@@ -5,9 +5,8 @@
 
 typedef struct remaps remaps;
 
-remaps *remaps_create(void);
-void remaps_update(remaps *remaps, const unsigned char *data);
-GLuint remaps_get_block_id(const remaps *remaps);
+remaps *remaps_create(GLuint unit_id);
+void remaps_update(const remaps *remaps, const char *data);
 void remaps_free(remaps **maps);
 
 #endif // REMAPS_H

@@ -37,6 +37,8 @@ layout (std140) uniform palette {
 };
 
 uniform sampler2D framebuffer;
+uniform sampler2D remaps;
+
 // Out
 layout (location = 0) out vec4 color;
 
@@ -45,6 +47,9 @@ layout (location = 0) out vec4 color;
 
 void main() {
     vec4 texel = texture(framebuffer, tex_coord);
+    float offset = 3.0 / 255.0;
+    int add_remap = int(texture(remaps, vec2(texel.r, texel.g + offset)).r * 255.0);
+    int sub_remap = int(texture(remaps, vec2(texel.r, texel.b + offset)).r * 255.0);
     int color_index = int(texel.r * 255.0);
     int add_index = int(texel.g * 255.0);
     int sub_index = int(texel.b * 255.0);
@@ -54,21 +59,10 @@ void main() {
         color = colors[0].rgba;
     }
     else if (add_index > 0) {
-        // If additive value is set, check if we are within a color slide. If we go outside,
-        // then just use the 0xEF or "white" color.
-        int real_index = color_index + add_index;
-        int row = int(color_index / 8.0);
-        if (real_index > highs[row]) {
-            color = colors[0xEF].rgba;
-        } else {
-            color = colors[real_index].rgba;
-        }
+        color = colors[add_remap].rgba;
     }
     else if (sub_index > 0) {
-        // If subtractive value is set, check if we are within a color slide.
-        int row = int(color_index / 8.0);
-        int real_index = clamp(color_index - sub_index, lows[row], 255);
-        color = colors[real_index].rgba;
+        color = colors[sub_remap].rgba;
     }
     else {
         // Normal draw; just pick the color and output it.

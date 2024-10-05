@@ -35,7 +35,7 @@ void main() {
 
     // Instead of using texture index, use alternate index instead.
     if(alternate_index > 0) {
-        index = alternate_index;
+        index = alternate_index / 255.0;
     }
 
     color = handle(index, limit, offset);
