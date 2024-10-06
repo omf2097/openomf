@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 #include "video/opengl/remaps.h"
 #include "utils/allocator.h"
 #include "video/opengl/buffers.h"
@@ -9,8 +11,6 @@ typedef struct remaps {
     GLuint tex_unit;
     GLuint texture_id;
 } remaps;
-
-// TODO: Move the remappings to 1D array texture!
 
 remaps *remaps_create(GLuint tex_unit) {
     remaps *maps = omf_calloc(1, sizeof(remaps));
@@ -27,6 +27,6 @@ void remaps_free(remaps **maps) {
     remaps *obj = *maps;
     if(obj != NULL) {
         texture_free(obj->tex_unit, obj->texture_id);
-        *maps = NULL;
+        omf_free(obj);
     }
 }
