@@ -45,7 +45,6 @@ typedef struct video_state {
     // Palettes
     palette *base_palette;          // Copy of the scenes base palette
     screen_palette *screen_palette; // Normal rendering palette
-    screen_palette *extra_palette;  // Reflects base palette, used for additive blending
 } video_state;
 
 #define TEX_UNIT_ATLAS 0
@@ -68,9 +67,7 @@ int video_init(int window_w, int window_h, bool fullscreen, bool vsync) {
 
     // Clear palettes
     g_video_state.base_palette = omf_calloc(1, sizeof(palette));
-    g_video_state.extra_palette = omf_calloc(1, sizeof(screen_palette));
     g_video_state.screen_palette = omf_calloc(1, sizeof(screen_palette));
-    g_video_state.extra_palette->version = 0;
     g_video_state.screen_palette->version = 1;
 
     if(!create_window(&g_video_state.window, window_w, window_h, fullscreen)) {
@@ -136,7 +133,6 @@ error_1:
 
 error_0:
     omf_free(g_video_state.screen_palette);
-    omf_free(g_video_state.extra_palette);
     omf_free(g_video_state.base_palette);
     return 1;
 }
@@ -228,7 +224,6 @@ void video_close(void) {
     SDL_GL_DeleteContext(g_video_state.gl_context);
     SDL_DestroyWindow(g_video_state.window);
     omf_free(g_video_state.screen_palette);
-    omf_free(g_video_state.extra_palette);
     omf_free(g_video_state.base_palette);
     INFO("Video renderer closed.");
 }
@@ -271,8 +266,6 @@ void video_area_capture(surface *sur, int x, int y, int w, int h) {
 
 void video_force_pal_refresh(void) {
     memcpy(g_video_state.screen_palette->data, g_video_state.base_palette->data, 768);
-    memcpy(g_video_state.extra_palette->data, g_video_state.base_palette->data, 768);
-    g_video_state.extra_palette->version++;
     g_video_state.screen_palette->version++;
 }
 
