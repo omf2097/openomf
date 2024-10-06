@@ -8,7 +8,6 @@ typedef struct vector_t {
     unsigned int block_size;
     unsigned int blocks;
     unsigned int reserved;
-    unsigned int inc_factor;
 } vector;
 
 typedef int (*vector_compare_func)(const void *, const void *);

@@ -6,7 +6,6 @@
 
 void vector_init(vector *vec) {
     vec->blocks = 0;
-    vec->inc_factor = 2;
     vec->data = (char *)omf_calloc(vec->reserved, vec->block_size);
 }
 
