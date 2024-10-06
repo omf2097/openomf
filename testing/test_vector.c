@@ -81,21 +81,22 @@ void test_vector_delete(void) {
 
 void test_vector_zero_size(void) {
     iterator it;
-    vector_create_with_size(&test_vector, sizeof(int), 0);
-    vector_iter_begin(&test_vector, &it);
+    vector zero_vector;
+    vector_create_with_size(&zero_vector, sizeof(int), 0);
+    vector_iter_begin(&zero_vector, &it);
     for(int i = 0; i < TEST_VAL_COUNT / 2; i++) {
-        CU_ASSERT(vector_append(&test_vector, (void *)&i) == 0);
+        CU_ASSERT(vector_append(&zero_vector, (void *)&i) == 0);
         test_values[i] = TEST_VAL_COUNT - i;
-        CU_ASSERT(vector_size(&test_vector) == i + 1);
+        CU_ASSERT(vector_size(&zero_vector) == i + 1);
     }
 
-    for(int i = 0; i < TEST_VAL_COUNT; i++) {
-        CU_ASSERT_PTR_NOT_NULL(vector_get(&test_vector, i));
+    for(int i = 0; i < TEST_VAL_COUNT / 2; i++) {
+        CU_ASSERT_PTR_NOT_NULL(vector_get(&zero_vector, i));
     }
 
     // We try to fetch a too high an index; this should return NULL
-    CU_ASSERT_PTR_NULL(vector_get(&test_vector, TEST_VAL_COUNT + 1));
-    vector_free(&test_vector);
+    CU_ASSERT_PTR_NULL(vector_get(&zero_vector, TEST_VAL_COUNT + 1));
+    vector_free(&zero_vector);
 }
 
 void vector_test_suite(CU_pSuite suite) {
