@@ -153,7 +153,7 @@ void melee_tick(scene *scene, int paused) {
                 game_state_set_next(scene->gs, SCENE_MENU);
                 return;
             }
-        } while((i = i->next));
+        } while((i = i->next) != NULL);
     }
     i = player2->ctrl->extra_events;
     if(i) {
@@ -164,7 +164,7 @@ void melee_tick(scene *scene, int paused) {
                 game_state_set_next(scene->gs, SCENE_MENU);
                 return;
             }
-        } while((i = i->next));
+        } while((i = i->next) != NULL);
     }
 
     if(local->page == HAR_SELECT && local->ticks % 10 == 1) {
@@ -388,7 +388,7 @@ void melee_input_tick(scene *scene) {
             } else if(i->type == EVENT_TYPE_CLOSE) {
                 game_state_set_next(scene->gs, SCENE_MENU);
             }
-        } while((i = i->next));
+        } while((i = i->next) != NULL);
     }
     controller_free_chain(p1);
     i = p2;
@@ -399,7 +399,7 @@ void melee_input_tick(scene *scene) {
             } else if(i->type == EVENT_TYPE_CLOSE) {
                 game_state_set_next(scene->gs, SCENE_MENU);
             }
-        } while((i = i->next));
+        } while((i = i->next) != NULL);
     }
     controller_free_chain(p2);
 }

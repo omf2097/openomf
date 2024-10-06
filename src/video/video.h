@@ -20,13 +20,6 @@ void video_get_state(int *w, int *h, int *fs, int *vsync);
 void video_move_target(int x, int y);
 
 /**
- * @deprecated
- */
-void video_render_sprite_flip_scale_opacity_tint(surface *sur, int x, int y, VIDEO_BLEND_MODE blend_mode,
-                                                 int pal_offset, int pal_limit, unsigned int flip_mode, float x_percent,
-                                                 float y_percent, uint8_t opacity, color tint);
-
-/**
  * Render a sprite on the screen. Content of source surface will be saved to atlas for faster rendering.
  * This is the simplest way to draw.
  *
@@ -45,7 +38,7 @@ void video_draw(const surface *src_surface, int x, int y);
  * @param x Destination X
  * @param y Destination y
  * @param offset Palette offset (default = 0)
- * @param limit PAlette offset max limit (default = 255)
+ * @param limit Palette offset max limit (default = 255)
  */
 void video_draw_offset(const surface *src_surface, int x, int y, int offset, int limit);
 
@@ -60,6 +53,31 @@ void video_draw_offset(const surface *src_surface, int x, int y, int offset, int
  * @param h Destination height
  */
 void video_draw_size(const surface *src_surface, int x, int y, int w, int h);
+
+/**
+ * Render a sprite on screen. Accept all drawing arguments.
+ * @param src_surface Source surface
+ * @param x Destination X
+ * @param y Destination Y
+ * @param w Destination width
+ * @param h Destination height
+ * @param blend_mode Blending mode
+ * @param offset Palette offset
+ * @param limit Palette limit
+ * @param alt_index Use alternate index (assign alternate index to offset)
+ * @param flip_mode Sprite flipping mode (FLIP_HORIZONTAL | FLIP_VERTICAL)
+ */
+void video_draw_full(
+    const surface *src_surface,
+    int x,
+    int y,
+    int w,
+    int h, video_blend_mode blend_mode,
+    int offset,
+    int limit,
+    int alt_index,
+    unsigned int flip_mode
+);
 
 void video_reset_atlas(void);
 

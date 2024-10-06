@@ -3,15 +3,16 @@
 
 typedef enum
 {
-    BLEND_ADDITIVE = 0,
-    BLEND_ALPHA = 1,
-} VIDEO_BLEND_MODE;
+    BLEND_ADD = 0,
+    BLEND_SUB = 1,
+    BLEND_SET = 2,
+} video_blend_mode;
 
 typedef enum
 {
     FLIP_NONE = 0,
     FLIP_HORIZONTAL = 0x1,
     FLIP_VERTICAL = 0x2,
-} VIDEO_FLIP_MODE;
+} video_flip_mode;
 
 #endif // VIDEO_ENUMS_H
