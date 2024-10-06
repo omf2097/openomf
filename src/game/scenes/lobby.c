@@ -2,6 +2,7 @@
 #include "game/protos/scene.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
+#include "game/utils/serial.h"
 #include "utils/miscmath.h"
 #include "video/video.h"
 
@@ -43,6 +44,7 @@ enum
 
 typedef struct lobby_local_t {
     char name[16];
+    uint32_t id;
     list log;
     list users;
     bool named;
@@ -58,6 +60,16 @@ typedef struct log_event_t {
     uint8_t color;
     char msg[51];
 } log_event;
+
+typedef struct lobby_user_t {
+    char name[16];
+    char version[15];
+    bool self;
+    ENetAddress address;
+    uint32_t id;
+    uint8_t wins;
+    uint8_t losses;
+} lobby_user;
 
 static int lobby_event(scene *scene, SDL_Event *e) {
     lobby_local *local = scene_get_userdata(scene);
@@ -95,6 +107,7 @@ void lobby_render_overlay(scene *scene) {
     lobby_local *local = scene_get_userdata(scene);
 
     char buf[100];
+    local->active_user = min2(local->active_user, list_size(&local->users) - 1);
 
     if(local->mode > LOBBY_YELL) {
         snprintf(buf, sizeof(buf), "Player");
@@ -109,23 +122,25 @@ void lobby_render_overlay(scene *scene) {
         snprintf(buf, sizeof(buf), "Version");
         font_render(&font_net2, buf, 240, 8, 56);
 
-        snprintf(buf, sizeof(buf), "1 of 0");
+        snprintf(buf, sizeof(buf), "%d of %d", local->active_user + 1, list_size(&local->users));
         font_render(&font_net2, buf, 284, 8, 56);
 
         iterator it;
-        char *username;
+        lobby_user *user;
         list_iter_begin(&local->users, &it);
         int i = 0;
-        local->active_user = min2(local->active_user, list_size(&local->users) - 1);
-        while((username = list_iter_next(&it)) && i < 8) {
+        while((user = list_iter_next(&it)) && i < 8) {
             if(i == local->active_user) {
-                font_render(&font_net1, username, 16, 18 + (10 * i), 7);
+                font_render(&font_net1, user->name, 16, 18 + (10 * i), 7);
             } else {
-                font_render(&font_net1, username, 16, 18 + (10 * i), 8);
+                font_render(&font_net1, user->name, 16, 18 + (10 * i), 8);
             }
+            // TODO status
             font_render(&font_net2, "available", 117, 18 + (10 * i), 40);
-            font_render(&font_net2, "0/0", 200, 18 + (10 * i), 56);
-            font_render(&font_net2, "OpenOMF 0.9.6-git", 240, 18 + (10 * i), 56);
+            char wins[8];
+            snprintf(wins, sizeof(wins), "%d/%d", user->wins, user->losses);
+            font_render(&font_net2, wins, 200, 18 + (10 * i), 56);
+            font_render(&font_net2, user->version, 240, 18 + (10 * i), 56);
             i++;
         }
 
@@ -178,7 +193,6 @@ void lobby_do_yell(component *c, void *userdata) {
         enet_peer_send(local->peer, 0, packet);
         textinput_clear(c);
     }
-    // TODO get the message and send/log it from the textinput component 'c'
 }
 
 component *lobby_yell_create(scene *s) {
@@ -317,13 +331,27 @@ void lobby_entered_name(component *c, void *userdata) {
     else if(enet_host_service(local->client, &event, 5000) > 0 && event.type == ENET_EVENT_TYPE_CONNECT) {
         DEBUG("Connection to server succeeded.");
 
+        DEBUG("local peer connect id %d", local->peer->connectID);
+        DEBUG("remote peer connect id %d", event.peer->connectID);
+
         event.peer->data = "Client information";
         strncpy(local->name, textinput_value(c), sizeof(local->name));
 
-        char name_packet[20];
-        snprintf(name_packet, sizeof(name_packet), "\1%s", textinput_value(c));
+        char version[15];
+        // TODO support git version when not on a tag
+        snprintf(version, 14, "%d.%d.%d", V_MAJOR, V_MINOR, V_PATCH);
+        version[14] = 0;
+        serial ser;
+        serial_create(&ser);
+        serial_write_int8(&ser, PACKET_JOIN);
+        serial_write_int8(&ser, strlen(version));
+        serial_write(&ser, version, strlen(version));
+        char *name = textinput_value(c);
+        serial_write(&ser, name, strlen(name));
 
-        ENetPacket *packet = enet_packet_create(name_packet, strlen(name_packet) + 1, ENET_PACKET_FLAG_RELIABLE);
+        ENetPacket *packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
+        serial_free(&ser);
+
         enet_peer_send(local->peer, 0, packet);
 
         menu *m = sizer_get_obj(c->parent);
@@ -368,6 +396,7 @@ void lobby_exit(component *c, void *userdata) {
 void lobby_tick(scene *scene, int paused) {
     lobby_local *local = scene_get_userdata(scene);
     ENetEvent event;
+    serial ser;
     while(local->client && enet_host_service(local->client, &event, 0) > 0) {
         switch(event.type) {
             case ENET_EVENT_TYPE_NONE:
@@ -380,18 +409,43 @@ void lobby_tick(scene *scene, int paused) {
 
                 break;
             case ENET_EVENT_TYPE_RECEIVE:
-                DEBUG("A packet of length %u containing %s was received from %s on channel %u.",
-                      event.packet->dataLength, event.packet->data, (char *)event.peer->data, event.channelID);
-                switch(event.packet->data[0]) {
+
+                serial_create_from(&ser, (const char *)event.packet->data, event.packet->dataLength);
+                uint8_t control_byte = serial_read_int8(&ser);
+                DEBUG("A packet of length %u with control byte %d was received from %s on channel %u.",
+                      event.packet->dataLength, control_byte, (char *)event.peer->data, event.channelID);
+                switch(control_byte >> 4) {
                     case PACKET_PRESENCE:
-                        list_append(&local->users, event.packet->data + 1, event.packet->dataLength - 1);
+                        {
+                        lobby_user user;
+                        user.id = serial_read_uint32(&ser);
+                        user.address.host = serial_read_uint32(&ser);
+                        user.address.port = serial_read_uint16(&ser);
+                        user.wins = serial_read_int8(&ser);
+                        user.losses = serial_read_int8(&ser);
+                        uint8_t version_len = serial_read_int8(&ser);
+                        if (version_len < 15) {
+                            serial_read(&ser, user.version, version_len);
+                            user.version[version_len] = 0;
+                            uint8_t name_len = ser.wpos - ser.rpos;
+                            if (name_len > 0 && name_len < 16) {
+                                serial_read(&ser, user.name, name_len);
+                                user.name[name_len] = 0;
+                                list_append(&local->users, &user, sizeof(lobby_user));
+                                if (control_byte & 0x8) {
+                                    log_event log;
+                                    log.color = JOIN_COLOR;
+                                    snprintf(log.msg, sizeof(log.msg), "%s has entered the Arena", user.name),
+                                        list_append(&local->log, &log, sizeof(log));
+                                }
+
+                            }
+                        }
+                        }
                         break;
                     case PACKET_JOIN:
-                        list_append(&local->users, event.packet->data + 1, event.packet->dataLength - 1);
-                        log_event log;
-                        log.color = JOIN_COLOR;
-                        snprintf(log.msg, sizeof(log.msg), "%s has entered the Arena", event.packet->data + 1),
-                            list_append(&local->log, &log, sizeof(log));
+                        local->id = serial_read_uint32(&ser);
+                        DEBUG("successfully joined lobby and assigned ID %d", local->id);
                         break;
                     case PACKET_YELL: {
                         log_event log;
@@ -406,27 +460,23 @@ void lobby_tick(scene *scene, int paused) {
                         list_append(&local->log, &log, sizeof(log));
                     } break;
                     case PACKET_DISCONNECT: {
-                        char *name = (char *)(event.packet->data + 1);
+                        uint32_t connect_id = serial_read_uint32(&ser);
                         iterator it;
-                        char *username;
                         list_iter_begin(&local->users, &it);
-                        bool found = false;
-                        while((username = list_iter_next(&it))) {
-                            if(strncmp(name, username, 16) == 0) {
+                        lobby_user *user;
+                        while((user = list_iter_next(&it))) {
+                            if(user->id == connect_id) {
+                                log_event log;
+                                log.color = LEAVE_COLOR;
+                                snprintf(log.msg, sizeof(log.msg), "%s has left the Arena", user->name);
+                                list_append(&local->log, &log, sizeof(log));
                                 list_delete(&local->users, &it);
-                                found = true;
                                 break;
                             }
                         }
-                        if(found) {
-                            log_event log;
-                            log.color = LEAVE_COLOR;
-                            snprintf(log.msg, sizeof(log.msg), "%s has left the Arena", name);
-                            list_append(&local->log, &log, sizeof(log));
-                        }
                     } break;
                     default:
-                        DEBUG("unknown packet of type %d received", event.packet->data[0]);
+                        DEBUG("unknown packet of type %d received", event.packet->data[0] >> 4);
                         break;
                 }
                 /* Clean up the packet now that we're done using it. */

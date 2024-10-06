@@ -128,6 +128,12 @@ int16_t serial_read_int16(serial *s) {
     return ntohs(v);
 }
 
+uint16_t serial_read_uint16(serial *s) {
+    uint16_t v;
+    serial_read(s, (char *)&v, sizeof(v));
+    return ntohs(v);
+}
+
 int32_t serial_read_int32(serial *s) {
     int32_t v;
     serial_read(s, (char *)&v, sizeof(v));

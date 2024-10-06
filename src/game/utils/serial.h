@@ -25,6 +25,7 @@ void serial_free(serial *s);
 void serial_read_reset(serial *s);
 int8_t serial_read_int8(serial *s);
 int16_t serial_read_int16(serial *s);
+uint16_t serial_read_uint16(serial *s);
 int32_t serial_read_int32(serial *s);
 uint32_t serial_read_uint32(serial *s);
 long serial_read_long(serial *s);
