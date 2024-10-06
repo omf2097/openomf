@@ -3,6 +3,7 @@ Language:  Cpp
 BasedOnStyle: LLVM
 ColumnLimit: 120
 IndentWidth: 4
+LineEnding: LF
 SpaceBeforeParens: Never
 BreakBeforeBraces: Custom
 BraceWrapping:
