@@ -32,6 +32,7 @@ void textbutton_set_border(component *c, uint8_t color) {
     int fsize = text_char_width(&tb->tconf);
     int width = text_width(&tb->tconf, tb->text);
     menu_background_border_create(&tb->border, width + 6, fsize + 3);
+    tb->border_created = 1;
 }
 
 void textbutton_set_text(component *c, const char *text) {

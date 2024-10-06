@@ -104,6 +104,8 @@ void melee_free(scene *scene) {
     for(int i = 0; i < 10; i++) {
         surface_free(&local->har_portraits[i].enabled);
         surface_free(&local->har_portraits[i].disabled);
+        surface_free(&local->pilot_portraits[i].enabled);
+        surface_free(&local->pilot_portraits[i].disabled);
         object_free(&local->har_player1[i]);
         if(player2->selectable) {
             object_free(&local->har_player2[i]);
