@@ -5,13 +5,19 @@
 
 void vector_init(vector *vec) {
     vec->blocks = 0;
-    vec->reserved = 32;
     vec->inc_factor = 2;
     vec->data = (char *)omf_calloc(vec->reserved, vec->block_size);
 }
 
 void vector_create(vector *vec, unsigned int block_size) {
     vec->block_size = block_size;
+    vec->reserved = 32;
+    vector_init(vec);
+}
+
+void vector_create_with_size(vector *vec, unsigned int block_size, unsigned int reserved) {
+    vec->block_size = block_size;
+    vec->reserved = reserved;
     vector_init(vec);
 }
 

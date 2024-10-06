@@ -15,7 +15,7 @@ void bk_create(bk *b, void *src) {
     memcpy(b->sound_translation_table, sdbk->soundtable, 30);
 
     // Copy palettes
-    vector_create(&b->palettes, sizeof(palette));
+    vector_create_with_size(&b->palettes, sizeof(palette), sdbk->palette_count);
     for(int i = 0; i < sdbk->palette_count; i++) {
         vector_append(&b->palettes, (palette *)sdbk->palettes[i]);
     }
