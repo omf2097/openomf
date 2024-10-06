@@ -555,7 +555,7 @@ void har_move(object *obj) {
     }
 }
 
-void har_take_damage(object *obj, const str *string, fix16_t damage, fix16_t stun) {
+void har_take_damage(object *obj, const str *string, float damage, float stun) {
     har *h = object_get_userdata(obj);
 
     // Got hit, disable stasis activator on this bot
@@ -570,33 +570,27 @@ void har_take_damage(object *obj, const str *string, fix16_t damage, fix16_t stu
         if(player->pilot->photo) {
             // in tournament mode, damage is mitigated by armor
             // (Armor + 2.5) * .25
-            char damage_str[24];
-            char mitigation_str[24];
-            fix16_t mitigation = fix16_mul(F16(0.25), fix16_add(F16(2.5), fix16_from_int(player->pilot->armor)));
-            fix16_to_str(damage, damage_str, 2);
-            fix16_to_str(mitigation, mitigation_str, 2);
-            DEBUG("applying %s to %d modulated by armor %s", damage_str, h->health, mitigation_str);
-            h->health -= fix16_to_int(fix16_div(damage, mitigation));
+            DEBUG("applying %f to %d modulated by armor %f", damage, h->health, 0.25f * (2.5f + player->pilot->armor));
+            h->health -= damage / (0.25f * (2.5f + player->pilot->armor));
         } else {
-            h->health -= fix16_to_int(damage);
+            h->health -= damage;
         }
     }
 
     // Handle health changes
     if(h->health <= 0) {
         h->health = 0;
-        h->endurance = 0;
+        h->endurance = 0.0f;
     }
-    char stun_str[24];
-    fix16_to_str(stun, stun_str, 2);
-    DEBUG("applying %s stun damage to %d", stun_str, h->endurance);
-    h->endurance -= fix16_to_int(stun);
-    if(h->endurance < 100) {
+
+    DEBUG("applying %f stun damage to %f", stun, h->endurance);
+    h->endurance -= stun;
+    if(h->endurance < 1.0f) {
         if(h->state == STATE_STUNNED) {
             // refill endurance
             h->endurance = h->endurance_max;
         } else {
-            h->endurance = 0;
+            h->endurance = 0.0f;
         }
     }
 
@@ -609,7 +603,7 @@ void har_take_damage(object *obj, const str *string, fix16_t damage, fix16_t stu
 
     // If damage is high enough, slow down the game for a bit
     // Also slow down game more for last shot
-    if(damage > F16(24) || h->health == 0) {
+    if(damage > 24.0f || h->health == 0) {
         DEBUG("Slowdown: Slowing from %d to %d.", game_state_get_speed(obj->gs),
               h->health == 0 ? game_state_get_speed(obj->gs) - 10 : game_state_get_speed(obj->gs) - 6);
         game_state_slowdown(obj->gs, 12,
@@ -1142,9 +1136,7 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
         if(move->successor_id) {
             af_move *next_move = af_get_move(prog_owner_af_data, move->successor_id);
             if(next_move->footer_string.data) {
-                char damage_str[24];
-                fix16_to_str(move->damage, damage_str, 2);
-                DEBUG("HAR %s Takes %s units of damage on string %s", har_get_name(h->id), damage_str,
+                DEBUG("HAR %s Takes %f units of damage on string %s", har_get_name(h->id), move->damage,
                       str_c(&move->footer_string));
                 har_take_damage(o_har, &move->footer_string, move->damage, move->stun);
                 damage = 1;
@@ -1217,8 +1209,7 @@ void har_collide_with_hazard(object *o_har, object *o_hzd) {
     int level = 2;
     vec2i hit_coord;
     if(!h->damage_received && intersect_sprite_hitpoint(o_hzd, o_har, level, &hit_coord)) {
-        har_take_damage(o_har, &anim->footer_string, fix16_from_int(anim->hazard_damage),
-                        fix16_mul(fix16_add(fix16_from_int(anim->hazard_damage), F16(6)), F16(512)));
+        har_take_damage(o_har, &anim->footer_string, anim->hazard_damage, (anim->hazard_damage + 6) * 512);
         controller *ctrl = game_player_get_ctrl(game_state_get_player(o_har->gs, h->player_id));
         har_event_hazard_hit(h, anim, ctrl);
         // fire enemy hazard hit event
@@ -1428,7 +1419,7 @@ void har_tick(object *obj) {
     if(h->endurance < h->endurance_max &&
        !(h->executing_move || h->state == STATE_RECOIL || h->state == STATE_STUNNED || h->state == STATE_FALLEN ||
          h->state == STATE_STANDING_UP || h->state == STATE_DEFEAT)) {
-        h->endurance += 1; // made up but implausible number
+        h->endurance += 0.025f; // made up but plausible number
     }
 
     // Flip tint effect flag
@@ -2020,7 +2011,7 @@ void har_finished(object *obj) {
         h->state = STATE_DEFEAT;
         har_set_ani(obj, ANIM_DEFEAT, 0);
         har_event_defeat(h, ctrl);
-    } else if((h->state == STATE_RECOIL || h->state == STATE_STANDING_UP) && h->endurance < 100) {
+    } else if((h->state == STATE_RECOIL || h->state == STATE_STANDING_UP) && h->endurance < 1.0f) {
         if(h->state == STATE_RECOIL) {
             har_event_recover(h, ctrl);
         }
@@ -2127,7 +2118,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     //  The stun cap is calculated as follows
     //  HAR Endurance * 3.6 * (Pilot Endurance + 16) / 23
     local->endurance_max = local->endurance = af_data->endurance * 3.6 * (pilot->endurance + 16) / 23;
-    DEBUG("HAR endurance is %d with pilot endurance %d and base endurance %f", local->endurance, pilot->endurance,
+    DEBUG("HAR endurance is %f with pilot endurance %d and base endurance %f", local->endurance, pilot->endurance,
           af_data->endurance);
     // fwd speed = (Agility + 20) / 30 * fwd speed
     // back speed = (Agility + 20) / 30 * back speed
@@ -2170,7 +2161,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     local->action_hook_cb_data = NULL;
 
     // Last damage value, for convenience
-    local->last_damage_value = F16(0);
+    local->last_damage_value = 0.0f;
 
     // p<x> stuff
     local->p_ticks_left = 0;
@@ -2230,14 +2221,14 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     // fixup a bunch of stuff based on player stats
 
     bool is_tournament = false;
-    fix16_t leg_power = 0;
-    fix16_t arm_power = 0;
+    float leg_power = 0.0f;
+    float arm_power = 0.0f;
     // cheap way to check if we're in tournament mode
     if(pilot->photo != NULL) {
         is_tournament = true;
         // (Limb Power + 3) * .192
-        leg_power = fix16_mul(fix16_add(fix16_from_int(pilot->leg_power), F16(3.0)), F16(0.192f));
-        arm_power = fix16_mul(fix16_add(fix16_from_int(pilot->arm_power), F16(3.0)), F16(0.192f));
+        leg_power = (pilot->leg_power + 3) * 0.192f;
+        arm_power = (pilot->arm_power + 3) * 0.192f;
     }
 
     af_move *move;
@@ -2249,33 +2240,19 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
                 // Single Player
                 // Damage = Base Damage * (20 + Power) / 30 + 1
                 //  Stun = (Base Damage + 6) * 512
-                move->stun = fix16_mul(fix16_add(move->damage, F16(6)), F16(512));
-                move->damage = fix16_add(
-                    fix16_div(fix16_mul(move->damage, (fix16_add(F16(20), fix16_from_int(pilot->power)))), F16(30)),
-                    F16(1));
+                move->stun = (move->damage + 6) * 512;
+                move->damage = move->damage * (20 + pilot->power) / 30 + 1;
             } else {
                 // Tournament Mode
                 // Damage = (Base Damage * (25 + Power) / 35 + 1) * leg/arm power / armor
                 // Stun = ((Base Damage * (35 + Power) / 45) * 2 + 12) * 256
-                move->stun = fix16_mul(
-                    fix16_add(
-                        fix16_mul(fix16_div(fix16_mul(move->damage, fix16_add(F16(35), fix16_from_int(pilot->power))),
-                                            F16(45)),
-                                  F16(2)),
-                        F16(12)),
-                    F16(256));
+                move->stun = ((move->damage * (35 + pilot->power) / 45) * 2 + 12) * 256;
                 switch(move->extra_string_selector) {
                     case 0:
                         break;
                     case 1:
                         // arm speed and power
-                        // move->damage = (move->damage * (25 + pilot->power) / 35 + 1) * arm_power;
-                        move->damage =
-                            fix16_mul(fix16_add(fix16_div(fix16_mul(move->damage,
-                                                                    fix16_add(F16(25.0), fix16_from_int(pilot->power))),
-                                                          F16(35.0)),
-                                                F16(1.0)),
-                                      arm_power);
+                        move->damage = (move->damage * (25 + pilot->power) / 35 + 1) * arm_power;
                         if(move->ani.extra_string_count > 0) {
                             str_free(&move->ani.animation_string);
                             // sometimes there's not enough extra strings, so take the last available
@@ -2286,14 +2263,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
                         break;
                     case 2:
                         // leg speed and power
-                        // move->damage = (move->damage * (25 + pilot->power) / 35 + 1) * leg_power;
-                        move->damage =
-                            fix16_mul(fix16_add(fix16_div(fix16_mul(move->damage,
-                                                                    fix16_add(F16(25.0), fix16_from_int(pilot->power))),
-                                                          F16(35.0)),
-                                                F16(1.0)),
-                                      leg_power);
-
+                        move->damage = (move->damage * (25 + pilot->power) / 35 + 1) * leg_power;
                         if(move->ani.extra_string_count > 0) {
                             str_free(&move->ani.animation_string);
                             // sometimes there's not enough extra strings, so take the last available
@@ -2304,37 +2274,19 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
                         break;
                     case 3:
                         // check if you have the enhancement(s) (and apply arm power for damage)
-                        // move->damage = (move->damage * (25 + pilot->power) / 35 + 1) * arm_power;
-                        move->damage =
-                            fix16_mul(fix16_add(fix16_div(fix16_mul(move->damage,
-                                                                    fix16_add(F16(25.0), fix16_from_int(pilot->power))),
-                                                          F16(35.0)),
-                                                F16(1.0)),
-                                      arm_power);
+                        move->damage = (move->damage * (25 + pilot->power) / 35 + 1) * arm_power;
                         // TODO if you have 1 enhancement choose extra string 2
                         // if you have 2 enhancements choose extra string 3
                         break;
                     case 4:
                         // check if you have the enhancement(s) (and apply leg power for damage)
-                        // move->damage = (move->damage * (25 + pilot->power) / 35 + 1) * leg_power;
-                        move->damage =
-                            fix16_mul(fix16_add(fix16_div(fix16_mul(move->damage,
-                                                                    fix16_add(F16(25.0), fix16_from_int(pilot->power))),
-                                                          F16(35.0)),
-                                                F16(1.0)),
-                                      leg_power);
+                        move->damage = (move->damage * (25 + pilot->power) / 35 + 1) * leg_power;
                         // TODO if you have 1 enhancement choose extra string 2
                         // if you have 2 enhancements choose extra string 3
                         break;
                     case 5:
                         // check if you have the enhancement(s) (and apply leg and arm power for damage)
-                        // move->damage = (move->damage * (25 + pilot->power) / 35 + 1) * leg_power * leg_power;
-                        move->damage =
-                            fix16_mul(fix16_add(fix16_div(fix16_mul(move->damage,
-                                                                    fix16_add(F16(25.0), fix16_from_int(pilot->power))),
-                                                          F16(35.0)),
-                                                F16(1.0)),
-                                      fix16_mul(leg_power, leg_power));
+                        move->damage = (move->damage * (25 + pilot->power) / 35 + 1) * leg_power * leg_power;
                         // TODO if you have 1 enhancement choose extra string 2
                         // if you have 2 enhancements choose extra string 3
                         break;

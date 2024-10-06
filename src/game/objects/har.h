@@ -3,7 +3,6 @@
 
 #include "game/objects/arena_constraints.h"
 #include "game/protos/object.h"
-#include "libfixmath/fixmath.h"
 #include "resources/af.h"
 #include "resources/animation.h"
 #include "resources/bk.h"
@@ -134,9 +133,9 @@ typedef struct har_t {
     uint8_t damage_done;     // Damage was done this animation
     uint8_t damage_received; // Damage was received this animation
     uint8_t air_attacked;
-    uint8_t is_wallhugging;    // HAR is standing right next to a wall
-    uint8_t is_grabbed;        // Is being moved by another object. Set by ex, ey tags
-    fix16_t last_damage_value; // Last damage value taken
+    uint8_t is_wallhugging;  // HAR is standing right next to a wall
+    uint8_t is_grabbed;      // Is being moved by another object. Set by ex, ey tags
+    float last_damage_value; // Last damage value taken
 
     float jump_speed;      // Agility generated speed modifier for jumping
     float superjump_speed; // Agility generated speed modifier for jumping
@@ -148,7 +147,7 @@ typedef struct har_t {
 
     uint8_t stride;
     int16_t health_max, health;
-    int32_t endurance_max, endurance;
+    float endurance_max, endurance;
     char inputs[11];
     uint8_t hard_close;
 
