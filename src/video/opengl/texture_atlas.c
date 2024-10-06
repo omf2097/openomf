@@ -155,7 +155,7 @@ bool atlas_insert(texture_atlas *atlas, const char *bytes, uint16_t w, uint16_t 
     }
 
     // Split found, add the area to the atlas.
-    texture_update(atlas->tex_unit, atlas->texture_id, free.x, free.y, w, h, bytes);
+    texture_update(atlas->tex_unit, atlas->texture_id, free.x, free.y, w, h, GL_RG, bytes);
     *nx = free.x;
     *ny = free.y;
     return true;

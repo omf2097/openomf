@@ -20,7 +20,7 @@ remaps *remaps_create(GLuint tex_unit) {
 }
 
 void remaps_update(const remaps *remaps, const char *data) {
-    texture_update(remaps->tex_unit, remaps->texture_id, 0, 0, REMAPS_WIDTH, REMAPS_HEIGHT, data);
+    texture_update(remaps->tex_unit, remaps->texture_id, 0, 0, REMAPS_WIDTH, REMAPS_HEIGHT, GL_RED, data);
 }
 
 void remaps_free(remaps **maps) {

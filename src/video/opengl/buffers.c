@@ -49,9 +49,9 @@ GLuint texture_create(GLuint tex_unit, GLsizei w, GLsizei h, GLint internal_form
     return id;
 }
 
-void texture_update(GLuint tex_unit, GLuint id, int x, int y, int w, int h, const char *bytes) {
+void texture_update(GLuint tex_unit, GLuint id, int x, int y, int w, int h, GLenum format, const char *bytes) {
     bindings_bind_tex(tex_unit, id);
-    glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, w, h, GL_RG, GL_UNSIGNED_BYTE, bytes);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, w, h, format, GL_UNSIGNED_BYTE, bytes);
 }
 
 void texture_free(GLuint tex_unit, GLuint id) {
