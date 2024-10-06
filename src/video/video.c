@@ -27,7 +27,7 @@ typedef struct video_state {
     GLuint palette_prog_id;
     GLuint rgba_prog_id;
 
-    int current_blend_mode;
+    video_blend_mode current_blend_mode;
 
     int viewport_w;
     int viewport_h;
@@ -64,7 +64,7 @@ int video_init(int window_w, int window_h, bool fullscreen, bool vsync) {
     g_video_state.fade = 1.0f;
     g_video_state.target_move_x = 0;
     g_video_state.target_move_y = 0;
-    g_video_state.current_blend_mode = 0;
+    g_video_state.current_blend_mode = BLEND_SET;
 
     // Clear palettes
     g_video_state.base_palette = omf_calloc(1, sizeof(palette));
@@ -92,8 +92,10 @@ int video_init(int window_w, int window_h, bool fullscreen, bool vsync) {
     // Fetch viewport size which may be different from window size.
     SDL_GL_GetDrawableSize(g_video_state.window, &g_video_state.viewport_w, &g_video_state.viewport_h);
 
-    // Reset background color to black.
+    // Initial blending mode
     glEnable(GL_BLEND);
+
+    // Reset background color to black.
     glClearColor(0.0, 0.0, 0.0, 1.0);
 
     // Create the rest of the graphics objects
@@ -188,8 +190,10 @@ void video_render_finish(void) {
     object_array_begin(g_video_state.objects, &batch);
     activate_program(g_video_state.palette_prog_id);
     render_target_activate(g_video_state.target);
-    while(object_array_get_batch(g_video_state.objects, &batch)) {
-        video_set_blend_mode(!batch.mode);
+
+    video_blend_mode mode;
+    while(object_array_get_batch(g_video_state.objects, &batch, &mode)) {
+        video_set_blend_mode(mode);
         object_array_draw(g_video_state.objects, &batch);
     }
 

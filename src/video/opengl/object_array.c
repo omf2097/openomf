@@ -105,16 +105,19 @@ void object_array_begin(const object_array *array, object_array_batch *state) {
     state->mode = (array->item_count > 0) ? array->modes[0] : 0;
 }
 
-bool object_array_get_batch(const object_array *array, object_array_batch *state) {
+bool object_array_get_batch(const object_array *array, object_array_batch *state, video_blend_mode *mode) {
     if(state->end >= array->item_count) {
         return false;
     }
     state->start = state->end;
+    video_blend_mode next;
     for(; state->end < array->item_count; state->end++) {
-        if(array->modes[state->end] != state->mode)
+        next = array->modes[state->end];
+        if(next != state->mode)
             break;
     }
-    state->mode = !state->mode; // We only have two modes, so flip-flop.
+    *mode = state->mode;
+    state->mode = next;
     return true;
 }
 
