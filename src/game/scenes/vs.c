@@ -443,6 +443,7 @@ int vs_create(scene *scene) {
         object_select_sprite(player2_har, player2->pilot->har_id);
         object_set_direction(player2_har, OBJECT_FACE_LEFT);
         object_set_pal_offset(player2_har, 48);
+        object_set_pal_limit(player2_har, 96);
         object_set_halt(player2_har, 1);
         game_state_add_object(scene->gs, player2_har, RENDER_LAYER_MIDDLE, 0, 0);
 
