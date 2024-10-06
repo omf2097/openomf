@@ -336,8 +336,7 @@ void object_render_shadow(object *obj) {
     // Render shadow object twice with different offsets, so that
     // the shadows seem a bit blobbier and shadow-y
     for(int i = 0; i < 2; i++) {
-        video_render_sprite_flip_scale_opacity_tint(cur_sprite->data, x + i, y + i, BLEND_ALPHA, 192, 192, flipmode,
-                                                    1.0, scale_y, 65, color_create(0, 0, 0, 255));
+        video_render_sprite_flip_scale_opacity_tint(cur_sprite->data, x + i, y + i, BLEND_SET, 192, 192, flipmode, 1.0, scale_y, 65, color_create(0, 0, 0, 255));
     }
 }
 
@@ -524,7 +523,7 @@ void object_select_sprite(object *obj, int id) {
         } else {
             if(animation_get_sprite(obj->cur_animation, id)) {
                 obj->cur_sprite_id = id;
-                obj->sprite_state.blendmode = BLEND_ALPHA;
+                obj->sprite_state.blendmode = BLEND_SET;
                 obj->sprite_state.flipmode = FLIP_NONE;
             } else {
                 DEBUG("unable to find sprite %d", id);

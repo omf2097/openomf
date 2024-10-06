@@ -164,7 +164,7 @@ static void video_set_blend_mode(int request_mode) {
     if(g_video_state.current_blend_mode == request_mode)
         return;
 
-    if(request_mode == BLEND_ALPHA) { // ALPHA
+    if(request_mode == BLEND_SET) {   // ALPHA
         glBlendFunc(GL_ONE, GL_ZERO); // 1 * src + 0 * dst
     } else {                          // ADDITIVE
         glBlendFunc(GL_ONE, GL_ONE);  // 1 * src + 1 * dst
@@ -293,11 +293,11 @@ screen_palette *video_get_pal_ref(void) {
 void video_render_background(surface *sur) {
     uint16_t tx, ty, tw, th;
     if(atlas_get(g_video_state.atlas, sur, &tx, &ty, &tw, &th)) {
-        object_array_add(g_video_state.objects, 0, 0, 320, 200, tx, ty, tw, th, 0, BLEND_ALPHA, 0, -1);
+        object_array_add(g_video_state.objects, 0, 0, 320, 200, tx, ty, tw, th, 0, BLEND_SET, 0, -1);
     }
 }
 
-static void draw_args(video_state *state, const surface *sur, SDL_Rect *dst, VIDEO_BLEND_MODE blend_mode,
+static void draw_args(video_state *state, const surface *sur, SDL_Rect *dst, video_blend_mode blend_mode,
                       int pal_offset, int pal_limit, unsigned int flip_mode) {
     uint16_t tx, ty, tw, th;
     if(atlas_get(g_video_state.atlas, sur, &tx, &ty, &tw, &th)) {
@@ -312,7 +312,7 @@ void video_draw_offset(const surface *src_surface, int x, int y, int offset, int
     dst.h = src_surface->h;
     dst.x = x;
     dst.y = y;
-    draw_args(&g_video_state, src_surface, &dst, BLEND_ALPHA, offset, limit, 0);
+    draw_args(&g_video_state, src_surface, &dst, BLEND_SET, offset, limit, 0);
 }
 
 void video_draw_size(const surface *src_surface, int x, int y, int w, int h) {
@@ -321,14 +321,14 @@ void video_draw_size(const surface *src_surface, int x, int y, int w, int h) {
     dst.h = h;
     dst.x = x;
     dst.y = y;
-    draw_args(&g_video_state, src_surface, &dst, BLEND_ALPHA, 0, 255, 0);
+    draw_args(&g_video_state, src_surface, &dst, BLEND_SET, 0, 255, 0);
 }
 
 void video_draw(const surface *src_surface, int x, int y) {
     video_draw_offset(src_surface, x, y, 0, 255);
 }
 
-void video_render_sprite_flip_scale_opacity_tint(surface *sur, int sx, int sy, VIDEO_BLEND_MODE blend_mode,
+void video_render_sprite_flip_scale_opacity_tint(surface *sur, int sx, int sy, video_blend_mode blend_mode,
                                                  int pal_offset, int pal_limit, unsigned int flip_mode, float x_percent,
                                                  float y_percent, uint8_t opacity, color tint) {
 

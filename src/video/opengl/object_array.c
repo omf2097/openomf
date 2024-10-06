@@ -133,7 +133,7 @@ void object_array_draw(const object_array *array, object_array_batch *state) {
     ptr.palette_limit = pal_limit;
 
 static void add_item(object_array *array, float dx, float dy, int x, int y, int w, int h, int tx, int ty, int tw,
-                     int th, int flags, VIDEO_BLEND_MODE blend_mode, int pal_offset, int pal_limit) {
+                     int th, int flags, video_blend_mode blend_mode, int pal_offset, int pal_limit) {
     float tx0, tx1;
     if(flags & FLIP_HORIZONTAL) {
         tx0 = (tx + tw) * dx;
@@ -166,7 +166,7 @@ static void add_item(object_array *array, float dx, float dy, int x, int y, int 
 }
 
 void object_array_add(object_array *array, int x, int y, int w, int h, int tx, int ty, int tw, int th, int flags,
-                      VIDEO_BLEND_MODE blend_mode, int pal_offset, int pal_limit) {
+                      video_blend_mode blend_mode, int pal_offset, int pal_limit) {
     if(array->item_count >= MAX_FANS) {
         PERROR("Too many objects!");
         return;
