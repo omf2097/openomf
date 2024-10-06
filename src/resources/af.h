@@ -19,7 +19,7 @@ typedef struct af_t {
 } af;
 
 void af_create(af *a, void *src);
-af_move *af_get_move(af *a, int id);
+af_move *af_get_move(const af *a, int id);
 void af_free(af *a);
 
 #endif // AF_H

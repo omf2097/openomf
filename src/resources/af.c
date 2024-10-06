@@ -37,7 +37,7 @@ void af_create(af *a, void *src) {
     }
 }
 
-af_move *af_get_move(af *a, int id) {
+af_move *af_get_move(const af *a, int id) {
     return array_get(&a->moves, id);
 }
 
