@@ -23,9 +23,9 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Run clang-format style check
-      uses: jidicula/clang-format-action@v4.5.0
+      uses: jidicula/clang-format-action@v4.13.0
       with:
-        clang-format-version: '13'
+        clang-format-version: '16'
 
   # Run unittests on modern-ish versions of gcc and clang.
   # -----------------------------------------------------------------------------------------------
