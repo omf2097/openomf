@@ -1,7 +1,6 @@
 #include "formats/bk.h"
 #include "resources/bk.h"
 #include "utils/allocator.h"
-#include "utils/log.h"
 #include <string.h>
 
 void bk_create(bk *b, void *src) {
@@ -73,12 +72,5 @@ void bk_free(bk *b) {
     }
     hashmap_free(&b->infos);
 
-    sprite *sprite = NULL;
-    array_iter_begin(&b->sprites, &it);
-    while((sprite = array_iter_next(&it))) {
-        DEBUG("freeing sprite");
-        sprite_free(sprite);
-        omf_free(sprite);
-    }
     array_free(&b->sprites);
 }
