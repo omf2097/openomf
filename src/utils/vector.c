@@ -6,7 +6,11 @@
 
 void vector_init(vector *vec) {
     vec->blocks = 0;
-    vec->data = (char *)omf_calloc(vec->reserved, vec->block_size);
+    if (vec->reserved) {
+        vec->data = (char *)omf_calloc(vec->reserved, vec->block_size);
+    } else {
+        vec->data = NULL;
+    }
 }
 
 void vector_create(vector *vec, unsigned int block_size) {
@@ -56,8 +60,13 @@ int vector_set(vector *vec, unsigned int key, const void *value) {
 
 int vector_grow(vector *vec) {
     int current_size = max2(1, vec->reserved);
-    int new_size = current_size + (current_size >> 2);
-    void *ndata = omf_realloc(vec->data, new_size * vec->block_size);
+    int new_size = current_size + max2(1, (current_size >> 2));
+    void *ndata;
+    if (vec->data) {
+        ndata = omf_realloc(vec->data, new_size * vec->block_size);
+    } else {
+        ndata = omf_calloc(new_size, vec->block_size);
+    }
     if(ndata == NULL)
         return 1;
     vec->data = ndata;
