@@ -22,7 +22,7 @@ void video_move_target(int x, int y);
 /**
  * @deprecated
  */
-void video_render_sprite_flip_scale_opacity_tint(surface *sur, int x, int y, VIDEO_BLEND_MODE blend_mode,
+void video_render_sprite_flip_scale_opacity_tint(surface *sur, int x, int y, video_blend_mode blend_mode,
                                                  int pal_offset, int pal_limit, unsigned int flip_mode, float x_percent,
                                                  float y_percent, uint8_t opacity, color tint);
 

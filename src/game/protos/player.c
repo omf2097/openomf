@@ -57,7 +57,7 @@ struct {
 
 void player_clear_frame(object *obj) {
     player_sprite_state *s = &obj->sprite_state;
-    s->blendmode = BLEND_ALPHA;
+    s->blendmode = BLEND_SET;
     s->flipmode = FLIP_NONE;
     s->timer = 0;
     s->duration = 0;
@@ -713,7 +713,7 @@ void player_run(object *obj) {
             object_select_sprite(obj, frame->sprite);
             if(obj->cur_sprite_id >= 0) {
                 rstate->duration = frame->tick_len;
-                rstate->blendmode = sd_script_isset(frame, "br") ? BLEND_ADDITIVE : BLEND_ALPHA;
+                rstate->blendmode = sd_script_isset(frame, "br") ? BLEND_ADD : BLEND_SET;
                 if(sd_script_isset(frame, "r") || obj->animation_state.shadow_corner_hack) {
                     rstate->flipmode ^= FLIP_HORIZONTAL;
                 }

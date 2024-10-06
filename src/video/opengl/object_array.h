@@ -19,6 +19,6 @@ void object_array_begin(const object_array *array, object_array_batch *state);
 bool object_array_get_batch(const object_array *array, object_array_batch *state);
 void object_array_draw(const object_array *array, object_array_batch *state);
 void object_array_add(object_array *array, int x, int y, int w, int h, int tx, int ty, int tw, int th, int flags,
-                      VIDEO_BLEND_MODE blend_mode, int pal_offset, int pal_limit);
+                      video_blend_mode blend_mode, int pal_offset, int pal_limit);
 
 #endif // OBJECT_ARRAY_H
