@@ -147,12 +147,8 @@ void lobby_render_overlay(scene *scene) {
         i = 0;
         list_iter_end(&local->log, &it);
         log_event *logmsg;
-        int length = list_size(&local->log);
-        if(length > 4) {
-            length = 4;
-        }
-        while((logmsg = list_iter_next(&it)) && i < 4) {
-            font_render(&font_net1, logmsg->msg, 10, 196 - (8 * length) + (8 * i), logmsg->color);
+        while((logmsg = list_iter_prev(&it)) && i < 4) {
+            font_render(&font_net1, logmsg->msg, 10, 188 - (8 * i), logmsg->color);
             i++;
         }
     } else if(local->mode == LOBBY_YELL) {
@@ -160,12 +156,8 @@ void lobby_render_overlay(scene *scene) {
         int i = 0;
         list_iter_end(&local->log, &it);
         log_event *logmsg;
-        int length = list_size(&local->log);
-        if(length > 13) {
-            length = 13;
-        }
-        while((logmsg = list_iter_next(&it)) && i < 13) {
-            font_render(&font_net1, logmsg->msg, 10, 130 - (8 * length) + (8 * i), logmsg->color);
+        while((logmsg = list_iter_prev(&it)) && i < 13) {
+            font_render(&font_net1, logmsg->msg, 10, 120 -  (8 * i), logmsg->color);
             i++;
         }
     }
