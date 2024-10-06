@@ -313,7 +313,7 @@ void object_render(object *obj) {
     }
     */
 
-    video_draw_full(obj->cur_surface, x, y, w, h, mode, 0, 0, flip_mode);
+    video_draw_full(obj->cur_surface, x, y, w, h, mode, obj->pal_offset, obj->pal_limit, flip_mode);
 }
 
 void object_render_shadow(object *obj) {
