@@ -11,7 +11,7 @@ int cfg_opts_init = 0;
 
 void conf_ensure_opt_init(void) {
     if(!cfg_opts_init) {
-        vector_create(&cfg_opts, sizeof(cfg_opt_t));
+        vector_create_with_size(&cfg_opts, sizeof(cfg_opt_t), 62);
         cfg_opt_t c = CFG_END();
         vector_append(&cfg_opts, &c);
         cfg_opts_init = 1;

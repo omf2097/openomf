@@ -1,5 +1,6 @@
 #include "utils/vector.h"
 #include "utils/allocator.h"
+#include "utils/miscmath.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -55,11 +56,13 @@ int vector_set(vector *vec, unsigned int key, const void *value) {
 }
 
 int vector_grow(vector *vec) {
-    void *ndata = omf_realloc(vec->data, vec->reserved * vec->block_size * vec->inc_factor);
+    int current_size = max2(1, vec->reserved);
+    int new_size = current_size + (current_size >> 2);
+    void *ndata = omf_realloc(vec->data, new_size * vec->block_size);
     if(ndata == NULL)
         return 1;
     vec->data = ndata;
-    vec->reserved = vec->reserved * vec->inc_factor;
+    vec->reserved = new_size;
     return 0;
 }
 
