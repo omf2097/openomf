@@ -6,6 +6,7 @@ layout (std140) uniform palette {
     vec4 colors[256];
 };
 uniform sampler2D framebuffer;
+uniform sampler2D remaps;
 
 // Out
 layout (location = 0) out vec4 color;
