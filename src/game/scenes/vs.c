@@ -22,12 +22,8 @@ void cb_vs_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t fl
 void cb_vs_destroy_object(object *parent, int id, void *userdata);
 
 typedef struct vs_local_t {
-    object player1_portrait;
-    object player2_portrait;
-    object player1_har;
-    object player2_har;
+    int arena_select_obj_id;
     surface arena_select_bg;
-    object arena_select;
     int arena;
     char vs_str[128];
     dialog quit_dialog;
@@ -130,18 +126,10 @@ void cb_vs_destroy_object(object *parent, int id, void *userdata) {
 
 void vs_free(scene *scene) {
     vs_local *local = scene_get_userdata(scene);
-    game_player *player2 = game_state_get_player(scene->gs, 1);
 
     dialog_free(&local->quit_dialog);
     dialog_free(&local->too_pathetic_dialog);
     surface_free(&local->arena_select_bg);
-    object_free(&local->player1_portrait);
-    object_free(&local->player2_portrait);
-    object_free(&local->player1_har);
-    object_free(&local->player2_har);
-    if(player2->selectable) {
-        object_free(&local->arena_select);
-    }
     omf_free(local);
     scene_set_userdata(scene, local);
 }
@@ -176,7 +164,8 @@ void vs_handle_action(scene *scene, int action) {
                     if(local->arena < 0) {
                         local->arena = 4;
                     }
-                    object_select_sprite(&local->arena_select, local->arena);
+                    object *arena_select = game_state_find_object(scene->gs, local->arena_select_obj_id);
+                    object_select_sprite(arena_select, local->arena);
                 }
                 break;
             case ACT_DOWN:
@@ -186,7 +175,8 @@ void vs_handle_action(scene *scene, int action) {
                     if(local->arena > 4) {
                         local->arena = 0;
                     }
-                    object_select_sprite(&local->arena_select, local->arena);
+                    object *arena_select = game_state_find_object(scene->gs, local->arena_select_obj_id);
+                    object_select_sprite(arena_select, local->arena);
                 }
                 break;
         }
@@ -260,26 +250,12 @@ void vs_render(scene *scene) {
     game_player *player1 = game_state_get_player(scene->gs, 0);
     game_player *player2 = game_state_get_player(scene->gs, 1);
 
-    // player 1 HAR
-    object_render(&local->player1_har);
-
-    // player 2 HAR
-    object_render(&local->player2_har);
-
-    // player 1 portrait
-    object_render(&local->player1_portrait);
-
-    // player 2 portrait
-    object_render(&local->player2_portrait);
-
     font_render_shadowed(&font_small, local->vs_str, 160 - ((strlen(local->vs_str) * font_small.w) / 2), 3,
                          COLOR_YELLOW, TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
 
     if(player2->selectable) {
         // arena selection
         video_draw(&local->arena_select_bg, 55, 150);
-
-        object_render(&local->arena_select);
 
         // arena name
         font_render_wrapped(&font_small, lang_get(56 + local->arena), 56 + 72, 153, (211 - 72) - 4, TEXT_MEDIUM_GREEN);
@@ -453,55 +429,68 @@ int vs_create(scene *scene) {
 
     // HAR
     ani = &bk_get_info(scene->bk_data, 5)->ani;
-    object_create(&local->player1_har, scene->gs, vec2i_create(160, 0), vec2f_create(0, 0));
-    object_set_animation(&local->player1_har, ani);
-    object_select_sprite(&local->player1_har, player1->pilot->har_id);
+    object *player1_har = omf_calloc(1, sizeof(object));
+    object_create(player1_har, scene->gs, vec2i_create(160, 0), vec2f_create(0, 0));
+    object_set_animation(player1_har, ani);
+    object_select_sprite(player1_har, player1->pilot->har_id);
+    object_set_halt(player1_har, 1);
+    game_state_add_object(scene->gs, player1_har, RENDER_LAYER_MIDDLE, 0, 0);
 
     if(player2->pilot) {
-        object_create(&local->player2_har, scene->gs, vec2i_create(160, 0), vec2f_create(0, 0));
-        object_set_animation(&local->player2_har, ani);
-        object_select_sprite(&local->player2_har, player2->pilot->har_id);
-        object_set_direction(&local->player2_har, OBJECT_FACE_LEFT);
-        object_set_pal_offset(&local->player2_har, 48);
-        object_set_pal_limit(&local->player2_har, 96);
+        object *player2_har = omf_calloc(1, sizeof(object));
+        object_create(player2_har, scene->gs, vec2i_create(160, 0), vec2f_create(0, 0));
+        object_set_animation(player2_har, ani);
+        object_select_sprite(player2_har, player2->pilot->har_id);
+        object_set_direction(player2_har, OBJECT_FACE_LEFT);
+        object_set_pal_offset(player2_har, 48);
+        object_set_pal_limit(player2_har, 96);
+        object_set_halt(player2_har, 1);
+        game_state_add_object(scene->gs, player2_har, RENDER_LAYER_MIDDLE, 0, 0);
 
         // PLAYER
-        object_create(&local->player1_portrait, scene->gs, vec2i_create(-10, 150), vec2f_create(0, 0));
+        object *player1_portrait = omf_calloc(1, sizeof(object));
+        object_create(player1_portrait, scene->gs, vec2i_create(-10, 150), vec2f_create(0, 0));
         ani = &bk_get_info(scene->bk_data, 4)->ani;
         if(player1->chr) {
-            object_set_sprite_override(&local->player1_portrait, 1);
+            object_set_sprite_override(player1_portrait, 1);
             sprite *sp = omf_calloc(1, sizeof(sprite));
             sprite_create(sp, player1->chr->photo, -1);
-            object_set_animation(&local->player1_portrait, create_animation_from_single(sp, vec2i_create(0, 0)));
-            object_set_animation_owner(&local->player1_portrait, OWNER_OBJECT);
-            local->player1_portrait.cur_sprite_id = 0;
+            object_set_animation(player1_portrait, create_animation_from_single(sp, vec2i_create(0, 0)));
+            object_set_animation_owner(player1_portrait, OWNER_OBJECT);
+            player1_portrait->cur_sprite_id = 0;
         } else {
-            object_set_animation(&local->player1_portrait, ani);
-            object_select_sprite(&local->player1_portrait, player1->pilot->pilot_id);
+            object_set_animation(player1_portrait, ani);
+            object_select_sprite(player1_portrait, player1->pilot->pilot_id);
         }
+        object_set_halt(player1_portrait, 1);
+        game_state_add_object(scene->gs, player1_portrait, RENDER_LAYER_TOP, 0, 0);
 
-        object_create(&local->player2_portrait, scene->gs, vec2i_create(330, 150), vec2f_create(0, 0));
+        object *player2_portrait = omf_calloc(1, sizeof(object));
+        object_create(player2_portrait, scene->gs, vec2i_create(330, 150), vec2f_create(0, 0));
         if(player1->chr) {
-            object_set_sprite_override(&local->player2_portrait, 1);
+            object_set_sprite_override(player2_portrait, 1);
             sprite *sp = omf_calloc(1, sizeof(sprite));
             sprite_create(sp, player2->pilot->photo, -1);
-            object_set_animation(&local->player2_portrait, create_animation_from_single(sp, vec2i_create(0, 0)));
-            object_set_animation_owner(&local->player2_portrait, OWNER_OBJECT);
-            local->player2_portrait.cur_sprite_id = 0;
+            object_set_animation(player2_portrait, create_animation_from_single(sp, vec2i_create(0, 0)));
+            object_set_animation_owner(player2_portrait, OWNER_OBJECT);
+            player2_portrait->cur_sprite_id = 0;
         } else {
-            object_set_animation(&local->player2_portrait, ani);
-            object_select_sprite(&local->player2_portrait, player2->pilot->pilot_id);
+            object_set_animation(player2_portrait, ani);
+            object_select_sprite(player2_portrait, player2->pilot->pilot_id);
         }
-        object_set_direction(&local->player2_portrait, OBJECT_FACE_LEFT);
-    } else {
+        object_set_direction(player2_portrait, OBJECT_FACE_LEFT);
+        object_set_halt(player2_portrait, 1);
+        game_state_add_object(scene->gs, player2_portrait, RENDER_LAYER_TOP, 0, 0);
 
-        local->player2_har.cur_sprite_id = -1;
-        local->player2_portrait.cur_sprite_id = -1;
-        // plug is player 1 now
-        object_create(&local->player1_portrait, scene->gs, vec2i_create(-10, 150), vec2f_create(0, 0));
+    } else {
+        // plug time!!!!!!!111eleven!
+        object *plug = omf_calloc(1, sizeof(object));
+        object_create(plug, scene->gs, vec2i_create(-10, 150), vec2f_create(0, 0));
         ani = &bk_get_info(scene->bk_data, 2)->ani;
-        object_set_animation(&local->player1_portrait, ani);
-        object_select_sprite(&local->player1_portrait, 0);
+        object_set_animation(plug, ani);
+        object_select_sprite(plug, 0);
+        object_set_halt(plug, 1);
+        game_state_add_object(scene->gs, plug, RENDER_LAYER_TOP, 0, 0);
     }
 
     if(player2->pilot != NULL) {
@@ -529,9 +518,13 @@ int vs_create(scene *scene) {
     // Arena
     if(player2->selectable) {
         ani = &bk_get_info(scene->bk_data, 3)->ani;
-        object_create(&local->arena_select, scene->gs, vec2i_create(59, 155), vec2f_create(0, 0));
-        object_set_animation(&local->arena_select, ani);
-        object_select_sprite(&local->arena_select, local->arena);
+        object *arena_select = omf_calloc(1, sizeof(object));
+        object_create(arena_select, scene->gs, vec2i_create(59, 155), vec2f_create(0, 0));
+        local->arena_select_obj_id = arena_select->id;
+        object_set_animation(arena_select, ani);
+        object_select_sprite(arena_select, local->arena);
+        object_set_halt(arena_select, 1);
+        game_state_add_object(scene->gs, arena_select, RENDER_LAYER_TOP, 0, 0);
     }
 
     // SCIENTIST
