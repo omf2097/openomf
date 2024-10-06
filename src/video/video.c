@@ -50,6 +50,7 @@ typedef struct video_state {
 
 #define TEX_UNIT_ATLAS 0
 #define TEX_UNIT_FBO 1
+#define TEX_UNIT_REMAPS 2
 
 #define PAL_BLOCK_BINDING 0
 
@@ -100,6 +101,7 @@ int video_init(int window_w, int window_h, bool fullscreen, bool vsync) {
     g_video_state.objects = object_array_create(2048.0f, 2048.0f);
     g_video_state.shared = shared_create();
     g_video_state.target = render_target_create(TEX_UNIT_FBO, NATIVE_W, NATIVE_H, GL_RG8, GL_RG);
+    g_video_state.remaps = remaps_create(TEX_UNIT_REMAPS);
 
     // Create orthographic projection matrix for 2d stuff.
     GLfloat projection_matrix[16];
@@ -116,6 +118,7 @@ int video_init(int window_w, int window_h, bool fullscreen, bool vsync) {
     GLuint pal_ubo_id = shared_get_block(g_video_state.shared);
     bind_uniform_block(g_video_state.rgba_prog_id, "palette", PAL_BLOCK_BINDING, pal_ubo_id);
     bind_uniform_1i(g_video_state.rgba_prog_id, "framebuffer", TEX_UNIT_FBO);
+    bind_uniform_1i(g_video_state.rgba_prog_id, "remaps", TEX_UNIT_REMAPS);
 
     INFO("OpenGL Renderer initialized!");
     return 0;
@@ -172,9 +175,12 @@ static void video_set_blend_mode(int request_mode) {
 
 // Called after frame has been rendered
 void video_render_finish(void) {
-    shared_set_palette(g_video_state.shared, g_video_state.screen_palette->data);
-    shared_flush_dirty(g_video_state.shared);
     object_array_finish(g_video_state.objects);
+
+    // TODO: Handle these only if there are changes
+    shared_set_palette(g_video_state.shared, g_video_state.screen_palette->data);
+    remaps_update(g_video_state.remaps, (char *)g_video_state.base_palette->remaps);
+    shared_flush_dirty(g_video_state.shared);
 
     // Set to VGA emulation state, and render to an indexed surface
     glViewport(0, 0, NATIVE_W, NATIVE_H);
