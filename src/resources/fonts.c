@@ -17,7 +17,7 @@ static int fonts_loaded = 0;
 
 void font_create(font *f) {
     memset(f, 0, sizeof(font));
-    vector_create(&f->surfaces, sizeof(surface *));
+    vector_create_with_size(&f->surfaces, sizeof(surface *), 233);
 }
 
 void font_free(font *font) {

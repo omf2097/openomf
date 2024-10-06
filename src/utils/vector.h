@@ -8,12 +8,12 @@ typedef struct vector_t {
     unsigned int block_size;
     unsigned int blocks;
     unsigned int reserved;
-    unsigned int inc_factor;
 } vector;
 
 typedef int (*vector_compare_func)(const void *, const void *);
 
 void vector_create(vector *vector, unsigned int block_size);
+void vector_create_with_size(vector *vector, unsigned int block_size, unsigned int initial_size);
 void vector_free(vector *vector);
 void vector_clear(vector *vector);
 void *vector_get(const vector *vector, unsigned int key);

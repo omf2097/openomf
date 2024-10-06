@@ -1,17 +1,27 @@
 #include "utils/vector.h"
 #include "utils/allocator.h"
+#include "utils/miscmath.h"
 #include <stdlib.h>
 #include <string.h>
 
 void vector_init(vector *vec) {
     vec->blocks = 0;
-    vec->reserved = 32;
-    vec->inc_factor = 2;
-    vec->data = (char *)omf_calloc(vec->reserved, vec->block_size);
+    if(vec->reserved) {
+        vec->data = (char *)omf_calloc(vec->reserved, vec->block_size);
+    } else {
+        vec->data = NULL;
+    }
 }
 
 void vector_create(vector *vec, unsigned int block_size) {
     vec->block_size = block_size;
+    vec->reserved = 32;
+    vector_init(vec);
+}
+
+void vector_create_with_size(vector *vec, unsigned int block_size, unsigned int reserved) {
+    vec->block_size = block_size;
+    vec->reserved = reserved;
     vector_init(vec);
 }
 
@@ -49,11 +59,18 @@ int vector_set(vector *vec, unsigned int key, const void *value) {
 }
 
 int vector_grow(vector *vec) {
-    void *ndata = omf_realloc(vec->data, vec->reserved * vec->block_size * vec->inc_factor);
+    int current_size = max2(1, vec->reserved);
+    int new_size = current_size + max2(1, (current_size >> 2));
+    void *ndata;
+    if(vec->data) {
+        ndata = omf_realloc(vec->data, new_size * vec->block_size);
+    } else {
+        ndata = omf_calloc(new_size, vec->block_size);
+    }
     if(ndata == NULL)
         return 1;
     vec->data = ndata;
-    vec->reserved = vec->reserved * vec->inc_factor;
+    vec->reserved = new_size;
     return 0;
 }
 
