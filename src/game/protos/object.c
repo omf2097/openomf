@@ -226,11 +226,14 @@ void object_del_effects(object *obj, int effects) {
 }
 
 void object_render(object *obj) {
-    // Stop here if cur_sprite is NULL
+    // Stop here if cur_sprite_id is not set
     if(obj->cur_sprite_id < 0)
         return;
 
     sprite *cur_sprite = animation_get_sprite(obj->cur_animation, obj->cur_sprite_id);
+    if(cur_sprite == NULL)
+        return;
+
     // Set current surface
     obj->cur_surface = cur_sprite->data;
 
