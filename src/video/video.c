@@ -303,6 +303,16 @@ static void draw_args(video_state *state, const surface *sur, SDL_Rect *dst, vid
     }
 }
 
+void video_draw_full(const surface *src_surface, int x, int y, int w, int h, video_blend_mode blend_mode, int offset,
+                     int limit, unsigned int flip_mode) {
+    SDL_Rect dst;
+    dst.w = w;
+    dst.h = h;
+    dst.x = x;
+    dst.y = y;
+    draw_args(&g_video_state, src_surface, &dst, blend_mode, offset, limit, flip_mode);
+}
+
 void video_draw_offset(const surface *src_surface, int x, int y, int offset, int limit) {
     SDL_Rect dst;
     dst.w = src_surface->w;
@@ -323,18 +333,4 @@ void video_draw_size(const surface *src_surface, int x, int y, int w, int h) {
 
 void video_draw(const surface *src_surface, int x, int y) {
     video_draw_offset(src_surface, x, y, 0, 255);
-}
-
-void video_render_sprite_flip_scale_opacity_tint(surface *sur, int sx, int sy, video_blend_mode blend_mode,
-                                                 int pal_offset, int pal_limit, unsigned int flip_mode, float x_percent,
-                                                 float y_percent, uint8_t opacity, color tint) {
-
-    // Position
-    SDL_Rect dst;
-    dst.w = sur->w * x_percent;
-    dst.h = sur->h * y_percent;
-    dst.x = sx;
-    dst.y = sy + (sur->h - dst.h) / 2;
-
-    draw_args(&g_video_state, sur, &dst, blend_mode, pal_offset, pal_limit, flip_mode);
 }
