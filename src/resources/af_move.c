@@ -1,6 +1,5 @@
 #include "resources/af_move.h"
 #include "formats/move.h"
-#include "libfixmath/fixmath.h"
 
 void af_move_create(af_move *move, void *src, int id) {
     sd_move *sdmv = (sd_move *)src;
@@ -10,8 +9,8 @@ void af_move_create(af_move *move, void *src, int id) {
     move->next_move = sdmv->next_anim_id;
     move->successor_id = sdmv->successor_id;
     move->category = sdmv->category;
-    move->damage = fix16_from_int(sdmv->damage_amount);
-    move->stun = F16(0);
+    move->damage = sdmv->damage_amount;
+    move->stun = 0.0f;
     move->points = sdmv->points * 400;
     move->block_damage = sdmv->block_damage;
     move->block_stun = sdmv->block_stun;

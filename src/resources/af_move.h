@@ -1,7 +1,6 @@
 #ifndef AF_MOVE_H
 #define AF_MOVE_H
 
-#include "libfixmath/fixmath.h"
 #include "resources/animation.h"
 #include "utils/str.h"
 
@@ -17,8 +16,8 @@ typedef struct af_move_t {
     uint8_t block_stun;
     uint8_t collision_opts;
     uint8_t extra_string_selector;
-    fix16_t damage;
-    fix16_t stun;
+    float damage;
+    float stun;
     str move_string;
     str footer_string;
 #ifdef DEBUGMODE
