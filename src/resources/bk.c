@@ -1,5 +1,7 @@
 #include "formats/bk.h"
 #include "resources/bk.h"
+#include "utils/allocator.h"
+#include <string.h>
 
 void bk_create(bk *b, void *src) {
     sd_bk_file *sdbk = (sd_bk_file *)src;
@@ -27,12 +29,14 @@ void bk_create(bk *b, void *src) {
     // Index 0 is always black.
     pal->data[0][0] = pal->data[0][1] = pal->data[0][2] = 0;
 
+    array_create(&b->sprites);
+
     // Copy info structs
     hashmap_create(&b->infos);
     bk_info tmp_bk_info;
     for(int i = 0; i < 50; i++) {
         if(sdbk->anims[i] != NULL) {
-            bk_info_create(&tmp_bk_info, (void *)sdbk->anims[i], i);
+            bk_info_create(&tmp_bk_info, &b->sprites, (void *)sdbk->anims[i], i);
             hashmap_iput(&b->infos, i, &tmp_bk_info, sizeof(bk_info));
         }
     }
@@ -67,4 +71,6 @@ void bk_free(bk *b) {
         bk_info_free((bk_info *)pair->value);
     }
     hashmap_free(&b->infos);
+
+    array_free(&b->sprites);
 }

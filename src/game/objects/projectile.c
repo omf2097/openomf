@@ -10,7 +10,7 @@
 
 typedef struct projectile_local_t {
     uint8_t player_id;
-    af *af_data;
+    const af *af_data;
     int wall_bounce;
     int ground_freeze;
     int invincible;
@@ -117,7 +117,7 @@ int projectile_create(object *obj, har *har) {
     return 0;
 }
 
-af *projectile_get_af_data(object *obj) {
+const af *projectile_get_af_data(object *obj) {
     return ((projectile_local *)object_get_userdata(obj))->af_data;
 }
 

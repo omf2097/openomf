@@ -15,6 +15,7 @@ void sprite_create(sprite *sp, void *src, int id) {
     sp->id = id;
     sp->pos = vec2i_create(sdsprite->pos_x, sdsprite->pos_y);
     sp->data = omf_calloc(1, sizeof(surface));
+    sp->owned = true;
 
     // Load data
     sd_vga_image raw;
@@ -22,6 +23,14 @@ void sprite_create(sprite *sp, void *src, int id) {
     surface_create_from_data(sp->data, raw.w, raw.h, (unsigned char *)raw.data);
     memcpy(sp->data->stencil, raw.stencil, raw.w * raw.h);
     sd_vga_image_free(&raw);
+}
+
+void sprite_create_reference(sprite *sp, void *src, int id, void *data) {
+    sd_sprite *sdsprite = (sd_sprite *)src;
+    sp->id = id;
+    sp->pos = vec2i_create(sdsprite->pos_x, sdsprite->pos_y);
+    sp->data = data;
+    sp->owned = false;
 }
 
 int sprite_clone(sprite *src, sprite *dst) {
@@ -32,8 +41,10 @@ int sprite_clone(sprite *src, sprite *dst) {
 }
 
 void sprite_free(sprite *sp) {
-    surface_free(sp->data);
-    omf_free(sp->data);
+    if(sp->owned) {
+        surface_free(sp->data);
+        omf_free(sp->data);
+    }
 }
 
 vec2i sprite_get_size(sprite *sp) {

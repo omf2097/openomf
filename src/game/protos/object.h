@@ -94,7 +94,7 @@ struct object_t {
 
     animation *cur_animation;
     int cur_sprite_id;
-    char *sound_translation_table;
+    const char *sound_translation_table;
     uint8_t sprite_override; //< Tells whether cur_sprite should be kept constant regardless of anim string.
 
     // 0 if this object is not attached to any other objects
@@ -159,8 +159,8 @@ void object_set_stride(object *obj, int stride);
 void object_set_delay(object *obj, int delay);
 void object_set_playback_direction(object *obj, int dir);
 
-void object_set_stl(object *obj, char *ptr);
-char *object_get_stl(const object *obj);
+void object_set_stl(object *obj, const char *ptr);
+const char *object_get_stl(const object *obj);
 
 void object_set_animation_owner(object *obj, int owner);
 void object_set_animation(object *obj, animation *ani);

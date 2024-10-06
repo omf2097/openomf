@@ -2,6 +2,7 @@
 #define BK_H
 
 #include "resources/bk_info.h"
+#include "utils/array.h"
 #include "utils/hashmap.h"
 #include "utils/vector.h"
 
@@ -10,6 +11,7 @@ typedef struct bk_t {
     surface background;
     hashmap infos;
     vector palettes;
+    array sprites;
     char sound_translation_table[30];
 } bk;
 

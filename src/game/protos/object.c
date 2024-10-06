@@ -230,7 +230,7 @@ void object_render(object *obj) {
     if(obj->cur_sprite_id < 0)
         return;
 
-    sprite *cur_sprite = animation_get_sprite(obj->cur_animation, obj->cur_sprite_id);
+    const sprite *cur_sprite = animation_get_sprite(obj->cur_animation, obj->cur_sprite_id);
     if(cur_sprite == NULL)
         return;
 
@@ -321,7 +321,7 @@ void object_render_shadow(object *obj) {
         return;
     }
 
-    sprite *cur_sprite = animation_get_sprite(obj->cur_animation, obj->cur_sprite_id);
+    const sprite *cur_sprite = animation_get_sprite(obj->cur_animation, obj->cur_sprite_id);
     if(cur_sprite == NULL) {
         return;
     }
@@ -456,7 +456,7 @@ int object_clone_free(object *obj) {
  * \param obj Object handle
  * \param ptr Pointer to the STL (30 byte char array)
  */
-void object_set_stl(object *obj, char *ptr) {
+void object_set_stl(object *obj, const char *ptr) {
     obj->sound_translation_table = ptr;
 }
 
@@ -464,7 +464,7 @@ void object_set_stl(object *obj, char *ptr) {
  * \param obj Object handle
  * \return Pointer to the sound translation table
  */
-char *object_get_stl(const object *obj) {
+const char *object_get_stl(const object *obj) {
     return obj->sound_translation_table;
 }
 

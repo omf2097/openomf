@@ -129,7 +129,7 @@ typedef struct har_t {
     uint8_t flinching;
     uint8_t close;
     uint8_t enqueued;
-    af *af_data;
+    const af *af_data;
     uint8_t damage_done;     // Damage was done this animation
     uint8_t damage_received; // Damage was received this animation
     uint8_t air_attacked;

@@ -1,5 +1,6 @@
 #include "formats/af.h"
 #include "resources/af.h"
+#include "resources/sprite.h"
 #include <string.h>
 
 void af_create(af *a, void *src) {
@@ -23,27 +24,31 @@ void af_create(af *a, void *src) {
     a->sound_translation_table[26] = 0;
     a->sound_translation_table[27] = 0;
 
+    array_create(&a->moves);
+    array_create(&a->sprites);
+
     // Moves
     for(int i = 0; i < 70; i++) {
         if(sdaf->moves[i] != NULL) {
-            af_move_create(&a->moves[i], (void *)sdaf->moves[i], i);
-        } else {
-            a->moves[i].id = -1;
+            af_move *move = omf_calloc(1, sizeof(af_move));
+            af_move_create(move, &a->sprites, (void *)sdaf->moves[i], i);
+            array_set(&a->moves, i, move);
         }
     }
 }
 
-af_move *af_get_move(af *a, int id) {
-    if(a->moves[id].id == -1) {
-        return NULL;
-    }
-    return &a->moves[id];
+af_move *af_get_move(const af *a, int id) {
+    return array_get(&a->moves, id);
 }
 
 void af_free(af *a) {
-    for(int i = 0; i < 70; i++) {
-        if(a->moves[i].id != -1) {
-            af_move_free(&a->moves[i]);
-        }
+    iterator it;
+    af_move *move = NULL;
+    array_iter_begin(&a->moves, &it);
+    while((move = array_iter_next(&it))) {
+        af_move_free(move);
+        omf_free(move);
     }
+    array_free(&a->moves);
+    array_free(&a->sprites);
 }

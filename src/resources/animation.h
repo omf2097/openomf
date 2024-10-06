@@ -2,6 +2,7 @@
 #define ANIMATION_H
 
 #include "resources/sprite.h"
+#include "utils/array.h"
 #include "utils/str.h"
 #include "utils/vec.h"
 #include "utils/vector.h"
@@ -45,13 +46,14 @@ typedef struct animation_t {
     vector sprites;
 } animation;
 
-void animation_create(animation *ani, void *src, int id);
+void animation_create(animation *ani, array *sprites, void *src, int id);
 sprite *animation_get_sprite(animation *ani, int sprite_id);
 void animation_free(animation *ani);
 
 int animation_get_sprite_count(animation *ani);
 
 animation *create_animation_from_single(sprite *sp, vec2i pos);
+void animation_fixup_coordinates(animation *ani, int fix_x, int fix_y);
 
 int animation_clone(animation *src, animation *dst);
 

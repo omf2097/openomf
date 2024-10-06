@@ -1101,7 +1101,7 @@ void har_collide_with_har(object *obj_a, object *obj_b, int loop) {
 
 void har_collide_with_projectile(object *o_har, object *o_pjt) {
     har *h = object_get_userdata(o_har);
-    af *prog_owner_af_data = projectile_get_af_data(o_pjt);
+    const af *prog_owner_af_data = projectile_get_af_data(o_pjt);
     har *other = object_get_userdata(
         game_state_find_object(o_har->gs, game_state_get_player(o_har->gs, abs(h->player_id - 1))->har_obj_id));
 

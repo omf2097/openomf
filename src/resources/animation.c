@@ -3,7 +3,11 @@
 #include "utils/allocator.h"
 #include <stdlib.h>
 
-void animation_create(animation *ani, void *src, int id) {
+typedef struct sprite_reference_t {
+    sprite *sprite;
+} sprite_reference;
+
+void animation_create(animation *ani, array *sprites, void *src, int id) {
     sd_animation *sdani = (sd_animation *)src;
 
     // Copy simple stuff
@@ -32,11 +36,28 @@ void animation_create(animation *ani, void *src, int id) {
     }
 
     // Handle sprites
-    vector_create_with_size(&ani->sprites, sizeof(sprite), sdani->sprite_count);
-    sprite tmp_sprite;
+    vector_create_with_size(&ani->sprites, sizeof(sprite_reference), sdani->sprite_count);
+    sprite *tmp_sprite;
     for(int i = 0; i < sdani->sprite_count; i++) {
-        sprite_create(&tmp_sprite, (void *)sdani->sprites[i], i);
-        vector_append(&ani->sprites, &tmp_sprite);
+        if(sdani->sprites[i]->missing) {
+            // read the right index from the sprite table
+            tmp_sprite = omf_calloc(1, sizeof(sprite));
+            sprite_create_reference(tmp_sprite, (void *)sdani->sprites[i], i,
+                                    ((sprite *)array_get(sprites, sdani->sprites[i]->index))->data);
+            sprite_reference spr;
+            spr.sprite = tmp_sprite;
+            vector_append(&ani->sprites, &spr);
+        } else {
+            tmp_sprite = omf_calloc(1, sizeof(sprite));
+            sprite_create(tmp_sprite, (void *)sdani->sprites[i], i);
+            sprite_reference spr;
+            spr.sprite = tmp_sprite;
+            if(sdani->sprites[i]->index) {
+                // insert into the global sprite table
+                array_set(sprites, sdani->sprites[i]->index, tmp_sprite);
+            }
+            vector_append(&ani->sprites, &spr);
+        }
     }
 }
 
@@ -47,9 +68,10 @@ animation *create_animation_from_single(sprite *sp, vec2i pos) {
     str_from_c(&a->animation_string, "A9999999999");
     vector_create_with_size(&a->collision_coords, sizeof(collision_coord), 0);
     vector_create_with_size(&a->extra_strings, sizeof(str), 0);
-    vector_create_with_size(&a->sprites, sizeof(sprite), 1);
-    vector_append(&a->sprites, sp);
-    omf_free(sp);
+    vector_create_with_size(&a->sprites, sizeof(sprite_reference), 1);
+    sprite_reference spr;
+    spr.sprite = sp;
+    vector_append(&a->sprites, &spr);
     return a;
 }
 
@@ -72,20 +94,40 @@ int animation_clone(animation *src, animation *dst) {
         str_from(&new_str, tmp_str);
         vector_append(&dst->extra_strings, &new_str);
     }
-    vector_create_with_size(&dst->sprites, sizeof(sprite), vector_size(&src->sprites));
+    vector_create_with_size(&dst->sprites, sizeof(sprite_reference), vector_size(&src->sprites));
     vector_iter_begin(&src->sprites, &it);
-    sprite *tmp_sprite = NULL;
-    while((tmp_sprite = iter_next(&it)) != NULL) {
-        sprite new_sprite;
-        sprite_clone(tmp_sprite, &new_sprite);
-        vector_append(&dst->sprites, &new_sprite);
+    sprite_reference *spr = NULL;
+    while((spr = iter_next(&it)) != NULL) {
+        vector_append(&dst->sprites, spr);
     }
 
     return 0;
 }
 
+void animation_fixup_coordinates(animation *ani, int fix_x, int fix_y) {
+    iterator it;
+    sprite_reference *spr;
+    // Fix sprite positions
+    vector_iter_begin(&ani->sprites, &it);
+    while((spr = iter_next(&it)) != NULL) {
+        spr->sprite->pos.x += fix_x;
+        spr->sprite->pos.y += fix_y;
+    }
+    // Fix collisions coordinates
+    collision_coord *c;
+    vector_iter_begin(&ani->collision_coords, &it);
+    while((c = iter_next(&it)) != NULL) {
+        c->pos.x += fix_x;
+        c->pos.y += fix_y;
+    }
+}
+
 sprite *animation_get_sprite(animation *ani, int sprite_id) {
-    return (sprite *)vector_get(&ani->sprites, sprite_id);
+    sprite_reference *s = (sprite_reference *)vector_get(&ani->sprites, sprite_id);
+    if(s == NULL) {
+        return NULL;
+    }
+    return s->sprite;
 }
 
 int animation_get_sprite_count(animation *ani) {
@@ -109,11 +151,12 @@ void animation_free(animation *ani) {
     }
     vector_free(&ani->extra_strings);
 
-    // Free animations
     vector_iter_begin(&ani->sprites, &it);
-    sprite *tmp_sprite = NULL;
-    while((tmp_sprite = iter_next(&it)) != NULL) {
-        sprite_free(tmp_sprite);
+    sprite_reference *spr;
+    while((spr = iter_next(&it)) != NULL) {
+        sprite_free(spr->sprite);
+        omf_free(spr->sprite);
     }
+
     vector_free(&ani->sprites);
 }

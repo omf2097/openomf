@@ -39,7 +39,7 @@ void array_set(array *array, unsigned int key, const void *ptr) {
 }
 
 void *array_get(const array *array, unsigned int key) {
-    if(key > array->allocated_size) {
+    if(key >= array->allocated_size) {
         return NULL;
     }
     return array->data[key];
