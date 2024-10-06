@@ -53,6 +53,7 @@ void animation_free(animation *ani);
 int animation_get_sprite_count(animation *ani);
 
 animation *create_animation_from_single(sprite *sp, vec2i pos);
+void animation_fixup_coordinates(animation *ani, int fix_x, int fix_y);
 
 int animation_clone(animation *src, animation *dst);
 

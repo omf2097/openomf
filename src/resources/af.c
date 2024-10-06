@@ -44,17 +44,11 @@ af_move *af_get_move(const af *a, int id) {
 void af_free(af *a) {
     iterator it;
     af_move *move = NULL;
-    sprite *sprite = NULL;
     array_iter_begin(&a->moves, &it);
     while((move = array_iter_next(&it))) {
         af_move_free(move);
         omf_free(move);
     }
     array_free(&a->moves);
-    array_iter_begin(&a->sprites, &it);
-    while((sprite = array_iter_next(&it))) {
-        sprite_free(sprite);
-        omf_free(sprite);
-    }
     array_free(&a->sprites);
 }

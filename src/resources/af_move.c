@@ -18,6 +18,10 @@ void af_move_create(af_move *move, array *sprites, void *src, int id) {
     move->collision_opts = sdmv->collision_opts;
     move->extra_string_selector = sdmv->extra_string_selector;
     animation_create(&move->ani, sprites, sdmv->animation, id);
+    if(id == ANIM_JUMPING) {
+        // fixup the jump coordinates
+        animation_fixup_coordinates(&move->ani, 0, -50);
+    }
 }
 
 void af_move_free(af_move *move) {

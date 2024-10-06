@@ -8,10 +8,12 @@ typedef struct sprite_t {
     int id;
     vec2i pos;
     surface *data;
+    bool owned;
 } sprite;
 
 void sprite_create(sprite *sp, void *src, int id);
 void sprite_create_custom(sprite *sp, vec2i pos, surface *sur);
+void sprite_create_reference(sprite *sp, void *src, int id, void *data);
 int sprite_clone(sprite *src, sprite *dst);
 void sprite_free(sprite *sp);
 
