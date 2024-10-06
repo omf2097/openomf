@@ -98,7 +98,6 @@ void test_vector_zero_size(void) {
     vector_free(&test_vector);
 }
 
-
 void vector_test_suite(CU_pSuite suite) {
     // Add tests
     if(CU_add_test(suite, "Test for vector create", test_vector_create) == NULL) {
@@ -128,5 +127,4 @@ void vector_test_suite(CU_pSuite suite) {
     if(CU_add_test(suite, "Test for zero size vector operation", test_vector_zero_size) == NULL) {
         return;
     }
-
 }

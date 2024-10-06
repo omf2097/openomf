@@ -6,7 +6,7 @@
 
 void vector_init(vector *vec) {
     vec->blocks = 0;
-    if (vec->reserved) {
+    if(vec->reserved) {
         vec->data = (char *)omf_calloc(vec->reserved, vec->block_size);
     } else {
         vec->data = NULL;
@@ -62,7 +62,7 @@ int vector_grow(vector *vec) {
     int current_size = max2(1, vec->reserved);
     int new_size = current_size + max2(1, (current_size >> 2));
     void *ndata;
-    if (vec->data) {
+    if(vec->data) {
         ndata = omf_realloc(vec->data, new_size * vec->block_size);
     } else {
         ndata = omf_calloc(new_size, vec->block_size);
