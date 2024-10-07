@@ -7,7 +7,7 @@
 void vector_init(vector *vec) {
     vec->blocks = 0;
     if(vec->reserved) {
-        vec->data = (char *)omf_calloc(vec->reserved, vec->block_size);
+        vec->data = (char *)omf_malloc(vec->reserved * vec->block_size);
     } else {
         vec->data = NULL;
     }
@@ -58,25 +58,16 @@ int vector_set(vector *vec, unsigned int key, const void *value) {
     return 0;
 }
 
-int vector_grow(vector *vec) {
+static void vector_grow(vector *vec) {
     int current_size = max2(1, vec->reserved);
     int new_size = current_size + max2(1, (current_size >> 2));
-    void *ndata;
-    if(vec->data) {
-        ndata = omf_realloc(vec->data, new_size * vec->block_size);
-    } else {
-        ndata = omf_calloc(new_size, vec->block_size);
-    }
-    if(ndata == NULL)
-        return 1;
-    vec->data = ndata;
+    vec->data = omf_realloc(vec->data, new_size * vec->block_size);
     vec->reserved = new_size;
-    return 0;
 }
 
 int vector_append(vector *vec, const void *value) {
-    if(vec->blocks >= vec->reserved && vector_grow(vec)) {
-        return 1;
+    if(vec->blocks >= vec->reserved) {
+        vector_grow(vec);
     }
     void *dst = (char *)(vec->data + vec->blocks * vec->block_size);
     memmove(dst, value, vec->block_size);
@@ -85,8 +76,8 @@ int vector_append(vector *vec, const void *value) {
 }
 
 int vector_prepend(vector *vec, const void *value) {
-    if(vec->blocks >= vec->reserved && vector_grow(vec)) {
-        return 1;
+    if(vec->blocks >= vec->reserved) {
+        vector_grow(vec);
     }
     char *dst = (char *)(vec->data + vec->block_size);
     memmove(dst, vec->data, vec->block_size * vec->blocks);
