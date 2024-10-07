@@ -5,9 +5,12 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-typedef struct {
+#define STR_STACK_SIZE (16)
+
+typedef struct str {
     size_t len;
     char *data;
+    char small[STR_STACK_SIZE];
 } str;
 
 /**
