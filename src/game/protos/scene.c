@@ -56,10 +56,17 @@ int scene_create(scene *scene, game_state *gs, int scene_id) {
 
 int scene_load_har(scene *scene, int player_id) {
     game_player *player = game_state_get_player(scene->gs, player_id);
+    game_player *player0 = game_state_get_player(scene->gs, 0);
     if(scene->af_data[player_id]) {
         af_free(scene->af_data[player_id]);
         omf_free(scene->af_data[player_id]);
     }
+
+    if(player_id > 0 && player->pilot->har_id == player0->pilot->har_id) {
+        scene->af_data[player_id] = scene->af_data[0];
+        return 0;
+    }
+
     scene->af_data[player_id] = omf_calloc(1, sizeof(af));
 
     int resource_id = har_to_resource(player->pilot->har_id);
@@ -198,6 +205,10 @@ void scene_free(scene *scene) {
     }
     bk_free(scene->bk_data);
     omf_free(scene->bk_data);
+    if(scene->af_data[0] && scene->af_data[0] == scene->af_data[1]) {
+        // players were using the same HAR
+        scene->af_data[1] = NULL;
+    }
     if(scene->af_data[0]) {
         af_free(scene->af_data[0]);
         omf_free(scene->af_data[0]);

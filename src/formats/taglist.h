@@ -41,7 +41,7 @@ extern const int sd_taglist_size; ///< Taglist size
  * \param tag A pointer to the tag string in library memory. Will be ignored if set to NULL.
  * \param desc A pointer to the description in library memory. Will be ignored if set to NULL.
  */
-int sd_tag_info(const char *search_tag, int *req_param, const char **tag, const char **desc);
+int sd_tag_info(const char *search_tag, int search_len, int *req_param, const char **tag, const char **desc);
 
 #ifdef __cplusplus
 }

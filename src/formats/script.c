@@ -203,20 +203,16 @@ static int read_int(const str *src, int *original) {
         return 0; // If we found no number, just return default 0.
     }
 
-    str test;
-    str_from_slice(&test, src, start, end);
-    if(!str_to_int(&test, &value)) {
+    if(!str_to_int(src, start, &value)) {
         value = 0; // This should never really happen.
     }
-    str_free(&test);
     *original = end;
     return value;
 }
 
-static bool test_tag_slice(const str *test, sd_script_tag *new, str *src, int *now) {
-    const int len = str_size(test);
-    const int jmp = *now + len;
-    if(sd_tag_info(str_c(test), &new->has_param, &new->key, &new->desc) == 0) {
+static bool test_tag_slice(const char *test, int size, sd_script_tag *new, str *src, int *now) {
+    if(sd_tag_info(test + *now, size, &new->has_param, &new->key, &new->desc) == 0) {
+        const int jmp = *now + strlen(new->key);
         // Ensure that tag has no value, if value is not desired.
         if(!new->has_param && find_numeric_span(src, jmp) > jmp) {
             return false;
@@ -238,19 +234,16 @@ static bool parse_tag(sd_script_tag *new, str *src, int *now) {
     }
 
     // Check if tag is legit.
-    str test;
     for(int m = 3; m > 0; m--) {
-        str_from_slice(&test, src, *now, *now + m);
-        if(str_equal_c(&test, "usw") && find_numeric_span(src, *now + m) > *now + m) {
+        // str_from_slice(&test, src, *now, *now + m);
+        if(strncmp(src->data + *now, "usw", m) == 0 && find_numeric_span(src, *now + m) > *now + m) {
             // Fixup rare usw30/usw case, which can be u + sw30 or us + w
-            str_free(&test);
+            // str_free(&test);
             return false;
         }
-        if(test_tag_slice(&test, new, src, now)) {
-            str_free(&test);
+        if(test_tag_slice(src->data, m, new, src, now)) {
             return true;
         }
-        str_free(&test);
     }
     return false;
 }
@@ -595,7 +588,7 @@ int sd_script_set_tag(sd_script *script, int frame_id, const char *tag, int valu
 
     // Get tag information
     sd_script_tag new;
-    if(sd_tag_info(tag, &new.has_param, &new.key, &new.desc) != SD_SUCCESS) {
+    if(sd_tag_info(tag, strlen(tag), &new.has_param, &new.key, &new.desc) != SD_SUCCESS) {
         return SD_INVALID_INPUT;
     }
     if(new.has_param) {

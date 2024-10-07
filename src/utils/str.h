@@ -215,7 +215,7 @@ bool str_to_long(const str *string, long *m);
  * @return true If success
  * @return false If failure (result value is invalid)
  */
-bool str_to_int(const str *string, int *m);
+bool str_to_int(const str *string, size_t offset, int *m);
 
 /**
  * @brief Returns a C string compatible represantation of a string object.
