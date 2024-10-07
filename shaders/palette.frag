@@ -10,17 +10,27 @@ flat in int palette_limit;
 
 uniform sampler2D atlas;
 
+vec4 handle(float index) {
+    switch(blend_mode) {
+        case 0: return vec4(0.0, index, 0.0, 1.0);  // ADD
+        case 1: return vec4(0.0, 0.0, index, 1.0);  // SUB
+        case 2: return vec4(index, 0.0, 0.0, 1.0);  // SET
+    }
+}
+
 void main() {
     vec4 texel = texture(atlas, tex_coord);
-    int pal_index = int(texel.r * 255.0);
-    if (pal_index == transparency_index) discard;  // Don't render if it's transparent pixel
-    if (blend_mode == 0) {
-        color = vec4(0.0, texel.r, 0.0, 1.0);
-    } else {
-        if (pal_index <= palette_limit) {
-            pal_index = clamp(palette_limit, 0, pal_index + palette_offset);
-        }
-        float float_index = pal_index / 255.0;
-        color = vec4(float_index, 0.0, 0.0, 1.0);
+
+    // Don't render if it's transparent pixel
+    int index = int(texel.r * 255.0);
+    if (index == transparency_index) discard;
+
+    // Palette offset and limit (for e.g. fonts)
+    float limit = palette_limit / 255.0;
+    float offset = palette_offset / 255.0;
+    if (texel.r <= limit) {
+        texel.r = clamp(texel.r + offset, 0, limit);
     }
+
+    color = handle(texel.r);
 }
