@@ -3,6 +3,9 @@
 
 #include <stddef.h>
 
+#define omf_malloc(size) omf_malloc_real((size), __FILE__, __LINE__)
+void *omf_malloc_real(size_t size, const char *file, int line);
+
 #define omf_calloc(nmemb, size) omf_calloc_real((nmemb), (size), __FILE__, __LINE__)
 void *omf_calloc_real(size_t nmemb, size_t size, const char *file, int line);
 
