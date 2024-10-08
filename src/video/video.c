@@ -76,7 +76,7 @@ int video_init(int window_w, int window_h, bool fullscreen, bool vsync) {
     if(!create_gl_context(&g_video_state.gl_context, g_video_state.window)) {
         goto error_1;
     }
-    if(!enable_vsync()) {
+    if(!set_vsync(g_video_state.vsync)) {
         goto error_2;
     }
     if(!create_program(&g_video_state.palette_prog_id, "palette.vert", "palette.frag")) {
