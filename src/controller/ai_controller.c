@@ -1589,15 +1589,17 @@ int ai_block_projectile(controller *ctrl, ctrl_event **ev) {
         }
         if(o_prj->cur_sprite_id >= 0 && (smart_usually(a) || remember_shooting)) {
             sprite *cur_sprite = animation_get_sprite(o_prj->cur_animation, o_prj->cur_sprite_id);
-            vec2i pos_prj = vec2i_add(object_get_pos(o_prj), cur_sprite->pos);
-            vec2i size_prj = object_get_size(o_prj);
-            if(object_get_direction(o_prj) == OBJECT_FACE_LEFT) {
-                pos_prj.x = object_get_pos(o_prj).x + ((cur_sprite->pos.x * -1) - size_prj.x);
-            }
-            if(fabsf(pos_prj.x - o->pos.x) < 120) {
-                a->cur_act = (o->direction == OBJECT_FACE_RIGHT ? ACT_DOWN | ACT_LEFT : ACT_DOWN | ACT_RIGHT);
-                controller_cmd(ctrl, a->cur_act, ev);
-                return 1;
+            if(cur_sprite) {
+                vec2i pos_prj = vec2i_add(object_get_pos(o_prj), cur_sprite->pos);
+                vec2i size_prj = object_get_size(o_prj);
+                if(object_get_direction(o_prj) == OBJECT_FACE_LEFT) {
+                    pos_prj.x = object_get_pos(o_prj).x + ((cur_sprite->pos.x * -1) - size_prj.x);
+                }
+                if(fabsf(pos_prj.x - o->pos.x) < 120) {
+                    a->cur_act = (o->direction == OBJECT_FACE_RIGHT ? ACT_DOWN | ACT_LEFT : ACT_DOWN | ACT_RIGHT);
+                    controller_cmd(ctrl, a->cur_act, ev);
+                    return 1;
+                }
             }
         }
     }
