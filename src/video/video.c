@@ -208,9 +208,6 @@ void video_render_finish(void) {
     // Flip buffers. If vsync is off, we should sleep here
     // so hat our main loop doesn't eat up all cpu :)
     SDL_GL_SwapWindow(g_video_state.window);
-    if(!g_video_state.vsync) {
-        SDL_Delay(1);
-    }
 }
 
 void video_close(void) {
