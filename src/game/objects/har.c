@@ -1054,22 +1054,25 @@ void har_collide_with_har(object *obj_a, object *obj_b, int loop) {
         har_event_take_hit(b, move, false, ctrl_b);
         har_event_land_hit(a, move, false, ctrl_a);
 
-        if(b->state == STATE_RECOIL || b->is_wallhugging) {
-            // back the attacker off a little
-            vec2f push = object_get_vel(obj_a);
-            push.x += 2.0f * object_get_direction(obj_b);
-            object_set_vel(obj_a, push);
+        if(move->category != CAT_CLOSE) {
+            if(b->state == STATE_RECOIL || b->is_wallhugging) {
+                // back the attacker off a little
+                vec2f push = object_get_vel(obj_a);
+                push.x += 2.0f * object_get_direction(obj_b);
+                object_set_vel(obj_a, push);
+            }
+            if(b->is_wallhugging) {
+                vec2f push = object_get_vel(obj_a);
+                push.x += 3.0f * object_get_direction(obj_b);
+                object_set_vel(obj_a, push);
+            } else {
+                vec2f push = object_get_vel(obj_b);
+                push.x += 3.0f * object_get_direction(obj_a);
+                object_set_vel(obj_b, push);
+            }
         }
+
         har_take_damage(obj_b, &move->footer_string, move->damage, move->stun);
-        if(b->is_wallhugging) {
-            vec2f push = object_get_vel(obj_a);
-            push.x += 3.0f * object_get_direction(obj_b);
-            object_set_vel(obj_a, push);
-        } else {
-            vec2f push = object_get_vel(obj_b);
-            push.x += 3.0f * object_get_direction(obj_a);
-            object_set_vel(obj_b, push);
-        }
 
         if(hit_coord.x != 0 || hit_coord.y != 0) {
             har_spawn_scrap(obj_b, hit_coord, move->block_stun);
