@@ -129,7 +129,7 @@ int intersect_sprite_hitpoint(object *obj, object *target, int level, vec2i *poi
         if(target_dir == OBJECT_FACE_LEFT) {
             hitpoint = (ycoord * sfc->w) + (sfc->w - xcoord);
         }
-        if(sfc->stencil[hitpoint] > 0) {
+        if(hitpoint < sfc->w * sfc->h && sfc->stencil[hitpoint] > 0) {
             hcoords[found++] = vec2i_create(xcoord, ycoord);
             if(found >= level) {
                 vec2f sum = vec2f_create(0, 0);
