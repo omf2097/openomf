@@ -1130,23 +1130,30 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
             return;
         }
 
-        int damage = 0;
-
-        /// Handle the flich animation correctly for projectiles
-        if(move->successor_id) {
-            af_move *next_move = af_get_move(prog_owner_af_data, move->successor_id);
-            if(next_move->footer_string.data) {
-                DEBUG("HAR %s Takes %f units of damage on string %s", har_get_name(h->id), move->damage,
-                      str_c(&move->footer_string));
-                har_take_damage(o_har, &move->footer_string, move->damage, move->stun);
-                damage = 1;
-            }
+        if(projectile_did_hit(o_pjt)) {
+            // projectile has already hit
+            return;
         }
+
+        DEBUG("PROJECTILE %d to HAR %s collision at %d,%d!", object_get_animation(o_pjt)->id, har_get_name(h->id),
+              hit_coord.x, hit_coord.y);
+
+        if(move->next_move) {
+            DEBUG("PROJECTILE %d going to next move %d on HIT", object_get_animation(o_pjt)->id, move->next_move);
+            object_set_animation(o_pjt, &af_get_move(prog_owner_af_data, move->next_move)->ani);
+            object_set_repeat(o_pjt, 0);
+            return;
+        }
+
+        vec2f vel = object_get_vel(o_har);
+        vel.x = 0.0f;
+        object_set_vel(o_har, vel);
 
         // Just take damage normally if there is no footer string in successor
-        if(!damage) {
-            har_take_damage(o_har, &move->footer_string, move->damage, move->stun);
-        }
+        DEBUG("projectile dealt damage of %f", move->damage);
+        har_take_damage(o_har, &move->footer_string, move->damage, move->stun);
+
+        projectile_mark_hit(o_pjt);
 
         har_event_take_hit(h, move, true, ctrl);
         har_event_land_hit(other, move, true, ctrl_other);
@@ -1154,30 +1161,19 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
         har_spawn_scrap(o_har, hit_coord, move->block_stun);
         h->damage_received = 1;
 
-        vec2f vel = object_get_vel(o_har);
-        vel.x = 0.0f;
-        object_set_vel(o_har, vel);
-
         // Exception case for chronos' time freeze
         if(player_frame_isset(o_pjt, "af")) {
             h->in_stasis_ticks = 75;
         }
 
-        DEBUG("PROJECTILE %d to HAR %s collision at %d,%d!", object_get_animation(o_pjt)->id, har_get_name(h->id),
-              hit_coord.x, hit_coord.y);
-        DEBUG("HAR %s animation set to %s", har_get_name(h->id), str_c(&move->footer_string));
-
         // Switch to successor animation if one exists for this projectile
-        if(move->successor_id) {
+        // CAT CLOSE is a check for shadow grab, but there's probably a special flag
+        if(move->successor_id && move->category != CAT_CLOSE) {
             af_move *next_move = af_get_move(prog_owner_af_data, move->successor_id);
-            if(!move->footer_string.data && next_move->footer_string.data) {
-                DEBUG("HAR %s: Using successor footer string: %s", har_get_name(h->id),
-                      str_c(&next_move->footer_string));
-                object_set_custom_string(o_har, str_c(&next_move->footer_string));
-            }
             object_set_animation(o_pjt, &next_move->ani);
             object_set_repeat(o_pjt, 0);
             o_pjt->animation_state.finished = 0;
+            projectile_clear_hit(o_pjt);
             DEBUG("SUCCESSOR: Selecting anim %d with string %s", object_get_animation(o_pjt)->id,
                   str_c(&object_get_animation(o_pjt)->animation_string));
         }
@@ -2241,7 +2237,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
                 // Damage = Base Damage * (20 + Power) / 30 + 1
                 //  Stun = (Base Damage + 6) * 512
                 move->stun = (move->damage + 6) * 512;
-                move->damage = move->damage * (20 + pilot->power) / 30 + 1;
+                move->damage = move->damage * ((20 + pilot->power) / 30 + 1);
             } else {
                 // Tournament Mode
                 // Damage = (Base Damage * (25 + Power) / 35 + 1) * leg/arm power / armor
