@@ -92,6 +92,11 @@ int console_cmd_scene(game_state *gs, int argc, char **argv) {
 
 int console_toggle_warp(game_state *gs, int argc, char **argv) {
     gs->warp_speed = !gs->warp_speed;
+    if(gs->warp_speed) {
+        console_output_addline("Warp speed ON");
+    } else {
+        console_output_addline("Warp speed OFF");
+    }
     return 0;
 }
 
