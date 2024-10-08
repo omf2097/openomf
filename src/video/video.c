@@ -162,10 +162,14 @@ static void video_set_blend_mode(int request_mode) {
     if(g_video_state.current_blend_mode == request_mode)
         return;
 
-    if(request_mode == BLEND_SET) {   // ALPHA
-        glBlendFunc(GL_ONE, GL_ZERO); // 1 * src + 0 * dst
-    } else {                          // ADDITIVE
-        glBlendFunc(GL_ONE, GL_ONE);  // 1 * src + 1 * dst
+    switch(request_mode) {
+        case BLEND_SET:
+            glBlendFunc(GL_ONE, GL_ZERO); // 1 * src + 0 * dst
+            break;
+        case BLEND_ADD:
+        case BLEND_SUB:
+            glBlendFunc(GL_ONE, GL_ONE);  // 1 * src + 1 * dst
+            break;
     }
 
     g_video_state.current_blend_mode = request_mode;
