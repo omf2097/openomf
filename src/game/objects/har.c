@@ -2231,13 +2231,13 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     // apply pilot stats and HAR upgrades/enhancements to the HAR
     for(int i = 0; i < MAX_AF_MOVES; i++) {
         move = af_get_move(af_data, i);
-        if(move != NULL) {
+        if(move != NULL && move->damage) {
             if(!is_tournament) {
                 // Single Player
                 // Damage = Base Damage * (20 + Power) / 30 + 1
                 //  Stun = (Base Damage + 6) * 512
                 move->stun = (move->damage + 6) * 512;
-                move->damage = move->damage * ((20 + pilot->power) / 30 + 1);
+                move->damage = move->damage * (20 + pilot->power) / 30 + 1;
             } else {
                 // Tournament Mode
                 // Damage = (Base Damage * (25 + Power) / 35 + 1) * leg/arm power / armor
