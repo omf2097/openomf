@@ -653,7 +653,7 @@ void game_state_static_tick(game_state *gs, bool replay) {
 // This function is called when the game speed requires it
 void game_state_dynamic_tick(game_state *gs, bool replay) {
     // We want to load another scene
-    if(gs->this_id != gs->next_id && (gs->next_wait_ticks <= 1 || !settings_get()->video.crossfade_on)) {
+    if(gs->this_id != gs->next_id) {
         // If this is the end, set run to 0 so that engine knows to close here
         if(gs->next_id == SCENE_NONE) {
             DEBUG("Next ID is SCENE_NONE! bailing.");
