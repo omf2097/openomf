@@ -86,9 +86,9 @@ bool create_window(SDL_Window **window, int width, int height, bool fullscreen) 
     return true;
 }
 
-bool enable_vsync(bool enable) {
+bool set_vsync(bool enable) {
     // If we don't want to enable vsync, just log and okay out.
-    if (!enable) {
+    if(!enable) {
         INFO("VSYNC is disabled!");
         return true;
     }
