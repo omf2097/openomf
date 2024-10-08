@@ -86,7 +86,12 @@ bool create_window(SDL_Window **window, int width, int height, bool fullscreen) 
     return true;
 }
 
-bool enable_vsync(void) {
+bool enable_vsync(bool enable) {
+    // If we don't want to enable vsync, just log and okay out.
+    if (!enable) {
+        INFO("VSYNC is disabled!");
+        return true;
+    }
     // Try for adaptive vsync first.
     if(SDL_GL_SetSwapInterval(-1) == 0) {
         INFO("Adaptive VSYNC enabled!");
@@ -103,7 +108,7 @@ bool enable_vsync(void) {
     }
     // Fallback to no vsync, in which case we do SDL_Delay.
     if(SDL_GL_SetSwapInterval(0) == 0) {
-        INFO("VSYNC is disabled! Falling back to delay sleep.");
+        INFO("VSYNC is disabled!");
         return true;
     } else {
         PERROR("Unable to set any VSYNC mode -- something is really broken.");
