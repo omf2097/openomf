@@ -14,6 +14,7 @@ typedef struct projectile_local_t {
     int wall_bounce;
     int ground_freeze;
     int invincible;
+    bool has_hit;
 } projectile_local;
 
 void projectile_tick(object *obj) {
@@ -73,10 +74,13 @@ void projectile_move(object *obj) {
             obj->animation_state.finished = 1;
         }
     }
-    if(obj->pos.y > ARENA_FLOOR) {
+    if(obj->pos.y > ARENA_FLOOR && local->wall_bounce) {
         obj->pos.y = ARENA_FLOOR;
         obj->vel.y = -obj->vel.y * dampen;
         obj->vel.x = obj->vel.x * dampen;
+    } else if(obj->pos.y > ARENA_FLOOR) {
+        obj->pos.y = ARENA_FLOOR;
+        obj->animation_state.finished = 1;
     }
     if(obj->pos.y >= (ARENA_FLOOR - 5) && IS_ZERO(obj->vel.x) && obj->vel.y < obj->gravity * 1.1 &&
        obj->vel.y > obj->gravity * -1.1 && local->ground_freeze) {
@@ -106,6 +110,7 @@ int projectile_create(object *obj, har *har) {
     local->wall_bounce = 0;
     local->ground_freeze = 0;
     local->af_data = har->af_data;
+    local->has_hit = false;
 
     // Set up callbacks
     object_set_userdata(obj, local);
@@ -138,4 +143,19 @@ void projectile_set_invincible(object *obj) {
 void projectile_stop_on_ground(object *obj, int stop) {
     projectile_local *local = object_get_userdata(obj);
     local->ground_freeze = stop;
+}
+
+void projectile_mark_hit(object *obj) {
+    projectile_local *local = object_get_userdata(obj);
+    local->has_hit = true;
+}
+
+bool projectile_did_hit(object *obj) {
+    projectile_local *local = object_get_userdata(obj);
+    return local->has_hit;
+}
+
+void projectile_clear_hit(object *obj) {
+    projectile_local *local = object_get_userdata(obj);
+    local->has_hit = false;
 }

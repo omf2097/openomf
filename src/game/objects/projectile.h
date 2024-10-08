@@ -13,4 +13,8 @@ void projectile_set_wall_bounce(object *obj, int bounce);
 void projectile_set_invincible(object *obj);
 void projectile_stop_on_ground(object *obj, int stop);
 
+void projectile_mark_hit(object *obj);
+bool projectile_did_hit(object *obj);
+void projectile_clear_hit(object *obj);
+
 #endif // PROJECTILE_H
