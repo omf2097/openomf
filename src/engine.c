@@ -16,6 +16,8 @@
 #include <SDL.h>
 #include <stdio.h>
 
+#define STATIC_TICKS 10
+
 static int run = 0;
 static int start_timeout = 30;
 static int take_screenshot = 0;
@@ -234,22 +236,20 @@ void engine_run(engine_init_flags *init_flags) {
             static_wait += 20;
             debugger_proceed = 0;
         }
-        int limit_static = 100;
-        int limit_dynamic = 100;
-        while(static_wait > 10 && limit_static--) {
-            // Static tick for gamestate
+
+        // Tick static features. This is a fixed with-rate tick, and is meant for running things
+        // that are not dependent on game speed (such as menus).
+        if(static_wait > STATIC_TICKS) {
             game_state_static_tick(gs, false);
-
-            // Tick console
             console_tick();
-
-            static_wait -= 10;
+            static_wait -= STATIC_TICKS;
         }
-        while(dynamic_wait > game_state_ms_per_dyntick(gs) && limit_dynamic--) {
-            // Tick scene
-            game_state_dynamic_tick(gs, false);
 
-            // Handle waiting period leftover time
+        // Tick dynamic features. This is a dynamically changing tick, and it depends on things such as
+        // hit-pause, hit slowdown and game-speed slider. It is meant for ticking everything that has to do
+        // with the actual gameplay stuff.
+        if(dynamic_wait > game_state_ms_per_dyntick(gs)) {
+            game_state_dynamic_tick(gs, false);
             dynamic_wait -= game_state_ms_per_dyntick(gs);
         }
 
