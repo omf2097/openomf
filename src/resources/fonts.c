@@ -62,8 +62,9 @@ int font_load(font *font, const char *filename, unsigned int size) {
     sd_vga_image_create(&img, pixsize, pixsize);
     for(int i = 0; i < 224; i++) {
         sur = omf_calloc(1, sizeof(surface));
-        sd_font_decode(&sdfont, &img, i, 0);
+        sd_font_decode(&sdfont, &img, i, 1);
         surface_create_from_vga(sur, &img);
+        surface_set_transparency(sur, 0);
         vector_append(&font->surfaces, &sur);
     }
 
@@ -96,8 +97,9 @@ int pcx_font_load(font *font, const char *filename, int8_t palette_offset) {
     for(int i = 0; i < pcx_font.glyph_count; i++) {
         sd_vga_image_create(&img, pcx_font.glyphs[i].width, pixsize);
         sur = omf_calloc(1, sizeof(surface));
-        pcx_font_decode(&pcx_font, &img, i, 0);
+        pcx_font_decode(&pcx_font, &img, i, 1);
         surface_create_from_vga(sur, &img);
+        surface_set_transparency(sur, 0);
         vector_append(&font->surfaces, &sur);
         sd_vga_image_free(&img);
     }

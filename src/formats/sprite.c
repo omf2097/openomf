@@ -295,10 +295,6 @@ int sd_sprite_vga_decode(sd_vga_image *dst, const sd_sprite *src) {
         return SD_SUCCESS;
     }
 
-    // everything defaults to transparent
-    int bsize = src->width * src->height;
-    memset(dst->stencil, 0, bsize);
-
     // Walk through raw sprite data
     while(i < src->len) {
         // read a word
@@ -320,7 +316,6 @@ int sd_sprite_vga_decode(sd_vga_image *dst, const sd_sprite *src) {
                     uint8_t b = src->data[i];
                     int pos = ((y * src->width) + x);
                     dst->data[pos] = b;
-                    dst->stencil[pos] = 1;
                     i++; // we read 1 byte
                     x++;
                     data--;
@@ -364,13 +359,12 @@ int sd_sprite_vga_encode(sd_sprite *dst, const sd_vga_image *src) {
     buf[i++] = 0;
     rowstart = i;
 
-    // Walk through the RGBA data
+    // Walk through the index data
     for(int pos = 0; pos < vga_size; pos++) {
         uint8_t idx = src->data[pos];
-        uint8_t stc = src->stencil[pos];
 
         // ignore anything but fully opaque pixels
-        if(stc == 1) {
+        if(idx != 0) {
             int16_t x = pos % src->w;
             int16_t y = pos / src->w;
             if(y != lasty) {

@@ -654,12 +654,11 @@ int main(int argc, char *argv[]) {
     struct arg_lit *pop = arg_lit0(NULL, "pop", "Pop the last element (requires --key)");
     struct arg_file *export = arg_file0(NULL, "export", "<file>", "Exports data to a file (requires --key)");
     struct arg_file *import = arg_file0(NULL, "import", "<file>", "Imports data from a file (requires --key)");
-    struct arg_int *stencil = arg_int0(NULL, "stencil", "<int>", "Stencil index for image (requires --import)");
     struct arg_int *scale = arg_int0(NULL, "scale", "<factor>", "Scales sprites (requires --play)");
     struct arg_lit *parse = arg_lit0(NULL, "parse", "Parse value (requires --key)");
     struct arg_end *end = arg_end(30);
     void *argtable[] = {help,  vers, file, new,    output, anim,    all_anims, sprite, keylist, key,
-                        value, push, pop,  export, import, stencil, play,      scale,  parse,   end};
+                        value, push, pop,  export, import, play, scale,     parse,  end};
     const char *progname = "bktool";
 
     // Make sure everything got allocated
@@ -801,11 +800,7 @@ int main(int argc, char *argv[]) {
             } else if(export->count > 0) {
                 sprite_export_key(sp, key->sval, key->count, export->filename[0], &bk);
             } else if(import->count > 0) {
-                int st = -1;
-                if(stencil->count > 0) {
-                    st = stencil->ival[0];
-                }
-                sprite_import_key(sp, key->sval, key->count, import->filename[0], st);
+                sprite_import_key(sp, key->sval, key->count, import->filename[0]);
             } else {
                 sprite_get_key(sp, key->sval, key->count);
             }

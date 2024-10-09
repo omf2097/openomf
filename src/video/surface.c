@@ -7,21 +7,19 @@
 
 // Each surface is tagged with a unique key. This is then used for texture atlas.
 // This keeps track of the last index used.
-static uint32_t hash_index = 0;
-
+static unsigned int guid = 0;
 
 void surface_create(surface *sur, int w, int h) {
     sur->data = omf_calloc(1, w * h);
-    sur->stencil = omf_calloc(1, w * h);
-    sur->hash = hash_index++;
+    sur->guid = guid++;
     sur->w = w;
     sur->h = h;
+    sur->transparent = 0;
 }
 
 void surface_create_from_data(surface *sur, int w, int h, const unsigned char *src) {
     surface_create(sur, w, h);
     memcpy(sur->data, src, w * h);
-    memset(sur->stencil, 1, w * h);
 }
 
 void surface_create_from_data_flip(surface *sur, int w, int h, const unsigned char *src) {
@@ -29,51 +27,49 @@ void surface_create_from_data_flip(surface *sur, int w, int h, const unsigned ch
     for(int y = 0; y < h; y++) {
         memcpy(sur->data + (h - y - 1) * w, src + y * w, w);
     }
-    memset(sur->stencil, 1, w * h);
 }
 
 void surface_create_from_vga(surface *sur, const sd_vga_image *src) {
     surface_create(sur, src->w, src->h);
     memcpy(sur->data, src->data, src->w * src->h);
-    memcpy(sur->stencil, src->stencil, src->w * src->h);
+    sur->transparent = -1;
 }
 
 void surface_create_from_surface(surface *sur, int w, int h, int src_x, int src_y, const surface *src) {
     surface_create(sur, w, h);
     surface_sub(sur, src, 0, 0, src_x, src_y, w, h, SUB_METHOD_NONE);
-}
-
-void surface_generate_stencil(const surface *sur, int index) {
-    for(int i = 0; i < sur->w * sur->h; i++) {
-        sur->stencil[i] = (sur->data[i] == index) ? 0 : 1;
-    }
+    sur->transparent = src->transparent;
 }
 
 void surface_create_from_image(surface *sur, image *img) {
     surface_create_from_data(sur, img->w, img->h, img->data);
+    sur->transparent = -1;
 }
 
-int surface_to_image(surface *sur, image *img) {
+int surface_to_image(const surface *sur, image *img) {
     img->w = sur->w;
     img->h = sur->h;
     img->data = sur->data;
     return 0;
 }
 
+void surface_set_transparency(surface *sur, int index) {
+    sur->transparent = index;
+}
+
 void surface_free(surface *sur) {
     omf_free(sur->data);
-    omf_free(sur->stencil);
 }
 
 void surface_clear(surface *sur) {
     memset(sur->data, 0, sur->w * sur->h);
-    sur->hash = hash_index++;
+    sur->guid = guid++;
 }
 
 void surface_create_from(surface *dst, const surface *src) {
     surface_create(dst, src->w, src->h);
     memcpy(dst->data, src->data, src->w * src->h);
-    memcpy(dst->stencil, src->stencil, src->w * src->h);
+    dst->transparent = src->transparent;
 }
 
 // Copies a an area of old surface to an entirely new surface
@@ -92,10 +88,9 @@ void surface_sub(surface *dst, const surface *src, int dst_x, int dst_y, int src
                     break;
             }
             dst->data[dst_offset] = src->data[src_offset];
-            dst->stencil[dst_offset] = src->stencil[src_offset];
         }
     }
-    dst->hash = hash_index++;
+    dst->guid = guid++;
 }
 
 static uint8_t find_closest_gray(const screen_palette *pal, int range_start, int range_end, int ref) {
@@ -139,7 +134,7 @@ void surface_convert_to_grayscale(surface *sur, const screen_palette *pal, int r
         idx = sur->data[i];
         sur->data[i] = mapping[idx];
     }
-    sur->hash = hash_index++;
+    sur->guid = guid++;
 }
 
 void surface_compress_index_blocks(surface *sur, int range_start, int range_end, int block_size, int amount) {
@@ -153,7 +148,7 @@ void surface_compress_index_blocks(surface *sur, int range_start, int range_end,
             sur->data[i] = idx - old_idx + new_idx;
         }
     }
-    sur->hash = hash_index++;
+    sur->guid = guid++;
 }
 
 void surface_compress_remap(surface *sur, int range_start, int range_end, int remap_to, int amount) {
@@ -168,7 +163,7 @@ void surface_compress_remap(surface *sur, int range_start, int range_end, int re
             }
         }
     }
-    sur->hash = hash_index++;
+    sur->guid = guid++;
 }
 
 bool surface_write_png(const surface *sur, const screen_palette *pal, const char *filename) {

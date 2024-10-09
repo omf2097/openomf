@@ -105,7 +105,7 @@ void sprite_export_key(sd_sprite *s, const char **key, int kcount, const char *f
     }
 }
 
-void sprite_import_key(sd_sprite *s, const char **key, int kcount, const char *filename, int transparent_index) {
+void sprite_import_key(sd_sprite *s, const char **key, int kcount, const char *filename) {
     switch(sprite_key_get_id(key[0])) {
         case 1:
         case 2:
@@ -117,12 +117,6 @@ void sprite_import_key(sd_sprite *s, const char **key, int kcount, const char *f
             int ret = sd_vga_image_from_png(&img, filename);
             if(ret != SD_SUCCESS) {
                 printf("Error while importing sprite from %s: %s\n", filename, sd_get_error(ret));
-                return;
-            }
-
-            ret = sd_vga_image_stencil_index(&img, transparent_index);
-            if(ret != SD_SUCCESS) {
-                printf("Stencil oculd not be set: %s\n", sd_get_error(ret));
                 return;
             }
 

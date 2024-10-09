@@ -258,6 +258,7 @@ void video_area_capture(surface *sur, int x, int y, int w, int h) {
     unsigned char *buffer = omf_calloc(1, w * h);
     glReadPixels(x, y, w, h, GL_RED, GL_UNSIGNED_BYTE, buffer);
     surface_create_from_data_flip(sur, w, h, buffer);
+    surface_set_transparency(sur, -1);
     free(buffer);
 }
 
@@ -287,7 +288,7 @@ screen_palette *video_get_pal_ref(void) {
 void video_render_background(surface *sur) {
     uint16_t tx, ty, tw, th;
     if(atlas_get(g_video_state.atlas, sur, &tx, &ty, &tw, &th)) {
-        object_array_add(g_video_state.objects, 0, 0, 320, 200, tx, ty, tw, th, 0, BLEND_SET, 0, -1);
+        object_array_add(g_video_state.objects, 0, 0, 320, 200, tx, ty, tw, th, 0, sur->transparent, BLEND_SET, 0, -1);
     }
 }
 
@@ -295,8 +296,8 @@ static void draw_args(video_state *state, const surface *sur, SDL_Rect *dst, vid
                       int pal_offset, int pal_limit, unsigned int flip_mode) {
     uint16_t tx, ty, tw, th;
     if(atlas_get(g_video_state.atlas, sur, &tx, &ty, &tw, &th)) {
-        object_array_add(state->objects, dst->x, dst->y, dst->w, dst->h, tx, ty, tw, th, flip_mode, blend_mode,
-                         pal_offset, pal_limit);
+        object_array_add(state->objects, dst->x, dst->y, dst->w, dst->h, tx, ty, tw, th, flip_mode, sur->transparent,
+                         blend_mode, pal_offset, pal_limit);
     }
 }
 

@@ -14,18 +14,11 @@
 #include "formats/palette.h"
 #include "formats/rgba_image.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /*! \brief VGA image structure
  *
- * Contains a paletted image and transparency stencil. The image can be exported to
+ * Contains a paletted image. The image can be exported to
  * an omf:2097 sprite by using a proper function  sd_sprite_vga_encode() and back
  * sd_sprite_vga_decode() . For RGBA conversion, a valid palette is required.
- *
- * Invisibility is handled by setting a single palette index as the invisibility stencil.
- * This can be modified with library function sd_vga_image_stencil_index().
  *
  * In VGA images, the len field should always be exactly w*h bytes long.
  */
@@ -34,7 +27,6 @@ typedef struct {
     unsigned int h;   ///< Pixel height
     unsigned int len; ///< Byte length
     char *data;       ///< Palette representation of image data
-    char *stencil;    ///< holds 0 or 1 indicating whether a pixel is present
 } sd_vga_image;
 
 /*! \brief Initialize VGA image structure
@@ -75,39 +67,6 @@ int sd_vga_image_copy(sd_vga_image *dst, const sd_vga_image *src);
  * \param img VGA image struct to modify.
  */
 void sd_vga_image_free(sd_vga_image *img);
-
-/*! \brief Regenerates the stencil from a color index
- *
- * This function regenerates the invisibility mask for the VGA image.
- * A necative value for stencil_index will lead to a completely opaque background,
- * while a value of 0-255 will create a stencil from colors of this index.
- *
- * \retval SD_INVALID_INPUT Bad index value or img was NULL
- * \retval SD_SUCCESS All good.
- *
- * \param img VGA image struct to modify.
- * \param stencil_index Color key to use for invisibility
- */
-int sd_vga_image_stencil_index(sd_vga_image *img, int stencil_index);
-
-/*! \brief Encode RGBA data to VGA data
- *
- * Encodes RGBA image data to VGA image data. Color values will be matched to exact values in
- * the palette. If no matching value is found for the pixel, the pixel color will be black.
- *
- * Note! The output VGA image will be created here. If the image had been
- * already created by using sd_vga_image_create() previously, there may
- * potentially be a memory leak, since the old image internals will not be freed.
- *
- * \retval SD_INVALID_INPUT Dst, src or palette was NULL.
- * \retval SD_SUCCESS Success.
- *
- * \param dst Destination VGA image pointer.
- * \param src Source RGBA image pointer
- * \param pal Palette that should be used for the conversion
- * \param remapping Palette remapping table that should be used. -1 for none.
- */
-int sd_vga_image_encode(sd_vga_image *dst, const sd_rgba_image *src, const palette *pal, int remapping);
 
 /*! \brief Decode VGA data to RGBA format
  *
@@ -163,9 +122,5 @@ int sd_vga_image_from_png(sd_vga_image *img, const char *filename);
  * \param filename Destination filename
  */
 int sd_vga_image_to_png(const sd_vga_image *img, const palette *pal, const char *filename);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // SD_VGA_IMAGE_H

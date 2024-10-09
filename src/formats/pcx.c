@@ -152,14 +152,11 @@ int pcx_font_decode(const pcx_font *font, sd_vga_image *o, uint8_t ch, int8_t pa
         for(int j = font->glyphs[ch].x; j < font->glyphs[ch].x + font->glyphs[ch].width; j++) {
             if(font->pcx.image.data[(i * 320) + j]) {
                 o->data[(k * font->glyphs[ch].width) + l] = palette_offset + (int)font->pcx.image.data[(i * 320) + j];
-                o->stencil[(k * font->glyphs[ch].width) + l] = 1;
             } else {
                 o->data[(k * font->glyphs[ch].width) + l] = 0;
-                o->stencil[(k * font->glyphs[ch].width) + l] = 0;
             }
 
             l++;
-            ;
         }
         k++;
     }
