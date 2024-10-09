@@ -44,6 +44,7 @@ enum
 
 typedef struct lobby_local_t {
     char name[16];
+    char helptext[80];
     uint32_t id;
     list log;
     list users;
@@ -176,7 +177,46 @@ void lobby_render_overlay(scene *scene) {
     guiframe_render(local->frame);
 }
 
+void lobby_do_challenge(component *c, void *userdata) {
+}
+
+void lobby_cancel_challenge(component *c, void *userdata) {
+    menu *m = sizer_get_obj(c->parent);
+    scene *s = userdata;
+    lobby_local *local = scene_get_userdata(s);
+    m->finished = 1;
+    local->mode = LOBBY_MAIN;
+}
+
+component *lobby_challenge_create(scene *s) {
+
+    lobby_local *local = scene_get_userdata(s);
+    // Text config
+    text_settings tconf;
+    text_defaults(&tconf);
+    tconf.font = FONT_NET1;
+    tconf.halign = TEXT_LEFT;
+    tconf.cforeground = 6;
+    tconf.cselected = 5;
+    tconf.cdisabled = 4;
+    tconf.cinactive = 3;
+
+    component *menu = menu_create(11);
+    menu_set_horizontal(menu, true);
+    menu_set_background(menu, false);
+
+    lobby_user *user = list_get(&local->users, local->active_user);
+    snprintf(local->helptext, sizeof(local->helptext), "Challenge %s?", user->name);
+    menu_attach(menu, label_create(&tconf, local->helptext));
+    menu_attach(menu, textbutton_create(&tconf, "Yes", NULL, COM_ENABLED, lobby_do_challenge, s));
+    menu_attach(menu, textbutton_create(&tconf, "No", NULL, COM_ENABLED, lobby_cancel_challenge, s));
+
+    return menu;
+}
+
 void lobby_challenge(component *c, void *userdata) {
+    scene *s = userdata;
+    menu_set_submenu(c->parent, lobby_challenge_create(s));
 }
 
 void lobby_do_yell(component *c, void *userdata) {
@@ -271,6 +311,7 @@ void lobby_do_whisper(component *c, void *userdata) {
 }
 
 component *lobby_whisper_create(scene *s) {
+    lobby_local *local = scene_get_userdata(s);
     // Text config
     text_settings tconf;
     text_defaults(&tconf);
@@ -294,8 +335,10 @@ component *lobby_whisper_create(scene *s) {
     menu_set_horizontal(menu, true);
     menu_set_background(menu, false);
     menu_attach(menu, label_create(&tconf, "Whisper:"));
-    component *whisper_input =
-        textinput_create(&tconf, "Whisper:", "Whisper a message to %s. Press enter when done, esc to abort.", "");
+    lobby_user *user = list_get(&local->users, local->active_user);
+    snprintf(local->helptext, sizeof(local->helptext), "Whisper a message to %s. Press enter when done, esc to abort.",
+             user->name);
+    component *whisper_input = textinput_create(&tconf, "Whisper:", local->helptext, "");
     textinput_set_max_chars(whisper_input, 36);
     menu_attach(menu, whisper_input);
     textinput_enable_background(whisper_input, 0);
