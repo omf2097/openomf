@@ -2,7 +2,6 @@
 #include "resources/sprite.h"
 #include "utils/allocator.h"
 #include <stdlib.h>
-#include <string.h>
 
 void sprite_create_custom(sprite *sp, vec2i pos, surface *data) {
     sp->id = -1;

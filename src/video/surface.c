@@ -5,27 +5,15 @@
 #include <stdlib.h>
 #include <utils/log.h>
 
-#define FNV_INITIAL ((uint32_t)2166136261)
+// Each surface is tagged with a unique key. This is then used for texture atlas.
+// This keeps track of the last index used.
+static uint32_t hash_index = 0;
 
-static void fnv_32a_buf(uint32_t *hash, const void *buf, unsigned int len) {
-    unsigned char *bp = (unsigned char *)buf;
-    unsigned char *be = bp + len;
-    while(bp < be) {
-        *hash ^= (uint32_t)*bp++;
-        *hash *= ((uint32_t)0x01000193);
-    }
-}
-
-static inline void create_hash(surface *sur) {
-    sur->hash = FNV_INITIAL;
-    fnv_32a_buf(&sur->hash, sur->data, sur->w * sur->h);
-    fnv_32a_buf(&sur->hash, sur->stencil, sur->w * sur->h);
-}
 
 void surface_create(surface *sur, int w, int h) {
     sur->data = omf_calloc(1, w * h);
     sur->stencil = omf_calloc(1, w * h);
-    sur->hash = 0;
+    sur->hash = hash_index++;
     sur->w = w;
     sur->h = h;
 }
@@ -34,7 +22,6 @@ void surface_create_from_data(surface *sur, int w, int h, const unsigned char *s
     surface_create(sur, w, h);
     memcpy(sur->data, src, w * h);
     memset(sur->stencil, 1, w * h);
-    create_hash(sur);
 }
 
 void surface_create_from_data_flip(surface *sur, int w, int h, const unsigned char *src) {
@@ -43,20 +30,17 @@ void surface_create_from_data_flip(surface *sur, int w, int h, const unsigned ch
         memcpy(sur->data + (h - y - 1) * w, src + y * w, w);
     }
     memset(sur->stencil, 1, w * h);
-    create_hash(sur);
 }
 
 void surface_create_from_vga(surface *sur, const sd_vga_image *src) {
     surface_create(sur, src->w, src->h);
     memcpy(sur->data, src->data, src->w * src->h);
     memcpy(sur->stencil, src->stencil, src->w * src->h);
-    create_hash(sur);
 }
 
 void surface_create_from_surface(surface *sur, int w, int h, int src_x, int src_y, const surface *src) {
     surface_create(sur, w, h);
     surface_sub(sur, src, 0, 0, src_x, src_y, w, h, SUB_METHOD_NONE);
-    create_hash(sur);
 }
 
 void surface_generate_stencil(const surface *sur, int index) {
@@ -83,14 +67,13 @@ void surface_free(surface *sur) {
 
 void surface_clear(surface *sur) {
     memset(sur->data, 0, sur->w * sur->h);
-    create_hash(sur);
+    sur->hash = hash_index++;
 }
 
 void surface_create_from(surface *dst, const surface *src) {
     surface_create(dst, src->w, src->h);
     memcpy(dst->data, src->data, src->w * src->h);
     memcpy(dst->stencil, src->stencil, src->w * src->h);
-    create_hash(dst);
 }
 
 // Copies a an area of old surface to an entirely new surface
@@ -112,7 +95,7 @@ void surface_sub(surface *dst, const surface *src, int dst_x, int dst_y, int src
             dst->stencil[dst_offset] = src->stencil[src_offset];
         }
     }
-    create_hash(dst);
+    dst->hash = hash_index++;
 }
 
 static uint8_t find_closest_gray(const screen_palette *pal, int range_start, int range_end, int ref) {
@@ -156,7 +139,7 @@ void surface_convert_to_grayscale(surface *sur, const screen_palette *pal, int r
         idx = sur->data[i];
         sur->data[i] = mapping[idx];
     }
-    create_hash(sur);
+    sur->hash = hash_index++;
 }
 
 void surface_compress_index_blocks(surface *sur, int range_start, int range_end, int block_size, int amount) {
@@ -170,7 +153,7 @@ void surface_compress_index_blocks(surface *sur, int range_start, int range_end,
             sur->data[i] = idx - old_idx + new_idx;
         }
     }
-    create_hash(sur);
+    sur->hash = hash_index++;
 }
 
 void surface_compress_remap(surface *sur, int range_start, int range_end, int remap_to, int amount) {
@@ -185,7 +168,7 @@ void surface_compress_remap(surface *sur, int range_start, int range_end, int re
             }
         }
     }
-    create_hash(sur);
+    sur->hash = hash_index++;
 }
 
 bool surface_write_png(const surface *sur, const screen_palette *pal, const char *filename) {
