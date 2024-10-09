@@ -1,8 +1,8 @@
 #include "game/gui/frame.h"
 #include "game/protos/scene.h"
+#include "game/utils/serial.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
-#include "game/utils/serial.h"
 #include "utils/miscmath.h"
 #include "video/video.h"
 
@@ -71,7 +71,6 @@ typedef struct lobby_user_t {
     uint8_t losses;
 } lobby_user;
 
-
 void lobby_free(scene *scene) {
     lobby_local *local = scene_get_userdata(scene);
     guiframe_free(local->frame);
@@ -120,7 +119,6 @@ void lobby_render_overlay(scene *scene) {
     lobby_local *local = scene_get_userdata(scene);
 
     char buf[100];
-    local->active_user = min2(local->active_user, list_size(&local->users) - 1);
 
     if(local->mode > LOBBY_YELL) {
         snprintf(buf, sizeof(buf), "Player");
@@ -170,7 +168,7 @@ void lobby_render_overlay(scene *scene) {
         list_iter_end(&local->log, &it);
         log_event *logmsg;
         while((logmsg = list_iter_prev(&it)) && i < 13) {
-            font_render(&font_net1, logmsg->msg, 10, 120 -  (8 * i), logmsg->color);
+            font_render(&font_net1, logmsg->msg, 10, 120 - (8 * i), logmsg->color);
             i++;
         }
     }
@@ -240,11 +238,36 @@ component *lobby_yell_create(scene *s) {
 void lobby_do_whisper(component *c, void *userdata) {
     menu *m = sizer_get_obj(c->parent);
     scene *s = userdata;
-    lobby_local *local = scene_get_userdata(s);
-    DEBUG("whispered %s", textinput_value(c));
-    // TODO get the message and send/log it from the textinput component 'c'
-    m->finished = 1;
-    local->mode = LOBBY_MAIN;
+
+    char *whisper = textinput_value(c);
+
+    if(strlen(whisper) > 0) {
+        DEBUG("whispered %s", whisper);
+
+        lobby_local *local = scene_get_userdata(s);
+        lobby_user *user = list_get(&local->users, local->active_user);
+        DEBUG("active_user is %d", local->active_user);
+        DEBUG("whispered %s", textinput_value(c));
+        serial ser;
+        serial_create(&ser);
+        serial_write_int8(&ser, PACKET_WHISPER);
+        serial_write_int32(&ser, user->id);
+        serial_write(&ser, whisper, strlen(whisper));
+
+        ENetPacket *packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
+        serial_free(&ser);
+
+        enet_peer_send(local->peer, 0, packet);
+
+        log_event log;
+        log.color = WHISPER_COLOR;
+        snprintf(log.msg, sizeof(log.msg), "%s: %s", local->name, whisper);
+        list_append(&local->log, &log, sizeof(log));
+
+        m->finished = 1;
+        local->mode = LOBBY_MAIN;
+        textinput_clear(c);
+    }
 }
 
 component *lobby_whisper_create(scene *s) {
@@ -420,8 +443,7 @@ void lobby_tick(scene *scene, int paused) {
                 DEBUG("A packet of length %u with control byte %d was received from %s on channel %u.",
                       event.packet->dataLength, control_byte, (char *)event.peer->data, event.channelID);
                 switch(control_byte >> 4) {
-                    case PACKET_PRESENCE:
-                        {
+                    case PACKET_PRESENCE: {
                         lobby_user user;
                         user.id = serial_read_uint32(&ser);
                         user.address.host = serial_read_uint32(&ser);
@@ -429,25 +451,23 @@ void lobby_tick(scene *scene, int paused) {
                         user.wins = serial_read_int8(&ser);
                         user.losses = serial_read_int8(&ser);
                         uint8_t version_len = serial_read_int8(&ser);
-                        if (version_len < 15) {
+                        if(version_len < 15) {
                             serial_read(&ser, user.version, version_len);
                             user.version[version_len] = 0;
                             uint8_t name_len = ser.wpos - ser.rpos;
-                            if (name_len > 0 && name_len < 16) {
+                            if(name_len > 0 && name_len < 16) {
                                 serial_read(&ser, user.name, name_len);
                                 user.name[name_len] = 0;
                                 list_append(&local->users, &user, sizeof(lobby_user));
-                                if (control_byte & 0x8) {
+                                if(control_byte & 0x8) {
                                     log_event log;
                                     log.color = JOIN_COLOR;
                                     snprintf(log.msg, sizeof(log.msg), "%s has entered the Arena", user.name),
                                         list_append(&local->log, &log, sizeof(log));
                                 }
-
                             }
                         }
-                        }
-                        break;
+                    } break;
                     case PACKET_JOIN:
                         local->id = serial_read_uint32(&ser);
                         DEBUG("successfully joined lobby and assigned ID %d", local->id);
@@ -497,6 +517,7 @@ void lobby_tick(scene *scene, int paused) {
                 event.peer->data = NULL;
         }
     }
+    local->active_user = min2(local->active_user, list_size(&local->users) - 1);
     guiframe_tick(local->frame);
 
     component *c = guiframe_get_root(local->frame);
