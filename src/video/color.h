@@ -13,9 +13,9 @@
 #define COLOR_YELLOW 0xFF
 
 typedef struct color {
-    uint8_t r;
-    uint8_t g;
-    uint8_t b;
+    unsigned char r;
+    unsigned char g;
+    unsigned char b;
 } color;
 
 #endif // COLOR_H
