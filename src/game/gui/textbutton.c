@@ -54,12 +54,12 @@ static void textbutton_render(component *c) {
     } else if(component_is_disabled(c)) {
         text_mode = TEXT_DISABLED;
     }
-    text_render(&tb->tconf, text_mode, c->x, c->y, c->w, c->h, tb->text);
-
     // Border
     if(tb->border_created) {
         video_draw(&tb->border, c->x - 2, c->y - 2);
     }
+
+    text_render(&tb->tconf, text_mode, c->x, c->y, c->w, c->h, tb->text);
 }
 
 static int textbutton_action(component *c, int action) {
