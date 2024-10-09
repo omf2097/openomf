@@ -153,7 +153,7 @@ void melee_tick(scene *scene, int paused) {
                 game_state_set_next(scene->gs, SCENE_MENU);
                 return;
             }
-        } while((i = i->next));
+        } while((i = i->next) != NULL);
     }
     i = player2->ctrl->extra_events;
     if(i) {
@@ -164,7 +164,7 @@ void melee_tick(scene *scene, int paused) {
                 game_state_set_next(scene->gs, SCENE_MENU);
                 return;
             }
-        } while((i = i->next));
+        } while((i = i->next) != NULL);
     }
 
     if(local->page == HAR_SELECT && local->ticks % 10 == 1) {
@@ -388,7 +388,7 @@ void melee_input_tick(scene *scene) {
             } else if(i->type == EVENT_TYPE_CLOSE) {
                 game_state_set_next(scene->gs, SCENE_MENU);
             }
-        } while((i = i->next));
+        } while((i = i->next) != NULL);
     }
     controller_free_chain(p1);
     i = p2;
@@ -399,7 +399,7 @@ void melee_input_tick(scene *scene) {
             } else if(i->type == EVENT_TYPE_CLOSE) {
                 game_state_set_next(scene->gs, SCENE_MENU);
             }
-        } while((i = i->next));
+        } while((i = i->next) != NULL);
     }
     controller_free_chain(p2);
 }
@@ -609,7 +609,7 @@ static void load_har_portraits(scene *scene, melee_local *local) {
         target->x = current->pos.x + 62 * col;
         target->y = current->pos.y + 42 * row;
         surface_create_from_surface(&target->enabled, 51, 36, 62 * col, 42 * row, current->data);
-        surface_generate_stencil(&target->enabled, 0xD0);
+        surface_set_transparency(&target->enabled, 0xD0);
 
         // Copy the enabled image, and compress the colors to grayscale
         surface_create_from(&target->disabled, &target->enabled);
@@ -665,6 +665,7 @@ int melee_create(scene *scene) {
     // Create a black surface for the highlight box. We modify the palette in renderer.
     unsigned char *black = omf_calloc(1, 51 * 36);
     surface_create_from_data(&local->select_hilight, 51, 36, black);
+    surface_set_transparency(&local->select_hilight, -1);
     omf_free(black);
 
     // set up the magic controller hooks

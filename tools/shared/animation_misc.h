@@ -13,7 +13,7 @@ void sprite_keylist(void);
 void sprite_info(sd_sprite *s, int anim, int sprite);
 
 void sprite_export_key(sd_sprite *s, const char **key, int kcount, const char *filename, sd_bk_file *bk);
-void sprite_import_key(sd_sprite *s, const char **key, int kcount, const char *filename, int transparent_index);
+void sprite_import_key(sd_sprite *s, const char **key, int kcount, const char *filename);
 
 void anim_common_info(sd_animation *ani);
 int anim_key_get_id(const char *key);

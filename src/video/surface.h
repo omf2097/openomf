@@ -8,11 +8,11 @@
 #include <SDL.h>
 
 typedef struct {
-    uint32_t hash;
+    unsigned int guid;
     int w;
     int h;
+    int transparent;
     unsigned char *data;
-    unsigned char *stencil;
 } surface;
 
 enum
@@ -28,12 +28,12 @@ void surface_create_from_image(surface *sur, image *img);
 void surface_create_from_data(surface *sur, int w, int h, const unsigned char *src);
 void surface_create_from_data_flip(surface *sur, int w, int h, const unsigned char *src);
 void surface_create_from_surface(surface *sur, int w, int h, int src_x, int src_y, const surface *src);
-int surface_to_image(surface *sur, image *img);
+int surface_to_image(const surface *sur, image *img);
 void surface_free(surface *sur);
 void surface_clear(surface *sur);
 void surface_sub(surface *dst, const surface *src, int dst_x, int dst_y, int src_x, int src_y, int w, int h,
                  int method);
-void surface_generate_stencil(const surface *sur, int index);
+void surface_set_transparency(surface *dst, int index);
 
 /**
  * Flatten each block of {block_size} colors by decrementing the index by {amount} in each block.

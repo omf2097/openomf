@@ -2,7 +2,6 @@
 #include "resources/sprite.h"
 #include "utils/allocator.h"
 #include <stdlib.h>
-#include <string.h>
 
 void sprite_create_custom(sprite *sp, vec2i pos, surface *data) {
     sp->id = -1;
@@ -21,7 +20,6 @@ void sprite_create(sprite *sp, void *src, int id) {
     sd_vga_image raw;
     sd_sprite_vga_decode(&raw, sdsprite);
     surface_create_from_data(sp->data, raw.w, raw.h, (unsigned char *)raw.data);
-    memcpy(sp->data->stencil, raw.stencil, raw.w * raw.h);
     sd_vga_image_free(&raw);
 }
 

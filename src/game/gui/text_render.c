@@ -66,7 +66,7 @@ int text_render_char(const text_settings *settings, text_mode state, int x, int 
     }
 
     // Draw the actual font
-    video_draw_offset(*sur, x, y, color, 255);
+    video_draw_offset(*sur, x, y, color - 1, 255);
     return (*sur)->w;
 }
 
@@ -335,7 +335,7 @@ int font_render_char_shadowed(const font *font, char ch, int x, int y, uint8_t c
         video_draw_offset(*sur, x, y - 1, shadow_color, 255);
 
     // Handle the font face itself
-    video_draw_offset(*sur, x, y, c, 255);
+    video_draw_offset(*sur, x, y, c - 1, 255);
     return (*sur)->w;
 }
 

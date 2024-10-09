@@ -36,7 +36,7 @@ texture_atlas *atlas_create(GLuint tex_unit, uint16_t width, uint16_t height) {
     atlas->w = width;
     atlas->h = height;
     atlas->tex_unit = tex_unit;
-    atlas->texture_id = texture_create(tex_unit, width, height, GL_RG8, GL_RG);
+    atlas->texture_id = texture_create(tex_unit, width, height, GL_R8, GL_RED);
     zone item = {0, 0, width, height};
     vector_append(&atlas->free_space, &item);
     DEBUG("Texture atlas %dx%d created", width, height);
@@ -155,25 +155,16 @@ bool atlas_insert(texture_atlas *atlas, const char *bytes, uint16_t w, uint16_t 
     }
 
     // Split found, add the area to the atlas.
-    texture_update(atlas->tex_unit, atlas->texture_id, free.x, free.y, w, h, GL_RG, bytes);
+    texture_update(atlas->tex_unit, atlas->texture_id, free.x, free.y, w, h, GL_RED, bytes);
     *nx = free.x;
     *ny = free.y;
     return true;
 }
 
-static void convert_surface(const surface *src, char *dst) {
-    int size = src->w * src->h;
-    int w = 0;
-    for(int i = 0; i < size; i++) {
-        dst[w++] = src->data[i];
-        dst[w++] = src->stencil[i];
-    }
-}
-
 bool atlas_get(texture_atlas *atlas, const surface *surface, uint16_t *x, uint16_t *y, uint16_t *w, uint16_t *h) {
     // First, check if item is already in the texture atlas. If it is, return coords immediately.
     zone *coords;
-    if(hashmap_get(&atlas->items, (void *)&surface->hash, 4, (void **)&coords, NULL) == 0) {
+    if(hashmap_iget(&atlas->items, surface->guid, (void **)&coords, NULL) == 0) {
         *x = coords->x;
         *y = coords->y;
         *w = surface->w;
@@ -183,15 +174,13 @@ bool atlas_get(texture_atlas *atlas, const surface *surface, uint16_t *x, uint16
 
     // If item is NOT in the texture atlas, add it now.
     uint16_t nx, ny;
-    char tmp[surface->w * surface->h * 2];
-    convert_surface(surface, tmp);
-    if(atlas_insert(atlas, tmp, surface->w, surface->h, &nx, &ny)) {
+    if(atlas_insert(atlas, (const char *)surface->data, surface->w, surface->h, &nx, &ny)) {
         *x = nx;
         *y = ny;
         *w = surface->w;
         *h = surface->h;
         zone cached = {nx, ny, surface->w, surface->h};
-        hashmap_put(&atlas->items, (void *)&surface->hash, 4, &cached, sizeof(zone));
+        hashmap_iput(&atlas->items, surface->guid, &cached, sizeof(zone));
         return true;
     }
 
