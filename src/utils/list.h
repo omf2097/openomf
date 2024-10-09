@@ -29,6 +29,7 @@ unsigned int list_size(const list *list);
 void list_iter_begin(const list *list, iterator *iter);
 void list_iter_end(const list *list, iterator *iter);
 void *list_iter_next(iterator *iter);
+void *list_iter_prev(iterator *iter);
 void *list_iter_peek(iterator *iter);
 void list_iter_append(iterator *iter, const void *ptr, size_t size);
 void *list_get(const list *list, unsigned int i);
