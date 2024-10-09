@@ -3,9 +3,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-int sd_tag_info(const char *search_tag, int *req_param, const char **tag, const char **desc) {
+int sd_tag_info(const char *search_tag, int search_len, int *req_param, const char **tag, const char **desc) {
     for(int i = 0; i < sd_taglist_size; i++) {
-        if(strcmp(search_tag, sd_taglist[i].tag) == 0) {
+        if(strlen(sd_taglist[i].tag) == search_len && strncmp(search_tag, sd_taglist[i].tag, search_len) == 0) {
             if(req_param != NULL)
                 *req_param = sd_taglist[i].has_param;
             if(tag != NULL)

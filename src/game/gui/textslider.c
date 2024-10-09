@@ -16,35 +16,37 @@ typedef struct {
     int *pos;
     int has_off;
     int positions;
+    char txt[20];
 
     void *userdata;
     textslider_slide_cb slide;
 } textslider;
 
-static void textslider_render(component *c) {
+static void render_text(component *c) {
     textslider *tb = widget_get_obj(c);
-    str txt;
-    str_from_format(&txt, "%s ", tb->text);
+    int off = snprintf(tb->txt, sizeof(tb->txt), "%s ", tb->text);
     if(tb->has_off && *tb->pos == 0) {
-        str_append_c(&txt, "OFF");
+        snprintf(tb->txt + off, sizeof(tb->txt) - off, "%s", "OFF");
     } else {
         for(int i = 0; i < tb->positions; i++) {
             if(i + 1 > *tb->pos) {
-                str_append_c(&txt, "|");
+                off += snprintf(tb->txt + off, sizeof(tb->txt) - off, "%s", "|");
             } else {
-                str_append_c(&txt, "\x7f");
+                off += snprintf(tb->txt + off, sizeof(tb->txt) - off, "%s", "\x7f");
             }
         }
     }
+}
 
+static void textslider_render(component *c) {
+    textslider *tb = widget_get_obj(c);
     text_mode mode = TEXT_UNSELECTED;
     if(component_is_selected(c)) {
         mode = TEXT_SELECTED;
     } else if(component_is_disabled(c)) {
         mode = TEXT_DISABLED;
     }
-    text_render(&tb->tconf, mode, c->x, c->y, c->w, c->h, str_c(&txt));
-    str_free(&txt);
+    text_render(&tb->tconf, mode, c->x, c->y, c->w, c->h, tb->txt);
 }
 
 static int textslider_action(component *c, int action) {
@@ -60,6 +62,9 @@ static int textslider_action(component *c, int action) {
         if(tb->slide) {
             tb->slide(c, tb->userdata, *tb->pos);
         }
+
+        render_text(c);
+
         // reset ticks so text is bright
         tb->ticks = 0;
         tb->dir = 0;
@@ -75,6 +80,9 @@ static int textslider_action(component *c, int action) {
         if(tb->slide) {
             tb->slide(c, tb->userdata, *tb->pos);
         }
+
+        render_text(c);
+
         // reset ticks so text is bright
         tb->ticks = 0;
         tb->dir = 0;
@@ -122,6 +130,8 @@ component *textslider_create(const text_settings *tconf, const char *text, const
     tb->slide = cb;
     widget_set_obj(c, tb);
 
+    render_text(c);
+
     widget_set_render_cb(c, textslider_render);
     widget_set_action_cb(c, textslider_action);
     widget_set_tick_cb(c, textslider_tick);
@@ -133,7 +143,10 @@ component *textslider_create_bind(const text_settings *tconf, const char *text, 
                                   unsigned int positions, int has_off, textslider_slide_cb cb, void *userdata,
                                   int *bind) {
     component *c = textslider_create(tconf, text, help, positions, has_off, cb, userdata);
-    textslider *ts = widget_get_obj(c);
-    ts->pos = (bind) ? bind : &ts->pos_;
+    textslider *tb = widget_get_obj(c);
+    tb->pos = (bind) ? bind : &tb->pos_;
+
+    render_text(c);
+
     return c;
 }
