@@ -71,6 +71,19 @@ typedef struct lobby_user_t {
     uint8_t losses;
 } lobby_user;
 
+
+void lobby_free(scene *scene) {
+    lobby_local *local = scene_get_userdata(scene);
+    guiframe_free(local->frame);
+    list_free(&local->users);
+    list_free(&local->log);
+    if(local->client) {
+        enet_host_destroy(local->client);
+    }
+    omf_free(local);
+    scene_set_userdata(scene, local);
+}
+
 static int lobby_event(scene *scene, SDL_Event *e) {
     lobby_local *local = scene_get_userdata(scene);
     return guiframe_event(local->frame, e);
@@ -471,6 +484,7 @@ void lobby_tick(scene *scene, int paused) {
                         DEBUG("unknown packet of type %d received", event.packet->data[0] >> 4);
                         break;
                 }
+                serial_free(&ser);
                 /* Clean up the packet now that we're done using it. */
                 enet_packet_destroy(event.packet);
 
@@ -561,6 +575,8 @@ int lobby_create(scene *scene) {
     scene_set_input_poll_cb(scene, lobby_input_tick);
 
     scene_set_dynamic_tick_cb(scene, lobby_tick);
+
+    scene_set_free_cb(scene, lobby_free);
 
     scene_set_render_overlay_cb(scene, lobby_render_overlay);
     scene_set_event_cb(scene, lobby_event);
