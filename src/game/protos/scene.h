@@ -33,6 +33,7 @@ struct scene_t {
     bk *bk_data;
     af *af_data[2];
     void *userdata;
+    int static_ticks_since_start;
 
     scene_free_cb free;
     scene_event_cb event;

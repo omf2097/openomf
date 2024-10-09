@@ -1,6 +1,4 @@
 #include "game/protos/scene.h"
-#include "formats/af.h"
-#include "formats/move.h"
 #include "game/game_player.h"
 #include "game/game_state_type.h"
 #include "resources/af_loader.h"
@@ -33,6 +31,7 @@ int scene_create(scene *scene, game_state *gs, int scene_id) {
     scene->gs = gs;
     scene->af_data[0] = NULL;
     scene->af_data[1] = NULL;
+    scene->static_ticks_since_start = 0;
 
     // Init functions
     scene->userdata = NULL;
@@ -107,7 +106,6 @@ void scene_init(scene *scene) {
 }
 
 int scene_clone(scene *src, scene *dst, game_state *gs) {
-
     memcpy(dst, src, sizeof(scene));
     dst->gs = gs;
     if(src->clone) {
@@ -170,6 +168,7 @@ int scene_anim_prio_override(scene *scene, int anim_id) {
 }
 
 void scene_static_tick(scene *scene, int paused) {
+    scene->static_ticks_since_start++;
     if(scene->static_tick != NULL) {
         scene->static_tick(scene, paused);
     }
@@ -187,6 +186,11 @@ void scene_dynamic_tick(scene *scene, int paused) {
 }
 
 void scene_input_poll(scene *scene) {
+    if(scene->static_ticks_since_start < 25) {
+        // Wait a bit at scene startup so that inputs from previous scene
+        // don't bleed to this one.
+        return;
+    }
     if(scene->input_poll != NULL) {
         scene->input_poll(scene);
     }
