@@ -657,7 +657,7 @@ int main(int argc, char *argv[]) {
     struct arg_int *scale = arg_int0(NULL, "scale", "<factor>", "Scales sprites (requires --play)");
     struct arg_lit *parse = arg_lit0(NULL, "parse", "Parse value (requires --key)");
     struct arg_end *end = arg_end(30);
-    void *argtable[] = {help,  vers, file, new,    output, anim,    all_anims, sprite, keylist, key,
+    void *argtable[] = {help,  vers, file, new,    output, anim, all_anims, sprite, keylist, key,
                         value, push, pop,  export, import, play, scale,     parse,  end};
     const char *progname = "bktool";
 
