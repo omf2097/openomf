@@ -43,6 +43,7 @@ typedef enum resource_id
     PSM_ARENA4,
     DAT_SOUNDS,
     DAT_ENGLISH,
+    DAT_GERMAN,
     DAT_GRAPHCHR,
     DAT_CHARSMAL,
     DAT_ALTPALS,
