@@ -68,7 +68,7 @@ formatter to the entire codebase.
 
 OpenOMF loads the original data files from the original OMF:2097 game.
 Since One Must Fall 2079 is freeware, the files are obtainable for free from
-[www.omf2097.com](http://www.omf2097.com/pub/files/omf/omf2097-assets.zip).
+[www.omf2097.com](https://www.omf2097.com/pub/files/omf/omf2097-assets.zip).
 
 On Linux in debug mode, the OMF resource files should be put in resources/ subdirectory.
 
