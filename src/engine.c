@@ -238,11 +238,14 @@ void engine_run(engine_init_flags *init_flags) {
         }
 
         // In warp mode, allow more ticks to happen per vsync period.
-        int tick_limit = gs->warp_speed ? 10 : 1;
-        while(tick_limit--) {
+        bool has_dynamic = true;
+        bool has_static = true;
+        int tick_limit = 10;
+        while(tick_limit-- && has_dynamic && has_static) {
             // Tick static features. This is a fixed with-rate tick, and is meant for running things
             // that are not dependent on game speed (such as menus).
-            if(static_wait > STATIC_TICKS) {
+            has_static = static_wait > STATIC_TICKS;
+            if(has_static) {
                 game_state_static_tick(gs, false);
                 console_tick();
                 static_wait -= STATIC_TICKS;
@@ -251,7 +254,8 @@ void engine_run(engine_init_flags *init_flags) {
             // Tick dynamic features. This is a dynamically changing tick, and it depends on things such as
             // hit-pause, hit slowdown and game-speed slider. It is meant for ticking everything that has to do
             // with the actual gameplay stuff.
-            if(dynamic_wait > game_state_ms_per_dyntick(gs)) {
+            has_dynamic = dynamic_wait > game_state_ms_per_dyntick(gs);
+            if(has_dynamic) {
                 game_state_dynamic_tick(gs, false);
                 dynamic_wait -= game_state_ms_per_dyntick(gs);
             }
