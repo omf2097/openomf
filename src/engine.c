@@ -17,6 +17,7 @@
 #include <stdio.h>
 
 #define STATIC_TICKS 10
+#define MAX_TICKS_PER_FRAME 10
 
 static int run = 0;
 static int start_timeout = 30;
@@ -240,8 +241,8 @@ void engine_run(engine_init_flags *init_flags) {
         // In warp mode, allow more ticks to happen per vsync period.
         bool has_dynamic = true;
         bool has_static = true;
-        int tick_limit = 10;
-        while(tick_limit-- && has_dynamic && has_static) {
+        int tick_limit = MAX_TICKS_PER_FRAME;
+        do {
             // Tick static features. This is a fixed with-rate tick, and is meant for running things
             // that are not dependent on game speed (such as menus).
             has_static = static_wait > STATIC_TICKS;
@@ -259,7 +260,7 @@ void engine_run(engine_init_flags *init_flags) {
                 game_state_dynamic_tick(gs, false);
                 dynamic_wait -= game_state_ms_per_dyntick(gs);
             }
-        }
+        } while(tick_limit-- && (has_dynamic || has_static));
 
         // Do the actual video rendering jobs
         if(enable_screen_updates) {
