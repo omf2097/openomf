@@ -17,12 +17,12 @@ Required:
 
 On Ubuntu, it is possible to pull the libraries using apt-get.
 ```
-apt-get install cmake libargtable2-dev libcunit1-dev libsdl2-mixer-dev libconfuse-dev libenet-dev libsdl2-dev libxmp-dev libpng-dev
+apt-get install cmake libargtable2-dev libcunit1-dev libsdl2-mixer-dev libconfuse-dev libenet-dev libsdl2-dev libxmp-dev libpng-dev libepoxy-dev
 ```
 
 On Mac, you can use brew:
 ```
-brew install cmake argtable cunit sdl2_mixer confuse enet sdl2 libxmp libpng
+brew install cmake argtable cunit sdl2_mixer confuse enet sdl2 libxmp libpng libepoxy
 ```
 
 ### Acquiring the sources
@@ -68,7 +68,7 @@ formatter to the entire codebase.
 
 OpenOMF loads the original data files from the original OMF:2097 game.
 Since One Must Fall 2079 is freeware, the files are obtainable for free from
-[www.omf2097.com](http://www.omf2097.com/pub/files/omf/omf2097-assets.zip).
+[www.omf2097.com](https://www.omf2097.com/pub/files/omf/omf2097-assets.zip).
 
 On Linux in debug mode, the OMF resource files should be put in resources/ subdirectory.
 
