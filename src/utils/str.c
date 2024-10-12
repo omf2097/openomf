@@ -348,13 +348,14 @@ bool str_to_long(const str *string, long *result) {
     return (ptr != end);
 }
 
-bool str_to_int(const str *string, int *result) {
-    long value;
-    bool got = str_to_long(string, &value);
-    if(got) {
-        *result = clamp_long_to_int(value);
+bool str_to_int(const str *string, size_t pos, int *result) {
+    char *end;
+    *result = strtol(string->data + pos, &end, 10);
+    if(string->data + pos != end) {
+        *result = clamp_long_to_int(*result);
+        return true;
     }
-    return got;
+    return false;
 }
 
 const char *str_c(const str *string) {
