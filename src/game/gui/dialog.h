@@ -2,13 +2,15 @@
 #define DIALOG_H
 
 #include "game/gui/component.h"
+#include "game/gui/frame.h"
 #include "utils/vector.h"
 #include "video/surface.h"
 
 typedef enum dialog_style_t
 {
     DIALOG_STYLE_YES_NO,
-    DIALOG_STYLE_OK
+    DIALOG_STYLE_OK,
+    DIALOG_STYLE_CANCEL
 } dialog_style;
 
 typedef enum dialog_result_t
@@ -26,13 +28,8 @@ typedef void (*dialog_clicked_cb)(dialog *, dialog_result result);
 typedef struct dialog_t {
     int x;
     int y;
-    char text[256];
-    surface background;
-    component *yes;
-    component *no;
-    component *ok;
+    guiframe *frame;
     int visible;
-    dialog_result result;
 
     // events
     void *userdata;

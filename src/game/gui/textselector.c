@@ -157,6 +157,8 @@ component *textselector_create(const text_settings *tconf, const char *text, con
     vector_create(&tb->options, sizeof(char *));
     widget_set_obj(c, tb);
 
+    component_set_size_hints(c, text_width(&tb->tconf, text), 8);
+
     widget_set_render_cb(c, textselector_render);
     widget_set_action_cb(c, textselector_action);
     widget_set_tick_cb(c, textselector_tick);

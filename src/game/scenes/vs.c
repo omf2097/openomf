@@ -136,6 +136,7 @@ void vs_free(scene *scene) {
 
 void vs_handle_action(scene *scene, int action) {
     vs_local *local = scene_get_userdata(scene);
+    game_player *player1 = game_state_get_player(scene->gs, 0);
     if(dialog_is_visible(&local->too_pathetic_dialog)) {
         dialog_event(&local->too_pathetic_dialog, action);
     } else if(dialog_is_visible(&local->quit_dialog)) {
@@ -179,24 +180,23 @@ void vs_handle_action(scene *scene, int action) {
                     object_select_sprite(arena_select, local->arena);
                 }
                 break;
+            case ACT_ESC:
+                if(dialog_is_visible(&local->too_pathetic_dialog)) {
+                    dialog_event(&local->too_pathetic_dialog, action);
+                } else if(dialog_is_visible(&local->quit_dialog)) {
+                    dialog_event(&local->quit_dialog, action);
+                } else if(vs_is_singleplayer(scene) && player1->sp_wins != 0 && !player1->chr) {
+                    // there's an active singleplayer campaign, confirm quitting
+                    dialog_show(&local->quit_dialog, 1);
+                } else {
+                    if(player1->chr) {
+                        game_state_set_next(scene->gs, SCENE_MECHLAB);
+                    } else {
+                        game_state_set_next(scene->gs, SCENE_MELEE);
+                    }
+                }
+                break;
         }
-    }
-}
-
-void vs_dynamic_tick(scene *scene, int paused) {
-    game_player *player1 = game_state_get_player(scene->gs, 0);
-    ctrl_event *i = NULL;
-    // Handle extra controller inputs
-    i = player1->ctrl->extra_events;
-    if(i) {
-        do {
-            if(i->type == EVENT_TYPE_ACTION) {
-                vs_handle_action(scene, i->event_data.action);
-            } else if(i->type == EVENT_TYPE_CLOSE) {
-                game_state_set_next(scene->gs, SCENE_MENU);
-                return;
-            }
-        } while((i = i->next));
     }
 }
 
@@ -210,7 +210,6 @@ void vs_static_tick(scene *scene, int paused) {
 }
 
 void vs_input_tick(scene *scene) {
-    vs_local *local = scene->userdata;
     ctrl_event *p1 = NULL, *i;
     game_player *player1 = game_state_get_player(scene->gs, 0);
     controller_poll(player1->ctrl, &p1);
@@ -218,24 +217,7 @@ void vs_input_tick(scene *scene) {
     if(i) {
         do {
             if(i->type == EVENT_TYPE_ACTION) {
-                if(i->event_data.action == ACT_ESC) {
-                    if(dialog_is_visible(&local->too_pathetic_dialog)) {
-                        dialog_event(&local->too_pathetic_dialog, i->event_data.action);
-                    } else if(dialog_is_visible(&local->quit_dialog)) {
-                        dialog_event(&local->quit_dialog, i->event_data.action);
-                    } else if(vs_is_singleplayer(scene) && player1->sp_wins != 0 && !player1->chr) {
-                        // there's an active singleplayer campaign, confirm quitting
-                        dialog_show(&local->quit_dialog, 1);
-                    } else {
-                        if(player1->chr) {
-                            game_state_set_next(scene->gs, SCENE_MECHLAB);
-                        } else {
-                            game_state_set_next(scene->gs, SCENE_MELEE);
-                        }
-                    }
-                } else {
-                    vs_handle_action(scene, i->event_data.action);
-                }
+                vs_handle_action(scene, i->event_data.action);
             } else if(i->type == EVENT_TYPE_CLOSE) {
                 game_state_set_next(scene->gs, SCENE_MENU);
             }
@@ -356,6 +338,8 @@ void vs_quit_dialog_clicked(dialog *dlg, dialog_result result) {
     scene *sc = dlg->userdata;
     if(result == DIALOG_RESULT_YES_OK) {
         game_state_set_next(sc->gs, SCENE_MELEE);
+    } else {
+        dialog_show(dlg, 0);
     }
 }
 
@@ -597,7 +581,7 @@ int vs_create(scene *scene) {
     menu_background2_create(&local->arena_select_bg, 211, 50);
 
     // Quit Dialog
-    dialog_create(&local->quit_dialog, DIALOG_STYLE_YES_NO, "ARE YOU SURE YOU WANT TO QUIT THIS GAME?", 72, 60);
+    dialog_create(&local->quit_dialog, DIALOG_STYLE_YES_NO, "Are you sure you want to quit this game?", 72, 60);
     local->quit_dialog.userdata = scene;
     local->quit_dialog.clicked = vs_quit_dialog_clicked;
 
@@ -617,7 +601,6 @@ int vs_create(scene *scene) {
     scene_set_render_cb(scene, vs_render);
     scene_set_render_overlay_cb(scene, vs_render_overlay);
     scene_set_input_poll_cb(scene, vs_input_tick);
-    scene_set_dynamic_tick_cb(scene, vs_dynamic_tick);
     scene_set_static_tick_cb(scene, vs_static_tick);
     scene_set_free_cb(scene, vs_free);
 

@@ -4,7 +4,7 @@
 #include "game/gui/sizer.h"
 #include "game/gui/text_render.h"
 #include "utils/allocator.h"
-#include "utils/log.h"
+#include "utils/miscmath.h"
 #include "utils/vector.h"
 #include "video/surface.h"
 #include "video/video.h"
@@ -202,7 +202,7 @@ void menu_set_submenu(component *mc, component *submenu) {
     m->submenu = submenu;
     m->prev_submenu_state = 0;
     submenu->parent = mc; // Set correct parent
-    component_layout(m->submenu, mc->x, mc->y, mc->w, mc->h);
+    component_layout(m->submenu, mc->x, mc->y, mc->w_hint, mc->h_hint);
 }
 
 void menu_link_menu(component *mc, guiframe *linked_menu) {
@@ -230,17 +230,6 @@ static void menu_layout(component *c, int x, int y, int w, int h) {
     sizer *s = component_get_obj(c);
     menu *m = sizer_get_obj(c);
 
-    // Set the background now that we know the width and height
-    if(m->bg == NULL && m->background) {
-        m->bg = omf_calloc(1, sizeof(surface));
-        menu_background_create(m->bg, w, h);
-    }
-
-    if(m->help_bg == NULL && m->background) {
-        m->help_bg = omf_calloc(1, sizeof(surface));
-        menu_background_create(m->help_bg, m->help_w + 16, m->help_w / 8);
-    }
-
     // Set layout for all components in the sizer
     iterator it;
     component **tmp;
@@ -248,6 +237,10 @@ static void menu_layout(component *c, int x, int y, int w, int h) {
     int i = 0;
     int first_selected = 0;
     int x_offset = 0;
+    int height = 0;
+    int centerwidth = 0;
+    component *filler = NULL;
+    y += m->margin_top;
     while((tmp = iter_next(&it)) != NULL) {
         // Select first non-disabled component
         if(!component_is_disabled(*tmp) && !first_selected) {
@@ -256,15 +249,60 @@ static void menu_layout(component *c, int x, int y, int w, int h) {
             m->selected = i;
         }
 
+        if((*tmp)->filler) {
+            filler = (*tmp);
+        }
+
         // Set component position and size
         if(m->horizontal) {
-            component_layout(*tmp, x + x_offset, m->margin_top + y, w, m->obj_h);
-            x_offset += (*tmp)->w_hint + 5;
+            component_layout(*tmp, x + x_offset, m->margin_top + y, w, -1);
+            if(m->centered) {
+                centerwidth += (*tmp)->w_hint;
+            }
+            x_offset += (*tmp)->w_hint + m->padding;
+            height = max2(height, (*tmp)->h_hint);
         } else {
-            component_layout(*tmp, x, m->margin_top + y + i * m->obj_h, w, m->obj_h);
+            component_layout(*tmp, x, y + height, w, -1);
+            height += max2(0, (*tmp)->h_hint) + m->padding;
         }
         i++;
     }
+
+    if(m->horizontal && m->centered) {
+        centerwidth += m->padding * (i - 1);
+        int x_offset = (w - centerwidth) / 2;
+        height = 0;
+        vector_iter_begin(&s->objs, &it);
+        while((tmp = iter_next(&it)) != NULL) {
+            component_layout(*tmp, x + x_offset, m->margin_top + y, w, -1);
+            x_offset += (*tmp)->w_hint + m->padding;
+            height = max2(height, (*tmp)->h_hint);
+        }
+    }
+
+    if(!m->horizontal) {
+        // get rid of the trailing padding
+        height -= m->padding;
+    }
+
+    if(filler && filler->h_hint == -1 && h > height) {
+        filler->h_hint = h - height;
+        menu_layout(c, x, y - m->margin_top, w, h);
+        return;
+    }
+
+    // Set the background now that we know the width and height
+    if(m->bg == NULL && m->background) {
+        m->bg = omf_calloc(1, sizeof(surface));
+        menu_background_create(m->bg, w, height + m->margin_top * 2);
+    }
+
+    if(m->help_bg == NULL && m->background) {
+        m->help_bg = omf_calloc(1, sizeof(surface));
+        menu_background_create(m->help_bg, m->help_w + 16, m->help_w / 8);
+    }
+
+    component_set_size_hints(c, w, height);
 }
 
 void menu_set_userdata(component *c, void *userdata) {
@@ -290,6 +328,11 @@ void menu_set_tick_cb(component *c, menu_tick_cb cb) {
 void menu_set_horizontal(component *c, bool horizontal) {
     menu *m = sizer_get_obj(c);
     m->horizontal = horizontal;
+}
+
+void menu_set_centered(component *c, bool centered) {
+    menu *m = sizer_get_obj(c);
+    m->centered = centered;
 }
 
 void menu_set_background(component *c, bool background) {
@@ -337,14 +380,26 @@ static component *menu_find(component *c, int id) {
     return NULL;
 }
 
+void menu_set_margin_top(component *c, int margin) {
+    menu *m = sizer_get_obj(c);
+    m->margin_top = margin;
+}
+
+void menu_set_padding(component *c, int padding) {
+    menu *m = sizer_get_obj(c);
+    m->padding = padding;
+}
+
 component *menu_create(int obj_h) {
     component *c = sizer_create();
 
     menu *m = omf_calloc(1, sizeof(menu));
     m->margin_top = 8;
-    m->obj_h = obj_h;
+    m->padding = 3;
+    // m->obj_h = obj_h;
     m->horizontal = false;
     m->background = true;
+    m->centered = false;
     sizer_set_obj(c, m);
 
     m->help_w = 284;

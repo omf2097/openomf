@@ -41,7 +41,7 @@ void textbutton_set_text(component *c, const char *text) {
         omf_free(tb->text);
     }
     tb->text = strdup(text);
-    component_set_size_hints(c, text_width(&tb->tconf, text), 8);
+    component_set_size_hints(c, text_width(&tb->tconf, text), 10);
 }
 
 static void textbutton_render(component *c) {

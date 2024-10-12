@@ -4,6 +4,7 @@
 #include "game/gui/component.h"
 #include "game/gui/text_render.h"
 
+component *label_create_with_width(const text_settings *tconf, const char *text, int max_width);
 component *label_create(const text_settings *tconf, const char *text);
 void label_set_text(component *label, const char *text);
 text_settings *label_get_text_settings(component *c);

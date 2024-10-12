@@ -16,9 +16,11 @@ typedef struct {
     int selected;
     int obj_h;
     int margin_top;
+    int padding;
     int finished;
     bool horizontal;
     bool background;
+    bool centered;
 
     int help_x;
     int help_y;
@@ -53,7 +55,10 @@ void menu_set_free_cb(component *menu, menu_free_cb cb);
 void menu_set_tick_cb(component *menu, menu_tick_cb cb);
 void menu_set_horizontal(component *c, bool horizontal);
 void menu_set_background(component *c, bool background);
+void menu_set_centered(component *c, bool centered);
 void menu_set_help_pos(component *c, int x, int y, int h, int w);
 void menu_set_help_text_settings(component *c, text_settings *settings);
+void menu_set_margin_top(component *c, int margin);
+void menu_set_padding(component *c, int padding);
 
 #endif // MENU_H

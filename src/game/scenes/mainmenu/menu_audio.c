@@ -94,7 +94,7 @@ component *menu_audio_create(scene *s) {
     text_defaults(&tconf);
     tconf.font = FONT_BIG;
     tconf.halign = TEXT_CENTER;
-    tconf.cforeground = TEXT_MEDIUM_GREEN;
+    tconf.cforeground = TEXT_BRIGHT_GREEN;
 
     // Create menu and its header
     component *menu = menu_create(11);

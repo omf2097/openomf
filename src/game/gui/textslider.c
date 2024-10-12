@@ -122,6 +122,8 @@ component *textslider_create(const text_settings *tconf, const char *text, const
     tb->slide = cb;
     widget_set_obj(c, tb);
 
+    component_set_size_hints(c, text_width(&tb->tconf, text), 8);
+
     widget_set_render_cb(c, textslider_render);
     widget_set_action_cb(c, textslider_action);
     widget_set_tick_cb(c, textslider_tick);
