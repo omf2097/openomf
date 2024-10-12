@@ -21,14 +21,12 @@ void main() {
     vec4 tex_add = texture(remaps, vec2(texel.r, (add_index + offset) / 19.0));
     vec4 tex_sub = texture(remaps, vec2(texel.r, (sub_index + offset) / 19.0));
 
+    int out_index = int(texel.r * 255.0);
     if (add_index > 0) {
-        color = colors[int(tex_add.r * 255.0)].rgba;
+        out_index = int(tex_add.r * 255.0);
     }
     else if (sub_index > 0) {
-        color = colors[int(tex_sub.r * 255.0)].rgba;
+        out_index = int(tex_sub.r * 255.0);
     }
-    else {
-        // Normal draw; just pick the color and output it.
-        color = colors[int(texel.r * 255.0)].rgba;
-    }
+    color = colors[out_index];
 }
