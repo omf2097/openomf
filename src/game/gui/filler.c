@@ -7,5 +7,6 @@ component *filler_create(void) {
     c->supports_disable = 1;
     c->supports_select = 0;
     c->supports_focus = 0;
+    c->filler = true;
     return c;
 }

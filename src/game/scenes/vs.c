@@ -185,7 +185,7 @@ void vs_handle_action(scene *scene, int action) {
                     dialog_event(&local->too_pathetic_dialog, action);
                 } else if(dialog_is_visible(&local->quit_dialog)) {
                     dialog_event(&local->quit_dialog, action);
-                } else if(vs_is_singleplayer(scene) && /*player1->sp_wins != 0 &&*/ !player1->chr) {
+                } else if(vs_is_singleplayer(scene) && player1->sp_wins != 0 && !player1->chr) {
                     // there's an active singleplayer campaign, confirm quitting
                     dialog_show(&local->quit_dialog, 1);
                 } else {

@@ -114,7 +114,7 @@ component *menu_presskey_create(char **key) {
     text_defaults(&tconf);
     tconf.font = FONT_BIG;
     tconf.halign = TEXT_CENTER;
-    tconf.cforeground = TEXT_MEDIUM_GREEN;
+    tconf.cforeground = TEXT_BRIGHT_GREEN;
 
     component *menu = menu_create(11);
     local->text[0] = label_create(&tconf, "PRESS A KEY FOR");

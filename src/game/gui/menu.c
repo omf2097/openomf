@@ -203,7 +203,7 @@ void menu_set_submenu(component *mc, component *submenu) {
     m->submenu = submenu;
     m->prev_submenu_state = 0;
     submenu->parent = mc; // Set correct parent
-    component_layout(m->submenu, mc->x, mc->y, mc->w, mc->h);
+    component_layout(m->submenu, mc->x, mc->y, mc->w_hint, mc->h_hint);
 }
 
 void menu_link_menu(component *mc, guiframe *linked_menu) {
@@ -240,6 +240,7 @@ static void menu_layout(component *c, int x, int y, int w, int h) {
     int x_offset = 0;
     int height = 0;
     int centerwidth = 0;
+    component *filler = NULL;
     y += m->margin_top;
     while((tmp = iter_next(&it)) != NULL) {
         // Select first non-disabled component
@@ -247,6 +248,10 @@ static void menu_layout(component *c, int x, int y, int w, int h) {
             component_select(*tmp, 1);
             first_selected = 1;
             m->selected = i;
+        }
+
+        if((*tmp)->filler) {
+            filler = (*tmp);
         }
 
         // Set component position and size
@@ -259,7 +264,7 @@ static void menu_layout(component *c, int x, int y, int w, int h) {
             height = max2(height, (*tmp)->h_hint);
         } else {
             component_layout(*tmp, x, y + height, w, -1);
-            height += (*tmp)->h_hint + m->padding;
+            height += max2(0, (*tmp)->h_hint) + m->padding;
             DEBUG("component height was %d", (*tmp)->h_hint);
         }
         i++;
@@ -293,7 +298,7 @@ static void menu_layout(component *c, int x, int y, int w, int h) {
         menu_background_create(m->help_bg, m->help_w + 16, m->help_w / 8);
     }
 
-    component_set_size_hints(c, w, height + m->margin_top * 2);
+    component_set_size_hints(c, w, height);
 }
 
 void menu_set_userdata(component *c, void *userdata) {

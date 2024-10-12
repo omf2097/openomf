@@ -64,6 +64,7 @@ struct component_t {
     char supports_focus; ///< Whether the component can be focused by component_focus() call.
     char is_focused;     ///< Whether the component is focused
     const char *help;    ///< Help text, if available
+    bool filler;         ///< Whether the component should fill unused space during layout
 
     component_render_cb render; ///< Render function callback. This tells the component to draw itself.
     component_event_cb event;   ///< Event function callback. Direct SDL2 event handler.

@@ -131,7 +131,7 @@ guiframe *menu_keyboard_create(scene *s, int selected_player) {
     text_defaults(&tconf);
     tconf.font = FONT_BIG;
     tconf.halign = TEXT_CENTER;
-    tconf.cforeground = TEXT_MEDIUM_GREEN;
+    tconf.cforeground = TEXT_BRIGHT_GREEN;
 
     local->frame = guiframe_create(25, 5, 270, 140);
     component *menu = menu_create(11);

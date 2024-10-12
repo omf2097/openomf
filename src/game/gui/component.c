@@ -152,6 +152,7 @@ component *component_create(void) {
     c->w_hint = -1;
     c->h_hint = -1;
     c->help = NULL;
+    c->filler = false;
     return c;
 }
 
