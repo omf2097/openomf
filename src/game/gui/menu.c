@@ -4,7 +4,6 @@
 #include "game/gui/sizer.h"
 #include "game/gui/text_render.h"
 #include "utils/allocator.h"
-#include "utils/log.h"
 #include "utils/miscmath.h"
 #include "utils/vector.h"
 #include "video/surface.h"
@@ -265,7 +264,6 @@ static void menu_layout(component *c, int x, int y, int w, int h) {
         } else {
             component_layout(*tmp, x, y + height, w, -1);
             height += max2(0, (*tmp)->h_hint) + m->padding;
-            DEBUG("component height was %d", (*tmp)->h_hint);
         }
         i++;
     }
@@ -285,6 +283,12 @@ static void menu_layout(component *c, int x, int y, int w, int h) {
     if(!m->horizontal) {
         // get rid of the trailing padding
         height -= m->padding;
+    }
+
+    if(filler && filler->h_hint == -1 && h > height) {
+        filler->h_hint = h - height;
+        menu_layout(c, x, y - m->margin_top, w, h);
+        return;
     }
 
     // Set the background now that we know the width and height
