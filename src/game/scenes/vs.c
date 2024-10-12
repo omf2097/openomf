@@ -200,23 +200,6 @@ void vs_handle_action(scene *scene, int action) {
     }
 }
 
-void vs_dynamic_tick(scene *scene, int paused) {
-    game_player *player1 = game_state_get_player(scene->gs, 0);
-    ctrl_event *i = NULL;
-    // Handle extra controller inputs
-    i = player1->ctrl->extra_events;
-    if(i) {
-        do {
-            if(i->type == EVENT_TYPE_ACTION) {
-                vs_handle_action(scene, i->event_data.action);
-            } else if(i->type == EVENT_TYPE_CLOSE) {
-                game_state_set_next(scene->gs, SCENE_MENU);
-                return;
-            }
-        } while((i = i->next));
-    }
-}
-
 void vs_static_tick(scene *scene, int paused) {
     vs_local *local = scene->userdata;
     if(dialog_is_visible(&local->too_pathetic_dialog)) {
@@ -618,7 +601,6 @@ int vs_create(scene *scene) {
     scene_set_render_cb(scene, vs_render);
     scene_set_render_overlay_cb(scene, vs_render_overlay);
     scene_set_input_poll_cb(scene, vs_input_tick);
-    // scene_set_dynamic_tick_cb(scene, vs_dynamic_tick);
     scene_set_static_tick_cb(scene, vs_static_tick);
     scene_set_free_cb(scene, vs_free);
 
