@@ -1,4 +1,6 @@
 #include "game/gui/dialog.h"
+#include "game/gui/label.h"
+#include "game/gui/menu.h"
 #include "game/gui/menu_background.h"
 #include "game/gui/textbutton.h"
 #include "video/video.h"
@@ -6,8 +8,71 @@
 
 #define MAX_WIDTH 160
 
+void dialog_cancel(component *c, void *userdata) {
+    dialog *dlg = userdata;
+    if(dlg->clicked) {
+        dlg->clicked(dlg, DIALOG_RESULT_CANCEL);
+    }
+}
+
+void dialog_no(component *c, void *userdata) {
+    dialog *dlg = userdata;
+    if(dlg->clicked) {
+        dlg->clicked(dlg, DIALOG_RESULT_NO);
+    }
+}
+
+void dialog_yes_ok(component *c, void *userdata) {
+    dialog *dlg = userdata;
+    if(dlg->clicked) {
+        dlg->clicked(dlg, DIALOG_RESULT_YES_OK);
+    }
+}
+
+void dialog_create_with_tconf(dialog *dlg, dialog_style style, text_settings *tconf, text_settings *tconf_desc,
+                              const char *text, int x, int y) {
+    dlg->x = x;
+    dlg->y = y;
+    dlg->visible = 0;
+    dlg->userdata = NULL;
+    dlg->clicked = NULL;
+
+    component *menu = menu_create(11);
+
+    menu_attach(menu, label_create_with_width(tconf_desc, text, MAX_WIDTH));
+
+    component *menu2 = menu_create(11);
+
+    menu_set_horizontal(menu2, true);
+    menu_set_background(menu2, false);
+    menu_set_margin_top(menu2, 0);
+    menu_set_padding(menu2, 20);
+    menu_set_centered(menu2, true);
+    menu_attach(menu, menu2);
+
+    if(style == DIALOG_STYLE_CANCEL) {
+        component *cancel = textbutton_create(tconf, "CANCEL", NULL, COM_ENABLED, dialog_cancel, dlg);
+        textbutton_set_border(cancel, TEXT_MEDIUM_GREEN);
+        menu_attach(menu2, cancel);
+    } else if(style == DIALOG_STYLE_YES_NO) {
+        component *yes = textbutton_create(tconf, "YES", NULL, COM_ENABLED, dialog_yes_ok, dlg);
+        component *no = textbutton_create(tconf, "NO", NULL, COM_ENABLED, dialog_no, dlg);
+        textbutton_set_border(yes, TEXT_MEDIUM_GREEN);
+        textbutton_set_border(no, TEXT_MEDIUM_GREEN);
+        menu_attach(menu2, yes);
+        menu_attach(menu2, no);
+    } else if(style == DIALOG_STYLE_OK) {
+        component *ok = textbutton_create(tconf, "OK", NULL, COM_ENABLED, dialog_yes_ok, dlg);
+        textbutton_set_border(ok, TEXT_MEDIUM_GREEN);
+        menu_attach(menu2, ok);
+    }
+
+    dlg->frame = guiframe_create(x, y, MAX_WIDTH, 80);
+    guiframe_set_root(dlg->frame, menu);
+    guiframe_layout(dlg->frame);
+}
+
 void dialog_create(dialog *dlg, dialog_style style, const char *text, int x, int y) {
-    int w, h;
 
     text_settings tconf;
     text_defaults(&tconf);
@@ -16,52 +81,15 @@ void dialog_create(dialog *dlg, dialog_style style, const char *text, int x, int
 
     text_settings tconf_desc;
     text_defaults(&tconf_desc);
-    tconf_desc.font = FONT_SMALL;
-    tconf_desc.cforeground = TEXT_MEDIUM_GREEN;
+    tconf_desc.font = FONT_BIG;
+    tconf_desc.cforeground = TEXT_BRIGHT_GREEN;
+    tconf_desc.halign = TEXT_CENTER;
 
-    dlg->x = x;
-    dlg->y = y;
-    dlg->yes = NULL;
-    dlg->no = NULL;
-    dlg->ok = NULL;
-    dlg->visible = 0;
-    dlg->userdata = NULL;
-    dlg->clicked = NULL;
-    strncpy(dlg->text, text, sizeof(dlg->text) - 1);
-    dlg->text[sizeof(dlg->text) - 1] = 0;
-    font_get_wrapped_size_shadowed(&font_small, dlg->text, MAX_WIDTH, TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM, &w, &h);
-    int tsize = text_char_width(&tconf);
-    menu_background_create(&dlg->background, MAX_WIDTH + 30, h + 24 + tsize);
-
-    if(style == DIALOG_STYLE_YES_NO) {
-        dlg->yes = textbutton_create(&tconf, "YES", NULL, COM_ENABLED, NULL, NULL);
-        dlg->no = textbutton_create(&tconf, "NO", NULL, COM_ENABLED, NULL, NULL);
-        textbutton_set_border(dlg->yes, TEXT_MEDIUM_GREEN);
-        textbutton_set_border(dlg->no, TEXT_MEDIUM_GREEN);
-        component_layout(dlg->yes, x + 54, x + h + 6, 8, 8);
-        component_layout(dlg->no, x + 114, x + h + 6, 8, 8);
-        component_select(dlg->yes, 1);
-        dlg->result = DIALOG_RESULT_YES_OK;
-    } else if(style == DIALOG_STYLE_OK) {
-        dlg->ok = textbutton_create(&tconf, "OK", NULL, COM_ENABLED, NULL, NULL);
-        textbutton_set_border(dlg->ok, TEXT_MEDIUM_GREEN);
-        component_layout(dlg->ok, x + 84, x + h + 6, 8, 8);
-        component_select(dlg->ok, 1);
-        dlg->result = DIALOG_RESULT_YES_OK;
-    }
+    dialog_create_with_tconf(dlg, style, &tconf, &tconf_desc, text, x, y);
 }
 
 void dialog_free(dialog *dlg) {
-    if(dlg->yes) {
-        component_free(dlg->yes);
-    }
-    if(dlg->no) {
-        component_free(dlg->no);
-    }
-    if(dlg->ok) {
-        component_free(dlg->ok);
-    }
-    surface_free(&dlg->background);
+    guiframe_free(dlg->frame);
 }
 
 void dialog_show(dialog *dlg, int visible) {
@@ -76,60 +104,24 @@ void dialog_render(dialog *dlg) {
     if(!dlg->visible) {
         return;
     }
-    video_draw(&dlg->background, dlg->x, dlg->y);
-    if(dlg->yes) {
-        component_render(dlg->yes);
-    }
-    if(dlg->no) {
-        component_render(dlg->no);
-    }
-    if(dlg->ok) {
-        component_render(dlg->ok);
-    }
-    font_render_wrapped_shadowed(&font_small, dlg->text, dlg->x + 15, dlg->y + 3, MAX_WIDTH, TEXT_MEDIUM_GREEN,
-                                 TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
+    guiframe_render(dlg->frame);
 }
 
 void dialog_tick(dialog *dlg) {
     if(!dlg->visible) {
         return;
     }
-    if(dlg->yes) {
-        component_tick(dlg->yes);
-    }
-    if(dlg->no) {
-        component_tick(dlg->no);
-    }
-    if(dlg->ok) {
-        component_tick(dlg->ok);
-    }
+    guiframe_tick(dlg->frame);
 }
 
 void dialog_event(dialog *dlg, int action) {
     if(!dlg->visible) {
         return;
     }
-    if(action == ACT_LEFT || action == ACT_RIGHT) {
-        if(dlg->yes && dlg->no) {
-            if(component_is_selected(dlg->yes)) {
-                component_select(dlg->yes, 0);
-                component_select(dlg->no, 1);
-                dlg->result = DIALOG_RESULT_NO;
-            } else if(component_is_selected(dlg->no)) {
-                component_select(dlg->yes, 1);
-                component_select(dlg->no, 0);
-                dlg->result = DIALOG_RESULT_YES_OK;
-            }
-        }
-    } else if(action == ACT_PUNCH || action == ACT_KICK) {
-        if(dlg->clicked) {
-            dlg->clicked(dlg, dlg->result);
-        }
-        dlg->visible = 0;
-    } else if(action == ACT_ESC) {
-        if(dlg->clicked) {
-            dlg->clicked(dlg, DIALOG_RESULT_CANCEL);
-        }
-        dlg->visible = 0;
+
+    guiframe_action(dlg->frame, action);
+
+    if(action == ACT_ESC && dlg->clicked) {
+        dlg->clicked(dlg, DIALOG_RESULT_CANCEL);
     }
 }
