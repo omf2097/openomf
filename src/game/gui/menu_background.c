@@ -3,9 +3,9 @@
 
 #define COLOR_MENU_LINE 252
 #define COLOR_MENU_BORDER 251
-#define COLOR_MENU_LINE2 250
-#define COLOR_MENU_BORDER1 253
-#define COLOR_MENU_BORDER2 254
+#define COLOR_MENU_LINE2 172
+#define COLOR_MENU_BORDER1 164
+#define COLOR_MENU_BORDER2 162
 #define COLOR_MENU_BG 0
 
 void menu_background_create(surface *s, int w, int h) {
@@ -23,7 +23,7 @@ void menu_background_create(surface *s, int w, int h) {
     image_free(&img);
 }
 
-// the *other* style menu background
+// the *other* style menu background, used on VS and MELEE
 void menu_background2_create(surface *s, int w, int h) {
     image img;
     image_create(&img, w, h);

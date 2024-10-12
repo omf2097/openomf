@@ -5,6 +5,10 @@
 #include "game/gui/component.h"
 #include "game/protos/scene.h"
 
+#define MECHLAB_DARK_GREEN 165
+#define MECHLAB_BRIGHT_GREEN 167
+#define MECHLAB_YELLOW 207
+
 typedef enum
 {
     DASHBOARD_NONE,
