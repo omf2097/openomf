@@ -10,7 +10,7 @@
 // These are okay
 #define COLOR_GREEN 0xA7
 #define COLOR_DARK_GREEN 0xA0
-#define COLOR_YELLOW 0xFF
+#define COLOR_YELLOW 0xCF
 
 typedef struct color {
     unsigned char r;

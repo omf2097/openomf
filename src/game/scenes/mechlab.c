@@ -471,7 +471,7 @@ int mechlab_create(scene *scene) {
     tconf.font = FONT_SMALL;
     tconf.halign = TEXT_CENTER;
     tconf.valign = TEXT_MIDDLE;
-    tconf.cforeground = TEXT_DARK_GREEN;
+    tconf.cforeground = 207;
 
     local->hint = label_create(&tconf, "HINTY");
     component_set_pos_hints(local->hint, 32, 131);
