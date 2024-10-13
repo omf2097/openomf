@@ -158,7 +158,7 @@ void video_render_prepare(void) {
     object_array_prepare(g_video_state.objects);
 }
 
-static void video_set_blend_mode(int request_mode) {
+static void video_set_blend_mode(video_blend_mode request_mode) {
     if(g_video_state.current_blend_mode == request_mode)
         return;
 
@@ -168,7 +168,7 @@ static void video_set_blend_mode(int request_mode) {
             break;
         case BLEND_ADD:
         case BLEND_SUB:
-            glBlendFunc(GL_ONE, GL_ONE);  // 1 * src + 1 * dst
+            glBlendFunc(GL_ONE, GL_ONE); // 1 * src + 1 * dst
             break;
     }
 
