@@ -10,11 +10,15 @@ flat in int palette_limit;
 
 uniform sampler2D atlas;
 
+#define BLEND_SET 0
+#define BLEND_ADD 1
+#define BLEND_SUB 2
+
 vec4 handle(float index) {
     switch(blend_mode) {
-        case 0: return vec4(0.0, index, 0.0, 1.0);  // ADD
-        case 1: return vec4(0.0, 0.0, index, 1.0);  // SUB
-        case 2: return vec4(index, 0.0, 0.0, 1.0);  // SET
+        case BLEND_SET: return vec4(index, 0.0, 0.0, 1.0);
+        case BLEND_ADD: return vec4(0.0, index, 0.0, 1.0);
+        case BLEND_SUB: return vec4(0.0, 0.0, index, 1.0);
     }
 }
 
