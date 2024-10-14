@@ -1,3 +1,4 @@
+#include "game/gui/dialog.h"
 #include "game/gui/frame.h"
 #include "game/protos/scene.h"
 #include "game/utils/serial.h"
@@ -42,6 +43,13 @@ enum
     PACKET_COUNT
 };
 
+enum
+{
+    CHALLENGE_FLAG_ACCEPT = 1 << 0,
+    CHALLENGE_FLAG_REJECT = 1 << 1,
+    CHALLENGE_FLAG_CANCEL = 1 << 2
+};
+
 typedef struct lobby_local_t {
     char name[16];
     char helptext[80];
@@ -53,6 +61,8 @@ typedef struct lobby_local_t {
     ENetHost *client;
     ENetPeer *peer;
     uint8_t active_user;
+
+    dialog *dialog;
 
     guiframe *frame;
 } lobby_local;
@@ -80,6 +90,11 @@ void lobby_free(scene *scene) {
     if(local->client) {
         enet_host_destroy(local->client);
     }
+    if(local->dialog) {
+        dialog_free(local->dialog);
+        omf_free(local->dialog);
+    }
+
     omf_free(local);
     scene_set_userdata(scene, local);
 }
@@ -109,7 +124,11 @@ void lobby_input_tick(scene *scene) {
                     local->active_user = list_size(&local->users) - 1;
                 }
             } else {
-                guiframe_action(local->frame, p1->event_data.action);
+                if(local->dialog && dialog_is_visible(local->dialog)) {
+                    dialog_event(local->dialog, p1->event_data.action);
+                } else {
+                    guiframe_action(local->frame, p1->event_data.action);
+                }
             }
         } while((i = i->next));
     }
@@ -175,9 +194,52 @@ void lobby_render_overlay(scene *scene) {
     }
 
     guiframe_render(local->frame);
+
+    if(local->dialog && dialog_is_visible(local->dialog)) {
+        dialog_render(local->dialog);
+    }
+}
+
+void lobby_dialog_cancel_challenge(dialog *dlg, dialog_result result) {
+    dialog_show(dlg, 0);
+    scene *s = dlg->userdata;
+    lobby_local *local = scene_get_userdata(s);
+    serial ser;
+    serial_create(&ser);
+    serial_write_int8(&ser, PACKET_CHALLENGE << 4 & CHALLENGE_FLAG_CANCEL);
+
+    ENetPacket *packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
+    serial_free(&ser);
+    enet_peer_send(local->peer, 0, packet);
 }
 
 void lobby_do_challenge(component *c, void *userdata) {
+    scene *s = userdata;
+    lobby_local *local = scene_get_userdata(s);
+    if(local->dialog) {
+        dialog_free(local->dialog);
+        omf_free(local->dialog);
+    }
+    local->dialog = omf_calloc(1, sizeof(dialog));
+    lobby_user *user = list_get(&local->users, local->active_user);
+    char buf[80];
+
+    snprintf(buf, sizeof(buf), "Challenging %s...", user->name);
+    dialog_create(local->dialog, DIALOG_STYLE_CANCEL, buf, 72, 60);
+    local->dialog->userdata = s;
+    local->dialog->clicked = lobby_dialog_cancel_challenge;
+
+    dialog_show(local->dialog, 1);
+
+    serial ser;
+    serial_create(&ser);
+    serial_write_int8(&ser, PACKET_CHALLENGE << 4);
+    serial_write_int32(&ser, user->id);
+
+    ENetPacket *packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
+    serial_free(&ser);
+
+    enet_peer_send(local->peer, 0, packet);
 }
 
 void lobby_cancel_challenge(component *c, void *userdata) {
@@ -204,6 +266,8 @@ component *lobby_challenge_create(scene *s) {
     component *menu = menu_create(11);
     menu_set_horizontal(menu, true);
     menu_set_background(menu, false);
+    menu_set_margin_top(menu, 0);
+    menu_set_padding(menu, 6);
 
     lobby_user *user = list_get(&local->users, local->active_user);
     snprintf(local->helptext, sizeof(local->helptext), "Challenge %s?", user->name);
@@ -261,6 +325,9 @@ component *lobby_yell_create(scene *s) {
     menu_set_help_text_settings(menu, &help_text);
     menu_set_horizontal(menu, true);
     menu_set_background(menu, false);
+    menu_set_margin_top(menu, 0);
+    menu_set_padding(menu, 6);
+
     menu_attach(menu, label_create(&tconf, "Yell:"));
     component *yell_input =
         textinput_create(&tconf, "Yell:",
@@ -290,7 +357,7 @@ void lobby_do_whisper(component *c, void *userdata) {
         DEBUG("whispered %s", textinput_value(c));
         serial ser;
         serial_create(&ser);
-        serial_write_int8(&ser, PACKET_WHISPER);
+        serial_write_int8(&ser, PACKET_WHISPER << 4);
         serial_write_int32(&ser, user->id);
         serial_write(&ser, whisper, strlen(whisper));
 
@@ -334,6 +401,9 @@ component *lobby_whisper_create(scene *s) {
     menu_set_help_text_settings(menu, &help_text);
     menu_set_horizontal(menu, true);
     menu_set_background(menu, false);
+    menu_set_margin_top(menu, 0);
+    menu_set_padding(menu, 6);
+
     menu_attach(menu, label_create(&tconf, "Whisper:"));
     lobby_user *user = list_get(&local->users, local->active_user);
     snprintf(local->helptext, sizeof(local->helptext), "Whisper a message to %s. Press enter when done, esc to abort.",
@@ -414,7 +484,7 @@ void lobby_entered_name(component *c, void *userdata) {
         version[14] = 0;
         serial ser;
         serial_create(&ser);
-        serial_write_int8(&ser, PACKET_JOIN);
+        serial_write_int8(&ser, PACKET_JOIN << 4);
         serial_write_int8(&ser, strlen(version));
         serial_write(&ser, version, strlen(version));
         char *name = textinput_value(c);
@@ -438,6 +508,33 @@ void lobby_entered_name(component *c, void *userdata) {
     }
 }
 
+void lobby_dialog_cancel_connect(dialog *dlg, dialog_result result) {
+    // TODO
+}
+
+void lobby_dialog_accept_challenge(dialog *dlg, dialog_result result) {
+    dialog_show(dlg, 0);
+
+    scene *s = dlg->userdata;
+    lobby_local *local = scene_get_userdata(s);
+    serial ser;
+    serial_create(&ser);
+    uint8_t flag = result == DIALOG_RESULT_YES_OK ? CHALLENGE_FLAG_ACCEPT : CHALLENGE_FLAG_REJECT;
+    serial_write_int8(&ser, (PACKET_CHALLENGE << 4) | flag);
+
+    ENetPacket *packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
+    serial_free(&ser);
+    enet_peer_send(local->peer, 0, packet);
+
+    if(result == DIALOG_RESULT_YES_OK) {
+        dialog_free(local->dialog);
+        dialog_create(local->dialog, DIALOG_STYLE_CANCEL, "Establishing connection...", 72, 60);
+        dialog_show(local->dialog, 1);
+        local->dialog->userdata = s;
+        local->dialog->clicked = lobby_dialog_cancel_connect;
+    }
+}
+
 component *lobby_exit_create(scene *s) {
     // Text config
     text_settings tconf;
@@ -452,6 +549,9 @@ component *lobby_exit_create(scene *s) {
     component *menu = menu_create(11);
     menu_set_horizontal(menu, true);
     menu_set_background(menu, false);
+    menu_set_margin_top(menu, 0);
+    menu_set_padding(menu, 6);
+
     menu_attach(menu, label_create(&tconf, "Exit the Challenge Arena?"));
     menu_attach(menu, textbutton_create(&tconf, "Yes", NULL, COM_ENABLED, lobby_do_exit, s));
     menu_attach(menu, textbutton_create(&tconf, "No", NULL, COM_ENABLED, lobby_refuse_exit, NULL));
@@ -462,6 +562,10 @@ component *lobby_exit_create(scene *s) {
 void lobby_exit(component *c, void *userdata) {
     scene *s = userdata;
     menu_set_submenu(c->parent, lobby_exit_create(s));
+}
+
+void lobby_dialog_close(dialog *dlg, dialog_result result) {
+    dialog_show(dlg, 0);
 }
 
 void lobby_tick(scene *scene, int paused) {
@@ -543,6 +647,77 @@ void lobby_tick(scene *scene, int paused) {
                             }
                         }
                     } break;
+                    case PACKET_CHALLENGE: {
+                        switch(control_byte & 0xf) {
+                            case 0: {
+                                uint32_t connect_id = serial_read_uint32(&ser);
+
+                                DEBUG("got challenge from %d, we are %d", connect_id, local->id);
+                                iterator it;
+                                list_iter_begin(&local->users, &it);
+                                lobby_user *user;
+                                bool found = false;
+                                while((user = list_iter_next(&it)) && !found) {
+                                    if(user->id == connect_id) {
+                                        found = true;
+                                        break;
+                                    }
+                                }
+
+                                if(found) {
+                                    local->dialog = omf_calloc(1, sizeof(dialog));
+                                    char buf[80];
+
+                                    snprintf(buf, sizeof(buf), "Accept challenge from %s?", user->name);
+                                    dialog_create(local->dialog, DIALOG_STYLE_YES_NO, buf, 72, 60);
+                                    local->dialog->userdata = scene;
+                                    local->dialog->clicked = lobby_dialog_accept_challenge;
+                                    dialog_show(local->dialog, 1);
+                                } else {
+                                    DEBUG("unable to find user with id %d", connect_id);
+                                }
+                            } break;
+                            case CHALLENGE_FLAG_ACCEPT:
+                                // peer accepted, try to connect to them
+                                if(local->dialog) {
+                                    dialog_show(local->dialog, 0);
+                                    dialog_free(local->dialog);
+                                } else {
+                                    local->dialog = omf_calloc(1, sizeof(dialog));
+                                }
+                                dialog_create(local->dialog, DIALOG_STYLE_CANCEL, "Establishing connection...", 72, 60);
+                                dialog_show(local->dialog, 1);
+                                local->dialog->userdata = scene;
+                                local->dialog->clicked = lobby_dialog_cancel_connect;
+                                break;
+                            case CHALLENGE_FLAG_REJECT:
+                                // peer accepted, try to connect to them
+                                if(local->dialog) {
+                                    dialog_show(local->dialog, 0);
+                                    dialog_free(local->dialog);
+                                } else {
+                                    local->dialog = omf_calloc(1, sizeof(dialog));
+                                }
+                                dialog_create(local->dialog, DIALOG_STYLE_OK, "Challenge rejected.", 72, 60);
+                                dialog_show(local->dialog, 1);
+                                local->dialog->userdata = scene;
+                                local->dialog->clicked = lobby_dialog_close;
+                                break;
+                            case CHALLENGE_FLAG_CANCEL:
+                                // peer accepted, try to connect to them
+                                if(local->dialog) {
+                                    dialog_show(local->dialog, 0);
+                                    dialog_free(local->dialog);
+                                } else {
+                                    local->dialog = omf_calloc(1, sizeof(dialog));
+                                }
+                                dialog_create(local->dialog, DIALOG_STYLE_OK, "Challenge cancelled by peer.", 72, 60);
+                                dialog_show(local->dialog, 1);
+                                local->dialog->userdata = scene;
+                                local->dialog->clicked = lobby_dialog_close;
+                                break;
+                        }
+                    } break;
                     default:
                         DEBUG("unknown packet of type %d received", event.packet->data[0] >> 4);
                         break;
@@ -599,6 +774,8 @@ int lobby_create(scene *scene) {
     component *menu = menu_create(11);
     menu_set_horizontal(menu, true);
     menu_set_background(menu, false);
+    // menu_set_margin_top(menu, 0);
+    menu_set_padding(menu, 6);
 
     menu_set_help_pos(menu, 10, 155, 500, 10);
     text_settings help_text;
@@ -622,6 +799,9 @@ int lobby_create(scene *scene) {
     component *name_menu = menu_create(11);
     menu_set_horizontal(name_menu, true);
     menu_set_background(name_menu, false);
+    menu_set_margin_top(menu, 0);
+    menu_set_padding(menu, 6);
+
     menu_attach(name_menu, label_create(&tconf, "Enter your name:"));
     // TODO pull the last used name from settings
     component *name_input = textinput_create(&tconf, "", "", "");
