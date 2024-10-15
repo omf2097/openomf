@@ -18,7 +18,6 @@
 #define CURSOR_STR "\x7f"
 
 typedef struct scoreboard_local_t {
-    surface black_surface;
     scoreboard data;
     score_entry pending_data;
     int has_pending_data;
@@ -27,7 +26,6 @@ typedef struct scoreboard_local_t {
 
 void scoreboard_free(scene *scene) {
     scoreboard_local *local = scene_get_userdata(scene);
-    surface_free(&local->black_surface);
     omf_free(local);
     scene_set_userdata(scene, local);
 }
@@ -123,7 +121,6 @@ void scoreboard_input_tick(scene *scene) {
 
 void scoreboard_render_overlay(scene *scene) {
     scoreboard_local *local = scene_get_userdata(scene);
-    video_draw_size(&local->black_surface, 0, 0, 320, 200);
     char row[128];
     char score_text[15];
     char temp_name[17];
