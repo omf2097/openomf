@@ -212,9 +212,6 @@ void engine_run(engine_init_flags *init_flags) {
             }
         }
 
-        // Tick controllers
-        game_state_tick_controllers(gs);
-
         // check if we need to replace the game state
         if(gs->new_state) {
             // one of the controllers wants to replace the game state

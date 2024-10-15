@@ -161,11 +161,6 @@ void menu_connect_tick(component *c) {
         controller *c1 = game_player_get_ctrl(p1);
         if(c1->type == CTRL_TYPE_NETWORK && net_controller_ready(c1)) {
             DEBUG("network peer is ready, tick offset is %d and rtt is %d", net_controller_tick_offset(c1), c1->rtt);
-            local->host = NULL;
-            local->controllers_created = 0;
-            local->connect_start = 0;
-            gs->tick += net_controller_tick_offset(c1);
-            gs->int_tick = gs->tick;
             game_state_set_next(gs, SCENE_MELEE);
         }
     }
