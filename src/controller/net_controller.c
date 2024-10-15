@@ -255,7 +255,8 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
             game_state_dynamic_tick(gs, true);
             DEBUG("arena tick %d, hash %d", gs->int_tick - data->local_proposal, arena_state_hash(gs));
             arena_state_dump(gs);
-            if((ev->events[0] || ev->events[1]) && ev->seen_peer == 3 && ev->tick > data->last_traced_tick) {
+            if(data->trace_file && (ev->events[0] || ev->events[1]) && ev->seen_peer == 3 &&
+               ev->tick > data->last_traced_tick) {
                 data->last_traced_tick = ev->tick;
                 int sz = snprintf(buf, sizeof(buf), "tick %d -- player 1 %d -- player 2 %d -- hash %" PRIu32 "\n",
                                   ev->tick, ev->events[0], ev->events[1], arena_state_hash(gs));
@@ -264,10 +265,12 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
 
             if(gs->int_tick - data->local_proposal == data->peer_last_hash_tick &&
                data->peer_last_hash != arena_state_hash(gs) && ev->seen_peer == 3) {
-                int sz = snprintf(buf, sizeof(buf), "---MISMATCH at %d (%d) got %" PRIu32 " expected %" PRIu32 "\n",
-                                  gs->int_tick - data->local_proposal, data->peer_last_hash_tick, data->peer_last_hash,
-                                  arena_state_hash(gs));
-                SDL_RWwrite(data->trace_file, buf, sz, 1);
+                if(data->trace_file) {
+                    int sz = snprintf(buf, sizeof(buf), "---MISMATCH at %d (%d) got %" PRIu32 " expected %" PRIu32 "\n",
+                                      gs->int_tick - data->local_proposal, data->peer_last_hash_tick,
+                                      data->peer_last_hash, arena_state_hash(gs));
+                    SDL_RWwrite(data->trace_file, buf, sz, 1);
+                }
 
                 DEBUG("arena hash mismatch at %d (%d) -- got %" PRIu32 " expected %" PRIu32 "!",
                       gs->int_tick - data->local_proposal, data->peer_last_hash_tick, data->peer_last_hash,
@@ -359,22 +362,24 @@ int net_controller_tick_offset(controller *ctrl) {
 void net_controller_free(controller *ctrl) {
     wtf *data = ctrl->data;
 
-    char buf[255];
-    int sz = snprintf(buf, sizeof(buf), "------BEGIN TRANSCRIPT-------\n");
+    if(data->trace_file) {
+        char buf[255];
+        int sz = snprintf(buf, sizeof(buf), "------BEGIN TRANSCRIPT-------\n");
 
-    SDL_RWwrite(data->trace_file, buf, sz, 1);
-
-    iterator it;
-    list_iter_begin(&data->transcript, &it);
-    tick_events *ev = NULL;
-    while((ev = (tick_events *)list_iter_next(&it))) {
-        DEBUG("tick %d has events %d -- %d", ev->tick, ev->events[0], ev->events[1]);
-        int sz = snprintf(buf, sizeof(buf), "tick %d -- player 1 %d -- player 2 %d -- seen_peer %d\n", ev->tick,
-                          ev->events[0], ev->events[1], ev->seen_peer);
         SDL_RWwrite(data->trace_file, buf, sz, 1);
-    }
 
-    SDL_RWclose(data->trace_file);
+        iterator it;
+        list_iter_begin(&data->transcript, &it);
+        tick_events *ev = NULL;
+        while((ev = (tick_events *)list_iter_next(&it))) {
+            DEBUG("tick %d has events %d -- %d", ev->tick, ev->events[0], ev->events[1]);
+            int sz = snprintf(buf, sizeof(buf), "tick %d -- player 1 %d -- player 2 %d -- seen_peer %d\n", ev->tick,
+                              ev->events[0], ev->events[1], ev->seen_peer);
+            SDL_RWwrite(data->trace_file, buf, sz, 1);
+        }
+
+        SDL_RWclose(data->trace_file);
+    }
     ENetEvent event;
     if(!data->disconnected) {
         DEBUG("closing connection");
@@ -439,6 +444,10 @@ int net_controller_tick(controller *ctrl, int ticks0, ctrl_event **ev) {
             // proposal expired
             data->local_proposal = 0;
         }
+    }
+
+    if(ticks > data->local_proposal && !data->synchronized) {
+        DEBUG("missed synchronize tick %d -- @ %d", data->local_proposal, ticks);
     }
 
     if(data->gs_bak == NULL && is_arena(game_state_get_scene(ctrl->gs)->id) &&
@@ -605,6 +614,7 @@ int net_controller_tick(controller *ctrl, int ticks0, ctrl_event **ev) {
                             serial start_ser;
                             serial_create(&start_ser);
 
+                            DEBUG("confirmed starting round at %d", peer_proposal);
                             serial_write_int8(&start_ser, EVENT_TYPE_CONFIRM_START);
                             serial_write_int32(&start_ser, peer_proposal);
 
