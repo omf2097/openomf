@@ -324,6 +324,11 @@ int font_render_char_shadowed(const font *font, char ch, int x, int y, uint8_t c
     // Get font face
     sur = vector_get(&font->surfaces, code);
 
+    // Empty character's don't need to be rendered just skip the space.
+    if(ch == ' ') {
+        return (*sur)->w;
+    }
+
     // Handle shadows if necessary
     if(shadow_flags & TEXT_SHADOW_RIGHT)
         video_draw_offset(*sur, x + 1, y, shadow_color, 255);
