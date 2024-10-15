@@ -130,12 +130,12 @@ void scoreboard_render_overlay(scene *scene) {
     const char *score_row_format = "%-18s%-9s%-9s%11s";
 
     // Header text
-    snprintf(row, 128, "SCOREBOARD - %s", round_get_name(local->page));
+    snprintf(row, sizeof(row), "SCOREBOARD - %s", round_get_name(local->page));
     int title_x = 62 + (local->page == 0 ? 8 : 0);
     font_render(&font_large, row, title_x, 5, TEXT_COLOR_HEADER);
 
     // Column names
-    snprintf(row, 128, score_row_format, "PLAYER NAME", "ROBOT", "PILOT", "SCORE");
+    snprintf(row, sizeof(row), score_row_format, "PLAYER NAME", "ROBOT", "PILOT", "SCORE");
     font_render(&font_small, row, 20, 20, TEXT_COLOR_HEADER);
 
     // Scores information
@@ -151,9 +151,9 @@ void scoreboard_render_overlay(scene *scene) {
         // show pending data and text input field. Otherwise just show next line of
         // original saved score data.
         if(local->has_pending_data && score < local->pending_data.score && !found_slot) {
-            snprintf(temp_name, 17, "%s%s", local->pending_data.name, CURSOR_STR);
-            score_format(local->pending_data.score, score_text, 15);
-            snprintf(row, 128, score_row_format, temp_name, har_get_name(local->pending_data.har_id),
+            snprintf(temp_name, sizeof(temp_name), "%s%s", local->pending_data.name, CURSOR_STR);
+            score_format(local->pending_data.score, score_text, sizeof(score_text));
+            snprintf(row, sizeof(row), score_row_format, temp_name, har_get_name(local->pending_data.har_id),
                      pilot_get_name(local->pending_data.pilot_id), score_text);
             found_slot = 1;
         } else {
@@ -161,9 +161,9 @@ void scoreboard_render_overlay(scene *scene) {
             pilot_id = local->data.entries[local->page][entry].pilot_id;
             player_name = local->data.entries[local->page][entry].name;
             if(score > 0) {
-                score_format(score, score_text, 15);
-                snprintf(row, 128, score_row_format, player_name, har_get_name(har_id), pilot_get_name(pilot_id),
-                         score_text);
+                score_format(score, score_text, sizeof(score_text));
+                snprintf(row, sizeof(row), score_row_format, player_name, har_get_name(har_id),
+                         pilot_get_name(pilot_id), score_text);
             }
             entry++;
         }
