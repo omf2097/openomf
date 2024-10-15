@@ -126,14 +126,22 @@ void scoreboard_render_overlay(scene *scene) {
     char temp_name[17];
     const char *score_row_format = "%-18s%-9s%-9s%11s";
 
+    text_settings big_text;
+    text_defaults(&big_text);
+    big_text.font = FONT_BIG;
+
     // Header text
     snprintf(row, sizeof(row), "SCOREBOARD - %s", round_get_name(local->page));
     int title_x = 62 + (local->page == 0 ? 8 : 0);
-    font_render(&font_large, row, title_x, 5, TEXT_COLOR_HEADER);
+    text_render(&big_text, TEXT_DEFAULT, title_x, 5, 200, 6, row);
+
+    text_settings small_text;
+    text_defaults(&small_text);
+    small_text.font = FONT_SMALL;
 
     // Column names
     snprintf(row, sizeof(row), score_row_format, "PLAYER NAME", "ROBOT", "PILOT", "SCORE");
-    font_render(&font_small, row, 20, 20, TEXT_COLOR_HEADER);
+    text_render(&small_text, TEXT_DEFAULT, 20, 20, 290, 6, row);
 
     // Scores information
     unsigned int score, har_id, pilot_id;
@@ -164,7 +172,7 @@ void scoreboard_render_overlay(scene *scene) {
             }
             entry++;
         }
-        font_render(&font_small, row, 20, 30 + r * 8, TEXT_COLOR_SCORES);
+        text_render(&small_text, TEXT_DEFAULT, 20, 30 + r * 8, 290, 6, row);
     }
 }
 
