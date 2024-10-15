@@ -7,6 +7,8 @@
 #include "utils/miscmath.h"
 #include "video/video.h"
 
+#include "game/utils/settings.h"
+
 #include "game/gui/gui.h"
 
 // FIXME: No idea what these should be
@@ -50,6 +52,16 @@ enum
     CHALLENGE_FLAG_CANCEL = 1 << 2
 };
 
+typedef struct lobby_user_t {
+    char name[16];
+    char version[15];
+    bool self;
+    ENetAddress address;
+    uint32_t id;
+    uint8_t wins;
+    uint8_t losses;
+} lobby_user;
+
 typedef struct lobby_local_t {
     char name[16];
     char helptext[80];
@@ -60,7 +72,10 @@ typedef struct lobby_local_t {
     uint8_t mode;
     ENetHost *client;
     ENetPeer *peer;
+    ENetPeer *opponent_peer;
     uint8_t active_user;
+    lobby_user *opponent;
+    bool controllers_created;
 
     dialog *dialog;
 
@@ -72,24 +87,15 @@ typedef struct log_event_t {
     char msg[51];
 } log_event;
 
-typedef struct lobby_user_t {
-    char name[16];
-    char version[15];
-    bool self;
-    ENetAddress address;
-    uint32_t id;
-    uint8_t wins;
-    uint8_t losses;
-} lobby_user;
-
 void lobby_free(scene *scene) {
     lobby_local *local = scene_get_userdata(scene);
     guiframe_free(local->frame);
     list_free(&local->users);
     list_free(&local->log);
-    if(local->client) {
+    // TODO only destroy this if we're going back to the main menu
+    /*if(local->client) {
         enet_host_destroy(local->client);
-    }
+    }*/
     if(local->dialog) {
         dialog_free(local->dialog);
         omf_free(local->dialog);
@@ -222,6 +228,7 @@ void lobby_do_challenge(component *c, void *userdata) {
     }
     local->dialog = omf_calloc(1, sizeof(dialog));
     lobby_user *user = list_get(&local->users, local->active_user);
+    local->opponent = user;
     char buf[80];
 
     snprintf(buf, sizeof(buf), "Challenging %s...", user->name);
@@ -235,6 +242,7 @@ void lobby_do_challenge(component *c, void *userdata) {
     serial_create(&ser);
     serial_write_int8(&ser, PACKET_CHALLENGE << 4);
     serial_write_int32(&ser, user->id);
+    local->opponent = user;
 
     ENetPacket *packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
     serial_free(&ser);
@@ -293,11 +301,16 @@ void lobby_do_yell(component *c, void *userdata) {
     if(strlen(yell) > 0) {
         DEBUG("yelled %s", textinput_value(c));
 
-        char yell_packet[50];
-        snprintf(yell_packet, sizeof(yell_packet), "\2%s", yell);
+        serial ser;
+        serial_create(&ser);
+        serial_write_int8(&ser, PACKET_YELL << 4);
+        serial_write(&ser, yell, strlen(yell));
 
-        ENetPacket *packet = enet_packet_create(yell_packet, strlen(yell_packet) + 1, ENET_PACKET_FLAG_RELIABLE);
+        ENetPacket *packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
+        serial_free(&ser);
+
         enet_peer_send(local->peer, 0, packet);
+
         textinput_clear(c);
     }
 }
@@ -446,70 +459,82 @@ void lobby_refuse_exit(component *c, void *userdata) {
 }
 
 void lobby_entered_name(component *c, void *userdata) {
-    scene *scene = userdata;
-    lobby_local *local = scene_get_userdata(scene);
+    if(strlen(textinput_value(c))) {
+        scene *scene = userdata;
+        lobby_local *local = scene_get_userdata(scene);
 
-    local->client = enet_host_create(NULL /* create a client host */, 1 /* only allow 1 outgoing connection */,
-                                     2 /* allow up 2 channels to be used, 0 and 1 */,
-                                     0 /* assume any amount of incoming bandwidth */,
-                                     0 /* assume any amount of outgoing bandwidth */);
+        local->client = enet_host_create(NULL /* create a client host */, 2 /* only allow 2 outgoing connections */,
+                                         2 /* allow up 2 channels to be used, 0 and 1 */,
+                                         0 /* assume any amount of incoming bandwidth */,
+                                         0 /* assume any amount of outgoing bandwidth */);
 
-    ENetAddress address;
-    ENetEvent event;
-    ENetPeer *peer = NULL;
-    if(local->client == NULL) {
-        DEBUG("An error occurred while trying to create an ENet client host.\n");
-    }
-    enet_address_set_host(&address, "127.0.0.1");
-    address.port = 2098;
-    /* Initiate the connection, allocating the two channels 0 and 1. */
-    local->peer = enet_host_connect(local->client, &address, 2, 0);
+        ENetAddress address;
+        ENetEvent event;
+        ENetPeer *peer = NULL;
+        if(local->client == NULL) {
+            DEBUG("An error occurred while trying to create an ENet client host.\n");
+        }
+        enet_address_set_host(&address, "127.0.0.1");
+        address.port = 2098;
+        DEBUG("server address is %d", address.host);
+        /* Initiate the connection, allocating the two channels 0 and 1. */
+        local->peer = enet_host_connect(local->client, &address, 2, 0);
 
-    if(local->peer == NULL) {
-        DEBUG("No available peers for initiating an ENet connection.\n");
-    }
-    /* Wait up to 5 seconds for the connection attempt to succeed. */
-    else if(enet_host_service(local->client, &event, 5000) > 0 && event.type == ENET_EVENT_TYPE_CONNECT) {
-        DEBUG("Connection to server succeeded.");
+        if(local->peer == NULL) {
+            DEBUG("No available peers for initiating an ENet connection.\n");
+        }
+        /* Wait up to 5 seconds for the connection attempt to succeed. */
+        else if(enet_host_service(local->client, &event, 5000) > 0 && event.type == ENET_EVENT_TYPE_CONNECT) {
+            DEBUG("Connection to server succeeded.");
 
-        DEBUG("local peer connect id %d", local->peer->connectID);
-        DEBUG("remote peer connect id %d", event.peer->connectID);
+            DEBUG("local peer connect id %d", local->peer->connectID);
+            DEBUG("remote peer connect id %d", event.peer->connectID);
 
-        event.peer->data = "Client information";
-        strncpy(local->name, textinput_value(c), sizeof(local->name));
+            event.peer->data = "Client information";
+            strncpy(local->name, textinput_value(c), sizeof(local->name));
 
-        char version[15];
-        // TODO support git version when not on a tag
-        snprintf(version, 14, "%d.%d.%d", V_MAJOR, V_MINOR, V_PATCH);
-        version[14] = 0;
-        serial ser;
-        serial_create(&ser);
-        serial_write_int8(&ser, PACKET_JOIN << 4);
-        serial_write_int8(&ser, strlen(version));
-        serial_write(&ser, version, strlen(version));
-        char *name = textinput_value(c);
-        serial_write(&ser, name, strlen(name));
+            char version[15];
+            // TODO support git version when not on a tag
+            snprintf(version, 14, "%d.%d.%d", V_MAJOR, V_MINOR, V_PATCH);
+            version[14] = 0;
+            serial ser;
+            serial_create(&ser);
+            serial_write_int8(&ser, PACKET_JOIN << 4);
+            serial_write_int8(&ser, strlen(version));
+            serial_write(&ser, version, strlen(version));
+            char *name = textinput_value(c);
+            serial_write(&ser, name, strlen(name));
 
-        ENetPacket *packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
-        serial_free(&ser);
+            ENetPacket *packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
+            serial_free(&ser);
 
-        enet_peer_send(local->peer, 0, packet);
+            enet_peer_send(local->peer, 0, packet);
 
-        menu *m = sizer_get_obj(c->parent);
-        m->finished = 1;
-        local->mode = LOBBY_MAIN;
-    } else {
-        /* Either the 5 seconds are up or a disconnect event was */
-        /* received. Reset the peer in the event the 5 seconds   */
-        /* had run out without any significant event.            */
-        enet_peer_reset(peer);
+            menu *m = sizer_get_obj(c->parent);
+            m->finished = 1;
+            local->mode = LOBBY_MAIN;
+        } else {
+            /* Either the 5 seconds are up or a disconnect event was */
+            /* received. Reset the peer in the event the 5 seconds   */
+            /* had run out without any significant event.            */
+            enet_peer_reset(peer);
 
-        DEBUG("Connection to server failed.");
+            DEBUG("Connection to server failed.");
+        }
     }
 }
 
 void lobby_dialog_cancel_connect(dialog *dlg, dialog_result result) {
     // TODO
+}
+
+void lobby_try_connect(void *scenedata, void *userdata) {
+    scene *s = scenedata;
+    lobby_local *local = scene_get_userdata(s);
+    if(!local->opponent_peer) {
+        DEBUG("doing scheduled outbound connection");
+        local->opponent_peer = enet_host_connect(local->client, &local->opponent->address, 2, 0);
+    }
 }
 
 void lobby_dialog_accept_challenge(dialog *dlg, dialog_result result) {
@@ -529,6 +554,10 @@ void lobby_dialog_accept_challenge(dialog *dlg, dialog_result result) {
     if(result == DIALOG_RESULT_YES_OK) {
         dialog_free(local->dialog);
         dialog_create(local->dialog, DIALOG_STYLE_CANCEL, "Establishing connection...", 72, 60);
+
+        ticktimer_add(&s->tick_timer, 50, lobby_try_connect, NULL);
+        ticktimer_add(&s->tick_timer, 150, lobby_try_connect, NULL);
+
         dialog_show(local->dialog, 1);
         local->dialog->userdata = s;
         local->dialog->clicked = lobby_dialog_cancel_connect;
@@ -570,9 +599,11 @@ void lobby_dialog_close(dialog *dlg, dialog_result result) {
 
 void lobby_tick(scene *scene, int paused) {
     lobby_local *local = scene_get_userdata(scene);
+
+    game_state *gs = scene->gs;
     ENetEvent event;
     serial ser;
-    while(local->client && enet_host_service(local->client, &event, 0) > 0) {
+    while(local->client && !local->controllers_created && enet_host_service(local->client, &event, 0) > 0) {
         switch(event.type) {
             case ENET_EVENT_TYPE_NONE:
                 break;
@@ -581,6 +612,69 @@ void lobby_tick(scene *scene, int paused) {
 
                 /* Store any relevant client information here. */
                 event.peer->data = "Client information";
+                DEBUG("new peer was %d, server peer was %d, opponent peer was %d", event.peer, local->peer,
+                      local->opponent_peer);
+
+                if(local->opponent_peer && event.peer->address.host == local->opponent->address.host) {
+                    DEBUG("connected to peer outbound!");
+                    local->opponent_peer = event.peer;
+                    serial_create(&ser);
+                    serial_write_int8(&ser, PACKET_JOIN << 4);
+
+                    ENetPacket *packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
+                    serial_free(&ser);
+
+                    enet_peer_send(local->opponent_peer, 0, packet);
+
+                    controller *player1_ctrl, *player2_ctrl;
+                    keyboard_keys *keys;
+                    game_player *p1 = game_state_get_player(gs, 0);
+                    game_player *p2 = game_state_get_player(gs, 1);
+
+                    // force the speed to 3
+                    game_state_set_speed(gs, 10);
+
+                    p1->pilot->har_id = HAR_JAGUAR;
+                    p1->pilot->pilot_id = 0;
+                    p2->pilot->har_id = HAR_JAGUAR;
+                    p2->pilot->pilot_id = 0;
+
+                    player1_ctrl = omf_calloc(1, sizeof(controller));
+                    controller_init(player1_ctrl, gs);
+                    player1_ctrl->har_obj_id = p1->har_obj_id;
+                    player2_ctrl = omf_calloc(1, sizeof(controller));
+                    controller_init(player2_ctrl, gs);
+                    player2_ctrl->har_obj_id = p2->har_obj_id;
+
+                    // Player 1 controller -- Keyboard
+                    settings_keyboard *k = &settings_get()->keys;
+                    keys = omf_calloc(1, sizeof(keyboard_keys));
+                    keys->jump_up = SDL_GetScancodeFromName(k->key1_jump_up);
+                    keys->jump_right = SDL_GetScancodeFromName(k->key1_jump_right);
+                    keys->walk_right = SDL_GetScancodeFromName(k->key1_walk_right);
+                    keys->duck_forward = SDL_GetScancodeFromName(k->key1_duck_forward);
+                    keys->duck = SDL_GetScancodeFromName(k->key1_duck);
+                    keys->duck_back = SDL_GetScancodeFromName(k->key1_duck_back);
+                    keys->walk_back = SDL_GetScancodeFromName(k->key1_walk_back);
+                    keys->jump_left = SDL_GetScancodeFromName(k->key1_jump_left);
+                    keys->punch = SDL_GetScancodeFromName(k->key1_punch);
+                    keys->kick = SDL_GetScancodeFromName(k->key1_kick);
+                    keys->escape = SDL_GetScancodeFromName(k->key1_escape);
+                    keyboard_create(player1_ctrl, keys, 0);
+                    game_player_set_ctrl(p1, player1_ctrl);
+
+                    // Player 2 controller -- Network
+                    net_controller_create(player2_ctrl, local->client, event.peer, ROLE_SERVER);
+                    game_player_set_ctrl(p2, player2_ctrl);
+                    game_player_set_selectable(p2, 1);
+
+                    chr_score_set_difficulty(game_player_get_score(game_state_get_player(gs, 0)),
+                                             AI_DIFFICULTY_CHAMPION);
+                    chr_score_set_difficulty(game_player_get_score(game_state_get_player(gs, 1)),
+                                             AI_DIFFICULTY_CHAMPION);
+
+                    local->controllers_created = true;
+                }
 
                 break;
             case ENET_EVENT_TYPE_RECEIVE:
@@ -616,8 +710,66 @@ void lobby_tick(scene *scene, int paused) {
                         }
                     } break;
                     case PACKET_JOIN:
-                        local->id = serial_read_uint32(&ser);
-                        DEBUG("successfully joined lobby and assigned ID %d", local->id);
+                        if(event.peer == local->peer) {
+                            local->id = serial_read_uint32(&ser);
+                            DEBUG("successfully joined lobby and assigned ID %d", local->id);
+                        } else if(!local->opponent_peer && event.peer->address.host == local->opponent->address.host) {
+                            DEBUG("connected to peer inbound!");
+                            local->opponent_peer = event.peer;
+
+                            controller *player1_ctrl, *player2_ctrl;
+                            keyboard_keys *keys;
+                            game_player *p1 = game_state_get_player(gs, 0);
+                            game_player *p2 = game_state_get_player(gs, 1);
+
+                            // force the speed to 3
+                            game_state_set_speed(gs, 10);
+
+                            p1->pilot->har_id = HAR_JAGUAR;
+                            p1->pilot->pilot_id = 0;
+                            p2->pilot->har_id = HAR_JAGUAR;
+                            p2->pilot->pilot_id = 0;
+
+                            player1_ctrl = omf_calloc(1, sizeof(controller));
+                            controller_init(player1_ctrl, gs);
+                            player1_ctrl->har_obj_id = p1->har_obj_id;
+                            player2_ctrl = omf_calloc(1, sizeof(controller));
+                            controller_init(player2_ctrl, gs);
+                            player2_ctrl->har_obj_id = p2->har_obj_id;
+
+                            // Player 1 controller -- Network
+                            net_controller_create(player1_ctrl, local->client, event.peer, ROLE_CLIENT);
+                            game_player_set_ctrl(p1, player1_ctrl);
+
+                            // Player 2 controller -- Keyboard
+                            settings_keyboard *k = &settings_get()->keys;
+                            keys = omf_calloc(1, sizeof(keyboard_keys));
+                            keys->jump_up = SDL_GetScancodeFromName(k->key1_jump_up);
+                            keys->jump_right = SDL_GetScancodeFromName(k->key1_jump_right);
+                            keys->walk_right = SDL_GetScancodeFromName(k->key1_walk_right);
+                            keys->duck_forward = SDL_GetScancodeFromName(k->key1_duck_forward);
+                            keys->duck = SDL_GetScancodeFromName(k->key1_duck);
+                            keys->duck_back = SDL_GetScancodeFromName(k->key1_duck_back);
+                            keys->walk_back = SDL_GetScancodeFromName(k->key1_walk_back);
+                            keys->jump_left = SDL_GetScancodeFromName(k->key1_jump_left);
+                            keys->punch = SDL_GetScancodeFromName(k->key1_punch);
+                            keys->kick = SDL_GetScancodeFromName(k->key1_kick);
+                            keys->escape = SDL_GetScancodeFromName(k->key1_escape);
+                            keyboard_create(player2_ctrl, keys, 0);
+                            game_player_set_ctrl(p2, player2_ctrl);
+                            game_player_set_selectable(p2, 1);
+
+                            chr_score_set_difficulty(game_player_get_score(game_state_get_player(gs, 0)),
+                                                     AI_DIFFICULTY_CHAMPION);
+                            chr_score_set_difficulty(game_player_get_score(game_state_get_player(gs, 1)),
+                                                     AI_DIFFICULTY_CHAMPION);
+
+                            local->controllers_created = true;
+
+                        } else {
+                            DEBUG("opponent peer %d, host %d %d", local->opponent_peer, event.peer->address.host,
+                                  local->opponent->address.host);
+                        }
                         break;
                     case PACKET_YELL: {
                         log_event log;
@@ -642,6 +794,15 @@ void lobby_tick(scene *scene, int paused) {
                                 log.color = LEAVE_COLOR;
                                 snprintf(log.msg, sizeof(log.msg), "%s has left the Arena", user->name);
                                 list_append(&local->log, &log, sizeof(log));
+                                if(local->opponent == user) {
+                                    local->opponent = NULL;
+                                    // any existing dialogs were for this user
+                                    if(local->dialog) {
+                                        dialog_free(local->dialog);
+                                        omf_free(local->dialog);
+                                    }
+                                    // TODO do we need to pop a dialog saying "user disconnected"?
+                                }
                                 list_delete(&local->users, &it);
                                 break;
                             }
@@ -665,6 +826,7 @@ void lobby_tick(scene *scene, int paused) {
                                 }
 
                                 if(found) {
+                                    local->opponent = user;
                                     local->dialog = omf_calloc(1, sizeof(dialog));
                                     char buf[80];
 
@@ -686,6 +848,12 @@ void lobby_tick(scene *scene, int paused) {
                                     local->dialog = omf_calloc(1, sizeof(dialog));
                                 }
                                 dialog_create(local->dialog, DIALOG_STYLE_CANCEL, "Establishing connection...", 72, 60);
+
+                                // try to connect immediately
+                                local->opponent_peer =
+                                    enet_host_connect(local->client, &local->opponent->address, 2, 0);
+
+                                ticktimer_add(&scene->tick_timer, 100, lobby_try_connect, NULL);
                                 dialog_show(local->dialog, 1);
                                 local->dialog->userdata = scene;
                                 local->dialog->clicked = lobby_dialog_cancel_connect;
@@ -741,6 +909,20 @@ void lobby_tick(scene *scene, int paused) {
     component *c = guiframe_get_root(local->frame);
     if((c = menu_get_submenu(c)) && menu_is_finished(c)) {
         local->mode = LOBBY_MAIN;
+    }
+
+    game_player *p1 = game_state_get_player(gs, 0);
+    controller *c1 = game_player_get_ctrl(p1);
+    if(c1->type == CTRL_TYPE_NETWORK && net_controller_ready(c1)) {
+        DEBUG("network peer is ready, tick offset is %d and rtt is %d", net_controller_tick_offset(c1), c1->rtt);
+        game_state_set_next(gs, SCENE_MELEE);
+    }
+
+    game_player *p2 = game_state_get_player(gs, 1);
+    controller *c2 = game_player_get_ctrl(p2);
+    if(c2->type == CTRL_TYPE_NETWORK && net_controller_ready(c2) == 1) {
+        DEBUG("network peer is ready, tick offset is %d and rtt is %d", net_controller_tick_offset(c2), c2->rtt);
+        game_state_set_next(gs, SCENE_MELEE);
     }
 }
 
