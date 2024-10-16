@@ -232,8 +232,19 @@ void vs_render(scene *scene) {
     game_player *player1 = game_state_get_player(scene->gs, 0);
     game_player *player2 = game_state_get_player(scene->gs, 1);
 
-    font_render_shadowed(&font_small, local->vs_str, 160 - ((strlen(local->vs_str) * font_small.w) / 2), 3,
-                         COLOR_YELLOW, TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
+    // X vs Y
+    text_settings tconf_yellow;
+    text_defaults(&tconf_yellow);
+    tconf_yellow.font = FONT_SMALL;
+    tconf_yellow.cforeground = COLOR_YELLOW;
+    tconf_yellow.shadow = TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM;
+    tconf_yellow.cshadow = 202;
+    tconf_yellow.halign = TEXT_CENTER;
+
+    text_render(&tconf_yellow, TEXT_DEFAULT, 0, 3, 320, 8, local->vs_str);
+
+    // no other text is shadowed
+    tconf_yellow.shadow = 0;
 
     if(player2->selectable) {
         // arena selection
@@ -249,6 +260,7 @@ void vs_render(scene *scene) {
         // kreissack, but not on Veteran or higher
         font_render_wrapped(&font_small, lang_get(747), 59, 160, 200, COLOR_YELLOW);
     } else if(player1->chr && player2->pilot) {
+        // tournament mode insult
         font_render_wrapped(&font_small, player2->pilot->quotes[0], 320 - (59 + 150), 165, 120, COLOR_YELLOW);
     } else if(!player2->pilot) {
         // render plug's bitching
@@ -316,10 +328,12 @@ void vs_render(scene *scene) {
         snprintf(text, sizeof(text), "%u%%", fight_stats->hit_miss_ratio[1]);
         font_render(&font_small, text, 276, 137, COLOR_GREEN);
     } else {
-        font_render_wrapped(&font_small, lang_get(749 + (11 * player1->pilot->pilot_id) + player2->pilot->pilot_id), 59,
-                            160, 150, COLOR_YELLOW);
-        font_render_wrapped(&font_small, lang_get(870 + (11 * player2->pilot->pilot_id) + player1->pilot->pilot_id),
-                            320 - (59 + 150), 180, 150, COLOR_YELLOW);
+        // 1 player insult
+        tconf_yellow.valign = TEXT_MIDDLE;
+        tconf_yellow.halign = TEXT_LEFT;
+        text_render(&tconf_yellow, TEXT_DEFAULT, 77, 150, 150, 30, lang_get(749 + (11 * player1->pilot->pilot_id) + player2->pilot->pilot_id));
+        tconf_yellow.halign = TEXT_RIGHT;
+        text_render(&tconf_yellow, TEXT_DEFAULT, 110, 170, 150, 30, lang_get(870 + (11 * player2->pilot->pilot_id) + player1->pilot->pilot_id));
     }
 }
 
