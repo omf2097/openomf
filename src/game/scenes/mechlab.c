@@ -86,9 +86,8 @@ bool mechlab_find_last_player(scene *scene) {
         object_dynamic_tick(local->mech);
         sd_pilot *old_pilot = game_player_get_pilot(p1);
         if(&p1->chr->pilot != old_pilot) {
-            omf_free(old_pilot);
+            game_player_set_pilot(p1, &p1->chr->pilot);
         }
-        game_player_set_pilot(p1, &p1->chr->pilot);
     }
     return true;
 }

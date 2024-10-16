@@ -26,7 +26,7 @@ void lab_menu_main_arena(component *c, void *userdata) {
         game_player *p1 = game_state_get_player(s->gs, 0);
         game_player *p2 = game_state_get_player(s->gs, 1);
         p2->selectable = 0;
-        p2->pilot = pilot;
+        sd_pilot_clone(p2->pilot, pilot);
         // there's not an exact difficulty mapping
         // for aluminum to 1p mode, but round up to
         // veteran
