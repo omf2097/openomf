@@ -11,7 +11,6 @@
 #define TEXT_MEDIUM_GREEN 0xFE
 #define TEXT_BLINKY_GREEN 0xFF
 #define TEXT_BRIGHT_GREEN 0xFD
-#define TEXT_BLACK 0
 #define TEXT_TRN_BLUE 0xAB
 
 typedef enum
@@ -64,6 +63,7 @@ typedef struct {
     uint8_t cdisabled;
     uint8_t cinactive;
     uint8_t cselected;
+    uint8_t cshadow;
     text_valign valign;
     text_halign halign;
     text_padding padding;

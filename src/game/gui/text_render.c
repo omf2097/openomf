@@ -12,6 +12,7 @@ void text_defaults(text_settings *settings) {
     settings->cselected = 0xFF;
     settings->cinactive = 0xFE;
     settings->cdisabled = 0xC0;
+    settings->cshadow = 0xC0;
 }
 
 int text_render_char(const text_settings *settings, text_mode state, int x, int y, char ch) {
@@ -42,13 +43,13 @@ int text_render_char(const text_settings *settings, text_mode state, int x, int 
 
     // Handle shadows if necessary
     if(settings->shadow & TEXT_SHADOW_RIGHT)
-        video_draw_offset(*sur, x + 1, y, 0xC0, 255);
+        video_draw_offset(*sur, x + 1, y, settings->cshadow, 255);
     if(settings->shadow & TEXT_SHADOW_LEFT)
-        video_draw_offset(*sur, x - 1, y, 0xC0, 255);
+        video_draw_offset(*sur, x - 1, y, settings->cshadow, 255);
     if(settings->shadow & TEXT_SHADOW_BOTTOM)
-        video_draw_offset(*sur, x, y + 1, 0xC0, 255);
+        video_draw_offset(*sur, x, y + 1, settings->cshadow, 255);
     if(settings->shadow & TEXT_SHADOW_TOP)
-        video_draw_offset(*sur, x, y - 1, 0xC0, 255);
+        video_draw_offset(*sur, x, y - 1, settings->cshadow, 255);
 
     int color;
     switch(state) {

@@ -8,6 +8,7 @@
 // FIXME: No idea what these should be
 #define TEXT_COLOR 0xFE
 #define BLUE_TEXT_COLOR 0xFE
+#define TEXT_BLACK 1
 
 enum
 {

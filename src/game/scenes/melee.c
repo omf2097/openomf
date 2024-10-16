@@ -21,6 +21,9 @@
 
 #define MAX_STAT 20
 #define TEXT_GREEN 0xA6
+#define TEXT_SHADOW_GREEN 0xA2
+#define TEXT_BLACK 0xD1
+#define TEXT_SHADOW_BLACK 0xD7
 #define RED_CURSOR_INDEX 0xF6
 #define BLUE_CURSOR_INDEX 0xF7
 #define VIOLET_CURSOR_INDEX 0xF8
@@ -440,50 +443,59 @@ static void render_pilot_select(melee_local *local, bool player2_is_selectable) 
     video_draw(&local->bg_player_stats, 70, 0);
     video_draw(&local->bg_player_bio, 0, 62);
 
+    text_settings tconf_green;
+    text_defaults(&tconf_green);
+    tconf_green.font = FONT_SMALL;
+    tconf_green.cforeground = TEXT_GREEN;
+    tconf_green.shadow = TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM;
+    tconf_green.halign = TEXT_CENTER;
+    tconf_green.cshadow = TEXT_SHADOW_GREEN;
+
+    text_settings tconf_black;
+    text_defaults(&tconf_black);
+    tconf_black.font = FONT_SMALL;
+    tconf_black.cforeground = TEXT_BLACK;
+    tconf_black.shadow = TEXT_SHADOW_TOP | TEXT_SHADOW_LEFT;
+    tconf_black.halign = TEXT_CENTER;
+    tconf_black.cshadow = TEXT_SHADOW_BLACK;
+
     // player bio
-    font_render_wrapped_shadowed(&font_small, lang_get(135 + current_a), 4, 66, 152, TEXT_GREEN,
-                                 TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
+    text_render(&tconf_green, TEXT_DEFAULT, 4, 66, 152, 40, lang_get(135 + current_a));
     // player stats
-    font_render_shadowed(&font_small, lang_get(216), 74 + 27, 4, TEXT_GREEN, TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
-    font_render_shadowed(&font_small, lang_get(217), 74 + 19, 22, TEXT_GREEN, TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
-    font_render_shadowed(&font_small, lang_get(218), 74 + 12, 40, TEXT_GREEN, TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
+    text_render(&tconf_green, TEXT_DEFAULT, 74, 4, 85, 8, lang_get(216));
+    text_render(&tconf_green, TEXT_DEFAULT, 74, 22, 85, 8, lang_get(217));
+    text_render(&tconf_green, TEXT_DEFAULT, 74, 40, 85, 8, lang_get(218));
     component_render(local->bar_power[0]);
     component_render(local->bar_agility[0]);
     component_render(local->bar_endurance[0]);
 
     if(player2_is_selectable) {
+        // player 2 name
+        text_render(&tconf_black, TEXT_DEFAULT, 320 - 66, 52, 66, 8, lang_get(20 + current_b));
+
         video_draw(&local->bg_player_stats, 320 - 70 - local->bg_player_stats.w, 0);
         video_draw(&local->bg_player_bio, 320 - local->bg_player_bio.w, 62);
         // player bio
-        font_render_wrapped_shadowed(&font_small, lang_get(135 + current_b), 320 - local->bg_player_bio.w + 4, 66, 152,
-                                     TEXT_GREEN, TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
+        text_render(&tconf_green, TEXT_DEFAULT, 320 - local->bg_player_bio.w + 4, 66, 152, 40,
+                    lang_get(135 + current_b));
+
         // player stats
-        font_render_shadowed(&font_small, lang_get(216), 320 - 66 - local->bg_player_stats.w + 27, 4, TEXT_GREEN,
-                             TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
-        font_render_shadowed(&font_small, lang_get(217), 320 - 66 - local->bg_player_stats.w + 19, 22, TEXT_GREEN,
-                             TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
-        font_render_shadowed(&font_small, lang_get(218), 320 - 66 - local->bg_player_stats.w + 12, 40, TEXT_GREEN,
-                             TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
+        text_render(&tconf_green, TEXT_DEFAULT, 320 - 66 - local->bg_player_stats.w, 4, 85, 8, lang_get(216));
+        text_render(&tconf_green, TEXT_DEFAULT, 320 - 66 - local->bg_player_stats.w, 22, 85, 8, lang_get(217));
+        text_render(&tconf_green, TEXT_DEFAULT, 320 - 66 - local->bg_player_stats.w, 40, 85, 8, lang_get(218));
+
         component_render(local->bar_power[1]);
         component_render(local->bar_agility[1]);
         component_render(local->bar_endurance[1]);
     } else {
         // 'choose your pilot'
-        font_render_wrapped_shadowed(&font_small, lang_get(187), 160, 97, 160, TEXT_GREEN,
-                                     TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
+        text_render(&tconf_green, TEXT_DEFAULT, 160, 97, 160, 8, lang_get(187));
     }
 
     object_render(&local->player2_placeholder);
 
     // player 1 name
-    font_render_wrapped_shadowed(&font_small, lang_get(20 + current_a), 0, 52, 66, TEXT_BLACK,
-                                 TEXT_SHADOW_TOP | TEXT_SHADOW_LEFT);
-
-    if(player2_is_selectable) {
-        // player 2 name
-        font_render_wrapped_shadowed(&font_small, lang_get(20 + current_b), 320 - 66, 52, 66, TEXT_BLACK,
-                                     TEXT_SHADOW_TOP | TEXT_SHADOW_LEFT);
-    }
+    text_render(&tconf_black, TEXT_DEFAULT, 0, 52, 66, 8, lang_get(20 + current_a));
 
     render_highlights(local, player2_is_selectable);
     render_disabled_portraits(local->pilot_portraits);
@@ -510,14 +522,28 @@ static void render_har_select(melee_local *local, bool player2_is_selectable) {
     render_enabled_portrait(local->har_portraits, &local->cursor[0]);
     object_render(&local->har_player1[CURSOR_INDEX(local, 0)]);
 
+    text_settings tconf_green;
+    text_defaults(&tconf_green);
+    tconf_green.font = FONT_SMALL;
+    tconf_green.cforeground = TEXT_GREEN;
+    tconf_green.shadow = TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM;
+    tconf_green.halign = TEXT_CENTER;
+    tconf_green.cshadow = TEXT_SHADOW_GREEN;
+
+    text_settings tconf_black;
+    text_defaults(&tconf_black);
+    tconf_black.font = FONT_SMALL;
+    tconf_black.cforeground = TEXT_BLACK;
+    tconf_black.shadow = TEXT_SHADOW_TOP | TEXT_SHADOW_LEFT;
+    tconf_black.halign = TEXT_CENTER;
+    tconf_black.cshadow = TEXT_SHADOW_BLACK;
+
     // player 1 name
-    font_render_wrapped_shadowed(&font_small, lang_get(20 + local->pilot_id_a), 0, 52, 66, TEXT_BLACK,
-                                 TEXT_SHADOW_TOP | TEXT_SHADOW_LEFT);
+    text_render(&tconf_black, TEXT_DEFAULT, 0, 52, 66, 8, lang_get(20 + local->pilot_id_a));
 
     if(player2_is_selectable) {
         // player 2 name
-        font_render_wrapped_shadowed(&font_small, lang_get(20 + local->pilot_id_b), 320 - 66, 52, 66, TEXT_BLACK,
-                                     TEXT_SHADOW_TOP | TEXT_SHADOW_LEFT);
+        text_render(&tconf_black, TEXT_DEFAULT, 320 - 66, 52, 66, 8, lang_get(20 + local->pilot_id_b));
 
         // currently selected player
         object_render(&local->big_portrait_2);
@@ -530,17 +556,14 @@ static void render_har_select(melee_local *local, bool player2_is_selectable) {
         str vs_text;
         str_from_format(&vs_text, "%s VS. %s", har_get_name(CURSOR_INDEX(local, 0)),
                         har_get_name(CURSOR_INDEX(local, 1)));
-        font_render_wrapped_shadowed(&font_small, str_c(&vs_text), 80, 107, 150, TEXT_BLACK,
-                                     TEXT_SHADOW_TOP | TEXT_SHADOW_LEFT);
+        text_render(&tconf_black, TEXT_DEFAULT, 80, 107, 150, 8, str_c(&vs_text));
         str_free(&vs_text);
     } else {
-        // 'choose your HAR'
-        font_render_wrapped_shadowed(&font_small, lang_get(186), 160, 97, 160, TEXT_MEDIUM_GREEN,
-                                     TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
+        // 'choose your Robot'
+        text_render(&tconf_green, TEXT_DEFAULT, 160, 97, 160, 8, lang_get(186));
 
         // render HAR name
-        font_render_wrapped_shadowed(&font_small, har_get_name(CURSOR_INDEX(local, 0)), 130, 107, 66, TEXT_BLACK,
-                                     TEXT_SHADOW_TOP | TEXT_SHADOW_LEFT);
+        text_render(&tconf_black, TEXT_DEFAULT, 120, 107, 60, 8, har_get_name(CURSOR_INDEX(local, 0)));
     }
 }
 
@@ -554,6 +577,13 @@ void melee_render(scene *scene) {
         render_har_select(local, player2->selectable);
     }
 
+    text_settings tconf_black;
+    text_defaults(&tconf_black);
+    tconf_black.font = FONT_SMALL;
+    tconf_black.cforeground = TEXT_BLACK;
+    tconf_black.shadow = TEXT_SHADOW_TOP | TEXT_SHADOW_LEFT;
+    tconf_black.cshadow = TEXT_SHADOW_BLACK;
+
     if(player2->selectable) {
         int text_x = 8;
         chr_score *s1 = game_player_get_score(game_state_get_player(scene->gs, 0));
@@ -561,11 +591,9 @@ void melee_render(scene *scene) {
         str wins_text_a, wins_text_b;
         str_from_format(&wins_text_a, "Wins: %d", s1->wins);
         str_from_format(&wins_text_b, "Wins: %d", s2->wins);
-        font_render_shadowed(&font_small, str_c(&wins_text_a), text_x, 107, TEXT_BLACK,
-                             TEXT_SHADOW_TOP | TEXT_SHADOW_LEFT);
-        text_x = 312 - str_size(&wins_text_b) * font_small.w;
-        font_render_shadowed(&font_small, str_c(&wins_text_a), text_x, 107, TEXT_BLACK,
-                             TEXT_SHADOW_TOP | TEXT_SHADOW_LEFT);
+        text_render(&tconf_black, TEXT_DEFAULT, text_x, 107, 50, 8, str_c(&wins_text_a));
+        text_x = 312 - text_width(&tconf_black, str_c(&wins_text_b));
+        text_render(&tconf_black, TEXT_DEFAULT, text_x, 107, 50, 8, str_c(&wins_text_b));
         str_free(&wins_text_a);
         str_free(&wins_text_b);
     }
