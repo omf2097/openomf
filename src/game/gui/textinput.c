@@ -22,6 +22,9 @@ typedef struct {
     char *buf;
     int max_chars;
     int bg_enabled;
+
+    textinput_done_cb done_cb;
+    void *userdata;
 } textinput;
 
 static void textinput_render(component *c) {
@@ -34,20 +37,39 @@ static void textinput_render(component *c) {
 
     text_mode mode = TEXT_UNSELECTED;
     if(component_is_selected(c)) {
+        mode = TEXT_SELECTED;
         if(chars > 0) {
-            mode = TEXT_SELECTED;
-            tb->buf[chars] = '\x7F';
-            tb->buf[chars + 1] = 0;
-            tb->buf[chars] = 0;
+            if(chars < tb->max_chars) {
+                tb->buf[chars] = '\x7F';
+                tb->buf[chars + 1] = 0;
+            }
+            text_render(&tb->tconf, mode, c->x, c->y, c->w, c->h, tb->buf);
+            if(chars < tb->max_chars) {
+                tb->buf[chars] = 0;
+            }
+            return;
         }
     } else if(component_is_disabled(c)) {
         mode = TEXT_DISABLED;
     }
     if(chars == 0) {
-        mode = TEXT_DISABLED;
+        text_render(&tb->tconf, mode, c->x, c->y, c->w, c->h, "\x7F ");
+    } else {
+        text_render(&tb->tconf, mode, c->x, c->y, c->w, c->h, tb->buf);
     }
+}
 
-    text_render(&tb->tconf, mode, c->x, c->y, c->w, c->h, tb->buf);
+static int textinput_action(component *c, int action) {
+    textinput *tb = widget_get_obj(c);
+
+    // Handle selection
+    if(action == ACT_PUNCH) {
+        if(tb->done_cb) {
+            tb->done_cb(c, tb->userdata);
+        }
+        return 0;
+    }
+    return 1;
 }
 
 static int textinput_event(component *c, SDL_Event *e) {
@@ -98,6 +120,11 @@ char *textinput_value(const component *c) {
     return tb->buf;
 }
 
+void textinput_clear(component *c) {
+    textinput *tb = widget_get_obj(c);
+    tb->buf[0] = 0;
+}
+
 static void textinput_free(component *c) {
     textinput *tb = widget_get_obj(c);
     surface_free(&tb->sur);
@@ -118,6 +145,12 @@ void textinput_enable_background(component *c, int enabled) {
     tb->bg_enabled = enabled;
 }
 
+void textinput_set_done_cb(component *c, textinput_done_cb done_cb, void *userdata) {
+    textinput *tb = widget_get_obj(c);
+    tb->done_cb = done_cb;
+    tb->userdata = userdata;
+}
+
 component *textinput_create(const text_settings *tconf, const char *text, const char *help, const char *initialvalue) {
     component *c = widget_create();
 
@@ -126,6 +159,9 @@ component *textinput_create(const text_settings *tconf, const char *text, const 
     memcpy(&tb->tconf, tconf, sizeof(text_settings));
     tb->bg_enabled = 1;
     tb->max_chars = 15;
+    tb->buf = omf_calloc(1, tb->max_chars + 1);
+    tb->done_cb = NULL;
+    tb->userdata = NULL;
 
     component_set_help_text(c, help);
 
@@ -138,14 +174,17 @@ component *textinput_create(const text_settings *tconf, const char *text, const 
     surface_create_from_image(&tb->sur, &img);
     image_free(&img);
 
-    // Copy over the initial value
-    tb->buf = omf_calloc(tb->max_chars + 1, 1);
-    strncpy(tb->buf, initialvalue, tb->max_chars);
+    component_set_size_hints(c, 15 * tsize + 2, tsize + 3);
 
+    if(initialvalue && strlen(initialvalue)) {
+        // Copy over the initial value
+        strncpy(tb->buf, initialvalue, tb->max_chars);
+    }
     // Widget stuff
     widget_set_obj(c, tb);
     widget_set_render_cb(c, textinput_render);
     widget_set_event_cb(c, textinput_event);
+    widget_set_action_cb(c, textinput_action);
     widget_set_tick_cb(c, textinput_tick);
     widget_set_free_cb(c, textinput_free);
     return c;
