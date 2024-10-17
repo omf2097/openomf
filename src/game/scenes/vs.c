@@ -263,14 +263,10 @@ void vs_render(scene *scene) {
 
         // arena name
         text_render(&tconf_green, TEXT_DEFAULT, 56 + 72, 153, (211 - 72) - 4, 8, lang_get(56 + local->arena));
-        // font_render_wrapped(&font_small, lang_get(56 + local->arena), 56 + 72, 153, (211 - 72) - 4,
-        // TEXT_BRIGHT_GREEN);
 
         tconf_green.valign = TEXT_MIDDLE;
         // arena description
         text_render(&tconf_green, TEXT_DEFAULT, 56 + 72, 153, (211 - 72) - 4, 50, lang_get(66 + local->arena));
-        // font_render_wrapped(&font_small, lang_get(66 + local->arena), 56 + 72, 160, (211 - 72) - 4,
-        // TEXT_BRIGHT_GREEN);
     } else if(player2->pilot && player2->pilot->pilot_id == PILOT_KREISSACK &&
               settings_get()->gameplay.difficulty < 2) {
         // kreissack, but not on Veteran or higher
