@@ -162,6 +162,8 @@ typedef struct har_t {
     unsigned int p_ticks_length;
     uint8_t p_color_fn;
 
+    uint32_t linked_obj;
+
     list har_hooks;
 
     har_action_hook_cb action_hook_cb;

@@ -15,12 +15,19 @@ typedef struct projectile_local_t {
     int ground_freeze;
     int invincible;
     bool has_hit;
+    uint32_t linked_obj;
 } projectile_local;
 
 void projectile_tick(object *obj) {
     projectile_local *local = object_get_userdata(obj);
 
     if(obj->animation_state.finished) {
+        if (local->linked_obj) {
+            object *linked = game_state_find_object(obj->gs, local->linked_obj);
+            if (linked) {
+                linked->animation_state.disable_d = 1;
+            }
+        }
         af_move *move = af_get_move(local->af_data, obj->cur_animation->id);
         if(move->successor_id) {
             object_set_animation(obj, &af_get_move(local->af_data, move->successor_id)->ani);
@@ -158,4 +165,9 @@ bool projectile_did_hit(object *obj) {
 void projectile_clear_hit(object *obj) {
     projectile_local *local = object_get_userdata(obj);
     local->has_hit = false;
+}
+
+void projectile_link_object(object *obj, object *link) {
+    projectile_local *local = object_get_userdata(obj);
+    local->linked_obj = link->id;
 }
