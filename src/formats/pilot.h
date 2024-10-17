@@ -142,7 +142,7 @@ void sd_pilot_clone(sd_pilot *dest, const sd_pilot *src);
  *
  * \param pilot Pilot struct pointer.
  */
-void sd_pilot_free(sd_pilot **pilot);
+void sd_pilot_free(sd_pilot *pilot);
 
 void sd_pilot_load_player_from_mem(memreader *mreader, sd_pilot *pilot);
 void sd_pilot_load_from_mem(memreader *mreader, sd_pilot *pilot);

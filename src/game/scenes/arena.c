@@ -76,7 +76,7 @@ void game_menu_quit(component *c, void *userdata) {
     if(player1->chr) {
         // quit back to VS for plug to call you a chicken
         game_player *player2 = game_state_get_player(((scene *)userdata)->gs, 1);
-        player2->pilot = NULL;
+        game_player_set_pilot(player2, NULL);
         game_state_set_next(s->gs, SCENE_VS);
     } else {
         game_state_set_next(s->gs, SCENE_MENU);

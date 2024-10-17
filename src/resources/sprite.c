@@ -63,5 +63,6 @@ sprite *sprite_copy(sprite *src) {
     // Copy surface
     new->data = omf_calloc(1, sizeof(surface));
     surface_create_from(new->data, src->data);
+    new->owned = true;
     return new;
 }

@@ -20,7 +20,8 @@ int sd_tournament_create(sd_tournament_file *trn) {
 static void free_enemies(sd_tournament_file *trn) {
     for(int i = 0; i < MAX_TRN_ENEMIES; i++) {
         if(trn->enemies[i]) {
-            sd_pilot_free(&trn->enemies[i]);
+            sd_pilot_free(trn->enemies[i]);
+            omf_free(trn->enemies[i]);
         }
     }
 }

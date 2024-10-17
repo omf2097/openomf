@@ -16,6 +16,7 @@ int sd_pilot_create(sd_pilot *pilot) {
 }
 
 void sd_pilot_clone(sd_pilot *dest, const sd_pilot *src) {
+    sd_pilot_free(dest);
     memcpy(dest, src, sizeof(sd_pilot));
     for(int m = 0; m < 10; m++) {
         if(src->quotes[m] != NULL) {
@@ -24,13 +25,12 @@ void sd_pilot_clone(sd_pilot *dest, const sd_pilot *src) {
     }
 }
 
-void sd_pilot_free(sd_pilot **pilot) {
-    if(*pilot == NULL)
+void sd_pilot_free(sd_pilot *pilot) {
+    if(pilot == NULL)
         return;
     for(int m = 0; m < 10; m++) {
-        omf_free((*pilot)->quotes[m]);
+        omf_free(pilot->quotes[m]);
     }
-    omf_free(*pilot);
 }
 
 // Reads exactly 24 + 8 + 11 = 43 bytes
