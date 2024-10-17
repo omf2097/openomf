@@ -22,9 +22,9 @@ void projectile_tick(object *obj) {
     projectile_local *local = object_get_userdata(obj);
 
     if(obj->animation_state.finished) {
-        if (local->linked_obj) {
+        if(local->linked_obj) {
             object *linked = game_state_find_object(obj->gs, local->linked_obj);
-            if (linked) {
+            if(linked) {
                 linked->animation_state.disable_d = 1;
             }
         }

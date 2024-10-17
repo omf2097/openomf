@@ -564,14 +564,13 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
     // Save damage taken
     h->last_damage_value = damage;
 
-    if (h->linked_obj) {
+    if(h->linked_obj) {
         object *linked = game_state_find_object(obj->gs, h->linked_obj);
-        if (linked) {
+        if(linked) {
             // end the animation of the linked object, so it can go to the successor
             linked->animation_state.finished = 1;
         }
     }
-
 
     game_player *player = game_state_get_player(obj->gs, h->player_id);
     // If god mode is not on, take damage
@@ -1177,7 +1176,6 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
         if(player_frame_isset(o_pjt, "af")) {
             h->in_stasis_ticks = 75;
         }
-
 
         if(player_frame_isset(o_pjt, "uz")) {
             // associate this with the enemy HAR
