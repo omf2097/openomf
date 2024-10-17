@@ -80,7 +80,7 @@ int text_find_max_strlen(int max_chars, const char *ptr) {
         if(ptr[i] != ' ')
             break;
     }
-    if(i == len - 1) {
+    if(i == len) {
         return i;
     }
 
@@ -158,7 +158,7 @@ int text_char_width(const text_settings *settings) {
 int text_find_line_count(text_direction dir, int cols, int rows, int len, const char *text) {
     int ptr = 0;
     int lines = 0;
-    while(ptr < len - 1) {
+    while(ptr < len) {
         // Find out how many characters for this row/col
         int line_len;
         if(dir == TEXT_HORIZONTAL)
@@ -220,7 +220,7 @@ void text_render(const text_settings *settings, text_mode mode, int x, int y, in
 
     int ptr = 0;
     int line = 0;
-    while(ptr < len - 1 && line < fit_lines) {
+    while(ptr < len && line < fit_lines) {
         int line_len;
         int real_len;
         int mx = 0;
