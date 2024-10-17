@@ -144,6 +144,7 @@ void player_reset(object *obj) {
     obj->animation_state.current_tick = 0;
     obj->animation_state.finished = 0;
     obj->animation_state.previous = -1;
+    obj->animation_state.disable_d = 0;
 }
 
 int player_frame_isset(const object *obj, const char *tag) {

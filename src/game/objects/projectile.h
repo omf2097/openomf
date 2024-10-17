@@ -17,4 +17,6 @@ void projectile_mark_hit(object *obj);
 bool projectile_did_hit(object *obj);
 void projectile_clear_hit(object *obj);
 
+void projectile_link_object(object *obj, object *link);
+
 #endif // PROJECTILE_H
