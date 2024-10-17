@@ -5,6 +5,8 @@
 #include "game/gui/textinput.h"
 #include "game/gui/widget.h"
 #include "utils/allocator.h"
+#include "utils/miscmath.h"
+#include "utils/log.h"
 #include "video/color.h"
 #include "video/image.h"
 #include "video/video.h"
@@ -21,12 +23,12 @@ typedef struct {
     surface sur;
     char *buf;
     int max_chars;
+    int pos;
     int bg_enabled;
 } textinput;
 
 static void textinput_render(component *c) {
     textinput *tb = widget_get_obj(c);
-    int chars = strlen(tb->buf);
 
     if(tb->bg_enabled) {
         video_draw(&tb->sur, c->x + (c->w - tb->sur.w) / 2, c->y - 2);
@@ -34,27 +36,60 @@ static void textinput_render(component *c) {
 
     text_mode mode = TEXT_UNSELECTED;
     if(component_is_selected(c)) {
-        if(chars > 0) {
-            mode = TEXT_SELECTED;
-            tb->buf[chars] = '\x7F';
-            tb->buf[chars + 1] = 0;
-            tb->buf[chars] = 0;
+        mode = TEXT_SELECTED;
+        int i = (tb->ticks / 10) % 16;
+        if(i > 8) {
+            i = 16 - i;
         }
+        tb->tconf.cforeground = 216 + i ;
+        text_render(&tb->tconf, TEXT_DEFAULT, c->x + (tb->pos * text_char_width(&tb->tconf)), c->y, c->w, c->h, "\x7F");
     } else if(component_is_disabled(c)) {
-        mode = TEXT_DISABLED;
-    }
-    if(chars == 0) {
         mode = TEXT_DISABLED;
     }
 
     text_render(&tb->tconf, mode, c->x, c->y, c->w, c->h, tb->buf);
 }
 
+static int textinput_action(component *c, int action) {
+    textinput *tb = widget_get_obj(c);
+    DEBUG("action %d", action);
+    switch (action) {
+        case ACT_RIGHT:
+            tb->pos = min2(tb->max_chars, tb->pos + 1);
+            if(!tb->buf[tb->pos]) {
+                tb->buf[tb->pos] = 'a';
+            }
+            return 0;
+            break;
+        case ACT_LEFT:
+            tb->pos = max2(0, tb->pos - 1);
+            return 0;
+            break;
+        case ACT_UP:
+            tb->buf[tb->pos] = tb->buf[tb->pos] + 1;
+            if(tb->buf[tb->pos] > 126) {
+                tb->buf[tb->pos] = 32;
+            }
+            return 0;
+            break;
+        case ACT_DOWN:
+            tb->buf[tb->pos] = tb->buf[tb->pos] - 1;
+            if(tb->buf[tb->pos] < 32) {
+                tb->buf[tb->pos] = 126;
+            }
+            return 0;
+            break;
+    }
+    return 1;
+}
+
 static int textinput_event(component *c, SDL_Event *e) {
     // Handle selection
     if(e->type == SDL_TEXTINPUT) {
         textinput *tb = widget_get_obj(c);
-        strncat(tb->buf, e->text.text, tb->max_chars - strlen(tb->buf));
+        tb->buf[tb->pos] = e->text.text[0];
+        tb->pos = min2(tb->max_chars, tb->pos + 1);
+        //strncat(tb->buf, e->text.text, tb->max_chars - strlen(tb->buf));
         return 0;
     } else if(e->type == SDL_KEYDOWN) {
         textinput *tb = widget_get_obj(c);
@@ -63,14 +98,22 @@ static int textinput_event(component *c, SDL_Event *e) {
         if(state[SDL_SCANCODE_BACKSPACE] || state[SDL_SCANCODE_DELETE]) {
             if(len > 0) {
                 tb->buf[len - 1] = '\0';
+                tb->pos = max2(0, tb->pos - 1);
             }
-        } else if(state[SDL_SCANCODE_LEFT]) {
+        /*} else if(state[SDL_SCANCODE_LEFT]) {
+            tb->pos = min2(tb->max_chars, tb->pos + 1);
+            if(!tb->buf[tb->pos]) {
+                tb->buf[tb->pos] = ' ';
+            }
             // TODO move cursor to the left
         } else if(state[SDL_SCANCODE_RIGHT]) {
-            // TODO move cursor to the right
+            tb->pos = max2(0, tb->pos - 1);
+            // TODO move cursor to the right*/
         } else if(state[SDL_SCANCODE_V] && state[SDL_SCANCODE_LCTRL]) {
             if(SDL_HasClipboardText()) {
-                strncat(tb->buf, SDL_GetClipboardText(), tb->max_chars - strlen(tb->buf));
+                char *clip = SDL_GetClipboardText();
+                strncat(tb->buf + tb->pos, clip, tb->max_chars - tb->pos);
+                tb->pos = min2(tb->max_chars, tb->pos + strlen(clip));
             }
         }
         return 0;
@@ -95,6 +138,7 @@ static void textinput_tick(component *c) {
 
 char *textinput_value(const component *c) {
     textinput *tb = widget_get_obj(c);
+    // TODO trim trailing whitespace
     return tb->buf;
 }
 
@@ -126,6 +170,7 @@ component *textinput_create(const text_settings *tconf, const char *text, const 
     memcpy(&tb->tconf, tconf, sizeof(text_settings));
     tb->bg_enabled = 1;
     tb->max_chars = 15;
+    tb->pos = 0;
 
     component_set_help_text(c, help);
 
@@ -146,6 +191,7 @@ component *textinput_create(const text_settings *tconf, const char *text, const 
     widget_set_obj(c, tb);
     widget_set_render_cb(c, textinput_render);
     widget_set_event_cb(c, textinput_event);
+    widget_set_action_cb(c, textinput_action);
     widget_set_tick_cb(c, textinput_tick);
     widget_set_free_cb(c, textinput_free);
     return c;

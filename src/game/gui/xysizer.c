@@ -69,7 +69,9 @@ static int xysizer_event(component *c, SDL_Event *event) {
 }
 
 static int xysizer_action(component *c, int action) {
-    sizer *s = sizer_get_obj(c);
+    sizer *s = component_get_obj(c);
+
+    DEBUG("sizer action %d", action);
 
     // Just pass events to all children
     iterator it;
