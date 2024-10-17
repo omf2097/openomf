@@ -18,6 +18,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define TEXT_GREEN 0xA7
+#define TEXT_SHADOW_GREEN 0xA2
+
 void cb_vs_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t flags, int s, int g, void *userdata);
 void cb_vs_destroy_object(object *parent, int id, void *userdata);
 
@@ -232,24 +235,48 @@ void vs_render(scene *scene) {
     game_player *player1 = game_state_get_player(scene->gs, 0);
     game_player *player2 = game_state_get_player(scene->gs, 1);
 
-    font_render_shadowed(&font_small, local->vs_str, 160 - ((strlen(local->vs_str) * font_small.w) / 2), 3,
-                         COLOR_YELLOW, TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
+    // X vs Y
+    text_settings tconf_yellow;
+    text_defaults(&tconf_yellow);
+    tconf_yellow.font = FONT_SMALL;
+    tconf_yellow.cforeground = COLOR_YELLOW;
+    tconf_yellow.shadow = TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM;
+    tconf_yellow.cshadow = 202;
+    tconf_yellow.halign = TEXT_CENTER;
+
+    text_render(&tconf_yellow, TEXT_DEFAULT, 0, 3, 320, 8, local->vs_str);
+
+    // no other text is shadowed
+    tconf_yellow.shadow = 0;
 
     if(player2->selectable) {
+        text_settings tconf_green;
+        text_defaults(&tconf_green);
+        tconf_green.font = FONT_SMALL;
+        tconf_green.cforeground = TEXT_GREEN;
+        tconf_green.shadow = TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM;
+        tconf_green.halign = TEXT_CENTER;
+        tconf_green.cshadow = TEXT_SHADOW_GREEN;
+
         // arena selection
         video_draw(&local->arena_select_bg, 55, 150);
 
         // arena name
-        font_render_wrapped(&font_small, lang_get(56 + local->arena), 56 + 72, 153, (211 - 72) - 4, TEXT_BRIGHT_GREEN);
+        text_render(&tconf_green, TEXT_DEFAULT, 56 + 72, 153, (211 - 72) - 4, 8, lang_get(56 + local->arena));
 
+        tconf_green.valign = TEXT_MIDDLE;
         // arena description
-        font_render_wrapped(&font_small, lang_get(66 + local->arena), 56 + 72, 160, (211 - 72) - 4, TEXT_BRIGHT_GREEN);
+        text_render(&tconf_green, TEXT_DEFAULT, 56 + 72, 153, (211 - 72) - 4, 50, lang_get(66 + local->arena));
     } else if(player2->pilot && player2->pilot->pilot_id == PILOT_KREISSACK &&
               settings_get()->gameplay.difficulty < 2) {
         // kreissack, but not on Veteran or higher
-        font_render_wrapped(&font_small, lang_get(747), 59, 160, 200, COLOR_YELLOW);
+        tconf_yellow.halign = TEXT_CENTER;
+        text_render(&tconf_yellow, TEXT_DEFAULT, 80, 165, 170, 60, lang_get(747));
+
     } else if(player1->chr && player2->pilot) {
-        font_render_wrapped(&font_small, player2->pilot->quotes[0], 320 - (59 + 150), 165, 120, COLOR_YELLOW);
+        // tournament mode insult
+        tconf_yellow.halign = TEXT_RIGHT;
+        text_render(&tconf_yellow, TEXT_DEFAULT, 100, 165, 150, 60, player2->pilot->quotes[0]);
     } else if(!player2->pilot) {
         // render plug's bitching
         char text[256];
@@ -316,10 +343,14 @@ void vs_render(scene *scene) {
         snprintf(text, sizeof(text), "%u%%", fight_stats->hit_miss_ratio[1]);
         font_render(&font_small, text, 276, 137, COLOR_GREEN);
     } else {
-        font_render_wrapped(&font_small, lang_get(749 + (11 * player1->pilot->pilot_id) + player2->pilot->pilot_id), 59,
-                            160, 150, COLOR_YELLOW);
-        font_render_wrapped(&font_small, lang_get(870 + (11 * player2->pilot->pilot_id) + player1->pilot->pilot_id),
-                            320 - (59 + 150), 180, 150, COLOR_YELLOW);
+        // 1 player insult
+        tconf_yellow.valign = TEXT_MIDDLE;
+        tconf_yellow.halign = TEXT_LEFT;
+        text_render(&tconf_yellow, TEXT_DEFAULT, 77, 150, 150, 30,
+                    lang_get(749 + (11 * player1->pilot->pilot_id) + player2->pilot->pilot_id));
+        tconf_yellow.halign = TEXT_RIGHT;
+        text_render(&tconf_yellow, TEXT_DEFAULT, 110, 170, 150, 30,
+                    lang_get(870 + (11 * player2->pilot->pilot_id) + player1->pilot->pilot_id));
     }
 }
 
@@ -588,7 +619,7 @@ int vs_create(scene *scene) {
     // Too Pathetic Dialog
     char insult[512];
     snprintf(insult, 512, lang_get(748), "Veteran", "Major Kreissack");
-    dialog_create(&local->too_pathetic_dialog, DIALOG_STYLE_OK, insult, 72, 60);
+    dialog_create(&local->too_pathetic_dialog, DIALOG_STYLE_OK, insult, 72, 40);
     local->too_pathetic_dialog.userdata = scene;
     local->too_pathetic_dialog.clicked = vs_too_pathetic_dialog_clicked;
 
