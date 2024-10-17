@@ -331,9 +331,11 @@ void vs_render(scene *scene) {
         // 1 player insult
         tconf_yellow.valign = TEXT_MIDDLE;
         tconf_yellow.halign = TEXT_LEFT;
-        text_render(&tconf_yellow, TEXT_DEFAULT, 77, 150, 150, 30, lang_get(749 + (11 * player1->pilot->pilot_id) + player2->pilot->pilot_id));
+        text_render(&tconf_yellow, TEXT_DEFAULT, 77, 150, 150, 30,
+                    lang_get(749 + (11 * player1->pilot->pilot_id) + player2->pilot->pilot_id));
         tconf_yellow.halign = TEXT_RIGHT;
-        text_render(&tconf_yellow, TEXT_DEFAULT, 110, 170, 150, 30, lang_get(870 + (11 * player2->pilot->pilot_id) + player1->pilot->pilot_id));
+        text_render(&tconf_yellow, TEXT_DEFAULT, 110, 170, 150, 30,
+                    lang_get(870 + (11 * player2->pilot->pilot_id) + player1->pilot->pilot_id));
     }
 }
 
