@@ -422,7 +422,8 @@ void mechlab_input_tick(scene *scene) {
                             guiframe_get_root(local->frame)); // This will trigger exception case in mechlab_tick
                     }
                 } else {
-                    guiframe_action(local->frame, i->event_data.action);
+                    DEBUG("sending input %d to new player dash", i->event_data.action);
+                    guiframe_action(local->dashboard, i->event_data.action);
                 }
 
             } else if(local->dashtype == DASHBOARD_SELECT_NEW_PIC && i->event_data.action == ACT_ESC) {

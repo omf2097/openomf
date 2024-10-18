@@ -28,12 +28,13 @@ component *lab_dash_newplayer_create(scene *s, newplayer_widgets *nw) {
     xysizer_attach(xy, label_create(&tconf, lang_get(192)), 110, 43, 100, 50);
 
     // Input field
-    tconf.cforeground = TEXT_MEDIUM_GREEN;
+    tconf.cselected = TEXT_BRIGHT_GREEN;
+    tconf.halign = TEXT_LEFT;
     nw->input = textinput_create(&tconf, "Name", NULL, "");
     component_select(nw->input, 1);
     textinput_enable_background(nw->input, 0);
     textinput_set_max_chars(nw->input, 8);
-    xysizer_attach(xy, nw->input, 101, 62, 120, 8);
+    xysizer_attach(xy, nw->input, 114, 62, 120, 8);
 
     return xy;
 }
