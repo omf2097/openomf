@@ -84,7 +84,7 @@ int pcx_load(pcx_file *pcx, const char *filename) {
         return SD_FILE_READ_ERROR;
     }
 
-    if(sd_read_buf(reader, (void *)&(pcx->palette.data), 768) != 1) {
+    if(sd_read_buf(reader, (void *)&(pcx->palette.colors), sizeof(vga_palette)) != 1) {
         sd_reader_close(reader);
         return SD_FILE_READ_ERROR;
     }
@@ -167,12 +167,10 @@ void pcx_free(pcx_file *pcx) {
     if(pcx == NULL)
         return;
     sd_vga_image_free(&pcx->image);
-    palette_free(&pcx->palette);
 }
 
 void pcx_font_free(pcx_font *font) {
     if(font == NULL)
         return;
     sd_vga_image_free(&font->pcx.image);
-    palette_free(&font->pcx.palette);
 }

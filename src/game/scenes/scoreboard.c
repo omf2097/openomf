@@ -12,7 +12,7 @@
 #include "utils/allocator.h"
 #include "utils/log.h"
 #include "video/surface.h"
-#include "video/video.h"
+#include "video/vga_state.h"
 
 #define MAX_PAGES (NUMBER_OF_ROUND_TYPES - 1)
 #define TEXT_COLOR_HEADER TEXT_BLINKY_GREEN
@@ -222,13 +222,7 @@ int scoreboard_create(scene *scene) {
     }
 
     // Darken the colors for the background a bit.
-    palette *pal = video_get_base_palette();
-    for(int i = 0; i < 0xEF; i++) {
-        pal->data[i][0] *= 0.6;
-        pal->data[i][1] *= 0.6;
-        pal->data[i][2] *= 0.6;
-    }
-    video_force_pal_refresh();
+    vga_state_mul_base_palette(0, 0xEF, 0.6);
 
     if(local->has_pending_data) {
         text_settings small_text;

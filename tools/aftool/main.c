@@ -77,7 +77,7 @@ void sprite_play(sd_af_file *af, sd_bk_file *bk, int scale, int anim, int sprite
     }
 
     sd_rgba_image img;
-    sd_sprite_rgba_decode(&img, s, bk->palettes[0], -1);
+    sd_sprite_rgba_decode(&img, s, bk->palettes[0]);
 
     if(!(surface =
              SDL_CreateRGBSurfaceFrom((void *)img.data, img.w, img.h, 32, img.w * 4, rmask, gmask, bmask, amask))) {
@@ -164,7 +164,7 @@ void sprite_play(sd_af_file *af, sd_bk_file *bk, int scale, int anim, int sprite
                 }
                 if(changed) {
                     s = af->moves[anim]->animation->sprites[sprite];
-                    sd_sprite_rgba_decode(&img, s, bk->palettes[0], -1);
+                    sd_sprite_rgba_decode(&img, s, bk->palettes[0]);
                     printf("Sprite Info: pos=(%d,%d) size=(%d,%d) len=%d\n", s->pos_x, s->pos_y, s->width, s->height,
                            s->len);
 

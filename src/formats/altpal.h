@@ -23,7 +23,7 @@ extern "C" {
  * A simple list of alternate palettes.
  */
 typedef struct {
-    palette palettes[ALTPALS_PALETTES]; ///< List of palettes
+    vga_palette palettes[ALTPALS_PALETTES]; ///< List of palettes
 } altpal_file;
 
 // globals, yay

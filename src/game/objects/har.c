@@ -22,7 +22,8 @@
 #include "utils/log.h"
 #include "utils/miscmath.h"
 #include "utils/random.h"
-
+#include "video/damage_tracker.h"
+#include "video/vga_state.h"
 #include "video/video.h"
 
 #define IS_ZERO(n) (n < 0.8 && n > -0.8)
@@ -1277,13 +1278,10 @@ void har_collide(object *obj_a, object *obj_b) {
     har_collide_with_har(obj_b, obj_a, 0);
 }
 
-int har_palette_transform(object *obj, screen_palette *pal) {
+void har_palette_transform(damage_tracker *damage, vga_palette *pal, void *obj) {
     har *h = object_get_userdata(obj);
-
-    // Dont run transformations if there is no need.
-    if(h->p_ticks_left <= 0) {
-        return 0;
-    }
+    int step, max;
+    vga_color ref, tmp;
 
     // Select palette start and length.
     // For player 0, we should use palette indexes 0-47. For player 1, 48-96.
@@ -1292,35 +1290,41 @@ int har_palette_transform(object *obj, screen_palette *pal) {
     int pal_length = 47 + h->player_id;
 
     // Handle palette transformation
-    int r, g, b, m, c;
-    int _r = pal->data[h->p_pal_ref][0];
-    int _g = pal->data[h->p_pal_ref][1];
-    int _b = pal->data[h->p_pal_ref][2];
-    c = (h->p_color_ref * 4) * ((float)h->p_ticks_left / (float)h->p_ticks_length);
-    for(int i = pal_start; i < pal_start + pal_length; i++) {
-        if(h->p_color_fn) {
-            m = max3(pal->data[i][0], pal->data[i][1], pal->data[i][2]);
-            r = (m * (c * (_r * pal->data[i][0]) / 255.0f) / 255.0f) * pal->data[i][0];
-            g = (m * (c * (_g * pal->data[i][1]) / 255.0f) / 255.0f) * pal->data[i][1];
-            b = (m * (c * (_b * pal->data[i][2]) / 255.0f) / 255.0f) * pal->data[i][2];
-        } else {
-            r = (c * _r) / 255.0f + (255 - c) * (pal->data[i][0] / 255.0f);
-            g = (c * _g) / 255.0f + (255 - c) * (pal->data[i][1] / 255.0f);
-            b = (c * _b) / 255.0f + (255 - c) * (pal->data[i][2] / 255.0f);
+    ref = pal->colors[h->p_pal_ref];
+    step = (h->p_color_ref * 4) * ((float)h->p_ticks_left / (float)h->p_ticks_length);
+    if(h->p_color_fn) {
+        for(int i = pal_start; i < pal_start + pal_length; i++) {
+            max = max3(pal->colors[i].r, pal->colors[i].g, pal->colors[i].b);
+            tmp.r = (max * (step * (ref.r * pal->colors[i].r) / 255.0f) / 255.0f) * pal->colors[i].r;
+            tmp.g = (max * (step * (ref.g * pal->colors[i].g) / 255.0f) / 255.0f) * pal->colors[i].g;
+            tmp.b = (max * (step * (ref.b * pal->colors[i].b) / 255.0f) / 255.0f) * pal->colors[i].b;
+            pal->colors[i].r = min2(max2(tmp.r, 0), 255);
+            pal->colors[i].g = min2(max2(tmp.g, 0), 255);
+            pal->colors[i].b = min2(max2(tmp.b, 0), 255);
         }
-
-        pal->data[i][0] = min2(max2(r, 0), 255);
-        pal->data[i][1] = min2(max2(g, 0), 255);
-        pal->data[i][2] = min2(max2(b, 0), 255);
+    } else {
+        for(int i = pal_start; i < pal_start + pal_length; i++) {
+            tmp.r = (step * ref.r) / 255.0f + (255 - step) * (pal->colors[i].r / 255.0f);
+            tmp.g = (step * ref.g) / 255.0f + (255 - step) * (pal->colors[i].g / 255.0f);
+            tmp.b = (step * ref.b) / 255.0f + (255 - step) * (pal->colors[i].b / 255.0f);
+            pal->colors[i].r = min2(max2(tmp.r, 0), 255);
+            pal->colors[i].g = min2(max2(tmp.g, 0), 255);
+            pal->colors[i].b = min2(max2(tmp.b, 0), 255);
+        }
     }
 
-    h->p_ticks_left--;
-    return 1;
+    // Mark the palette as damaged.
+    damage_set_range(damage, pal_start, pal_start + pal_length);
 }
 
 void har_tick(object *obj) {
     har *h = object_get_userdata(obj);
     controller *ctrl = game_player_get_ctrl(game_state_get_player(obj->gs, h->player_id));
+
+    if(h->p_ticks_left > 0) {
+        vga_state_use_palette_transform(har_palette_transform, obj);
+        h->p_ticks_left--;
+    }
 
     if(h->in_stasis_ticks > 0) {
         h->in_stasis_ticks--;
@@ -2212,7 +2216,6 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     object_set_move_cb(obj, har_move);
     object_set_collide_cb(obj, har_collide);
     object_set_finish_cb(obj, har_finished);
-    object_set_pal_transform_cb(obj, har_palette_transform);
 
 #ifdef DEBUGMODE
     object_set_debug_cb(obj, har_debug);

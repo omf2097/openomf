@@ -18,6 +18,7 @@
 #include "utils/allocator.h"
 #include "utils/log.h"
 #include "utils/random.h"
+#include "video/vga_state.h"
 #include "video/video.h"
 
 #define MAX_STAT 20
@@ -135,18 +136,15 @@ void melee_free(scene *scene) {
 }
 
 static void set_cursor_colors(int offset, bool a_done, bool b_done) {
-    palette *pal = video_get_base_palette();
     int base = 120;
-    pal->data[RED_CURSOR_INDEX][0] = base + (a_done ? 64 : offset);
-    pal->data[RED_CURSOR_INDEX][1] = 0;
-    pal->data[RED_CURSOR_INDEX][2] = 0;
-    pal->data[BLUE_CURSOR_INDEX][0] = 0;
-    pal->data[BLUE_CURSOR_INDEX][1] = 0;
-    pal->data[BLUE_CURSOR_INDEX][2] = base + (b_done ? 64 : offset);
-    pal->data[VIOLET_CURSOR_INDEX][0] = base + offset;
-    pal->data[VIOLET_CURSOR_INDEX][1] = 0;
-    pal->data[VIOLET_CURSOR_INDEX][2] = base + offset;
-    video_force_pal_refresh();
+
+    vga_color red_cursor_color = {base + (a_done ? 64 : offset), 0, 0};
+    vga_color blue_cursor_color = {0, 0, base + (b_done ? 64 : offset)};
+    vga_color violet_cursor_color = {base + offset, 0, base + offset};
+
+    vga_state_set_base_palette_index(RED_CURSOR_INDEX, &red_cursor_color);
+    vga_state_set_base_palette_index(BLUE_CURSOR_INDEX, &blue_cursor_color);
+    vga_state_set_base_palette_index(VIOLET_CURSOR_INDEX, &violet_cursor_color);
 }
 
 void melee_tick(scene *scene, int paused) {
@@ -303,7 +301,6 @@ void handle_action(scene *scene, int player, int action) {
 
                     object_select_sprite(&local->big_portrait_1, local->pilot_id_a);
                     // update the player palette
-                    palette *base_pal = video_get_base_palette();
                     pilot p_a;
                     pilot_get_info(&p_a, local->pilot_id_a);
                     player1->pilot->endurance = p_a.endurance;
@@ -312,8 +309,7 @@ void handle_action(scene *scene, int player, int action) {
                     sd_pilot_set_player_color(player1->pilot, TERTIARY, p_a.colors[0]);
                     sd_pilot_set_player_color(player1->pilot, SECONDARY, p_a.colors[1]);
                     sd_pilot_set_player_color(player1->pilot, PRIMARY, p_a.colors[2]);
-
-                    palette_load_player_colors(base_pal, &player1->pilot->palette, 0);
+                    palette_load_player_colors(&player1->pilot->palette, 0);
 
                     if(player2->selectable) {
                         object_select_sprite(&local->big_portrait_2, local->pilot_id_b);
@@ -325,10 +321,8 @@ void handle_action(scene *scene, int player, int action) {
                         sd_pilot_set_player_color(player2->pilot, TERTIARY, p_a.colors[0]);
                         sd_pilot_set_player_color(player2->pilot, SECONDARY, p_a.colors[1]);
                         sd_pilot_set_player_color(player2->pilot, PRIMARY, p_a.colors[2]);
-
-                        palette_load_player_colors(base_pal, &player2->pilot->palette, 1);
+                        palette_load_player_colors(&player2->pilot->palette, 1);
                     }
-                    video_force_pal_refresh();
                 } else {
                     int nova_activated[2] = {1, 1};
                     for(int i = 0; i < 2; i++) {
@@ -673,8 +667,9 @@ static void load_har_portraits(scene *scene, melee_local *local) {
         surface_set_transparency(&target->enabled, 0xD0);
 
         // Copy the enabled image, and compress the colors to grayscale
+        vga_palette *scene_pal = vector_get(&scene->bk_data->palettes, 0);
         surface_create_from(&target->disabled, &target->enabled);
-        surface_convert_to_grayscale(&target->disabled, video_get_pal_ref(), 0xD0, 0xDF);
+        surface_convert_to_grayscale(&target->disabled, scene_pal, 0xD0, 0xDF);
     }
 }
 
@@ -712,11 +707,9 @@ int melee_create(scene *scene) {
     controller *player1_ctrl = game_player_get_ctrl(player1);
     controller *player2_ctrl = game_player_get_ctrl(player2);
 
-    palette *mpal = video_get_base_palette();
-    palette_set_player_color(mpal, 0, 8, 0);
-    palette_set_player_color(mpal, 0, 8, 1);
-    palette_set_player_color(mpal, 0, 8, 2);
-    video_force_pal_refresh();
+    palette_set_player_color(0, 8, 0);
+    palette_set_player_color(0, 8, 1);
+    palette_set_player_color(0, 8, 2);
 
     menu_background2_create(&local->bg_player_stats, 90, 61);
     menu_background2_create(&local->bg_player_bio, 160, 43);

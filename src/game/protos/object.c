@@ -6,6 +6,7 @@
 #include "utils/compat.h"
 #include "utils/log.h"
 #include "utils/miscmath.h"
+#include "video/vga_state.h"
 #include "video/video.h"
 #include <stdlib.h>
 #include <string.h>
@@ -89,7 +90,6 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
     obj->finish = NULL;
     obj->move = NULL;
     obj->debug = NULL;
-    obj->pal_transform = NULL;
     obj->clone = NULL;
     obj->clone_free = NULL;
 }
@@ -142,6 +142,45 @@ void object_set_playback_direction(object *obj, int dir) {
     }
 }
 
+void object_scenewide_palette_transform(damage_tracker *damage, vga_palette *pal, void *userdata) {
+    float u, k, step, bp;
+    uint8_t m;
+    vga_color ref;
+    vga_index start, end;
+    player_sprite_state *state;
+
+    // Make sure stuff seems legit.
+    state = &((object *)userdata)->sprite_state;
+    assert(state->pal_start_index < 256);
+    assert(state->pal_start_index + state->pal_entry_count <= 256);
+
+    step = state->timer / (float)state->duration;
+    bp = (float)state->pal_begin + (state->pal_end - state->pal_begin) * step;
+    k = bp / 255.0f;
+    ref = pal->colors[state->pal_ref_index];
+    start = state->pal_start_index;
+    end = state->pal_start_index + state->pal_entry_count;
+
+    if(state->pal_tint) {
+        for(vga_index i = start; i < end; i++) {
+            m = max3(pal->colors[i].r, pal->colors[i].g, pal->colors[i].b);
+            u = m / 255.0f;
+            pal->colors[i].r = max2(0, min2(255, pal->colors[i].r + u * k * (ref.r - pal->colors[i].r)));
+            pal->colors[i].g = max2(0, min2(255, pal->colors[i].g + u * k * (ref.g - pal->colors[i].g)));
+            pal->colors[i].b = max2(0, min2(255, pal->colors[i].b + u * k * (ref.b - pal->colors[i].b)));
+        }
+    } else {
+        for(vga_index i = start; i < end; i++) {
+            pal->colors[i].r = max2(0, min2(255, pal->colors[i].r * (1 - k) + (ref.r * k)));
+            pal->colors[i].g = max2(0, min2(255, pal->colors[i].g * (1 - k) + (ref.g * k)));
+            pal->colors[i].b = max2(0, min2(255, pal->colors[i].b * (1 - k) + (ref.b * k)));
+        }
+    }
+
+    // Mark the palette as damaged
+    damage_set_range(damage, start, end);
+}
+
 void object_dynamic_tick(object *obj) {
     obj->age++;
 
@@ -176,6 +215,10 @@ void object_dynamic_tick(object *obj) {
     if(obj->sprite_state.screen_shake_horizontal > 0) {
         obj->gs->screen_shake_horizontal = obj->sprite_state.screen_shake_horizontal * 4;
         obj->sprite_state.screen_shake_horizontal = 0;
+    }
+
+    if(obj->sprite_state.pal_entry_count > 0 && obj->sprite_state.duration > 0) {
+        vga_state_use_palette_transform(object_scenewide_palette_transform, obj);
     }
 }
 
@@ -379,51 +422,6 @@ void object_move(object *obj) {
     }
 }
 
-// This does palette transformations to the WHOLE screen palette
-// and affects all objects!
-int object_scenewide_palette_transform(object *obj, screen_palette *pal) {
-    player_sprite_state *rstate = &obj->sprite_state;
-    if(rstate->pal_entry_count > 0 && rstate->duration > 0) {
-        float bp = ((float)rstate->pal_begin) + ((float)rstate->pal_end - (float)rstate->pal_begin) *
-                                                    ((float)rstate->timer / (float)rstate->duration);
-
-        color b;
-        b.r = pal->data[rstate->pal_ref_index][0];
-        b.g = pal->data[rstate->pal_ref_index][1];
-        b.b = pal->data[rstate->pal_ref_index][2];
-
-        uint8_t m;
-        float u;
-        float k = bp / 255.0f;
-        for(int i = rstate->pal_start_index; i < rstate->pal_start_index + rstate->pal_entry_count; i++) {
-            if(rstate->pal_tint) {
-                m = max3(pal->data[i][0], pal->data[i][1], pal->data[i][2]);
-                u = m / 255.0f;
-                pal->data[i][0] = max2(0, min2(255, pal->data[i][0] + u * k * (b.r - pal->data[i][0])));
-                pal->data[i][1] = max2(0, min2(255, pal->data[i][1] + u * k * (b.g - pal->data[i][1])));
-                pal->data[i][2] = max2(0, min2(255, pal->data[i][2] + u * k * (b.b - pal->data[i][2])));
-            } else {
-                pal->data[i][0] = max2(0, min2(255, pal->data[i][0] * (1 - k) + (b.r * k)));
-                pal->data[i][1] = max2(0, min2(255, pal->data[i][1] * (1 - k) + (b.g * k)));
-                pal->data[i][2] = max2(0, min2(255, pal->data[i][2] * (1 - k) + (b.b * k)));
-            }
-        }
-        return 1;
-    }
-    return 0;
-}
-
-// This does palette transformations to the WHOLE screen palette
-// and affects all objects!
-int object_palette_transform(object *obj, screen_palette *pal) {
-    int transform_done = 0;
-    transform_done |= object_scenewide_palette_transform(obj, pal);
-    if(obj->pal_transform != NULL) {
-        transform_done |= obj->pal_transform(obj, pal);
-    }
-    return transform_done;
-}
-
 /** Frees the object and all resources attached to it (even the animation, if it is owned by the object)
  * \param obj Object handle
  */
@@ -590,10 +588,6 @@ void object_set_move_cb(object *obj, object_move_cb cbfunc) {
 }
 void object_set_debug_cb(object *obj, object_debug_cb cbfunc) {
     obj->debug = cbfunc;
-}
-
-void object_set_pal_transform_cb(object *obj, object_palette_transform_cb cbfunc) {
-    obj->pal_transform = cbfunc;
 }
 
 void object_set_layers(object *obj, int layers) {

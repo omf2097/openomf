@@ -161,7 +161,7 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
 
     // Read palette. Only 40 colors are defined, starting
     // from palette position 128. Remember to convert VGA pal.
-    memset((void *)&trn->pal, 0, sizeof(palette));
+    vga_palette_init(&trn->pal);
     palette_load_range(r, &trn->pal, 128, 40);
 
     // Read pic filename

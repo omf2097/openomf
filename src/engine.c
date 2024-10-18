@@ -12,6 +12,7 @@
 #include "utils/allocator.h"
 #include "utils/log.h"
 #include "video/surface.h"
+#include "video/vga_state.h"
 #include "video/video.h"
 #include <SDL.h>
 #include <stdio.h>
@@ -53,6 +54,7 @@ int engine_init(void) {
         goto exit_5;
     if(console_init())
         goto exit_6;
+    vga_state_init();
 
     // Return successfully
     run = 1;
@@ -262,6 +264,7 @@ void engine_run(engine_init_flags *init_flags) {
         // Do the actual video rendering jobs
         if(enable_screen_updates) {
 
+            vga_state_render();
             video_render_prepare();
             game_state_render(gs);
             if(debugger_render) {
@@ -275,7 +278,7 @@ void engine_run(engine_init_flags *init_flags) {
                 surface sur;
                 video_screenshot(&sur);
                 snprintf(screenshot_filename, 128, "screenshot_%u.png", SDL_GetTicks());
-                if(surface_write_png(&sur, video_get_pal_ref(), screenshot_filename)) {
+                if(surface_write_png(&sur, vga_state_get_palette(), screenshot_filename)) {
                     DEBUG("Got a screenshot: %s", screenshot_filename);
                 } else {
                     PERROR("Screenshot write operation failed (%s)", screenshot_filename);
@@ -303,5 +306,6 @@ void engine_close(void) {
     sounds_loader_close();
     audio_close();
     video_close();
+    vga_state_close();
     INFO("Engine deinit successful.");
 }

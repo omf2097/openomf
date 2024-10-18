@@ -98,7 +98,7 @@ int main(int argc, char *argv[]) {
 
         if(export->count > 0) {
             sd_rgba_image img;
-            sd_sprite_rgba_decode(&img, photo->sprite, bk.palettes[0], -1);
+            sd_sprite_rgba_decode(&img, photo->sprite, bk.palettes[0]);
             ret = sd_rgba_image_to_ppm(&img, export->filename[0]);
             if(ret != SD_SUCCESS) {
                 printf("Failed to write photo %d to %s: %s\n", entry_id, export->filename[0], sd_get_error(ret));

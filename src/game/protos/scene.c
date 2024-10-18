@@ -7,6 +7,7 @@
 #include "utils/allocator.h"
 #include "utils/log.h"
 #include "utils/vec.h"
+#include "video/vga_state.h"
 #include "video/video.h"
 #include <stdlib.h>
 
@@ -47,7 +48,15 @@ int scene_create(scene *scene, game_state *gs, int scene_id) {
     scene->prio_override = NULL;
 
     // Set base palette
-    video_set_base_palette(bk_get_palette(scene->bk_data, 0));
+    vga_state_set_base_palette_from(bk_get_palette(scene->bk_data, 0));
+    vga_state_set_remaps_from(bk_get_remaps(scene->bk_data, 0));
+
+    // Set menu colors to the correct position
+    palette_set_menu_colors();
+
+    // Index 0 is always black.
+    vga_color c = {0, 0, 0};
+    vga_state_set_base_palette_index(0, &c);
 
     // All done.
     DEBUG("Loaded scene %s (%s).", scene_get_name(scene_id), get_resource_name(resource_id));

@@ -28,6 +28,7 @@
 #include "utils/allocator.h"
 #include "utils/log.h"
 #include "utils/miscmath.h"
+#include "video/vga_state.h"
 #include "video/video.h"
 #include <SDL.h>
 #include <math.h>
@@ -62,7 +63,6 @@ int game_state_create(game_state *gs, engine_init_flags *init_flags) {
     gs->tick = 0;
     gs->int_tick = 0;
     gs->role = ROLE_CLIENT;
-    gs->next_requires_refresh = 0;
     gs->net_mode = init_flags->net_mode;
     gs->speed = settings_get()->gameplay.speed + 5;
     gs->init_flags = init_flags;
@@ -322,29 +322,6 @@ int game_state_handle_event(game_state *gs, SDL_Event *event) {
 void game_state_render(game_state *gs) {
     iterator it;
     render_obj *robj;
-
-    // Do palette transformations
-    screen_palette *scr_pal = video_get_pal_ref();
-    int pal_changed = 0;
-    vector_iter_begin(&gs->objects, &it);
-    while((robj = iter_next(&it)) != NULL) {
-        if(object_palette_transform(robj->obj, scr_pal) == 1) {
-            pal_changed = 1;
-            gs->next_requires_refresh = 1;
-        }
-    }
-
-    // If changes were made to palette, then
-    // all resources that depend on it must be redrawn.
-    // This will take care of it.
-    if(pal_changed) {
-        scr_pal->version++;
-    } else if(gs->next_requires_refresh) {
-        // Because of caching, we might sometimes get stuck to
-        // a bad/old frame. This will fix it.
-        scr_pal->version++;
-        gs->next_requires_refresh = 0;
-    }
 
     // Render scene background
     scene_render(gs->sc);

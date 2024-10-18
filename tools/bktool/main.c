@@ -72,7 +72,7 @@ void sprite_play(sd_bk_file *bk, int scale, int anim, int sprite) {
     amask = 0xff000000;
 
     sd_rgba_image img;
-    sd_vga_image_decode(&img, bk->background, bk->palettes[0], -1);
+    sd_vga_image_decode(&img, bk->background, bk->palettes[0]);
 
     if(!(surface =
              SDL_CreateRGBSurfaceFrom((void *)img.data, img.w, img.h, 32, img.w * 4, rmask, gmask, bmask, amask))) {
@@ -94,7 +94,7 @@ void sprite_play(sd_bk_file *bk, int scale, int anim, int sprite) {
     SDL_FreeSurface(surface);
     sd_rgba_image_free(&img);
 
-    sd_sprite_rgba_decode(&img, s, bk->palettes[0], -1);
+    sd_sprite_rgba_decode(&img, s, bk->palettes[0]);
 
     if(!(surface =
              SDL_CreateRGBSurfaceFrom((void *)img.data, img.w, img.h, 32, img.w * 4, rmask, gmask, bmask, amask))) {
@@ -180,7 +180,7 @@ void sprite_play(sd_bk_file *bk, int scale, int anim, int sprite) {
                 }
                 if(changed) {
                     s = bk->anims[anim]->animation->sprites[sprite];
-                    sd_sprite_rgba_decode(&img, s, bk->palettes[0], -1);
+                    sd_sprite_rgba_decode(&img, s, bk->palettes[0]);
                     int x = s->pos_x + bk->anims[anim]->animation->start_x;
                     int y = s->pos_y + bk->anims[anim]->animation->start_y;
                     printf("Sprite Info: pos=(%d,%d) size=(%d,%d) len=%d\n", x, y, s->width, s->height, s->len);
@@ -431,16 +431,16 @@ void bk_get_key(sd_bk_file *bk, const char **key, int kcount) {
                 return;
             }
             int index = conv_ubyte(key[1]);
-            palette *pal = sd_bk_get_palette(bk, index);
+            vga_palette *pal = sd_bk_get_palette(bk, index);
             if(pal == NULL) {
                 printf("No palette found at index %d.\n", index);
                 return;
             }
-            for(int tmp = 0; tmp < 256; tmp++) {
-                r = pal->data[tmp][0];
-                g = pal->data[tmp][1];
-                b = pal->data[tmp][2];
-                printf("%d = %3u %3u %3u\n", tmp, r, g, b);
+            for(int t = 0; t < 256; t++) {
+                r = pal->colors[t].r;
+                g = pal->colors[t].g;
+                b = pal->colors[t].b;
+                printf("%d = %3u %3u %3u\n", t, r, g, b);
             }
         } break;
         case 2:
@@ -469,10 +469,9 @@ void bk_get_key(sd_bk_file *bk, const char **key, int kcount) {
 void bk_push_key(sd_bk_file *bk, const char **key) {
     switch(bk_key_get_id(key[0])) {
         case 1: {
-            palette pal;
-            palette_create(&pal);
+            vga_palette pal;
+            vga_palette_init(&pal);
             sd_bk_push_palette(bk, &pal);
-            palette_free(&pal);
             printf("Element pushed; new size is %d.\n", bk->palette_count);
         } break;
         default:
@@ -499,7 +498,7 @@ void bk_export_key(sd_bk_file *bk, const char **key, int kcount, const char *fil
                 return;
             }
             int index = atoi(key[1]);
-            palette *pal = sd_bk_get_palette(bk, index);
+            vga_palette *pal = sd_bk_get_palette(bk, index);
             if(pal == NULL) {
                 printf("No palette found at index %d.\n", index);
                 return;
@@ -511,7 +510,7 @@ void bk_export_key(sd_bk_file *bk, const char **key, int kcount, const char *fil
             }
         } break;
         case 4: {
-            palette *pal = sd_bk_get_palette(bk, 0);
+            vga_palette *pal = sd_bk_get_palette(bk, 0);
             if(pal == NULL) {
                 printf("Palette required for exporting to PNG.\n");
                 return;
@@ -540,7 +539,7 @@ void bk_import_key(sd_bk_file *bk, const char **key, int kcount, const char *fil
                 return;
             }
             int index = atoi(key[1]);
-            palette *pal = sd_bk_get_palette(bk, index);
+            vga_palette *pal = sd_bk_get_palette(bk, index);
             if(pal == NULL) {
                 printf("No palette found at index %d.\n", index);
                 return;

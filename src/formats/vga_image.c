@@ -38,7 +38,7 @@ void sd_vga_image_free(sd_vga_image *img) {
     omf_free(img->data);
 }
 
-int sd_vga_image_decode(sd_rgba_image *dst, const sd_vga_image *src, const palette *pal, int remapping) {
+int sd_vga_image_decode(sd_rgba_image *dst, const sd_vga_image *src, const vga_palette *pal) {
     int ret;
     if(dst == NULL || src == NULL || pal == NULL) {
         return SD_INVALID_INPUT;
@@ -51,17 +51,10 @@ int sd_vga_image_decode(sd_rgba_image *dst, const sd_vga_image *src, const palet
         for(unsigned x = 0; x < src->w; x++) {
             uint8_t b = src->data[y * src->w + x];
             pos = ((y * src->w) + x) * 4;
-            if(remapping > -1) {
-                dst->data[pos + 0] = (uint8_t)pal->data[(uint8_t)pal->remaps[remapping][b]][0];
-                dst->data[pos + 1] = (uint8_t)pal->data[(uint8_t)pal->remaps[remapping][b]][1];
-                dst->data[pos + 2] = (uint8_t)pal->data[(uint8_t)pal->remaps[remapping][b]][2];
-                dst->data[pos + 3] = (uint8_t)255;
-            } else {
-                dst->data[pos + 0] = (uint8_t)pal->data[b][0];
-                dst->data[pos + 1] = (uint8_t)pal->data[b][1];
-                dst->data[pos + 2] = (uint8_t)pal->data[b][2];
-                dst->data[pos + 3] = (uint8_t)255;
-            }
+            dst->data[pos + 0] = (uint8_t)pal->colors[b].r;
+            dst->data[pos + 1] = (uint8_t)pal->colors[b].g;
+            dst->data[pos + 2] = (uint8_t)pal->colors[b].b;
+            dst->data[pos + 3] = (uint8_t)255;
         }
     }
     return SD_SUCCESS;
@@ -167,7 +160,7 @@ error_0:
     return ret;
 }
 
-int sd_vga_image_to_png(const sd_vga_image *img, const palette *pal, const char *filename) {
+int sd_vga_image_to_png(const sd_vga_image *img, const vga_palette *pal, const char *filename) {
     if(img == NULL || filename == NULL) {
         return SD_INVALID_INPUT;
     }
@@ -209,9 +202,9 @@ int sd_vga_image_to_png(const sd_vga_image *img, const palette *pal, const char 
 
     palette = png_malloc(png_ptr, 256 * sizeof(png_color));
     for(int i = 0; i < 256; i++) {
-        palette[i].red = pal->data[i][0];
-        palette[i].green = pal->data[i][1];
-        palette[i].blue = pal->data[i][2];
+        palette[i].red = pal->colors[i].r;
+        palette[i].green = pal->colors[i].g;
+        palette[i].blue = pal->colors[i].b;
     }
     png_set_PLTE(png_ptr, info_ptr, palette, 256);
 

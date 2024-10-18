@@ -31,7 +31,7 @@ typedef struct {
     // After the headers here, there is 54 bytes of padding.
 
     sd_vga_image image;
-    palette palette;
+    vga_palette palette;
 } pcx_file;
 
 typedef struct {

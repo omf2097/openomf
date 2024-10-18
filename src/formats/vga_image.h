@@ -82,9 +82,8 @@ void sd_vga_image_free(sd_vga_image *img);
  * \param dst Destination RGBA image struct pointer.
  * \param src Source VGA image pointer
  * \param pal Palette that should be used for the conversion
- * \param remapping Palette remapping table that should be used. -1 for none.
  */
-int sd_vga_image_decode(sd_rgba_image *dst, const sd_vga_image *src, const palette *pal, int remapping);
+int sd_vga_image_decode(sd_rgba_image *dst, const sd_vga_image *src, const vga_palette *pal);
 
 /*! \brief Load an indexed image from a PNG file.
  *
@@ -121,6 +120,6 @@ int sd_vga_image_from_png(sd_vga_image *img, const char *filename);
  * \param pal Palette for the image
  * \param filename Destination filename
  */
-int sd_vga_image_to_png(const sd_vga_image *img, const palette *pal, const char *filename);
+int sd_vga_image_to_png(const sd_vga_image *img, const vga_palette *pal, const char *filename);
 
 #endif // SD_VGA_IMAGE_H

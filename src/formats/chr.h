@@ -37,7 +37,7 @@ typedef struct {
  */
 typedef struct {
     sd_pilot pilot;                         ///< Pilot data
-    palette pal;                            ///< Pilot palette
+    vga_palette pal;                        ///< Pilot palette
     uint32_t unknown_b;                     ///< Unkown value. Maybe tells if there is photo data ?
     sd_sprite *photo;                       ///< Pilot photo
     sd_chr_enemy *enemies[MAX_CHR_ENEMIES]; ///< List of enemy states in current tournament

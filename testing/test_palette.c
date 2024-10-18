@@ -7,20 +7,14 @@
 #define TESTFILE "test.gpl"
 #define TESTFILE2 "test2.gpl"
 
-palette pal;
+vga_palette pal;
 
 void test_palette_create(void) {
-    int ret;
-    ret = palette_create(&pal);
-    CU_ASSERT(ret == SD_SUCCESS);
-    ret = palette_create(NULL);
-    CU_ASSERT(ret == SD_INVALID_INPUT);
-
     // Fill with data
     for(int i = 0; i < 256; i++) {
-        pal.data[i][0] = i;
-        pal.data[i][1] = 256 - i;
-        pal.data[i][2] = 128;
+        pal.colors[i].r = i;
+        pal.colors[i].g = 256 - i;
+        pal.colors[i].b = 128;
     }
 }
 
@@ -61,17 +55,10 @@ void test_palette_gimp_load(void) {
     CU_ASSERT(ret == SD_SUCCESS);
 }
 
-void test_palette_free(void) {
-    palette_free(&pal);
-}
-
 void test_gimp_roundtrip(void) {
-    palette new;
+    vga_palette new;
+    vga_palette_init(&new);
     int ret;
-
-    // Create
-    ret = palette_create(&new);
-    CU_ASSERT(ret == SD_SUCCESS);
 
     // Write
     ret = palette_to_gimp_palette(&pal, TESTFILE);
@@ -82,10 +69,7 @@ void test_gimp_roundtrip(void) {
     CU_ASSERT(ret == SD_SUCCESS);
 
     // Match
-    CU_ASSERT_NSTRING_EQUAL(pal.data, new.data, 256 * 3);
-
-    // Free up
-    palette_free(&new);
+    CU_ASSERT_NSTRING_EQUAL(pal.colors, new.colors, 256 * 3);
 }
 
 void palette_test_suite(CU_pSuite suite) {
@@ -99,9 +83,6 @@ void palette_test_suite(CU_pSuite suite) {
         return;
     }
     if(CU_add_test(suite, "test of palette roundtripping", test_gimp_roundtrip) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "test of palette_free", test_palette_free) == NULL) {
         return;
     }
 }

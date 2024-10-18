@@ -2,7 +2,6 @@
 #include <epoxy/gl.h>
 #include <stdlib.h>
 
-#include "formats/palette.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
 #include "video/opengl/object_array.h"
@@ -12,6 +11,7 @@
 #include "video/opengl/shared.h"
 #include "video/opengl/texture_atlas.h"
 #include "video/sdl_window.h"
+#include "video/vga_state.h"
 #include "video/video.h"
 
 typedef struct video_state {
@@ -40,10 +40,6 @@ typedef struct video_state {
     float fade;
     int target_move_x;
     int target_move_y;
-
-    // Palettes
-    palette *base_palette;          // Copy of the scenes base palette
-    screen_palette *screen_palette; // Normal rendering palette
 } video_state;
 
 #define TEX_UNIT_ATLAS 0
@@ -63,11 +59,6 @@ int video_init(int window_w, int window_h, bool fullscreen, bool vsync) {
     g_video_state.target_move_x = 0;
     g_video_state.target_move_y = 0;
     g_video_state.current_blend_mode = MODE_SET;
-
-    // Clear palettes
-    g_video_state.base_palette = omf_calloc(1, sizeof(palette));
-    g_video_state.screen_palette = omf_calloc(1, sizeof(screen_palette));
-    g_video_state.screen_palette->version = 1;
 
     if(!create_window(&g_video_state.window, window_w, window_h, fullscreen)) {
         goto error_0;
@@ -129,8 +120,6 @@ error_1:
     SDL_DestroyWindow(g_video_state.window);
 
 error_0:
-    omf_free(g_video_state.screen_palette);
-    omf_free(g_video_state.base_palette);
     return 1;
 }
 
@@ -151,7 +140,6 @@ void video_reset_atlas(void) {
 }
 
 void video_render_prepare(void) {
-    memcpy(g_video_state.screen_palette->data, g_video_state.base_palette->data, 768);
     object_array_prepare(g_video_state.objects);
 }
 
@@ -172,10 +160,20 @@ static void video_set_blend_mode(object_array_blend_mode request_mode) {
 void video_render_finish(void) {
     object_array_finish(g_video_state.objects);
 
-    // TODO: Handle these only if there are changes
-    shared_set_palette(g_video_state.shared, g_video_state.screen_palette->data);
-    remaps_update(g_video_state.remaps, (char *)g_video_state.base_palette->remaps);
-    shared_flush_dirty(g_video_state.shared);
+    // If palette is dirty, flush it to the texture. Note that the range is inclusive (dirty area is start <= x <= end).
+    vga_index range_start, range_end;
+    vga_palette *palette;
+    if(vga_state_is_palette_dirty(&palette, &range_start, &range_end)) {
+        shared_set_palette(g_video_state.shared, palette, range_start, range_end);
+        vga_state_mark_palette_flushed();
+    }
+
+    // If remaps are dirty, do the flush. This should be pretty rare (once per scene change)
+    vga_remap_tables *tables;
+    if(vga_state_is_remap_dirty(&tables)) {
+        remaps_update(g_video_state.remaps, tables);
+        vga_state_mark_remaps_flushed();
+    }
 
     // Set to VGA emulation state, and render to an indexed surface
     glViewport(0, 0, NATIVE_W, NATIVE_H);
@@ -218,8 +216,6 @@ void video_close(void) {
     delete_program(g_video_state.rgba_prog_id);
     SDL_GL_DeleteContext(g_video_state.gl_context);
     SDL_DestroyWindow(g_video_state.window);
-    omf_free(g_video_state.screen_palette);
-    omf_free(g_video_state.base_palette);
     INFO("Video renderer closed.");
 }
 
@@ -258,29 +254,6 @@ void video_area_capture(surface *sur, int x, int y, int w, int h) {
     surface_create_from_data_flip(sur, w, h, buffer);
     surface_set_transparency(sur, -1);
     omf_free(buffer);
-}
-
-void video_force_pal_refresh(void) {
-    memcpy(g_video_state.screen_palette->data, g_video_state.base_palette->data, 768);
-    g_video_state.screen_palette->version++;
-}
-
-void video_set_base_palette(const palette *src) {
-    memcpy(g_video_state.base_palette, src, sizeof(palette));
-    video_force_pal_refresh();
-}
-
-palette *video_get_base_palette(void) {
-    return g_video_state.base_palette;
-}
-
-void video_copy_base_pal_range(const palette *src, int src_start, int dst_start, int amount) {
-    memcpy(g_video_state.base_palette->data + dst_start, src->data + src_start, amount * 3);
-    video_force_pal_refresh();
-}
-
-screen_palette *video_get_pal_ref(void) {
-    return g_video_state.screen_palette;
 }
 
 void video_render_background(surface *sur) {

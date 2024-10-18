@@ -7,7 +7,6 @@
 #include "video/color.h"
 #include "video/enums.h"
 #include "video/image.h"
-#include "video/screen_palette.h"
 #include "video/surface.h"
 
 #define NATIVE_W 320
@@ -83,11 +82,5 @@ void video_area_capture(surface *sur, int x, int y, int w, int h);
 void video_set_fade(float fade);
 
 void video_draw_atlas(bool draw_atlas);
-
-void video_set_base_palette(const palette *src);
-palette *video_get_base_palette(void);
-void video_force_pal_refresh(void);
-void video_copy_base_pal_range(const palette *src, int src_start, int dst_start, int amount);
-screen_palette *video_get_pal_ref(void);
 
 #endif // VIDEO_H

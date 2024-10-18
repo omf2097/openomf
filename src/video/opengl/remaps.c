@@ -19,8 +19,8 @@ remaps *remaps_create(GLuint tex_unit) {
     return maps;
 }
 
-void remaps_update(const remaps *remaps, const char *data) {
-    texture_update(remaps->tex_unit, remaps->texture_id, 0, 0, REMAPS_WIDTH, REMAPS_HEIGHT, GL_RED, data);
+void remaps_update(const remaps *remaps, vga_remap_tables *data) {
+    texture_update(remaps->tex_unit, remaps->texture_id, 0, 0, REMAPS_WIDTH, REMAPS_HEIGHT, GL_RED, (char *)data);
 }
 
 void remaps_free(remaps **maps) {

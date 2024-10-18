@@ -62,8 +62,10 @@ int sd_bk_copy(sd_bk_file *dst, const sd_bk_file *src) {
     for(int i = 0; i < MAX_BK_PALETTES; i++) {
         dst->palettes[i] = NULL;
         if(src->palettes[i] != NULL) {
-            dst->palettes[i] = omf_calloc(1, sizeof(palette));
-            memcpy(dst->palettes[i], src->palettes[i], sizeof(palette));
+            dst->palettes[i] = omf_calloc(1, sizeof(vga_palette));
+            dst->remaps[i] = omf_calloc(1, sizeof(vga_remap_tables));
+            memcpy(dst->palettes[i], src->palettes[i], sizeof(vga_palette));
+            memcpy(dst->remaps[i], src->remaps[i], sizeof(vga_remap_tables));
         }
     }
 
@@ -138,11 +140,15 @@ int sd_bk_load(sd_bk_file *bk, const char *filename) {
     int bsize = img_w * img_h;
     sd_read_buf(r, bk->background->data, bsize);
 
-    // Read palettes
+    // Read palettes and their remaps
     bk->palette_count = sd_read_ubyte(r);
     for(uint8_t i = 0; i < bk->palette_count; i++) {
-        bk->palettes[i] = omf_calloc(1, sizeof(palette));
+        bk->palettes[i] = omf_malloc(sizeof(vga_palette));
         if((ret = palette_load(r, bk->palettes[i])) != SD_SUCCESS) {
+            goto exit_0;
+        }
+        bk->remaps[i] = omf_malloc(sizeof(vga_remap_tables));
+        if((ret = palette_remaps_load(r, bk->remaps[i])) != SD_SUCCESS) {
             goto exit_0;
         }
     }
@@ -168,8 +174,10 @@ int sd_bk_load_from_pcx(sd_bk_file *bk, const char *filename) {
     bk->palette_count = 1;
     bk->background = omf_calloc(1, sizeof(sd_vga_image));
     sd_vga_image_copy(bk->background, &pcx->image);
-    bk->palettes[0] = omf_calloc(1, sizeof(palette));
+    bk->palettes[0] = omf_malloc(sizeof(vga_palette));
+    bk->remaps[0] = omf_malloc(sizeof(vga_remap_tables));
     palette_copy(bk->palettes[0], &pcx->palette, 0, 256);
+    vga_remaps_init(bk->remaps[0]); // Not used, but expected to be allocated.
     pcx_free(pcx);
     omf_free(pcx);
     return SD_SUCCESS;
@@ -239,6 +247,7 @@ int sd_bk_save(const sd_bk_file *bk, const char *filename) {
     sd_write_ubyte(w, bk->palette_count);
     for(uint8_t i = 0; i < bk->palette_count; i++) {
         palette_save(w, bk->palettes[i]);
+        palette_remaps_save(w, bk->remaps[i]);
     }
 
     // Write soundtable
@@ -308,15 +317,14 @@ sd_bk_anim *sd_bk_get_anim(const sd_bk_file *bk, int index) {
     return bk->anims[index];
 }
 
-int sd_bk_set_palette(sd_bk_file *bk, int index, const palette *pal) {
+int sd_bk_set_palette(sd_bk_file *bk, int index, const vga_palette *pal) {
     if(index < 0 || bk == NULL || index >= bk->palette_count || pal == NULL) {
         return SD_INVALID_INPUT;
     }
-    if(bk->palettes[index] != NULL) {
-        omf_free(bk->palettes[index]);
+    if(bk->palettes[index] == NULL) {
+        bk->palettes[index] = omf_malloc(sizeof(vga_palette));
     }
-    bk->palettes[index] = omf_calloc(1, sizeof(palette));
-    memcpy(bk->palettes[index], pal, sizeof(palette));
+    memcpy(bk->palettes[index], pal, sizeof(vga_palette));
     return SD_SUCCESS;
 }
 
@@ -331,21 +339,21 @@ int sd_bk_pop_palette(sd_bk_file *bk) {
     return SD_SUCCESS;
 }
 
-int sd_bk_push_palette(sd_bk_file *bk, const palette *pal) {
+int sd_bk_push_palette(sd_bk_file *bk, const vga_palette *pal) {
     if(bk == NULL || pal == NULL || bk->palette_count >= MAX_BK_PALETTES) {
         return SD_INVALID_INPUT;
     }
     if(bk->palettes[bk->palette_count] != NULL) {
         omf_free(bk->palettes[bk->palette_count]);
     }
-    bk->palettes[bk->palette_count] = omf_calloc(1, sizeof(palette));
-    memcpy(bk->palettes[bk->palette_count], pal, sizeof(palette));
+    bk->palettes[bk->palette_count] = omf_malloc(sizeof(vga_palette));
+    memcpy(bk->palettes[bk->palette_count], pal, sizeof(vga_palette));
     bk->palette_count++;
 
     return SD_SUCCESS;
 }
 
-palette *sd_bk_get_palette(const sd_bk_file *bk, int index) {
+vga_palette *sd_bk_get_palette(const sd_bk_file *bk, int index) {
     if(bk == NULL || index < 0 || index >= bk->palette_count) {
         return NULL;
     }
@@ -367,6 +375,7 @@ void sd_bk_free(sd_bk_file *bk) {
     for(i = 0; i < bk->palette_count; i++) {
         if(bk->palettes[i] != NULL) {
             omf_free(bk->palettes[i]);
+            omf_free(bk->remaps[i]);
         }
     }
 }

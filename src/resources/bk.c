@@ -15,19 +15,15 @@ void bk_create(bk *b, void *src) {
     // Copy sound translation table
     memcpy(b->sound_translation_table, sdbk->soundtable, 30);
 
-    // Copy palettes
-    vector_create_with_size(&b->palettes, sizeof(palette), sdbk->palette_count);
+    // Copy palettes & remaps.
+    vector_create_with_size(&b->palettes, sizeof(vga_palette), sdbk->palette_count);
+    vector_create_with_size(&b->remaps, sizeof(vga_remap_tables), sdbk->palette_count);
     for(int i = 0; i < sdbk->palette_count; i++) {
-        vector_append(&b->palettes, (palette *)sdbk->palettes[i]);
+        vector_append(&b->palettes, (vga_palette *)sdbk->palettes[i]);
+        vector_append(&b->remaps, (vga_remap_tables *)sdbk->remaps[i]);
     }
 
-    // All scenes always have the menu colors set for palette 0.
-    palette *pal = vector_get(&b->palettes, 0);
-    palette_set_menu_colors(pal);
-
-    // Index 0 is always black.
-    pal->data[0][0] = pal->data[0][1] = pal->data[0][2] = 0;
-
+    // Array for sprites, since we know we will fill most slots.
     array_create(&b->sprites);
 
     // Copy info structs
@@ -50,8 +46,12 @@ bk_info *bk_get_info(bk *b, int id) {
     return val;
 }
 
-palette *bk_get_palette(bk *b, int id) {
+vga_palette *bk_get_palette(bk *b, int id) {
     return vector_get(&b->palettes, id);
+}
+
+vga_remap_tables *bk_get_remaps(bk *b, int id) {
+    return vector_get(&b->remaps, id);
 }
 
 char *bk_get_stl(bk *b) {
@@ -61,6 +61,7 @@ char *bk_get_stl(bk *b) {
 void bk_free(bk *b) {
     surface_free(&b->background);
     vector_free(&b->palettes);
+    vector_free(&b->remaps);
 
     // Free info structs
     iterator it;

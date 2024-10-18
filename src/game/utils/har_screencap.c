@@ -1,5 +1,6 @@
 #include "game/utils/har_screencap.h"
 #include "utils/miscmath.h"
+#include "video/vga_state.h"
 #include "video/video.h"
 
 void har_screencaps_create(har_screencaps *caps) {
@@ -48,6 +49,9 @@ void har_screencaps_capture(har_screencaps *caps, object *obj, int id) {
 
     // Capture
     video_area_capture(&caps->cap[id], x, y, SCREENCAP_W, SCREENCAP_H);
-    surface_convert_to_grayscale(&caps->cap[id], video_get_pal_ref(), 0xD0, 0xDF);
     caps->ok[id] = true;
+}
+
+void har_screencaps_compress(har_screencaps *caps, const vga_palette *pal, int id) {
+    surface_convert_to_grayscale(&caps->cap[id], pal, 0xD0, 0xDF);
 }

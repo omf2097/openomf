@@ -28,7 +28,7 @@ static void show_pcx(pcx_file *pcx) {
     }
 
     sd_rgba_image img;
-    sd_vga_image_decode(&img, &pcx->image, &pcx->palette, -1);
+    sd_vga_image_decode(&img, &pcx->image, &pcx->palette);
 
     SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 

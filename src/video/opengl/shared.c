@@ -12,36 +12,24 @@ typedef struct data_buffer {
 typedef struct shared {
     GLuint ubo_id;
     data_buffer data;
-    bool dirty;
 } shared;
 
 shared *shared_create(void) {
     shared *obj = omf_calloc(1, sizeof(shared));
     obj->ubo_id = ubo_create(sizeof(data_buffer));
-    obj->dirty = false;
     for(int i = 0; i < 1024; i++) {
         obj->data.palette[i] = 1.0f;
     }
     return obj;
 }
 
-void shared_set_palette(shared *shared, const void *data) {
-    int w = 0;
-    for(int i = 0; i < 256; i++) {
-        unsigned char *ptr = (unsigned char *)data + i * 3;
-        shared->data.palette[w++] = ((float)*(ptr + 0)) / 255.0f;
-        shared->data.palette[w++] = ((float)*(ptr + 1)) / 255.0f;
-        shared->data.palette[w++] = ((float)*(ptr + 2)) / 255.0f;
-        w++;
+void shared_set_palette(shared *shared, vga_palette *data, vga_index start, vga_index end) {
+    for(int i = start; i <= end; i++) {
+        shared->data.palette[i * 4 + 0] = data->colors[i].r / 255.0f;
+        shared->data.palette[i * 4 + 1] = data->colors[i].g / 255.0f;
+        shared->data.palette[i * 4 + 2] = data->colors[i].b / 255.0f;
     }
-    shared->dirty = true;
-}
-
-void shared_flush_dirty(shared *shared) {
-    if(shared->dirty) {
-        ubo_update(shared->ubo_id, sizeof(data_buffer), &shared->data);
-        shared->dirty = false;
-    }
+    ubo_update(shared->ubo_id, sizeof(data_buffer), &shared->data);
 }
 
 GLuint shared_get_block(shared *buffer) {
