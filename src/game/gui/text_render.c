@@ -14,6 +14,7 @@ void text_defaults(text_settings *settings) {
     settings->cdisabled = 0xC0;
     settings->cshadow = 0xC0;
     settings->cspacing = 0;
+    settings->strip_leading_whitespace = false;
 }
 
 int text_render_char(const text_settings *settings, text_mode state, int x, int y, char ch) {
@@ -72,18 +73,20 @@ int text_render_char(const text_settings *settings, text_mode state, int x, int 
     return (*sur)->w;
 }
 
-int text_find_max_strlen(int max_chars, const char *ptr) {
+int text_find_max_strlen(const text_settings *settings, int max_chars, const char *ptr) {
     int i = 0;
     int len = strlen(ptr);
 
     // Skip whitespace at the start of the string
-    /*for(i = 0; i < len; i++) {
-        if(ptr[i] != ' ')
-            break;
-    }*/
-    /*if(i == len) {
-        return i;
-    }*/
+    if(settings->strip_leading_whitespace) {
+        for(i = 0; i < len; i++) {
+            if(ptr[i] != ' ')
+                break;
+        }
+        if(i == len) {
+            return i;
+        }
+    }
 
     // Walk through the rest of the string
     int last_space = i;
@@ -156,16 +159,16 @@ int text_char_width(const text_settings *settings) {
     return 6;
 }
 
-int text_find_line_count(text_direction dir, int cols, int rows, int len, const char *text) {
+int text_find_line_count(const text_settings *settings, int cols, int rows, int len, const char *text) {
     int ptr = 0;
     int lines = 0;
     while(ptr < len) {
         // Find out how many characters for this row/col
         int line_len;
-        if(dir == TEXT_HORIZONTAL)
-            line_len = text_find_max_strlen(cols, text + ptr);
+        if(settings->direction == TEXT_HORIZONTAL)
+            line_len = text_find_max_strlen(settings, cols, text + ptr);
         else
-            line_len = text_find_max_strlen(rows, text + ptr);
+            line_len = text_find_max_strlen(settings, rows, text + ptr);
 
         ptr += line_len;
         lines++;
@@ -183,7 +186,7 @@ void text_render(const text_settings *settings, text_mode mode, int x, int y, in
     int charh = size + settings->lspacing;
     int rows = (yspace + settings->lspacing) / charh;
     int cols = (xspace + settings->cspacing) / charw;
-    int fit_lines = text_find_line_count(settings->direction, cols, rows, len, text);
+    int fit_lines = text_find_line_count(settings, cols, rows, len, text);
 
     int start_x = x + settings->padding.left;
     int start_y = y + settings->padding.top;
@@ -231,9 +234,9 @@ void text_render(const text_settings *settings, text_mode mode, int x, int y, in
 
         // Find out how many characters for this row/col
         if(settings->direction == TEXT_HORIZONTAL)
-            line_len = text_find_max_strlen(cols, text + ptr);
+            line_len = text_find_max_strlen(settings, cols, text + ptr);
         else
-            line_len = text_find_max_strlen(rows, text + ptr);
+            line_len = text_find_max_strlen(settings, rows, text + ptr);
         real_len = line_len;
 
         // If line ends in linebreak, skip it from calculation.
@@ -243,11 +246,13 @@ void text_render(const text_settings *settings, text_mode mode, int x, int y, in
 
         // Skip spaces
         int k = 0;
-        /*for(; k < line_len; k++) {
-            if(text[ptr + k] != ' ')
-                break;
-            real_len--;
-        }*/
+        if(settings->strip_leading_whitespace) {
+            for(; k < line_len; k++) {
+                if(text[ptr + k] != ' ')
+                    break;
+                real_len--;
+            }
+        }
 
         // Find total size of this line and set newline start coords
         switch(settings->direction) {
