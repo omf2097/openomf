@@ -45,8 +45,8 @@ component *label_create_with_width(const text_settings *tconf, const char *text,
 
     int tsize = text_char_width(tconf);
     int w, h;
-    w = text_find_max_strlen(max_width / tsize, text);
-    h = text_find_line_count(TEXT_HORIZONTAL, w, 0, strlen(text), text) * 8; // fonts are all 8 high?
+    w = text_find_max_strlen(tconf, max_width / tsize, text);
+    h = text_find_line_count(tconf, w, 0, strlen(text), text) * 8; // fonts are all 8 high?
 
     component_set_size_hints(c, w, h);
 
