@@ -5,8 +5,8 @@
 #include "game/gui/textinput.h"
 #include "game/gui/widget.h"
 #include "utils/allocator.h"
-#include "utils/miscmath.h"
 #include "utils/log.h"
+#include "utils/miscmath.h"
 #include "video/color.h"
 #include "video/image.h"
 #include "video/video.h"
@@ -41,8 +41,20 @@ static void textinput_render(component *c) {
         if(i > 8) {
             i = 16 - i;
         }
-        tb->tconf.cforeground = 216 + i ;
-        text_render(&tb->tconf, TEXT_DEFAULT, c->x + (tb->pos * text_char_width(&tb->tconf)), c->y, c->w, c->h, "\x7F");
+        tb->tconf.cforeground = 216 + i;
+        int offset = tb->pos * text_char_width(&tb->tconf);
+
+        int start_x = c->x + tb->tconf.padding.left;
+        if(tb->tconf.halign == TEXT_CENTER) {
+            int tmp_s = text_width(&tb->tconf, tb->buf); // Total W minus last spacing
+            int xspace = c->w - tb->tconf.padding.left - tb->tconf.padding.right;
+            start_x += ceilf((xspace - tmp_s) / 2.0f);
+            tb->tconf.halign = TEXT_LEFT;
+            text_render(&tb->tconf, TEXT_DEFAULT, start_x + offset, c->y, c->w, c->h, "\x7F");
+            tb->tconf.halign = TEXT_CENTER;
+        } else {
+            text_render(&tb->tconf, TEXT_DEFAULT, start_x + offset, c->y, c->w, c->h, "\x7F");
+        }
     } else if(component_is_disabled(c)) {
         mode = TEXT_DISABLED;
     }
@@ -53,11 +65,14 @@ static void textinput_render(component *c) {
 static int textinput_action(component *c, int action) {
     textinput *tb = widget_get_obj(c);
     DEBUG("action %d", action);
-    switch (action) {
+    switch(action) {
         case ACT_RIGHT:
-            tb->pos = min2(tb->max_chars, tb->pos + 1);
             if(!tb->buf[tb->pos]) {
-                tb->buf[tb->pos] = 'a';
+                tb->buf[tb->pos] = ' ';
+            }
+            tb->pos = min2(tb->max_chars - 1, tb->pos + 1);
+            if(!tb->buf[tb->pos]) {
+                tb->buf[tb->pos] = ' ';
             }
             return 0;
             break;
@@ -88,27 +103,22 @@ static int textinput_event(component *c, SDL_Event *e) {
     if(e->type == SDL_TEXTINPUT) {
         textinput *tb = widget_get_obj(c);
         tb->buf[tb->pos] = e->text.text[0];
-        tb->pos = min2(tb->max_chars, tb->pos + 1);
-        //strncat(tb->buf, e->text.text, tb->max_chars - strlen(tb->buf));
+        tb->pos = min2(tb->max_chars - 1, tb->pos + 1);
+        // strncat(tb->buf, e->text.text, tb->max_chars - strlen(tb->buf));
         return 0;
     } else if(e->type == SDL_KEYDOWN) {
         textinput *tb = widget_get_obj(c);
         size_t len = strlen(tb->buf);
         const unsigned char *state = SDL_GetKeyboardState(NULL);
         if(state[SDL_SCANCODE_BACKSPACE] || state[SDL_SCANCODE_DELETE]) {
-            if(len > 0) {
-                tb->buf[len - 1] = '\0';
+            if(len > 1) {
+                memmove(tb->buf + max2(tb->pos - 1, 0), tb->buf + max2(tb->pos, 1),
+                        min2(tb->max_chars, tb->max_chars - tb->pos + 1));
                 tb->pos = max2(0, tb->pos - 1);
+            } else if(len == 1) {
+                tb->buf[0] = 0;
+                tb->pos = 0;
             }
-        /*} else if(state[SDL_SCANCODE_LEFT]) {
-            tb->pos = min2(tb->max_chars, tb->pos + 1);
-            if(!tb->buf[tb->pos]) {
-                tb->buf[tb->pos] = ' ';
-            }
-            // TODO move cursor to the left
-        } else if(state[SDL_SCANCODE_RIGHT]) {
-            tb->pos = max2(0, tb->pos - 1);
-            // TODO move cursor to the right*/
         } else if(state[SDL_SCANCODE_V] && state[SDL_SCANCODE_LCTRL]) {
             if(SDL_HasClipboardText()) {
                 char *clip = SDL_GetClipboardText();
@@ -154,7 +164,10 @@ void textinput_set_max_chars(component *c, int max_chars) {
     textinput *tb = widget_get_obj(c);
     tb->buf = omf_realloc(tb->buf, max_chars + 1);
     tb->buf[max_chars] = 0;
+
     tb->max_chars = max_chars;
+
+    component_set_size_hints(c, text_char_width(&tb->tconf) * tb->max_chars, 10);
 }
 
 void textinput_enable_background(component *c, int enabled) {
@@ -186,6 +199,9 @@ component *textinput_create(const text_settings *tconf, const char *text, const 
     // Copy over the initial value
     tb->buf = omf_calloc(tb->max_chars + 1, 1);
     strncpy(tb->buf, initialvalue, tb->max_chars);
+    tb->pos = min2(strlen(initialvalue), tb->max_chars);
+
+    component_set_size_hints(c, text_char_width(&tb->tconf) * tb->max_chars, 10);
 
     // Widget stuff
     widget_set_obj(c, tb);

@@ -13,6 +13,7 @@ void text_defaults(text_settings *settings) {
     settings->cinactive = 0xFE;
     settings->cdisabled = 0xC0;
     settings->cshadow = 0xC0;
+    settings->cspacing = 0;
 }
 
 int text_render_char(const text_settings *settings, text_mode state, int x, int y, char ch) {
@@ -72,17 +73,17 @@ int text_render_char(const text_settings *settings, text_mode state, int x, int 
 }
 
 int text_find_max_strlen(int max_chars, const char *ptr) {
-    int i;
+    int i = 0;
     int len = strlen(ptr);
 
     // Skip whitespace at the start of the string
-    for(i = 0; i < len; i++) {
+    /*for(i = 0; i < len; i++) {
         if(ptr[i] != ' ')
             break;
-    }
-    if(i == len) {
+    }*/
+    /*if(i == len) {
         return i;
-    }
+    }*/
 
     // Walk through the rest of the string
     int last_space = i;
@@ -242,11 +243,11 @@ void text_render(const text_settings *settings, text_mode mode, int x, int y, in
 
         // Skip spaces
         int k = 0;
-        for(; k < line_len; k++) {
+        /*for(; k < line_len; k++) {
             if(text[ptr + k] != ' ')
                 break;
             real_len--;
-        }
+        }*/
 
         // Find total size of this line and set newline start coords
         switch(settings->direction) {
