@@ -12,19 +12,21 @@ uniform sampler2D remaps;
 // Out
 layout (location = 0) out vec4 color;
 
-const float offset = 3 / 19.0;
+float get_remapping_index(float src) {
+    int remap_index = int(round(src * 255.0));
+    int clamped_index = clamp(remap_index, 0, 18);
+    return clamped_index / 18.0;
+}
 
 void main() {
     vec4 texel = texture(framebuffer, tex_coord);
-    vec4 tex_add = texture(remaps, vec2(texel.r, texel.g * 19.0 + offset));
-    vec4 tex_sub = texture(remaps, vec2(texel.r, texel.b * 19.0 + offset));
+    int remap_count = int(texel.b * 255.0);
+    float remap_index = get_remapping_index(texel.g);
 
-    int out_index = int(texel.r * 255.0);
-    if (texel.g > 0) {
-        out_index = int(tex_add.r * 255.0);
+    // TODO: precalculate palette to 2d texture for required remappings later.
+    for (int i = 0; i < remap_count; i++) {
+        texel = texture(remaps, vec2(texel.r, remap_index));
     }
-    else if (texel.b > 0) {
-        out_index = int(tex_sub.r * 255.0);
-    }
-    color = colors[out_index];
+
+    color = colors[int(255.0 * texel.r)];
 }
