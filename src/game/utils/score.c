@@ -129,12 +129,19 @@ void chr_score_render(chr_score *score) {
     // Render all texts in list to right spot
     char tmp[50];
     score_format(score->score, tmp, 50);
+
+    text_settings tconf_score;
+    text_defaults(&tconf_score);
+    tconf_score.font = FONT_SMALL;
+    tconf_score.cforeground = TEXT_COLOR;
+    tconf_score.shadow = TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM;
+
     if(score->direction == OBJECT_FACE_RIGHT) {
-        font_render_shadowed(&font_small, tmp, score->x, score->y, TEXT_COLOR, TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
+        text_render(&tconf_score, TEXT_DEFAULT, score->x, score->y, 200, 6, tmp);
+
     } else {
         int s2len = strlen(tmp) * font_small.w;
-        font_render_shadowed(&font_small, tmp, score->x - s2len, score->y, TEXT_COLOR,
-                             TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
+        text_render(&tconf_score, TEXT_DEFAULT, score->x - s2len, score->y, 200, 6, tmp);
     }
 
     iterator it;
@@ -152,7 +159,7 @@ void chr_score_render(chr_score *score) {
             pos =
                 interpolate(vec2i_create(score->x - (strlen(t->text) * font_small.w), score->y), t->start, t->position);
         }
-        font_render_shadowed(&font_small, t->text, pos.x, pos.y, TEXT_COLOR, TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
+        text_render(&tconf_score, TEXT_DEFAULT, pos.x, pos.y, 200, 6, t->text);
         lastage = t->age;
     }
 }
