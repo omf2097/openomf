@@ -139,7 +139,14 @@ void newsroom_overlay_render(scene *scene) {
     // Render text
     if(str_size(&local->news_str) > 0) {
         video_draw(&local->news_bg, 20, 140);
-        font_render_wrapped(&font_small, str_c(&local->news_str), 30, 150, 250, COLOR_YELLOW);
+        text_settings tconf_yellow;
+        text_defaults(&tconf_yellow);
+        tconf_yellow.font = FONT_SMALL;
+        tconf_yellow.cforeground = COLOR_YELLOW;
+        tconf_yellow.shadow = TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM;
+        tconf_yellow.cshadow = 202;
+        tconf_yellow.halign = TEXT_CENTER;
+        text_render(&tconf_yellow, TEXT_DEFAULT, 30, 150, 250, 6, str_c(&local->news_str));
     }
 
     // Dialog
