@@ -183,6 +183,10 @@ void console_output_render(void) {
     int x = 0;
     int y = 0;
     unsigned int lines = 0;
+    text_settings tconf;
+    text_defaults(&tconf);
+    tconf.cforeground = TEXT_MEDIUM_GREEN;
+    tconf.font = FONT_SMALL;
     for(unsigned int i = con->output_pos; i != con->output_tail && lines < 15; i = BUFFER_INC(i)) {
 
         char c = con->output[i];
@@ -192,7 +196,7 @@ void console_output_render(void) {
             lines++;
         } else {
             // TODO add word wrapping?
-            font_render_char(&font_small, c, x, y + con->ypos - 100, TEXT_MEDIUM_GREEN);
+            text_render_char(&tconf, TEXT_DEFAULT, x, y + con->ypos - 100, c);
             x += font_small.w;
         }
     }
@@ -311,10 +315,16 @@ void console_render(void) {
             con->histpos_changed = 0;
         }
         video_draw(&con->background, -1, con->ypos - 101);
+        text_settings tconf;
+        text_defaults(&tconf);
+        tconf.font = FONT_SMALL;
         // input line
-        font_render(&font_small, con->input, 0, con->ypos - 7, TEXT_MEDIUM_GREEN);
+        tconf.cforeground = TEXT_MEDIUM_GREEN;
+        text_render(&tconf, TEXT_DEFAULT, 0, con->ypos - 7, 300, 6, con->input);
+
         // cursor
-        font_render(&font_small, CURSOR_STR, strlen(con->input) * font_small.w, con->ypos - 7, TEXT_BLINKY_GREEN);
+        tconf.cforeground = TEXT_BLINKY_GREEN;
+        text_render(&tconf, TEXT_DEFAULT, strlen(con->input) * font_small.w, con->ypos - 7, 6, 6, CURSOR_STR);
         console_output_render();
     }
 }
