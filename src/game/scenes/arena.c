@@ -1082,11 +1082,22 @@ void arena_render_overlay(scene *scene) {
     object *obj[2];
 
     char buf[40];
+
+    text_settings tconf_players;
+    text_defaults(&tconf_players);
+    tconf_players.font = FONT_SMALL;
+    tconf_players.cforeground = TEXT_COLOR;
+    tconf_players.shadow = TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM;
+
+    text_settings tconf_debug;
+    text_defaults(&tconf_debug);
+    tconf_debug.font = FONT_SMALL;
+    tconf_debug.cforeground = TEXT_COLOR;
 #ifdef DEBUGMODE
     snprintf(buf, 40, "%u", game_state_get_tick(scene->gs));
-    font_render(&font_small, buf, 160, 0, TEXT_COLOR);
+    text_render(&tconf_debug, TEXT_DEFAULT, 160, 0, 250, 6, buf);
     snprintf(buf, 40, "%u", random_get_seed(&scene->gs->rand));
-    font_render(&font_small, buf, 130, 8, TEXT_COLOR);
+    text_render(&tconf_debug, TEXT_DEFAULT, 130, 8, 250, 6, buf);
 #endif
 
     for(int i = 0; i < 2; i++) {
@@ -1115,18 +1126,16 @@ void arena_render_overlay(scene *scene) {
             player2_name = lang_get(player[1]->pilot->pilot_id + 20);
         }
 
-        font_render_shadowed(&font_small, player1_name, 5, 19, TEXT_COLOR, TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
-        font_render_shadowed(&font_small, lang_get((player[0]->pilot->har_id) + 31), 5, 26, TEXT_COLOR,
-                             TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
+        text_render(&tconf_players, TEXT_DEFAULT, 5, 19, 250, 6, player1_name);
+        text_render(&tconf_players, TEXT_DEFAULT, 5, 26, 250, 6, lang_get((player[0]->pilot->har_id) + 31));
 
         if(player[1]->pilot) {
             // when quitting, this can go null
             int p2len = (strlen(player2_name) - 1) * font_small.w;
             int h2len = (strlen(lang_get((player[1]->pilot->har_id) + 31)) - 1) * font_small.w;
-            font_render_shadowed(&font_small, player2_name, 315 - p2len, 19, TEXT_COLOR,
-                                 TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
-            font_render_shadowed(&font_small, lang_get((player[1]->pilot->har_id) + 31), 315 - h2len, 26, TEXT_COLOR,
-                                 TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
+            text_render(&tconf_players, TEXT_DEFAULT, 315 - p2len, 19, 100, 6, player2_name);
+            text_render(&tconf_players, TEXT_DEFAULT, 315 - h2len, 26, 100, 6,
+                        lang_get((player[1]->pilot->har_id) + 31));
         }
 
         // Render score stuff
@@ -1140,11 +1149,11 @@ void arena_render_overlay(scene *scene) {
         // render ping, if player is networked
         if(player[0]->ctrl->type == CTRL_TYPE_NETWORK) {
             snprintf(buf, 40, "ping %d", player[0]->ctrl->rtt);
-            font_render(&font_small, buf, 5, 40, TEXT_COLOR);
+            text_render(&tconf_debug, TEXT_DEFAULT, 5, 40, 250, 6, buf);
         }
         if(player[1]->ctrl->type == CTRL_TYPE_NETWORK) {
             snprintf(buf, 40, "ping %d", player[1]->ctrl->rtt);
-            font_render(&font_small, buf, 315 - (strlen(buf) * font_small.w), 40, TEXT_COLOR);
+            text_render(&tconf_debug, TEXT_DEFAULT, 315 - (strlen(buf) * font_small.w), 40, 250, 6, buf);
         }
     }
 
