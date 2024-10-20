@@ -1,6 +1,7 @@
 #include "resources/sgmanager.h"
 #include "formats/chr.h"
 #include "formats/error.h"
+#include "game/utils/settings.h"
 #include "resources/pathmanager.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
@@ -133,6 +134,19 @@ int sg_load(sd_chr_file *chr, const char *pilotname) {
     }
 
     return SD_SUCCESS;
+}
+
+int sg_save(sd_chr_file *chr) {
+    char filename[1024];
+    const char *dirname = pm_get_local_path(SAVE_PATH);
+    snprintf(filename, sizeof(filename), "%s%s.CHR", dirname, chr->pilot.name);
+    int ret = sd_chr_save(chr, filename);
+    if(ret == SD_SUCCESS) {
+        omf_free(settings_get()->tournament.last_name);
+        settings_get()->tournament.last_name = strdup(chr->pilot.name);
+        settings_save();
+    }
+    return ret;
 }
 
 int sg_delete(const char *pilotname) {

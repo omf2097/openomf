@@ -126,17 +126,8 @@ void mechlab_free(scene *scene) {
 
     game_player *player1 = game_state_get_player(scene->gs, 0);
     // save the character file
-    if(strlen(player1->pilot->name) != 0) {
-        DEBUG("saving player %s", player1->pilot->name);
-        char tmp[1024];
-        const char *dirname = pm_get_local_path(SAVE_PATH);
-        snprintf(tmp, 1024, "%s%s.CHR", dirname, player1->pilot->name);
-        sd_chr_save(player1->chr, tmp);
-        omf_free(settings_get()->tournament.last_name);
-        settings_get()->tournament.last_name = strdup(player1->pilot->name);
-        settings_save();
-    } else {
-        DEBUG("not saving pilot");
+    if(player1->chr != NULL && sg_save(player1->chr) != SD_SUCCESS) {
+        PERROR("Failed to save pilot %s", player1->chr->pilot.name);
     }
 
     for(int i = 0; i < sizeof(local->bg_obj) / sizeof(object); i++) {
@@ -253,13 +244,9 @@ void mechlab_tick(scene *scene, int paused) {
             player1->chr = omf_calloc(1, sizeof(sd_chr_file));
             memcpy(&player1->chr->pilot, player1->pilot, sizeof(sd_pilot));
             sd_chr_from_trn(player1->chr, trn, player1->pilot);
-            char tmp[1024];
-            const char *dirname = pm_get_local_path(SAVE_PATH);
-            snprintf(tmp, 1024, "%s%s.CHR", dirname, player1->pilot->name);
-            sd_chr_save(player1->chr, tmp);
-            omf_free(settings_get()->tournament.last_name);
-            settings_get()->tournament.last_name = strdup(player1->pilot->name);
-            settings_save();
+            if(sg_save(player1->chr) != SD_SUCCESS) {
+                PERROR("Failed to save pilot %s", player1->chr->pilot.name);
+            }
             // force the character to reload because its just easier
             sd_chr_free(player1->chr);
             omf_free(player1->chr);
