@@ -293,7 +293,7 @@ void vs_render(scene *scene) {
         char money[16];
         fight_stats *fight_stats = &scene->gs->fight_stats;
         snprintf(text, sizeof(text), lang_get(fight_stats->plug_text + PLUG_TEXT_START), fight_stats->sold);
-        font_render_wrapped(&font_small, text, 90, 156, 198, COLOR_YELLOW);
+        text_render(&tconf_yellow, TEXT_DEFAULT, 90, 156, 198, 6, text);
 
         text_render(&light_green, TEXT_DEFAULT, 190, 6, 140, 6, "FINANCIAL REPORT");
 
