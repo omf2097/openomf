@@ -62,16 +62,52 @@ static void textinput_render(component *c) {
     text_render(&tb->tconf, mode, c->x, c->y, c->w, c->h, tb->buf);
 }
 
+// Start from ' '. Support 0-9, ' ', and A-Z.
+static char textinput_scroll_character(char cur, bool down) {
+    if(cur == '\0') {
+        cur = ' ';
+    }
+
+    char ret = down ? cur - 1 : cur + 1;
+    if(ret == ' ' || (ret >= '0' && ret <= '9') || (ret >= 'A' && ret <= 'Z')) {
+        return ret;
+    }
+
+    // In ASCII the order of the ranges is ' ', 0-9, and A-Z. As we are
+    // starting from ' ', we reorder the ranges to be 0-9, ' ', and A-Z. This
+    // makes both numbers and letters easier to find. The if conditions here
+    // have to be specified by ASCII order from smallest to largest when going
+    // down, and from largest to smallest when going up.
+    if(down) {
+        if(ret < ' ') {
+            return '9';
+        } else if(ret < '0') {
+            return 'Z';
+        } else if(ret < 'A') {
+            return ' ';
+        }
+    } else {
+        if(ret > 'Z') {
+            return '0';
+        } else if(ret > '9') {
+            return ' ';
+        } else if(ret > ' ') {
+            return 'A';
+        }
+    }
+    return ' ';
+}
+
 static int textinput_action(component *c, int action) {
     textinput *tb = widget_get_obj(c);
     DEBUG("action %d", action);
     switch(action) {
         case ACT_RIGHT:
-            if(!tb->buf[tb->pos]) {
+            if(tb->buf[tb->pos] == '\0') {
                 tb->buf[tb->pos] = ' ';
             }
             tb->pos = min2(tb->max_chars - 1, tb->pos + 1);
-            if(!tb->buf[tb->pos]) {
+            if(tb->buf[tb->pos] == '\0') {
                 tb->buf[tb->pos] = ' ';
             }
             return 0;
@@ -81,17 +117,11 @@ static int textinput_action(component *c, int action) {
             return 0;
             break;
         case ACT_UP:
-            tb->buf[tb->pos] = tb->buf[tb->pos] + 1;
-            if(tb->buf[tb->pos] > 126) {
-                tb->buf[tb->pos] = 32;
-            }
+            tb->buf[tb->pos] = textinput_scroll_character(tb->buf[tb->pos], false);
             return 0;
             break;
         case ACT_DOWN:
-            tb->buf[tb->pos] = tb->buf[tb->pos] - 1;
-            if(tb->buf[tb->pos] < 32) {
-                tb->buf[tb->pos] = 126;
-            }
+            tb->buf[tb->pos] = textinput_scroll_character(tb->buf[tb->pos], true);
             return 0;
             break;
     }
