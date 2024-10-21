@@ -82,7 +82,7 @@ void lab_menu_main_training_enter(component *c, void *userdata) {
 
 void lab_menu_main_new(component *c, void *userdata) {
     scene *s = userdata;
-    mechlab_select_dashboard(s, DASHBOARD_NEW);
+    mechlab_select_dashboard(s, DASHBOARD_NEW_PLAYER);
 }
 
 void lab_menu_main_tournament(component *c, void *userdata) {

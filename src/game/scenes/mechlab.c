@@ -218,7 +218,7 @@ void mechlab_tick(scene *scene, int paused) {
     component *root = guiframe_get_root(local->frame);
     if(trnmenu_is_finished(root)) {
         game_player *player1 = game_state_get_player(scene->gs, 0);
-        if(local->dashtype == DASHBOARD_NEW) {
+        if(local->dashtype == DASHBOARD_NEW_PLAYER) {
             char select_photo[64];
             snprintf(select_photo, sizeof(select_photo), lang_get(224), player1->pilot->name);
             mechlab_select_dashboard(scene, DASHBOARD_SELECT_NEW_PIC);
@@ -316,7 +316,7 @@ void mechlab_select_dashboard(scene *scene, dashboard_type type) {
             guiframe_layout(local->dashboard);
             break;
         // Dashboard for new player
-        case DASHBOARD_NEW:
+        case DASHBOARD_NEW_PLAYER:
             local->dashboard = guiframe_create(0, 0, 320, 200);
             // new pilots have 2000 credits
             memset(player1->pilot, 0, sizeof(sd_pilot));
@@ -358,7 +358,7 @@ int mechlab_event(scene *scene, SDL_Event *event) {
         return 1;
     }
 
-    if(local->dashtype == DASHBOARD_NEW) {
+    if(local->dashtype == DASHBOARD_NEW_PLAYER) {
         return guiframe_event(local->dashboard, event);
     } else {
         return guiframe_event(local->frame, event);
@@ -378,7 +378,7 @@ void mechlab_render(scene *scene) {
     // Render dashboard
     guiframe_render(local->frame);
 
-    if(local->dashtype != DASHBOARD_NEW && local->mech != NULL) {
+    if(local->dashtype != DASHBOARD_NEW_PLAYER && local->mech != NULL) {
         if(local->dashtype != DASHBOARD_SELECT_TOURNAMENT) {
             object_render(local->mech);
         }
@@ -406,7 +406,7 @@ void mechlab_input_tick(scene *scene) {
     do {
         if(i->type == EVENT_TYPE_ACTION) {
             // If view is new dashboard view, pass all input to it
-            if(local->dashtype == DASHBOARD_NEW) {
+            if(local->dashtype == DASHBOARD_NEW_PLAYER) {
                 // If inputting text for new player name is done, switch to next view.
                 // If ESC, exit view.
                 // Otherwise handle text input
