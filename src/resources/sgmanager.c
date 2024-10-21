@@ -142,6 +142,7 @@ int sg_save(sd_chr_file *chr) {
     snprintf(filename, sizeof(filename), "%s%s.CHR", dirname, chr->pilot.name);
     int ret = sd_chr_save(chr, filename);
     if(ret == SD_SUCCESS) {
+        DEBUG("Saved pilot %s in %s", chr->pilot.name, filename);
         omf_free(settings_get()->tournament.last_name);
         settings_get()->tournament.last_name = strdup(chr->pilot.name);
         settings_save();
