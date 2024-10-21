@@ -5,8 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define COLOR_6TO8(color) ((color * 255.0) / 63.0)
-#define COLOR_8TO6(color) ((color * 63.0) / 255.0)
+#define COLOR_6TO8(color) ((color << 2) | ((color & 0x30) >> 4))
+#define COLOR_8TO6(color) ((color >> 2) & 0x3F)
 
 // Inserted to range 250 - 255.
 static const int menu_colors[6][3] = {

@@ -37,10 +37,10 @@ void video_draw(const surface *src_surface, int x, int y);
  * @param src_surface Source surface
  * @param x Destination X
  * @param y Destination y
- * @param offset Palette offset (default = 0)
- * @param limit Palette offset max limit (default = 255)
+ * @param palette_offset Palette offset (default = 0)
+ * @param palette_limit Palette offset max limit (default = 255)
  */
-void video_draw_offset(const surface *src_surface, int x, int y, int offset, int limit);
+void video_draw_offset(const surface *src_surface, int x, int y, int palette_offset, int palette_limit);
 
 /**
  * Render a sprite on the screen using at given size. Surface will be scaled as needed to fit the
@@ -55,19 +55,20 @@ void video_draw_offset(const surface *src_surface, int x, int y, int offset, int
 void video_draw_size(const surface *src_surface, int x, int y, int w, int h);
 
 /**
- * Render a sprite on screen. Accept all drawing arguments.
- * @param src_surface Source surface
- * @param x Destination X
- * @param y Destination Y
- * @param w Destination width
- * @param h Destination height
- * @param blend_mode Blending mode
- * @param offset Palette offset
- * @param limit Palette limit
- * @param flip_mode Sprite flipping mode (FLIP_HORIZONTAL | FLIP_VERTICAL)
+ * Render a sprite on the screen.
+ * @param src_surface
+ * @param x
+ * @param y
+ * @param w
+ * @param h
+ * @param remap_offset
+ * @param remap_rounds
+ * @param palette_offset
+ * @param palette_limit
+ * @param flip_mode
  */
-void video_draw_full(const surface *src_surface, int x, int y, int w, int h, video_blend_mode blend_mode, int offset,
-                     int limit, unsigned int flip_mode);
+void video_draw_full(const surface *src_surface, int x, int y, int w, int h, int remap_offset, int remap_rounds,
+                     int palette_offset, int palette_limit, unsigned int flip_mode);
 
 void video_reset_atlas(void);
 
