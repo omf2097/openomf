@@ -42,7 +42,7 @@ int main(int argc, char *argv[]) {
     // commandline argument parser options
     struct arg_lit *help = arg_lit0("h", "help", "print this help and exit");
     struct arg_lit *vers = arg_lit0("v", "version", "print version information and exit");
-    struct arg_file *file = arg_file1("f", "file", "<file>", "Input altpals file");
+    struct arg_file *file = arg_file1("f", "file", "<file>", "Input CHR file");
     struct arg_file *export = arg_file0("e", "export", "<file>", "Export Photo to a ppm file");
     struct arg_file *bkfile = arg_file0("b", "bkfile", "<file>", "Palette BK file");
     struct arg_lit *pilot = arg_lit0(NULL, "pilot", "Only print pilot information");
