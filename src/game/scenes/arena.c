@@ -1315,7 +1315,7 @@ int arena_create(scene *scene) {
             // render pilot portraits
             object *portrait = omf_calloc(1, sizeof(object));
             if(i == 0) {
-                object_create(portrait, scene->gs, vec2i_create(105, 0), vec2f_create(0, 0));
+                object_create(portrait, scene->gs, vec2i_create(95, 0), vec2f_create(0, 0));
                 sprite *sp = omf_calloc(1, sizeof(sprite));
                 sprite_create(sp, player->pilot->photo, -1);
                 portrait->x_percent = 0.70f;
@@ -1326,7 +1326,7 @@ int arena_create(scene *scene) {
                 portrait->cur_sprite_id = 0;
                 game_state_add_object(scene->gs, portrait, RENDER_LAYER_TOP, 0, 0);
             } else {
-                object_create(portrait, scene->gs, vec2i_create(235, 0), vec2f_create(0, 0));
+                object_create(portrait, scene->gs, vec2i_create(225, 0), vec2f_create(0, 0));
                 sprite *sp = omf_calloc(1, sizeof(sprite));
                 sprite_create(sp, player->pilot->photo, -1);
                 portrait->x_percent = 0.70f;
