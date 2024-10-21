@@ -30,6 +30,7 @@
 #include "game/utils/settings.h"
 #include "game/utils/ticktimer.h"
 #include "resources/languages.h"
+#include "resources/sgmanager.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
 #include "utils/random.h"
@@ -298,6 +299,9 @@ void arena_end(scene *sc) {
             fight_stats->plug_text = PLUG_LOSE + rand_int(5);
         }
 
+        if(sg_save(p1->chr) != SD_SUCCESS) {
+            PERROR("Failed to save pilot %s", p1->chr->pilot.name);
+        }
         game_state_set_next(gs, SCENE_NEWSROOM);
     } else if(is_twoplayer(sc)) {
         game_state_set_next(gs, SCENE_MELEE);
