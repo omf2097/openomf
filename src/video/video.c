@@ -89,9 +89,6 @@ int video_init(int window_w, int window_h, bool fullscreen, bool vsync) {
     // Fetch viewport size which may be different from window size.
     SDL_GL_GetDrawableSize(g_video_state.window, &g_video_state.viewport_w, &g_video_state.viewport_h);
 
-    // Initial blending mode
-    glEnable(GL_BLEND);
-
     // Reset background color to black.
     glClearColor(0.0, 0.0, 0.0, 1.0);
 
@@ -163,9 +160,9 @@ static void video_set_blend_mode(object_array_blend_mode request_mode) {
         return;
 
     if(request_mode == MODE_SET) {
-        glBlendFunc(GL_ONE, GL_ZERO); // 1 * src + 0 * dst
+        glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     } else {
-        glBlendFunc(GL_ONE, GL_ONE); // 1 * src + 1 * dst
+        glColorMask(GL_FALSE, GL_TRUE, GL_TRUE, GL_TRUE);
     }
 
     g_video_state.current_blend_mode = request_mode;
@@ -196,6 +193,7 @@ void video_render_finish(void) {
     // Disable render target, and dump its contents as RGBA to the screen.
     render_target_deactivate();
     glViewport(0, 0, g_video_state.viewport_w, g_video_state.viewport_h);
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     activate_program(g_video_state.rgba_prog_id);
     if(g_video_state.draw_atlas) {
         bind_uniform_1i(g_video_state.rgba_prog_id, "framebuffer", TEX_UNIT_ATLAS);
