@@ -47,7 +47,7 @@ void hazard_tick(object *obj) {
     }
 }
 
-void hazard_spawn_cb(object *parent, int id, vec2i pos, vec2f vel, uint8_t flags, int s, int g, void *userdata) {
+void hazard_spawn_cb(object *parent, int id, vec2i pos, vec2f vel, uint8_t mp_flags, int s, int g, void *userdata) {
     scene *sc = (scene *)userdata;
 
     // Get next animation

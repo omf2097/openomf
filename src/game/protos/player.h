@@ -8,7 +8,7 @@
 
 typedef struct object_t object;
 
-typedef void (*object_state_add_cb)(object *parent, int id, vec2i pos, vec2f vel, uint8_t flags, int s, int g,
+typedef void (*object_state_add_cb)(object *parent, int id, vec2i pos, vec2f vel, uint8_t mp_flags, int s, int g,
                                     void *userdata);
 typedef void (*object_state_del_cb)(object *parent, int id, void *userdata);
 
