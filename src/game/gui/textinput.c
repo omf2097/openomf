@@ -179,7 +179,7 @@ static void textinput_tick(component *c) {
 char *textinput_value(const component *c) {
     textinput *tb = widget_get_obj(c);
     // Trim trailing whitespace
-    for(size_t i = strlen(tb->buf) - 1; i >= 0 && isspace(tb->buf[i]); --i) {
+    for(int i = strlen(tb->buf) - 1; i >= 0 && isspace(tb->buf[i]); --i) {
         tb->buf[i] = '\0';
     }
     return tb->buf;
