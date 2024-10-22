@@ -4,7 +4,7 @@
 #include "utils/hashmap.h"
 #include "utils/log.h"
 #include "utils/vector.h"
-#include "video/opengl/buffers.h"
+#include "video/opengl/texture.h"
 #include "video/opengl/texture_atlas.h"
 
 // WIP

@@ -11,7 +11,8 @@
 #include <stdlib.h>
 
 // Some internal functions
-void cb_scene_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t flags, int s, int g, void *userdata);
+void cb_scene_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t mp_flags, int s, int g,
+                           void *userdata);
 void cb_scene_destroy_object(object *parent, int id, void *userdata);
 
 // Loads BK file etc.
@@ -249,7 +250,8 @@ void scene_set_input_poll_cb(scene *scene, scene_input_poll_cb cbfunc) {
     scene->input_poll = cbfunc;
 }
 
-void cb_scene_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t flags, int s, int g, void *userdata) {
+void cb_scene_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t mp_flags, int s, int g,
+                           void *userdata) {
     scene *sc = (scene *)userdata;
 
     // Get next animation
@@ -263,6 +265,9 @@ void cb_scene_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t
         object_set_destroy_cb(obj, cb_scene_destroy_object, userdata);
         if(info->probability == 1) {
             object_set_repeat(obj, 1);
+        }
+        if(mp_flags & 0x1) {
+            object_add_effects(obj, EFFECT_SATURATE);
         }
         game_state_add_object(parent->gs, obj, RENDER_LAYER_BOTTOM, 0, 0);
     }

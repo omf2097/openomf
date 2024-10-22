@@ -1,8 +1,8 @@
 #include <stdlib.h>
 
 #include "utils/allocator.h"
-#include "video/opengl/buffers.h"
 #include "video/opengl/shared.h"
+#include "video/opengl/ubo.h"
 
 typedef struct data_buffer {
     GLfloat palette[1024]; // 256 * sizeof(vec4f)

@@ -372,7 +372,7 @@ int har_is_invincible(object *obj, af_move *move) {
 }
 
 // Callback for spawning new objects, eg. projectiles
-void cb_har_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t flags, int s, int g, void *userdata) {
+void cb_har_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t mp_flags, int s, int g, void *userdata) {
     har *h = userdata;
     vec2i p_pos = object_get_pos(parent);
 

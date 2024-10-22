@@ -274,8 +274,15 @@ void object_render(object *obj) {
         flip_mode ^= FLIP_HORIZONTAL;
     }
 
-    // Figure out blending mode
-    video_blend_mode mode = rstate->blendmode;
+    int remap_offset = 0;
+    int remap_rounds = 0;
+    if(rstate->blendmode == BLEND_ADD) {
+        remap_rounds = 1;
+        remap_offset = 3;
+    }
+    if(obj->video_effects & EFFECT_SATURATE) {
+        remap_rounds = 10;
+    }
 
     // TODO: Figure this stuff out.
     /*
@@ -313,7 +320,8 @@ void object_render(object *obj) {
     }
     */
 
-    video_draw_full(obj->cur_surface, x, y, w, h, mode, obj->pal_offset, obj->pal_limit, flip_mode);
+    video_draw_full(obj->cur_surface, x, y, w, h, remap_offset, remap_rounds, obj->pal_offset, obj->pal_limit,
+                    flip_mode);
 }
 
 void object_render_shadow(object *obj) {
@@ -347,7 +355,7 @@ void object_render_shadow(object *obj) {
     // Render shadow object twice with different offsets, so that
     // the shadows seem a bit blobbier and shadow-y
     for(int i = 0; i < 2; i++) {
-        video_draw_full(cur_sprite->data, x + i, y + i, w, scaled_h, BLEND_ADD, 0, 0, flip_mode);
+        video_draw_full(cur_sprite->data, x + i, y + i, w, scaled_h, 0, 0, 0, 0, flip_mode);
     }
 }
 
