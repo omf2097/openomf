@@ -12,14 +12,10 @@ uniform sampler2D remaps;
 // Out
 layout (location = 0) out vec4 color;
 
-float get_remapping_index(float src) {
-    return clamp(src * 255.0, 0, 18.0) / 18.0;
-}
-
 void main() {
     vec4 texel = texture(framebuffer, tex_coord);
     int remap_count = int(texel.b * 255.0);
-    float remap_index = get_remapping_index(texel.g);
+    float remap_index = clamp(texel.g * 255.0, 0, 18.0) / 18.0;
 
     // TODO: precalculate palette to 2d texture for required remappings later.
     for (int i = 0; i < remap_count; i++) {
