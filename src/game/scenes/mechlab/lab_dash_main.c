@@ -58,6 +58,23 @@ void lab_dash_main_chr_load(component *c, void *userdata) {
     p1->chr = omf_calloc(1, sizeof(sd_chr_file));
     memcpy(p1->chr, ((sd_chr_file *)list_get(dw->savegames, dw->index)), sizeof(sd_chr_file));
     p1->pilot = &p1->chr->pilot;
+
+    if(dw->savegames) {
+        iterator it;
+        list_iter_begin(dw->savegames, &it);
+        sd_chr_file *chr = NULL;
+
+        while((chr = (sd_chr_file *)list_iter_next(&it))) {
+            if(p1->chr && strcmp(p1->chr->pilot.name, chr->pilot.name) == 0) {
+                continue;
+            }
+            sd_chr_free(chr);
+        }
+
+        list_free(dw->savegames);
+        omf_free(dw->savegames);
+    }
+
     omf_free(settings_get()->tournament.last_name);
     settings_get()->tournament.last_name = strdup(p1->pilot->name);
     settings_save();
@@ -104,6 +121,7 @@ void lab_dash_main_chr_init(component *menu, component *submenu) {
     // find the current character, if any, and exclude them
     // and set the first pilot in the list to be the loaded one
     // and call mechlab_update to draw it
+
     iterator it;
     list_iter_begin(dw->savegames, &it);
 
@@ -167,7 +185,6 @@ void lab_dash_main_chr_done(component *menu, component *submenu) {
     // that CHR, that we do not free that CHR from the savegame list
     // and if there's no CHR we null out the pilot as well.
     iterator it;
-    list_iter_begin(dw->savegames, &it);
     game_player *p1 = game_state_get_player(dw->scene->gs, 0);
 
     sd_chr_file *chr = NULL;
@@ -177,17 +194,25 @@ void lab_dash_main_chr_done(component *menu, component *submenu) {
         p1->pilot = &p1->chr->pilot;
     } else if(p1->pilot) {
         // no character is loaded, we need to go back to nothing
-        p1->pilot = NULL;
+        sd_sprite_free(dw->pilot->photo);
+        omf_free(dw->pilot->photo);
+        sd_pilot_free(p1->pilot);
+        omf_free(p1->pilot);
+        // p1->pilot = NULL;
     }
 
-    while((chr = (sd_chr_file *)list_iter_next(&it))) {
-        if(p1->chr && strcmp(p1->chr->pilot.name, chr->pilot.name) != 0) {
+    if(dw->savegames) {
+        list_iter_begin(dw->savegames, &it);
+        while((chr = (sd_chr_file *)list_iter_next(&it))) {
+            if(p1->chr && strcmp(p1->chr->pilot.name, chr->pilot.name) == 0) {
+                continue;
+            }
             sd_chr_free(chr);
         }
-    }
 
-    list_free(dw->savegames);
-    omf_free(dw->savegames);
+        list_free(dw->savegames);
+        omf_free(dw->savegames);
+    }
 
     mechlab_update(dw->scene);
 }
@@ -225,6 +250,7 @@ component *lab_dash_main_create(scene *s, dashboard_widgets *dw) {
         pilotpic_set_photo(dw->photo, dw->pilot->photo);
     } else {
         dw->pilot->photo = omf_calloc(1, sizeof(sd_sprite));
+        sd_sprite_create(dw->pilot->photo);
         DEBUG("seletng default pilot photo");
         dw->pilot->photo_id = pilotpic_selected(dw->photo);
         pilotpic_load(dw->pilot->photo, &dw->pilot->palette, PIC_PLAYERS, 0);
@@ -286,6 +312,7 @@ component *lab_dash_sim_create(scene *s, dashboard_widgets *dw) {
         pilotpic_set_photo(dw->photo, dw->pilot->photo);
     } else {
         dw->pilot->photo = omf_calloc(1, sizeof(sd_sprite));
+        sd_sprite_create(dw->pilot->photo);
         DEBUG("seletng default pilot photo");
         dw->pilot->photo_id = pilotpic_selected(dw->photo);
         pilotpic_load(dw->pilot->photo, &dw->pilot->palette, PIC_PLAYERS, 0);

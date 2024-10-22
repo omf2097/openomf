@@ -28,6 +28,10 @@ void sd_pilot_clone(sd_pilot *dest, const sd_pilot *src) {
 void sd_pilot_free(sd_pilot *pilot) {
     if(pilot == NULL)
         return;
+    if(pilot->photo) {
+        sd_sprite_free(pilot->photo);
+        omf_free(pilot->photo);
+    }
     for(int m = 0; m < 10; m++) {
         omf_free(pilot->quotes[m]);
     }

@@ -48,6 +48,7 @@ int pilotpic_load(sd_sprite *sprite, palette *pal, int pic_id, int pilot_id) {
         DEBUG("PIC file %s loaded, selecting picture %d.", get_resource_name(pic_id), pilot_id);
     }
 
+    sd_sprite_free(sprite);
     // Create new
     const sd_pic_photo *photo = sd_pic_get(&pics, pilot_id);
     sd_sprite_copy(sprite, photo->sprite);

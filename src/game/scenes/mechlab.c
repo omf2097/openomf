@@ -241,15 +241,29 @@ void mechlab_tick(scene *scene, int paused) {
             } else {
                 player1->pilot->money = player1->pilot->money - trn->registration_fee;
             }
+            sd_chr_file *oldchr = player1->chr;
             player1->chr = omf_calloc(1, sizeof(sd_chr_file));
+            sd_chr_create(player1->chr);
             memcpy(&player1->chr->pilot, player1->pilot, sizeof(sd_pilot));
             sd_chr_from_trn(player1->chr, trn, player1->pilot);
+
+            if(oldchr) {
+                sd_chr_free(oldchr);
+                omf_free(oldchr);
+            }
+
             if(sg_save(player1->chr) != SD_SUCCESS) {
                 PERROR("Failed to save pilot %s", player1->chr->pilot.name);
             }
             // force the character to reload because its just easier
             sd_chr_free(player1->chr);
             omf_free(player1->chr);
+            sd_sprite_free(player1->pilot->photo);
+            omf_free(player1->pilot->photo);
+
+            // sd_pilot_free(player1->pilot);
+            // omf_free(player1->pilot);
+            // player1->pilot = NULL;
             bool found = mechlab_find_last_player(scene);
             mechlab_select_dashboard(scene, DASHBOARD_STATS);
             guiframe_free(local->frame);
@@ -307,6 +321,13 @@ void mechlab_select_dashboard(scene *scene, dashboard_type type) {
             break;
         // Dashboard for new player
         case DASHBOARD_NEW_PLAYER:
+            if(player1->chr) {
+                if(&player1->chr->pilot == player1->pilot) {
+                    player1->pilot = omf_calloc(1, sizeof(sd_pilot));
+                }
+                sd_chr_free(player1->chr);
+                omf_free(player1->chr);
+            }
             local->dashboard = guiframe_create(0, 0, 320, 200);
             // new pilots have 2000 credits
             memset(player1->pilot, 0, sizeof(sd_pilot));
