@@ -13,9 +13,7 @@ uniform sampler2D remaps;
 layout (location = 0) out vec4 color;
 
 float get_remapping_index(float src) {
-    int remap_index = int(round(src * 255.0));
-    int clamped_index = clamp(remap_index, 0, 18);
-    return clamped_index / 18.0;
+    return clamp(src * 255.0, 0, 18.0) / 18.0;
 }
 
 void main() {
