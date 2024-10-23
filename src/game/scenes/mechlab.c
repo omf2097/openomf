@@ -261,9 +261,6 @@ void mechlab_tick(scene *scene, int paused) {
             sd_sprite_free(player1->pilot->photo);
             omf_free(player1->pilot->photo);
 
-            // sd_pilot_free(player1->pilot);
-            // omf_free(player1->pilot);
-            // player1->pilot = NULL;
             bool found = mechlab_find_last_player(scene);
             mechlab_select_dashboard(scene, DASHBOARD_STATS);
             guiframe_free(local->frame);
