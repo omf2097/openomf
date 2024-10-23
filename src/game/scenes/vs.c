@@ -158,6 +158,7 @@ void vs_handle_action(scene *scene, int action) {
                         }
                     }
                 } else {
+                    game_state_get_player(scene->gs, 1)->pilot = NULL;
                     game_state_set_next(scene->gs, SCENE_MECHLAB);
                 }
                 break;
@@ -193,6 +194,8 @@ void vs_handle_action(scene *scene, int action) {
                     dialog_show(&local->quit_dialog, 1);
                 } else {
                     if(player1->chr) {
+                        // null out the  p2 pilot
+                        game_state_get_player(scene->gs, 1)->pilot = NULL;
                         game_state_set_next(scene->gs, SCENE_MECHLAB);
                     } else {
                         game_state_set_next(scene->gs, SCENE_MELEE);

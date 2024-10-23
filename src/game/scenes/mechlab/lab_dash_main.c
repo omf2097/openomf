@@ -1,5 +1,6 @@
 #include <stdio.h>
 
+#include "formats/error.h"
 #include "game/gui/gauge.h"
 #include "game/gui/label.h"
 #include "game/gui/pilotpic.h"
@@ -51,12 +52,23 @@ void lab_dash_main_photo_right(component *c, void *userdata) {
 void lab_dash_main_chr_load(component *c, void *userdata) {
     dashboard_widgets *dw = userdata;
     game_player *p1 = game_state_get_player(dw->scene->gs, 0);
-    if(p1->chr) {
-        sd_chr_free(p1->chr);
-        omf_free(p1->chr);
-    }
+
+    sd_chr_file *oldchr = p1->chr;
+    sd_chr_file *chr = ((sd_chr_file *)list_get(dw->savegames, dw->index));
     p1->chr = omf_calloc(1, sizeof(sd_chr_file));
-    memcpy(p1->chr, ((sd_chr_file *)list_get(dw->savegames, dw->index)), sizeof(sd_chr_file));
+    if(sg_load(p1->chr, chr->pilot.name) != SD_SUCCESS) {
+        // bad save, revert to the loaded character
+        omf_free(p1->chr);
+        p1->chr = oldchr;
+        trnmenu_finish(c);
+        return;
+    }
+    if(oldchr) {
+        DEBUG("freeing loaded CHR %s", oldchr->pilot.name);
+        sd_chr_free(oldchr);
+        omf_free(oldchr);
+    }
+
     p1->pilot = &p1->chr->pilot;
 
     if(dw->savegames) {
@@ -65,9 +77,7 @@ void lab_dash_main_chr_load(component *c, void *userdata) {
         sd_chr_file *chr = NULL;
 
         while((chr = (sd_chr_file *)list_iter_next(&it))) {
-            if(p1->chr && strcmp(p1->chr->pilot.name, chr->pilot.name) == 0) {
-                continue;
-            }
+            DEBUG("freeing CHR %s", chr->pilot.name);
             sd_chr_free(chr);
         }
 
@@ -204,9 +214,7 @@ void lab_dash_main_chr_done(component *menu, component *submenu) {
     if(dw->savegames) {
         list_iter_begin(dw->savegames, &it);
         while((chr = (sd_chr_file *)list_iter_next(&it))) {
-            if(p1->chr && strcmp(p1->chr->pilot.name, chr->pilot.name) == 0) {
-                continue;
-            }
+            DEBUG("freeing CHR %s", chr->pilot.name);
             sd_chr_free(chr);
         }
 
