@@ -41,7 +41,8 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
     obj->gravity = 0.0f;
 
     // Video effect stuff
-    obj->video_effects = 0;
+    obj->animation_video_effects = 0;
+    obj->frame_video_effects = 0;
 
     // Attachment stuff
     obj->attached_to_id = 0;
@@ -209,20 +210,28 @@ void object_collide(object *obj, object *b) {
     }
 }
 
-void object_set_effects(object *obj, int effects) {
-    obj->video_effects = effects;
+void object_set_frame_effects(object *obj, uint32_t effects) {
+    obj->frame_video_effects = effects;
 }
 
-int object_get_effects(const object *obj) {
-    return obj->video_effects;
+void object_set_animation_effects(object *obj, uint32_t effects) {
+    obj->animation_video_effects = effects;
 }
 
-void object_add_effects(object *obj, int effects) {
-    obj->video_effects |= effects;
+void object_add_animation_effects(object *obj, uint32_t effects) {
+    obj->animation_video_effects |= effects;
 }
 
-void object_del_effects(object *obj, int effects) {
-    obj->video_effects &= ~effects;
+bool object_has_effect(const object *obj, uint32_t effect) {
+    return obj->animation_video_effects & effect || obj->frame_video_effects & effect;
+}
+
+void object_add_frame_effects(object *obj, uint32_t effects) {
+    obj->frame_video_effects |= effects;
+}
+
+void object_del_frame_effects(object *obj, uint32_t effects) {
+    obj->frame_video_effects &= ~effects;
 }
 
 void object_render(object *obj) {
@@ -276,13 +285,29 @@ void object_render(object *obj) {
 
     int remap_offset = 0;
     int remap_rounds = 0;
-    if(rstate->blendmode == BLEND_ADD) {
+    if(object_has_effect(obj, EFFECT_GLOW)) {
         remap_rounds = 1;
         remap_offset = 3;
+
+        if(object_has_effect(obj, EFFECT_SATURATE)) {
+            remap_rounds = 10;
+        }
     }
-    if(obj->video_effects & EFFECT_SATURATE) {
-        remap_rounds = 10;
+    /*
+    else if (object_has_effect(obj, EFFECT_SHADOW)) {
+        remap_rounds = 1;
+        remap_offset = 4;
     }
+    else if (object_has_effect(obj, EFFECT_DARK_TINT)) {
+        remap_rounds = 1;
+        remap_offset = 4;
+    }
+    else if (object_has_effect(obj, EFFECT_POSITIONAL_LIGHTING)) {
+        int p = (x > 160) ? 320 - x : x;
+        remap_rounds = 1;
+        remap_offset = 6 + p % 4;
+    }
+    */
 
     // TODO: Figure this stuff out.
     /*
@@ -294,29 +319,8 @@ void object_render(object *obj) {
         opacity = rstate->blend_start + d;
     }
 
-    // Default Tint color
-    color tint = color_create(0xFF, 0xFF, 0xFF, 0xFF);
-
-    // These two force set the sprite color, so handle them first
-    if(obj->video_effects & EFFECT_SHADOW) {
-        tint = color_create(0x20, 0x20, 0x20, 0xFF);
-    }
-    if(obj->video_effects & EFFECT_DARK_TINT) {
-        tint = color_create(0x60, 0x60, 0x60, 0xFF);
-    }
     if(obj->video_effects & EFFECT_STASIS) {
         opacity = 128;
-    }
-
-    // This changes the tint depending on position, so handle next
-    if(obj->video_effects & EFFECT_POSITIONAL_LIGHTING) {
-        float p = (x > 160) ? 320 - x : x;
-        float shade = 0.65f + p / 320;
-        if(shade > 1.0f)
-            shade = 1.0f;
-        tint.r *= shade;
-        tint.g *= shade;
-        tint.b *= shade;
     }
     */
 
@@ -355,7 +359,7 @@ void object_render_shadow(object *obj) {
     // Render shadow object twice with different offsets, so that
     // the shadows seem a bit blobbier and shadow-y
     for(int i = 0; i < 2; i++) {
-        video_draw_full(cur_sprite->data, x + i, y + i, w, scaled_h, 0, 0, 0, 0, flip_mode);
+        video_draw_full(cur_sprite->data, x + i, y + i, w, scaled_h, 4, 1, obj->pal_offset, obj->pal_limit, flip_mode);
     }
 }
 
@@ -542,7 +546,6 @@ void object_select_sprite(object *obj, int id) {
         } else {
             if(animation_get_sprite(obj->cur_animation, id)) {
                 obj->cur_sprite_id = id;
-                obj->sprite_state.blendmode = BLEND_SET;
                 obj->sprite_state.flipmode = FLIP_NONE;
             } else {
                 DEBUG("unable to find sprite %d", id);
