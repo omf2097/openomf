@@ -220,8 +220,8 @@ void update_har(scene *scene, int player) {
         object_select_sprite(har, 0);
         object_set_repeat(har, 1);
         if(player2->selectable) {
-            str_from_format(&local->vs_text, "%s VS. %s", har_get_name(CURSOR_INDEX(local, 0)),
-                            har_get_name(CURSOR_INDEX(local, 1)));
+            str_format(&local->vs_text, "%s VS. %s", har_get_name(CURSOR_INDEX(local, 0)),
+                       har_get_name(CURSOR_INDEX(local, 1)));
         }
     }
 }
@@ -751,8 +751,8 @@ int melee_create(scene *scene) {
     if(player2->selectable) {
         chr_score *s1 = game_player_get_score(game_state_get_player(scene->gs, 0));
         chr_score *s2 = game_player_get_score(game_state_get_player(scene->gs, 1));
-        str_from_format(&local->wins_text_a, "Wins: %d", s1->wins);
-        str_from_format(&local->wins_text_b, "Wins: %d", s2->wins);
+        str_format(&local->wins_text_a, "Wins: %d", s1->wins);
+        str_format(&local->wins_text_b, "Wins: %d", s2->wins);
 
         object_create(&local->big_portrait_2, scene->gs, vec2i_create(320, 0), vec2f_create(0, 0));
         object_set_animation(&local->big_portrait_2, pilot_big_portraits);

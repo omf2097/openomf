@@ -76,6 +76,16 @@ void str_from_format(str *dst, const char *format, ...);
 void str_from_slice(str *dst, const str *src, size_t start, size_t end);
 
 /**
+ * @brief Formats a string into an existing str
+ * @details This uses snprintf internally, so usual printf format strings are valid.
+ * @param dst Target string object
+ * @param format Format string
+ * @param ... Arguments list
+ */
+
+void str_format(str *dst, const char *format, ...);
+
+/**
  * @brief Cut away amount of characters from the end of the string.
  * @details If cut amount is larger than the length of the string, the whole string will be cleared.
  * @param dst String to cut
