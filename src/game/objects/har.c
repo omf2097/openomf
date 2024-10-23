@@ -1443,6 +1443,7 @@ void har_tick(object *obj) {
     if(object_has_effect(obj, EFFECT_TRAIL) && obj->age % 2 == 0) {
         sprite *cur_sprite = animation_get_sprite(obj->cur_animation, obj->cur_sprite_id);
         sprite *nsp = sprite_copy(cur_sprite);
+        surface_flatten_to_mask(nsp->data, 1);
         object *nobj = omf_calloc(1, sizeof(object));
         object_create(nobj, obj->gs, object_get_pos(obj), vec2f_create(0, 0));
         object_set_stl(nobj, object_get_stl(obj));
