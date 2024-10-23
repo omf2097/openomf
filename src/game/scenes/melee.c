@@ -133,15 +133,15 @@ void melee_free(scene *scene) {
     scene_set_userdata(scene, local);
 }
 
-static void set_cursor_colors(int offset) {
+static void set_cursor_colors(int offset, bool a_done, bool b_done) {
     palette *pal = video_get_base_palette();
     int base = 120;
-    pal->data[RED_CURSOR_INDEX][0] = base + offset;
+    pal->data[RED_CURSOR_INDEX][0] = base + (a_done ? 64 : offset);
     pal->data[RED_CURSOR_INDEX][1] = 0;
     pal->data[RED_CURSOR_INDEX][2] = 0;
     pal->data[BLUE_CURSOR_INDEX][0] = 0;
     pal->data[BLUE_CURSOR_INDEX][1] = 0;
-    pal->data[BLUE_CURSOR_INDEX][2] = base + offset;
+    pal->data[BLUE_CURSOR_INDEX][2] = base + (b_done ? 64 : offset);
     pal->data[VIOLET_CURSOR_INDEX][0] = base + offset;
     pal->data[VIOLET_CURSOR_INDEX][1] = 0;
     pal->data[VIOLET_CURSOR_INDEX][2] = base + offset;
@@ -189,7 +189,7 @@ void melee_tick(scene *scene, int paused) {
     local->ticks++;
     double rate = ((double)local->ticks) / 25.0;
     int num = round((sin(rate) + 1.0) * 64);
-    set_cursor_colors(num);
+    set_cursor_colors(num, CURSOR_A_DONE(local), CURSOR_B_DONE(local));
 }
 
 void refresh_pilot_stats(melee_local *local) {
@@ -783,7 +783,7 @@ int melee_create(scene *scene) {
     component_layout(local->bar_endurance[1], 320 - 66 - local->bg_player_stats.w, 48, 20 * 4, 8);
 
     refresh_pilot_stats(local);
-    set_cursor_colors(0);
+    set_cursor_colors(0, false, false);
 
     // initialize nova selection cheat
     memset(local->har_selected, 0, sizeof(local->har_selected));
