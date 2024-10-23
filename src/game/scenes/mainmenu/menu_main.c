@@ -72,6 +72,10 @@ void mainmenu_soreboard(component *c, void *userdata) {
 
 void mainmenu_mechlab(component *c, void *userdata) {
     scene *s = userdata;
+    game_player *p2 = game_state_get_player(s->gs, 1);
+    sd_pilot_free(p2->pilot);
+    omf_free(p2->pilot);
+    p2->pilot = NULL;
     game_state_set_next(s->gs, SCENE_MECHLAB);
 }
 

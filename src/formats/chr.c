@@ -180,7 +180,6 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
         memread_buf(mr, chr->enemies[i]->unknown, 25);
         for(int m = 0; m < 10; m++) {
             if(trn_loaded && trn.enemies[i]->quotes[m]) {
-                DEBUG("allocating %d bytes for quote %s", strlen(trn.enemies[i]->quotes[m]), trn.enemies[i]->quotes[m]);
                 chr->enemies[i]->pilot.quotes[m] = omf_calloc(1, strlen(trn.enemies[i]->quotes[m]) + 1);
                 strncpy(chr->enemies[i]->pilot.quotes[m], trn.enemies[i]->quotes[m], strlen(trn.enemies[i]->quotes[m]));
             }

@@ -77,7 +77,7 @@ void game_menu_quit(component *c, void *userdata) {
     if(player1->chr) {
         // quit back to VS for plug to call you a chicken
         game_player *player2 = game_state_get_player(((scene *)userdata)->gs, 1);
-        game_player_set_pilot(player2, NULL);
+        player2->pilot = NULL;
         game_state_set_next(s->gs, SCENE_VS);
     } else {
         game_state_set_next(s->gs, SCENE_MENU);
@@ -299,7 +299,7 @@ void arena_end(scene *sc) {
             fight_stats->plug_text = PLUG_LOSE + rand_int(5);
         }
 
-        if(sg_save(p1->chr) != SD_SUCCESS) {
+        if(p1->chr && sg_save(p1->chr) != SD_SUCCESS) {
             PERROR("Failed to save pilot %s", p1->chr->pilot.name);
         }
         game_state_set_next(gs, SCENE_NEWSROOM);

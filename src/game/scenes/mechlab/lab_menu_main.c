@@ -26,11 +26,11 @@ void lab_menu_main_arena(component *c, void *userdata) {
         game_player *p1 = game_state_get_player(s->gs, 0);
         game_player *p2 = game_state_get_player(s->gs, 1);
         p2->selectable = 0;
-        if(!p2->pilot) {
-            p2->pilot = omf_calloc(1, sizeof(sd_pilot));
-            sd_pilot_create(p2->pilot);
+        if(p2->pilot) {
+            sd_pilot_free(p2->pilot);
+            omf_free(p2->pilot);
         }
-        sd_pilot_clone(p2->pilot, pilot);
+        p2->pilot = pilot;
         // there's not an exact difficulty mapping
         // for aluminum to 1p mode, but round up to
         // veteran
@@ -127,7 +127,7 @@ static const button_details details_list[] = {
      COM_DISABLED                                                                                                          },
     {lab_menu_main_buy_enter,      "BUY",              TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP,    2, 0, 0,  0, COM_DISABLED},
     {lab_menu_main_sell_enter,     "SELL",             TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP,    2, 0, 0,  0, COM_DISABLED},
-    {lab_menu_main_load,           "LOAD",             TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 14, 0, COM_ENABLED },
+    {lab_menu_main_load,           "LOAD",             TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 14, 0, COM_DISABLED},
     {lab_menu_main_new,            "NEW",              TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 14, 0, COM_ENABLED },
     {lab_menu_main_delete,         "DELETE",           TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 14, 0, COM_DISABLED},
     {lab_menu_main_sim,            "SIM",              TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP,    2, 0, 0,  0, COM_DISABLED},
@@ -282,7 +282,12 @@ component *lab_menu_main_create(scene *s, bool character_loaded) {
 
         sprite *bsprite = animation_get_sprite(main_buttons, i);
         bool enabled = details_list[i].enabled;
-        if(details_list[i].enabled == COM_DISABLED && character_loaded == true) {
+        if(i == 4) {
+            if(sg_count() > 0) {
+                // there are save games to load
+                enabled = COM_ENABLED;
+            }
+        } else if(details_list[i].enabled == COM_DISABLED && character_loaded == true) {
             enabled = COM_ENABLED;
         }
         component *button =
