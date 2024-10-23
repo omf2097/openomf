@@ -35,6 +35,12 @@ void surface_sub(surface *dst, const surface *src, int dst_x, int dst_y, int src
                  int method);
 void surface_set_transparency(surface *dst, int index);
 
+/** Flatten surface to a mask
+ *
+ * @param sur Surface to convert
+ */
+void surface_flatten_to_mask(surface *sur, uint8_t value);
+
 /**
  * Flatten each block of {block_size} colors by decrementing the index by {amount} in each block.
  * Start counting from {range_start} and stop at {range_end}. A block can be e.g. a color slide

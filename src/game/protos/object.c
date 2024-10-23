@@ -283,6 +283,13 @@ void object_render(object *obj) {
         flip_mode ^= FLIP_HORIZONTAL;
     }
 
+    uint8_t opacity = rstate->blend_finish;
+    if(rstate->duration > 0) {
+        float moment = (float)rstate->timer / (float)rstate->duration;
+        float d = ((float)rstate->blend_finish - (float)rstate->blend_start) * moment;
+        opacity = rstate->blend_start + d;
+    }
+
     int remap_offset = 0;
     int remap_rounds = 0;
     if(object_has_effect(obj, EFFECT_GLOW)) {
@@ -292,12 +299,11 @@ void object_render(object *obj) {
         if(object_has_effect(obj, EFFECT_SATURATE)) {
             remap_rounds = 10;
         }
+    } else if(object_has_effect(obj, EFFECT_SHADOW)) {
+        remap_rounds = 1;
+        remap_offset = (opacity * 4) >> 8;
     }
     /*
-    else if (object_has_effect(obj, EFFECT_SHADOW)) {
-        remap_rounds = 1;
-        remap_offset = 4;
-    }
     else if (object_has_effect(obj, EFFECT_DARK_TINT)) {
         remap_rounds = 1;
         remap_offset = 4;
@@ -311,14 +317,6 @@ void object_render(object *obj) {
 
     // TODO: Figure this stuff out.
     /*
-    // Blend start / blend finish
-    uint8_t opacity = rstate->blend_finish;
-    if(rstate->duration > 0) {
-        float moment = (float)rstate->timer / (float)rstate->duration;
-        float d = ((float)rstate->blend_finish - (float)rstate->blend_start) * moment;
-        opacity = rstate->blend_start + d;
-    }
-
     if(obj->video_effects & EFFECT_STASIS) {
         opacity = 128;
     }
