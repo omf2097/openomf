@@ -57,7 +57,6 @@ struct {
 
 void player_clear_frame(object *obj) {
     player_sprite_state *s = &obj->sprite_state;
-    s->blendmode = BLEND_SET;
     s->flipmode = FLIP_NONE;
     s->timer = 0;
     s->duration = 0;
@@ -703,21 +702,26 @@ void player_run(object *obj) {
             }
         }
 
+        // Set video effects now.
+        int effects = EFFECT_NONE;
+        if(player_frame_isset(obj, "bt"))
+            effects |= EFFECT_DARK_TINT;
+        if(player_frame_isset(obj, "br"))
+            effects |= EFFECT_GLOW;
+        if(player_frame_isset(obj, "ub"))
+            effects |= EFFECT_TRAIL;
+        object_set_frame_effects(obj, effects);
+
         // Set render settings
-        if(frame->sprite < 25) {
-            object_select_sprite(obj, frame->sprite);
-            if(obj->cur_sprite_id >= 0) {
-                rstate->duration = frame->tick_len;
-                rstate->blendmode = sd_script_isset(frame, "br") ? BLEND_ADD : BLEND_SET;
-                if(sd_script_isset(frame, "r") || obj->animation_state.shadow_corner_hack) {
-                    rstate->flipmode ^= FLIP_HORIZONTAL;
-                }
-                if(sd_script_isset(frame, "f")) {
-                    rstate->flipmode ^= FLIP_VERTICAL;
-                }
+        object_select_sprite(obj, frame->sprite);
+        if(obj->cur_sprite_id >= 0) {
+            rstate->duration = frame->tick_len;
+            if(sd_script_isset(frame, "r") || obj->animation_state.shadow_corner_hack) {
+                rstate->flipmode ^= FLIP_HORIZONTAL;
             }
-        } else {
-            object_select_sprite(obj, -1);
+            if(sd_script_isset(frame, "f")) {
+                rstate->flipmode ^= FLIP_VERTICAL;
+            }
         }
     }
 

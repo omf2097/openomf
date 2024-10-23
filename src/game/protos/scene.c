@@ -267,7 +267,7 @@ void cb_scene_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t
             object_set_repeat(obj, 1);
         }
         if(mp_flags & 0x1) {
-            object_add_effects(obj, EFFECT_SATURATE);
+            object_set_animation_effects(obj, EFFECT_SATURATE);
         }
         game_state_add_object(parent->gs, obj, RENDER_LAYER_BOTTOM, 0, 0);
     }

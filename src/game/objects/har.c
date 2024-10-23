@@ -1326,10 +1326,10 @@ void har_tick(object *obj) {
         h->in_stasis_ticks--;
         if(h->in_stasis_ticks) {
             object_set_halt(obj, 1);
-            object_add_effects(obj, EFFECT_STASIS);
+            object_add_frame_effects(obj, EFFECT_STASIS);
         } else {
             object_set_halt(obj, 0);
-            object_del_effects(obj, EFFECT_STASIS);
+            object_del_frame_effects(obj, EFFECT_STASIS);
         }
     }
 
@@ -1435,19 +1435,12 @@ void har_tick(object *obj) {
         h->endurance += 0.025f; // made up but plausible number
     }
 
-    // Flip tint effect flag
-    if(player_frame_isset(obj, "bt")) {
-        object_add_effects(obj, EFFECT_DARK_TINT);
-    } else {
-        object_del_effects(obj, EFFECT_DARK_TINT);
-    }
-
     // Leave shadow trail
     // IF trail is on, copy current sprite to a new animation, and set animation string
     // to show the sprite with animation string that interpolates opacity down
     // Mark new object as the owner of the animation, so that the animation gets
     // removed when the object is finished.
-    if(player_frame_isset(obj, "ub") && obj->age % 2 == 0) {
+    if(object_has_effect(obj, EFFECT_TRAIL) && obj->age % 2 == 0) {
         sprite *cur_sprite = animation_get_sprite(obj->cur_animation, obj->cur_sprite_id);
         sprite *nsp = sprite_copy(cur_sprite);
         object *nobj = omf_calloc(1, sizeof(object));
@@ -1456,7 +1449,7 @@ void har_tick(object *obj) {
         object_set_animation(nobj, create_animation_from_single(nsp, obj->cur_animation->start_pos));
         object_set_animation_owner(nobj, OWNER_OBJECT);
         object_set_custom_string(nobj, "bs100A1-bf0A15");
-        object_add_effects(nobj, EFFECT_SHADOW);
+        object_add_animation_effects(nobj, EFFECT_SHADOW);
         object_set_direction(nobj, object_get_direction(obj));
         object_dynamic_tick(nobj);
         game_state_add_object(obj->gs, nobj, RENDER_LAYER_BOTTOM, 0, 0);
@@ -2198,7 +2191,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     object_set_repeat(obj, 1);
     object_set_stl(obj, local->af_data->sound_translation_table);
     object_set_shadow(obj, 1);
-    object_add_effects(obj, EFFECT_POSITIONAL_LIGHTING);
+    object_add_animation_effects(obj, EFFECT_POSITIONAL_LIGHTING);
 
     // New object spawner callback
     object_set_spawn_cb(obj, cb_har_spawn_object, local);

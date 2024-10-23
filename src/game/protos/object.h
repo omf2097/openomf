@@ -42,6 +42,8 @@ enum
     EFFECT_POSITIONAL_LIGHTING = 0x4,
     EFFECT_STASIS = 0x8,
     EFFECT_SATURATE = 0x10,
+    EFFECT_GLOW = 0x20,
+    EFFECT_TRAIL = 0x40,
 };
 
 typedef struct object_t object;
@@ -88,7 +90,8 @@ struct object_t {
     float gravity;
 
     // Bitmask for several video effects (shadow, etc.)
-    int video_effects;
+    uint32_t frame_video_effects;     //< Effects that only last for current frame
+    uint32_t animation_video_effects; //< Effects that last for the entire animation
 
     uint8_t layers;
     uint8_t cur_animation_own;
@@ -175,10 +178,12 @@ int object_get_halt_ticks(object *obj);
 void object_set_halt(object *obj, int halt);
 int object_get_halt(const object *obj);
 
-void object_set_effects(object *obj, int effects);
-int object_get_effects(const object *obj);
-void object_add_effects(object *obj, int effects);
-void object_del_effects(object *obj, int effects);
+void object_set_animation_effects(object *obj, uint32_t effects);
+void object_add_animation_effects(object *obj, uint32_t effects);
+void object_set_frame_effects(object *obj, uint32_t effects);
+void object_add_frame_effects(object *obj, uint32_t effects);
+void object_del_frame_effects(object *obj, uint32_t effects);
+bool object_has_effect(const object *obj, uint32_t effect);
 
 void object_set_layers(object *obj, int layers);
 void object_set_group(object *obj, int group);

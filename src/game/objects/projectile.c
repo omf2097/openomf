@@ -36,13 +36,6 @@ void projectile_tick(object *obj) {
             obj->animation_state.finished = 0;
         }
     }
-
-    // Set effect flags
-    if(player_frame_isset(obj, "bt")) {
-        object_add_effects(obj, EFFECT_DARK_TINT);
-    } else {
-        object_del_effects(obj, EFFECT_DARK_TINT);
-    }
 }
 
 void projectile_free(object *obj) {

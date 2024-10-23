@@ -13,7 +13,6 @@ typedef void (*object_state_add_cb)(object *parent, int id, vec2i pos, vec2f vel
 typedef void (*object_state_del_cb)(object *parent, int id, void *userdata);
 
 typedef struct player_sprite_state_t {
-    int blendmode;
     int flipmode;
     int timer;
     int duration;
