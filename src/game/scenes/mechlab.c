@@ -248,6 +248,12 @@ void mechlab_tick(scene *scene, int paused) {
             sd_chr_from_trn(player1->chr, trn, player1->pilot);
 
             if(oldchr) {
+                if(player1->pilot != &oldchr->pilot) {
+                    sd_sprite_free(player1->pilot->photo);
+                    omf_free(player1->pilot->photo);
+                } else {
+                    player1->pilot = NULL;
+                }
                 sd_chr_free(oldchr);
                 omf_free(oldchr);
             }
@@ -256,10 +262,9 @@ void mechlab_tick(scene *scene, int paused) {
                 PERROR("Failed to save pilot %s", player1->chr->pilot.name);
             }
             // force the character to reload because its just easier
+
             sd_chr_free(player1->chr);
             omf_free(player1->chr);
-            sd_sprite_free(player1->pilot->photo);
-            omf_free(player1->pilot->photo);
 
             bool found = mechlab_find_last_player(scene);
             mechlab_select_dashboard(scene, DASHBOARD_STATS);
