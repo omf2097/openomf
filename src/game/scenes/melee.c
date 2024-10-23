@@ -68,8 +68,8 @@ typedef struct {
     portrait pilot_portraits[10];
     portrait har_portraits[10];
 
-    object har_player1[10];
-    object har_player2[10];
+    object har_player1;
+    object har_player2;
 
     component *bar_power[2];
     component *bar_agility[2];
@@ -83,6 +83,10 @@ typedef struct {
     surface select_hilight;
 
     unsigned int ticks;
+
+    str vs_text;
+    str wins_text_a;
+    str wins_text_b;
 
     // nova selection cheat
     unsigned char har_selected[2][10];
@@ -104,15 +108,16 @@ void melee_free(scene *scene) {
         component_free(local->bar_endurance[i]);
     }
 
+    object_free(&local->har_player1);
+    if(player2->selectable) {
+        object_free(&local->har_player2);
+    }
+
     for(int i = 0; i < 10; i++) {
         surface_free(&local->har_portraits[i].enabled);
         surface_free(&local->har_portraits[i].disabled);
         surface_free(&local->pilot_portraits[i].enabled);
         surface_free(&local->pilot_portraits[i].disabled);
-        object_free(&local->har_player1[i]);
-        if(player2->selectable) {
-            object_free(&local->har_player2[i]);
-        }
     }
 
     object_free(&local->player2_placeholder);
@@ -121,6 +126,9 @@ void melee_free(scene *scene) {
     if(player2->selectable) {
         object_free(&local->big_portrait_2);
     }
+    str_free(&local->vs_text);
+    str_free(&local->wins_text_a);
+    str_free(&local->wins_text_b);
     omf_free(local);
     scene_set_userdata(scene, local);
 }
@@ -171,9 +179,9 @@ void melee_tick(scene *scene, int paused) {
     }
 
     if(local->page == HAR_SELECT && local->ticks % 10 == 1) {
-        object_dynamic_tick(&local->har_player1[CURSOR_INDEX(local, 0)]);
+        object_dynamic_tick(&local->har_player1);
         if(player2->selectable) {
-            object_dynamic_tick(&local->har_player2[CURSOR_INDEX(local, 1)]);
+            object_dynamic_tick(&local->har_player2);
         }
     }
 
@@ -196,6 +204,28 @@ void refresh_pilot_stats(melee_local *local) {
     progressbar_set_progress(local->bar_endurance[1], (p_b.endurance * 100) / MAX_STAT);
 }
 
+void update_har(scene *scene, int player) {
+
+    melee_local *local = scene_get_userdata(scene);
+    if(local->page == HAR_SELECT) {
+        game_player *player2 = game_state_get_player(scene->gs, 1);
+        animation *ani;
+        object *har = &local->har_player1;
+        if(player == 2) {
+            har = &local->har_player2;
+        }
+
+        ani = &bk_get_info(scene->bk_data, 18 + CURSOR_INDEX(local, player - 1))->ani;
+        object_set_animation(har, ani);
+        object_select_sprite(har, 0);
+        object_set_repeat(har, 1);
+        if(player2->selectable) {
+            str_from_format(&local->vs_text, "%s VS. %s", har_get_name(CURSOR_INDEX(local, 0)),
+                            har_get_name(CURSOR_INDEX(local, 1)));
+        }
+    }
+}
+
 void handle_action(scene *scene, int player, int action) {
     game_player *player1 = game_state_get_player(scene->gs, 0);
     game_player *player2 = game_state_get_player(scene->gs, 1);
@@ -214,20 +244,28 @@ void handle_action(scene *scene, int player, int action) {
             if(*column < 0) {
                 *column = 4;
             }
+
             audio_play_sound(19, 0.5f, 0.0f, 2.0f);
+            update_har(scene, player);
+
             break;
         case ACT_RIGHT:
             (*column)++;
             if(*column > 4) {
                 *column = 0;
             }
+
             audio_play_sound(19, 0.5f, 0.0f, 2.0f);
+            update_har(scene, player);
+
             break;
         case ACT_UP:
             if(*row == 1) {
                 *row = 0;
             }
+
             audio_play_sound(19, 0.5f, 0.0f, 2.0f);
+            update_har(scene, player);
             break;
         case ACT_DOWN:
             if(*row == 0) {
@@ -240,7 +278,9 @@ void handle_action(scene *scene, int player, int action) {
                     local->katana_down_count[player - 1] = 11;
                 }
             }
+
             audio_play_sound(19, 0.5f, 0.0f, 2.0f);
+            update_har(scene, player);
             break;
         case ACT_KICK:
         case ACT_PUNCH:
@@ -251,6 +291,8 @@ void handle_action(scene *scene, int player, int action) {
                 local->cursor[1].done = 0;
                 if(local->page == PILOT_SELECT) {
                     local->page = HAR_SELECT;
+                    update_har(scene, 1);
+                    update_har(scene, 2);
                     local->pilot_id_a = CURSOR_INDEX(local, 0);
                     local->pilot_id_b = CURSOR_INDEX(local, 1);
 
@@ -520,7 +562,7 @@ static void render_har_select(melee_local *local, bool player2_is_selectable) {
 
     // currently selected HAR
     render_enabled_portrait(local->har_portraits, &local->cursor[0]);
-    object_render(&local->har_player1[CURSOR_INDEX(local, 0)]);
+    object_render(&local->har_player1);
 
     text_settings tconf_green;
     text_defaults(&tconf_green);
@@ -550,14 +592,10 @@ static void render_har_select(melee_local *local, bool player2_is_selectable) {
 
         // currently selected HAR
         render_enabled_portrait(local->har_portraits, &local->cursor[1]);
-        object_render(&local->har_player2[CURSOR_INDEX(local, 1)]);
+        object_render(&local->har_player2);
 
         // render HAR name (Har1 VS. Har2)
-        str vs_text;
-        str_from_format(&vs_text, "%s VS. %s", har_get_name(CURSOR_INDEX(local, 0)),
-                        har_get_name(CURSOR_INDEX(local, 1)));
-        text_render(&tconf_black, TEXT_DEFAULT, 80, 107, 150, 8, str_c(&vs_text));
-        str_free(&vs_text);
+        text_render(&tconf_black, TEXT_DEFAULT, 80, 107, 150, 8, str_c(&local->vs_text));
     } else {
         // 'choose your Robot'
         text_render(&tconf_green, TEXT_DEFAULT, 160, 97, 160, 8, lang_get(186));
@@ -586,16 +624,9 @@ void melee_render(scene *scene) {
 
     if(player2->selectable) {
         int text_x = 8;
-        chr_score *s1 = game_player_get_score(game_state_get_player(scene->gs, 0));
-        chr_score *s2 = game_player_get_score(game_state_get_player(scene->gs, 1));
-        str wins_text_a, wins_text_b;
-        str_from_format(&wins_text_a, "Wins: %d", s1->wins);
-        str_from_format(&wins_text_b, "Wins: %d", s2->wins);
-        text_render(&tconf_black, TEXT_DEFAULT, text_x, 107, 50, 8, str_c(&wins_text_a));
-        text_x = 312 - text_width(&tconf_black, str_c(&wins_text_b));
-        text_render(&tconf_black, TEXT_DEFAULT, text_x, 107, 50, 8, str_c(&wins_text_b));
-        str_free(&wins_text_a);
-        str_free(&wins_text_b);
+        text_render(&tconf_black, TEXT_DEFAULT, text_x, 107, 50, 8, str_c(&local->wins_text_a));
+        text_x = 312 - text_width(&tconf_black, str_c(&local->wins_text_b));
+        text_render(&tconf_black, TEXT_DEFAULT, text_x, 107, 50, 8, str_c(&local->wins_text_b));
     }
 }
 
@@ -647,23 +678,21 @@ static void load_har_portraits(scene *scene, melee_local *local) {
 
 static void load_hars(scene *scene, melee_local *local, bool player2_is_selectable) {
     animation *ani;
-    for(int i = 0; i < 10; i++) {
-        ani = &bk_get_info(scene->bk_data, 18 + i)->ani;
-        object_create(&local->har_player1[i], scene->gs, vec2i_create(110, 95), vec2f_create(0, 0));
-        object_set_animation(&local->har_player1[i], ani);
-        object_select_sprite(&local->har_player1[i], 0);
-        object_set_repeat(&local->har_player1[i], 1);
+    ani = &bk_get_info(scene->bk_data, 18)->ani;
+    object_create(&local->har_player1, scene->gs, vec2i_create(110, 95), vec2f_create(0, 0));
+    object_set_animation(&local->har_player1, ani);
+    object_select_sprite(&local->har_player1, 0);
+    object_set_repeat(&local->har_player1, 1);
 
-        if(player2_is_selectable) {
-            ani = &bk_get_info(scene->bk_data, 18 + i)->ani;
-            object_create(&local->har_player2[i], scene->gs, vec2i_create(210, 95), vec2f_create(0, 0));
-            object_set_animation(&local->har_player2[i], ani);
-            object_select_sprite(&local->har_player2[i], 0);
-            object_set_repeat(&local->har_player2[i], 1);
-            object_set_direction(&local->har_player2[i], OBJECT_FACE_LEFT);
-            object_set_pal_offset(&local->har_player2[i], 48);
-            object_set_pal_limit(&local->har_player2[i], 96);
-        }
+    if(player2_is_selectable) {
+        ani = &bk_get_info(scene->bk_data, 18 + 4)->ani;
+        object_create(&local->har_player2, scene->gs, vec2i_create(210, 95), vec2f_create(0, 0));
+        object_set_animation(&local->har_player2, ani);
+        object_select_sprite(&local->har_player2, 0);
+        object_set_repeat(&local->har_player2, 1);
+        object_set_direction(&local->har_player2, OBJECT_FACE_LEFT);
+        object_set_pal_offset(&local->har_player2, 48);
+        object_set_pal_limit(&local->har_player2, 96);
     }
 }
 
@@ -720,6 +749,11 @@ int melee_create(scene *scene) {
     object_set_animation(&local->big_portrait_1, pilot_big_portraits);
     object_select_sprite(&local->big_portrait_1, 0);
     if(player2->selectable) {
+        chr_score *s1 = game_player_get_score(game_state_get_player(scene->gs, 0));
+        chr_score *s2 = game_player_get_score(game_state_get_player(scene->gs, 1));
+        str_from_format(&local->wins_text_a, "Wins: %d", s1->wins);
+        str_from_format(&local->wins_text_b, "Wins: %d", s2->wins);
+
         object_create(&local->big_portrait_2, scene->gs, vec2i_create(320, 0), vec2f_create(0, 0));
         object_set_animation(&local->big_portrait_2, pilot_big_portraits);
         object_select_sprite(&local->big_portrait_2, 4);
