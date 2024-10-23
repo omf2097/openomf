@@ -127,19 +127,12 @@ static int textinput_action(component *c, int action) {
             tb->buf[tb->pos] = textinput_scroll_character(tb->buf[tb->pos], true);
             return 0;
             break;
-    }
-    return 1;
-}
-
-static int textinput_action(component *c, int action) {
-    textinput *tb = widget_get_obj(c);
-
-    // Handle selection
-    if(action == ACT_PUNCH) {
-        if(tb->done_cb) {
-            tb->done_cb(c, tb->userdata);
-        }
-        return 0;
+        case ACT_PUNCH:
+            if(tb->done_cb) {
+                tb->done_cb(c, tb->userdata);
+                return 0;
+            }
+            break;
     }
     return 1;
 }
@@ -203,7 +196,8 @@ char *textinput_value(const component *c) {
 
 void textinput_clear(component *c) {
     textinput *tb = widget_get_obj(c);
-    tb->buf[0] = 0;
+    memset(tb->buf, 0, tb->max_chars + 1);
+    tb->pos = 0;
 }
 
 static void textinput_free(component *c) {

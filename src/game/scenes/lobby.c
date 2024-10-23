@@ -474,7 +474,7 @@ void lobby_entered_name(component *c, void *userdata) {
         if(local->client == NULL) {
             DEBUG("An error occurred while trying to create an ENet client host.\n");
         }
-        enet_address_set_host(&address, "127.0.0.1");
+        enet_address_set_host(&address, "45.79.158.117");
         address.port = 2098;
         DEBUG("server address is %d", address.host);
         /* Initiate the connection, allocating the two channels 0 and 1. */
