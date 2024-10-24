@@ -97,7 +97,7 @@ int sd_bk_load(sd_bk_file *bk, const char *filename) {
     int ret = SD_SUCCESS;
 
     size_t fn_len = strlen(filename);
-    if(fn_len >= 4 && strncasecmp(&filename[fn_len - 4], ".PCX", 4) == 0) {
+    if(fn_len >= 4 && strncmp(&filename[fn_len - 4], ".PCX", 4) == 0) {
         return sd_bk_load_from_pcx(bk, filename);
     }
 

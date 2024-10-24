@@ -81,7 +81,7 @@ int pm_init(void) {
     local_path_build(LOG_PATH, local_base_dir, logfile_name);
     local_path_build(CONFIG_PATH, local_base_dir, configfile_name);
     local_path_build(SCORE_PATH, local_base_dir, scorefile_name);
-    if(!strcasecmp(SDL_GetPlatform(), "Windows")) {
+    if(strcmp(SDL_GetPlatform(), "Windows") == 0) {
         local_path_build(SAVE_PATH, local_base_dir, "save\\");
     } else {
         local_path_build(SAVE_PATH, local_base_dir, "save/");
@@ -93,19 +93,19 @@ int pm_init(void) {
         // where is the openomf binary, if this call fails we will look for resources in ./resources
         bin_base_dir = SDL_GetBasePath();
         if(bin_base_dir != NULL) {
-            if(!strcasecmp(SDL_GetPlatform(), "Windows")) {
+            if(strcmp(SDL_GetPlatform(), "Windows") == 0) {
                 // on windows, the resources will be in ./resources, relative to the binary
                 local_path_build(RESOURCE_PATH, bin_base_dir, "resources\\");
                 local_path_build(SHADER_PATH, bin_base_dir, "shaders\\");
                 m_ok = 1;
-            } else if(!strcasecmp(SDL_GetPlatform(), "Linux")) {
+            } else if(strcmp(SDL_GetPlatform(), "Linux") == 0) {
                 // on linux, the resources will be in ../share/games/openomf, relative to the binary
                 // so if openomf is installed to /usr/local/bin,
                 // the resources will be in /usr/local/share/games/openomf
                 local_path_build(RESOURCE_PATH, bin_base_dir, "../share/games/openomf/");
                 local_path_build(SHADER_PATH, bin_base_dir, "../share/games/openomf/shaders/");
                 m_ok = 1;
-            } else if(!strcasecmp(SDL_GetPlatform(), "Mac OS X")) {
+            } else if(strcmp(SDL_GetPlatform(), "Mac OS X") == 0) {
                 // on OSX, GetBasePath returns the 'Resources' directory
                 // if run from an app bundle, so we can use this as-is
                 local_path_build(RESOURCE_PATH, bin_base_dir, "");
@@ -119,7 +119,7 @@ int pm_init(void) {
 
     // Set default resource paths
     if(!m_ok) {
-        if(!strcasecmp(SDL_GetPlatform(), "Windows")) {
+        if(strcmp(SDL_GetPlatform(), "Windows") == 0) {
             local_path_build(RESOURCE_PATH, "resources\\", "");
             local_path_build(SHADER_PATH, "shaders\\", "");
         } else {
@@ -129,7 +129,7 @@ int pm_init(void) {
     }
 
     char *platform_sep = "/";
-    if(!strcasecmp(SDL_GetPlatform(), "Windows")) {
+    if(strcmp(SDL_GetPlatform(), "Windows") == 0) {
         platform_sep = "\\";
     }
 

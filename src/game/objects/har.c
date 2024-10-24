@@ -276,7 +276,7 @@ void har_set_ani(object *obj, int animation_id, int repeat) {
     uint8_t has_corner_hack = obj->animation_state.shadow_corner_hack;
     object_set_animation(obj, &move->ani);
     obj->animation_state.shadow_corner_hack = has_corner_hack;
-    if(s != NULL && strcasecmp(s, "!") && strcasecmp(s, "0") && h->delay > 0) {
+    if(s != NULL && strcmp(s, "!") != 0 && strcmp(s, "0") != 0 && h->delay > 0) {
         DEBUG("delaying move %d %s by %d ticks", move->id, s, h->delay);
         object_set_delay(obj, h->delay);
     }
