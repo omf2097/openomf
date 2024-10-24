@@ -1,6 +1,6 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 
 #include "formats/animation.h"
 #include "formats/bk.h"
@@ -253,7 +253,7 @@ int sd_bk_save(const sd_bk_file *bk, const char *filename) {
     return SD_SUCCESS;
 
 error:
-    unlink(filename);
+    remove(filename);
     sd_writer_close(w);
     return SD_FILE_WRITE_ERROR;
 }
