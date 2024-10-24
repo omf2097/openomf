@@ -120,7 +120,9 @@ void lobby_input_tick(scene *scene) {
     i = p1;
     if(i) {
         do {
-            if(i->type == EVENT_TYPE_ACTION && i->event_data.action == ACT_DOWN) {
+            if(local->dialog && dialog_is_visible(local->dialog)) {
+                dialog_event(local->dialog, p1->event_data.action);
+            } else if(i->type == EVENT_TYPE_ACTION && i->event_data.action == ACT_DOWN) {
                 local->active_user++;
                 if(local->active_user >= list_size(&local->users)) {
                     local->active_user = 0;
@@ -131,11 +133,7 @@ void lobby_input_tick(scene *scene) {
                     local->active_user = list_size(&local->users) - 1;
                 }
             } else {
-                if(local->dialog && dialog_is_visible(local->dialog)) {
-                    dialog_event(local->dialog, p1->event_data.action);
-                } else {
-                    guiframe_action(local->frame, p1->event_data.action);
-                }
+                guiframe_action(local->frame, p1->event_data.action);
             }
         } while((i = i->next));
     }
@@ -228,7 +226,7 @@ void lobby_dialog_cancel_challenge(dialog *dlg, dialog_result result) {
     lobby_local *local = scene_get_userdata(s);
     serial ser;
     serial_create(&ser);
-    serial_write_int8(&ser, PACKET_CHALLENGE << 4 & CHALLENGE_FLAG_CANCEL);
+    serial_write_int8(&ser, PACKET_CHALLENGE << 4 | CHALLENGE_FLAG_CANCEL);
 
     ENetPacket *packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
     serial_free(&ser);
@@ -541,7 +539,18 @@ void lobby_entered_name(component *c, void *userdata) {
 }
 
 void lobby_dialog_cancel_connect(dialog *dlg, dialog_result result) {
-    // TODO
+    dialog_show(dlg, 0);
+    scene *s = dlg->userdata;
+    lobby_local *local = scene_get_userdata(s);
+    serial ser;
+    serial_create(&ser);
+    serial_write_int8(&ser, PACKET_CHALLENGE << 4 | CHALLENGE_FLAG_CANCEL);
+
+    ENetPacket *packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
+    serial_free(&ser);
+    enet_peer_send(local->peer, 0, packet);
+    local->opponent_peer = NULL;
+
 }
 
 void lobby_try_connect(void *scenedata, void *userdata) {
@@ -550,6 +559,7 @@ void lobby_try_connect(void *scenedata, void *userdata) {
     if(!local->opponent_peer) {
         DEBUG("doing scheduled outbound connection");
         local->opponent_peer = enet_host_connect(local->client, &local->opponent->address, 2, 0);
+        enet_peer_timeout(local->opponent_peer, 4, 1000, 1000);
     }
 }
 
@@ -868,6 +878,7 @@ void lobby_tick(scene *scene, int paused) {
                                 // try to connect immediately
                                 local->opponent_peer =
                                     enet_host_connect(local->client, &local->opponent->address, 2, 0);
+                                enet_peer_timeout(local->opponent_peer, 4, 1000, 1000);
                                 local->connection_count = 0;
 
                                 dialog_show(local->dialog, 1);
@@ -899,6 +910,7 @@ void lobby_tick(scene *scene, int paused) {
                                 dialog_show(local->dialog, 1);
                                 local->dialog->userdata = scene;
                                 local->dialog->clicked = lobby_dialog_close;
+                                local->opponent_peer = NULL;
                                 break;
                         }
                     } break;
