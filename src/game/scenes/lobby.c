@@ -73,6 +73,7 @@ typedef struct lobby_local_t {
     ENetHost *client;
     ENetPeer *peer;
     ENetPeer *opponent_peer;
+    uint8_t connection_count;
     uint8_t active_user;
     lobby_user *opponent;
     bool controllers_created;
@@ -570,8 +571,8 @@ void lobby_dialog_accept_challenge(dialog *dlg, dialog_result result) {
         dialog_free(local->dialog);
         dialog_create(local->dialog, DIALOG_STYLE_CANCEL, "Establishing connection...", 72, 60);
 
-        ticktimer_add(&s->tick_timer, 50, lobby_try_connect, NULL);
-        ticktimer_add(&s->tick_timer, 150, lobby_try_connect, NULL);
+        local->connection_count = 0;
+        ticktimer_add(&s->tick_timer, 500, lobby_try_connect, NULL);
 
         dialog_show(local->dialog, 1);
         local->dialog->userdata = s;
@@ -867,8 +868,8 @@ void lobby_tick(scene *scene, int paused) {
                                 // try to connect immediately
                                 local->opponent_peer =
                                     enet_host_connect(local->client, &local->opponent->address, 2, 0);
+                                local->connection_count = 0;
 
-                                ticktimer_add(&scene->tick_timer, 100, lobby_try_connect, NULL);
                                 dialog_show(local->dialog, 1);
                                 local->dialog->userdata = scene;
                                 local->dialog->clicked = lobby_dialog_cancel_connect;
@@ -912,6 +913,15 @@ void lobby_tick(scene *scene, int paused) {
                 break;
             case ENET_EVENT_TYPE_DISCONNECT:
                 DEBUG("%s disconnected.\n", (char *)event.peer->data);
+
+                if(event.peer == local->opponent_peer) {
+                    local->connection_count++;
+                    DEBUG("outbound peer connection failed");
+                    local->opponent_peer = NULL;
+                    if(local->connection_count < 2) {
+                        ticktimer_add(&scene->tick_timer, 150, lobby_try_connect, NULL);
+                    }
+                }
 
                 /* Reset the peer's client information. */
 
