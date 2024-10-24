@@ -186,10 +186,12 @@ float sd_peek_float(sd_reader *reader) {
 }
 
 int sd_match(sd_reader *reader, const char *buf, unsigned int nbytes) {
-    char t[nbytes];
+    char *t = omf_malloc(nbytes);
     if(sd_peek_buf(reader, t, nbytes) == 0 && memcmp(t, buf, nbytes) == 0) {
+        omf_free(t);
         return 1;
     }
+    omf_free(t);
     return 0;
 }
 
