@@ -287,7 +287,7 @@ void object_render(object *obj) {
     if(rstate->duration > 0) {
         float moment = (float)rstate->timer / (float)rstate->duration;
         float d = ((float)rstate->blend_finish - (float)rstate->blend_start) * moment;
-        opacity = rstate->blend_start + d;
+        opacity = clamp(rstate->blend_start + d, 0, 255);
     }
 
     int remap_offset = 0;
