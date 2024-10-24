@@ -311,16 +311,11 @@ void object_render(object *obj) {
     }
 
     /*
-else if (object_has_effect(obj, EFFECT_DARK_TINT)) {
-    remap_rounds = 1;
-    remap_offset = 4;
-}
-else if (object_has_effect(obj, EFFECT_POSITIONAL_LIGHTING)) {
-    int p = (x > 160) ? 320 - x : x;
-    remap_rounds = 1;
-    remap_offset = 6 + p % 4;
-}
-*/
+    else if (object_has_effect(obj, EFFECT_DARK_TINT)) {
+        remap_rounds = 1;
+        remap_offset = 4;
+    }
+    */
 
     // TODO: Figure this stuff out.
     /*
@@ -364,8 +359,8 @@ void object_render_shadow(object *obj) {
     // Render shadow object twice with different offsets, so that
     // the shadows seem a bit blobbier and shadow-y
     for(int i = 0; i < 2; i++) {
-        video_draw_full(cur_sprite->data, x + i, y + i, w, scaled_h, 3, 1, obj->pal_offset, obj->pal_limit, flip_mode,
-                        0);
+        video_draw_full(cur_sprite->data, x + i, y + i, w, scaled_h, 2, 1, obj->pal_offset, obj->pal_limit, flip_mode,
+                        SPRITE_MASK);
     }
 }
 

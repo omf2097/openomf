@@ -6,6 +6,8 @@ typedef enum
     // If this is on, then we remap sprite using the selected index and blit.
     // Otherwise we use sprite palette indexes as remap selection indexes and modify existing image.
     REMAP_SPRITE = 0x01,
+    // Use sprite as a mask of 1's instead of color indexes.
+    SPRITE_MASK = 0x02,
 } renderer_options;
 
 typedef enum
