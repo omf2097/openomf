@@ -1,0 +1,31 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "dependencies": [
+    {
+      "name": "sdl2",
+      "default-features": false
+    },
+    {
+      "name": "sdl2",
+      "default-features": false,
+      "platform": "linux",
+      "features": [
+        "x11",
+        "wayland"
+      ]
+    },
+    {
+      "name": "sdl2-mixer",
+      "default-features": false,
+      "features": [
+        "wavpack"
+      ]
+    },
+    "libxmp",
+    "libepoxy",
+    "enet",
+    "libconfuse",
+    "argtable3",
+    "libpng"
+  ]
+}
