@@ -146,21 +146,31 @@ void lobby_render_overlay(scene *scene) {
 
     char buf[100];
 
+    text_settings font_big;
+    text_defaults(&font_big);
+    font_big.font = FONT_NET1;
+    font_big.cforeground = 3;
+
+    text_settings font_small;
+    text_defaults(&font_small);
+    font_small.font = FONT_NET2;
+    font_small.cforeground = 56;
+
     if(local->mode > LOBBY_YELL) {
         snprintf(buf, sizeof(buf), "Player");
-        font_render(&font_net1, buf, 16, 7, 3);
+        text_render(&font_big, TEXT_DEFAULT, 16, 7, 15, 8, buf);
 
         snprintf(buf, sizeof(buf), "Action");
-        font_render(&font_net1, buf, 117, 7, 3);
+        text_render(&font_big, TEXT_DEFAULT, 117, 7, 15, 8, buf);
 
         snprintf(buf, sizeof(buf), "Wn/Loss");
-        font_render(&font_net2, buf, 200, 8, 56);
+        text_render(&font_small, TEXT_DEFAULT, 200, 8, 15, 6, buf);
 
         snprintf(buf, sizeof(buf), "Version");
-        font_render(&font_net2, buf, 240, 8, 56);
+        text_render(&font_small, TEXT_DEFAULT, 240, 8, 15, 6, buf);
 
         snprintf(buf, sizeof(buf), "%d of %d", local->active_user + 1, list_size(&local->users));
-        font_render(&font_net2, buf, 284, 8, 56);
+        text_render(&font_small, TEXT_DEFAULT, 284, 8, 40, 6, buf);
 
         iterator it;
         lobby_user *user;
@@ -168,16 +178,19 @@ void lobby_render_overlay(scene *scene) {
         int i = 0;
         while((user = list_iter_next(&it)) && i < 8) {
             if(i == local->active_user) {
-                font_render(&font_net1, user->name, 16, 18 + (10 * i), 7);
+                font_big.cforeground = 7;
             } else {
-                font_render(&font_net1, user->name, 16, 18 + (10 * i), 8);
+                font_big.cforeground = 8;
             }
+            text_render(&font_big, TEXT_DEFAULT, 16, 18 + (10 * i), 50, 8, user->name);
             // TODO status
-            font_render(&font_net2, "available", 117, 18 + (10 * i), 40);
+            font_small.cforeground = 40;
+            text_render(&font_small, TEXT_DEFAULT, 117, 18 + (10 * i), 50, 6, "available");
             char wins[8];
             snprintf(wins, sizeof(wins), "%d/%d", user->wins, user->losses);
-            font_render(&font_net2, wins, 200, 18 + (10 * i), 56);
-            font_render(&font_net2, user->version, 240, 18 + (10 * i), 56);
+            font_small.cforeground = 56;
+            text_render(&font_small, TEXT_DEFAULT, 200, 18 + (10 * i), 50, 6, wins);
+            text_render(&font_small, TEXT_DEFAULT, 240, 18 + (10 * i), 50, 6, user->version);
             i++;
         }
 
@@ -185,8 +198,9 @@ void lobby_render_overlay(scene *scene) {
         list_iter_end(&local->log, &it);
         log_event *logmsg;
         while((logmsg = list_iter_prev(&it)) && i < 4) {
-            font_render(&font_net1, logmsg->msg, 10, 188 - (8 * i), logmsg->color);
-            i++;
+            font_big.cforeground = logmsg->color;
+            text_render(&font_big, TEXT_DEFAULT, 10, 188 - (8 * i), 300, 8, logmsg->msg);
+            i += text_find_line_count(&font_big, 300 / 8, 3, strlen(logmsg->msg), logmsg->msg);
         }
     } else if(local->mode == LOBBY_YELL) {
         iterator it;
@@ -194,8 +208,9 @@ void lobby_render_overlay(scene *scene) {
         list_iter_end(&local->log, &it);
         log_event *logmsg;
         while((logmsg = list_iter_prev(&it)) && i < 13) {
-            font_render(&font_net1, logmsg->msg, 10, 120 - (8 * i), logmsg->color);
-            i++;
+            font_big.cforeground = logmsg->color;
+            text_render(&font_big, TEXT_DEFAULT, 10, 120 - (8 * i), 300, 8, logmsg->msg);
+            i += text_find_line_count(&font_big, 300 / 8, 3, strlen(logmsg->msg), logmsg->msg);
         }
     }
 
