@@ -308,14 +308,11 @@ void object_render(object *obj) {
         remap_rounds = 0;
         remap_offset = clamp(6 + floorf(((rx > 160) ? 320 - rx : rx) / 60), 6, 8);
         options |= REMAP_SPRITE;
+    } else if(object_has_effect(obj, EFFECT_DARK_TINT)) {
+        remap_rounds = 0;
+        remap_offset = 5;
+        options |= REMAP_SPRITE;
     }
-
-    /*
-    else if (object_has_effect(obj, EFFECT_DARK_TINT)) {
-        remap_rounds = 1;
-        remap_offset = 4;
-    }
-    */
 
     // TODO: Figure this stuff out.
     /*
