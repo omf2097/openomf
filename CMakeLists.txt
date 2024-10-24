@@ -114,9 +114,9 @@ if(MINGW)
     set(CORELIBS mingw32 ${CORELIBS})
 endif()
 
-# On windows, add winsock2 and winmm
+# On windows, add winsock2, winmm, and shlwapi
 if(WIN32)
-    set(CORELIBS ${CORELIBS} ws2_32 winmm)
+    set(CORELIBS ${CORELIBS} ws2_32 winmm shlwapi)
 endif()
 
 # On unix platforms, add libm (sometimes needed, it seems)

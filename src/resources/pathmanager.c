@@ -2,12 +2,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 
 #if defined(_WIN32) || defined(WIN32)
-#include <shlobj.h> //SHCreateDirectoryEx
+#include <shlobj.h>  //SHCreateDirectoryEx
+#include <shlwapi.h> //PathFileExists
 #else
 #include <sys/stat.h> // mkdir
+#include <unistd.h>
 #endif
 
 #include "resources/pathmanager.h"
@@ -46,10 +47,17 @@ int str_ends_with_sep(const char *str) {
 int pm_validate_resources(void) {
     for(int i = 0; i < NUMBER_OF_RESOURCES; i++) {
         const char *testfile = pm_get_resource_path(i);
+#if defined(_WIN32) || defined(WIN32)
+        if(PathFileExistsA(testfile) == FALSE) {
+            snprintf(errormessage, 128, "Missing file %s.", testfile);
+            return 1;
+        }
+#else
         if(access(testfile, F_OK) == -1) {
             snprintf(errormessage, 128, "Missing file %s.", testfile);
             return 1;
         }
+#endif
     }
     return 0;
 }
@@ -195,9 +203,15 @@ int pm_in_release_mode(void) {
 }
 
 int pm_in_portable_mode(void) {
+#if defined(_WIN32) || defined(WIN32)
+    if(PathFileExistsA(configfile_name) != FALSE) {
+        return 1;
+    }
+#else
     if(access(configfile_name, F_OK) != -1) {
         return 1;
     }
+#endif
     return 0;
 }
 
