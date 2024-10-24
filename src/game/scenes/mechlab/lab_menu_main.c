@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 #include "game/scenes/mechlab/lab_menu_main.h"
 #include "formats/chr.h"
 #include "game/common_defines.h"

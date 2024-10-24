@@ -1,3 +1,4 @@
+#include <math.h>
 #include <stdlib.h>
 
 #include "audio/audio.h"

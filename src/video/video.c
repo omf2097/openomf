@@ -5,7 +5,6 @@
 #include "formats/palette.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
-#include "video/image.h"
 #include "video/opengl/object_array.h"
 #include "video/opengl/remaps.h"
 #include "video/opengl/render_target.h"

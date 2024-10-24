@@ -2,6 +2,7 @@
 #include "utils/log.h"
 
 #include <epoxy/gl.h>
+#include <stdio.h>
 
 bool create_gl_context(SDL_GLContext **context, SDL_Window *window) {
     SDL_GLContext *ctx = SDL_GL_CreateContext(window);
