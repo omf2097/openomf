@@ -180,6 +180,7 @@ int object_get_halt(const object *obj);
 
 void object_set_animation_effects(object *obj, uint32_t effects);
 void object_add_animation_effects(object *obj, uint32_t effects);
+void object_del_animation_effects(object *obj, uint32_t effects);
 void object_set_frame_effects(object *obj, uint32_t effects);
 void object_add_frame_effects(object *obj, uint32_t effects);
 void object_del_frame_effects(object *obj, uint32_t effects);

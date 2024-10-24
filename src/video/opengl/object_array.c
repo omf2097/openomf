@@ -23,6 +23,7 @@ typedef struct {
     GLint remap_rounds;
     GLint palette_offset;
     GLint palette_limit;
+    GLuint options;
 } __attribute__((aligned(4))) object_data;
 
 typedef struct object_array {
@@ -51,7 +52,7 @@ typedef struct object_array {
     index++
 
 static void setup_vao_layout(void) {
-    int stride = 4 * sizeof(GLfloat) + 5 * sizeof(GLint);
+    int stride = 4 * sizeof(GLfloat) + 6 * sizeof(GLint);
     int index = 0;
     unsigned char *step = 0;
     ATTRIB(index, stride, step, 2, GL_FLOAT, GL_FALSE);
@@ -61,6 +62,7 @@ static void setup_vao_layout(void) {
     ATTRIB_I(index, stride, step, 1, GL_INT);
     ATTRIB_I(index, stride, step, 1, GL_INT);
     ATTRIB_I(index, stride, step, 1, GL_INT);
+    ATTRIB_I(index, stride, step, 1, GL_UNSIGNED_INT);
 }
 
 object_array *object_array_create(GLfloat src_w, GLfloat src_h) {
@@ -129,7 +131,7 @@ void object_array_draw(const object_array *array, object_array_batch *state) {
     glMultiDrawArrays(GL_TRIANGLE_FAN, array->fans_starts + state->start, array->fans_sizes + state->start, count);
 }
 
-#define COORDS(ptr, cx, cy, tx, ty, transparency, remap_offset, remap_rounds, pal_offset, pal_limit)                   \
+#define COORDS(ptr, cx, cy, tx, ty, transparency, remap_offset, remap_rounds, pal_offset, pal_limit, options)          \
     ptr.x = cx;                                                                                                        \
     ptr.y = cy;                                                                                                        \
     ptr.tex_x = tx;                                                                                                    \
@@ -138,11 +140,12 @@ void object_array_draw(const object_array *array, object_array_batch *state) {
     ptr.remap_offset = remap_offset;                                                                                   \
     ptr.remap_rounds = remap_rounds;                                                                                   \
     ptr.palette_offset = pal_offset;                                                                                   \
-    ptr.palette_limit = pal_limit;
+    ptr.palette_limit = pal_limit;                                                                                     \
+    ptr.options = options;
 
 static void add_item(object_array *array, float dx, float dy, int x, int y, int w, int h, int tx, int ty, int tw,
                      int th, int flags, int transparency, int remap_offset, int remap_rounds, int pal_offset,
-                     int pal_limit) {
+                     int pal_limit, int options) {
     float tx0, tx1;
     if(flags & FLIP_HORIZONTAL) {
         tx0 = (tx + tw) * dx;
@@ -163,10 +166,11 @@ static void add_item(object_array *array, float dx, float dy, int x, int y, int 
 
     object_data *data = (object_data *)array->mapping;
     int row = array->item_count * 4;
-    COORDS(data[row + 0], x + w, y + h, tx1, ty1, transparency, remap_offset, remap_rounds, pal_offset, pal_limit);
-    COORDS(data[row + 1], x, y + h, tx0, ty1, transparency, remap_offset, remap_rounds, pal_offset, pal_limit);
-    COORDS(data[row + 2], x, y, tx0, ty0, transparency, remap_offset, remap_rounds, pal_offset, pal_limit);
-    COORDS(data[row + 3], x + w, y, tx1, ty0, transparency, remap_offset, remap_rounds, pal_offset, pal_limit);
+    COORDS(data[row + 0], x + w, y + h, tx1, ty1, transparency, remap_offset, remap_rounds, pal_offset, pal_limit,
+           options);
+    COORDS(data[row + 1], x, y + h, tx0, ty1, transparency, remap_offset, remap_rounds, pal_offset, pal_limit, options);
+    COORDS(data[row + 2], x, y, tx0, ty0, transparency, remap_offset, remap_rounds, pal_offset, pal_limit, options);
+    COORDS(data[row + 3], x + w, y, tx1, ty0, transparency, remap_offset, remap_rounds, pal_offset, pal_limit, options);
 
     array->fans_starts[array->item_count] = array->item_count * 4;
     array->fans_sizes[array->item_count] = 4;
@@ -175,7 +179,8 @@ static void add_item(object_array *array, float dx, float dy, int x, int y, int 
 }
 
 void object_array_add(object_array *array, int x, int y, int w, int h, int tx, int ty, int tw, int th, int flags,
-                      int transparency, int remap_offset, int remap_rounds, int pal_offset, int pal_limit) {
+                      int transparency, int remap_offset, int remap_rounds, int pal_offset, int pal_limit,
+                      unsigned int options) {
     if(array->item_count >= MAX_FANS) {
         PERROR("Too many objects!");
         return;
@@ -183,5 +188,5 @@ void object_array_add(object_array *array, int x, int y, int w, int h, int tx, i
     float dx = 1.0f / array->src_w;
     float dy = 1.0f / array->src_h;
     add_item(array, dx, dy, x, y, w, h, tx, ty, tw, th, flags, transparency, remap_offset, remap_rounds, pal_offset,
-             pal_limit);
+             pal_limit, options);
 }

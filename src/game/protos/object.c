@@ -222,6 +222,10 @@ void object_add_animation_effects(object *obj, uint32_t effects) {
     obj->animation_video_effects |= effects;
 }
 
+void object_del_animation_effects(object *obj, uint32_t effects) {
+    obj->animation_video_effects &= ~effects;
+}
+
 bool object_has_effect(const object *obj, uint32_t effect) {
     return obj->animation_video_effects & effect || obj->frame_video_effects & effect;
 }
@@ -287,11 +291,12 @@ void object_render(object *obj) {
     if(rstate->duration > 0) {
         float moment = (float)rstate->timer / (float)rstate->duration;
         float d = ((float)rstate->blend_finish - (float)rstate->blend_start) * moment;
-        opacity = rstate->blend_start + d;
+        opacity = clamp(rstate->blend_start + d, 0, 255);
     }
 
     int remap_offset = 0;
     int remap_rounds = 0;
+    unsigned int options = 0;
     if(object_has_effect(obj, EFFECT_GLOW)) {
         remap_rounds = 1;
         remap_offset = 3;
@@ -301,29 +306,24 @@ void object_render(object *obj) {
         }
     } else if(object_has_effect(obj, EFFECT_SHADOW)) {
         remap_rounds = 1;
-        remap_offset = (opacity * 4) >> 8;
+        remap_offset = clamp((opacity * 4) >> 8, 0, 3);
+    } else if(object_has_effect(obj, EFFECT_DARK_TINT)) {
+        remap_rounds = 0;
+        remap_offset = 5;
+        options |= REMAP_SPRITE;
+    } else if(object_has_effect(obj, EFFECT_STASIS)) {
+        remap_rounds = 0;
+        remap_offset = 5;
+        options |= REMAP_SPRITE;
+    } else if(object_has_effect(obj, EFFECT_POSITIONAL_LIGHTING)) {
+        int rx = x + (w >> 1);
+        remap_rounds = 0;
+        remap_offset = clamp(6 + floorf(((rx > 160) ? 320 - rx : rx) / 60), 6, 8);
+        options |= REMAP_SPRITE;
     }
-    /*
-    else if (object_has_effect(obj, EFFECT_DARK_TINT)) {
-        remap_rounds = 1;
-        remap_offset = 4;
-    }
-    else if (object_has_effect(obj, EFFECT_POSITIONAL_LIGHTING)) {
-        int p = (x > 160) ? 320 - x : x;
-        remap_rounds = 1;
-        remap_offset = 6 + p % 4;
-    }
-    */
-
-    // TODO: Figure this stuff out.
-    /*
-    if(obj->video_effects & EFFECT_STASIS) {
-        opacity = 128;
-    }
-    */
 
     video_draw_full(obj->cur_surface, x, y, w, h, remap_offset, remap_rounds, obj->pal_offset, obj->pal_limit,
-                    flip_mode);
+                    flip_mode, options);
 }
 
 void object_render_shadow(object *obj) {
@@ -357,7 +357,8 @@ void object_render_shadow(object *obj) {
     // Render shadow object twice with different offsets, so that
     // the shadows seem a bit blobbier and shadow-y
     for(int i = 0; i < 2; i++) {
-        video_draw_full(cur_sprite->data, x + i, y + i, w, scaled_h, 4, 1, obj->pal_offset, obj->pal_limit, flip_mode);
+        video_draw_full(cur_sprite->data, x + i, y + i, w, scaled_h, 2, 1, obj->pal_offset, obj->pal_limit, flip_mode,
+                        SPRITE_MASK);
     }
 }
 

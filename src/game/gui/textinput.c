@@ -1,4 +1,5 @@
 #include <SDL.h>
+#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -7,7 +8,6 @@
 #include "utils/allocator.h"
 #include "utils/log.h"
 #include "utils/miscmath.h"
-#include "video/color.h"
 #include "video/image.h"
 #include "video/video.h"
 

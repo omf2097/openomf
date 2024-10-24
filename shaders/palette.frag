@@ -8,10 +8,16 @@ flat in int remap_offset;
 flat in int remap_rounds;
 flat in int palette_offset;
 flat in int palette_limit;
+flat in uint options;
 
 uniform sampler2D atlas;
+uniform sampler2D remaps;
 
-vec4 handle(float index) {
+uint use_sprite_remap = options & 1u;
+uint use_sprite_mask = options & 2u;
+
+
+vec4 handle(float index, float remap) {
     if (remap_rounds > 0) {
         float r_index = remap_offset / 255.0 + index;
         float r_rounds = remap_rounds / 255.0;
@@ -22,10 +28,13 @@ vec4 handle(float index) {
 
 void main() {
     vec4 texel = texture(atlas, tex_coord);
+    vec4 remap = texture(remaps, vec2(texel.r, remap_offset / 18.0));
 
     // Don't render if it's transparent pixel
     int index = int(texel.r * 255.0);
-    if (index == transparency_index) discard;
+    if (index == transparency_index) {
+        discard;
+    }
 
     // Palette offset and limit (for e.g. fonts)
     float limit = palette_limit / 255.0;
@@ -34,5 +43,15 @@ void main() {
         texel.r = clamp(texel.r + offset, 0, limit);
     }
 
-    color = handle(texel.r);
+    // If remapping is on, do it now. Bypass palette limit/offset.
+    if (use_sprite_remap > 0u) {
+        texel = remap;
+    }
+
+    // If masking is on, set our color to always be index 1.
+    if (use_sprite_mask > 0u) {
+        texel.r = 1.0 / 255.0;
+    }
+
+    color = handle(texel.r, remap.r);
 }
