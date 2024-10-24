@@ -176,7 +176,7 @@ int sd_vga_image_to_png(const sd_vga_image *img, const palette *pal, const char 
     png_infop info_ptr;
     png_colorp palette;
     int ret = SD_SUCCESS;
-    char *rows[img->h];
+    char **rows = omf_calloc(img->h, sizeof(char *));
 
     FILE *handle = fopen(filename, "wb");
     if(handle == NULL) {
@@ -237,5 +237,6 @@ error_2:
 error_1:
     fclose(handle);
 error_0:
+    omf_free(rows);
     return ret;
 }
