@@ -1326,10 +1326,10 @@ void har_tick(object *obj) {
         h->in_stasis_ticks--;
         if(h->in_stasis_ticks) {
             object_set_halt(obj, 1);
-            object_add_frame_effects(obj, EFFECT_STASIS);
+            object_add_animation_effects(obj, EFFECT_STASIS);
         } else {
             object_set_halt(obj, 0);
-            object_del_frame_effects(obj, EFFECT_STASIS);
+            object_del_animation_effects(obj, EFFECT_STASIS);
         }
     }
 
