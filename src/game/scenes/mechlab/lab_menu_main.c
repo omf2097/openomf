@@ -1,6 +1,5 @@
 #include <stdio.h>
 
-#include "game/scenes/mechlab/lab_menu_main.h"
 #include "formats/chr.h"
 #include "game/common_defines.h"
 #include "game/gui/sizer.h"
@@ -10,6 +9,7 @@
 #include "game/scenes/mechlab.h"
 #include "game/scenes/mechlab/button_details.h"
 #include "game/scenes/mechlab/lab_menu_customize.h"
+#include "game/scenes/mechlab/lab_menu_main.h"
 #include "game/scenes/mechlab/lab_menu_training.h"
 #include "resources/bk.h"
 #include "resources/languages.h"
