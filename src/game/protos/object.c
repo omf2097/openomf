@@ -292,6 +292,7 @@ void object_render(object *obj) {
 
     int remap_offset = 0;
     int remap_rounds = 0;
+    unsigned int options = 0;
     if(object_has_effect(obj, EFFECT_GLOW)) {
         remap_rounds = 1;
         remap_offset = 3;
@@ -302,18 +303,24 @@ void object_render(object *obj) {
     } else if(object_has_effect(obj, EFFECT_SHADOW)) {
         remap_rounds = 1;
         remap_offset = clamp((opacity * 4) >> 8, 0, 3);
+    } else if(object_has_effect(obj, EFFECT_POSITIONAL_LIGHTING)) {
+        int rx = x + (w >> 1);
+        remap_rounds = 0;
+        remap_offset = 5 + floorf(((rx > 160) ? 320 - rx : rx) / 40);
+        options |= REMAP_SPRITE;
     }
+
     /*
-    else if (object_has_effect(obj, EFFECT_DARK_TINT)) {
-        remap_rounds = 1;
-        remap_offset = 4;
-    }
-    else if (object_has_effect(obj, EFFECT_POSITIONAL_LIGHTING)) {
-        int p = (x > 160) ? 320 - x : x;
-        remap_rounds = 1;
-        remap_offset = 6 + p % 4;
-    }
-    */
+else if (object_has_effect(obj, EFFECT_DARK_TINT)) {
+    remap_rounds = 1;
+    remap_offset = 4;
+}
+else if (object_has_effect(obj, EFFECT_POSITIONAL_LIGHTING)) {
+    int p = (x > 160) ? 320 - x : x;
+    remap_rounds = 1;
+    remap_offset = 6 + p % 4;
+}
+*/
 
     // TODO: Figure this stuff out.
     /*
@@ -323,7 +330,7 @@ void object_render(object *obj) {
     */
 
     video_draw_full(obj->cur_surface, x, y, w, h, remap_offset, remap_rounds, obj->pal_offset, obj->pal_limit,
-                    flip_mode, 0);
+                    flip_mode, options);
 }
 
 void object_render_shadow(object *obj) {
@@ -357,7 +364,7 @@ void object_render_shadow(object *obj) {
     // Render shadow object twice with different offsets, so that
     // the shadows seem a bit blobbier and shadow-y
     for(int i = 0; i < 2; i++) {
-        video_draw_full(cur_sprite->data, x + i, y + i, w, scaled_h, 4, 1, obj->pal_offset, obj->pal_limit, flip_mode,
+        video_draw_full(cur_sprite->data, x + i, y + i, w, scaled_h, 3, 1, obj->pal_offset, obj->pal_limit, flip_mode,
                         0);
     }
 }

@@ -3,10 +3,10 @@
 
 typedef enum
 {
-    BLEND_SET = 0,
-    BLEND_ADD = 1,
-    BLEND_SUB = 2,
-} video_blend_mode;
+    // If this is on, then we remap sprite using the selected index and blit.
+    // Otherwise we use sprite palette indexes as remap selection indexes and modify existing image.
+    REMAP_SPRITE = 0x01,
+} renderer_options;
 
 typedef enum
 {

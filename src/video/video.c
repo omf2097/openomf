@@ -106,6 +106,7 @@ int video_init(int window_w, int window_h, bool fullscreen, bool vsync) {
     activate_program(g_video_state.palette_prog_id);
     bind_uniform_4fv(g_video_state.palette_prog_id, "projection", projection_matrix);
     bind_uniform_1i(g_video_state.palette_prog_id, "atlas", TEX_UNIT_ATLAS);
+    bind_uniform_1i(g_video_state.palette_prog_id, "remaps", TEX_UNIT_REMAPS);
 
     // Activate RGBA conversion program, and bind palette etc.
     activate_program(g_video_state.rgba_prog_id);
