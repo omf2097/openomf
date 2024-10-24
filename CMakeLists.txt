@@ -40,6 +40,10 @@ if(GIT_FOUND)
     set_source_files_properties(src/main.c PROPERTIES COMPILE_DEFINITIONS SHA1_HASH="${SHA1_HASH}")
 endif()
 
+if(WIN32)
+    add_definitions(-DWIN32_LEAN_AND_MEAN)
+endif()
+
 # System packages (hard dependencies)
 find_package(SDL2 REQUIRED)
 find_package(SDL2_mixer REQUIRED)
