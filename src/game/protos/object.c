@@ -306,7 +306,7 @@ void object_render(object *obj) {
     } else if(object_has_effect(obj, EFFECT_POSITIONAL_LIGHTING)) {
         int rx = x + (w >> 1);
         remap_rounds = 0;
-        remap_offset = clamp(5 + floorf(((rx > 160) ? 320 - rx : rx) / 40), 5, 8);
+        remap_offset = clamp(6 + floorf(((rx > 160) ? 320 - rx : rx) / 60), 6, 8);
         options |= REMAP_SPRITE;
     }
 
