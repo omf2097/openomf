@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdlib.h>
 
 #include "utils/allocator.h"
@@ -14,7 +15,8 @@ typedef struct {
     uint16_t y;
     uint16_t w;
     uint16_t h;
-} __attribute__((packed)) zone;
+} zone;
+static_assert(8 == sizeof(zone), "zone should pack into 8 bytes");
 
 typedef struct texture_atlas {
     hashmap items;

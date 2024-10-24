@@ -1,6 +1,6 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 
 #include "formats/error.h"
 #include "formats/internal/reader.h"
@@ -163,7 +163,7 @@ int sd_pic_save(const sd_pic_file *pic, const char *filename) {
     return SD_SUCCESS;
 
 error:
-    unlink(filename);
+    remove(filename);
     sd_writer_close(w);
     return SD_FILE_WRITE_ERROR;
 }

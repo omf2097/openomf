@@ -1,3 +1,5 @@
+#include <assert.h>
+
 #include "game/protos/intersect.h"
 
 /**
@@ -96,7 +98,8 @@ int intersect_sprite_hitpoint(object *obj, object *target, int level, vec2i *poi
     }
 
     // Iterate through hitpoints
-    vec2i hcoords[level];
+    assert(level == 1 || level == 2);
+    vec2i hcoords[2];
     int found = 0;
     iterator it;
     collision_coord *cc;

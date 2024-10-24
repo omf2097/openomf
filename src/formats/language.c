@@ -55,7 +55,7 @@ int sd_language_load(sd_language *language, const char *filename) {
 
     // Some variables etc.
     unsigned int offset = 0;
-    unsigned int offsets[string_count + 1];
+    unsigned int *offsets = omf_calloc(string_count + 1, sizeof(unsigned int));
     language->strings = omf_calloc(string_count, sizeof(sd_lang_string));
     language->count = string_count;
 
@@ -70,6 +70,7 @@ int sd_language_load(sd_language *language, const char *filename) {
 
     // Valid file with no content
     if(pos <= 0) {
+        omf_free(offsets);
         sd_reader_close(r);
         return SD_SUCCESS;
     }
@@ -92,6 +93,7 @@ int sd_language_load(sd_language *language, const char *filename) {
     }
 
     // All done.
+    omf_free(offsets);
     sd_reader_close(r);
     return SD_SUCCESS;
 }

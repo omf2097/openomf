@@ -69,7 +69,7 @@ void console_handle_line(game_state *gs) {
         memcpy(input_copy, con->input, sizeof(con->input));
         int argc = make_argv(con->input, NULL);
         if(argc > 0) {
-            char *argv[argc];
+            char **argv = omf_calloc(argc, sizeof(char *));
             void *val = 0;
             unsigned int len;
             make_argv(con->input, argv);
@@ -94,6 +94,7 @@ void console_handle_line(game_state *gs) {
                 console_output_add(argv[0]);
                 console_output_addline(" NOT RECOGNIZED");
             }
+            omf_free(argv);
         } else {
             console_output_addline(">");
         }

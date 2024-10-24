@@ -19,11 +19,15 @@ OPTION(USE_FORMAT "Use clang-format for checks" OFF)
 
 # These flags are used for all builds
 set(CMAKE_C_STANDARD 11)
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wformat -pedantic")
-set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -ggdb -DDEBUGMODE -Werror -fno-omit-frame-pointer")
-set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -g -O2 -fno-omit-frame-pointer -DNDEBUG")
-set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O2 -DNDEBUG")
-set(CMAKE_C_FLAGS_MINSIZEREL "${CMAKE_C_FLAGS_MINSIZEREL} -Os -DNDEBUG")
+if(MSVC)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /Wall /permissive-")
+else()
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wformat -pedantic -Wvla")
+    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -ggdb -DDEBUGMODE -Werror -fno-omit-frame-pointer")
+    set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -g -O2 -fno-omit-frame-pointer -DNDEBUG")
+    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O2 -DNDEBUG")
+    set(CMAKE_C_FLAGS_MINSIZEREL "${CMAKE_C_FLAGS_MINSIZEREL} -Os -DNDEBUG")
+endif()
 add_definitions(-DV_MAJOR=${VERSION_MAJOR} -DV_MINOR=${VERSION_MINOR} -DV_PATCH=${VERSION_PATCH})
 
 # See if we have Git, and use it to fetch current SHA1 hash
@@ -38,6 +42,10 @@ if(GIT_FOUND)
     )
     message(STATUS "Git SHA1 Hash: ${SHA1_HASH}")
     add_definitions(-DSHA1_HASH="${SHA1_HASH}")
+endif()
+
+if(WIN32)
+    add_definitions(-DWIN32_LEAN_AND_MEAN)
 endif()
 
 # System packages (hard dependencies)
@@ -114,9 +122,9 @@ if(MINGW)
     set(CORELIBS mingw32 ${CORELIBS})
 endif()
 
-# On windows, add winsock2 and winmm
+# On windows, add winsock2, winmm, and shlwapi
 if(WIN32)
-    set(CORELIBS ${CORELIBS} ws2_32 winmm)
+    set(CORELIBS ${CORELIBS} ws2_32 winmm shlwapi)
 endif()
 
 # On unix platforms, add libm (sometimes needed, it seems)

@@ -87,7 +87,7 @@ static bool load_shader(GLuint program_id, GLenum shader_type, const char *shade
 void delete_program(GLuint program_id) {
     GLsizei attached_count = 0;
     glGetProgramiv(program_id, GL_ATTACHED_SHADERS, &attached_count);
-    GLuint shaders[attached_count];
+    GLuint *shaders = omf_calloc(attached_count, sizeof(GLuint));
     glUseProgram(0);
     glGetAttachedShaders(program_id, attached_count, NULL, shaders);
     for(int i = 0; i < attached_count; i++) {
@@ -96,6 +96,7 @@ void delete_program(GLuint program_id) {
     }
     glDeleteProgram(program_id);
     DEBUG("Program %d deleted", program_id);
+    omf_free(shaders);
 }
 
 bool create_program(GLuint *program_id, const char *vertex_shader, const char *fragment_shader) {

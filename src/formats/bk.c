@@ -1,6 +1,6 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 
 #include "formats/animation.h"
 #include "formats/bk.h"
@@ -97,7 +97,7 @@ int sd_bk_load(sd_bk_file *bk, const char *filename) {
     int ret = SD_SUCCESS;
 
     size_t fn_len = strlen(filename);
-    if(fn_len >= 4 && strncasecmp(&filename[fn_len - 4], ".PCX", 4) == 0) {
+    if(fn_len >= 4 && strncmp(&filename[fn_len - 4], ".PCX", 4) == 0) {
         return sd_bk_load_from_pcx(bk, filename);
     }
 
@@ -253,7 +253,7 @@ int sd_bk_save(const sd_bk_file *bk, const char *filename) {
     return SD_SUCCESS;
 
 error:
-    unlink(filename);
+    remove(filename);
     sd_writer_close(w);
     return SD_FILE_WRITE_ERROR;
 }

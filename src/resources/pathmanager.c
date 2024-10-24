@@ -2,12 +2,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 
 #if defined(_WIN32) || defined(WIN32)
-#include <shlobj.h> //SHCreateDirectoryEx
+#include <shlobj.h>  //SHCreateDirectoryEx
+#include <shlwapi.h> //PathFileExists
 #else
 #include <sys/stat.h> // mkdir
+#include <unistd.h>
 #endif
 
 #include "resources/pathmanager.h"
@@ -46,10 +47,17 @@ int str_ends_with_sep(const char *str) {
 int pm_validate_resources(void) {
     for(int i = 0; i < NUMBER_OF_RESOURCES; i++) {
         const char *testfile = pm_get_resource_path(i);
+#if defined(_WIN32) || defined(WIN32)
+        if(PathFileExistsA(testfile) == FALSE) {
+            snprintf(errormessage, 128, "Missing file %s.", testfile);
+            return 1;
+        }
+#else
         if(access(testfile, F_OK) == -1) {
             snprintf(errormessage, 128, "Missing file %s.", testfile);
             return 1;
         }
+#endif
     }
     return 0;
 }
@@ -73,7 +81,7 @@ int pm_init(void) {
     local_path_build(LOG_PATH, local_base_dir, logfile_name);
     local_path_build(CONFIG_PATH, local_base_dir, configfile_name);
     local_path_build(SCORE_PATH, local_base_dir, scorefile_name);
-    if(!strcasecmp(SDL_GetPlatform(), "Windows")) {
+    if(strcmp(SDL_GetPlatform(), "Windows") == 0) {
         local_path_build(SAVE_PATH, local_base_dir, "save\\");
     } else {
         local_path_build(SAVE_PATH, local_base_dir, "save/");
@@ -85,19 +93,19 @@ int pm_init(void) {
         // where is the openomf binary, if this call fails we will look for resources in ./resources
         bin_base_dir = SDL_GetBasePath();
         if(bin_base_dir != NULL) {
-            if(!strcasecmp(SDL_GetPlatform(), "Windows")) {
+            if(strcmp(SDL_GetPlatform(), "Windows") == 0) {
                 // on windows, the resources will be in ./resources, relative to the binary
                 local_path_build(RESOURCE_PATH, bin_base_dir, "resources\\");
                 local_path_build(SHADER_PATH, bin_base_dir, "shaders\\");
                 m_ok = 1;
-            } else if(!strcasecmp(SDL_GetPlatform(), "Linux")) {
+            } else if(strcmp(SDL_GetPlatform(), "Linux") == 0) {
                 // on linux, the resources will be in ../share/games/openomf, relative to the binary
                 // so if openomf is installed to /usr/local/bin,
                 // the resources will be in /usr/local/share/games/openomf
                 local_path_build(RESOURCE_PATH, bin_base_dir, "../share/games/openomf/");
                 local_path_build(SHADER_PATH, bin_base_dir, "../share/games/openomf/shaders/");
                 m_ok = 1;
-            } else if(!strcasecmp(SDL_GetPlatform(), "Mac OS X")) {
+            } else if(strcmp(SDL_GetPlatform(), "Mac OS X") == 0) {
                 // on OSX, GetBasePath returns the 'Resources' directory
                 // if run from an app bundle, so we can use this as-is
                 local_path_build(RESOURCE_PATH, bin_base_dir, "");
@@ -111,7 +119,7 @@ int pm_init(void) {
 
     // Set default resource paths
     if(!m_ok) {
-        if(!strcasecmp(SDL_GetPlatform(), "Windows")) {
+        if(strcmp(SDL_GetPlatform(), "Windows") == 0) {
             local_path_build(RESOURCE_PATH, "resources\\", "");
             local_path_build(SHADER_PATH, "shaders\\", "");
         } else {
@@ -121,7 +129,7 @@ int pm_init(void) {
     }
 
     char *platform_sep = "/";
-    if(!strcasecmp(SDL_GetPlatform(), "Windows")) {
+    if(strcmp(SDL_GetPlatform(), "Windows") == 0) {
         platform_sep = "\\";
     }
 
@@ -195,9 +203,15 @@ int pm_in_release_mode(void) {
 }
 
 int pm_in_portable_mode(void) {
+#if defined(_WIN32) || defined(WIN32)
+    if(PathFileExistsA(configfile_name) != FALSE) {
+        return 1;
+    }
+#else
     if(access(configfile_name, F_OK) != -1) {
         return 1;
     }
+#endif
     return 0;
 }
 
