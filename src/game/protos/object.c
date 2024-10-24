@@ -301,7 +301,7 @@ void object_render(object *obj) {
         }
     } else if(object_has_effect(obj, EFFECT_SHADOW)) {
         remap_rounds = 1;
-        remap_offset = (opacity * 4) >> 8;
+        remap_offset = clamp((opacity * 4) >> 8, 0, 3);
     }
     /*
     else if (object_has_effect(obj, EFFECT_DARK_TINT)) {
