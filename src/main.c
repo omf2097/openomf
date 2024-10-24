@@ -19,9 +19,7 @@
 #include <enet/enet.h>
 #include <stdio.h>
 #include <string.h>
-#include <strings.h>
 #include <time.h>
-#include <unistd.h>
 
 #ifndef SHA1_HASH
 static const char *git_sha1_hash = "";
