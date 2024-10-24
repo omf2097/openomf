@@ -643,6 +643,9 @@ void game_state_static_tick(game_state *gs, bool replay) {
         }
     }
 
+    // Tick controllers
+    game_state_tick_controllers(gs);
+
     // Call static ticks for scene
     scene_static_tick(gs->sc, game_state_is_paused(gs));
 

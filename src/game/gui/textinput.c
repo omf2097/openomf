@@ -25,6 +25,9 @@ typedef struct {
     int max_chars;
     int pos;
     int bg_enabled;
+
+    textinput_done_cb done_cb;
+    void *userdata;
 } textinput;
 
 static void textinput_render(component *c) {
@@ -124,6 +127,12 @@ static int textinput_action(component *c, int action) {
             tb->buf[tb->pos] = textinput_scroll_character(tb->buf[tb->pos], true);
             return 0;
             break;
+        case ACT_PUNCH:
+            if(tb->done_cb) {
+                tb->done_cb(c, tb->userdata);
+                return 0;
+            }
+            break;
     }
     return 1;
 }
@@ -185,6 +194,12 @@ char *textinput_value(const component *c) {
     return tb->buf;
 }
 
+void textinput_clear(component *c) {
+    textinput *tb = widget_get_obj(c);
+    memset(tb->buf, 0, tb->max_chars + 1);
+    tb->pos = 0;
+}
+
 static void textinput_free(component *c) {
     textinput *tb = widget_get_obj(c);
     surface_free(&tb->sur);
@@ -206,6 +221,12 @@ void textinput_set_max_chars(component *c, int max_chars) {
 void textinput_enable_background(component *c, int enabled) {
     textinput *tb = widget_get_obj(c);
     tb->bg_enabled = enabled;
+}
+
+void textinput_set_done_cb(component *c, textinput_done_cb done_cb, void *userdata) {
+    textinput *tb = widget_get_obj(c);
+    tb->done_cb = done_cb;
+    tb->userdata = userdata;
 }
 
 component *textinput_create(const text_settings *tconf, const char *text, const char *help, const char *initialvalue) {
@@ -236,6 +257,12 @@ component *textinput_create(const text_settings *tconf, const char *text, const 
 
     component_set_size_hints(c, text_char_width(&tb->tconf) * tb->max_chars, 10);
 
+    component_set_size_hints(c, 15 * tsize + 2, tsize + 3);
+
+    if(initialvalue && strlen(initialvalue)) {
+        // Copy over the initial value
+        strncpy(tb->buf, initialvalue, tb->max_chars);
+    }
     // Widget stuff
     widget_set_obj(c, tb);
     widget_set_render_cb(c, textinput_render);
