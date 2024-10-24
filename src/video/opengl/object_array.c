@@ -1,4 +1,6 @@
+#include <assert.h>
 #include <epoxy/gl.h>
+#include <stdalign.h>
 #include <stdlib.h>
 
 #include "utils/allocator.h"
@@ -24,7 +26,8 @@ typedef struct {
     GLint palette_offset;
     GLint palette_limit;
     GLuint options;
-} __attribute__((aligned(4))) object_data;
+} object_data;
+static_assert(4 == alignof(object_data), "object_data alignment is expected to be 4");
 
 typedef struct object_array {
     GLuint vbo_ids[BUFFER_COUNT];

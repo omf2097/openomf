@@ -1,3 +1,4 @@
+#include <stdalign.h>
 #include <stdlib.h>
 
 #include "utils/allocator.h"
@@ -5,8 +6,8 @@
 #include "video/opengl/ubo.h"
 
 typedef struct data_buffer {
-    GLfloat palette[1024]; // 256 * sizeof(vec4f)
-} __attribute__((aligned(16))) data_buffer;
+    alignas(16) GLfloat palette[1024]; // 256 * sizeof(vec4f)
+} data_buffer;
 
 typedef struct shared {
     GLuint ubo_id;
