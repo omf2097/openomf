@@ -1,3 +1,17 @@
+if(VCPKG_TOOLCHAIN)
+    find_package(Argtable3 CONFIG)
+    if(Argtable3_FOUND)
+        set(ARGTABLE3_FOUND ON)
+        set(ARGTABLE3_LIBRARY argtable3::argtable3)
+        set(ARGTABLE3_INCLUDE_DIR)
+        set(ARGTABLE3_INCLUDE_DIRS)
+        set(ARGTABLE3_LIBRARIES ${ARGTABLE3_LIBRARY})
+
+        mark_as_advanced(ARGTABLE3_INCLUDE_DIR ARGTABLE3_LIBRARY)
+        return()
+    endif(Argtable3_FOUND)
+endif(VCPKG_TOOLCHAIN)
+
 set(ARGTABLE3_SEARCH_PATHS
     /usr/local
     /usr

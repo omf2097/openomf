@@ -1,3 +1,17 @@
+if(VCPKG_TOOLCHAIN)
+    find_package(Argtable2 CONFIG)
+    if(Argtable2_FOUND)
+        set(ARGTABLE2_FOUND ON)
+        set(ARGTABLE2_LIBRARY argtable2::argtable2)
+        set(ARGTABLE2_INCLUDE_DIR)
+        set(ARGTABLE2_INCLUDE_DIRS)
+        set(ARGTABLE2_LIBRARIES ${ARGTABLE2_LIBRARY})
+
+        mark_as_advanced(ARGTABLE2_INCLUDE_DIR ARGTABLE2_LIBRARY)
+        return()
+    endif(Argtable2_FOUND)
+endif(VCPKG_TOOLCHAIN)
+
 set(ARGTABLE2_SEARCH_PATHS
     /usr/local
     /usr

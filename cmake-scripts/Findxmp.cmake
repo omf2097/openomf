@@ -1,4 +1,20 @@
 
+if(VCPKG_TOOLCHAIN)
+    find_package(libxmp CONFIG)
+    if(libxmp_FOUND)
+        if(TARGET libxmp::xmp_shared)
+            set(XMP_LIBRARY libxmp::xmp_shared)
+        else()
+            set(XMP_LIBRARY libxmp::xmp_static)
+        endif()
+
+        get_target_property(XMP_INCLUDE_DIR "${XMP_LIBRARY}" INTERFACE_INCLUDE_DIRECTORIES)
+
+        mark_as_advanced(XMP_INCLUDE_DIR XMP_LIBRARY)
+        return()
+    endif()
+endif()
+
 SET(XMP_SEARCH_PATHS
     /usr/local/
     /usr
