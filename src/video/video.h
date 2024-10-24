@@ -56,6 +56,7 @@ void video_draw_size(const surface *src_surface, int x, int y, int w, int h);
 
 /**
  * Render a sprite on the screen.
+ *
  * @param src_surface
  * @param x
  * @param y
@@ -66,9 +67,10 @@ void video_draw_size(const surface *src_surface, int x, int y, int w, int h);
  * @param palette_offset
  * @param palette_limit
  * @param flip_mode
+ * @param options
  */
 void video_draw_full(const surface *src_surface, int x, int y, int w, int h, int remap_offset, int remap_rounds,
-                     int palette_offset, int palette_limit, unsigned int flip_mode);
+                     int palette_offset, int palette_limit, unsigned int flip_mode, unsigned int options);
 
 void video_reset_atlas(void);
 

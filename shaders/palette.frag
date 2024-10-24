@@ -8,6 +8,7 @@ flat in int remap_offset;
 flat in int remap_rounds;
 flat in int palette_offset;
 flat in int palette_limit;
+flat in uint options;
 
 uniform sampler2D atlas;
 
