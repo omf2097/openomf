@@ -98,6 +98,33 @@ void str_from_file(str *dst, const char *file_name) {
     str_zero(dst);
 }
 
+void str_format(str *dst, const char *format, ...) {
+    int size;
+    va_list args1;
+    va_list args2;
+
+    // Find size for the printf output. Make sure to copy the variadic
+    // args for the next vsnprintf call.
+    va_start(args1, format);
+    va_copy(args2, args1);
+    size = vsnprintf(NULL, 0, format, args1);
+    va_end(args1);
+
+    // vsnprintf may return -1 for errors, catch that here.
+    if(size < 0) {
+        PERROR("Call to vsnprintf returned -1");
+        abort();
+    }
+
+    // Make sure there is enough room for our vsnprintf call plus ending NULL,
+    // then render the output to our new buffer.
+    if(dst->len < size) {
+        str_resize_buffer(dst, size);
+    }
+    vsnprintf(str_ptr(dst), size + 1, format, args2);
+    va_end(args2);
+}
+
 void str_from_format(str *dst, const char *format, ...) {
     int size;
     va_list args1;
