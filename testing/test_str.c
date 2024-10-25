@@ -26,6 +26,26 @@ void test_str_from(void) {
     str_free(&src);
 }
 
+void test_str_from_threshold_short(void) {
+    str d;
+    char short_str[STR_STACK_SIZE];
+    memset(short_str, 'A', sizeof short_str);
+    short_str[sizeof short_str - 1] = '\0';
+    str_from_c(&d, short_str);
+    CU_ASSERT_PTR_NULL(d.data);
+    str_free(&d);
+}
+
+void test_str_from_threshold_long(void) {
+    str d;
+    char long_str[STR_STACK_SIZE + 1];
+    memset(long_str, 'A', sizeof long_str);
+    long_str[sizeof long_str - 1] = '\0';
+    str_from_c(&d, long_str);
+    CU_ASSERT_PTR_NOT_NULL(d.data);
+    str_free(&d);
+}
+
 void test_str_from_long(void) {
     str src;
     str_from_c(&src, "testdatatestdatatestdatatestdata1"); // 33
@@ -327,7 +347,22 @@ void test_str_replace_sm(void) {
     str_replace(&d, "$1", "1", -1);
     str_replace(&d, "$2", "2", -1);
     CU_ASSERT(str_c(&d)[d.len] == 0);
-    CU_ASSERT_STRING_EQUAL(d.data, "test 1 string 2");
+    CU_ASSERT_STRING_EQUAL(str_c(&d), "test 1 string 2");
+    str_free(&d);
+}
+
+void test_str_replace_sm_regression(void) {
+    str d;
+    char long_str[STR_STACK_SIZE + 1];
+    memset(long_str, 'A', sizeof long_str);
+    long_str[sizeof long_str - 2] = 'B';
+    long_str[sizeof long_str - 1] = '\0';
+    str_from_c(&d, long_str);
+    CU_ASSERT_PTR_NOT_NULL(d.data);
+
+    str_replace(&d, "AA", "C", 1);
+    CU_ASSERT(str_c(&d)[d.len] == '\0');
+    CU_ASSERT(str_c(&d)[d.len - 1] == 'B');
     str_free(&d);
 }
 
@@ -340,12 +375,30 @@ void test_str_replace_multi(void) {
     str_free(&d);
 }
 
+void test_str_replace_multi_regression(void) {
+    str d;
+    str_from_c(&d, "test $1 string");
+    str_replace(&d, "$1", "$2 $1", 2);
+    CU_ASSERT(str_c(&d)[d.len] == 0);
+    CU_ASSERT_STRING_EQUAL(str_c(&d), "test $2 $1 string");
+    str_free(&d);
+}
+
+void test_str_replace_multi_consecutive(void) {
+    str d;
+    str_from_c(&d, "test $1$1 string");
+    str_replace(&d, "$1", "", -1);
+    CU_ASSERT(str_c(&d)[d.len] == 0);
+    CU_ASSERT_STRING_EQUAL(str_c(&d), "test  string");
+    str_free(&d);
+}
+
 void test_str_replace_multi_limit(void) {
     str d;
     str_from_c(&d, "test $1 string $1");
     str_replace(&d, "$1", "one", 1);
     CU_ASSERT(str_c(&d)[d.len] == 0);
-    CU_ASSERT_STRING_EQUAL(d.data, "test one string $1");
+    CU_ASSERT_STRING_EQUAL(str_c(&d), "test one string $1");
     str_free(&d);
 }
 
@@ -357,6 +410,12 @@ void str_test_suite(CU_pSuite suite) {
         return;
     }
     if(CU_add_test(suite, "Test for str_from", test_str_from) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_from small string threshold, short", test_str_from_threshold_short) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_from small string threshold, long", test_str_from_threshold_long) == NULL) {
         return;
     }
     if(CU_add_test(suite, "Test for long str_from", test_str_from_long) == NULL) {
@@ -421,7 +480,19 @@ void str_test_suite(CU_pSuite suite) {
     if(CU_add_test(suite, "Test for str_replace (shorter replacement)", test_str_replace_sm) == NULL) {
         return;
     }
+    if(CU_add_test(suite, "Test for str_replace (shorter replacement regression test)",
+                   test_str_replace_sm_regression) == NULL) {
+        return;
+    }
     if(CU_add_test(suite, "Test for str_replace (multiple hits)", test_str_replace_multi) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_replace (multiple hits, replacement contains seek)",
+                   test_str_replace_multi_regression) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_replace (multiple consecutive hits w/empty)",
+                   test_str_replace_multi_consecutive) == NULL) {
         return;
     }
     if(CU_add_test(suite, "Test for str_replace (multiple hits w/limit)", test_str_replace_multi_limit) == NULL) {

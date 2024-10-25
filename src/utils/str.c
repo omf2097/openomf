@@ -16,7 +16,7 @@
 
 static void str_resize_buffer(str *dst, size_t size) {
     size_t size_with_zero = size + 1;
-    if(size_with_zero >= STR_STACK_SIZE) {
+    if(size_with_zero > STR_STACK_SIZE) {
         dst->data = omf_realloc(dst->data, size_with_zero);
         dst->small[0] = 0;
     } else {
@@ -30,7 +30,7 @@ static void str_resize_buffer(str *dst, size_t size) {
 
 static void str_resize_and_copy_buffer(str *dst, size_t size) {
     size_t size_with_zero = size + 1;
-    if(size_with_zero >= STR_STACK_SIZE) {
+    if(size_with_zero > STR_STACK_SIZE) {
         // New size is larger than the stack buffer; do malloc.
         if(dst->data == NULL) {
             // Old string is in stack, move to heap
@@ -265,7 +265,7 @@ void str_replace(str *dst, const char *seek, const char *replacement, int limit)
     size_t replacement_len = strlen(replacement);
     assert(seek_len > 0);
     int found = 0;
-    size_t diff = replacement_len - seek_len;
+    ptrdiff_t diff = replacement_len - (ptrdiff_t)seek_len;
     size_t current_pos = 0;
     while(str_find_next(dst, seek[0], &current_pos) && (found < limit || limit < 0)) {
         if(strncmp(str_ptr(dst) + current_pos, seek, seek_len) == 0) {
@@ -282,8 +282,10 @@ void str_replace(str *dst, const char *seek, const char *replacement, int limit)
             str_zero(dst);
 
             found++;
+            current_pos += replacement_len;
+        } else {
+            current_pos++;
         }
-        current_pos++;
     }
 }
 
