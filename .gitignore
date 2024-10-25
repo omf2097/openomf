@@ -15,3 +15,5 @@ mingw_build/
 .vscode
 cmake-build-debug/
 cmake-build-release/
+.cache
+compile_commands.json
