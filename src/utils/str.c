@@ -265,7 +265,7 @@ void str_replace(str *dst, const char *seek, const char *replacement, int limit)
     size_t replacement_len = strlen(replacement);
     assert(seek_len > 0);
     int found = 0;
-    size_t diff = replacement_len - seek_len;
+    ptrdiff_t diff = replacement_len - (ptrdiff_t)seek_len;
     size_t current_pos = 0;
     while(str_find_next(dst, seek[0], &current_pos) && (found < limit || limit < 0)) {
         if(strncmp(str_ptr(dst) + current_pos, seek, seek_len) == 0) {
