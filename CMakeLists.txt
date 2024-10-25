@@ -69,7 +69,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
 endif()
 
 # Find OpenOMF core sources
-file(GLOB_RECURSE OPENOMF_SRC RELATIVE ${CMAKE_SOURCE_DIR} "src/*/*.c")
+file(GLOB_RECURSE OPENOMF_SRC RELATIVE ${CMAKE_SOURCE_DIR} "src/*/*.c" "src/*/*.h")
 
 set(COREINCS
     src
