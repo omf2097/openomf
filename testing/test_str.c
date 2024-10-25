@@ -375,6 +375,24 @@ void test_str_replace_multi(void) {
     str_free(&d);
 }
 
+void test_str_replace_multi_regression(void) {
+    str d;
+    str_from_c(&d, "test $1 string");
+    str_replace(&d, "$1", "$2 $1", 2);
+    CU_ASSERT(str_c(&d)[d.len] == 0);
+    CU_ASSERT_STRING_EQUAL(str_c(&d), "test $2 $1 string");
+    str_free(&d);
+}
+
+void test_str_replace_multi_consecutive(void) {
+    str d;
+    str_from_c(&d, "test $1$1 string");
+    str_replace(&d, "$1", "", -1);
+    CU_ASSERT(str_c(&d)[d.len] == 0);
+    CU_ASSERT_STRING_EQUAL(str_c(&d), "test  string");
+    str_free(&d);
+}
+
 void test_str_replace_multi_limit(void) {
     str d;
     str_from_c(&d, "test $1 string $1");
@@ -467,6 +485,14 @@ void str_test_suite(CU_pSuite suite) {
         return;
     }
     if(CU_add_test(suite, "Test for str_replace (multiple hits)", test_str_replace_multi) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_replace (multiple hits, replacement contains seek)",
+                   test_str_replace_multi_regression) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_replace (multiple consecutive hits w/empty)",
+                   test_str_replace_multi_consecutive) == NULL) {
         return;
     }
     if(CU_add_test(suite, "Test for str_replace (multiple hits w/limit)", test_str_replace_multi_limit) == NULL) {

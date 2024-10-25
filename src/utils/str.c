@@ -282,8 +282,10 @@ void str_replace(str *dst, const char *seek, const char *replacement, int limit)
             str_zero(dst);
 
             found++;
+            current_pos += replacement_len;
+        } else {
+            current_pos++;
         }
-        current_pos++;
     }
 }
 
