@@ -15,9 +15,11 @@
 #include "video/surface.h"
 #include "video/video.h"
 
-// newsroom text starts at 87 in english.dat
+// newsroom text starts at 87
 // there are 24*2 texts in total
 #define NEWSROOM_TEXT 87
+// there are 3*2 pronouns in total
+#define NEWSROOM_PRONOUN 81
 
 typedef struct newsroom_local_t {
     int news_id;
@@ -32,18 +34,31 @@ typedef struct newsroom_local_t {
     dialog continue_dialog;
 } newsroom_local;
 
-const char *object_pronoun(int sex) {
-    if(sex == PILOT_SEX_MALE) {
-        return "Him";
-    }
-    return "Her";
+// their
+const char *possessive_pronoun(int sex) {
+    return lang_get(NEWSROOM_PRONOUN + sex);
 }
 
+// them
+const char *object_pronoun(int sex) {
+    return lang_get(NEWSROOM_PRONOUN + 2 + sex);
+}
+
+// they
 const char *subject_pronoun(int sex) {
-    if(sex == PILOT_SEX_MALE) {
-        return "He";
+    return lang_get(NEWSROOM_PRONOUN + 4 + sex);
+}
+
+char const *pronoun_strip(char const *pronoun, char *buf, size_t buf_size) {
+    size_t pronoun_len = strlen(pronoun);
+    while(pronoun_len && pronoun[pronoun_len - 1] == '\n'){
+        pronoun_len--;
     }
-    return "She";
+    if(pronoun_len > buf_size)
+        pronoun_len = buf_size;
+    memcpy(buf, pronoun, pronoun_len);
+    buf[pronoun_len] = '\0';
+    return buf;
 }
 
 void newsroom_fixup_str(newsroom_local *local) {
@@ -54,12 +69,13 @@ void newsroom_fixup_str(newsroom_local *local) {
        2= Player2 - Steffan
        3= HAR1 - jaguar
        4= HAR2 - shadow
-       5= Arena - power plant
-       6= His/Her P1 - Her
-       7= Him/Her P1 - Her
-       8= He/She P1 - She
-       10= Him/Her P2 - Him
-       11= He/She P2 - He
+       5= Arena - Stadium. (DOS OMF always refers to the arena as Stadium)
+       6= P1 Possessive pronoun - Her
+       7= P1 Objective pronoun  - Her
+       8= P1 Subjective pronoun - She
+       9= P2 Possessive pronoun - His
+       10= P2 Objective pronoun  - Him
+       11= P2 Subjective pronoun - He
     */
 
     unsigned int translation_id;
@@ -70,14 +86,15 @@ void newsroom_fixup_str(newsroom_local *local) {
         translation_id = NEWSROOM_TEXT + local->news_id + min2(local->screen, 1);
     }
 
+    char scratch[8];
     str tmp;
     str_from_c(&tmp, lang_get(translation_id));
-    str_replace(&tmp, "~11", subject_pronoun(local->sex2), -1);
-    str_replace(&tmp, "~10", object_pronoun(local->sex2), -1);
-    str_replace(&tmp, "~9", "WTF", -1);
-    str_replace(&tmp, "~8", subject_pronoun(local->sex1), -1);
-    str_replace(&tmp, "~7", object_pronoun(local->sex1), -1);
-    str_replace(&tmp, "~6", "The", -1);
+    str_replace(&tmp, "~11", pronoun_strip(subject_pronoun(local->sex2), scratch, sizeof scratch), -1);
+    str_replace(&tmp, "~10", pronoun_strip(object_pronoun(local->sex2), scratch, sizeof scratch), -1);
+    str_replace(&tmp, "~9", pronoun_strip(possessive_pronoun(local->sex2), scratch, sizeof scratch), -1);
+    str_replace(&tmp, "~8", pronoun_strip(subject_pronoun(local->sex1), scratch, sizeof scratch), -1);
+    str_replace(&tmp, "~7", pronoun_strip(object_pronoun(local->sex1), scratch, sizeof scratch), -1);
+    str_replace(&tmp, "~6", pronoun_strip(possessive_pronoun(local->sex1), scratch, sizeof scratch), -1);
     str_replace(&tmp, "~5", "Stadium", -1);
     str_replace(&tmp, "~4", str_c(&local->har2), -1);
     str_replace(&tmp, "~3", str_c(&local->har1), -1);
@@ -255,12 +272,9 @@ void newsroom_input_tick(scene *scene) {
 
 int pilot_sex(int pilot_id) {
     switch(pilot_id) {
-        case 0:
-            // Crystal
-        case 7:
-            // Angel
-        case 8:
-            // Cossette
+        case PILOT_CRYSTAL:
+        case PILOT_ANGEL:
+        case PILOT_COSSETTE:
             return PILOT_SEX_FEMALE;
         default:
             // everyone else is male
