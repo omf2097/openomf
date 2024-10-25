@@ -2714,7 +2714,7 @@ void ai_controller_create(controller *ctrl, int difficulty, sd_pilot *pilot, int
     reset_pilot_personality(pilot);
 
     // set initial tactical state
-    tactic_state *tactic = calloc(1, sizeof(tactic_state));
+    tactic_state *tactic = omf_calloc(1, sizeof(tactic_state));
     tactic->tactic_type = 0;
     tactic->last_tactic = 0;
     tactic->move_type = 0;

@@ -257,7 +257,7 @@ void video_area_capture(surface *sur, int x, int y, int w, int h) {
     glReadPixels(x, y, w, h, GL_RED, GL_UNSIGNED_BYTE, buffer);
     surface_create_from_data_flip(sur, w, h, buffer);
     surface_set_transparency(sur, -1);
-    free(buffer);
+    omf_free(buffer);
 }
 
 void video_force_pal_refresh(void) {

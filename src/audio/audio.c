@@ -303,7 +303,7 @@ void audio_play_sound(int id, float volume, float panning, float pitch) {
     return;
 
 error_1:
-    free(chunk);
+    Mix_FreeChunk(chunk);
 error_0:
     return;
 }
