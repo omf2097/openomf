@@ -84,8 +84,6 @@ const char *get_resource_file(unsigned int id) {
             return "ARENA4.PSM";
         case DAT_SOUNDS:
             return "SOUNDS.DAT";
-        case DAT_ENGLISH:
-            return "ENGLISH.DAT";
         case DAT_GRAPHCHR:
             return "GRAPHCHR.DAT";
         case DAT_CHARSMAL:
@@ -194,8 +192,6 @@ const char *get_resource_name(unsigned int id) {
             return "PSM_ARENA4";
         case DAT_SOUNDS:
             return "DAT_SOUNDS";
-        case DAT_ENGLISH:
-            return "DAT_ENGLISH";
         case DAT_GRAPHCHR:
             return "DAT_GRAPHCHR";
         case DAT_CHARSMAL:
