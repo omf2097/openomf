@@ -3,14 +3,12 @@
 #include "formats/language.h"
 #include "resources/pathmanager.h"
 #include "utils/allocator.h"
-#include "utils/array.h"
 #include "utils/log.h"
+#include <string.h>
 
-static array language_strings;
 static sd_language *language;
 
 int lang_init(void) {
-    // Get filename
     const char *filename = pm_get_resource_path(DAT_ENGLISH);
 
     // Load up language file
@@ -20,31 +18,63 @@ int lang_init(void) {
     }
     if(sd_language_load(language, filename)) {
         PERROR("Unable to load language file '%s'!", filename);
-        goto error_1;
+        goto error_0;
     }
 
-    // Load language strings
-    array_create(&language_strings);
-    for(unsigned i = 0; i < language->count; i++) {
-        array_set(&language_strings, i, language->strings[i].data);
+    unsigned const lang_count_old = 990;
+    unsigned const lang_count_new = 1013;
+    if(language->count == lang_count_old) {
+        // OMF 2.1 added netplay, and with it 23 new localization strings
+        unsigned new_ids[] = {149, 150, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181,
+                              182, 183, 184, 185, 267, 269, 270, 271, 284, 295, 305};
+        unsigned *new_ids_end = new_ids + sizeof(new_ids) / sizeof(new_ids[0]);
+
+        // insert dummy entries
+        sd_lang_string *expanded_strings = omf_malloc(lang_count_new * sizeof(sd_lang_string));
+        unsigned next = 0;
+        unsigned next_from = 0;
+        for(unsigned *id = new_ids; id < new_ids_end; id++) {
+            unsigned copy_count = *id - next;
+            memcpy(expanded_strings + next, language->strings + next_from, copy_count * sizeof(sd_lang_string));
+            next += copy_count;
+            next_from += copy_count;
+
+            expanded_strings[next].data = NULL;
+            memcpy(expanded_strings[next].description, "dummy", 6);
+            next++;
+        }
+        memcpy(expanded_strings + next, language->strings + next_from,
+               (lang_count_new - next) * sizeof(sd_lang_string));
+        omf_free(language->strings);
+        language->strings = expanded_strings;
+        language->count = lang_count_new;
+    }
+    if(language->count != lang_count_new) {
+        PERROR("Unable to load language file '%s', unsupported file version!", filename);
+        goto error_0;
     }
 
     INFO("Loaded language file '%s'.", filename);
+
+    // XXX we're wasting 32KB of memory on language->strings[...].description
+
     return 0;
 
-error_1:
-    sd_language_free(language);
 error_0:
+    sd_language_free(language);
     omf_free(language);
     return 1;
 }
 
 void lang_close(void) {
-    array_free(&language_strings);
     sd_language_free(language);
     omf_free(language);
 }
 
 const char *lang_get(unsigned int id) {
-    return (const char *)array_get(&language_strings, id);
+    if(id > language->count || !language->strings[id].data) {
+        PERROR("unsupported lang id %u!", id);
+        return "!INVALID!";
+    }
+    return language->strings[id].data;
 }
