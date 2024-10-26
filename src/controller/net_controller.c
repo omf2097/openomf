@@ -19,6 +19,7 @@
 typedef struct {
     ENetHost *host;
     ENetPeer *peer;
+    ENetPeer *lobby;
     int id;
     int last_hb;
     int last_action;
@@ -183,8 +184,13 @@ void send_events(wtf *data) {
     data->last_sent = data->last_tick;
 
     packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_UNSEQUENCED);
-    serial_free(&ser);
     enet_peer_send(peer, 1, packet);
+    if(data->lobby && peer != data->lobby) {
+        // CC the events to the lobby, unless the lobby is already the peer
+        packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_UNSEQUENCED);
+        enet_peer_send(data->lobby, 1, packet);
+    }
+    serial_free(&ser);
     enet_host_flush(host);
 }
 
@@ -767,11 +773,12 @@ void net_controller_har_hook(int action, void *cb_data) {
     }
 }
 
-void net_controller_create(controller *ctrl, ENetHost *host, ENetPeer *peer, int id) {
+void net_controller_create(controller *ctrl, ENetHost *host, ENetPeer *peer, ENetPeer *lobby, int id) {
     wtf *data = omf_calloc(1, sizeof(wtf));
     data->id = id;
     data->host = host;
     data->peer = peer;
+    data->lobby = lobby; // this is null in a peer-to-peer game
     data->last_hb = -1;
     data->last_action = ACT_STOP;
     data->outstanding_hb = 0;

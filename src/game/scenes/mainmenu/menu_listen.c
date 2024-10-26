@@ -81,7 +81,7 @@ void menu_listen_tick(component *c) {
             game_player_set_ctrl(p1, player1_ctrl);
 
             // Player 2 controller -- Network
-            net_controller_create(player2_ctrl, local->host, event.peer, ROLE_SERVER);
+            net_controller_create(player2_ctrl, local->host, event.peer, NULL, ROLE_SERVER);
             game_player_set_ctrl(p2, player2_ctrl);
             game_player_set_selectable(p2, 1);
 
