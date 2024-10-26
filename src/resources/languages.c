@@ -1,15 +1,21 @@
 #include "resources/languages.h"
 #include "formats/error.h"
 #include "formats/language.h"
+#include "game/utils/settings.h"
 #include "resources/pathmanager.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
+#include "utils/str.h"
 #include <string.h>
 
 static sd_language *language;
 
 int lang_init(void) {
-    const char *filename = pm_get_resource_path(DAT_ENGLISH);
+    str filename_str;
+    const char *dirname = pm_get_local_path(RESOURCE_PATH);
+    const char *lang = settings_get()->language.language;
+    str_from_format(&filename_str, "%s%s", dirname, lang);
+    char const *filename = str_c(&filename_str);
 
     // Load up language file
     language = omf_calloc(1, sizeof(sd_language));
@@ -56,6 +62,8 @@ int lang_init(void) {
 
     INFO("Loaded language file '%s'.", filename);
 
+    str_free(&filename_str);
+
     // XXX we're wasting 32KB of memory on language->strings[...].description
 
     return 0;
@@ -63,6 +71,7 @@ int lang_init(void) {
 error_0:
     sd_language_free(language);
     omf_free(language);
+    str_free(&filename_str);
     return 1;
 }
 

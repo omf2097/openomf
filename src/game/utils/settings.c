@@ -55,6 +55,10 @@ typedef struct {
 } struct_to_field;
 
 // clang-format off
+static const field f_language[] = {
+    F_STRING(settings_language, language, "ENGLISH.DAT"),
+};
+
 const field f_video[] = {
     F_INT(settings_video, screen_w, 640),
     F_INT(settings_video, screen_h, 400),
@@ -146,6 +150,7 @@ const field f_net[] = {
 
 // Map struct to field
 const struct_to_field struct_to_fields[] = {
+    S_2_F(&_settings.language, f_language),
     S_2_F(&_settings.video, f_video),
     S_2_F(&_settings.sound, f_sound),
     S_2_F(&_settings.gameplay, f_gameplay),

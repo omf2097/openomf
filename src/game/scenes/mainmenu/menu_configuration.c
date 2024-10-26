@@ -1,6 +1,7 @@
 #include "game/scenes/mainmenu/menu_configuration.h"
 #include "game/scenes/mainmenu/menu_audio.h"
 #include "game/scenes/mainmenu/menu_input.h"
+#include "game/scenes/mainmenu/menu_language.h"
 #include "game/scenes/mainmenu/menu_video.h"
 
 #include "game/gui/gui.h"
@@ -9,6 +10,11 @@
 void menu_config_done(component *c, void *u) {
     menu *m = sizer_get_obj(c->parent);
     m->finished = 1;
+}
+
+static void menu_enter_language(component *c, void *userdata) {
+    scene *s = userdata;
+    menu_set_submenu(c->parent, menu_language_create(s));
 }
 
 void menu_enter_input_1(component *c, void *userdata) {
@@ -41,7 +47,8 @@ component *menu_configuration_create(scene *s) {
     component *menu = menu_create(11);
     menu_attach(menu, label_create(&tconf, "CONFIGURATION"));
     menu_attach(menu, filler_create());
-    menu_attach(menu, filler_create());
+    menu_attach(menu,
+                textbutton_create(&tconf, "LANGUAGE", "Forstar du ikke engelsk?", COM_ENABLED, menu_enter_language, s));
     menu_attach(menu,
                 textbutton_create(&tconf, "PLAYER 1 INPUT", "Choose the control for player 1: keyboard or joystick.",
                                   COM_ENABLED, menu_enter_input_1, s));

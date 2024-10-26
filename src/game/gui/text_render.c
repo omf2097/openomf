@@ -21,7 +21,7 @@ void text_defaults(text_settings *settings) {
 
 int text_render_char(const text_settings *settings, text_mode state, int x, int y, char ch) {
     // Make sure code is valid
-    int code = ch - 32;
+    int code = (unsigned char)ch - 32;
     surface **sur = NULL;
     if(code < 0) {
         return 0;

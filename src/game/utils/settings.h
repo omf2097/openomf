@@ -35,6 +35,10 @@ typedef struct {
 } settings_sound;
 
 typedef struct {
+    char *language;
+} settings_language;
+
+typedef struct {
     int screen_w;
     int screen_h;
     int vsync;
@@ -117,6 +121,7 @@ typedef struct {
 } settings_network;
 
 typedef struct {
+    settings_language language;
     settings_video video;
     settings_sound sound;
     settings_gameplay gameplay;
