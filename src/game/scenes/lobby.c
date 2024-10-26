@@ -80,6 +80,8 @@ typedef struct lobby_local_t {
 
     dialog *dialog;
 
+    menu *joinmenu;
+
     guiframe *frame;
 } lobby_local;
 
@@ -524,9 +526,10 @@ void lobby_entered_name(component *c, void *userdata) {
 
             enet_peer_send(local->peer, 0, packet);
 
-            menu *m = sizer_get_obj(c->parent);
-            m->finished = 1;
-            local->mode = LOBBY_MAIN;
+            local->joinmenu = sizer_get_obj(c->parent);
+            // menu *m = sizer_get_obj(c->parent);
+            // m->finished = 1;
+            // local->mode = LOBBY_MAIN;
         } else {
             /* Either the 5 seconds are up or a disconnect event was */
             /* received. Reset the peer in the event the 5 seconds   */
@@ -550,7 +553,6 @@ void lobby_dialog_cancel_connect(dialog *dlg, dialog_result result) {
     serial_free(&ser);
     enet_peer_send(local->peer, 0, packet);
     local->opponent_peer = NULL;
-
 }
 
 void lobby_try_connect(void *scenedata, void *userdata) {
@@ -690,7 +692,7 @@ void lobby_tick(scene *scene, int paused) {
                     game_player_set_ctrl(p1, player1_ctrl);
 
                     // Player 2 controller -- Network
-                    net_controller_create(player2_ctrl, local->client, event.peer, ROLE_SERVER);
+                    net_controller_create(player2_ctrl, local->client, event.peer, local->peer, ROLE_SERVER);
                     game_player_set_ctrl(p2, player2_ctrl);
                     game_player_set_selectable(p2, 1);
 
@@ -737,8 +739,17 @@ void lobby_tick(scene *scene, int paused) {
                     } break;
                     case PACKET_JOIN:
                         if(event.peer == local->peer) {
-                            local->id = serial_read_uint32(&ser);
-                            DEBUG("successfully joined lobby and assigned ID %d", local->id);
+                            switch(control_byte & 0xf) {
+                                case 0:
+                                    local->id = serial_read_uint32(&ser);
+                                    DEBUG("successfully joined lobby and assigned ID %d", local->id);
+                                    local->joinmenu->finished = 1;
+                                    local->mode = LOBBY_MAIN;
+                                    break;
+                                default:
+                                    // TODO something went wrong show a dialog box
+                                    break;
+                            }
                         } else if(!local->opponent_peer && event.peer->address.host == local->opponent->address.host) {
                             DEBUG("connected to peer inbound!");
                             local->opponent_peer = event.peer;
@@ -764,7 +775,7 @@ void lobby_tick(scene *scene, int paused) {
                             player2_ctrl->har_obj_id = p2->har_obj_id;
 
                             // Player 1 controller -- Network
-                            net_controller_create(player1_ctrl, local->client, event.peer, ROLE_CLIENT);
+                            net_controller_create(player1_ctrl, local->client, event.peer, local->peer, ROLE_CLIENT);
                             game_player_set_ctrl(p1, player1_ctrl);
 
                             // Player 2 controller -- Keyboard

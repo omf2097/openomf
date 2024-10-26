@@ -306,6 +306,7 @@ void arena_end(scene *sc) {
     } else if(is_twoplayer(sc)) {
         game_state_set_next(gs, SCENE_MELEE);
     } else {
+        // TODO check for a network controller, and check if that network controller is tied to a lobby
         game_state_set_next(gs, SCENE_MENU);
     }
 }

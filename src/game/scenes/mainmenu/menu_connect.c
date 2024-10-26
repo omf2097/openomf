@@ -124,7 +124,7 @@ void menu_connect_tick(component *c) {
             player2_ctrl->har_obj_id = p2->har_obj_id;
 
             // Player 1 controller -- Network
-            net_controller_create(player1_ctrl, local->host, event.peer, ROLE_CLIENT);
+            net_controller_create(player1_ctrl, local->host, event.peer, NULL, ROLE_CLIENT);
             game_player_set_ctrl(p1, player1_ctrl);
 
             // Player 2 controller -- Keyboard
