@@ -73,7 +73,7 @@ typedef struct {
     uint8_t cspacing;
     uint8_t lspacing;
     bool strip_leading_whitespace;
-    bool wrap;
+    uint8_t max_lines;
 } text_settings;
 
 // New text rendering functions

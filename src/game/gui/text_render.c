@@ -14,6 +14,7 @@ void text_defaults(text_settings *settings) {
     settings->cdisabled = 0xC0;
     settings->cshadow = 0xC0;
     settings->cspacing = 0;
+    settings->max_lines = UINT8_MAX;
     settings->strip_leading_whitespace = false;
 }
 
@@ -162,7 +163,7 @@ int text_char_width(const text_settings *settings) {
 int text_find_line_count(const text_settings *settings, int cols, int rows, int len, const char *text) {
     int ptr = 0;
     int lines = 0;
-    while(ptr < len) {
+    while(lines < settings->max_lines && ptr < len) {
         // Find out how many characters for this row/col
         int line_len;
         if(settings->direction == TEXT_HORIZONTAL)
@@ -233,7 +234,9 @@ void text_render(const text_settings *settings, text_mode mode, int x, int y, in
         int line_ph;
 
         // Find out how many characters for this row/col
-        if(settings->direction == TEXT_HORIZONTAL)
+        if(line + 1 == fit_lines)
+            line_len = strlen(text + ptr);
+        else if(settings->direction == TEXT_HORIZONTAL)
             line_len = text_find_max_strlen(settings, cols, text + ptr);
         else
             line_len = text_find_max_strlen(settings, rows, text + ptr);
