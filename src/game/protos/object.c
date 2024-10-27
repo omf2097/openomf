@@ -547,7 +547,6 @@ void object_select_sprite(object *obj, int id) {
                 obj->cur_sprite_id = id;
                 obj->sprite_state.flipmode = FLIP_NONE;
             } else {
-                DEBUG("unable to find sprite %d", id);
                 obj->cur_sprite_id = -1;
             }
         }
