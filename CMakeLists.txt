@@ -37,7 +37,7 @@ if(GIT_FOUND)
         OUTPUT_STRIP_TRAILING_WHITESPACE
     )
     message(STATUS "Git SHA1 Hash: ${SHA1_HASH}")
-    add_definitions(-DSHA1_HASH="${SHA1_HASH}")
+    set_source_files_properties(src/main.c PROPERTIES COMPILE_DEFINITIONS SHA1_HASH="${SHA1_HASH}")
 endif()
 
 # System packages (hard dependencies)
