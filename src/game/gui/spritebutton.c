@@ -58,7 +58,6 @@ static void spritebutton_tick(component *c) {
 }
 
 static void spritebutton_focus(component *c, bool focused) {
-    DEBUG("spritebutton focused");
     spritebutton *sb = widget_get_obj(c);
     if(sb->focus_cb) {
         sb->focus_cb(c, focused, sb->userdata);

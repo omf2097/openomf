@@ -27,7 +27,6 @@ static int trnmenu_hand_deselect(component *c) {
     if(sel == NULL)
         return 0;
 
-    DEBUG("defocusing button");
     component_focus(sel, 0);
     return 1;
 }
@@ -38,7 +37,6 @@ static int trnmenu_hand_select(component *c) {
     if(sel == NULL)
         return 0;
 
-    DEBUG("defocusing button");
     component_focus(sel, 1);
     m->hand.move = 1;
     m->hand.pstart = object_get_pos(m->hand.obj);
