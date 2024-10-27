@@ -57,7 +57,6 @@ void component_focus(component *c, int focused) {
         return;
     c->is_focused = (focused != 0) ? 1 : 0;
     if(c->focus) {
-        DEBUG("running component focus cb");
         c->focus(c, c->is_focused == 1);
     }
 }

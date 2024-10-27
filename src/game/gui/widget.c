@@ -89,9 +89,7 @@ static int widget_action(component *c, int action) {
 
 void widget_focus(component *c, bool focused) {
     widget *local = component_get_obj(c);
-    DEBUG("widget focus");
     if(local->focus) {
-        DEBUG("running widget focus cb");
         local->focus(c, focused);
     }
 }
