@@ -18,8 +18,9 @@
 // newsroom text starts at 87
 // there are 24*2 texts in total
 #define NEWSROOM_TEXT 87
-// there are 3*2 pronouns in total
+
 #define NEWSROOM_PRONOUN 81
+#define NEWSROOM_HAR 31
 
 typedef struct newsroom_local_t {
     int news_id;
@@ -27,7 +28,7 @@ typedef struct newsroom_local_t {
     surface news_bg;
     str news_str;
     str pilot1, pilot2;
-    str har1, har2;
+    int har1, har2;
     int sex1, sex2;
     int won;
     bool champion;
@@ -51,7 +52,7 @@ const char *subject_pronoun(int sex) {
 
 char const *pronoun_strip(char const *pronoun, char *buf, size_t buf_size) {
     size_t pronoun_len = strlen(pronoun);
-    while(pronoun_len && pronoun[pronoun_len - 1] == '\n'){
+    while(pronoun_len && pronoun[pronoun_len - 1] == '\n') {
         pronoun_len--;
     }
     if(pronoun_len > buf_size)
@@ -96,8 +97,8 @@ void newsroom_fixup_str(newsroom_local *local) {
     str_replace(&tmp, "~7", pronoun_strip(object_pronoun(local->sex1), scratch, sizeof scratch), -1);
     str_replace(&tmp, "~6", pronoun_strip(possessive_pronoun(local->sex1), scratch, sizeof scratch), -1);
     str_replace(&tmp, "~5", "Stadium", -1);
-    str_replace(&tmp, "~4", str_c(&local->har2), -1);
-    str_replace(&tmp, "~3", str_c(&local->har1), -1);
+    str_replace(&tmp, "~4", pronoun_strip(lang_get(local->har2 + NEWSROOM_HAR), scratch, sizeof scratch), -1);
+    str_replace(&tmp, "~3", pronoun_strip(lang_get(local->har1 + NEWSROOM_HAR), scratch, sizeof scratch), -1);
     str_replace(&tmp, "~2", str_c(&local->pilot2), -1);
     str_replace(&tmp, "~1", str_c(&local->pilot1), -1);
 
@@ -106,13 +107,13 @@ void newsroom_fixup_str(newsroom_local *local) {
     str_free(&tmp);
 }
 
-void newsroom_set_names(newsroom_local *local, const char *pilot1, const char *pilot2, const char *har1,
-                        const char *har2, int sex1, int sex2) {
+void newsroom_set_names(newsroom_local *local, const char *pilot1, const char *pilot2, int har1, int har2, int sex1,
+                        int sex2) {
 
     str_from_c(&local->pilot1, pilot1);
     str_from_c(&local->pilot2, pilot2);
-    str_from_c(&local->har1, har1);
-    str_from_c(&local->har2, har2);
+    local->har1 = har1;
+    local->har2 = har2;
     local->sex1 = sex1;
     local->sex2 = sex2;
 
@@ -128,8 +129,6 @@ void newsroom_free(scene *scene) {
     str_free(&local->news_str);
     str_free(&local->pilot1);
     str_free(&local->pilot2);
-    str_free(&local->har1);
-    str_free(&local->har2);
     dialog_free(&local->continue_dialog);
     omf_free(local);
     scene_set_userdata(scene, local);
@@ -353,13 +352,12 @@ int newsroom_create(scene *scene) {
     // XXX TODO set winner/loser names properly
     if(p1->chr) {
         // TODO pilot genders
-        newsroom_set_names(local, p1->pilot->name, p2->pilot->name, har_get_name(p1->pilot->har_id),
-                           har_get_name(p2->pilot->har_id), pilot_sex(p1->pilot->pilot_id),
-                           pilot_sex(p2->pilot->pilot_id));
+        newsroom_set_names(local, p1->pilot->name, p2->pilot->name, p1->pilot->har_id, p2->pilot->har_id,
+                           pilot_sex(p1->pilot->pilot_id), pilot_sex(p2->pilot->pilot_id));
     } else {
         newsroom_set_names(local, lang_get(20 + p1->pilot->pilot_id), lang_get(20 + p2->pilot->pilot_id),
-                           har_get_name(p1->pilot->har_id), har_get_name(p2->pilot->har_id),
-                           pilot_sex(p1->pilot->pilot_id), pilot_sex(p2->pilot->pilot_id));
+                           p1->pilot->har_id, p2->pilot->har_id, pilot_sex(p1->pilot->pilot_id),
+                           pilot_sex(p2->pilot->pilot_id));
     }
     newsroom_fixup_str(local);
 
