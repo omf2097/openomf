@@ -105,6 +105,14 @@ const sd_lang_string *sd_language_get(const sd_language *language, unsigned num)
     return &language->strings[num];
 }
 
+void sd_language_append(sd_language *language, const char *description, const char *data) {
+    language->count++;
+
+    language->strings = omf_realloc(language->strings, language->count * sizeof(sd_lang_string));
+    strncpy(language->strings[language->count - 1].description, description, 32);
+    language->strings[language->count - 1].data = strdup(data);
+}
+
 int sd_language_save(sd_language *language, const char *filename) {
     if(language == NULL || filename == NULL) {
         return SD_INVALID_INPUT;
