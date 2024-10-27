@@ -274,7 +274,7 @@ void str_replace(str *dst, const char *seek, const char *replacement, int limit)
             }
             char *ptr = str_ptr(dst);
             memmove(ptr + current_pos + replacement_len, ptr + current_pos + seek_len,
-                    dst->len - replacement_len - current_pos);
+                    dst->len - current_pos - max2(replacement_len, seek_len));
             memcpy(ptr + current_pos, replacement, replacement_len);
             if(diff < 0) { // Reduce after all is done.
                 str_resize_and_copy_buffer(dst, dst->len + diff);
