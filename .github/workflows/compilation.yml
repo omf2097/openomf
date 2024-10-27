@@ -58,6 +58,7 @@ jobs:
         cmake -DCMAKE_BUILD_TYPE=Debug \
               -DUSE_TIDY=${{ matrix.config.tidy }} \
               -DUSE_TESTS=On \
+              -DUSE_SANITIZERS=On \
               -DUSE_TOOLS=On ..
         make -j $(getconf _NPROCESSORS_ONLN)
 
