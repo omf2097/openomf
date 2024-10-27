@@ -728,7 +728,7 @@ void player_run(object *obj) {
     // Tick management
     if(sd_script_isset(frame, "d") && !obj->animation_state.disable_d) {
         state->previous_tick = state->current_tick;
-        state->current_tick = sd_script_get(frame, "d");
+        state->current_tick = sd_script_get(frame, "d") + 1;
         return;
     }
 
