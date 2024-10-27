@@ -54,21 +54,34 @@ typedef struct {
     int num_fields;
 } struct_to_field;
 
+// clang-format off
 const field f_video[] = {
-    F_INT(settings_video, screen_w, 640),    F_INT(settings_video, screen_h, 400),
-    F_BOOL(settings_video, vsync, 0),        F_BOOL(settings_video, fullscreen, 0),
-    F_INT(settings_video, scaling, 0),       F_BOOL(settings_video, instant_console, 0),
+    F_INT(settings_video, screen_w, 640),
+    F_INT(settings_video, screen_h, 400),
+    F_BOOL(settings_video, vsync, 0),
+    F_BOOL(settings_video, fullscreen, 0),
+    F_INT(settings_video, scaling, 0),
+    F_BOOL(settings_video, instant_console, 0),
     F_BOOL(settings_video, crossfade_on, 1),
 };
 
-const field f_sound[] = {F_BOOL(settings_sound, music_mono, 0), F_INT(settings_sound, sound_vol, 5),
-                         F_INT(settings_sound, music_vol, 5), F_INT(settings_sound, music_frequency, 48000),
-                         F_INT(settings_sound, music_resampler, 1)};
+const field f_sound[] = {
+    F_BOOL(settings_sound, music_mono, 0),
+    F_INT(settings_sound, sound_vol, 5),
+    F_INT(settings_sound, music_vol, 5),
+    F_INT(settings_sound, music_frequency, 48000),
+    F_INT(settings_sound, music_resampler, 1)
+};
 
-const field f_gameplay[] = {F_INT(settings_gameplay, speed, 5),       F_INT(settings_gameplay, fight_mode, 0),
-                            F_INT(settings_gameplay, power1, 5),      F_INT(settings_gameplay, power2, 5),
-                            F_BOOL(settings_gameplay, hazards_on, 1), F_INT(settings_gameplay, difficulty, 1),
-                            F_INT(settings_gameplay, rounds, 1)};
+const field f_gameplay[] = {
+    F_INT(settings_gameplay, speed, 5),
+    F_INT(settings_gameplay, fight_mode, 0),
+    F_INT(settings_gameplay, power1, 5),
+    F_INT(settings_gameplay, power2, 5),
+    F_BOOL(settings_gameplay, hazards_on, 1),
+    F_INT(settings_gameplay, difficulty, 1),
+    F_INT(settings_gameplay, rounds, 1)
+};
 
 const field f_tournament[] = {
     F_STRING(settings_tournament, last_name, ""),
@@ -87,42 +100,61 @@ const field f_advanced[] = {
 
 const field f_keyboard[] = {
     // Player one
-    F_INT(settings_keyboard, ctrl_type1, CTRL_TYPE_KEYBOARD), F_STRING(settings_keyboard, joy_name1, "None"),
-    F_INT(settings_keyboard, joy_offset1, -1), F_STRING(settings_keyboard, key1_jump_up, "Up"),
-    F_STRING(settings_keyboard, key1_jump_right, "PageUp"), F_STRING(settings_keyboard, key1_walk_right, "Right"),
-    F_STRING(settings_keyboard, key1_duck_forward, "PageDown"), F_STRING(settings_keyboard, key1_duck, "Down"),
-    F_STRING(settings_keyboard, key1_duck_back, "End"), F_STRING(settings_keyboard, key1_walk_back, "Left"),
-    F_STRING(settings_keyboard, key1_jump_left, "Home"), F_STRING(settings_keyboard, key1_kick, "Right Shift"),
-    F_STRING(settings_keyboard, key1_punch, "Return"), F_STRING(settings_keyboard, key1_escape, "Escape"),
+    F_INT(settings_keyboard, ctrl_type1, CTRL_TYPE_KEYBOARD),
+    F_STRING(settings_keyboard, joy_name1, "None"),
+    F_INT(settings_keyboard, joy_offset1, -1),
+    F_STRING(settings_keyboard, key1_jump_up, "Up"),
+    F_STRING(settings_keyboard, key1_jump_right, "PageUp"),
+    F_STRING(settings_keyboard, key1_walk_right, "Right"),
+    F_STRING(settings_keyboard, key1_duck_forward, "PageDown"),
+    F_STRING(settings_keyboard, key1_duck, "Down"),
+    F_STRING(settings_keyboard, key1_duck_back, "End"),
+    F_STRING(settings_keyboard, key1_walk_back, "Left"),
+    F_STRING(settings_keyboard, key1_jump_left, "Home"),
+    F_STRING(settings_keyboard, key1_kick, "Right Shift"),
+    F_STRING(settings_keyboard, key1_punch, "Return"),
+    F_STRING(settings_keyboard, key1_escape, "Escape"),
 
     // Player two
-    F_INT(settings_keyboard, ctrl_type2, CTRL_TYPE_KEYBOARD), F_STRING(settings_keyboard, joy_name2, "None"),
-    F_INT(settings_keyboard, joy_offset2, -1), F_STRING(settings_keyboard, key2_jump_up, "W"),
-    F_STRING(settings_keyboard, key2_jump_right, "E"), F_STRING(settings_keyboard, key2_walk_right, "D"),
-    F_STRING(settings_keyboard, key2_duck_forward, "C"), F_STRING(settings_keyboard, key2_duck, "X"),
-    F_STRING(settings_keyboard, key2_duck_back, "Z"), F_STRING(settings_keyboard, key2_walk_back, "A"),
-    F_STRING(settings_keyboard, key2_jump_left, "Q"), F_STRING(settings_keyboard, key2_kick, "Left Shift"),
-    F_STRING(settings_keyboard, key2_punch, "Left Ctrl"), F_STRING(settings_keyboard, key2_escape, "Escape")};
+    F_INT(settings_keyboard, ctrl_type2, CTRL_TYPE_KEYBOARD),
+    F_STRING(settings_keyboard, joy_name2, "None"),
+    F_INT(settings_keyboard, joy_offset2, -1),
+    F_STRING(settings_keyboard, key2_jump_up, "W"),
+    F_STRING(settings_keyboard, key2_jump_right, "E"),
+    F_STRING(settings_keyboard, key2_walk_right, "D"),
+    F_STRING(settings_keyboard, key2_duck_forward, "C"),
+    F_STRING(settings_keyboard, key2_duck, "X"),
+    F_STRING(settings_keyboard, key2_duck_back, "Z"),
+    F_STRING(settings_keyboard, key2_walk_back, "A"),
+    F_STRING(settings_keyboard, key2_jump_left, "Q"),
+    F_STRING(settings_keyboard, key2_kick, "Left Shift"),
+    F_STRING(settings_keyboard, key2_punch, "Left Ctrl"),
+    F_STRING(settings_keyboard, key2_escape, "Escape")};
 
-const field f_net[] = {F_STRING(settings_network, net_connect_ip, "localhost"),
-                       F_STRING(settings_network, net_username, ""),
-                       F_STRING(settings_network, trace_file, NULL),
-                       F_INT(settings_network, net_connect_port, 2097),
-                       F_INT(settings_network, net_listen_port_start, 0),
-                       F_INT(settings_network, net_listen_port_end, 0),
-                       F_INT(settings_network, net_ext_port_start, 0),
-                       F_INT(settings_network, net_ext_port_end, 0),
-                       F_BOOL(settings_network, net_use_pmp, 1),
-                       F_BOOL(settings_network, net_use_upnp, 1)};
+const field f_net[] = {
+    F_STRING(settings_network, net_connect_ip, "localhost"),
+    F_STRING(settings_network, net_username, ""),
+    F_STRING(settings_network, trace_file, NULL),
+    F_INT(settings_network, net_connect_port, 2097),
+    F_INT(settings_network, net_listen_port_start, 0),
+    F_INT(settings_network, net_listen_port_end, 0),
+    F_INT(settings_network, net_ext_port_start, 0),
+    F_INT(settings_network, net_ext_port_end, 0),
+    F_BOOL(settings_network, net_use_pmp, 1),
+    F_BOOL(settings_network, net_use_upnp, 1)
+};
 
 // Map struct to field
-const struct_to_field struct_to_fields[] = {S_2_F(&_settings.video, f_video),
-                                            S_2_F(&_settings.sound, f_sound),
-                                            S_2_F(&_settings.gameplay, f_gameplay),
-                                            S_2_F(&_settings.tournament, f_tournament),
-                                            S_2_F(&_settings.advanced, f_advanced),
-                                            S_2_F(&_settings.keys, f_keyboard),
-                                            S_2_F(&_settings.net, f_net)};
+const struct_to_field struct_to_fields[] = {
+    S_2_F(&_settings.video, f_video),
+    S_2_F(&_settings.sound, f_sound),
+    S_2_F(&_settings.gameplay, f_gameplay),
+    S_2_F(&_settings.tournament, f_tournament),
+    S_2_F(&_settings.advanced, f_advanced),
+    S_2_F(&_settings.keys, f_keyboard),
+    S_2_F(&_settings.net, f_net)
+};
+// clang-format on
 
 int *fieldint(void *st, int offset) {
     return (int *)((char *)st + offset);
