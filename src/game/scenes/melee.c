@@ -512,6 +512,8 @@ static void render_pilot_select(melee_local *local, bool player2_is_selectable) 
     component_render(local->bar_agility[0]);
     component_render(local->bar_endurance[0]);
 
+    object_render(&local->player2_placeholder);
+
     if(player2_is_selectable) {
         // player 2 name
         text_render(&tconf_black, TEXT_DEFAULT, 320 - 66, 52, 66, 8, lang_get(20 + current_b));
@@ -534,8 +536,6 @@ static void render_pilot_select(melee_local *local, bool player2_is_selectable) 
         // 'choose your pilot'
         text_render(&tconf_green, TEXT_DEFAULT, 160, 97, 160, 8, lang_get(187));
     }
-
-    object_render(&local->player2_placeholder);
 
     // player 1 name
     text_render(&tconf_black, TEXT_DEFAULT, 0, 52, 66, 8, lang_get(20 + current_a));
