@@ -95,6 +95,8 @@ int sd_language_save(sd_language *language, const char *filename);
  */
 const sd_lang_string *sd_language_get(const sd_language *language, unsigned num);
 
+void sd_language_append(sd_language *language, const char *description, const char *data);
+
 #ifdef __cplusplus
 }
 #endif
