@@ -19,13 +19,18 @@ jobs:
   # -----------------------------------------------------------------------------------------------
   formatting-check:
     name: Formatting Check
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    env:
+      clang-format-version: '16'
     steps:
     - uses: actions/checkout@v4
+    - name: Install clang-format and fd-find
+      run: |
+        sudo apt-get update
+        sudo apt-get -y install clang-format-${{ env.clang-format-version }} fd-find
     - name: Run clang-format style check
-      uses: jidicula/clang-format-action@v4.13.0
-      with:
-        clang-format-version: '16'
+      run: |
+        fdfind . -e .c -e .h -X clang-format-${{ env.clang-format-version }} --dry-run --Werror
 
   # Run unittests on modern-ish versions of gcc and clang.
   # -----------------------------------------------------------------------------------------------
