@@ -68,9 +68,9 @@ void newsroom_fixup_str(newsroom_local *local) {
 
        1= Player1 - Crystal
        2= Player2 - Steffan
-       3= HAR1 - jaguar
-       4= HAR2 - shadow
-       5= Arena - Stadium. (DOS OMF always refers to the arena as Stadium)
+       3= HAR1 - Jaguar
+       4= HAR2 - Shadow
+       5= Arena - Stadium
        6= P1 Possessive pronoun - Her
        7= P1 Objective pronoun  - Her
        8= P1 Subjective pronoun - She
@@ -103,8 +103,7 @@ void newsroom_fixup_str(newsroom_local *local) {
     str_replace(&tmp, "~1", str_c(&local->pilot1), -1);
 
     str_free(&local->news_str);
-    str_from(&local->news_str, &tmp);
-    str_free(&tmp);
+    local->news_str = tmp;
 }
 
 void newsroom_set_names(newsroom_local *local, const char *pilot1, const char *pilot2, int har1, int har2, int sex1,
@@ -154,15 +153,16 @@ void newsroom_overlay_render(scene *scene) {
 
     // Render text
     if(str_size(&local->news_str) > 0) {
-        video_draw(&local->news_bg, 20, 140);
+        video_draw(&local->news_bg, 20, 131);
         text_settings tconf_yellow;
         text_defaults(&tconf_yellow);
-        tconf_yellow.font = FONT_SMALL;
+        tconf_yellow.font = FONT_BIG;
         tconf_yellow.cforeground = COLOR_YELLOW;
-        tconf_yellow.shadow = TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM;
+        tconf_yellow.shadow = TEXT_SHADOW_NONE;
         tconf_yellow.cshadow = 202;
         tconf_yellow.halign = TEXT_CENTER;
-        text_render(&tconf_yellow, TEXT_DEFAULT, 30, 150, 250, 6, str_c(&local->news_str));
+        tconf_yellow.lspacing = 1;
+        text_render(&tconf_yellow, TEXT_DEFAULT, 30, 140, 250, 6, str_c(&local->news_str));
     }
 
     // Dialog
@@ -296,7 +296,7 @@ int newsroom_create(scene *scene) {
     local->news_id = rand_int(24) * 2;
     local->screen = 0;
     local->champion = false;
-    menu_background_create(&local->news_bg, 280, 50);
+    menu_background_create(&local->news_bg, 280, 55);
 
     game_player *p1 = game_state_get_player(scene->gs, 0);
     game_player *p2 = game_state_get_player(scene->gs, 1);
