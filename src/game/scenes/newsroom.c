@@ -162,6 +162,7 @@ void newsroom_overlay_render(scene *scene) {
         tconf_yellow.cshadow = 202;
         tconf_yellow.halign = TEXT_CENTER;
         tconf_yellow.lspacing = 1;
+        tconf_yellow.max_lines = 4;
         text_render(&tconf_yellow, TEXT_DEFAULT, 30, 140, 250, 6, str_c(&local->news_str));
     }
 
