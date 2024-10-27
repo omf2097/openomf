@@ -590,7 +590,7 @@ void player_run(object *obj) {
         }
 
         // If UA is set, force other HAR to damage animation
-        if(sd_script_isset(frame, "ua") && enemy->cur_animation->id != 9 && enemy) {
+        if(sd_script_isset(frame, "ua") && enemy && enemy->cur_animation->id != 9) {
 
             DEBUG("my position %f, %f, their position %f %f", obj->pos.x, obj->pos.y, enemy->pos.x, enemy->pos.y);
             har_set_ani(enemy, 9, 0);
