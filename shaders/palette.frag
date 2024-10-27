@@ -28,7 +28,6 @@ vec4 handle(float index, float remap) {
 
 void main() {
     vec4 texel = texture(atlas, tex_coord);
-    vec4 remap = texture(remaps, vec2(texel.r, remap_offset / 18.0));
 
     // Don't render if it's transparent pixel
     int index = int(texel.r * 255.0);
@@ -43,7 +42,9 @@ void main() {
         texel.r = clamp(texel.r + offset, 0, limit);
     }
 
-    // If remapping is on, do it now. Bypass palette limit/offset.
+    vec4 remap = texture(remaps, vec2(texel.r, remap_offset / 18.0));
+
+    // If remapping is on, do it now.
     if (use_sprite_remap > 0u) {
         texel = remap;
     }
