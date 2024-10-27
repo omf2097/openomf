@@ -150,6 +150,7 @@ endif()
 
 # Build the game binary
 add_executable(openomf src/main.c src/engine.c ${ICON_RESOURCE})
+set_property(DIRECTORY ${CMAKE_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT openomf)
 
 # This is used to copy shader files from source directory to the binary output directory during compile.
 add_custom_target(
