@@ -7,6 +7,7 @@
 #include "utils/miscmath.h"
 #include "video/video.h"
 
+#include "game/utils/nat.h"
 #include "game/utils/settings.h"
 
 #include "game/gui/gui.h"
@@ -52,7 +53,6 @@ enum
     CHALLENGE_FLAG_REJECT = 1 << 1,
     CHALLENGE_FLAG_CANCEL = 1 << 2
 };
-
 
 typedef struct lobby_user_t {
     char name[16];
@@ -465,6 +465,10 @@ void lobby_refresh(component *c, void *userdata) {
 
 void lobby_do_exit(component *c, void *userdata) {
     scene *scene = userdata;
+    lobby_local *local = scene_get_userdata(scene);
+    nat_free((nat_ctx *)local->peer->data);
+    omf_free(local->peer->data);
+
     game_state_set_next(scene->gs, SCENE_MENU);
 }
 
@@ -480,6 +484,7 @@ void lobby_entered_name(component *c, void *userdata) {
     if(strlen(textinput_value(c))) {
         scene *scene = userdata;
         lobby_local *local = scene_get_userdata(scene);
+        // TODO consult the settings for a port to use, or default to 0
 
         local->client = enet_host_create(NULL /* create a client host */, 2 /* only allow 2 outgoing connections */,
                                          2 /* allow up 2 channels to be used, 0 and 1 */,
@@ -491,8 +496,9 @@ void lobby_entered_name(component *c, void *userdata) {
         ENetPeer *peer = NULL;
         if(local->client == NULL) {
             DEBUG("An error occurred while trying to create an ENet client host.\n");
+            return;
         }
-        //enet_address_set_host(&address, "45.79.158.117");
+        // enet_address_set_host(&address, "45.79.158.117");
         enet_address_set_host(&address, "127.0.0.1");
         address.port = 2098;
         DEBUG("server address is %d", address.host);
@@ -509,7 +515,19 @@ void lobby_entered_name(component *c, void *userdata) {
             DEBUG("local peer connect id %d", local->peer->connectID);
             DEBUG("remote peer connect id %d", event.peer->connectID);
 
-            event.peer->data = "Client information";
+            struct sockaddr_in sin;
+            socklen_t len = sizeof(sin);
+            nat_ctx *nat = omf_calloc(1, sizeof(nat_ctx));
+            // TODO only do this if the bind port was 0
+            if(getsockname(local->client->socket, (struct sockaddr *)&sin, &len) == -1) {
+                DEBUG("unable to determine local port");
+            } else {
+                nat_create(nat, ntohs(sin.sin_port));
+            }
+
+            DEBUG("local port is %d", ntohs(sin.sin_port));
+
+            event.peer->data = nat;
             strncpy(local->name, textinput_value(c), sizeof(local->name));
 
             char version[15];
@@ -519,6 +537,12 @@ void lobby_entered_name(component *c, void *userdata) {
             serial ser;
             serial_create(&ser);
             serial_write_int8(&ser, PACKET_JOIN << 4);
+            // if we mapped an external port, send it to the server
+            if(nat->type != NAT_TYPE_NONE) {
+                serial_write_int16(&ser, nat->ext_port);
+            } else {
+                serial_write_int16(&ser, 0);
+            }
             serial_write_int8(&ser, strlen(version));
             serial_write(&ser, version, strlen(version));
             char *name = textinput_value(c);
@@ -642,7 +666,7 @@ void lobby_tick(scene *scene, int paused) {
                 DEBUG("A new client connected from %x:%u.", event.peer->address.host, event.peer->address.port);
 
                 /* Store any relevant client information here. */
-                event.peer->data = "Client information";
+                event.peer->data = NULL;
                 DEBUG("new peer was %d, server peer was %d, opponent peer was %d", event.peer, local->peer,
                       local->opponent_peer);
 
@@ -657,14 +681,12 @@ void lobby_tick(scene *scene, int paused) {
 
                     enet_peer_send(local->opponent_peer, 0, packet);
 
-
                     // signal the server we're connected
                     serial_create(&ser);
                     serial_write_int8(&ser, PACKET_CONNECTED << 4);
                     packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
                     enet_peer_send(local->peer, 0, packet);
                     serial_free(&ser);
-
 
                     controller *player1_ctrl, *player2_ctrl;
                     keyboard_keys *keys;
@@ -722,8 +744,8 @@ void lobby_tick(scene *scene, int paused) {
 
                 serial_create_from(&ser, (const char *)event.packet->data, event.packet->dataLength);
                 uint8_t control_byte = serial_read_int8(&ser);
-                DEBUG("A packet of length %u with control byte %d was received from %s on channel %u.",
-                      event.packet->dataLength, control_byte, (char *)event.peer->data, event.channelID);
+                DEBUG("A packet of length %u with control byte %d was received on channel %u.",
+                      event.packet->dataLength, control_byte, event.channelID);
                 switch(control_byte >> 4) {
                     case PACKET_PRESENCE: {
                         lobby_user user;
@@ -770,10 +792,10 @@ void lobby_tick(scene *scene, int paused) {
                             // signal the server we're connected
                             serial_create(&ser);
                             serial_write_int8(&ser, PACKET_CONNECTED << 4);
-                            ENetPacket *packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
+                            ENetPacket *packet =
+                                enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
                             enet_peer_send(local->peer, 0, packet);
                             serial_free(&ser);
-
 
                             controller *player1_ctrl, *player2_ctrl;
                             keyboard_keys *keys;
@@ -957,13 +979,11 @@ void lobby_tick(scene *scene, int paused) {
 
                 break;
             case ENET_EVENT_TYPE_DISCONNECT:
-                DEBUG("%s disconnected.\n", (char *)event.peer->data);
 
                 if(event.peer == local->opponent_peer) {
                     local->connection_count++;
                     DEBUG("outbound peer connection failed");
                     local->opponent_peer = NULL;
-
 
                     if(local->connection_count < 2) {
                         // signal the server we failed to connect first time
@@ -986,7 +1006,13 @@ void lobby_tick(scene *scene, int paused) {
 
                 /* Reset the peer's client information. */
 
-                event.peer->data = NULL;
+                if(event.peer && local->peer == event.peer && event.peer->data) {
+                    nat_free((nat_ctx *)event.peer->data);
+                    omf_free(event.peer->data);
+                    game_state_set_next(gs, SCENE_MENU);
+                }
+
+                // event.peer->data = NULL;
         }
     }
     local->active_user = min2(local->active_user, list_size(&local->users) - 1);
@@ -1025,7 +1051,6 @@ int lobby_create(scene *scene) {
     // Initialize local struct
     local = omf_calloc(1, sizeof(lobby_local));
     scene_set_userdata(scene, local);
-
 
     local->name[0] = 0;
     local->mode = LOBBY_STARTING;
@@ -1085,13 +1110,11 @@ int lobby_create(scene *scene) {
     }
     reconfigure_controller(scene->gs);
 
-
     local->frame = guiframe_create(9, 132, 300, 12);
     guiframe_set_root(local->frame, menu);
     guiframe_layout(local->frame);
 
-
-    if (local->mode == LOBBY_STARTING) {
+    if(local->mode == LOBBY_STARTING) {
 
         component *name_menu = menu_create(11);
         menu_set_horizontal(name_menu, true);
