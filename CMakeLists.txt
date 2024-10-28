@@ -78,6 +78,10 @@ find_package(argtable2)
 find_package(Argtable3 CONFIG)
 find_package(PNG)
 find_package(ZLIB)
+find_package(miniupnpc)
+find_package(natpmp)
+
+
 
 # Check functions and generate platform configuration file
 check_symbol_exists(strdup "string.h" HAVE_STD_STRDUP)
@@ -127,6 +131,24 @@ elseif(Argtable3_FOUND)
   add_compile_definitions(ARGTABLE3_FOUND)
 else()
   message(FATAL_ERROR "Neither argtable2 or argtable3 was found")
+endif()
+
+if(ARGTABLE2_FOUND)
+  set(CORELIBS ${CORELIBS} ${ARGTABLE2_LIBRARY})
+elseif(ARGTABLE3_FOUND)
+  set(CORELIBS ${CORELIBS} ${ARGTABLE3_LIBRARY})
+endif()
+
+if(MINIUPNPC_FOUND)
+    set(CORELIBS ${CORELIBS} ${MINIUPNPC_LIBRARY})
+    set(COREINCS ${COREINCS} ${MINIUPNPC_INCLUDE_DIR})
+    add_compile_definitions(MINIUPNPC_FOUND)
+endif()
+
+if(NATPMP_FOUND)
+    set(CORELIBS ${CORELIBS} ${NATPMP_LIBRARY})
+    set(COREINCS ${COREINCS} ${NATPMP_INCLUDE_DIR})
+    add_compile_definitions(NATPMP_FOUND)
 endif()
 
 # MingW build should add mingw32 lib

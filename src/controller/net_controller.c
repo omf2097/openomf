@@ -365,7 +365,6 @@ ENetHost *net_controller_get_host(controller *ctrl) {
     return data->host;
 }
 
-
 bool net_controller_ready(controller *ctrl) {
     wtf *data = ctrl->data;
     return data->synchronized;
