@@ -39,6 +39,7 @@ typedef struct {
     void *userdata;
     menu_free_cb free;
     menu_tick_cb tick;
+    text_object text_cache[1];
 } menu;
 
 component *menu_create(int obj_h);
@@ -63,5 +64,6 @@ void menu_set_help_pos(component *c, int x, int y, int h, int w);
 void menu_set_help_text_settings(component *c, text_settings *settings);
 void menu_set_margin_top(component *c, int margin);
 void menu_set_padding(component *c, int padding);
+void menu_invalidate_help_text_cache(component *c);
 
 #endif // MENU_H

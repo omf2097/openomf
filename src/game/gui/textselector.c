@@ -19,6 +19,7 @@ typedef struct {
 
     void *userdata;
     textselector_toggle_cb toggle;
+    text_object text_cache[1];
 } textselector;
 
 void textselector_clear_options(component *c) {
@@ -74,7 +75,7 @@ static void textselector_render(component *c) {
     } else if(component_is_disabled(c)) {
         mode = TEXT_DISABLED;
     }
-    text_render_str(&tb->tconf, mode, c->x, c->y, c->w, c->h, &buf);
+    text_render(&(tb->text_cache[0]), &tb->tconf, mode, c->x, c->y, c->w, c->h, str_c(&buf));
     str_free(&buf);
 }
 
@@ -139,6 +140,7 @@ void textselector_set_pos(component *c, int pos) {
 static void textselector_free(component *c) {
     textselector *tb = widget_get_obj(c);
     textselector_clear_options(c);
+    text_objects_free(tb->text_cache, (sizeof(tb->text_cache) / sizeof(tb->text_cache[0])));
     vector_free(&tb->options);
     omf_free(tb->text);
     omf_free(tb);

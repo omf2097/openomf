@@ -208,7 +208,7 @@ void console_output_render(void) {
             lines++;
         } else {
             // TODO add word wrapping?
-            text_render_char(&tconf, TEXT_DEFAULT, x, y + con->y_pos - 100, c);
+            text_render_char_uncached(&tconf, TEXT_DEFAULT, x, y + con->y_pos - 100, c, false);
             x += font_small.w;
         }
     }
@@ -324,6 +324,11 @@ void console_event(game_state *gs, SDL_Event *e) {
 }
 
 void console_render(void) {
+    if (con == NULL) {
+        return;
+    }
+
+    static text_object text_cache[2] = {0};
     if(con->y_pos > 0) {
         if(con->hist_pos != -1 && con->hist_pos_changed) {
             const char *input = list_get(&con->history, con->hist_pos);
@@ -342,11 +347,11 @@ void console_render(void) {
         tconf.font = FONT_SMALL;
         // input line
         tconf.cforeground = TEXT_MEDIUM_GREEN;
-        text_render_str(&tconf, TEXT_DEFAULT, 0, con->y_pos - 7, 300, 6, &con->input);
+        text_render(&text_cache[0], &tconf, TEXT_DEFAULT, 0, con->y_pos - 7, 300, 6, con->input);
 
         // cursor
         tconf.cforeground = TEXT_BLINKY_GREEN;
-        text_render(&tconf, TEXT_DEFAULT, str_size(&con->input) * font_small.w, con->y_pos - 7, 6, 6, CURSOR_STR);
+        text_render(&text_cache[1], &tconf, TEXT_DEFAULT, strlen(con->input) * font_small.w, con->y_pos - 7, 6, 6, CURSOR_STR);
         console_output_render();
     }
 }

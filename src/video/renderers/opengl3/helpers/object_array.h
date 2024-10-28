@@ -1,6 +1,8 @@
 #ifndef OBJECT_ARRAY_H
 #define OBJECT_ARRAY_H
 
+#include <epoxy/gl.h>
+
 #include "video/enums.h"
 #include <epoxy/gl.h>
 

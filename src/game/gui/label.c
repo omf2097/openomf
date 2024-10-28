@@ -6,15 +6,17 @@
 typedef struct {
     char *text;
     text_settings tconf;
+    text_object text_cache[1];
 } label;
 
 static void label_render(component *c) {
     label *local = widget_get_obj(c);
-    text_render(&local->tconf, TEXT_DEFAULT, c->x, c->y, c->w, c->h, local->text);
+    text_render(&(local->text_cache[0]), &local->tconf, TEXT_DEFAULT, c->x, c->y, c->w, c->h, local->text);
 }
 
 static void label_free(component *c) {
     label *local = widget_get_obj(c);
+    text_objects_free(local->text_cache, 1);
     omf_free(local->text);
     omf_free(local);
 }
@@ -45,7 +47,7 @@ component *label_create_with_width(const text_settings *tconf, const char *text,
 
     int tsize = text_char_width(tconf);
     int longest = 0;
-    int h = text_find_line_count(tconf, max_width / tsize, 0, strlen(text), text, &longest);
+    int h = text_find_line_count(tconf, max_width / tsize, 0, text, &longest);
 
     // fonts are all 8 high?
     component_set_size_hints(c, longest * tsize, h * 8);
@@ -55,7 +57,7 @@ component *label_create_with_width(const text_settings *tconf, const char *text,
     widget_set_obj(c, local);
     widget_set_render_cb(c, label_render);
     widget_set_free_cb(c, label_free);
-
+    //local->text_cache[0].dynamic = true;
     return c;
 }
 

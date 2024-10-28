@@ -31,7 +31,7 @@ void test_text_find_max_strlen(void) {
 
 // to simplify tests, pass in full string length
 static int text_find_line_count_(const text_settings *settings, int cols, int rows, const char *text, int *longest) {
-    return text_find_line_count(settings, cols, rows, strlen(text), text, longest);
+    return text_find_line_count(settings, cols, rows, text, longest);
 }
 
 void test_text_find_line_count(void) {
@@ -40,9 +40,9 @@ void test_text_find_line_count(void) {
     int longest = 0;
     tconf.strip_trailing_whitespace = false;
     // word is broken in half because there are no spaces
-    CU_ASSERT(text_find_line_count(&tconf, 5, 5, strlen("AAAAAAAAA"), "AAAAAAAAA", &longest) == 2);
+    CU_ASSERT(text_find_line_count(&tconf, 5, 5, "AAAAAAAAA", &longest) == 1);
     CU_ASSERT_EQUAL(5, longest);
-    CU_ASSERT(text_find_line_count(&tconf, 5, 5, 11, "AAA AAA AAA", &longest) == 3);
+    CU_ASSERT(text_find_line_count(&tconf, 5, 5, "AAA AAA AAA", &longest) == 3);
     CU_ASSERT_EQUAL(4, longest);
 }
 

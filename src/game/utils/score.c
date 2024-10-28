@@ -20,6 +20,7 @@ typedef struct score_text {
     vec2i start;
     int points;
     int age;
+    text_object text_cache[1];
 } score_text;
 
 float std_multipliers[] = {
@@ -50,6 +51,8 @@ vec2i interpolate(vec2i start, vec2i end, float fraction) {
 }
 
 void chr_score_create(chr_score *score) {
+    score->text_cache[0].dynamic = true;
+    score->text_cache[1].dynamic = true;
     score->difficulty = 0; // will be set later
     score->x = 0;
     score->y = 0;
@@ -85,6 +88,7 @@ void chr_score_reset(chr_score *score, bool wipe) {
     score->destruction = false;
     list_iter_begin(&score->texts, &it);
     while((t = iter_next(&it)) != NULL) {
+        text_objects_free(t->text_cache, 1);
         omf_free(t->text);
         list_delete(&score->texts, &it);
     }
@@ -112,8 +116,10 @@ void chr_score_free(chr_score *score) {
     iterator it;
     score_text *t;
 
+    text_objects_free(score->text_cache, (sizeof(score->text_cache) / sizeof(score->text_cache[0])));
     list_iter_begin(&score->texts, &it);
     while((t = iter_next(&it)) != NULL) {
+        text_objects_free(t->text_cache, 1);
         omf_free(t->text);
     }
     list_free(&score->texts);
@@ -154,10 +160,12 @@ void chr_score_render(chr_score *score, bool render_total_points) {
         score_format(score->score, tmp, 50);
 
         if(score->direction == OBJECT_FACE_RIGHT) {
-            text_render(&tconf_score, TEXT_DEFAULT, score->x, score->y, 200, 6, tmp);
+            score->text_cache[0].dirty = true;
+            text_render(&(score->text_cache[0]), &tconf_score, TEXT_DEFAULT, score->x, score->y, 200, 6, tmp);
         } else {
             int s2len = strlen(tmp) * font_small.w;
-            text_render(&tconf_score, TEXT_DEFAULT, score->x - s2len, score->y, 200, 6, tmp);
+            score->text_cache[0].dirty = true;
+            text_render(&(score->text_cache[1]), &tconf_score, TEXT_DEFAULT, score->x - s2len, score->y, 200, 6, tmp);
         }
     }
 
@@ -177,7 +185,8 @@ void chr_score_render(chr_score *score, bool render_total_points) {
             pos =
                 interpolate(vec2i_create(score->x - (strlen(t->text) * font_small.w), score->y), t->start, t->position);
         }
-        text_render(&tconf_score, TEXT_DEFAULT, pos.x, pos.y, 200, 6, t->text);
+        text_render(t->text_cache, &tconf_score, TEXT_DEFAULT, pos.x, pos.y, 200, 6, t->text);
+        assert(t->text_cache->dynamic == true);
         lastage = t->age;
     }
 }
@@ -193,6 +202,8 @@ void chr_score_add(chr_score *score, char *text, int points, vec2i pos, float po
     s.start.x -= ((strlen(s.text) * font_small.w) / 2);
     s.position = position;
     s.age = 0;
+    memset(&(s.text_cache[0]), 0, sizeof(s.text_cache));
+    s.text_cache[0].dynamic = true;
 
     list_append(&score->texts, &s, sizeof(score_text));
 }
@@ -304,12 +315,18 @@ int chr_score_end_combo(chr_score *score, vec2i pos) {
 int chr_score_clone(chr_score *src, chr_score *dst) {
     iterator it;
     score_text *t;
+    assert(src != dst);
     memcpy(dst, src, sizeof(chr_score));
+    memset(dst->text_cache, 0, sizeof(dst->text_cache));
+    dst->text_cache[0].dynamic = true;
+    dst->text_cache[1].dynamic = true;
     list_create(&dst->texts);
     list_iter_begin(&src->texts, &it);
     while((t = iter_next(&it)) != NULL) {
         score_text t2;
         memcpy(&t2, t, sizeof(score_text));
+        memset(&(t2.text_cache), 0, sizeof(t2.text_cache));
+        t2.text_cache->dynamic = true;
         t2.text = omf_strdup(t->text);
         list_append(&dst->texts, &t2, sizeof(score_text));
     }

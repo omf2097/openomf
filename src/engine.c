@@ -162,6 +162,7 @@ void engine_run(engine_init_flags *init_flags) {
             // Handle other events
             switch(e.type) {
                 case SDL_QUIT:
+                    assert(false);
                     run = 0;
                     break;
                 case SDL_KEYDOWN:

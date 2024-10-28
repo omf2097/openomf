@@ -27,6 +27,7 @@ typedef struct {
 
     textinput_done_cb done_cb;
     void *userdata;
+    text_object text_cache[3];
 } textinput;
 
 static void textinput_render(component *c) {
@@ -52,16 +53,16 @@ static void textinput_render(component *c) {
             int xspace = c->w - tb->tconf.padding.left - tb->tconf.padding.right;
             start_x += ceilf((xspace - tmp_s) / 2.0f);
             tb->tconf.halign = TEXT_LEFT;
-            text_render(&tb->tconf, TEXT_DEFAULT, start_x + offset, c->y, c->w, c->h, "\x7F");
+            text_render(&tb->text_cache[0], &tb->tconf, TEXT_DEFAULT, start_x + offset, c->y, c->w, c->h, "\x7F");
             tb->tconf.halign = TEXT_CENTER;
         } else {
-            text_render(&tb->tconf, TEXT_DEFAULT, start_x + offset, c->y, c->w, c->h, "\x7F");
+            text_render(&tb->text_cache[1], &tb->tconf, TEXT_DEFAULT, start_x + offset, c->y, c->w, c->h, "\x7F");
         }
     } else if(component_is_disabled(c)) {
         mode = TEXT_DISABLED;
     }
 
-    text_render_str(&tb->tconf, mode, c->x, c->y, c->w, c->h, &tb->text);
+    text_render(&tb->text_cache[2], &tb->tconf, mode, c->x, c->y, c->w, c->h, str_c(&tb->text));
 }
 
 // Start from ' '. Support 0-9, ' ', and A-Z.
@@ -212,6 +213,7 @@ static void textinput_free(component *c) {
     textinput *tb = widget_get_obj(c);
     surface_free(&tb->sur);
     str_free(&tb->text);
+    text_objects_free(tb->text_cache, (sizeof(tb->text_cache) / sizeof(tb->text_cache[0])));
     omf_free(tb);
 }
 
@@ -262,5 +264,8 @@ component *textinput_create(const text_settings *tconf, int max_chars, const cha
     widget_set_action_cb(c, textinput_action);
     widget_set_tick_cb(c, textinput_tick);
     widget_set_free_cb(c, textinput_free);
+    tb->text_cache[0].dynamic = true;
+    tb->text_cache[1].dynamic = true;
+    tb->text_cache[2].dynamic = true;
     return c;
 }

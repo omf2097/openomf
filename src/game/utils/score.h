@@ -35,6 +35,7 @@ typedef struct chr_score_t {
     bool done;
     bool scrap;
     bool destruction;
+    text_object text_cache[2];
 } chr_score;
 
 void chr_score_create(chr_score *score);

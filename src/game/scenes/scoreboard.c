@@ -27,6 +27,7 @@ typedef struct scoreboard_local_t {
     int page;
     component *ti;
     guiframe *frame;
+    text_object text_cache[22];
 } scoreboard_local;
 
 void scoreboard_free(scene *scene) {
@@ -130,7 +131,7 @@ void scoreboard_render_overlay(scene *scene) {
     // Header text
     snprintf(row, sizeof(row), "SCOREBOARD - %s", round_get_name(local->page));
     int title_x = 62 + (local->page == 0 ? 8 : 0);
-    text_render(&big_text, TEXT_DEFAULT, title_x, 5, 200, 6, row);
+    text_render(&(local->text_cache[0]), &big_text, TEXT_DEFAULT, title_x, 5, 200, 6, row);
 
     text_settings small_text;
     text_defaults(&small_text);
@@ -138,7 +139,7 @@ void scoreboard_render_overlay(scene *scene) {
 
     // Column names
     snprintf(row, sizeof(row), score_row_format, "PLAYER NAME", "ROBOT", "PILOT", "SCORE");
-    text_render(&small_text, TEXT_DEFAULT, 20, 20, 290, 6, row);
+    text_render(&(local->text_cache[1]), &small_text, TEXT_DEFAULT, 20, 20, 290, 6, row);
 
     // Scores information
     unsigned int score, har_id, pilot_id;
@@ -169,7 +170,7 @@ void scoreboard_render_overlay(scene *scene) {
             }
             entry++;
         }
-        text_render(&small_text, TEXT_DEFAULT, 20, 30 + r * 8, 290, 6, row);
+        text_render(&(local->text_cache[r + 2]), &small_text, TEXT_DEFAULT, 20, 30 + r * 8, 290, 6, row);
     }
 }
 

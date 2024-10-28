@@ -19,6 +19,7 @@ typedef struct {
 
     textbutton_click_cb click_cb;
     void *userdata;
+    text_object text_cache[1];
 } textbutton;
 
 void textbutton_set_border(component *c, uint8_t color) {
@@ -60,7 +61,7 @@ static void textbutton_render(component *c) {
         video_draw(&tb->border, c->x - 2, c->y - 2);
     }
 
-    text_render(&tb->tconf, text_mode, c->x, c->y, c->w, c->h, tb->text);
+    text_render(&(tb->text_cache[0]), &tb->tconf, text_mode, c->x, c->y, c->w, c->h, tb->text);
 }
 
 static int textbutton_action(component *c, int action) {
@@ -84,6 +85,7 @@ void textbutton_set_userdata(component *c, void *userdata) {
 
 static void textbutton_free(component *c) {
     textbutton *tb = widget_get_obj(c);
+    text_objects_free(tb->text_cache, 1);
     if(tb->border_created) {
         surface_free(&tb->border);
     }
@@ -108,6 +110,6 @@ component *textbutton_create(const text_settings *tconf, const char *text, const
     widget_set_render_cb(c, textbutton_render);
     widget_set_action_cb(c, textbutton_action);
     widget_set_free_cb(c, textbutton_free);
-
+    tb->text_cache[0].dynamic = true;
     return c;
 }

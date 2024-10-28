@@ -110,7 +110,10 @@ static void menu_render(component *c) {
             if(m->help_bg2) {
                 video_draw(m->help_bg2, m->help_x - 8, m->help_y - 8);
             }
-            text_render(&m->help_text_conf, TEXT_DEFAULT, m->help_x, m->help_y, m->help_w, m->help_h, (*tmp)->help);
+            // TODO: The text_cache should move into inner component. In this case the one of the s->objs.
+            // Right now it will get invalidated on every render. For help text it usually doesn't matter because there is
+            // usually only 1 help text on the screen per time.
+            text_render(&(m->text_cache[0]), &m->help_text_conf, TEXT_DEFAULT, m->help_x, m->help_y, m->help_w, m->help_h, (*tmp)->help);
         }
         i++;
     }
@@ -376,6 +379,7 @@ void menu_set_help_text_settings(component *c, text_settings *settings) {
 
 static void menu_free(component *c) {
     menu *m = sizer_get_obj(c);
+    text_objects_free(m->text_cache, 1);
     if(m->bg1) {
         surface_free(m->bg1);
         omf_free(m->bg1);
@@ -417,6 +421,11 @@ void menu_set_margin_top(component *c, int margin) {
 void menu_set_padding(component *c, int padding) {
     menu *m = sizer_get_obj(c);
     m->padding = padding;
+}
+
+void menu_invalidate_help_text_cache(component *c) {
+    menu *m = sizer_get_obj(c);
+    m->text_cache->dirty = true;
 }
 
 component *menu_create(int obj_h) {
