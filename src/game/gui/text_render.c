@@ -227,6 +227,7 @@ void text_render(const text_settings *settings, text_mode mode, int x, int y, in
     int ptr = 0;
     int line = 0;
     while(ptr < len && line < fit_lines) {
+        int advance;
         int line_len;
         int mx = 0;
         int my = 0;
@@ -240,6 +241,7 @@ void text_render(const text_settings *settings, text_mode mode, int x, int y, in
             line_len = text_find_max_strlen(settings, cols, text + ptr);
         else
             line_len = text_find_max_strlen(settings, rows, text + ptr);
+        advance = line_len;
 
         // If line ends in linebreak, skip it from calculation.
         if(text[ptr + line_len - 1] == '\n') {
@@ -317,7 +319,7 @@ void text_render(const text_settings *settings, text_mode mode, int x, int y, in
             }
         }
 
-        ptr += line_len;
+        ptr += advance;
         line++;
     }
 }
