@@ -62,6 +62,24 @@ char const *pronoun_strip(char const *pronoun, char *buf, size_t buf_size) {
     return buf;
 }
 
+static void newsroom_fixup_capitalization(str *tmp) {
+    // XXX non-const str_c variant?
+    char *it = (char *)str_c(tmp);
+    while(it && *it) {
+        unsigned char c = *it;
+        // XXX undone: capitalization outside of ASCII range
+        if(c < 0x7F)
+            // capitalize the letter
+            *it = toupper(c);
+
+        // find next char that has two spaces in front
+        it = strstr(it + 1, "  ");
+        if(it == NULL)
+            return;
+        it += 2;
+    }
+}
+
 void newsroom_fixup_str(newsroom_local *local) {
     /*
      * Substitution table
@@ -101,6 +119,8 @@ void newsroom_fixup_str(newsroom_local *local) {
     str_replace(&tmp, "~3", pronoun_strip(lang_get(local->har1 + NEWSROOM_HAR), scratch, sizeof scratch), -1);
     str_replace(&tmp, "~2", str_c(&local->pilot2), -1);
     str_replace(&tmp, "~1", str_c(&local->pilot1), -1);
+
+    newsroom_fixup_capitalization(&tmp);
 
     str_free(&local->news_str);
     local->news_str = tmp;
