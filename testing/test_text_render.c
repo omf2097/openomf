@@ -38,7 +38,8 @@ void test_text_find_line_count(void) {
     text_settings tconf;
     text_defaults(&tconf);
     tconf.strip_trailing_whitespace = false;
-    CU_ASSERT(text_find_line_count(&tconf, 5, 5, strlen("AAAAAAAAA"), "AAAAAAAAA") == 1);
+    // word is broken in half because there are no spaces
+    CU_ASSERT(text_find_line_count(&tconf, 5, 5, strlen("AAAAAAAAA"), "AAAAAAAAA") == 2);
     CU_ASSERT(text_find_line_count(&tconf, 5, 5, 11, "AAA AAA AAA") == 3);
 }
 
