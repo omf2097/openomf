@@ -13,4 +13,8 @@ void net_controller_har_hook(int action, void *cb_data);
 bool net_controller_ready(controller *ctrl);
 int net_controller_tick_offset(controller *ctrl);
 
+ENetPeer *net_controller_get_lobby_connection(controller *ctrl);
+
+ENetHost *net_controller_get_host(controller *ctrl);
+
 #endif // NET_CONTROLLER_H

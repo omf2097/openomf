@@ -355,6 +355,17 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
     return 0;
 }
 
+ENetPeer *net_controller_get_lobby_connection(controller *ctrl) {
+    wtf *data = ctrl->data;
+    return data->lobby;
+}
+
+ENetHost *net_controller_get_host(controller *ctrl) {
+    wtf *data = ctrl->data;
+    return data->host;
+}
+
+
 bool net_controller_ready(controller *ctrl) {
     wtf *data = ctrl->data;
     return data->synchronized;
@@ -408,7 +419,7 @@ void net_controller_free(controller *ctrl) {
         }
     }
 done:
-    if(data->host) {
+    if(data->host && !data->lobby) {
         enet_host_destroy(data->host);
         data->host = NULL;
     }

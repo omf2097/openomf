@@ -42,6 +42,7 @@ enum
     PACKET_CHALLENGE,
     PACKET_DISCONNECT,
     PACKET_PRESENCE,
+    PACKET_CONNECTED,
     PACKET_COUNT
 };
 
@@ -51,6 +52,7 @@ enum
     CHALLENGE_FLAG_REJECT = 1 << 1,
     CHALLENGE_FLAG_CANCEL = 1 << 2
 };
+
 
 typedef struct lobby_user_t {
     char name[16];
@@ -490,7 +492,8 @@ void lobby_entered_name(component *c, void *userdata) {
         if(local->client == NULL) {
             DEBUG("An error occurred while trying to create an ENet client host.\n");
         }
-        enet_address_set_host(&address, "45.79.158.117");
+        //enet_address_set_host(&address, "45.79.158.117");
+        enet_address_set_host(&address, "127.0.0.1");
         address.port = 2098;
         DEBUG("server address is %d", address.host);
         /* Initiate the connection, allocating the two channels 0 and 1. */
@@ -654,10 +657,20 @@ void lobby_tick(scene *scene, int paused) {
 
                     enet_peer_send(local->opponent_peer, 0, packet);
 
+
+                    // signal the server we're connected
+                    serial_create(&ser);
+                    serial_write_int8(&ser, PACKET_CONNECTED << 4);
+                    packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
+                    enet_peer_send(local->peer, 0, packet);
+                    serial_free(&ser);
+
+
                     controller *player1_ctrl, *player2_ctrl;
                     keyboard_keys *keys;
                     game_player *p1 = game_state_get_player(gs, 0);
                     game_player *p2 = game_state_get_player(gs, 1);
+                    gs->net_mode = NET_MODE_LOBBY;
 
                     // force the speed to 3
                     game_state_set_speed(gs, 10);
@@ -754,10 +767,19 @@ void lobby_tick(scene *scene, int paused) {
                             DEBUG("connected to peer inbound!");
                             local->opponent_peer = event.peer;
 
+                            // signal the server we're connected
+                            serial_create(&ser);
+                            serial_write_int8(&ser, PACKET_CONNECTED << 4);
+                            ENetPacket *packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
+                            enet_peer_send(local->peer, 0, packet);
+                            serial_free(&ser);
+
+
                             controller *player1_ctrl, *player2_ctrl;
                             keyboard_keys *keys;
                             game_player *p1 = game_state_get_player(gs, 0);
                             game_player *p2 = game_state_get_player(gs, 1);
+                            gs->net_mode = NET_MODE_LOBBY;
 
                             // force the speed to 3
                             game_state_set_speed(gs, 10);
@@ -941,8 +963,24 @@ void lobby_tick(scene *scene, int paused) {
                     local->connection_count++;
                     DEBUG("outbound peer connection failed");
                     local->opponent_peer = NULL;
+
+
                     if(local->connection_count < 2) {
+                        // signal the server we failed to connect first time
+                        serial_create(&ser);
+                        serial_write_int8(&ser, PACKET_CONNECTED << 4 | 1);
+                        ENetPacket *packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
+                        enet_peer_send(local->peer, 0, packet);
+                        serial_free(&ser);
+
                         ticktimer_add(&scene->tick_timer, 150, lobby_try_connect, NULL);
+                    } else {
+                        // signal the server we failed to connect second time
+                        serial_create(&ser);
+                        serial_write_int8(&ser, PACKET_CONNECTED << 4 | 2);
+                        ENetPacket *packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
+                        enet_peer_send(local->peer, 0, packet);
+                        serial_free(&ser);
                     }
                 }
 
@@ -988,6 +1026,7 @@ int lobby_create(scene *scene) {
     local = omf_calloc(1, sizeof(lobby_local));
     scene_set_userdata(scene, local);
 
+
     local->name[0] = 0;
     local->mode = LOBBY_STARTING;
     list_create(&local->log);
@@ -1026,25 +1065,52 @@ int lobby_create(scene *scene) {
                 textbutton_create(&tconf, "Refresh", "Refresh the player list.", COM_ENABLED, lobby_refresh, scene));
     menu_attach(menu, textbutton_create(&tconf, "Exit", "Exit and disconnect.", COM_ENABLED, lobby_exit, scene));
 
-    component *name_menu = menu_create(11);
-    menu_set_horizontal(name_menu, true);
-    menu_set_background(name_menu, false);
-    menu_set_margin_top(menu, 0);
-    menu_set_padding(menu, 6);
+    // check if there's already a net controller provisioned
+    // and harvest the information from it, if possible
+    if(game_state_get_player(scene->gs, 0)->ctrl->type == CTRL_TYPE_NETWORK) {
+        local->peer = net_controller_get_lobby_connection(game_state_get_player(scene->gs, 0)->ctrl);
+        local->client = net_controller_get_host(game_state_get_player(scene->gs, 0)->ctrl);
+        local->mode = LOBBY_MAIN;
+    } else if(game_state_get_player(scene->gs, 1)->ctrl->type == CTRL_TYPE_NETWORK) {
+        local->peer = net_controller_get_lobby_connection(game_state_get_player(scene->gs, 1)->ctrl);
+        local->client = net_controller_get_host(game_state_get_player(scene->gs, 1)->ctrl);
+        local->mode = LOBBY_MAIN;
+    }
 
-    menu_attach(name_menu, label_create(&tconf, "Enter your name:"));
-    // TODO pull the last used name from settings
-    component *name_input = textinput_create(&tconf, "", "", "");
-    textinput_enable_background(name_input, 0);
-    textinput_set_max_chars(name_input, 14);
-    textinput_set_done_cb(name_input, lobby_entered_name, scene);
-    menu_attach(name_menu, name_input);
+    // Cleanups and resets
+    for(int i = 0; i < 2; i++) {
+        // destroy any leftover controllers
+        game_player *player = game_state_get_player(scene->gs, i);
+        game_player_set_ctrl(player, NULL);
+    }
+    reconfigure_controller(scene->gs);
+
 
     local->frame = guiframe_create(9, 132, 300, 12);
     guiframe_set_root(local->frame, menu);
     guiframe_layout(local->frame);
 
-    menu_set_submenu(menu, name_menu);
+
+    if (local->mode == LOBBY_STARTING) {
+
+        component *name_menu = menu_create(11);
+        menu_set_horizontal(name_menu, true);
+        menu_set_background(name_menu, false);
+        menu_set_margin_top(menu, 0);
+        menu_set_padding(menu, 6);
+
+        menu_attach(name_menu, label_create(&tconf, "Enter your name:"));
+        // TODO pull the last used name from settings
+        component *name_input = textinput_create(&tconf, "", "", "");
+        textinput_enable_background(name_input, 0);
+        textinput_set_max_chars(name_input, 14);
+        textinput_set_done_cb(name_input, lobby_entered_name, scene);
+        menu_attach(name_menu, name_input);
+
+        menu_set_submenu(menu, name_menu);
+    } else {
+        // TODO send the server a REFRESH command so we can get the userlist, our username, etc
+    }
 
     scene_set_input_poll_cb(scene, lobby_input_tick);
 
