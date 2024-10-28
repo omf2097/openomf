@@ -108,6 +108,50 @@ jobs:
     - name: Build openomf
       run: cmake --build build-msvc --config Debug --target openomf
 
+    - name: Restore omf2097-assets.zip
+      id: cache-assets
+      uses: actions/cache/restore@v4
+      with:
+        path: omf2097-assets.zip
+        key: omf2097-assets.zip
+
+    - name: Download omf 2097 assets
+      if: steps.cache-assets.outputs.cache-hit != 'true'
+      run: Invoke-WebRequest -URI "${{ env.OPENOMF_ASSETS_URL }}" -OutFile omf2097-assets.zip
+
+    - name: Cache omf2097-assets.zip
+      if: steps.cache-assets.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v4
+      with:
+        path: omf2097-assets.zip
+        key: omf2097-assets.zip
+
+    - name: Extract omf 2097 assets
+      run: |
+        Expand-Archive omf2097-assets.zip -PassThru
+        mkdir install/openomf/resources
+        Move-Item -Path omf2097-assets/OMF2097/* -Destination install/openomf/resources/ -Force -PassThru
+
+    - name: Install openomf
+      run: cmake --install build-msvc --config Debug --prefix install
+
+    - name: Get short SHA
+      shell: bash
+      id: slug
+      run: echo "sha8=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_OUTPUT
+
+    - name: Generate ZIP package
+      run: |
+        cd install
+        Compress-Archive -Path openomf -DestinationPath openomf_${{ env.OPENOMF_VERSION }}-${{ steps.slug.outputs.sha8 }}_windows_msvc_amd64.zip -PassThru
+
+    - name: Upload ZIP artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: openomf_${{ env.OPENOMF_VERSION }}-${{ steps.slug.outputs.sha8 }}_windows_msvc_amd64
+        path: install/openomf_${{ env.OPENOMF_VERSION }}-${{ steps.slug.outputs.sha8 }}_windows_msvc_amd64.zip
+        if-no-files-found: error
+
   # Build ubuntu package, release artifact and update "latest" release if necessary.
   # -----------------------------------------------------------------------------------------------
   build_ubuntu:
