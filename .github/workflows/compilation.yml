@@ -148,6 +148,7 @@ jobs:
       run: wget -q "${{ env.OPENOMF_ASSETS_URL }}"
 
     - name: Cache omf2097-assets.zip
+      if: steps.cache-assets.outputs.cache-hit != 'true'
       uses: actions/cache/save@v4
       with:
         path: omf2097-assets.zip
@@ -222,6 +223,7 @@ jobs:
       run: wget -q "${{ env.OPENOMF_ASSETS_URL }}"
 
     - name: Cache omf2097-assets.zip
+      if: steps.cache-assets.outputs.cache-hit != 'true'
       uses: actions/cache/save@v4
       with:
         path: omf2097-assets.zip
@@ -295,6 +297,7 @@ jobs:
       run: wget -q "${{ env.OPENOMF_ASSETS_URL }}"
 
     - name: Cache omf2097-assets.zip
+      if: steps.cache-assets.outputs.cache-hit != 'true'
       uses: actions/cache/save@v4
       with:
         path: omf2097-assets.zip
