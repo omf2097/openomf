@@ -20,6 +20,7 @@ typedef struct {
 
     void *userdata;
     textslider_slide_cb slide;
+    text_object text_cache[1];
 } textslider;
 
 static void textslider_render(component *c) {
@@ -44,7 +45,7 @@ static void textslider_render(component *c) {
     } else if(component_is_disabled(c)) {
         mode = TEXT_DISABLED;
     }
-    text_render_str(&tb->tconf, mode, c->x, c->y, c->w, c->h, &txt);
+    text_render(&(tb->text_cache[0]), &tb->tconf, mode, c->x, c->y, c->w, c->h, str_c(&txt));
     str_free(&txt);
 }
 
@@ -101,6 +102,7 @@ static void textslider_tick(component *c) {
 
 static void textslider_free(component *c) {
     textslider *tb = widget_get_obj(c);
+    text_objects_free(tb->text_cache, (sizeof(tb->text_cache) / sizeof(tb->text_cache[0])));
     omf_free(tb->text);
     omf_free(tb);
 }

@@ -6,6 +6,7 @@
 
 #include "resources/fonts.h"
 #include "utils/str.h"
+#include "video/surface.h"
 
 #define TEXT_DARK_GREEN 0xFE
 #define TEXT_MEDIUM_GREEN 0xFE
@@ -77,16 +78,44 @@ typedef struct {
     uint8_t max_lines;
 } text_settings;
 
+typedef struct letter {
+    int x;
+    int y;
+    int offset;
+    int limit;
+    surface* sur;
+} letter;
+
+typedef struct text_object {
+    uint32_t letter_count;
+    uint32_t max_letters;
+    bool dirty;
+    bool dynamic;
+    int x;
+    int y;
+    int w;
+    int h;
+    letter* letters;
+    letter* cur_letter;
+    text_mode mode;
+    text_settings settings;
+    const char* text;
+    void* render_private;
+} text_object;
+
+// New text rendering functions
 void text_defaults(text_settings *settings);
 // only for testing
 int text_find_max_strlen(const text_settings *settings, int max_chars, const char *ptr);
 
-int text_find_line_count(const text_settings *settings, int cols, int rows, int len, const char *text,
-                         int *longest_line_len);
-int text_render_char(const text_settings *settings, text_mode mode, int x, int y, char ch);
-void text_render(const text_settings *settings, text_mode mode, int x, int y, int w, int h, const char *text);
 void text_render_str(const text_settings *settings, text_mode mode, int x, int y, int w, int h, const str *text);
+int text_find_line_count(const text_settings *settings, int cols, int rows, const char *text, int *longest_line_len);
+int text_render_char(text_object *cached_text, const text_settings *settings, text_mode mode, int x, int y, char ch, bool shadow);
+int text_render_char_uncached(const text_settings *settings, text_mode mode, int x, int y, char ch, bool shadow);
+void text_render(text_object *cached_text, const text_settings *settings, text_mode mode, int x, int y, int w, int h, const char *text);
 int text_char_width(const text_settings *settings);
 int text_width(const text_settings *settings, const char *text);
+void text_objects_free(text_object *cached_text, size_t count);
+void text_objects_invalidate(text_object *text_cache, size_t cache_size);
 
 #endif // TEXT_RENDER_H

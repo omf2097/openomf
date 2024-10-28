@@ -21,6 +21,7 @@ typedef struct {
     spritebutton_focus_cb focus_cb;
     bool free_userdata;
     void *userdata;
+    text_object text_cache[1];
 } spritebutton;
 
 static void spritebutton_render(component *c) {
@@ -34,12 +35,13 @@ static void spritebutton_render(component *c) {
         mode = TEXT_SELECTED;
     }
     if(sb->text) {
-        text_render(&sb->tconf, mode, c->x, c->y, c->w, c->h, sb->text);
+        text_render(sb->text_cache, &sb->tconf, mode, c->x, c->y, c->w, c->h, sb->text);
     }
 }
 
 static void spritebutton_free(component *c) {
     spritebutton *sb = widget_get_obj(c);
+    text_objects_free(sb->text_cache, 1);
     if(sb->free_userdata) {
         omf_free(sb->userdata);
     }
@@ -107,7 +109,7 @@ component *spritebutton_create(const text_settings *tconf, const char *text, sur
     widget_set_focus_cb(c, spritebutton_focus);
     widget_set_tick_cb(c, spritebutton_tick);
     widget_set_free_cb(c, spritebutton_free);
-
+    sb->text_cache[0].dynamic = true;
     return c;
 }
 

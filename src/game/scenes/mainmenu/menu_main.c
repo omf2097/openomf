@@ -113,6 +113,10 @@ component *menu_main_create(scene *s) {
     menu_attach(menu, textbutton_create(&tconf, "HELP", NULL, COM_DISABLED, NULL, NULL));
     menu_attach(menu, textbutton_create(&tconf, "DEMO", NULL, COM_ENABLED, mainmenu_demo, s));
     menu_attach(menu, textbutton_create(&tconf, "SCOREBOARD", NULL, COM_ENABLED, mainmenu_soreboard, s));
+#ifdef N64_BUILD
+    menu_attach(menu, textbutton_create(&tconf, "CREDITS", NULL, COM_ENABLED, mainmenu_quit, s));
+#else
     menu_attach(menu, textbutton_create(&tconf, "QUIT", NULL, COM_ENABLED, mainmenu_quit, s));
+#endif
     return menu;
 }

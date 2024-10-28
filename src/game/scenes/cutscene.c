@@ -22,6 +22,7 @@ typedef struct cutscene_local {
     int text_y;
     int text_width;
     text_settings text_conf;
+    text_object text_cache[1];
 } cutscene_local;
 
 static int cutscene_next_scene(scene *scene) {
@@ -77,11 +78,12 @@ static void cutscene_input_tick(scene *scene) {
 
 static void cutscene_render_overlay(scene *scene) {
     cutscene_local *local = scene_get_userdata(scene);
-    text_render(&local->text_conf, TEXT_DEFAULT, local->text_x, local->text_y, local->text_width, 200, local->current);
+    text_render(&local->text_cache[0], &local->text_conf, TEXT_DEFAULT, local->text_x, local->text_y, local->text_width, 200, local->current);
 }
 
 static void cutscene_free(scene *scene) {
     cutscene_local *local = scene_get_userdata(scene);
+    text_objects_free(local->text_cache, (sizeof(local->text_cache) / sizeof(local->text_cache[0])));
     omf_free(local->text);
     omf_free(local);
     scene_set_userdata(scene, local);

@@ -64,6 +64,8 @@ typedef struct arena_local_t {
     sd_action rec_last[2];
 } arena_local;
 
+static text_object text_cache[8];
+
 void write_rec_move(scene *scene, game_player *player, int action);
 
 // -------- Local callbacks --------
@@ -90,6 +92,9 @@ void game_menu_return(component *c, void *userdata) {
     controller_set_repeat(game_player_get_ctrl(player1), 1);
     local->menu_visible = 0;
     game_state_set_paused(((scene *)userdata)->gs, 0);
+    // invalidate the cache of the menu items.
+    menu_invalidate_help_text_cache(local->game_menu->root_node);
+
 }
 
 void arena_music_slide(component *c, void *userdata, int pos) {
@@ -1117,9 +1122,9 @@ void arena_render_overlay(scene *scene) {
     tconf_debug.cforeground = TEXT_COLOR;
 #ifdef DEBUGMODE
     snprintf(buf, 40, "%u", game_state_get_tick(scene->gs));
-    text_render(&tconf_debug, TEXT_DEFAULT, 160, 0, 250, 6, buf);
+    text_render(&text_cache[0], &tconf_debug, TEXT_DEFAULT, 160, 0, 250, 6, buf);
     snprintf(buf, 40, "%u", random_get_seed(&scene->gs->rand));
-    text_render(&tconf_debug, TEXT_DEFAULT, 130, 8, 250, 6, buf);
+    text_render(&text_cache[1], &tconf_debug, TEXT_DEFAULT, 130, 8, 250, 6, buf);
 #endif
 
     for(int i = 0; i < 2; i++) {
@@ -1148,15 +1153,15 @@ void arena_render_overlay(scene *scene) {
             player2_name = lang_get(player[1]->pilot->pilot_id + 20);
         }
 
-        text_render(&tconf_players, TEXT_DEFAULT, 5, 19, 250, 6, player1_name);
-        text_render(&tconf_players, TEXT_DEFAULT, 5, 26, 250, 6, lang_get((player[0]->pilot->har_id) + 31));
+        text_render(&text_cache[2], &tconf_players, TEXT_DEFAULT, 5, 19, 250, 6, player1_name);
+        text_render(&text_cache[3], &tconf_players, TEXT_DEFAULT, 5, 26, 250, 6, lang_get((player[0]->pilot->har_id) + 31));
 
         if(player[1]->pilot) {
             // when quitting, this can go null
             int p2len = (strlen(player2_name) - 1) * font_small.w;
             int h2len = (strlen(lang_get((player[1]->pilot->har_id) + 31)) - 1) * font_small.w;
-            text_render(&tconf_players, TEXT_DEFAULT, 315 - p2len, 19, 100, 6, player2_name);
-            text_render(&tconf_players, TEXT_DEFAULT, 315 - h2len, 26, 100, 6,
+            text_render(&text_cache[4], &tconf_players, TEXT_DEFAULT, 315 - p2len, 19, 100, 6, player2_name);
+            text_render(&text_cache[5], &tconf_players, TEXT_DEFAULT, 315 - h2len, 26, 100, 6,
                         lang_get((player[1]->pilot->har_id) + 31));
         }
 
@@ -1171,11 +1176,11 @@ void arena_render_overlay(scene *scene) {
         // render ping, if player is networked
         if(player[0]->ctrl->type == CTRL_TYPE_NETWORK) {
             snprintf(buf, 40, "ping %d", player[0]->ctrl->rtt);
-            text_render(&tconf_debug, TEXT_DEFAULT, 5, 40, 250, 6, buf);
+            text_render(&text_cache[6], &tconf_debug, TEXT_DEFAULT, 5, 40, 250, 6, buf);
         }
         if(player[1]->ctrl->type == CTRL_TYPE_NETWORK) {
             snprintf(buf, 40, "ping %d", player[1]->ctrl->rtt);
-            text_render(&tconf_debug, TEXT_DEFAULT, 315 - (strlen(buf) * font_small.w), 40, 250, 6, buf);
+            text_render(&text_cache[7], &tconf_debug, TEXT_DEFAULT, 315 - (strlen(buf) * font_small.w), 40, 250, 6, buf);
         }
     }
 
@@ -1225,6 +1230,10 @@ void arena_startup(scene *scene, int id, int *m_load, int *m_repeat) {
 int arena_create(scene *scene) {
     settings *setting;
     arena_local *local;
+    memset(text_cache, 0, sizeof(text_cache));
+    for (size_t i = 0; i < (sizeof(text_cache)/sizeof(text_cache[0])); i++) {
+        text_cache[i].dynamic = true;
+    }
 
     // Load up settings
     setting = settings_get();

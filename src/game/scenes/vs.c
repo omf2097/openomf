@@ -31,6 +31,7 @@ typedef struct vs_local_t {
     char vs_str[128];
     dialog quit_dialog;
     dialog too_pathetic_dialog;
+    text_object text_cache[34];
 } vs_local;
 
 int vs_is_netplay(scene *scene) {
@@ -129,6 +130,10 @@ void cb_vs_destroy_object(object *parent, int id, void *userdata) {
 
 void vs_free(scene *scene) {
     vs_local *local = scene_get_userdata(scene);
+    size_t cache_size = sizeof(local->text_cache) / sizeof(local->text_cache[0]);
+    for (size_t i = 0; i < cache_size; i++) {
+        local->text_cache[i].dirty = true;
+    }
 
     dialog_free(&local->quit_dialog);
     dialog_free(&local->too_pathetic_dialog);
@@ -264,7 +269,7 @@ void vs_render(scene *scene) {
     tconf_yellow.cshadow = 202;
     tconf_yellow.halign = TEXT_CENTER;
 
-    text_render(&tconf_yellow, TEXT_DEFAULT, 0, 3, 320, 8, local->vs_str);
+    text_render(&(local->text_cache[0]), &tconf_yellow, TEXT_DEFAULT, 0, 3, 320, 8, local->vs_str);
 
     // no other text is shadowed
     tconf_yellow.shadow = 0;
@@ -282,21 +287,21 @@ void vs_render(scene *scene) {
         video_draw(&local->arena_select_bg, 55, 150);
 
         // arena name
-        text_render(&tconf_green, TEXT_DEFAULT, 56 + 72, 152, (211 - 72), 8, lang_get(56 + local->arena));
+        text_render(&(local->text_cache[1]), &tconf_green, TEXT_DEFAULT, 56 + 72, 152, (211 - 72), 8, lang_get(56 + local->arena));
 
         tconf_green.valign = TEXT_MIDDLE;
         // arena description
-        text_render(&tconf_green, TEXT_DEFAULT, 56 + 72, 153, (211 - 72), 50, lang_get(66 + local->arena));
+        text_render(&(local->text_cache[2]), &tconf_green, TEXT_DEFAULT, 56 + 72, 153, (211 - 72), 50, lang_get(66 + local->arena));
     } else if(player2->pilot && player2->pilot->pilot_id == PILOT_KREISSACK &&
               settings_get()->gameplay.difficulty < 2) {
         // kreissack, but not on Veteran or higher
         tconf_yellow.halign = TEXT_CENTER;
-        text_render(&tconf_yellow, TEXT_DEFAULT, 80, 165, 170, 60, lang_get(747));
+        text_render(&(local->text_cache[3]), &tconf_yellow, TEXT_DEFAULT, 80, 165, 170, 60, lang_get(747));
 
     } else if(player1->chr && player2->pilot) {
         // tournament mode insult
         tconf_yellow.halign = TEXT_RIGHT;
-        text_render(&tconf_yellow, TEXT_DEFAULT, 100, 165, 150, 60, player2->pilot->quotes[0]);
+        text_render(&(local->text_cache[4]), &tconf_yellow, TEXT_DEFAULT, 100, 165, 150, 60, player2->pilot->quotes[0]);
     } else if(!player2->pilot) {
         text_settings dark_green;
         text_defaults(&dark_green);
@@ -312,73 +317,83 @@ void vs_render(scene *scene) {
         char text[256];
         char money[16];
         fight_stats *fight_stats = &scene->gs->fight_stats;
+        static int force_redraw = 1;
+        if (force_redraw) {
+            // TODO: Find out why this caching doesn't work. The cache is built before the stats are correct.
+            // Rendering the first time, after a scene switch should fill the cache correctly but it doesn't.
+            // The text_render cache should never do a strcmp or memcmp on the text. However setting dirty 
+            // here every time would bypass the cache and therefore is not desirable.
+            size_t cache_size = sizeof(local->text_cache) / sizeof(local->text_cache[0]);
+            text_objects_invalidate(local->text_cache, cache_size);
+        }
+
         snprintf(text, sizeof(text), lang_get(fight_stats->plug_text + PLUG_TEXT_START), fight_stats->sold);
-        text_render(&tconf_yellow, TEXT_DEFAULT, 90, 156, 198, 6, text);
+        text_render(&(local->text_cache[5]), &tconf_yellow, TEXT_DEFAULT, 90, 156, 198, 6, text);
 
-        text_render(&light_green, TEXT_DEFAULT, 190, 6, 140, 6, "FINANCIAL REPORT");
+        text_render(&(local->text_cache[6]), &light_green, TEXT_DEFAULT, 190, 6, 140, 6, "FINANCIAL REPORT");
 
-        text_render(&dark_green, TEXT_DEFAULT, 190, 16, 90, 6, "WINNINGS:");
+        text_render(&(local->text_cache[7]), &dark_green, TEXT_DEFAULT, 190, 16, 90, 6, "WINNINGS:");
         score_format(fight_stats->winnings, money, sizeof(money));
         snprintf(text, sizeof(text), "$ %sK", money);
-        text_render(&light_green, TEXT_DEFAULT, 250, 16, 140, 6, text);
+        text_render(&(local->text_cache[8]), &light_green, TEXT_DEFAULT, 250, 16, 140, 6, text);
 
-        text_render(&dark_green, TEXT_DEFAULT, 196, 24, 90, 6, "BONUSES:");
+        text_render(&(local->text_cache[9]), &dark_green, TEXT_DEFAULT, 196, 24, 90, 6, "BONUSES:");
         score_format(fight_stats->bonuses, money, sizeof(money));
         snprintf(text, sizeof(text), "$ %sK", money);
-        text_render(&light_green, TEXT_DEFAULT, 250, 24, 140, 6, text);
+        text_render(&(local->text_cache[10]), &light_green, TEXT_DEFAULT, 250, 24, 140, 6, text);
 
-        text_render(&dark_green, TEXT_DEFAULT, 172, 32, 90, 6, "REPAIR COST:");
+        text_render(&(local->text_cache[11]), &dark_green, TEXT_DEFAULT, 172, 32, 90, 6, "REPAIR COST:");
         score_format(fight_stats->repair_cost, money, sizeof(money));
         snprintf(text, sizeof(text), "$ %sK", money);
-        text_render(&light_green, TEXT_DEFAULT, 250, 32, 140, 6, text);
+        text_render(&(local->text_cache[12]), &light_green, TEXT_DEFAULT, 250, 32, 140, 6, text);
 
-        text_render(&dark_green, TEXT_DEFAULT, 202, 40, 120, 6, "PROFIT:");
+        text_render(&(local->text_cache[13]), &dark_green, TEXT_DEFAULT, 202, 40, 120, 6, "PROFIT:");
         score_format(fight_stats->profit, money, sizeof(money));
         snprintf(text, sizeof(text), "$ %sK", money);
-        text_render(&light_green, TEXT_DEFAULT, 250, 40, 140, 6, text);
+        text_render(&(local->text_cache[14]), &light_green, TEXT_DEFAULT, 250, 40, 140, 6, text);
 
-        text_render(&light_green, TEXT_DEFAULT, 210, 60, 60, 6, "FIGHT STATISTICS");
+        text_render(&(local->text_cache[15]), &light_green, TEXT_DEFAULT, 210, 60, 60, 6, "FIGHT STATISTICS");
 
-        text_render(&dark_green, TEXT_DEFAULT, 202, 79, 90, 6, "HITS LANDED:");
+        text_render(&(local->text_cache[16]), &dark_green, TEXT_DEFAULT, 202, 79, 90, 6, "HITS LANDED:");
         snprintf(text, sizeof(text), "%u", fight_stats->hits_landed[0]);
-        text_render(&light_green, TEXT_DEFAULT, 276, 79, 80, 6, text);
+        text_render(&(local->text_cache[17]), &light_green, TEXT_DEFAULT, 276, 79, 80, 6, text);
 
-        text_render(&dark_green, TEXT_DEFAULT, 184, 86, 90, 6, "AVERAGE DAMAGE:");
+        text_render(&(local->text_cache[18]), &dark_green, TEXT_DEFAULT, 184, 86, 90, 6, "AVERAGE DAMAGE:");
         snprintf(text, sizeof(text), "%.1f", fight_stats->average_damage[0]);
-        text_render(&light_green, TEXT_DEFAULT, 276, 86, 80, 6, text);
+        text_render(&(local->text_cache[19]), &light_green, TEXT_DEFAULT, 276, 86, 80, 6, text);
 
-        text_render(&dark_green, TEXT_DEFAULT, 184, 93, 90, 6, "FAILED ATTACKS:");
+        text_render(&(local->text_cache[20]), &dark_green, TEXT_DEFAULT, 184, 93, 90, 6, "FAILED ATTACKS:");
         snprintf(text, sizeof(text), "%u", fight_stats->total_attacks[0] - fight_stats->hits_landed[0]);
-        text_render(&light_green, TEXT_DEFAULT, 276, 93, 80, 6, text);
+        text_render(&(local->text_cache[21]), &light_green, TEXT_DEFAULT, 276, 93, 80, 6, text);
 
-        text_render(&dark_green, TEXT_DEFAULT, 184, 100, 90, 6, "HIT/MISS RATIO:");
+        text_render(&(local->text_cache[22]), &dark_green, TEXT_DEFAULT, 184, 100, 90, 6, "HIT/MISS RATIO:");
         snprintf(text, sizeof(text), "%u%%", fight_stats->hit_miss_ratio[0]);
-        text_render(&light_green, TEXT_DEFAULT, 276, 100, 80, 6, text);
+        text_render(&(local->text_cache[23]), &light_green, TEXT_DEFAULT, 276, 100, 80, 6, text);
 
-        text_render(&light_green, TEXT_DEFAULT, 210, 108, 80, 6, "OPPONENT");
+        text_render(&(local->text_cache[24]), &light_green, TEXT_DEFAULT, 210, 108, 80, 6, "OPPONENT");
 
-        text_render(&dark_green, TEXT_DEFAULT, 202, 115, 90, 6, "HITS LANDED:");
+        text_render(&(local->text_cache[25]), &dark_green, TEXT_DEFAULT, 202, 115, 90, 6, "HITS LANDED:");
         snprintf(text, sizeof(text), "%u", fight_stats->hits_landed[1]);
-        text_render(&light_green, TEXT_DEFAULT, 276, 115, 80, 6, text);
+        text_render(&(local->text_cache[26]), &light_green, TEXT_DEFAULT, 276, 115, 80, 6, text);
 
-        text_render(&dark_green, TEXT_DEFAULT, 184, 123, 90, 6, "AVERAGE DAMAGE:");
+        text_render(&(local->text_cache[27]), &dark_green, TEXT_DEFAULT, 184, 123, 90, 6, "AVERAGE DAMAGE:");
         snprintf(text, sizeof(text), "%.1f", fight_stats->average_damage[1]);
-        text_render(&light_green, TEXT_DEFAULT, 276, 123, 80, 6, text);
+        text_render(&(local->text_cache[28]), &light_green, TEXT_DEFAULT, 276, 123, 80, 6, text);
 
-        text_render(&dark_green, TEXT_DEFAULT, 184, 130, 90, 6, "FAILED ATTACKS:");
+        text_render(&(local->text_cache[29]), &dark_green, TEXT_DEFAULT, 184, 130, 90, 6, "FAILED ATTACKS:");
         snprintf(text, sizeof(text), "%u", fight_stats->total_attacks[1] - fight_stats->hits_landed[1]);
-        text_render(&light_green, TEXT_DEFAULT, 276, 130, 30, 6, text);
+        text_render(&(local->text_cache[30]), &light_green, TEXT_DEFAULT, 276, 130, 30, 6, text);
 
-        text_render(&dark_green, TEXT_DEFAULT, 184, 137, 90, 6, "HIT/MISS RATIO:");
+        text_render(&(local->text_cache[31]), &dark_green, TEXT_DEFAULT, 184, 137, 90, 6, "HIT/MISS RATIO:");
         snprintf(text, sizeof(text), "%u%%", fight_stats->hit_miss_ratio[1]);
-        text_render(&light_green, TEXT_DEFAULT, 276, 137, 40, 6, text);
+        text_render(&(local->text_cache[32]), &light_green, TEXT_DEFAULT, 276, 137, 40, 6, text);
     } else {
         // 1 player insult
         tconf_yellow.valign = TEXT_MIDDLE;
         tconf_yellow.halign = TEXT_CENTER;
-        text_render(&tconf_yellow, TEXT_DEFAULT, 77, 150, 150, 30,
+        text_render(&(local->text_cache[32]), &tconf_yellow, TEXT_DEFAULT, 77, 150, 150, 30,
                     lang_get(749 + (11 * player1->pilot->pilot_id) + player2->pilot->pilot_id));
-        text_render(&tconf_yellow, TEXT_DEFAULT, 110, 170, 150, 30,
+        text_render(&(local->text_cache[33]), &tconf_yellow, TEXT_DEFAULT, 110, 170, 150, 30,
                     lang_get(870 + (11 * player2->pilot->pilot_id) + player1->pilot->pilot_id));
     }
 }
@@ -414,7 +429,6 @@ int vs_create(scene *scene) {
     scene_set_userdata(scene, local);
     game_player *player1 = game_state_get_player(scene->gs, 0);
     game_player *player2 = game_state_get_player(scene->gs, 1);
-
     if(player2->pilot == NULL) {
         // display the financial report with your host Plug!
 

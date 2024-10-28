@@ -52,6 +52,10 @@ typedef struct {
 #define CURSORS_DONE(local) (local->cursor[0].done && local->cursor[1].done)
 #define CURSOR_NOVA_SELECT(local, player) (local->cursor[player].row == 1 && local->cursor[player].column == 2)
 
+static const char* p1_bio_prev = NULL;
+static const char* p2_bio_prev = NULL;
+static text_object text_cache[18];
+
 typedef enum
 {
     PILOT_SELECT = 0,
@@ -419,6 +423,10 @@ void melee_input_tick(scene *scene) {
                         local->cursor[1].row = local->pilot_id_b / 5;
                         local->cursor[1].done = 0;
                         local->page = PILOT_SELECT;
+                        // Invalidate texture objects.
+                        text_objects_invalidate(text_cache, sizeof(text_cache) / sizeof(text_cache[0]));
+                        p1_bio_prev = NULL;
+                        p2_bio_prev = NULL;
                     } else {
                         game_state_set_next(scene->gs, SCENE_MENU);
                     }
@@ -502,42 +510,42 @@ static void render_pilot_select(melee_local *local, bool player2_is_selectable) 
     tconf_black.cshadow = TEXT_SHADOW_BLACK;
 
     // player bio
-    text_render(&tconf_green, TEXT_DEFAULT, 4, 66, 156, 34, lang_get(135 + current_a));
+    text_render(&text_cache[0], &tconf_green, TEXT_DEFAULT, 4, 66, 156, 34, lang_get(135 + current_a));
+
     // player stats
-    text_render(&tconf_green, TEXT_DEFAULT, 74, 4, 85, 6, lang_get(216));
-    text_render(&tconf_green, TEXT_DEFAULT, 74, 22, 85, 6, lang_get(217));
-    text_render(&tconf_green, TEXT_DEFAULT, 74, 40, 85, 6, lang_get(218));
+    text_render(&text_cache[1], &tconf_green, TEXT_DEFAULT, 74, 4, 85, 6, lang_get(216));
+    text_render(&text_cache[2], &tconf_green, TEXT_DEFAULT, 74, 22, 85, 6, lang_get(217));
+    text_render(&text_cache[3], &tconf_green, TEXT_DEFAULT, 74, 40, 85, 6, lang_get(218));
     component_render(local->bar_power[0]);
     component_render(local->bar_agility[0]);
     component_render(local->bar_endurance[0]);
 
     object_render(&local->player2_placeholder);
-
     if(player2_is_selectable) {
         // player 2 name
-        text_render(&tconf_black, TEXT_DEFAULT, 320 - 66, 52, 66, 6, lang_get(20 + current_b));
+        text_render(&text_cache[4], &tconf_black, TEXT_DEFAULT, 320 - 66, 52, 66, 6, lang_get(20 + current_b));
 
         video_draw(&local->bg_player_stats, 320 - 70 - local->bg_player_stats.w, 0);
         video_draw(&local->bg_player_bio, 320 - local->bg_player_bio.w, 62);
         // player bio
-        text_render(&tconf_green, TEXT_DEFAULT, 320 - local->bg_player_bio.w + 4, 66, 156, 34,
+        text_render(&text_cache[5], &tconf_green, TEXT_DEFAULT, 320 - local->bg_player_bio.w + 4, 66, 156, 34,
                     lang_get(135 + current_b));
 
         // player stats
-        text_render(&tconf_green, TEXT_DEFAULT, 320 - 66 - local->bg_player_stats.w, 4, 85, 6, lang_get(216));
-        text_render(&tconf_green, TEXT_DEFAULT, 320 - 66 - local->bg_player_stats.w, 22, 85, 6, lang_get(217));
-        text_render(&tconf_green, TEXT_DEFAULT, 320 - 66 - local->bg_player_stats.w, 40, 85, 6, lang_get(218));
+        text_render(&text_cache[6], &tconf_green, TEXT_DEFAULT, 320 - 66 - local->bg_player_stats.w, 4, 85, 6, lang_get(216));
+        text_render(&text_cache[7], &tconf_green, TEXT_DEFAULT, 320 - 66 - local->bg_player_stats.w, 22, 85, 6, lang_get(217));
+        text_render(&text_cache[8], &tconf_green, TEXT_DEFAULT, 320 - 66 - local->bg_player_stats.w, 40, 85, 6, lang_get(218));
 
         component_render(local->bar_power[1]);
         component_render(local->bar_agility[1]);
         component_render(local->bar_endurance[1]);
     } else {
         // 'choose your pilot'
-        text_render(&tconf_green, TEXT_DEFAULT, 160, 97, 160, 6, lang_get(187));
+        text_render(&text_cache[9], &tconf_green, TEXT_DEFAULT, 160, 97, 160, 6, lang_get(187));
     }
 
     // player 1 name
-    text_render(&tconf_black, TEXT_DEFAULT, 0, 52, 66, 6, lang_get(20 + current_a));
+    text_render(&text_cache[10], &tconf_black, TEXT_DEFAULT, 0, 52, 66, 6, lang_get(20 + current_a));
 
     render_highlights(local, player2_is_selectable);
     render_disabled_portraits(local->pilot_portraits);
@@ -581,11 +589,11 @@ static void render_har_select(melee_local *local, bool player2_is_selectable) {
     tconf_black.cshadow = TEXT_SHADOW_BLACK;
 
     // player 1 name
-    text_render(&tconf_black, TEXT_DEFAULT, 0, 52, 66, 6, lang_get(20 + local->pilot_id_a));
+    text_render(&text_cache[11], &tconf_black, TEXT_DEFAULT, 0, 52, 66, 6, lang_get(20 + local->pilot_id_a));
 
     if(player2_is_selectable) {
         // player 2 name
-        text_render(&tconf_black, TEXT_DEFAULT, 320 - 66, 52, 66, 6, lang_get(20 + local->pilot_id_b));
+        text_render(&text_cache[12], &tconf_black, TEXT_DEFAULT, 320 - 66, 52, 66, 6, lang_get(20 + local->pilot_id_b));
 
         // currently selected player
         object_render(&local->big_portrait_2);
@@ -595,13 +603,13 @@ static void render_har_select(melee_local *local, bool player2_is_selectable) {
         object_render(&local->har_player2);
 
         // render HAR name (Har1 VS. Har2)
-        text_render(&tconf_black, TEXT_DEFAULT, 80, 107, 150, 6, str_c(&local->vs_text));
+        text_render(&text_cache[13], &tconf_black, TEXT_DEFAULT, 80, 107, 150, 6, str_c(&local->vs_text));
     } else {
         // 'choose your Robot'
-        text_render(&tconf_green, TEXT_DEFAULT, 160, 97, 160, 6, lang_get(186));
+        text_render(&text_cache[14], &tconf_green, TEXT_DEFAULT, 160, 97, 160, 6, lang_get(186));
 
         // render HAR name
-        text_render(&tconf_black, TEXT_DEFAULT, 120, 107, 60, 6, har_get_name(CURSOR_INDEX(local, 0)));
+        text_render(&text_cache[15], &tconf_black, TEXT_DEFAULT, 120, 107, 60, 6, har_get_name(CURSOR_INDEX(local, 0)));
     }
 }
 
@@ -624,9 +632,9 @@ void melee_render(scene *scene) {
 
     if(player2->selectable) {
         int text_x = 8;
-        text_render(&tconf_black, TEXT_DEFAULT, text_x, 107, 50, 6, str_c(&local->wins_text_a));
+        text_render(&text_cache[16], &tconf_black, TEXT_DEFAULT, text_x, 107, 50, 6, str_c(&local->wins_text_a));
         text_x = 312 - text_width(&tconf_black, str_c(&local->wins_text_b));
-        text_render(&tconf_black, TEXT_DEFAULT, text_x, 107, 50, 6, str_c(&local->wins_text_b));
+        text_render(&text_cache[17], &tconf_black, TEXT_DEFAULT, text_x, 107, 50, 6, str_c(&local->wins_text_b));
     }
 }
 
@@ -707,8 +715,11 @@ static void load_hars(scene *scene, melee_local *local, bool player2_is_selectab
 
 int melee_create(scene *scene) {
     // Init local data
+    p1_bio_prev = NULL;
+    p2_bio_prev = NULL;
     melee_local *local = omf_calloc(1, sizeof(melee_local));
     scene_set_userdata(scene, local);
+    memset(text_cache, 0, sizeof(text_cache));
 
     local->cursor[1].row = 0;
     local->cursor[1].column = 4;
