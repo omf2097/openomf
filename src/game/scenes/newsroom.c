@@ -161,9 +161,12 @@ void newsroom_overlay_render(scene *scene) {
         tconf_yellow.shadow = TEXT_SHADOW_NONE;
         tconf_yellow.cshadow = 202;
         tconf_yellow.halign = TEXT_CENTER;
+        tconf_yellow.valign = TEXT_MIDDLE;
         tconf_yellow.lspacing = 1;
-        tconf_yellow.max_lines = 4;
-        text_render(&tconf_yellow, TEXT_DEFAULT, 30, 140, 250, 6, str_c(&local->news_str));
+        tconf_yellow.strip_leading_whitespace = false;
+        tconf_yellow.strip_trailing_whitespace = true;
+        tconf_yellow.max_lines = 9;
+        text_render(&tconf_yellow, TEXT_DEFAULT, 34, 155, 250, 6, str_c(&local->news_str));
     }
 
     // Dialog

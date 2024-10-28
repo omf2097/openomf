@@ -72,7 +72,8 @@ typedef struct {
     uint8_t shadow;
     uint8_t cspacing;
     uint8_t lspacing;
-    bool strip_leading_whitespace;
+    bool strip_leading_whitespace : 1;
+    bool strip_trailing_whitespace : 1;
     uint8_t max_lines;
 } text_settings;
 

@@ -16,6 +16,7 @@ void text_defaults(text_settings *settings) {
     settings->cspacing = 0;
     settings->max_lines = UINT8_MAX;
     settings->strip_leading_whitespace = false;
+    settings->strip_trailing_whitespace = false;
 }
 
 int text_render_char(const text_settings *settings, text_mode state, int x, int y, char ch) {
@@ -90,23 +91,23 @@ int text_find_max_strlen(const text_settings *settings, int max_chars, const cha
     }
 
     // Walk through the rest of the string
-    int last_space = i;
     int max = max_chars + i;
-    int line_start = i;
+    int breakpoint = max;
+    int next_breakpoint = breakpoint;
     for(; i < len; i++) {
         // If we detect newline, this line ends here
-        if(ptr[i] == '\n')
+        if(ptr[i] == '\n') {
             return i + 1;
+        }
 
-        // If we are reading over our text limit ...
         if(i >= max) {
-            if(ptr[i] == ' ') { // If we are at valid end character (space), end here
-                return i;
-            } else if(last_space != line_start) {
-                return last_space;
-            }
-        } else if(ptr[i] == ' ') {
-            last_space = i;
+            return breakpoint;
+        }
+
+        if(ptr[i] == ' ') {
+            next_breakpoint = i + 1;
+        } else {
+            breakpoint = next_breakpoint;
         }
     }
 
@@ -227,7 +228,6 @@ void text_render(const text_settings *settings, text_mode mode, int x, int y, in
     int line = 0;
     while(ptr < len && line < fit_lines) {
         int line_len;
-        int real_len;
         int mx = 0;
         int my = 0;
         int line_pw;
@@ -240,27 +240,33 @@ void text_render(const text_settings *settings, text_mode mode, int x, int y, in
             line_len = text_find_max_strlen(settings, cols, text + ptr);
         else
             line_len = text_find_max_strlen(settings, rows, text + ptr);
-        real_len = line_len;
 
         // If line ends in linebreak, skip it from calculation.
         if(text[ptr + line_len - 1] == '\n') {
-            real_len--;
+            line_len--;
         }
 
-        // Skip spaces
+        // Skip trailing spaces
+        if(settings->strip_trailing_whitespace) {
+            while(line_len > 0 && text[ptr + line_len - 1] == ' ') {
+                line_len--;
+            }
+        }
+
+        // Skip leading spaces
         int k = 0;
         if(settings->strip_leading_whitespace) {
             for(; k < line_len; k++) {
                 if(text[ptr + k] != ' ')
                     break;
-                real_len--;
+                line_len--;
             }
         }
 
         // Find total size of this line and set newline start coords
         switch(settings->direction) {
             case TEXT_HORIZONTAL:
-                line_pw = real_len * charw - settings->cspacing;
+                line_pw = line_len * charw - settings->cspacing;
                 my += charh * line;
 
                 // Horizontal alignment for this line
@@ -276,7 +282,7 @@ void text_render(const text_settings *settings, text_mode mode, int x, int y, in
                 }
                 break;
             case TEXT_VERTICAL:
-                line_ph = real_len * charh - settings->lspacing;
+                line_ph = line_len * charh - settings->lspacing;
                 mx += charw * line;
 
                 // Vertical alignment for this line
