@@ -23,7 +23,8 @@ enum
 {
     NET_MODE_NONE,
     NET_MODE_SERVER,
-    NET_MODE_CLIENT
+    NET_MODE_CLIENT,
+    NET_MODE_LOBBY
 };
 
 typedef struct scene_t scene;

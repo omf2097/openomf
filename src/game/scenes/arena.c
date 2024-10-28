@@ -305,8 +305,9 @@ void arena_end(scene *sc) {
         game_state_set_next(gs, SCENE_NEWSROOM);
     } else if(is_twoplayer(sc)) {
         game_state_set_next(gs, SCENE_MELEE);
+    } else if (gs->net_mode == NET_MODE_LOBBY) {
+        game_state_set_next(gs, SCENE_LOBBY);
     } else {
-        // TODO check for a network controller, and check if that network controller is tied to a lobby
         game_state_set_next(gs, SCENE_MENU);
     }
 }
@@ -892,6 +893,9 @@ int arena_handle_events(scene *scene, game_player *player, ctrl_event *i) {
                 if(player->ctrl->type == CTRL_TYPE_REC) {
                     game_state_set_next(scene->gs, SCENE_NONE);
                 } else {
+                    if (scene->gs->net_mode == NET_MODE_LOBBY) {
+                        game_state_set_next(scene->gs, SCENE_LOBBY);
+                    }
                     game_state_set_next(scene->gs, SCENE_MENU);
                 }
                 return 0;
