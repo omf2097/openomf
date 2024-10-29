@@ -12,6 +12,8 @@
 
 #include "game/gui/gui.h"
 
+#include <stdio.h>
+
 // FIXME: No idea what these should be
 #define TEXT_COLOR 0xFE
 #define BLUE_TEXT_COLOR 0xFE
