@@ -55,7 +55,6 @@ endif()
 find_package(SDL2 REQUIRED)
 find_package(SDL2_mixer REQUIRED)
 find_package(xmp)
-find_package(OpenGL REQUIRED)
 find_package(Epoxy REQUIRED)
 find_package(enet)
 find_package(confuse)
@@ -263,10 +262,10 @@ endif()
 
 # Make sure libraries are linked
 target_link_libraries(openomf ${CORELIBS})
-target_link_libraries(openomf SDL2::Main SDL2::Mixer OpenGL::GL Epoxy::Main)
+target_link_libraries(openomf SDL2::Main SDL2::Mixer Epoxy::Main)
 foreach(TARGET ${TOOL_TARGET_NAMES})
     target_link_libraries(${TARGET} ${CORELIBS})
-    target_link_libraries(${TARGET} SDL2::Main SDL2::Mixer OpenGL::GL Epoxy::Main)
+    target_link_libraries(${TARGET} SDL2::Main SDL2::Mixer Epoxy::Main)
 endforeach()
 
 # Testing stuff
@@ -284,7 +283,7 @@ if(CUNIT_FOUND)
     target_compile_definitions(openomf_test_main PRIVATE
                                TESTS_ROOT_DIR="${CMAKE_SOURCE_DIR}/testing")
 
-    target_link_libraries(openomf_test_main ${CORELIBS} SDL2::Main SDL2::Mixer OpenGL::GL Epoxy::Main)
+    target_link_libraries(openomf_test_main ${CORELIBS} SDL2::Main SDL2::Mixer Epoxy::Main)
 
     if(MINGW)
         # Always build as a console executable with mingw
