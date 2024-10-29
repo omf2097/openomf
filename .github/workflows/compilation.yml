@@ -105,7 +105,7 @@ jobs:
         -G "Ninja"
         --toolchain vcpkg/scripts/buildsystems/vcpkg.cmake
         -DCMAKE_BUILD_TYPE="Release"
-        -DVCPKG_BUILD_TYPE="release" # skip debug deps
+        -DVCPKG_BUILD_TYPE="release"
         -DVCPKG_TARGET_TRIPLET="x64-windows-static"
     - name: Build openomf
       run: cmake --build build-msvc --target openomf
