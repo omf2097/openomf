@@ -189,6 +189,11 @@ void text_render(const text_settings *settings, text_mode mode, int x, int y, in
     int rows = (yspace + settings->lspacing) / charh;
     int cols = (xspace + settings->cspacing) / charw;
     int fit_lines = text_find_line_count(settings, cols, rows, len, text);
+    int max_chars = settings->direction == TEXT_HORIZONTAL ? cols : rows;
+    if(max_chars == 0) {
+        DEBUG("Warning: Text has zero size! text: '%s'");
+        max_chars = 1;
+    }
 
     int start_x = x + settings->padding.left;
     int start_y = y + settings->padding.top;
@@ -237,10 +242,8 @@ void text_render(const text_settings *settings, text_mode mode, int x, int y, in
         // Find out how many characters for this row/col
         if(line + 1 == fit_lines)
             line_len = strlen(text + ptr);
-        else if(settings->direction == TEXT_HORIZONTAL)
-            line_len = text_find_max_strlen(settings, cols, text + ptr);
         else
-            line_len = text_find_max_strlen(settings, rows, text + ptr);
+            line_len = text_find_max_strlen(settings, max_chars, text + ptr);
         advance = line_len;
 
         // If line ends in linebreak, skip it from calculation.
