@@ -72,12 +72,12 @@ jobs:
         cd build-test
         make test ARGS="-V"
 
-  # Build msvc binary, to ensure it doesn't regress.
+  # Build windows package, release artifact (MSVC)
   # -----------------------------------------------------------------------------------------------
-  check_msvc:
+  build_msvc:
     needs: [unittest, formatting-check]
 
-    name: Check Windows MSVC build
+    name: Build windows-amd64 (MSVC)
     runs-on: windows-latest
 
     env:
@@ -102,11 +102,13 @@ jobs:
     - name: Install VCPKG Dependencies, Configure CMake
       run: >
         cmake -S . -B build-msvc
-        -G "Ninja Multi-Config"
+        -G "Ninja"
         --toolchain vcpkg/scripts/buildsystems/vcpkg.cmake
-        -DVCPKG_BUILD_TYPE="debug" # skip release deps
+        -DCMAKE_BUILD_TYPE="Release"
+        -DVCPKG_BUILD_TYPE="release" # skip debug deps
+        -DVCPKG_TARGET_TRIPLET="x64-windows-static"
     - name: Build openomf
-      run: cmake --build build-msvc --config Debug --target openomf
+      run: cmake --build build-msvc --target openomf
 
     - name: Restore omf2097-assets.zip
       id: cache-assets
@@ -133,7 +135,7 @@ jobs:
         Move-Item -Path omf2097-assets/OMF2097/* -Destination install/openomf/resources/ -Force -PassThru
 
     - name: Install openomf
-      run: cmake --install build-msvc --config Debug --prefix install
+      run: cmake --install build-msvc --prefix install
 
     - name: Get short SHA
       shell: bash
@@ -152,7 +154,7 @@ jobs:
         path: install/openomf_${{ env.OPENOMF_VERSION }}-${{ steps.slug.outputs.sha8 }}_windows_msvc_amd64.zip
         if-no-files-found: error
 
-  # Build ubuntu package, release artifact and update "latest" release if necessary.
+  # Build ubuntu package, release artifact
   # -----------------------------------------------------------------------------------------------
   build_ubuntu:
     needs: [unittest, formatting-check]
@@ -232,7 +234,7 @@ jobs:
         path: openomf_${{ env.OPENOMF_VERSION }}-${{ steps.slug.outputs.sha8 }}_amd64.deb
         if-no-files-found: error
 
-  # Build macos package, release artifact and update "latest" release if necessary.
+  # Build macos package, release artifact
   # -----------------------------------------------------------------------------------------------
   build_macos-arm:
     needs: [unittest, formatting-check]
@@ -292,12 +294,12 @@ jobs:
         path: openomf_${{ env.OPENOMF_VERSION }}-${{ steps.slug.outputs.sha8 }}_macos14_arm.zip
         if-no-files-found: error
 
-  # Build windows package, release artifact and update "latest" release if necessary.
+  # Build windows package, release artifact (mingw-w64)
   # -----------------------------------------------------------------------------------------------
   build_windows:
     needs: [unittest, formatting-check]
 
-    name: Build windows-amd64
+    name: Build windows-amd64 (mingw-w64)
     runs-on: ubuntu-latest
 
     steps:
@@ -366,7 +368,7 @@ jobs:
   # Create a "latest" release
   # -----------------------------------------------------------------------------------------------
   make_release:
-    needs: [build_windows, build_macos-arm, build_ubuntu, check_msvc]
+    needs: [build_windows, build_macos-arm, build_ubuntu, build_msvc]
     if: github.ref == 'refs/heads/master'
 
     name: Make "latest" release
