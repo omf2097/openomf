@@ -33,6 +33,15 @@ else()
 endif()
 add_definitions(-DV_MAJOR=${VERSION_MAJOR} -DV_MINOR=${VERSION_MINOR} -DV_PATCH=${VERSION_PATCH})
 
+# Enable AddressSanitizer if requested
+if(USE_SANITIZERS)
+    add_compile_options("-fsanitize=address,undefined")
+    add_link_options("-fsanitize=address,undefined")
+    message(STATUS "Development: Asan and Ubsan enabled")
+else()
+    message(STATUS "Development: Asan and Ubsan disabled")
+endif()
+
 # match vcpkg crt linkage
 if(MSVC AND VCPKG_TARGET_TRIPLET MATCHES "-windows-static$")
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
@@ -233,15 +242,6 @@ if(USE_FORMAT)
     message(STATUS "Development: clang-format enabled")
 else()
     message(STATUS "Development: clang-format disabled")
-endif()
-
-# Enable AddressSanitizer if requested
-if(USE_SANITIZERS)
-    add_compile_options("-fsanitize=address,undefined")
-    add_link_options("-fsanitize=address,undefined")
-    message(STATUS "Development: Asan and Ubsan enabled")
-else()
-    message(STATUS "Development: Asan and Ubsan disabled")
 endif()
 
 if(WIN32)
