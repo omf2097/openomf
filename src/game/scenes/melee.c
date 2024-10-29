@@ -504,7 +504,7 @@ static void render_pilot_select(melee_local *local, bool player2_is_selectable) 
     tconf_black.cshadow = TEXT_SHADOW_BLACK;
 
     // player bio
-    text_render(&tconf_green, TEXT_DEFAULT, 4, 66, 152, 34, lang_get(135 + current_a));
+    text_render(&tconf_green, TEXT_DEFAULT, 4, 66, 156, 34, lang_get(135 + current_a));
     // player stats
     text_render(&tconf_green, TEXT_DEFAULT, 74, 4, 85, 6, lang_get(216));
     text_render(&tconf_green, TEXT_DEFAULT, 74, 22, 85, 6, lang_get(217));
@@ -522,7 +522,7 @@ static void render_pilot_select(melee_local *local, bool player2_is_selectable) 
         video_draw(&local->bg_player_stats, 320 - 70 - local->bg_player_stats.w, 0);
         video_draw(&local->bg_player_bio, 320 - local->bg_player_bio.w, 62);
         // player bio
-        text_render(&tconf_green, TEXT_DEFAULT, 320 - local->bg_player_bio.w + 4, 66, 152, 34,
+        text_render(&tconf_green, TEXT_DEFAULT, 320 - local->bg_player_bio.w + 4, 66, 156, 34,
                     lang_get(135 + current_b));
 
         // player stats
