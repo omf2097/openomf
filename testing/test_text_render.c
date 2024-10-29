@@ -125,6 +125,16 @@ static void test_text_find_line_count_newsroom(void) {
         text_find_line_count_(&tconf, 2, 999, "one two three four five six seven eight nine ten eleven twelve"), 9);
 }
 
+static void test_text_find_max_strlen_pilot_bio(void) {
+    text_settings tconf;
+    text_defaults(&tconf);
+    tconf.strip_leading_whitespace = false;
+    tconf.strip_trailing_whitespace = false;
+    tconf.max_lines = 8;
+    CU_ASSERT_EQUAL(
+        text_find_max_strlen(&tconf, 26, "her reclusive disposition and strong will, little is known of her."), 26);
+}
+
 void text_render_test_suite(CU_pSuite suite) {
     // Add tests
     if(CU_add_test(suite, "Test for text_find_max_strlen", test_text_find_max_strlen) == NULL) {
@@ -138,6 +148,10 @@ void text_render_test_suite(CU_pSuite suite) {
         return;
     }
     if(CU_add_test(suite, "Test for text_find_line_count with newsroom quirks", test_text_find_line_count_newsroom) ==
+       NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for text_find_max_strlen with pilot bio quirks", test_text_find_max_strlen_pilot_bio) ==
        NULL) {
         return;
     }
