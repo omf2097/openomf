@@ -353,13 +353,13 @@ component *lab_dash_main_create_gauges(component *xy, dashboard_widgets *dw, sd_
     tconf_dark.cforeground = MECHLAB_DARK_GREEN;
 
     // Bars and texts (bottom left side)
-    xysizer_attach(xy, label_create(&tconf_dark, "POWER"), 12, 95, -1, -1);
+    xysizer_attach(xy, label_create(&tconf_dark, "POWER"), 12, 95, 200, 6);
     dw->power = gauge_create(GAUGE_SMALL, 25, 3);
     xysizer_attach(xy, dw->power, 12, 102, -1, -1);
-    xysizer_attach(xy, label_create(&tconf_dark, "AGILITY"), 12, 106, -1, -1);
+    xysizer_attach(xy, label_create(&tconf_dark, "AGILITY"), 12, 106, 200, 6);
     dw->agility = gauge_create(GAUGE_SMALL, 25, 3);
     xysizer_attach(xy, dw->agility, 12, 113, -1, -1);
-    xysizer_attach(xy, label_create(&tconf_dark, "ENDURANCE"), 12, 117, -1, -1);
+    xysizer_attach(xy, label_create(&tconf_dark, "ENDURANCE"), 12, 117, 200, 6);
     dw->endurance = gauge_create(GAUGE_SMALL, 25, 3);
     xysizer_attach(xy, dw->endurance, 12, 124, -1, -1);
 
