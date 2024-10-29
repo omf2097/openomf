@@ -59,6 +59,8 @@ typedef struct lobby_user_t {
     char version[15];
     bool self;
     ENetAddress address;
+    uint16_t port;     // port the server sees this user connecting from
+    uint16_t ext_port; // port this user claims will route inbound to them (or 0)
     uint32_t id;
     uint8_t wins;
     uint8_t losses;
@@ -751,7 +753,13 @@ void lobby_tick(scene *scene, int paused) {
                         lobby_user user;
                         user.id = serial_read_uint32(&ser);
                         user.address.host = serial_read_uint32(&ser);
-                        user.address.port = serial_read_uint16(&ser);
+                        user.port = serial_read_uint16(&ser);
+                        user.ext_port = serial_read_uint16(&ser);
+                        if(user.ext_port != 0) {
+                            user.address.port = user.ext_port;
+                        } else {
+                            user.address.port = user.port;
+                        }
                         user.wins = serial_read_int8(&ser);
                         user.losses = serial_read_int8(&ser);
                         uint8_t version_len = serial_read_int8(&ser);
@@ -992,6 +1000,13 @@ void lobby_tick(scene *scene, int paused) {
                         ENetPacket *packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
                         enet_peer_send(local->peer, 0, packet);
                         serial_free(&ser);
+
+                        if(local->opponent->address.port != local->opponent->port && local->opponent->ext_port != 0) {
+                            // the user's claimed port didn't work, try the one the server saw
+                            local->opponent->address.port = local->opponent->port;
+                            // reset the counter
+                            local->connection_count = 0;
+                        }
 
                         ticktimer_add(&scene->tick_timer, 150, lobby_try_connect, NULL);
                     } else {

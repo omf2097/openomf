@@ -8,6 +8,14 @@
 #include <miniupnpc/upnpcommands.h>
 #endif
 
+// socklen_t nonsense
+#if defined(_WIN32)
+#if defined(__MSVC__)
+#include <WinSock2.h>
+#endif
+#include <WS2tcpip.h>
+#endif
+
 typedef enum
 {
     NAT_TYPE_NONE,
