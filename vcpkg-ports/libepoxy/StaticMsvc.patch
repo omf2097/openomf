@@ -1,0 +1,65 @@
+diff --git a/src/dispatch_common.h b/src/dispatch_common.h
+index a136943..d40d553 100644
+--- a/src/dispatch_common.h
++++ b/src/dispatch_common.h
+@@ -76,12 +76,9 @@
+ /* On win32, we're going to need to keep a per-thread dispatch table,
+  * since the function pointers depend on the device and pixel format
+  * of the current context.
++ * OpenOMF only uses a single GL context with epoxy, so no need for this correctness.
+  */
+-#if defined(_WIN32)
+-#define USING_DISPATCH_TABLE 1
+-#else
+ #define USING_DISPATCH_TABLE 0
+-#endif
+ 
+ #define UNWRAPPED_PROTO(x) (GLAPIENTRY *x)
+ #define WRAPPER_VISIBILITY(type) static type GLAPIENTRY
+diff --git a/src/dispatch_wgl.c b/src/dispatch_wgl.c
+index 7baf130..3592428 100644
+--- a/src/dispatch_wgl.c
++++ b/src/dispatch_wgl.c
+@@ -27,9 +27,6 @@
+ 
+ #include "dispatch_common.h"
+ 
+-static bool first_context_current = false;
+-static bool already_switched_to_dispatch_table = false;
+-
+ /**
+  * If we can determine the WGL extension support from the current
+  * context, then return that, otherwise give the answer that will just
+@@ -62,6 +59,11 @@ epoxy_has_wgl_extension(HDC hdc, const char *ext)
+     return epoxy_extension_in_string(getext(hdc), ext);
+ }
+ 
++#if USING_DISPATCH_TABLE
++
++static bool first_context_current = false;
++static bool already_switched_to_dispatch_table = false;
++
+ /**
+  * Does the work necessary to update the win32 per-thread dispatch
+  * tables when wglMakeCurrent() is called.
+@@ -194,3 +196,5 @@ PFNWGLMAKECURRENTPROC epoxy_wglMakeCurrent = epoxy_wglMakeCurrent_wrapped;
+ PFNWGLMAKECONTEXTCURRENTEXTPROC epoxy_wglMakeContextCurrentEXT = epoxy_wglMakeContextCurrentEXT_wrapped;
+ PFNWGLMAKECONTEXTCURRENTARBPROC epoxy_wglMakeContextCurrentARB = epoxy_wglMakeContextCurrentARB_wrapped;
+ PFNWGLMAKEASSOCIATEDCONTEXTCURRENTAMDPROC epoxy_wglMakeAssociatedContextCurrentEXT = epoxy_wglMakeAssociatedContextCurrentAMD_wrapped;
++
++#endif // USING_DISPATCH_TABLE
+diff --git a/src/gen_dispatch.py b/src/gen_dispatch.py
+index 3daad84..70979fc 100755
+--- a/src/gen_dispatch.py
++++ b/src/gen_dispatch.py
+@@ -67,10 +67,6 @@ class GLFunction(object):
+         wrapped_functions = {
+             'glBegin',
+             'glEnd',
+-            'wglMakeCurrent',
+-            'wglMakeContextCurrentEXT',
+-            'wglMakeContextCurrentARB',
+-            'wglMakeAssociatedContextCurrentAMD',
+         }
+ 
+         if name in wrapped_functions:

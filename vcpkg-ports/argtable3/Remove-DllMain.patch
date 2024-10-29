@@ -1,0 +1,17 @@
+diff --git a/src/argtable3.c b/src/argtable3.c
+index ae1920b..41369a3 100644
+--- a/src/argtable3.c
++++ b/src/argtable3.c
+@@ -1095,12 +1095,3 @@ void arg_freetable(void** argtable, size_t n) {
+         table[tabindex] = NULL;
+     };
+ }
+-
+-#ifdef _WIN32
+-BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved) {
+-    return TRUE;
+-    UNREFERENCED_PARAMETER(hinstDLL);
+-    UNREFERENCED_PARAMETER(fdwReason);
+-    UNREFERENCED_PARAMETER(lpvReserved);
+-}
+-#endif
