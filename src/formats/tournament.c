@@ -6,6 +6,7 @@
 #include "formats/internal/reader.h"
 #include "formats/internal/writer.h"
 #include "formats/tournament.h"
+#include "resources/pathmanager.h"
 #include "utils/allocator.h"
 
 int sd_tournament_create(sd_tournament_file *trn) {
@@ -91,8 +92,7 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
         goto error_0;
     }
 
-    // TODO check if this works on windows
-    char *justfile = strrchr(filename, '/');
+    char *justfile = strrchr(filename, pm_path_sep);
     if(justfile == NULL) {
         strncpy(trn->filename, filename, sizeof(trn->filename));
     } else {

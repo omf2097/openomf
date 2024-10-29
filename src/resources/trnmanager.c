@@ -45,7 +45,7 @@ list *trnlist_init(void) {
     while((trn_file = iter_next(&it)) != NULL) {
         sd_tournament_file trn;
         sd_tournament_create(&trn);
-        snprintf(tmp, 1024, "%s/%s", dirname, trn_file);
+        snprintf(tmp, 1024, "%s%s", dirname, trn_file);
         if(SD_SUCCESS == sd_tournament_load(&trn, tmp)) {
             list_append(trnlist, &trn, sizeof(sd_tournament_file));
         } else {
