@@ -33,6 +33,13 @@ else()
 endif()
 add_definitions(-DV_MAJOR=${VERSION_MAJOR} -DV_MINOR=${VERSION_MINOR} -DV_PATCH=${VERSION_PATCH})
 
+# match vcpkg crt linkage
+if(MSVC AND VCPKG_TARGET_TRIPLET MATCHES "-windows-static$")
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+elseif(MSVC AND VCPKG_TARGET_TRIPLET MATCHES "-windows-static-md$")
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
+endif()
+
 # See if we have Git, and use it to fetch current SHA1 hash
 find_package(Git)
 if(GIT_FOUND)
