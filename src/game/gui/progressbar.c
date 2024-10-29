@@ -111,7 +111,7 @@ static void progressbar_render(component *c) {
 
     // Render block
     if(bar->block != NULL) {
-        video_draw(bar->block, c->x + (bar->orientation == PROGRESSBAR_LEFT ? 0 : c->w - bar->block->w + 1), c->y);
+        video_draw(bar->block, c->x + (bar->orientation == PROGRESSBAR_LEFT ? 0 : c->w - bar->block->w), c->y);
     }
 }
 
