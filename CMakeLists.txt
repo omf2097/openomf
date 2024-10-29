@@ -66,7 +66,7 @@ find_package(Epoxy REQUIRED)
 find_package(enet)
 find_package(confuse)
 find_package(argtable2)
-find_package(argtable3)
+find_package(Argtable3 CONFIG)
 find_package(PNG)
 find_package(ZLIB)
 
@@ -112,18 +112,13 @@ set(CORELIBS
 
 if(ARGTABLE2_FOUND)
   set(COREINCS ${COREINCS} ${ARGTABLE2_INCLUDE_DIR})
+  set(CORELIBS ${CORELIBS} ${ARGTABLE2_LIBRARY})
   add_compile_definitions(ARGTABLE2_FOUND)
-elseif(ARGTABLE3_FOUND)
-  set(COREINCS ${COREINCS} ${ARGTABLE3_INCLUDE_DIR})
+elseif(Argtable3_FOUND)
+  set(CORELIBS ${CORELIBS} argtable3::argtable3)
   add_compile_definitions(ARGTABLE3_FOUND)
 else()
   message(FATAL_ERROR "Neither argtable2 or argtable3 was found")
-endif()
-
-if(ARGTABLE2_FOUND)
-  set(CORELIBS ${CORELIBS} ${ARGTABLE2_LIBRARY})
-elseif(ARGTABLE3_FOUND)
-  set(CORELIBS ${CORELIBS} ${ARGTABLE3_LIBRARY})
 endif()
 
 # MingW build should add mingw32 lib
