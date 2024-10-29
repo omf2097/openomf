@@ -10,10 +10,8 @@
 
 // socklen_t nonsense
 #if defined(_WIN32)
-#if defined(__MSVC__)
 #include <WinSock2.h>
-#endif
-#include <WS2tcpip.h>
+#include <windows.h>
 #endif
 
 typedef enum
