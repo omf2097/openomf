@@ -104,7 +104,6 @@ set(COREINCS
 
 set(CORELIBS
     ${CONFUSE_LIBRARY}
-    ${XMP_LIBRARY}
     ${ENET_LIBRARY}
     ${PNG_LIBRARY}
     ${ZLIB_LIBRARY}
@@ -142,6 +141,7 @@ include_directories(${COREINCS})
 # Build core sources first as an object library
 # this can then be reused in tests and main executable to speed things up
 add_library(openomf_core OBJECT ${OPENOMF_SRC})
+target_link_libraries(openomf_core PRIVATE ${XMP_LIBRARY})
 set(CORELIBS openomf_core ${CORELIBS})
 
 # Set icon for windows executable
