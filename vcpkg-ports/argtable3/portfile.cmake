@@ -33,6 +33,15 @@ elseif(EXISTS "${CURRENT_PACKAGES_DIR}/lib/cmake/${PORT}")
     vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/${PORT})
 endif()
 
+if(NOT ARGTABLE3_REPLACE_GETOPT)
+    # fix dependency unofficial-getopt-win32
+    vcpkg_replace_string("${CURRENT_PACKAGES_DIR}/share/${PORT}/Argtable3Config.cmake" "# Generated CMake target import file."
+[[
+find_package(unofficial-getopt-win32 CONFIG REQUIRED)
+
+# Generated CMake target import file.]])
+endif()
+
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")
 
 file(INSTALL "${SOURCE_PATH}/LICENSE" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}" RENAME copyright)
