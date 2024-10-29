@@ -100,14 +100,14 @@ int text_find_max_strlen(const text_settings *settings, int max_chars, const cha
             return i + 1;
         }
 
-        if(i >= max) {
-            return breakpoint;
-        }
-
         if(ptr[i] == ' ') {
             next_breakpoint = i + 1;
         } else {
             breakpoint = next_breakpoint;
+        }
+
+        if(i >= max) {
+            return breakpoint;
         }
     }
 
