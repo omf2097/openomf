@@ -14,6 +14,8 @@ enum
     NUMBER_OF_LOCAL_PATHS
 };
 
+extern char const pm_path_sep;
+
 int pm_init(void);
 void pm_free(void);
 void pm_log(void);

@@ -25,6 +25,12 @@ static char errormessage[128];
 static char *local_paths[NUMBER_OF_LOCAL_PATHS];
 static char *resource_paths[NUMBER_OF_RESOURCES];
 
+#if _WIN32
+char const pm_path_sep = '\\';
+#else
+char const pm_path_sep = '/';
+#endif
+
 // Build directory
 static void local_path_build(int path_id, const char *path, const char *ext) {
     int len = strlen(path) + strlen(ext) + 1;
