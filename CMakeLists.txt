@@ -362,6 +362,13 @@ else()
     message(STATUS "Development: Unit-tests are disabled")
 endif()
 
+if(USE_TOOLS)
+    include("cmake-scripts/BuildLanguages.cmake")
+    message(STATUS "Since tools are enabled, languages will be built.")
+else()
+    message(STATUS "Since tools are disabled, languages will NOT be built!")
+endif()
+
 # Copy some resources to destination resources directory to ease development setup.
 file(COPY resources/openomf.bk resources/gamecontrollerdb.txt DESTINATION resources)
 

@@ -9,8 +9,12 @@
 #include <string.h>
 
 static sd_language *language;
+static sd_language *language2;
 
 int lang_init(void) {
+    language = NULL;
+    language2 = NULL;
+
     str filename_str;
     const char *dirname = pm_get_local_path(RESOURCE_PATH);
     const char *lang = settings_get()->language.language;
@@ -62,6 +66,21 @@ int lang_init(void) {
 
     INFO("Loaded language file '%s'.", filename);
 
+    // Load up language2 file (OpenOMF)
+    str_append_c(&filename_str, "2");
+    filename = str_c(&filename_str);
+
+    language2 = omf_calloc(1, sizeof(sd_language));
+    if(sd_language_create(language2) != SD_SUCCESS) {
+        goto error_0;
+    }
+    if(sd_language_load(language2, filename)) {
+        PERROR("Unable to load OpenOMF language file '%s'!", filename);
+        goto error_0;
+    }
+
+    INFO("Loaded OpenOMF language file '%s'.", filename);
+
     str_free(&filename_str);
 
     // XXX we're wasting 32KB of memory on language->strings[...].description
@@ -69,15 +88,16 @@ int lang_init(void) {
     return 0;
 
 error_0:
-    sd_language_free(language);
-    omf_free(language);
     str_free(&filename_str);
+    lang_close();
     return 1;
 }
 
 void lang_close(void) {
     sd_language_free(language);
     omf_free(language);
+    sd_language_free(language2);
+    omf_free(language2);
 }
 
 const char *lang_get(unsigned int id) {
@@ -86,4 +106,12 @@ const char *lang_get(unsigned int id) {
         return "!INVALID!";
     }
     return language->strings[id].data;
+}
+
+const char *lang_get2(unsigned int id) {
+    if(id > language2->count || !language2->strings[id].data) {
+        PERROR("unsupported lang2 id %u!", id);
+        return "!INVALID2!";
+    }
+    return language2->strings[id].data;
 }

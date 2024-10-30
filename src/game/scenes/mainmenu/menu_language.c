@@ -2,6 +2,8 @@
 
 #include "game/scenes/mainmenu/menu_language.h"
 
+#include "formats/error.h"
+#include "formats/language.h"
 #include "game/gui/gui.h"
 #include "game/utils/settings.h"
 #include "resources/languages.h"
@@ -10,6 +12,7 @@
 #include "utils/list.h"
 #include "utils/log.h"
 #include "utils/scandir.h"
+#include "utils/str.h"
 
 typedef struct {
     char **language_filenames;
@@ -71,7 +74,9 @@ component *menu_language_create(scene *s) {
     list dirlist;
     // Seek all files
     list_create(&dirlist);
-    scan_directory(&dirlist, dirname);
+    list_append(&dirlist, "ENGLISH.DAT", strlen("ENGLISH.DAT") + 1);
+    list_append(&dirlist, "GERMAN.DAT", strlen("GERMAN.DAT") + 1);
+    scan_directory_suffix(&dirlist, dirname, ".LNG");
     local->language_filenames = omf_malloc(list_size(&dirlist) * sizeof(char *));
     local->language_names = omf_malloc(list_size(&dirlist) * sizeof(char *));
     local->language_count = 0;
@@ -79,26 +84,36 @@ component *menu_language_create(scene *s) {
     iterator it;
     list_iter_begin(&dirlist, &it);
     char const *filename;
+    str filename2;
+    str_create(&filename2);
     while((filename = (char *)list_iter_next(&it))) {
-        char *ext = NULL;
-
-        if(strcmp("ENGLISH.DAT", filename) != 0 && strcmp("GERMAN.DAT", filename) != 0 &&
-           ((ext = strrchr(filename, '.')) == NULL || strcmp(".LNG", ext) != 0)) {
+        // Get localized language name from OpenOMF .DAT2 or .LNG2 file
+        str_format(&filename2, "%s%s2", dirname, filename);
+        INFO("trying %s\n", str_c(&filename2));
+        sd_language lang2;
+        if(sd_language_create(&lang2) != SD_SUCCESS) {
             continue;
         }
+        if(sd_language_load(&lang2, str_c(&filename2))) {
+            INFO("Warning: Unable to load OpenOMF language file '%s'!", str_c(&filename2));
+            sd_language_free(&lang2);
+            continue;
+        }
+        if(lang2.count < 1) {
+            INFO("Warning: Invalid OpenOMF language file '%s', got %d entries!", str_c(&filename2), lang2.count);
+            sd_language_free(&lang2);
+            continue;
+        }
+        char *language_name = lang2.strings[0].data;
+        lang2.strings[0].data = NULL;
+        sd_language_free(&lang2);
 
         if(strcmp(setting->language.language, filename) == 0) {
             local->selected_language = local->language_count;
         }
 
         int id = local->language_count++;
-
-        // strip .DAT or .LNG
-        size_t filename_len = strlen(filename);
-        size_t name_len = filename_len - 4;
-        local->language_names[id] = omf_malloc(name_len + 1);
-        memcpy(local->language_names[id], filename, name_len);
-        local->language_names[id][name_len] = '\0';
+        local->language_names[id] = language_name;
 
         // move filename into language_filenames
         list_node *now = it.vnow;
