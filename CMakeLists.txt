@@ -119,7 +119,12 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
 endif()
 
 # Find OpenOMF core sources
-file(GLOB_RECURSE OPENOMF_SRC RELATIVE ${CMAKE_SOURCE_DIR} "src/*/*.c" "src/*/*.h")
+file(GLOB_RECURSE OPENOMF_SRC
+    LIST_DIRECTORIES OFF
+    CONFIGURE_DEPENDS
+    RELATIVE ${CMAKE_SOURCE_DIR}
+    "src/*/*.c" "src/*/*.h"
+)
 
 set(COREINCS
     src
@@ -283,9 +288,9 @@ endif()
 # Formatting via clang-format
 if(USE_FORMAT)
     include(ClangFormat)
-    file(
-        GLOB_RECURSE
-        SRC_FILES
+    file(GLOB_RECURSE SRC_FILES
+        LIST_DIRECTORIES OFF
+        CONFIGURE_DEPENDS
         RELATIVE ${CMAKE_SOURCE_DIR}
         "src/*.h"
         "src/*.c"
@@ -341,7 +346,12 @@ if(CUNIT_FOUND)
     include_directories(${CUNIT_INCLUDE_DIR} testing/ src/)
     SET(CORELIBS ${CORELIBS} ${CUNIT_LIBRARY})
 
-    file(GLOB_RECURSE TEST_SRC RELATIVE ${CMAKE_SOURCE_DIR} "testing/*.c")
+    file(GLOB_RECURSE TEST_SRC
+        LIST_DIRECTORIES OFF
+        CONFIGURE_DEPENDS
+        RELATIVE ${CMAKE_SOURCE_DIR}
+        "testing/*.c"
+    )
 
     add_executable(openomf_test_main ${TEST_SRC})
 
