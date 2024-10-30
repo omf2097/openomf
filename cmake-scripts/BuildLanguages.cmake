@@ -5,7 +5,7 @@ set(OMF_LANGS ENGLISH GERMAN)
 set(LANG2_STRCOUNT 1)
 set(OPENOMF_LANGS DANISH)
 
-set(LANGUAGETOOL_COMMAND $<TARGET_FILE:languagetool> CACHE STRING "How to run languagetool")
+set(OMF_COMMAND_WRAPPER "" CACHE STRING "Optional wrapper to run languagetool with")
 
 if(WIN32)
     set(LANGUAGE_INSTALL_PATH "openomf/resources/")
@@ -21,7 +21,7 @@ foreach(LANG ${OMF_LANGS})
     list(APPEND BUILD_LANG_COMMANDS
         DEPENDS "${TXT2}"
         BYPRODUCTS "${DAT2}"
-        COMMAND ${LANGUAGETOOL_COMMAND} -i "${TXT2}" -o "${DAT2}" --check-count ${LANG2_STRCOUNT}
+        COMMAND ${OMF_COMMAND_WRAPPER} "$<TARGET_FILE:languagetool>" -i "${TXT2}" -o "${DAT2}" --check-count ${LANG2_STRCOUNT}
     )
     install(FILES "${DAT2}" DESTINATION "${LANGUAGE_INSTALL_PATH}")
 endforeach()
@@ -33,8 +33,8 @@ foreach(LANG ${OPENOMF_LANGS})
     list(APPEND BUILD_LANG_COMMANDS
         DEPENDS "${TXT}" "${TXT2}"
         BYPRODUCTS "${LNG}" "{LNG2}"
-        COMMAND ${LANGUAGETOOL_COMMAND} -i "${TXT}" -o "${LNG}" --check-count ${LANG_STRCOUNT}
-        COMMAND ${LANGUAGETOOL_COMMAND} -i "${TXT2}" -o "${LNG2}" --check-count ${LANG2_STRCOUNT}
+        COMMAND ${OMF_COMMAND_WRAPPER} "$<TARGET_FILE:languagetool>" -i "${TXT}" -o "${LNG}" --check-count ${LANG_STRCOUNT}
+        COMMAND ${OMF_COMMAND_WRAPPER} "$<TARGET_FILE:languagetool>" -i "${TXT2}" -o "${LNG2}" --check-count ${LANG2_STRCOUNT}
     )
     install(FILES "${LNG}" "${LNG2}" DESTINATION "${LANGUAGE_INSTALL_PATH}")
 endforeach()
