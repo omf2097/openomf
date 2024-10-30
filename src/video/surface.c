@@ -1,9 +1,8 @@
 #include "video/surface.h"
 #include "utils/allocator.h"
 #include "utils/miscmath.h"
-#include <png.h>
+#include "utils/png_writer.h"
 #include <stdlib.h>
-#include <utils/log.h>
 
 // Each surface is tagged with a unique key. This is then used for texture atlas.
 // This keeps track of the last index used.
@@ -180,19 +179,5 @@ void surface_compress_remap(surface *sur, int range_start, int range_end, int re
 }
 
 bool surface_write_png(const surface *sur, const vga_palette *pal, const char *filename) {
-    png_image out;
-    memset(&out, 0, sizeof(out));
-    out.version = PNG_IMAGE_VERSION;
-    out.opaque = NULL;
-    out.width = sur->w;
-    out.height = sur->h;
-    out.flags = 0;
-    out.format = PNG_FORMAT_RGB_COLORMAP;
-    out.colormap_entries = 256;
-    png_image_write_to_file(&out, filename, 0, sur->data, sur->w, pal->colors);
-    if(PNG_IMAGE_FAILED(out)) {
-        PERROR("Unable to write PNG file: %s", out.message);
-        return false;
-    }
-    return true;
+    return png_write_paletted(filename, sur->w, sur->h, pal, sur->data);
 }

@@ -7,6 +7,7 @@
 #include "formats/error.h"
 #include "formats/vga_image.h"
 #include "utils/allocator.h"
+#include "utils/png_writer.h"
 
 int sd_vga_image_create(sd_vga_image *img, unsigned int w, unsigned int h) {
     if(img == NULL) {
@@ -164,72 +165,8 @@ int sd_vga_image_to_png(const sd_vga_image *img, const vga_palette *pal, const c
     if(img == NULL || filename == NULL) {
         return SD_INVALID_INPUT;
     }
-
-    png_structp png_ptr;
-    png_infop info_ptr;
-    png_colorp palette;
-    int ret = SD_SUCCESS;
-    char **rows = omf_calloc(img->h, sizeof(char *));
-
-    FILE *handle = fopen(filename, "wb");
-    if(handle == NULL) {
-        ret = SD_FILE_OPEN_ERROR;
-        goto error_0;
+    if(!png_write_paletted(filename, img->w, img->h, pal, (unsigned char *)img->data)) {
+        return SD_FILE_OPEN_ERROR;
     }
-
-    png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-    if(!png_ptr) {
-        ret = SD_OUT_OF_MEMORY;
-        goto error_1;
-    }
-
-    info_ptr = png_create_info_struct(png_ptr);
-    if(!info_ptr) {
-        ret = SD_OUT_OF_MEMORY;
-        goto error_2;
-    }
-
-    if(setjmp(png_jmpbuf(png_ptr))) {
-        ret = SD_OUT_OF_MEMORY;
-        goto error_2;
-    }
-
-    png_init_io(png_ptr, handle);
-
-    // Write header. Paletted, 8 bits per pixel
-    png_set_IHDR(png_ptr, info_ptr, img->w, img->h, 8, PNG_COLOR_TYPE_PALETTE, PNG_INTERLACE_NONE,
-                 PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
-
-    palette = png_malloc(png_ptr, 256 * sizeof(png_color));
-    for(int i = 0; i < 256; i++) {
-        palette[i].red = pal->colors[i].r;
-        palette[i].green = pal->colors[i].g;
-        palette[i].blue = pal->colors[i].b;
-    }
-    png_set_PLTE(png_ptr, info_ptr, palette, 256);
-
-    if(setjmp(png_jmpbuf(png_ptr))) {
-        ret = SD_OUT_OF_MEMORY;
-        goto error_3;
-    }
-
-    for(unsigned y = 0; y < img->h; y++) {
-        rows[y] = img->data + y * img->w;
-    }
-
-    // Write data
-    png_write_info(png_ptr, info_ptr);
-    png_write_image(png_ptr, (void *)rows);
-    png_write_end(png_ptr, NULL);
-
-    // Free everything
-error_3:
-    png_free(png_ptr, palette);
-error_2:
-    png_destroy_write_struct(&png_ptr, NULL);
-error_1:
-    fclose(handle);
-error_0:
-    omf_free(rows);
-    return ret;
+    return SD_SUCCESS;
 }

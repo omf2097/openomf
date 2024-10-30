@@ -1,4 +1,3 @@
-#include <png.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,7 +6,7 @@
 #include "formats/error.h"
 #include "formats/rgba_image.h"
 #include "utils/allocator.h"
-#include "utils/log.h"
+#include "utils/png_writer.h"
 
 #define STRIDE 4
 
@@ -98,27 +97,7 @@ int sd_rgba_image_clear(sd_rgba_image *img, char r, char g, char b, char a) {
 }
 
 int sd_rgba_image_to_png(const sd_rgba_image *img, const char *filename) {
-    if(img == NULL || filename == NULL) {
-        return SD_INVALID_INPUT;
-    }
-
-    png_image out;
-    memset(&out, 0, sizeof(out));
-    out.version = PNG_IMAGE_VERSION;
-    out.opaque = NULL;
-    out.width = img->w;
-    out.height = img->h;
-    out.format = PNG_FORMAT_RGBA;
-    out.flags = 0;
-    out.colormap_entries = 0;
-
-    png_image_write_to_file(&out, filename, 0, img->data, img->w * 4, NULL);
-
-    if(PNG_IMAGE_FAILED(out)) {
-        PERROR("Unable to write PNG file: %s", out.message);
-        return SD_FILE_WRITE_ERROR;
-    }
-    return SD_SUCCESS;
+    return png_write_rgb(filename, img->w, img->h, (const unsigned char *)img->data, true, false);
 }
 
 void sd_rgba_image_free(sd_rgba_image *img) {
