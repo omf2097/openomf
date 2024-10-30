@@ -221,7 +221,7 @@ int main(int argc, char *argv[]) {
 
         printf("Title: %s\n", ds->description);
         printf("Data: %s\n", ds->data);
-    } else {
+    } else if(output->count == 0) {
         for(unsigned i = 0; i < language.count; i++) {
             ds = sd_language_get(&language, i);
             if(ds != NULL) {
@@ -232,7 +232,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    // Saving
+    // Save
     if(output->count > 0) {
         ret = sd_language_save(&language, output->filename[0]);
         if(ret != SD_SUCCESS) {
