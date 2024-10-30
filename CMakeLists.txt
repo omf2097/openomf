@@ -145,9 +145,9 @@ if(MINIUPNPC_FOUND)
     add_compile_definitions(MINIUPNPC_FOUND)
 endif()
 
-if(NATPMP_FOUND)
-    set(CORELIBS ${CORELIBS} ${NATPMP_LIBRARY})
-    set(COREINCS ${COREINCS} ${NATPMP_INCLUDE_DIR})
+if(LIBNATPMP_FOUND)
+    set(CORELIBS ${CORELIBS} ${LIBNATPMP_LIBRARY})
+    set(COREINCS ${COREINCS} ${LIBNATPMP_INCLUDE_DIR})
     add_compile_definitions(NATPMP_FOUND)
 endif()
 
