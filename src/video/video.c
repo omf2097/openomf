@@ -40,6 +40,8 @@ typedef struct video_state {
     float fade;
     int target_move_x;
     int target_move_y;
+
+    video_screenshot_signal screenshot_cb;
 } video_state;
 
 #define TEX_UNIT_ATLAS 0
@@ -156,6 +158,24 @@ static void video_set_blend_mode(object_array_blend_mode request_mode) {
     g_video_state.current_blend_mode = request_mode;
 }
 
+void video_area_capture(surface *sur, int x, int y, int w, int h) {
+    render_target_activate(g_video_state.target);
+    unsigned char *buffer = omf_calloc(1, w * h);
+    glReadPixels(x, y, w, h, GL_RED, GL_UNSIGNED_BYTE, buffer);
+    surface_create_from_data_flip(sur, w, h, buffer);
+    surface_set_transparency(sur, -1);
+    omf_free(buffer);
+}
+
+// TODO: Use asynchronous capture + PBO here.
+static void video_screenshot_capture(void) {
+    SDL_Rect r = {0, 0, g_video_state.screen_w, g_video_state.screen_h};
+    unsigned char *buffer = omf_malloc(r.w * r.h * 3);
+    glReadPixels(r.x, r.y, r.w, r.h, GL_RGB, GL_UNSIGNED_BYTE, buffer);
+    g_video_state.screenshot_cb(&r, buffer, true); // TODO: should preferably happen in a thread.
+    omf_free(buffer);
+}
+
 // Called after frame has been rendered
 void video_render_finish(void) {
     object_array_finish(g_video_state.objects);
@@ -201,6 +221,12 @@ void video_render_finish(void) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
+    // Snap screenshot from the freshly rendered state.
+    if(g_video_state.screenshot_cb) {
+        video_screenshot_capture();
+        g_video_state.screenshot_cb = NULL;
+    }
+
     // Flip buffers. If vsync is off, we should sleep here
     // so hat our main loop doesn't eat up all cpu :)
     SDL_GL_SwapWindow(g_video_state.window);
@@ -243,17 +269,8 @@ void video_set_fade(float fade) {
     g_video_state.fade = fade;
 }
 
-void video_screenshot(surface *sur) {
-    video_area_capture(sur, 0, 0, NATIVE_W, NATIVE_H);
-}
-
-void video_area_capture(surface *sur, int x, int y, int w, int h) {
-    render_target_activate(g_video_state.target);
-    unsigned char *buffer = omf_calloc(1, w * h);
-    glReadPixels(x, y, w, h, GL_RED, GL_UNSIGNED_BYTE, buffer);
-    surface_create_from_data_flip(sur, w, h, buffer);
-    surface_set_transparency(sur, -1);
-    omf_free(buffer);
+void video_schedule_screenshot(video_screenshot_signal callback) {
+    g_video_state.screenshot_cb = callback;
 }
 
 void video_render_background(surface *sur) {

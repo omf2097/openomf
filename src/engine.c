@@ -11,7 +11,8 @@
 #include "resources/sounds_loader.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
-#include "video/surface.h"
+#include "utils/png_writer.h"
+#include "utils/time_fmt.h"
 #include "video/vga_state.h"
 #include "video/video.h"
 #include <SDL.h>
@@ -22,9 +23,7 @@
 
 static int run = 0;
 static int start_timeout = 30;
-static int take_screenshot = 0;
 static int enable_screen_updates = 1;
-static char screenshot_filename[128];
 
 int engine_init(void) {
     settings *setting = settings_get();
@@ -76,6 +75,19 @@ exit_1:
     video_close();
 exit_0:
     return 1;
+}
+
+void save_screenshot(const SDL_Rect *r, unsigned char *data, bool flip) {
+    char *time = format_time();
+    char *filename = omf_malloc(256);
+    snprintf(filename, 256, "screenshot_%s.png", time);
+    if(png_write_rgb(filename, r->w, r->h, data, false, flip)) {
+        DEBUG("Got a screenshot: %s", filename);
+    } else {
+        PERROR("Screenshot write operation failed (%s)", filename);
+    }
+    omf_free(filename);
+    omf_free(time);
 }
 
 void engine_run(engine_init_flags *init_flags) {
@@ -131,7 +143,7 @@ void engine_run(engine_init_flags *init_flags) {
                     break;
                 case SDL_KEYDOWN:
                     if(e.key.keysym.sym == SDLK_F1) {
-                        take_screenshot = 1;
+                        video_schedule_screenshot(save_screenshot);
                     }
                     if(e.key.keysym.sym == SDLK_F9) {
                         video_draw_atlas(true);
@@ -272,20 +284,6 @@ void engine_run(engine_init_flags *init_flags) {
             }
             console_render();
             video_render_finish();
-
-            // If screenshot requested, do it here.
-            if(take_screenshot) {
-                surface sur;
-                video_screenshot(&sur);
-                snprintf(screenshot_filename, 128, "screenshot_%u.png", SDL_GetTicks());
-                if(surface_write_png(&sur, vga_state_get_palette(), screenshot_filename)) {
-                    DEBUG("Got a screenshot: %s", screenshot_filename);
-                } else {
-                    PERROR("Screenshot write operation failed (%s)", screenshot_filename);
-                }
-                surface_free(&sur);
-                take_screenshot = 0;
-            }
         } else {
             // If screen updates are disabled, then wait
             SDL_Delay(1);

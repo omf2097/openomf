@@ -12,6 +12,9 @@
 #define NATIVE_W 320
 #define NATIVE_H 200
 
+typedef void (*video_screenshot_signal)(const SDL_Rect *rect, unsigned char *data,
+                                        bool flipped); // Asynchronous screenshot signal
+
 int video_init(int window_w, int window_h, bool fullscreen, bool vsync);
 int video_reinit(int window_w, int window_h, bool fullscreen, bool vsync);
 void video_reinit_renderer(void);
@@ -77,9 +80,9 @@ void video_render_background(surface *sur);
 void video_render_prepare(void);
 void video_render_finish(void);
 void video_close(void);
-void video_screenshot(surface *sur);
 void video_area_capture(surface *sur, int x, int y, int w, int h);
 void video_set_fade(float fade);
+void video_schedule_screenshot(video_screenshot_signal callback);
 
 void video_draw_atlas(bool draw_atlas);
 
