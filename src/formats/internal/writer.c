@@ -55,7 +55,7 @@ int sd_writer_seek_end(const sd_writer *writer, long offset) {
     return fseek(writer->handle, offset, SEEK_END);
 }
 
-int sd_write_buf(sd_writer *writer, const char *buf, int len) {
+int sd_write_buf(sd_writer *writer, const char *buf, size_t len) {
     if(fwrite(buf, 1, len, writer->handle) != len) {
         writer->sd_errno = ferror(writer->handle);
         return 0;
@@ -99,9 +99,9 @@ void sd_write_float(sd_writer *writer, float data) {
     sd_write_buf(writer, (char *)&data, sizeof(float));
 }
 
-void sd_write_fill(sd_writer *writer, char content, int len) {
-    int left = len;
-    int now = 0;
+void sd_write_fill(sd_writer *writer, char content, size_t len) {
+    size_t left = len;
+    size_t now = 0;
     char buffer[1024];
 
     memset(buffer, content, 1024);

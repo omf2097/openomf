@@ -69,7 +69,7 @@ int main(int argc, char *argv[]) {
     // Print
     const sd_lang_string *ds;
     if(str->count > 0) {
-        int str_id = str->ival[0];
+        unsigned str_id = (unsigned)str->ival[0];
         ds = sd_language_get(&language, str_id);
         if(ds == NULL) {
             printf("String %d not found!\n", str_id);
@@ -79,7 +79,7 @@ int main(int argc, char *argv[]) {
         printf("Title: %s\n", ds->description);
         printf("Data:  %s\n", ds->data);
     } else {
-        for(int i = 0; i < language.count; i++) {
+        for(unsigned i = 0; i < language.count; i++) {
             ds = sd_language_get(&language, i);
             if(ds != NULL) {
                 printf("ID:    %d\n", i);

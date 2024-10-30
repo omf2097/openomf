@@ -210,11 +210,6 @@ int sd_animation_load(sd_reader *r, sd_animation *ani) {
               ani->coord_count);
         return SD_FILE_PARSE_ERROR;
     }
-    if(ani->sprite_count > SD_SPRITE_COUNT_MAX) {
-        DEBUG("Animation contains too many sprites! Expected max %d sprites, got %hhu sprites.", SD_SPRITE_COUNT_MAX,
-              ani->sprite_count);
-        return SD_FILE_PARSE_ERROR;
-    }
 
     // Read collision point data
     for(int i = 0; i < ani->coord_count; i++) {

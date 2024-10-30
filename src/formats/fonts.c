@@ -63,7 +63,7 @@ int sd_font_decode(const sd_font *font, sd_vga_image *o, uint8_t ch, uint8_t col
     }
 
     int t = 0;
-    for(int i = 0; i < font->h; i++) {
+    for(unsigned i = 0; i < font->h; i++) {
         for(int k = font->h - 1; k >= 0; k--) {
             if(font->chars[ch].data[i] & (1 << k)) {
                 o->data[t] = color;

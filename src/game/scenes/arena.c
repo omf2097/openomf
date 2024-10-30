@@ -61,7 +61,7 @@ typedef struct arena_local_t {
     int rein_enabled;
 
     sd_rec_file *rec;
-    int rec_last[2];
+    sd_action rec_last[2];
 } arena_local;
 
 void write_rec_move(scene *scene, game_player *player, int action);

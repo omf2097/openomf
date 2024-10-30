@@ -28,7 +28,7 @@ int sd_chr_create(sd_chr_file *chr) {
 
 int sd_chr_from_trn(sd_chr_file *chr, sd_tournament_file *trn, sd_pilot *pilot) {
     int ranked = 0;
-    for(int i = 0; i < trn->enemy_count; i++) {
+    for(uint32_t i = 0; i < trn->enemy_count; i++) {
         chr->enemies[i] = omf_calloc(1, sizeof(sd_chr_enemy));
         sd_pilot_create(&chr->enemies[i]->pilot);
         sd_pilot_clone(&chr->enemies[i]->pilot, trn->enemies[i]);

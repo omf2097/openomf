@@ -16,7 +16,7 @@
 typedef struct cutscene_local_t {
     char *text;
     char *current;
-    int len;
+    size_t len;
     int pos;
     int text_x;
     int text_y;

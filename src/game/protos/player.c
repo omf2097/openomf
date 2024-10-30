@@ -202,7 +202,7 @@ void player_set_delay(object *obj, int delay) {
 #ifdef DEBUGMODE
 void player_describe_frame(const sd_script_frame *frame) {
     DEBUG("Frame %c%d", 65 + frame->sprite, frame->tick_len);
-    for(int i = 0; i < vector_size(&frame->tags); i++) {
+    for(unsigned i = 0; i < vector_size(&frame->tags); i++) {
         sd_script_tag *tag = vector_get(&frame->tags, i);
         if(tag->has_param) {
             DEBUG("    %3s%5d   %s", tag->key, tag->value, tag->desc);
@@ -786,7 +786,7 @@ void player_goto_frame(object *obj, int frame_id) {
     state->previous_tick = state->current_tick - 1;
 }
 
-int player_get_current_tick(const object *obj) {
+uint32_t player_get_current_tick(const object *obj) {
     return obj->animation_state.current_tick;
 }
 

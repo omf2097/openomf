@@ -35,7 +35,7 @@ int sd_writer_seek_end(const sd_writer *writer, long offset);
 /**
  * Write a buffer to file.
  */
-int sd_write_buf(sd_writer *writer, const char *buf, int len);
+int sd_write_buf(sd_writer *writer, const char *buf, size_t len);
 
 int sd_write_fprintf(const sd_writer *writer, const char *format, ...);
 
@@ -50,7 +50,7 @@ void sd_write_float(sd_writer *writer, float data);
 /**
  * Writes len bytes of filler content
  */
-void sd_write_fill(sd_writer *writer, char content, int len);
+void sd_write_fill(sd_writer *writer, char content, size_t len);
 
 /**
  * @brief Writes a string object

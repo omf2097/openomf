@@ -2,12 +2,13 @@
 #include "formats/rec.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
+#include <inttypes.h>
 
 typedef struct {
     int id;
-    int last_tick;
+    uint32_t last_tick;
     int last_action;
-    int max_tick;
+    uint32_t max_tick;
     hashmap tick_lookup;
 } wtf;
 
@@ -19,7 +20,7 @@ void rec_controller_free(controller *ctrl) {
     }
 }
 
-int rec_controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
+int rec_controller_tick(controller *ctrl, uint32_t ticks, ctrl_event **ev) {
     wtf *data = ctrl->data;
     sd_rec_move *move;
     unsigned int len;
@@ -83,7 +84,7 @@ void rec_controller_create(controller *ctrl, int player, sd_rec_file *rec) {
         }
     }
     data->max_tick = rec->moves[rec->move_count - 1].tick;
-    DEBUG("max tick is %d", data->last_tick);
+    DEBUG("max tick is %" PRIu32, data->last_tick);
     ctrl->data = data;
     ctrl->type = CTRL_TYPE_REC;
     ctrl->dyntick_fun = &rec_controller_tick;

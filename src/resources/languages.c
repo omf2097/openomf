@@ -25,7 +25,7 @@ int lang_init(void) {
 
     // Load language strings
     array_create(&language_strings);
-    for(int i = 0; i < language->count; i++) {
+    for(unsigned i = 0; i < language->count; i++) {
         array_set(&language_strings, i, language->strings[i].data);
     }
 

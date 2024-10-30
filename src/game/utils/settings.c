@@ -229,7 +229,7 @@ int settings_write_defaults(const char *path) {
 int settings_init(const char *path) {
     settings_path = path;
     memset(&_settings, 0, sizeof(settings));
-    for(int i = 0; i < sizeof(struct_to_fields) / sizeof(struct_to_field); i++) {
+    for(unsigned i = 0; i < sizeof(struct_to_fields) / sizeof(struct_to_field); i++) {
         const struct_to_field *s2f = &struct_to_fields[i];
         settings_add_fields(s2f->fields, s2f->num_fields);
     }
@@ -237,14 +237,14 @@ int settings_init(const char *path) {
 }
 
 void settings_load(void) {
-    for(int i = 0; i < sizeof(struct_to_fields) / sizeof(struct_to_field); i++) {
+    for(unsigned i = 0; i < sizeof(struct_to_fields) / sizeof(struct_to_field); i++) {
         const struct_to_field *s2f = &struct_to_fields[i];
         settings_load_fields(s2f->_struct, s2f->fields, s2f->num_fields);
     }
 }
 
 void settings_save(void) {
-    for(int i = 0; i < sizeof(struct_to_fields) / sizeof(struct_to_field); i++) {
+    for(unsigned i = 0; i < sizeof(struct_to_fields) / sizeof(struct_to_field); i++) {
         const struct_to_field *s2f = &struct_to_fields[i];
         settings_save_fields(s2f->_struct, s2f->fields, s2f->num_fields);
     }
@@ -254,7 +254,7 @@ void settings_save(void) {
 }
 
 void settings_free(void) {
-    for(int i = 0; i < sizeof(struct_to_fields) / sizeof(struct_to_field); i++) {
+    for(unsigned i = 0; i < sizeof(struct_to_fields) / sizeof(struct_to_field); i++) {
         const struct_to_field *s2f = &struct_to_fields[i];
         settings_free_strings(s2f->_struct, s2f->fields, s2f->num_fields);
     }

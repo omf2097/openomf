@@ -22,7 +22,7 @@ long sd_reader_pos(sd_reader *reader);
 long sd_reader_filesize(const sd_reader *reader);
 int sd_reader_set(sd_reader *reader, long pos);
 
-int sd_read_buf(sd_reader *reader, char *buf, int len);
+int sd_read_buf(sd_reader *reader, char *buf, size_t len);
 int sd_peek_buf(sd_reader *reader, char *buf, int len);
 
 uint8_t sd_read_ubyte(sd_reader *reader);

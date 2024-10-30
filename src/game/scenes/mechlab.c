@@ -130,7 +130,7 @@ void mechlab_free(scene *scene) {
         PERROR("Failed to save pilot %s", player1->chr->pilot.name);
     }
 
-    for(int i = 0; i < sizeof(local->bg_obj) / sizeof(object); i++) {
+    for(unsigned i = 0; i < sizeof(local->bg_obj) / sizeof(object); i++) {
         object_free(&local->bg_obj[i]);
     }
 
@@ -381,7 +381,7 @@ int mechlab_event(scene *scene, SDL_Event *event) {
 void mechlab_render(scene *scene) {
     mechlab_local *local = scene_get_userdata(scene);
 
-    for(int i = 0; i < sizeof(local->bg_obj) / sizeof(object); i++) {
+    for(unsigned i = 0; i < sizeof(local->bg_obj) / sizeof(object); i++) {
         if(local->dashtype == DASHBOARD_SELECT_TOURNAMENT && i > 0) {
             continue;
         }
@@ -471,7 +471,7 @@ int mechlab_create(scene *scene) {
     animation *bg_ani[3];
 
     // Init the background
-    for(int i = 0; i < sizeof(bg_ani) / sizeof(animation *); i++) {
+    for(unsigned i = 0; i < sizeof(bg_ani) / sizeof(animation *); i++) {
         sprite *spr = sprite_copy(animation_get_sprite(&bk_get_info(scene->bk_data, 14)->ani, i));
         bg_ani[i] = create_animation_from_single(spr, spr->pos);
         object_create(&local->bg_obj[i], scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));

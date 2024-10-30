@@ -21,7 +21,7 @@ void sd_language_free(sd_language *language) {
     if(language == NULL)
         return;
     if(language->strings != 0) {
-        for(int i = 0; i < language->count; i++) {
+        for(unsigned i = 0; i < language->count; i++) {
             omf_free(language->strings[i].data);
         }
         omf_free(language->strings);
@@ -98,8 +98,8 @@ int sd_language_load(sd_language *language, const char *filename) {
     return SD_SUCCESS;
 }
 
-const sd_lang_string *sd_language_get(const sd_language *language, int num) {
-    if(language == NULL || num < 0 || num >= language->count) {
+const sd_lang_string *sd_language_get(const sd_language *language, unsigned num) {
+    if(language == NULL || num >= language->count) {
         return NULL;
     }
     return &language->strings[num];
@@ -116,13 +116,13 @@ int sd_language_save(sd_language *language, const char *filename) {
     }
 
     // Write descriptors
-    for(int i = 0; i < language->count; i++) {
+    for(unsigned i = 0; i < language->count; i++) {
         sd_write_dword(w, 0); // For now
         sd_write_buf(w, language->strings[i].description, 32);
     }
 
     // Write strings
-    for(int i = 0; i < language->count; i++) {
+    for(unsigned i = 0; i < language->count; i++) {
         // Write catalog offset
         long offset = sd_writer_pos(w);
         if(offset < 0) {

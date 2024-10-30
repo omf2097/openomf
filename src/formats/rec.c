@@ -36,7 +36,7 @@ void sd_rec_free(sd_rec_file *rec) {
     if(rec == NULL)
         return;
     if(rec->moves) {
-        for(int i = 0; i < rec->move_count; i++) {
+        for(unsigned i = 0; i < rec->move_count; i++) {
             omf_free(rec->moves[i].extra_data);
         }
         omf_free(rec->moves);
@@ -116,7 +116,7 @@ int sd_rec_load(sd_rec_file *rec, const char *file) {
     rec->moves = omf_calloc(rec->move_count, sizeof(sd_rec_move));
 
     // Read blocks
-    for(int i = 0; i < rec->move_count; i++) {
+    for(unsigned i = 0; i < rec->move_count; i++) {
         rec->moves[i].tick = sd_read_udword(r);
         rec->moves[i].lookup_id = sd_read_ubyte(r);
         rec->moves[i].player_id = sd_read_ubyte(r);
@@ -237,7 +237,7 @@ int sd_rec_save(sd_rec_file *rec, const char *file) {
     sd_write_byte(w, rec->unknown_m);
 
     // Move records
-    for(int i = 0; i < rec->move_count; i++) {
+    for(unsigned i = 0; i < rec->move_count; i++) {
         sd_write_udword(w, rec->moves[i].tick);
         sd_write_ubyte(w, rec->moves[i].lookup_id);
         sd_write_ubyte(w, rec->moves[i].player_id);

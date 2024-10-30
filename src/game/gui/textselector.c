@@ -79,7 +79,7 @@ static int textselector_action(component *c, int action) {
             return 0;
         }
         (*tb->pos)++;
-        if(*tb->pos >= vector_size(&tb->options)) {
+        if(*tb->pos >= (int)vector_size(&tb->options)) {
             *tb->pos = 0;
         }
         if(tb->toggle) {

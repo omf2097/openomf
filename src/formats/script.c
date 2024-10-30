@@ -127,7 +127,7 @@ int sd_script_set_sprite_at_frame(sd_script *script, int frame_id, int sprite_id
     return SD_SUCCESS;
 }
 
-int sd_script_get_total_ticks(const sd_script *script) {
+unsigned sd_script_get_total_ticks(const sd_script *script) {
     return sd_script_get_tick_pos_at_frame(script, vector_size(&script->frames));
 }
 
@@ -328,7 +328,7 @@ int sd_script_decode(sd_script *script, const char *input, int *invalid_pos) {
     sd_script_tag_create(&tag);
 
     int now = 0;
-    while(now < str_size(&src)) {
+    while(now < (int)str_size(&src)) {
         if(parse_frame(&frame, &src, &now)) {
             vector_append(&script->frames, &frame);
             sd_script_frame_create(&frame);
@@ -447,7 +447,7 @@ int sd_script_frame_changed(const sd_script *script, int tick_start, int tick_st
 int sd_script_get_frame_index(const sd_script *script, const sd_script_frame *frame) {
     if(script == NULL || frame == NULL)
         return -1;
-    for(int i = 0; i < vector_size(&script->frames); i++) {
+    for(unsigned i = 0; i < vector_size(&script->frames); i++) {
         if(vector_get(&script->frames, i) == frame) {
             return i;
         }
@@ -455,16 +455,16 @@ int sd_script_get_frame_index(const sd_script *script, const sd_script_frame *fr
     return -1;
 }
 
-int sd_script_get_frame_index_at(const sd_script *script, int ticks) {
-    if(script == NULL || ticks < 0)
+int sd_script_get_frame_index_at(const sd_script *script, unsigned ticks) {
+    if(script == NULL)
         return -1;
 
-    int next, pos = 0;
-    for(int i = 0; i < vector_size(&script->frames); i++) {
+    unsigned next, pos = 0;
+    for(unsigned i = 0; i < vector_size(&script->frames); i++) {
         sd_script_frame *now = vector_get(&script->frames, i);
         next = pos + now->tick_len;
         if(pos <= ticks && ticks < next) {
-            return i;
+            return (int)i;
         }
         pos = next;
     }
@@ -520,7 +520,7 @@ int sd_script_get(const sd_script_frame *frame, const char *tag) {
     return stag->value;
 }
 
-int sd_script_next_frame_with_sprite(const sd_script *script, int sprite_id, int current_tick) {
+int sd_script_next_frame_with_sprite(const sd_script *script, int sprite_id, unsigned current_tick) {
     if(script == NULL)
         return -1;
     if(sprite_id < 0)
@@ -528,13 +528,13 @@ int sd_script_next_frame_with_sprite(const sd_script *script, int sprite_id, int
     if(current_tick > sd_script_get_total_ticks(script))
         return -1;
 
-    int next, pos = 0;
+    unsigned next, pos = 0;
     sd_script_frame *frame;
-    for(int i = 0; i < vector_size(&script->frames); i++) {
+    for(unsigned i = 0; i < vector_size(&script->frames); i++) {
         frame = vector_get(&script->frames, i);
         next = pos + frame->tick_len;
         if(current_tick < pos && sprite_id == frame->sprite) {
-            return i;
+            return (int)i;
         }
         pos = next;
     }
@@ -542,19 +542,19 @@ int sd_script_next_frame_with_sprite(const sd_script *script, int sprite_id, int
     return -1;
 }
 
-int sd_script_next_frame_with_tag(const sd_script *script, const char *tag, int current_tick) {
+int sd_script_next_frame_with_tag(const sd_script *script, const char *tag, uint32_t current_tick) {
     if(script == NULL || tag == NULL)
         return -1;
     if(current_tick > sd_script_get_total_ticks(script))
         return -1;
 
-    int next, pos = 0;
+    unsigned next, pos = 0;
     sd_script_frame *frame;
-    for(int i = 0; i < vector_size(&script->frames); i++) {
+    for(unsigned i = 0; i < vector_size(&script->frames); i++) {
         frame = vector_get(&script->frames, i);
         next = pos + frame->tick_len;
         if(current_tick < pos && sd_script_isset(frame, tag)) {
-            return i;
+            return (int)i;
         }
         pos = next;
     }

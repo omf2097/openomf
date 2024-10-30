@@ -83,7 +83,7 @@ void print_rec_root_info(sd_rec_file *rec) {
 
         printf("## Parsed data:\n");
         printf("Number Tick       Extra Player Action Length            Action enum Extra data\n");
-        for(int i = 0; i < rec->move_count; i++) {
+        for(unsigned i = 0; i < rec->move_count; i++) {
             char tmp[100];
             tmp[0] = 0;
             if(rec->moves[i].lookup_id < 3) {
@@ -229,7 +229,7 @@ void rec_get_key(sd_rec_file *rec, const char **key, int kcount) {
             }
             if(kcount == 2) {
                 int r = atoi(key[1]);
-                if(r >= rec->move_count) {
+                if(r >= (int)rec->move_count) {
                     printf("Index does not exist.");
                     return;
                 }

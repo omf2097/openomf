@@ -584,7 +584,7 @@ void bk_info(sd_bk_file *bk) {
 
     printf(" * Animations:  ");
     int start = -1, last = -1;
-    unsigned int m;
+    int m;
     for(m = 0; m < 50; m++) {
         if(bk->anims[m]) {
             if(start == -1) {

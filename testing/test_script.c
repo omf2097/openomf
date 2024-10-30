@@ -206,7 +206,6 @@ void test_next_frame_with_sprite(void) {
     CU_ASSERT(sd_script_next_frame_with_sprite(&script, 0, 100) == -1);  // A
     CU_ASSERT(sd_script_next_frame_with_sprite(&script, 3, 0) == -1);    // D (does not exist)
     CU_ASSERT(sd_script_next_frame_with_sprite(&script, 0, 0) == -1);    // A, exists but should not be found
-    CU_ASSERT(sd_script_next_frame_with_sprite(&script, 0, -1) == 0);    // A, test negative tick
     CU_ASSERT(sd_script_next_frame_with_sprite(&script, 0, 99) == -1);   // A, exists but should not be found
     CU_ASSERT(sd_script_next_frame_with_sprite(&script, 1, 99) == 1);    // B
 }
@@ -217,7 +216,6 @@ void test_next_frame_with_tag(void) {
     CU_ASSERT(sd_script_next_frame_with_tag(&script, "s", 1000) == -1); // tick does not exist
     CU_ASSERT(sd_script_next_frame_with_tag(&script, "s", 0) == 1);     // Should be in frame 1
     CU_ASSERT(sd_script_next_frame_with_tag(&script, "bpd", 0) == -1);  // should be in frame 0, but should not be found
-    CU_ASSERT(sd_script_next_frame_with_tag(&script, "bpd", -1) == 0);  // test negative tick
     CU_ASSERT(sd_script_next_frame_with_tag(&script, "sf", 0) == 1);    // Just test any tag
     CU_ASSERT(sd_script_next_frame_with_tag(&script, "sf", 99) == 1);   // Border case 1
     CU_ASSERT(sd_script_next_frame_with_tag(&script, "sf", 100) == -1); // Border case 2

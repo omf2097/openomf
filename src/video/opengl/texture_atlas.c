@@ -27,7 +27,7 @@ typedef struct texture_atlas {
     GLuint tex_unit;
 } texture_atlas;
 
-int static inline zone_perimeter(zone *zone) {
+static inline int zone_perimeter(zone *zone) {
     return zone->w * 2 + zone->h * 2;
 }
 
@@ -66,7 +66,7 @@ static bool find_free_space(const texture_atlas *atlas, uint16_t w, uint16_t h, 
     int seek_limit = 10;
     int best_index = -1, index;
     int best_perimeter = 4 * 4096 + 1, perimeter;
-    for(int i = 0; i < vec_size; i++) {
+    for(int i = 0; i < (int)vec_size; i++) {
         index = vec_size - i - 1;
         item = vector_get(&atlas->free_space, index);
         if(item->w >= w && item->h >= h) {

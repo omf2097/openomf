@@ -48,7 +48,7 @@ int sd_vga_image_decode(sd_rgba_image *dst, const sd_vga_image *src, const palet
     }
     int pos = 0;
     for(int y = src->h - 1; y >= 0; y--) {
-        for(int x = 0; x < src->w; x++) {
+        for(unsigned x = 0; x < src->w; x++) {
             uint8_t b = src->data[y * src->w + x];
             pos = ((y * src->w) + x) * 4;
             if(remapping > -1) {
@@ -220,7 +220,7 @@ int sd_vga_image_to_png(const sd_vga_image *img, const palette *pal, const char 
         goto error_3;
     }
 
-    for(int y = 0; y < img->h; y++) {
+    for(unsigned y = 0; y < img->h; y++) {
         rows[y] = img->data + y * img->w;
     }
 

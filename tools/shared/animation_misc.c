@@ -204,7 +204,7 @@ void string_strip(char *input, size_t len, const char *tag) {
     sd_script_create(&s);
     sd_script_decode(&s, input, NULL);
 
-    for(int i = 0; i < vector_size(&s.frames); i++) {
+    for(unsigned i = 0; i < vector_size(&s.frames); i++) {
         sd_script_delete_tag(&s, i, tag);
     }
 

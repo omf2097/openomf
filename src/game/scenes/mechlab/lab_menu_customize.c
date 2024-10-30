@@ -846,7 +846,7 @@ int sell_highest_value_upgrade(sd_pilot *pilot, char *sold) {
     };
     int max_idx = -1;
     int32_t max_price = 0;
-    for(int i = 0; i < sizeof(prices) / sizeof(prices[0]); ++i) {
+    for(unsigned i = 0; i < sizeof(prices) / sizeof(prices[0]); ++i) {
         if(prices[i] > max_price) {
             max_price = prices[i];
             max_idx = i;

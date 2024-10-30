@@ -83,7 +83,7 @@ long sd_reader_pos(sd_reader *reader) {
     return res;
 }
 
-int sd_read_buf(sd_reader *reader, char *buf, int len) {
+int sd_read_buf(sd_reader *reader, char *buf, size_t len) {
     if(fread(buf, 1, len, reader->handle) != len) {
         reader->sd_errno = ferror(reader->handle);
         return 0;

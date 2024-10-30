@@ -90,14 +90,14 @@ void controller_close(controller *ctrl, ctrl_event **ev) {
     (*ev)->next = NULL;
 }
 
-int controller_tick(controller *ctrl, int ticks, ctrl_event **ev) {
+int controller_tick(controller *ctrl, uint32_t ticks, ctrl_event **ev) {
     if(ctrl->tick_fun != NULL) {
         return ctrl->tick_fun(ctrl, ticks, ev);
     }
     return 0;
 }
 
-int controller_dyntick(controller *ctrl, int ticks, ctrl_event **ev) {
+int controller_dyntick(controller *ctrl, uint32_t ticks, ctrl_event **ev) {
     if(ctrl->dyntick_fun != NULL) {
         return ctrl->dyntick_fun(ctrl, ticks, ev);
     }

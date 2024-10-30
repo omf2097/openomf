@@ -6,7 +6,7 @@
 #define PTR_SIZE(bs) ((bs) * sizeof(void *))
 
 void array_nullify(void **ptr, unsigned int len) {
-    for(int i = 0; i < len; i++) {
+    for(unsigned i = 0; i < len; i++) {
         ptr[i] = NULL;
     }
 }
@@ -48,7 +48,7 @@ void *array_get(const array *array, unsigned int key) {
 void *array_iter_next(iterator *iter) {
     array *arr = (array *)iter->data;
     void *out = NULL;
-    while(iter->inow < arr->allocated_size) {
+    while(iter->inow < (int)arr->allocated_size) {
         if(arr->data[iter->inow] != NULL) {
             out = arr->data[iter->inow];
             iter->inow++;
@@ -56,7 +56,7 @@ void *array_iter_next(iterator *iter) {
         }
         iter->inow++;
     }
-    if(iter->inow + 1 >= arr->allocated_size) {
+    if(iter->inow + 1 >= (int)arr->allocated_size) {
         iter->ended = 1;
     }
     return out;

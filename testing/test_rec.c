@@ -43,7 +43,7 @@ void test_rec_roundtrip(void) {
 
     // Make sure the RECs seem the same
     CU_ASSERT(rec.move_count == loaded.move_count);
-    for(int i = 0; i < rec.move_count; i++) {
+    for(unsigned i = 0; i < rec.move_count; i++) {
         CU_ASSERT(rec.moves[i].tick == loaded.moves[i].tick);
         CU_ASSERT(rec.moves[i].lookup_id == loaded.moves[i].lookup_id);
         CU_ASSERT(rec.moves[i].player_id == loaded.moves[i].player_id);

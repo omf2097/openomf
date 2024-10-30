@@ -115,7 +115,7 @@ void lab_dash_main_chr_right(component *c, void *userdata) {
     DEBUG("CHAR RIGHT");
     dashboard_widgets *dw = userdata;
     dw->index++;
-    if(dw->index >= list_size(dw->savegames)) {
+    if(dw->index >= (int16_t)list_size(dw->savegames)) {
         dw->index = 0;
     }
     game_player *p1 = game_state_get_player(dw->scene->gs, 0);
