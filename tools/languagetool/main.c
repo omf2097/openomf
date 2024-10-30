@@ -148,6 +148,9 @@ int main(int argc, char *argv[]) {
     void *argtable[] = {help, vers, file, input, output, str, end};
     const char *progname = "languagetool";
 
+    sd_language language;
+    sd_language_create(&language);
+
     // Make sure everything got allocated
     if(arg_nullcheck(argtable) != 0) {
         printf("%s: insufficient memory\n", progname);
@@ -183,29 +186,27 @@ int main(int argc, char *argv[]) {
     }
 
     // Get strings
-    sd_language language;
-    sd_language_create(&language);
     int ret;
 
     if(file->count > 0) {
         ret = sd_language_load(&language, file->filename[0]);
         if(ret != SD_SUCCESS) {
             printf("Language file could not be loaded! Error [%d] %s\n", ret, sd_get_error(ret));
-            goto exit_1;
+            goto exit_0;
         }
     } else if(input->count > 0) {
         // parse the supplied text file
         FILE *file = fopen(input->filename[0], "r");
         if(!file) {
             fprintf(stderr, "Could not open %s", input->filename[0]);
-            goto exit_1;
+            goto exit_0;
         }
         int line = 1;
         while(read_entry(file, &language, &line)) {
         }
     } else {
         fprintf(stderr, "Please supply -f or -i\n");
-        goto exit_1;
+        goto exit_0;
     }
 
     // Print
@@ -215,7 +216,7 @@ int main(int argc, char *argv[]) {
         ds = sd_language_get(&language, str_id);
         if(ds == NULL) {
             printf("String %d not found!\n", str_id);
-            goto exit_1;
+            goto exit_0;
         }
 
         printf("Title: %s\n", ds->description);
@@ -236,12 +237,12 @@ int main(int argc, char *argv[]) {
         ret = sd_language_save(&language, output->filename[0]);
         if(ret != SD_SUCCESS) {
             printf("Failed saving language file to %s: %s", output->filename[0], sd_get_error(ret));
+            goto exit_0;
         }
     }
 
-exit_1:
-    sd_language_free(&language);
 exit_0:
+    sd_language_free(&language);
     arg_freetable(argtable, sizeof(argtable) / sizeof(argtable[0]));
     return 0;
 }
