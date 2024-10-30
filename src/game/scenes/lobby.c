@@ -502,8 +502,8 @@ void lobby_entered_name(component *c, void *userdata) {
             DEBUG("An error occurred while trying to create an ENet client host.\n");
             return;
         }
-        // enet_address_set_host(&address, "45.79.158.117");
-        enet_address_set_host(&address, "127.0.0.1");
+        enet_address_set_host(&address, "lobby.openomf.org");
+        //enet_address_set_host(&address, "127.0.0.1");
         address.port = 2098;
         DEBUG("server address is %d", address.host);
         /* Initiate the connection, allocating the two channels 0 and 1. */
