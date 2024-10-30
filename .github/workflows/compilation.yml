@@ -319,6 +319,7 @@ jobs:
     - name: Generate Windows Release
       run: |
         mkdir build-release && cd build-release
+        export WINEPATH="${GITHUB_WORKSPACE}/openomf-win-build-main/bin/"
         cmake -DCMAKE_BUILD_TYPE=Release \
               -DCMAKE_INSTALL_PREFIX=release \
               -DCMAKE_TOOLCHAIN_FILE="${GITHUB_WORKSPACE}/cmake-scripts/mingw-w64-toolchain.cmake" \
