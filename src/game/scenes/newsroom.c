@@ -55,8 +55,8 @@ char const *pronoun_strip(char const *pronoun, char *buf, size_t buf_size) {
     while(pronoun_len && pronoun[pronoun_len - 1] == '\n') {
         pronoun_len--;
     }
-    if(pronoun_len > buf_size)
-        pronoun_len = buf_size;
+    if(pronoun_len >= buf_size)
+        pronoun_len = buf_size - 1;
     memcpy(buf, pronoun, pronoun_len);
     buf[pronoun_len] = '\0';
     return buf;
@@ -105,7 +105,7 @@ void newsroom_fixup_str(newsroom_local *local) {
         translation_id = NEWSROOM_TEXT + local->news_id + min2(local->screen, 1);
     }
 
-    char scratch[8];
+    char scratch[9];
     str tmp;
     str_from_c(&tmp, lang_get(translation_id));
     str_replace(&tmp, "~11", pronoun_strip(subject_pronoun(local->sex2), scratch, sizeof scratch), -1);
