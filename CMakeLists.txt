@@ -25,7 +25,7 @@ if(MSVC)
     # we would probably like to pass /Wall instead of /W4, but there's a lot
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /permissive- /W4")
 else()
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wformat -pedantic -Wvla")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wno-unused-parameter -Wformat -pedantic -Wvla")
     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -ggdb -DDEBUGMODE -Werror -fno-omit-frame-pointer")
     set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -g -O2 -fno-omit-frame-pointer -DNDEBUG")
     set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O2 -DNDEBUG")
