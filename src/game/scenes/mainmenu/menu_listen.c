@@ -135,11 +135,18 @@ component *menu_listen_create(scene *s) {
 
     // Set up host
     local->controllers_created = 0;
+    int randtries = 0;
     while(local->host == NULL) {
         local->host = enet_host_create(&address, 1, 2, 0, 0);
         if(local->host == NULL) {
             if(settings_get()->net.net_listen_port_start == 0) {
                 address.port = rand_int(65525 - 1024) + 1024;
+                randtries++;
+                if(randtries > 10) {
+                    DEBUG("Failed to initialize ENet server with random ports");
+                    omf_free(local);
+                    return NULL;
+                }
             } else {
                 address.port++;
                 if(address.port > settings_get()->net.net_listen_port_end) {
@@ -160,9 +167,14 @@ component *menu_listen_create(scene *s) {
             // try to use the internal port first
             ext_port = address.port;
         }
+        randtries = 0;
         while(!nat_create_mapping(&local->nat, address.port, ext_port)) {
             if(settings_get()->net.net_ext_port_start == 0) {
                 ext_port = rand_int(65525 - 1024) + 1024;
+                if(randtries > 10) {
+                    ext_port = 0;
+                    break;
+                }
             } else {
                 ext_port++;
                 if(ext_port > settings_get()->net.net_ext_port_end) {

@@ -504,15 +504,21 @@ void lobby_entered_name(component *c, void *userdata) {
 
         // Set up host
         local->controllers_created = 0;
+        int randtries = 0;
         while(local->client == NULL) {
             local->client = enet_host_create(&address, 2, 2, 0, 0);
             if(local->client == NULL) {
                 if(settings_get()->net.net_listen_port_start == 0) {
                     address.port = rand_int(65525 - 1024) + 1024;
+                    randtries++;
+                    if(randtries > 10) {
+                        DEBUG("Failed to initialize ENet server, could not allocate random port");
+                        return;
+                    }
                 } else {
                     address.port++;
                     if(address.port > settings_get()->net.net_listen_port_end) {
-                        DEBUG("Failed to initialize ENet server");
+                        DEBUG("Failed to initialize ENet server, port range exhausted");
                         return;
                     }
                 }
@@ -524,10 +530,15 @@ void lobby_entered_name(component *c, void *userdata) {
             // try to use the internal port first
             ext_port = address.port;
         }
+        randtries = 0;
         if(nat->type != NAT_TYPE_NONE) {
             while(!nat_create_mapping(nat, address.port, ext_port)) {
                 if(settings_get()->net.net_ext_port_start == 0) {
                     ext_port = rand_int(65525 - 1024) + 1024;
+                    randtries++;
+                    if(randtries > 10) {
+                        break;
+                    }
                 } else {
                     ext_port++;
                     if(ext_port > settings_get()->net.net_ext_port_end) {

@@ -8,19 +8,6 @@
 #include <miniupnpc/upnpcommands.h>
 #endif
 
-// socklen_t nonsense
-#if defined(_WIN32)
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
-#ifndef _WINSOCK_DEPRECATED_NO_WARNINGS
-#define _WINSOCK_DEPRECATED_NO_WARNINGS
-#endif
-#include <windows.h>
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#endif
-
 typedef enum
 {
     NAT_TYPE_NONE,

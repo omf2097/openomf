@@ -15,7 +15,12 @@ bool nat_create_upnp_mapping(nat_ctx *ctx, uint16_t int_port, uint16_t ext_port)
     snprintf(ext_portstr, sizeof(ext_portstr), "%d", ext_port);
 
     char lan_address[64];
+#if(MINIUPNPC_API_VERSION >= 18)
+    int status =
+        UPNP_GetValidIGD(ctx->upnp_dev, &ctx->upnp_urls, &ctx->upnp_data, lan_address, sizeof(lan_address), NULL, 0);
+#else
     int status = UPNP_GetValidIGD(ctx->upnp_dev, &ctx->upnp_urls, &ctx->upnp_data, lan_address, sizeof(lan_address));
+#endif
 
     if(status == 1) {
         // get the external (WAN) IP address
@@ -103,7 +108,12 @@ void nat_try_upnp(nat_ctx *ctx) {
     // TODO check error here?
     // try to look up our lan address, to test it
     char lan_address[64];
+#if(MINIUPNPC_API_VERSION >= 18)
+    int status =
+        UPNP_GetValidIGD(ctx->upnp_dev, &ctx->upnp_urls, &ctx->upnp_data, lan_address, sizeof(lan_address), NULL, 0);
+#else
     int status = UPNP_GetValidIGD(ctx->upnp_dev, &ctx->upnp_urls, &ctx->upnp_data, lan_address, sizeof(lan_address));
+#endif
     // look up possible "status" values, the number "1" indicates a valid IGD was found
 
     if(status == 1) {
