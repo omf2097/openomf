@@ -210,6 +210,7 @@ if (USE_TOOLS)
     add_executable(trntool tools/trntool/main.c tools/shared/pilot.c)
     add_executable(altpaltool tools/altpaltool/main.c)
     add_executable(chrtool tools/chrtool/main.c tools/shared/pilot.c)
+    add_executable(fonttool tools/fonttool/main.c)
     add_executable(setuptool tools/setuptool/main.c tools/shared/pilot.c)
     add_executable(stringparser tools/stringparser/main.c)
 
@@ -225,6 +226,7 @@ if (USE_TOOLS)
         scoretool
         trntool
         altpaltool
+        fonttool
         chrtool
         setuptool
         stringparser
