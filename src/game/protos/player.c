@@ -596,11 +596,14 @@ void player_run(object *obj) {
             har_set_ani(enemy, 9, 0);
         }
 
+        // XXX BJ tag invalidates frame, and probably doesn't do what it's supposed to.
+#if 0
         // BJ sets new animation for our HAR
         if(sd_script_isset(frame, "bj")) {
             int new_ani = sd_script_get(frame, "bj");
             har_set_ani(obj, new_ani, 0);
         }
+#endif
 
         if(sd_script_isset(frame, "bu") && obj->vel.y < 0.0f) {
             float x_dist = dist(obj->pos.x, 160);
