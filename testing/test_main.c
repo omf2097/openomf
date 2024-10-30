@@ -13,6 +13,7 @@ void vector_test_suite(CU_pSuite suite);
 void list_test_suite(CU_pSuite suite);
 void array_test_suite(CU_pSuite suite);
 void text_render_test_suite(CU_pSuite suite);
+void cp437_test_suite(CU_pSuite suite);
 
 int main(int argc, char **argv) {
     CU_pSuite suite = NULL;
@@ -82,6 +83,11 @@ int main(int argc, char **argv) {
     if(text_render_suite == NULL)
         goto end;
     text_render_test_suite(text_render_suite);
+
+    CU_pSuite cp437_suite = CU_add_suite("Code Page 437", NULL, NULL);
+    if(cp437_suite == NULL)
+        goto end;
+    cp437_test_suite(cp437_suite);
 
     // Run tests
     CU_basic_set_mode(CU_BRM_VERBOSE);
