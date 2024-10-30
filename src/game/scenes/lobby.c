@@ -488,20 +488,58 @@ void lobby_entered_name(component *c, void *userdata) {
     if(strlen(textinput_value(c))) {
         scene *scene = userdata;
         lobby_local *local = scene_get_userdata(scene);
-        // TODO consult the settings for a port to use, or default to 0
 
-        local->client = enet_host_create(NULL /* create a client host */, 2 /* only allow 2 outgoing connections */,
-                                         2 /* allow up 2 channels to be used, 0 and 1 */,
-                                         0 /* assume any amount of incoming bandwidth */,
-                                         0 /* assume any amount of outgoing bandwidth */);
+        nat_ctx *nat = omf_calloc(1, sizeof(nat_ctx));
+        nat_create(nat);
 
         ENetAddress address;
+        address.host = ENET_HOST_ANY;
+        address.port = settings_get()->net.net_listen_port_start;
+
+        DEBUG("attemotinfg to bind to port %d", address.port);
+
+        if(address.port == 0) {
+            address.port = rand_int(65525 - 1024) + 1024;
+        }
+
+        // Set up host
+        local->controllers_created = 0;
+        while(local->client == NULL) {
+            local->client = enet_host_create(&address, 2, 2, 0, 0);
+            if(local->client == NULL) {
+                if(settings_get()->net.net_listen_port_start == 0) {
+                    address.port = rand_int(65525 - 1024) + 1024;
+                } else {
+                    address.port++;
+                    if(address.port > settings_get()->net.net_listen_port_end) {
+                        DEBUG("Failed to initialize ENet server");
+                        return;
+                    }
+                }
+            }
+        }
+
+        int ext_port = settings_get()->net.net_ext_port_start;
+        if(ext_port == 0) {
+            // try to use the internal port first
+            ext_port = address.port;
+        }
+        if(nat->type != NAT_TYPE_NONE) {
+            while(!nat_create_mapping(nat, address.port, ext_port)) {
+                if(settings_get()->net.net_ext_port_start == 0) {
+                    ext_port = rand_int(65525 - 1024) + 1024;
+                } else {
+                    ext_port++;
+                    if(ext_port > settings_get()->net.net_ext_port_end) {
+                        break;
+                    }
+                }
+            }
+        }
+        enet_socket_set_option(local->client->socket, ENET_SOCKOPT_REUSEADDR, 1);
+
         ENetEvent event;
         ENetPeer *peer = NULL;
-        if(local->client == NULL) {
-            DEBUG("An error occurred while trying to create an ENet client host.\n");
-            return;
-        }
         enet_address_set_host(&address, "lobby.openomf.org");
         // enet_address_set_host(&address, "127.0.0.1");
         address.port = 2098;
@@ -518,18 +556,6 @@ void lobby_entered_name(component *c, void *userdata) {
 
             DEBUG("local peer connect id %d", local->peer->connectID);
             DEBUG("remote peer connect id %d", event.peer->connectID);
-
-            struct sockaddr_in sin;
-            socklen_t len = sizeof(sin);
-            nat_ctx *nat = omf_calloc(1, sizeof(nat_ctx));
-            // TODO only do this if the bind port was 0
-            if(getsockname(local->client->socket, (struct sockaddr *)&sin, &len) == -1) {
-                DEBUG("unable to determine local port");
-            } else {
-                nat_create(nat, ntohs(sin.sin_port));
-            }
-
-            DEBUG("local port is %d", ntohs(sin.sin_port));
 
             event.peer->data = nat;
             strncpy(local->name, textinput_value(c), sizeof(local->name));
@@ -551,6 +577,8 @@ void lobby_entered_name(component *c, void *userdata) {
             serial_write(&ser, version, strlen(version));
             char *name = textinput_value(c);
             serial_write(&ser, name, strlen(name));
+
+            settings_get()->net.net_username = strdup(name);
 
             ENetPacket *packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
             serial_free(&ser);
@@ -1141,7 +1169,7 @@ int lobby_create(scene *scene) {
 
         menu_attach(name_menu, label_create(&tconf, "Enter your name:"));
         // TODO pull the last used name from settings
-        component *name_input = textinput_create(&tconf, "", "", "");
+        component *name_input = textinput_create(&tconf, "", "", settings_get()->net.net_username);
         textinput_enable_background(name_input, 0);
         textinput_set_max_chars(name_input, 14);
         textinput_set_done_cb(name_input, lobby_entered_name, scene);

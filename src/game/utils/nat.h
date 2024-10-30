@@ -35,9 +35,15 @@ typedef struct nat_ctx_t {
 #ifdef MINIUPNPC_FOUND
     struct UPNPUrls upnp_urls;
     struct IGDdatas upnp_data;
+    struct UPNPDev *upnp_dev;
+#endif
+#ifdef NATPMP_FOUND
+    natpmp_t natpmp;
 #endif
 } nat_ctx;
 
-void nat_create(nat_ctx *ctx, uint16_t port);
+void nat_create(nat_ctx *ctx);
+
+bool nat_create_mapping(nat_ctx *ctx, uint16_t int_port, uint16_t ext_port);
 
 void nat_free(nat_ctx *ctx);

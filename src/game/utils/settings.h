@@ -106,8 +106,14 @@ typedef struct {
 typedef struct {
     char *net_connect_ip;
     char *trace_file;
+    char *net_username;
     int net_connect_port;
-    int net_listen_port;
+    int net_listen_port_start;
+    int net_listen_port_end;
+    int net_ext_port_start;
+    int net_ext_port_end;
+    int net_use_upnp;
+    int net_use_pmp;
 } settings_network;
 
 typedef struct {

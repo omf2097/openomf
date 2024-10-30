@@ -6,6 +6,7 @@
 #include "game/game_state.h"
 #include "game/gui/gui.h"
 #include "game/protos/scene.h"
+#include "game/utils/nat.h"
 #include "game/utils/settings.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
@@ -14,6 +15,7 @@ typedef struct {
     ENetHost *host;
     int controllers_created;
     component *cancel_button;
+    nat_ctx nat;
     scene *s;
 } listen_menu_data;
 
@@ -24,6 +26,7 @@ void menu_listen_free(component *c) {
     }
     local->host = NULL;
     local->controllers_created = 0;
+    nat_free(&local->nat);
     omf_free(local);
     menu_set_userdata(c, local);
 }
@@ -113,6 +116,7 @@ void menu_listen_cancel(component *c, void *userdata) {
     }
     local->controllers_created = 0;
     local->host = NULL;
+    nat_free(&local->nat);
 }
 
 component *menu_listen_create(scene *s) {
@@ -123,15 +127,50 @@ component *menu_listen_create(scene *s) {
     // Form address (host)
     ENetAddress address;
     address.host = ENET_HOST_ANY;
-    address.port = settings_get()->net.net_listen_port;
+    address.port = settings_get()->net.net_listen_port_start;
+
+    if(address.port == 0) {
+        address.port = rand_int(65525 - 1024) + 1024;
+    }
 
     // Set up host
     local->controllers_created = 0;
-    local->host = enet_host_create(&address, 1, 2, 0, 0);
-    if(local->host == NULL) {
-        DEBUG("Failed to initialize ENet server");
-        omf_free(local);
-        return NULL;
+    while(local->host == NULL) {
+        local->host = enet_host_create(&address, 1, 2, 0, 0);
+        if(local->host == NULL) {
+            if(settings_get()->net.net_listen_port_start == 0) {
+                address.port = rand_int(65525 - 1024) + 1024;
+            } else {
+                address.port++;
+                if(address.port > settings_get()->net.net_listen_port_end) {
+                    DEBUG("Failed to initialize ENet server");
+                    omf_free(local);
+                    return NULL;
+                }
+            }
+        }
+    }
+    nat_create(&local->nat);
+
+    int ext_port = 0;
+
+    if(local->nat.type != NAT_TYPE_NONE) {
+        ext_port = settings_get()->net.net_ext_port_start;
+        if(ext_port == 0) {
+            // try to use the internal port first
+            ext_port = address.port;
+        }
+        while(!nat_create_mapping(&local->nat, address.port, ext_port)) {
+            if(settings_get()->net.net_ext_port_start == 0) {
+                ext_port = rand_int(65525 - 1024) + 1024;
+            } else {
+                ext_port++;
+                if(ext_port > settings_get()->net.net_ext_port_end) {
+                    ext_port = 0;
+                    break;
+                }
+            }
+        }
     }
     enet_socket_set_option(local->host->socket, ENET_SOCKOPT_REUSEADDR, 1);
 
@@ -146,10 +185,12 @@ component *menu_listen_create(scene *s) {
     component *menu = menu_create(11);
     menu_attach(menu, label_create(&tconf, "START SERVER"));
     menu_attach(menu, filler_create());
-    menu_attach(menu, label_create(&tconf, "Waiting ..."));
+    char buf[80];
+    snprintf(buf, sizeof(buf), "Waiting for connections to port %d.", ext_port ? ext_port : address.port);
+    menu_attach(menu, label_create(&tconf, buf));
     menu_attach(menu, filler_create());
     local->cancel_button =
-        textbutton_create(&tconf, "CANCEL", "Cancel listening for a connection.", COM_ENABLED, menu_listen_cancel, s);
+        textbutton_create(&tconf, "CANCEL", "Cancel listing for a connection.", COM_ENABLED, menu_listen_cancel, s);
     menu_attach(menu, local->cancel_button);
 
     menu_set_userdata(menu, local);

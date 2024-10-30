@@ -124,23 +124,22 @@ int main(int argc, char *argv[]) {
         if(port->count > 0) {
             connect_port = port->ival[0] & 0xFFFF;
         }
-        if(trace->count > 0) {
-            trace_file = strdup(trace->sval[0]);
-        }
     } else if(listen->count > 0) {
         init_flags.net_mode = NET_MODE_SERVER;
         listen_port = 2097;
-        if(port->count > 0) {
-            listen_port = port->ival[0] & 0xFFFF;
-        }
-        if(trace->count > 0) {
-            trace_file = strdup(trace->sval[0]);
-        }
     } else if(play->count > 0) {
         strncpy(init_flags.rec_file, play->filename[0], 254);
     } else if(rec->count > 0) {
         init_flags.record = 1;
         strncpy(init_flags.rec_file, rec->filename[0], 254);
+    }
+
+    if(port->count > 0) {
+        listen_port = port->ival[0] & 0xFFFF;
+    }
+
+    if(trace->count > 0) {
+        trace_file = strdup(trace->sval[0]);
     }
 
     // Init log
@@ -201,7 +200,8 @@ int main(int argc, char *argv[]) {
     }
     if(listen_port > 0 && listen_port < 0xFFFF) {
         DEBUG("Listen Port overridden to %u", listen_port & 0xFFFF);
-        settings_get()->net.net_listen_port = listen_port;
+        settings_get()->net.net_listen_port_start = listen_port;
+        settings_get()->net.net_listen_port_end = listen_port;
     }
 
     // Init SDL2
