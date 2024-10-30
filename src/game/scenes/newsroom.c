@@ -15,13 +15,6 @@
 #include "video/surface.h"
 #include "video/video.h"
 
-// newsroom text starts at 87
-// there are 24*2 texts in total
-#define NEWSROOM_TEXT 87
-
-#define NEWSROOM_PRONOUN 81
-#define NEWSROOM_HAR 31
-
 typedef struct newsroom_local_t {
     int news_id;
     int screen;
@@ -37,17 +30,17 @@ typedef struct newsroom_local_t {
 
 // their
 const char *possessive_pronoun(int sex) {
-    return lang_get(NEWSROOM_PRONOUN + sex);
+    return lang_get(LANG_STR_PRONOUN + sex);
 }
 
 // them
 const char *object_pronoun(int sex) {
-    return lang_get(NEWSROOM_PRONOUN + 2 + sex);
+    return lang_get(LANG_STR_PRONOUN + 2 + sex);
 }
 
 // they
 const char *subject_pronoun(int sex) {
-    return lang_get(NEWSROOM_PRONOUN + 4 + sex);
+    return lang_get(LANG_STR_PRONOUN + 4 + sex);
 }
 
 char const *pronoun_strip(char const *pronoun, char *buf, size_t buf_size) {
@@ -100,9 +93,9 @@ void newsroom_fixup_str(newsroom_local *local) {
     unsigned int translation_id;
 
     if(local->champion && local->screen >= 2) {
-        translation_id = 79;
+        translation_id = LANG_STR_NEWSROOM_NEWCHAMPION;
     } else {
-        translation_id = NEWSROOM_TEXT + local->news_id + min2(local->screen, 1);
+        translation_id = LANG_STR_NEWSROOM_TEXT + local->news_id + min2(local->screen, 1);
     }
 
     char scratch[9];
@@ -115,8 +108,8 @@ void newsroom_fixup_str(newsroom_local *local) {
     str_replace(&tmp, "~7", pronoun_strip(object_pronoun(local->sex1), scratch, sizeof scratch), -1);
     str_replace(&tmp, "~6", pronoun_strip(possessive_pronoun(local->sex1), scratch, sizeof scratch), -1);
     str_replace(&tmp, "~5", "Stadium", -1);
-    str_replace(&tmp, "~4", pronoun_strip(lang_get(local->har2 + NEWSROOM_HAR), scratch, sizeof scratch), -1);
-    str_replace(&tmp, "~3", pronoun_strip(lang_get(local->har1 + NEWSROOM_HAR), scratch, sizeof scratch), -1);
+    str_replace(&tmp, "~4", pronoun_strip(lang_get(local->har2 + LANG_STR_HAR), scratch, sizeof scratch), -1);
+    str_replace(&tmp, "~3", pronoun_strip(lang_get(local->har1 + LANG_STR_HAR), scratch, sizeof scratch), -1);
     str_replace(&tmp, "~2", str_c(&local->pilot2), -1);
     str_replace(&tmp, "~1", str_c(&local->pilot1), -1);
 

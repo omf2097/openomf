@@ -31,16 +31,14 @@ int lang_init(void) {
         goto error_0;
     }
 
-    unsigned const lang_count_old = 990;
-    unsigned const lang_count_new = 1013;
-    if(language->count == lang_count_old) {
+    if(language->count == 990) {
         // OMF 2.1 added netplay, and with it 23 new localization strings
         unsigned new_ids[] = {149, 150, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181,
                               182, 183, 184, 185, 267, 269, 270, 271, 284, 295, 305};
         unsigned *new_ids_end = new_ids + sizeof(new_ids) / sizeof(new_ids[0]);
 
         // insert dummy entries
-        sd_lang_string *expanded_strings = omf_malloc(lang_count_new * sizeof(sd_lang_string));
+        sd_lang_string *expanded_strings = omf_malloc(LANG_STR_COUNT * sizeof(sd_lang_string));
         unsigned next = 0;
         unsigned next_from = 0;
         for(unsigned *id = new_ids; id < new_ids_end; id++) {
@@ -52,15 +50,15 @@ int lang_init(void) {
             expanded_strings[next].data = NULL;
             memcpy(expanded_strings[next].description, "dummy", 6);
             next++;
+            language->count++;
         }
         memcpy(expanded_strings + next, language->strings + next_from,
-               (lang_count_new - next) * sizeof(sd_lang_string));
+               (LANG_STR_COUNT - next) * sizeof(sd_lang_string));
         omf_free(language->strings);
         language->strings = expanded_strings;
-        language->count = lang_count_new;
     }
-    if(language->count != lang_count_new) {
-        PERROR("Unable to load language file '%s', unsupported file version!", filename);
+    if(language->count != LANG_STR_COUNT) {
+        PERROR("Unable to load language file '%s', unsupported or corrupt file!", filename);
         goto error_0;
     }
 
@@ -76,6 +74,10 @@ int lang_init(void) {
     }
     if(sd_language_load(language2, filename)) {
         PERROR("Unable to load OpenOMF language file '%s'!", filename);
+        goto error_0;
+    }
+    if(language2->count != LANG2_STR_COUNT) {
+        PERROR("Unable to load OpenOMF language file '%s', unsupported or corrupt file!", filename);
         goto error_0;
     }
 

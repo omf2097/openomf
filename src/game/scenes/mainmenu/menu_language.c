@@ -89,7 +89,6 @@ component *menu_language_create(scene *s) {
     while((filename = (char *)list_iter_next(&it))) {
         // Get localized language name from OpenOMF .DAT2 or .LNG2 file
         str_format(&filename2, "%s%s2", dirname, filename);
-        INFO("trying %s\n", str_c(&filename2));
         sd_language lang2;
         if(sd_language_create(&lang2) != SD_SUCCESS) {
             continue;
@@ -99,13 +98,13 @@ component *menu_language_create(scene *s) {
             sd_language_free(&lang2);
             continue;
         }
-        if(lang2.count < 1) {
+        if(lang2.count != LANG2_STR_COUNT) {
             INFO("Warning: Invalid OpenOMF language file '%s', got %d entries!", str_c(&filename2), lang2.count);
             sd_language_free(&lang2);
             continue;
         }
-        char *language_name = lang2.strings[0].data;
-        lang2.strings[0].data = NULL;
+        char *language_name = lang2.strings[LANG2_STR_LANGUAGE].data;
+        lang2.strings[LANG2_STR_LANGUAGE].data = NULL;
         sd_language_free(&lang2);
 
         if(strcmp(setting->language.language, filename) == 0) {
