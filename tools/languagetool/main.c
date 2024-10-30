@@ -144,8 +144,10 @@ int main(int argc, char *argv[]) {
     struct arg_file *input = arg_file0("i", "input", "<file>", "exported language file to re-import");
     struct arg_int *str = arg_int0("s", "string", "<value>", "Select language string number");
     struct arg_file *output = arg_file0("o", "output", "<file>", "Output compiled language file");
+    struct arg_int *check_count =
+        arg_int0("c", "check-count", "<NUM>", "Check that language file has this many entries, or bail.");
     struct arg_end *end = arg_end(20);
-    void *argtable[] = {help, vers, file, input, output, str, end};
+    void *argtable[] = {help, vers, file, input, output, str, check_count, end};
     const char *progname = "languagetool";
 
     sd_language language;
@@ -208,6 +210,11 @@ int main(int argc, char *argv[]) {
         }
     } else {
         fprintf(stderr, "Please supply -f or -i\n");
+        goto exit_0;
+    }
+
+    if(check_count->count > 0 && (unsigned)check_count->ival[0] != language.count) {
+        fprintf(stderr, "Expected %u entries, got %d!\n", (unsigned)check_count->ival[0], language.count);
         goto exit_0;
     }
 
