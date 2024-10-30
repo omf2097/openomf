@@ -195,8 +195,6 @@ sd_sprite *sd_animation_get_sprite(sd_animation *anim, int num) {
 
 int sd_animation_load(sd_reader *r, sd_animation *ani) {
     int ret;
-    uint32_t tmp;
-    int32_t a, b;
     uint16_t size;
 
     // Animation header
@@ -220,9 +218,9 @@ int sd_animation_load(sd_reader *r, sd_animation *ani) {
 
     // Read collision point data
     for(int i = 0; i < ani->coord_count; i++) {
-        tmp = sd_read_udword(r);
-        a = tmp & 0xffff;
-        b = (tmp & 0xffff0000) >> 16;
+        uint32_t tmp = sd_read_udword(r);
+        uint16_t a = tmp & 0xffff;
+        uint16_t b = (tmp & 0xffff0000) >> 16;
         ani->coord_table[i].x = ((a & 0x3ff) << (6 + 16)) >> (6 + 16);
         ani->coord_table[i].null = (a >> 10);
         ani->coord_table[i].y = ((b & 0x3ff) << (6 + 16)) >> (6 + 16);
