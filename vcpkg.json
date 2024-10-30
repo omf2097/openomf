@@ -16,10 +16,7 @@
     },
     {
       "name": "sdl2-mixer",
-      "default-features": false,
-      "features": [
-        "wavpack"
-      ]
+      "default-features": false
     },
     "libxmp",
     "libepoxy",
