@@ -150,6 +150,8 @@ int main(int argc, char *argv[]) {
 
     sd_language language;
     sd_language_create(&language);
+    // assume failure until success happens.
+    int main_ret = EXIT_FAILURE;
 
     // Make sure everything got allocated
     if(arg_nullcheck(argtable) != 0) {
@@ -241,8 +243,9 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    main_ret = EXIT_SUCCESS;
 exit_0:
     sd_language_free(&language);
     arg_freetable(argtable, sizeof(argtable) / sizeof(argtable[0]));
-    return 0;
+    return main_ret;
 }
