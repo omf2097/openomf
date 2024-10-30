@@ -157,7 +157,7 @@ int main(int argc, char *argv[]) {
 
     // Make sure everything got allocated
     if(arg_nullcheck(argtable) != 0) {
-        printf("%s: insufficient memory\n", progname);
+        fprintf(stderr, "%s: insufficient memory\n", progname);
         goto exit_0;
     }
 
@@ -184,8 +184,8 @@ int main(int argc, char *argv[]) {
 
     // Handle errors
     if(nerrors > 0) {
-        arg_print_errors(stdout, end, progname);
-        printf("Try '%s --help' for more information.\n", progname);
+        arg_print_errors(stderr, end, progname);
+        fprintf(stderr, "Try '%s --help' for more information.\n", progname);
         goto exit_0;
     }
 
@@ -195,14 +195,14 @@ int main(int argc, char *argv[]) {
     if(file->count > 0) {
         ret = sd_language_load(&language, file->filename[0]);
         if(ret != SD_SUCCESS) {
-            printf("Language file could not be loaded! Error [%d] %s\n", ret, sd_get_error(ret));
+            fprintf(stderr, "Language file could not be loaded! Error [%d] %s\n", ret, sd_get_error(ret));
             goto exit_0;
         }
     } else if(input->count > 0) {
         // parse the supplied text file
         FILE *file = fopen(input->filename[0], "r");
         if(!file) {
-            fprintf(stderr, "Could not open %s", input->filename[0]);
+            fprintf(stderr, "Could not open %s\n", input->filename[0]);
             goto exit_0;
         }
         int line = 1;
@@ -224,7 +224,7 @@ int main(int argc, char *argv[]) {
         unsigned str_id = (unsigned)str->ival[0];
         ds = sd_language_get(&language, str_id);
         if(ds == NULL) {
-            printf("String %d not found!\n", str_id);
+            fprintf(stderr, "String %d not found!\n", str_id);
             goto exit_0;
         }
 
@@ -245,7 +245,7 @@ int main(int argc, char *argv[]) {
     if(output->count > 0) {
         ret = sd_language_save(&language, output->filename[0]);
         if(ret != SD_SUCCESS) {
-            printf("Failed saving language file to %s: %s", output->filename[0], sd_get_error(ret));
+            fprintf(stderr, "Failed saving language file to %s: %s\n", output->filename[0], sd_get_error(ret));
             goto exit_0;
         }
     }
