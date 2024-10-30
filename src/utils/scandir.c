@@ -62,15 +62,19 @@ int scan_directory_prefix(list *dir_list, const char *dir, const char *prefix) {
 #if defined(_WIN32) || defined(WIN32)
 
     str glob;
-    str_from_format(&glob, "%s%s*", prefix, dir);
+    str_from_format(&glob, "%s*", dir);
     WIN32_FIND_DATAA entry;
     HANDLE hFind;
     if((hFind = FindFirstFileA(str_c(&glob), &entry)) == INVALID_HANDLE_VALUE) {
         str_free(&glob);
         return 1;
     }
+    size_t prefix_len = strlen(prefix);
     while(FindNextFileA(hFind, &entry) != FALSE) {
-        list_append(dir_list, entry.cFileName, strlen(entry.cFileName) + 1);
+        size_t filename_len = strlen(entry.cFileName);
+        if(filename_len >= prefix_len && memcmp(entry.cFileName, prefix, prefix_len) == 0) {
+            list_append(dir_list, entry.cFileName, filename_len + 1);
+        }
     }
     FindClose(hFind);
     str_free(&glob);
@@ -101,15 +105,19 @@ int scan_directory_suffix(list *dir_list, const char *dir, const char *suffix) {
 #if defined(_WIN32) || defined(WIN32)
 
     str glob;
-    str_from_format(&glob, "%s*%s", dir, suffix);
+    str_from_format(&glob, "%s*", dir);
     WIN32_FIND_DATAA entry;
     HANDLE hFind;
     if((hFind = FindFirstFileA(str_c(&glob), &entry)) == INVALID_HANDLE_VALUE) {
         str_free(&glob);
         return 1;
     }
+    size_t suffix_len = strlen(suffix);
     while(FindNextFileA(hFind, &entry) != FALSE) {
-        list_append(dir_list, entry.cFileName, strlen(entry.cFileName) + 1);
+        size_t filename_len = strlen(entry.cFileName);
+        if(filename_len >= suffix_len && memcmp(entry.cFileName + filename_len - suffix_len, suffix, suffix_len) == 0) {
+            list_append(dir_list, entry.cFileName, filename_len + 1);
+        }
     }
     FindClose(hFind);
     str_free(&glob);
