@@ -77,7 +77,6 @@ typedef struct {
     uint8_t max_lines;
 } text_settings;
 
-// New text rendering functions
 void text_defaults(text_settings *settings);
 int text_find_max_strlen(const text_settings *settings, int max_chars, const char *ptr);
 int text_find_line_count(const text_settings *settings, int cols, int rows, int len, const char *text);
@@ -85,22 +84,5 @@ int text_render_char(const text_settings *settings, text_mode mode, int x, int y
 void text_render(const text_settings *settings, text_mode mode, int x, int y, int w, int h, const char *text);
 int text_char_width(const text_settings *settings);
 int text_width(const text_settings *settings, const char *text);
-
-// Old functions
-void font_get_wrapped_size(const font *font, const char *text, int max_w, int *out_w, int *out_h);
-void font_get_wrapped_size_shadowed(const font *font, const char *text, int max_w, int shadow_flag, int *out_w,
-                                    int *out_h);
-void font_render_char(const font *font, char ch, int x, int y, uint8_t c);
-int font_render_char_shadowed(const font *font, char ch, int x, int y, uint8_t c, int shadow_flags,
-                              uint8_t shadow_color);
-void font_render_len(const font *font, const char *text, int len, int x, int y, uint8_t c);
-void font_render_len_shadowed(const font *font, const char *text, int len, int x, int y, uint8_t c, int shadow_flags,
-                              uint8_t shadow_color);
-void font_render(const font *font, const char *text, int x, int y, uint8_t c);
-void font_render_shadowed(const font *font, const char *text, int x, int y, uint8_t c, int shadow_flags);
-void font_render_shadowed_colored(const font *font, const char *text, int x, int y, uint8_t c, int shadow_flags,
-                                  uint8_t shadow_color);
-void font_render_wrapped(const font *font, const char *text, int x, int y, int w, uint8_t c);
-void font_render_wrapped_shadowed(const font *font, const char *text, int x, int y, int w, uint8_t c, int shadow_flags);
 
 #endif // TEXT_RENDER_H
