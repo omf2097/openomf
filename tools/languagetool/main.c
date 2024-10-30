@@ -36,7 +36,7 @@ void trim(char *str) {
 
 void error_exit(const char *message, int line_number) {
     fprintf(stderr, "Error on line %d: %s\n", line_number, message);
-    abort();
+    exit(EXIT_FAILURE);
 }
 
 // Function to extract value after colon with validation
@@ -72,10 +72,15 @@ int read_entry(FILE *file, sd_language *language, int *line_number) {
     char *value = extract_value(line, "ID", *line_number, false);
     trim(value);
     char *endptr;
-    strtol(value, &endptr, 10);
+    long id = strtol(value, &endptr, 10);
 
     if(*endptr != '\0') {
         error_exit("ID must be a valid integer", *line_number);
+    }
+    if(language->count != id) {
+        char error[100];
+        snprintf(error, sizeof error, "Nonsequential ID. Expected %u, got %ld.", language->count, id);
+        error_exit(error, *line_number);
     }
     *line_number += 1;
 
