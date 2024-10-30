@@ -44,7 +44,7 @@ void vga_state_render(void) {
         damage_reset(&state.dmg_base);
 
         // Run transformers on top. These may modify the current palette and change dirtiness state.
-        for(int i = 0; i < state.transformer_count; i++) {
+        for(unsigned int i = 0; i < state.transformer_count; i++) {
             state.transformers[i].callback(&state.dmg_current, &state.current, state.transformers[i].userdata);
         }
         state.transformer_count = 0;
