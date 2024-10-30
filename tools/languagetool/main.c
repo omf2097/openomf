@@ -203,6 +203,9 @@ int main(int argc, char *argv[]) {
         int line = 1;
         while(read_entry(file, &language, &line)) {
         }
+    } else {
+        fprintf(stderr, "Please supply -f or -i\n");
+        goto exit_1;
     }
 
     // Print
@@ -226,10 +229,6 @@ int main(int argc, char *argv[]) {
                 printf("Data: %s\n", ds->data);
             }
         }
-    }
-    else {
-        fprintf(stderr, "Please supply -f or -i\n");
-        goto exit_1;
     }
 
     // Saving
