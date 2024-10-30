@@ -654,6 +654,15 @@ static void load_har_portraits(scene *scene, melee_local *local) {
     portrait *target;
     int row, col;
     animation *har_portraits = &bk_get_info(scene->bk_data, 1)->ani;
+    vga_palette *bk_pal = bk_get_palette(scene->bk_data, 0);
+
+    // Use a composite palette to help grayscale rendering
+    vga_palette pal;
+    palette_copy(&pal, bk_pal, 0, 255);
+    palette_load_altpal_player_color(&pal, 0, 16, 0);
+    palette_load_altpal_player_color(&pal, 0, 16, 1);
+    palette_load_altpal_player_color(&pal, 0, 16, 2);
+
     for(int i = 0; i < 10; i++) {
         row = i / 5;
         col = i % 5;
@@ -667,9 +676,8 @@ static void load_har_portraits(scene *scene, melee_local *local) {
         surface_set_transparency(&target->enabled, 0xD0);
 
         // Copy the enabled image, and compress the colors to grayscale
-        vga_palette *scene_pal = vector_get(&scene->bk_data->palettes, 0);
         surface_create_from(&target->disabled, &target->enabled);
-        surface_convert_to_grayscale(&target->disabled, scene_pal, 0xD0, 0xDF);
+        surface_convert_to_grayscale(&target->disabled, &pal, 0xD0, 0xDF);
     }
 }
 
