@@ -10,7 +10,6 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 #if ARGTABLE2_FOUND
 #include <argtable2.h>
 #elif ARGTABLE3_FOUND
@@ -205,7 +204,7 @@ int main(int argc, char *argv[]) {
         }
     } else if(input->count > 0) {
         // parse the supplied text file
-        FILE *file = fopen(input->filename[0], "r");
+        FILE *file = fopen(input->filename[0], "rb");
         if(!file) {
             fprintf(stderr, "Could not open %s\n", input->filename[0]);
             goto exit_0;

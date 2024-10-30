@@ -11,7 +11,13 @@
 #include <inttypes.h>
 #include <stdint.h>
 #include <string.h>
+
+#if _WIN32
+#include <errno.h>
+#include <io.h>
+#else
 #include <unistd.h>
+#endif
 
 #include "formats/vga_image.h"
 
@@ -84,6 +90,14 @@ static void show_pcx(pcx_file *pcx) {
     }
 }
 
+static int file_exists(char const *filename) {
+#if _WIN32
+    return _access(filename, 0) == 0;
+#else
+    return access(filename, F_OK) == 0;
+#endif
+}
+
 int main(int argc, char *argv[]) {
     struct arg_lit *help = arg_lit0("h", "help", "Print this help and exit");
     struct arg_file *file = arg_file0("f", "file", "<file>", "Input .PCX file");
@@ -110,7 +124,7 @@ int main(int argc, char *argv[]) {
     if(file->count == 0) {
         printf("The --file argument is required\n");
         goto exit_0;
-    } else if(access(file->filename[0], F_OK) != 0) {
+    } else if(!file_exists(file->filename[0])) {
         printf("File %s cannot be accessed\n", file->filename[0]);
         goto exit_0;
     }
