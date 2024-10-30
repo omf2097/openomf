@@ -327,7 +327,7 @@ jobs:
               -DCMAKE_LIBRARY_PATH="${GITHUB_WORKSPACE}/openomf-win-build-main/lib/" \
               -DCMAKE_FIND_ROOT_PATH="${GITHUB_WORKSPACE}/openomf-win-build-main/" \
               -DUSE_TOOLS=On \
-              -DLANGUAGETOOL_COMMAND="wine $<TARGET_FILE:languagetool>" \
+              -DOMF_COMMAND_WRAPPER="wine" \
               "${GITHUB_WORKSPACE}"
         make -j $(getconf _NPROCESSORS_ONLN)
         make -j $(getconf _NPROCESSORS_ONLN) install
