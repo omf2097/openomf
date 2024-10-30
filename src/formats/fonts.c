@@ -75,3 +75,27 @@ int sd_font_decode(const sd_font *font, sd_vga_image *o, uint8_t ch, uint8_t col
     }
     return SD_SUCCESS;
 }
+
+int sd_font_decode_rgb(const sd_font *font, sd_rgba_image *o, uint8_t ch, uint8_t r, uint8_t g, uint8_t b) {
+    if(font == NULL || o == NULL || ch >= 224) {
+        return SD_INVALID_INPUT;
+    }
+
+    int t = 0;
+    for(unsigned int i = 0; i < font->h; i++) {
+        for(int k = font->h - 1; k >= 0; k--) {
+            if(font->chars[ch].data[i] & (1 << k)) {
+                o->data[t++] = r;
+                o->data[t++] = g;
+                o->data[t++] = b;
+                o->data[t++] = (uint8_t)255;
+            } else {
+                o->data[t++] = 0;
+                o->data[t++] = 0;
+                o->data[t++] = 0;
+                o->data[t++] = 0;
+            }
+        }
+    }
+    return SD_SUCCESS;
+}

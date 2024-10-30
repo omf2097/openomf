@@ -40,7 +40,7 @@ int sd_language_load(sd_language *language, const char *filename) {
 
     // Find out how many strings there are in the file
     unsigned int string_count = 0;
-    long file_size = sd_reader_filesize(r);
+    uint32_t file_size = sd_reader_filesize(r);
     while(sd_read_udword(r) < file_size) {
         sd_skip(r, 32);
         string_count++;

@@ -99,6 +99,11 @@ int sd_font_save(const sd_font *font, const char *filename);
  */
 int sd_font_decode(const sd_font *font, sd_vga_image *surface, uint8_t ch, uint8_t color);
 
+/**
+ * Same as sd_font_decode, but decodes to an RGBA surface.
+ */
+int sd_font_decode_rgb(const sd_font *font, sd_rgba_image *o, uint8_t ch, uint8_t r, uint8_t g, uint8_t b);
+
 #ifdef __cplusplus
 }
 #endif

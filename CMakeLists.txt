@@ -210,6 +210,7 @@ if (USE_TOOLS)
     add_executable(trntool tools/trntool/main.c tools/shared/pilot.c)
     add_executable(altpaltool tools/altpaltool/main.c)
     add_executable(chrtool tools/chrtool/main.c tools/shared/pilot.c)
+    add_executable(fonttool tools/fonttool/main.c)
     add_executable(setuptool tools/setuptool/main.c tools/shared/pilot.c)
     add_executable(stringparser tools/stringparser/main.c)
 
@@ -225,6 +226,7 @@ if (USE_TOOLS)
         scoretool
         trntool
         altpaltool
+        fonttool
         chrtool
         setuptool
         stringparser
@@ -266,15 +268,6 @@ else()
     message(STATUS "Development: clang-format disabled")
 endif()
 
-if(MINGW)
-    # Don't show console on mingw in release builds (but enable if debug mode)
-    if(NOT ${CMAKE_BUILD_TYPE} MATCHES "Debug")
-        set_target_properties(openomf PROPERTIES LINK_FLAGS "-mwindows")
-    else()
-        set_target_properties(openomf PROPERTIES LINK_FLAGS "-mconsole")
-    endif()
-endif()
-
 if(WIN32)
     # Don't show console in windows release builds (but enable if debug mode)
     set_target_properties(openomf PROPERTIES WIN32_EXECUTABLE "$<IF:$<CONFIG:Debug>,OFF,ON>")
@@ -290,7 +283,15 @@ if(MINGW)
     target_link_options(openomf PRIVATE -static-libgcc)
     foreach(TARGET ${TOOL_TARGET_NAMES})
         target_link_options(${TARGET} PRIVATE -static-libgcc)
+        set_target_properties(${TARGET} PROPERTIES LINK_FLAGS "-mconsole")
     endforeach()
+
+    # Don't show console on mingw in release builds (but enable if debug mode)
+    if (NOT ${CMAKE_BUILD_TYPE} MATCHES "Debug")
+        set_target_properties(openomf PROPERTIES LINK_FLAGS "-mwindows")
+    else ()
+        set_target_properties(openomf PROPERTIES LINK_FLAGS "-mconsole")
+    endif ()
 endif()
 
 # Make sure libraries are linked

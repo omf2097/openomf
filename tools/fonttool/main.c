@@ -56,7 +56,7 @@ SDL_Surface *render_text(sd_font *font, const char *text, int area_w) {
     dst.h = font->h;
     sd_rgba_image_create(&img, font->h, font->h);
     for(int i = 0; i < slen; i++) {
-        sd_font_decode(font, &img, text[i] - 32, 64, 128, 64);
+        sd_font_decode_rgb(font, &img, text[i] - 32, 64, 128, 64);
         memcpy(tmp->pixels, img.data, 4 * font->h * font->h);
         dst.y = i / char_w * font->h;
         dst.x = i % char_w * font->h;
@@ -75,7 +75,7 @@ void export_to(sd_font *font, const char *filename, int split) {
         sd_rgba_image ch_img;
         sd_rgba_image_create(&ch_img, font->h, font->h);
         for(int i = 32; i < 256; i++) {
-            sd_font_decode(font, &ch_img, (char)(i - 32), 0, 0, 0);
+            sd_font_decode_rgb(font, &ch_img, (char)(i - 32), 0, 0, 0);
             sprintf(path, "%s/uni%04x.png", filename, i);
             int ret = sd_rgba_image_to_png(&ch_img, path);
             if(ret != SD_SUCCESS) {
@@ -91,7 +91,7 @@ void export_to(sd_font *font, const char *filename, int split) {
         for(int i = 32; i < 256; i++) {
             int x = i % 16;
             int y = i / 16;
-            sd_font_decode(font, &ch_img, (char)(i - 32), 0, 0, 0);
+            sd_font_decode_rgb(font, &ch_img, (char)(i - 32), 0, 0, 0);
             sd_rgba_image_blit(&dst_img, &ch_img, x * font->h, y * font->h);
         }
         sd_rgba_image_free(&ch_img);
