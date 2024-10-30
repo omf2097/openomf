@@ -14,6 +14,7 @@
 #include "utils/str.h"
 #include "utils/vector.h"
 #include <stddef.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -110,7 +111,7 @@ int sd_script_encode(const sd_script *script, str *dst);
  * \param script Script structure to check
  * \return The total duration of the script in game ticks
  */
-int sd_script_get_total_ticks(const sd_script *script);
+unsigned sd_script_get_total_ticks(const sd_script *script);
 
 /*! \brief Find the tick position at the start of the given frame.
  *
@@ -223,7 +224,7 @@ int sd_script_get_frame_index(const sd_script *script, const sd_script_frame *fr
  * \param ticks Tick position to find
  * \return Index of the frame
  */
-int sd_script_get_frame_index_at(const sd_script *script, int ticks);
+int sd_script_get_frame_index_at(const sd_script *script, unsigned ticks);
 
 /*! \brief Tells if the frame is the last frame in animation.
  *
@@ -313,7 +314,7 @@ int sd_script_get(const sd_script_frame *frame, const char *tag);
  * \param current_tick Current tick time
  * \return Frame ID or -1 on error
  */
-int sd_script_next_frame_with_sprite(const sd_script *script, int sprite_id, int current_tick);
+int sd_script_next_frame_with_sprite(const sd_script *script, int sprite_id, unsigned current_tick);
 
 /*! \brief Returns the next frame number with a given tag
  *
@@ -330,7 +331,7 @@ int sd_script_next_frame_with_sprite(const sd_script *script, int sprite_id, int
  * \param current_tick Current tick time
  * \return Frame ID or -1 on error
  */
-int sd_script_next_frame_with_tag(const sd_script *script, const char *tag, int current_tick);
+int sd_script_next_frame_with_tag(const sd_script *script, const char *tag, uint32_t current_tick);
 
 /*! \brief Sets a tag for the given frame
  *

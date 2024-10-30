@@ -85,10 +85,10 @@ int main(int argc, char *argv[]) {
         goto exit_1;
     }
 
-    for(int frame_id = 0; frame_id < vector_size(&script.frames); frame_id++) {
+    for(unsigned frame_id = 0; frame_id < vector_size(&script.frames); frame_id++) {
         sd_script_frame *frame = vector_get(&script.frames, frame_id);
         printf("%d. Frame %d: '%c%d'\n", frame_id, frame->sprite, (char)(frame->sprite + 65), frame->tick_len);
-        for(int tag_id = 0; tag_id < vector_size(&frame->tags); tag_id++) {
+        for(unsigned tag_id = 0; tag_id < vector_size(&frame->tags); tag_id++) {
             sd_script_tag *tag = vector_get(&frame->tags, tag_id);
             if(tag->desc == NULL) {
                 tag->desc = "";

@@ -43,9 +43,9 @@ int sd_rgba_image_blit(sd_rgba_image *dst, const sd_rgba_image *src, int x, int 
         return SD_INVALID_INPUT;
     }
 
-    int rdp, rsp;
-    for(int py = 0; py < src->h; py++) {
-        for(int px = 0; px < src->w; px++) {
+    unsigned rdp, rsp;
+    for(unsigned py = 0; py < src->h; py++) {
+        for(unsigned px = 0; px < src->w; px++) {
             rdp = (py + y) * dst->w + (px + x);
             rsp = py * src->w + px;
             dst->data[rdp * 4 + 0] = src->data[rsp * 4 + 0];
@@ -60,7 +60,7 @@ int sd_rgba_image_blit(sd_rgba_image *dst, const sd_rgba_image *src, int x, int 
 
 int sd_rgba_image_to_ppm(const sd_rgba_image *img, const char *filename) {
     FILE *fd;
-    int i;
+    unsigned i;
 
     if((fd = fopen(filename, "wb")) == NULL) {
         return SD_FILE_OPEN_ERROR;
@@ -86,8 +86,8 @@ int sd_rgba_image_clear(sd_rgba_image *img, char r, char g, char b, char a) {
     if(img == NULL) {
         return SD_INVALID_INPUT;
     }
-    for(int y = 0; y < img->h; y++) {
-        for(int x = 0; x < img->w; x++) {
+    for(unsigned y = 0; y < img->h; y++) {
+        for(unsigned x = 0; x < img->w; x++) {
             img->data[(y * img->w + x) * 4 + 0] = r;
             img->data[(y * img->w + x) * 4 + 1] = g;
             img->data[(y * img->w + x) * 4 + 2] = b;

@@ -115,7 +115,7 @@ int sd_sprite_rgba_encode(sd_sprite *dst, const sd_rgba_image *src, const palett
     rowstart = i;
 
     // Walk through the RGBA data
-    for(int pos = 0; pos <= rgb_size; pos += 4) {
+    for(size_t pos = 0; pos <= rgb_size; pos += 4) {
         uint8_t r = src->data[pos];
         uint8_t g = src->data[pos + 1];
         uint8_t b = src->data[pos + 2];
@@ -360,7 +360,7 @@ int sd_sprite_vga_encode(sd_sprite *dst, const sd_vga_image *src) {
     rowstart = i;
 
     // Walk through the index data
-    for(int pos = 0; pos < vga_size; pos++) {
+    for(size_t pos = 0; pos < vga_size; pos++) {
         uint8_t idx = src->data[pos];
 
         // ignore anything but fully opaque pixels

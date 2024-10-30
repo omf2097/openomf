@@ -96,7 +96,7 @@ void vector_pop(vector *vec) {
     }
 }
 
-int vector_delete_at(vector *vec, int index) {
+int vector_delete_at(vector *vec, unsigned index) {
     if(vec->blocks == 0)
         return 1;
 
@@ -130,7 +130,7 @@ int vector_delete(vector *vec, iterator *iter) {
     }
 
     // If this is NOT the last entry, we need to do memmove.
-    if(real + 1 < vec->blocks) {
+    if(real + 1 < (int)vec->blocks) {
         void *dst = vec->data + real * vec->block_size;
         void *src = vec->data + (real + 1) * vec->block_size;
         unsigned int size = (vec->blocks - 1 - real) * vec->block_size;
@@ -158,7 +158,7 @@ void vector_sort(vector *vec, vector_compare_func cf) {
 
 void *vector_iter_next(iterator *iter) {
     vector *vec = (vector *)iter->data;
-    if(iter->inow + 1 >= vec->blocks) {
+    if(iter->inow + 1 >= (int)vec->blocks) {
         iter->ended = 1;
     }
     void *addr = (void *)(vec->data + iter->inow * vec->block_size);

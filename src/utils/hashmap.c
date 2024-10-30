@@ -382,14 +382,14 @@ int hashmap_delete(hashmap *hm, iterator *iter) {
 }
 
 static void _hashmap_seek_next(hashmap *hm, iterator *iter) {
-    if(iter->inow >= hashmap_size(hm)) {
+    if(iter->inow >= (int)hashmap_size(hm)) {
         iter->vnow = NULL;
         iter->ended = 1;
         return;
     }
     do {
         iter->vnow = hm->buckets[iter->inow++];
-    } while(iter->vnow == NULL && iter->inow < hashmap_size(hm));
+    } while(iter->vnow == NULL && iter->inow < (int)hashmap_size(hm));
 }
 
 void *hashmap_iter_next(iterator *iter) {

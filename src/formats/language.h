@@ -93,7 +93,7 @@ int sd_language_save(sd_language *language, const char *filename);
  * \param language Language struct pointer.
  * \param num Language entry number to get.
  */
-const sd_lang_string *sd_language_get(const sd_language *language, int num);
+const sd_lang_string *sd_language_get(const sd_language *language, unsigned num);
 
 #ifdef __cplusplus
 }

@@ -168,7 +168,7 @@ void *list_get(const list *list, unsigned int i) {
     iterator it;
     list_iter_begin(list, &it);
     list_node *node;
-    int n = 0;
+    unsigned n = 0;
     while((node = iter_next(&it)) != NULL) {
         if(i == n) {
             return node;

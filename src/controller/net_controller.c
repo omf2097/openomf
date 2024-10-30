@@ -21,9 +21,9 @@ typedef struct {
     ENetPeer *peer;
     ENetPeer *lobby;
     int id;
-    int last_hb;
+    uint32_t last_hb;
     int last_action;
-    int outstanding_hb;
+    uint32_t outstanding_hb;
     int disconnected;
     int rttbuf[100];
     int rttpos;
@@ -31,26 +31,26 @@ typedef struct {
     int tick_offset;
     bool synchronized;
     int guesses;
-    int peer_proposal;
-    int local_proposal;
+    uint32_t peer_proposal;
+    uint32_t local_proposal;
     bool confirmed;
-    int last_tick;
-    int last_sent;
+    uint32_t last_tick;
+    uint32_t last_sent;
     list transcript;
-    int last_received_tick;
-    int last_acked_tick;
+    uint32_t last_received_tick;
+    uint32_t last_acked_tick;
     int last_har_state;
-    int last_traced_tick;
+    uint32_t last_traced_tick;
     uint32_t peer_last_hash;
-    int peer_last_hash_tick;
+    uint32_t peer_last_hash_tick;
     uint32_t last_hash;
-    int last_hash_tick;
+    uint32_t last_hash_tick;
     SDL_RWops *trace_file;
     game_state *gs_bak;
 } wtf;
 
 typedef struct {
-    int tick;
+    uint32_t tick;
     uint16_t events[2];
     uint8_t seen_peer;
 } tick_events;
@@ -89,7 +89,7 @@ int avg_rtt(int data[], int n) {
     return truncf(average);
 }
 
-void insert_event(wtf *data, int tick, uint16_t action, int id) {
+void insert_event(wtf *data, uint32_t tick, uint16_t action, int id) {
 
     iterator it;
     list *transcript = &data->transcript;
@@ -128,7 +128,7 @@ void insert_event(wtf *data, int tick, uint16_t action, int id) {
     list_append(transcript, &event, sizeof(tick_events));
 }
 
-bool has_event(wtf *data, int tick) {
+bool has_event(wtf *data, uint32_t tick) {
 
     iterator it;
     list_iter_begin(&data->transcript, &it);
@@ -161,8 +161,8 @@ void send_events(wtf *data) {
     tick_events *ev = NULL;
     serial_create(&ser);
     serial_write_int8(&ser, EVENT_TYPE_ACTION);
-    serial_write_int32(&ser, data->last_received_tick);
-    serial_write_int32(&ser, data->last_hash_tick);
+    serial_write_uint32(&ser, data->last_received_tick);
+    serial_write_uint32(&ser, data->last_hash_tick);
     serial_write_uint32(&ser, data->last_hash);
 
     int events = 0;
@@ -171,7 +171,7 @@ void send_events(wtf *data) {
         if(ev->events[data->id] != 0 && ev->tick > data->last_acked_tick &&
            ev->tick < data->last_tick - data->local_proposal) {
             serial_write_int16(&ser, ev->events[data->id]);
-            serial_write_int32(&ser, ev->tick);
+            serial_write_uint32(&ser, ev->tick);
             events++;
         }
     }
@@ -208,7 +208,7 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
     game_state *gs_old = omf_calloc(1, sizeof(game_state));
     game_state_clone(gs, gs_old);
 
-    DEBUG("current game ticks is %d, stored game ticks are %d, last tick is %d",
+    DEBUG("current game ticks is %" PRIu32 ", stored game ticks are %" PRIu32 ", last tick is %" PRIu32,
           gs_current->int_tick - data->local_proposal, gs->int_tick - data->local_proposal,
           data->last_tick - data->local_proposal);
 
@@ -228,7 +228,7 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
     while((ev = (tick_events *)list_iter_next(&it))) {
         if(ev->tick + data->local_proposal < data->gs_bak->int_tick) {
             // tick too old to matter
-            DEBUG("tick %d is older than %d", ev->tick, data->gs_bak->int_tick - data->local_proposal);
+            DEBUG("tick %" PRIu32 " is older than %" PRIu32, ev->tick, data->gs_bak->int_tick - data->local_proposal);
             assert(ev->seen_peer == 3);
             list_delete(transcript, &it);
             continue;
@@ -241,9 +241,9 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
         last_seen_peer = ev->seen_peer;
 
         // XXX TODO disable this for now, for unknown reason
-        if(false && gs_new == NULL && ev->tick > min2(data->last_acked_tick, data->last_received_tick) &&
+        if(false && gs_new == NULL && ev->tick > umin2(data->last_acked_tick, data->last_received_tick) &&
            ev->seen_peer == 3) {
-            DEBUG("tick %d is newer than last acked tick %d", ev->tick, data->last_acked_tick);
+            DEBUG("tick %" PRIu32 " is newer than last acked tick %" PRIu32, ev->tick, data->last_acked_tick);
             // save off the game state at the point we last agreed
             // on the state of the game
             gs_new = omf_calloc(1, sizeof(game_state));
@@ -259,7 +259,7 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
         for(int dynamic_wait = ticks; dynamic_wait > 0; dynamic_wait--) {
             // Tick scene
             game_state_dynamic_tick(gs, true);
-            DEBUG("arena tick %d, hash %d", gs->int_tick - data->local_proposal, arena_state_hash(gs));
+            DEBUG("arena tick %" PRIu32 ", hash %" PRIu32, gs->int_tick - data->local_proposal, arena_state_hash(gs));
             arena_state_dump(gs);
             if(data->trace_file && (ev->events[0] || ev->events[1]) && ev->seen_peer == 3 &&
                ev->tick > data->last_traced_tick) {
@@ -339,15 +339,15 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
         data->gs_bak = gs_old;
     }
 
-    DEBUG("game state is %d, want %d", gs->int_tick, data->last_tick);
-    int ticks = data->last_tick - gs->int_tick;
+    DEBUG("game state is %" PRIu32 ", want %" PRIu32, gs->int_tick, data->last_tick);
+    uint32_t ticks = data->last_tick - gs->int_tick;
     // tick the number of required times
-    for(int dynamic_wait = ticks; dynamic_wait > 0; dynamic_wait--) {
+    for(int dynamic_wait = (int)ticks; dynamic_wait > 0; dynamic_wait--) {
         // Tick scene
         game_state_dynamic_tick(gs, true);
     }
 
-    DEBUG("advanced game state to %d, expected %d", gs->int_tick - data->local_proposal,
+    DEBUG("advanced game state to %" PRIu32 ", expected %" PRIu32, gs->int_tick - data->local_proposal,
           data->last_tick - data->local_proposal);
 
     // replace the game state with the replayed one
@@ -388,9 +388,9 @@ void net_controller_free(controller *ctrl) {
         list_iter_begin(&data->transcript, &it);
         tick_events *ev = NULL;
         while((ev = (tick_events *)list_iter_next(&it))) {
-            DEBUG("tick %d has events %d -- %d", ev->tick, ev->events[0], ev->events[1]);
-            int sz = snprintf(buf, sizeof(buf), "tick %d -- player 1 %d -- player 2 %d -- seen_peer %d\n", ev->tick,
-                              ev->events[0], ev->events[1], ev->seen_peer);
+            DEBUG("tick %" PRIu32 " has events %d -- %d", ev->tick, ev->events[0], ev->events[1]);
+            int sz = snprintf(buf, sizeof(buf), "tick %" PRIu32 " -- player 1 %d -- player 2 %d -- seen_peer %d\n",
+                              ev->tick, ev->events[0], ev->events[1], ev->seen_peer);
             SDL_RWwrite(data->trace_file, buf, sz, 1);
         }
 
@@ -432,13 +432,13 @@ done:
     }
 }
 
-int net_controller_tick(controller *ctrl, int ticks0, ctrl_event **ev) {
+int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
     ENetEvent event;
     wtf *data = ctrl->data;
     ENetHost *host = data->host;
     ENetPeer *peer = data->peer;
     serial ser;
-    int ticks = ctrl->gs->int_tick;
+    uint32_t ticks = ctrl->gs->int_tick;
 
     if(has_event(data, ticks - 1) && ticks > data->last_tick) {
         DEBUG("sending events %d -- %d", ticks - data->local_proposal, data->last_acked_tick);
@@ -454,7 +454,7 @@ int net_controller_tick(controller *ctrl, int ticks0, ctrl_event **ev) {
 
     if(ticks == data->local_proposal && !data->synchronized) {
         if(data->confirmed) {
-            DEBUG("time to start match: %d", ticks);
+            DEBUG("time to start match: %" PRIu32, ticks);
             data->synchronized = true;
         } else {
             // proposal expired
@@ -463,7 +463,7 @@ int net_controller_tick(controller *ctrl, int ticks0, ctrl_event **ev) {
     }
 
     if(ticks > data->local_proposal && !data->synchronized) {
-        DEBUG("missed synchronize tick %d -- @ %d", data->local_proposal, ticks);
+        DEBUG("missed synchronize tick %" PRIu32 " -- @ %" PRIu32, data->local_proposal, ticks);
     }
 
     if(data->gs_bak == NULL && is_arena(game_state_get_scene(ctrl->gs)->id) &&
@@ -490,25 +490,25 @@ int net_controller_tick(controller *ctrl, int ticks0, ctrl_event **ev) {
                 switch(serial_read_int8(&ser)) {
                     case EVENT_TYPE_ACTION: {
                         assert(event.packet->dataLength % 6 == 1);
-                        int last_received = 0;
-                        int last_acked = serial_read_int32(&ser);
-                        int peer_last_hash_tick = serial_read_int32(&ser);
+                        uint32_t last_received = 0;
+                        uint32_t last_acked = serial_read_uint32(&ser);
+                        uint32_t peer_last_hash_tick = serial_read_uint32(&ser);
                         uint32_t peer_last_hash = serial_read_uint32(&ser);
 
-                        for(int i = 13; i < event.packet->dataLength; i += 6) {
+                        for(size_t i = 13; i < event.packet->dataLength; i += 6) {
                             // dispatch keypress to scene
                             int action = serial_read_int16(&ser);
-                            int remote_tick = serial_read_int32(&ser);
+                            unsigned remote_tick = serial_read_uint32(&ser);
 
                             if(data->synchronized && data->gs_bak) {
-                                DEBUG("inserting event %d at tick %d", action, remote_tick);
+                                DEBUG("inserting event %d at tick %" PRIu32, action, remote_tick);
                                 if(remote_tick > data->last_received_tick) {
                                     insert_event(data, remote_tick, action, abs(data->id - 1));
                                 }
                                 last_received = remote_tick;
                                 // print_transcript(&data->transcript);
                             } else {
-                                DEBUG("Remote event %d at %d", action, remote_tick);
+                                DEBUG("Remote event %d at %" PRIu32, action, remote_tick);
                                 controller_cmd(ctrl, action, ev);
                             }
                         }
@@ -539,10 +539,11 @@ int net_controller_tick(controller *ctrl, int ticks0, ctrl_event **ev) {
                         int id = serial_read_int8(&ser);
                         if(id == data->id) {
                             // this is a reply to our own heartbeat, analyze it
-                            int start = serial_read_int32(&ser);
-                            int peerticks = serial_read_int32(&ser);
-                            int peerguess = serial_read_int32(&ser);
-                            if(abs(peerguess - ticks) < 2) {
+                            uint32_t start = serial_read_int32(&ser);
+                            uint32_t peerticks = serial_read_int32(&ser);
+                            uint32_t peerguess = serial_read_int32(&ser);
+
+                            if(udist(peerguess, ticks) < 2) {
                                 // DEBUG("peer @ %d guessed our ticks correctly! %d %d %d", peerticks, start, peerguess,
                                 // peerguess - start);
                                 data->guesses++;
@@ -553,7 +554,7 @@ int net_controller_tick(controller *ctrl, int ticks0, ctrl_event **ev) {
                                 }
                                 data->guesses = 0;
                             }
-                            int newrtt = ticks - start;
+                            int newrtt = udist(ticks, start);
                             if(data->guesses >= 10 &&
                                ((data->id == ROLE_SERVER && ticks % 37 == 0) ||
                                 (data->id == ROLE_CLIENT && ticks % 73 == 0)) &&
@@ -563,15 +564,16 @@ int net_controller_tick(controller *ctrl, int ticks0, ctrl_event **ev) {
                                 data->local_proposal = ticks + 100;
                                 uint32_t seed = time(NULL);
                                 random_seed(&ctrl->gs->rand, seed);
-                                DEBUG("proposing peer start game at their time %d, my time %d, seed %" PRIu32,
+                                DEBUG("proposing peer start game at their time %" PRIu32 ", my time %" PRIu32
+                                      ", seed %" PRIu32,
                                       data->peer_proposal, data->local_proposal, seed);
                                 ENetPacket *start_packet;
                                 serial start_ser;
                                 serial_create(&start_ser);
 
                                 serial_write_int8(&start_ser, EVENT_TYPE_PROPOSE_START);
-                                serial_write_int32(&start_ser, data->peer_proposal);
-                                serial_write_int32(&start_ser, data->local_proposal);
+                                serial_write_uint32(&start_ser, data->peer_proposal);
+                                serial_write_uint32(&start_ser, data->local_proposal);
                                 serial_write_uint32(&start_ser, seed);
 
                                 start_packet = enet_packet_create(start_ser.data, serial_len(&start_ser),
@@ -598,7 +600,7 @@ int net_controller_tick(controller *ctrl, int ticks0, ctrl_event **ev) {
                             data->outstanding_hb = 0;
                             data->last_hb = ticks;
                         } else {
-                            int peerticks = serial_read_int32(&ser);
+                            uint32_t peerticks = serial_read_uint32(&ser);
 
                             // a heartbeat from the peer, bounce it back with our tick and our prediction of the peer's
                             // tick
@@ -606,8 +608,8 @@ int net_controller_tick(controller *ctrl, int ticks0, ctrl_event **ev) {
                             // write our own ticks into it
                             if(peer) {
                                 // DEBUG("peer ticks are %d, adding guess of %d", peerticks, data->tick_offset * 2);
-                                serial_write_int32(&ser, ticks);
-                                serial_write_int32(&ser, peerticks + data->tick_offset);
+                                serial_write_uint32(&ser, ticks);
+                                serial_write_uint32(&ser, peerticks + data->tick_offset);
                                 packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_UNSEQUENCED);
                                 enet_peer_send(peer, 0, packet);
                                 enet_host_flush(host);
@@ -615,12 +617,12 @@ int net_controller_tick(controller *ctrl, int ticks0, ctrl_event **ev) {
                         }
                     } break;
                     case EVENT_TYPE_PROPOSE_START: {
-                        int peer_proposal = serial_read_int32(&ser);
-                        int local_proposal = serial_read_int32(&ser);
+                        uint32_t peer_proposal = serial_read_uint32(&ser);
+                        uint32_t local_proposal = serial_read_uint32(&ser);
                         uint32_t seed = serial_read_uint32(&ser);
                         if(peer_proposal + data->tick_offset > ticks && data->peer_proposal == 0) {
-                            DEBUG("got peer proposal to start @ %d (currently %d), seed %" PRIu32, peer_proposal, ticks,
-                                  seed);
+                            DEBUG("got peer proposal to start @ %" PRIu32 " (currently %" PRIu32 "), seed %" PRIu32,
+                                  peer_proposal, ticks, seed);
                             data->local_proposal = peer_proposal;
                             data->peer_proposal = local_proposal;
                             data->confirmed = true;
@@ -630,9 +632,9 @@ int net_controller_tick(controller *ctrl, int ticks0, ctrl_event **ev) {
                             serial start_ser;
                             serial_create(&start_ser);
 
-                            DEBUG("confirmed starting round at %d", peer_proposal);
+                            DEBUG("confirmed starting round at %" PRIu32 "", peer_proposal);
                             serial_write_int8(&start_ser, EVENT_TYPE_CONFIRM_START);
-                            serial_write_int32(&start_ser, peer_proposal);
+                            serial_write_uint32(&start_ser, peer_proposal);
 
                             start_packet = enet_packet_create(start_ser.data, serial_len(&start_ser),
                                                               ENET_PACKET_FLAG_UNSEQUENCED);
@@ -643,11 +645,11 @@ int net_controller_tick(controller *ctrl, int ticks0, ctrl_event **ev) {
                         }
                     } break;
                     case EVENT_TYPE_CONFIRM_START: {
-                        int peer_proposal = serial_read_int32(&ser);
+                        uint32_t peer_proposal = serial_read_uint32(&ser);
                         if(data->peer_proposal == peer_proposal) {
                             // peer has agreed to our proposal
-                            DEBUG("peer agreed to start at %d (local %d), currently %d", peer_proposal,
-                                  data->local_proposal, ticks);
+                            DEBUG("peer agreed to start at %" PRIu32 " (local %" PRIu32 "), currently %" PRIu32 "",
+                                  peer_proposal, data->local_proposal, ticks);
                             data->confirmed = true;
                         }
                     } break;
@@ -675,12 +677,12 @@ int net_controller_tick(controller *ctrl, int ticks0, ctrl_event **ev) {
         }
     }
 
-    int tick_interval = 5;
+    unsigned tick_interval = 5;
     if(data->rttfilled) {
         tick_interval = 20;
     }
 
-    if((data->last_hb == -1 || ticks - data->last_hb > tick_interval) || !data->outstanding_hb) {
+    if((data->last_hb == 0 || ticks - data->last_hb > tick_interval) || !data->outstanding_hb) {
         data->outstanding_hb = 1;
         if(peer) {
             ENetPacket *packet;
@@ -689,7 +691,7 @@ int net_controller_tick(controller *ctrl, int ticks0, ctrl_event **ev) {
 
             serial_write_int8(&ser, EVENT_TYPE_HB);
             serial_write_int8(&ser, data->id);
-            serial_write_int32(&ser, ticks);
+            serial_write_uint32(&ser, ticks);
 
             packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_UNSEQUENCED);
             serial_free(&ser);
@@ -733,7 +735,7 @@ void controller_hook(controller *ctrl, int action) {
     if(peer) {
         // DEBUG("Local event %d at %d", action, data->last_tick - data->local_proposal);
         if(data->synchronized && data->gs_bak) {
-            DEBUG("inserting event %d at tick %d", action, ctrl->gs->int_tick - data->local_proposal);
+            DEBUG("inserting event %d at tick %" PRIu32, action, ctrl->gs->int_tick - data->local_proposal);
             insert_event(data, ctrl->gs->int_tick - data->local_proposal, action, data->id);
             // print_transcript(&data->transcript);
             // send_events(data);
@@ -743,11 +745,11 @@ void controller_hook(controller *ctrl, int action) {
             ENetPacket *packet;
             serial_create(&ser);
             serial_write_int8(&ser, EVENT_TYPE_ACTION);
-            serial_write_int32(&ser, 0);
-            serial_write_int32(&ser, 0);
-            serial_write_int32(&ser, 0);
+            serial_write_uint32(&ser, 0);
+            serial_write_uint32(&ser, 0);
+            serial_write_uint32(&ser, 0);
             serial_write_int16(&ser, action);
-            serial_write_int32(&ser, data->last_tick - data->local_proposal);
+            serial_write_uint32(&ser, udist(data->last_tick, data->local_proposal));
             DEBUG("controller hook fired with %d", action);
             /*sprintf(buf, "k%d", action);*/
             // non gameplay events are not repeated, so they need to be reliable
@@ -789,7 +791,7 @@ void net_controller_create(controller *ctrl, ENetHost *host, ENetPeer *peer, ENe
     data->host = host;
     data->peer = peer;
     data->lobby = lobby; // this is null in a peer-to-peer game
-    data->last_hb = -1;
+    data->last_hb = 0;
     data->last_action = ACT_STOP;
     data->outstanding_hb = 0;
     data->disconnected = 0;

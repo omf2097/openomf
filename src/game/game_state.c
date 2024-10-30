@@ -546,9 +546,9 @@ error_0:
 void game_state_call_collide(game_state *gs) {
     object *a, *b;
     unsigned int size = vector_size(&gs->objects);
-    for(int i = 0; i < size; i++) {
+    for(unsigned i = 0; i < size; i++) {
         a = ((render_obj *)vector_get(&gs->objects, i))->obj;
-        for(int k = i + 1; k < size; k++) {
+        for(unsigned k = i + 1; k < size; k++) {
             b = ((render_obj *)vector_get(&gs->objects, k))->obj;
             if(a->group != b->group || a->group == OBJECT_NO_GROUP || b->group == OBJECT_NO_GROUP) {
                 if(a->layers & b->layers) {

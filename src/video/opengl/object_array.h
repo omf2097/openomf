@@ -4,17 +4,18 @@
 #include "video/enums.h"
 
 typedef struct object_array object_array;
-typedef struct {
-    int start;
-    int end;
-    int mode;
-} object_array_batch;
 
 typedef enum object_array_blend_mode
 {
     MODE_SET = 0,
     MODE_REMAP = 1,
 } object_array_blend_mode;
+
+typedef struct {
+    int start;
+    int end;
+    object_array_blend_mode mode;
+} object_array_batch;
 
 object_array *object_array_create(GLfloat src_w, GLfloat src_h);
 void object_array_free(object_array **array);

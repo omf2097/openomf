@@ -225,7 +225,7 @@ int is_arena(unsigned int id) {
 }
 
 int is_scene(unsigned int id) {
-    return (id >= BK_INTRO && id <= BK_WORLD);
+    return (id <= BK_WORLD);
 }
 
 int is_har(unsigned int id) {

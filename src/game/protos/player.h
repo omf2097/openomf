@@ -87,6 +87,6 @@ char player_get_frame_letter(const object *obj);
 unsigned int player_get_len_ticks(const object *obj);
 void player_set_delay(object *obj, int delay);
 int player_is_last_frame(const object *obj);
-int player_get_current_tick(const object *obj);
+uint32_t player_get_current_tick(const object *obj);
 
 #endif // PLAYER_H

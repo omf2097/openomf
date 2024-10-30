@@ -51,8 +51,8 @@ void image_line(image *img, int x0, int y0, int x1, int y1, uint8_t c) {
 }
 
 inline void image_set_pixel(image *img, int x, int y, uint8_t c) {
-    CHECK_COORD_BOUNDS(x, img->w);
-    CHECK_COORD_BOUNDS(y, img->h);
+    CHECK_COORD_BOUNDS(x, (int)img->w);
+    CHECK_COORD_BOUNDS(y, (int)img->h);
     img->data[y * img->w + x] = c;
 }
 

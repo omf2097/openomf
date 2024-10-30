@@ -26,8 +26,8 @@ int sd_score_load(sd_score *score, const char *filename) {
         return SD_FILE_OPEN_ERROR;
     }
 
-    for(int i = 0; i < sizeof(score->scores) / sizeof(score->scores[0]); i++) {
-        for(int j = 0; j < sizeof(score->scores[0]) / sizeof(score->scores[0][0]); j++) {
+    for(unsigned i = 0; i < sizeof(score->scores) / sizeof(score->scores[0]); i++) {
+        for(unsigned j = 0; j < sizeof(score->scores[0]) / sizeof(score->scores[0][0]); j++) {
             sd_score_entry *e = &score->scores[i][j];
             e->score = sd_read_udword(r);
             sd_read_buf(r, e->name, sizeof(e->name));
@@ -59,8 +59,8 @@ int sd_score_save(const sd_score *score, const char *filename) {
         return SD_FILE_OPEN_ERROR;
     }
 
-    for(int i = 0; i < sizeof(score->scores) / sizeof(score->scores[0]); i++) {
-        for(int j = 0; j < sizeof(score->scores[0]) / sizeof(score->scores[0][0]); j++) {
+    for(unsigned i = 0; i < sizeof(score->scores) / sizeof(score->scores[0]); i++) {
+        for(unsigned j = 0; j < sizeof(score->scores[0]) / sizeof(score->scores[0][0]); j++) {
             const sd_score_entry *e = &score->scores[i][j];
             sd_write_udword(w, e->score);
             sd_write_buf(w, e->name, sizeof(e->name));
