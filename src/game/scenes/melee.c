@@ -468,9 +468,13 @@ static void render_disabled_portraits(const portrait *portraits) {
     }
 }
 
-static void render_enabled_portrait(const portrait *portraits, cursor_data *cursor) {
+static void render_enabled_portrait(const portrait *portraits, cursor_data *cursor, int player) {
     const portrait *p = &portraits[5 * cursor->row + cursor->column];
-    video_draw(&p->enabled, p->x, p->y);
+    if(player < 0) {
+        video_draw(&p->enabled, p->x, p->y);
+    } else {
+        video_draw_offset(&p->enabled, p->x, p->y, player * 48, (player + 1) * 48);
+    }
 }
 
 static void render_pilot_select(melee_local *local, bool player2_is_selectable) {
@@ -537,10 +541,10 @@ static void render_pilot_select(melee_local *local, bool player2_is_selectable) 
 
     render_highlights(local, player2_is_selectable);
     render_disabled_portraits(local->pilot_portraits);
-    render_enabled_portrait(local->pilot_portraits, &local->cursor[0]);
+    render_enabled_portrait(local->pilot_portraits, &local->cursor[0], -1);
     object_render(&local->big_portrait_1);
     if(player2_is_selectable) {
-        render_enabled_portrait(local->pilot_portraits, &local->cursor[0]);
+        render_enabled_portrait(local->pilot_portraits, &local->cursor[0], -1);
         object_render(&local->big_portrait_2);
     }
 }
@@ -557,7 +561,7 @@ static void render_har_select(melee_local *local, bool player2_is_selectable) {
     object_render(&local->big_portrait_1);
 
     // currently selected HAR
-    render_enabled_portrait(local->har_portraits, &local->cursor[0]);
+    render_enabled_portrait(local->har_portraits, &local->cursor[0], 0);
     object_render(&local->har_player1);
 
     text_settings tconf_green;
@@ -587,7 +591,7 @@ static void render_har_select(melee_local *local, bool player2_is_selectable) {
         object_render(&local->big_portrait_2);
 
         // currently selected HAR
-        render_enabled_portrait(local->har_portraits, &local->cursor[1]);
+        render_enabled_portrait(local->har_portraits, &local->cursor[1], 1);
         object_render(&local->har_player2);
 
         // render HAR name (Har1 VS. Har2)
