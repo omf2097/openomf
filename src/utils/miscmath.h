@@ -9,6 +9,9 @@ float clampf(float val, float _min, float _max);
 int clamp(int val, int _min, int _max);
 int max2(int a, int b);
 int min2(int a, int b);
+unsigned umax2(unsigned a, unsigned b);
+unsigned umin2(unsigned a, unsigned b);
+unsigned udist(unsigned a, unsigned b);
 int clamp_long_to_int(long val);
 unsigned powu(unsigned x, unsigned y);
 

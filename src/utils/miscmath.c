@@ -38,8 +38,21 @@ int max3(int a, int b, int c) {
 int max2(int a, int b) {
     return (a > b) ? a : b;
 }
+
 int min2(int a, int b) {
     return (a > b) ? b : a;
+}
+
+unsigned umax2(unsigned a, unsigned b) {
+    return (a > b) ? a : b;
+}
+
+unsigned umin2(unsigned a, unsigned b) {
+    return (a > b) ? b : a;
+}
+
+unsigned udist(unsigned a, unsigned b) {
+    return (a > b) ? a - b : b - a;
 }
 
 float dist(float a, float b) {
