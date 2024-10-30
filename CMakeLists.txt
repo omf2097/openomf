@@ -224,6 +224,9 @@ add_dependencies(openomf copy_shaders)
 
 # Build tools if requested
 set(TOOL_TARGET_NAMES)
+# always build languagetool, for BuildLanguages.cmake
+add_executable(languagetool tools/languagetool/main.c)
+list(APPEND TOOL_TARGET_NAMES languagetool)
 if (USE_TOOLS)
     add_executable(bktool tools/bktool/main.c
         tools/shared/animation_misc.c
@@ -232,7 +235,6 @@ if (USE_TOOLS)
         tools/shared/animation_misc.c
         tools/shared/conversions.c)
     add_executable(soundtool tools/soundtool/main.c)
-    add_executable(languagetool tools/languagetool/main.c)
     add_executable(afdiff tools/afdiff/main.c)
     add_executable(rectool tools/rectool/main.c tools/shared/pilot.c)
     add_executable(pcxtool tools/pcxtool/main.c)
@@ -249,7 +251,6 @@ if (USE_TOOLS)
         bktool
         aftool
         soundtool
-        languagetool
         afdiff
         rectool
         pcxtool
@@ -362,12 +363,7 @@ else()
     message(STATUS "Development: Unit-tests are disabled")
 endif()
 
-if(USE_TOOLS)
-    include("cmake-scripts/BuildLanguages.cmake")
-    message(STATUS "Since tools are enabled, languages will be built.")
-else()
-    message(STATUS "Since tools are disabled, languages will NOT be built!")
-endif()
+include("cmake-scripts/BuildLanguages.cmake")
 
 # Copy some resources to destination resources directory to ease development setup.
 file(COPY resources/openomf.bk resources/gamecontrollerdb.txt DESTINATION resources)
