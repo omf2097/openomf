@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.7.2)
+cmake_minimum_required(VERSION 3.16)
 project(OpenOMF C)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-scripts)
 
@@ -16,6 +16,20 @@ OPTION(USE_TOOLS "Build tools" OFF)
 OPTION(USE_SANITIZERS "Enable Asan and Ubsan" OFF)
 OPTION(USE_TIDY "Use clang-tidy for checks" OFF)
 OPTION(USE_FORMAT "Use clang-format for checks" OFF)
+
+set(USE_PCH ON)
+# clang-tidy only works with clang when PCH is enabled
+if(USE_PCH AND USE_TIDY AND NOT CMAKE_C_COMPILER_ID MATCHES ".*Clang")
+    message(WARNING "clang-tidy cannot consume precompiled headers from non-clang compiler. Disabling PCH at the cost of higher build times.")
+    set(USE_PCH OFF)
+endif()
+
+function(omf_target_precompile_headers)
+    if(NOT USE_PCH)
+        return()
+    endif()
+    target_precompile_headers(${ARGN})
+endfunction()
 
 # These flags are used for all builds
 set(CMAKE_C_STANDARD 11)
@@ -173,7 +187,18 @@ include_directories(${COREINCS})
 # this can then be reused in tests and main executable to speed things up
 add_library(openomf_core OBJECT ${OPENOMF_SRC})
 target_link_libraries(openomf_core PRIVATE ${XMP_LIBRARY})
+omf_target_precompile_headers(openomf_core PUBLIC
+    "<SDL.h>"
+    "<enet/enet.h>"
+    "<epoxy/gl.h>"
+)
 set(CORELIBS openomf_core ${CORELIBS})
+
+if(WIN32 AND NOT MINGW)
+    omf_target_precompile_headers(openomf_core PUBLIC
+        "<windows.h>"
+    )
+endif()
 
 # Set icon for windows executable
 if(WIN32)

@@ -44,8 +44,8 @@ jobs:
       fail-fast: false
       matrix:
         config:
-        - { name: "gcc 14",   cc: gcc-14,   tidy: "On"  }
-        - { name: "clang 16", cc: clang-16, tidy: "Off" }
+        - { name: "gcc 14",   cc: gcc-14,   tidy: "Off" }
+        - { name: "clang 16", cc: clang-16, tidy: "On"  }
 
     steps:
     - uses: actions/checkout@v4
