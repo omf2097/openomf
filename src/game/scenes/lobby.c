@@ -165,16 +165,16 @@ void lobby_render_overlay(scene *scene) {
 
     if(local->mode > LOBBY_YELL) {
         snprintf(buf, sizeof(buf), "Player");
-        text_render(&font_big, TEXT_DEFAULT, 16, 7, 15, 8, buf);
+        text_render(&font_big, TEXT_DEFAULT, 16, 7, 50, 8, buf);
 
         snprintf(buf, sizeof(buf), "Action");
-        text_render(&font_big, TEXT_DEFAULT, 117, 7, 15, 8, buf);
+        text_render(&font_big, TEXT_DEFAULT, 117, 7, 50, 8, buf);
 
         snprintf(buf, sizeof(buf), "Wn/Loss");
-        text_render(&font_small, TEXT_DEFAULT, 200, 8, 15, 6, buf);
+        text_render(&font_small, TEXT_DEFAULT, 200, 8, 50, 6, buf);
 
         snprintf(buf, sizeof(buf), "Version");
-        text_render(&font_small, TEXT_DEFAULT, 240, 8, 15, 6, buf);
+        text_render(&font_small, TEXT_DEFAULT, 240, 8, 50, 6, buf);
 
         snprintf(buf, sizeof(buf), "%d of %d", local->active_user + 1, list_size(&local->users));
         text_render(&font_small, TEXT_DEFAULT, 284, 8, 40, 6, buf);
@@ -189,10 +189,10 @@ void lobby_render_overlay(scene *scene) {
             } else {
                 font_big.cforeground = 8;
             }
-            text_render(&font_big, TEXT_DEFAULT, 16, 18 + (10 * i), 50, 8, user->name);
+            text_render(&font_big, TEXT_DEFAULT, 16, 18 + (10 * i), 90, 8, user->name);
             // TODO status
             font_small.cforeground = 40;
-            text_render(&font_small, TEXT_DEFAULT, 117, 18 + (10 * i), 50, 6, "available");
+            text_render(&font_small, TEXT_DEFAULT, 117, 18 + (10 * i), 60, 6, "available");
             char wins[8];
             snprintf(wins, sizeof(wins), "%d/%d", user->wins, user->losses);
             font_small.cforeground = 56;
