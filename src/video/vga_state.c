@@ -61,10 +61,6 @@ void vga_state_mark_remaps_flushed(void) {
     state.dirty_remaps = false;
 }
 
-vga_palette *vga_state_get_palette(void) {
-    return &state.current;
-}
-
 void vga_state_mul_base_palette(vga_index start, vga_index end, float multiplier) {
     vga_color *c;
     for(int i = start; i < end; i++) {

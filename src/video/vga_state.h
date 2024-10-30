@@ -12,8 +12,6 @@ void vga_state_init(void);
 void vga_state_close(void);
 void vga_state_render(void);
 
-vga_palette *vga_state_get_palette(void);
-
 void vga_state_mark_palette_flushed(void);
 void vga_state_mark_remaps_flushed(void);
 
