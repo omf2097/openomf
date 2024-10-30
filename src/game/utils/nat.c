@@ -56,15 +56,17 @@ bool nat_create_upnp_mapping(nat_ctx *ctx, uint16_t int_port, uint16_t ext_port)
 
 bool nat_create_pmp_mapping(nat_ctx *ctx, uint16_t int_port, uint16_t ext_port) {
 #ifdef NATPMP_FOUND
+    int r;
+    natpmpresp_t response;
     sendnewportmappingrequest(&ctx->natpmp, NATPMP_PROTOCOL_UDP, int_port, ext_port, 3600);
     do {
         fd_set fds;
         struct timeval timeout;
         FD_ZERO(&fds);
-        FD_SET(natpmp.s, &fds);
-        getnatpmprequesttimeout(&natpmp, &timeout);
+        FD_SET(ctx->natpmp.s, &fds);
+        getnatpmprequesttimeout(&ctx->natpmp, &timeout);
         select(FD_SETSIZE, &fds, NULL, NULL, &timeout);
-        r = readnatpmpresponseorretry(&natpmp, &response);
+        r = readnatpmpresponseorretry(&ctx->natpmp, &response);
     } while(r == NATPMP_TRYAGAIN);
 
     if(r == 0) {
@@ -74,7 +76,7 @@ bool nat_create_pmp_mapping(nat_ctx *ctx, uint16_t int_port, uint16_t ext_port) 
         ctx->ext_port = response.pnu.newportmapping.mappedpublicport;
         return true;
     } else {
-        DEBUG("NAT-PMP failed with error %d", r);
+        DEBUG("NAT-PMP %d -> %d failed with error %d", int_port, ext_port, r);
         // TODO handle some errors here
         return false;
     }
@@ -126,13 +128,10 @@ void nat_try_upnp(nat_ctx *ctx) {
 }
 
 void nat_try_pmp(nat_ctx *ctx) {
-#ifdef HAVE_NATPMP
+#ifdef NATPMP_FOUND
     // try nat-pmp
-    int r;
-    natpmp_t natpmp;
-    natpmpresp_t response;
     in_addr_t forcedgw = {0};
-    if(initnatpmp(&natpmp, 0, forcedgw) == 0) {
+    if(initnatpmp(&ctx->natpmp, 0, forcedgw) == 0) {
         DEBUG("discovered NAT-PMP server");
         ctx->type = NAT_TYPE_PMP;
     }
@@ -160,15 +159,16 @@ void nat_release_upnp(nat_ctx *ctx) {
 void nat_release_pmp(nat_ctx *ctx) {
 #ifdef NATPMP_FOUND
     natpmpresp_t response;
-    sendnewportmappingrequest(&natpmp, NATPMP_PROTOCOL_UDP, ctx->int_port, ctx->ext_port, 0);
+    int r;
+    sendnewportmappingrequest(&ctx->natpmp, NATPMP_PROTOCOL_UDP, ctx->int_port, ctx->ext_port, 0);
     do {
         fd_set fds;
         struct timeval timeout;
         FD_ZERO(&fds);
-        FD_SET(natpmp.s, &fds);
-        getnatpmprequesttimeout(&natpmp, &timeout);
+        FD_SET(ctx->natpmp.s, &fds);
+        getnatpmprequesttimeout(&ctx->natpmp, &timeout);
         select(FD_SETSIZE, &fds, NULL, NULL, &timeout);
-        r = readnatpmpresponseorretry(&natpmp, &response);
+        r = readnatpmpresponseorretry(&ctx->natpmp, &response);
     } while(r == NATPMP_TRYAGAIN);
     if(r == 0) {
         DEBUG("released public port %hu to localport %huu\n", response.pnu.newportmapping.mappedpublicport,
@@ -176,7 +176,7 @@ void nat_release_pmp(nat_ctx *ctx) {
     } else {
         DEBUG("NAT-PMP release failed with error %d", r);
     }
-    closenatpmp(&natpmp);
+    closenatpmp(&ctx->natpmp);
 #endif
 }
 
