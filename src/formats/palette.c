@@ -200,7 +200,7 @@ void palette_load_player_colors(vga_palette *src, int player) {
     // only load 47 palette colors, skipping the first one
     // because that seems to be ignored by the original
     int dst_offset = (player * 48) + 1;
-    vga_state_set_base_palette_from_range(src, dst_offset, 0, 47);
+    vga_state_set_base_palette_from_range(src, dst_offset, 1, 47);
 }
 
 void palette_load_player_cutscene_colors(vga_palette *src) {
