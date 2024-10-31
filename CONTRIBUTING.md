@@ -40,6 +40,7 @@ Before making a pull request, please verify via a normal issue ticket
 Pull requests:
 * must not have any build errors
 * must be formatted using clang-format
+* must be formatted using cmake-format, when changing the build scripts
 * must be verified using clang-tidy
 
 ### PR workflow if you don't have merge rights
@@ -68,3 +69,19 @@ Pull requests:
 Note that we only give merge rights if you have been involved for a while
 and we feel you can be trusted. Therefore we also trust you to know how to do
 this and when to bend the rules and when not to.
+
+### Running cmake-format
+cmake-format may be available in your system package manager, or can be installed from pip:
+```
+pip install cmakelang
+```
+
+cmake-format can then be run like so, taking care to pass it the config file argument `-c`:
+
+```sh
+# Format the main CMakeLists.txt file, making changes in-place
+cmake-format --in-place CMakeLists.txt -c .cmake-format.py
+
+# Format the cmake-scripts folder, making changes in-place
+cmake-format --in-place cmake-scripts/*.cmake -c .cmake-format.py
+```
