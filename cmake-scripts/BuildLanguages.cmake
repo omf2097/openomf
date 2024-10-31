@@ -23,6 +23,7 @@ foreach(LANG ${OMF_LANGS})
     list(APPEND BUILD_LANG_COMMANDS
         DEPENDS "${TXT2}"
         BYPRODUCTS "${DAT2}"
+        COMMAND ${CMAKE_COMMAND} -E echo_append "${LANG}, "
         COMMAND ${OMF_COMMAND_WRAPPER} "$<TARGET_FILE:languagetool>" -i "${TXT2}" -o "${DAT2}" --check-count ${LANG2_STRCOUNT}
     )
     install(FILES "${DAT2}" DESTINATION "${LANGUAGE_INSTALL_PATH}")
@@ -36,6 +37,7 @@ foreach(LANG ${OPENOMF_LANGS})
     list(APPEND BUILD_LANG_COMMANDS
         DEPENDS "${TXT}" "${TXT2}"
         BYPRODUCTS "${LNG}" "{LNG2}"
+        COMMAND ${CMAKE_COMMAND} -E echo_append "${LANG}, "
         COMMAND ${OMF_COMMAND_WRAPPER} "$<TARGET_FILE:languagetool>" -i "${TXT}" -o "${LNG}" --check-count ${LANG_STRCOUNT}
         COMMAND ${OMF_COMMAND_WRAPPER} "$<TARGET_FILE:languagetool>" -i "${TXT2}" -o "${LNG2}" --check-count ${LANG2_STRCOUNT}
     )
@@ -45,7 +47,7 @@ endforeach()
 
 
 add_custom_target(build_languages
-    COMMAND ${CMAKE_COMMAND} -E echo_append "Building Languages..."
+    COMMAND ${CMAKE_COMMAND} -E echo_append "Building Languages... "
     ${BUILD_LANG_COMMANDS}
     COMMAND ${CMAKE_COMMAND} -E echo_append "done"
 )

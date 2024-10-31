@@ -150,6 +150,11 @@ int read_entry(FILE *file, sd_language *language, int *line_number) {
     if(data_iter > data && data_iter[-1] == '\n')
         // trim final newline
         data_iter[-1] = '\0';
+    if(strlen(desc) > 31) {
+        fprintf(stderr, "Warning: truncating overlong 'Title:' of entry id %d. Length is %zu, max length is %d\n",
+                language->count, strlen(desc), 31);
+        desc[31] = '\0';
+    }
     sd_language_append(language, desc, data);
     free(data);
     free(desc);

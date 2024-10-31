@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -106,6 +107,7 @@ const sd_lang_string *sd_language_get(const sd_language *language, unsigned num)
 }
 
 void sd_language_append(sd_language *language, const char *description, const char *data) {
+    assert(strlen(description) < 32);
     language->count++;
 
     language->strings = omf_realloc(language->strings, language->count * sizeof(sd_lang_string));
