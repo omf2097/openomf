@@ -19,6 +19,7 @@ vcpkg_configure_cmake(
 
 vcpkg_install_cmake()
 vcpkg_copy_pdbs()
+vcpkg_fixup_pkgconfig()
 
 if("tool" IN_LIST FEATURES)
     vcpkg_copy_tools(TOOL_NAMES natpmpc AUTO_CLEAN)
