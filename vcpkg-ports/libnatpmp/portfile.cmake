@@ -4,6 +4,9 @@ vcpkg_from_github(
     REF 8257134a5dcb077e40db1946554d676e444406e4
     SHA512 eb277a2507d658d5f5b8af4af44b80eabdd9ea460c498f736c2e6417dd1026994916cdafb0aaf31c0687cec38abe6abfd9179a5afe2c3c87d2203564db88b97a
     HEAD_REF master
+    PATCHES
+        "install-declspec-header.patch"
+
 )
 
 vcpkg_configure_cmake(
