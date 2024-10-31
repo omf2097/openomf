@@ -1,3 +1,16 @@
+if(VCPKG_TOOLCHAIN)
+  if(TARGET libnatpmp::natpmp)
+    return()
+  endif()
+  find_package(libnatpmp CONFIG)
+  if(TARGET libnatpmp::natpmp)
+    MESSAGE(STATUS "Found libnatpmp in vcpkg")
+    set(LIBNATPMP_LIBRARY libnatpmp::natpmp)
+    SET(LIBNATPMP_FOUND TRUE)
+    set(LIBNATPMP_INCLUDE_DIR)
+    return()
+  endif()
+endif(VCPKG_TOOLCHAIN)
 
 SET(LIBNATPMP_SEARCH_PATHS
     /usr/local/
