@@ -24,12 +24,15 @@ shared *shared_create(void) {
 }
 
 void shared_set_palette(shared *shared, vga_palette *data, vga_index start, vga_index end) {
-    for(int i = start; i <= end; i++) {
-        shared->data.palette[i * 4 + 0] = data->colors[i].r / 255.0f;
-        shared->data.palette[i * 4 + 1] = data->colors[i].g / 255.0f;
-        shared->data.palette[i * 4 + 2] = data->colors[i].b / 255.0f;
+    GLsizeiptr items = end - start + 1;
+    for(int i = 0; i < items; i++) {
+        shared->data.palette[i * 4 + 0] = data->colors[start + i].r / 255.0f;
+        shared->data.palette[i * 4 + 1] = data->colors[start + i].g / 255.0f;
+        shared->data.palette[i * 4 + 2] = data->colors[start + i].b / 255.0f;
     }
-    ubo_update(shared->ubo_id, sizeof(data_buffer), &shared->data);
+    GLsizeiptr offset = start * sizeof(GLfloat) * 4;
+    GLsizeiptr size = items * sizeof(GLfloat) * 4;
+    ubo_update(shared->ubo_id, offset, size, &shared->data);
 }
 
 GLuint shared_get_block(shared *buffer) {
