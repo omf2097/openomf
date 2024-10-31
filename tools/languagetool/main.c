@@ -109,10 +109,16 @@ int read_entry(FILE *file, sd_language *language, int *line_number) {
 
     char *data = malloc(8192);
     memset(data, 0, 8192);
+    char *data_end = data + 8192;
     value = extract_value(line, "Data", *line_number, true);
-    if(strlen(value) > 0) {
-        strncpy(data, value, strlen(value));
-        data[strlen(value) + 1] = 0;
+    char *data_iter = data;
+    if(value[0] != '\0') {
+        size_t value_len = strlen(value);
+        if(data + value_len + 1 > data_end) {
+            error_exit("Way too long 'Data:' field", *line_number);
+        }
+        memcpy(data_iter, value, value_len + 1);
+        data_iter += value_len;
 
         *line_number += 1;
         // Read data body until next entry or EOF
@@ -125,7 +131,12 @@ int read_entry(FILE *file, sd_language *language, int *line_number) {
             }
 
             // Append to existing data
-            strncat(data, line, strlen(line));
+            value_len = strlen(line);
+            if(data_iter + value_len + 1 > data_end) {
+                error_exit("Way too long 'Data:' field", *line_number);
+            }
+            memcpy(data_iter, line, value_len + 1);
+            data_iter += value_len;
             *line_number += 1;
         }
     }
@@ -133,7 +144,9 @@ int read_entry(FILE *file, sd_language *language, int *line_number) {
     if(desc[0] == '\n') {
         desc[0] = 0;
     }
-    data[strlen(data) - 1] = 0;
+    if(data_iter > data && data_iter[-1] == '\n')
+        // trim final newline
+        data_iter[-1] = '\0';
     sd_language_append(language, desc, data);
     free(data);
     free(desc);
