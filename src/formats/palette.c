@@ -139,6 +139,7 @@ void palette_pulse_menu_colors(int tick) {
 }
 
 int palette_load_range(sd_reader *reader, vga_palette *pal, int index_start, int index_count) {
+    assert(index_start + index_count <= 256);
     vga_color d;
     for(int i = index_start; i < index_start + index_count; i++) {
         sd_read_buf(reader, (char *)&d, 3);
@@ -150,6 +151,7 @@ int palette_load_range(sd_reader *reader, vga_palette *pal, int index_start, int
 }
 
 int palette_mload_range(memreader *reader, vga_palette *pal, int index_start, int index_count) {
+    assert(index_start + index_count <= 256);
     vga_color d;
     for(int i = index_start; i < index_start + index_count; i++) {
         memread_buf(reader, (char *)&d, 3);
