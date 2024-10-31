@@ -110,7 +110,7 @@ void object_array_finish(object_array *array) {
 void object_array_begin(const object_array *array, object_array_batch *state) {
     state->start = 0;
     state->end = 0;
-    state->mode = (array->item_count > 0) ? array->modes[0] : 0;
+    state->mode = (array->item_count > 0) ? array->modes[0] : MODE_SET;
 }
 
 bool object_array_get_batch(const object_array *array, object_array_batch *state, object_array_blend_mode *mode) {
