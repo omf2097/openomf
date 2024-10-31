@@ -12,17 +12,14 @@ vcpkg_from_github(
 vcpkg_configure_cmake(
     SOURCE_PATH "${SOURCE_PATH}"
     PREFER_NINJA
-    OPTIONS
-        -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
-        -DBUILD_TESTING=OFF
 )
 
 vcpkg_install_cmake()
 vcpkg_copy_pdbs()
 vcpkg_fixup_pkgconfig()
 
-if("tool" IN_LIST FEATURES)
-    vcpkg_copy_tools(TOOL_NAMES natpmpc AUTO_CLEAN)
+if(VCPKG_LIBRARY_LINKAGE STREQUAL "static")
+  file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/bin" "${CURRENT_PACKAGES_DIR}/bin")
 endif()
 
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")
