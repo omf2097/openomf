@@ -1,10 +1,10 @@
+#include "utils/cp437.h"
 #include <CUnit/Basic.h>
 #include <CUnit/CUnit.h>
 #include <assert.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <uchar.h>
-#include <utils/cp437.h>
 
 #include <locale.h>
 
@@ -24,7 +24,7 @@ static void test_source_charset(void) {
                                      0xE2, 0x98, 0xBB,
                                      // NUL byte
                                      0x00};
-    static_assert((sizeof string) == (sizeof string2), "bad source-charset");
+    static_assert((sizeof string) == (sizeof string2), "bad charset");
     CU_ASSERT(memcmp(string, string2, sizeof string) == 0);
 }
 

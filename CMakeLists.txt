@@ -84,7 +84,13 @@ if(GIT_FOUND)
 endif()
 
 if(WIN32)
+    # prevent Windows.h from automatically defining as many macros
     add_definitions(-DWIN32_LEAN_AND_MEAN)
+
+    if(NOT MINGW)
+        # set source charset & runtime charset to utf-8
+        add_compile_options("/utf-8")
+    endif()
 endif()
 
 # System packages (hard dependencies)
@@ -109,7 +115,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/platform.h.in ${CMAKE_CURRENT_BIN
 
 # If tests are enabled, find CUnit
 if(USE_TESTS)
-    find_package(CUnit)
+    find_package(CUnit REQUIRED)
 endif()
 
 # Only strip on GCC (clang does not appreciate)
@@ -360,6 +366,10 @@ if(CUNIT_FOUND)
                                TESTS_ROOT_DIR="${CMAKE_SOURCE_DIR}/testing")
 
     target_link_libraries(openomf_test_main ${CORELIBS} SDL2::Main SDL2::Mixer Epoxy::Main)
+
+    if(MSVC)
+        target_precompile_headers(openomf_test_main PRIVATE "<stdio.h>")
+    endif()
 
     if(MINGW)
         # Always build as a console executable with mingw
