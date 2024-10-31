@@ -1,211 +1,211 @@
 ID: 0
-Title: Hjëlp side 1
+Title: Hj√¶lp side 1
 Data: {BIDDET 260}{CENTER OFF}
 {SIZE 8}{SKYD OVER}{COLOR:YELLOW}One Skal Falde 2097{KOLOR:DELEN}
 
-{SIZE 6}{SPACING 7} Velkommen til en skal falde 2097. Hvis tanken om 90 fod hoje robotter konstrueret til at rive dig i stykker fÜr dig til at makulere dig i frygt, vil du elske "Exit" -indstillingen.
+{SIZE 6}{SPACING 7} Velkommen til en skal falde 2097. Hvis tanken om 90 fod hoje robotter konstrueret til at rive dig i stykker f√•r dig til at makulere dig i frygt, vil du elske "Exit" -indstillingen.
 
-   Men hvis du er pumpet op og klar til dit livs kamp, lavede vi dette spil for dig! Forbered dig pÜ at sparke robotkoj.
+   Men hvis du er pumpet op og klar til dit livs kamp, lavede vi dette spil for dig! Forbered dig p√• at sparke robotkoj.
 
-   Lës videre for at finde ud af det indvendige scoop pÜ OMF 2097 - kontrollerne, bevëgelserne, turneringerne, spilletips og meget mere. Mens du spiller spillet, kan du til enhver tid trykke pÜ F1-tasten for at bringe disse instruktioner op.
+   L√¶s videre for at finde ud af det indvendige scoop p√• OMF 2097 - kontrollerne, bev√¶gelserne, turneringerne, spilletips og meget mere. Mens du spiller spillet, kan du til enhver tid trykke p√• F1-tasten for at bringe disse instruktioner op.
 
-   On-disk manualen er ogsÜ spëkket med endnu flere tips. For at se det, skriv "HELPME" fra DOS-prompten.
-{CENTER Pè}
+   On-disk manualen er ogs√• sp√¶kket med endnu flere tips. For at se det, skriv "HELPME" fra DOS-prompten.
+{CENTER P√Ö}
 
 ID: 1
-Title: Hjëlp side 2
+Title: Hj√¶lp side 2
 Data: {CENTER OFF}
 {SIZE 8}{SHADOWS ON}{COLOR:YELLOW}Using The Main Menu{COLOR:DEFAULT}{SIZE 6}{SPACINGG 7}
 
 One Must Fall 2097 giver dig tre markant forskellige typer af spil.
 
 {SIZE 6}{SPACING 9}{COLOR:YELLOW}One spiller spil
-{SIZE 6}{SPACING 7}{COLOR:DEFAULT} Dette kaster dig ind i en rëkke kampe, der tester din fërdighed i ren hurtig handling kamp. StÜl vil boje og gnister vil flyve!
+{SIZE 6}{SPACING 7}{COLOR:DEFAULT} Dette kaster dig ind i en r√¶kke kampe, der tester din f√¶rdighed i ren hurtig handling kamp. St√•l vil boje og gnister vil flyve!
 
 {SIZE 6}{SPACING 9}{COLOR:YELLOW}Two spiller spil
 {SIZE 6}{SPACING 7}{COLOR:DEFAULT} Udfordre en menneskelig modstander. To kan spille med tastaturet, tastaturet og joystick, eller to joysticks.  
 
 {SIZE 6}{SPACING 9}{COLOR:YELLOW}Tournament spil
-{SIZE 6}{SPACING 7}{COLOR:DEFAULT} Begynder med en svag robot, du këmper for kontanter og bruge dine gevinster til at opgradere din robot. Den ultimative kombination af handling og strategi!
-{CENTER Pè}
+{SIZE 6}{SPACING 7}{COLOR:DEFAULT} Begynder med en svag robot, du k√¶mper for kontanter og bruge dine gevinster til at opgradere din robot. Den ultimative kombination af handling og strategi!
+{CENTER P√Ö}
 
 ID: 2
-Title: Hjëlp side 3
+Title: Hj√¶lp side 3
 Data: {CENTER OFF}
-{SIZE 8}{SKADOWS Pè}{COLOR:YELLOW}Andre Hovedmenuindstillinger{SIZE 6}{COLOR:DEFAULT}
+{SIZE 8}{SKADOWS P√Ö}{COLOR:YELLOW}Andre Hovedmenuindstillinger{SIZE 6}{COLOR:DEFAULT}
 
 
 {SIZE 6}{SPACING 9}{COLOR:YELLOW}Konfiguration
-{SIZE 6}{SPACING 7}{COLOR:DEFAULT} Brug dette vigtigste menuvalg til at ëndre video, lyd, tastatur og joystick indstillinger.
+{SIZE 6}{SPACING 7}{COLOR:DEFAULT} Brug dette vigtigste menuvalg til at √¶ndre video, lyd, tastatur og joystick indstillinger.
 
 {SIZE 6}{SPACING 9}{COLOR:YELLOW}Gameplay
-{SIZE 6}{SPACING 7}{COLOR:DEFAULT} Tweak spillet hastighed, computer intelligens og andre spil muligheder. Du kan tilpasse OMF 2097 pÜ mange mÜder.
-{CENTER Pè}
+{SIZE 6}{SPACING 7}{COLOR:DEFAULT} Tweak spillet hastighed, computer intelligens og andre spil muligheder. Du kan tilpasse OMF 2097 p√• mange m√•der.
+{CENTER P√Ö}
 
 ID: 3
-Title: Hjëlp side 4
+Title: Hj√¶lp side 4
 Data: {CENTER OFF}
-{SIZE 8}{SHADOWS ON}{COLOR:YELLOW}VVíLG EN Pilot{COLOR:DELêR}
+{SIZE 8}{SHADOWS ON}{COLOR:YELLOW}VV√ÜLG EN Pilot{COLOR:DEL√âR}
 
-{SIZE 6}{SPACING 7}NÜr du starter et nyt spil, skal du vëlge en pilot til at lede din robot i kamp. Hver pilot har unikke statistikker:
+{SIZE 6}{SPACING 7}N√•r du starter et nyt spil, skal du v√¶lge en pilot til at lede din robot i kamp. Hver pilot har unikke statistikker:
 
 {SIZE 6}{SPACING 9}{KOLOR:YELLOM}KYGGERE
-{SIZE 6}{SPACING 7}{COLOR:DEFAULT} En pilots rene brute styrke.  Hvad er, der er, er, at du er hojere, sÜ meget din magt, sÜ meget du har, sÜ meget du har ondt i stikken.
+{SIZE 6}{SPACING 7}{COLOR:DEFAULT} En pilots rene brute styrke.  Hvad er, der er, er, at du er hojere, s√• meget din magt, s√• meget du har, s√• meget du har ondt i stikken.
 
 {SIZE 6}{SPACING 9}{KOLOR:YELLOW}AGILITY
-{SIZE 6}{SPACING 7}{COLOR:DEFAULT} Hurtige tënkere gor hurtige konkurrenter.  Agilitet viser din pilots reaktionshastighed.
+{SIZE 6}{SPACING 7}{COLOR:DEFAULT} Hurtige t√¶nkere gor hurtige konkurrenter.  Agilitet viser din pilots reaktionshastighed.
 
 {SIZE 6}{SPACING 9}{ KOLLEGA:YELLOM}ENDURANCE
-{SIZE 6}{SPACING 7}{COLOR:DEFAULT} Det er ikke kun trëkstyrke, der holder en robot pÜ fodderne.  Da en pilot foler hvert slag mod sin robot, spiller ENTURANCE en afgorende rolle.
-{CENTER Pè}
+{SIZE 6}{SPACING 7}{COLOR:DEFAULT} Det er ikke kun tr√¶kstyrke, der holder en robot p√• fodderne.  Da en pilot foler hvert slag mod sin robot, spiller ENTURANCE en afgorende rolle.
+{CENTER P√Ö}
 
 ID: 4
-Title: Hjëlp side 5
+Title: Hj√¶lp side 5
 Data: {CENTER OFF}
-{SIZE 8}{SSKYT OVER}}KOLOR:YELLOM}VíLG EN robot {KOLOR: FOREDBARK
+{SIZE 8}{SSKYT OVER}}KOLOR:YELLOM}V√ÜLG EN robot {KOLOR: FOREDBARK
 
-{SIZE 6}{SPACING 7}{COLOR:DEFAULT} Efter at have valgt en pilot, stÜr du over for din vigtigste beslutning - hvilken robot vil reprësentere dig i kamp.  Hver robot har mange angreb eller bevëgelser, som han kan skade og til sidst besejre modstandere. Hver robot har ogsÜ mindst to "sërlige bevëgelser".
+{SIZE 6}{SPACING 7}{COLOR:DEFAULT} Efter at have valgt en pilot, st√•r du over for din vigtigste beslutning - hvilken robot vil repr√¶sentere dig i kamp.  Hver robot har mange angreb eller bev√¶gelser, som han kan skade og til sidst besejre modstandere. Hver robot har ogs√• mindst to "s√¶rlige bev√¶gelser".
 
-   Specielle bevëgelser opnÜs ved hurtig controller og knapkombinationer.  Du skal mestre de sërlige trëk, hvis du onsker at blive en mester.
+   Specielle bev√¶gelser opn√•s ved hurtig controller og knapkombinationer.  Du skal mestre de s√¶rlige tr√¶k, hvis du onsker at blive en mester.
 
-   Du kan finde flere oplysninger om kontrol og sërlige bevëgelser under side 10 og lëse manualen (lober HELPME.EXE fra DOS-promenden).
-{CENTER Pè}
+   Du kan finde flere oplysninger om kontrol og s√¶rlige bev√¶gelser under side 10 og l√¶se manualen (lober HELPME.EXE fra DOS-promenden).
+{CENTER P√Ö}
 
 ID: 5
-Title: Hjëlp side 6
+Title: Hj√¶lp side 6
 Data: {CENTER OFF}
-{SIZE 8}{SKADOWS Pè}{COLOR:YELLOW}Tournament Play{COLOR: DEFAULT}
+{SIZE 8}{SKADOWS P√Ö}{COLOR:YELLOW}Tournament Play{COLOR: DEFAULT}
 
-{SIZE 6}{SPACING 7}{COLOR:DEFAULT} Efter at have valgt turneringsspil, er du i turneringskommandocentret. Kontrolpanelet er nederst pÜ skërmen. Brug den til at kobe eller sëlge dele, tage trëningskurser og këmpe i en turnering eller simulering.
+{SIZE 6}{SPACING 7}{COLOR:DEFAULT} Efter at have valgt turneringsspil, er du i turneringskommandocentret. Kontrolpanelet er nederst p√• sk√¶rmen. Brug den til at kobe eller s√¶lge dele, tage tr√¶ningskurser og k√¶mpe i en turnering eller simulering.
 
-   NÜr du har oprettet en ny pilot, ser du et holografisk billede af din robot. Din robots navn og specielle bevëgelser er opfort overst til hojre.
+   N√•r du har oprettet en ny pilot, ser du et holografisk billede af din robot. Din robots navn og specielle bev√¶gelser er opfort overst til hojre.
 
    Din pilot statistik er til venstre: POWER, AGILITY, OG UDENDURANCE. Du kan tage kurser for at forbedre disse.
 
-   Din robots statistik vises nederst til hojre. Disse ëndrer sig, nÜr du kober robotopgraderinger.
-{CENTER Pè}
+   Din robots statistik vises nederst til hojre. Disse √¶ndrer sig, n√•r du kober robotopgraderinger.
+{CENTER P√Ö}
 
 ID: 6
-Title: Hjëlp side 7
+Title: Hj√¶lp side 7
 Data: {CENTER OFF}
-{SIZE 8}{SSKYGGERE Pè}{COLOR:YELLOW}Robot Statistik i turneringen Play{COLOR:DEFAULT}
+{SIZE 8}{SSKYGGERE P√Ö}{COLOR:YELLOW}Robot Statistik i turneringen Play{COLOR:DEFAULT}
 
 {STORRELSE 6}{SPACING 9}{COLOR:YELLOW}ARM HASTIGHED OG BEN HASTIGHED
-{SIZE 6}{SPACING 7}{COLOR:DEFAULT} Disse mÜlere viser hastigheden pÜ din robots lemmer.  Som disse stiger, vil du vëre i stand til at slÜ og sparke hurtigere.
+{SIZE 6}{SPACING 7}{COLOR:DEFAULT} Disse m√•lere viser hastigheden p√• din robots lemmer.  Som disse stiger, vil du v√¶re i stand til at sl√• og sparke hurtigere.
 
-{SIZE 6}{SPACING 9}{COLOR:YELLOW}ARM KRíFT OG BEN KRíFT
-{SIZE 6}{SPACING 7}{COLOR:DEFAULT} Disse mÜlere beskriver den skade, du kan gore, nÜr du rammer eller sparker din modstander.
+{SIZE 6}{SPACING 9}{COLOR:YELLOW}ARM KR√ÜFT OG BEN KR√ÜFT
+{SIZE 6}{SPACING 7}{COLOR:DEFAULT} Disse m√•lere beskriver den skade, du kan gore, n√•r du rammer eller sparker din modstander.
 
 {SIZE 6}{SPACING 9}{COLOR:YELLOW}STUN MODSTAND
-{SIZE 6}{SPACING 7}{COLOR:DEFAULT} Opgradere dette for at hjëlpe din robot med at hÜndtere chok af gentagne slag. Uden, vil du ofte blive slÜet svimmel.
+{SIZE 6}{SPACING 7}{COLOR:DEFAULT} Opgradere dette for at hj√¶lpe din robot med at h√•ndtere chok af gentagne slag. Uden, vil du ofte blive sl√•et svimmel.
 
 {SIZE 6}{SPACING 9}{ KOLLER:YELLOW}ARMOR PLATE:
-{SIZE 6}{SPACING 7}{COLOR:DEFAULT} Armor plade drastisk reducerer skaderne pÜ din robot, nÜr du rammer.
-{CENTER Pè}
+{SIZE 6}{SPACING 7}{COLOR:DEFAULT} Armor plade drastisk reducerer skaderne p√• din robot, n√•r du rammer.
+{CENTER P√Ö}
 
 ID: 7
-Title: Hjëlp side 8
+Title: Hj√¶lp side 8
 Data: {CENTER OFF}
-{SIZE 8}{SSKADOVRE Pè}{COLOR:YELLOW}The Holding Bay{COLOR:DEFAULT}
+{SIZE 8}{SSKADOVRE P√Ö}{COLOR:YELLOW}The Holding Bay{COLOR:DEFAULT}
 
 {SIZE 6}{SPACING 7} Dette er, hvor robotterne er forberedt og inspiceret til kamp. I et spillerspil vil du se en dialog mellem din pilot og hans modstander.
 
-   I et tospillerspil kan spiller man vëlge arenaen til at këmpe i. Tryk til venstre og hojre for at skifte arenaer.
+   I et tospillerspil kan spiller man v√¶lge arenaen til at k√¶mpe i. Tryk til venstre og hojre for at skifte arenaer.
 
-   Derefter bliver din pilot taget ind i turneringslaboratoriet, hvor hans nervesystem er grënsefladet med hans robot. Han glider derefter ind i en stof-induceret sovn. Da piloten vÜgner, erstattes hans kod af hërdt stÜl. Med held og din hjëlp kan piloten besejre sin modstander i arenaen.
-{CENTER Pè}
+   Derefter bliver din pilot taget ind i turneringslaboratoriet, hvor hans nervesystem er gr√¶nsefladet med hans robot. Han glider derefter ind i en stof-induceret sovn. Da piloten v√•gner, erstattes hans kod af h√¶rdt st√•l. Med held og din hj√¶lp kan piloten besejre sin modstander i arenaen.
+{CENTER P√Ö}
 
 ID: 8
-Title: Hjëlp side 9
+Title: Hj√¶lp side 9
 Data: {CENTER OFF}
-{SKYER Pè}{SIZE 8}{COLOR:YELLOW}The Arena{COLOR:DEFAULT}
+{SKYER P√Ö}{SIZE 8}{COLOR:YELLOW}The Arena{COLOR:DEFAULT}
 
 {SIZE 6}{SPACING 7}{COLOR:DEFAULT}Nu er det tid til den virkelige test!
 
-   Den rode energimÜler overst viser, hvor meget skade din robot kan tage for nedlukning. Enhver vellykket strejke mod dig sënker det samlede belob. Hvis din energimÜler dypper under nul, kollapser din robot.
+   Den rode energim√•ler overst viser, hvor meget skade din robot kan tage for nedlukning. Enhver vellykket strejke mod dig s√¶nker det samlede belob. Hvis din energim√•ler dypper under nul, kollapser din robot.
 
-   Den tynde blÜ bar viser din bedovelsesskade. Denne bar blinker, nÜr den er faretruende lav. NÜr det falder under nul, bliver din pilot svimmel og mister kontrollen i flere sekunder.
+   Den tynde bl√• bar viser din bedovelsesskade. Denne bar blinker, n√•r den er faretruende lav. N√•r det falder under nul, bliver din pilot svimmel og mister kontrollen i flere sekunder.
 
    Nogle arenaer indeholder farlige farer: ildkugler, pigge, kampfly og lignende. Hvis du ikke kan tage varmen, kan du slukke dem i GAMEPLAY-menuen.
-{CENTER Pè}
+{CENTER P√Ö}
 
 ID: 9
-Title: Hjëlp side 10
+Title: Hj√¶lp side 10
 Data: {CENTER OFF}
-{SKYTKRíNKER Pè}{SIZE 8}{COLOR:YELLOW}Offense{COLOR:DEFAULT}
+{SKYTKR√ÜNKER P√Ö}{SIZE 8}{COLOR:YELLOW}Offense{COLOR:DEFAULT}
 
-{SIZE 6}{SPACING 7}{COLOR:DEFAULT} Robotter har en bred vifte af angreb. For du kan pommel din modstander med dem, skal du kende kontrollerne. Du kan udfore ethvert trëk med enten tastaturet eller et joystick.
+{SIZE 6}{SPACING 7}{COLOR:DEFAULT} Robotter har en bred vifte af angreb. For du kan pommel din modstander med dem, skal du kende kontrollerne. Du kan udfore ethvert tr√¶k med enten tastaturet eller et joystick.
 
 "Forward" betyder for din modstander.
-"Back" betyder vëk fra din modstander.
+"Back" betyder v√¶k fra din modstander.
 
-   Angrebene bruger disse retninger sammen med spark og PUNCH knapper. Strygning mens du trykker tilbage vil producere et andet trëk end at slÜ, mens du trykker fremad.
+   Angrebene bruger disse retninger sammen med spark og PUNCH knapper. Strygning mens du trykker tilbage vil producere et andet tr√¶k end at sl√•, mens du trykker fremad.
 
    Tryk op for at springe. For at hoppe hojere og videre, skal du forst trykke ned og tryk derefter op.
-{CENTER Pè}
+{CENTER P√Ö}
 
 ID: 10
-Title: Hjëlp side 11
+Title: Hj√¶lp side 11
 Data: {CENTER OFF}
-{SKYGGES Pè}{SIZE 8}{COLOR:YELLOW}Defense
+{SKYGGES P√Ö}{SIZE 8}{COLOR:YELLOW}Defense
 
-{SIZE 6}{SPACING 7}{COLOR:DEFAULT} For at forsvare dig mod et angreb, mens du er pÜ jorden, skal du trykke tilbage uden at angribe (ikke slÜ eller sparke). Din robot vil blokere enhver form for bevëgelse, undtagen ben fejer.
+{SIZE 6}{SPACING 7}{COLOR:DEFAULT} For at forsvare dig mod et angreb, mens du er p√• jorden, skal du trykke tilbage uden at angribe (ikke sl√• eller sparke). Din robot vil blokere enhver form for bev√¶gelse, undtagen ben fejer.
 
    For at blokere ben fejer, tryk ned-back. At trykke ned-back vil ikke blokere luftangreb.
 
-   Mens du er luftbÜren, kan du ikke forsvare noget angreb. Hop med forsigtighed.
-{CENTER Pè}
+   Mens du er luftb√•ren, kan du ikke forsvare noget angreb. Hop med forsigtighed.
+{CENTER P√Ö}
 
 ID: 11
-Title: Hjëlp side 12
+Title: Hj√¶lp side 12
 Data: {CENTER OFF}
 {SKYER ON}{SIZE 8}{COLOR:YELLOW}At spille Tips{COLOR: DEFAULT}
 
-{SIZE 6}{SPACING 7} Hver pilot giver en robot en helt ny folelse. Prov flere piloter og vëlg en, der passer bedst til dine evner. I et enspiller spil, computeren vil spille de andre piloter, ved hjëlp af deres individuelle personligheder til at guide intelligensen af de robotter, de udover.
+{SIZE 6}{SPACING 7} Hver pilot giver en robot en helt ny folelse. Prov flere piloter og v√¶lg en, der passer bedst til dine evner. I et enspiller spil, computeren vil spille de andre piloter, ved hj√¶lp af deres individuelle personligheder til at guide intelligensen af de robotter, de udover.
 
-   Hver robot har flere specielle bevëgelser, som bÜde er udokumenterede og meget kraftfulde. For at udfore et sërligt trëk skal du kombinere controllerbevëgelser og knaptryk i hurtig rëkkefolge. Se computeren spille for at se nogle af de sërlige bevëgelser, sÜ prov at gore dem selv.
+   Hver robot har flere specielle bev√¶gelser, som b√•de er udokumenterede og meget kraftfulde. For at udfore et s√¶rligt tr√¶k skal du kombinere controllerbev√¶gelser og knaptryk i hurtig r√¶kkefolge. Se computeren spille for at se nogle af de s√¶rlige bev√¶gelser, s√• prov at gore dem selv.
 
 Eksempel: Udfor Jaguars hjernerystelse Cannon ved at trykke ned-back-punch.
-{CENTER Pè}
+{CENTER P√Ö}
 
 ID: 12
-Title: Hjëlp side 13
+Title: Hj√¶lp side 13
 Data: {CENTER OFF}
 {SKYGGES ON}{SIZE 8}{COLOR:YELLOW}Combos
 {SIZE 6}{COLOR:STANDER}
 {SIZE 6}{SPACING 7}{ KOLLEGA:SLIGNER EFTERFAULT}
-   En kombination er en serie af to eller flere bevëgelser, der, nÜr de udfores i rëkkefolge, gor betydelig skade og ikke kan blokeres efter det forste hit.
+   En kombination er en serie af to eller flere bev√¶gelser, der, n√•r de udfores i r√¶kkefolge, gor betydelig skade og ikke kan blokeres efter det forste hit.
 
-   NÜr du rammer med en combo, fÜr du bonuspoint. Hvis du vil vëre en virkelig fremragende spiller, mestre sÜ mange kombinationer som du kan finde.
-{CENTER Pè}
+   N√•r du rammer med en combo, f√•r du bonuspoint. Hvis du vil v√¶re en virkelig fremragende spiller, mestre s√• mange kombinationer som du kan finde.
+{CENTER P√Ö}
 
 ID: 13
-Title: Hjëlp side 14
-Data: Dette skal vëre lille og normal storrelse.
+Title: Hj√¶lp side 14
+Data: Dette skal v√¶re lille og normal storrelse.
 
 ID: 14
-Title: Hjëlp side 15
-Data: Dette skal vëre lille og normal storrelse.
+Title: Hj√¶lp side 15
+Data: Dette skal v√¶re lille og normal storrelse.
 
 ID: 15
-Title: Hjëlp side 16
-Data: Dette skal vëre lille og normal storrelse.
+Title: Hj√¶lp side 16
+Data: Dette skal v√¶re lille og normal storrelse.
 
 ID: 16
-Title: Hjëlp side 17
-Data: Dette skal vëre lille og normal storrelse.
+Title: Hj√¶lp side 17
+Data: Dette skal v√¶re lille og normal storrelse.
 
 ID: 17
-Title: Hjëlp side 18
-Data: Dette skal vëre lille og normal storrelse.
+Title: Hj√¶lp side 18
+Data: Dette skal v√¶re lille og normal storrelse.
 
 ID: 18
-Title: Hjëlp side 19
-Data: Dette skal vëre lille og normal storrelse.
+Title: Hj√¶lp side 19
+Data: Dette skal v√¶re lille og normal storrelse.
 
 ID: 19
-Title: Hjëlp side 20
-Data: Dette skal vëre lille og normal storrelse.
+Title: Hj√¶lp side 20
+Data: Dette skal v√¶re lille og normal storrelse.
 
 ID: 20
 Title: Piloter
@@ -343,11 +343,11 @@ Data: Stadion
 
 ID: 57
 Title: Robotter
-Data: Danger vërelse
+Data: Danger v√¶relse
 
 ID: 58
 Title: Robotter
-Data: Kraftvërk
+Data: Kraftv√¶rk
 
 ID: 59
 Title: Robotter
@@ -379,47 +379,47 @@ Data: Fire Pit
 
 ID: 66
 Title: Arenaer
-Data: Det er her W.A.R. maskiner fÜr deres forste test. Offentligheden opfordres til at se begivenheden.
+Data: Det er her W.A.R. maskiner f√•r deres forste test. Offentligheden opfordres til at se begivenheden.
 
 ID: 67
 Title: Arenaer
-Data: Dette var W.A.R.'s forste fare arena.  Kombattanter skal undgÜ de farlige pigg.
+Data: Dette var W.A.R.'s forste fare arena.  Kombattanter skal undg√• de farlige pigg.
 
 ID: 68
 Title: Arenaer
-Data: Bygget inde i et lyn mod hedning, der er et pustet over modtageligt kraftanlëg, leverer vëggene noget af et chok.
+Data: Bygget inde i et lyn mod hedning, der er et pustet over modtageligt kraftanl√¶g, leverer v√¶ggene noget af et chok.
 
 ID: 69
 Title: Arenaer
-Data: Den ultimative test, computere projicerer holografiske sfërer, der, nÜr de rammer, antënder ildkugler under din fjendes fodder.
+Data: Den ultimative test, computere projicerer holografiske sf√¶rer, der, n√•r de rammer, ant√¶nder ildkugler under din fjendes fodder.
 
 ID: 70
 Title: Arenaer
-Data: Bliv pÜ tëerne og undvige angrebene pÜ jagerflyene for at overleve i orkenen.
+Data: Bliv p√• t√¶erne og undvige angrebene p√• jagerflyene for at overleve i orkenen.
 
 ID: 71
 Title: Arenaer
-Data: Den ultimative test: Computere projicerer holografiske kugler, der, nÜr de rammer, antënder ildkugler under din fjendes fodder.
+Data: Den ultimative test: Computere projicerer holografiske kugler, der, n√•r de rammer, ant√¶nder ildkugler under din fjendes fodder.
 
 ID: 72
 Title: Arenaer
-Data: Den ultimative test, computere projicerer holografiske sfërer, der, nÜr de rammer, antënder ildkugler under din fjendes fodder.
+Data: Den ultimative test, computere projicerer holografiske sf√¶rer, der, n√•r de rammer, ant√¶nder ildkugler under din fjendes fodder.
 
 ID: 73
 Title: Arenaer
-Data: Den ultimative test, computere projicerer holografiske sfërer, der, nÜr de rammer, antënder ildkugler under din fjendes fodder.
+Data: Den ultimative test, computere projicerer holografiske sf√¶rer, der, n√•r de rammer, ant√¶nder ildkugler under din fjendes fodder.
 
 ID: 74
 Title: Arenaer
-Data: Den ultimative test, computere projicerer holografiske sfërer, der, nÜr de rammer, antënder ildkugler under din fjendes fodder.
+Data: Den ultimative test, computere projicerer holografiske sf√¶rer, der, n√•r de rammer, ant√¶nder ildkugler under din fjendes fodder.
 
 ID: 75
 Title: Arenaer
-Data: Den ultimative test, computere projicerer holografiske sfërer, der, nÜr de rammer, antënder ildkugler under din fjendes fodder.
+Data: Den ultimative test, computere projicerer holografiske sf√¶rer, der, n√•r de rammer, ant√¶nder ildkugler under din fjendes fodder.
 
 ID: 76
 Title: Forste nyhedsreport
-Data: Vil du bekëmpe denne udfordrer?
+Data: Vil du bek√¶mpe denne udfordrer?
 
 ID: 77
 Title: Forste nyhedsreport
@@ -427,11 +427,11 @@ Data: Og i andre nyheder, efter ~1's kamp i aften, ~2, en urangeret konkurrent, 
 
 ID: 78
 Title: Forste nyhedsreport
-Data: NÜ, hvis ~8 accepterer udfordringen, kan du vëdde dit liv, jeg vil vëre der for at se kampen!
+Data: N√•, hvis ~8 accepterer udfordringen, kan du v√¶dde dit liv, jeg vil v√¶re der for at se kampen!
 
 ID: 79
 Title: Forste nyhedsreport
-Data: Jeg hÜber helt sikkert, at du ikke gik glip af denne kampfolk, for i aften har vi en ny MESMEKëmpe.
+Data: Jeg h√•ber helt sikkert, at du ikke gik glip af denne kampfolk, for i aften har vi en ny MESMEK√¶mpe.
 
 ID: 80
 Title: Forste nyhedsreport
@@ -463,7 +463,7 @@ Data: hun
 
 ID: 87
 Title: Forste nyhedsreport
-Data: ~1 viste utrolige evner med ~3 som ~2 blev lidt mere end en boksesëk.
+Data: ~1 viste utrolige evner med ~3 som ~2 blev lidt mere end en bokses√¶k.
 
 ID: 88
 Title: Anden nyhedsrapport
@@ -471,11 +471,11 @@ Data: Denne ene, samt andre fremragende hits, har sendt ~2 tilbage til butikken 
 
 ID: 89
 Title: Forste nyhedsreport
-Data: For alle jer folk, der nyder en jëvnt matchet kamp, hÜber jeg, at du ikke betalte for kampen pÜ ~5.
+Data: For alle jer folk, der nyder en j√¶vnt matchet kamp, h√•ber jeg, at du ikke betalte for kampen p√• ~5.
 
 ID: 90
 Title: Anden nyhedsrapport
-Data: ...Men for alle jer, der kan lide den lejlighedsvise ensidige masochistiske puncing, sÜ pas pÜ ~1.
+Data: ...Men for alle jer, der kan lide den lejlighedsvise ensidige masochistiske puncing, s√• pas p√• ~1.
 
 ID: 91
 Title: Forste nyhedsreport
@@ -483,35 +483,35 @@ Data: Whoa, denne udfordrer betod forretning i aften.  ~1 kunne vise de gamle pr
 
 ID: 92
 Title: Anden nyhedsrapport
-Data: Tjek denne handling ud.  Dette er, hvordan ~2 sÜ hele kampen: slÜet, forslÜet og forvirret.
+Data: Tjek denne handling ud.  Dette er, hvordan ~2 s√• hele kampen: sl√•et, forsl√•et og forvirret.
 
 ID: 93
 Title: Forste nyhedsreport
-Data: Publikum jublede som ~2 blev besejret i det bemërkelsesvërdige opgor med ~1.
+Data: Publikum jublede som ~2 blev besejret i det bem√¶rkelsesv√¶rdige opgor med ~1.
 
 ID: 94
 Title: Anden nyhedsrapport
-Data: ~1 glade glade tilskuere med respektable fërdigheder.  Her er det hit, der sluttede kampen.
+Data: ~1 glade glade tilskuere med respektable f√¶rdigheder.  Her er det hit, der sluttede kampen.
 
 ID: 95
 Title: Forste nyhedsreport
-Data: ~1 sÜ godt ud i aften.  ~6 ~3 forlod ~5 med kun et par ar fra ~6 overmatched modstander.
+Data: ~1 s√• godt ud i aften.  ~6 ~3 forlod ~5 med kun et par ar fra ~6 overmatched modstander.
 
 ID: 96
 Title: Anden nyhedsrapport
-Data: ~2 viste nogle temmelig patetiske kampfërdigheder, og ~1 udnyttede ham.  Bare se pÜ dette hit.
+Data: ~2 viste nogle temmelig patetiske kampf√¶rdigheder, og ~1 udnyttede ham.  Bare se p√• dette hit.
 
 ID: 97
 Title: Forste nyhedsreport
-Data: ~5 blev rystet i aften af den imponerende ~1.  ~2 har brug for mere praksis, for ~11 kan slÜ som ~7.
+Data: ~5 blev rystet i aften af den imponerende ~1.  ~2 har brug for mere praksis, for ~11 kan sl√• som ~7.
 
 ID: 98
 Title: Anden nyhedsrapport
-Data: ~4 dele fyldte gulvet efter gentagne slag som dette.  Jeg har nësten ondt af ~2's reparationshold.
+Data: ~4 dele fyldte gulvet efter gentagne slag som dette.  Jeg har n√¶sten ondt af ~2's reparationshold.
 
 ID: 99
 Title: Forste nyhedsreport
-Data: ~1 udkëmpede en respektabel kamp med ~2 og sejrede.  Ikke halvt dÜrligt, ~1!
+Data: ~1 udk√¶mpede en respektabel kamp med ~2 og sejrede.  Ikke halvt d√•rligt, ~1!
 
 ID: 100
 Title: Anden nyhedsrapport
@@ -523,35 +523,35 @@ Data: ...Og i arenaen i aften, ~2 gav ~1 et lob for ~6 penge, men kom op et par 
 
 ID: 102
 Title: Anden nyhedsrapport
-Data: ~2 holdt derinde i et stykke tid, men ~1 simpelthen ud-prësteret ~10 med bevëgelser som dette.
+Data: ~2 holdt derinde i et stykke tid, men ~1 simpelthen ud-pr√¶steret ~10 med bev√¶gelser som dette.
 
 ID: 103
 Title: Forste nyhedsreport
-Data: Alle jer arena junkies derude fik et ret godt show pÜ ~5.  ~2 këmpede med dygtighed, men ikke nok...
+Data: Alle jer arena junkies derude fik et ret godt show p√• ~5.  ~2 k√¶mpede med dygtighed, men ikke nok...
 
 ID: 104
 Title: Anden nyhedsrapport
-Data: ...at lëgge ned ~1 s hulking ~3.  Hey, mÜske nëste gang, ~2.
+Data: ...at l√¶gge ned ~1 s hulking ~3.  Hey, m√•ske n√¶ste gang, ~2.
 
 ID: 105
 Title: Forste nyhedsreport
-Data: ~1 og ~2 blev jëvnt matchet.  ~4 af ~2 vil tilbringe lidt tid i butikken i aften!
+Data: ~1 og ~2 blev j√¶vnt matchet.  ~4 af ~2 vil tilbringe lidt tid i butikken i aften!
 
 ID: 106
 Title: Anden nyhedsrapport
-Data: Disse to këmpede praktisk talt blow for blow indtil ~1 endelig naglet ~2 med dette veltimede skud.
+Data: Disse to k√¶mpede praktisk talt blow for blow indtil ~1 endelig naglet ~2 med dette veltimede skud.
 
 ID: 107
 Title: Forste nyhedsreport
-Data: Jeg hÜber, ~1 og ~2's reparationsbesëtninger ikke planlagde nogen fester i aften.
+Data: Jeg h√•ber, ~1 og ~2's reparationsbes√¶tninger ikke planlagde nogen fester i aften.
 
 ID: 108
 Title: Anden nyhedsrapport
-Data: Med den middelmÜdige prëstation af ~1, ~6 ~3 reparation besëtning vil sidde fast i butikken nësten lige sÜ lënge ~6 modstanderens.
+Data: Med den middelm√•dige pr√¶station af ~1, ~6 ~3 reparation bes√¶tning vil sidde fast i butikken n√¶sten lige s√• l√¶nge ~6 modstanderens.
 
 ID: 109
 Title: Forste nyhedsreport
-Data: Nu var dette en lige match-up, hvis jeg nogensinde har set en.  Hvis de këmpede denne kamp i morgen, ~2 kunne lige sÜ nemt vinde.
+Data: Nu var dette en lige match-up, hvis jeg nogensinde har set en.  Hvis de k√¶mpede denne kamp i morgen, ~2 kunne lige s√• nemt vinde.
 
 ID: 110
 Title: Anden nyhedsrapport
@@ -559,11 +559,11 @@ Data: ~1's sidste, snublende slag sluttede kampen i, hvad der kun kunne kaldes e
 
 ID: 111
 Title: Forste nyhedsreport
-Data: Whew, ~2 virkelig rev ind i ~1.  ~1 bor nok tage det ~3 tilbage til trëningsbanen.
+Data: Whew, ~2 virkelig rev ind i ~1.  ~1 bor nok tage det ~3 tilbage til tr√¶ningsbanen.
 
 ID: 112
 Title: Anden nyhedsrapport
-Data: Alt jeg kan sige til ~1 er at fÜ noget praksis. At ~3 ikke vinder uden din hjëlp.
+Data: Alt jeg kan sige til ~1 er at f√• noget praksis. At ~3 ikke vinder uden din hj√¶lp.
 
 ID: 113
 Title: Forste nyhedsreport
@@ -571,11 +571,11 @@ Data: Jeg vil opsummere denne ene op for alle jer sportsfans i to ord: TRACK MEE
 
 ID: 114
 Title: Anden nyhedsrapport
-Data: ~1 og ~6 skëbnesvangert ~3.  ~1 bor begynde at lave vëddemÜl mod ~7self, hvis ~8 skal tage dyk som denne.
+Data: ~1 og ~6 sk√¶bnesvangert ~3.  ~1 bor begynde at lave v√¶ddem√•l mod ~7self, hvis ~8 skal tage dyk som denne.
 
 ID: 115
 Title: Forste nyhedsreport
-Data: Min, min...  Hvem havde kontrol over det ~3!  èh, det var ~1.  Jeg har nogle rÜd til dig, ~1.
+Data: Min, min...  Hvem havde kontrol over det ~3!  √Öh, det var ~1.  Jeg har nogle r√•d til dig, ~1.
 
 ID: 116
 Title: Anden nyhedsrapport
@@ -583,7 +583,7 @@ Data: And, blok, dodge, tilkald sig syg, gor noget andet end at tage hit efter h
 
 ID: 117
 Title: Forste nyhedsreport
-Data: Denne kamp var temmelig ensidig.  ~2 dominerede kampen mod den overvëldede ~1.
+Data: Denne kamp var temmelig ensidig.  ~2 dominerede kampen mod den overv√¶ldede ~1.
 
 ID: 118
 Title: Anden nyhedsrapport
@@ -591,31 +591,31 @@ Data: Opforelsen af ~2 var simpelthen fremragende. ~1 kunne ikke reagere hurtigt
 
 ID: 119
 Title: Forste nyhedsreport
-Data: ~2 ved virkelig, hvad han laver derude, eller mÜske ~1 har simpelthen ingen anelse.  Uanset hvad, var det et blowout.
+Data: ~2 ved virkelig, hvad han laver derude, eller m√•ske ~1 har simpelthen ingen anelse.  Uanset hvad, var det et blowout.
 
 ID: 120
 Title: Anden nyhedsrapport
-Data: Der var et par heldige skud ved ~1, men det meste af tiden kampen sÜ sÜdan ud.
+Data: Der var et par heldige skud ved ~1, men det meste af tiden kampen s√• s√•dan ud.
 
 ID: 121
 Title: Forste nyhedsreport
-Data: De skal vëre temmelig korte pÜ piloter i disse dage for at rekruttere lignende ~1.
+Data: De skal v√¶re temmelig korte p√• piloter i disse dage for at rekruttere lignende ~1.
 
 ID: 122
 Title: Anden nyhedsrapport
-Data: Jeg kunne have blokeret dette sidste hit i min sovn.  MÜske er det problemet.  Nogen vÜgner op ~1.
+Data: Jeg kunne have blokeret dette sidste hit i min sovn.  M√•ske er det problemet.  Nogen v√•gner op ~1.
 
 ID: 123
 Title: Forste nyhedsreport
-Data: En god prëstation af ~1, men naturligvis ikke nok til at konkurrere ~2's ~4
+Data: En god pr√¶station af ~1, men naturligvis ikke nok til at konkurrere ~2's ~4
 
 ID: 124
 Title: Anden nyhedsrapport
-Data: ~1's dygtighed er indlysende, men dette skud viser virkelig, hvad en ~4 kan gore i hënderne pÜ ~2.
+Data: ~1's dygtighed er indlysende, men dette skud viser virkelig, hvad en ~4 kan gore i h√¶nderne p√• ~2.
 
 ID: 125
 Title: Forste nyhedsreport
-Data: èh, en dÜrlig dag i livet af ~1.  Jeg er sikker pÜ ~2 vil ikke fëlde nogen tÜrer over ~6 tab.
+Data: √Öh, en d√•rlig dag i livet af ~1.  Jeg er sikker p√• ~2 vil ikke f√¶lde nogen t√•rer over ~6 tab.
 
 ID: 126
 Title: Anden nyhedsrapport
@@ -627,23 +627,23 @@ Data: Hmm. ~1 viste nogle mod i ~5 mod ~2 i aften, men viste bare ikke nok dygti
 
 ID: 128
 Title: Anden nyhedsrapport
-Data: ~1 stod ~6 jorden modigt, men blev til sidst efterladt liggende pÜ det.  NÜ ~1, der er altid i morgen.
+Data: ~1 stod ~6 jorden modigt, men blev til sidst efterladt liggende p√• det.  N√• ~1, der er altid i morgen.
 
 ID: 129
 Title: Forste nyhedsreport
-Data: Flot forsog ~1.  Det var sÜ tët pÜ, som de kommer, folkens.  ~2 mÜ vëre taknemmelig for...
+Data: Flot forsog ~1.  Det var s√• t√¶t p√•, som de kommer, folkens.  ~2 m√• v√¶re taknemmelig for...
 
 ID: 130
 Title: Anden nyhedsrapport
-Data: blëser som denne.  Det var skud som dette, der holdt ~2 bare et halvt skridt foran ~1.
+Data: bl√¶ser som denne.  Det var skud som dette, der holdt ~2 bare et halvt skridt foran ~1.
 
 ID: 131
 Title: Forste nyhedsreport
-Data: Wow, det var en tët en.  ~1 og ~2 handlede slag i ~5 indtil...
+Data: Wow, det var en t√¶t en.  ~1 og ~2 handlede slag i ~5 indtil...
 
 ID: 132
 Title: Anden nyhedsrapport
-Data: ~2, trët og snuble, landede dette, det sidste slag.  Nëste gang disse to modes, vil det vëre en rematch.
+Data: ~2, tr√¶t og snuble, landede dette, det sidste slag.  N√¶ste gang disse to modes, vil det v√¶re en rematch.
 
 ID: 133
 Title: Forste nyhedsreport
@@ -655,43 +655,43 @@ Data: et par heldige slag som denne, jeg tror ~1 ville have trukket denne ene ud
 
 ID: 135
 Title: Beskrivelser 1
-Data: Tvunget til at klare sig selv efter hendes forëldres mystiske dod, har Crystals beslutsomhed opnÜet stor respekt.
+Data: Tvunget til at klare sig selv efter hendes for√¶ldres mystiske dod, har Crystals beslutsomhed opn√•et stor respekt.
 
 ID: 136
 Title: Beskrivelser 2
-Data: Selvom han er den yngste konkurrent i turneringens historie, këmper Stoffan med dygtighed ud over sine Ür.
+Data: Selvom han er den yngste konkurrent i turneringens historie, k√¶mper Stoffan med dygtighed ud over sine √•r.
 
 ID: 137
 Title: Beskrivelser 3
-Data: Rekrutteret af Raven for hans fremragende kickboxing fërdigheder, Milanos hastighed og fingerfërdighed er legendariske.
+Data: Rekrutteret af Raven for hans fremragende kickboxing f√¶rdigheder, Milanos hastighed og fingerf√¶rdighed er legendariske.
 
 ID: 138
 Title: Beskrivelse 4
-Data: Christians aggressive stil rammer frygt i konkurrenternes sind og begër i mange unge kvinders hjerter.
+Data: Christians aggressive stil rammer frygt i konkurrenternes sind og beg√¶r i mange unge kvinders hjerter.
 
 ID: 139
 Title: Beskrivelser 5
-Data: I lobet af sine mange Ürs konkurrence har Shirro udviklet uovertruffen magt, men bevarer en ungdommelig sans for humor.
+Data: I lobet af sine mange √•rs konkurrence har Shirro udviklet uovertruffen magt, men bevarer en ungdommelig sans for humor.
 
 ID: 140
 Title: Beskrivelser 6
-Data: Hans beregnende og luskede natur sammen med velafrundede evner skrëmmer ofte Jean-Pauls modstandere.
+Data: Hans beregnende og luskede natur sammen med velafrundede evner skr√¶mmer ofte Jean-Pauls modstandere.
 
 ID: 141
 Title: Beskrivelser 7
-Data: En pensioneret triatlet, Ibrahims tÜlmodighed og ërlighed har gjort ham til en vërdsat mentor for mange hÜbefulde konkurrenter.
+Data: En pensioneret triatlet, Ibrahims t√•lmodighed og √¶rlighed har gjort ham til en v√¶rdsat mentor for mange h√•befulde konkurrenter.
 
 ID: 142
 Title: Beskrivelser 8
-Data: Angels fortid er indhyllet i mystik.  Bortset fra hendes reclusive disposition og stërke vilje, er lidt kendt om hende.
+Data: Angels fortid er indhyllet i mystik.  Bortset fra hendes reclusive disposition og st√¶rke vilje, er lidt kendt om hende.
 
 ID: 143
 Title: Beskrivelser 9
-Data: En veteran fighter, Cossette er blevet forsigtig, defensiv og bitter efter at vëre blevet forkroblet i arenaen.
+Data: En veteran fighter, Cossette er blevet forsigtig, defensiv og bitter efter at v√¶re blevet forkroblet i arenaen.
 
 ID: 144
 Title: Beskrivelser 10
-Data: Som stor Kreissacks livvagt og hojre hÜnd har Raven slÜet og ydmyget mange inden for og udenfor, arenaen.
+Data: Som stor Kreissacks livvagt og hojre h√•nd har Raven sl√•et og ydmyget mange inden for og udenfor, arenaen.
 
 ID: 145
 Title: Beskrivelser 11
@@ -699,17 +699,17 @@ Data: Boss fyrs beskrivelse.  Dette vil virkelig ikke blive set, men vi vil gore
 
 ID: 146
 Title: Shareware Msgs
-Data: Beklager, denne pilot er kun tilgëngelig i den fulde version af spillet.  Se BESTILLING INFO i hovedmenuen.
+Data: Beklager, denne pilot er kun tilg√¶ngelig i den fulde version af spillet.  Se BESTILLING INFO i hovedmenuen.
 
 ID: 147
 Title: Shareware Msgs
-Data: Beklager, denne robot er kun tilgëngelig i den fulde version af spillet.  Se BESTILLING INFO i hovedmenuen.
+Data: Beklager, denne robot er kun tilg√¶ngelig i den fulde version af spillet.  Se BESTILLING INFO i hovedmenuen.
 
 ID: 148
 Title: Shareware Msgs
-Data: Beklager, denne turnering er kun tilgëngelig i den fulde version af spillet.  Se BESTILLING INFO i hovedmenuen.
+Data: Beklager, denne turnering er kun tilg√¶ngelig i den fulde version af spillet.  Se BESTILLING INFO i hovedmenuen.
 
-TíR Pè ENHVER NOGLE FOR AT FORTSíTTE
+T√ÜR P√Ö ENHVER NOGLE FOR AT FORTS√ÜTTE
 
 ID: 149
 Title: Fejl
@@ -721,7 +721,7 @@ Data: UD AF SYNC-FEJL
 
 ID: 151
 Title: Fejl
-Data: Joystick %i synes at vëre kalibreret forkert.  Onsker du at omkalibrere?
+Data: Joystick %i synes at v√¶re kalibreret forkert.  Onsker du at omkalibrere?
 
 ID: 152
 Title: Fejl
@@ -733,71 +733,71 @@ ID: 153
 Title: Fejl
 Data: Ude af mulighed for at initialisere joystick %i.  Skifte af spiller %i input til tastaturet.
 
-TíR Pè ENHVER NOGLE FOR AT FORTSíTTE
+T√ÜR P√Ö ENHVER NOGLE FOR AT FORTS√ÜTTE
 
 ID: 154
 Title: Fejl
-Data: Beklager, den anden spiller bruger dette.  Vëlg venligst en anden.
+Data: Beklager, den anden spiller bruger dette.  V√¶lg venligst en anden.
 
-TíR Pè ENHVER NOGLE FOR AT FORTSíTTE
+T√ÜR P√Ö ENHVER NOGLE FOR AT FORTS√ÜTTE
 
 ID: 155
 Title: Fejl
-Data: Kan ikke finde nogen turneringsfiler.  PÜ en eller anden mÜde er alle filer med en TRN-udvidelse blevet fjernet fra mappen.  Du skal geninstallere OMF.
+Data: Kan ikke finde nogen turneringsfiler.  P√• en eller anden m√•de er alle filer med en TRN-udvidelse blevet fjernet fra mappen.  Du skal geninstallere OMF.
 
 ID: 156
 Title: Fejl
 Data: Ikke kan gemme fil %s.
 
-TíR Pè ENHVER NOGLE FOR AT FORTSíTTE
+T√ÜR P√Ö ENHVER NOGLE FOR AT FORTS√ÜTTE
 
 ID: 157
 Title: Fejl
-Data: INGEN PILOTER ER TILGíNGELIGER.  OPLEV EN NY PILOT.
+Data: INGEN PILOTER ER TILG√ÜNGELIGER.  OPLEV EN NY PILOT.
 
-TíR Pè ENHVER NOGLE FOR AT FORTSíTTE
+T√ÜR P√Ö ENHVER NOGLE FOR AT FORTS√ÜTTE
 
 ID: 158
 Title: Fejl
-Data: DEN EGEN OG EGEN PILOT Pè FILEN ER DER ENHEDER, DER ER FYRET.
+Data: DEN EGEN OG EGEN PILOT P√Ö FILEN ER DER ENHEDER, DER ER FYRET.
 
-TíR Pè ENHVER NOGLE FOR AT FORTSíTTE
+T√ÜR P√Ö ENHVER NOGLE FOR AT FORTS√ÜTTE
 
 ID: 159
 Title: Fejl
-Data: INGEN PILOTER TIL RèDGIVENDE FOR SLETNING.
+Data: INGEN PILOTER TIL R√ÖDGIVENDE FOR SLETNING.
 
-TíR Pè ENHVER NOGLE FOR AT FORTSíTTE
+T√ÜR P√Ö ENHVER NOGLE FOR AT FORTS√ÜTTE
 
 ID: 160
 Title: Fejl
 Data: Ikke i stand til at finde joystick.  Sorg for, at joysticket er tilsluttet din joystick port, for du korer OMF.
 
-TíR Pè ENHVER NOGLE FOR AT FORTSíTTE
+T√ÜR P√Ö ENHVER NOGLE FOR AT FORTS√ÜTTE
 
 ID: 161
 Title: Fejl
-Data: Denne maskine har ikke nok konventionel hukommelse til at kore lyd og musik. %lik er pÜkrëvet for at kore lyde, og %lik er pÜkrëvet for bÜde lyd og musik.
+Data: Denne maskine har ikke nok konventionel hukommelse til at kore lyd og musik. %lik er p√•kr√¶vet for at kore lyde, og %lik er p√•kr√¶vet for b√•de lyd og musik.
 
-TíR Pè ENHVER NOGLE FOR AT FORTSíTTE
+T√ÜR P√Ö ENHVER NOGLE FOR AT FORTS√ÜTTE
 
 ID: 162
 Title: Fejl
 Data: Denne maskine har ikke nok konventionel hukommelse (%lik nodvendigt) til at kore musik.  Musik er handicappet.
 
-TíR Pè ENHVER NOGLE FOR AT FORTSíTTE
+T√ÜR P√Ö ENHVER NOGLE FOR AT FORTS√ÜTTE
 
 ID: 163
 Title: Fejl
-Data: Denne maskine har ikke nok konventionel hukommelse (%lik pÜkrëvet) til at kore lyd.  Lyden handicappet.
+Data: Denne maskine har ikke nok konventionel hukommelse (%lik p√•kr√¶vet) til at kore lyd.  Lyden handicappet.
 
-TíR Pè ENHVER NOGLE FOR AT FORTSíTTE
+T√ÜR P√Ö ENHVER NOGLE FOR AT FORTS√ÜTTE
 
 ID: 164
 Title: Fejl
-Data: Denne maskine har ikke nok konventionel hukommelse. %lik er pÜkrëvet.
+Data: Denne maskine har ikke nok konventionel hukommelse. %lik er p√•kr√¶vet.
 
-TíR Pè ENHVER NOGLE FOR AT FORTSíTTE
+T√ÜR P√Ö ENHVER NOGLE FOR AT FORTS√ÜTTE
 
 ID: 165
 Title: Fejl
@@ -812,7 +812,7 @@ Prov at frigore mere overhukommelse.
 
 ID: 167
 Title: Konventionel hukommelse
-Data: FejlÜbningsfil: %s
+Data: Fejl√•bningsfil: %s
 
 ID: 168
 Title: Konventionel hukommelse
@@ -820,7 +820,7 @@ Data: Lob tor for XMS.
 
 ID: 169
 Title: MASI Musik belastning fejl
-Data: Musikbelastningsfejl #%i, indlësning af musikfil %s.
+Data: Musikbelastningsfejl #%i, indl√¶sning af musikfil %s.
 
 ID: 170
 Title: MASI Musik belastning fejl
@@ -828,28 +828,28 @@ Data: mSampleLoad fejl #%i.
 
 ID: 171
 Title: MASI Musik belastning fejl
-Data: FORSOGTE AT INDLíSES STORRE END ARKSPAGT.
-NODVENDIGT AT UDVíKSLE ARKSRUPSSTORRELSE.
+Data: FORSOGTE AT INDL√ÜSES STORRE END ARKSPAGT.
+NODVENDIGT AT UDV√ÜKSLE ARKSRUPSSTORRELSE.
 
 ID: 172
 Title: Optag fil ting
-Data: Din modstander ëndrer systemindstillinger.
+Data: Din modstander √¶ndrer systemindstillinger.
 
-Vër sod at vente.
+V√¶r sod at vente.
 
 ID: 173
 Title: Optag fil ting
-Data: Filtrets %s er blevet ëndret eller beskadiget og er ikke lëngere kompatibel med din modstanders maskine.  Du skal reparere denne fil eller geninstallere spillet.
+Data: Filtrets %s er blevet √¶ndret eller beskadiget og er ikke l√¶ngere kompatibel med din modstanders maskine.  Du skal reparere denne fil eller geninstallere spillet.
 
 ID: 174
 Title: Optag fil ting
-Data: Filerne pÜ din modstanders maskine er blevet ëndret eller beskadiget og er ikke lëngere kompatibel med din maskine.
+Data: Filerne p√• din modstanders maskine er blevet √¶ndret eller beskadiget og er ikke l√¶ngere kompatibel med din maskine.
 
 ID: 175
 Title: Optag fil ting
 Data: Din modstander har travlt med at gore noget.
 
-Vër sod at vente.
+V√¶r sod at vente.
 
 ID: 176
 Title: Optag fil ting
@@ -868,7 +868,7 @@ Title: Chat tekst
 Data: DEN ANDEN FYR
 
 ID: 180
-Title: Spiller citat nÜr du nÜr han nÜr
+Title: Spiller citat n√•r du n√•r han n√•r
 Data: Den whimp er ikke her endnu!  Jeg hader virkelig at vente.
 
 ID: 181
@@ -877,11 +877,11 @@ Data: Din modstander er endnu ikke ankommet
 
 ID: 182
 Title: !
-Data: Din modstander spiller i turneringen.  Du skal vëlge TURNERING PLAY og udfordre ham med en reddet pilot.
+Data: Din modstander spiller i turneringen.  Du skal v√¶lge TURNERING PLAY og udfordre ham med en reddet pilot.
 
 ID: 183
 Title: !
-Data: Din modstander spiller et tospillerspil.  Du skal vëlge to SPILLER GAME for at udfordre ham.
+Data: Din modstander spiller et tospillerspil.  Du skal v√¶lge to SPILLER GAME for at udfordre ham.
 
 ID: 184
 Title: Brugt ved opstart som ikke-server
@@ -890,18 +890,18 @@ Data: Gameplay muligheder er blevet kopieret fra din modstander.
 PRESSE <ALT> G FOR GAMEPLAY MENUEN
 
 ID: 185
-Title: Brugt pÜ opstart som server
+Title: Brugt p√• opstart som server
 Data: Gameplay muligheder er blevet sendt til din modstander.
 
 PRESSE <ALT> G FOR GAMEPLAY MENUEN
 
 ID: 186
-Title: Vëlg robot i det normale spil
-Data: VíLG DIN ROBOT
+Title: V√¶lg robot i det normale spil
+Data: V√ÜLG DIN ROBOT
 
 ID: 187
-Title: Vëlg pilot i det normale spil
-Data: VíLG DIN PILOT
+Title: V√¶lg pilot i det normale spil
+Data: V√ÜLG DIN PILOT
 
 ID: 188
 Title: Engelsk exit tekst.
@@ -924,7 +924,7 @@ Title: til oprettelse af pilot
 Data: INTER PILOT'S NAVN
 
 ID: 193
-Title: for spiller ved hjëlp af robot
+Title: for spiller ved hj√¶lp af robot
 Data: MED
 
 ID: 194
@@ -940,79 +940,79 @@ Title: Resultattavle
 Data: SPILLER NAVN ROBOT PILOT SCORE
 
 ID: 197
-Title: Velkommen til opsëtning
+Title: Velkommen til ops√¶tning
 Data: DEL AF ARENAEN
 
 ID: 198
-Title: Velkommen til opsëtning
-Data: Tryk pÜ PGDN eller PGUP for at ëndre side
-Presse ESC til at afslutte hjëlp
+Title: Velkommen til ops√¶tning
+Data: Tryk p√• PGDN eller PGUP for at √¶ndre side
+Presse ESC til at afslutte hj√¶lp
 
 ID: 199
-Title: Velkommen til opsëtning
+Title: Velkommen til ops√¶tning
 Data: SIDE
 
 ID: 200
-Title: Velkommen til opsëtning
+Title: Velkommen til ops√¶tning
 Data: VS.
 
 ID: 201
-Title: Velkommen til opsëtning
+Title: Velkommen til ops√¶tning
 Data: HINANDEN FOLGER AF HITS
 
 ID: 202
-Title: Velkommen til opsëtning
+Title: Velkommen til ops√¶tning
 Data: HIT COMBO
 
 ID: 203
-Title: Velkommen til opsëtning
+Title: Velkommen til ops√¶tning
 Data: PERFEKT RUNDE
 
 ID: 204
-Title: Velkommen til opsëtning
+Title: Velkommen til ops√¶tning
 Data: VITALITET
 
 ID: 205
-Title: Velkommen til opsëtning
+Title: Velkommen til ops√¶tning
 Data: SCRAP BONUS
 
 ID: 206
-Title: Velkommen til opsëtning
+Title: Velkommen til ops√¶tning
 Data: DESTRUKTIONSBONUS
 
 ID: 207
-Title: Velkommen til opsëtning
+Title: Velkommen til ops√¶tning
 Data: Type OMF til at starte spillet.
 
 
 ID: 208
-Title: Velkommen til opsëtning
+Title: Velkommen til ops√¶tning
 Data: Kor Venligst SETUP.EXE for du korer OMF.EXE
 
 
 ID: 209
-Title: Velkommen til opsëtning
+Title: Velkommen til ops√¶tning
 Data: Hav en dejlig dag.
 
 
 ID: 210
-Title: Velkommen til opsëtning
-Data: Der opstod fejl pÜ linje %d af modul %s
+Title: Velkommen til ops√¶tning
+Data: Der opstod fejl p√• linje %d af modul %s
 
 
 ID: 211
-Title: Velkommen til opsëtning
+Title: Velkommen til ops√¶tning
 Data: SPIL PAUSED
 
-TíR Pè ENHVER NOGLE FOR AT FORTSíTTE
+T√ÜR P√Ö ENHVER NOGLE FOR AT FORTS√ÜTTE
 
 ID: 212
 Title: Sejr
-Data: Er du sikker pÜ, at du vil afslutte dette spil?
+Data: Er du sikker p√•, at du vil afslutte dette spil?
 
 ID: 213
 Title: Sejr
-Data: Onsker du at fortsëtte?
+Data: Onsker du at forts√¶tte?
 
 ID: 214
 Title: Joystick Kalibrering
@@ -1020,7 +1020,7 @@ Data: KALIBRATE JOYSTICK
 
 ID: 215
 Title: Joystick Kalibrering
-Data: Kalibrere joystick ved at bevëge sig i en komplet cirkel.  At lade joystick 'rest' i midten skal medfore, at midterknappen trykkes pÜ.  Tryk pÜ ESC til abort eller joystick-knap for at acceptere.
+Data: Kalibrere joystick ved at bev√¶ge sig i en komplet cirkel.  At lade joystick 'rest' i midten skal medfore, at midterknappen trykkes p√•.  Tryk p√• ESC til abort eller joystick-knap for at acceptere.
 
 ID: 216
 Title: Magt
@@ -1043,48 +1043,48 @@ Title: Hyper eller Normal
 Data: HYPER
 
 ID: 221
-Title: Vëlg
-Data: EN ANDEN PILOT VED NAVNEN Pè %S HAR DET SAMME FILENAME.  OVER DU OVERSKRIV DEN PILOT?
+Title: V√¶lg
+Data: EN ANDEN PILOT VED NAVNEN P√Ö %S HAR DET SAMME FILENAME.  OVER DU OVERSKRIV DEN PILOT?
 
 ID: 222
-Title: Vëlg
+Title: V√¶lg
 Data: ER DU SIKRE DIG TIL AT SLETTE PILOT %s?
 
 ID: 223
-Title: Vëlg
+Title: V√¶lg
 Data: SELECT
 
 ID: 224
-Title: Vëlg
-Data: VíLG FOTO TIL PILOT %s
+Title: V√¶lg
+Data: V√ÜLG FOTO TIL PILOT %s
 
 ID: 225
-Title: Vëlg
-Data: VíLG PILOT TIL AT BíRE BORD
+Title: V√¶lg
+Data: V√ÜLG PILOT TIL AT B√ÜRE BORD
 
 ID: 226
-Title: Vëlg
-Data: VíLG PILOT TIL SLETNING
+Title: V√¶lg
+Data: V√ÜLG PILOT TIL SLETNING
 
 ID: 227
-Title: Vëlg
-Data: VíLG MODSTANDER
+Title: V√¶lg
+Data: V√ÜLG MODSTANDER
 
 ID: 228
-Title: PÜ eller uden for
+Title: P√• eller uden for
 Data: NEJ
 
 ID: 229
-Title: PÜ eller uden for
+Title: P√• eller uden for
 Data: JA
 
 ID: 230
-Title: PÜ eller uden for
+Title: P√• eller uden for
 Data: OFF
 
 ID: 231
-Title: PÜ eller uden for
-Data: PíLE
+Title: P√• eller uden for
+Data: P√ÜLE
 
 ID: 232
 Title: Hurtigste
@@ -1116,17 +1116,17 @@ Data: HAST
 
 ID: 239
 Title: Undskyld
-Data: Beklager, HYPER mode er kun tilgëngelig i den fulde version af spillet.  Se BESTILLING INFO i hovedmenuen. 
+Data: Beklager, HYPER mode er kun tilg√¶ngelig i den fulde version af spillet.  Se BESTILLING INFO i hovedmenuen. 
 
-Tryk pÜ en nogle til at fortsëtte.
+Tryk p√• en nogle til at forts√¶tte.
 
 ID: 240
 Title: Lydkort
-Data: VíLG LYDKORT
+Data: V√ÜLG LYDKORT
 
 ID: 241
 Title: Lydkort
-Data: Vëlg lydkort.  Hvis du ikke har et lydkort, skal du vëlge PC SPEAKER.  PC hojttaler lyd kan deaktiveres fra spillet, hvis du foretrëkker stilhed.
+Data: V√¶lg lydkort.  Hvis du ikke har et lydkort, skal du v√¶lge PC SPEAKER.  PC hojttaler lyd kan deaktiveres fra spillet, hvis du foretr√¶kker stilhed.
 
 ID: 242
 Title: Lydkort
@@ -1136,7 +1136,7 @@ ID: 243
 Title: Lydkort
 Data: Kan ikke initialisere lydkort.  Tjek dine lydkortindstillinger og sorg for, at IRQ, DMA og base IO-adresse overholder.
 
-TíR Pè ENHVER NOGLE FOR AT FORTSíTTE
+T√ÜR P√Ö ENHVER NOGLE FOR AT FORTS√ÜTTE
 
 ID: 244
 Title: Lydkort
@@ -1268,7 +1268,7 @@ Data: BGEDE
 
 ID: 276
 Title: Mulighed 1
-Data: Dette vil tillade flere hits til en luftbÜren fjende.  Men efter et trëk har forbundet det kan ikke lëngere genhit.  Hvis du blander dine bevëgelser, kan du fÜ nogle vilde "jongler" kombinationer.  "Ekstra" hits vil kun pÜfore 60% skader.
+Data: Dette vil tillade flere hits til en luftb√•ren fjende.  Men efter et tr√¶k har forbundet det kan ikke l√¶ngere genhit.  Hvis du blander dine bev√¶gelser, kan du f√• nogle vilde "jongler" kombinationer.  "Ekstra" hits vil kun p√•fore 60% skader.
 
 ID: 277
 Title: Mulighed 1
@@ -1276,31 +1276,31 @@ Data: Tillad spilleren at kaste fjende fra en defensiv (ryg) position.
 
 ID: 278
 Title: Mulighed 1
-Data: índre den afstand, hvorfra en spiller kan kaste sin fjende (Standarder til 100%).
+Data: √Ündre den afstand, hvorfra en spiller kan kaste sin fjende (Standarder til 100%).
 
 ID: 279
 Title: Mulighed 1
-Data: Skift hojden af spillerne hopper (Gëlder til 100%).  Dette har ingen effekt i turneringstilstand.
+Data: Skift hojden af spillerne hopper (G√¶lder til 100%).  Dette har ingen effekt i turneringstilstand.
 
 ID: 280
 Title: Mulighed 1
-Data: Dette pÜvirker den tid, spillet holder pause under et hit eller en blok (Standard til 4).
+Data: Dette p√•virker den tid, spillet holder pause under et hit eller en blok (Standard til 4).
 
 ID: 281
 Title: Mulighed 1
-Data: Dette vil pÜvirke mëngden af hits en spiller kan tage.  Forogelse af dette vil give mulighed for lëngere kampe (Defaults til 100%).  Dette har ingen effekt i turneringstilstand.
+Data: Dette vil p√•virke m√¶ngden af hits en spiller kan tage.  Forogelse af dette vil give mulighed for l√¶ngere kampe (Defaults til 100%).  Dette har ingen effekt i turneringstilstand.
 
 ID: 282
 Title: Mulighed 1
-Data: Dette vil fÜ det angivne springende trëk at vëlte modstanderen, nÜr den rammer.
+Data: Dette vil f√• det angivne springende tr√¶k at v√¶lte modstanderen, n√•r den rammer.
 
 ID: 283
 Title: Mulighed 1
-Data: Dette vil medfore, at skaden pÜfores, nÜr ethvert trëk er blokeret.
+Data: Dette vil medfore, at skaden p√•fores, n√•r ethvert tr√¶k er blokeret.
 
 ID: 284
 Title: Mulighed 1
-Data: Dette vil automatisk forbedre begge robotter i et netvërksspil til det angivne niveau.
+Data: Dette vil automatisk forbedre begge robotter i et netv√¶rksspil til det angivne niveau.
 
 ID: 285
 Title: Mulighed 1
@@ -1352,35 +1352,35 @@ Data: DONEa
 
 ID: 297
 Title: Mulighed 1
-Data: índre den samlede hastighed af spillet.  Tryk til venstre og hojre for at ëndre.
+Data: √Ündre den samlede hastighed af spillet.  Tryk til venstre og hojre for at √¶ndre.
 
 ID: 298
 Title: Mulighed 1
-Data: Kamptilstand kan vëre enten NORMAL eller HYPER.  Hypertilstand vil forbedre dine specielle bevëgelser.  Tjek robotbeskrivelsesafsnitt af hjëlpen for mere information.
+Data: Kamptilstand kan v√¶re enten NORMAL eller HYPER.  Hypertilstand vil forbedre dine specielle bev√¶gelser.  Tjek robotbeskrivelsesafsnitt af hj√¶lpen for mere information.
 
 ID: 299
 Title: Mulighed 1
-Data: índre kraften i spiller 1's hits og kast.  Denne indstilling trëder kun i kraft i to spillerspil.  Tryk til venstre og hojre for at ëndre.
+Data: √Ündre kraften i spiller 1's hits og kast.  Denne indstilling tr√¶der kun i kraft i to spillerspil.  Tryk til venstre og hojre for at √¶ndre.
 
 ID: 300
 Title: Mulighed 1
-Data: índre kraften i player 2's hits og kast.  Denne indstilling trëder kun i kraft i to spillerspil.  Tryk til venstre og hojre for at ëndre.
+Data: √Ündre kraften i player 2's hits og kast.  Denne indstilling tr√¶der kun i kraft i to spillerspil.  Tryk til venstre og hojre for at √¶ndre.
 
 ID: 301
 Title: Mulighed 1
-Data: Nogle arenaer har farlige miljoer: pigge, elektricitet, kampfly og lignende.  Denne indstilling tënder og slukker dem.
+Data: Nogle arenaer har farlige miljoer: pigge, elektricitet, kampfly og lignende.  Denne indstilling t√¶nder og slukker dem.
 
 ID: 302
 Title: Mulighed 1
-Data: Dette bestemmer, hvor godt computeren këmper i et enspiller spil.  Dette har ingen effekt pÜ to spiller spil.  Tryk til venstre og hojre for at ëndre.
+Data: Dette bestemmer, hvor godt computeren k√¶mper i et enspiller spil.  Dette har ingen effekt p√• to spiller spil.  Tryk til venstre og hojre for at √¶ndre.
 
 ID: 303
 Title: Mulighed 1
-Data: Dette vil oprette kampe, sÜ de er en runde, bedste to ud af tre runder, eller bedste tre ud af fem runder.
+Data: Dette vil oprette kampe, s√• de er en runde, bedste to ud af tre runder, eller bedste tre ud af fem runder.
 
 ID: 304
 Title: Mulighed 1
-Data: Skal jeg virkelig fortëlle dig, hvad det er?
+Data: Skal jeg virkelig fort√¶lle dig, hvad det er?
 
 ID: 305
 Title: Mulighed 1
@@ -1388,7 +1388,7 @@ Data: Indstil forskellige spilmuligheder.
 
 ID: 306
 Title: Mulighed 1
-Data: GÜ tilbage til hovedmenuen.
+Data: G√• tilbage til hovedmenuen.
 
 ID: 307
 Title: Titel
@@ -1428,19 +1428,19 @@ Data: FORFEITa
 
 ID: 316
 Title: Titel
-Data: Fortsët kampen.
+Data: Forts√¶t kampen.
 
 ID: 317
 Title: Titel
-Data: Hëv eller sënk mëngden af alle lydeffekter.  Tryk til venstre eller hojre for at ëndre.
+Data: H√¶v eller s√¶nk m√¶ngden af alle lydeffekter.  Tryk til venstre eller hojre for at √¶ndre.
 
 ID: 318
 Title: Titel
-Data: Hëv eller lav lydstyrken af musik.  Tryk til venstre eller hojre for at ëndre.
+Data: H√¶v eller lav lydstyrken af musik.  Tryk til venstre eller hojre for at √¶ndre.
 
 ID: 319
 Title: Titel
-Data: índre hastigheden af spillet, nÜr i arenaen.  Tryk til venstre eller hojre for at ëndre.
+Data: √Ündre hastigheden af spillet, n√•r i arenaen.  Tryk til venstre eller hojre for at √¶ndre.
 
 ID: 320
 Title: Titel
@@ -1448,7 +1448,7 @@ Data: Disse er forskellige muligheder for visuelle effekter og detaljer.
 
 ID: 321
 Title: Titel
-Data: FÜ detaljeret og grundig forklaring pÜ de forskellige muligheder, som du mÜske har brug for en detaljeret og grundig forklaring pÜ.
+Data: F√• detaljeret og grundig forklaring p√• de forskellige muligheder, som du m√•ske har brug for en detaljeret og grundig forklaring p√•.
 
 ID: 322
 Title: Titel
@@ -1456,7 +1456,7 @@ Data: Afslut spillet og vende tilbage til hovedmenuen.
 
 ID: 323
 Title: Titel
-Data: Du vil tabe kampen og stadig betale for reparationer pÜ din robot.
+Data: Du vil tabe kampen og stadig betale for reparationer p√• din robot.
 
 ID: 324
 Title: Mulighed 1
@@ -1564,95 +1564,95 @@ Data: CPU: ULTIMAT
 
 ID: 350
 Title: Titel
-Data: BRUGERDSKíRM FOR KEYBOARD SETUP
+Data: BRUGERDSK√ÜRM FOR KEYBOARD SETUP
 
 ID: 351
-Title: vëlg 1
+Title: v√¶lg 1
 Data: JUMPE UP
 
 ID: 352
-Title: vëlg 1
+Title: v√¶lg 1
 Data: JUMP HOJRE
 
 ID: 353
-Title: vëlg 1
-Data: Gè RIGTIGT
+Title: v√¶lg 1
+Data: G√Ö RIGTIGT
 
 ID: 354
-Title: vëlg 1
+Title: v√¶lg 1
 Data: DUCK FREMAD
 
 ID: 355
-Title: vëlg 1
+Title: v√¶lg 1
 Data: DUCK
 
 ID: 356
-Title: vëlg 1
+Title: v√¶lg 1
 Data: DUCK TILBAGE
 
 ID: 357
-Title: vëlg 1
-Data: Gè TILBAGE
+Title: v√¶lg 1
+Data: G√Ö TILBAGE
 
 ID: 358
-Title: vëlg 1
+Title: v√¶lg 1
 Data: JUMP LEFT
 
 ID: 359
-Title: vëlg 1
+Title: v√¶lg 1
 Data: PUNCH
 
 ID: 360
-Title: vëlg 1
+Title: v√¶lg 1
 Data: KICK
 
 ID: 361
-Title: vëlg 1
+Title: v√¶lg 1
 Data: DONEa
 
 ID: 362
-Title: vëlg 1
-Data: Tryk pÜ Enter for at ëndre tasten, og tryk derefter pÜ noglen, der er onsket for den angivne handling.  Tryk pÜ ESC, nÜr det er gjort.
+Title: v√¶lg 1
+Data: Tryk p√• Enter for at √¶ndre tasten, og tryk derefter p√• noglen, der er onsket for den angivne handling.  Tryk p√• ESC, n√•r det er gjort.
 
 ID: 363
-Title: vëlg 1
-Data: Tryk pÜ Enter for at ëndre tasten, og tryk derefter pÜ noglen, der er onsket for den angivne handling.  Tryk pÜ ESC, nÜr det er gjort.
+Title: v√¶lg 1
+Data: Tryk p√• Enter for at √¶ndre tasten, og tryk derefter p√• noglen, der er onsket for den angivne handling.  Tryk p√• ESC, n√•r det er gjort.
 
 ID: 364
-Title: vëlg 1
-Data: Tryk pÜ Enter for at ëndre tasten, og tryk derefter pÜ noglen, der er onsket for den angivne handling.  Tryk pÜ ESC, nÜr det er gjort.
+Title: v√¶lg 1
+Data: Tryk p√• Enter for at √¶ndre tasten, og tryk derefter p√• noglen, der er onsket for den angivne handling.  Tryk p√• ESC, n√•r det er gjort.
 
 ID: 365
-Title: vëlg 1
-Data: Tryk pÜ Enter for at ëndre tasten, og tryk derefter pÜ noglen, der er onsket for den angivne handling.  Tryk pÜ ESC, nÜr det er gjort.
+Title: v√¶lg 1
+Data: Tryk p√• Enter for at √¶ndre tasten, og tryk derefter p√• noglen, der er onsket for den angivne handling.  Tryk p√• ESC, n√•r det er gjort.
 
 ID: 366
-Title: vëlg 1
-Data: Tryk pÜ Enter for at ëndre tasten, og tryk derefter pÜ noglen, der er onsket for den angivne handling.  Tryk pÜ ESC, nÜr det er gjort.
+Title: v√¶lg 1
+Data: Tryk p√• Enter for at √¶ndre tasten, og tryk derefter p√• noglen, der er onsket for den angivne handling.  Tryk p√• ESC, n√•r det er gjort.
 
 ID: 367
-Title: vëlg 1
-Data: Tryk pÜ Enter for at ëndre tasten, og tryk derefter pÜ noglen, der er onsket for den angivne handling.  Tryk pÜ ESC, nÜr det er gjort.
+Title: v√¶lg 1
+Data: Tryk p√• Enter for at √¶ndre tasten, og tryk derefter p√• noglen, der er onsket for den angivne handling.  Tryk p√• ESC, n√•r det er gjort.
 
 ID: 368
-Title: vëlg 1
-Data: Tryk pÜ Enter for at ëndre tasten, og tryk derefter pÜ noglen, der er onsket for den angivne handling.  Tryk pÜ ESC, nÜr det er gjort.
+Title: v√¶lg 1
+Data: Tryk p√• Enter for at √¶ndre tasten, og tryk derefter p√• noglen, der er onsket for den angivne handling.  Tryk p√• ESC, n√•r det er gjort.
 
 ID: 369
-Title: vëlg 1
-Data: Tryk pÜ Enter for at ëndre tasten, og tryk derefter pÜ noglen, der er onsket for den angivne handling.  Tryk pÜ ESC, nÜr det er gjort.
+Title: v√¶lg 1
+Data: Tryk p√• Enter for at √¶ndre tasten, og tryk derefter p√• noglen, der er onsket for den angivne handling.  Tryk p√• ESC, n√•r det er gjort.
 
 ID: 370
-Title: vëlg 1
-Data: Tryk pÜ Enter for at ëndre tasten, og tryk derefter pÜ noglen, der er onsket for den angivne handling.  Tryk pÜ ESC, nÜr det er gjort.
+Title: v√¶lg 1
+Data: Tryk p√• Enter for at √¶ndre tasten, og tryk derefter p√• noglen, der er onsket for den angivne handling.  Tryk p√• ESC, n√•r det er gjort.
 
 ID: 371
-Title: vëlg 1
-Data: Tryk pÜ Enter for at ëndre tasten, og tryk derefter pÜ noglen, der er onsket for den angivne handling.  Tryk pÜ ESC, nÜr det er gjort.
+Title: v√¶lg 1
+Data: Tryk p√• Enter for at √¶ndre tasten, og tryk derefter p√• noglen, der er onsket for den angivne handling.  Tryk p√• ESC, n√•r det er gjort.
 
 ID: 372
-Title: vëlg 1
-Data: Efterlad den brugerdefinerede tastaturopsëtning.
+Title: v√¶lg 1
+Data: Efterlad den brugerdefinerede tastaturops√¶tning.
 
 ID: 373
 Title: Shadows
@@ -1676,7 +1676,7 @@ Data: SNOW CHECKING %sa
 
 ID: 378
 Title: Shadows
-Data: SKíRME SHAKES %sa
+Data: SK√ÜRME SHAKES %sa
 
 ID: 379
 Title: Shadows
@@ -1691,35 +1691,35 @@ Title: Shadows
 Data: DONEa
 
 ID: 382
-Title: hjëlp1
+Title: hj√¶lp1
 Data: Drej robotskygger til og fra.  Sluk for at forbedre spillets hastighed, mens du er i arenaen.
 
 ID: 383
-Title: hjëlp1
+Title: hj√¶lp1
 Data: Drej ekstra animation til og fra.  Hvis du slukker dette, vil spillet kore hurtigere, men vil ikke se ud som detaljer.
 
 ID: 384
-Title: hjëlp1
-Data: Dette vil slukke for al paletanimation: lynglimt, flammeflimmer og lignende.  Sluk for hurtigere spil, eller hvis skërmen flimrer.
+Title: hj√¶lp1
+Data: Dette vil slukke for al paletanimation: lynglimt, flammeflimmer og lignende.  Sluk for hurtigere spil, eller hvis sk√¶rmen flimrer.
 
 ID: 385
-Title: hjëlp1
-Data: At slukke dette vil fremskynde palette animationer, men kan forÜrsage sne eller flimmer med nogle videokort.
+Title: hj√¶lp1
+Data: At slukke dette vil fremskynde palette animationer, men kan for√•rsage sne eller flimmer med nogle videokort.
 
 ID: 386
-Title: hjëlp1
-Data: Sluk for at fjerne skërmen 'rystende', nÜr en karakter rammer vëggen, en karakter kastes osv.
+Title: hj√¶lp1
+Data: Sluk for at fjerne sk√¶rmen 'rystende', n√•r en karakter rammer v√¶ggen, en karakter kastes osv.
 
 ID: 387
-Title: hjëlp1
-Data: Normale menuer ser godt ud, men kan vëre lidt langsomme pÜ nogle maskiner.  índringer vil finde sted efter at have forladt menuerne.
+Title: hj√¶lp1
+Data: Normale menuer ser godt ud, men kan v√¶re lidt langsomme p√• nogle maskiner.  √Ündringer vil finde sted efter at have forladt menuerne.
 
 ID: 388
-Title: hjëlp1
+Title: hj√¶lp1
 Data: Dette vil gendanne alle videoindstillinger til standardindstillingerne.
 
 ID: 389
-Title: hjëlp1
+Title: hj√¶lp1
 Data: Udrejse fra denne menu.
 
 ID: 390
@@ -1776,35 +1776,35 @@ Data: DONEa
 
 ID: 403
 Title: Kvalitet
-Data: Indstilling af lydkvaliteten lav kan hjëlpe den samlede hastighed pÜ langsommere maskiner.  Dette pÜvirker ikke PC Speaker og nogle lydkort, som Gravis Ultra Sound.
+Data: Indstilling af lydkvaliteten lav kan hj√¶lpe den samlede hastighed p√• langsommere maskiner.  Dette p√•virker ikke PC Speaker og nogle lydkort, som Gravis Ultra Sound.
 
 ID: 404
 Title: Kvalitet
-Data: Vëlg et lydkort for at afspille lydeffekter og musik.
+Data: V√¶lg et lydkort for at afspille lydeffekter og musik.
 
 ID: 405
 Title: Kvalitet
-Data: Vëlg IO-adressen pÜ kortet.  Tryk pÜ VENSTRE eller HOJRE for at ëndre vërdien.
+Data: V√¶lg IO-adressen p√• kortet.  Tryk p√• VENSTRE eller HOJRE for at √¶ndre v√¶rdien.
 
 ID: 406
 Title: Kvalitet
-Data: Vëlg den 8-bit DMA-kanal af kortet.  Tryk pÜ VENSTRE eller HOJRE for at ëndre vërdien.
+Data: V√¶lg den 8-bit DMA-kanal af kortet.  Tryk p√• VENSTRE eller HOJRE for at √¶ndre v√¶rdien.
 
 ID: 407
 Title: Kvalitet
-Data: Vëlg kortets 16-bit DMA-kanal.  Tryk pÜ VENSTRE eller HOJRE for at ëndre vërdien.
+Data: V√¶lg kortets 16-bit DMA-kanal.  Tryk p√• VENSTRE eller HOJRE for at √¶ndre v√¶rdien.
 
 ID: 408
 Title: Kvalitet
-Data: Vëlg kortets IRQ-nummer.  Tryk pÜ VENSTRE eller HOJRE for at ëndre vërdien.
+Data: V√¶lg kortets IRQ-nummer.  Tryk p√• VENSTRE eller HOJRE for at √¶ndre v√¶rdien.
 
 ID: 409
 Title: Kvalitet
-Data: Vëlg kortets MIDI IO-adresse.  Tryk pÜ VENSTRE eller HOJRE for at ëndre vërdien.
+Data: V√¶lg kortets MIDI IO-adresse.  Tryk p√• VENSTRE eller HOJRE for at √¶ndre v√¶rdien.
 
 ID: 410
 Title: Kvalitet
-Data: Vëlg kortets MIDI IRQ.  Tryk pÜ VENSTRE eller HOJRE for at ëndre vërdien.
+Data: V√¶lg kortets MIDI IRQ.  Tryk p√• VENSTRE eller HOJRE for at √¶ndre v√¶rdien.
 
 ID: 411
 Title: Kvalitet
@@ -1856,11 +1856,11 @@ Data: VENDT
 
 ID: 423
 Title: Mulighed
-Data: Vëlg kontrol for spiller 1: tastatur eller joystick.
+Data: V√¶lg kontrol for spiller 1: tastatur eller joystick.
 
 ID: 424
 Title: Mulighed
-Data: Vëlg kontrol for spiller 2: tastatur eller joystick.
+Data: V√¶lg kontrol for spiller 2: tastatur eller joystick.
 
 ID: 425
 Title: Mulighed
@@ -1868,15 +1868,15 @@ Data: Forskellige muligheder for visuelle effekter og detaljeringsniveauer.
 
 ID: 426
 Title: Mulighed
-Data: Hëv eller sënk mëngden af alle lydeffekter.  Tryk til venstre eller hojre for at ëndre.
+Data: H√¶v eller s√¶nk m√¶ngden af alle lydeffekter.  Tryk til venstre eller hojre for at √¶ndre.
 
 ID: 427
 Title: Mulighed
-Data: Hëv eller lav lydstyrken af musik.  Tryk til venstre eller hojre for at ëndre.
+Data: H√¶v eller lav lydstyrken af musik.  Tryk til venstre eller hojre for at √¶ndre.
 
 ID: 428
 Title: Mulighed
-Data: UNDEFFEKT TEST.  Tryk pÜ venstre og hojre for at ëndre lydeffekt, og ind for at spille den.
+Data: UNDEFFEKT TEST.  Tryk p√• venstre og hojre for at √¶ndre lydeffekt, og ind for at spille den.
 
 ID: 429
 Title: Mulighed
@@ -1888,7 +1888,7 @@ Data: Forlad KONFIGURATION.
 
 ID: 431
 Title: Titel
-Data: VíLG INPUT ENGíNGEJENED FOR SPILLER %i
+Data: V√ÜLG INPUT ENG√ÜNGEJENED FOR SPILLER %i
 
 ID: 432
 Title: Mulighed
@@ -1916,11 +1916,11 @@ Data: DONEa
 
 ID: 438
 Title: Mulighed
-Data: Dette vil bruge det numeriske tastatur til bevëgelse, indtaste til punch og hojre skift til spark.
+Data: Dette vil bruge det numeriske tastatur til bev√¶gelse, indtaste til punch og hojre skift til spark.
 
 ID: 439
 Title: Mulighed
-Data: Dette vil sëtte 'Q', 'W', og 'E' til spring retninger, 'A' og 'D' til venstre og hojre og 'Z', 'X', og 'C' til edsvinding.  TAB og CTRL kontrol stansning og spark.
+Data: Dette vil s√¶tte 'Q', 'W', og 'E' til spring retninger, 'A' og 'D' til venstre og hojre og 'Z', 'X', og 'C' til edsvinding.  TAB og CTRL kontrol stansning og spark.
 
 ID: 440
 Title: Mulighed
@@ -1932,11 +1932,11 @@ Data: Brug joystick 1.
 
 ID: 442
 Title: Mulighed
-Data: Brug joystick 2.  Dette er kun tilgëngeligt, hvis du har et specielt kabel til at forbinde to joysticks til din computer.
+Data: Brug joystick 2.  Dette er kun tilg√¶ngeligt, hvis du har et specielt kabel til at forbinde to joysticks til din computer.
 
 ID: 443
 Title: Mulighed
-Data: Forlad uden at ëndre noget.
+Data: Forlad uden at √¶ndre noget.
 
 ID: 444
 Title: Navne
@@ -2000,21 +2000,21 @@ Data: KOB
 
 ID: 458
 Title: Navne
-Data: SíLG
+Data: S√ÜLG
 
 ID: 459
 Title: Navne
-Data: TRíNING
+Data: TR√ÜNING
 KILDE
 
 ID: 460
 Title: Navne
 Data: HANDEL
-I NíVNT
+I N√ÜVNT
 
 ID: 461
 Title: Navne
-Data: TILGíNGEBARE:
+Data: TILG√ÜNGEBARE:
 
 ID: 462
 Title: Navne
@@ -2044,7 +2044,7 @@ Data: %s HASTIGHED:
 ID: 468
 Title: Navne
 Data: %s
-I NíVNT
+I N√ÜVNT
 
 ID: 469
 Title: Navne
@@ -2062,7 +2062,7 @@ Data: %s HASTIGHED:
 ID: 472
 Title: Navne
 Data: %s
-I NíVNT
+I N√ÜVNT
 
 ID: 473
 Title: Navne
@@ -2072,7 +2072,7 @@ ID: 474
 Title: Navne
 Data: D
  O
- I nërheden af N
+ I n√¶rheden af N
  E
 
 ID: 475
@@ -2083,83 +2083,83 @@ Data: Q
  T
 
 ID: 476
-Title: Ingen omsëttelige robotter
+Title: Ingen oms√¶ttelige robotter
 Data: INGEN
 
 ID: 477
-Title: Ikke tilgëngelig element
-Data: UTILGíNGEBARE
+Title: Ikke tilg√¶ngelig element
+Data: UTILG√ÜNGEBARE
 
 ID: 478
-Title: Ikke tilgëngelig element
+Title: Ikke tilg√¶ngelig element
 Data: IKKE
-TILGíNGEBARE
+TILG√ÜNGEBARE
 
 ID: 479
-Title: Ikke tilgëngelig element
+Title: Ikke tilg√¶ngelig element
 Data: MINIMUMSNIVEA
 
 ID: 480
-Title: Ikke tilgëngelig element
-Data: Mens du arbejder for pengene til at komme ind i turneringen, er dine hÜrdt tjente fërdigheder faldet, og dele af din robot er forvërret.  Du lover aldrig at vëre sÜ skodeslos med dine penge.
+Title: Ikke tilg√¶ngelig element
+Data: Mens du arbejder for pengene til at komme ind i turneringen, er dine h√•rdt tjente f√¶rdigheder faldet, og dele af din robot er forv√¶rret.  Du lover aldrig at v√¶re s√• skodeslos med dine penge.
 
-TíR Pè ENHVER NOGLE FOR AT FORTSíTTE
+T√ÜR P√Ö ENHVER NOGLE FOR AT FORTS√ÜTTE
 
 ID: 481
-Title: Ikke tilgëngelig element
-Data: Mens du arbejder for pengene til at komme ind i turneringen, er dine hÜrdt tjente fërdigheder faldet, og dele af din robot er forvërret.  Du lover aldrig at vëre sÜ skodeslos med dine penge.
+Title: Ikke tilg√¶ngelig element
+Data: Mens du arbejder for pengene til at komme ind i turneringen, er dine h√•rdt tjente f√¶rdigheder faldet, og dele af din robot er forv√¶rret.  Du lover aldrig at v√¶re s√• skodeslos med dine penge.
 
-TíR Pè ENHVER NOGLE FOR AT FORTSíTTE
+T√ÜR P√Ö ENHVER NOGLE FOR AT FORTS√ÜTTE
 
 ID: 482
-Title: Ikke tilgëngelig element
-Data: Mens du arbejder for pengene til at komme ind i turneringen, er dine hÜrdt tjente fërdigheder faldet, og dele af din robot er forvërret.  Du lover aldrig at vëre sÜ skodeslos med dine penge.
+Title: Ikke tilg√¶ngelig element
+Data: Mens du arbejder for pengene til at komme ind i turneringen, er dine h√•rdt tjente f√¶rdigheder faldet, og dele af din robot er forv√¶rret.  Du lover aldrig at v√¶re s√• skodeslos med dine penge.
 
-TíR Pè ENHVER NOGLE FOR AT FORTSíTTE
+T√ÜR P√Ö ENHVER NOGLE FOR AT FORTS√ÜTTE
 
 ID: 483
-Title: Ikke tilgëngelig element
-Data: DU SKAL BRUGERE TID Pè AT ARGUMENTERE Sè EN MEKÇIKER FOR AT TJENE PENAGET I NíRING TIL DEN TOURNAMENT.  ER DU SIKRE Pè, AT DU VIL DELTAG I %s?
+Title: Ikke tilg√¶ngelig element
+Data: DU SKAL BRUGERE TID P√Ö AT ARGUMENTERE S√Ö EN MEK√©IKER FOR AT TJENE PENAGET I N√ÜRING TIL DEN TOURNAMENT.  ER DU SIKRE P√Ö, AT DU VIL DELTAG I %s?
 
 ID: 484
-Title: Ikke tilgëngelig element
-Data: ER DU SIKKER Pè, AT DU VIL FORDELE %s TIL AT TRíDE %s?
+Title: Ikke tilg√¶ngelig element
+Data: ER DU SIKKER P√Ö, AT DU VIL FORDELE %s TIL AT TR√ÜDE %s?
 
 ID: 485
-Title: Ikke tilgëngelig element
-Data: DU KONKURRERER ALLEREDE I %s.  ODELíGGERE OG Gè IGEN VIDERE %s?
+Title: Ikke tilg√¶ngelig element
+Data: DU KONKURRERER ALLEREDE I %s.  ODEL√ÜGGERE OG G√Ö IGEN VIDERE %s?
 
 ID: 486
-Title: Ikke tilgëngelig element
-Data: VíLG DEN TURNERING, DU ODSLER, SKAL DE INDTASTE
+Title: Ikke tilg√¶ngelig element
+Data: V√ÜLG DEN TURNERING, DU ODSLER, SKAL DE INDTASTE
 
 ID: 487
-Title: Ikke tilgëngelig element
-Data: VíLG ET VENEDIGT NíVN NíVN
+Title: Ikke tilg√¶ngelig element
+Data: V√ÜLG ET VENEDIGT N√ÜVN N√ÜVN
 
 ID: 488
-Title: Ingen omsëttelige robotter
+Title: Ingen oms√¶ttelige robotter
 Data: INGEN OVERKOMMENDE
-ROBOTTER TIL RèDIGHED
+ROBOTTER TIL R√ÖDIGHED
 FOR HANDEL
 
 ID: 489
-Title: Ikke tilgëngelig element
+Title: Ikke tilg√¶ngelig element
 Data: SALG PRIS:
 
 ID: 490
-Title: Ikke tilgëngelig element
+Title: Ikke tilg√¶ngelig element
 Data: OPGRADERINGSOMKOSTNINGER:
 
 ID: 491
-Title: Ikke tilgëngelig element
+Title: Ikke tilg√¶ngelig element
 Data: Niveau %d
 
 ID: 492
 Title: Robotbeskrivelse
-Data: SíRLIGE BEVíGELSER:
+Data: S√ÜRLIGE BEV√ÜGELSER:
 
-I nërheden af Jaguar Leap
+I n√¶rheden af Jaguar Leap
 
 Hjernerystelse Cannon
 
@@ -2167,41 +2167,41 @@ Overhead Kast
 
 ID: 493
 Title: Robotbeskrivelse
-Data: SíRLIGE BEVíGELSER:
+Data: S√ÜRLIGE BEV√ÜGELSER:
 
 Skyggedving
 
-I nërheden af Shadow Punch
+I n√¶rheden af Shadow Punch
 
 Skygge Slide
 
-I nërheden af Shadow Grab
+I n√¶rheden af Shadow Grab
 
 ID: 494
 Title: Robotbeskrivelse
-Data: SíRLIGE BEVíGELSER:
+Data: S√ÜRLIGE BEV√ÜGELSER:
 
 Hastighed-Kick
 
 Off-Wall angreb
 
-I nërheden af Spike-Charge
+I n√¶rheden af Spike-Charge
 
 ID: 495
 Title: Robotbeskrivelse
-Data: SíRLIGE BEVíGELSER:
+Data: S√ÜRLIGE BEV√ÜGELSER:
 
-I nërheden af Fire Spin
+I n√¶rheden af Fire Spin
 
 Super fremstod angreb
 
-I nërheden af Jet Swoop
+I n√¶rheden af Jet Swoop
 
 ID: 496
 Title: Robotbeskrivelse
-Data: SíRLIGE BEVíGELSER:
+Data: S√ÜRLIGE BEV√ÜGELSER:
 
-I nërheden af Ball Lightning
+I n√¶rheden af Ball Lightning
 
 Rullende Torden
 
@@ -2209,160 +2209,160 @@ Elektriske Shards
 
 ID: 497
 Title: Robotbeskrivelse
-Data: SíRLIGE BEVíGELSER:
+Data: S√ÜRLIGE BEV√ÜGELSER:
 
 Stigende blad
 
-I nërheden af Head Stomp
+I n√¶rheden af Head Stomp
 
-I nërheden af Razor Spin
+I n√¶rheden af Razor Spin
 
 ID: 498
 Title: Robotbeskrivelse
-Data: SíRLIGE BEVíGELSER:
+Data: S√ÜRLIGE BEV√ÜGELSER:
 
 Hoved-Butt
 
 Flip Kick
 
-I nërheden af Flying Hands
+I n√¶rheden af Flying Hands
 
 ID: 499
 Title: Robotbeskrivelse
-Data: SíRLIGE BEVíGELSER:
+Data: S√ÜRLIGE BEV√ÜGELSER:
 
 Spinning Kast
 
 Opladning af Punch
 
-Svingende këder
+Svingende k√¶der
 
 ID: 500
 Title: Robotbeskrivelse
-Data: SíRLIGE BEVíGELSER:
+Data: S√ÜRLIGE BEV√ÜGELSER:
 
-I nërheden af Diving Claw
+I n√¶rheden af Diving Claw
 
-I nërheden af Flying Talon
+I n√¶rheden af Flying Talon
 
 Fodsle Afgift
 
 ID: 501
 Title: Robotbeskrivelse
-Data: SíRLIGE BEVíGELSER:
+Data: S√ÜRLIGE BEV√ÜGELSER:
 
-Teleportation i smÜ skala
+Teleportation i sm√• skala
 
-I nërheden af Matter Phasing
+I n√¶rheden af Matter Phasing
 
-I nërheden af Stasis Activator
+I n√¶rheden af Stasis Activator
 
 ID: 502
 Title: Robotbeskrivelse
-Data: SíRLIGE BEVíGELSER:
+Data: S√ÜRLIGE BEV√ÜGELSER:
 
 Mini granat
 
-I nërheden af Missil Launcher
+I n√¶rheden af Missil Launcher
 
-Jordskëlv smadrer
+Jordsk√¶lv smadrer
 
 ID: 503
 Title: Robotbeskrivelse
-Data: SíRLIGE BEVíGELSER:
+Data: S√ÜRLIGE BEV√ÜGELSER:
 
-I NíVNT
+I N√ÜVNT
 HOP VIA WALL THINGIE
 STASIS KRISETAL
 
 ID: 504
 Title: Robotbeskrivelse
-Data: SíRLIGE BEVíGELSER:
+Data: S√ÜRLIGE BEV√ÜGELSER:
 
 BLASH KICK RIP-OFF
 STIGE AFGORELSE
-I NíRHEDEN AF WALL SPIKE
+I N√ÜRHEDEN AF WALL SPIKE
 
 ID: 505
 Title: Robotbeskrivelse
-Data: SíRLIGE BEVíGELSER:
+Data: S√ÜRLIGE BEV√ÜGELSER:
 
 JET CHARGE
-I NíRHEDEN AF FLAME DIVE
+I N√ÜRHEDEN AF FLAME DIVE
 
 ID: 506
 Title: Robotbeskrivelse
-Data: SíRLIGE BEVíGELSER:
+Data: S√ÜRLIGE BEV√ÜGELSER:
 
 JET CHARGE
-I NíRHEDEN AF FLAME DIVE
+I N√ÜRHEDEN AF FLAME DIVE
 
 ID: 507
 Title: Robotbeskrivelse
-Data: SíRLIGE BEVíGELSER:
+Data: S√ÜRLIGE BEV√ÜGELSER:
 
 JET CHARGE
-I NíRHEDEN AF FLAME DIVE
+I N√ÜRHEDEN AF FLAME DIVE
 
 ID: 508
 Title: Robotbeskrivelse
-Data: SíRLIGE BEVíGELSER:
+Data: S√ÜRLIGE BEV√ÜGELSER:
 
 JET CHARGE
-I NíRHEDEN AF FLAME DIVE
+I N√ÜRHEDEN AF FLAME DIVE
 
 ID: 509
 Title: Robotbeskrivelse
-Data: SíRLIGE BEVíGELSER:
+Data: S√ÜRLIGE BEV√ÜGELSER:
 
 JET CHARGE
-I NíRHEDEN AF FLAME DIVE
+I N√ÜRHEDEN AF FLAME DIVE
 
 ID: 510
 Title: Robotbeskrivelse
-Data: SíRLIGE BEVíGELSER:
+Data: S√ÜRLIGE BEV√ÜGELSER:
 
 JET CHARGE
-I NíRHEDEN AF FLAME DIVE
+I N√ÜRHEDEN AF FLAME DIVE
 
 ID: 511
 Title: Robotbeskrivelse
-Data: SíRLIGE BEVíGELSER:
+Data: S√ÜRLIGE BEV√ÜGELSER:
 
 JET CHARGE
-I NíRHEDEN AF FLAME DIVE
+I N√ÜRHEDEN AF FLAME DIVE
 
 ID: 512
-Title: Trëning
+Title: Tr√¶ning
 Data: BLUNT STONE'S
-STROMAFREVARIALíG
+STROMAFREVARIAL√ÜG
 TEKNIKKER:
 
 ID: 513
-Title: Trëning
+Title: Tr√¶ning
 Data: DEN LEGENDARISK
-FLASH TRíNING
-FOR FíNGSEL
+FLASH TR√ÜNING
+FOR F√ÜNGSEL
 UDFORDRET:
 
 ID: 514
-Title: Trëning
+Title: Tr√¶ning
 Data: VLAD IRONSIDE'S
 AEROB OG CHOK
 MODSTANDSDYGTIGHED
 WORKSHOP:
 
 ID: 515
-Title: Trëning
-Data: TAG KRAFTVíRK I %?
+Title: Tr√¶ning
+Data: TAG KRAFTV√ÜRK I %?
 
 ID: 516
-Title: Trëning
+Title: Tr√¶ning
 Data: TAG AGILITY TRAINING KURS FOR %s?
 
 ID: 517
-Title: Trëning
-Data: TAG UDHOLDENDE TRíNING KURS I %s?
+Title: Tr√¶ning
+Data: TAG UDHOLDENDE TR√ÜNING KURS I %s?
 
 ID: 518
 Title: Handel robot
@@ -2378,15 +2378,15 @@ Data: HANDLE DINE %s for A %s?
 
 ID: 521
 Title: Opgradering kob
-Data: SíLGE NIVèR %d %s HASTIGHEDSSTUR FOR %s?
+Data: S√ÜLGE NIV√ÖR %d %s HASTIGHEDSSTUR FOR %s?
 
 ID: 522
 Title: Opgradering kob
-Data: KOBSNIVALETS NIVíRD %d %s OPGRADERING FOR %s?
+Data: KOBSNIVALETS NIV√ÜRD %d %s OPGRADERING FOR %s?
 
 ID: 523
 Title: Opgradering kob
-Data: SíLGENDE NIVíRD %d %s POWER OPGRADERING FOR %s?
+Data: S√ÜLGENDE NIV√ÜRD %d %s POWER OPGRADERING FOR %s?
 
 ID: 524
 Title: Opgradering kob
@@ -2394,7 +2394,7 @@ Data: KOB NEVER %d %s POWER UPGRADE FOR %s?
 
 ID: 525
 Title: Opgradering kob
-Data: SíLGER NIVIL %d STUN RESISTANCE FOR %s?
+Data: S√ÜLGER NIVIL %d STUN RESISTANCE FOR %s?
 
 ID: 526
 Title: Opgradering kob
@@ -2402,270 +2402,270 @@ Data: KOB NIVEA %d STUN RESISTANCE FOR %s?
 
 ID: 527
 Title: Opgradering kob
-Data: SíLGER NIVèR %d ARMOR PLANTNING FOR %s?
+Data: S√ÜLGER NIV√ÖR %d ARMOR PLANTNING FOR %s?
 
 ID: 528
 Title: Opgradering kob
 Data: KOBSNIVEA %D ARMOR PLETTER FOR %s?
 
 ID: 529
-Title: Hjëlp til turneringsbesvër
+Title: Hj√¶lp til turneringsbesv√¶r
 Data: Den perfekte problemindstilling for nye spillere.
 
 ID: 530
-Title: Hjëlp til turneringsbesvër
-Data: Tror du, du er klar til at këmpe med de store drenge?
+Title: Hj√¶lp til turneringsbesv√¶r
+Data: Tror du, du er klar til at k√¶mpe med de store drenge?
 
 ID: 531
-Title: Hjëlp til turneringsbesvër
-Data: For at overleve, skal du bruge kuglelejer af stÜl.
+Title: Hj√¶lp til turneringsbesv√¶r
+Data: For at overleve, skal du bruge kuglelejer af st√•l.
 
 ID: 532
-Title: Hjëlp til turneringsbesvër
-Data: Forbered dig pÜ at blive rystet!
+Title: Hj√¶lp til turneringsbesv√¶r
+Data: Forbered dig p√• at blive rystet!
 
 ID: 533
-Title: Hjëlp til robot dev. knap
-Data: TRíNER FOR AT STIGE PILOTS MAGTNíRE
+Title: Hj√¶lp til robot dev. knap
+Data: TR√ÜNER FOR AT STIGE PILOTS MAGTN√ÜRE
 
 ID: 534
-Title: Hjëlp til robot dev. knap
-Data: TRíN FOR AT FOROGE PILOTS AGILITETSNIVíRNIT
+Title: Hj√¶lp til robot dev. knap
+Data: TR√ÜN FOR AT FOROGE PILOTS AGILITETSNIV√ÜRNIT
 
 ID: 535
-Title: Hjëlp til robot dev. knap
-Data: TOG FOR AT STIGE PILOTS UDVANDRINGSNIVíRD
+Title: Hj√¶lp til robot dev. knap
+Data: TOG FOR AT STIGE PILOTS UDVANDRINGSNIV√ÜRD
 
 ID: 536
-Title: Hjëlp til robot dev. knap
-Data: FORLAD PILOT TRíNINGSCENTERET
+Title: Hj√¶lp til robot dev. knap
+Data: FORLAD PILOT TR√ÜNINGSCENTERET
 
 ID: 537
-Title: Hjëlp til robot dev. knap
+Title: Hj√¶lp til robot dev. knap
 Data: INDTJEK ARENA OG KAMP %s
 
 ID: 538
-Title: Hjëlp til robot dev. knap
-Data: TAG TRíNINGSKURS FOR AT OGE KRíFT, AGNILITET ELLER UDHOLDENHED
+Title: Hj√¶lp til robot dev. knap
+Data: TAG TR√ÜNINGSKURS FOR AT OGE KR√ÜFT, AGNILITET ELLER UDHOLDENHED
 
 ID: 539
-Title: Hjëlp til robot dev. knap
-Data: KOB OVERGANGSíT TIL DIN ROBOT
+Title: Hj√¶lp til robot dev. knap
+Data: KOB OVERGANGS√ÜT TIL DIN ROBOT
 
 ID: 540
-Title: Hjëlp til robot dev. knap
-Data: SíLG OPGRADER KITS FRA DIN ROBOT
+Title: Hj√¶lp til robot dev. knap
+Data: S√ÜLG OPGRADER KITS FRA DIN ROBOT
 
 ID: 541
-Title: Hjëlp til robot dev. knap
-Data: LíS PILOT FRA DISK
+Title: Hj√¶lp til robot dev. knap
+Data: L√ÜS PILOT FRA DISK
 
 ID: 542
-Title: Hjëlp til robot dev. knap
+Title: Hj√¶lp til robot dev. knap
 Data: SKAPRING EN NY PILOT
 
 ID: 543
-Title: Hjëlp til robot dev. knap
+Title: Hj√¶lp til robot dev. knap
 Data: SLETT EN PILOT FRA DISK
 
 ID: 544
-Title: Hjëlp til robot dev. knap
+Title: Hj√¶lp til robot dev. knap
 Data: PRAKSIS MOD EN FJENDTLIG PILOT ELLER SPILLER I EN COMPUTERSITI
 
 ID: 545
-Title: Hjëlp til robot dev. knap
+Title: Hj√¶lp til robot dev. knap
 Data: FORLAD KOMMANDECENTERET
 (DIN PILOT VIL BLEV REDDET AUTOMATICELT)
 
 ID: 546
-Title: Hjëlp til robot dev. knap
+Title: Hj√¶lp til robot dev. knap
 Data: REGISTRERING FOR EN NY TOURNAMENT
 
 ID: 547
-Title: Hjëlp til robot dev. knap
-Data: íNDRE HOMSERFARVE TIL ROBOT
+Title: Hj√¶lp til robot dev. knap
+Data: √ÜNDRE HOMSERFARVE TIL ROBOT
 
 ID: 548
-Title: Hjëlp til robot dev. knap
-Data: íNDRE HOMSERFARVE TIL ROBOT
+Title: Hj√¶lp til robot dev. knap
+Data: √ÜNDRE HOMSERFARVE TIL ROBOT
 
 ID: 549
-Title: Hjëlp til robot dev. knap
-Data: íNDRING AF SEKUNDíRE KUGLE FARVER TIL ROBOT
+Title: Hj√¶lp til robot dev. knap
+Data: √ÜNDRING AF SEKUND√ÜRE KUGLE FARVER TIL ROBOT
 
 ID: 550
-Title: Hjëlp til robot dev. knap
-Data: íNDRING AF SEKUNDíRE KUGLE FARVER TIL ROBOT
+Title: Hj√¶lp til robot dev. knap
+Data: √ÜNDRING AF SEKUND√ÜRE KUGLE FARVER TIL ROBOT
 
 ID: 551
-Title: Hjëlp til robot dev. knap
-Data: íNDRE TREDJE KAMPAGN FARVE TIL ROBOT
+Title: Hj√¶lp til robot dev. knap
+Data: √ÜNDRE TREDJE KAMPAGN FARVE TIL ROBOT
 
 ID: 552
-Title: Hjëlp til robot dev. knap
-Data: íNDRE TREDJE KAMPAGN FARVE TIL ROBOT
+Title: Hj√¶lp til robot dev. knap
+Data: √ÜNDRE TREDJE KAMPAGN FARVE TIL ROBOT
 
 ID: 553
-Title: Hjëlp til robot dev. knap
-Data: SíLG POWER NEVEL FOR %s ANGREB
+Title: Hj√¶lp til robot dev. knap
+Data: S√ÜLG POWER NEVEL FOR %s ANGREB
 
 ID: 554
-Title: Hjëlp til robot dev. knap
+Title: Hj√¶lp til robot dev. knap
 Data: OPGRADER DE SKADER, DER ER GJORT AF ALL %S ANGREB
 
 ID: 555
-Title: Hjëlp til robot dev. knap
-Data: SíLG POWER NEVEL FOR %s ANGREB
+Title: Hj√¶lp til robot dev. knap
+Data: S√ÜLG POWER NEVEL FOR %s ANGREB
 
 ID: 556
-Title: Hjëlp til robot dev. knap
+Title: Hj√¶lp til robot dev. knap
 Data: OPGRADER DE SKADER, DER ER GJORT AF ALL %S ANGREB
 
 ID: 557
-Title: Hjëlp til robot dev. knap
-Data: SíLG HASTIGHEDSNOVELSE FOR %s ANGREB
+Title: Hj√¶lp til robot dev. knap
+Data: S√ÜLG HASTIGHEDSNOVELSE FOR %s ANGREB
 
 ID: 558
-Title: Hjëlp til robot dev. knap
+Title: Hj√¶lp til robot dev. knap
 Data: OPGRADERER HASTIGHEDEN AF ALLE %s ANGREB
 
 ID: 559
-Title: Hjëlp til robot dev. knap
-Data: SíLG HASTIGHEDSNOVELSE FOR %s ANGREB
+Title: Hj√¶lp til robot dev. knap
+Data: S√ÜLG HASTIGHEDSNOVELSE FOR %s ANGREB
 
 ID: 560
-Title: Hjëlp til robot dev. knap
+Title: Hj√¶lp til robot dev. knap
 Data: OPGRADERER HASTIGHEDEN AF ALLE %s ANGREB
 
 ID: 561
-Title: Hjëlp til robot dev. knap
-Data: SíLG ARMT PLATING NIVEAER FRA ROBOT
+Title: Hj√¶lp til robot dev. knap
+Data: S√ÜLG ARMT PLATING NIVEAER FRA ROBOT
 
 ID: 562
-Title: Hjëlp til robot dev. knap
-Data: OPGRADERER BEVíBNING AF ROBOTEN
+Title: Hj√¶lp til robot dev. knap
+Data: OPGRADERER BEV√ÜBNING AF ROBOTEN
 
 ID: 563
-Title: Hjëlp til robot dev. knap
-Data: SíLG STUN RESISTANCENIVEA FRA ROBOT
+Title: Hj√¶lp til robot dev. knap
+Data: S√ÜLG STUN RESISTANCENIVEA FRA ROBOT
 
 ID: 564
-Title: Hjëlp til robot dev. knap
+Title: Hj√¶lp til robot dev. knap
 Data: OPGRADERING AF STUN RESISTANCENIVNEN FOR ROBOT
 
 ID: 565
-Title: Hjëlp til robot dev. knap
-Data: HANDELS NUVíRENDE ROBOT FOR EN ANDEN TYPE ROBOT
+Title: Hj√¶lp til robot dev. knap
+Data: HANDELS NUV√ÜRENDE ROBOT FOR EN ANDEN TYPE ROBOT
 
 ID: 566
-Title: Hjëlp til robot dev. knap
-Data: HANDELS NUVíRENDE ROBOT FOR EN ANDEN TYPE ROBOT
+Title: Hj√¶lp til robot dev. knap
+Data: HANDELS NUV√ÜRENDE ROBOT FOR EN ANDEN TYPE ROBOT
 
 ID: 567
-Title: Hjëlp til robot dev. knap
+Title: Hj√¶lp til robot dev. knap
 Data: LAV EQUIPMENT EXCHANGE CENTER
 
 ID: 568
-Title: Hjëlp til robot dev. knap
+Title: Hj√¶lp til robot dev. knap
 Data: FORLAD ROBOT FORBEDELSESCENTER
 
 ID: 569
-Title: Hjëlp til robot dev. knap
+Title: Hj√¶lp til robot dev. knap
 Data: RANK
 %i
 
 ID: 570
-Title: Hjëlp til robot dev. knap
+Title: Hj√¶lp til robot dev. knap
 Data: NEJ
 RANK
 
 ID: 571
-Title: Hjëlp til robot dev. knap
+Title: Hj√¶lp til robot dev. knap
 Data: INGEN RANG
 
 ID: 572
-Title: Hjëlp til robot dev. knap
+Title: Hj√¶lp til robot dev. knap
 Data: NAVN:
 
 ID: 573
-Title: Hjëlp til robot dev. knap
+Title: Hj√¶lp til robot dev. knap
 Data: RANK:
 
 ID: 574
-Title: Hjëlp til robot dev. knap
+Title: Hj√¶lp til robot dev. knap
 Data: VINDER:
 
 ID: 575
-Title: Hjëlp til robot dev. knap
+Title: Hj√¶lp til robot dev. knap
 Data: TABER:
 
 ID: 576
-Title: Hjëlp til robot dev. knap
+Title: Hj√¶lp til robot dev. knap
 Data: PENGE:
 
 ID: 577
-Title: Hjëlp til robot dev. knap
+Title: Hj√¶lp til robot dev. knap
 Data: MODEL:
 
 ID: 578
-Title: Hjëlp til robot dev. knap
+Title: Hj√¶lp til robot dev. knap
 Data: POWER
 
 ID: 579
-Title: Hjëlp til robot dev. knap
+Title: Hj√¶lp til robot dev. knap
 Data: SMIDIGHED
 
 ID: 580
-Title: Hjëlp til robot dev. knap
+Title: Hj√¶lp til robot dev. knap
 Data: UDHOLDENHED
 
 ID: 581
-Title: Hjëlp til robot dev. knap
+Title: Hj√¶lp til robot dev. knap
 Data: %s HASTIGHED
 
 ID: 582
-Title: Hjëlp til robot dev. knap
+Title: Hj√¶lp til robot dev. knap
 Data: %s POWER
 
 ID: 583
-Title: Hjëlp til robot dev. knap
+Title: Hj√¶lp til robot dev. knap
 Data: %s HASTIGHED
 
 ID: 584
-Title: Hjëlp til robot dev. knap
+Title: Hj√¶lp til robot dev. knap
 Data: %s POWER
 
 ID: 585
-Title: Hjëlp til robot dev. knap
+Title: Hj√¶lp til robot dev. knap
 Data: RUMM
 
 ID: 586
-Title: Hjëlp til robot dev. knap
+Title: Hj√¶lp til robot dev. knap
 Data: STUN RES
 
 ID: 587
 Title: Reparation meddelelser til fortabing
-Data: Oprydningsbesëtningerne fandt en form for ekstraudstyr hardware i vraget, du forlod derude.  Teknologierne installerer det i din robot.
+Data: Oprydningsbes√¶tningerne fandt en form for ekstraudstyr hardware i vraget, du forlod derude.  Teknologierne installerer det i din robot.
 
 ID: 588
 Title: Reparation meddelelser til fortabing
-Data: Patetisk, knëgt, virkelig patetisk.  Kunne ikke holde varmen ud, sÜ du spogte.  Du er nodt til at lëre at se dine kampe i ojnene, eller du vil altid vëre den klynkende kujon, du var i dag.
+Data: Patetisk, kn√¶gt, virkelig patetisk.  Kunne ikke holde varmen ud, s√• du spogte.  Du er nodt til at l√¶re at se dine kampe i ojnene, eller du vil altid v√¶re den klynkende kujon, du var i dag.
 
 ID: 589
 Title: Reparation meddelelser for at tabe
-Data: Whew, du blev slÜet temmelig slemt.  Du skal sëtte ekstra tid i sims for din nëste.
+Data: Whew, du blev sl√•et temmelig slemt.  Du skal s√¶tte ekstra tid i sims for din n√¶ste.
 
 ID: 590
 Title: Reparation meddelelser for at tabe
-Data: Forsoger at holde mine drenge beskëftiget, ikke?
+Data: Forsoger at holde mine drenge besk√¶ftiget, ikke?
 
 ID: 591
 Title: Reparation meddelelser for at tabe
-Data: Hej, du mÜ hellere komme tilbage derude.  Der er et par steder pÜ den 'bot, der ikke blev revet i stykker.
+Data: Hej, du m√• hellere komme tilbage derude.  Der er et par steder p√• den 'bot, der ikke blev revet i stykker.
 
 ID: 592
 Title: Reparation meddelelser for at tabe
-Data: èh, mand.  Har du nogensinde hort om blokering?
+Data: √Öh, mand.  Har du nogensinde hort om blokering?
 
 ID: 593
 Title: Reparation meddelelser for at tabe
@@ -2673,31 +2673,31 @@ Data: Du er heldig, at jeg kan lide mit arbejde mere end min kone.
 
 ID: 594
 Title: Reparation beskeder til at vinde
-Data: NÜ, i det mindste vandt du.  írgerligt jeg vil vëre her hele natten.
+Data: N√•, i det mindste vandt du.  √Ürgerligt jeg vil v√¶re her hele natten.
 
 ID: 595
 Title: Reparation beskeder til at vinde
-Data: Ser ud til at du knap nok klarede den ene, knëgt.
+Data: Ser ud til at du knap nok klarede den ene, kn√¶gt.
 
 ID: 596
 Title: Reparation beskeder til at vinde
-Data: Du er nodt til at lëre noget forsvar, eller du vil altid fÜ slÜet op pÜ denne mÜde.
+Data: Du er nodt til at l√¶re noget forsvar, eller du vil altid f√• sl√•et op p√• denne m√•de.
 
 ID: 597
 Title: Reparation beskeder til at vinde
-Data: Ikke sÜ slemt, ser ud til at du holdt mindst et skridt foran dem.
+Data: Ikke s√• slemt, ser ud til at du holdt mindst et skridt foran dem.
 
 ID: 598
 Title: Reparation beskeder til at vinde
-Data: Dejligt job.  Nëste gang kunne du holde dig vëk fra ham lidt mere.  Gor mit arbejde lettere, knëgt?
+Data: Dejligt job.  N√¶ste gang kunne du holde dig v√¶k fra ham lidt mere.  Gor mit arbejde lettere, kn√¶gt?
 
 ID: 599
 Title: Reparation beskeder til at vinde
-Data: Kom nu knëgt, hold vagten deroppe.  Du gjorde det ikke dÜrligt, men du kunne have gjort det meget bedre.
+Data: Kom nu kn√¶gt, hold vagten deroppe.  Du gjorde det ikke d√•rligt, men du kunne have gjort det meget bedre.
 
 ID: 600
 Title: Reparation beskeder til at vinde
-Data: Whoa, du har studeret nogle af mine gamle kampe i holo-biblioteket, har ikke cha.  Du har mÜske lidt talent, knëgt.
+Data: Whoa, du har studeret nogle af mine gamle kampe i holo-biblioteket, har ikke cha.  Du har m√•ske lidt talent, kn√¶gt.
 
 ID: 601
 Title: Reparation beskeder til at vinde
@@ -2709,15 +2709,15 @@ Data: Tja, det ser ud til, at jeg kommer tidligt hjem i aften.
 
 ID: 603
 Title: Shop rapport
-Data: Lyt, og lyt tët pÜ.  Jeg fortalte teknologien, at du ville betale dem tilbage pÜ den nëste kamp, sÜ hvis du ikke vinder, er det tilbage til bleachers for dig.
+Data: Lyt, og lyt t√¶t p√•.  Jeg fortalte teknologien, at du ville betale dem tilbage p√• den n√¶ste kamp, s√• hvis du ikke vinder, er det tilbage til bleachers for dig.
 
 ID: 604
 Title: Shop rapport
-Data: Jeg advarede dig.  Turneringsembedsmëndene sparker dig ud for ikke at betale dine regninger.  MÜske skulle du finde en anden karriere, knëgt.
+Data: Jeg advarede dig.  Turneringsembedsm√¶ndene sparker dig ud for ikke at betale dine regninger.  M√•ske skulle du finde en anden karriere, kn√¶gt.
 
 ID: 605
 Title: Shop rapport
-Data: DU SKAL BEGYNDE AT VENDE ET OVERSKUD.  JEG VAR NODT TIL AT SíLGE A %s BARE FOR AT DíKSE REPAIR-regningen.
+Data: DU SKAL BEGYNDE AT VENDE ET OVERSKUD.  JEG VAR NODT TIL AT S√ÜLGE A %s BARE FOR AT D√ÜKSE REPAIR-regningen.
 
 ID: 606
 Title: Shop rapport
@@ -2766,7 +2766,7 @@ Data: HITS TAGET:
 
 ID: 617
 Title: Shop rapport
-Data: MèLSTREGNE
+Data: M√ÖLSTREGNE
 
 ID: 618
 Title: Shop rapport
@@ -3285,13 +3285,13 @@ Data:
 
 ID: 747
 Title: 1
-Data: Jeg er ikke imponeret over dine patetiske kampfërdigheder.  Kom tilbage, nÜr du har lërt at këmpe.
+Data: Jeg er ikke imponeret over dine patetiske kampf√¶rdigheder.  Kom tilbage, n√•r du har l√¶rt at k√¶mpe.
 
 ID: 748
 Title: 1
-Data: Vëlg et hojere CPU-vanskelighedsniveau fra GAMEPLAY-menuen. %s niveau, der krëves for at udfordre %s.
+Data: V√¶lg et hojere CPU-vanskelighedsniveau fra GAMEPLAY-menuen. %s niveau, der kr√¶ves for at udfordre %s.
 
-TíR Pè ENHVER NOGLE FOR AT FORTSíTTE
+T√ÜR P√Ö ENHVER NOGLE FOR AT FORTS√ÜTTE
 
 ID: 749
 Title: 1
@@ -3307,19 +3307,19 @@ Data: Du kendte min far.  Hvad skete der med ham?
 
 ID: 752
 Title: 1
-Data: Jeg er dygtig nok til at stÜ over for enhver fare, bror.
+Data: Jeg er dygtig nok til at st√• over for enhver fare, bror.
 
 ID: 753
 Title: 1
-Data: StÜ ikke i vejen!  Jeg mÜ sejre!
+Data: St√• ikke i vejen!  Jeg m√• sejre!
 
 ID: 754
 Title: 1
-Data: Jeg kan fÜ dig til at tale!
+Data: Jeg kan f√• dig til at tale!
 
 ID: 755
 Title: 1
-Data: Jeg këmper for hëvn!  Du kan ikke stoppe mig.
+Data: Jeg k√¶mper for h√¶vn!  Du kan ikke stoppe mig.
 
 ID: 756
 Title: Crystal til Angel
@@ -3327,7 +3327,7 @@ Data: Skonhed er kun en af mine mange aktiver.
 
 ID: 757
 Title: Crystal til Cossette
-Data: Er der noget, du kan fortëlle mig?
+Data: Er der noget, du kan fort√¶lle mig?
 
 ID: 758
 Title: Crystal to Raven
@@ -3335,7 +3335,7 @@ Data: Du ved sikkert noget?
 
 ID: 759
 Title: Crystal til major Kreissack
-Data: Jeg ved, at du mÜ have drëbt mine forëldre.  Jeg vil have hëvn!
+Data: Jeg ved, at du m√• have dr√¶bt mine for√¶ldre.  Jeg vil have h√¶vn!
 
 ID: 760
 Title: Steffan til Crystal
@@ -3359,15 +3359,15 @@ Data: Hej pops, er det ikke tid til din lur?
 
 ID: 765
 Title: Steffan til Jean-Paul
-Data: Se og lër, stille dreng.  Jeg giver dig 30 fliser inden du falder.
+Data: Se og l√¶r, stille dreng.  Jeg giver dig 30 fliser inden du falder.
 
 ID: 766
 Title: Steffan til Ibrahim
-Data: Du kan forlade nu og undgÜ forlegenhed.
+Data: Du kan forlade nu og undg√• forlegenhed.
 
 ID: 767
 Title: Stoffan til Angel
-Data: NÜr jeg har fjernet dig, tager jeg dig ud!
+Data: N√•r jeg har fjernet dig, tager jeg dig ud!
 
 ID: 768
 Title: Steffan til Cossette
@@ -3375,11 +3375,11 @@ Data: Du tror bestemt ikke, at du kan vinde?
 
 ID: 769
 Title: Steffan til Raven
-Data: Jeg vil lade dig vaske min 'bot, nÜr vi er fërdige.
+Data: Jeg vil lade dig vaske min 'bot, n√•r vi er f√¶rdige.
 
 ID: 770
 Title: Steffan til major Kreissack
-Data: Til sidst en vërdig modstander.  Gor dig klar til at rocke!
+Data: Til sidst en v√¶rdig modstander.  Gor dig klar til at rocke!
 
 ID: 771
 Title: Milano til Crystal
@@ -3387,15 +3387,15 @@ Data: Du ser forberedt ud.  Det bliver en stor kamp.
 
 ID: 772
 Title: Milano til Steffan
-Data: Arrogance gor kujoner af mënd, min ven.
+Data: Arrogance gor kujoner af m√¶nd, min ven.
 
 ID: 773
 Title: Milano til Milano
-Data: NÜr jeg tënker pÜ dig...
+Data: N√•r jeg t√¶nker p√• dig...
 
 ID: 774
 Title: Milano til Christian
-Data: Jeg kan kun onske dig held og lykke med dine bestrëbelser.
+Data: Jeg kan kun onske dig held og lykke med dine bestr√¶belser.
 
 ID: 775
 Title: Milano til Shirro
@@ -3411,7 +3411,7 @@ Data: Jeg bekymrer mig lidt for dine motiver.  Du vil snart se min vej.
 
 ID: 778
 Title: Milano til Angel
-Data: Jeg er helt sikker pÜ, at vi modes igen.
+Data: Jeg er helt sikker p√•, at vi modes igen.
 
 ID: 779
 Title: Milano til Cossette
@@ -3419,23 +3419,23 @@ Data: Jeg kan kun sige, at jeg respekterer din vedholdenhed.
 
 ID: 780
 Title: Milano til Raven
-Data: Jeg kender dine planer.  Du skal vëre mere diskret.
+Data: Jeg kender dine planer.  Du skal v√¶re mere diskret.
 
 ID: 781
 Title: Milano til major Kreissad
-Data: Du har ingen idÇ om den indvirkning, denne kamp kan have.
+Data: Du har ingen id√© om den indvirkning, denne kamp kan have.
 
 ID: 782
 Title: Christian til Crystal
-Data: NÜr jeg har vundet, vil du stoppe dette vrovl.
+Data: N√•r jeg har vundet, vil du stoppe dette vrovl.
 
 ID: 783
 Title: Christian til Steffan
-Data: Du har bedst fortalt mig alt, hvad du kender til mine forëldre.
+Data: Du har bedst fortalt mig alt, hvad du kender til mine for√¶ldre.
 
 ID: 784
 Title: Christian til Milano
-Data: Du vil ikke stÜ mellem mig og min virkelige fjende.
+Data: Du vil ikke st√• mellem mig og min virkelige fjende.
 
 ID: 785
 Title: Christian til Christian
@@ -3443,15 +3443,15 @@ Data: Synes du, jeg ser godt ud i denne farve?
 
 ID: 786
 Title: Christian til Shirro
-Data: Mine forëldre kendte dig godt.   Hvad ved du?
+Data: Mine for√¶ldre kendte dig godt.   Hvad ved du?
 
 ID: 787
 Title: Christian til Jean-Paul
-Data: Hvilken slags V.P. kunne du vëre?
+Data: Hvilken slags V.P. kunne du v√¶re?
 
 ID: 788
 Title: Christian til Ibrahim
-Data: Fortël mig om dine eksperimenter.
+Data: Fort√¶l mig om dine eksperimenter.
 
 ID: 789
 Title: Christian til Angel
@@ -3459,7 +3459,7 @@ Data: Hvis jeg vinder, lover du vil give mig nogle anelse!
 
 ID: 790
 Title: Christian til Cossette
-Data: Jeg kan kun hÜbe, at den fremtidige hersker vil vëre retfërdig.
+Data: Jeg kan kun h√•be, at den fremtidige hersker vil v√¶re retf√¶rdig.
 
 ID: 791
 Title: Christian til Raven
@@ -3467,15 +3467,15 @@ Data: Som ansat i W.A.R. skal du have oplysninger!
 
 ID: 792
 Title: Christian til major Kreissck
-Data: Du drëbte min far, forbereder dig pÜ at do.
+Data: Du dr√¶bte min far, forbereder dig p√• at do.
 
 ID: 793
 Title: Shirro til Crystal
-Data: En pige af din skonhed bor ikke vëre sÜ urolig.
+Data: En pige af din skonhed bor ikke v√¶re s√• urolig.
 
 ID: 794
 Title: Shirro til Steffan
-Data: Og nu vil den lille dreng gÜ i skole...
+Data: Og nu vil den lille dreng g√• i skole...
 
 ID: 795
 Title: Shirro til Milano
@@ -3487,15 +3487,15 @@ Data: Din far var en god mand.  Tingene vil snart fungere.
 
 ID: 797
 Title: Shirro til Shirro
-Data: Bruger du skildpaddevoks pÜ det hoved?
+Data: Bruger du skildpaddevoks p√• det hoved?
 
 ID: 798
 Title: Shirro til Jean-Paul
-Data: HÜber du ikke har noget imod et par bule i den 'bot.
+Data: H√•ber du ikke har noget imod et par bule i den 'bot.
 
 ID: 799
 Title: Shirro til Ibrahim
-Data: NÜ, Ib!  Lang tid ikke at se...
+Data: N√•, Ib!  Lang tid ikke at se...
 
 ID: 800
 Title: Shirro til Angel
@@ -3503,15 +3503,15 @@ Data: Hvad er du, pige?
 
 ID: 801
 Title: Shirro til Cossette
-Data: Selvom jeg beundrer dig, mÜ jeg have denne sejr!
+Data: Selvom jeg beundrer dig, m√• jeg have denne sejr!
 
 ID: 802
 Title: Shirro til Raven
-Data: Jeg kender mange af dine svagheder.  Du kan give afkald nu, knëgt.
+Data: Jeg kender mange af dine svagheder.  Du kan give afkald nu, kn√¶gt.
 
 ID: 803
 Title: Shirro til major Kreissack
-Data: Hvad laver du her?  èh ja, sÜ mere den gladere.
+Data: Hvad laver du her?  √Öh ja, s√• mere den gladere.
 
 ID: 804
 Title: Jean-Paul til Crystal
@@ -3531,11 +3531,11 @@ Data: Du har ingen mulighed for at vinde.
 
 ID: 808
 Title: Jean-Paul til Shirro
-Data: Hvordan kan du grine, mens W.A.R. fortsëtter sine eksperimenter?
+Data: Hvordan kan du grine, mens W.A.R. forts√¶tter sine eksperimenter?
 
 ID: 809
 Title: Jean-Paul til Jean-Paul
-Data: Jeg vil vëdde pÜ, hvad du tënker.
+Data: Jeg vil v√¶dde p√•, hvad du t√¶nker.
 
 ID: 810
 Title: Jean-Paul til Ibrahim
@@ -3559,7 +3559,7 @@ Data: Dine dage med magt vil snart komme til en ende!
 
 ID: 815
 Title: Ibrahim til Crystal
-Data: Eksperimentet, som din far arbejdede pÜ, skulle aldrig have startet.
+Data: Eksperimentet, som din far arbejdede p√•, skulle aldrig have startet.
 
 ID: 816
 Title: Ibrahim til Steffan
@@ -3575,7 +3575,7 @@ Data: Din mor var et uskyldigt offer.
 
 ID: 819
 Title: Ibrahim til Shirro
-Data: Du kan ikke lëngere vëre en neutral part i det, der sker her.
+Data: Du kan ikke l√¶ngere v√¶re en neutral part i det, der sker her.
 
 ID: 820
 Title: Ibrahim til Jean-Paul
@@ -3583,7 +3583,7 @@ Data: Intelligens er en gave, men visdom er tjent.
 
 ID: 821
 Title: Ibrahim til Ibrahim
-Data: To fyre gÜr ind i en bar...
+Data: To fyre g√•r ind i en bar...
 
 ID: 822
 Title: Ibrahim til Angel
@@ -3591,7 +3591,7 @@ Data: Hvorfor er der intet af dig i Interpol-optegnelserne?
 
 ID: 823
 Title: Ibrahim til Cossette
-Data: Du stÜr over for nogle vanskelige beslutninger i fremtiden, min ven.
+Data: Du st√•r over for nogle vanskelige beslutninger i fremtiden, min ven.
 
 ID: 824
 Title: Ibrahim til Raven
@@ -3607,7 +3607,7 @@ Data: Jeg bekymrer mig ikke om dit trivielle tab.
 
 ID: 827
 Title: Angel til Steffan
-Data: Du er ikke engang min tid vërd.
+Data: Du er ikke engang min tid v√¶rd.
 
 ID: 828
 Title: Angel til Milano
@@ -3627,11 +3627,11 @@ Data: Tilbage fra, menneskelig.  Denne kamp er ubetydelig.
 
 ID: 832
 Title: Angel til Ibrahim
-Data: NÜr dette er overstÜet, mÜ du ophore med dine eksperimenter.
+Data: N√•r dette er overst√•et, m√• du ophore med dine eksperimenter.
 
 ID: 833
 Title: Angel til Angel
-Data: I det mindste kan jeg stole pÜ dig.
+Data: I det mindste kan jeg stole p√• dig.
 
 ID: 834
 Title: Angel til Cossette
@@ -3639,27 +3639,27 @@ Data: Du skulle have sagt op, mens du havde chancen.
 
 ID: 835
 Title: Angel til Raven
-Data: Synes du dig selv stërk?
+Data: Synes du dig selv st√¶rk?
 
 ID: 836
 Title: Angel til Major Kreissack
-Data: Vi vil ikke blive nëgtet!  Det er oproret lige ved hÜnden!
+Data: Vi vil ikke blive n√¶gtet!  Det er oproret lige ved h√•nden!
 
 ID: 837
 Title: Cossette til Crystal
-Data: Hvorfor gÜr du ikke hjem og gemmer dig under omslag?
+Data: Hvorfor g√•r du ikke hjem og gemmer dig under omslag?
 
 ID: 838
 Title: Cossette til Steffan
-Data: Selv lammet, jeg er stërkere end dig.
+Data: Selv lammet, jeg er st√¶rkere end dig.
 
 ID: 839
 Title: Cossette til Milano
-Data: Ganymede vil snart vëre min!
+Data: Ganymede vil snart v√¶re min!
 
 ID: 840
 Title: Cossette til christian
-Data: Med dit sind sÜ uroligt, kan du ikke vinde.
+Data: Med dit sind s√• uroligt, kan du ikke vinde.
 
 ID: 841
 Title: Cossette til Shirro
@@ -3671,11 +3671,11 @@ Data: Nu vil du se et rigtigt sind i aktion.
 
 ID: 843
 Title: Cossette til Ibrahim
-Data: Dine ben vil ikke hjëlpe dig i denne konkurrence!
+Data: Dine ben vil ikke hj√¶lpe dig i denne konkurrence!
 
 ID: 844
 Title: Cossette til Angel
-Data: Hvis du ikke har nogen erfaring pÜ disse maskiner, hvorfor er du her?
+Data: Hvis du ikke har nogen erfaring p√• disse maskiner, hvorfor er du her?
 
 ID: 845
 Title: Cossette til Cossette
@@ -3683,7 +3683,7 @@ Data: Jeg er garanteret at vinde.
 
 ID: 846
 Title: Cossette til Raven
-Data: MÜske kan du vëre min livvagt, nÜr jeg vinder...
+Data: M√•ske kan du v√¶re min livvagt, n√•r jeg vinder...
 
 ID: 847
 Title: Cossette til major Kreissack
@@ -3691,7 +3691,7 @@ Data: Du kaldte mig svag en gang.  Du vil aldrig gore det igen.
 
 ID: 848
 Title: Raven til Crystal
-Data: Du er intet andet end et barn, der rider pÜ din fars navn.
+Data: Du er intet andet end et barn, der rider p√• din fars navn.
 
 ID: 849
 Title: Raven til Steffan
@@ -3699,7 +3699,7 @@ Data: Du er et skadedyr, der er ved at blive trampet.
 
 ID: 850
 Title: Raven til Milano
-Data: Hastighed er intet imod rÜ magt!
+Data: Hastighed er intet imod r√• magt!
 
 ID: 851
 Title: Raven til kristen
@@ -3707,7 +3707,7 @@ Data: Din far skulle aldrig have forladt Nova-projektet.
 
 ID: 852
 Title: Raven til Shirro
-Data: Du havde bedst at gÜ pÜ pension, for vi gik pÜ pension.
+Data: Du havde bedst at g√• p√• pension, for vi gik p√• pension.
 
 ID: 853
 Title: Raven til Jean-Paul
@@ -3715,11 +3715,11 @@ Data: Du er en freak, der skal blive i laboratoriet.
 
 ID: 854
 Title: Raven til Ibrahim
-Data: Jeg ved ikke, hvad du laver her.  Dine evner er vërdilose.
+Data: Jeg ved ikke, hvad du laver her.  Dine evner er v√¶rdilose.
 
 ID: 855
 Title: Raven til Angel
-Data: Jeg ved ikke, hvem du er, men du mÜ hellere gÜ tilbage til, hvor du kom fra.
+Data: Jeg ved ikke, hvem du er, men du m√• hellere g√• tilbage til, hvor du kom fra.
 
 ID: 856
 Title: Raven to Cossette
@@ -3727,7 +3727,7 @@ Data: Denne kamp er kun for dem med en "PERFECT" krop og sind.
 
 ID: 857
 Title: Raven til Raven
-Data: Nësten som at se i et spejl...
+Data: N√¶sten som at se i et spejl...
 
 ID: 858
 Title: Raven til major Kreissack
@@ -3739,11 +3739,11 @@ Data: Intet som at hacke et spil, eh?
 
 ID: 860
 Title: M Kreissack til Steffan
-Data: Jeg fÜr en stor glëde af at rive op nogens arbejde.
+Data: Jeg f√•r en stor gl√¶de af at rive op nogens arbejde.
 
 ID: 861
 Title: M Kreissick til Milano
-Data: Hvordan er det, at jeg këmper mod dig, mÜske?
+Data: Hvordan er det, at jeg k√¶mper mod dig, m√•ske?
 
 ID: 862
 Title: M Kreissack til kristen
@@ -3751,11 +3751,11 @@ Data: Hvem gjorde det til mig!?!
 
 ID: 863
 Title: M Kreissack til Shirro
-Data: Jeg skal vëre pÜ den anden side af denne skërm.
+Data: Jeg skal v√¶re p√• den anden side af denne sk√¶rm.
 
 ID: 864
-Title: M Kreissëk til Jean-Paul
-Data: Sët mig tilbage, hvor jeg horer hjemme.
+Title: M Kreiss√¶k til Jean-Paul
+Data: S√¶t mig tilbage, hvor jeg horer hjemme.
 
 ID: 865
 Title: M Kreissack til Ibrahim
@@ -3763,15 +3763,15 @@ Data: Blodkoden er TILFREDS TILFREDS FREMAD PUNCH KICK og derefter FREMAD 135 ga
 
 ID: 866
 Title: M Kreissuck til Angel
-Data: For at spille som Kreissack skal du trykke pÜ <F19>-tasten.
+Data: For at spille som Kreissack skal du trykke p√• <F19>-tasten.
 
 ID: 867
 Title: M Kreissak til Cossette
-Data: For at nÜ Arachnid, fÜ syv perfektioner i trëk.
+Data: For at n√• Arachnid, f√• syv perfektioner i tr√¶k.
 
 ID: 868
 Title: M Kreissick til Raven
-Data: Hvorfor lëser du dette, alligevel?
+Data: Hvorfor l√¶ser du dette, alligevel?
 
 ID: 869
 Title: M Kreissak til major Kreissak
@@ -3783,11 +3783,11 @@ Data: Du er den smukkeste pige, jeg nogensinde har set!
 
 ID: 871
 Title: Krystal til Steffan
-Data: Et par strimlen af metal vil vëre alt, hvad der er tilbage af dig.
+Data: Et par strimlen af metal vil v√¶re alt, hvad der er tilbage af dig.
 
 ID: 872
 Title: Crystal til Milano
-Data: NÜr det er overstÜet, kan du mÜske vëre min sekretër.
+Data: N√•r det er overst√•et, kan du m√•ske v√¶re min sekret√¶r.
 
 ID: 873
 Title: Crystal til Christian
@@ -3815,11 +3815,11 @@ Data: Huh?  Jeg viser dig!
 
 ID: 879
 Title: Crystal to Raven
-Data: Det vil ikke vëre hans navn, der vinder denne kamp.
+Data: Det vil ikke v√¶re hans navn, der vinder denne kamp.
 
 ID: 880
 Title: Crystal til major Kreissack
-Data: Hvorfor këmper du mig alligevel?
+Data: Hvorfor k√¶mper du mig alligevel?
 
 ID: 881
 Title: Steffan til Crystal
@@ -3847,11 +3847,11 @@ Data: Og din respekt er den mindste af mine bekymringer, Pud.
 
 ID: 887
 Title: Steffan til Ibrahim
-Data: Eller i det mindste vil jeg forÜrsage en.
+Data: Eller i det mindste vil jeg for√•rsage en.
 
 ID: 888
 Title: Stoffan til Angel
-Data: Og jeg vil vëdde pÜ, at du ikke ville kende en robot, hvis den trÜdte pÜ dig.
+Data: Og jeg vil v√¶dde p√•, at du ikke ville kende en robot, hvis den tr√•dte p√• dig.
 
 ID: 889
 Title: Steffan til Cossette
@@ -3863,11 +3863,11 @@ Data: Kom inden for fem meter fra mig, og du er stov.
 
 ID: 891
 Title: Steffan til major Kreissack
-Data: Hvorfor këmper du mig alligevel?
+Data: Hvorfor k√¶mper du mig alligevel?
 
 ID: 892
 Title: Milano til Crystal
-Data: De dode betyder ikke lëngere noget.  Min sejr er alt, hvad der er vigtigt.
+Data: De dode betyder ikke l√¶ngere noget.  Min sejr er alt, hvad der er vigtigt.
 
 ID: 893
 Title: Milano til Steffan
@@ -3879,19 +3879,19 @@ Data: ... Jeg sparker mig selv...
 
 ID: 895
 Title: Milano til Christian
-Data: MÜske ikke, men jeg vil besejre dig her.
+Data: M√•ske ikke, men jeg vil besejre dig her.
 
 ID: 896
 Title: Milano til Shirro
-Data: Gët vi bliver nodt til at se.
+Data: G√¶t vi bliver nodt til at se.
 
 ID: 897
 Title: Milano til Jean-Paul
-Data: Ser ud til min ide om skëbne, og din er ved at kollidere.
+Data: Ser ud til min ide om sk√¶bne, og din er ved at kollidere.
 
 ID: 898
 Title: Milano til Ibrahim
-Data: At have evnen til at bygge et vÜben giver dig ikke fërdigheder til at bruge det.
+Data: At have evnen til at bygge et v√•ben giver dig ikke f√¶rdigheder til at bruge det.
 
 ID: 899
 Title: Milano til Angel
@@ -3903,15 +3903,15 @@ Data: Du bliver nodt til at komme forbi mig, forst.
 
 ID: 901
 Title: Milano til Raven
-Data: SÜ vil dette vëre testen.
+Data: S√• vil dette v√¶re testen.
 
 ID: 902
 Title: Milano til major Kreissad
-Data: Hvorfor këmper du mig alligevel?
+Data: Hvorfor k√¶mper du mig alligevel?
 
 ID: 903
 Title: Christian til Crystal
-Data: Hvis du kan besejre mig, tror jeg mÜske pÜ dig.
+Data: Hvis du kan besejre mig, tror jeg m√•ske p√• dig.
 
 ID: 904
 Title: Christian til Steffan
@@ -3919,15 +3919,15 @@ Data: Din heldige stribe slutter her.
 
 ID: 905
 Title: Christian til Milano
-Data: Alt vil blive afsloret, nÜr jeg korer showet.
+Data: Alt vil blive afsloret, n√•r jeg korer showet.
 
 ID: 906
 Title: Christian til Christian
-Data: NÜ, jeg ved, det ser godt ud pÜ mig!
+Data: N√•, jeg ved, det ser godt ud p√• mig!
 
 ID: 907
 Title: Christian til Shirro
-Data: SÜ snart jeg fÜr fingrene i din chef.
+Data: S√• snart jeg f√•r fingrene i din chef.
 
 ID: 908
 Title: Christian til Jean-Paul
@@ -3935,7 +3935,7 @@ Data: Vi skal bare finde ud af det.
 
 ID: 909
 Title: Christian til Ibrahim
-Data: Hun skulle aldrig have vëret pÜ den shuttle...
+Data: Hun skulle aldrig have v√¶ret p√• den shuttle...
 
 ID: 910
 Title: Christian til Angel
@@ -3943,15 +3943,15 @@ Data: Frygter du?  Jeg ved ikke engang, hvem du er!
 
 ID: 911
 Title: Christian til Cossette
-Data: Mit had vil vëre min styrke.
+Data: Mit had vil v√¶re min styrke.
 
 ID: 912
 Title: Christian til Raven
-Data: Er det derfor, han blev drëbt?  For at forlade projektet?
+Data: Er det derfor, han blev dr√¶bt?  For at forlade projektet?
 
 ID: 913
 Title: Christian til major Kreissck
-Data: Hvorfor këmper du mig alligevel?
+Data: Hvorfor k√¶mper du mig alligevel?
 
 ID: 914
 Title: Shirro til Crystal
@@ -3959,7 +3959,7 @@ Data: Vring til skuffelse.
 
 ID: 915
 Title: Shirro til Steffan
-Data: Faktisk er det pÜ tide, at jeg smëkker en grëdende baby.
+Data: Faktisk er det p√• tide, at jeg sm√¶kker en gr√¶dende baby.
 
 ID: 916
 Title: Shirro til Milano
@@ -3967,7 +3967,7 @@ Data: Det blomstrer nu, og du vil aldrig vinde alligevel!
 
 ID: 917
 Title: Shirro til christian
-Data: Din far ville vëre stolt af dig.  For nu, sëtte dit sind i ro.
+Data: Din far ville v√¶re stolt af dig.  For nu, s√¶tte dit sind i ro.
 
 ID: 918
 Title: Shirro til Shirro
@@ -3995,11 +3995,11 @@ Data: Jeg er ikke bange for virksomheden.  Sted vil forbedre sig.
 
 ID: 924
 Title: Shirro til major Kreissack
-Data: Hvorfor këmper du mig alligevel?
+Data: Hvorfor k√¶mper du mig alligevel?
 
 ID: 925
 Title: Jean-Paul til Crystal
-Data: Bare slÜs.
+Data: Bare sl√•s.
 
 ID: 926
 Title: Jean-Paul til Steffan
@@ -4011,11 +4011,11 @@ Data: Farvel, ven.
 
 ID: 928
 Title: Jean-Paul til kristen
-Data: I det mindste er mine grunde ikke sÜ dyr som din.
+Data: I det mindste er mine grunde ikke s√• dyr som din.
 
 ID: 929
 Title: Jean-Paul til Shirro
-Data: Hvis du këmper som du gjorde i din sidste kamp, er jeg sikker pÜ at vinde.
+Data: Hvis du k√¶mper som du gjorde i din sidste kamp, er jeg sikker p√• at vinde.
 
 ID: 930
 Title: Jean-Paul til Jean-Paul
@@ -4023,11 +4023,11 @@ Data: Du har ret, selvfolgelig...
 
 ID: 931
 Title: Jean-Paul til Ibrahim
-Data: MÜske, men min intelligens vil give mig sejr.
+Data: M√•ske, men min intelligens vil give mig sejr.
 
 ID: 932
 Title: Jean-Paul til Angel
-Data: Hvis ja, hvorfor er du sÜ her?
+Data: Hvis ja, hvorfor er du s√• her?
 
 ID: 933
 Title: Jean-Paul til Cossette
@@ -4039,11 +4039,11 @@ Data: Og du er en marionet, der forsoger at bryde sine strenge.
 
 ID: 935
 Title: Jean-Paul til major Kreissak
-Data: Hvorfor këmper du mig alligevel?
+Data: Hvorfor k√¶mper du mig alligevel?
 
 ID: 936
 Title: Ibrahim til Crystal
-Data: Hëvn vil overskygge dit sind, lille en.
+Data: H√¶vn vil overskygge dit sind, lille en.
 
 ID: 937
 Title: Ibrahim til Steffan
@@ -4055,11 +4055,11 @@ Data: Din vej vil ikke betyde noget.
 
 ID: 939
 Title: Ibrahim til christian
-Data: Eksperimenterne startede ikke ondt.  Vi forsogte at forlënge livet!
+Data: Eksperimenterne startede ikke ondt.  Vi forsogte at forl√¶nge livet!
 
 ID: 940
 Title: Ibrahim til Shirro
-Data: Det er alvorligt, min ven.  Jeg mÜ besejre dig.
+Data: Det er alvorligt, min ven.  Jeg m√• besejre dig.
 
 ID: 941
 Title: Ibrahim til Jean-Paul
@@ -4067,7 +4067,7 @@ Data: Min involvering er ikke din bekymring.
 
 ID: 942
 Title: Ibrahim til Ibrahim
-Data: ... det efterlod et stort bar-mërke pÜ deres hoveder.
+Data: ... det efterlod et stort bar-m√¶rke p√• deres hoveder.
 
 ID: 943
 Title: Ibrahim til Angel
@@ -4079,27 +4079,27 @@ Data: Venligst, din skade har intet at gore med denne kamp.
 
 ID: 945
 Title: Ibrahim til Raven
-Data: Du kan ëndre mening forste gang jeg smider dig.
+Data: Du kan √¶ndre mening forste gang jeg smider dig.
 
 ID: 946
 Title: Ibrahim til major Kreissack
-Data: Hvorfor këmper du mig alligevel?
+Data: Hvorfor k√¶mper du mig alligevel?
 
 ID: 947
 Title: Angel til Crystal
-Data: Men det vil vëre det storste sind, der vinder denne konkurrence.
+Data: Men det vil v√¶re det storste sind, der vinder denne konkurrence.
 
 ID: 948
 Title: Angel til Steffan
-Data: Du er ved at fÜ en mands uddannelse.
+Data: Du er ved at f√• en mands uddannelse.
 
 ID: 949
 Title: Angel til Milano
-Data: Vër ikke.
+Data: V√¶r ikke.
 
 ID: 950
 Title: Angel til christian
-Data: Jeg bekymrer mig ikke om dine smÜ konflikter.
+Data: Jeg bekymrer mig ikke om dine sm√• konflikter.
 
 ID: 951
 Title: Angel til Shirro
@@ -4119,7 +4119,7 @@ Data: Og i det mindste kender jeg den rigtige dig.
 
 ID: 955
 Title: Angel til Cossette
-Data: For Ganymede mÜ jeg sejre.
+Data: For Ganymede m√• jeg sejre.
 
 ID: 956
 Title: Angel til Raven
@@ -4127,15 +4127,15 @@ Data: Jeg har til hensigt at gore det.
 
 ID: 957
 Title: Angel til Major Kreissack
-Data: Hvorfor këmper du mig alligevel?
+Data: Hvorfor k√¶mper du mig alligevel?
 
 ID: 958
 Title: Cossette til Crystal
-Data: Det var et lejesoldater band kaldet Iron Fist, der odelagde rumfërgen.
+Data: Det var et lejesoldater band kaldet Iron Fist, der odelagde rumf√¶rgen.
 
 ID: 959
 Title: Cossette til Steffan
-Data: Forbered dig pÜ at se, hvad et rigtigt sind kan gore.
+Data: Forbered dig p√• at se, hvad et rigtigt sind kan gore.
 
 ID: 960
 Title: Cossette til Milano
@@ -4143,7 +4143,7 @@ Data: Jeg har ikke brug for din respekt.  Bare titlen.
 
 ID: 961
 Title: Cossette til christian
-Data: èh, det vil jeg, tro mig.
+Data: √Öh, det vil jeg, tro mig.
 
 ID: 962
 Title: Cossette til Shirro
@@ -4151,7 +4151,7 @@ Data: Men jeg er bange for, at jeg har andre planer...
 
 ID: 963
 Title: Cossette til Jean-Paul
-Data: Held?  Hvis jeg var heldig, ville jeg ikke vëre i denne stol!
+Data: Held?  Hvis jeg var heldig, ville jeg ikke v√¶re i denne stol!
 
 ID: 964
 Title: Cossette til Ibrahim
@@ -4167,15 +4167,15 @@ Data: Ja, men hvilken!
 
 ID: 967
 Title: Cossette til Raven
-Data: Se hvad du siger, jeg er dodbringende, nÜr jeg er vred.
+Data: Se hvad du siger, jeg er dodbringende, n√•r jeg er vred.
 
 ID: 968
 Title: Cossette til major Kreissack
-Data: Hvorfor këmper du mig alligevel?
+Data: Hvorfor k√¶mper du mig alligevel?
 
 ID: 969
 Title: Raven til Crystal
-Data: Hvis du vil holde det smukke ansigt, skal du stoppe med at stille sporgsmÜl.
+Data: Hvis du vil holde det smukke ansigt, skal du stoppe med at stille sporgsm√•l.
 
 ID: 970
 Title: Raven til Steffan
@@ -4183,11 +4183,11 @@ Data: Ja, jeg vil slange ned, hvad der er tilbage.
 
 ID: 971
 Title: Raven til Milano
-Data: Det er lige meget.  NÜr jeg vinder, vil Kreissack do.
+Data: Det er lige meget.  N√•r jeg vinder, vil Kreissack do.
 
 ID: 972
 Title: Raven til kristen
-Data: De onsker at vëre i stand til at holde et menneskeligt sind i live inde i en robot.
+Data: De onsker at v√¶re i stand til at holde et menneskeligt sind i live inde i en robot.
 
 ID: 973
 Title: Raven til Shirro
@@ -4199,15 +4199,15 @@ Data: Du bekymrer dig selv for meget med andres forretning.
 
 ID: 975
 Title: Raven til Ibrahim
-Data: Og du er ogsÜ mÜlrettet, medoprorere.
+Data: Og du er ogs√• m√•lrettet, medoprorere.
 
 ID: 976
 Title: Raven til Angel
-Data: I hvert fald stërkere end dig!
+Data: I hvert fald st√¶rkere end dig!
 
 ID: 977
 Title: Raven to Cossette
-Data: Jeg er kun en bodyguard, sÜ lënge det passer til mit formÜl.
+Data: Jeg er kun en bodyguard, s√• l√¶nge det passer til mit form√•l.
 
 ID: 978
 Title: Raven til Raven
@@ -4215,11 +4215,11 @@ Data: ...rorrim a ni gnikool ekil tsomlA
 
 ID: 979
 Title: Raven til major Kreissack
-Data: Hvorfor këmper du mig alligevel?
+Data: Hvorfor k√¶mper du mig alligevel?
 
 ID: 980
-Title: Kreissëk til Crystal
-Data: Din nysgerrighed vil vëre din ulempe, pige!
+Title: Kreiss√¶k til Crystal
+Data: Din nysgerrighed vil v√¶re din ulempe, pige!
 
 ID: 981
 Title: M Kreissack til Steffan
@@ -4227,18 +4227,18 @@ Data: Ha!  Hvad er det?  Du er knap nok ude af bleer!
 
 ID: 982
 Title: M Kreissick til Milano
-Data: èh, men det gor jeg.  Du er den i morket her!
+Data: √Öh, men det gor jeg.  Du er den i morket her!
 
 ID: 983
 Title: M Kreissack til kristen
-Data: Kom og se hvad din far arbejdede pÜ!  Den perfekte hersker er her!
+Data: Kom og se hvad din far arbejdede p√•!  Den perfekte hersker er her!
 
 ID: 984
 Title: M Kreissack til Shirro
-Data: Godt, jeg er overrasket over at se dig her, ogsÜ.
+Data: Godt, jeg er overrasket over at se dig her, ogs√•.
 
 ID: 985
-Title: M Kreissëk til Jean-Paul
+Title: M Kreiss√¶k til Jean-Paul
 Data: Mine dage med magt er lige begyndt!
 
 ID: 986
@@ -4251,11 +4251,11 @@ Data: Opror?  Hvilket opror?
 
 ID: 988
 Title: M Kreissak til Cossette
-Data: Din skade var tragisk.  írgerligt, at du ikke blev nede.
+Data: Din skade var tragisk.  √Ürgerligt, at du ikke blev nede.
 
 ID: 989
 Title: M Kreissick til Raven
-Data: Jeg ved, hvad du er op til, hvalp, og jeg ser pÜ en dod mand.
+Data: Jeg ved, hvad du er op til, hvalp, og jeg ser p√• en dod mand.
 
 ID: 990
 Title: Kreissuck til Kreissuck
@@ -4263,57 +4263,57 @@ Data: 'Aven't vi modtes for?
 
 ID: 991
 Title: Shareware Slutter
-Data: Da oprydningsbesëtningerne fjerner, hvad der er tilbage af Ravens robot fra arenaen, indser du, at du har bestÜet testen.
-Kampen har efterladt dig udmattet, men du kan stadig kun tënke pÜ at vinde den virkelige kamp, kampen mod Kreissack, overherre af turneringen.
-Der er meget at lëre, meget at overvinde; Men du vil lëre, du vil këmpe, og du vil vinde...
+Data: Da oprydningsbes√¶tningerne fjerner, hvad der er tilbage af Ravens robot fra arenaen, indser du, at du har best√•et testen.
+Kampen har efterladt dig udmattet, men du kan stadig kun t√¶nke p√• at vinde den virkelige kamp, kampen mod Kreissack, overherre af turneringen.
+Der er meget at l√¶re, meget at overvinde; Men du vil l√¶re, du vil k√¶mpe, og du vil vinde...
 Hvis du tor tage imod udfordringen!
 
 ID: 992
-Title: Alles begyndelse pÜ e
-Data: Du vÜgner i din egen krop.  I et ojeblik kommer du ned fra adrenalinhojen, du har oplevet.  Din krop virker sÜ skrobelig nu.  Holdet fejrer allerede, og du glëder dig over deres lykonskninger.
-Tid til at feste er kortvarig.  Dit sind tager i de sidste par timer begivenheder og den viden, at en hel mÜne er nu din til at styre.
+Title: Alles begyndelse p√• e
+Data: Du v√•gner i din egen krop.  I et ojeblik kommer du ned fra adrenalinhojen, du har oplevet.  Din krop virker s√• skrobelig nu.  Holdet fejrer allerede, og du gl√¶der dig over deres lykonskninger.
+Tid til at feste er kortvarig.  Dit sind tager i de sidste par timer begivenheder og den viden, at en hel m√•ne er nu din til at styre.
 "Vent et sekund!" kommer en panikagtig stemme fra en vidmonitor.  "Alle!  Lyt til!"  Han skruer op for lydstyrken, og alle i rummet er stille.
 "... blev fundet dod i dag.  Vi gentager, Hans Kreissacks lig blev fundet kl. 18.00 i aften i en skraldespand uden for Nova-laboratorierne.
-Alle holder vejret, mens nyhedsreporteren fortsëtter.  - Vi har fÜet denne meddelelse, der skulle lëses, da Kreissack vandt kampen i aften.  Der stÜr:"
+Alle holder vejret, mens nyhedsreporteren forts√¶tter.  - Vi har f√•et denne meddelelse, der skulle l√¶ses, da Kreissack vandt kampen i aften.  Der st√•r:"
 "Medlemme af alle mennesker: En ny dag er begyndt!  Nova, et projekt startet af WAR., vil give nyt liv!  Denne proces kan tage en menneskelig hjerne og placere den inde i en robotkrop.
-- Det, du sÜ i aften, var mig, Hans Kreissack, der var direkte forbundet med en ny form for H.A.R.  Den menneskelige race vil nu se dens endelige udvikling!
-Annoncoren lëgger bevillingsapparatet, der indeholder meddelelsen.  "Tragisk nok er alle forskere tët pÜ projektet blevet drëbt i en brand, der brod ud kort efter den sidste kamp i aften.  Alle optegnelser fra Nova-projektet blev odelagt.
+- Det, du s√• i aften, var mig, Hans Kreissack, der var direkte forbundet med en ny form for H.A.R.  Den menneskelige race vil nu se dens endelige udvikling!
+Annoncoren l√¶gger bevillingsapparatet, der indeholder meddelelsen.  "Tragisk nok er alle forskere t√¶t p√• projektet blevet dr√¶bt i en brand, der brod ud kort efter den sidste kamp i aften.  Alle optegnelser fra Nova-projektet blev odelagt.
 "I andre nyheder..."
-Et besëtningsmedlem slukker for displayet.  "NÜ, det ser ud til, at vi vil vëre pÜ udkig efter en ny chef nu..."
+Et bes√¶tningsmedlem slukker for displayet.  "N√•, det ser ud til, at vi vil v√¶re p√• udkig efter en ny chef nu..."
 
 ID: 993
 Title: Crystals afslutning
-Data: De skulle give dig topprioriteret adgang med det samme.  Din forste handling var at hoppe pÜ et privat link og bruge den kode, du har bÜret siden dine forëldres dod.  NÜr du fÜr adgang til en personlig log fra din far, finder du ud af, hvad Nova handlede om.
-Din far, sammen med andre topforskere, arbejdede pÜ en mÜde at holde en menneskelig hjerne i live.  Lidt indsÜ de den virkelige Ürsag til deres eksperimenter.  Da din far opdagede, at Kreissack forsogte at danne en cyborg hër ved hjëlp af sine eksperimenter, forlod han projektet.
-Han burde have vidst, at Kreissuck ikke ville lade ham gÜ vëk.  Optegnelserne viste en $ 1500k udbetaling til Iron Fist for "forskning".  Iron Fist, hyret under Kreissacks direkte ordrer, drëbte dine forëldre.
-Nu er han ogsÜ dod.  Nova-projektet vil ikke fortsëtte.  NÜr du trëder ind i elevatoren til den nëste shuttle til Ganymede, forestiller du dig de ëndringer, du kan hjëlpe med at bringe til KLAGE.  Nu har du magt til at bringe disse dromme til virkelighed.
+Data: De skulle give dig topprioriteret adgang med det samme.  Din forste handling var at hoppe p√• et privat link og bruge den kode, du har b√•ret siden dine for√¶ldres dod.  N√•r du f√•r adgang til en personlig log fra din far, finder du ud af, hvad Nova handlede om.
+Din far, sammen med andre topforskere, arbejdede p√• en m√•de at holde en menneskelig hjerne i live.  Lidt inds√• de den virkelige √•rsag til deres eksperimenter.  Da din far opdagede, at Kreissack forsogte at danne en cyborg h√¶r ved hj√¶lp af sine eksperimenter, forlod han projektet.
+Han burde have vidst, at Kreissuck ikke ville lade ham g√• v√¶k.  Optegnelserne viste en $ 1500k udbetaling til Iron Fist for "forskning".  Iron Fist, hyret under Kreissacks direkte ordrer, dr√¶bte dine for√¶ldre.
+Nu er han ogs√• dod.  Nova-projektet vil ikke forts√¶tte.  N√•r du tr√¶der ind i elevatoren til den n√¶ste shuttle til Ganymede, forestiller du dig de √¶ndringer, du kan hj√¶lpe med at bringe til KLAGE.  Nu har du magt til at bringe disse dromme til virkelighed.
 
 ID: 994
 Title: Steffans Slutning
-Data: NÜ, den onde heks er dod...  Det vil gore dit job meget lettere!  For det forste, at Nova-projektet lyder som om det kunne vëre en god ting at hente igen.  MÜske havde den gamle mand bare ikke den rigtige hjerne...
-Ganymede var let.  Kreissack var en brise.  Den nëste udfordring bliver hele Jupiter.  Og SÜ Mars.  Og sÜ Jorden.
+Data: N√•, den onde heks er dod...  Det vil gore dit job meget lettere!  For det forste, at Nova-projektet lyder som om det kunne v√¶re en god ting at hente igen.  M√•ske havde den gamle mand bare ikke den rigtige hjerne...
+Ganymede var let.  Kreissack var en brise.  Den n√¶ste udfordring bliver hele Jupiter.  Og S√• Mars.  Og s√• Jorden.
 Men for nu skal du mode dit folk.
 
 ID: 995
 Title: Milano
-Data: Med Kreissack dod, vil der vëre indlysende ëndringer.  Bestyrelsen taler allerede om at vëlge en ny prësident, og du er bare manden til det job.
-Forst skal du bringe Ganymede op i fart.  Brug derefter sine enorme naturressourcer til at producere H.A.R.'s i rekordfart.  SÜ, nÜr anerkendelsen er der, byde pÜ formand.
-NÜr du er prësident, kan du afslore dit sande navn og vise, at dette firma er din fodselsret.  Endnu en gang vil KRIG vëre en virksomhed for at hjëlpe menneskeheden, ikke slavebande den.  MÜske kan du endda ëndre navnet til Aeronautics og Robotics Technologies!
+Data: Med Kreissack dod, vil der v√¶re indlysende √¶ndringer.  Bestyrelsen taler allerede om at v√¶lge en ny pr√¶sident, og du er bare manden til det job.
+Forst skal du bringe Ganymede op i fart.  Brug derefter sine enorme naturressourcer til at producere H.A.R.'s i rekordfart.  S√•, n√•r anerkendelsen er der, byde p√• formand.
+N√•r du er pr√¶sident, kan du afslore dit sande navn og vise, at dette firma er din fodselsret.  Endnu en gang vil KRIG v√¶re en virksomhed for at hj√¶lpe menneskeheden, ikke slavebande den.  M√•ske kan du endda √¶ndre navnet til Aeronautics og Robotics Technologies!
 
 ID: 996
 Title: Christians afslutning
-Data: I en lille Alco-bar modte du lederen af den berygtede lejesoldatgruppe Iron Fist.  Med Kreissack ude af vejen indrommede de frit at blive ansat til at drëbe alle, der er forbundet med Nova-projektet.
-De forklarer, at dine forëldre blev placeret pÜ et rumfërskib og derefter odelagt af laserbrand.  Af vrede trëkker du en pistol, klar til at slÜ ned mindst en af disse fjender som hëvn, for resten fordamper dig.
-Din sidearm er der ikke.  Du stinker som Iron Fist reprësentanter griner.  Deres leder siger: "Din hëvn er forbi, ven.  Anyway, vi har brug for dig pÜ Ganymede i live.  Der er stadig meget arbejde, der skal gores."
-"Dine forëldre var dode, uanset om vi drëbte dem eller ej.  Nu har vi brug for, at du er med til at këmpe mod Kërlighed.  Kreissuck var kun begyndelsen.  Ganymede er kun begyndelsen.  Pas pÜ din ryg, knëgt."
-Nu forbereder du dig pÜ at gÜ om bord pÜ skibet, der vil tage dig til dit nye liv...
+Data: I en lille Alco-bar modte du lederen af den berygtede lejesoldatgruppe Iron Fist.  Med Kreissack ude af vejen indrommede de frit at blive ansat til at dr√¶be alle, der er forbundet med Nova-projektet.
+De forklarer, at dine for√¶ldre blev placeret p√• et rumf√¶rskib og derefter odelagt af laserbrand.  Af vrede tr√¶kker du en pistol, klar til at sl√• ned mindst en af disse fjender som h√¶vn, for resten fordamper dig.
+Din sidearm er der ikke.  Du stinker som Iron Fist repr√¶sentanter griner.  Deres leder siger: "Din h√¶vn er forbi, ven.  Anyway, vi har brug for dig p√• Ganymede i live.  Der er stadig meget arbejde, der skal gores."
+"Dine for√¶ldre var dode, uanset om vi dr√¶bte dem eller ej.  Nu har vi brug for, at du er med til at k√¶mpe mod K√¶rlighed.  Kreissuck var kun begyndelsen.  Ganymede er kun begyndelsen.  Pas p√• din ryg, kn√¶gt."
+Nu forbereder du dig p√• at g√• om bord p√• skibet, der vil tage dig til dit nye liv...
 
 ID: 997
 Title: Shirro
-Data: En menneskelig hjerne inde i en robot?   Du tënker pÜ mulighederne.  Hvor vidunderligt kunne det vëre at vëre inde i den metalramme PERMANENT?  Hvor KRAFTIG?
-Men se, hvad denne magt gjorde mod Kreissack.  Du spekulerer pÜ, hvad det kan gore ved dig...
-Du arkiverer den tanke i de morkere fordybninger af dit sind og vender din opmërksomhed mod fremtiden.  En fremtid, hvor H.A.R. Arenakampe er en sport i stedet for et simpelt reklamestunt.  Da dette ikke ville indebëre skade pÜ levende vësener, kunne det nemt komme forbi Verdensfredsorganisationen.
-Ja, det er rigtigt!  En ny sport!  Plus penge og berommelse vil gÜ til dig!  Til sidst, sÜ vil KRIG...
+Data: En menneskelig hjerne inde i en robot?   Du t√¶nker p√• mulighederne.  Hvor vidunderligt kunne det v√¶re at v√¶re inde i den metalramme PERMANENT?  Hvor KRAFTIG?
+Men se, hvad denne magt gjorde mod Kreissack.  Du spekulerer p√•, hvad det kan gore ved dig...
+Du arkiverer den tanke i de morkere fordybninger af dit sind og vender din opm√¶rksomhed mod fremtiden.  En fremtid, hvor H.A.R. Arenakampe er en sport i stedet for et simpelt reklamestunt.  Da dette ikke ville indeb√¶re skade p√• levende v√¶sener, kunne det nemt komme forbi Verdensfredsorganisationen.
+Ja, det er rigtigt!  En ny sport!  Plus penge og berommelse vil g√• til dig!  Til sidst, s√• vil KRIG...
 
 ID: 998
 Title: Jean-Paul
@@ -4322,93 +4322,93 @@ Data: Selvfolgelig!  Kreisscks hemmelighed!  Hvad kan der ske med dit perfekte s
 ID: 999
 Title: Ibrahim
 Data: Nova... Fantastisk...
-Du husker folelsen, da det monster af en robot dukkede op overfor dig.  Stadig forbloffet over, at du var i stand til at overvinde noget sÜ kraftfuldt, du sidder gennem de endelose moder og horinger i en dos.
+Du husker folelsen, da det monster af en robot dukkede op overfor dig.  Stadig forbloffet over, at du var i stand til at overvinde noget s√• kraftfuldt, du sidder gennem de endelose moder og horinger i en dos.
 "Mr. Det er Jihad.  Er det okay?"  Du indser, at en person, der har talt med dig i de sidste femten minutter forventer et svar...
 "I Hvert Fald... James, er det?  Ja... hvad... hvad...  Jeg er ked af det, men I herrer bliver nodt til at undskylde mig..."
-Du gÜr, ignorerer protesterne fra WAR's bestyrelse.  Deres këvl over, hvem der bliver den nëste konge af bakken gor lidt mere end irriteret dig.
-"Hvordan kan jeg bygge den robot?" siger du hojt.  Du kommer ind pÜ dit kontor og begynder straks at skrive noter pÜ de metaller, du har bemërket under kampen.  Placeringen af armene... De sandsynlige mikromotorer i hënderne...
+Du g√•r, ignorerer protesterne fra WAR's bestyrelse.  Deres k√¶vl over, hvem der bliver den n√¶ste konge af bakken gor lidt mere end irriteret dig.
+"Hvordan kan jeg bygge den robot?" siger du hojt.  Du kommer ind p√• dit kontor og begynder straks at skrive noter p√• de metaller, du har bem√¶rket under kampen.  Placeringen af armene... De sandsynlige mikromotorer i h√¶nderne...
 Den Nova-robot, du designer, vil en dag tage den plads i WAR's stadigt stigende arsenal af robotter.  Selvom den model, du designer, aldrig vil holde en egentlig menneskelig hjerne, vil Nova snart blive den mest formidable 'bot i kataloget...
 ...og Ganymede er hvor produktionen vil starte...
 
 ID: 1000
 Title: Angel
-Data: Forestil dig, at gamle fjols tënker, at blot at placere sin hjerne inde i en robot ville gore ham til en slags god!  Disse mennesker vil aldrig forstÜ, at odelëggelse aldrig gor fremskridt.  Dine ojne lukker...
+Data: Forestil dig, at gamle fjols t√¶nker, at blot at placere sin hjerne inde i en robot ville gore ham til en slags god!  Disse mennesker vil aldrig forst√•, at odel√¶ggelse aldrig gor fremskridt.  Dine ojne lukker...
 < 695342: Operationer er ved at forlobe som planlagt. Jeg er ikke blevet opdaget. >
 < 000126: Erkendt.  Vi lytter.  Er du blevet deres leder? >
-69542: Jeg er deres leder for vores mÜne.  De kalder det Ganymede.>
-< 000385: SÜ har vi vundet.  De vil gÜ nu.>
+69542: Jeg er deres leder for vores m√•ne.  De kalder det Ganymede.>
+< 000385: S√• har vi vundet.  De vil g√• nu.>
 < 695342: Ikke endnu. Jeg vil snart blive spurgt, om jeg vil blive formand for KRIG.
-< 000014: Du vil acceptere.  SÜ vil de gÜ.  Vi vil vëre alene igen.>
+< 000014: Du vil acceptere.  S√• vil de g√•.  Vi vil v√¶re alene igen.>
 < 695342: Ja.  Men de kender de mineraler, vores planet har.  De vil vende tilbage.>
-< 000001: SÜ vil de gÜ til grunde.>
-... Dine ojne er Übne.  "Hvilket er, hvad jeg har onsket hele tiden..." siger du bittert.
+< 000001: S√• vil de g√• til grunde.>
+... Dine ojne er √•bne.  "Hvilket er, hvad jeg har onsket hele tiden..." siger du bittert.
 
 ID: 1001
 Title: Cossette
 Data: Selvfolgelig vandt du.  Det gamle fjols forstod aldrig dine evner.  Og han betalte for sin fejl, gjorde han ikke.
 Umiddelbart tildeler du, hvilke ingeniorer du kan monstre for at finde ud af, hvordan Kreissack var i stand til at placere sin hjerne inde i en maskine.
-Hvor ville det vëre vidunderligt at endelig sige farvel til denne stol og tilbringe evigheden i den perfekte krop af en robot.  Du ser ned pÜ skrive- og designspecifikationerne for Cossette-robotten.
-"Jeg vil snart gÜ igen." siger du, "og sÜ vil jeg se, hvilken slags KORT prësident jeg kan gore..."
+Hvor ville det v√¶re vidunderligt at endelig sige farvel til denne stol og tilbringe evigheden i den perfekte krop af en robot.  Du ser ned p√• skrive- og designspecifikationerne for Cossette-robotten.
+"Jeg vil snart g√• igen." siger du, "og s√• vil jeg se, hvilken slags KORT pr√¶sident jeg kan gore..."
 
 ID: 1002
 Title: Raven
-Data: Hvem kunne have bedt om mere?  Sikke en bonus!  At fÜ Ganymede og levere dodsstodet til Kreissack selv!
-Selvfolgelig skal du beskëftige sig med tosere i bestyrelsen, men med den store chef ud af den mÜde, de vil vëre lidt mere end foder.
-En af de forudsigelige smÜ papirpushovere forsogte allerede at ëndre hakkeordenen tidligere, husker du...
-"Minste, sir."  Du ser ned som dëkningen over dit mÜltid er hëvet.
-"Sjëld bof.  Min favorit, Jonesey!" Du indÜnder den skarpe aroma af din sejrsfest...
+Data: Hvem kunne have bedt om mere?  Sikke en bonus!  At f√• Ganymede og levere dodsstodet til Kreissack selv!
+Selvfolgelig skal du besk√¶ftige sig med tosere i bestyrelsen, men med den store chef ud af den m√•de, de vil v√¶re lidt mere end foder.
+En af de forudsigelige sm√• papirpushovere forsogte allerede at √¶ndre hakkeordenen tidligere, husker du...
+"Minste, sir."  Du ser ned som d√¶kningen over dit m√•ltid er h√¶vet.
+"Sj√¶ld bof.  Min favorit, Jonesey!" Du ind√•nder den skarpe aroma af din sejrsfest...
 For skarpt...  Du smiler...
-"Jonesey?  Dette indeholder Noxosilinon Aerodide.  Meget dodbringende, meget dyr gift.  Lugter lidt som kylling.  "MÜ du tage den vëk?"
-Han stammer, "...ja... sir... Vil det vëre alt, sir?" siger han, mens han bakker ud af rummet. Han lukker doren bag sig, for du har tid til at svare.
-"Nej, det vil helt sikkert ikke vëre alt." Du lëner dig tilbage i din stol og smider dine fodder pÜ bordet og dine hënder bag dit hoved, "Det vil kun vëre begyndelsen..."
+"Jonesey?  Dette indeholder Noxosilinon Aerodide.  Meget dodbringende, meget dyr gift.  Lugter lidt som kylling.  "M√• du tage den v√¶k?"
+Han stammer, "...ja... sir... Vil det v√¶re alt, sir?" siger han, mens han bakker ud af rummet. Han lukker doren bag sig, for du har tid til at svare.
+"Nej, det vil helt sikkert ikke v√¶re alt." Du l√¶ner dig tilbage i din stol og smider dine fodder p√• bordet og dine h√¶nder bag dit hoved, "Det vil kun v√¶re begyndelsen..."
 
 ID: 1003
 Title: Crystals anden slutning
-Data: NÜr du flyver mod mÜnen, falder en fred over dig.
-Du foler, at du endelig kan vëre glad, nu hvor dine forëldres dod er blevet hëvnet.
+Data: N√•r du flyver mod m√•nen, falder en fred over dig.
+Du foler, at du endelig kan v√¶re glad, nu hvor dine for√¶ldres dod er blevet h√¶vnet.
 
 ID: 1004
 Title: Steffans anden slutning
-Data: NÜr du flyver mod mÜnen, lukker du ojnene og begynder at tënke pÜ, hvad du snart vil have.
+Data: N√•r du flyver mod m√•nen, lukker du ojnene og begynder at t√¶nke p√•, hvad du snart vil have.
 Ingen kan stoppe dig nu.
 
 ID: 1005
 Title: Milanos anden slutning
-Data: NÜr du flyver mod mÜnen, falder en fred over dig.
-Du foler, at du endelig kan slappe af, nu hvor den hÜrde del af rejsen er forbi.
+Data: N√•r du flyver mod m√•nen, falder en fred over dig.
+Du foler, at du endelig kan slappe af, nu hvor den h√•rde del af rejsen er forbi.
 
 ID: 1006
 Title: Christians anden slutning
-Data: NÜr du flyver mod mÜnen, falder en fred over dig.
-Du foler, at du endelig kan vëre glad, nu hvor dine forëldres dod er blevet hëvnet.
+Data: N√•r du flyver mod m√•nen, falder en fred over dig.
+Du foler, at du endelig kan v√¶re glad, nu hvor dine for√¶ldres dod er blevet h√¶vnet.
 
 ID: 1007
 Title: Crystals anden slutning
-Data: Du kan ikke stoppe med at tënke pÜ fremtiden, nÜr du flyver mod mÜnen.
-NÜr du lander pÜ den morke side af mÜnen, ser fremtiden lys ud.
+Data: Du kan ikke stoppe med at t√¶nke p√• fremtiden, n√•r du flyver mod m√•nen.
+N√•r du lander p√• den morke side af m√•nen, ser fremtiden lys ud.
 
 ID: 1008
 Title: Jean-Paul slutter #2
-Data: Du finder pÜ dit trukne en nogle til et stort rum begravet dybt inde i Ganymede.  èbner doren, du stirrer pÜ den storste videnskabelige facilitet, du nogensinde har set.  Det er klart, at Kreissck planlagde en fremtid her. Hans fremtid.
+Data: Du finder p√• dit trukne en nogle til et stort rum begravet dybt inde i Ganymede.  √Öbner doren, du stirrer p√• den storste videnskabelige facilitet, du nogensinde har set.  Det er klart, at Kreissck planlagde en fremtid her. Hans fremtid.
 "Hjem" siger du, at hore ordet ekkoet tilbage fra morket.
 
 ID: 1009
 Title: Ibrahims anden slutning
-Data: Planerne dannes, nÜr du flyver mod mÜnen.
-Ingen tvivl om det, mÜnen vil fungere perfekt.
+Data: Planerne dannes, n√•r du flyver mod m√•nen.
+Ingen tvivl om det, m√•nen vil fungere perfekt.
 
 ID: 1010
 Title: Angel's anden slutning
-Data: NÜr du vender tilbage til dit hjem, tënker du pÜ, hvordan du stopper dem.
-Disse mennesker med deres urimelige og umëttelige ambitioner, de er gÜet langt nok!
+Data: N√•r du vender tilbage til dit hjem, t√¶nker du p√•, hvordan du stopper dem.
+Disse mennesker med deres urimelige og um√¶ttelige ambitioner, de er g√•et langt nok!
 
 ID: 1011
 Title: Cossettes anden slutning
-Data: NÜr du flyver mod mÜnen, synes dine handicaps begrënsninger at falme vëk.
-Med dine dromme inden for rëkkevidde foler du dig stërkere og mere levende end nogensinde.
+Data: N√•r du flyver mod m√•nen, synes dine handicaps begr√¶nsninger at falme v√¶k.
+Med dine dromme inden for r√¶kkevidde foler du dig st√¶rkere og mere levende end nogensinde.
 
 ID: 1012
 Title: Ravens anden slutning
-Data: Nu flyver du mod mÜnen, hvilket gor en mental liste over firmaets mënd, der har den usunde tendens til at tënke for sig selv.
-Du kan ikke lade vëre med at smile, nÜr en tanke opstÜr...
+Data: Nu flyver du mod m√•nen, hvilket gor en mental liste over firmaets m√¶nd, der har den usunde tendens til at t√¶nke for sig selv.
+Du kan ikke lade v√¶re med at smile, n√•r en tanke opst√•r...
 Nu skal du bruge en livvagt.
