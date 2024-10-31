@@ -1459,80 +1459,80 @@ Title: Titel
 Data: Du vil tabe kampen og stadig betale for reparationer på din robot.
 
 ID: 324
-Title: Mulighed 1
-Data: |||||||||
+Title: Option 1
+Data: ⌂|||||||
 
 ID: 325
-Title: Mulighed 2
-Data: |||||||
+Title: Option 2
+Data: ⌂⌂||||||
 
 ID: 326
-Title: Mulighed 1
-Data: ||||||
+Title: Option 1
+Data: ⌂⌂⌂|||||
 
 ID: 327
-Title: Mulighed 1
-Data: ||||
+Title: Option 1
+Data: ⌂⌂⌂⌂||||
 
 ID: 328
-Title: Mulighed 1
-Data: |||
+Title: Option 1
+Data: ⌂⌂⌂⌂⌂|||
 
 ID: 329
-Title: Mulighed 1
-Data: | ||
+Title: Option 1
+Data: ⌂⌂⌂⌂⌂⌂||
 
 ID: 330
-Title: Mulighed 1
-Data: |
+Title: Option 1
+Data: ⌂⌂⌂⌂⌂⌂⌂|
 
 ID: 331
-Title: Mulighed 1
-Data: 
+Title: Option 1
+Data: ⌂⌂⌂⌂⌂⌂⌂⌂
 
 ID: 332
-Title: Mulighed 1
-Data: ||||||||||||||
-
-ID: 333
-Title: Mulighed 1
-Data: |||||||||||||
-
-ID: 334
-Title: Mulighed 2
+Title: Option 1
 Data: ||||||||||
 
+ID: 333
+Title: Option 1
+Data: ⌂|||||||||
+
+ID: 334
+Title: Option 2
+Data: ⌂⌂||||||||
+
 ID: 335
-Title: Mulighed 1
-Data: |||||||||
+Title: Option 1
+Data: ⌂⌂⌂|||||||
 
 ID: 336
-Title: Mulighed 1
-Data: |||||||
+Title: Option 1
+Data: ⌂⌂⌂⌂||||||
 
 ID: 337
-Title: Mulighed 1
-Data: ||||||
+Title: Option 1
+Data: ⌂⌂⌂⌂⌂|||||
 
 ID: 338
-Title: Mulighed 1
-Data: ||||
+Title: Option 1
+Data: ⌂⌂⌂⌂⌂⌂||||
 
 ID: 339
-Title: Mulighed 1
-Data: |||
+Title: Option 1
+Data: ⌂⌂⌂⌂⌂⌂⌂|||
 
 ID: 340
-Title: Mulighed 1
-Data: | ||
+Title: Option 1
+Data: ⌂⌂⌂⌂⌂⌂⌂⌂||
 
 ID: 341
-Title: Mulighed 1
-Data: |
+Title: Option 1
+Data: ⌂⌂⌂⌂⌂⌂⌂⌂⌂|
 
 ID: 342
-Title: Mulighed 1
-Data: 
+Title: Option 1
+Data: ⌂⌂⌂⌂⌂⌂⌂⌂⌂⌂
 
 ID: 343
 Title: Diff 1
