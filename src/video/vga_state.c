@@ -12,6 +12,7 @@ typedef struct palette_transformer {
 } palette_transformer;
 
 typedef struct vga_state {
+    vga_palette pushed;
     vga_palette base;
     vga_palette current;
     damage_tracker dmg_base;
@@ -34,6 +35,15 @@ void vga_state_init(void) {
 
 void vga_state_close(void) {
     vga_state_init();
+}
+
+void vga_state_push_palette(void) {
+    memcpy(&state.pushed, &state.base, sizeof(vga_palette));
+}
+
+void vga_state_pop_palette(void) {
+    memcpy(&state.base, &state.pushed, sizeof(vga_palette));
+    damage_set_range(&state.dmg_base, 0, 255);
 }
 
 void vga_state_render(void) {
@@ -102,11 +112,6 @@ void vga_state_set_remaps_from(const vga_remap_tables *src) {
     assert(src != NULL);
     memcpy(&state.remaps, src, sizeof(vga_remap_tables));
     state.dirty_remaps = true;
-}
-
-void vga_state_copy_base_palette(vga_palette *dst) {
-    assert(dst != NULL);
-    memcpy(dst, &state.base, sizeof(vga_palette));
 }
 
 void vga_state_set_base_palette_from(const vga_palette *src) {

@@ -20,7 +20,6 @@ typedef struct {
     component *label;
     int max;
     int selected;
-    vga_palette palette_backup;
 } trnselect;
 
 static void trnselect_render(component *c) {
@@ -106,7 +105,7 @@ void load_description(component **c, const char *desc) {
 
 static void trnselect_free(component *c) {
     trnselect *g = widget_get_obj(c);
-    vga_state_set_base_palette_from(&g->palette_backup);
+    vga_state_pop_palette(); // Recover previous palette
     sprite_free(g->img);
     omf_free(g->img);
     list_free(g->tournaments);
@@ -163,7 +162,7 @@ component *trnselect_create(void) {
 
     local->label = NULL;
 
-    vga_state_copy_base_palette(&local->palette_backup);
+    vga_state_push_palette(); // Backup the current palette
 
     sd_tournament_file *trn = list_get(local->tournaments, local->selected);
     sd_sprite *logo = trn->locales[0]->logo;

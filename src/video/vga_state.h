@@ -18,8 +18,17 @@ void vga_state_mark_remaps_flushed(void);
 bool vga_state_is_palette_dirty(vga_palette **palette, vga_index *dirty_range_start, vga_index *dirty_range_end);
 bool vga_state_is_remap_dirty(vga_remap_tables **remaps);
 
+/**
+ * Copies current base palette to stash.
+ */
+void vga_state_push_palette(void);
+
+/**
+ * Recover base palette from stash. Replaces current base palette.
+ */
+void vga_state_pop_palette(void);
+
 void vga_state_mul_base_palette(vga_index start, vga_index end, float multiplier);
-void vga_state_copy_base_palette(vga_palette *dst);
 void vga_state_set_remaps_from(const vga_remap_tables *src);
 void vga_state_set_base_palette_from(const vga_palette *src);
 void vga_state_set_base_palette_from_range(const vga_palette *src, vga_index dst_start, vga_index src_start,
