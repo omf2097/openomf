@@ -139,18 +139,6 @@ elseif(ARGTABLE3_FOUND)
   set(CORELIBS ${CORELIBS} ${ARGTABLE3_LIBRARY})
 endif()
 
-if(MINIUPNPC_FOUND)
-    set(CORELIBS ${CORELIBS} ${MINIUPNPC_LIBRARY})
-    set(COREINCS ${COREINCS} ${MINIUPNPC_INCLUDE_DIR})
-    add_compile_definitions(MINIUPNPC_FOUND)
-endif()
-
-if(LIBNATPMP_FOUND)
-    set(CORELIBS ${CORELIBS} ${LIBNATPMP_LIBRARY})
-    set(COREINCS ${COREINCS} ${LIBNATPMP_INCLUDE_DIR})
-    add_compile_definitions(NATPMP_FOUND)
-endif()
-
 # MingW build should add mingw32 lib
 if(MINGW)
     set(CORELIBS mingw32 ${CORELIBS})
@@ -172,13 +160,28 @@ include_directories(${COREINCS})
 # Build core sources first as an object library
 # this can then be reused in tests and main executable to speed things up
 add_library(openomf_core OBJECT ${OPENOMF_SRC})
-target_link_libraries(openomf_core PRIVATE ${XMP_LIBRARY})
 set(CORELIBS openomf_core ${CORELIBS})
 
 # Set icon for windows executable
 if(WIN32)
     SET(ICON_RESOURCE "resources/icons/openomf.rc")
 endif()
+
+# Link openomf_core to libraries directly, so their defines are present
+target_link_libraries(openomf_core PUBLIC ${XMP_LIBRARY})
+if(MINIUPNPC_FOUND)
+    target_link_libraries(openomf_core PUBLIC ${MINIUPNPC_LIBRARY})
+    target_include_directories(openomf_core PUBLIC ${MINIUPNPC_INCLUDE_DIR})
+    target_compile_definitions(openomf_core PUBLIC MINIUPNPC_FOUND)
+endif()
+
+if(LIBNATPMP_FOUND)
+    target_link_libraries(openomf_core PUBLIC ${LIBNATPMP_LIBRARY})
+    target_include_directories(openomf_core PUBLIC ${LIBNATPMP_INCLUDE_DIR})
+    target_compile_definitions(openomf_core PUBLIC NATPMP_FOUND)
+endif()
+
+
 
 # Build the game binary
 add_executable(openomf src/main.c src/engine.c ${ICON_RESOURCE})
