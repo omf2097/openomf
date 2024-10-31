@@ -6,8 +6,10 @@ vcpkg_from_github(
     HEAD_REF master
     PATCHES
         "install-declspec-header.patch"
-
+        "install-targets.patch"
 )
+
+file(COPY "${CMAKE_CURRENT_LIST_DIR}/libnatpmp-config.cmake.in" DESTINATION "${SOURCE_PATH}")
 
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}"
@@ -15,12 +17,14 @@ vcpkg_cmake_configure(
 
 vcpkg_install_cmake()
 vcpkg_copy_pdbs()
+
 vcpkg_fixup_pkgconfig()
+vcpkg_cmake_config_fixup()
+
+vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")
 
 if(VCPKG_LIBRARY_LINKAGE STREQUAL "static")
   file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/bin" "${CURRENT_PACKAGES_DIR}/bin")
 endif()
 
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")
-
-vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE")
