@@ -1,0 +1,13 @@
+{
+  "name": "libnatpmp",
+  "version": "20150609",
+  "description": "NAT-PMP client library",
+  "homepage": "https://github.com/miniupnp/libnatpmp",
+  "license": "BSD-3-Clause",
+  "dependencies": [],
+  "features": {
+    "tool": {
+      "description": "Build natpmpc tool"
+    }
+  }
+}

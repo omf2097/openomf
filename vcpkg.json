@@ -23,6 +23,8 @@
     "enet",
     "libconfuse",
     "argtable3",
-    "libpng"
+    "libpng",
+    "miniupnpc",
+    "libnatpmp"
   ]
 }
