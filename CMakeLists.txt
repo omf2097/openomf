@@ -78,7 +78,7 @@ find_package(argtable2)
 find_package(Argtable3 CONFIG)
 find_package(PNG)
 find_package(ZLIB)
-find_package(miniupnpc)
+include(cmake-scripts/Findminiupnpc.cmake)
 find_package(natpmp)
 
 
