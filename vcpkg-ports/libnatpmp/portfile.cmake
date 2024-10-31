@@ -1,10 +1,8 @@
-include(vcpkg_common_functions)
-
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO miniupnp/libnatpmp
-    REF e5d6c5c35e18ed062f2053fd51c50f40ccd6cb68 # Release 20150609
-    SHA512 c0f745da633eeaec9b53a0ce6d0679548e68e40c28367e9133ecb6d1e1a6134514f31c926e6606729731fc9b82280bea3bc9405dafe58805999f8c0c49950099
+    REF 8257134a5dcb077e40db1946554d676e444406e4
+    SHA512 eb277a2507d658d5f5b8af4af44b80eabdd9ea460c498f736c2e6417dd1026994916cdafb0aaf31c0687cec38abe6abfd9179a5afe2c3c87d2203564db88b97a
     HEAD_REF master
 )
 
