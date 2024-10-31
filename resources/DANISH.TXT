@@ -868,7 +868,7 @@ Title: Chat tekst
 Data: DEN ANDEN FYR
 
 ID: 180
-Title: Spiller citat når du når han når
+Title: Player quote when reaching han
 Data: Den whimp er ikke her endnu!  Jeg hader virkelig at vente.
 
 ID: 181
@@ -884,7 +884,7 @@ Title: !
 Data: Din modstander spiller et tospillerspil.  Du skal vælge to SPILLER GAME for at udfordre ham.
 
 ID: 184
-Title: Brugt ved opstart som ikke-server
+Title: Used on startup as non-server
 Data: Gameplay muligheder er blevet kopieret fra din modstander.
 
 PRESSE <ALT> G FOR GAMEPLAY MENUEN
@@ -2644,67 +2644,67 @@ Title: Hjælp til robot dev. knap
 Data: STUN RES
 
 ID: 587
-Title: Reparation meddelelser til fortabing
+Title: Repair messages til fortabing
 Data: Oprydningsbesætningerne fandt en form for ekstraudstyr hardware i vraget, du forlod derude.  Teknologierne installerer det i din robot.
 
 ID: 588
-Title: Reparation meddelelser til fortabing
+Title: Repair messages til fortabing
 Data: Patetisk, knægt, virkelig patetisk.  Kunne ikke holde varmen ud, så du spogte.  Du er nodt til at lære at se dine kampe i ojnene, eller du vil altid være den klynkende kujon, du var i dag.
 
 ID: 589
-Title: Reparation meddelelser for at tabe
+Title: Repair messages for at tabe
 Data: Whew, du blev slået temmelig slemt.  Du skal sætte ekstra tid i sims for din næste.
 
 ID: 590
-Title: Reparation meddelelser for at tabe
+Title: Repair messages for at tabe
 Data: Forsoger at holde mine drenge beskæftiget, ikke?
 
 ID: 591
-Title: Reparation meddelelser for at tabe
+Title: Repair messages for at tabe
 Data: Hej, du må hellere komme tilbage derude.  Der er et par steder på den 'bot, der ikke blev revet i stykker.
 
 ID: 592
-Title: Reparation meddelelser for at tabe
+Title: Repair messages for at tabe
 Data: Åh, mand.  Har du nogensinde hort om blokering?
 
 ID: 593
-Title: Reparation meddelelser for at tabe
+Title: Repair messages for at tabe
 Data: Du er heldig, at jeg kan lide mit arbejde mere end min kone.
 
 ID: 594
-Title: Reparation beskeder til at vinde
+Title: Repair messages til at vinde
 Data: Nå, i det mindste vandt du.  Ærgerligt jeg vil være her hele natten.
 
 ID: 595
-Title: Reparation beskeder til at vinde
+Title: Repair messages til at vinde
 Data: Ser ud til at du knap nok klarede den ene, knægt.
 
 ID: 596
-Title: Reparation beskeder til at vinde
+Title: Repair messages til at vinde
 Data: Du er nodt til at lære noget forsvar, eller du vil altid få slået op på denne måde.
 
 ID: 597
-Title: Reparation beskeder til at vinde
+Title: Repair messages til at vinde
 Data: Ikke så slemt, ser ud til at du holdt mindst et skridt foran dem.
 
 ID: 598
-Title: Reparation beskeder til at vinde
+Title: Repair messages til at vinde
 Data: Dejligt job.  Næste gang kunne du holde dig væk fra ham lidt mere.  Gor mit arbejde lettere, knægt?
 
 ID: 599
-Title: Reparation beskeder til at vinde
+Title: Repair messages til at vinde
 Data: Kom nu knægt, hold vagten deroppe.  Du gjorde det ikke dårligt, men du kunne have gjort det meget bedre.
 
 ID: 600
-Title: Reparation beskeder til at vinde
+Title: Repair messages til at vinde
 Data: Whoa, du har studeret nogle af mine gamle kampe i holo-biblioteket, har ikke cha.  Du har måske lidt talent, knægt.
 
 ID: 601
-Title: Reparation beskeder til at vinde
+Title: Repair messages til at vinde
 Data: Humph.  Du synes, du er ret god, gor du ikke.  Hvis jeg var yngre, ville jeg vise dig en ting eller to.
 
 ID: 602
-Title: Reparation beskeder til at vinde
+Title: Repair messages til at vinde
 Data: Tja, det ser ud til, at jeg kommer tidligt hjem i aften.
 
 ID: 603
