@@ -211,7 +211,7 @@ void video_render_finish(void) {
     // Disable render target, and dump its contents as RGBA to the screen.
     render_target_deactivate();
     glViewport(0, 0, g_video_state.viewport_w, g_video_state.viewport_h);
-    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    video_set_blend_mode(MODE_SET);
     activate_program(g_video_state.rgba_prog_id);
     if(g_video_state.draw_atlas) {
         bind_uniform_1i(g_video_state.rgba_prog_id, "framebuffer", TEX_UNIT_ATLAS);
