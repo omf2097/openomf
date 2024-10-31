@@ -103,7 +103,7 @@ void object_array_prepare(object_array *array) {
 }
 
 void object_array_finish(object_array *array) {
-    vbo_unmap(array->vbo_ids[array->vbo_flip]);
+    vbo_unmap(array->vbo_ids[array->vbo_flip], array->item_count * OBJ_BYTES);
     array->mapping = NULL;
 }
 
