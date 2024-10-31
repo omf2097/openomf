@@ -67,17 +67,17 @@ static void test_cp437_utf8_len(void) {
         unsigned char buf_two[CP437_MAX_UTF8_PER_CP437 * sizeof buf_one];
 
         size_t utf8_len = 99, utf8_len_withbuffer = 55;
-        cp437_to_utf8(NULL, &utf8_len, buf_one, sizeof buf_one);
+        cp437_to_utf8(NULL, 0, &utf8_len, buf_one, sizeof buf_one);
         CU_ASSERT_FATAL(utf8_len <= CP437_MAX_UTF8_PER_CP437 * sizeof buf_one);
-        cp437_to_utf8(buf_two, &utf8_len_withbuffer, buf_one, sizeof buf_one);
+        cp437_to_utf8(buf_two, sizeof buf_two, &utf8_len_withbuffer, buf_one, sizeof buf_one);
         CU_ASSERT_EQUAL(utf8_len, utf8_len_withbuffer);
 
         // reverse conversion, too
         // cp437
         uint8_t buf_three[sizeof buf_two];
         size_t cp437_len, cp437_len_withbuffer;
-        cp437_result err1 = cp437_from_utf8(NULL, &cp437_len, buf_two, utf8_len);
-        cp437_result err2 = cp437_from_utf8(buf_three, &cp437_len_withbuffer, buf_two, utf8_len);
+        cp437_result err1 = cp437_from_utf8(NULL, 0, &cp437_len, buf_two, utf8_len);
+        cp437_result err2 = cp437_from_utf8(buf_three, sizeof buf_three, &cp437_len_withbuffer, buf_two, utf8_len);
         CU_ASSERT_EQUAL(err1, err2);
         CU_ASSERT_EQUAL(cp437_len, cp437_len_withbuffer);
     }
@@ -90,14 +90,14 @@ static void test_cp437_utf8_len(void) {
 #if 0
     // with NULL output buffer, cp437 doesn't check if codepoints map
     size_t cp437_len;
-    cp437_result err1 = cp437_from_utf8(NULL, &cp437_len, unrecogn, sizeof unrecogn);
+    cp437_result err1 = cp437_from_utf8(NULL, 0, &cp437_len, unrecogn, sizeof unrecogn);
     CU_ASSERT_EQUAL(err1, CP437_SUCCESS);
     CU_ASSERT_EQUAL(8, cp437_len);
 #else
     // with NULL output buffer, cp437 will still detect robot emoji
     // This behavior is good, because it makes the function behavior more consistent & easier to use
     size_t cp437_len;
-    cp437_result err1 = cp437_from_utf8(NULL, &cp437_len, unrecogn, sizeof unrecogn);
+    cp437_result err1 = cp437_from_utf8(NULL, 0, &cp437_len, unrecogn, sizeof unrecogn);
     CU_ASSERT_EQUAL(err1, CP437_ERROR_UNKNOWN_CODEPOINT);
     CU_ASSERT_EQUAL(0, cp437_len);
 #endif
@@ -105,7 +105,8 @@ static void test_cp437_utf8_len(void) {
     // cp437
     uint8_t unrecogn_cp437[sizeof unrecogn];
     size_t cp437_len_withbuffer;
-    cp437_result err2 = cp437_from_utf8(unrecogn_cp437, &cp437_len_withbuffer, unrecogn, sizeof unrecogn);
+    cp437_result err2 =
+        cp437_from_utf8(unrecogn_cp437, sizeof unrecogn_cp437, &cp437_len_withbuffer, unrecogn, sizeof unrecogn);
     CU_ASSERT_EQUAL(err2, CP437_ERROR_UNKNOWN_CODEPOINT);
     CU_ASSERT_EQUAL(0, cp437_len_withbuffer);
 }
@@ -116,7 +117,7 @@ static void test_cp437_utf8(void) {
 
     // calculate length
     size_t cp437_len;
-    CU_ASSERT_EQUAL(cp437_from_utf8(NULL, &cp437_len, utf8, sizeof utf8), CP437_SUCCESS);
+    CU_ASSERT_EQUAL(cp437_from_utf8(NULL, 0, &cp437_len, utf8, sizeof utf8), CP437_SUCCESS);
     // NOTE: this length includes the NUL byte, which we also passed into the conversion function
     uint8_t cp437[46];
     CU_ASSERT_EQUAL(cp437_len, sizeof cp437);
@@ -124,20 +125,20 @@ static void test_cp437_utf8(void) {
     // actually convert it
     uint8_t cp437_nolen[sizeof cp437];
     cp437_len = 0;
-    CU_ASSERT_EQUAL(cp437_from_utf8(cp437, &cp437_len, utf8, sizeof utf8), CP437_SUCCESS);
+    CU_ASSERT_EQUAL(cp437_from_utf8(cp437, sizeof cp437, &cp437_len, utf8, sizeof utf8), CP437_SUCCESS);
     CU_ASSERT_EQUAL(cp437_len, sizeof cp437);
-    CU_ASSERT_EQUAL(cp437_from_utf8(cp437_nolen, NULL, utf8, sizeof utf8), CP437_SUCCESS);
+    CU_ASSERT_EQUAL(cp437_from_utf8(cp437_nolen, sizeof cp437_nolen, NULL, utf8, sizeof utf8), CP437_SUCCESS);
     CU_ASSERT_EQUAL(memcmp(cp437, cp437_nolen, sizeof cp437), 0);
 
     // convert it back
     size_t utf8_len;
-    cp437_to_utf8(NULL, &utf8_len, cp437, cp437_len);
+    CU_ASSERT_EQUAL(cp437_to_utf8(NULL, 0, &utf8_len, cp437, cp437_len), CP437_SUCCESS);
     CU_ASSERT_EQUAL(utf8_len, sizeof utf8);
     unsigned char utf8_again[sizeof utf8], utf8_again_nolen[sizeof utf8];
     utf8_len = 0;
-    cp437_to_utf8(utf8_again, &utf8_len, cp437, cp437_len);
+    CU_ASSERT_EQUAL(cp437_to_utf8(utf8_again, sizeof utf8_again, &utf8_len, cp437, cp437_len), CP437_SUCCESS);
     CU_ASSERT_EQUAL(utf8_len, sizeof utf8);
-    cp437_to_utf8(utf8_again_nolen, NULL, cp437, cp437_len);
+    CU_ASSERT_EQUAL(cp437_to_utf8(utf8_again_nolen, sizeof utf8_again_nolen, NULL, cp437, cp437_len), CP437_SUCCESS);
     CU_ASSERT_EQUAL(memcmp(utf8_again, utf8_again_nolen, sizeof utf8), 0);
     CU_ASSERT_EQUAL(memcmp(utf8, utf8_again, sizeof utf8), 0);
 }

@@ -144,10 +144,15 @@ static cp437_result next_utf32(char32_t *out_utf32, unsigned char const **utf8, 
     return CP437_SUCCESS;
 }
 
-cp437_result cp437_from_utf8(uint8_t *out_cp437, size_t *out_cp437_len, unsigned char const *utf8, size_t utf8_len) {
+cp437_result cp437_from_utf8(uint8_t *out_cp437, size_t sizeof_out_cp437, size_t *out_cp437_len,
+                             unsigned char const *utf8, size_t utf8_len) {
     assert(utf8);
     size_t cp437_len = 0;
+    uint8_t *out_cp437_end = out_cp437 + sizeof_out_cp437;
     while(utf8_len > 0) {
+        if(out_cp437 && out_cp437 >= out_cp437_end) {
+            return CP437_ERROR_OUTPUTBUFFER_TOOSMALL;
+        }
         char32_t utf32;
         cp437_result result = next_utf32(&utf32, &utf8, &utf8_len);
         if(result != CP437_SUCCESS) {
@@ -172,20 +177,24 @@ cp437_result cp437_from_utf8(uint8_t *out_cp437, size_t *out_cp437_len, unsigned
     return CP437_SUCCESS;
 }
 
-void cp437_to_utf8(unsigned char *out_utf8, size_t *out_utf8_len, uint8_t const *cp437, size_t cp437_len) {
+cp437_result cp437_to_utf8(unsigned char *out_utf8, size_t sizeof_out_utf8, size_t *out_utf8_len, uint8_t const *cp437,
+                           size_t cp437_len) {
     assert(cp437);
     assert(out_utf8 || out_utf8_len);
     if(out_utf8_len) {
         *out_utf8_len = 0;
     }
+    unsigned char *out_utf8_end = out_utf8 + sizeof_out_utf8;
     while(cp437_len > 0) {
         char32_t utf32;
         cp437_to_utf32(&utf32, *cp437);
-        size_t utf8_advance;
+        size_t utf8_advance = code_utf8len(utf32);
         if(out_utf8) {
-            out_utf8 += (utf8_advance = code_to_utf8(out_utf8, utf32));
-        } else {
-            utf8_advance = code_utf8len(utf32);
+            if(out_utf8 + utf8_advance > out_utf8_end) {
+                return CP437_ERROR_OUTPUTBUFFER_TOOSMALL;
+            }
+            code_to_utf8(out_utf8, utf32);
+            out_utf8 += utf8_advance;
         }
         if(out_utf8_len) {
             *out_utf8_len += utf8_advance;
@@ -193,6 +202,7 @@ void cp437_to_utf8(unsigned char *out_utf8, size_t *out_utf8_len, uint8_t const 
         cp437++;
         cp437_len--;
     }
+    return CP437_SUCCESS;
 }
 
 void cp437_to_utf32(char32_t *out_utf32, uint8_t cp437) {
