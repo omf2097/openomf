@@ -1,0 +1,50 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 5df1be2..bfc7492 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -22,7 +22,8 @@ option(BUILD_SHARED_LIBS "Build using shared libraries" OFF)
+ 
+ # Library itself
+ add_library(natpmp ${NATPMP_SOURCES})
+-target_include_directories(natpmp PUBLIC ${CMAKE_CURRENT_LIST_DIR})
++target_include_directories(natpmp PRIVATE ${CMAKE_CURRENT_LIST_DIR})
++target_include_directories(natpmp INTERFACE $<INSTALL_INTERFACE:include>)
+ target_compile_definitions(natpmp PRIVATE -DENABLE_STRNATPMPERR)
+ 
+ if (WIN32)
+@@ -52,7 +53,14 @@ include(GNUInstallDirs)
+ configure_file(natpmp.pc.in natpmp.pc @ONLY)
+ 
+ # install
+-install(TARGETS natpmp natpmpc
++install(TARGETS natpmp
++        EXPORT libnatpmp-targets
++        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
++        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
++        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
++
++# undone: natpmpc export target
++install(TARGETS natpmpc
+         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+@@ -63,3 +71,19 @@ install(FILES natpmp.h
+ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/natpmp.pc
+         DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+ 
++include(CMakePackageConfigHelpers)
++configure_package_config_file(
++  "${CMAKE_CURRENT_SOURCE_DIR}/libnatpmp-config.cmake.in"
++  "${CMAKE_CURRENT_BINARY_DIR}/libnatpmp-config.cmake"
++  INSTALL_DESTINATION "share/libnatpmp"
++)
++install(
++  FILES "${CMAKE_CURRENT_BINARY_DIR}/libnatpmp-config.cmake"
++  DESTINATION "share/libnatpmp"
++)
++
++install(
++    EXPORT libnatpmp-targets
++    DESTINATION share/libnatpmp
++    NAMESPACE libnatpmp::
++)
