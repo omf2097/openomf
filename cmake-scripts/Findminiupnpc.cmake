@@ -1,3 +1,16 @@
+if(VCPKG_TOOLCHAIN)
+  if(TARGET miniupnpc::miniupnpc)
+    return()
+  endif()
+  find_package(miniupnpc CONFIG)
+  if(TARGET miniupnpc::miniupnpc)
+    MESSAGE(STATUS "Found miniupnp in vcpkg")
+    set(MINIUPNPC_LIBRARY miniupnpc::miniupnpc)
+    SET(MINIUPNPC_FOUND TRUE)
+    set(MINIUPNPC_INCLUDE_DIR)
+    return()
+  endif()
+endif(VCPKG_TOOLCHAIN)
 
 SET(MINIUPNPC_SEARCH_PATHS
     /usr/local/
