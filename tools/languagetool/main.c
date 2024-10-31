@@ -179,10 +179,10 @@ int main(int argc, char *argv[]) {
 
     // Handle version
     if(vers->count > 0) {
-        printf("%s v0.1\n", progname);
+        printf("%s v0.2\n", progname);
         printf("Command line One Must Fall 2097 Language file editor.\n");
         printf("Source code is available at https://github.com/omf2097 under MIT license.\n");
-        printf("(C) 2013 Tuomas Virtanen\n");
+        printf("(C) 2013-2024 Tuomas Virtanen & Contributors\n");
         goto exit_0;
     }
 
