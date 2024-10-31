@@ -203,6 +203,12 @@ int main(int argc, char *argv[]) {
             goto exit_0;
         }
     } else if(input->count > 0) {
+        char const *expected_ext = ".TXT";
+        if(!input->extension[0] || strcmp(input->extension[0], expected_ext) != 0) {
+            fprintf(stderr, "Refusing to open input file %s, does not have expected %s file extension.\n",
+                    input->filename[0], expected_ext);
+            goto exit_0;
+        }
         // parse the supplied text file
         FILE *file = fopen(input->filename[0], "rb");
         if(!file) {
@@ -247,6 +253,19 @@ int main(int argc, char *argv[]) {
 
     // Save
     if(output->count > 0) {
+        char const *expected_output_extensions[] = {".DAT", ".DAT2", ".LNG", ".LNG2"};
+        bool unexpected_extension = true;
+        for(int i = 0; i < (sizeof expected_output_extensions) / (sizeof expected_output_extensions[0]); i++) {
+            if(output->extension[0] && strcmp(expected_output_extensions[i], output->extension[0]) == 0) {
+                unexpected_extension = false;
+                break;
+            }
+        }
+        if(unexpected_extension) {
+            fprintf(stderr, "Refusing to save language file to %s: unexpected file extension.\n", output->filename[0]);
+            goto exit_0;
+        }
+
         ret = sd_language_save(&language, output->filename[0]);
         if(ret != SD_SUCCESS) {
             fprintf(stderr, "Failed saving language file to %s: %s\n", output->filename[0], sd_get_error(ret));
