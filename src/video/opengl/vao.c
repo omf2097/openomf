@@ -8,6 +8,10 @@ GLuint vao_create(void) {
     return id;
 }
 
+void vao_use(GLuint id) {
+    bindings_bind_vao(id);
+}
+
 void vao_free(GLuint id) {
     bindings_unbind_vao(id);
     glDeleteVertexArrays(1, &id);

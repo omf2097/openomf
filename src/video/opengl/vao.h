@@ -4,6 +4,7 @@
 #include <epoxy/gl.h>
 
 GLuint vao_create(void);
+void vao_use(GLuint id);
 void vao_free(GLuint id);
 
 #endif // VAO_H
