@@ -52,21 +52,18 @@ const char *textselector_get_current_text(const component *c) {
 
 static void textselector_render(component *c) {
     textselector *tb = widget_get_obj(c);
-    char buf[100];
-    int buf_max = sizeof buf - 1;
-    buf[buf_max] = '\0';
-
+    str buf;
     if(vector_size(&tb->options) > 0 && tb->text[0] != '\0') {
         // label & options
         char **opt = vector_get(&tb->options, *tb->pos);
-        snprintf(buf, buf_max, "%s %s", tb->text, *opt);
+        str_from_format(&buf, "%s %s", tb->text, *opt);
     } else if(vector_size(&tb->options) > 0) {
         // no label, just options
         char **opt = vector_get(&tb->options, *tb->pos);
-        snprintf(buf, buf_max, "%s", *opt);
+        str_from_format(&buf, "%s", *opt);
     } else {
         // no options, just label
-        snprintf(buf, buf_max, "%s -", tb->text);
+        str_from_format(&buf, "%s -", tb->text);
     }
 
     // Render text
@@ -76,7 +73,8 @@ static void textselector_render(component *c) {
     } else if(component_is_disabled(c)) {
         mode = TEXT_DISABLED;
     }
-    text_render(&tb->tconf, mode, c->x, c->y, c->w, c->h, buf);
+    text_render(&tb->tconf, mode, c->x, c->y, c->w, c->h, str_c(&buf));
+    str_free(&buf);
 }
 
 static int textselector_action(component *c, int action) {
