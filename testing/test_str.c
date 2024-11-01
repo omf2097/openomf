@@ -445,6 +445,22 @@ void test_str_delete_at_big(void) {
     str_free(&d);
 }
 
+void test_str_set_at(void) {
+    str d;
+
+    str_from_c(&d, "AAAA");
+
+    CU_ASSERT(str_set_at(&d, 4, 'X') == false);
+    CU_ASSERT_STRING_EQUAL(str_c(&d), "AAAA");
+
+    CU_ASSERT(str_set_at(&d, 3, 'X') == true);
+    CU_ASSERT_STRING_EQUAL(str_c(&d), "AAAX");
+    CU_ASSERT(str_set_at(&d, 0, 'X') == true);
+    CU_ASSERT_STRING_EQUAL(str_c(&d), "XAAX");
+
+    str_free(&d);
+}
+
 void str_test_suite(CU_pSuite suite) {
     if(CU_add_test(suite, "Test for str_create", test_str_create) == NULL) {
         return;
@@ -564,6 +580,9 @@ void str_test_suite(CU_pSuite suite) {
         return;
     }
     if(CU_add_test(suite, "Test for big str_delete_at", test_str_delete_at_big) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_set_at", test_str_set_at) == NULL) {
         return;
     }
 }

@@ -374,6 +374,15 @@ bool str_delete_at(str *string, size_t pos) {
     return true;
 }
 
+bool str_set_at(str *string, size_t pos, char value) {
+    if(pos >= string->len) {
+        return false;
+    }
+    char *buf = str_ptr(string);
+    buf[pos] = value;
+    return true;
+}
+
 // ------------------------ Type conversion ------------------------
 
 bool str_to_float(const str *string, float *result) {
