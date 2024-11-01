@@ -8,6 +8,7 @@
 #include "formats/language.h"
 #include "utils/allocator.h"
 #include "utils/cp437.h"
+#include "utils/str.h"
 #include <assert.h>
 #include <ctype.h>
 #include <stdbool.h>
@@ -23,85 +24,86 @@
 #define MAX_DATA 8192 // Data field cannot exceed 32 bytes
 #define MAX_TITLE 32
 
-// Function to trim whitespace from both ends of a string
-void trim(char *str) {
-    char *end;
-    while(isspace((unsigned char)*str))
-        str++;
-    if(*str == 0)
-        return;
-    end = str + strlen(str) - 1;
-    while(end > str && isspace((unsigned char)*end))
-        end--;
-    end[1] = '\0';
-}
-
 void error_exit(const char *message, int line_number) {
     fprintf(stderr, "Error on line %d: %s\n", line_number, message);
     exit(EXIT_FAILURE);
 }
 
 // Function to extract value after colon with validation
-char *extract_value(const char *line, const char *field_name, int line_number, bool allow_empty) {
-    char *colon = strchr(line, ':');
-    if(!colon) {
+char *extract_value(char *line, const char *field_name, int line_number, bool allow_empty) {
+    {
+        size_t line_len = strlen(line);
+        size_t field_name_len = strlen(field_name);
+        if(field_name_len > line_len || memcmp(line, field_name, field_name_len) != 0) {
+            char error[100];
+            snprintf(error, sizeof(error), "Expected %s field", field_name);
+            error_exit(error, line_number);
+        }
+        line += field_name_len;
+    }
+
+    if(':' != line[0]) {
         char error[100];
         snprintf(error, sizeof(error), "Missing colon in %s field", field_name);
         error_exit(error, line_number);
     }
+    line++;
 
-    char *value = colon + 2;
+    if(' ' != line[0]) {
+        char error[100];
+        snprintf(error, sizeof(error), "Missing space following colon in %s field", field_name);
+        error_exit(error, line_number);
+    }
+    line++;
 
-    if(!allow_empty && strlen(value) == 0) {
+    if(!allow_empty && line[0] == '\0') {
         char error[100];
         snprintf(error, sizeof(error), "Empty %s field", field_name);
         error_exit(error, line_number);
     }
 
-    return value;
+    return line;
 }
 
 int read_entry(FILE *file, sd_language *language, int *line_number) {
     char line[MAX_LINE];
+    *line_number += 1;
     if(!fgets(line, sizeof(line), file)) {
         // EOF is ok here
         return 0;
     }
-    if(strncmp(line, "ID:", 3) != 0) {
-        error_exit("Expected 'ID:' field", *line_number);
+
+    long id;
+    {
+        str value;
+        str_from_c(&value, extract_value(line, "ID", *line_number, false));
+        str_strip(&value);
+        char *endptr;
+        id = strtol(str_c(&value), &endptr, 10);
+        str_free(&value);
+
+        if(*endptr != '\0') {
+            error_exit("ID must be a valid integer", *line_number);
+        }
     }
 
-    char *value = extract_value(line, "ID", *line_number, false);
-    trim(value);
-    char *endptr;
-    long id = strtol(value, &endptr, 10);
-
-    if(*endptr != '\0') {
-        error_exit("ID must be a valid integer", *line_number);
-    }
     if(language->count != id) {
         char error[100];
         snprintf(error, sizeof error, "Nonsequential ID. Expected %u, got %ld.", language->count, id);
         error_exit(error, *line_number);
     }
-    *line_number += 1;
 
+    *line_number += 1;
     if(!fgets(line, sizeof(line), file)) {
         error_exit("Unexpected EOF while reading Title", *line_number);
     }
 
-    trim(line);
+    str desc;
+    str_from_c(&desc, extract_value(line, "Title", *line_number, true));
+    str_strip(&desc);
 
-    if(strncmp(line, "Title:", 6) != 0) {
-        error_exit("Expected 'Title:' field", *line_number);
-    }
-
-    char *title = extract_value(line, "Title", *line_number, true);
-    char *desc = strdup(title);
-    trim(desc);
-
-    *line_number += 1;
     // Read Data header
+    *line_number += 1;
     if(!fgets(line, sizeof(line), file)) {
         error_exit("Unexpected EOF while reading Data", *line_number);
     }
@@ -113,51 +115,52 @@ int read_entry(FILE *file, sd_language *language, int *line_number) {
     char *data = malloc(8192);
     memset(data, 0, 8192);
     char *data_end = data + 8192;
-    value = extract_value(line, "Data", *line_number, true);
+    char *value = extract_value(line, "Data", *line_number, true);
     char *data_iter = data;
-    if(value[0] != '\0') {
-        size_t value_len = strlen(value);
-        if(data + value_len + 1 > data_end) {
+    size_t value_len = strlen(value);
+    if(data + value_len + 1 > data_end) {
+        error_exit("Way too long 'Data:' field", *line_number);
+    }
+    memcpy(data_iter, value, value_len + 1);
+    data_iter += value_len;
+
+    // Read data body until next entry or EOF
+    while(fgets(line, sizeof(line), file)) {
+        *line_number += 1;
+        // Check if this is the start of a new entry
+        if(strncmp(line, "ID:", 3) == 0) {
+            // Rewind to start of this line
+            fseek(file, -strlen(line), SEEK_CUR);
+            *line_number -= 1;
+            break;
+        }
+
+        // Append to existing data
+        value_len = strlen(line);
+        if(data_iter + value_len + 1 > data_end) {
             error_exit("Way too long 'Data:' field", *line_number);
         }
-        memcpy(data_iter, value, value_len + 1);
+        memcpy(data_iter, line, value_len + 1);
         data_iter += value_len;
-
-        *line_number += 1;
-        // Read data body until next entry or EOF
-        while(fgets(line, sizeof(line), file)) {
-            // Check if this is the start of a new entry
-            if(strncmp(line, "ID:", 3) == 0) {
-                // Rewind to start of this line
-                fseek(file, -strlen(line), SEEK_CUR);
-                break;
-            }
-
-            // Append to existing data
-            value_len = strlen(line);
-            if(data_iter + value_len + 1 > data_end) {
-                error_exit("Way too long 'Data:' field", *line_number);
-            }
-            memcpy(data_iter, line, value_len + 1);
-            data_iter += value_len;
-            *line_number += 1;
-        }
     }
 
-    if(desc[0] == '\n') {
-        desc[0] = 0;
-    }
-    if(data_iter > data && data_iter[-1] == '\n')
-        // trim final newline
+    if(data_iter > data && data_iter[-1] == '\n') {
+        // trim a single trailing newline
         data_iter[-1] = '\0';
-    if(strlen(desc) > 31) {
-        fprintf(stderr, "Warning: truncating overlong 'Title:' of entry id %d. Length is %zu, max length is %d\n",
-                language->count, strlen(desc), 31);
-        desc[31] = '\0';
     }
-    sd_language_append(language, desc, data);
+
+    size_t max_desc_len = 31;
+    if(str_size(&desc) > max_desc_len) {
+        fprintf(stderr, "Warning: truncating overlong 'Title:' of entry id %d. Length is %zu, max length is %zu\n",
+                language->count, str_size(&desc), max_desc_len);
+        str trunc;
+        str_from_buf(&trunc, str_c(&desc), max_desc_len);
+        str_free(&desc);
+        desc = trunc;
+    }
+    sd_language_append(language, str_c(&desc), data);
     free(data);
-    free(desc);
+    str_free(&desc);
     return 1;
 }
 
@@ -332,7 +335,8 @@ int main(int argc, char *argv[]) {
             fprintf(stderr, "Could not open %s\n", input->filename[0]);
             goto exit_0;
         }
-        int line = 1;
+        // line is incremented prior to parsing each line
+        int line = 0;
         language_is_utf8 = true;
         while(read_entry(file, &language, &line)) {
         }
