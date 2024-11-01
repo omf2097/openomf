@@ -629,7 +629,9 @@ void lobby_try_connect(void *scenedata, void *userdata) {
     scene *s = scenedata;
     lobby_local *local = scene_get_userdata(s);
     if(!local->opponent_peer) {
-        DEBUG("doing scheduled outbound connection");
+        DEBUG("doing scheduled outbound connection to %d.%d.%d.%d port %d", local->opponent->address.host & 0xFF,
+              (local->opponent->address.host >> 8) & 0xFF, (local->opponent->address.host >> 16) & 0xF,
+              (local->opponent->address.host >> 24) & 0xFF, local->opponent->address.port);
         local->opponent_peer = enet_host_connect(local->client, &local->opponent->address, 2, 0);
         enet_peer_timeout(local->opponent_peer, 4, 1000, 1000);
     }
@@ -982,6 +984,11 @@ void lobby_tick(scene *scene, int paused) {
                                 // try to connect immediately
                                 local->opponent_peer =
                                     enet_host_connect(local->client, &local->opponent->address, 2, 0);
+
+                                DEBUG("doing immediate outbound connection to %d.%d.%d.%d port %d",
+                                      local->opponent->address.host & 0xFF, (local->opponent->address.host >> 8) & 0xFF,
+                                      (local->opponent->address.host >> 16) & 0xF,
+                                      (local->opponent->address.host >> 24) & 0xFF, local->opponent->address.port);
                                 enet_peer_timeout(local->opponent_peer, 4, 1000, 1000);
                                 local->connection_count = 0;
 
