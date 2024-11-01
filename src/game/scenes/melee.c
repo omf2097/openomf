@@ -731,11 +731,13 @@ int melee_create(scene *scene) {
     if(player1_ctrl && player2_ctrl) {
         if(player1_ctrl->type == CTRL_TYPE_NETWORK) {
             DEBUG("installing controller hook on controller 2");
+            controller_clear_hooks(player2_ctrl);
             controller_add_hook(player2_ctrl, player1_ctrl, player1_ctrl->controller_hook);
         }
 
         if(player2_ctrl->type == CTRL_TYPE_NETWORK) {
             DEBUG("installing controller hook on controller 1");
+            controller_clear_hooks(player1_ctrl);
             controller_add_hook(player1_ctrl, player2_ctrl, player2_ctrl->controller_hook);
         }
     }

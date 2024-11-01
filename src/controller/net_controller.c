@@ -234,16 +234,12 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
             continue;
         }
 
-        if(last_seen_peer && last_seen_peer != 3 && ev->seen_peer == 3) {
-            print_transcript(transcript);
-            assert(false);
-        }
-        last_seen_peer = ev->seen_peer;
-
         // XXX TODO disable this for now, for unknown reason
-        if(false && gs_new == NULL && ev->tick > umin2(data->last_acked_tick, data->last_received_tick) &&
-           ev->seen_peer == 3) {
-            DEBUG("tick %" PRIu32 " is newer than last acked tick %" PRIu32, ev->tick, data->last_acked_tick);
+        // if(false && gs_new == NULL && ev->tick > umin2(data->last_acked_tick, data->last_received_tick) &&
+        // ev->seen_peer == 3) {
+        if(gs_new == NULL && last_seen_peer == 3 && ev->seen_peer != 3) {
+            // DEBUG("tick %" PRIu32 " is newer than last acked tick %" PRIu32, ev->tick, data->last_acked_tick);
+            DEBUG("saving game state at last agreed on tick %d", gs->int_tick - data->local_proposal);
             // save off the game state at the point we last agreed
             // on the state of the game
             gs_new = omf_calloc(1, sizeof(game_state));
@@ -252,6 +248,12 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
             game_state_clone_free(gs_old);
             omf_free(gs_old);
         }
+        if(last_seen_peer && last_seen_peer != 3 && ev->seen_peer == 3) {
+            print_transcript(transcript);
+            assert(false);
+        }
+        last_seen_peer = ev->seen_peer;
+
         // these are 'dynamic ticks'
         int ticks = (ev->tick + data->local_proposal) - gs->int_tick;
 
@@ -330,6 +332,7 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
     }
 
     if(gs_new == NULL && gs->int_tick - data->local_proposal <= data->last_acked_tick) {
+        // XXX what is the tick condition here?
         gs_new = omf_calloc(1, sizeof(game_state));
         game_state_clone(gs, gs_new);
         data->gs_bak = gs_new;
@@ -481,6 +484,25 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
         // changed scene and no longer need a game state backup, release it
         game_state_clone_free(data->gs_bak);
         omf_free(data->gs_bak);
+        data->last_action = ACT_STOP;
+        data->synchronized = false;
+        data->local_proposal = 0;
+        data->peer_proposal = 0;
+        data->confirmed = false;
+        data->last_tick = 0;
+        data->last_sent = 0;
+        data->gs_bak = NULL;
+        data->last_received_tick = 0;
+        data->last_acked_tick = 0;
+        data->last_har_state = -1;
+        data->last_traced_tick = 0;
+        data->peer_last_hash = 0;
+        data->peer_last_hash_tick = 0;
+        data->last_hash = 0;
+        data->last_hash_tick = 0;
+
+        list_free(&data->transcript);
+        list_create(&data->transcript);
     }
 
     while(enet_host_service(host, &event, 0) > 0) {
@@ -520,8 +542,8 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                                 data->peer_last_hash_tick = peer_last_hash_tick;
                                 data->peer_last_hash = peer_last_hash;
                                 DEBUG("peer last hash is %" PRIu32 " %d, local is %d %" PRIu32,
-                                      data->peer_last_hash_tick, data->peer_last_hash, data->gs_bak->int_tick,
-                                      arena_state_hash(data->gs_bak));
+                                      data->peer_last_hash_tick, data->peer_last_hash,
+                                      data->gs_bak->int_tick - data->local_proposal, arena_state_hash(data->gs_bak));
                             }
                             if(last_received && rewind_and_replay(data, ctrl->gs)) {
                                 enet_peer_disconnect(data->peer, 0);

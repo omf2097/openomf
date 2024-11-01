@@ -308,7 +308,7 @@ void arena_end(scene *sc) {
     } else if(gs->net_mode == NET_MODE_LOBBY) {
         game_state_set_next(gs, SCENE_LOBBY);
     } else {
-        game_state_set_next(gs, SCENE_MENU);
+        game_state_set_next(gs, SCENE_MELEE);
     }
 }
 

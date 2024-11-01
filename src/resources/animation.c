@@ -98,7 +98,9 @@ int animation_clone(animation *src, animation *dst) {
     vector_iter_begin(&src->sprites, &it);
     sprite_reference *spr = NULL;
     while((spr = iter_next(&it)) != NULL) {
-        vector_append(&dst->sprites, spr);
+        sprite_reference spr_clone;
+        spr_clone.sprite = sprite_copy(spr->sprite);
+        vector_append(&dst->sprites, &spr_clone);
     }
 
     return 0;
