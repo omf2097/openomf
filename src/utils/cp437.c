@@ -1,6 +1,5 @@
 #include "cp437.h"
 #include <assert.h>
-#include <uchar.h>
 
 char const *cp437_result_to_string(cp437_result result) {
     switch(result) {
