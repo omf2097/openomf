@@ -2,6 +2,22 @@
 #include <assert.h>
 #include <uchar.h>
 
+char const *cp437_result_to_string(cp437_result result) {
+    switch(result) {
+        case CP437_SUCCESS:
+            return "CP437_SUCCESS";
+        case CP437_ERROR_UNKNOWN_CODEPOINT:
+            return "CP437_ERROR_UNKNOWN_CODEPOINT";
+        case CP437_ERROR_INVALID_UTF8:
+            return "CP437_ERROR_INVALID_UTF8";
+        case CP437_ERROR_OUTPUTBUFFER_TOOSMALL:
+            return "CP437_ERROR_OUTPUTBUFFER_TOOSMALL";
+        default:
+            assert(0);
+            return "! invalid cp437_result !";
+    }
+}
+
 // lookup table for cp437->UTF-32
 char32_t const cp437_toutf32_lookup[] = {
     // clang-format off

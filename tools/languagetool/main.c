@@ -169,7 +169,7 @@ typedef struct conversion_result {
 static conversion_result sd_language_to_utf8(sd_language *language) {
     assert(language);
     conversion_result result;
-    for(int idx = 0; idx < language->count; idx++) {
+    for(size_t idx = 0; idx < language->count; idx++) {
         result.string_index = idx;
         char *old_data = language->strings[idx].data;
         size_t sizeof_old_data = strlen(old_data) + 1;
@@ -178,14 +178,14 @@ static conversion_result sd_language_to_utf8(sd_language *language) {
 
         // convert data to utf-8
         size_t sizeof_utf8_data;
-        result.error_code = cp437_to_utf8(NULL, 0, &sizeof_utf8_data, old_data, sizeof_old_data);
+        result.error_code = cp437_to_utf8(NULL, 0, &sizeof_utf8_data, (uint8_t const *)old_data, sizeof_old_data);
         if(result.error_code != CP437_SUCCESS)
             return result;
         language->strings[idx].data = omf_malloc(sizeof_utf8_data);
-        result.error_code =
-            cp437_to_utf8(language->strings[idx].data, sizeof_utf8_data, NULL, old_data, sizeof_old_data);
+        result.error_code = cp437_to_utf8((unsigned char *)language->strings[idx].data, sizeof_utf8_data, NULL,
+                                          (uint8_t const *)old_data, sizeof_old_data);
         if(result.error_code != CP437_SUCCESS) {
-            assert(("cp437_to_utf8 should have failed the first time or not the second", 0));
+            assert(!"cp437_to_utf8 should have failed the first time or not the second");
             omf_free(language->strings[idx].data);
             language->strings[idx].data = old_data;
             return result;
@@ -196,8 +196,9 @@ static conversion_result sd_language_to_utf8(sd_language *language) {
         // TODO: Use strnlen_s here, check if description is missing its NUL terminator
         size_t sizeof_old_description = strlen(old_description) + 1;
         memset(language->strings[idx].description, '\0', sizeof language->strings[idx].description);
-        result.error_code = cp437_to_utf8(language->strings[idx].description, sizeof language->strings[idx].description,
-                                          NULL, old_description, sizeof_old_description);
+        result.error_code = cp437_to_utf8((unsigned char *)language->strings[idx].description,
+                                          sizeof language->strings[idx].description, NULL,
+                                          (uint8_t const *)old_description, sizeof_old_description);
         if(result.error_code != CP437_SUCCESS) {
             memcpy(language->strings[idx].description, old_description, sizeof old_description);
             return result;
@@ -212,7 +213,7 @@ static conversion_result sd_language_to_utf8(sd_language *language) {
 static conversion_result sd_language_from_utf8(sd_language *language) {
     assert(language);
     conversion_result result;
-    for(int idx = 0; idx < language->count; idx++) {
+    for(size_t idx = 0; idx < language->count; idx++) {
         result.string_index = idx;
         char *old_data = language->strings[idx].data;
         size_t sizeof_old_data = strlen(old_data) + 1;
@@ -221,14 +222,15 @@ static conversion_result sd_language_from_utf8(sd_language *language) {
 
         // convert data to DOS CP 437
         size_t sizeof_cp437_data;
-        result.error_code = cp437_from_utf8(NULL, 0, &sizeof_cp437_data, old_data, sizeof_old_data);
+        result.error_code =
+            cp437_from_utf8(NULL, 0, &sizeof_cp437_data, (unsigned char const *)old_data, sizeof_old_data);
         if(result.error_code != CP437_SUCCESS)
             return result;
         language->strings[idx].data = omf_malloc(sizeof_cp437_data);
-        result.error_code =
-            cp437_from_utf8(language->strings[idx].data, sizeof_cp437_data, NULL, old_data, sizeof_old_data);
+        result.error_code = cp437_from_utf8((uint8_t *)language->strings[idx].data, sizeof_cp437_data, NULL,
+                                            (unsigned char const *)old_data, sizeof_old_data);
         if(result.error_code != CP437_SUCCESS) {
-            assert(("cp437_from_utf8 should have failed the first time or not the second", 0));
+            assert(!"cp437_from_utf8 should have failed the first time or not the second");
             omf_free(language->strings[idx].data);
             language->strings[idx].data = old_data;
             return result;
@@ -240,8 +242,8 @@ static conversion_result sd_language_from_utf8(sd_language *language) {
         size_t sizeof_old_description = strlen(old_description) + 1;
         memset(language->strings[idx].description, '\0', sizeof language->strings[idx].description);
         result.error_code =
-            cp437_from_utf8(language->strings[idx].description, sizeof language->strings[idx].description, NULL,
-                            old_description, sizeof_old_description);
+            cp437_from_utf8((uint8_t *)language->strings[idx].description, sizeof language->strings[idx].description,
+                            NULL, (unsigned char const *)old_description, sizeof_old_description);
         if(result.error_code != CP437_SUCCESS) {
             memcpy(language->strings[idx].description, old_description, sizeof old_description);
             return result;
@@ -389,7 +391,7 @@ int main(int argc, char *argv[]) {
     if(output->count > 0) {
         char const *expected_output_extensions[] = {".DAT", ".DAT2", ".LNG", ".LNG2"};
         bool unexpected_extension = true;
-        for(int i = 0; i < (sizeof expected_output_extensions) / (sizeof expected_output_extensions[0]); i++) {
+        for(size_t i = 0; i < (sizeof expected_output_extensions) / (sizeof expected_output_extensions[0]); i++) {
             if(output->extension[0] && strcmp(expected_output_extensions[i], output->extension[0]) == 0) {
                 unexpected_extension = false;
                 break;
@@ -408,6 +410,7 @@ int main(int argc, char *argv[]) {
                 goto exit_0;
             }
             language_is_utf8 = false;
+            assert(!language_is_utf8); // silence dead store warning
         }
 
         ret = sd_language_save(&language, output->filename[0]);
