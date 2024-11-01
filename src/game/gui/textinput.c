@@ -20,7 +20,7 @@ typedef struct {
     int ticks;
     int dir;
     surface sur;
-    char *buf;
+    str text;
     int max_chars;
     int pos;
     int bg_enabled;
@@ -48,7 +48,7 @@ static void textinput_render(component *c) {
 
         int start_x = c->x + tb->tconf.padding.left;
         if(tb->tconf.halign == TEXT_CENTER) {
-            int tmp_s = text_width(&tb->tconf, tb->buf); // Total W minus last spacing
+            int tmp_s = text_width(&tb->tconf, str_c(&tb->text)); // Total W minus last spacing
             int xspace = c->w - tb->tconf.padding.left - tb->tconf.padding.right;
             start_x += ceilf((xspace - tmp_s) / 2.0f);
             tb->tconf.halign = TEXT_LEFT;
@@ -61,7 +61,7 @@ static void textinput_render(component *c) {
         mode = TEXT_DISABLED;
     }
 
-    text_render(&tb->tconf, mode, c->x, c->y, c->w, c->h, tb->buf);
+    text_render_str(&tb->tconf, mode, c->x, c->y, c->w, c->h, &tb->text);
 }
 
 // Start from ' '. Support 0-9, ' ', and A-Z.
@@ -102,16 +102,15 @@ static char textinput_scroll_character(char cur, bool down) {
 
 static int textinput_action(component *c, int action) {
     textinput *tb = widget_get_obj(c);
-    DEBUG("action %d", action);
+    char cursor_char = str_at(&tb->text, tb->pos);
+    char new_char;
     switch(action) {
         case ACT_RIGHT:
-            if(tb->buf[tb->pos] == '\0') {
-                tb->buf[tb->pos] = ' ';
+            if(cursor_char == '\0' && tb->pos >= (int)str_size(&tb->text)) {
+                str_append_c(&tb->text, " ");
             }
             tb->pos = min2(tb->max_chars - 1, tb->pos + 1);
-            if(tb->buf[tb->pos] == '\0') {
-                tb->buf[tb->pos] = ' ';
-            }
+            str_truncate(&tb->text, tb->max_chars);
             return 0;
             break;
         case ACT_LEFT:
@@ -119,11 +118,23 @@ static int textinput_action(component *c, int action) {
             return 0;
             break;
         case ACT_UP:
-            tb->buf[tb->pos] = textinput_scroll_character(tb->buf[tb->pos], false);
+            new_char = textinput_scroll_character(cursor_char, false);
+            if(tb->pos >= (int)str_size(&tb->text)) {
+                str_append_buf(&tb->text, &new_char, 1);
+            } else {
+                str_set_at(&tb->text, tb->pos, new_char);
+            }
+            str_truncate(&tb->text, tb->max_chars);
             return 0;
             break;
         case ACT_DOWN:
-            tb->buf[tb->pos] = textinput_scroll_character(tb->buf[tb->pos], true);
+            new_char = textinput_scroll_character(cursor_char, true);
+            if(tb->pos >= (int)str_size(&tb->text)) {
+                str_append_buf(&tb->text, &new_char, 1);
+            } else {
+                str_set_at(&tb->text, tb->pos, new_char);
+            }
+            str_truncate(&tb->text, tb->max_chars);
             return 0;
             break;
         case ACT_PUNCH:
@@ -140,28 +151,27 @@ static int textinput_event(component *c, SDL_Event *e) {
     // Handle selection
     if(e->type == SDL_TEXTINPUT) {
         textinput *tb = widget_get_obj(c);
-        tb->buf[tb->pos] = e->text.text[0];
+        str_insert_at(&tb->text, tb->pos, e->text.text[0]);
+        str_truncate(&tb->text, tb->max_chars);
         tb->pos = min2(tb->max_chars - 1, tb->pos + 1);
-        // strncat(tb->buf, e->text.text, tb->max_chars - strlen(tb->buf));
         return 0;
     } else if(e->type == SDL_KEYDOWN) {
         textinput *tb = widget_get_obj(c);
-        size_t len = strlen(tb->buf);
         const unsigned char *state = SDL_GetKeyboardState(NULL);
-        if(state[SDL_SCANCODE_BACKSPACE] || state[SDL_SCANCODE_DELETE]) {
-            if(len > 1) {
-                memmove(tb->buf + max2(tb->pos - 1, 0), tb->buf + max2(tb->pos, 1),
-                        min2(tb->max_chars, tb->max_chars - tb->pos + 1));
-                tb->pos = max2(0, tb->pos - 1);
-            } else if(len == 1) {
-                tb->buf[0] = 0;
-                tb->pos = 0;
+        if(state[SDL_SCANCODE_BACKSPACE]) {
+            tb->pos = max2(0, tb->pos - 1);
+            str_delete_at(&tb->text, tb->pos);
+        } else if(state[SDL_SCANCODE_DELETE]) {
+            if(str_delete_at(&tb->text, tb->pos)) {
+                tb->pos = max2(0, tb->pos);
             }
         } else if(state[SDL_SCANCODE_V] && state[SDL_SCANCODE_LCTRL]) {
             if(SDL_HasClipboardText()) {
                 char *clip = SDL_GetClipboardText();
-                strncat(tb->buf + tb->pos, clip, tb->max_chars - tb->pos);
-                tb->pos = min2(tb->max_chars, tb->pos + strlen(clip));
+                str_insert_c_at(&tb->text, tb->pos, clip);
+                str_truncate(&tb->text, tb->max_chars);
+                tb->pos = min2(tb->max_chars - 1, tb->pos + strlen(clip));
+                SDL_free(clip);
             }
         }
         return 0;
@@ -184,36 +194,25 @@ static void textinput_tick(component *c) {
     }
 }
 
-char *textinput_value(const component *c) {
+const char *textinput_value(const component *c) {
     textinput *tb = widget_get_obj(c);
-    // Trim trailing whitespace
-    for(int i = strlen(tb->buf) - 1; i >= 0 && isspace(tb->buf[i]); --i) {
-        tb->buf[i] = '\0';
-    }
-    return tb->buf;
+    // Trim whitespace
+    str_strip(&tb->text);
+    tb->pos = 0;
+    return str_c(&tb->text);
 }
 
 void textinput_clear(component *c) {
     textinput *tb = widget_get_obj(c);
-    memset(tb->buf, 0, tb->max_chars + 1);
+    str_truncate(&tb->text, 0);
     tb->pos = 0;
 }
 
 static void textinput_free(component *c) {
     textinput *tb = widget_get_obj(c);
     surface_free(&tb->sur);
-    omf_free(tb->buf);
+    str_free(&tb->text);
     omf_free(tb);
-}
-
-void textinput_set_max_chars(component *c, int max_chars) {
-    textinput *tb = widget_get_obj(c);
-    tb->buf = omf_realloc(tb->buf, max_chars + 1);
-    tb->buf[max_chars] = 0;
-
-    tb->max_chars = max_chars;
-
-    component_set_size_hints(c, text_char_width(&tb->tconf) * tb->max_chars, 10);
 }
 
 void textinput_enable_background(component *c, int enabled) {
@@ -227,14 +226,14 @@ void textinput_set_done_cb(component *c, textinput_done_cb done_cb, void *userda
     tb->userdata = userdata;
 }
 
-component *textinput_create(const text_settings *tconf, const char *help, const char *initialvalue) {
+component *textinput_create(const text_settings *tconf, int max_chars, const char *help, const char *initialvalue) {
     component *c = widget_create();
 
     textinput *tb = omf_calloc(1, sizeof(textinput));
     memcpy(&tb->tconf, tconf, sizeof(text_settings));
     tb->tconf.max_lines = 1;
     tb->bg_enabled = 1;
-    tb->max_chars = 15;
+    tb->max_chars = max_chars;
     tb->pos = 0;
 
     component_set_help_text(c, help);
@@ -242,25 +241,20 @@ component *textinput_create(const text_settings *tconf, const char *help, const 
     // Background for field
     int tsize = text_char_width(&tb->tconf);
     image img;
-    image_create(&img, 15 * tsize + 2, tsize + 3);
+    image_create(&img, tb->max_chars * tsize + 2, tsize + 3);
     image_clear(&img, COLOR_MENU_BG);
-    image_rect(&img, 0, 0, 15 * tsize + 1, tsize + 2, COLOR_MENU_BORDER);
+    image_rect(&img, 0, 0, tb->max_chars * tsize + 1, tsize + 2, COLOR_MENU_BORDER);
     surface_create_from_image(&tb->sur, &img);
     image_free(&img);
 
     // Copy over the initial value
-    tb->buf = omf_calloc(tb->max_chars + 1, 1);
-    strncpy(tb->buf, initialvalue, tb->max_chars);
-    tb->pos = min2(strlen(initialvalue), tb->max_chars);
+    str_from_c(&tb->text, initialvalue);
+    str_truncate(&tb->text, tb->max_chars);
+    tb->pos = min2(str_size(&tb->text), tb->max_chars);
 
     component_set_size_hints(c, text_char_width(&tb->tconf) * tb->max_chars, 10);
+    component_set_size_hints(c, tb->max_chars * tsize + 2, tsize + 3);
 
-    component_set_size_hints(c, 15 * tsize + 2, tsize + 3);
-
-    if(initialvalue && strlen(initialvalue)) {
-        // Copy over the initial value
-        strncpy(tb->buf, initialvalue, tb->max_chars);
-    }
     // Widget stuff
     widget_set_obj(c, tb);
     widget_set_render_cb(c, textinput_render);

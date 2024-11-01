@@ -317,7 +317,7 @@ void lobby_do_yell(component *c, void *userdata) {
     lobby_local *local = scene_get_userdata(scene);
 
     // menu *m = sizer_get_obj(c->parent);
-    char *yell = textinput_value(c);
+    const char *yell = textinput_value(c);
 
     if(strlen(yell) > 0) {
         DEBUG("yelled %s", textinput_value(c));
@@ -364,10 +364,9 @@ component *lobby_yell_create(scene *s) {
 
     menu_attach(menu, label_create(&tconf, "Yell:"));
     component *yell_input =
-        textinput_create(&tconf, "Yell:",
+        textinput_create(&tconf, 36, "Yell:",
                          "Yell a message to everybody in the challenge arena.\n\n\n\n\nTo whisper to one player, type "
                          "their name, a ':', and your message.\nPress 'esc' to return to the challenge arena menu.");
-    textinput_set_max_chars(yell_input, 36);
     menu_attach(menu, yell_input);
     textinput_enable_background(yell_input, 0);
     textinput_set_done_cb(yell_input, lobby_do_yell, s);
@@ -379,7 +378,7 @@ void lobby_do_whisper(component *c, void *userdata) {
     menu *m = sizer_get_obj(c->parent);
     scene *s = userdata;
 
-    char *whisper = textinput_value(c);
+    const char *whisper = textinput_value(c);
 
     if(strlen(whisper) > 0) {
         DEBUG("whispered %s", whisper);
@@ -441,8 +440,7 @@ component *lobby_whisper_create(scene *s) {
     lobby_user *user = list_get(&local->users, local->active_user);
     snprintf(local->helptext, sizeof(local->helptext), "Whisper a message to %s. Press enter when done, esc to abort.",
              user->name);
-    component *whisper_input = textinput_create(&tconf, "Whisper:", local->helptext);
-    textinput_set_max_chars(whisper_input, 36);
+    component *whisper_input = textinput_create(&tconf, 36, "Whisper:", local->helptext);
     menu_attach(menu, whisper_input);
     textinput_enable_background(whisper_input, 0);
     textinput_set_done_cb(whisper_input, lobby_do_whisper, s);
@@ -584,7 +582,7 @@ void lobby_entered_name(component *c, void *userdata) {
             }
             serial_write_int8(&ser, strlen(version));
             serial_write(&ser, version, strlen(version));
-            char *name = textinput_value(c);
+            const char *name = textinput_value(c);
             serial_write(&ser, name, strlen(name));
 
             settings_get()->net.net_username = strdup(name);
@@ -1187,9 +1185,8 @@ int lobby_create(scene *scene) {
 
         menu_attach(name_menu, label_create(&tconf, "Enter your name:"));
         // TODO pull the last used name from settings
-        component *name_input = textinput_create(&tconf, "", settings_get()->net.net_username);
+        component *name_input = textinput_create(&tconf, 14, "", settings_get()->net.net_username);
         textinput_enable_background(name_input, 0);
-        textinput_set_max_chars(name_input, 14);
         textinput_set_done_cb(name_input, lobby_entered_name, scene);
         menu_attach(name_menu, name_input);
 
