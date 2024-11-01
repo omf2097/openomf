@@ -174,6 +174,16 @@ static void video_screenshot_capture(void) {
     omf_free(buffer);
 }
 
+/**
+ * Set the viewport, and do screen-shakes here.
+ */
+static inline void set_screen_viewport(void) {
+    float ratio = g_video_state.screen_w / NATIVE_W;
+    int vp_x = g_video_state.target_move_x * ratio;
+    int vp_y = g_video_state.target_move_y * ratio;
+    glViewport(vp_x, vp_y, g_video_state.viewport_w, g_video_state.viewport_h); // This is used for screen shakes.
+}
+
 // Called after frame has been rendered
 void video_render_finish(void) {
     object_array_finish(g_video_state.objects);
@@ -208,11 +218,7 @@ void video_render_finish(void) {
 
     // Disable render target, and dump its contents as RGBA to the screen.
     render_target_deactivate();
-    float ratio = g_video_state.screen_w / NATIVE_W;
-    glViewport(
-        // This is used for screen shakes.
-        g_video_state.target_move_x * ratio, g_video_state.target_move_y * ratio, g_video_state.viewport_w,
-        g_video_state.viewport_h);
+    set_screen_viewport();
     video_set_blend_mode(MODE_SET);
     activate_program(g_video_state.rgba_prog_id);
     if(g_video_state.draw_atlas) {
