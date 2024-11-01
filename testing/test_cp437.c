@@ -4,7 +4,6 @@
 #include <assert.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <uchar.h>
 
 #include <locale.h>
 

@@ -21,8 +21,8 @@
 #ifndef CP437_H
 #define CP437_H
 
-#include <stdint.h> // uint8_t
-#include <uchar.h>  // char32_t
+#include "utils/compat.h" // char32_t
+#include <stdint.h>       // uint8_t
 
 // TODO: Use warn_unused_result on these methods.
 // TODO: Maybe expand cp437_result to signal what type of invalid UTF-8 was encountered, or where the error occured?
