@@ -35,20 +35,7 @@ typedef enum cp437_result
     CP437_ERROR_OUTPUTBUFFER_TOOSMALL,
 } cp437_result;
 
-inline char const *cp437_result_to_string(cp437_result result) {
-    switch(result) {
-        case CP437_SUCCESS:
-            return "CP437_SUCCESS";
-        case CP437_ERROR_UNKNOWN_CODEPOINT:
-            return "CP437_ERROR_UNKNOWN_CODEPOINT";
-        case CP437_ERROR_INVALID_UTF8:
-            return "CP437_ERROR_INVALID_UTF8";
-        case CP437_ERROR_OUTPUTBUFFER_TOOSMALL:
-            return "CP437_ERROR_OUTPUTBUFFER_TOOSMALL";
-        default:
-            return "! invalid cp437_result !";
-    }
-}
+char const *cp437_result_to_string(cp437_result result);
 
 #define CP437_MAX_UTF8_PER_CP437 3
 
