@@ -6,6 +6,13 @@
 #include "utils/vector.h"
 #include "video/video.h"
 
+static unsigned char FIRST_PRINTABLE_CHAR = (unsigned char)' ';
+
+static int text_chartoglyphindex(char c) {
+    int ic = (int)(unsigned char)c;
+    return ic - FIRST_PRINTABLE_CHAR;
+}
+
 void text_defaults(text_settings *settings) {
     memset(settings, 0, sizeof(text_settings));
     settings->cforeground = 0xFD;
@@ -21,7 +28,7 @@ void text_defaults(text_settings *settings) {
 
 int text_render_char(const text_settings *settings, text_mode state, int x, int y, char ch) {
     // Make sure code is valid
-    int code = (unsigned char)ch - 32;
+    int code = text_chartoglyphindex(ch);
     surface **sur = NULL;
     if(code < 0) {
         return 0;
@@ -121,7 +128,7 @@ int text_width(const text_settings *settings, const char *text) {
     int code = 0;
     surface **sur = NULL;
     for(int i = 0; i < len; i++) {
-        code = text[i] - 32;
+        code = text_chartoglyphindex(text[i]);
         if(code < 0) {
             continue;
         }
