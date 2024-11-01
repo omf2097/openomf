@@ -208,7 +208,11 @@ void video_render_finish(void) {
 
     // Disable render target, and dump its contents as RGBA to the screen.
     render_target_deactivate();
-    glViewport(0, 0, g_video_state.viewport_w, g_video_state.viewport_h);
+    float ratio = g_video_state.screen_w / NATIVE_W;
+    glViewport(
+        // This is used for screen shakes.
+        g_video_state.target_move_x * ratio, g_video_state.target_move_y * ratio, g_video_state.viewport_w,
+        g_video_state.viewport_h);
     video_set_blend_mode(MODE_SET);
     activate_program(g_video_state.rgba_prog_id);
     if(g_video_state.draw_atlas) {
