@@ -73,7 +73,7 @@ void vga_state_mark_remaps_flushed(void) {
 }
 
 void vga_state_mul_base_palette(vga_index start, vga_index end, float multiplier) {
-    assert(multiplier > 0 && multiplier <= 1.0);
+    assert(multiplier >= 0 && multiplier <= 1.0);
     vga_color *c;
     for(int i = start; i < end; i++) {
         c = &state.base.colors[i];

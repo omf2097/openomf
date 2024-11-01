@@ -37,7 +37,6 @@ typedef struct video_state {
     bool vsync;
 
     bool draw_atlas;
-    float fade;
     int target_move_x;
     int target_move_y;
 
@@ -57,7 +56,6 @@ int video_init(int window_w, int window_h, bool fullscreen, bool vsync) {
     g_video_state.screen_h = window_h;
     g_video_state.fullscreen = fullscreen;
     g_video_state.vsync = vsync;
-    g_video_state.fade = 1.0f;
     g_video_state.target_move_x = 0;
     g_video_state.target_move_y = 0;
     g_video_state.current_blend_mode = MODE_SET;
@@ -263,10 +261,6 @@ void video_get_state(int *w, int *h, int *fs, int *vsync) {
     if(vsync != NULL) {
         *vsync = g_video_state.vsync;
     }
-}
-
-void video_set_fade(float fade) {
-    g_video_state.fade = fade;
 }
 
 void video_schedule_screenshot(video_screenshot_signal callback) {

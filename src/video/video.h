@@ -81,7 +81,6 @@ void video_render_prepare(void);
 void video_render_finish(void);
 void video_close(void);
 void video_area_capture(surface *sur, int x, int y, int w, int h);
-void video_set_fade(float fade);
 void video_schedule_screenshot(video_screenshot_signal callback);
 
 void video_draw_atlas(bool draw_atlas);

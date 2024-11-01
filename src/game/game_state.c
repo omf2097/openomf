@@ -319,6 +319,27 @@ int game_state_handle_event(game_state *gs, SDL_Event *event) {
     return 1;
 }
 
+void cross_fade_transform(damage_tracker *damage, vga_palette *pal, void *userdata) {
+    game_state *gs = userdata;
+    float value = 1.0f;
+
+    if(gs->this_wait_ticks > 0) {
+        value = 1.0f - gs->this_wait_ticks / (float)FRAME_WAIT_TICKS;
+    }
+    if(gs->next_wait_ticks > 0) {
+        value = gs->next_wait_ticks / (float)FRAME_WAIT_TICKS;
+    }
+
+    // Set palette darkness value.
+    for(int i = 0; i < 256; i++) {
+        pal->colors[i].r *= value;
+        pal->colors[i].g *= value;
+        pal->colors[i].b *= value;
+    }
+
+    damage_set_range(damage, 0, 255);
+}
+
 void game_state_render(game_state *gs) {
     iterator it;
     render_obj *robj;
@@ -607,17 +628,11 @@ void game_state_call_tick(game_state *gs, int mode) {
 // This function is always called with the same interval, and game speed does not affect it
 void game_state_static_tick(game_state *gs, bool replay) {
     // Set scene crossfade values
-    if(gs->next_wait_ticks > 0) {
-        gs->next_wait_ticks--;
-        if(!replay) {
-            video_set_fade((float)gs->next_wait_ticks / (float)FRAME_WAIT_TICKS);
-        }
-    }
     if(gs->this_wait_ticks > 0) {
         gs->this_wait_ticks--;
-        if(!replay) {
-            video_set_fade(1.0f - (float)gs->this_wait_ticks / (float)FRAME_WAIT_TICKS);
-        }
+    }
+    if(gs->next_wait_ticks > 0) {
+        gs->next_wait_ticks--;
     }
 
     // Tick controllers
@@ -633,7 +648,7 @@ void game_state_static_tick(game_state *gs, bool replay) {
 // This function is called when the game speed requires it
 void game_state_dynamic_tick(game_state *gs, bool replay) {
     // We want to load another scene
-    if(gs->this_id != gs->next_id) {
+    if(gs->this_id != gs->next_id && (gs->next_wait_ticks <= 1 || !settings_get()->video.crossfade_on)) {
         // If this is the end, set run to 0 so that engine knows to close here
         if(gs->next_id == SCENE_NONE) {
             DEBUG("Next ID is SCENE_NONE! bailing.");
@@ -653,6 +668,11 @@ void game_state_dynamic_tick(game_state *gs, bool replay) {
             gs->this_wait_ticks = 0;
             gs->next_wait_ticks = 0;
         }
+    }
+
+    // Cross-fade effect
+    if(gs->next_wait_ticks > 0 || gs->this_wait_ticks > 0) {
+        vga_state_use_palette_transform(cross_fade_transform, gs);
     }
 
     // Change the screen shake value downwards
