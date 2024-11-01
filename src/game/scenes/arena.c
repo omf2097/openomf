@@ -1316,6 +1316,11 @@ int arena_create(scene *scene) {
             return 1;
         }
 
+        // Enable HAR positional lighting if on Stadium arena (It's not used anywhere else).
+        if(scene->bk_data->file_id == 8) {
+            object_add_animation_effects(obj, EFFECT_POSITIONAL_LIGHTING);
+        }
+
         // Set HAR to controller and game_player
         game_state_add_object(scene->gs, obj, RENDER_LAYER_MIDDLE, 0, 0);
 

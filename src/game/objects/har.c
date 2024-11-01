@@ -2198,7 +2198,6 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     object_set_repeat(obj, 1);
     object_set_stl(obj, local->af_data->sound_translation_table);
     object_set_shadow(obj, 1);
-    object_add_animation_effects(obj, EFFECT_POSITIONAL_LIGHTING);
 
     // New object spawner callback
     object_set_spawn_cb(obj, cb_har_spawn_object, local);
