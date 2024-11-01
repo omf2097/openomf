@@ -184,7 +184,7 @@ component *menu_connect_create(scene *s) {
     local->controllers_created = 0;
     local->connect_start = 0;
     local->addr_input =
-        textinput_create(&tconf, "Enter an IP address you wish to connect to.", settings_get()->net.net_connect_ip);
+        textinput_create(&tconf, 15, "Enter an IP address you wish to connect to.", settings_get()->net.net_connect_ip);
     local->connect_button =
         textbutton_create(&tconf, "CONNECT", "Connect to the provided IP address.", COM_ENABLED, menu_connect_start, s);
     local->cancel_button =

@@ -30,10 +30,9 @@ component *lab_dash_newplayer_create(scene *s, newplayer_widgets *nw) {
     // Input field
     tconf.cselected = TEXT_BRIGHT_GREEN;
     tconf.halign = TEXT_LEFT;
-    nw->input = textinput_create(&tconf, "Name", "");
+    nw->input = textinput_create(&tconf, 16, "Name", "");
     component_select(nw->input, 1);
     textinput_enable_background(nw->input, 0);
-    textinput_set_max_chars(nw->input, 16);
     xysizer_attach(xy, nw->input, 114, 62, 120, 8);
 
     return xy;
