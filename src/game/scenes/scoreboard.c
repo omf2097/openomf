@@ -237,7 +237,7 @@ int scoreboard_create(scene *scene) {
             if(local->has_pending_data && score < local->pending_data.score && !found_slot) {
                 found_slot = 1;
                 local->frame = guiframe_create(20, 30 + r * 8, 20, 10);
-                local->ti = textinput_create(&small_text, "", "", "");
+                local->ti = textinput_create(&small_text, "", "");
                 textinput_enable_background(local->ti, 0);
                 guiframe_set_root(local->frame, local->ti);
                 guiframe_layout(local->frame);
