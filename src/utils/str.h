@@ -201,6 +201,12 @@ bool str_equal_buf(const str *a, const char *buf, size_t len);
 char str_at(const str *string, size_t pos);
 
 /**
+ * @brief Delete a character at the given index.
+ * @return true If a character was deleted.
+ */
+bool str_delete_at(str *string, size_t pos);
+
+/**
  * @brief Convert string to float
  * @details Returns true if conversion was a success, false if not.
  * @param string String to convert

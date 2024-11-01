@@ -361,6 +361,19 @@ char str_at(const str *string, size_t pos) {
     return ptr[pos];
 }
 
+bool str_delete_at(str *string, size_t pos) {
+    if(pos >= string->len) {
+        return false;
+    }
+    char *buf = str_ptr(string);
+    size_t n = string->len - pos - 1;
+    memmove(&buf[pos], &buf[pos + 1], n);
+    string->len--;
+    str_resize_and_copy_buffer(string, string->len);
+    str_zero(string);
+    return true;
+}
+
 // ------------------------ Type conversion ------------------------
 
 bool str_to_float(const str *string, float *result) {

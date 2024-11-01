@@ -402,6 +402,49 @@ void test_str_replace_multi_limit(void) {
     str_free(&d);
 }
 
+void test_str_delete_at_small(void) {
+    str d;
+
+    str_from_c(&d, "ABCD");
+    CU_ASSERT(str_size(&d) == 4);
+    CU_ASSERT(str_delete_at(&d, 4) == false);
+    CU_ASSERT(str_delete_at(&d, 0) == true);
+    CU_ASSERT_STRING_EQUAL(str_c(&d), "BCD");
+    CU_ASSERT(str_size(&d) == 3);
+
+    CU_ASSERT(str_delete_at(&d, 1) == true);
+    CU_ASSERT_STRING_EQUAL(str_c(&d), "BD");
+    CU_ASSERT(str_size(&d) == 2);
+    CU_ASSERT(str_delete_at(&d, 0) == true);
+    CU_ASSERT(str_delete_at(&d, 0) == true);
+    CU_ASSERT(str_delete_at(&d, 0) == false);
+    CU_ASSERT_STRING_EQUAL(str_c(&d), "");
+
+    str_free(&d);
+}
+
+void test_str_delete_at_big(void) {
+    str d;
+
+    str_create(&d);
+    for(size_t i = 0; i < STR_STACK_SIZE + 1; ++i) {
+        str_append_c(&d, "A");
+    }
+    CU_ASSERT(str_size(&d) == STR_STACK_SIZE + 1);
+    CU_ASSERT(str_c(&d)[d.len] == '\0');
+    CU_ASSERT(str_c(&d)[d.len - 1] == 'A');
+    CU_ASSERT(str_c(&d)[0] == 'A');
+    CU_ASSERT(str_delete_at(&d, STR_STACK_SIZE + 1) == false);
+    for(size_t i = 0; i < STR_STACK_SIZE + 1; ++i) {
+        CU_ASSERT(str_delete_at(&d, d.len - 1) == true);
+    }
+    CU_ASSERT(str_size(&d) == 0);
+    CU_ASSERT(str_c(&d)[d.len] == '\0');
+    CU_ASSERT(str_c(&d)[0] == '\0');
+
+    str_free(&d);
+}
+
 void str_test_suite(CU_pSuite suite) {
     if(CU_add_test(suite, "Test for str_create", test_str_create) == NULL) {
         return;
@@ -515,6 +558,12 @@ void str_test_suite(CU_pSuite suite) {
         return;
     }
     if(CU_add_test(suite, "Test for str_equal_buf", test_str_equal_buf) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for small str_delete_at", test_str_delete_at_small) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for big str_delete_at", test_str_delete_at_big) == NULL) {
         return;
     }
 }
