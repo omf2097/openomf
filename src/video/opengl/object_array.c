@@ -31,7 +31,7 @@ static_assert(4 == alignof(object_data), "object_data alignment is expected to b
 
 typedef struct object_array {
     GLuint vbo_ids[BUFFER_COUNT];
-    GLuint vao_id;
+    GLuint vao_ids[BUFFER_COUNT];
     GLfloat src_w; // Source texture width
     GLfloat src_h; // Source texture height
     int vbo_flip;
@@ -74,9 +74,10 @@ object_array *object_array_create(GLfloat src_w, GLfloat src_h) {
     array->mapping = NULL;
     array->src_w = src_w;
     array->src_h = src_h;
-    for(int i = 0; i < BUFFER_COUNT; i++)
+    for(int i = 0; i < BUFFER_COUNT; i++) {
         array->vbo_ids[i] = vbo_create(VBO_SIZE);
-    array->vao_id = vao_create();
+        array->vao_ids[i] = vao_create();
+    }
     setup_vao_layout();
     return array;
 }
@@ -84,9 +85,10 @@ object_array *object_array_create(GLfloat src_w, GLfloat src_h) {
 void object_array_free(object_array **array) {
     object_array *obj = *array;
     if(obj != NULL) {
-        vao_free(obj->vao_id);
-        for(int i = 0; i < BUFFER_COUNT; i++)
-            vbo_free(obj->vbo_ids[1]);
+        for(int i = 0; i < BUFFER_COUNT; i++) {
+            vbo_free(obj->vbo_ids[i]);
+            vao_free(obj->vao_ids[i]);
+        }
         omf_free(obj);
         *array = NULL;
     }
@@ -99,18 +101,19 @@ void object_array_prepare(object_array *array) {
     }
     array->vbo_flip = (array->vbo_flip + 1) % BUFFER_COUNT;
     array->mapping = vbo_map(array->vbo_ids[array->vbo_flip], VBO_SIZE);
+    vao_use(array->vao_ids[array->vbo_flip]);
     array->item_count = 0;
 }
 
 void object_array_finish(object_array *array) {
-    vbo_unmap(array->vbo_ids[array->vbo_flip]);
+    vbo_unmap(array->vbo_ids[array->vbo_flip], array->item_count * OBJ_BYTES);
     array->mapping = NULL;
 }
 
 void object_array_begin(const object_array *array, object_array_batch *state) {
     state->start = 0;
     state->end = 0;
-    state->mode = (array->item_count > 0) ? array->modes[0] : 0;
+    state->mode = (array->item_count > 0) ? array->modes[0] : MODE_SET;
 }
 
 bool object_array_get_batch(const object_array *array, object_array_batch *state, object_array_blend_mode *mode) {

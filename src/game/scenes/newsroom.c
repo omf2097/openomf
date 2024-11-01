@@ -216,9 +216,9 @@ void newsroom_input_tick(scene *scene) {
     newsroom_local *local = scene_get_userdata(scene);
 
     game_player *player1 = game_state_get_player(scene->gs, 0);
-    ctrl_event *p1 = NULL, *i;
-    controller_poll(player1->ctrl, &p1);
-    i = p1;
+    ctrl_event *event = NULL, *i;
+    controller_poll(player1->ctrl, &event);
+    i = event;
     if(i) {
         do {
             if(i->type == EVENT_TYPE_ACTION) {
@@ -290,7 +290,7 @@ void newsroom_input_tick(scene *scene) {
             }
         } while((i = i->next));
     }
-    controller_free_chain(p1);
+    controller_free_chain(event);
 }
 
 int pilot_sex(int pilot_id) {

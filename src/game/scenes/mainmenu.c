@@ -7,6 +7,7 @@
 #include "resources/ids.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
+#include "video/vga_state.h"
 #include "video/video.h"
 #include <SDL.h>
 
@@ -25,9 +26,7 @@ void mainmenu_free(scene *scene) {
 
 void mainmenu_tick(scene *scene, int paused) {
     mainmenu_local *local = scene_get_userdata(scene);
-    palette *base_pal = video_get_base_palette();
-    palette_pulse_menu_colors(base_pal, scene->gs->tick / 8);
-    video_force_pal_refresh();
+    palette_pulse_menu_colors(scene->gs->tick / 8);
     guiframe_tick(local->frame);
 }
 

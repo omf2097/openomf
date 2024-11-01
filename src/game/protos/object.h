@@ -8,7 +8,6 @@
 #include "utils/hashmap.h"
 #include "utils/random.h"
 #include "utils/vec.h"
-#include "video/screen_palette.h"
 #include "video/surface.h"
 
 #define OBJECT_DEFAULT_LAYER 0x01
@@ -56,7 +55,6 @@ typedef void (*object_move_cb)(object *obj);
 typedef void (*object_collide_cb)(object *a, object *b);
 typedef void (*object_finish_cb)(object *obj);
 typedef void (*object_debug_cb)(object *obj);
-typedef int (*object_palette_transform_cb)(object *obj, screen_palette *pal);
 typedef int (*object_clone_cb)(object *src, object *dst);
 typedef int (*object_clone_free_cb)(object *obj);
 
@@ -134,7 +132,6 @@ struct object_t {
     object_finish_cb finish;
     object_move_cb move;
     object_debug_cb debug;
-    object_palette_transform_cb pal_transform;
     object_clone_cb clone;
     object_clone_free_cb clone_free;
 };
@@ -148,7 +145,6 @@ void object_static_tick(object *obj);
 void object_dynamic_tick(object *obj);
 void object_set_tick_pos(object *obj, int tick);
 void object_move(object *obj);
-int object_palette_transform(object *obj, screen_palette *pal);
 void object_collide(object *a, object *b);
 int object_act(object *obj, int action);
 int object_finished(object *obj);
@@ -200,7 +196,6 @@ void object_set_collide_cb(object *obj, object_collide_cb cbfunc);
 void object_set_finish_cb(object *obj, object_finish_cb cbfunc);
 void object_set_move_cb(object *obj, object_move_cb cbfunc);
 void object_set_debug_cb(object *obj, object_debug_cb cbfunc);
-void object_set_pal_transform_cb(object *obj, object_palette_transform_cb cbfunc);
 
 void object_set_repeat(object *obj, int repeat);
 int object_get_repeat(const object *obj);

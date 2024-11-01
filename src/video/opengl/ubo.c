@@ -9,9 +9,9 @@ GLuint ubo_create(GLsizeiptr size) {
     return id;
 }
 
-void ubo_update(GLuint id, GLsizeiptr size, const void *data) {
+void ubo_update(GLuint id, GLsizeiptr offset, GLsizeiptr size, const void *data) {
     bindings_bind_ubo(id);
-    glBufferSubData(GL_UNIFORM_BUFFER, 0, size, data);
+    glBufferSubData(GL_UNIFORM_BUFFER, offset, size, data);
 }
 
 void ubo_free(GLuint id) {

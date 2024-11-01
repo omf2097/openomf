@@ -89,7 +89,7 @@ int sd_sprite_save(sd_writer *w, const sd_sprite *sprite) {
     return SD_SUCCESS;
 }
 
-int sd_sprite_rgba_encode(sd_sprite *dst, const sd_rgba_image *src, const palette *pal, int remapping) {
+int sd_sprite_rgba_encode(sd_sprite *dst, const sd_rgba_image *src, const vga_palette *pal) {
     int lastx = -1;
     int lasty = 0;
     int i = 0;
@@ -197,7 +197,7 @@ int sd_sprite_rgba_encode(sd_sprite *dst, const sd_rgba_image *src, const palett
     return ret;
 }
 
-int sd_sprite_rgba_decode(sd_rgba_image *dst, const sd_sprite *src, const palette *pal, int remapping) {
+int sd_sprite_rgba_decode(sd_rgba_image *dst, const sd_sprite *src, const vga_palette *pal) {
     uint16_t x = 0;
     uint16_t y = 0;
     int i = 0;
@@ -242,15 +242,9 @@ int sd_sprite_rgba_decode(sd_rgba_image *dst, const sd_sprite *src, const palett
                 while(data > 0) {
                     uint8_t b = src->data[i];
                     int pos = ((y * src->width) + x) * 4;
-                    if(remapping > -1) {
-                        dst->data[pos + 0] = (uint8_t)pal->data[(uint8_t)pal->remaps[remapping][b]][0];
-                        dst->data[pos + 1] = (uint8_t)pal->data[(uint8_t)pal->remaps[remapping][b]][1];
-                        dst->data[pos + 2] = (uint8_t)pal->data[(uint8_t)pal->remaps[remapping][b]][2];
-                    } else {
-                        dst->data[pos + 0] = (uint8_t)pal->data[b][0];
-                        dst->data[pos + 1] = (uint8_t)pal->data[b][1];
-                        dst->data[pos + 2] = (uint8_t)pal->data[b][2];
-                    }
+                    dst->data[pos + 0] = (uint8_t)pal->colors[b].r;
+                    dst->data[pos + 1] = (uint8_t)pal->colors[b].g;
+                    dst->data[pos + 2] = (uint8_t)pal->colors[b].b;
                     dst->data[pos + 3] = (uint8_t)255; // fully opaque
                     i++;                               // we read 1 byte
                     x++;

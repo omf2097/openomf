@@ -461,17 +461,14 @@ int vs_create(scene *scene) {
                  (int)strlen(pilot2) - 1, (int)strlen(pilot2) - 1, pilot2);
     }
 
-    animation *ani;
-
-    palette *mpal = video_get_base_palette();
-
-    palette_load_player_colors(mpal, &player1->pilot->palette, 0);
+    // Set player palettes
+    palette_load_player_colors(&player1->pilot->palette, 0);
     if(player2->pilot) {
-        palette_load_player_colors(mpal, &player2->pilot->palette, 1);
+        palette_load_player_colors(&player2->pilot->palette, 1);
     }
-    video_force_pal_refresh();
 
     // HAR
+    animation *ani;
     ani = &bk_get_info(scene->bk_data, 5)->ani;
     object *player1_har = omf_calloc(1, sizeof(object));
     object_create(player1_har, scene->gs, vec2i_create(160, 0), vec2f_create(0, 0));

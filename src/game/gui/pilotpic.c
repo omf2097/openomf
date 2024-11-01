@@ -30,7 +30,7 @@ static void pilotpic_free(component *c) {
     omf_free(g);
 }
 
-int pilotpic_load(sd_sprite *sprite, palette *pal, int pic_id, int pilot_id) {
+int pilotpic_load(sd_sprite *sprite, vga_palette *pal, int pic_id, int pilot_id) {
     const char *filename = pm_get_resource_path(pic_id);
     if(filename == NULL) {
         PERROR("Could not find requested PIC file handle.");
@@ -70,7 +70,7 @@ void pilotpic_select(component *c, int pic_id, int pilot_id) {
 
     local->img = omf_calloc(1, sizeof(sprite));
     sd_sprite spr;
-    palette pal;
+    vga_palette pal;
     pilotpic_load(&spr, &pal, pic_id, pilot_id);
 
     sprite_create(local->img, &spr, -1);

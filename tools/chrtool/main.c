@@ -120,7 +120,7 @@ int main(int argc, char *argv[]) {
         }
 
         sd_rgba_image img;
-        sd_sprite_rgba_decode(&img, chr.photo, bk.palettes[0], -1);
+        sd_sprite_rgba_decode(&img, chr.photo, bk.palettes[0]);
         ret = sd_rgba_image_to_ppm(&img, export->filename[0]);
         if(ret == SD_SUCCESS) {
             printf("Exported photo to file %s.\n", export->filename[0]);

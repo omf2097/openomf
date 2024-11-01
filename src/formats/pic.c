@@ -78,7 +78,7 @@ int sd_pic_load(sd_pic_file *pic, const char *filename) {
         pic->photos[i]->sex = sd_read_uword(r);
 
         // Read palette
-        palette_create(&pic->photos[i]->pal);
+        vga_palette_init(&pic->photos[i]->pal);
         palette_load_range(r, &pic->photos[i]->pal, 0, 48);
 
         // This byte is probably an "is there image data" flag

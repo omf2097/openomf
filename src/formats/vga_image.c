@@ -7,6 +7,7 @@
 #include "formats/error.h"
 #include "formats/vga_image.h"
 #include "utils/allocator.h"
+#include "utils/png_writer.h"
 
 int sd_vga_image_create(sd_vga_image *img, unsigned int w, unsigned int h) {
     if(img == NULL) {
@@ -38,7 +39,7 @@ void sd_vga_image_free(sd_vga_image *img) {
     omf_free(img->data);
 }
 
-int sd_vga_image_decode(sd_rgba_image *dst, const sd_vga_image *src, const palette *pal, int remapping) {
+int sd_vga_image_decode(sd_rgba_image *dst, const sd_vga_image *src, const vga_palette *pal) {
     int ret;
     if(dst == NULL || src == NULL || pal == NULL) {
         return SD_INVALID_INPUT;
@@ -51,17 +52,10 @@ int sd_vga_image_decode(sd_rgba_image *dst, const sd_vga_image *src, const palet
         for(unsigned x = 0; x < src->w; x++) {
             uint8_t b = src->data[y * src->w + x];
             pos = ((y * src->w) + x) * 4;
-            if(remapping > -1) {
-                dst->data[pos + 0] = (uint8_t)pal->data[(uint8_t)pal->remaps[remapping][b]][0];
-                dst->data[pos + 1] = (uint8_t)pal->data[(uint8_t)pal->remaps[remapping][b]][1];
-                dst->data[pos + 2] = (uint8_t)pal->data[(uint8_t)pal->remaps[remapping][b]][2];
-                dst->data[pos + 3] = (uint8_t)255;
-            } else {
-                dst->data[pos + 0] = (uint8_t)pal->data[b][0];
-                dst->data[pos + 1] = (uint8_t)pal->data[b][1];
-                dst->data[pos + 2] = (uint8_t)pal->data[b][2];
-                dst->data[pos + 3] = (uint8_t)255;
-            }
+            dst->data[pos + 0] = (uint8_t)pal->colors[b].r;
+            dst->data[pos + 1] = (uint8_t)pal->colors[b].g;
+            dst->data[pos + 2] = (uint8_t)pal->colors[b].b;
+            dst->data[pos + 3] = (uint8_t)255;
         }
     }
     return SD_SUCCESS;
@@ -167,76 +161,12 @@ error_0:
     return ret;
 }
 
-int sd_vga_image_to_png(const sd_vga_image *img, const palette *pal, const char *filename) {
+int sd_vga_image_to_png(const sd_vga_image *img, const vga_palette *pal, const char *filename) {
     if(img == NULL || filename == NULL) {
         return SD_INVALID_INPUT;
     }
-
-    png_structp png_ptr;
-    png_infop info_ptr;
-    png_colorp palette;
-    int ret = SD_SUCCESS;
-    char **rows = omf_calloc(img->h, sizeof(char *));
-
-    FILE *handle = fopen(filename, "wb");
-    if(handle == NULL) {
-        ret = SD_FILE_OPEN_ERROR;
-        goto error_0;
+    if(!png_write_paletted(filename, img->w, img->h, pal, (unsigned char *)img->data)) {
+        return SD_FILE_OPEN_ERROR;
     }
-
-    png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-    if(!png_ptr) {
-        ret = SD_OUT_OF_MEMORY;
-        goto error_1;
-    }
-
-    info_ptr = png_create_info_struct(png_ptr);
-    if(!info_ptr) {
-        ret = SD_OUT_OF_MEMORY;
-        goto error_2;
-    }
-
-    if(setjmp(png_jmpbuf(png_ptr))) {
-        ret = SD_OUT_OF_MEMORY;
-        goto error_2;
-    }
-
-    png_init_io(png_ptr, handle);
-
-    // Write header. Paletted, 8 bits per pixel
-    png_set_IHDR(png_ptr, info_ptr, img->w, img->h, 8, PNG_COLOR_TYPE_PALETTE, PNG_INTERLACE_NONE,
-                 PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
-
-    palette = png_malloc(png_ptr, 256 * sizeof(png_color));
-    for(int i = 0; i < 256; i++) {
-        palette[i].red = pal->data[i][0];
-        palette[i].green = pal->data[i][1];
-        palette[i].blue = pal->data[i][2];
-    }
-    png_set_PLTE(png_ptr, info_ptr, palette, 256);
-
-    if(setjmp(png_jmpbuf(png_ptr))) {
-        ret = SD_OUT_OF_MEMORY;
-        goto error_3;
-    }
-
-    for(unsigned y = 0; y < img->h; y++) {
-        rows[y] = img->data + y * img->w;
-    }
-
-    // Write data
-    png_write_info(png_ptr, info_ptr);
-    png_write_image(png_ptr, (void *)rows);
-    png_write_end(png_ptr, NULL);
-
-    // Free everything
-error_3:
-    png_free(png_ptr, palette);
-error_2:
-    png_destroy_write_struct(&png_ptr, NULL);
-error_1:
-    fclose(handle);
-error_0:
-    omf_free(rows);
-    return ret;
+    return SD_SUCCESS;
 }

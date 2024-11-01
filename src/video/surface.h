@@ -1,10 +1,9 @@
 #ifndef SURFACE_H
 #define SURFACE_H
 
-#include "formats/palette.h"
 #include "formats/vga_image.h"
 #include "video/image.h"
-#include "video/screen_palette.h"
+#include "video/vga_palette.h"
 #include <SDL.h>
 
 typedef struct {
@@ -77,7 +76,7 @@ void surface_compress_remap(surface *sur, int range_start, int range_end, int re
  * @param range_start First grey palette color
  * @param range_end Last gray palette color
  */
-void surface_convert_to_grayscale(surface *sur, const screen_palette *pal, int range_start, int range_end);
+void surface_convert_to_grayscale(surface *sur, const vga_palette *pal, int range_start, int range_end);
 
 /**
  * Write surface to a PNG file.
@@ -87,6 +86,6 @@ void surface_convert_to_grayscale(surface *sur, const screen_palette *pal, int r
  * @param filename Target filename to write
  * @return True on success, false on any failure.
  */
-bool surface_write_png(const surface *sur, const screen_palette *pal, const char *filename);
+bool surface_write_png(const surface *sur, const vga_palette *pal, const char *filename);
 
 #endif // SURFACE_H

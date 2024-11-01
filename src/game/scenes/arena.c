@@ -246,6 +246,7 @@ void arena_screengrab_winner(scene *sc) {
 
 void arena_end(scene *sc) {
     game_state *gs = sc->gs;
+    const scene *scene = game_state_get_scene(gs);
     fight_stats *fight_stats = &gs->fight_stats;
     int next_id;
 
@@ -260,6 +261,14 @@ void arena_end(scene *sc) {
         game_player *p2 = game_state_get_player(gs, 1);
         har *p1_har = object_get_userdata(game_state_find_object(gs, game_player_get_har_obj_id(p1)));
         har *p2_har = object_get_userdata(game_state_find_object(gs, game_player_get_har_obj_id(p2)));
+
+        // Convert screen captures to grayscale
+        har_screencaps *caps = &(fight_stats->winner == 0 ? p1 : p2)->screencaps;
+        vga_palette *pal = bk_get_palette(scene->bk_data, 0);
+        har_screencaps_compress(caps, pal, SCREENCAP_BLOW);
+        har_screencaps_compress(caps, pal, SCREENCAP_POSE);
+
+        // Set the fight statistics and Plug McEllis's complaints
         fight_stats->bonuses = game_player_get_score(p1)->score / 1000;
         fight_stats->profit = fight_stats->bonuses + fight_stats->winnings - fight_stats->repair_cost;
         bool warning_given = p1->pilot->money < 0;
@@ -1292,9 +1301,7 @@ int arena_create(scene *scene) {
         object *obj = omf_calloc(1, sizeof(object));
 
         // load the player's colors into the palette
-        palette *base_pal = video_get_base_palette();
-        palette_load_player_colors(base_pal, &player->pilot->palette, i);
-        video_force_pal_refresh();
+        palette_load_player_colors(&player->pilot->palette, i);
 
         // Create object and specialize it as HAR.
         // Errors are unlikely here, but check anyway.
@@ -1510,7 +1517,7 @@ int arena_create(scene *scene) {
     scene_set_render_overlay_cb(scene, arena_render_overlay);
     scene->clone = arena_clone;
 
-    // initalize recording, if enabled
+    // initialize recording, if enabled
     if(scene->gs->init_flags->record == 1) {
         local->rec = omf_calloc(1, sizeof(sd_rec_file));
         sd_rec_create(local->rec);

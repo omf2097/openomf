@@ -1,9 +1,8 @@
 #include "video/surface.h"
 #include "utils/allocator.h"
 #include "utils/miscmath.h"
-#include <png.h>
+#include "utils/png_writer.h"
 #include <stdlib.h>
-#include <utils/log.h>
 
 // Each surface is tagged with a unique key. This is then used for texture atlas.
 // This keeps track of the last index used.
@@ -93,12 +92,12 @@ void surface_sub(surface *dst, const surface *src, int dst_x, int dst_y, int src
     dst->guid = guid++;
 }
 
-static uint8_t find_closest_gray(const screen_palette *pal, int range_start, int range_end, int ref) {
+static uint8_t find_closest_gray(const vga_palette *pal, int range_start, int range_end, int ref) {
     uint8_t closest = 0, current;
     int closest_dist = 256, dist;
 
     for(int i = range_start; i <= range_end; i++) {
-        current = pal->data[i][0]; // Grayscale, r = g = b so pick any.
+        current = pal->colors[i].r; // Grayscale, r = g = b so pick any.
         dist = current - ref;
         if(dist < 0) {
             dist = -dist;
@@ -127,16 +126,16 @@ void surface_flatten_to_mask(surface *sur, uint8_t value) {
     sur->guid = guid++;
 }
 
-void surface_convert_to_grayscale(surface *sur, const screen_palette *pal, int range_start, int range_end) {
+void surface_convert_to_grayscale(surface *sur, const vga_palette *pal, int range_start, int range_end) {
     float r, g, b;
     uint8_t idx;
     unsigned char mapping[256];
 
     // Make a mapping for fast search.
     for(int i = 0; i < 256; i++) {
-        r = pal->data[i][0] * 0.3;
-        g = pal->data[i][1] * 0.59;
-        b = pal->data[i][2] * 0.11;
+        r = pal->colors[i].r * 0.3;
+        g = pal->colors[i].g * 0.59;
+        b = pal->colors[i].b * 0.11;
         mapping[i] = find_closest_gray(pal, range_start, range_end, r + g + b);
     }
 
@@ -179,20 +178,6 @@ void surface_compress_remap(surface *sur, int range_start, int range_end, int re
     sur->guid = guid++;
 }
 
-bool surface_write_png(const surface *sur, const screen_palette *pal, const char *filename) {
-    png_image out;
-    memset(&out, 0, sizeof(out));
-    out.version = PNG_IMAGE_VERSION;
-    out.opaque = NULL;
-    out.width = sur->w;
-    out.height = sur->h;
-    out.flags = 0;
-    out.format = PNG_FORMAT_RGB_COLORMAP;
-    out.colormap_entries = 256;
-    png_image_write_to_file(&out, filename, 0, sur->data, sur->w, pal->data);
-    if(PNG_IMAGE_FAILED(out)) {
-        PERROR("Unable to write PNG file: %s", out.message);
-        return false;
-    }
-    return true;
+bool surface_write_png(const surface *sur, const vga_palette *pal, const char *filename) {
+    return png_write_paletted(filename, sur->w, sur->h, pal, sur->data);
 }

@@ -68,7 +68,7 @@ int sd_rec_load(sd_rec_file *rec, const char *file) {
         }
         rec->pilots[i].unknown_a = sd_read_ubyte(r);
         rec->pilots[i].unknown_b = sd_read_uword(r);
-        palette_create(&rec->pilots[i].pal);
+        vga_palette_init(&rec->pilots[i].pal);
         palette_load_range(r, &rec->pilots[i].pal, 0, 48);
         rec->pilots[i].has_photo = sd_read_ubyte(r);
         sd_sprite_create(&rec->pilots[i].photo);

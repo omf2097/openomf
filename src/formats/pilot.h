@@ -106,7 +106,7 @@ typedef struct {
     uint32_t total_value; ///< Total value for the pilot
     float unk_f_a;        ///< Unknown
     float unk_f_b;        ///< Unknown
-    palette palette;      ///< Palette for photo ?
+    vga_palette palette;  ///< Palette for photo ?
     uint16_t unk_block_i; ///< Unknown
     uint16_t photo_id;    ///< Which face photo this pilot uses
 

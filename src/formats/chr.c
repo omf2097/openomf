@@ -37,7 +37,7 @@ int sd_chr_from_trn(sd_chr_file *chr, sd_tournament_file *trn, sd_pilot *pilot) 
             chr->enemies[i]->pilot.rank = ranked;
         }
     }
-    palette_create(&chr->pal);
+    vga_palette_init(&chr->pal);
     chr->pilot.enemies_inc_unranked = trn->enemy_count;
     chr->pilot.enemies_ex_unranked = ranked;
     chr->pilot.rank = ranked + 1;
@@ -130,7 +130,7 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
             chr->enemies[i]->pilot.har_id = rand_int(10);
         }
         if(trn_loaded) {
-            memcpy(&chr->enemies[i]->pilot.palette, &pic.photos[trn.enemies[i]->photo_id]->pal, sizeof(palette));
+            memcpy(&chr->enemies[i]->pilot.palette, &pic.photos[trn.enemies[i]->photo_id]->pal, sizeof(vga_palette));
             chr->enemies[i]->pilot.photo = omf_calloc(1, sizeof(sd_sprite));
             sd_sprite_copy(chr->enemies[i]->pilot.photo, pic.photos[trn.enemies[i]->photo_id]->sprite);
             //  copy all the "pilot" fields (eg. winnings) over from the tournament file
@@ -195,7 +195,7 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
     memreader_close(mr);
 
     // Read HAR palette
-    palette_create(&chr->pal);
+    vga_palette_init(&chr->pal);
     palette_load_range(r, &chr->pal, 0, 48);
 
     // No idea what this is.

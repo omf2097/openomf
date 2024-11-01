@@ -31,9 +31,10 @@ typedef struct {
     uint8_t unknown_a;     ///< Unknown value
     uint8_t palette_count; ///< Number of palettes in the BK file
 
-    sd_bk_anim *anims[MAX_BK_ANIMS];    ///< All animations contained by the BK file
-    sd_vga_image *background;           ///< Background image. If NULL, a black background will be used.
-    palette *palettes[MAX_BK_PALETTES]; ///< All palettes in the BK file.
+    sd_bk_anim *anims[MAX_BK_ANIMS];           ///< All animations contained by the BK file
+    sd_vga_image *background;                  ///< Background image. If NULL, a black background will be used.
+    vga_palette *palettes[MAX_BK_PALETTES];    ///< All palettes in the BK file.
+    vga_remap_tables *remaps[MAX_BK_PALETTES]; ///< Remappings for the palettes
 
     char soundtable[30]; ///< All sounds used by the animations in this BK file.
 } sd_bk_file;
@@ -141,7 +142,7 @@ sd_bk_anim *sd_bk_get_anim(const sd_bk_file *bk, int index);
  * \param index Palette index.
  * \param pal A Valid palette object pointer.
  */
-int sd_bk_set_palette(sd_bk_file *bk, int index, const palette *pal);
+int sd_bk_set_palette(sd_bk_file *bk, int index, const vga_palette *pal);
 
 /*! \brief Push palette
  *
@@ -156,7 +157,7 @@ int sd_bk_set_palette(sd_bk_file *bk, int index, const palette *pal);
  * \param bk BK struct pointer.
  * \param pal A Valid palette object pointer.
  */
-int sd_bk_push_palette(sd_bk_file *bk, const palette *pal);
+int sd_bk_push_palette(sd_bk_file *bk, const vga_palette *pal);
 
 /*! \brief Pop palette
  *
@@ -184,7 +185,7 @@ int sd_bk_pop_palette(sd_bk_file *bk);
  * \param bk BK struct pointer.
  * \param index Palette index. Must be 0 <= index <= 7
  */
-palette *sd_bk_get_palette(const sd_bk_file *bk, int index);
+vga_palette *sd_bk_get_palette(const sd_bk_file *bk, int index);
 
 /*! \brief Load .BK file
  *

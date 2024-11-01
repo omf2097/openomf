@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "formats/palette.h"
 #include "formats/tournament.h"
 #include "game/gui/label.h"
 #include "game/gui/trnselect.h"
@@ -11,6 +10,7 @@
 #include "utils/allocator.h"
 #include "utils/list.h"
 #include "utils/log.h"
+#include "video/vga_state.h"
 #include "video/video.h"
 
 // Local small gauge type
@@ -20,7 +20,6 @@ typedef struct {
     component *label;
     int max;
     int selected;
-    palette palette_backup;
 } trnselect;
 
 static void trnselect_render(component *c) {
@@ -106,7 +105,7 @@ void load_description(component **c, const char *desc) {
 
 static void trnselect_free(component *c) {
     trnselect *g = widget_get_obj(c);
-    video_set_base_palette(&g->palette_backup);
+    vga_state_pop_palette(); // Recover previous palette
     sprite_free(g->img);
     omf_free(g->img);
     list_free(g->tournaments);
@@ -123,7 +122,7 @@ void trnselect_next(component *c) {
     }
     sd_tournament_file *trn = list_get(local->tournaments, local->selected);
     sd_sprite *logo = trn->locales[0]->logo;
-    video_copy_base_pal_range(&trn->pal, 128, 128, 40);
+    vga_state_set_base_palette_from_range(&trn->pal, 128, 128, 40);
     load_description(&local->label, trn->locales[0]->description);
     sprite_free(local->img);
     sprite_create(local->img, logo, -1);
@@ -137,7 +136,7 @@ void trnselect_prev(component *c) {
     }
     sd_tournament_file *trn = list_get(local->tournaments, local->selected);
     sd_sprite *logo = trn->locales[0]->logo;
-    video_copy_base_pal_range(&trn->pal, 128, 128, 40);
+    vga_state_set_base_palette_from_range(&trn->pal, 128, 128, 40);
     load_description(&local->label, trn->locales[0]->description);
     sprite_free(local->img);
     sprite_create(local->img, logo, -1);
@@ -163,11 +162,11 @@ component *trnselect_create(void) {
 
     local->label = NULL;
 
-    memcpy(&local->palette_backup, video_get_base_palette(), sizeof(palette));
+    vga_state_push_palette(); // Backup the current palette
 
     sd_tournament_file *trn = list_get(local->tournaments, local->selected);
     sd_sprite *logo = trn->locales[0]->logo;
-    video_copy_base_pal_range(&trn->pal, 128, 128, 40);
+    vga_state_set_base_palette_from_range(&trn->pal, 128, 128, 40);
     load_description(&local->label, trn->locales[0]->description);
 
     sprite_create(local->img, logo, -1);

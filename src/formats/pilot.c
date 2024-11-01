@@ -144,7 +144,7 @@ void sd_pilot_load_from_mem(memreader *mr, sd_pilot *pilot) {
     pilot->unk_f_a = memread_float(mr);
     pilot->unk_f_b = memread_float(mr);
     sd_mskip(mr, 8);
-    palette_create(&pilot->palette);
+    vga_palette_init(&pilot->palette);
     palette_mload_range(mr, &pilot->palette, 0, 48);
     pilot->unk_block_i = memread_uword(mr);
 
@@ -312,15 +312,15 @@ void sd_pilot_set_player_color(sd_pilot *pilot, player_color index, uint8_t colo
     switch(index) {
         case PRIMARY:
             pilot->color_3 = color;
-            palette_set_player_color(&pilot->palette, 0, pilot->color_3, 0);
+            palette_load_altpal_player_color(&pilot->palette, 0, pilot->color_3, 0);
             break;
         case SECONDARY:
             pilot->color_2 = color;
-            palette_set_player_color(&pilot->palette, 0, pilot->color_2, 1);
+            palette_load_altpal_player_color(&pilot->palette, 0, pilot->color_2, 1);
             break;
         case TERTIARY:
             pilot->color_1 = color;
-            palette_set_player_color(&pilot->palette, 0, pilot->color_1, 2);
+            palette_load_altpal_player_color(&pilot->palette, 0, pilot->color_1, 2);
             break;
     }
 }

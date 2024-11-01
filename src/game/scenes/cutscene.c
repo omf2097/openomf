@@ -104,7 +104,6 @@ int cutscene_create(scene *scene) {
     local->text_conf.font = FONT_SMALL;
 
     game_player *p1 = game_state_get_player(scene->gs, 0);
-    palette *mpal = video_get_base_palette();
 
     const char *text = "";
     switch(scene->id) {
@@ -155,8 +154,7 @@ int cutscene_create(scene *scene) {
         case SCENE_WORLD:
             audio_play_music(PSM_END);
 
-            palette_load_player_cutscene_colors(mpal, &p1->pilot->palette);
-            video_force_pal_refresh();
+            palette_load_player_cutscene_colors(&p1->pilot->palette);
 
             // load all the animations, in order
             // including the one for our HAR

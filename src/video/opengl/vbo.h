@@ -5,7 +5,7 @@
 
 GLuint vbo_create(GLsizeiptr size);
 void *vbo_map(GLuint id, GLsizei size);
-void vbo_unmap(GLuint id);
+void vbo_unmap(GLuint id, GLsizei size);
 void vbo_free(GLuint id);
 
 #endif // VBO_H

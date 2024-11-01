@@ -56,7 +56,6 @@ int altpals_load(altpal_file *ap, const char *filename) {
     }
 
     for(uint8_t i = 0; i < ALTPALS_PALETTES; i++) {
-        palette_create(&ap->palettes[i]);
         palette_load_range(r, &ap->palettes[i], 0, 256);
     }
 

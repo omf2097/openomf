@@ -371,7 +371,7 @@ int main(int argc, char *argv[]) {
         printf("  - Unknown: %d\n", rec.pilots[i].unknown_a);
         printf("  - Unknown: %d\n", rec.pilots[i].unknown_b);
         printf("  - Palette:\n");
-        print_bytes((char *)rec.pilots[i].pal.data, 144, 16, 4);
+        print_bytes((char *)rec.pilots[i].pal.colors, 144, 16, 4);
         printf("\n");
 
         if(rec.pilots[i].has_photo) {

@@ -11,11 +11,13 @@ GLuint vbo_create(GLsizeiptr size) {
 
 void *vbo_map(GLuint id, GLsizei size) {
     bindings_bind_vbo(id);
-    return glMapBufferRange(GL_ARRAY_BUFFER, 0, size, GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
+    return glMapBufferRange(GL_ARRAY_BUFFER, 0, size,
+                            GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT | GL_MAP_FLUSH_EXPLICIT_BIT);
 }
 
-void vbo_unmap(GLuint id) {
+void vbo_unmap(GLuint id, GLsizei size) {
     bindings_bind_vbo(id);
+    glFlushMappedBufferRange(GL_ARRAY_BUFFER, 0, size);
     glUnmapBuffer(GL_ARRAY_BUFFER);
 }
 

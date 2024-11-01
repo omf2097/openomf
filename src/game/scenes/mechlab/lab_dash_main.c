@@ -34,9 +34,7 @@ void lab_dash_main_photo_left(component *c, void *userdata) {
     pilotpic_prev(dw->photo);
     dw->pilot->photo_id = pilotpic_selected(dw->photo);
     pilotpic_load(dw->pilot->photo, &dw->pilot->palette, PIC_PLAYERS, dw->pilot->photo_id);
-    palette *base_pal = video_get_base_palette();
-    palette_load_player_colors(base_pal, &dw->pilot->palette, 0);
-    video_force_pal_refresh();
+    palette_load_player_colors(&dw->pilot->palette, 0);
 }
 
 void lab_dash_main_photo_right(component *c, void *userdata) {
@@ -44,9 +42,7 @@ void lab_dash_main_photo_right(component *c, void *userdata) {
     pilotpic_next(dw->photo);
     dw->pilot->photo_id = pilotpic_selected(dw->photo);
     pilotpic_load(dw->pilot->photo, &dw->pilot->palette, PIC_PLAYERS, dw->pilot->photo_id);
-    palette *base_pal = video_get_base_palette();
-    palette_load_player_colors(base_pal, &dw->pilot->palette, 0);
-    video_force_pal_refresh();
+    palette_load_player_colors(&dw->pilot->palette, 0);
 }
 
 void lab_dash_main_chr_load(component *c, void *userdata) {
@@ -263,9 +259,7 @@ component *lab_dash_main_create(scene *s, dashboard_widgets *dw) {
         dw->pilot->photo_id = pilotpic_selected(dw->photo);
         pilotpic_load(dw->pilot->photo, &dw->pilot->palette, PIC_PLAYERS, 0);
     }
-    palette *base_pal = video_get_base_palette();
-    palette_load_player_colors(base_pal, &dw->pilot->palette, 0);
-    video_force_pal_refresh();
+    palette_load_player_colors(&dw->pilot->palette, 0);
 
     xysizer_attach(xy, dw->photo, 12, -1, -1, -1);
 
@@ -325,9 +319,7 @@ component *lab_dash_sim_create(scene *s, dashboard_widgets *dw) {
         dw->pilot->photo_id = pilotpic_selected(dw->photo);
         pilotpic_load(dw->pilot->photo, &dw->pilot->palette, PIC_PLAYERS, 0);
     }
-    palette *base_pal = video_get_base_palette();
-    palette_load_player_colors(base_pal, &dw->pilot->palette, 0);
-    video_force_pal_refresh();
+    palette_load_player_colors(&dw->pilot->palette, 0);
 
     xysizer_attach(xy, dw->photo, 12, -1, -1, -1);
 
@@ -470,7 +462,5 @@ void lab_dash_main_update_gauges(dashboard_widgets *dw, sd_pilot *pilot) {
     }
 
     // Palette
-    palette *base_pal = video_get_base_palette();
-    palette_load_player_colors(base_pal, &pilot->palette, 0);
-    video_force_pal_refresh();
+    palette_load_player_colors(&pilot->palette, 0);
 }

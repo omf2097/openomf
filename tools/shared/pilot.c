@@ -162,9 +162,9 @@ void print_pilot_info(sd_pilot *pilot) {
 
         printf("    ");
         for(int i = 0; i < 48; i += 1) {
-            uint8_t r = pilot->palette.data[i][0];
-            uint8_t g = pilot->palette.data[i][1];
-            uint8_t b = pilot->palette.data[i][2];
+            uint8_t r = pilot->palette.colors[i].r;
+            uint8_t g = pilot->palette.colors[i].g;
+            uint8_t b = pilot->palette.colors[i].b;
             printf("\033[48;2;%d;%d;%dm", r, g, b);
             printf("%02x", i);
             printf("\033[0m");

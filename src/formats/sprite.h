@@ -86,9 +86,8 @@ void sd_sprite_free(sd_sprite *sprite);
  * \param dst Destination sprite struct pointer.
  * \param src Source RGBA image pointer
  * \param pal Palette that should be used for the conversion
- * \param remapping Palette remapping table that should be used. -1 for none.
  */
-int sd_sprite_rgba_encode(sd_sprite *dst, const sd_rgba_image *src, const palette *pal, int remapping);
+int sd_sprite_rgba_encode(sd_sprite *dst, const sd_rgba_image *src, const vga_palette *pal);
 
 /*! \brief Decode sprite data to RGBA format
  *
@@ -104,9 +103,8 @@ int sd_sprite_rgba_encode(sd_sprite *dst, const sd_rgba_image *src, const palett
  * \param dst Destination RGBA image struct pointer.
  * \param src Source Sprite image pointer
  * \param pal Palette that should be used for the conversion
- * \param remapping Palette remapping table that should be used. -1 for none.
  */
-int sd_sprite_rgba_decode(sd_rgba_image *dst, const sd_sprite *src, const palette *pal, int remapping);
+int sd_sprite_rgba_decode(sd_rgba_image *dst, const sd_sprite *src, const vga_palette *pal);
 
 /*! \brief Decode sprite to VGA image format.
  *
