@@ -6,7 +6,7 @@
 
 typedef void (*textinput_done_cb)(component *c, void *userdata);
 
-component *textinput_create(const text_settings *tconf, const char *text, const char *help, const char *initialoption);
+component *textinput_create(const text_settings *tconf, const char *help, const char *initialvalue);
 char *textinput_value(const component *c);
 void textinput_clear(component *c);
 void textinput_enable_background(component *c, int enabled);

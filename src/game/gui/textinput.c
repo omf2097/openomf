@@ -16,7 +16,6 @@
 #define COLOR_MENU_BG 0
 
 typedef struct {
-    char *text;
     text_settings tconf;
     int ticks;
     int dir;
@@ -203,7 +202,6 @@ void textinput_clear(component *c) {
 static void textinput_free(component *c) {
     textinput *tb = widget_get_obj(c);
     surface_free(&tb->sur);
-    omf_free(tb->text);
     omf_free(tb->buf);
     omf_free(tb);
 }
@@ -229,11 +227,10 @@ void textinput_set_done_cb(component *c, textinput_done_cb done_cb, void *userda
     tb->userdata = userdata;
 }
 
-component *textinput_create(const text_settings *tconf, const char *text, const char *help, const char *initialvalue) {
+component *textinput_create(const text_settings *tconf, const char *help, const char *initialvalue) {
     component *c = widget_create();
 
     textinput *tb = omf_calloc(1, sizeof(textinput));
-    tb->text = strdup(text);
     memcpy(&tb->tconf, tconf, sizeof(text_settings));
     tb->tconf.max_lines = 1;
     tb->bg_enabled = 1;
