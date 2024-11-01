@@ -37,7 +37,6 @@ typedef struct video_state {
     bool vsync;
 
     bool draw_atlas;
-    float fade;
     int target_move_x;
     int target_move_y;
 
@@ -57,7 +56,6 @@ int video_init(int window_w, int window_h, bool fullscreen, bool vsync) {
     g_video_state.screen_h = window_h;
     g_video_state.fullscreen = fullscreen;
     g_video_state.vsync = vsync;
-    g_video_state.fade = 1.0f;
     g_video_state.target_move_x = 0;
     g_video_state.target_move_y = 0;
     g_video_state.current_blend_mode = MODE_SET;
@@ -176,6 +174,16 @@ static void video_screenshot_capture(void) {
     omf_free(buffer);
 }
 
+/**
+ * Set the viewport, and do screen-shakes here.
+ */
+static inline void set_screen_viewport(void) {
+    float ratio = g_video_state.screen_w / NATIVE_W;
+    int vp_x = g_video_state.target_move_x * ratio;
+    int vp_y = g_video_state.target_move_y * ratio;
+    glViewport(vp_x, vp_y, g_video_state.viewport_w, g_video_state.viewport_h); // This is used for screen shakes.
+}
+
 // Called after frame has been rendered
 void video_render_finish(void) {
     object_array_finish(g_video_state.objects);
@@ -210,7 +218,7 @@ void video_render_finish(void) {
 
     // Disable render target, and dump its contents as RGBA to the screen.
     render_target_deactivate();
-    glViewport(0, 0, g_video_state.viewport_w, g_video_state.viewport_h);
+    set_screen_viewport();
     video_set_blend_mode(MODE_SET);
     activate_program(g_video_state.rgba_prog_id);
     if(g_video_state.draw_atlas) {
@@ -263,10 +271,6 @@ void video_get_state(int *w, int *h, int *fs, int *vsync) {
     if(vsync != NULL) {
         *vsync = g_video_state.vsync;
     }
-}
-
-void video_set_fade(float fade) {
-    g_video_state.fade = fade;
 }
 
 void video_schedule_screenshot(video_screenshot_signal callback) {
