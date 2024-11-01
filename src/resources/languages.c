@@ -31,7 +31,10 @@ int lang_init(void) {
         goto error_0;
     }
 
-    if(language->count == 990) {
+    // OMF GERMAN.DAT and old versions of ENGLISH.DAT have only 990 strings
+    unsigned int const old_language_count = 990;
+
+    if(language->count == old_language_count) {
         // OMF 2.1 added netplay, and with it 23 new localization strings
         unsigned new_ids[] = {149, 150, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181,
                               182, 183, 184, 185, 267, 269, 270, 271, 284, 295, 305};
