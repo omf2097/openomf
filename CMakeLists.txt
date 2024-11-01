@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.21)
 project(OpenOMF C)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-scripts)
 
@@ -369,7 +369,23 @@ file(COPY resources/openomf.bk resources/gamecontrollerdb.txt DESTINATION resour
 if(WIN32)
     # On windows, generate a flat directory structure under openomf/ subdir.
     # This way we have an "openomf/" root directory inside the zip file.
-    install(TARGETS openomf RUNTIME DESTINATION openomf/ COMPONENT Binaries)
+    if(CMAKE_CROSSCOMPILING)
+        # RUNTIME_DEPENDENCIES is not supported when cross compiling
+        install(TARGETS openomf
+                RUNTIME
+                    DESTINATION openomf/
+                    COMPONENT Binaries
+        )
+    else()
+        install(TARGETS openomf
+            RUNTIME_DEPENDENCIES
+              PRE_EXCLUDE_REGEXES "api-ms-" "ext-ms-"
+              POST_EXCLUDE_REGEXES ".*system32/.*\\.dll"
+            RUNTIME
+                DESTINATION openomf/
+                COMPONENT Binaries
+        )
+    endif()
     install(FILES resources/openomf.bk resources/gamecontrollerdb.txt DESTINATION openomf/resources/ COMPONENT Data)
     install(DIRECTORY shaders/ DESTINATION openomf/shaders COMPONENT Data)
     install(FILES README.md BUILD.md LICENSE DESTINATION openomf/ COMPONENT Data)
