@@ -13,18 +13,16 @@
 #define SERIAL_BUF_RESIZE_INC 64
 
 // taken from http://stackoverflow.com/questions/10620601/portable-serialisation-of-ieee754-floating-point-values
-float htonf(float val) {
+static uint32_t serial_htonf(float val) {
     uint32_t rep;
     memcpy(&rep, &val, sizeof rep);
     rep = htonl(rep);
-    memcpy(&val, &rep, sizeof rep);
-    return val;
+    return rep;
 }
 
-float ntohf(float val) {
-    uint32_t rep;
-    memcpy(&rep, &val, sizeof rep);
+static float serial_ntohf(uint32_t rep) {
     rep = ntohl(rep);
+    float val;
     memcpy(&val, &rep, sizeof rep);
     return val;
 }
@@ -89,7 +87,7 @@ void serial_write_uint32(serial *s, uint32_t v) {
 }
 
 void serial_write_float(serial *s, float v) {
-    float t = htonf(v);
+    uint32_t t = serial_htonf(v);
     serial_write(s, (char *)&t, sizeof(t));
 }
 
@@ -147,7 +145,7 @@ uint32_t serial_read_uint32(serial *s) {
 }
 
 float serial_read_float(serial *s) {
-    float v;
+    uint32_t v;
     serial_read(s, (char *)&v, sizeof(v));
-    return ntohf(v);
+    return serial_ntohf(v);
 }

@@ -575,7 +575,7 @@ void bk_keylist(void) {
     printf("* background\n");
 }
 
-void bk_info(sd_bk_file *bk) {
+void bk_getinfo(sd_bk_file *bk) {
     printf("BK File information:\n");
     printf(" * File ID:     %d\n", bk->file_id);
     printf(" * Palettes:    %d\n", bk->palette_count);
@@ -881,7 +881,7 @@ int main(int argc, char *argv[]) {
         } else if(keylist->count > 0) {
             bk_keylist();
         } else {
-            bk_info(&bk);
+            bk_getinfo(&bk);
         }
     }
 
