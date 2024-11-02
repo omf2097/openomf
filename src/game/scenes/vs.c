@@ -405,7 +405,7 @@ void vs_quit_dialog_clicked(dialog *dlg, dialog_result result) {
 
 void vs_too_pathetic_dialog_clicked(dialog *dlg, dialog_result result) {
     scene *sc = dlg->userdata;
-    game_state_set_next(sc->gs, SCENE_MENU);
+    game_state_set_next(sc->gs, SCENE_SCOREBOARD);
 }
 
 int vs_create(scene *scene) {
