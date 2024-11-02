@@ -13,10 +13,5 @@
       "name": "vcpkg-cmake-config",
       "host": true
     }
-  ],
-  "features": {
-    "tool": {
-      "description": "Build natpmpc tool"
-    }
-  }
+  ]
 }
