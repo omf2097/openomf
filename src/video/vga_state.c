@@ -161,3 +161,14 @@ void vga_state_use_palette_transform(vga_palette_transform transform_callback, v
     state.transformers[state.transformer_count].userdata = userdata;
     state.transformer_count++;
 }
+
+bool vga_state_dontuse_palette_transform(vga_palette_transform transform_callback, void *userdata) {
+    for(unsigned int i = 0; i < state.transformer_count; i++) {
+        if(state.transformers[i].callback == transform_callback && state.transformers[i].userdata == userdata) {
+            memmove(&state.transformers[i], &state.transformers[i + 1],
+                    sizeof(palette_transformer) * (--state.transformer_count - i));
+            return true;
+        }
+    }
+    return false;
+}

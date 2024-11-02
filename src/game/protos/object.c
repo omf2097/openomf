@@ -429,6 +429,7 @@ void object_free(object *obj) {
     if(obj == NULL) {
         return;
     }
+    vga_state_dontuse_palette_transform(object_scenewide_palette_transform, obj);
     if(obj->free != NULL) {
         obj->free(obj);
     }
