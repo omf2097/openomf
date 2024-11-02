@@ -257,9 +257,9 @@ void object_dynamic_tick(object *obj) {
     }
 
     if(obj->sprite_state.pal_tricks_off && obj->sprite_state.pal_copy_count > 0) { // BPO tag is on
-        vga_state_use_palette_transform(object_palette_copy_transform, &obj->sprite_state);
+        vga_state_enable_palette_transform(object_palette_copy_transform, &obj->sprite_state);
     } else if(obj->sprite_state.pal_entry_count > 0 && obj->sprite_state.duration > 0) { // BPO tag is off
-        vga_state_use_palette_transform(object_scenewide_palette_transform, &obj->sprite_state);
+        vga_state_enable_palette_transform(object_scenewide_palette_transform, &obj->sprite_state);
     }
 }
 
@@ -470,7 +470,7 @@ void object_free(object *obj) {
     if(obj == NULL) {
         return;
     }
-    vga_state_dontuse_palette_transform(object_scenewide_palette_transform, obj);
+    vga_state_disable_palette_transform(object_scenewide_palette_transform, obj);
     if(obj->free != NULL) {
         obj->free(obj);
     }

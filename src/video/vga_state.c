@@ -149,7 +149,7 @@ void vga_state_copy_base_palette_range(vga_index dst, vga_index src, vga_index c
     damage_set_range(&state.dmg_base, dst, dst + count);
 }
 
-void vga_state_use_palette_transform(vga_palette_transform transform_callback, void *userdata) {
+void vga_state_enable_palette_transform(vga_palette_transform transform_callback, void *userdata) {
     for(unsigned int i = 0; i < state.transformer_count; i++) {
         if(state.transformers[i].callback == transform_callback && state.transformers[i].userdata == userdata) {
             // don't push duplicates
@@ -163,7 +163,7 @@ void vga_state_use_palette_transform(vga_palette_transform transform_callback, v
     state.transformer_count++;
 }
 
-bool vga_state_dontuse_palette_transform(vga_palette_transform transform_callback, void *userdata) {
+bool vga_state_disable_palette_transform(vga_palette_transform transform_callback, void *userdata) {
     for(unsigned int i = 0; i < state.transformer_count; i++) {
         if(state.transformers[i].callback == transform_callback && state.transformers[i].userdata == userdata) {
             memmove(&state.transformers[i], &state.transformers[i + 1],
