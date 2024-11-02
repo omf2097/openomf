@@ -132,30 +132,12 @@ int text_width(const text_settings *settings, const char *text) {
 
     int len = strlen(text);
     int width = 0;
-    int code = 0;
-    surface **sur = NULL;
+    surface *sur = NULL;
     for(int i = 0; i < len; i++) {
-        code = text_chartoglyphindex(text[i]);
-        if(code < 0) {
-            continue;
+        sur = get_font_surface(settings, text[i]);
+        if(sur != NULL) {
+            width += sur->w;
         }
-        // Select font face surface
-        if(settings->font == FONT_BIG) {
-            sur = vector_get(&font_large.surfaces, code);
-        }
-        if(settings->font == FONT_SMALL) {
-            sur = vector_get(&font_small.surfaces, code);
-        }
-        if(settings->font == FONT_NET1) {
-            sur = vector_get(&font_net1.surfaces, code);
-        }
-        if(settings->font == FONT_NET2) {
-            sur = vector_get(&font_net2.surfaces, code);
-        }
-        if(sur == NULL || *sur == NULL) {
-            continue;
-        }
-        width += (*sur)->w;
     }
     return width;
 }
