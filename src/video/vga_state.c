@@ -1,6 +1,7 @@
 #include "video/vga_state.h"
 
 #include "utils/miscmath.h"
+#include "utils/png_writer.h"
 #include <assert.h>
 #include <string.h>
 
@@ -171,4 +172,15 @@ bool vga_state_dontuse_palette_transform(vga_palette_transform transform_callbac
         }
     }
     return false;
+}
+
+/**
+ * For debug use only!
+ */
+void vga_state_debug_screenshot(const char *filename) {
+    unsigned char img[256];
+    for(int i = 0; i < 256; i++) {
+        img[i] = i;
+    }
+    png_write_paletted(filename, 16, 16, &state.current, img);
 }

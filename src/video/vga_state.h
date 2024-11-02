@@ -40,4 +40,7 @@ void vga_state_copy_base_palette_range(vga_index dst, vga_index src, vga_index c
 void vga_state_use_palette_transform(vga_palette_transform transform_callback, void *userdata);
 bool vga_state_dontuse_palette_transform(vga_palette_transform transform_callback, void *userdata);
 
+// Take debug snapshot of the current palette state.
+void vga_state_debug_screenshot(const char *filename);
+
 #endif // VGA_STATE_H
