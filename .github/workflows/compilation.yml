@@ -32,6 +32,21 @@ jobs:
       run: |
         fdfind . -e .c -e .h -X clang-format-${{ env.clang-format-version }} --dry-run --Werror
 
+  cmake-formatting-check:
+    name: CMake Formatting Check
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install cmake-format and fd-find
+      run: |
+        sudo apt-get update
+        sudo apt-get -y install cmake-format fd-find
+    - name: Check cmake-format
+      run: |
+        fdfind . -e cmake . -X cmake-format '{}' --in-place --config-files .cmake-format.py
+        fdfind CMakeLists.txt . -X cmake-format '{}' --in-place --config-files .cmake-format.py
+        git --no-pager diff --exit-code
+
   # Run unittests on modern-ish versions of gcc and clang.
   # -----------------------------------------------------------------------------------------------
   unittest:
@@ -75,7 +90,7 @@ jobs:
   # Build windows package, release artifact (MSVC)
   # -----------------------------------------------------------------------------------------------
   build_msvc:
-    needs: [unittest, formatting-check]
+    needs: [unittest, formatting-check, cmake-formatting-check]
 
     name: Build windows-amd64 (MSVC)
     runs-on: windows-latest
@@ -157,7 +172,7 @@ jobs:
   # Build ubuntu package, release artifact
   # -----------------------------------------------------------------------------------------------
   build_ubuntu:
-    needs: [unittest, formatting-check]
+    needs: [unittest, formatting-check, cmake-formatting-check]
 
     name: Build ubuntu-latest
     runs-on: ubuntu-latest
@@ -237,7 +252,7 @@ jobs:
   # Build macos package, release artifact
   # -----------------------------------------------------------------------------------------------
   build_macos-arm:
-    needs: [unittest, formatting-check]
+    needs: [unittest, formatting-check, cmake-formatting-check]
 
     name: Build macos-14
     runs-on: macos-14
@@ -297,7 +312,7 @@ jobs:
   # Build windows package, release artifact (mingw-w64)
   # -----------------------------------------------------------------------------------------------
   build_windows:
-    needs: [unittest, formatting-check]
+    needs: [unittest, formatting-check, cmake-formatting-check]
 
     name: Build windows-amd64 (mingw-w64)
     runs-on: ubuntu-latest

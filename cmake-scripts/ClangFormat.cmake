@@ -16,7 +16,9 @@ function(prefix_clangformat_setup prefix)
       set(CLANGFORMAT_EXECUTABLE ${clangformat_executable_tmp})
       unset(clangformat_executable_tmp)
     else()
-      message(FATAL_ERROR "ClangFormat: ${CLANGFORMAT_EXECUTABLE} not found! Aborting")
+      message(
+        FATAL_ERROR "ClangFormat: ${CLANGFORMAT_EXECUTABLE} not found! Aborting"
+      )
     endif()
   endif()
 
@@ -25,17 +27,11 @@ function(prefix_clangformat_setup prefix)
     list(APPEND clangformat_sources ${clangformat_source})
   endforeach()
 
-  add_custom_target(${prefix}_clangformat
-    COMMAND
-      ${CLANGFORMAT_EXECUTABLE}
-      -style=file
-      -i
-      ${clangformat_sources}
-    WORKING_DIRECTORY
-      ${CMAKE_SOURCE_DIR}
-    COMMENT
-      "Formatting ${prefix} with ${CLANGFORMAT_EXECUTABLE} ..."
-  )
+  add_custom_target(
+    ${prefix}_clangformat
+    COMMAND ${CLANGFORMAT_EXECUTABLE} -style=file -i ${clangformat_sources}
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    COMMENT "Formatting ${prefix} with ${CLANGFORMAT_EXECUTABLE} ...")
 
   if(TARGET clangformat)
     add_dependencies(clangformat ${prefix}_clangformat)

@@ -1,42 +1,38 @@
 if(VCPKG_TOOLCHAIN)
-    find_package(Argtable2 CONFIG)
-    if(Argtable2_FOUND)
-        set(ARGTABLE2_FOUND ON)
-        set(ARGTABLE2_LIBRARY argtable2::argtable2)
-        set(ARGTABLE2_INCLUDE_DIR)
-        set(ARGTABLE2_INCLUDE_DIRS)
-        set(ARGTABLE2_LIBRARIES ${ARGTABLE2_LIBRARY})
+  find_package(Argtable2 CONFIG)
+  if(Argtable2_FOUND)
+    set(ARGTABLE2_FOUND ON)
+    set(ARGTABLE2_LIBRARY argtable2::argtable2)
+    set(ARGTABLE2_INCLUDE_DIR)
+    set(ARGTABLE2_INCLUDE_DIRS)
+    set(ARGTABLE2_LIBRARIES ${ARGTABLE2_LIBRARY})
 
-        mark_as_advanced(ARGTABLE2_INCLUDE_DIR ARGTABLE2_LIBRARY)
-        return()
-    endif(Argtable2_FOUND)
+    mark_as_advanced(ARGTABLE2_INCLUDE_DIR ARGTABLE2_LIBRARY)
+    return()
+  endif(Argtable2_FOUND)
 endif(VCPKG_TOOLCHAIN)
 
-set(ARGTABLE2_SEARCH_PATHS
-    /usr/local
-    /usr
-    /opt
-)
+set(ARGTABLE2_SEARCH_PATHS /usr/local /usr /opt)
 
-find_path(ARGTABLE2_INCLUDE_DIR argtable2.h 
-    HINTS
-    PATH_SUFFIXES include
-    PATHS ${ARGTABLE2_SEARCH_PATHS}
-)
-find_library(ARGTABLE2_LIBRARY argtable2 
-    HINTS
-    PATH_SUFFIXES lib64 lib
-    PATHS ${ARGTABLE2_SEARCH_PATHS}
-)
+find_path(
+  ARGTABLE2_INCLUDE_DIR argtable2.h
+  HINTS
+  PATH_SUFFIXES include
+  PATHS ${ARGTABLE2_SEARCH_PATHS})
+find_library(
+  ARGTABLE2_LIBRARY argtable2
+  HINTS
+  PATH_SUFFIXES lib64 lib
+  PATHS ${ARGTABLE2_SEARCH_PATHS})
 
 if(ARGTABLE2_INCLUDE_DIR AND ARGTABLE2_LIBRARY)
-   set(ARGTABLE2_FOUND TRUE)
+  set(ARGTABLE2_FOUND TRUE)
 endif()
 
 if(ARGTABLE2_FOUND)
-    set(ARGTABLE2_LIBRARIES ${ARGTABLE2_LIBRARY})
-    set(ARGTABLE2_INCLUDE_DIRS ${ARGTABLE2_INCLUDE_DIR})
-    message(STATUS "Found Argtable2: ${ARGTABLE2_LIBRARIES}")
+  set(ARGTABLE2_LIBRARIES ${ARGTABLE2_LIBRARY})
+  set(ARGTABLE2_INCLUDE_DIRS ${ARGTABLE2_INCLUDE_DIR})
+  message(STATUS "Found Argtable2: ${ARGTABLE2_LIBRARIES}")
 endif()
 
 mark_as_advanced(ARGTABLE2_INCLUDE_DIR ARGTABLE2_LIBRARY ARGTABLE2_SEARCH_PATHS)
