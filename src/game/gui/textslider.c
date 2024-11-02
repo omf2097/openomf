@@ -17,25 +17,15 @@ typedef struct {
     int has_off;
     int positions;
 
+    char *buf;
+    int len;
+
     void *userdata;
     textslider_slide_cb slide;
 } textslider;
 
 static void textslider_render(component *c) {
     textslider *tb = widget_get_obj(c);
-    str txt;
-    str_from_format(&txt, "%s ", tb->text);
-    if(tb->has_off && *tb->pos == 0) {
-        str_append_c(&txt, "OFF");
-    } else {
-        for(int i = 0; i < tb->positions; i++) {
-            if(i + 1 > *tb->pos) {
-                str_append_c(&txt, "|");
-            } else {
-                str_append_c(&txt, "\x7f");
-            }
-        }
-    }
 
     text_mode mode = TEXT_UNSELECTED;
     if(component_is_selected(c)) {
@@ -43,8 +33,26 @@ static void textslider_render(component *c) {
     } else if(component_is_disabled(c)) {
         mode = TEXT_DISABLED;
     }
-    text_render(&tb->tconf, mode, c->x, c->y, c->w, c->h, str_c(&txt));
-    str_free(&txt);
+    text_render(&tb->tconf, mode, c->x, c->y, c->w, c->h, tb->text);
+}
+
+void update_string(component *c) {
+    textslider *tb = widget_get_obj(c);
+    if(tb->has_off && *tb->pos == 0) {
+        tb->buf[0] = 'O';
+        tb->buf[1] = 'F';
+        tb->buf[2] = 'F';
+        tb->buf[3] = 0;
+    } else {
+        for(int i = 0; i < tb->positions; i++) {
+            if(i + 1 > *tb->pos) {
+                tb->buf[i] = '|';
+            } else {
+                tb->buf[i] = '\x7f';
+            }
+        }
+        tb->buf[tb->positions] = 0;
+    }
 }
 
 static int textslider_action(component *c, int action) {
@@ -54,6 +62,7 @@ static int textslider_action(component *c, int action) {
         if(*tb->pos > tb->positions) {
             *tb->pos = tb->positions;
         } else {
+            update_string(c);
             // Play menu sound
             audio_play_sound(20, 0.5f, 0.5f, 2.0f);
         }
@@ -69,6 +78,7 @@ static int textslider_action(component *c, int action) {
         if(*tb->pos < 0) {
             *tb->pos = 0;
         } else {
+            update_string(c);
             // Play menu sound
             audio_play_sound(20, 0.5f, -0.5f, 2.0f);
         }
@@ -109,7 +119,13 @@ component *textslider_create(const text_settings *tconf, const char *text, const
     component *c = widget_create();
 
     textslider *tb = omf_calloc(1, sizeof(textslider));
-    tb->text = strdup(text);
+    tb->len = strlen(text) + positions + 2;
+    tb->text = omf_calloc(1, tb->len);
+    strncpy(tb->text, text, tb->len);
+    tb->buf = tb->text + strlen(text);;
+    tb->buf[0] = ' ';
+    tb->buf[1] = 0;
+    tb->buf++;
     memcpy(&tb->tconf, tconf, sizeof(text_settings));
     component_set_help_text(c, help);
     tb->ticks = 0;
@@ -123,6 +139,8 @@ component *textslider_create(const text_settings *tconf, const char *text, const
     widget_set_obj(c, tb);
 
     component_set_size_hints(c, text_width(&tb->tconf, text), 8);
+
+    update_string(c);
 
     widget_set_render_cb(c, textslider_render);
     widget_set_action_cb(c, textslider_action);
