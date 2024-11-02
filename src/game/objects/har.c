@@ -31,8 +31,10 @@
 void har_finished(object *obj);
 int har_act(object *obj, int act_type);
 void har_spawn_scrap(object *obj, vec2i pos, int amount);
+void har_palette_transform(damage_tracker *damage, vga_palette *pal, void *obj);
 
 void har_free(object *obj) {
+    vga_state_dontuse_palette_transform(har_palette_transform, obj);
     har *h = object_get_userdata(obj);
     list_free(&h->har_hooks);
 #ifdef DEBUGMODE
