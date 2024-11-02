@@ -156,26 +156,28 @@ if(VCPKG_TOOLCHAIN)
     else()
       set(SDL2_LIBRARIES SDL2::SDL2-static)
     endif()
-    get_target_property(SDL2_INCLUDE_DIR "${SDL2_LIBRARIES}" INTERFACE_INCLUDE_DIRECTORIES)
+    get_target_property(SDL2_INCLUDE_DIR "${SDL2_LIBRARIES}"
+                        INTERFACE_INCLUDE_DIRECTORIES)
     add_library(SDL2::Main INTERFACE IMPORTED)
-    target_link_libraries(SDL2::Main INTERFACE
-      SDL2::SDL2main
-      "${SDL2_LIBRARIES}"
-    )
+    target_link_libraries(SDL2::Main INTERFACE SDL2::SDL2main
+                                               "${SDL2_LIBRARIES}")
     return()
   endif(SDL2_FOUND)
 endif(VCPKG_TOOLCHAIN)
 
 # Define options for searching SDL2 Library in a custom path
 
-set(SDL2_PATH "" CACHE STRING "Custom SDL2 Library path")
+set(SDL2_PATH
+    ""
+    CACHE STRING "Custom SDL2 Library path")
 
 set(_SDL2_NO_DEFAULT_PATH OFF)
 if(SDL2_PATH)
   set(_SDL2_NO_DEFAULT_PATH ON)
 endif()
 
-set(SDL2_NO_DEFAULT_PATH ${_SDL2_NO_DEFAULT_PATH}
+set(SDL2_NO_DEFAULT_PATH
+    ${_SDL2_NO_DEFAULT_PATH}
     CACHE BOOL "Disable search SDL2 Library in default path")
 unset(_SDL2_NO_DEFAULT_PATH)
 
@@ -185,16 +187,15 @@ if(SDL2_NO_DEFAULT_PATH)
 endif()
 
 # Search for the SDL2 include directory
-find_path(SDL2_INCLUDE_DIR SDL.h
-  HINTS
-    ENV SDL2DIR
-    ${SDL2_NO_DEFAULT_PATH_CMD}
-  PATH_SUFFIXES SDL2
-                # path suffixes to search inside ENV{SDL2DIR}
-                include/SDL2 include
+find_path(
+  SDL2_INCLUDE_DIR SDL.h
+  HINTS ENV SDL2DIR ${SDL2_NO_DEFAULT_PATH_CMD}
+  PATH_SUFFIXES
+    SDL2
+    # path suffixes to search inside ENV{SDL2DIR}
+    include/SDL2 include
   PATHS ${SDL2_PATH}
-  DOC "Where the SDL2 headers can be found"
-)
+  DOC "Where the SDL2 headers can be found")
 
 set(SDL2_INCLUDE_DIRS "${SDL2_INCLUDE_DIR}")
 
@@ -206,15 +207,13 @@ endif()
 
 # SDL-2.0 is the name used by FreeBSD ports...
 # don't confuse it for the version number.
-find_library(SDL2_LIBRARY
+find_library(
+  SDL2_LIBRARY
   NAMES SDL2 SDL-2.0
-  HINTS
-    ENV SDL2DIR
-    ${SDL2_NO_DEFAULT_PATH_CMD}
+  HINTS ENV SDL2DIR ${SDL2_NO_DEFAULT_PATH_CMD}
   PATH_SUFFIXES lib ${VC_LIB_PATH_SUFFIX}
   PATHS ${SDL2_PATH}
-  DOC "Where the SDL2 Library can be found"
-)
+  DOC "Where the SDL2 Library can be found")
 
 set(SDL2_LIBRARIES "${SDL2_LIBRARY}")
 
@@ -230,37 +229,31 @@ if(NOT SDL2_BUILDING_LIBRARY)
     endif()
 
     if(NOT SDL2_NO_DEFAULT_PATH)
-      set(SDL2MAIN_LIBRARY_PATHS
-            /sw
-            /opt/local
-            /opt/csw
-            /opt
-            "${SDL2MAIN_LIBRARY_PATHS}"
-      )
+      set(SDL2MAIN_LIBRARY_PATHS /sw /opt/local /opt/csw /opt
+                                 "${SDL2MAIN_LIBRARY_PATHS}")
     endif()
 
-    find_library(SDL2MAIN_LIBRARY
+    find_library(
+      SDL2MAIN_LIBRARY
       NAMES SDL2main
-      HINTS
-        ENV SDL2DIR
-        ${SDL2_NO_DEFAULT_PATH_CMD}
+      HINTS ENV SDL2DIR ${SDL2_NO_DEFAULT_PATH_CMD}
       PATH_SUFFIXES lib ${VC_LIB_PATH_SUFFIX}
       PATHS ${SDL2MAIN_LIBRARY_PATHS}
-      DOC "Where the SDL2main library can be found"
-    )
+      DOC "Where the SDL2main library can be found")
     unset(SDL2MAIN_LIBRARY_PATHS)
   endif()
 endif()
 
 find_package(Threads QUIET)
 if(NOT Threads_FOUND)
-  set(SDL2_THREADS_NOT_FOUND "Could NOT find Threads (Threads is required by SDL2).")
+  set(SDL2_THREADS_NOT_FOUND
+      "Could NOT find Threads (Threads is required by SDL2).")
   if(SDL2_FIND_REQUIRED)
     message(FATAL_ERROR ${SDL2_THREADS_NOT_FOUND})
   else()
-      if(NOT SDL2_FIND_QUIETLY)
-        message(STATUS ${SDL2_THREADS_NOT_FOUND})
-      endif()
+    if(NOT SDL2_FIND_QUIETLY)
+      message(STATUS ${SDL2_THREADS_NOT_FOUND})
+    endif()
     return()
   endif()
   unset(SDL2_THREADS_NOT_FOUND)
@@ -269,7 +262,9 @@ endif()
 # MinGW needs an additional link flag, -mwindows
 # It's total link flags should look like -lmingw32 -lSDL2main -lSDL2 -mwindows
 if(MINGW)
-  set(MINGW32_LIBRARY mingw32 "-mwindows" CACHE STRING "link flags for MinGW")
+  set(MINGW32_LIBRARY
+      mingw32 "-mwindows"
+      CACHE STRING "link flags for MinGW")
 endif()
 
 if(SDL2_LIBRARY)
@@ -282,7 +277,6 @@ if(SDL2_LIBRARY)
     unset(_SDL2_MAIN_INDEX)
   endif()
 
-
   set(SDL2_LIBRARIES ${SDL2_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
 
   # For MinGW library
@@ -294,13 +288,20 @@ endif()
 
 # Read SDL2 version
 if(SDL2_INCLUDE_DIR AND EXISTS "${SDL2_INCLUDE_DIR}/SDL_version.h")
-  file(STRINGS "${SDL2_INCLUDE_DIR}/SDL_version.h" SDL2_VERSION_MAJOR_LINE REGEX "^#define[ \t]+SDL_MAJOR_VERSION[ \t]+[0-9]+$")
-  file(STRINGS "${SDL2_INCLUDE_DIR}/SDL_version.h" SDL2_VERSION_MINOR_LINE REGEX "^#define[ \t]+SDL_MINOR_VERSION[ \t]+[0-9]+$")
-  file(STRINGS "${SDL2_INCLUDE_DIR}/SDL_version.h" SDL2_VERSION_PATCH_LINE REGEX "^#define[ \t]+SDL_PATCHLEVEL[ \t]+[0-9]+$")
-  string(REGEX REPLACE "^#define[ \t]+SDL_MAJOR_VERSION[ \t]+([0-9]+)$" "\\1" SDL2_VERSION_MAJOR "${SDL2_VERSION_MAJOR_LINE}")
-  string(REGEX REPLACE "^#define[ \t]+SDL_MINOR_VERSION[ \t]+([0-9]+)$" "\\1" SDL2_VERSION_MINOR "${SDL2_VERSION_MINOR_LINE}")
-  string(REGEX REPLACE "^#define[ \t]+SDL_PATCHLEVEL[ \t]+([0-9]+)$" "\\1" SDL2_VERSION_PATCH "${SDL2_VERSION_PATCH_LINE}")
-  set(SDL2_VERSION_STRING ${SDL2_VERSION_MAJOR}.${SDL2_VERSION_MINOR}.${SDL2_VERSION_PATCH})
+  file(STRINGS "${SDL2_INCLUDE_DIR}/SDL_version.h" SDL2_VERSION_MAJOR_LINE
+       REGEX "^#define[ \t]+SDL_MAJOR_VERSION[ \t]+[0-9]+$")
+  file(STRINGS "${SDL2_INCLUDE_DIR}/SDL_version.h" SDL2_VERSION_MINOR_LINE
+       REGEX "^#define[ \t]+SDL_MINOR_VERSION[ \t]+[0-9]+$")
+  file(STRINGS "${SDL2_INCLUDE_DIR}/SDL_version.h" SDL2_VERSION_PATCH_LINE
+       REGEX "^#define[ \t]+SDL_PATCHLEVEL[ \t]+[0-9]+$")
+  string(REGEX REPLACE "^#define[ \t]+SDL_MAJOR_VERSION[ \t]+([0-9]+)$" "\\1"
+                       SDL2_VERSION_MAJOR "${SDL2_VERSION_MAJOR_LINE}")
+  string(REGEX REPLACE "^#define[ \t]+SDL_MINOR_VERSION[ \t]+([0-9]+)$" "\\1"
+                       SDL2_VERSION_MINOR "${SDL2_VERSION_MINOR_LINE}")
+  string(REGEX REPLACE "^#define[ \t]+SDL_PATCHLEVEL[ \t]+([0-9]+)$" "\\1"
+                       SDL2_VERSION_PATCH "${SDL2_VERSION_PATCH_LINE}")
+  set(SDL2_VERSION_STRING
+      ${SDL2_VERSION_MAJOR}.${SDL2_VERSION_MINOR}.${SDL2_VERSION_PATCH})
   unset(SDL2_VERSION_MAJOR_LINE)
   unset(SDL2_VERSION_MINOR_LINE)
   unset(SDL2_VERSION_PATCH_LINE)
@@ -311,25 +312,21 @@ endif()
 
 include(FindPackageHandleStandardArgs)
 
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(SDL2
-                                  REQUIRED_VARS SDL2_LIBRARY SDL2_INCLUDE_DIR
-                                  VERSION_VAR SDL2_VERSION_STRING)
+find_package_handle_standard_args(
+  SDL2
+  REQUIRED_VARS SDL2_LIBRARY SDL2_INCLUDE_DIR
+  VERSION_VAR SDL2_VERSION_STRING)
 
 if(SDL2MAIN_LIBRARY)
   set(FPHSA_NAME_MISMATCHED 1)
-  FIND_PACKAGE_HANDLE_STANDARD_ARGS(SDL2main
-                                    REQUIRED_VARS SDL2MAIN_LIBRARY SDL2_INCLUDE_DIR
-                                    VERSION_VAR SDL2_VERSION_STRING)
+  find_package_handle_standard_args(
+    SDL2main
+    REQUIRED_VARS SDL2MAIN_LIBRARY SDL2_INCLUDE_DIR
+    VERSION_VAR SDL2_VERSION_STRING)
 endif()
 
-
-mark_as_advanced(SDL2_PATH
-                 SDL2_NO_DEFAULT_PATH
-                 SDL2_LIBRARY
-                 SDL2MAIN_LIBRARY
-                 SDL2_INCLUDE_DIR
-                 SDL2_BUILDING_LIBRARY)
-
+mark_as_advanced(SDL2_PATH SDL2_NO_DEFAULT_PATH SDL2_LIBRARY SDL2MAIN_LIBRARY
+                 SDL2_INCLUDE_DIR SDL2_BUILDING_LIBRARY)
 
 # SDL2:: targets (SDL2::Core and SDL2::Main)
 if(SDL2_FOUND)
@@ -337,12 +334,14 @@ if(SDL2_FOUND)
   # SDL2::Core target
   if(SDL2_LIBRARY AND NOT TARGET SDL2::Core)
     add_library(SDL2::Core UNKNOWN IMPORTED)
-    set_target_properties(SDL2::Core PROPERTIES
-                          IMPORTED_LOCATION "${SDL2_LIBRARY}"
-                          INTERFACE_INCLUDE_DIRECTORIES "${SDL2_INCLUDE_DIR}")
+    set_target_properties(
+      SDL2::Core PROPERTIES IMPORTED_LOCATION "${SDL2_LIBRARY}"
+                            INTERFACE_INCLUDE_DIRECTORIES "${SDL2_INCLUDE_DIR}")
 
-    set_property(TARGET SDL2::Core APPEND PROPERTY
-                  INTERFACE_LINK_LIBRARIES Threads::Threads)
+    set_property(
+      TARGET SDL2::Core
+      APPEND
+      PROPERTY INTERFACE_LINK_LIBRARIES Threads::Threads)
   endif()
 
   # SDL2::Main target
@@ -352,29 +351,31 @@ if(SDL2_FOUND)
 
     if(SDL2_INCLUDE_DIR MATCHES ".framework" OR NOT SDL2MAIN_LIBRARY)
       add_library(SDL2::Main INTERFACE IMPORTED)
-      set_property(TARGET SDL2::Main PROPERTY
-                   INTERFACE_LINK_LIBRARIES SDL2::Core)
+      set_property(TARGET SDL2::Main PROPERTY INTERFACE_LINK_LIBRARIES
+                                              SDL2::Core)
     elseif(SDL2MAIN_LIBRARY)
       # MinGW requires that the mingw32 library is specified before the
       # libSDL2main.a static library when linking.
       # The SDL2::MainInternal target is used internally to make sure that
       # CMake respects this condition.
       add_library(SDL2::MainInternal UNKNOWN IMPORTED)
-      set_property(TARGET SDL2::MainInternal PROPERTY
-                   IMPORTED_LOCATION "${SDL2MAIN_LIBRARY}")
-      set_property(TARGET SDL2::MainInternal PROPERTY
-                   INTERFACE_LINK_LIBRARIES SDL2::Core)
+      set_property(TARGET SDL2::MainInternal PROPERTY IMPORTED_LOCATION
+                                                      "${SDL2MAIN_LIBRARY}")
+      set_property(TARGET SDL2::MainInternal PROPERTY INTERFACE_LINK_LIBRARIES
+                                                      SDL2::Core)
 
       add_library(SDL2::Main INTERFACE IMPORTED)
 
       if(MINGW)
         # MinGW needs an additional link flag '-mwindows' and link to mingw32
-        set_property(TARGET SDL2::Main PROPERTY
-                     INTERFACE_LINK_LIBRARIES "mingw32" "-mwindows")
+        set_property(TARGET SDL2::Main PROPERTY INTERFACE_LINK_LIBRARIES
+                                                "mingw32" "-mwindows")
       endif()
 
-      set_property(TARGET SDL2::Main APPEND PROPERTY
-                   INTERFACE_LINK_LIBRARIES SDL2::MainInternal)
+      set_property(
+        TARGET SDL2::Main
+        APPEND
+        PROPERTY INTERFACE_LINK_LIBRARIES SDL2::MainInternal)
     endif()
 
   endif()
