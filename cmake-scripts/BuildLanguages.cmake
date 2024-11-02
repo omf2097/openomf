@@ -5,6 +5,14 @@ set(OMF_LANGS ENGLISH GERMAN)
 set(LANG2_STRCOUNT 1)
 set(OPENOMF_LANGS DANISH)
 
+set(LANGUAGETOOL_COMMAND $<TARGET_FILE:languagetool> CACHE STRING "How to run languagetool")
+
+if(WIN32)
+    set(LANGUAGE_INSTALL_PATH "openomf/resources/")
+else()
+    set(LANGUAGE_INSTALL_PATH "share/games/openomf/")
+endif()
+
 # generate custom target info
 set(BUILD_LANG_COMMANDS)
 foreach(LANG ${OMF_LANGS})
@@ -13,8 +21,9 @@ foreach(LANG ${OMF_LANGS})
     list(APPEND BUILD_LANG_COMMANDS
         DEPENDS "${TXT2}"
         BYPRODUCTS "${DAT2}"
-        COMMAND $<TARGET_FILE:languagetool> -i "${TXT2}" -o "${DAT2}" --check-count ${LANG2_STRCOUNT}
+        COMMAND ${LANGUAGETOOL_COMMAND} -i "${TXT2}" -o "${DAT2}" --check-count ${LANG2_STRCOUNT}
     )
+    install(FILES "${DAT2}" DESTINATION "${LANGUAGE_INSTALL_PATH}")
 endforeach()
 foreach(LANG ${OPENOMF_LANGS})
     set(TXT "${PROJECT_SOURCE_DIR}/resources/${LANG}.TXT")
@@ -24,9 +33,10 @@ foreach(LANG ${OPENOMF_LANGS})
     list(APPEND BUILD_LANG_COMMANDS
         DEPENDS "${TXT}" "${TXT2}"
         BYPRODUCTS "${LNG}" "{LNG2}"
-        COMMAND $<TARGET_FILE:languagetool> -i "${TXT}" -o "${LNG}" --check-count ${LANG_STRCOUNT}
-        COMMAND $<TARGET_FILE:languagetool> -i "${TXT2}" -o "${LNG2}" --check-count ${LANG2_STRCOUNT}
+        COMMAND ${LANGUAGETOOL_COMMAND} -i "${TXT}" -o "${LNG}" --check-count ${LANG_STRCOUNT}
+        COMMAND ${LANGUAGETOOL_COMMAND} -i "${TXT2}" -o "${LNG2}" --check-count ${LANG2_STRCOUNT}
     )
+    install(FILES "${LNG}" "${LNG2}" DESTINATION "${LANGUAGE_INSTALL_PATH}")
 endforeach()
 
 
