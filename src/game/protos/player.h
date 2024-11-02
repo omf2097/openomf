@@ -32,6 +32,12 @@ typedef struct player_sprite_state_t {
     int pal_begin;       // bpb
     int pal_end;         // bpd
     int pal_tint;        // bz
+
+    int pal_tricks_off; // bpo
+
+    int pal_copy_entries; // ba
+    int pal_copy_start;   // bi
+    int pal_copy_count;   // ba
 } player_sprite_state;
 
 typedef struct player_slide_op_t {

@@ -147,10 +147,9 @@ void object_scenewide_palette_transform(damage_tracker *damage, vga_palette *pal
     uint8_t m;
     vga_color ref;
     vga_index start, end;
-    player_sprite_state *state;
+    player_sprite_state *state = userdata;
 
     // Make sure stuff seems legit.
-    state = &((object *)userdata)->sprite_state;
     assert(state->pal_start_index < 256);
     assert(state->pal_start_index + state->pal_entry_count <= 256);
 
@@ -179,6 +178,26 @@ void object_scenewide_palette_transform(damage_tracker *damage, vga_palette *pal
 
     // Mark the palette as damaged
     damage_set_range(damage, start, end);
+}
+
+void object_palette_copy_transform(damage_tracker *damage, vga_palette *pal, void *userdata) {
+    player_sprite_state *state = userdata;
+    int src_start = state->pal_copy_start;
+    int src_end = state->pal_copy_entries + src_start;
+    float step = state->timer / (float)state->duration;
+    float bpp = (state->pal_begin + (state->pal_end - state->pal_begin) * step) / 255.0;
+
+    int pos = src_end;
+    for(int i = 0; i < state->pal_copy_count; i++) {
+        for(int w = src_start; w < src_end; w++) {
+            pal->colors[pos].r = clamp(pal->colors[w].r * bpp, 0, 255);
+            pal->colors[pos].g = clamp(pal->colors[w].g * bpp, 0, 255);
+            pal->colors[pos].b = clamp(pal->colors[w].b * bpp, 0, 255);
+            pos++;
+        }
+    }
+
+    damage_set_range(damage, src_end, pos);
 }
 
 void object_dynamic_tick(object *obj) {
@@ -217,8 +236,10 @@ void object_dynamic_tick(object *obj) {
         obj->sprite_state.screen_shake_horizontal = 0;
     }
 
-    if(obj->sprite_state.pal_entry_count > 0 && obj->sprite_state.duration > 0) {
-        vga_state_use_palette_transform(object_scenewide_palette_transform, obj);
+    if(obj->sprite_state.pal_tricks_off && obj->sprite_state.pal_copy_count > 0) { // BPO tag is on
+        vga_state_use_palette_transform(object_palette_copy_transform, &obj->sprite_state);
+    } else if(obj->sprite_state.pal_entry_count > 0 && obj->sprite_state.duration > 0) { // BPO tag is off
+        vga_state_use_palette_transform(object_scenewide_palette_transform, &obj->sprite_state);
     }
 }
 

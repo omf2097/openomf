@@ -17,41 +17,6 @@
 #include "utils/vec.h"
 #include "video/video.h"
 
-// For CREDITS page, marks the animations and frames on which to fade in and out
-// Somewhat hacky, but easier than trying to figure out the tags (which only work for this scene anyway)
-struct {
-    int anim_no;
-    int frame_no;
-    int fade_in;
-} bd_overrides[] = {
-    {20, 2,  1},
-    {21, 1,  1},
-    {21, 4,  0},
-    {21, 6,  1},
-    {21, 9,  0},
-    {21, 11, 1},
-    {21, 14, 0},
-    {21, 16, 1},
-    {21, 19, 0},
-    {20, 5,  0},
-    {22, 2,  1},
-    {23, 1,  1},
-    {23, 4,  0},
-    {23, 6,  1},
-    {23, 9,  0},
-    {23, 11, 1},
-    {23, 14, 0},
-    {22, 5,  0},
-    {25, 1,  1},
-    {24, 3,  1},
-    {25, 4,  0},
-    {24, 6,  0},
-    {27, 1,  1},
-    {26, 3,  1},
-    {27, 4,  0},
-    {26, 6,  0},
-    {0,  0,  0}  // guard
-};
 #define COLOR_6TO8(color) ((color << 2) | ((color & 0x30) >> 4))
 
 // ---------------- Private functions ----------------
@@ -79,6 +44,10 @@ void player_clear_frame(object *obj) {
     s->pal_start_index = 0;
     s->pal_entry_count = 0;
     s->pal_tint = 0;
+
+    s->pal_copy_entries = 0;
+    s->pal_copy_start = 0;
+    s->pal_copy_count = 0;
 }
 
 // ---------------- Public functions ----------------
@@ -576,6 +545,12 @@ void player_run(object *obj) {
             rstate->pal_tint = 1;
         }
 
+        // CREDITS palette copy tricks
+        rstate->pal_tricks_off = sd_script_isset(frame, "bpo") ? 1 : 0;
+        rstate->pal_copy_count = sd_script_get(frame, "ba");   // Number of copies to make after bi + bc
+        rstate->pal_copy_start = sd_script_get(frame, "bi");   // Start offset for copying
+        rstate->pal_copy_entries = sd_script_get(frame, "bc"); // Number of indexes to copy
+
         // Handle position correction
         if(sd_script_isset(frame, "ox")) {
             DEBUG("O_CORRECTION: X = %d", sd_script_get(frame, "ox"));
@@ -683,27 +658,6 @@ void player_run(object *obj) {
         if(obj->hit_frames > 0) {
             obj->can_hit = 1;
             obj->hit_frames--;
-        }
-
-        // CREDITS scene moving titles & names
-        if(sd_script_isset(frame, "bd")) {
-            int cur_anim = obj->cur_animation->id;
-            int cur_frame = sd_script_get_frame_index(&obj->animation_state.parser, frame);
-
-            int n = 0;
-            while(1) {
-                if(bd_overrides[n].anim_no == 0) {
-                    break;
-                }
-                if(bd_overrides[n].anim_no == cur_anim && bd_overrides[n].frame_no == cur_frame) {
-                    if(bd_overrides[n].fade_in == 1) {
-                        rstate->blend_start = 0;
-                    } else {
-                        rstate->blend_finish = 0;
-                    }
-                }
-                n++;
-            }
         }
 
         // Set video effects now.
