@@ -23,8 +23,6 @@ typedef struct player_sprite_state_t {
     int dir_correction;
     int disable_gravity;
 
-    int saturate_effect;
-
     int blend_start;
     int blend_finish;
 
