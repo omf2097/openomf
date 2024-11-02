@@ -14,41 +14,31 @@ bool nat_create_upnp_mapping(nat_ctx *ctx, uint16_t int_port, uint16_t ext_port)
     char ext_portstr[6];
     snprintf(ext_portstr, sizeof(ext_portstr), "%d", ext_port);
 
-    char lan_address[64];
-#if(MINIUPNPC_API_VERSION >= 18)
-    int status =
-        UPNP_GetValidIGD(ctx->upnp_dev, &ctx->upnp_urls, &ctx->upnp_data, lan_address, sizeof(lan_address), NULL, 0);
-#else
-    int status = UPNP_GetValidIGD(ctx->upnp_dev, &ctx->upnp_urls, &ctx->upnp_data, lan_address, sizeof(lan_address));
-#endif
+    // get the external (WAN) IP address
+    // char wan_address[64];
+    // UPNP_GetExternalIPAddress(ctx->upnp_urls.controlURL, ctx->upnp_data.first.servicetype, wan_address);
 
-    if(status == 1) {
-        // get the external (WAN) IP address
-        char wan_address[64];
-        UPNP_GetExternalIPAddress(ctx->upnp_urls.controlURL, ctx->upnp_data.first.servicetype, wan_address);
+    // add a new UDP port mapping from WAN port 12345 to local host port 24680
+    int error =
+        UPNP_AddPortMapping(ctx->upnp_urls.controlURL, ctx->upnp_data.first.servicetype,
+                            ext_portstr,      // external (WAN) port requested
+                            int_portstr,      // internal (LAN) port to which packets will be redirected
+                            ctx->lan_address, // internal (LAN) address to which packets will be redirected
+                            "OpenOMF", // text description to indicate why or who is responsible for the port mapping
+                            "UDP",     // protocol must be either TCP or UDP
+                            NULL,      // remote (peer) host address or nullptr for no restriction
+                            "86400");  // port map lease duration (in seconds) or zero for "as long as possible"
+    if(error == 0) {
+        DEBUG("NAT-uPNP Port map successfully created from %d to %d!", int_port, ext_port);
 
-        // add a new UDP port mapping from WAN port 12345 to local host port 24680
-        int error = UPNP_AddPortMapping(
-            ctx->upnp_urls.controlURL, ctx->upnp_data.first.servicetype,
-            ext_portstr, // external (WAN) port requested
-            int_portstr, // internal (LAN) port to which packets will be redirected
-            lan_address, // internal (LAN) address to which packets will be redirected
-            "OpenOMF",   // text description to indicate why or who is responsible for the port mapping
-            "UDP",       // protocol must be either TCP or UDP
-            NULL,        // remote (peer) host address or nullptr for no restriction
-            "86400");    // port map lease duration (in seconds) or zero for "as long as possible"
-        if(error == 0) {
-            DEBUG("NAT-uPNP Port map successfully created from %d to %d!", int_port, ext_port);
-
-            ctx->int_port = int_port;
-            ctx->ext_port = ext_port;
-            return true;
-        } else {
-            DEBUG("NAT-uPNP port mapping failed with %d", error);
-            // TODO there are some errors we can work around here
-            // like overly short lifetimes
-            return false;
-        }
+        ctx->int_port = int_port;
+        ctx->ext_port = ext_port;
+        return true;
+    } else {
+        DEBUG("NAT-uPNP port %d -> %d mapping failed with %d", int_port, ext_port, error);
+        // TODO there are some errors we can work around here
+        // like overly short lifetimes
+        return false;
     }
 #endif
     return false;
@@ -109,12 +99,12 @@ void nat_try_upnp(nat_ctx *ctx) {
                                  &error); // error condition
     // TODO check error here?
     // try to look up our lan address, to test it
-    char lan_address[64];
 #if(MINIUPNPC_API_VERSION >= 18)
-    int status =
-        UPNP_GetValidIGD(ctx->upnp_dev, &ctx->upnp_urls, &ctx->upnp_data, lan_address, sizeof(lan_address), NULL, 0);
+    int status = UPNP_GetValidIGD(ctx->upnp_dev, &ctx->upnp_urls, &ctx->upnp_data, ctx->lan_address,
+                                  sizeof(ctx->lan_address), NULL, 0);
 #else
-    int status = UPNP_GetValidIGD(ctx->upnp_dev, &ctx->upnp_urls, &ctx->upnp_data, lan_address, sizeof(lan_address));
+    int status =
+        UPNP_GetValidIGD(ctx->upnp_dev, &ctx->upnp_urls, &ctx->upnp_data, ctx->lan_address, sizeof(ctx->lan_address));
 #endif
     // look up possible "status" values, the number "1" indicates a valid IGD was found
 
@@ -153,6 +143,7 @@ void nat_release_upnp(nat_ctx *ctx) {
         DEBUG("failed to remove port mapping with %d", error);
     }
     FreeUPNPUrls(&ctx->upnp_urls);
+    freeUPNPDevlist(ctx->upnp_dev);
 #endif
 }
 
@@ -210,4 +201,5 @@ void nat_free(nat_ctx *ctx) {
         default:
             break;
     }
+    ctx->type = NAT_TYPE_NONE;
 }
