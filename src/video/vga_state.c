@@ -156,7 +156,7 @@ void vga_state_use_palette_transform(vga_palette_transform transform_callback, v
         }
     }
 
-    assert(state.transformer_count < MAX_TRANSFORMER_COUNT);
+    assert(state.transformer_count < MAX_TRANSFORMER_COUNT - 1);
     state.transformers[state.transformer_count].callback = transform_callback;
     state.transformers[state.transformer_count].userdata = userdata;
     state.transformer_count++;
