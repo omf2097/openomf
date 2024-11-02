@@ -195,7 +195,9 @@ void palette_save(sd_writer *writer, const vga_palette *pal) {
 }
 
 void palette_remaps_save(sd_writer *writer, const vga_remap_tables *remaps) {
-    sd_write_buf(writer, (char *)remaps, sizeof(vga_remap_tables));
+    if(remaps) {
+        sd_write_buf(writer, (char *)remaps, sizeof(vga_remap_tables));
+    }
 }
 
 void palette_load_player_colors(vga_palette *src, int player) {
