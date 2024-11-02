@@ -78,16 +78,13 @@ int read_entry(FILE *file, sd_language *language, int *line_number) {
         str value;
         str_from_c(&value, extract_value(line, "ID", *line_number, false));
         str_strip(&value);
-        char *endptr;
-        id = strtol(str_c(&value), &endptr, 10);
-        str_free(&value);
-
-        if(*endptr != '\0') {
+        if(!str_to_long(&value, &id)) {
             error_exit("ID must be a valid integer", *line_number);
         }
+        str_free(&value);
     }
 
-    if(language->count != id) {
+    if(language->count != (unsigned int)id) {
         char error[100];
         snprintf(error, sizeof error, "Nonsequential ID. Expected %u, got %ld.", language->count, id);
         error_exit(error, *line_number);
