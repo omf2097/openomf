@@ -73,7 +73,7 @@ static void textselector_render(component *c) {
     } else if(component_is_disabled(c)) {
         mode = TEXT_DISABLED;
     }
-    text_render(&tb->tconf, mode, c->x, c->y, c->w, c->h, str_c(&buf));
+    text_render_str(&tb->tconf, mode, c->x, c->y, c->w, c->h, &buf);
     str_free(&buf);
 }
 
