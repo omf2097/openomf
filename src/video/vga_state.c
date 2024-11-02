@@ -149,7 +149,14 @@ void vga_state_copy_base_palette_range(vga_index dst, vga_index src, vga_index c
 }
 
 void vga_state_use_palette_transform(vga_palette_transform transform_callback, void *userdata) {
-    assert(state.transformer_count < MAX_TRANSFORMER_COUNT - 1);
+    for(unsigned int i = 0; i < state.transformer_count; i++) {
+        if(state.transformers[i].callback == transform_callback && state.transformers[i].userdata == userdata) {
+            // don't push duplicates
+            return;
+        }
+    }
+
+    assert(state.transformer_count < MAX_TRANSFORMER_COUNT);
     state.transformers[state.transformer_count].callback = transform_callback;
     state.transformers[state.transformer_count].userdata = userdata;
     state.transformer_count++;
