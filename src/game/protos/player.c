@@ -52,6 +52,7 @@ struct {
     {26, 6,  0},
     {0,  0,  0}  // guard
 };
+#define COLOR_6TO8(color) ((color << 2) | ((color & 0x30) >> 4))
 
 // ---------------- Private functions ----------------
 
@@ -565,11 +566,11 @@ void player_run(object *obj) {
             }
         }
         if(sd_script_isset(frame, "bpp")) {
-            rstate->pal_end = sd_script_get(frame, "bpp") * 4;
-            rstate->pal_begin = sd_script_get(frame, "bpp") * 4;
+            rstate->pal_end = COLOR_6TO8(sd_script_get(frame, "bpp"));
+            rstate->pal_begin = COLOR_6TO8(sd_script_get(frame, "bpp"));
         }
         if(sd_script_isset(frame, "bpb")) {
-            rstate->pal_begin = sd_script_get(frame, "bpb") * 4;
+            rstate->pal_begin = COLOR_6TO8(sd_script_get(frame, "bpb"));
         }
         if(sd_script_isset(frame, "bz")) {
             rstate->pal_tint = 1;
