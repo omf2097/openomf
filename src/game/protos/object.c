@@ -165,15 +165,15 @@ void object_scenewide_palette_transform(damage_tracker *damage, vga_palette *pal
         for(vga_index i = start; i < end; i++) {
             m = max3(pal->colors[i].r, pal->colors[i].g, pal->colors[i].b);
             u = m / 255.0f;
-            pal->colors[i].r = max2(0, min2(255, pal->colors[i].r + u * k * (ref.r - pal->colors[i].r)));
-            pal->colors[i].g = max2(0, min2(255, pal->colors[i].g + u * k * (ref.g - pal->colors[i].g)));
-            pal->colors[i].b = max2(0, min2(255, pal->colors[i].b + u * k * (ref.b - pal->colors[i].b)));
+            pal->colors[i].r = clamp(pal->colors[i].r + u * k * (ref.r - pal->colors[i].r), 0, 255);
+            pal->colors[i].g = clamp(pal->colors[i].g + u * k * (ref.g - pal->colors[i].g), 0, 255);
+            pal->colors[i].b = clamp(pal->colors[i].b + u * k * (ref.b - pal->colors[i].b), 0, 255);
         }
     } else {
         for(vga_index i = start; i < end; i++) {
-            pal->colors[i].r = max2(0, min2(255, pal->colors[i].r * (1 - k) + (ref.r * k)));
-            pal->colors[i].g = max2(0, min2(255, pal->colors[i].g * (1 - k) + (ref.g * k)));
-            pal->colors[i].b = max2(0, min2(255, pal->colors[i].b * (1 - k) + (ref.b * k)));
+            pal->colors[i].r = clamp(pal->colors[i].r * (1 - k) + (ref.r * k), 0, 255);
+            pal->colors[i].g = clamp(pal->colors[i].g * (1 - k) + (ref.g * k), 0, 255);
+            pal->colors[i].b = clamp(pal->colors[i].b * (1 - k) + (ref.b * k), 0, 255);
         }
     }
 
