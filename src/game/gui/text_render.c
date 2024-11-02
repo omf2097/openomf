@@ -16,7 +16,7 @@ void text_defaults(text_settings *settings) {
     settings->cspacing = 0;
     settings->max_lines = UINT8_MAX;
     settings->strip_leading_whitespace = false;
-    settings->strip_trailing_whitespace = false;
+    settings->strip_trailing_whitespace = true;
 }
 
 int text_render_char(const text_settings *settings, text_mode state, int x, int y, char ch) {
