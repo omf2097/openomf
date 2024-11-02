@@ -33,7 +33,8 @@ typedef struct player_sprite_state_t {
     int pal_end;         // bpd
     int pal_tint;        // bz
 
-    int pal_tricks_off; // bpo
+    bool pal_tricks_off; // bpo
+    bool bd_flag;        // bd
 
     int pal_copy_entries; // ba
     int pal_copy_start;   // bi

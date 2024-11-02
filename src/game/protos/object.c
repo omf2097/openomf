@@ -185,14 +185,34 @@ void object_palette_copy_transform(damage_tracker *damage, vga_palette *pal, voi
     int src_start = state->pal_copy_start;
     int src_end = state->pal_copy_entries + src_start;
     float step = state->timer / (float)state->duration;
-    float bpp = (state->pal_begin + (state->pal_end - state->pal_begin) * step) / 255.0;
+    float chunk = state->pal_end - state->pal_begin;
+    float bpp = (state->pal_begin + chunk * step) / 255.0;
+
+    // These are copied from CREDITS.BK frame 20 last sprite and multiplied by 4.
+    // "bd" tag should read the entire palette from there, but we don't bother.
+    vga_color bd_colors[3] = {
+        {80,  80,  80 },
+        {164, 164, 164},
+        {255, 255, 255},
+    };
+    if(!state->bd_flag) {
+        // If bd flag is disabled, the color map should be just 0's.
+        memset(bd_colors, 0, sizeof(bd_colors));
+    }
 
     int pos = src_end;
+    vga_color *ref;
+    float r, g, b;
     for(int i = 0; i < state->pal_copy_count; i++) {
+        ref = &bd_colors[i];
         for(int w = src_start; w < src_end; w++) {
-            pal->colors[pos].r = clamp(pal->colors[w].r * bpp, 0, 255);
-            pal->colors[pos].g = clamp(pal->colors[w].g * bpp, 0, 255);
-            pal->colors[pos].b = clamp(pal->colors[w].b * bpp, 0, 255);
+            r = clampf((ref->r - pal->colors[w].r) * bpp, 0, 255);
+            g = clampf((ref->g - pal->colors[w].g) * bpp, 0, 255);
+            b = clampf((ref->b - pal->colors[w].b) * bpp, 0, 255);
+            pal->colors[pos].r = clamp(r + pal->colors[w].r, 0, 255);
+            pal->colors[pos].g = clamp(g + pal->colors[w].g, 0, 255);
+            pal->colors[pos].b = clamp(b + pal->colors[w].b, 0, 255);
+            // DEBUG("%d = %d, %d, %d", pos, pal->colors[pos].r, pal->colors[pos].g, pal->colors[pos].b);
             pos++;
         }
     }
