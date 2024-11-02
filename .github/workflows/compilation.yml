@@ -64,7 +64,8 @@ jobs:
               -DUSE_TIDY=${{ matrix.config.tidy }} \
               -DUSE_TESTS=On \
               -DUSE_SANITIZERS=On \
-              -DUSE_TOOLS=On ..
+              -DUSE_TOOLS=On \
+              ..
         make -j $(getconf _NPROCESSORS_ONLN)
 
     - name: Run tests
@@ -107,6 +108,7 @@ jobs:
         -DCMAKE_BUILD_TYPE="Release"
         -DVCPKG_BUILD_TYPE="release"
         -DVCPKG_TARGET_TRIPLET="x64-windows-static"
+        -DUSE_TOOLS=On
     - name: Build openomf
       run: cmake --build build-msvc --target openomf
 
@@ -174,7 +176,7 @@ jobs:
     - name: Generate Release
       run: |
         mkdir build-release && cd build-release
-        cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=release/usr ..
+        cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=release/usr -DUSE_TOOLS=On ..
         make -j $(getconf _NPROCESSORS_ONLN)
         make -j $(getconf _NPROCESSORS_ONLN) install
 
@@ -253,7 +255,7 @@ jobs:
     - name: Generate Release
       run: |
         mkdir build-release && cd build-release
-        cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=release/usr ..
+        cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=release/usr -DUSE_TOOLS=On ..
         make -j $(getconf _NPROCESSORS_ONLN)
         make -j $(getconf _NPROCESSORS_ONLN) install
 
@@ -308,7 +310,7 @@ jobs:
     - name: Install apt Dependencies
       uses: Eeems-Org/apt-cache-action@v1.3
       with:
-        packages: mingw-w64 unzip
+        packages: mingw-w64 unzip wine64 wine
     - name: Install Dependencies
       run: |
         wget -q https://github.com/omf2097/openomf-win-build/archive/refs/heads/main.zip
@@ -324,6 +326,8 @@ jobs:
               -DCMAKE_INCLUDE_PATH="${GITHUB_WORKSPACE}/openomf-win-build-main/include/" \
               -DCMAKE_LIBRARY_PATH="${GITHUB_WORKSPACE}/openomf-win-build-main/lib/" \
               -DCMAKE_FIND_ROOT_PATH="${GITHUB_WORKSPACE}/openomf-win-build-main/" \
+              -DUSE_TOOLS=On \
+              -DLANGUAGETOOL_COMMAND="wine $<TARGET_FILE:languagetool>" \
               "${GITHUB_WORKSPACE}"
         make -j $(getconf _NPROCESSORS_ONLN)
         make -j $(getconf _NPROCESSORS_ONLN) install
