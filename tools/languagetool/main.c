@@ -84,7 +84,7 @@ int read_entry(FILE *file, sd_language *language, int *line_number) {
         str_free(&value);
     }
 
-    if(language->count != id) {
+    if(language->count != (unsigned int)id) {
         char error[100];
         snprintf(error, sizeof error, "Nonsequential ID. Expected %u, got %ld.", language->count, id);
         error_exit(error, *line_number);
