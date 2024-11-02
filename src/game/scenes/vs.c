@@ -643,9 +643,15 @@ int vs_create(scene *scene) {
     local->quit_dialog.clicked = vs_quit_dialog_clicked;
 
     // Too Pathetic Dialog
-    char insult[512];
-    snprintf(insult, 512, lang_get(748), "Veteran", "Major Kreissack");
-    dialog_create(&local->too_pathetic_dialog, DIALOG_STYLE_OK, insult, 72, 40);
+
+    str insult;
+    str_from_c(&insult, lang_get(748));
+    str_replace(&insult, "%s", lang_get(345), 1);
+    str_replace(&insult, "%s", lang_get(30), 1);
+    // XXX HACK: Remove newline after kreissack's name until we clean up our string tables
+    str_replace(&insult, "\n.", ".", -1);
+    dialog_create(&local->too_pathetic_dialog, DIALOG_STYLE_OK, str_c(&insult), 40, 40);
+    str_free(&insult);
     local->too_pathetic_dialog.userdata = scene;
     local->too_pathetic_dialog.clicked = vs_too_pathetic_dialog_clicked;
 

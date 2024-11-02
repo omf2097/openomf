@@ -6,7 +6,7 @@
 #include "video/video.h"
 #include <string.h>
 
-#define MAX_WIDTH 160
+#define SCREEN_WIDTH 320
 
 void dialog_cancel(component *c, void *userdata) {
     dialog *dlg = userdata;
@@ -37,9 +37,11 @@ void dialog_create_with_tconf(dialog *dlg, dialog_style style, text_settings *tc
     dlg->userdata = NULL;
     dlg->clicked = NULL;
 
+    int w = SCREEN_WIDTH - 2 * x;
+
     component *menu = menu_create(11);
 
-    menu_attach(menu, label_create_with_width(tconf_desc, text, MAX_WIDTH));
+    menu_attach(menu, label_create_with_width(tconf_desc, text, w));
 
     component *menu2 = menu_create(11);
 
@@ -67,7 +69,7 @@ void dialog_create_with_tconf(dialog *dlg, dialog_style style, text_settings *tc
         menu_attach(menu2, ok);
     }
 
-    dlg->frame = guiframe_create(x, y, MAX_WIDTH, 80);
+    dlg->frame = guiframe_create(x, y, w, 80);
     guiframe_set_root(dlg->frame, menu);
     guiframe_layout(dlg->frame);
 }
