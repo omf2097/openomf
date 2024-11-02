@@ -3,7 +3,6 @@
 #include "game/game_state.h"
 #include "game/scenes/credits.h"
 #include "utils/allocator.h"
-#include "video/video.h"
 
 typedef struct credits_local_t {
     int ticks;
