@@ -546,9 +546,10 @@ void player_run(object *obj) {
         }
 
         // CREDITS palette copy tricks
-        rstate->pal_tricks_off = sd_script_isset(frame, "bpo") ? 1 : 0;
+        rstate->pal_tricks_off = sd_script_isset(frame, "bpo") ? 1 : 0; // Disable the standard palette tricks
         rstate->bd_flag =
             sd_script_isset(frame, "bd"); // Read palette from the last frame of animation (we emulate this internally)
+        rstate->bg_flag = sd_script_isset(frame, "bg");
         rstate->pal_copy_count = sd_script_get(frame, "ba");   // Number of copies to make after bi + bc
         rstate->pal_copy_start = sd_script_get(frame, "bi");   // Start offset for copying
         rstate->pal_copy_entries = sd_script_get(frame, "bc"); // Number of indexes to copy
