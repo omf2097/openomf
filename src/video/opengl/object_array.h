@@ -9,6 +9,7 @@ typedef enum object_array_blend_mode
 {
     MODE_SET = 0,
     MODE_REMAP = 1,
+    MODE_ADD = 2,
 } object_array_blend_mode;
 
 typedef struct {
