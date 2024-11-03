@@ -171,6 +171,7 @@ component *menu_listen_create(scene *s) {
         while(!nat_create_mapping(&local->nat, address.port, ext_port)) {
             if(settings_get()->net.net_ext_port_start == 0) {
                 ext_port = rand_int(65525 - 1024) + 1024;
+                randtries++;
                 if(randtries > 10) {
                     ext_port = 0;
                     break;

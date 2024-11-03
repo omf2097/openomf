@@ -101,10 +101,9 @@ void lobby_free(scene *scene) {
     guiframe_free(local->frame);
     list_free(&local->users);
     list_free(&local->log);
-    // TODO only destroy this if we're going back to the main menu
-    /*if(local->client) {
+    if(local->client) {
         enet_host_destroy(local->client);
-    }*/
+    }
     if(local->dialog) {
         dialog_free(local->dialog);
         omf_free(local->dialog);
@@ -629,7 +628,9 @@ void lobby_try_connect(void *scenedata, void *userdata) {
     scene *s = scenedata;
     lobby_local *local = scene_get_userdata(s);
     if(!local->opponent_peer) {
-        DEBUG("doing scheduled outbound connection");
+        DEBUG("doing scheduled outbound connection to %d.%d.%d.%d port %d", local->opponent->address.host & 0xFF,
+              (local->opponent->address.host >> 8) & 0xFF, (local->opponent->address.host >> 16) & 0xF,
+              (local->opponent->address.host >> 24) & 0xFF, local->opponent->address.port);
         local->opponent_peer = enet_host_connect(local->client, &local->opponent->address, 2, 0);
         enet_peer_timeout(local->opponent_peer, 4, 1000, 1000);
     }
@@ -681,7 +682,7 @@ component *lobby_exit_create(scene *s) {
 
     menu_attach(menu, label_create(&tconf, "Exit the Challenge Arena?"));
     menu_attach(menu, textbutton_create(&tconf, "Yes", NULL, COM_ENABLED, lobby_do_exit, s));
-    menu_attach(menu, textbutton_create(&tconf, "No", NULL, COM_ENABLED, lobby_refuse_exit, NULL));
+    menu_attach(menu, textbutton_create(&tconf, "No", NULL, COM_ENABLED, lobby_refuse_exit, s));
 
     return menu;
 }
@@ -982,6 +983,11 @@ void lobby_tick(scene *scene, int paused) {
                                 // try to connect immediately
                                 local->opponent_peer =
                                     enet_host_connect(local->client, &local->opponent->address, 2, 0);
+
+                                DEBUG("doing immediate outbound connection to %d.%d.%d.%d port %d",
+                                      local->opponent->address.host & 0xFF, (local->opponent->address.host >> 8) & 0xFF,
+                                      (local->opponent->address.host >> 16) & 0xF,
+                                      (local->opponent->address.host >> 24) & 0xFF, local->opponent->address.port);
                                 enet_peer_timeout(local->opponent_peer, 4, 1000, 1000);
                                 local->connection_count = 0;
 
@@ -1083,6 +1089,7 @@ void lobby_tick(scene *scene, int paused) {
     controller *c1 = game_player_get_ctrl(p1);
     if(c1->type == CTRL_TYPE_NETWORK && net_controller_ready(c1)) {
         DEBUG("network peer is ready, tick offset is %d and rtt is %d", net_controller_tick_offset(c1), c1->rtt);
+        local->client = NULL;
         game_state_set_next(gs, SCENE_MELEE);
     }
 
@@ -1090,6 +1097,7 @@ void lobby_tick(scene *scene, int paused) {
     controller *c2 = game_player_get_ctrl(p2);
     if(c2->type == CTRL_TYPE_NETWORK && net_controller_ready(c2) == 1) {
         DEBUG("network peer is ready, tick offset is %d and rtt is %d", net_controller_tick_offset(c2), c2->rtt);
+        local->client = NULL;
         game_state_set_next(gs, SCENE_MELEE);
     }
 }

@@ -20,6 +20,7 @@ typedef struct nat_ctx_t {
     uint16_t int_port;
     uint16_t ext_port;
 #ifdef MINIUPNPC_FOUND
+    char lan_address[64];
     struct UPNPUrls upnp_urls;
     struct IGDdatas upnp_data;
     struct UPNPDev *upnp_dev;
