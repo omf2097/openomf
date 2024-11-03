@@ -20,12 +20,12 @@ Installation
 
 ### Ubuntu
 
-1. Download the latest .deb package from https://github.com/omf2097/openomf/releases/tag/latest
+1. Download the latest .deb package from https://github.com/omf2097/openomf/releases
 2. Run `sudo apt install ./openomf_<version>_amd64.deb`
 
 ### Windows
 
-1. Download the latest windows package from https://github.com/omf2097/openomf/releases/tag/latest
+1. Download the latest windows package from https://github.com/omf2097/openomf/releases
 2. Extract the zip file somewhere
 
 Build
