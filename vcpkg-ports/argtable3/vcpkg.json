@@ -6,10 +6,6 @@
   "license": "BSD-2-Clause-NetBSD AND TCL",
   "dependencies": [
     {
-      "name": "getopt",
-      "platform": "windows & !mingw"
-    },
-    {
       "name": "vcpkg-cmake",
       "host": true
     },
