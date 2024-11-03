@@ -1,7 +1,9 @@
 #include "formats/pcx.h"
 #include "formats/error.h"
 #include "formats/internal/reader.h"
+#include "formats/transparent.h"
 #include "utils/allocator.h"
+#include <assert.h>
 #include <inttypes.h>
 #include <stdio.h>
 #include <string.h>
@@ -69,7 +71,7 @@ int pcx_load(pcx_file *pcx, const char *filename) {
     }
 
     int ret;
-    if((ret = sd_vga_image_create(&(pcx->image), 320, 200)) != SD_SUCCESS) {
+    if((ret = sd_vga_image_create(&(pcx->image), 320, 200, FONT_TRANSPARENT_INDEX)) != SD_SUCCESS) {
         return ret;
     }
 
@@ -141,10 +143,13 @@ int pcx_load_font(pcx_font *font, const char *filename) {
     return SD_SUCCESS;
 }
 
-int pcx_font_decode(const pcx_font *font, sd_vga_image *o, uint8_t ch, int8_t palette_offset) {
+int pcx_font_decode(const pcx_font *font, sd_vga_image *o, uint8_t ch, int8_t palette_offset, int transparent) {
     if(ch >= font->glyph_count || font == NULL || o == NULL) {
         return SD_INVALID_INPUT;
     }
+
+    // Fonts always need to have a transparent value.
+    assert((transparent >= 0) && (transparent < 256));
 
     int k = 0;
     for(int i = font->glyphs[ch].y; i < font->glyphs[ch].y + font->glyph_height; i++) {
@@ -153,7 +158,7 @@ int pcx_font_decode(const pcx_font *font, sd_vga_image *o, uint8_t ch, int8_t pa
             if(font->pcx.image.data[(i * 320) + j]) {
                 o->data[(k * font->glyphs[ch].width) + l] = palette_offset + (int)font->pcx.image.data[(i * 320) + j];
             } else {
-                o->data[(k * font->glyphs[ch].width) + l] = 0;
+                o->data[(k * font->glyphs[ch].width) + l] = transparent;
             }
 
             l++;

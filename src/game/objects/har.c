@@ -6,6 +6,7 @@
 #include "audio/audio.h"
 #include "controller/controller.h"
 #include "formats/af.h"
+#include "formats/transparent.h"
 #include "game/common_defines.h"
 #include "game/game_state.h"
 #include "game/objects/arena_constraints.h"
@@ -2226,7 +2227,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
 
 #ifdef DEBUGMODE
     object_set_debug_cb(obj, har_debug);
-    surface_create(&local->cd_debug, 320, 200);
+    surface_create(&local->cd_debug, 320, 200, SPRITE_TRANSPARENT_INDEX);
     surface_clear(&local->cd_debug);
 #endif
 

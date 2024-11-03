@@ -1,10 +1,15 @@
 #include "utils/png_writer.h"
 #include "utils/log.h"
 #include <assert.h>
+#if !defined(MIN_BUILD)
 #include <png.h>
+#endif
 #include <string.h>
 
 bool png_write_rgb(const char *filename, int w, int h, const unsigned char *data, bool has_alpha, bool flip) {
+#if defined(MIN_BUILD)
+    return false;
+#else
     FILE *fp = fopen(filename, "wb");
     if(fp == NULL) {
         PERROR("Unable to write PNG file: Could not open file for writing");
@@ -32,9 +37,13 @@ bool png_write_rgb(const char *filename, int w, int h, const unsigned char *data
     png_destroy_write_struct(&png_ptr, &info_ptr);
     fclose(fp);
     return true;
+#endif
 }
 
 bool png_write_paletted(const char *filename, int w, int h, const vga_palette *pal, const unsigned char *data) {
+#if defined(MIN_BUILD)
+    return true;
+#else
     assert(filename != NULL);
     assert(data != NULL);
     assert(w * h > 0);
@@ -55,4 +64,5 @@ bool png_write_paletted(const char *filename, int w, int h, const vga_palette *p
         return false;
     }
     return true;
+#endif
 }

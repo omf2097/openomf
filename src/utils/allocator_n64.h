@@ -6,9 +6,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-// Allocator options
-#define ALLOC_HINT_TEXTURE 0x00000001
-
 #define omf_free(ptr)                                                                                                  \
     do {                                                                                                               \
         free(ptr);                                                                                                     \
@@ -40,7 +37,14 @@ static inline void *omf_realloc_real(void *ptr, size_t size, const char *file, i
 }
 
 static inline void *omf_alloc_with_options_real(size_t nmemb, size_t size, int options, const char *file, int line) {
-    void *ret = malloc(nmemb * size);
+    void *ret = NULL;
+    if((options & ALLOC_HINT_TEXTURE) != 0) {
+        assertf(size != 0, "texture size was 0");
+        ret = malloc_uncached_aligned(64, size);
+    } else {
+        assert(false); // Unknown/unhandled option.
+    }
+
     if(ret != NULL)
         return ret;
     fprintf(stderr, _text_calloc_error, nmemb, size, file, line);
@@ -48,7 +52,11 @@ static inline void *omf_alloc_with_options_real(size_t nmemb, size_t size, int o
 }
 
 static inline void omf_free_with_options(void *ptr, int options) {
-    omf_free(ptr);
+    if((options & ALLOC_HINT_TEXTURE) != 0) {
+        free_uncached(ptr);
+    } else {
+        assert(false);
+    }
 }
 
 #endif // ALLOCATOR_DEFAULT_H

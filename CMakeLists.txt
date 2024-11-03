@@ -38,6 +38,8 @@ if(MSVC)
     string(REGEX REPLACE "/W3" "" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
     # we would probably like to pass /Wall instead of /W4, but there's a lot
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /permissive- /W4")
+    #LibPNG is not linking on MSVC correctly, disable it.
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DMIN_BUILD")
 else()
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wno-unused-parameter -Wformat -pedantic -Wvla")
     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -ggdb -DDEBUGMODE -Werror -fno-omit-frame-pointer")
@@ -235,6 +237,8 @@ add_dependencies(openomf copy_shaders)
 
 # Build tools if requested
 set(TOOL_TARGET_NAMES)
+
+
 # always build languagetool, for BuildLanguages.cmake
 add_executable(languagetool tools/languagetool/main.c)
 list(APPEND TOOL_TARGET_NAMES languagetool)

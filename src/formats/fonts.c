@@ -4,6 +4,7 @@
 #include "formats/fonts.h"
 #include "formats/internal/reader.h"
 #include "formats/internal/writer.h"
+#include <assert.h>
 
 int sd_font_create(sd_font *font) {
     if(font == NULL) {
@@ -57,10 +58,12 @@ int sd_font_save(const sd_font *font, const char *file) {
     return SD_SUCCESS;
 }
 
-int sd_font_decode(const sd_font *font, sd_vga_image *o, uint8_t ch, uint8_t color) {
+int sd_font_decode(const sd_font *font, sd_vga_image *o, uint8_t ch, uint8_t color, int transparent) {
     if(font == NULL || o == NULL || ch >= 224) {
         return SD_INVALID_INPUT;
     }
+
+    assert((transparent >= 0) && (transparent < 256));
 
     int t = 0;
     for(unsigned i = 0; i < font->h; i++) {
@@ -68,7 +71,7 @@ int sd_font_decode(const sd_font *font, sd_vga_image *o, uint8_t ch, uint8_t col
             if(font->chars[ch].data[i] & (1 << k)) {
                 o->data[t] = color;
             } else {
-                o->data[t] = 0;
+                o->data[t] = (char)transparent;
             }
             t++;
         }

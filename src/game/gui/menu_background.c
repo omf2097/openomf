@@ -1,4 +1,5 @@
 #include "game/gui/menu_background.h"
+#include "formats/transparent.h"
 #include "video/image.h"
 
 #define COLOR_MENU_LINE 252
@@ -9,8 +10,7 @@
 #define COLOR_MENU_BG 0
 
 void menu_transparent_bg_create(surface *s, int w, int h) {
-    surface_create(s, w, h);
-    surface_set_transparency(s, -1);
+    surface_create(s, w, h, BACKGROUND_TRANSPARENT_INDEX);
 }
 
 void menu_background_create(surface *s, int w, int h) {
@@ -24,8 +24,7 @@ void menu_background_create(surface *s, int w, int h) {
         image_line(&img, 0, y, w - 1, y, COLOR_MENU_LINE);
     }
     image_rect(&img, 0, 0, w - 1, h - 1, COLOR_MENU_BORDER);
-    surface_create_from_image(s, &img);
-    surface_set_transparency(s, COLOR_MENU_BG);
+    surface_create_from_image(s, &img, MENU_TRANSPARENT_INDEX);
     image_free(&img);
 }
 
@@ -42,8 +41,7 @@ void menu_background2_create(surface *s, int w, int h) {
     }
     image_rect(&img, 1, 1, w - 2, h - 2, COLOR_MENU_BORDER2);
     image_rect(&img, 0, 0, w - 2, h - 2, COLOR_MENU_BORDER1);
-    surface_create_from_image(s, &img);
-    surface_set_transparency(s, COLOR_MENU_BG);
+    surface_create_from_image(s, &img, MENU_TRANSPARENT_INDEX);
     image_free(&img);
 }
 
@@ -53,6 +51,6 @@ void menu_background_border_create(surface *s, int w, int h) {
     image_create(&img, w, h);
     image_clear(&img, 0);
     image_rect(&img, 0, 0, w - 1, h - 1, COLOR_MENU_BORDER);
-    surface_create_from_image(s, &img);
+    surface_create_from_image(s, &img, MENU_TRANSPARENT_INDEX);
     image_free(&img);
 }

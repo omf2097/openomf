@@ -2,6 +2,7 @@
 #include <epoxy/gl.h>
 #include <stdlib.h>
 
+#include "formats/transparent.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
 #include "video/opengl/object_array.h"
@@ -173,8 +174,7 @@ void video_area_capture(surface *sur, int x, int y, int w, int h) {
     unsigned char *buffer = omf_calloc(1, w * h);
     glPixelStorei(GL_PACK_ALIGNMENT, 1);
     glReadPixels(x, y, w, h, GL_RED, GL_UNSIGNED_BYTE, buffer);
-    surface_create_from_data_flip(sur, w, h, buffer);
-    surface_set_transparency(sur, -1);
+    surface_create_from_data_flip(sur, w, h, buffer, BACKGROUND_TRANSPARENT_INDEX);
     omf_free(buffer);
 }
 

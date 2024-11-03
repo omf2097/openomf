@@ -1,22 +1,32 @@
+#if !defined(MIN_BUILD)
 #include <png.h>
+#endif
+#include <assert.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "formats/error.h"
+#include "formats/transparent.h"
 #include "formats/vga_image.h"
 #include "utils/allocator.h"
 #include "utils/png_writer.h"
 
-int sd_vga_image_create(sd_vga_image *img, unsigned int w, unsigned int h) {
+int sd_vga_image_create(sd_vga_image *img, unsigned int w, unsigned int h, int transparent) {
     if(img == NULL) {
         return SD_INVALID_INPUT;
     }
     img->w = w;
     img->h = h;
     img->len = w * h;
-    img->data = omf_calloc(1, w * h);
+    img->transparent = transparent;
+    img->data = omf_alloc_with_options(1, img->len, ALLOC_HINT_TEXTURE);
+    assert((img->data != NULL) || (img->len == 0));
+    if(img->data != NULL) {
+        memset(img->data, 0, img->len);
+    }
+
     return SD_SUCCESS;
 }
 
@@ -27,7 +37,8 @@ int sd_vga_image_copy(sd_vga_image *dst, const sd_vga_image *src) {
     dst->w = src->w;
     dst->h = src->h;
     dst->len = src->len;
-    dst->data = omf_calloc(src->len, 1);
+    dst->data = omf_malloc(src->len);
+    dst->transparent = src->transparent;
     memcpy(dst->data, src->data, src->len);
     return SD_SUCCESS;
 }
@@ -36,7 +47,7 @@ void sd_vga_image_free(sd_vga_image *img) {
     if(img == NULL) {
         return;
     }
-    omf_free(img->data);
+    omf_free_with_options(img->data, ALLOC_HINT_TEXTURE);
 }
 
 int sd_vga_image_decode(sd_rgba_image *dst, const sd_vga_image *src, const vga_palette *pal) {
@@ -62,6 +73,9 @@ int sd_vga_image_decode(sd_rgba_image *dst, const sd_vga_image *src, const vga_p
 }
 
 int sd_vga_image_from_png(sd_vga_image *img, const char *filename) {
+#if defined(MIN_BUILD)
+    return 0;
+#else
     png_structp png_ptr;
     png_infop info_ptr;
     int ret = SD_SUCCESS;
@@ -136,7 +150,7 @@ int sd_vga_image_from_png(sd_vga_image *img, const char *filename) {
     png_read_image(png_ptr, row_pointers);
 
     // Convert
-    if(sd_vga_image_create(img, w, h) != SD_SUCCESS) {
+    if(sd_vga_image_create(img, w, h, DEFAULT_NOT_TRANSPARENT) != SD_SUCCESS) {
         ret = SD_OUT_OF_MEMORY;
         goto error_3;
     }
@@ -159,6 +173,7 @@ error_1:
     fclose(handle);
 error_0:
     return ret;
+#endif
 }
 
 int sd_vga_image_to_png(const sd_vga_image *img, const vga_palette *pal, const char *filename) {

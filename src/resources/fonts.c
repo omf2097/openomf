@@ -1,6 +1,7 @@
 #include "formats/fonts.h"
 #include "formats/error.h"
 #include "formats/pcx.h"
+#include "formats/transparent.h"
 #include "resources/fonts.h"
 #include "resources/ids.h"
 #include "resources/pathmanager.h"
@@ -59,12 +60,12 @@ int font_load(font *font, const char *filename, unsigned int size) {
     }
 
     // Load into textures
-    sd_vga_image_create(&img, pixsize, pixsize);
+    sd_vga_image_create(&img, pixsize, pixsize, FONT_TRANSPARENT_INDEX);
     for(int i = 0; i < 224; i++) {
         sur = omf_calloc(1, sizeof(surface));
-        sd_font_decode(&sdfont, &img, i, 1);
-        surface_create_from_vga(sur, &img);
-        surface_set_transparency(sur, 0);
+        // TODO: why is there a copy needed for this?
+        sd_font_decode(&sdfont, &img, i, 1, FONT_TRANSPARENT_INDEX);
+        surface_create_from_vga(sur, &img, FONT_TRANSPARENT_INDEX);
         vector_append(&font->surfaces, &sur);
     }
 
@@ -95,11 +96,10 @@ int pcx_font_load(font *font, const char *filename, int8_t palette_offset) {
     // Load into textures
 
     for(int i = 0; i < pcx_font.glyph_count; i++) {
-        sd_vga_image_create(&img, pcx_font.glyphs[i].width, pixsize);
+        sd_vga_image_create(&img, pcx_font.glyphs[i].width, pixsize, PCX_FONT_TRANSPARENT_INDEX);
         sur = omf_calloc(1, sizeof(surface));
-        pcx_font_decode(&pcx_font, &img, i, 1);
-        surface_create_from_vga(sur, &img);
-        surface_set_transparency(sur, 0);
+        pcx_font_decode(&pcx_font, &img, i, 1, PCX_FONT_TRANSPARENT_INDEX);
+        surface_create_from_vga(sur, &img, PCX_FONT_TRANSPARENT_INDEX);
         vector_append(&font->surfaces, &sur);
         sd_vga_image_free(&img);
     }

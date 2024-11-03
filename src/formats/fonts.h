@@ -93,7 +93,7 @@ int sd_font_save(const sd_font *font, const char *filename);
  * \param ch Character to load. Must be 0 <= ch <= 224.
  * \param color Color palette index (0 - 0xFF)
  */
-int sd_font_decode(const sd_font *font, sd_vga_image *surface, uint8_t ch, uint8_t color);
+int sd_font_decode(const sd_font *font, sd_vga_image *surface, uint8_t ch, uint8_t color, int transparent);
 
 /**
  * Same as sd_font_decode, but decodes to an RGBA surface.

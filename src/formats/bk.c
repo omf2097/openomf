@@ -10,6 +10,7 @@
 #include "formats/internal/writer.h"
 #include "formats/palette.h"
 #include "formats/pcx.h"
+#include "formats/transparent.h"
 #include "formats/vga_image.h"
 #include "utils/allocator.h"
 
@@ -134,7 +135,7 @@ int sd_bk_load(sd_bk_file *bk, const char *filename) {
 
     // Read background image
     bk->background = omf_calloc(1, sizeof(sd_vga_image));
-    if((ret = sd_vga_image_create(bk->background, img_w, img_h)) != SD_SUCCESS) {
+    if((ret = sd_vga_image_create(bk->background, img_w, img_h, BACKGROUND_TRANSPARENT_INDEX)) != SD_SUCCESS) {
         goto exit_0;
     }
     int bsize = img_w * img_h;

@@ -3,6 +3,7 @@
 
 #include "audio/audio.h"
 #include "formats/pilot.h"
+#include "formats/transparent.h"
 #include "game/game_state.h"
 #include "game/gui/menu_background.h"
 #include "game/gui/progressbar.h"
@@ -677,7 +678,8 @@ static void load_har_portraits(scene *scene, melee_local *local) {
         target->x = current->pos.x + 62 * col;
         target->y = current->pos.y + 42 * row;
         surface_create_from_surface(&target->enabled, 51, 36, 62 * col, 42 * row, current->data);
-        surface_set_transparency(&target->enabled, 0xD0);
+        // TODO: The original surface needs to have the correct transparent index set at creation time.
+        target->enabled.transparent = PORTRAIT_TRANSPARENT_INDEX;
 
         // Copy the enabled image, and compress the colors to grayscale
         surface_create_from(&target->disabled, &target->enabled);
@@ -728,8 +730,7 @@ int melee_create(scene *scene) {
 
     // Create a black surface for the highlight box. We modify the palette in renderer.
     unsigned char *black = omf_calloc(1, 51 * 36);
-    surface_create_from_data(&local->select_hilight, 51, 36, black);
-    surface_set_transparency(&local->select_hilight, -1);
+    surface_create_from_data(&local->select_hilight, 51, 36, black, DEFAULT_NOT_TRANSPARENT);
     omf_free(black);
 
     // set up the magic controller hooks
