@@ -2,6 +2,7 @@
 #define ALLOCATOR_DEFAULT_H
 
 #include <stddef.h>
+#include <stdio.h>
 
 #define omf_free(ptr)                                                                                                  \
     do {                                                                                                               \
