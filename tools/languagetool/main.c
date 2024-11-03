@@ -91,7 +91,9 @@ int read_entry(FILE *file, sd_language *language, int *line_number) {
         str value;
         str_from_c(&value, extract_value(line, "ID", *line_number, false));
         str_strip(&value);
-        if(!str_to_long(&value, &id)) {
+        if(strcmp(str_c(&value), "auto") == 0) {
+            id = (long)language->count;
+        } else if(!str_to_long(&value, &id)) {
             error_exit("ID must be a valid integer", *line_number);
         }
         str_free(&value);
