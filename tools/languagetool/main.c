@@ -156,7 +156,7 @@ int read_entry(FILE *file, sd_language *language, int *line_number) {
         data_iter[-1] = '\0';
     }
 
-    size_t max_desc_len = 31;
+    size_t max_desc_len = MAX_TITLE - 1;
     if(str_size(&desc) > max_desc_len) {
         fprintf(stderr, "Warning: truncating overlong 'Title:' of entry id %d. Length is %zu, max length is %zu\n",
                 language->count, str_size(&desc), max_desc_len);
