@@ -404,6 +404,20 @@ bool str_insert_at(str *string, size_t pos, char value) {
     return true;
 }
 
+bool str_insert_c_at(str *dst, size_t pos, const char *src) {
+    if(pos > dst->len) {
+        return false;
+    }
+    size_t src_len = strlen(src);
+    size_t n = dst->len - pos;
+    str_resize_and_copy_buffer(dst, dst->len + src_len);
+    str_zero(dst);
+    char *buf = str_ptr(dst);
+    memmove(&buf[pos + src_len], &buf[pos], n);
+    memcpy(&buf[pos], src, src_len);
+    return true;
+}
+
 // ------------------------ Type conversion ------------------------
 
 bool str_to_float(const str *string, float *result) {

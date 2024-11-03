@@ -224,6 +224,11 @@ bool str_set_at(str *string, size_t pos, char value);
 bool str_insert_at(str *string, size_t pos, char value);
 
 /**
+ * @brief Insert a C string starting at the given index.
+ */
+bool str_insert_c_at(str *dst, size_t pos, const char *src);
+
+/**
  * @brief Convert string to float
  * @details Returns true if conversion was a success, false if not.
  * @param string String to convert
