@@ -391,6 +391,19 @@ bool str_set_at(str *string, size_t pos, char value) {
     return true;
 }
 
+bool str_insert_at(str *string, size_t pos, char value) {
+    if(pos > string->len) {
+        return false;
+    }
+    str_resize_and_copy_buffer(string, string->len + 1);
+    str_zero(string);
+    char *buf = str_ptr(string);
+    size_t n = string->len - pos;
+    memmove(&buf[pos + 1], &buf[pos], n);
+    buf[pos] = value;
+    return true;
+}
+
 // ------------------------ Type conversion ------------------------
 
 bool str_to_float(const str *string, float *result) {
