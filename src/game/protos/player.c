@@ -19,56 +19,19 @@
 
 #define COLOR_6TO8(color) ((color << 2) | ((color & 0x30) >> 4))
 
-// ---------------- Private functions ----------------
-
-void player_clear_frame(object *obj) {
+static void player_clear_frame(object *obj) {
     player_sprite_state *s = &obj->sprite_state;
+    memset(s, 0, sizeof(player_sprite_state));
     s->flipmode = FLIP_NONE;
-    s->timer = 0;
-    s->duration = 0;
-
-    s->o_correction = vec2i_create(0, 0);
     s->dir_correction = 1;
-
-    s->disable_gravity = 0;
-
-    s->screen_shake_horizontal = 0;
-    s->screen_shake_vertical = 0;
-
     s->blend_start = 0xFF;
     s->blend_finish = 0xFF;
-
-    s->pal_begin = 0;
-    s->pal_end = 0;
-    s->pal_ref_index = 0;
-    s->pal_start_index = 0;
-    s->pal_entry_count = 0;
-    s->pal_tint = 0;
-
-    s->pal_copy_entries = 0;
-    s->pal_copy_start = 0;
-    s->pal_copy_count = 0;
 }
 
-// ---------------- Public functions ----------------
-
 void player_create(object *obj) {
-    obj->animation_state.reverse = 0;
+    memset(&obj->animation_state, 0, sizeof(player_animation_state));
     obj->animation_state.end_frame = UINT32_MAX;
-    obj->animation_state.current_tick = 0;
     obj->animation_state.previous_tick = -1;
-    obj->animation_state.finished = 0;
-    obj->animation_state.repeat = 0;
-    obj->animation_state.entered_frame = 0;
-    obj->animation_state.spawn = NULL;
-    obj->animation_state.spawn_userdata = NULL;
-    obj->animation_state.destroy = NULL;
-    obj->animation_state.destroy_userdata = NULL;
-    obj->animation_state.disable_d = 0;
-    obj->animation_state.enemy_obj_id = 0;
-    obj->animation_state.shadow_corner_hack = 0;
-    obj->slide_state.timer = 0;
-    obj->slide_state.vel = vec2f_create(0, 0);
     sd_script_create(&obj->animation_state.parser);
     player_clear_frame(obj);
 }
@@ -549,10 +512,13 @@ void player_run(object *obj) {
         rstate->pal_tricks_off = sd_script_isset(frame, "bpo") ? 1 : 0; // Disable the standard palette tricks
         rstate->bd_flag =
             sd_script_isset(frame, "bd"); // Read palette from the last frame of animation (we emulate this internally)
-        rstate->bg_flag = sd_script_isset(frame, "bg");
-        rstate->pal_copy_count = sd_script_get(frame, "ba");   // Number of copies to make after bi + bc
-        rstate->pal_copy_start = sd_script_get(frame, "bi");   // Start offset for copying
-        rstate->pal_copy_entries = sd_script_get(frame, "bc"); // Number of indexes to copy
+
+        // These are animation-global instead of per-frame.
+        if(sd_script_isset(frame, "ba")) {
+            state->pal_copy_count = sd_script_get(frame, "ba");   // Number of copies to make after bi + bc
+            state->pal_copy_start = sd_script_get(frame, "bi");   // Start offset for copying
+            state->pal_copy_entries = sd_script_get(frame, "bc"); // Number of indexes to copy
+        }
 
         // Handle position correction
         if(sd_script_isset(frame, "ox")) {
@@ -671,6 +637,8 @@ void player_run(object *obj) {
             effects |= EFFECT_GLOW;
         if(player_frame_isset(obj, "ub"))
             effects |= EFFECT_TRAIL;
+        if(player_frame_isset(obj, "bg"))
+            effects |= EFFECT_ADD;
         object_set_frame_effects(obj, effects);
 
         // Set render settings

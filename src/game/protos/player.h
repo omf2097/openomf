@@ -35,11 +35,6 @@ typedef struct player_sprite_state_t {
 
     bool pal_tricks_off; // bpo
     bool bd_flag;        // bd
-    bool bg_flag;        // bg
-
-    int pal_copy_entries; // ba
-    int pal_copy_start;   // bi
-    int pal_copy_count;   // ba
 } player_sprite_state;
 
 typedef struct player_slide_op_t {
@@ -65,6 +60,10 @@ typedef struct player_animation_state_t {
     uint8_t finished;
     uint8_t disable_d;
     uint8_t shadow_corner_hack;
+
+    uint8_t pal_copy_entries; // ba
+    uint8_t pal_copy_start;   // bi
+    uint8_t pal_copy_count;   // bc
 
     void *spawn_userdata;
     void *destroy_userdata;

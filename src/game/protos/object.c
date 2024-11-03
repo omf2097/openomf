@@ -181,9 +181,11 @@ void object_scenewide_palette_transform(damage_tracker *damage, vga_palette *pal
 }
 
 void object_palette_copy_transform(damage_tracker *damage, vga_palette *pal, void *userdata) {
-    player_sprite_state *state = userdata;
-    int src_start = state->pal_copy_start;
-    int src_end = state->pal_copy_entries + src_start;
+    object *obj = userdata;
+    player_sprite_state *state = &obj->sprite_state;
+    player_animation_state *anim_state = &obj->animation_state;
+    int src_start = anim_state->pal_copy_start;
+    int src_end = anim_state->pal_copy_entries + src_start;
     float step = state->timer / (float)state->duration;
     float chunk = state->pal_end - state->pal_begin;
     float bpp = (state->pal_begin + chunk * step) / 255.0;
@@ -203,7 +205,7 @@ void object_palette_copy_transform(damage_tracker *damage, vga_palette *pal, voi
     int pos = src_end;
     vga_color *ref;
     float r, g, b;
-    for(int i = 0; i < state->pal_copy_count; i++) {
+    for(int i = 0; i < anim_state->pal_copy_count; i++) {
         ref = &bd_colors[i];
         for(int w = src_start; w < src_end; w++) {
             r = clampf((ref->r - pal->colors[w].r) * bpp, 0, 255);
@@ -212,7 +214,6 @@ void object_palette_copy_transform(damage_tracker *damage, vga_palette *pal, voi
             pal->colors[pos].r = clamp(r + pal->colors[w].r, 0, 255);
             pal->colors[pos].g = clamp(g + pal->colors[w].g, 0, 255);
             pal->colors[pos].b = clamp(b + pal->colors[w].b, 0, 255);
-            // DEBUG("%d = %d, %d, %d", pos, pal->colors[pos].r, pal->colors[pos].g, pal->colors[pos].b);
             pos++;
         }
     }
@@ -256,8 +257,8 @@ void object_dynamic_tick(object *obj) {
         obj->sprite_state.screen_shake_horizontal = 0;
     }
 
-    if(obj->sprite_state.pal_tricks_off && obj->sprite_state.pal_copy_count > 0) { // BPO tag is on
-        vga_state_enable_palette_transform(object_palette_copy_transform, &obj->sprite_state);
+    if(obj->sprite_state.pal_tricks_off) { // BPO tag is on
+        vga_state_enable_palette_transform(object_palette_copy_transform, obj);
     } else if(obj->sprite_state.pal_entry_count > 0 && obj->sprite_state.duration > 0) { // BPO tag is off
         vga_state_enable_palette_transform(object_scenewide_palette_transform, &obj->sprite_state);
     }
@@ -404,6 +405,8 @@ void object_render(object *obj) {
         remap_rounds = 0;
         remap_offset = clamp(6 + floorf(((rx > 160) ? 320 - rx : rx) / 60), 6, 8);
         options |= REMAP_SPRITE;
+    } else if(object_has_effect(obj, EFFECT_ADD)) {
+        options |= SPRITE_INDEX_ADD;
     }
 
     video_draw_full(obj->cur_surface, x, y, w, h, remap_offset, remap_rounds, obj->pal_offset, obj->pal_limit,

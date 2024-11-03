@@ -43,6 +43,7 @@ enum
     EFFECT_SATURATE = 0x10,
     EFFECT_GLOW = 0x20,
     EFFECT_TRAIL = 0x40,
+    EFFECT_ADD = 0x80,
 };
 
 typedef struct object_t object;
