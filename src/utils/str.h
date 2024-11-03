@@ -94,6 +94,13 @@ void str_format(str *dst, const char *format, ...);
 void str_cut(str *dst, size_t len);
 
 /**
+ * @brief Reduce the string length to max_len if it exceeds it.
+ * @param dst The string to truncate.
+ * @param max_len The new maximum length of the string.
+ */
+void str_truncate(str *dst, size_t max_len);
+
+/**
  * @brief Free string object
  * @details Frees up any memory used by the string object. Usage of the string after freeing it
  *          is undefined behaviour.

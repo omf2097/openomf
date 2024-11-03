@@ -461,6 +461,39 @@ void test_str_set_at(void) {
     str_free(&d);
 }
 
+void test_str_truncate(void) {
+    size_t initial_size = STR_STACK_SIZE + 1;
+    str d;
+    str_create(&d);
+    for(size_t i = 0; i < initial_size; ++i) {
+        str_append_c(&d, "A");
+    }
+
+    // These should do nothing.
+    CU_ASSERT(str_size(&d) == initial_size);
+    str_truncate(&d, initial_size * 2);
+    CU_ASSERT(str_size(&d) == initial_size);
+    str_truncate(&d, initial_size + 1);
+    CU_ASSERT(str_size(&d) == initial_size);
+    str_truncate(&d, initial_size);
+    CU_ASSERT(str_size(&d) == initial_size);
+
+    // These truncate.
+    str_truncate(&d, STR_STACK_SIZE);
+    CU_ASSERT(str_size(&d) == STR_STACK_SIZE);
+    str_truncate(&d, 3);
+    CU_ASSERT(str_size(&d) == 3);
+    CU_ASSERT_STRING_EQUAL(str_c(&d), "AAA");
+    str_truncate(&d, 1);
+    CU_ASSERT(str_size(&d) == 1);
+    CU_ASSERT_STRING_EQUAL(str_c(&d), "A");
+    str_truncate(&d, 0);
+    CU_ASSERT(str_size(&d) == 0);
+    CU_ASSERT_STRING_EQUAL(str_c(&d), "");
+
+    str_free(&d);
+}
+
 void str_test_suite(CU_pSuite suite) {
     if(CU_add_test(suite, "Test for str_create", test_str_create) == NULL) {
         return;
@@ -583,6 +616,9 @@ void str_test_suite(CU_pSuite suite) {
         return;
     }
     if(CU_add_test(suite, "Test for str_set_at", test_str_set_at) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_truncate", test_str_truncate) == NULL) {
         return;
     }
 }
