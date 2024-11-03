@@ -494,6 +494,31 @@ void test_str_truncate(void) {
     str_free(&d);
 }
 
+void test_str_insert_at(void) {
+    str d;
+
+    str_from_c(&d, "ABCD");
+    CU_ASSERT(str_insert_at(&d, 0, 'X') == true);
+    CU_ASSERT_STRING_EQUAL(str_c(&d), "XABCD");
+    CU_ASSERT(str_insert_at(&d, 2, 'Y') == true);
+    CU_ASSERT_STRING_EQUAL(str_c(&d), "XAYBCD");
+    CU_ASSERT(str_insert_at(&d, 6, 'Z') == true);
+    CU_ASSERT_STRING_EQUAL(str_c(&d), "XAYBCDZ");
+    CU_ASSERT(str_insert_at(&d, 8, 'X') == false);
+
+    size_t orig_size = 7;
+    CU_ASSERT(str_size(&d) == orig_size);
+    for(size_t i = 0; i < STR_STACK_SIZE; ++i) {
+        CU_ASSERT(str_size(&d) == orig_size + i);
+        CU_ASSERT(str_insert_at(&d, 4, 'W') == true);
+        CU_ASSERT(str_size(&d) == orig_size + i + 1);
+    }
+    // This needs to follow changes in STR_STACK_SIZE.
+    CU_ASSERT_STRING_EQUAL(str_c(&d), "XAYBWWWWWWWWWWWWWWWWCDZ");
+
+    str_free(&d);
+}
+
 void str_test_suite(CU_pSuite suite) {
     if(CU_add_test(suite, "Test for str_create", test_str_create) == NULL) {
         return;
@@ -619,6 +644,9 @@ void str_test_suite(CU_pSuite suite) {
         return;
     }
     if(CU_add_test(suite, "Test for str_truncate", test_str_truncate) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_insert_at", test_str_insert_at) == NULL) {
         return;
     }
 }

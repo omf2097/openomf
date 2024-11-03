@@ -219,6 +219,11 @@ bool str_delete_at(str *string, size_t pos);
 bool str_set_at(str *string, size_t pos, char value);
 
 /**
+ * @brief Insert a character at given index.
+ */
+bool str_insert_at(str *string, size_t pos, char value);
+
+/**
  * @brief Convert string to float
  * @details Returns true if conversion was a success, false if not.
  * @param string String to convert
