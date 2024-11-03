@@ -30,6 +30,19 @@ void error_exit(const char *message, int line_number) {
     exit(EXIT_FAILURE);
 }
 
+static char *lang_nextline(char *line, size_t sizeof_line, FILE *file, int *line_number) {
+    assert(sizeof_line > 1);
+    while(true) {
+        (*line_number)++;
+        char *read_line = fgets(line, sizeof_line, file);
+        if(read_line && *read_line == '#') {
+            // skip comments
+            continue;
+        }
+        return read_line;
+    }
+}
+
 // Function to extract value after colon with validation
 char *extract_value(char *line, const char *field_name, int line_number, bool allow_empty) {
     {
@@ -68,8 +81,7 @@ char *extract_value(char *line, const char *field_name, int line_number, bool al
 
 int read_entry(FILE *file, sd_language *language, int *line_number) {
     char line[MAX_LINE];
-    *line_number += 1;
-    if(!fgets(line, sizeof(line), file)) {
+    if(!lang_nextline(line, sizeof(line), file, line_number)) {
         // EOF is ok here
         return 0;
     }
@@ -91,8 +103,7 @@ int read_entry(FILE *file, sd_language *language, int *line_number) {
         error_exit(error, *line_number);
     }
 
-    *line_number += 1;
-    if(!fgets(line, sizeof(line), file)) {
+    if(!lang_nextline(line, sizeof(line), file, line_number)) {
         error_exit("Unexpected EOF while reading Title", *line_number);
     }
 
@@ -101,8 +112,7 @@ int read_entry(FILE *file, sd_language *language, int *line_number) {
     str_strip(&desc);
 
     // Read Data header
-    *line_number += 1;
-    if(!fgets(line, sizeof(line), file)) {
+    if(!lang_nextline(line, sizeof(line), file, line_number)) {
         error_exit("Unexpected EOF while reading Data", *line_number);
     }
 
@@ -123,8 +133,7 @@ int read_entry(FILE *file, sd_language *language, int *line_number) {
     data_iter += value_len;
 
     // Read data body until next entry or EOF
-    while(fgets(line, sizeof(line), file)) {
-        *line_number += 1;
+    while(lang_nextline(line, sizeof(line), file, line_number)) {
         // Check if this is the start of a new entry
         if(strncmp(line, "ID:", 3) == 0) {
             // Rewind to start of this line
