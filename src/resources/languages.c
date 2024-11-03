@@ -10,10 +10,45 @@
 #include <assert.h>
 #include <string.h>
 
-static sd_language *language;
+static char **language_compact;
+
+static char **lang_compact(sd_language *lang) {
+    // calculate in-memory size of language's data
+    unsigned int data_byte_count = 0;
+    for(unsigned int i = 0; i < lang->count; i++) {
+        char const *data = lang->strings[i].data;
+        data_byte_count += (data ? strlen(data) : 0) + 1;
+    }
+
+    char **allocation = omf_malloc(lang->count * sizeof(char *) + data_byte_count);
+    char *strings = (char *)(allocation + lang->count);
+
+    // fill the allocation
+    char **ptr_iter = allocation;
+    char *strings_iter = strings;
+    for(unsigned int i = 0; i < lang->count; i++) {
+        *(ptr_iter++) = strings_iter;
+
+        char const *data = lang->strings[i].data;
+        if(data) {
+            size_t data_size = strlen(data) + 1;
+            memcpy(strings_iter, data, data_size);
+            strings_iter += data_size;
+        } else {
+            strings_iter[0] = '\0';
+            strings_iter += 1;
+        }
+    }
+
+    assert(ptr_iter == allocation + lang->count);
+    assert(strings_iter == strings + data_byte_count);
+
+    return allocation;
+}
 
 bool lang_init(void) {
-    language = NULL;
+    language_compact = NULL;
+    sd_language *language = NULL;
 
     char *lang = settings_get()->language.language;
 
@@ -29,7 +64,8 @@ bool lang_init(void) {
     char const *filename = str_c(&filename_str);
 
     // Load up language file
-    language = omf_calloc(1, sizeof(sd_language));
+    sd_language language_real;
+    language = &language_real;
     if(sd_language_create(language) != SD_SUCCESS) {
         goto error_0;
     }
@@ -47,25 +83,27 @@ bool lang_init(void) {
 
     str_free(&filename_str);
 
-    // XXX we're wasting 32KB of memory on language->strings[...].description
+    language_compact = lang_compact(language);
+
+    sd_language_free(language);
 
     return true;
 
 error_0:
     str_free(&filename_str);
+    sd_language_free(language);
     lang_close();
     return false;
 }
 
 void lang_close(void) {
-    sd_language_free(language);
-    omf_free(language);
+    omf_free(language_compact);
 }
 
 const char *lang_get(int id) {
     assert(id >= 0);
     assert(id < Lang_Count);
-    return language->strings[id].data;
+    return language_compact[id];
 }
 
 const char *lang_get_offset_impl(int id, int last, int offset) {
