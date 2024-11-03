@@ -260,6 +260,14 @@ void str_cut(str *dst, size_t len) {
     str_zero(dst);
 }
 
+void str_truncate(str *dst, size_t max_len) {
+    size_t old_len = dst->len;
+    if(old_len > max_len) {
+        str_resize_and_copy_buffer(dst, max_len);
+        str_zero(dst);
+    }
+}
+
 void str_replace(str *dst, const char *seek, const char *replacement, int limit) {
     size_t seek_len = strlen(seek);
     size_t replacement_len = strlen(replacement);
