@@ -26,42 +26,45 @@ void text_defaults(text_settings *settings) {
     settings->strip_trailing_whitespace = true;
 }
 
-int text_render_char(const text_settings *settings, text_mode state, int x, int y, char ch) {
+static inline surface *get_font_surface(const text_settings *settings, char ch) {
     // Make sure code is valid
+    surface **ret;
     int code = text_chartoglyphindex(ch);
-    surface **sur = NULL;
     if(code < 0) {
-        return 0;
+        return NULL;
     }
+    switch(settings->font) {
+        case FONT_BIG:
+            ret = vector_get(&font_large.surfaces, code);
+            break;
+        case FONT_SMALL:
+            ret = vector_get(&font_small.surfaces, code);
+            break;
+        case FONT_NET1:
+            ret = vector_get(&font_net1.surfaces, code);
+            break;
+        case FONT_NET2:
+            ret = vector_get(&font_net2.surfaces, code);
+            break;
+        default:
+            ret = NULL;
+            break;
+    }
+    return (ret == NULL) ? NULL : *ret;
+}
 
-    // Select font face surface
-    if(settings->font == FONT_BIG) {
-        sur = vector_get(&font_large.surfaces, code);
-    }
-    if(settings->font == FONT_SMALL) {
-        sur = vector_get(&font_small.surfaces, code);
-    }
-    if(settings->font == FONT_NET1) {
-        sur = vector_get(&font_net1.surfaces, code);
-    }
-    if(settings->font == FONT_NET2) {
-        sur = vector_get(&font_net2.surfaces, code);
-    }
-
-    if(sur == NULL || *sur == NULL) {
-        return 0;
-    }
-
-    // Handle shadows if necessary
+static inline void render_char_shadow_surface(const text_settings *settings, const surface *sur, int x, int y) {
     if(settings->shadow & TEXT_SHADOW_RIGHT)
-        video_draw_offset(*sur, x + 1, y, settings->cshadow, 255);
+        video_draw_offset(sur, x + 1, y, settings->cshadow, 255);
     if(settings->shadow & TEXT_SHADOW_LEFT)
-        video_draw_offset(*sur, x - 1, y, settings->cshadow, 255);
+        video_draw_offset(sur, x - 1, y, settings->cshadow, 255);
     if(settings->shadow & TEXT_SHADOW_BOTTOM)
-        video_draw_offset(*sur, x, y + 1, settings->cshadow, 255);
+        video_draw_offset(sur, x, y + 1, settings->cshadow, 255);
     if(settings->shadow & TEXT_SHADOW_TOP)
-        video_draw_offset(*sur, x, y - 1, settings->cshadow, 255);
+        video_draw_offset(sur, x, y - 1, settings->cshadow, 255);
+}
 
+static inline void render_char_surface(const text_settings *settings, text_mode state, surface *sur, int x, int y) {
     int color;
     switch(state) {
         case TEXT_SELECTED:
@@ -76,10 +79,14 @@ int text_render_char(const text_settings *settings, text_mode state, int x, int 
         default:
             color = settings->cforeground;
     }
+    video_draw_offset(sur, x, y, color - 1, 255);
+}
 
-    // Draw the actual font
-    video_draw_offset(*sur, x, y, color - 1, 255);
-    return (*sur)->w;
+int text_render_char(const text_settings *settings, text_mode state, int x, int y, char ch) {
+    surface *sur = get_font_surface(settings, ch);
+    render_char_shadow_surface(settings, sur, x, y);
+    render_char_surface(settings, state, sur, x, y);
+    return sur->w;
 }
 
 int text_find_max_strlen(const text_settings *settings, int max_chars, const char *ptr) {
@@ -125,30 +132,12 @@ int text_width(const text_settings *settings, const char *text) {
 
     int len = strlen(text);
     int width = 0;
-    int code = 0;
-    surface **sur = NULL;
+    surface *sur = NULL;
     for(int i = 0; i < len; i++) {
-        code = text_chartoglyphindex(text[i]);
-        if(code < 0) {
-            continue;
+        sur = get_font_surface(settings, text[i]);
+        if(sur != NULL) {
+            width += sur->w;
         }
-        // Select font face surface
-        if(settings->font == FONT_BIG) {
-            sur = vector_get(&font_large.surfaces, code);
-        }
-        if(settings->font == FONT_SMALL) {
-            sur = vector_get(&font_small.surfaces, code);
-        }
-        if(settings->font == FONT_NET1) {
-            sur = vector_get(&font_net1.surfaces, code);
-        }
-        if(settings->font == FONT_NET2) {
-            sur = vector_get(&font_net2.surfaces, code);
-        }
-        if(sur == NULL || *sur == NULL) {
-            continue;
-        }
-        width += (*sur)->w;
     }
     return width;
 }
@@ -185,16 +174,15 @@ int text_find_line_count(const text_settings *settings, int cols, int rows, int 
     return lines;
 }
 
-void text_render(const text_settings *settings, text_mode mode, int x, int y, int w, int h, const char *text) {
-    int len = strlen(text);
-
+static void text_render_len(const text_settings *settings, text_mode mode, int x, int y, int w, int h, const char *text,
+                            int len) {
     int size = text_char_width(settings);
-    int xspace = w - settings->padding.left - settings->padding.right;
-    int yspace = h - settings->padding.top - settings->padding.bottom;
-    int charw = size + settings->cspacing;
-    int charh = size + settings->lspacing;
-    int rows = (yspace + settings->lspacing) / charh;
-    int cols = (xspace + settings->cspacing) / charw;
+    int x_space = w - settings->padding.left - settings->padding.right;
+    int y_space = h - settings->padding.top - settings->padding.bottom;
+    int char_w = size + settings->cspacing;
+    int char_h = size + settings->lspacing;
+    int rows = (y_space + settings->lspacing) / char_h;
+    int cols = (x_space + settings->cspacing) / char_w;
     int fit_lines = text_find_line_count(settings, cols, rows, len, text);
     int max_chars = settings->direction == TEXT_HORIZONTAL ? cols : rows;
     if(max_chars == 0) {
@@ -209,26 +197,26 @@ void text_render(const text_settings *settings, text_mode mode, int x, int y, in
     // Initial alignment for whole text block
     switch(settings->direction) {
         case TEXT_VERTICAL:
-            tmp_s = fit_lines * charw - settings->cspacing; // Total W minus last spacing
+            tmp_s = fit_lines * char_w - settings->cspacing; // Total W minus last spacing
             switch(settings->halign) {
                 case TEXT_CENTER:
-                    start_x += ceilf((xspace - tmp_s) / 2.0f);
+                    start_x += ceilf((x_space - tmp_s) / 2.0f);
                     break;
                 case TEXT_RIGHT:
-                    start_x += (xspace - tmp_s);
+                    start_x += (x_space - tmp_s);
                     break;
                 default:
                     break;
             }
             break;
         case TEXT_HORIZONTAL:
-            tmp_s = fit_lines * charh - settings->lspacing; // Total H minus last spacing
+            tmp_s = fit_lines * char_h - settings->lspacing; // Total H minus last spacing
             switch(settings->valign) {
                 case TEXT_MIDDLE:
-                    start_y += floorf((yspace - tmp_s) / 2.0f);
+                    start_y += floorf((y_space - tmp_s) / 2.0f);
                     break;
                 case TEXT_BOTTOM:
-                    start_y += (yspace - tmp_s);
+                    start_y += (y_space - tmp_s);
                     break;
                 default:
                     break;
@@ -278,32 +266,32 @@ void text_render(const text_settings *settings, text_mode mode, int x, int y, in
         // Find total size of this line and set newline start coords
         switch(settings->direction) {
             case TEXT_HORIZONTAL:
-                line_pw = line_len * charw - settings->cspacing;
-                my += charh * line;
+                line_pw = line_len * char_w - settings->cspacing;
+                my += char_h * line;
 
                 // Horizontal alignment for this line
                 switch(settings->halign) {
                     case TEXT_CENTER:
-                        mx += floorf((xspace - line_pw) / 2.0f);
+                        mx += floorf((x_space - line_pw) / 2.0f);
                         break;
                     case TEXT_RIGHT:
-                        mx += (xspace - line_pw);
+                        mx += (x_space - line_pw);
                         break;
                     default:
                         break;
                 }
                 break;
             case TEXT_VERTICAL:
-                line_ph = line_len * charh - settings->lspacing;
-                mx += charw * line;
+                line_ph = line_len * char_h - settings->lspacing;
+                mx += char_w * line;
 
                 // Vertical alignment for this line
                 switch(settings->valign) {
                     case TEXT_MIDDLE:
-                        my += ceilf((yspace - line_ph) / 2.0f);
+                        my += ceilf((y_space - line_ph) / 2.0f);
                         break;
                     case TEXT_BOTTOM:
-                        my += (yspace - line_ph);
+                        my += (y_space - line_ph);
                         break;
                     default:
                         break;
@@ -311,7 +299,7 @@ void text_render(const text_settings *settings, text_mode mode, int x, int y, in
                 break;
         }
 
-        int w = 0;
+        surface *sur;
         // Render characters
         for(; k < line_len; k++) {
             // Skip line endings.
@@ -319,17 +307,31 @@ void text_render(const text_settings *settings, text_mode mode, int x, int y, in
                 continue;
 
             // Render character
-            w = text_render_char(settings, mode, mx + start_x, my + start_y, text[ptr + k]);
+            sur = get_font_surface(settings, text[ptr + k]);
+            if(sur == NULL) {
+                continue;
+            }
+
+            render_char_shadow_surface(settings, sur, mx + start_x, my + start_y);
+            render_char_surface(settings, mode, sur, mx + start_x, my + start_y);
 
             // Render to the right direction
             if(settings->direction == TEXT_HORIZONTAL) {
-                mx += w + settings->cspacing;
+                mx += sur->w + settings->cspacing;
             } else {
-                my += charh;
+                my += char_h;
             }
         }
 
         ptr += advance;
         line++;
     }
+}
+
+void text_render(const text_settings *settings, text_mode mode, int x, int y, int w, int h, const char *text) {
+    text_render_len(settings, mode, x, y, w, h, text, strlen(text));
+}
+
+void text_render_str(const text_settings *settings, text_mode mode, int x, int y, int w, int h, const str *text) {
+    text_render_len(settings, mode, x, y, w, h, str_c(text), str_size(text));
 }
