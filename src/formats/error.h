@@ -11,10 +11,6 @@
 #ifndef SD_ERROR_H
 #define SD_ERROR_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /*! \brief Errorcode list.
  */
 enum SD_ERRORCODE
@@ -42,9 +38,5 @@ enum SD_ERRORCODE
  * \return Error message
  */
 const char *sd_get_error(enum SD_ERRORCODE error_code);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // SD_ERROR_H

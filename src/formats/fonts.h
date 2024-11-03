@@ -14,10 +14,6 @@
 #include "vga_image.h"
 #include <stdint.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /*! \brief Font character
  *
  * A single font character. Simply contains the data. Representation depends on font size.
@@ -103,9 +99,5 @@ int sd_font_decode(const sd_font *font, sd_vga_image *surface, uint8_t ch, uint8
  * Same as sd_font_decode, but decodes to an RGBA surface.
  */
 int sd_font_decode_rgb(const sd_font *font, sd_rgba_image *o, uint8_t ch, uint8_t r, uint8_t g, uint8_t b);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // SD_FONTS_H

@@ -18,10 +18,6 @@
 #include "formats/sprite.h"
 #include <stdint.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /*! \brief PIC pilot information
  *
  * Contains a pilot information. Current upgrades, powers, tournament, etc.
@@ -153,9 +149,5 @@ int sd_pilot_save(sd_writer *writer, const sd_pilot *pilot);
 
 void sd_pilot_set_player_color(sd_pilot *pilot, player_color index, uint8_t color);
 void sd_pilot_exit_tournament(sd_pilot *pilot);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // SD_PILOT_H

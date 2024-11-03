@@ -10,10 +10,6 @@
 #ifndef SD_TAGLIST_H
 #define SD_TAGLIST_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /*! \brief Tag information entry
  *
  * Contains information about a single animation tag.
@@ -42,9 +38,5 @@ extern const int sd_taglist_size; ///< Taglist size
  * \param desc A pointer to the description in library memory. Will be ignored if set to NULL.
  */
 int sd_tag_info(const char *search_tag, int *req_param, const char **tag, const char **desc);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // SD_TAGLIST_H

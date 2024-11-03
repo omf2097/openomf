@@ -18,10 +18,6 @@
 #include "video/vga_remap.h"
 #include <stdint.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /*! \brief Resolves an RGB color to palette index
  *
  * Attempts to resolve an RGB color to a palette index. The requested RGB color
@@ -79,9 +75,5 @@ void palette_load_player_cutscene_colors(vga_palette *src);
 void palette_load_altpal_player_color(vga_palette *dst, int player, int src_color, int dst_color);
 void palette_set_player_color(int player, int src_color, int dst_color);
 void palette_copy(vga_palette *dst, const vga_palette *src, int index_start, int index_count);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // PALETTE_H

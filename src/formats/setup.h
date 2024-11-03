@@ -14,10 +14,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 typedef struct {
     uint16_t unk : 2;
     uint16_t rehit_mode : 1;
@@ -82,9 +78,5 @@ static_assert(296 == sizeof(sd_setup_file), "sd_setup_file should pack into 296 
 int sd_setup_create(sd_setup_file *setup);
 void sd_setup_free(sd_setup_file *setup);
 int sd_setup_load(sd_setup_file *setup, const char *file);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // SD_SETUP_H

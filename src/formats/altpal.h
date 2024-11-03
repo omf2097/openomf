@@ -12,10 +12,6 @@
 #ifndef ALTPAL_H
 #define ALTPAL_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #define ALTPALS_PALETTES 11 ///< Maximum amount of alternate palettes (technical limitation)
 
 /*! \brief Alternate palettes
@@ -78,9 +74,5 @@ int altpals_save(altpal_file *ap, const char *filename);
  * \param ap Altpal struct pointer
  */
 void altpal_free(altpal_file *ap);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // ALTPAL_H

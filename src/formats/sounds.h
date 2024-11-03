@@ -12,10 +12,6 @@
 
 #include <inttypes.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #define SD_SOUNDS_MAX 299 ///< Maximum amount of sounds allowed in the SOUNDS.DAT file.
 
 /*! \brief A single sound entry.
@@ -131,9 +127,5 @@ int sd_sounds_load(sd_sound_file *sf, const char *filename);
  * \param filename Name of the sounds file to save into.
  */
 int sd_sounds_save(const sd_sound_file *sf, const char *filename);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // SD_SOUNDS_H

@@ -12,10 +12,6 @@
 
 #include "formats/sprite.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #define MAX_PIC_PHOTOS 256 ///< Maximum amount of PIC photos that will fit the array
 
 /*! \brief PIC pilot portrait
@@ -101,9 +97,5 @@ int sd_pic_save(const sd_pic_file *pic, const char *filename);
  * \param entry_id Photo picture number to get.
  */
 const sd_pic_photo *sd_pic_get(const sd_pic_file *pic, int entry_id);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // SD_PIC_H

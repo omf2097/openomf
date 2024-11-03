@@ -10,10 +10,6 @@
 #ifndef SD_LANGUAGE_H
 #define SD_LANGUAGE_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /*! \brief Language string container
  *
  * Contains a single language string and a short description for it. Descriptions
@@ -96,9 +92,5 @@ int sd_language_save(sd_language *language, const char *filename);
 const sd_lang_string *sd_language_get(const sd_language *language, unsigned num);
 
 void sd_language_append(sd_language *language, const char *description, const char *data);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // SD_LANGUAGE_H

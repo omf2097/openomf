@@ -15,10 +15,6 @@
 #include "formats/sprite.h"
 #include "formats/tournament.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #define MAX_CHR_ENEMIES 256 ///< Maximum amount of enemies for a CHR file.
 
 /*! \brief CHR enemy state entry
@@ -109,9 +105,5 @@ int sd_chr_save(sd_chr_file *chr, const char *filename);
  * \param enemy_num Enemy number to find
  */
 const sd_chr_enemy *sd_chr_get_enemy(sd_chr_file *chr, int enemy_num);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // SD_CHR_H

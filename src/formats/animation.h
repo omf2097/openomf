@@ -16,10 +16,6 @@
 #include "formats/sprite.h"
 #include <stdint.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #define SD_ANIMATION_STRING_MAX 1024 ///< Maximum animation string size
 #define SD_EXTRA_STRING_MAX 512      ///< Maximum extra string size
 
@@ -295,9 +291,5 @@ sd_sprite *sd_animation_get_sprite(sd_animation *animation, int num);
 
 int sd_animation_load(sd_reader *reader, sd_animation *animation);
 int sd_animation_save(sd_writer *writer, const sd_animation *animation);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // SD_ANIMATION_H
