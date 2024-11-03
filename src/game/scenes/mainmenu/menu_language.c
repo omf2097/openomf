@@ -68,6 +68,7 @@ component *menu_language_create(scene *s) {
     const char *dirname = pm_get_local_path(RESOURCE_PATH);
     if(dirname == NULL) {
         PERROR("Could not find resources path for menu_language!");
+        omf_free(local);
         return NULL;
     }
 
