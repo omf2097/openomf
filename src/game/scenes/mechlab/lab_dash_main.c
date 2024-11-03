@@ -405,8 +405,8 @@ void lab_dash_main_update(scene *s, dashboard_widgets *dw) {
     snprintf(tmp, sizeof(tmp), "MONEY: $ %sK", money);
     label_set_text(dw->money, tmp);
 
-    label_set_text(dw->har_name, lang_get(31 + p1->pilot->har_id));
-    label_set_text(dw->har_moves, lang_get(492 + p1->pilot->har_id));
+    label_set_text(dw->har_name, lang_get_offset(LangRobot, p1->pilot->har_id));
+    label_set_text(dw->har_moves, lang_get_offset(LangRobotDescription, p1->pilot->har_id));
 
     // Tournament and player name
     label_set_text(dw->name, p1->pilot->name);
@@ -422,7 +422,7 @@ void lab_dash_sim_update(scene *s, dashboard_widgets *dw, sd_pilot *pilot) {
     label_set_text(dw->wins, tmp);
     snprintf(tmp, sizeof(tmp), "LOSES: %d", pilot->losses);
     label_set_text(dw->losses, tmp);
-    snprintf(tmp, sizeof(tmp), "MODEL: %s", lang_get(31 + pilot->har_id));
+    snprintf(tmp, sizeof(tmp), "MODEL: %s", lang_get_offset(LangRobot, pilot->har_id));
     label_set_text(dw->har_name, tmp);
     snprintf(tmp, sizeof(tmp), "NAME: %s", pilot->name);
     label_set_text(dw->name, tmp);

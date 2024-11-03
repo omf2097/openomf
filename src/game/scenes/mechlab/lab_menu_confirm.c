@@ -58,7 +58,7 @@ component *lab_menu_confirm_create(scene *s, lab_menu_select_cb yes, void *yesda
 
     sprite *bsprite = animation_get_sprite(main_buttons, 0);
     component *button =
-        spritebutton_create(&tconf, lang_get(229), bsprite->data, COM_ENABLED, lab_menu_confirm_yes, yesgo);
+        spritebutton_create(&tconf, lang_get(LangYes), bsprite->data, COM_ENABLED, lab_menu_confirm_yes, yesgo);
 
     component_set_size_hints(button, bsprite->data->w, bsprite->data->h);
     component_set_pos_hints(button, bsprite->pos.x, bsprite->pos.y);
@@ -69,7 +69,7 @@ component *lab_menu_confirm_create(scene *s, lab_menu_select_cb yes, void *yesda
     nogo->data = nodata;
 
     bsprite = animation_get_sprite(main_buttons, 1);
-    button = spritebutton_create(&tconf, lang_get(228), bsprite->data, COM_ENABLED, lab_menu_confirm_no, nogo);
+    button = spritebutton_create(&tconf, lang_get(LangNo), bsprite->data, COM_ENABLED, lab_menu_confirm_no, nogo);
 
     component_set_size_hints(button, bsprite->data->w, bsprite->data->h);
     component_set_pos_hints(button, bsprite->pos.x, bsprite->pos.y);

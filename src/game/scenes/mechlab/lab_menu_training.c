@@ -19,9 +19,17 @@ static component *label2;
 static int32_t prices[] = {50,   80,   120,   180,   240,   300,   450,   600,   800,   1100,   1500,   2500,
                            4000, 7000, 10000, 14000, 20000, 28000, 40000, 55000, 75000, 100000, 140000, 200000};
 
+// XXX power/agility/endurance menu functions should be folded into one
 static void lab_menu_focus_power(component *c, bool focused, void *userdata);
 static void lab_menu_focus_agility(component *c, bool focused, void *userdata);
 static void lab_menu_focus_endurance(component *c, bool focused, void *userdata);
+
+enum
+{
+    FOCUS_POWER,
+    FOCUS_AGILITY,
+    FOCUS_ENDURANCE,
+};
 
 void lab_menu_training_power(component *c, void *userdata) {
     scene *s = userdata;
@@ -114,7 +122,7 @@ static void lab_menu_focus_power(component *c, bool focused, void *userdata) {
         scene *s = userdata;
         game_player *p1 = game_state_get_player(s->gs, 0);
         sd_pilot *pilot = game_player_get_pilot(p1);
-        label_set_text(label1, lang_get(512));
+        label_set_text(label1, lang_get_offset(LangTrainingTitle, FOCUS_POWER));
         if(pilot->power > 23) {
             label_set_text(label2, "UNAVAILABLE");
         } else {
@@ -124,7 +132,7 @@ static void lab_menu_focus_power(component *c, bool focused, void *userdata) {
             snprintf(tmp, sizeof(tmp), "$ %sK", price_str);
             label_set_text(label2, tmp);
         }
-        mechlab_set_hint(s, lang_get(533));
+        mechlab_set_hint(s, lang_get_offset(LangTrainingHelp, FOCUS_POWER));
     }
 }
 
@@ -133,7 +141,7 @@ static void lab_menu_focus_agility(component *c, bool focused, void *userdata) {
         scene *s = userdata;
         game_player *p1 = game_state_get_player(s->gs, 0);
         sd_pilot *pilot = game_player_get_pilot(p1);
-        label_set_text(label1, lang_get(513));
+        label_set_text(label1, lang_get_offset(LangTrainingTitle, FOCUS_AGILITY));
         if(pilot->agility > 23) {
             label_set_text(label2, "UNAVAILABLE");
         } else {
@@ -143,7 +151,7 @@ static void lab_menu_focus_agility(component *c, bool focused, void *userdata) {
             snprintf(tmp, sizeof(tmp), "$ %sK", price_str);
             label_set_text(label2, tmp);
         }
-        mechlab_set_hint(s, lang_get(534));
+        mechlab_set_hint(s, lang_get_offset(LangTrainingHelp, FOCUS_AGILITY));
     }
 }
 
@@ -152,7 +160,7 @@ static void lab_menu_focus_endurance(component *c, bool focused, void *userdata)
         scene *s = userdata;
         game_player *p1 = game_state_get_player(s->gs, 0);
         sd_pilot *pilot = game_player_get_pilot(p1);
-        label_set_text(label1, lang_get(514));
+        label_set_text(label1, lang_get_offset(LangTrainingTitle, FOCUS_ENDURANCE));
         if(pilot->endurance > 23) {
             label_set_text(label2, "UNAVAILABLE");
         } else {
@@ -162,7 +170,7 @@ static void lab_menu_focus_endurance(component *c, bool focused, void *userdata)
             snprintf(tmp, sizeof(tmp), "$ %sK", price_str);
             label_set_text(label2, tmp);
         }
-        mechlab_set_hint(s, lang_get(535));
+        mechlab_set_hint(s, lang_get_offset(LangTrainingHelp, FOCUS_ENDURANCE));
     }
 }
 
@@ -171,7 +179,7 @@ void lab_menu_focus_training_done(component *c, bool focused, void *userdata) {
         scene *s = userdata;
         label_set_text(label1, "");
         label_set_text(label2, "");
-        mechlab_set_hint(s, lang_get(536));
+        mechlab_set_hint(s, lang_get(LangTrainingDone));
     }
 }
 

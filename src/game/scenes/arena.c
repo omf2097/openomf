@@ -1144,20 +1144,21 @@ void arena_render_overlay(scene *scene) {
             }
         } else {
             // TODO put these in the pilot struct
-            player1_name = lang_get(player[0]->pilot->pilot_id + 20);
-            player2_name = lang_get(player[1]->pilot->pilot_id + 20);
+            player1_name = lang_get_offset(LangPilot, player[0]->pilot->pilot_id);
+            player2_name = lang_get_offset(LangPilot, player[1]->pilot->pilot_id);
         }
 
         text_render(&tconf_players, TEXT_DEFAULT, 5, 19, 250, 6, player1_name);
-        text_render(&tconf_players, TEXT_DEFAULT, 5, 26, 250, 6, lang_get((player[0]->pilot->har_id) + 31));
+        text_render(&tconf_players, TEXT_DEFAULT, 5, 26, 250, 6, lang_get_offset(LangRobot, player[0]->pilot->har_id));
 
         if(player[1]->pilot) {
             // when quitting, this can go null
             int p2len = (strlen(player2_name) - 1) * font_small.w;
-            int h2len = (strlen(lang_get((player[1]->pilot->har_id) + 31)) - 1) * font_small.w;
+            // XXX TODO: Magnus: Hardcoded - 1 for trailing newlines in localization strings
+            int h2len = (strlen(lang_get_offset(LangRobot, player[1]->pilot->har_id)) - 1) * font_small.w;
             text_render(&tconf_players, TEXT_DEFAULT, 315 - p2len, 19, 100, 6, player2_name);
             text_render(&tconf_players, TEXT_DEFAULT, 315 - h2len, 26, 100, 6,
-                        lang_get((player[1]->pilot->har_id) + 31));
+                        lang_get_offset(LangRobot, player[1]->pilot->har_id));
         }
 
         // Render score stuff
@@ -1539,7 +1540,9 @@ int arena_create(scene *scene) {
             local->rec->pilots[i].info.color_1 = player->pilot->color_1;
             local->rec->pilots[i].info.color_2 = player->pilot->color_2;
             local->rec->pilots[i].info.color_3 = player->pilot->color_3;
-            memcpy(local->rec->pilots[i].info.name, lang_get(player->pilot->pilot_id + 20), 18);
+            // XXX ugly strncpy, implicit truncation, no nul termination guarantee, why are we even copying the pilot's
+            // name in here?
+            strncpy(local->rec->pilots[i].info.name, lang_get_offset(LangPilot, player->pilot->pilot_id), 18);
         }
         local->rec->arena_id = scene->id - SCENE_ARENA0;
     } else {
