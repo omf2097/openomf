@@ -220,7 +220,8 @@ int console_init(void) {
     con->histpos_changed = 0;
     list_create(&con->history);
     hashmap_create(&con->cmds);
-    menu_background_create(&con->background, 322, 101);
+    menu_transparent_bg_create(&con->background1, 322, 101);
+    menu_background_create(&con->background2, 322, 101);
 
     console_init_cmd();
 
@@ -250,7 +251,8 @@ int console_init(void) {
 }
 
 void console_close(void) {
-    surface_free(&con->background);
+    surface_free(&con->background1);
+    surface_free(&con->background2);
     list_free(&con->history);
     hashmap_free(&con->cmds);
     omf_free(con);
@@ -315,7 +317,8 @@ void console_render(void) {
             con->input[0] = '\0';
             con->histpos_changed = 0;
         }
-        video_draw(&con->background, -1, con->ypos - 101);
+        video_draw_remap(&con->background1, -1, con->ypos - 101, 4, 1, 0);
+        video_draw(&con->background2, -1, con->ypos - 101);
         text_settings tconf;
         text_defaults(&tconf);
         tconf.font = FONT_SMALL;

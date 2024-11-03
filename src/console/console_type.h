@@ -15,7 +15,8 @@ typedef struct {
     unsigned int output_pos;
     int output_overflowing;
     char input[41];
-    surface background;
+    surface background1;
+    surface background2;
     int isopen;
     int ownsinput;
     int ypos;
