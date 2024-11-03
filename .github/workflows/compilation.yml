@@ -171,6 +171,7 @@ jobs:
       with:
         packages: cmake libargtable2-dev libcunit1-dev libsdl2-mixer-dev
           libconfuse-dev libenet-dev libsdl2-dev libxmp-dev libpng-dev libepoxy-dev
+          libminiupnpc-dev libnatpmp-dev
 
     - name: Generate Release
       run: |
@@ -222,7 +223,7 @@ jobs:
         maintainer: ${{ github.repository_owner }}
         version: ${{ env.OPENOMF_VERSION }}-${{ steps.slug.outputs.sha8 }}
         arch: 'amd64'
-        depends: 'libargtable2-0, libsdl2-mixer-2.0-0, libconfuse2, libenet7, libsdl2-2.0-0, libxmp4, libpng16-16, libepoxy0'
+        depends: 'libargtable2-0, libsdl2-mixer-2.0-0, libconfuse2, libenet7, libsdl2-2.0-0, libxmp4, libpng16-16, libepoxy0, libminiupnpc17, libnatpmp1'
         desc: 'One Must Fall 2097 Remake'
 
     - name: Install the DEB package
@@ -249,7 +250,7 @@ jobs:
     - name: Install Mac Dependencies
       run: |
         brew update
-        brew install cmake argtable cunit sdl2_mixer confuse enet sdl2 libxmp libpng libepoxy
+        brew install cmake argtable cunit sdl2_mixer confuse enet sdl2 libxmp libpng libepoxy miniupnpc libnatpmp
 
     - name: Generate Release
       run: |
