@@ -18,7 +18,8 @@
 typedef struct newsroom_local_t {
     int news_id;
     int screen;
-    surface news_bg;
+    surface news_bg1;
+    surface news_bg2;
     str news_str;
     str pilot1, pilot2;
     int har1, har2;
@@ -137,7 +138,8 @@ void newsroom_set_names(newsroom_local *local, const char *pilot1, const char *p
 // newsroom callbacks
 void newsroom_free(scene *scene) {
     newsroom_local *local = scene_get_userdata(scene);
-    surface_free(&local->news_bg);
+    surface_free(&local->news_bg1);
+    surface_free(&local->news_bg2);
     str_free(&local->news_str);
     str_free(&local->pilot1);
     str_free(&local->pilot2);
@@ -166,7 +168,8 @@ void newsroom_overlay_render(scene *scene) {
 
     // Render text
     if(str_size(&local->news_str) > 0) {
-        video_draw(&local->news_bg, 20, 131);
+        video_draw_remap(&local->news_bg1, 20, 131, 4, 1, 0);
+        video_draw(&local->news_bg2, 20, 131);
         text_settings tconf_yellow;
         text_defaults(&tconf_yellow);
         tconf_yellow.font = FONT_BIG;
@@ -313,7 +316,8 @@ int newsroom_create(scene *scene) {
     local->news_id = rand_int(24) * 2;
     local->screen = 0;
     local->champion = false;
-    menu_background_create(&local->news_bg, 280, 55);
+    menu_transparent_bg_create(&local->news_bg1, 280, 55);
+    menu_background_create(&local->news_bg2, 280, 55);
 
     game_player *p1 = game_state_get_player(scene->gs, 0);
     game_player *p2 = game_state_get_player(scene->gs, 1);
