@@ -8,6 +8,11 @@
 #define COLOR_MENU_BORDER2 162
 #define COLOR_MENU_BG 0
 
+void menu_transparent_bg_create(surface *s, int w, int h) {
+    surface_create(s, w, h);
+    surface_set_transparency(s, -1);
+}
+
 void menu_background_create(surface *s, int w, int h) {
     image img;
     image_create(&img, w, h);
@@ -20,6 +25,7 @@ void menu_background_create(surface *s, int w, int h) {
     }
     image_rect(&img, 0, 0, w - 1, h - 1, COLOR_MENU_BORDER);
     surface_create_from_image(s, &img);
+    surface_set_transparency(s, COLOR_MENU_BG);
     image_free(&img);
 }
 
@@ -37,6 +43,7 @@ void menu_background2_create(surface *s, int w, int h) {
     image_rect(&img, 1, 1, w - 2, h - 2, COLOR_MENU_BORDER2);
     image_rect(&img, 0, 0, w - 2, h - 2, COLOR_MENU_BORDER1);
     surface_create_from_image(s, &img);
+    surface_set_transparency(s, COLOR_MENU_BG);
     image_free(&img);
 }
 

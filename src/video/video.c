@@ -286,8 +286,8 @@ void video_render_background(surface *sur) {
     }
 }
 
-static void draw_args(video_state *state, const surface *sur, SDL_Rect *dst, int remap_offset, int remap_rounds,
-                      int pal_offset, int pal_limit, unsigned int flip_mode, unsigned int options) {
+static inline void draw_args(video_state *state, const surface *sur, SDL_Rect *dst, int remap_offset, int remap_rounds,
+                             int pal_offset, int pal_limit, unsigned int flip_mode, unsigned int options) {
     uint16_t tx, ty, tw, th;
     if(atlas_get(g_video_state.atlas, sur, &tx, &ty, &tw, &th)) {
         object_array_add(state->objects, dst->x, dst->y, dst->w, dst->h, tx, ty, tw, th, flip_mode, sur->transparent,
@@ -325,5 +325,20 @@ void video_draw_size(const surface *src_surface, int x, int y, int w, int h) {
 }
 
 void video_draw(const surface *src_surface, int x, int y) {
-    video_draw_offset(src_surface, x, y, 0, 255);
+    SDL_Rect dst;
+    dst.w = src_surface->w;
+    dst.h = src_surface->h;
+    dst.x = x;
+    dst.y = y;
+    draw_args(&g_video_state, src_surface, &dst, 0, 0, 0, 255, 0, 0);
+}
+
+void video_draw_remap(const surface *src_surface, int x, int y, int remap_offset, int remap_rounds,
+                      unsigned int options) {
+    SDL_Rect dst;
+    dst.w = src_surface->w;
+    dst.h = src_surface->h;
+    dst.x = x;
+    dst.y = y;
+    draw_args(&g_video_state, src_surface, &dst, remap_offset, remap_rounds, 0, 255, 0, options);
 }

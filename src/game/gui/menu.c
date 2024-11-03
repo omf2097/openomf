@@ -93,16 +93,22 @@ static void menu_render(component *c) {
     // Otherwise handle this component
     iterator it;
     component **tmp;
-    if(m->bg) {
-        video_draw(m->bg, c->x, c->y);
+    if(m->bg1) {
+        video_draw_remap(m->bg1, c->x, c->y, 4, 1, 0);
+    }
+    if(m->bg2) {
+        video_draw(m->bg2, c->x, c->y);
     }
     vector_iter_begin(&s->objs, &it);
     int i = 0;
     while((tmp = iter_next(&it)) != NULL) {
         component_render(*tmp);
         if(m->selected == i && (*tmp)->help) {
-            if(m->help_bg) {
-                video_draw(m->help_bg, m->help_x - 8, m->help_y - 8);
+            if(m->help_bg1) {
+                video_draw_remap(m->help_bg1, m->help_x - 8, m->help_y - 8, 4, 1, 0);
+            }
+            if(m->help_bg2) {
+                video_draw(m->help_bg2, m->help_x - 8, m->help_y - 8);
             }
             text_render(&m->help_text_conf, TEXT_DEFAULT, m->help_x, m->help_y, m->help_w, m->help_h, (*tmp)->help);
         }
@@ -292,14 +298,21 @@ static void menu_layout(component *c, int x, int y, int w, int h) {
     }
 
     // Set the background now that we know the width and height
-    if(m->bg == NULL && m->background) {
-        m->bg = omf_calloc(1, sizeof(surface));
-        menu_background_create(m->bg, w, height + m->margin_top * 2);
+    if(m->bg1 == NULL && m->background) {
+        m->bg1 = omf_malloc(sizeof(surface));
+        menu_transparent_bg_create(m->bg1, w, height + m->margin_top * 2);
     }
-
-    if(m->help_bg == NULL && m->background) {
-        m->help_bg = omf_calloc(1, sizeof(surface));
-        menu_background_create(m->help_bg, m->help_w + 16, m->help_w / 8);
+    if(m->bg2 == NULL && m->background) {
+        m->bg2 = omf_malloc(sizeof(surface));
+        menu_background_create(m->bg2, w, height + m->margin_top * 2);
+    }
+    if(m->help_bg1 == NULL && m->background) {
+        m->help_bg1 = omf_calloc(1, sizeof(surface));
+        menu_transparent_bg_create(m->help_bg1, m->help_w + 16, m->help_w / 8);
+    }
+    if(m->help_bg2 == NULL && m->background) {
+        m->help_bg2 = omf_calloc(1, sizeof(surface));
+        menu_background_create(m->help_bg2, m->help_w + 16, m->help_w / 8);
     }
 
     component_set_size_hints(c, w, height);
@@ -355,13 +368,21 @@ void menu_set_help_text_settings(component *c, text_settings *settings) {
 
 static void menu_free(component *c) {
     menu *m = sizer_get_obj(c);
-    if(m->bg) {
-        surface_free(m->bg);
-        omf_free(m->bg);
+    if(m->bg1) {
+        surface_free(m->bg1);
+        omf_free(m->bg1);
     }
-    if(m->help_bg) {
-        surface_free(m->help_bg);
-        omf_free(m->help_bg);
+    if(m->bg2) {
+        surface_free(m->bg2);
+        omf_free(m->bg2);
+    }
+    if(m->help_bg1) {
+        surface_free(m->help_bg1);
+        omf_free(m->help_bg1);
+    }
+    if(m->help_bg2) {
+        surface_free(m->help_bg2);
+        omf_free(m->help_bg2);
     }
     if(m->submenu) {
         component_free(m->submenu); // Free submenu component

@@ -11,8 +11,10 @@ typedef void (*menu_free_cb)(component *c);
 typedef void (*menu_submenu_done_cb)(component *menu, component *submenu);
 
 typedef struct {
-    surface *bg;
-    surface *help_bg;
+    surface *bg1;
+    surface *bg2;
+    surface *help_bg1;
+    surface *help_bg2;
     int selected;
     int obj_h;
     int margin_top;
