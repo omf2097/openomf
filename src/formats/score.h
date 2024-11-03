@@ -13,10 +13,6 @@
 
 #include <stdint.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #define SD_SCORE_PAGES 4    ///< Number of scoreboard pages
 #define SD_SCORE_ENTRIES 20 ///< Number of scoreboard entries
 
@@ -109,9 +105,5 @@ int sd_score_save(const sd_score *score, const char *filename);
  * \param entry_id Score information entry id.
  */
 const sd_score_entry *sd_score_get(const sd_score *score, int page, int entry_id);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // SD_SCORE_H

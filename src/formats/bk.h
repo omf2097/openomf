@@ -15,10 +15,6 @@
 #include "formats/vga_image.h"
 #include <stdint.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #define MAX_BK_ANIMS 50   ///< Amount of animations in the BK file. This is fixed!
 #define MAX_BK_PALETTES 8 ///< Maximum amount of palettes allowed in BK file.
 
@@ -224,9 +220,5 @@ int sd_bk_save(const sd_bk_file *bk, const char *filename);
  * \param bk BK file struct pointer.
  */
 void sd_bk_free(sd_bk_file *bk);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // SD_BK_H

@@ -13,10 +13,6 @@
 #include "formats/move.h"
 #include <stdint.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #define MAX_AF_MOVES 70 ///< Maximum amount of moves for a HAR
 
 /*! \brief HAR data container
@@ -134,9 +130,5 @@ int sd_af_save(const sd_af_file *af, const char *filename);
  * \param af AF struct pointer.
  */
 void sd_af_free(sd_af_file *af);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // SD_AF_H

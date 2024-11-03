@@ -16,10 +16,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /*! \brief Animation tag
  *
  * Describes a single tag in animation frame.
@@ -427,9 +423,5 @@ int sd_script_letter_to_frame(char letter);
  * \return Frame letter (0 => 'A', ...)
  */
 char sd_script_frame_to_letter(int frame_id);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // SD_SCRIPT_H

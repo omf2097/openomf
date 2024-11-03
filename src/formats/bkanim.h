@@ -17,10 +17,6 @@
 
 #define SD_BK_FOOTER_STRING_MAX 512 ///< Max BK footer string length
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /*! \brief BK specific animation information
  *
  * Information about the BK specific animation things.
@@ -116,9 +112,5 @@ int sd_bk_set_anim_string(sd_bk_anim *bka, const char *data);
 
 int sd_bk_anim_load(sd_reader *reader, sd_bk_anim *bka);
 int sd_bk_anim_save(sd_writer *writer, const sd_bk_anim *bka);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // SD_BKANIM_H

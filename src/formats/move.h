@@ -15,10 +15,6 @@
 #include "formats/internal/writer.h"
 #include <stdint.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #define SD_MOVE_STRING_MAX 21         ///< Maximum allowed move string length
 #define SD_MOVE_FOOTER_STRING_MAX 512 ///< Maximum allowed footer string length
 
@@ -147,9 +143,5 @@ int sd_move_set_move_string(sd_move *move, const char *str);
 
 int sd_move_load(sd_reader *reader, sd_move *move);
 int sd_move_save(sd_writer *writer, const sd_move *move);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // SD_MOVE_H

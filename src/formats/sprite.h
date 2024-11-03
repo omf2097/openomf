@@ -17,10 +17,6 @@
 #include "formats/vga_image.h"
 #include <stdint.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /*! \brief Sprite image
  *
  * An encoded sprite image. The image is paletted, and encoded with
@@ -136,9 +132,5 @@ int sd_sprite_vga_encode(sd_sprite *dst, const sd_vga_image *src);
 
 int sd_sprite_load(sd_reader *reader, sd_sprite *sprite);
 int sd_sprite_save(sd_writer *writer, const sd_sprite *sprite);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // SD_SPRITE_H

@@ -12,10 +12,6 @@
 
 #include <stdint.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /*! \brief Collision coordinate container
  *
  * Contains a single collision coordinate for animation frames. Collision coordinate
@@ -29,9 +25,5 @@ typedef struct {
     uint8_t null;     ///< Probably null padding
     uint8_t frame_id; ///< Sprite the coordinate belongs to
 } sd_coord;
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // COLCOORD_H

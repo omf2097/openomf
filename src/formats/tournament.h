@@ -14,10 +14,6 @@
 #include "formats/pilot.h"
 #include "formats/sprite.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #define MAX_TRN_ENEMIES 256 ///< Maximum amount of tournament enemies
 #define MAX_TRN_LOCALES 10  ///< Maximum amount of tournament locales (some of these are unused)
 
@@ -122,9 +118,5 @@ int sd_tournament_set_pic_name(sd_tournament_file *trn, const char *pic_name);
  * \param trn TRN file struct pointer.
  */
 void sd_tournament_free(sd_tournament_file *trn);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // SD_TOURNAMENT_H

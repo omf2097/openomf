@@ -10,10 +10,6 @@
 #ifndef SD_RGBA_IMAGE_H
 #define SD_RGBA_IMAGE_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /*! \brief RGBA image
  *
  * A very simple RGBA8888 image. Data size is always w * h * 4 bytes.
@@ -122,9 +118,5 @@ void sd_rgba_image_free(sd_rgba_image *img);
  * \param filename Destination filename
  */
 int sd_rgba_image_to_ppm(const sd_rgba_image *img, const char *filename);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // SD_RGBA_IMAGE_H

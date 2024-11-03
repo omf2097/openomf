@@ -17,10 +17,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /*! \brief REC action record
  *
  * AA record of a single action during the match.
@@ -167,9 +163,5 @@ int sd_rec_extra_len(int key);
  * \param move Move to insert
  */
 int sd_rec_insert_action(sd_rec_file *rec, unsigned int number, const sd_rec_move *move);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // SD_REC_H
