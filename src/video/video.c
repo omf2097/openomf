@@ -286,8 +286,8 @@ void video_render_background(surface *sur) {
     }
 }
 
-static void draw_args(video_state *state, const surface *sur, SDL_Rect *dst, int remap_offset, int remap_rounds,
-                      int pal_offset, int pal_limit, unsigned int flip_mode, unsigned int options) {
+static inline void draw_args(video_state *state, const surface *sur, SDL_Rect *dst, int remap_offset, int remap_rounds,
+                             int pal_offset, int pal_limit, unsigned int flip_mode, unsigned int options) {
     uint16_t tx, ty, tw, th;
     if(atlas_get(g_video_state.atlas, sur, &tx, &ty, &tw, &th)) {
         object_array_add(state->objects, dst->x, dst->y, dst->w, dst->h, tx, ty, tw, th, flip_mode, sur->transparent,
