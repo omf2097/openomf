@@ -147,10 +147,9 @@ void object_scenewide_palette_transform(damage_tracker *damage, vga_palette *pal
     uint8_t m;
     vga_color ref;
     vga_index start, end;
-    player_sprite_state *state;
+    player_sprite_state *state = userdata;
 
     // Make sure stuff seems legit.
-    state = &((object *)userdata)->sprite_state;
     assert(state->pal_start_index < 256);
     assert(state->pal_start_index + state->pal_entry_count <= 256);
 
@@ -165,20 +164,61 @@ void object_scenewide_palette_transform(damage_tracker *damage, vga_palette *pal
         for(vga_index i = start; i < end; i++) {
             m = max3(pal->colors[i].r, pal->colors[i].g, pal->colors[i].b);
             u = m / 255.0f;
-            pal->colors[i].r = max2(0, min2(255, pal->colors[i].r + u * k * (ref.r - pal->colors[i].r)));
-            pal->colors[i].g = max2(0, min2(255, pal->colors[i].g + u * k * (ref.g - pal->colors[i].g)));
-            pal->colors[i].b = max2(0, min2(255, pal->colors[i].b + u * k * (ref.b - pal->colors[i].b)));
+            pal->colors[i].r = clamp(pal->colors[i].r + u * k * (ref.r - pal->colors[i].r), 0, 255);
+            pal->colors[i].g = clamp(pal->colors[i].g + u * k * (ref.g - pal->colors[i].g), 0, 255);
+            pal->colors[i].b = clamp(pal->colors[i].b + u * k * (ref.b - pal->colors[i].b), 0, 255);
         }
     } else {
         for(vga_index i = start; i < end; i++) {
-            pal->colors[i].r = max2(0, min2(255, pal->colors[i].r * (1 - k) + (ref.r * k)));
-            pal->colors[i].g = max2(0, min2(255, pal->colors[i].g * (1 - k) + (ref.g * k)));
-            pal->colors[i].b = max2(0, min2(255, pal->colors[i].b * (1 - k) + (ref.b * k)));
+            pal->colors[i].r = clamp(pal->colors[i].r * (1 - k) + (ref.r * k), 0, 255);
+            pal->colors[i].g = clamp(pal->colors[i].g * (1 - k) + (ref.g * k), 0, 255);
+            pal->colors[i].b = clamp(pal->colors[i].b * (1 - k) + (ref.b * k), 0, 255);
         }
     }
 
     // Mark the palette as damaged
     damage_set_range(damage, start, end);
+}
+
+void object_palette_copy_transform(damage_tracker *damage, vga_palette *pal, void *userdata) {
+    object *obj = userdata;
+    player_sprite_state *state = &obj->sprite_state;
+    player_animation_state *anim_state = &obj->animation_state;
+    int src_start = anim_state->pal_copy_start;
+    int src_end = anim_state->pal_copy_entries + src_start;
+    float step = state->timer / (float)state->duration;
+    float chunk = state->pal_end - state->pal_begin;
+    float bpp = (state->pal_begin + chunk * step) / 255.0;
+
+    // These are copied from CREDITS.BK frame 20 last sprite and multiplied by 4.
+    // "bd" tag should read the entire palette from there, but we don't bother.
+    vga_color bd_colors[3] = {
+        {80,  80,  80 },
+        {164, 164, 164},
+        {255, 255, 255},
+    };
+    if(!state->bd_flag) {
+        // If bd flag is disabled, the color map should be just 0's.
+        memset(bd_colors, 0, sizeof(bd_colors));
+    }
+
+    int pos = src_end;
+    vga_color *ref;
+    float r, g, b;
+    for(int i = 0; i < anim_state->pal_copy_count; i++) {
+        ref = &bd_colors[i];
+        for(int w = src_start; w < src_end; w++) {
+            r = clampf((ref->r - pal->colors[w].r) * bpp, 0, 255);
+            g = clampf((ref->g - pal->colors[w].g) * bpp, 0, 255);
+            b = clampf((ref->b - pal->colors[w].b) * bpp, 0, 255);
+            pal->colors[pos].r = clamp(r + pal->colors[w].r, 0, 255);
+            pal->colors[pos].g = clamp(g + pal->colors[w].g, 0, 255);
+            pal->colors[pos].b = clamp(b + pal->colors[w].b, 0, 255);
+            pos++;
+        }
+    }
+
+    damage_set_range(damage, src_end, pos);
 }
 
 void object_dynamic_tick(object *obj) {
@@ -217,8 +257,10 @@ void object_dynamic_tick(object *obj) {
         obj->sprite_state.screen_shake_horizontal = 0;
     }
 
-    if(obj->sprite_state.pal_entry_count > 0 && obj->sprite_state.duration > 0) {
-        vga_state_use_palette_transform(object_scenewide_palette_transform, obj);
+    if(obj->sprite_state.pal_tricks_off) { // BPO tag is on
+        vga_state_enable_palette_transform(object_palette_copy_transform, obj);
+    } else if(obj->sprite_state.pal_entry_count > 0 && obj->sprite_state.duration > 0) { // BPO tag is off
+        vga_state_enable_palette_transform(object_scenewide_palette_transform, &obj->sprite_state);
     }
 }
 
@@ -363,6 +405,8 @@ void object_render(object *obj) {
         remap_rounds = 0;
         remap_offset = clamp(6 + floorf(((rx > 160) ? 320 - rx : rx) / 60), 6, 8);
         options |= REMAP_SPRITE;
+    } else if(object_has_effect(obj, EFFECT_ADD)) {
+        options |= SPRITE_INDEX_ADD;
     }
 
     video_draw_full(obj->cur_surface, x, y, w, h, remap_offset, remap_rounds, obj->pal_offset, obj->pal_limit,
@@ -429,7 +473,7 @@ void object_free(object *obj) {
     if(obj == NULL) {
         return;
     }
-    vga_state_dontuse_palette_transform(object_scenewide_palette_transform, obj);
+    vga_state_disable_palette_transform(object_scenewide_palette_transform, obj);
     if(obj->free != NULL) {
         obj->free(obj);
     }

@@ -24,6 +24,7 @@
 static int run = 0;
 static int start_timeout = 30;
 static int enable_screen_updates = 1;
+static int debug_palette_number = 0;
 
 int engine_init(void) {
     settings *setting = settings_get();
@@ -90,6 +91,16 @@ void save_screenshot(const SDL_Rect *r, unsigned char *data, bool flip) {
     omf_free(time);
 }
 
+void save_palette_shot(void) {
+    char *time = format_time();
+    char *filename = omf_malloc(256);
+    snprintf(filename, 256, "debug_palette_%s_%d.png", time, debug_palette_number++);
+    vga_state_debug_screenshot(filename);
+    DEBUG("Palette saved: %s", filename);
+    omf_free(filename);
+    omf_free(time);
+}
+
 void engine_run(engine_init_flags *init_flags) {
     SDL_Event e;
     int visual_debugger = 0;
@@ -144,6 +155,9 @@ void engine_run(engine_init_flags *init_flags) {
                 case SDL_KEYDOWN:
                     if(e.key.keysym.sym == SDLK_F1) {
                         video_schedule_screenshot(save_screenshot);
+                    }
+                    if(e.key.keysym.sym == SDLK_F2) {
+                        save_palette_shot();
                     }
                     if(e.key.keysym.sym == SDLK_F9) {
                         video_draw_atlas(true);

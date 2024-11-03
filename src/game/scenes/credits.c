@@ -3,7 +3,6 @@
 #include "game/game_state.h"
 #include "game/scenes/credits.h"
 #include "utils/allocator.h"
-#include "video/video.h"
 
 typedef struct credits_local_t {
     int ticks;
@@ -25,7 +24,7 @@ void credits_input_tick(scene *scene) {
                     game_state_set_next(scene->gs, SCENE_NONE);
                 }
             }
-        } while((i = i->next));
+        } while((i = i->next) != NULL);
     }
     controller_free_chain(p1);
 }

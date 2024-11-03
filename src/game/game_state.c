@@ -672,7 +672,7 @@ void game_state_dynamic_tick(game_state *gs, bool replay) {
 
     // Cross-fade effect
     if(gs->next_wait_ticks > 0 || gs->this_wait_ticks > 0) {
-        vga_state_use_palette_transform(cross_fade_transform, gs);
+        vga_state_enable_palette_transform(cross_fade_transform, gs);
     }
 
     // Change the screen shake value downwards

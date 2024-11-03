@@ -34,7 +34,7 @@ void har_spawn_scrap(object *obj, vec2i pos, int amount);
 void har_palette_transform(damage_tracker *damage, vga_palette *pal, void *obj);
 
 void har_free(object *obj) {
-    vga_state_dontuse_palette_transform(har_palette_transform, obj);
+    vga_state_disable_palette_transform(har_palette_transform, obj);
     har *h = object_get_userdata(obj);
     list_free(&h->har_hooks);
 #ifdef DEBUGMODE
@@ -1324,7 +1324,7 @@ void har_tick(object *obj) {
     controller *ctrl = game_player_get_ctrl(game_state_get_player(obj->gs, h->player_id));
 
     if(h->p_ticks_left > 0) {
-        vga_state_use_palette_transform(har_palette_transform, obj);
+        vga_state_enable_palette_transform(har_palette_transform, obj);
         h->p_ticks_left--;
     }
 
@@ -2198,7 +2198,6 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     object_set_repeat(obj, 1);
     object_set_stl(obj, local->af_data->sound_translation_table);
     object_set_shadow(obj, 1);
-    object_add_animation_effects(obj, EFFECT_POSITIONAL_LIGHTING);
 
     // New object spawner callback
     object_set_spawn_cb(obj, cb_har_spawn_object, local);

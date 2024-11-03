@@ -1,6 +1,7 @@
 #include "video/vga_state.h"
 
 #include "utils/miscmath.h"
+#include "utils/png_writer.h"
 #include <assert.h>
 #include <string.h>
 
@@ -148,7 +149,7 @@ void vga_state_copy_base_palette_range(vga_index dst, vga_index src, vga_index c
     damage_set_range(&state.dmg_base, dst, dst + count);
 }
 
-void vga_state_use_palette_transform(vga_palette_transform transform_callback, void *userdata) {
+void vga_state_enable_palette_transform(vga_palette_transform transform_callback, void *userdata) {
     for(unsigned int i = 0; i < state.transformer_count; i++) {
         if(state.transformers[i].callback == transform_callback && state.transformers[i].userdata == userdata) {
             // don't push duplicates
@@ -156,13 +157,13 @@ void vga_state_use_palette_transform(vga_palette_transform transform_callback, v
         }
     }
 
-    assert(state.transformer_count < MAX_TRANSFORMER_COUNT);
+    assert(state.transformer_count < MAX_TRANSFORMER_COUNT - 1);
     state.transformers[state.transformer_count].callback = transform_callback;
     state.transformers[state.transformer_count].userdata = userdata;
     state.transformer_count++;
 }
 
-bool vga_state_dontuse_palette_transform(vga_palette_transform transform_callback, void *userdata) {
+bool vga_state_disable_palette_transform(vga_palette_transform transform_callback, void *userdata) {
     for(unsigned int i = 0; i < state.transformer_count; i++) {
         if(state.transformers[i].callback == transform_callback && state.transformers[i].userdata == userdata) {
             memmove(&state.transformers[i], &state.transformers[i + 1],
@@ -171,4 +172,15 @@ bool vga_state_dontuse_palette_transform(vga_palette_transform transform_callbac
         }
     }
     return false;
+}
+
+/**
+ * For debug use only!
+ */
+void vga_state_debug_screenshot(const char *filename) {
+    unsigned char img[256];
+    for(int i = 0; i < 256; i++) {
+        img[i] = i;
+    }
+    png_write_paletted(filename, 16, 16, &state.current, img);
 }

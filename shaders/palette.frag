@@ -15,15 +15,20 @@ uniform sampler2D remaps;
 
 uint use_sprite_remap = options & 1u;
 uint use_sprite_mask = options & 2u;
+uint use_index_add = options & 4u;
 
 
 vec4 handle(float index, float remap) {
     if (remap_rounds > 0) {
         float r_index = remap_offset / 255.0 + index;
         float r_rounds = remap_rounds / 255.0;
-        return vec4(0.0, r_index, r_rounds, 1.0);
+        return vec4(0.0, r_index, r_rounds, 0.0);
     }
-    return vec4(index, 0.0, 0.0, 1.0);
+    if (use_index_add > 0u) {
+        float add = (index * 255.0 * 60) / 255.0;
+        return vec4(0.0, 0.0, 0.0, add);
+    }
+    return vec4(index, 0.0, 0.0, 0.0);
 }
 
 void main() {

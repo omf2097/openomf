@@ -8,6 +8,8 @@ typedef enum
     REMAP_SPRITE = 0x01,
     // Use sprite as a mask of 1's instead of color indexes.
     SPRITE_MASK = 0x02,
+    // This implements the "bg" tag feature. Add indexes together in the postprocess.
+    SPRITE_INDEX_ADD = 0x04,
 } renderer_options;
 
 typedef enum

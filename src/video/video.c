@@ -86,7 +86,7 @@ int video_init(int window_w, int window_h, bool fullscreen, bool vsync) {
     g_video_state.atlas = atlas_create(TEX_UNIT_ATLAS, 2048, 2048);
     g_video_state.objects = object_array_create(2048.0f, 2048.0f);
     g_video_state.shared = shared_create();
-    g_video_state.target = render_target_create(TEX_UNIT_FBO, NATIVE_W, NATIVE_H, GL_RGB8, GL_RGB);
+    g_video_state.target = render_target_create(TEX_UNIT_FBO, NATIVE_W, NATIVE_H, GL_RGBA8, GL_RGBA);
     g_video_state.remaps = remaps_create(TEX_UNIT_REMAPS);
 
     // Create orthographic projection matrix for 2d stuff.
@@ -149,6 +149,8 @@ static void video_set_blend_mode(object_array_blend_mode request_mode) {
 
     if(request_mode == MODE_SET) {
         glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    } else if(request_mode == MODE_ADD) {
+        glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_TRUE);
     } else {
         glColorMask(GL_FALSE, GL_TRUE, GL_TRUE, GL_TRUE);
     }

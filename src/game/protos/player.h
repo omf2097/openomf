@@ -23,8 +23,6 @@ typedef struct player_sprite_state_t {
     int dir_correction;
     int disable_gravity;
 
-    int saturate_effect;
-
     int blend_start;
     int blend_finish;
 
@@ -34,6 +32,9 @@ typedef struct player_sprite_state_t {
     int pal_begin;       // bpb
     int pal_end;         // bpd
     int pal_tint;        // bz
+
+    bool pal_tricks_off; // bpo
+    bool bd_flag;        // bd
 } player_sprite_state;
 
 typedef struct player_slide_op_t {
@@ -59,6 +60,10 @@ typedef struct player_animation_state_t {
     uint8_t finished;
     uint8_t disable_d;
     uint8_t shadow_corner_hack;
+
+    uint8_t pal_copy_entries; // ba
+    uint8_t pal_copy_start;   // bi
+    uint8_t pal_copy_count;   // bc
 
     void *spawn_userdata;
     void *destroy_userdata;

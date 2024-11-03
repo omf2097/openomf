@@ -17,88 +17,21 @@
 #include "utils/vec.h"
 #include "video/video.h"
 
-// For CREDITS page, marks the animations and frames on which to fade in and out
-// Somewhat hacky, but easier than trying to figure out the tags (which only work for this scene anyway)
-struct {
-    int anim_no;
-    int frame_no;
-    int fade_in;
-} bd_overrides[] = {
-    {20, 2,  1},
-    {21, 1,  1},
-    {21, 4,  0},
-    {21, 6,  1},
-    {21, 9,  0},
-    {21, 11, 1},
-    {21, 14, 0},
-    {21, 16, 1},
-    {21, 19, 0},
-    {20, 5,  0},
-    {22, 2,  1},
-    {23, 1,  1},
-    {23, 4,  0},
-    {23, 6,  1},
-    {23, 9,  0},
-    {23, 11, 1},
-    {23, 14, 0},
-    {22, 5,  0},
-    {25, 1,  1},
-    {24, 3,  1},
-    {25, 4,  0},
-    {24, 6,  0},
-    {27, 1,  1},
-    {26, 3,  1},
-    {27, 4,  0},
-    {26, 6,  0},
-    {0,  0,  0}  // guard
-};
+#define COLOR_6TO8(color) ((color << 2) | ((color & 0x30) >> 4))
 
-// ---------------- Private functions ----------------
-
-void player_clear_frame(object *obj) {
+static void player_clear_frame(object *obj) {
     player_sprite_state *s = &obj->sprite_state;
+    memset(s, 0, sizeof(player_sprite_state));
     s->flipmode = FLIP_NONE;
-    s->timer = 0;
-    s->duration = 0;
-
-    s->o_correction = vec2i_create(0, 0);
     s->dir_correction = 1;
-
-    s->disable_gravity = 0;
-
-    s->screen_shake_horizontal = 0;
-    s->screen_shake_vertical = 0;
-
     s->blend_start = 0xFF;
     s->blend_finish = 0xFF;
-
-    s->pal_begin = 0;
-    s->pal_end = 0;
-    s->pal_ref_index = 0;
-    s->pal_start_index = 0;
-    s->pal_entry_count = 0;
-    s->pal_tint = 0;
 }
 
-// ---------------- Public functions ----------------
-
 void player_create(object *obj) {
-    obj->animation_state.reverse = 0;
+    memset(&obj->animation_state, 0, sizeof(player_animation_state));
     obj->animation_state.end_frame = UINT32_MAX;
-    obj->animation_state.current_tick = 0;
     obj->animation_state.previous_tick = -1;
-    obj->animation_state.finished = 0;
-    obj->animation_state.repeat = 0;
-    obj->animation_state.entered_frame = 0;
-    obj->animation_state.spawn = NULL;
-    obj->animation_state.spawn_userdata = NULL;
-    obj->animation_state.destroy = NULL;
-    obj->animation_state.destroy_userdata = NULL;
-    obj->animation_state.disable_d = 0;
-    obj->animation_state.enemy_obj_id = 0;
-    obj->animation_state.shadow_corner_hack = 0;
-    obj->slide_state.timer = 0;
-    obj->slide_state.vel = vec2f_create(0, 0);
     sd_script_create(&obj->animation_state.parser);
     player_clear_frame(obj);
 }
@@ -565,14 +498,26 @@ void player_run(object *obj) {
             }
         }
         if(sd_script_isset(frame, "bpp")) {
-            rstate->pal_end = sd_script_get(frame, "bpp") * 4;
-            rstate->pal_begin = sd_script_get(frame, "bpp") * 4;
+            rstate->pal_end = COLOR_6TO8(sd_script_get(frame, "bpp"));
+            rstate->pal_begin = COLOR_6TO8(sd_script_get(frame, "bpp"));
         }
         if(sd_script_isset(frame, "bpb")) {
-            rstate->pal_begin = sd_script_get(frame, "bpb") * 4;
+            rstate->pal_begin = COLOR_6TO8(sd_script_get(frame, "bpb"));
         }
         if(sd_script_isset(frame, "bz")) {
             rstate->pal_tint = 1;
+        }
+
+        // CREDITS palette copy tricks
+        rstate->pal_tricks_off = sd_script_isset(frame, "bpo") ? 1 : 0; // Disable the standard palette tricks
+        rstate->bd_flag =
+            sd_script_isset(frame, "bd"); // Read palette from the last frame of animation (we emulate this internally)
+
+        // These are animation-global instead of per-frame.
+        if(sd_script_isset(frame, "ba")) {
+            state->pal_copy_count = sd_script_get(frame, "ba");   // Number of copies to make after bi + bc
+            state->pal_copy_start = sd_script_get(frame, "bi");   // Start offset for copying
+            state->pal_copy_entries = sd_script_get(frame, "bc"); // Number of indexes to copy
         }
 
         // Handle position correction
@@ -684,27 +629,6 @@ void player_run(object *obj) {
             obj->hit_frames--;
         }
 
-        // CREDITS scene moving titles & names
-        if(sd_script_isset(frame, "bd")) {
-            int cur_anim = obj->cur_animation->id;
-            int cur_frame = sd_script_get_frame_index(&obj->animation_state.parser, frame);
-
-            int n = 0;
-            while(1) {
-                if(bd_overrides[n].anim_no == 0) {
-                    break;
-                }
-                if(bd_overrides[n].anim_no == cur_anim && bd_overrides[n].frame_no == cur_frame) {
-                    if(bd_overrides[n].fade_in == 1) {
-                        rstate->blend_start = 0;
-                    } else {
-                        rstate->blend_finish = 0;
-                    }
-                }
-                n++;
-            }
-        }
-
         // Set video effects now.
         int effects = EFFECT_NONE;
         if(player_frame_isset(obj, "bt"))
@@ -713,6 +637,8 @@ void player_run(object *obj) {
             effects |= EFFECT_GLOW;
         if(player_frame_isset(obj, "ub"))
             effects |= EFFECT_TRAIL;
+        if(player_frame_isset(obj, "bg"))
+            effects |= EFFECT_ADD;
         object_set_frame_effects(obj, effects);
 
         // Set render settings
