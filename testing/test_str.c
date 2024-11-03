@@ -519,6 +519,22 @@ void test_str_insert_at(void) {
     str_free(&d);
 }
 
+void test_str_insert_c_at(void) {
+    str d;
+
+    str_from_c(&d, "ABCD");
+    CU_ASSERT(str_insert_c_at(&d, 0, "XXX") == true);
+    CU_ASSERT_STRING_EQUAL(str_c(&d), "XXXABCD");
+    CU_ASSERT(str_insert_c_at(&d, 4, "ZZZ") == true);
+    CU_ASSERT_STRING_EQUAL(str_c(&d), "XXXAZZZBCD");
+    CU_ASSERT(str_insert_c_at(&d, 10, "YY") == true);
+    CU_ASSERT_STRING_EQUAL(str_c(&d), "XXXAZZZBCDYY");
+    CU_ASSERT(str_insert_c_at(&d, 8, "UWUWUWUWUWUWUWUWU") == true);
+    CU_ASSERT_STRING_EQUAL(str_c(&d), "XXXAZZZBUWUWUWUWUWUWUWUWUCDYY");
+
+    str_free(&d);
+}
+
 void str_test_suite(CU_pSuite suite) {
     if(CU_add_test(suite, "Test for str_create", test_str_create) == NULL) {
         return;
@@ -647,6 +663,9 @@ void str_test_suite(CU_pSuite suite) {
         return;
     }
     if(CU_add_test(suite, "Test for str_insert_at", test_str_insert_at) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_insert_c_at", test_str_insert_c_at) == NULL) {
         return;
     }
 }
