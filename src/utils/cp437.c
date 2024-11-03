@@ -163,7 +163,10 @@ cp437_result cp437_from_utf8(uint8_t *out_cp437, size_t sizeof_out_cp437, size_t
                              unsigned char const *utf8, size_t utf8_len) {
     assert(utf8);
     size_t cp437_len = 0;
-    uint8_t *out_cp437_end = out_cp437 + sizeof_out_cp437;
+    uint8_t *out_cp437_end = NULL;
+    if(out_cp437 != NULL) {
+        out_cp437_end = out_cp437 + sizeof_out_cp437;
+    }
     while(utf8_len > 0) {
         if(out_cp437 && out_cp437 >= out_cp437_end) {
             return CP437_ERROR_OUTPUTBUFFER_TOOSMALL;
