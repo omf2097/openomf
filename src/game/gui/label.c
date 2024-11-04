@@ -45,9 +45,10 @@ component *label_create_with_width(const text_settings *tconf, const char *text,
 
     int tsize = text_char_width(tconf);
     int h = text_find_line_count(tconf, max_width / tsize, 0, strlen(text), text);
+    int width = text_find_max_strlen(tconf, max_width / tsize, text);
 
     // fonts are all 8 high?
-    component_set_size_hints(c, max_width, h * 8);
+    component_set_size_hints(c, width * tsize , h * 8);
 
     // local->tconf.cforeground = color_create(0, 255, 0, 255);
 
