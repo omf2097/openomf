@@ -1153,11 +1153,9 @@ void arena_render_overlay(scene *scene) {
 
         if(player[1]->pilot) {
             // when quitting, this can go null
-            int p2len = (strlen(player2_name) - 1) * font_small.w;
-            // XXX TODO: Magnus: Hardcoded - 1 for trailing newlines in localization strings
-            int h2len = (strlen(lang_get_offset(LangRobot, player[1]->pilot->har_id)) - 1) * font_small.w;
-            text_render(&tconf_players, TEXT_DEFAULT, 315 - p2len, 19, 100, 6, player2_name);
-            text_render(&tconf_players, TEXT_DEFAULT, 315 - h2len, 26, 100, 6,
+            tconf_players.halign = TEXT_RIGHT;
+            text_render(&tconf_players, TEXT_DEFAULT, 215, 19, 100, 6, player2_name);
+            text_render(&tconf_players, TEXT_DEFAULT, 215, 26, 100, 6,
                         lang_get_offset(LangRobot, player[1]->pilot->har_id));
         }
 

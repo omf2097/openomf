@@ -457,9 +457,8 @@ int vs_create(scene *scene) {
     } else {
         const char *pilot1 = lang_get_offset(LangPilot, player1->pilot->pilot_id);
         const char *pilot2 = lang_get_offset(LangPilot, player2->pilot->pilot_id);
-        // XXX TODO: Magnus: hardcoded -1's to compensate for OMF 2097 lang trailing newlines
-        snprintf(local->vs_str, 128, "%*.*s VS. %*.*s", (int)strlen(pilot1) - 1, (int)strlen(pilot1) - 1, pilot1,
-                 (int)strlen(pilot2) - 1, (int)strlen(pilot2) - 1, pilot2);
+        snprintf(local->vs_str, 128, "%*.*s VS. %*.*s", (int)strlen(pilot1), (int)strlen(pilot1), pilot1,
+                 (int)strlen(pilot2), (int)strlen(pilot2), pilot2);
     }
 
     // Set player palettes
@@ -649,8 +648,6 @@ int vs_create(scene *scene) {
     str_from_c(&insult, lang_get(LangTooPatheticDialog));
     str_replace(&insult, "%s", lang_get_offset(LangCpuDifficulty, VETERAN), 1);
     str_replace(&insult, "%s", lang_get_offset(LangPilot, PILOT_KREISSACK), 1);
-    // XXX HACK: Remove newline after kreissack's name until we clean up our string tables
-    str_replace(&insult, "\n.", ".", -1);
     dialog_create(&local->too_pathetic_dialog, DIALOG_STYLE_OK, str_c(&insult), 40, 40);
     str_free(&insult);
     local->too_pathetic_dialog.userdata = scene;

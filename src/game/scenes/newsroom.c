@@ -44,18 +44,6 @@ const char *subject_pronoun(int sex) {
     return lang_get_offset(LangPronoun, 4 + sex);
 }
 
-char const *pronoun_strip(char const *pronoun, char *buf, size_t buf_size) {
-    size_t pronoun_len = strlen(pronoun);
-    while(pronoun_len && pronoun[pronoun_len - 1] == '\n') {
-        pronoun_len--;
-    }
-    if(pronoun_len >= buf_size)
-        pronoun_len = buf_size - 1;
-    memcpy(buf, pronoun, pronoun_len);
-    buf[pronoun_len] = '\0';
-    return buf;
-}
-
 static void newsroom_fixup_capitalization(str *tmp) {
     // XXX non-const str_c variant?
     char *it = (char *)str_c(tmp);
@@ -99,18 +87,17 @@ void newsroom_fixup_str(newsroom_local *local) {
         raw_translation = lang_get_offset(LangNewsroomReport, local->news_id + min2(local->screen, 1));
     }
 
-    char scratch[9];
     str tmp;
     str_from_c(&tmp, raw_translation);
-    str_replace(&tmp, "~11", pronoun_strip(subject_pronoun(local->sex2), scratch, sizeof scratch), -1);
-    str_replace(&tmp, "~10", pronoun_strip(object_pronoun(local->sex2), scratch, sizeof scratch), -1);
-    str_replace(&tmp, "~9", pronoun_strip(possessive_pronoun(local->sex2), scratch, sizeof scratch), -1);
-    str_replace(&tmp, "~8", pronoun_strip(subject_pronoun(local->sex1), scratch, sizeof scratch), -1);
-    str_replace(&tmp, "~7", pronoun_strip(object_pronoun(local->sex1), scratch, sizeof scratch), -1);
-    str_replace(&tmp, "~6", pronoun_strip(possessive_pronoun(local->sex1), scratch, sizeof scratch), -1);
+    str_replace(&tmp, "~11", subject_pronoun(local->sex2), -1);
+    str_replace(&tmp, "~10", object_pronoun(local->sex2), -1);
+    str_replace(&tmp, "~9", possessive_pronoun(local->sex2), -1);
+    str_replace(&tmp, "~8", subject_pronoun(local->sex1), -1);
+    str_replace(&tmp, "~7", object_pronoun(local->sex1), -1);
+    str_replace(&tmp, "~6", possessive_pronoun(local->sex1), -1);
     str_replace(&tmp, "~5", "Stadium", -1);
-    str_replace(&tmp, "~4", pronoun_strip(lang_get_offset(LangRobot, local->har2), scratch, sizeof scratch), -1);
-    str_replace(&tmp, "~3", pronoun_strip(lang_get_offset(LangRobot, local->har1), scratch, sizeof scratch), -1);
+    str_replace(&tmp, "~4", lang_get_offset(LangRobot, local->har2), -1);
+    str_replace(&tmp, "~3", lang_get_offset(LangRobot, local->har1), -1);
     str_replace(&tmp, "~2", str_c(&local->pilot2), -1);
     str_replace(&tmp, "~1", str_c(&local->pilot1), -1);
 
