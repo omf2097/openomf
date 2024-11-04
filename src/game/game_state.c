@@ -106,6 +106,9 @@ int game_state_create(game_state *gs, engine_init_flags *init_flags) {
 
         nscene = SCENE_ARENA0 + rec.arena_id;
         DEBUG("playing recording file %s", init_flags->rec_file);
+        gs->this_id = nscene;
+        gs->next_id = nscene;
+
         if(scene_create(gs->sc, gs, nscene)) {
             PERROR("Error while loading scene %d.", nscene);
             goto error_0;
@@ -130,6 +133,9 @@ int game_state_create(game_state *gs, engine_init_flags *init_flags) {
     } else {
         // Select correct starting scene and load resources
         nscene = (init_flags->net_mode == NET_MODE_NONE ? SCENE_OPENOMF : SCENE_MENU);
+        gs->this_id = nscene;
+        gs->next_id = nscene;
+
         if(scene_create(gs->sc, gs, nscene)) {
             PERROR("Error while loading scene %d.", nscene);
             goto error_0;
@@ -154,8 +160,6 @@ int game_state_create(game_state *gs, engine_init_flags *init_flags) {
     scene_init(gs->sc);
 
     // All done
-    gs->this_id = nscene;
-    gs->next_id = nscene;
     return 0;
 
 error_1:
@@ -455,6 +459,9 @@ int game_load_new(game_state *gs, int scene_id) {
     // Free texture items, we are going to create new ones.
     video_signal_scene_change();
 
+    gs->this_id = scene_id;
+    gs->next_id = scene_id;
+
     // Initialize new scene with BK data etc.
     gs->sc = omf_calloc(1, sizeof(scene));
     if(scene_create(gs->sc, gs, scene_id)) {
@@ -546,8 +553,6 @@ int game_load_new(game_state *gs, int scene_id) {
     scene_init(gs->sc);
 
     // All done.
-    gs->this_id = scene_id;
-    gs->next_id = scene_id;
     gs->tick = 0;
     return 0;
 
