@@ -295,8 +295,7 @@ component *lobby_challenge_create(scene *s) {
     component *menu = menu_create(11);
     menu_set_horizontal(menu, true);
     menu_set_background(menu, false);
-    menu_set_margin_top(menu, 0);
-    menu_set_padding(menu, 6);
+    menu_set_padding(menu, 0);
 
     lobby_user *user = list_get(&local->users, local->active_user);
     snprintf(local->helptext, sizeof(local->helptext), "Challenge %s?", user->name);
@@ -359,8 +358,7 @@ component *lobby_yell_create(scene *s) {
     menu_set_help_text_settings(menu, &help_text);
     menu_set_horizontal(menu, true);
     menu_set_background(menu, false);
-    menu_set_margin_top(menu, 0);
-    menu_set_padding(menu, 6);
+    menu_set_padding(menu, 0);
 
     menu_attach(menu, label_create(&tconf, "Yell:"));
     component *yell_input =
@@ -433,8 +431,7 @@ component *lobby_whisper_create(scene *s) {
     menu_set_help_text_settings(menu, &help_text);
     menu_set_horizontal(menu, true);
     menu_set_background(menu, false);
-    menu_set_margin_top(menu, 0);
-    menu_set_padding(menu, 6);
+    menu_set_padding(menu, 0);
 
     menu_attach(menu, label_create(&tconf, "Whisper:"));
     lobby_user *user = list_get(&local->users, local->active_user);
@@ -674,8 +671,7 @@ component *lobby_exit_create(scene *s) {
     component *menu = menu_create(11);
     menu_set_horizontal(menu, true);
     menu_set_background(menu, false);
-    menu_set_margin_top(menu, 0);
-    menu_set_padding(menu, 6);
+    menu_set_padding(menu, 0);
 
     menu_attach(menu, label_create(&tconf, "Exit the Challenge Arena?"));
     menu_attach(menu, textbutton_create(&tconf, "Yes", NULL, COM_ENABLED, lobby_do_exit, s));
@@ -1129,7 +1125,6 @@ int lobby_create(scene *scene) {
     component *menu = menu_create(11);
     menu_set_horizontal(menu, true);
     menu_set_background(menu, false);
-    // menu_set_margin_top(menu, 0);
     menu_set_padding(menu, 6);
 
     menu_set_help_pos(menu, 10, 155, 500, 10);
@@ -1171,7 +1166,7 @@ int lobby_create(scene *scene) {
     }
     reconfigure_controller(scene->gs);
 
-    local->frame = guiframe_create(9, 132, 300, 12);
+    local->frame = guiframe_create(9, 128, 300, 12);
     guiframe_set_root(local->frame, menu);
     guiframe_layout(local->frame);
 
@@ -1180,8 +1175,7 @@ int lobby_create(scene *scene) {
         component *name_menu = menu_create(11);
         menu_set_horizontal(name_menu, true);
         menu_set_background(name_menu, false);
-        menu_set_margin_top(menu, 0);
-        menu_set_padding(menu, 6);
+        menu_set_padding(menu, 0);
 
         menu_attach(name_menu, label_create(&tconf, "Enter your name:"));
         // TODO pull the last used name from settings
