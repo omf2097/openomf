@@ -362,9 +362,9 @@ component *lobby_yell_create(scene *s) {
 
     menu_attach(menu, label_create(&tconf, "Yell:"));
     component *yell_input =
-        textinput_create(&tconf, 36, "Yell:",
+        textinput_create(&tconf, 36,
                          "Yell a message to everybody in the challenge arena.\n\n\n\n\nTo whisper to one player, type "
-                         "their name, a ':', and your message.\nPress 'esc' to return to the challenge arena menu.");
+                         "their name, a ':', and your message.\nPress 'esc' to return to the challenge arena menu.", "");
     menu_attach(menu, yell_input);
     textinput_enable_background(yell_input, 0);
     textinput_set_done_cb(yell_input, lobby_do_yell, s);
@@ -437,7 +437,7 @@ component *lobby_whisper_create(scene *s) {
     lobby_user *user = list_get(&local->users, local->active_user);
     snprintf(local->helptext, sizeof(local->helptext), "Whisper a message to %s. Press enter when done, esc to abort.",
              user->name);
-    component *whisper_input = textinput_create(&tconf, 36, "Whisper:", local->helptext);
+    component *whisper_input = textinput_create(&tconf, 36, local->helptext, "");
     menu_attach(menu, whisper_input);
     textinput_enable_background(whisper_input, 0);
     textinput_set_done_cb(whisper_input, lobby_do_whisper, s);
