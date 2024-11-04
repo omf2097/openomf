@@ -29,29 +29,31 @@ static void str_resize_buffer(str *dst, size_t size) {
 }
 
 static void str_resize_and_copy_buffer(str *dst, size_t size) {
-    size_t size_with_zero = size + 1;
-    if(size_with_zero > STR_STACK_SIZE) {
-        // New size is larger than the stack buffer; do malloc.
-        if(dst->data == NULL) {
-            // Old string is in stack, move to heap
-            dst->data = omf_malloc(size_with_zero);
-            memcpy(dst->data, dst->small, dst->len);
-            dst->data[dst->len] = 0;
-            dst->small[0] = 0;
+    if(size != dst->len) {
+        size_t size_with_zero = size + 1;
+        if(size_with_zero > STR_STACK_SIZE) {
+            // New size is larger than the stack buffer; do malloc.
+            if(dst->data == NULL) {
+                // Old string is in stack, move to heap
+                dst->data = omf_malloc(size_with_zero);
+                memcpy(dst->data, dst->small, dst->len);
+                dst->data[dst->len] = 0;
+                dst->small[0] = 0;
+            } else {
+                // Old string is already in heap, keep it there.
+                dst->data = omf_realloc(dst->data, size_with_zero);
+            }
         } else {
-            // Old string is already in heap, keep it there.
-            dst->data = omf_realloc(dst->data, size_with_zero);
+            // New size is small enough to move back to stack.
+            if(dst->data != NULL) {
+                // Old string is in heap, move to stack.
+                memcpy(dst->small, dst->data, size);
+                omf_free(dst->data);
+                dst->small[size] = 0;
+            }
         }
-    } else {
-        // New size is small enough to move back to stack.
-        if(dst->data != NULL) {
-            // Old string is in heap, move to stack.
-            memcpy(dst->small, dst->data, size);
-            omf_free(dst->data);
-            dst->small[size] = 0;
-        }
+        dst->len = size;
     }
-    dst->len = size;
 }
 
 static char *str_ptr(str *src) {
