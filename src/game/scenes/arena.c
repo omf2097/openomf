@@ -554,9 +554,11 @@ void arena_har_defeat_hook(int player_id, scene *scene) {
         object_set_sprite_override(round_token, 1);
     }
     score->rounds++;
+    if(player_winner->ctrl->type != CTRL_TYPE_AI && player_loser->ctrl->type == CTRL_TYPE_AI) {
+        chr_score_victory(score, har_health_percent(winner_har));
+    }
     if(score->rounds >= ceilf(local->rounds / 2.0f)) {
         har_set_ani(winner, ANIM_VICTORY, 0);
-        chr_score_victory(score, har_health_percent(winner_har));
         winner_har->state = STATE_VICTORY;
         local->over = 1;
         if(is_singleplayer(gs)) {
