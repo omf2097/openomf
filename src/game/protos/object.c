@@ -392,6 +392,7 @@ void object_render(object *obj) {
     } else if(object_has_effect(obj, EFFECT_SHADOW)) {
         remap_rounds = 1;
         remap_offset = clamp((opacity * 4) >> 8, 0, 3);
+        opacity = 255; // Reset opacity for rendering
     } else if(object_has_effect(obj, EFFECT_DARK_TINT)) {
         remap_rounds = 0;
         remap_offset = 5;
