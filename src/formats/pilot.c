@@ -312,16 +312,16 @@ void sd_pilot_set_player_color(sd_pilot *pilot, player_color index, uint8_t colo
     switch(index) {
         case PRIMARY:
             pilot->color_3 = color;
-            palette_load_altpal_player_color(&pilot->palette, 0, pilot->color_3, 0);
             break;
         case SECONDARY:
             pilot->color_2 = color;
-            palette_load_altpal_player_color(&pilot->palette, 0, pilot->color_2, 1);
             break;
         case TERTIARY:
             pilot->color_1 = color;
-            palette_load_altpal_player_color(&pilot->palette, 0, pilot->color_1, 2);
             break;
+    }
+    if(color != 255) {
+        palette_load_altpal_player_color(&pilot->palette, 0, color, index);
     }
 }
 
