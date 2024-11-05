@@ -62,7 +62,7 @@ void mainmenu_demo(component *c, void *userdata) {
 
     // Set up controllers
     game_state_init_demo(s->gs);
-    game_state_set_next(s->gs, rand_arena());
+    game_state_set_next(s->gs, SCENE_VS);
 }
 
 void mainmenu_soreboard(component *c, void *userdata) {

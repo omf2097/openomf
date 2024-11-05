@@ -232,6 +232,11 @@ void newsroom_input_tick(scene *scene) {
                     local->screen++;
                     newsroom_fixup_str(local);
 
+                    if(is_demoplay(scene->gs) && local->screen >= 2) {
+                        game_state_set_next(scene->gs, SCENE_VS);
+                        continue;
+                    }
+
                     if((local->screen >= 2 && !local->champion) || local->screen >= 3) {
                         if(local->won || player1->chr) {
                             // pick a new player

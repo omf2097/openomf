@@ -409,6 +409,11 @@ void vs_too_pathetic_dialog_clicked(dialog *dlg, dialog_result result) {
 }
 
 int vs_create(scene *scene) {
+    // Initialize Demo
+    if(is_demoplay(scene->gs)) {
+        game_state_init_demo(scene->gs);
+    }
+
     // Init local data
     vs_local *local = omf_calloc(1, sizeof(vs_local));
     scene_set_userdata(scene, local);
