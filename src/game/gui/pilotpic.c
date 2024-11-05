@@ -70,6 +70,7 @@ void pilotpic_select(component *c, int pic_id, int pilot_id) {
 
     local->img = omf_calloc(1, sizeof(sprite));
     sd_sprite spr;
+    sd_sprite_create(&spr);
     vga_palette pal;
     pilotpic_load(&spr, &pal, pic_id, pilot_id);
 
