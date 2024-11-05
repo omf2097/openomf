@@ -482,7 +482,8 @@ void object_free(object *obj) {
     if(obj == NULL) {
         return;
     }
-    vga_state_disable_palette_transform(object_scenewide_palette_transform, obj);
+    vga_state_disable_palette_transform(object_palette_copy_transform, obj);
+    vga_state_disable_palette_transform(object_scenewide_palette_transform, &obj->sprite_state);
     if(obj->free != NULL) {
         obj->free(obj);
     }
