@@ -120,11 +120,29 @@ void newsroom_fixup_str(newsroom_local *local) {
     local->news_str = tmp;
 }
 
+static void title_case(str *str) {
+    bool start = true;
+
+    unsigned char c;
+    // XXX this is not Unicode-aware
+    for(size_t pos = 0; (c = (unsigned char)str_at(str, pos)); pos++) {
+        if(c == ' ') {
+            start = true;
+        } else {
+            c = (unsigned char)(start ? toupper(c) : tolower(c));
+            str_set_at(str, pos, (char)c);
+            start = false;
+        }
+    }
+}
+
 void newsroom_set_names(newsroom_local *local, const char *pilot1, const char *pilot2, int har1, int har2, int sex1,
                         int sex2) {
 
     str_from_c(&local->pilot1, pilot1);
+    title_case(&local->pilot1);
     str_from_c(&local->pilot2, pilot2);
+    title_case(&local->pilot2);
     local->har1 = har1;
     local->har2 = har2;
     local->sex1 = sex1;
