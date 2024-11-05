@@ -14,9 +14,16 @@ static sd_language *language;
 bool lang_init(void) {
     language = NULL;
 
+    char *lang = settings_get()->language.language;
+
+    {
+        char *old_extension = strstr(lang, ".DAT");
+        if(old_extension)
+            memcpy(old_extension, ".LNG", 4);
+    }
+
     str filename_str;
     const char *dirname = pm_get_local_path(RESOURCE_PATH);
-    const char *lang = settings_get()->language.language;
     str_from_format(&filename_str, "%s%s", dirname, lang);
     char const *filename = str_c(&filename_str);
 
