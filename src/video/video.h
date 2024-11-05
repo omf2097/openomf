@@ -81,15 +81,15 @@ void video_draw_size(const surface *src_surface, int x, int y, int w, int h);
  * @param remap_rounds Count of rounds to run the pixel through the remapping table
  * @param palette_offset Palette offset (default = 0)
  * @param palette_limit Palette offset max limit (default = 255)
+ * @param opacity Opacity of the image (0-255, default = 255 -- fully visible)
  * @param flip_mode Sprite flipping options
  * @param options Renderer effect options
  */
 void video_draw_full(const surface *src_surface, int x, int y, int w, int h, int remap_offset, int remap_rounds,
-                     int palette_offset, int palette_limit, unsigned int flip_mode, unsigned int options);
+                     int palette_offset, int palette_limit, int opacity, unsigned int flip_mode, unsigned int options);
 
 void video_reset_atlas(void);
 
-void video_render_background(surface *sur);
 void video_render_prepare(void);
 void video_render_finish(void);
 void video_close(void);

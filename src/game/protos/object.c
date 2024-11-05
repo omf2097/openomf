@@ -392,6 +392,7 @@ void object_render(object *obj) {
     } else if(object_has_effect(obj, EFFECT_SHADOW)) {
         remap_rounds = 1;
         remap_offset = clamp((opacity * 4) >> 8, 0, 3);
+        opacity = 255; // Reset opacity for rendering
     } else if(object_has_effect(obj, EFFECT_DARK_TINT)) {
         remap_rounds = 0;
         remap_offset = 5;
@@ -409,7 +410,7 @@ void object_render(object *obj) {
         options |= SPRITE_INDEX_ADD;
     }
 
-    video_draw_full(obj->cur_surface, x, y, w, h, remap_offset, remap_rounds, obj->pal_offset, obj->pal_limit,
+    video_draw_full(obj->cur_surface, x, y, w, h, remap_offset, remap_rounds, obj->pal_offset, obj->pal_limit, opacity,
                     flip_mode, options);
 }
 
@@ -438,14 +439,22 @@ void object_render_shadow(object *obj) {
         flip_mode ^= FLIP_HORIZONTAL;
     }
 
+    player_sprite_state *state = &obj->sprite_state;
+    uint8_t opacity = state->blend_finish;
+    if(state->duration > 0) {
+        float moment = (float)state->timer / (float)state->duration;
+        float d = ((float)state->blend_finish - (float)state->blend_start) * moment;
+        opacity = clamp(state->blend_start + d, 0, 255);
+    }
+
     // Determine Y
     int y = 190 - scaled_h;
 
     // Render shadow object twice with different offsets, so that
     // the shadows seem a bit blobbier and shadow-y
     for(int i = 0; i < 2; i++) {
-        video_draw_full(cur_sprite->data, x + i, y + i, w, scaled_h, 2, 1, obj->pal_offset, obj->pal_limit, flip_mode,
-                        SPRITE_MASK);
+        video_draw_full(cur_sprite->data, x + i, y + i, w, scaled_h, 2, 1, obj->pal_offset, obj->pal_limit, opacity,
+                        flip_mode, SPRITE_MASK);
     }
 }
 
