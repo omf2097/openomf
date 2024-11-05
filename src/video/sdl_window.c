@@ -87,6 +87,15 @@ bool create_window(SDL_Window **window, int width, int height, bool fullscreen) 
     return true;
 }
 
+bool resize_window(SDL_Window *window, int width, int height, bool fullscreen) {
+    SDL_SetWindowSize(window, width, height);
+    if(SDL_SetWindowFullscreen(window, fullscreen ? SDL_WINDOW_FULLSCREEN : 0) < 0) {
+        PERROR("Could not set fullscreen mode: %s", SDL_GetError());
+        return false;
+    }
+    return true;
+}
+
 bool set_vsync(bool enable) {
     // If we don't want to enable vsync, just log and okay out.
     if(!enable) {
