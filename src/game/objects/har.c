@@ -465,6 +465,11 @@ void har_move(object *obj) {
     // Check for wall hits
     if(obj->pos.x <= ARENA_LEFT_WALL || obj->pos.x >= ARENA_RIGHT_WALL) {
         h->is_wallhugging = 1;
+        if(player_frame_isset(obj, "cw") && player_frame_isset(obj, "d")) {
+            DEBUG("disabling d tag on animation because of wall hit");
+            obj->animation_state.disable_d = 1;
+        }
+
     } else {
         h->is_wallhugging = 0;
     }
