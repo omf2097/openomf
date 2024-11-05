@@ -6,8 +6,6 @@
 #include "video/video.h"
 #include <string.h>
 
-#define SCREEN_WIDTH 320
-
 void dialog_cancel(component *c, void *userdata) {
     dialog *dlg = userdata;
     if(dlg->clicked) {
@@ -37,7 +35,7 @@ void dialog_create_with_tconf(dialog *dlg, dialog_style style, text_settings *tc
     dlg->userdata = NULL;
     dlg->clicked = NULL;
 
-    int w = SCREEN_WIDTH - 2 * x;
+    int w = NATIVE_W - 2 * x;
 
     component *menu = menu_create(11);
 
