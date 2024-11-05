@@ -409,7 +409,7 @@ void object_render(object *obj) {
         options |= SPRITE_INDEX_ADD;
     }
 
-    video_draw_full(obj->cur_surface, x, y, w, h, remap_offset, remap_rounds, obj->pal_offset, obj->pal_limit,
+    video_draw_full(obj->cur_surface, x, y, w, h, remap_offset, remap_rounds, obj->pal_offset, obj->pal_limit, opacity,
                     flip_mode, options);
 }
 
@@ -444,8 +444,8 @@ void object_render_shadow(object *obj) {
     // Render shadow object twice with different offsets, so that
     // the shadows seem a bit blobbier and shadow-y
     for(int i = 0; i < 2; i++) {
-        video_draw_full(cur_sprite->data, x + i, y + i, w, scaled_h, 2, 1, obj->pal_offset, obj->pal_limit, flip_mode,
-                        SPRITE_MASK);
+        video_draw_full(cur_sprite->data, x + i, y + i, w, scaled_h, 2, 1, obj->pal_offset, obj->pal_limit, 255,
+                        flip_mode, SPRITE_MASK);
     }
 }
 

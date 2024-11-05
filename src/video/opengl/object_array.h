@@ -27,7 +27,7 @@ void object_array_begin(const object_array *array, object_array_batch *state);
 bool object_array_get_batch(const object_array *array, object_array_batch *state, object_array_blend_mode *mode);
 void object_array_draw(const object_array *array, object_array_batch *state);
 void object_array_add(object_array *array, int x, int y, int w, int h, int tx, int ty, int tw, int th, int flags,
-                      int transparency, int remap_offset, int remap_rounds, int pal_offset, int pal_limit,
+                      int transparency, int remap_offset, int remap_rounds, int pal_offset, int pal_limit, int opacity,
                       unsigned int options);
 
 #endif // OBJECT_ARRAY_H

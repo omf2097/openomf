@@ -8,10 +8,13 @@ flat in int remap_offset;
 flat in int remap_rounds;
 flat in int palette_offset;
 flat in int palette_limit;
+flat in int opacity;
 flat in uint options;
 
 uniform sampler2D atlas;
 uniform sampler2D remaps;
+
+in vec4 gl_FragCoord;
 
 uint use_sprite_remap = options & 1u;
 uint use_sprite_mask = options & 2u;
@@ -37,6 +40,13 @@ void main() {
     // Don't render if it's transparent pixel
     int index = int(texel.r * 255.0);
     if (index == transparency_index) {
+        discard;
+    }
+
+    // Don't render if we're decimating due to opacity
+    int decimate_limit = int(opacity / 255.0 * 7);
+    int pos = int(gl_FragCoord.y * 320 + gl_FragCoord.x) % 7;
+    if (pos >= decimate_limit) {
         discard;
     }
 
