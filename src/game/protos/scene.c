@@ -163,7 +163,7 @@ void scene_render_overlay(scene *scene) {
 }
 
 void scene_render(scene *scene) {
-    video_render_background(&scene->bk_data->background);
+    video_draw(&scene->bk_data->background, 0, 0);
 
     if(scene->render != NULL) {
         scene->render(scene);

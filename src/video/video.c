@@ -289,14 +289,6 @@ void video_schedule_screenshot(video_screenshot_signal callback) {
     g_video_state.screenshot_cb = callback;
 }
 
-void video_render_background(surface *sur) {
-    uint16_t tx, ty, tw, th;
-    if(atlas_get(g_video_state.atlas, sur, &tx, &ty, &tw, &th)) {
-        object_array_add(g_video_state.objects, 0, 0, 320, 200, tx, ty, tw, th, 0, sur->transparent, 0, 0, 0, -1, 255,
-                         0);
-    }
-}
-
 static inline void draw_args(video_state *state, const surface *sur, SDL_Rect *dst, int remap_offset, int remap_rounds,
                              int pal_offset, int pal_limit, int opacity, unsigned int flip_mode, unsigned int options) {
     uint16_t tx, ty, tw, th;

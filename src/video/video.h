@@ -90,7 +90,6 @@ void video_draw_full(const surface *src_surface, int x, int y, int w, int h, int
 
 void video_reset_atlas(void);
 
-void video_render_background(surface *sur);
 void video_render_prepare(void);
 void video_render_finish(void);
 void video_close(void);
