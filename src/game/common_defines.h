@@ -91,6 +91,8 @@ enum
     PILOT_RAVEN,
     PILOT_KREISSACK,
     NUMBER_OF_PILOT_TYPES,
+    // Major Kreissack is not a playable character
+    NUMBER_OF_PLAYABLE_PILOT_TYPES = NUMBER_OF_PILOT_TYPES - 1,
 };
 
 enum
