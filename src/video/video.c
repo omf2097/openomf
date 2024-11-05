@@ -131,7 +131,17 @@ void video_reinit_renderer(void) {
 }
 
 int video_reinit(int window_w, int window_h, bool fullscreen, bool vsync) {
-    return 0;
+    g_video_state.screen_w = window_w;
+    g_video_state.screen_h = window_h;
+    g_video_state.fullscreen = fullscreen;
+    g_video_state.vsync = vsync;
+    bool success = resize_window(g_video_state.window, window_w, window_h, fullscreen);
+    success = set_vsync(g_video_state.vsync) && success;
+
+    // Fetch viewport size which may be different from window size.
+    SDL_GL_GetDrawableSize(g_video_state.window, &g_video_state.viewport_w, &g_video_state.viewport_h);
+
+    return success;
 }
 
 // Called on every game tick
