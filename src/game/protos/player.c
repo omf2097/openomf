@@ -457,21 +457,13 @@ void player_run(object *obj) {
 
         // Blend mode stuff
         if(sd_script_isset(frame, "bb")) {
-            rstate->blend_finish = sd_script_get(frame, "bb");
             rstate->screen_shake_vertical = sd_script_get(frame, "bb");
         }
         if(sd_script_isset(frame, "bf")) {
             rstate->blend_finish = sd_script_get(frame, "bf");
         }
         if(sd_script_isset(frame, "bl")) {
-            rstate->blend_finish = sd_script_get(frame, "bl");
             rstate->screen_shake_horizontal = sd_script_get(frame, "bl");
-        }
-        if(sd_script_isset(frame, "bm")) {
-            rstate->blend_finish = sd_script_get(frame, "bm");
-        }
-        if(sd_script_isset(frame, "bj")) {
-            rstate->blend_finish = sd_script_get(frame, "bj");
         }
         if(sd_script_isset(frame, "bs")) {
             rstate->blend_start = sd_script_get(frame, "bs");
