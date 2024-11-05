@@ -2578,6 +2578,12 @@ bool handle_queued_tactic(controller *ctrl, ctrl_event **ev) {
 int ai_controller_poll(controller *ctrl, ctrl_event **ev) {
     ai *a = ctrl->data;
     object *o = game_state_find_object(ctrl->gs, ctrl->har_obj_id);
+    scene *scene = game_state_get_scene(ctrl->gs);
+    if(scene->id == SCENE_VS || scene->id == SCENE_NEWSROOM) {
+        if(ctrl->gs->warp_speed || (scene->static_ticks_since_start + 1) % 256 == 0) {
+            controller_cmd(ctrl, ACT_PUNCH, ev);
+        }
+    }
     if(!o) {
         return 1;
     }

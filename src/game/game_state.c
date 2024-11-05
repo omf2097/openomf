@@ -320,6 +320,11 @@ void game_state_set_paused(game_state *gs, unsigned int paused) {
 
 // Return 0 if event was handled here
 int game_state_handle_event(game_state *gs, SDL_Event *event) {
+    // ESC during demo mode jumps you back to the main menu
+    if(event->type == SDL_KEYDOWN && is_demoplay(gs) && event->key.keysym.sym == SDLK_ESCAPE) {
+        game_state_set_next(gs, SCENE_MENU);
+        return 0;
+    }
     if(scene_event(gs->sc, event) == 0) {
         return 0;
     }
@@ -882,11 +887,11 @@ void game_state_init_demo(game_state *gs) {
         sd_pilot *pl = game_player_get_pilot(player);
         ai_controller_create(ctrl, 4, pl, player->pilot->pilot_id);
         game_player_set_ctrl(player, ctrl);
-        game_player_set_selectable(player, 1);
+        game_player_set_selectable(player, 0);
 
         // select random pilot and har
-        player->pilot->pilot_id = rand_int(10);
-        player->pilot->har_id = rand_int(11);
+        player->pilot->pilot_id = rand_int(NUMBER_OF_PLAYABLE_PILOT_TYPES);
+        player->pilot->har_id = rand_int(NUMBER_OF_HAR_TYPES);
         chr_score_reset(&player->score, 1);
 
         // set proper color

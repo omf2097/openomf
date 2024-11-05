@@ -211,15 +211,9 @@ void arena_end(scene *sc) {
     game_state *gs = sc->gs;
     const scene *scene = game_state_get_scene(gs);
     fight_stats *fight_stats = &gs->fight_stats;
-    int next_id;
 
     // Switch scene
-    if(is_demoplay(gs)) {
-        do {
-            next_id = rand_arena();
-        } while(next_id == sc->id);
-        game_state_set_next(gs, next_id);
-    } else if(is_singleplayer(gs) || is_tournament(gs)) {
+    if(is_singleplayer(gs) || is_tournament(gs) || is_demoplay(gs)) {
         game_player *p1 = game_state_get_player(gs, 0);
         game_player *p2 = game_state_get_player(gs, 1);
         har *p1_har = object_get_userdata(game_state_find_object(gs, game_player_get_har_obj_id(p1)));
@@ -1048,10 +1042,6 @@ void arena_input_tick(scene *scene) {
 }
 
 int arena_event(scene *scene, SDL_Event *e) {
-    // ESC during demo mode jumps you back to the main menu
-    if(e->type == SDL_KEYDOWN && is_demoplay(scene->gs) && e->key.keysym.sym == SDLK_ESCAPE) {
-        game_state_set_next(scene->gs, SCENE_MENU);
-    }
     return 0;
 }
 
@@ -1194,11 +1184,6 @@ int arena_create(scene *scene) {
 
     fight_stats *fight_stats = &scene->gs->fight_stats;
     memset(fight_stats, 0, sizeof(*fight_stats));
-
-    // Initialize Demo
-    if(is_demoplay(scene)) {
-        game_state_init_demo(scene->gs);
-    }
 
     // Handle music playback
     switch(scene->bk_data->file_id) {
