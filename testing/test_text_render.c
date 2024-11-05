@@ -30,17 +30,20 @@ void test_text_find_max_strlen(void) {
 }
 
 // to simplify tests, pass in full string length
-static int text_find_line_count_(const text_settings *settings, int cols, int rows, const char *text) {
-    return text_find_line_count(settings, cols, rows, strlen(text), text);
+static int text_find_line_count_(const text_settings *settings, int cols, int rows, const char *text, int *longest) {
+    return text_find_line_count(settings, cols, rows, strlen(text), text, longest);
 }
 
 void test_text_find_line_count(void) {
     text_settings tconf;
     text_defaults(&tconf);
+    int longest = 0;
     tconf.strip_trailing_whitespace = false;
     // word is broken in half because there are no spaces
-    CU_ASSERT(text_find_line_count(&tconf, 5, 5, strlen("AAAAAAAAA"), "AAAAAAAAA") == 2);
-    CU_ASSERT(text_find_line_count(&tconf, 5, 5, 11, "AAA AAA AAA") == 3);
+    CU_ASSERT(text_find_line_count(&tconf, 5, 5, strlen("AAAAAAAAA"), "AAAAAAAAA", &longest) == 2);
+    CU_ASSERT_EQUAL(5, longest);
+    CU_ASSERT(text_find_line_count(&tconf, 5, 5, 11, "AAA AAA AAA", &longest) == 3);
+    CU_ASSERT_EQUAL(4, longest);
 }
 
 static void test_text_find_max_strlen_newsroom(void) {
@@ -83,6 +86,7 @@ static void test_text_find_line_count_newsroom(void) {
     tconf.strip_leading_whitespace = false;
     tconf.strip_trailing_whitespace = true;
     tconf.max_lines = 9;
+    int longest = 0;
 
     // trailing spaces are counted as part of the previous word
     //clang-format off
@@ -90,39 +94,56 @@ static void test_text_find_line_count_newsroom(void) {
                                           "Whoa, this challenger meant "
                                           "business tonight.  Shirro "
                                           "could show the old pros a "
-                                          "thing or two about that Jaguar."),
+                                          "thing or two about that Jaguar.",
+                                          &longest),
                     4);
+    CU_ASSERT_EQUAL(31, longest);
     CU_ASSERT_EQUAL(text_find_line_count_(&tconf, 31, 999,
                                           "Whoa, this challenger meant "
                                           "business tonight.  Shirro "
                                           "could show the old pros a "
                                           "thing or two about that "
-                                          "Jaguar. "),
+                                          "Jaguar. ",
+                                          &longest),
                     5);
+    CU_ASSERT_EQUAL(28, longest);
+
     CU_ASSERT_EQUAL(text_find_line_count_(&tconf, 31, 999,
                                           "Whoa, this challenger meant "
                                           "business tonight.  Shirro "
                                           "could show the old pros a "
                                           "thing or two about that "
-                                          "Jaguar  "),
+                                          "Jaguar  ",
+                                          &longest),
                     5);
+    CU_ASSERT_EQUAL(28, longest);
     //clang-format on
 
     // leading spaces are not stripped
-    CU_ASSERT_EQUAL(text_find_line_count_(&tconf, 31, 999, "    Whoa, this challenger meant"), 1);
-    CU_ASSERT_EQUAL(text_find_line_count_(&tconf, 31, 999, "     Whoa, this challenger meant"), 2);
+    CU_ASSERT_EQUAL(text_find_line_count_(&tconf, 31, 999, "    Whoa, this challenger meant", &longest), 1);
+    CU_ASSERT_EQUAL(31, longest);
+
+    CU_ASSERT_EQUAL(text_find_line_count_(&tconf, 31, 999, "     Whoa, this challenger meant", &longest), 2);
+    CU_ASSERT_EQUAL(27, longest);
 
     // even without spaces, words break.
-    CU_ASSERT_EQUAL(text_find_line_count_(&tconf, 31, 999, "WhoaXXthisXchallengerXmeantXbusinessXtonight"), 2);
+    CU_ASSERT_EQUAL(text_find_line_count_(&tconf, 31, 999, "WhoaXXthisXchallengerXmeantXbusinessXtonight", &longest),
+                    2);
+    CU_ASSERT_EQUAL(31, longest);
 
     // linefeeds are ignored after reaching max_lines
     // note: displays as nineteneleventwelve, but unsure how to test for that.
     CU_ASSERT_EQUAL(text_find_line_count_(&tconf, 31, 999,
-                                          "one\ntwo\nthree\nfour\nfive\nsix\nseven\neight\nnine\nten\neleven\ntwelve"),
+                                          "one\ntwo\nthree\nfour\nfive\nsix\nseven\neight\nnine\nten\neleven\ntwelve",
+                                          &longest),
                     9);
+    CU_ASSERT_EQUAL(6, longest);
+
     // after reaching max_lines, word wrap stops (and no more words are rendered, but we don't care about that behavior)
-    CU_ASSERT_EQUAL(
-        text_find_line_count_(&tconf, 2, 999, "one two three four five six seven eight nine ten eleven twelve"), 9);
+    CU_ASSERT_EQUAL(text_find_line_count_(&tconf, 2, 999,
+                                          "one two three four five six seven eight nine ten eleven twelve", &longest),
+                    9);
+    CU_ASSERT_EQUAL(2, longest);
 }
 
 static void test_text_find_max_strlen_pilot_bio(void) {

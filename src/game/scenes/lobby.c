@@ -151,6 +151,7 @@ void lobby_render_overlay(scene *scene) {
     lobby_local *local = scene_get_userdata(scene);
 
     char buf[100];
+    int longest = 0;
 
     text_settings font_big;
     text_defaults(&font_big);
@@ -206,7 +207,7 @@ void lobby_render_overlay(scene *scene) {
         while((logmsg = list_iter_prev(&it)) && i < 4) {
             font_big.cforeground = logmsg->color;
             text_render(&font_big, TEXT_DEFAULT, 10, 188 - (8 * i), 300, 8, logmsg->msg);
-            i += text_find_line_count(&font_big, 300 / 8, 3, strlen(logmsg->msg), logmsg->msg);
+            i += text_find_line_count(&font_big, 300 / 8, 3, strlen(logmsg->msg), logmsg->msg, &longest);
         }
     } else if(local->mode == LOBBY_YELL) {
         iterator it;
@@ -216,7 +217,7 @@ void lobby_render_overlay(scene *scene) {
         while((logmsg = list_iter_prev(&it)) && i < 13) {
             font_big.cforeground = logmsg->color;
             text_render(&font_big, TEXT_DEFAULT, 10, 120 - (8 * i), 300, 8, logmsg->msg);
-            i += text_find_line_count(&font_big, 300 / 8, 3, strlen(logmsg->msg), logmsg->msg);
+            i += text_find_line_count(&font_big, 300 / 8, 3, strlen(logmsg->msg), logmsg->msg, &longest);
         }
     }
 
@@ -295,8 +296,7 @@ component *lobby_challenge_create(scene *s) {
     component *menu = menu_create(11);
     menu_set_horizontal(menu, true);
     menu_set_background(menu, false);
-    menu_set_margin_top(menu, 0);
-    menu_set_padding(menu, 6);
+    menu_set_padding(menu, 0);
 
     lobby_user *user = list_get(&local->users, local->active_user);
     snprintf(local->helptext, sizeof(local->helptext), "Challenge %s?", user->name);
@@ -359,14 +359,14 @@ component *lobby_yell_create(scene *s) {
     menu_set_help_text_settings(menu, &help_text);
     menu_set_horizontal(menu, true);
     menu_set_background(menu, false);
-    menu_set_margin_top(menu, 0);
-    menu_set_padding(menu, 6);
+    menu_set_padding(menu, 0);
 
     menu_attach(menu, label_create(&tconf, "Yell:"));
     component *yell_input =
-        textinput_create(&tconf, 36, "Yell:",
+        textinput_create(&tconf, 36,
                          "Yell a message to everybody in the challenge arena.\n\n\n\n\nTo whisper to one player, type "
-                         "their name, a ':', and your message.\nPress 'esc' to return to the challenge arena menu.");
+                         "their name, a ':', and your message.\nPress 'esc' to return to the challenge arena menu.",
+                         "");
     menu_attach(menu, yell_input);
     textinput_enable_background(yell_input, 0);
     textinput_set_done_cb(yell_input, lobby_do_yell, s);
@@ -433,14 +433,13 @@ component *lobby_whisper_create(scene *s) {
     menu_set_help_text_settings(menu, &help_text);
     menu_set_horizontal(menu, true);
     menu_set_background(menu, false);
-    menu_set_margin_top(menu, 0);
-    menu_set_padding(menu, 6);
+    menu_set_padding(menu, 0);
 
     menu_attach(menu, label_create(&tconf, "Whisper:"));
     lobby_user *user = list_get(&local->users, local->active_user);
     snprintf(local->helptext, sizeof(local->helptext), "Whisper a message to %s. Press enter when done, esc to abort.",
              user->name);
-    component *whisper_input = textinput_create(&tconf, 36, "Whisper:", local->helptext);
+    component *whisper_input = textinput_create(&tconf, 36, local->helptext, "");
     menu_attach(menu, whisper_input);
     textinput_enable_background(whisper_input, 0);
     textinput_set_done_cb(whisper_input, lobby_do_whisper, s);
@@ -674,8 +673,7 @@ component *lobby_exit_create(scene *s) {
     component *menu = menu_create(11);
     menu_set_horizontal(menu, true);
     menu_set_background(menu, false);
-    menu_set_margin_top(menu, 0);
-    menu_set_padding(menu, 6);
+    menu_set_padding(menu, 0);
 
     menu_attach(menu, label_create(&tconf, "Exit the Challenge Arena?"));
     menu_attach(menu, textbutton_create(&tconf, "Yes", NULL, COM_ENABLED, lobby_do_exit, s));
@@ -1129,7 +1127,6 @@ int lobby_create(scene *scene) {
     component *menu = menu_create(11);
     menu_set_horizontal(menu, true);
     menu_set_background(menu, false);
-    // menu_set_margin_top(menu, 0);
     menu_set_padding(menu, 6);
 
     menu_set_help_pos(menu, 10, 155, 500, 10);
@@ -1171,7 +1168,7 @@ int lobby_create(scene *scene) {
     }
     reconfigure_controller(scene->gs);
 
-    local->frame = guiframe_create(9, 132, 300, 12);
+    local->frame = guiframe_create(9, 128, 300, 12);
     guiframe_set_root(local->frame, menu);
     guiframe_layout(local->frame);
 
@@ -1180,8 +1177,7 @@ int lobby_create(scene *scene) {
         component *name_menu = menu_create(11);
         menu_set_horizontal(name_menu, true);
         menu_set_background(name_menu, false);
-        menu_set_margin_top(menu, 0);
-        menu_set_padding(menu, 6);
+        menu_set_padding(menu, 0);
 
         menu_attach(name_menu, label_create(&tconf, "Enter your name:"));
         // TODO pull the last used name from settings

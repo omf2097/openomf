@@ -29,6 +29,9 @@ static void str_resize_buffer(str *dst, size_t size) {
 }
 
 static void str_resize_and_copy_buffer(str *dst, size_t size) {
+    if(size == dst->len) {
+        return;
+    }
     size_t size_with_zero = size + 1;
     if(size_with_zero > STR_STACK_SIZE) {
         // New size is larger than the stack buffer; do malloc.
