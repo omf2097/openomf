@@ -151,6 +151,7 @@ void lobby_render_overlay(scene *scene) {
     lobby_local *local = scene_get_userdata(scene);
 
     char buf[100];
+    int longest = 0;
 
     text_settings font_big;
     text_defaults(&font_big);
@@ -206,7 +207,7 @@ void lobby_render_overlay(scene *scene) {
         while((logmsg = list_iter_prev(&it)) && i < 4) {
             font_big.cforeground = logmsg->color;
             text_render(&font_big, TEXT_DEFAULT, 10, 188 - (8 * i), 300, 8, logmsg->msg);
-            i += text_find_line_count(&font_big, 300 / 8, 3, strlen(logmsg->msg), logmsg->msg);
+            i += text_find_line_count(&font_big, 300 / 8, 3, strlen(logmsg->msg), logmsg->msg, &longest);
         }
     } else if(local->mode == LOBBY_YELL) {
         iterator it;
@@ -216,7 +217,7 @@ void lobby_render_overlay(scene *scene) {
         while((logmsg = list_iter_prev(&it)) && i < 13) {
             font_big.cforeground = logmsg->color;
             text_render(&font_big, TEXT_DEFAULT, 10, 120 - (8 * i), 300, 8, logmsg->msg);
-            i += text_find_line_count(&font_big, 300 / 8, 3, strlen(logmsg->msg), logmsg->msg);
+            i += text_find_line_count(&font_big, 300 / 8, 3, strlen(logmsg->msg), logmsg->msg, &longest);
         }
     }
 

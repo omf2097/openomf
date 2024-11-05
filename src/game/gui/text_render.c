@@ -3,6 +3,7 @@
 
 #include "game/gui/text_render.h"
 #include "utils/log.h"
+#include "utils/miscmath.h"
 #include "utils/vector.h"
 #include "video/video.h"
 
@@ -157,16 +158,19 @@ int text_char_width(const text_settings *settings) {
     return 6;
 }
 
-int text_find_line_count(const text_settings *settings, int cols, int rows, int len, const char *text) {
+int text_find_line_count(const text_settings *settings, int cols, int rows, int len, const char *text, int *longest) {
     int ptr = 0;
     int lines = 0;
+    *longest = 0;
     while(lines < settings->max_lines && ptr < len) {
         // Find out how many characters for this row/col
         int line_len;
-        if(settings->direction == TEXT_HORIZONTAL)
+        if(settings->direction == TEXT_HORIZONTAL) {
             line_len = text_find_max_strlen(settings, cols, text + ptr);
-        else
+        } else {
             line_len = text_find_max_strlen(settings, rows, text + ptr);
+        }
+        *longest = max2(*longest, line_len);
 
         ptr += line_len;
         lines++;
@@ -183,7 +187,8 @@ static void text_render_len(const text_settings *settings, text_mode mode, int x
     int char_h = size + settings->lspacing;
     int rows = (y_space + settings->lspacing) / char_h;
     int cols = (x_space + settings->cspacing) / char_w;
-    int fit_lines = text_find_line_count(settings, cols, rows, len, text);
+    int longest = 0;
+    int fit_lines = text_find_line_count(settings, cols, rows, len, text, &longest);
     int max_chars = settings->direction == TEXT_HORIZONTAL ? cols : rows;
     if(max_chars == 0) {
         DEBUG("Warning: Text has zero size! text: '%s'");
