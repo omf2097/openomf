@@ -21,6 +21,12 @@ uint use_sprite_mask = options & 2u;
 uint use_index_add = options & 4u;
 
 
+float PHI = 1.61803398874989484820459;
+
+float noise(in vec2 v) {
+    return fract(tan(distance(v * PHI, v)) * v.x);
+}
+
 vec4 handle(float index, float remap) {
     if (remap_rounds > 0) {
         float r_index = remap_offset / 255.0 + index;
@@ -44,9 +50,9 @@ void main() {
     }
 
     // Don't render if we're decimating due to opacity
-    int decimate_limit = int(opacity / 255.0 * 7);
-    int pos = int(gl_FragCoord.y * 320 + gl_FragCoord.x) % 7;
-    if (pos >= decimate_limit) {
+    float decimate_limit = opacity / 255.0;
+    float decimate_value = noise(gl_FragCoord.xy);
+    if (decimate_value >= decimate_limit) {
         discard;
     }
 
