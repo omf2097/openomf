@@ -365,7 +365,8 @@ component *lobby_yell_create(scene *s) {
     component *yell_input =
         textinput_create(&tconf, 36,
                          "Yell a message to everybody in the challenge arena.\n\n\n\n\nTo whisper to one player, type "
-                         "their name, a ':', and your message.\nPress 'esc' to return to the challenge arena menu.", "");
+                         "their name, a ':', and your message.\nPress 'esc' to return to the challenge arena menu.",
+                         "");
     menu_attach(menu, yell_input);
     textinput_enable_background(yell_input, 0);
     textinput_set_done_cb(yell_input, lobby_do_yell, s);

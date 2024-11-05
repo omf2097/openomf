@@ -103,7 +103,8 @@ static void test_text_find_line_count_newsroom(void) {
                                           "business tonight.  Shirro "
                                           "could show the old pros a "
                                           "thing or two about that "
-                                          "Jaguar. ", &longest),
+                                          "Jaguar. ",
+                                          &longest),
                     5);
     CU_ASSERT_EQUAL(28, longest);
 
@@ -112,7 +113,8 @@ static void test_text_find_line_count_newsroom(void) {
                                           "business tonight.  Shirro "
                                           "could show the old pros a "
                                           "thing or two about that "
-                                          "Jaguar  ", &longest),
+                                          "Jaguar  ",
+                                          &longest),
                     5);
     CU_ASSERT_EQUAL(28, longest);
     //clang-format on
@@ -124,24 +126,24 @@ static void test_text_find_line_count_newsroom(void) {
     CU_ASSERT_EQUAL(text_find_line_count_(&tconf, 31, 999, "     Whoa, this challenger meant", &longest), 2);
     CU_ASSERT_EQUAL(27, longest);
 
-
     // even without spaces, words break.
-    CU_ASSERT_EQUAL(text_find_line_count_(&tconf, 31, 999, "WhoaXXthisXchallengerXmeantXbusinessXtonight", &longest), 2);
+    CU_ASSERT_EQUAL(text_find_line_count_(&tconf, 31, 999, "WhoaXXthisXchallengerXmeantXbusinessXtonight", &longest),
+                    2);
     CU_ASSERT_EQUAL(31, longest);
-
 
     // linefeeds are ignored after reaching max_lines
     // note: displays as nineteneleventwelve, but unsure how to test for that.
     CU_ASSERT_EQUAL(text_find_line_count_(&tconf, 31, 999,
-                                          "one\ntwo\nthree\nfour\nfive\nsix\nseven\neight\nnine\nten\neleven\ntwelve", &longest),
+                                          "one\ntwo\nthree\nfour\nfive\nsix\nseven\neight\nnine\nten\neleven\ntwelve",
+                                          &longest),
                     9);
     CU_ASSERT_EQUAL(6, longest);
 
     // after reaching max_lines, word wrap stops (and no more words are rendered, but we don't care about that behavior)
-    CU_ASSERT_EQUAL(
-        text_find_line_count_(&tconf, 2, 999, "one two three four five six seven eight nine ten eleven twelve", &longest), 9);
+    CU_ASSERT_EQUAL(text_find_line_count_(&tconf, 2, 999,
+                                          "one two three four five six seven eight nine ten eleven twelve", &longest),
+                    9);
     CU_ASSERT_EQUAL(2, longest);
-
 }
 
 static void test_text_find_max_strlen_pilot_bio(void) {
