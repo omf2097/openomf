@@ -329,7 +329,7 @@ int newsroom_create(scene *scene) {
     local->screen = 0;
     local->champion = false;
     menu_transparent_bg_create(&local->news_bg1, 280, 55);
-    menu_background_create(&local->news_bg2, 280, 55);
+    menu_background_create(&local->news_bg2, 280, 55, MenuBackgroundNewsroom);
 
     game_player *p1 = game_state_get_player(scene->gs, 0);
     game_player *p2 = game_state_get_player(scene->gs, 1);

@@ -304,7 +304,7 @@ static void menu_layout(component *c, int x, int y, int w, int h) {
     }
     if(m->bg2 == NULL && m->background) {
         m->bg2 = omf_malloc(sizeof(surface));
-        menu_background_create(m->bg2, w, height + m->margin_top * 2);
+        menu_background_create(m->bg2, w, height + m->margin_top * 2, MenuBackground);
     }
     if(m->help_bg1 == NULL && m->background) {
         m->help_bg1 = omf_calloc(1, sizeof(surface));
@@ -312,7 +312,7 @@ static void menu_layout(component *c, int x, int y, int w, int h) {
     }
     if(m->help_bg2 == NULL && m->background) {
         m->help_bg2 = omf_calloc(1, sizeof(surface));
-        menu_background_create(m->help_bg2, m->help_w + 16, m->help_w / 8);
+        menu_background_create(m->help_bg2, m->help_w + 16, m->help_w / 8, MenuBackground);
     }
 
     component_set_size_hints(c, w, height);
