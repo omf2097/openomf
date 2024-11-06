@@ -52,7 +52,7 @@ void main() {
     // Don't render if we're decimating due to opacity
     float decimate_limit = opacity / 255.0;
     float decimate_value = noise(gl_FragCoord.xy);
-    if (decimate_value >= decimate_limit) {
+    if (decimate_value > decimate_limit) {
         discard;
     }
 
