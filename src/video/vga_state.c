@@ -56,10 +56,17 @@ void vga_state_render(void) {
         damage_reset(&state.dmg_base);
 
         // Run transformers on top. These may modify the current palette and change dirtiness state.
+        damage_tracker damage_transformers;
+        damage_reset(&damage_transformers);
         for(unsigned int i = 0; i < state.transformer_count; i++) {
-            state.transformers[i].callback(&state.dmg_current, &state.current, state.transformers[i].userdata);
+            state.transformers[i].callback(&damage_transformers, &state.current, state.transformers[i].userdata);
         }
         state.transformer_count = 0;
+
+        damage_combine(&state.dmg_current, &damage_transformers);
+        // mark next frame's base as damaged in these transformers' absence
+        damage_combine(&state.dmg_base, &damage_transformers);
+
         damage_copy(&state.dmg_previous, &state.dmg_current);
     }
 }
