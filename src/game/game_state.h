@@ -57,4 +57,10 @@ void game_state_del_animation(game_state *gs, int anim_id);
 void game_state_get_projectiles(game_state *gs, vector *obj_proj);
 void game_state_clear_hazards_projectiles(game_state *gs);
 
+bool is_netplay(game_state *gs);
+bool is_singleplayer(game_state *gs);
+bool is_tournament(game_state *gs);
+bool is_demoplay(game_state *gs);
+bool is_twoplayer(game_state *gs);
+
 #endif // GAME_STATE_H

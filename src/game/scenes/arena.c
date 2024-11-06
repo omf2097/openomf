@@ -193,43 +193,6 @@ void arena_repeat_controller(void *userdata) {
     controller_set_repeat(game_player_get_ctrl(player1), 1);
 }
 
-int is_netplay(scene *scene) {
-    if(game_state_get_player(scene->gs, 0)->ctrl->type == CTRL_TYPE_NETWORK ||
-       game_state_get_player(scene->gs, 1)->ctrl->type == CTRL_TYPE_NETWORK) {
-        return 1;
-    }
-    return 0;
-}
-
-int is_singleplayer(scene *scene) {
-    if(game_state_get_player(scene->gs, 1)->ctrl->type == CTRL_TYPE_AI) {
-        return 1;
-    }
-    return 0;
-}
-
-int is_tournament(scene *scene) {
-    if(game_state_get_player(scene->gs, 0)->chr) {
-        return 1;
-    }
-    return 0;
-}
-
-int is_demoplay(scene *scene) {
-    if(game_state_get_player(scene->gs, 0)->ctrl->type == CTRL_TYPE_AI &&
-       game_state_get_player(scene->gs, 1)->ctrl->type == CTRL_TYPE_AI) {
-        return 1;
-    }
-    return 0;
-}
-
-int is_twoplayer(scene *scene) {
-    if(!is_demoplay(scene) && !is_netplay(scene) && !is_singleplayer(scene)) {
-        return 1;
-    }
-    return 0;
-}
-
 void arena_screengrab_winner(scene *sc) {
     game_state *gs = sc->gs;
 
@@ -251,12 +214,12 @@ void arena_end(scene *sc) {
     int next_id;
 
     // Switch scene
-    if(is_demoplay(sc)) {
+    if(is_demoplay(gs)) {
         do {
             next_id = rand_arena();
         } while(next_id == sc->id);
         game_state_set_next(gs, next_id);
-    } else if(is_singleplayer(sc) || is_tournament(sc)) {
+    } else if(is_singleplayer(gs) || is_tournament(gs)) {
         game_player *p1 = game_state_get_player(gs, 0);
         game_player *p2 = game_state_get_player(gs, 1);
         har *p1_har = object_get_userdata(game_state_find_object(gs, game_player_get_har_obj_id(p1)));
@@ -312,7 +275,7 @@ void arena_end(scene *sc) {
             PERROR("Failed to save pilot %s", p1->chr->pilot.name);
         }
         game_state_set_next(gs, SCENE_NEWSROOM);
-    } else if(is_twoplayer(sc)) {
+    } else if(is_twoplayer(gs)) {
         game_state_set_next(gs, SCENE_MELEE);
     } else if(gs->net_mode == NET_MODE_LOBBY) {
         game_state_set_next(gs, SCENE_LOBBY);
@@ -563,7 +526,7 @@ void arena_har_defeat_hook(int player_id, scene *scene) {
     } else if(player_winner->ctrl->type == CTRL_TYPE_NETWORK && player_loser->ctrl->type != CTRL_TYPE_NETWORK) {
         scene_youlose_anim_start(scene->gs);
     } else {
-        if(!is_singleplayer(scene)) {
+        if(!is_singleplayer(gs)) {
             // XXX in two player mode, "you win" should always be displayed
             scene_youwin_anim_start(scene->gs);
         } else {
@@ -598,7 +561,7 @@ void arena_har_defeat_hook(int player_id, scene *scene) {
         chr_score_victory(score, har_health_percent(winner_har));
         winner_har->state = STATE_VICTORY;
         local->over = 1;
-        if(is_singleplayer(scene)) {
+        if(is_singleplayer(gs)) {
             player_winner->sp_wins |= 2 << player_loser->pilot->pilot_id;
             if(player_loser->pilot->pilot_id == PILOT_KREISSACK) {
                 // can't scrap/destruct kreissack
@@ -890,7 +853,7 @@ int arena_handle_events(scene *scene, game_player *player, ctrl_event *i) {
             } else if(i->type == EVENT_TYPE_ACTION && local->menu_visible &&
                       (player->ctrl->type == CTRL_TYPE_KEYBOARD || player->ctrl->type == CTRL_TYPE_GAMEPAD) &&
                       i->event_data.action != ACT_ESC && /* take AST_ESC only from player 1 */
-                      !is_demoplay(scene)) {
+                      !is_demoplay(scene->gs)) {
                 DEBUG("menu event %d", i->event_data.action);
                 // menu events
                 guiframe_action(local->game_menu, i->event_data.action);
@@ -1086,7 +1049,7 @@ void arena_input_tick(scene *scene) {
 
 int arena_event(scene *scene, SDL_Event *e) {
     // ESC during demo mode jumps you back to the main menu
-    if(e->type == SDL_KEYDOWN && is_demoplay(scene) && e->key.keysym.sym == SDLK_ESCAPE) {
+    if(e->type == SDL_KEYDOWN && is_demoplay(scene->gs) && e->key.keysym.sym == SDLK_ESCAPE) {
         game_state_set_next(scene->gs, SCENE_MENU);
     }
     return 0;
@@ -1429,7 +1392,7 @@ int arena_create(scene *scene) {
     component *speed_slider = textslider_create_bind(
         &tconf, "SPEED", "Change the speed of the game when in the arena. Press left or right to change", 10, 0,
         arena_speed_slide, scene, &setting->gameplay.speed);
-    if(is_netplay(scene)) {
+    if(is_netplay(scene->gs)) {
         component_disable(speed_slider, 1);
     }
     menu_attach(menu, speed_slider);
@@ -1464,11 +1427,11 @@ int arena_create(scene *scene) {
                       OBJECT_FACE_LEFT); // TODO: Set better coordinates for this
 
     // Reset the score
-    chr_score_reset(game_player_get_score(_player[0]), !is_singleplayer(scene));
+    chr_score_reset(game_player_get_score(_player[0]), !is_singleplayer(scene->gs));
     chr_score_reset(game_player_get_score(_player[1]), 1);
 
     // Reset the win counter in single player mode
-    if(is_singleplayer(scene)) {
+    if(is_singleplayer(scene->gs)) {
         chr_score_reset_wins(game_player_get_score(_player[0]));
         chr_score_reset_wins(game_player_get_score(_player[1]));
     }
