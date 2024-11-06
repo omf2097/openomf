@@ -197,10 +197,25 @@ static inline void set_screen_viewport(void) {
     glViewport(vp_x, vp_y, g_video_state.viewport_w, g_video_state.viewport_h); // This is used for screen shakes.
 }
 
-// Called after frame has been rendered
-void video_render_finish(void) {
+void video_render_finish_offscreen(void) {
     object_array_finish(g_video_state.objects);
 
+    // Set to VGA emulation state, and render to an indexed surface
+    glViewport(0, 0, NATIVE_W, NATIVE_H);
+    object_array_batch batch;
+    object_array_begin(g_video_state.objects, &batch);
+    activate_program(g_video_state.palette_prog_id);
+    render_target_activate(g_video_state.target);
+
+    object_array_blend_mode mode;
+    while(object_array_get_batch(g_video_state.objects, &batch, &mode)) {
+        video_set_blend_mode(mode);
+        object_array_draw(g_video_state.objects, &batch);
+    }
+}
+
+// Called after frame has been rendered
+void video_render_finish(void) {
     // If palette is dirty, flush it to the texture. Note that the range is inclusive (dirty area is start <= x <= end).
     vga_index range_start, range_end;
     vga_palette *palette;
@@ -216,18 +231,7 @@ void video_render_finish(void) {
         vga_state_mark_remaps_flushed();
     }
 
-    // Set to VGA emulation state, and render to an indexed surface
-    glViewport(0, 0, NATIVE_W, NATIVE_H);
-    object_array_batch batch;
-    object_array_begin(g_video_state.objects, &batch);
-    activate_program(g_video_state.palette_prog_id);
-    render_target_activate(g_video_state.target);
-
-    object_array_blend_mode mode;
-    while(object_array_get_batch(g_video_state.objects, &batch, &mode)) {
-        video_set_blend_mode(mode);
-        object_array_draw(g_video_state.objects, &batch);
-    }
+    video_render_finish_offscreen();
 
     // Disable render target, and dump its contents as RGBA to the screen.
     render_target_deactivate();

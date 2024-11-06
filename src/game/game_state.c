@@ -84,6 +84,8 @@ int game_state_create(game_state *gs, engine_init_flags *init_flags) {
     // Disable warp (debug) speed by default. This can be set in console.
     gs->warp_speed = 0;
 
+    gs->hide_ui = false;
+
     // Set up players
     gs->sc = omf_calloc(1, sizeof(scene));
     for(int i = 0; i < 2; i++) {

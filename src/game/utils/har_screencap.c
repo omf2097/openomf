@@ -51,6 +51,8 @@ void har_screencaps_capture(har_screencaps *caps, object *obj, object *obj2, int
         caps->ok[id] = false;
     }
 
+    game_state *gs = obj->gs;
+
     // Position
     vec2i pos = camera_position_for(obj);
     vec2i size = {SCREENCAP_W, SCREENCAP_H};
@@ -62,6 +64,12 @@ void har_screencaps_capture(har_screencaps *caps, object *obj, object *obj2, int
         pos.x = min2(pos.x, pos2.x);
         pos.y -= (size.y - SCREENCAP_H) / 2;
     }
+
+    video_render_prepare();
+    gs->hide_ui = true;
+    game_state_render(gs);
+    gs->hide_ui = false;
+    video_render_finish_offscreen();
 
     // Capture
     video_area_capture(&caps->cap[id], pos.x, pos.y, size.x, size.y);
