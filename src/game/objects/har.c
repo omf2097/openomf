@@ -614,7 +614,7 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
     if(h->health == 0) {
         game_player *other_player = game_state_get_player(obj->gs, !h->player_id);
         object *other_har = game_state_find_object(obj->gs, other_player->har_obj_id);
-        har_screencaps_capture(&other_player->screencaps, other_har, SCREENCAP_BLOW);
+        har_screencaps_capture(&other_player->screencaps, other_har, obj, SCREENCAP_BLOW);
     }
 
     // If damage is high enough, slow down the game for a bit
