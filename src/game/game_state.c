@@ -320,10 +320,19 @@ void game_state_set_paused(game_state *gs, unsigned int paused) {
 
 // Return 0 if event was handled here
 int game_state_handle_event(game_state *gs, SDL_Event *event) {
-    // ESC during demo mode jumps you back to the main menu
     if(event->type == SDL_KEYDOWN && is_demoplay(gs) && event->key.keysym.sym == SDLK_ESCAPE) {
+        // ESC during demo mode jumps you back to the main menu
         game_state_set_next(gs, SCENE_MENU);
         return 0;
+    } else if(event->type == SDL_KEYDOWN && is_demoplay(gs) && event->key.keysym.sym == SDLK_RETURN) {
+        // ENTER during demo mode skips menus
+        if(gs->sc->id < SCENE_ARENA0 || gs->sc->id > SCENE_ARENA4) {
+            if(gs->sc->id != SCENE_VS) {
+                game_state_init_demo(gs);
+            }
+            game_state_set_next(gs, rand_arena());
+            return 0;
+        }
     }
     if(scene_event(gs->sc, event) == 0) {
         return 0;
