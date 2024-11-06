@@ -640,7 +640,7 @@ int vs_create(scene *scene) {
     }
 
     // Background tex
-    menu_background2_create(&local->arena_select_bg, 211, 50);
+    menu_background_create(&local->arena_select_bg, 211, 50, MenuBackgroundMeleeVs);
 
     // Quit Dialog
     dialog_create(&local->quit_dialog, DIALOG_STYLE_YES_NO, "Are you sure you want to quit this game?", 72, 60);

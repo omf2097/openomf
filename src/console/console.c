@@ -221,7 +221,7 @@ bool console_init(void) {
     list_create(&con->history);
     hashmap_create(&con->cmds);
     menu_transparent_bg_create(&con->background1, 322, 101);
-    menu_background_create(&con->background2, 322, 101);
+    menu_background_create(&con->background2, 322, 101, MenuBackground);
 
     console_init_cmd();
 

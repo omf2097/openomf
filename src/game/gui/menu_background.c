@@ -13,35 +13,37 @@ void menu_transparent_bg_create(surface *s, int w, int h) {
     surface_set_transparency(s, -1);
 }
 
-void menu_background_create(surface *s, int w, int h) {
+void menu_background_create(surface *s, int w, int h, menu_background_style style) {
     image img;
     image_create(&img, w, h);
     image_clear(&img, COLOR_MENU_BG);
-    for(int x = 5; x < w; x += 8) {
-        image_line(&img, x, 0, x, h - 1, COLOR_MENU_LINE);
+    switch(style) {
+        case MenuBackground: {
+            for(int x = 5; x < w; x += 8) {
+                image_line(&img, x, 0, x, h - 1, COLOR_MENU_LINE);
+            }
+            for(int y = 5; y < h; y += 8) {
+                image_line(&img, 0, y, w - 1, y, COLOR_MENU_LINE);
+            }
+            image_rect(&img, 0, 0, w - 1, h - 1, COLOR_MENU_BORDER);
+            break;
+        }
+        case MenuBackgroundMeleeVs: {
+            for(int x = 5; x < w; x += 5) {
+                image_line(&img, x, 0, x, h - 1, COLOR_MENU_LINE2);
+            }
+            for(int y = 4; y < h; y += 5) {
+                image_line(&img, 0, y, w - 1, y, COLOR_MENU_LINE2);
+            }
+            image_rect(&img, 1, 1, w - 2, h - 2, COLOR_MENU_BORDER2);
+            image_rect(&img, 0, 0, w - 2, h - 2, COLOR_MENU_BORDER1);
+            break;
+        }
+        case MenuBackgroundNewsroom: {
+            image_rect(&img, 0, 0, w - 1, h - 1, COLOR_MENU_BORDER);
+            break;
+        }
     }
-    for(int y = 5; y < h; y += 8) {
-        image_line(&img, 0, y, w - 1, y, COLOR_MENU_LINE);
-    }
-    image_rect(&img, 0, 0, w - 1, h - 1, COLOR_MENU_BORDER);
-    surface_create_from_image(s, &img);
-    surface_set_transparency(s, COLOR_MENU_BG);
-    image_free(&img);
-}
-
-// the *other* style menu background, used on VS and MELEE
-void menu_background2_create(surface *s, int w, int h) {
-    image img;
-    image_create(&img, w, h);
-    image_clear(&img, COLOR_MENU_BG);
-    for(int x = 5; x < w; x += 5) {
-        image_line(&img, x, 0, x, h - 1, COLOR_MENU_LINE2);
-    }
-    for(int y = 4; y < h; y += 5) {
-        image_line(&img, 0, y, w - 1, y, COLOR_MENU_LINE2);
-    }
-    image_rect(&img, 1, 1, w - 2, h - 2, COLOR_MENU_BORDER2);
-    image_rect(&img, 0, 0, w - 2, h - 2, COLOR_MENU_BORDER1);
     surface_create_from_image(s, &img);
     surface_set_transparency(s, COLOR_MENU_BG);
     image_free(&img);
