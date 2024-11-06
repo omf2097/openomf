@@ -681,7 +681,7 @@ static void load_har_portraits(scene *scene, melee_local *local) {
 
         // Copy the enabled image, and compress the colors to grayscale
         surface_create_from(&target->disabled, &target->enabled);
-        surface_convert_to_grayscale(&target->disabled, &pal, 0xD0, 0xDF);
+        surface_convert_to_grayscale(&target->disabled, &pal, 0xD0, 0xDF, 0);
     }
 }
 

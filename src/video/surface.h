@@ -75,8 +75,10 @@ void surface_compress_remap(surface *sur, int range_start, int range_end, int re
  * @param pal Palette to use.
  * @param range_start First grey palette color
  * @param range_end Last gray palette color
+ * @param ignore_below Leave indexes below this range alone
  */
-void surface_convert_to_grayscale(surface *sur, const vga_palette *pal, int range_start, int range_end);
+void surface_convert_to_grayscale(surface *sur, const vga_palette *pal, int range_start, int range_end,
+                                  int ignore_below);
 
 /**
  * Write surface to a PNG file.
