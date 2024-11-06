@@ -1022,3 +1022,25 @@ int game_state_clone(game_state *src, game_state *dst) {
 
     return 0;
 }
+
+bool is_netplay(game_state *gs) {
+    return game_state_get_player(gs, 0)->ctrl->type == CTRL_TYPE_NETWORK ||
+           game_state_get_player(gs, 1)->ctrl->type == CTRL_TYPE_NETWORK;
+}
+
+bool is_singleplayer(game_state *gs) {
+    return game_state_get_player(gs, 1)->ctrl->type == CTRL_TYPE_AI;
+}
+
+bool is_tournament(game_state *gs) {
+    return game_state_get_player(gs, 0)->chr;
+}
+
+bool is_demoplay(game_state *gs) {
+    return game_state_get_player(gs, 0)->ctrl->type == CTRL_TYPE_AI &&
+           game_state_get_player(gs, 1)->ctrl->type == CTRL_TYPE_AI;
+}
+
+bool is_twoplayer(game_state *gs) {
+    return !is_demoplay(gs) && !is_netplay(gs) && !is_singleplayer(gs);
+}
