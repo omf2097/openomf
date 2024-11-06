@@ -31,25 +31,40 @@ int har_screencaps_clone(har_screencaps *src, har_screencaps *dst) {
     return 1;
 }
 
-void har_screencaps_capture(har_screencaps *caps, object *obj, int id) {
-    if(caps->ok[id]) {
-        surface_free(&caps->cap[id]);
-        caps->ok[id] = false;
-    }
-
-    // Position
+static vec2i camera_position_for(object *obj) {
     vec2i size = object_get_size(obj);
     vec2i pos = object_get_pos(obj);
     int x_margin = (SCREENCAP_W - size.x) / 2;
     int y_margin = (SCREENCAP_H - size.y) / 2;
     int x_center = pos.x - size.x / 2;
     int y_center = (NATIVE_H - pos.y);
-    int x = clamp(x_center - x_margin, 0, NATIVE_W - SCREENCAP_W);
-    int y = clamp(y_center + y_margin, 0, NATIVE_H);
+
+    vec2i res;
+    res.x = clamp(x_center - x_margin, 0, NATIVE_W - SCREENCAP_W);
+    res.y = clamp(y_center + y_margin, 0, NATIVE_H);
+    return res;
+}
+
+void har_screencaps_capture(har_screencaps *caps, object *obj, object *obj2, int id) {
+    if(caps->ok[id]) {
+        surface_free(&caps->cap[id]);
+        caps->ok[id] = false;
+    }
+
+    // Position
+    vec2i pos = camera_position_for(obj);
+    vec2i size = {SCREENCAP_W, SCREENCAP_H};
+    if(obj2) {
+        // pan out when bots are apart
+        vec2i pos2 = camera_position_for(obj2);
+        size.x = abs(pos.x - pos2.x) + size.x;
+        size.y = SCREENCAP_H * size.x / SCREENCAP_W;
+        pos.x = min2(pos.x, pos2.x);
+        pos.y -= (size.y - SCREENCAP_H) / 2;
+    }
 
     // Capture
-    surface *cap = &caps->cap[id];
-    video_area_capture(cap, x, y, SCREENCAP_W, SCREENCAP_H);
+    video_area_capture(&caps->cap[id], pos.x, pos.y, size.x, size.y);
     caps->ok[id] = true;
 }
 

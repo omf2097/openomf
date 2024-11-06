@@ -237,10 +237,10 @@ void arena_screengrab_winner(scene *sc) {
     object *o1 = game_state_find_object(gs, game_state_get_player(gs, 0)->har_obj_id);
     har *h1 = object_get_userdata(o1);
     if(h1->state == STATE_VICTORY || h1->state == STATE_DONE) {
-        har_screencaps_capture(&game_state_get_player(gs, 0)->screencaps, o1, SCREENCAP_POSE);
+        har_screencaps_capture(&game_state_get_player(gs, 0)->screencaps, o1, NULL, SCREENCAP_POSE);
     } else {
         object *o2 = game_state_find_object(gs, game_state_get_player(gs, 0)->har_obj_id);
-        har_screencaps_capture(&game_state_get_player(gs, 1)->screencaps, o2, SCREENCAP_POSE);
+        har_screencaps_capture(&game_state_get_player(gs, 1)->screencaps, o2, NULL, SCREENCAP_POSE);
     }
 }
 

@@ -171,6 +171,7 @@ static void video_set_blend_mode(object_array_blend_mode request_mode) {
 void video_area_capture(surface *sur, int x, int y, int w, int h) {
     render_target_activate(g_video_state.target);
     unsigned char *buffer = omf_calloc(1, w * h);
+    glPixelStorei(GL_PACK_ALIGNMENT, 1);
     glReadPixels(x, y, w, h, GL_RED, GL_UNSIGNED_BYTE, buffer);
     surface_create_from_data_flip(sur, w, h, buffer);
     surface_set_transparency(sur, -1);
