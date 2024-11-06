@@ -282,6 +282,7 @@ void engine_run(engine_init_flags *init_flags) {
             // with the actual gameplay stuff.
             has_dynamic = dynamic_wait > game_state_ms_per_dyntick(gs);
             if(has_dynamic) {
+                vga_state_dynamic_tick();
                 game_state_dynamic_tick(gs, false);
                 dynamic_wait -= game_state_ms_per_dyntick(gs);
             }

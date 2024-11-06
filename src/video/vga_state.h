@@ -11,6 +11,7 @@ typedef void (*vga_palette_transform)(damage_tracker *damage, vga_palette *palet
 void vga_state_init(void);
 void vga_state_close(void);
 void vga_state_render(void);
+void vga_state_dynamic_tick(void);
 
 void vga_state_mark_palette_flushed(void);
 void vga_state_mark_remaps_flushed(void);

@@ -23,6 +23,7 @@ typedef struct vga_state {
     bool dirty_remaps;
     palette_transformer transformers[MAX_TRANSFORMER_COUNT];
     unsigned int transformer_count;
+    unsigned int transformers_applied;
 } vga_state;
 
 static vga_state state;
@@ -61,13 +62,24 @@ void vga_state_render(void) {
         for(unsigned int i = 0; i < state.transformer_count; i++) {
             state.transformers[i].callback(&damage_transformers, &state.current, state.transformers[i].userdata);
         }
-        state.transformer_count = 0;
+        state.transformers_applied = state.transformer_count;
 
         damage_combine(&state.dmg_current, &damage_transformers);
         // mark next frame's base as damaged in these transformers' absence
         damage_combine(&state.dmg_base, &damage_transformers);
 
         damage_copy(&state.dmg_previous, &state.dmg_current);
+    }
+}
+
+void vga_state_dynamic_tick(void) {
+    if(state.transformers_applied > 0) {
+        // if this assert fails, someone's sneaking transformers in at an awkard time,
+        // and this function needs to shrink the list rather than clear it.
+        assert(state.transformers_applied == state.transformer_count);
+
+        state.transformer_count = 0;
+        state.transformers_applied = 0;
     }
 }
 
