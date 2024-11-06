@@ -55,6 +55,9 @@ typedef struct game_state_t {
     int next_wait_ticks;
     int this_wait_ticks;
 
+    // Newsroom HAR screencaps
+    bool hide_ui;
+
     // For debugging, sets fastest possible mode :)
     int warp_speed;
 

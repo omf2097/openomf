@@ -1093,6 +1093,10 @@ int arena_event(scene *scene, SDL_Event *e) {
 }
 
 void arena_render_overlay(scene *scene) {
+    if(scene->gs->hide_ui) {
+        return;
+    }
+
     arena_local *local = scene_get_userdata(scene);
 
     // Render bars
