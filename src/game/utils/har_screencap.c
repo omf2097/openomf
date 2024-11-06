@@ -48,10 +48,11 @@ void har_screencaps_capture(har_screencaps *caps, object *obj, int id) {
     int y = clamp(y_center + y_margin, 0, NATIVE_H);
 
     // Capture
-    video_area_capture(&caps->cap[id], x, y, SCREENCAP_W, SCREENCAP_H);
+    surface *cap = &caps->cap[id];
+    video_area_capture(cap, x, y, SCREENCAP_W, SCREENCAP_H);
     caps->ok[id] = true;
 }
 
 void har_screencaps_compress(har_screencaps *caps, const vga_palette *pal, int id) {
-    surface_convert_to_grayscale(&caps->cap[id], pal, 0xD0, 0xDF);
+    surface_convert_to_grayscale(&caps->cap[id], pal, 0xD0, 0xDF, 0x60);
 }

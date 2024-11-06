@@ -387,6 +387,13 @@ int newsroom_create(scene *scene) {
     local->continue_dialog.userdata = scene;
     local->continue_dialog.clicked = newsroom_continue_dialog_clicked;
 
+    for(int i = 0; i < 2; i++) {
+        game_player *player = game_state_get_player(scene->gs, i);
+
+        // load the player's colors into the palette
+        palette_load_player_colors(&player->pilot->palette, i);
+    }
+
     // Set callbacks
     scene_set_userdata(scene, local);
     scene_set_input_poll_cb(scene, newsroom_input_tick);

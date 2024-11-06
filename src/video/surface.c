@@ -126,13 +126,18 @@ void surface_flatten_to_mask(surface *sur, uint8_t value) {
     sur->guid = guid++;
 }
 
-void surface_convert_to_grayscale(surface *sur, const vga_palette *pal, int range_start, int range_end) {
+void surface_convert_to_grayscale(surface *sur, const vga_palette *pal, int range_start, int range_end,
+                                  int ignore_below) {
     float r, g, b;
     uint8_t idx;
     unsigned char mapping[256];
 
     // Make a mapping for fast search.
     for(int i = 0; i < 256; i++) {
+        if(i < ignore_below) {
+            mapping[i] = i;
+            continue;
+        }
         r = pal->colors[i].r * 0.3;
         g = pal->colors[i].g * 0.59;
         b = pal->colors[i].b * 0.11;
