@@ -29,6 +29,8 @@ const char *sd_get_error(enum SD_ERRORCODE error_code) {
             return "File could not be unlinked";
         case SD_FAILURE:
             return "General failure";
+        case SD_AGAIN:
+            return "Function not finished, call it again";
     }
     abort();
 }

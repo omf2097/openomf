@@ -2,7 +2,6 @@
 #include "game/game_player.h"
 #include "game/game_state_type.h"
 #include "resources/af_loader.h"
-#include "resources/bk_loader.h"
 #include "resources/ids.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
@@ -47,6 +46,64 @@ int scene_create(scene *scene, game_state *gs, int scene_id) {
     scene->startup = NULL;
     scene->prio_override = NULL;
     scene->debug = NULL;
+
+    // Set base palette
+    vga_state_set_base_palette_from(bk_get_palette(scene->bk_data, 0));
+    vga_state_set_remaps_from(bk_get_remaps(scene->bk_data, 0));
+
+    // Set menu colors to the correct position
+    palette_set_menu_colors();
+
+    // Index 0 is always black.
+    vga_color c = {0, 0, 0};
+    vga_state_set_base_palette_index(0, &c);
+
+    // All done.
+    log_debug("Loaded scene %s (%s).", scene_get_name(scene_id), get_resource_name(resource_id));
+    return 0;
+}
+
+// Loads BK file etc.
+int scene_create_incremental(scene *scene, game_state *gs, int scene_id) {
+    if(scene_id == SCENE_NONE) {
+        return 1;
+    }
+
+    // Load BK
+    int resource_id = scene_to_resource(scene_id);
+    if(!scene->next_bk_data) {
+        scene->next_bk_data = omf_calloc(1, sizeof(bk_inc));
+    }
+    int ret = load_bk_file_incremental(scene->next_bk_data, resource_id);
+    if(ret != SD_SUCCESS && ret != SD_AGAIN) {
+        log_error("Unable to load scene %s (%s)!", scene_get_name(scene_id), get_resource_name(resource_id));
+        return ret;
+    } else if(ret == SD_AGAIN) {
+        // not done loading yet
+        return SD_AGAIN;
+    }
+    scene_free(scene);
+    scene->bk_data = scene->next_bk_data->bk;
+
+    log_debug("setting bk_data %p", scene->bk_data);
+    omf_free(scene->next_bk_data);
+    scene->id = scene_id;
+    scene->gs = gs;
+    scene->af_data[0] = NULL;
+    scene->af_data[1] = NULL;
+    scene->static_ticks_since_start = 0;
+
+    // Init functions
+    scene->userdata = NULL;
+    scene->free = NULL;
+    scene->event = NULL;
+    scene->render = NULL;
+    scene->render_overlay = NULL;
+    scene->dynamic_tick = NULL;
+    scene->static_tick = NULL;
+    scene->input_poll = NULL;
+    scene->startup = NULL;
+    scene->prio_override = NULL;
 
     // Set base palette
     vga_state_set_base_palette_from(bk_get_palette(scene->bk_data, 0));
@@ -223,6 +280,7 @@ void scene_free(scene *scene) {
     if(scene->free != NULL) {
         scene->free(scene);
     }
+    log_debug("freeing %p", scene->bk_data);
     bk_free(scene->bk_data);
     omf_free(scene->bk_data);
     if(scene->af_data[0]) {

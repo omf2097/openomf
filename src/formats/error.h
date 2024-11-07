@@ -28,6 +28,7 @@ enum SD_ERRORCODE
     SD_FILE_READ_ERROR,      ///< File could not be read
     SD_FILE_UNLINK_ERROR,    ///< File could not be unlinked
     SD_FAILURE,              ///< General failure
+    SD_AGAIN,                ///< Function isn't done, needs to be called again
 };
 
 /*! \brief Get text error for error ID

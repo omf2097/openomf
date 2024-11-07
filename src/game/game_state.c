@@ -542,8 +542,24 @@ void game_state_debug(game_state *gs) {
 
 int game_load_new(game_state *gs, int scene_id) {
     // Free old scene
-    scene_free(gs->sc);
-    omf_free(gs->sc);
+    // scene_free(gs->sc);
+    // omf_free(gs->sc);
+
+    // Initialize new scene with BK data etc.
+    // gs->sc = omf_calloc(1, sizeof(scene));
+    int ret = scene_create_incremental(gs->sc, gs, scene_id);
+
+    if(ret == SD_AGAIN) {
+        return SD_AGAIN;
+    }
+
+    if(ret) {
+        log_error("Error while loading scene %d: %d.", scene_id, ret);
+        goto error_0;
+    }
+
+    // Free texture items, we are going to create new ones.
+    video_signal_scene_change();
 
     // Remove old objects
     render_obj *robj;
@@ -557,18 +573,8 @@ int game_load_new(game_state *gs, int scene_id) {
         }
     }
 
-    // Free texture items, we are going to create new ones.
-    video_signal_scene_change();
-
     gs->this_id = scene_id;
     gs->next_id = scene_id;
-
-    // Initialize new scene with BK data etc.
-    gs->sc = omf_calloc(1, sizeof(scene));
-    if(scene_create(gs->sc, gs, scene_id)) {
-        log_error("Error while loading scene %d.", scene_id);
-        goto error_0;
-    }
 
     // Load scene specifics
     switch(scene_id) {
@@ -844,6 +850,9 @@ void game_state_merge_sounds(game_state *old, game_state *new) {
 
 // This function is always called with the same interval, and game speed does not affect it
 void game_state_static_tick(game_state *gs, bool replay) {
+    uint64_t ticks = SDL_GetTicks64();
+    uint64_t limit = game_state_ms_per_dyntick(gs) / 2;
+
     // Set scene crossfade values
     if(gs->this_wait_ticks > 0) {
         gs->this_wait_ticks--;
@@ -862,9 +871,20 @@ void game_state_static_tick(game_state *gs, bool replay) {
         }
 
         // Load up new scene
-        if(game_load_new(gs, gs->next_id)) {
+        int ret;
+        while((ret = game_load_new(gs, gs->next_id)) == SD_AGAIN) {
+            uint64_t now = SDL_GetTicks64();
+            if(now - ticks > limit) {
+                // taking too long for the dynamic tick time
+                break;
+            }
+        }
+        if(ret > 0 && ret != SD_AGAIN) {
             log_error("Error while loading new scene! bailing.");
             gs->run = 0;
+            return;
+        }
+        if(ret == SD_AGAIN) {
             return;
         }
         if(settings_get()->video.crossfade_on) {
