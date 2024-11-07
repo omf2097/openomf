@@ -650,18 +650,6 @@ void game_state_static_tick(game_state *gs, bool replay) {
         gs->next_wait_ticks--;
     }
 
-    // Tick controllers
-    game_state_tick_controllers(gs);
-
-    // Call static ticks for scene
-    scene_static_tick(gs->sc, game_state_is_paused(gs));
-
-    // Call static tick functions
-    game_state_call_tick(gs, TICK_STATIC);
-}
-
-// This function is called when the game speed requires it
-void game_state_dynamic_tick(game_state *gs, bool replay) {
     // We want to load another scene
     if(gs->this_id != gs->next_id && (gs->next_wait_ticks <= 1 || !settings_get()->video.crossfade_on)) {
         // If this is the end, set run to 0 so that engine knows to close here
@@ -685,6 +673,18 @@ void game_state_dynamic_tick(game_state *gs, bool replay) {
         }
     }
 
+    // Tick controllers
+    game_state_tick_controllers(gs);
+
+    // Call static ticks for scene
+    scene_static_tick(gs->sc, game_state_is_paused(gs));
+
+    // Call static tick functions
+    game_state_call_tick(gs, TICK_STATIC);
+}
+
+// This function is called when the game speed requires it
+void game_state_dynamic_tick(game_state *gs, bool replay) {
     // Change the screen shake value downwards
     if(gs->screen_shake_horizontal > 0 && !gs->paused) {
         gs->screen_shake_horizontal--;
