@@ -193,6 +193,8 @@ int sd_bk_pop_palette(sd_bk_file *bk);
  */
 vga_palette *sd_bk_get_palette(const sd_bk_file *bk, int index);
 
+int sd_bk_load_incremental(sd_bk_file *bk, sd_reader *r);
+
 /*! \brief Load .BK file
  *
  * Loads the given BK file to memory. The structure must be initialized with sd_bk_create()

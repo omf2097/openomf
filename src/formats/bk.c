@@ -117,7 +117,7 @@ int sd_bk_load_incremental(sd_bk_file *bk, sd_reader *r) {
                 return SD_AGAIN;
             }
             if(!sd_reader_ok(r)) {
-                // is this an error?
+                // TODO is this an error?
                 return SD_INVALID_INPUT;
             }
 
@@ -184,7 +184,6 @@ int sd_bk_load(sd_bk_file *bk, const char *filename) {
     while((ret = sd_bk_load_incremental(bk, r)) == SD_AGAIN) {
     }
 
-exit_0:
     sd_reader_close(r);
     return ret;
 }
