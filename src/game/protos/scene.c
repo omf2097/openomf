@@ -81,9 +81,10 @@ int scene_create_incremental(scene *scene, game_state *gs, int scene_id) {
         // not done loading yet
         return SD_AGAIN;
     }
-    bk_free(scene->bk_data);
     scene_free(scene);
     scene->bk_data = scene->next_bk_data->bk;
+
+    DEBUG("setting bk_data %p", scene->bk_data);
     omf_free(scene->next_bk_data);
     scene->id = scene_id;
     scene->gs = gs;
@@ -266,6 +267,7 @@ void scene_free(scene *scene) {
     if(scene->free != NULL) {
         scene->free(scene);
     }
+    DEBUG("freeing %p", scene->bk_data);
     bk_free(scene->bk_data);
     omf_free(scene->bk_data);
     if(scene->af_data[0]) {

@@ -457,11 +457,6 @@ int game_load_new(game_state *gs, int scene_id) {
     // Free texture items, we are going to create new ones.
     video_reset_atlas();
 
-    if(scene_create(gs->sc, gs, scene_id)) {
-        PERROR("Error while loading scene %d.", scene_id);
-        goto error_0;
-    }
-
     // Remove old objects
     render_obj *robj;
     iterator it;
