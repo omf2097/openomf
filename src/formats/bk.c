@@ -93,13 +93,14 @@ void sd_bk_postprocess(sd_bk_file *bk) {
 }
 
 int sd_bk_load_incremental(sd_bk_file *bk, sd_reader *r) {
+    int ret = SD_SUCCESS;
     switch(bk->load_state) {
         case BK_LOAD_INIT:
             // Header
             bk->file_id = sd_read_udword(r);
             bk->unknown_a = sd_read_ubyte(r);
-            img_w = sd_read_uword(r);
-            img_h = sd_read_uword(r);
+            uint16_t img_w = sd_read_uword(r);
+            uint16_t img_h = sd_read_uword(r);
 
             // Allocate backgroun image
             bk->background = omf_calloc(1, sizeof(sd_vga_image));
@@ -110,7 +111,7 @@ int sd_bk_load_incremental(sd_bk_file *bk, sd_reader *r) {
             return SD_AGAIN;
         case BK_LOAD_ANIMS:
             sd_skip(r, 4); // offset of next animation
-            animno = sd_read_ubyte(r);
+            int animno = sd_read_ubyte(r);
             if(animno >= MAX_BK_ANIMS) {
                 bk->load_state = BK_LOAD_BACKGROUND;
                 return SD_AGAIN;
@@ -159,14 +160,14 @@ int sd_bk_load_incremental(sd_bk_file *bk, sd_reader *r) {
             sd_bk_postprocess(bk);
             bk->load_state = BK_LOAD_DONE;
             return SD_SUCCESS;
+        case BK_LOAD_DONE:
+            return SD_SUCCESS;
     }
     // Should never happen
     return SD_INVALID_INPUT;
 }
 
 int sd_bk_load(sd_bk_file *bk, const char *filename) {
-    uint16_t img_w, img_h;
-    uint8_t animno = 0;
     sd_reader *r;
     int ret = SD_SUCCESS;
 
@@ -182,63 +183,6 @@ int sd_bk_load(sd_bk_file *bk, const char *filename) {
 
     while((ret = sd_bk_load_incremental(bk, r)) == SD_AGAIN) {
     }
-
-    if (ret != SD_SUCCESS) {
-        goto exit_0;
-    }
-
-    /*
-    // Header
-    bk->file_id = sd_read_udword(r);
-    bk->unknown_a = sd_read_ubyte(r);
-    img_w = sd_read_uword(r);
-    img_h = sd_read_uword(r);
-
-    // Read animations
-    while(1) {
-        sd_skip(r, 4); // offset of next animation
-        animno = sd_read_ubyte(r);
-        if(animno >= MAX_BK_ANIMS || !sd_reader_ok(r)) {
-            break;
-        }
-
-        // Initialize animation
-        bk->anims[animno] = omf_calloc(1, sizeof(sd_bk_anim));
-        if((ret = sd_bk_anim_create(bk->anims[animno])) != SD_SUCCESS) {
-            goto exit_0;
-        }
-        if((ret = sd_bk_anim_load(r, bk->anims[animno])) != SD_SUCCESS) {
-            goto exit_0;
-        }
-    }
-
-    // Read background image
-    bk->background = omf_calloc(1, sizeof(sd_vga_image));
-    if((ret = sd_vga_image_create(bk->background, img_w, img_h)) != SD_SUCCESS) {
-        goto exit_0;
-    }
-    int bsize = img_w * img_h;
-    sd_read_buf(r, bk->background->data, bsize);
-
-    // Read palettes and their remaps
-    bk->palette_count = sd_read_ubyte(r);
-    for(uint8_t i = 0; i < bk->palette_count; i++) {
-        bk->palettes[i] = omf_malloc(sizeof(vga_palette));
-        if((ret = palette_load(r, bk->palettes[i])) != SD_SUCCESS) {
-            goto exit_0;
-        }
-        bk->remaps[i] = omf_malloc(sizeof(vga_remap_tables));
-        if((ret = palette_remaps_load(r, bk->remaps[i])) != SD_SUCCESS) {
-            goto exit_0;
-        }
-    }
-
-    // Read soundtable
-    sd_read_buf(r, bk->soundtable, 30);
-
-    // Fix missing sprites
-    sd_bk_postprocess(bk);
-    */
 
 exit_0:
     sd_reader_close(r);
