@@ -89,6 +89,7 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
     obj->collide = NULL;
     obj->finish = NULL;
     obj->move = NULL;
+    obj->palette_transform = NULL;
     obj->debug = NULL;
     obj->clone = NULL;
     obj->clone_free = NULL;
@@ -143,11 +144,12 @@ void object_set_playback_direction(object *obj, int dir) {
 }
 
 void object_scenewide_palette_transform(damage_tracker *damage, vga_palette *pal, void *userdata) {
+    object *obj = userdata;
     float u, k, step, bp;
     uint8_t m;
     vga_color ref;
     vga_index start, end;
-    player_sprite_state *state = userdata;
+    player_sprite_state *state = &obj->sprite_state;
 
     // Make sure stuff seems legit.
     assert(state->pal_start_index < 256);
@@ -255,12 +257,6 @@ void object_dynamic_tick(object *obj) {
     if(obj->sprite_state.screen_shake_horizontal > 0) {
         obj->gs->screen_shake_horizontal = obj->sprite_state.screen_shake_horizontal * 4;
         obj->sprite_state.screen_shake_horizontal = 0;
-    }
-
-    if(obj->sprite_state.pal_tricks_off) { // BPO tag is on
-        vga_state_enable_palette_transform(object_palette_copy_transform, obj);
-    } else if(obj->sprite_state.pal_entry_count > 0 && obj->sprite_state.duration > 0) { // BPO tag is off
-        vga_state_enable_palette_transform(object_scenewide_palette_transform, &obj->sprite_state);
     }
 }
 
@@ -458,6 +454,18 @@ void object_render_shadow(object *obj) {
     }
 }
 
+void object_palette_transform(object *obj) {
+    if(obj->palette_transform != NULL) {
+        vga_state_enable_palette_transform(obj->palette_transform, obj);
+    }
+
+    if(obj->sprite_state.pal_tricks_off) { // BPO tag is on
+        vga_state_enable_palette_transform(object_palette_copy_transform, obj);
+    } else if(obj->sprite_state.pal_entry_count > 0 && obj->sprite_state.duration > 0) { // BPO tag is off
+        vga_state_enable_palette_transform(object_scenewide_palette_transform, obj);
+    }
+}
+
 int object_act(object *obj, int action) {
     if(obj->act != NULL) {
         int res = obj->act(obj, action);
@@ -482,8 +490,6 @@ void object_free(object *obj) {
     if(obj == NULL) {
         return;
     }
-    vga_state_disable_palette_transform(object_palette_copy_transform, obj);
-    vga_state_disable_palette_transform(object_scenewide_palette_transform, &obj->sprite_state);
     if(obj->free != NULL) {
         obj->free(obj);
     }
@@ -640,6 +646,9 @@ void object_set_finish_cb(object *obj, object_finish_cb cbfunc) {
 }
 void object_set_move_cb(object *obj, object_move_cb cbfunc) {
     obj->move = cbfunc;
+}
+void object_set_palette_transform_cb(object *obj, vga_palette_transform palette_transform_cb) {
+    obj->palette_transform = palette_transform_cb;
 }
 void object_set_debug_cb(object *obj, object_debug_cb cbfunc) {
     obj->debug = cbfunc;

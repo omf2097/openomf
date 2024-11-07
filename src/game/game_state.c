@@ -406,6 +406,21 @@ void game_state_render(game_state *gs) {
     scene_render_overlay(gs->sc);
 }
 
+void game_state_palette_transform(game_state *gs) {
+    // object transforms
+    render_obj *robj;
+    iterator it;
+    vector_iter_begin(&gs->objects, &it);
+    while((robj = iter_next(&it)) != NULL) {
+        object_palette_transform(robj->obj);
+    }
+
+    // Cross-fade effect
+    if(gs->next_wait_ticks > 0 || gs->this_wait_ticks > 0) {
+        vga_state_enable_palette_transform(cross_fade_transform, gs);
+    }
+}
+
 void game_state_debug(game_state *gs) {
     // If we are in debug mode, handle HAR debug layers
 #ifdef DEBUGMODE
@@ -668,11 +683,6 @@ void game_state_dynamic_tick(game_state *gs, bool replay) {
             gs->this_wait_ticks = 0;
             gs->next_wait_ticks = 0;
         }
-    }
-
-    // Cross-fade effect
-    if(gs->next_wait_ticks > 0 || gs->this_wait_ticks > 0) {
-        vga_state_enable_palette_transform(cross_fade_transform, gs);
     }
 
     // Change the screen shake value downwards
