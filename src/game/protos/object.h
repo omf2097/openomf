@@ -9,6 +9,7 @@
 #include "utils/random.h"
 #include "utils/vec.h"
 #include "video/surface.h"
+#include "video/vga_state.h"
 
 #define OBJECT_DEFAULT_LAYER 0x01
 #define OBJECT_NO_GROUP -1
@@ -132,6 +133,7 @@ struct object_t {
     object_collide_cb collide;
     object_finish_cb finish;
     object_move_cb move;
+    vga_palette_transform palette_transform;
     object_debug_cb debug;
     object_clone_cb clone;
     object_clone_free_cb clone_free;
@@ -141,6 +143,7 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel);
 void object_create_static(object *obj, game_state *gs);
 void object_render(object *obj);
 void object_render_shadow(object *obj);
+void object_palette_transform(object *obj);
 void object_debug(object *obj);
 void object_static_tick(object *obj);
 void object_dynamic_tick(object *obj);
@@ -196,6 +199,7 @@ void object_set_static_tick_cb(object *obj, object_tick_cb cbfunc);
 void object_set_collide_cb(object *obj, object_collide_cb cbfunc);
 void object_set_finish_cb(object *obj, object_finish_cb cbfunc);
 void object_set_move_cb(object *obj, object_move_cb cbfunc);
+void object_set_palette_transform_cb(object *obj, vga_palette_transform palette_transform_cb);
 void object_set_debug_cb(object *obj, object_debug_cb cbfunc);
 
 void object_set_repeat(object *obj, int repeat);

@@ -1,5 +1,6 @@
 #include "video/vga_state.h"
 
+#include "game/game_state.h"
 #include "utils/miscmath.h"
 #include "utils/png_writer.h"
 #include <assert.h>
@@ -19,6 +20,7 @@ typedef struct vga_state {
     damage_tracker dmg_base;
     damage_tracker dmg_previous;
     damage_tracker dmg_current;
+    damage_tracker dmg_transform;
     vga_remap_tables remaps;
     bool dirty_remaps;
     palette_transformer transformers[MAX_TRANSFORMER_COUNT];
@@ -32,6 +34,7 @@ void vga_state_init(void) {
     damage_reset(&state.dmg_base);
     damage_reset(&state.dmg_previous);
     damage_reset(&state.dmg_current);
+    damage_reset(&state.dmg_transform);
 }
 
 void vga_state_close(void) {
@@ -47,6 +50,14 @@ void vga_state_pop_palette(void) {
     damage_set_range(&state.dmg_base, 0, 255);
 }
 
+void vga_state_clear_palette_transform(void) {
+    if(state.transformer_count > 0) {
+        // last frame's transform damage needs to be overwritten from base palette
+        damage_combine(&state.dmg_base, &state.dmg_transform);
+    }
+    state.transformer_count = 0;
+}
+
 void vga_state_render(void) {
     // We only want to render new state if something has changed. Otherwise, no-op.
     if(state.dmg_base.dirty || state.transformer_count) {
@@ -54,12 +65,13 @@ void vga_state_render(void) {
         memcpy(&state.current, &state.base, sizeof(vga_palette));
         damage_copy(&state.dmg_current, &state.dmg_base);
         damage_reset(&state.dmg_base);
+        damage_reset(&state.dmg_transform);
 
         // Run transformers on top. These may modify the current palette and change dirtiness state.
         for(unsigned int i = 0; i < state.transformer_count; i++) {
-            state.transformers[i].callback(&state.dmg_current, &state.current, state.transformers[i].userdata);
+            state.transformers[i].callback(&state.dmg_transform, &state.current, state.transformers[i].userdata);
         }
-        state.transformer_count = 0;
+        damage_combine(&state.dmg_current, &state.dmg_transform);
         damage_copy(&state.dmg_previous, &state.dmg_current);
     }
 }
@@ -150,28 +162,18 @@ void vga_state_copy_base_palette_range(vga_index dst, vga_index src, vga_index c
 }
 
 void vga_state_enable_palette_transform(vga_palette_transform transform_callback, void *userdata) {
+#ifndef NDEBUG
     for(unsigned int i = 0; i < state.transformer_count; i++) {
         if(state.transformers[i].callback == transform_callback && state.transformers[i].userdata == userdata) {
-            // don't push duplicates
-            return;
+            assert(!"duplicate transform");
         }
     }
+#endif
 
     assert(state.transformer_count < MAX_TRANSFORMER_COUNT - 1);
     state.transformers[state.transformer_count].callback = transform_callback;
     state.transformers[state.transformer_count].userdata = userdata;
     state.transformer_count++;
-}
-
-bool vga_state_disable_palette_transform(vga_palette_transform transform_callback, void *userdata) {
-    for(unsigned int i = 0; i < state.transformer_count; i++) {
-        if(state.transformers[i].callback == transform_callback && state.transformers[i].userdata == userdata) {
-            memmove(&state.transformers[i], &state.transformers[i + 1],
-                    sizeof(palette_transformer) * (--state.transformer_count - i));
-            return true;
-        }
-    }
-    return false;
 }
 
 /**

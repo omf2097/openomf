@@ -34,7 +34,6 @@ void har_spawn_scrap(object *obj, vec2i pos, int amount);
 void har_palette_transform(damage_tracker *damage, vga_palette *pal, void *obj);
 
 void har_free(object *obj) {
-    vga_state_disable_palette_transform(har_palette_transform, obj);
     har *h = object_get_userdata(obj);
     list_free(&h->har_hooks);
 #ifdef DEBUGMODE
@@ -1329,8 +1328,10 @@ void har_tick(object *obj) {
     controller *ctrl = game_player_get_ctrl(game_state_get_player(obj->gs, h->player_id));
 
     if(h->p_ticks_left > 0) {
-        vga_state_enable_palette_transform(har_palette_transform, obj);
+        object_set_palette_transform_cb(obj, har_palette_transform);
         h->p_ticks_left--;
+    } else {
+        object_set_palette_transform_cb(obj, NULL);
     }
 
     if(h->in_stasis_ticks > 0) {
