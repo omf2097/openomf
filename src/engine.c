@@ -289,7 +289,6 @@ void engine_run(engine_init_flags *init_flags) {
 
         // Do the actual video rendering jobs
         if(enable_screen_updates) {
-            vga_state_clear_palette_transform();
             game_state_palette_transform(gs);
 
             vga_state_render();
