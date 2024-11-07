@@ -18,11 +18,21 @@
 #define MAX_BK_ANIMS 50   ///< Amount of animations in the BK file. This is fixed!
 #define MAX_BK_PALETTES 8 ///< Maximum amount of palettes allowed in BK file.
 
+typedef enum {
+    BK_LOAD_INIT = 0,
+    BK_LOAD_ANIMS,
+    BK_LOAD_BACKGROUND,
+    BK_LOAD_PALETTES,
+    BK_LOAD_POSTPROCESS,
+    BK_LOAD_DONE,
+} bk_load_state;
+
 /*! \brief BK file information
  *
  * Contains information about an OMF:2097 scene. Eg. arenas, menus, intro, etc.
  */
 typedef struct {
+    bk_load_state load_state;
     uint32_t file_id;      ///< File ID
     uint8_t unknown_a;     ///< Unknown value
     uint8_t palette_count; ///< Number of palettes in the BK file
