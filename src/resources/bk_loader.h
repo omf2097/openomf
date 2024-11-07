@@ -1,9 +1,9 @@
 #ifndef BK_LOADER_H
 #define BK_LOADER_H
 
-#include "resources/bk.h"
 #include "formats/bk.h"
 #include "formats/error.h"
+#include "resources/bk.h"
 
 /*typedef enum {
     BK_LOADER_INIT,

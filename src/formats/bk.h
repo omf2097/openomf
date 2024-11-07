@@ -18,7 +18,8 @@
 #define MAX_BK_ANIMS 50   ///< Amount of animations in the BK file. This is fixed!
 #define MAX_BK_PALETTES 8 ///< Maximum amount of palettes allowed in BK file.
 
-typedef enum {
+typedef enum
+{
     BK_LOAD_INIT = 0,
     BK_LOAD_ANIMS,
     BK_LOAD_BACKGROUND,

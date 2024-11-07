@@ -9,8 +9,8 @@
 #include "game/utils/serial.h"
 #include "game/utils/ticktimer.h"
 #include "resources/bk.h"
-#include "video/surface.h"
 #include "resources/bk_loader.h"
+#include "video/surface.h"
 #include <SDL.h>
 
 typedef struct scene_t scene;

@@ -49,7 +49,7 @@ int load_bk_file_incremental(bk_inc *b, int id) {
             return bk_inc_create(b, id);
         case 1:
             ret = sd_bk_load_incremental(&b->sd_bk, b->r);
-            if (ret == SD_SUCCESS) {
+            if(ret == SD_SUCCESS) {
                 b->state = 2;
                 return SD_AGAIN;
             }

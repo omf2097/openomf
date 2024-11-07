@@ -77,7 +77,7 @@ int scene_create_incremental(scene *scene, game_state *gs, int scene_id) {
     if(ret != SD_SUCCESS && ret != SD_AGAIN) {
         PERROR("Unable to load scene %s (%s)!", scene_get_name(scene_id), get_resource_name(resource_id));
         return ret;
-    } else if (ret == SD_AGAIN) {
+    } else if(ret == SD_AGAIN) {
         // not done loading yet
         return SD_AGAIN;
     }
@@ -118,7 +118,6 @@ int scene_create_incremental(scene *scene, game_state *gs, int scene_id) {
     DEBUG("Loaded scene %s (%s).", scene_get_name(scene_id), get_resource_name(resource_id));
     return 0;
 }
-
 
 int scene_load_har(scene *scene, int player_id) {
     game_player *player = game_state_get_player(scene->gs, player_id);

@@ -437,12 +437,12 @@ void game_state_debug(game_state *gs) {
 
 int game_load_new(game_state *gs, int scene_id) {
     // Free old scene
-    //scene_free(gs->sc);
-    //omf_free(gs->sc);
+    // scene_free(gs->sc);
+    // omf_free(gs->sc);
 
     // Initialize new scene with BK data etc.
-    //gs->sc = omf_calloc(1, sizeof(scene));
-    int ret =scene_create_incremental(gs->sc, gs, scene_id);
+    // gs->sc = omf_calloc(1, sizeof(scene));
+    int ret = scene_create_incremental(gs->sc, gs, scene_id);
 
     if(ret == SD_AGAIN) {
         DEBUG("scene still loading");
@@ -473,8 +473,6 @@ int game_load_new(game_state *gs, int scene_id) {
             vector_delete(&gs->objects, &it);
         }
     }
-
-
 
     // Load scene specifics
     switch(scene_id) {
@@ -681,7 +679,7 @@ void game_state_static_tick(game_state *gs, bool replay) {
             PERROR("Error while loading new scene! bailing.");
             gs->run = 0;
             return;
-        } 
+        }
         if(settings_get()->video.crossfade_on) {
             gs->this_wait_ticks = FRAME_WAIT_TICKS;
         } else {
