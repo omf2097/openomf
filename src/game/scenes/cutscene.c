@@ -151,13 +151,15 @@ int cutscene_create(scene *scene) {
         case SCENE_NORTHAM:
         case SCENE_KATUSHAI:
         case SCENE_WAR:
-        case SCENE_WORLD:
-            audio_play_music(PSM_END);
-
             // Load colors for the HAR -- note that cutscenes use an expanded HAR color slides.
+            // World championship does not use these.
             palette_set_player_expanded_color(p1->chr->pilot.color_3, PRIMARY);
             palette_set_player_expanded_color(p1->chr->pilot.color_2, SECONDARY);
             palette_set_player_expanded_color(p1->chr->pilot.color_1, TERTIARY);
+
+            // Fall through!
+        case SCENE_WORLD:
+            audio_play_music(PSM_END);
 
             // load all the animations, in order
             // including the one for our HAR
