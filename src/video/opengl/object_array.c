@@ -13,7 +13,6 @@
 #define OBJ_BYTES (sizeof(object_data) * 4)
 #define MAX_FANS 2048
 #define VBO_SIZE (MAX_FANS * OBJ_BYTES)
-#define BUFFER_COUNT 2
 
 typedef struct {
     GLfloat x;
@@ -31,8 +30,8 @@ typedef struct {
 static_assert(4 == alignof(object_data), "object_data alignment is expected to be 4");
 
 typedef struct object_array {
-    GLuint vbo_ids[BUFFER_COUNT];
-    GLuint vao_ids[BUFFER_COUNT];
+    GLuint vbo_id;
+    GLuint vao_id;
     GLfloat src_w; // Source texture width
     GLfloat src_h; // Source texture height
     int vbo_flip;
@@ -76,10 +75,8 @@ object_array *object_array_create(GLfloat src_w, GLfloat src_h) {
     array->mapping = NULL;
     array->src_w = src_w;
     array->src_h = src_h;
-    for(int i = 0; i < BUFFER_COUNT; i++) {
-        array->vbo_ids[i] = vbo_create(VBO_SIZE);
-        array->vao_ids[i] = vao_create();
-    }
+    array->vbo_id = vbo_create(VBO_SIZE);
+    array->vao_id = vao_create();
     setup_vao_layout();
     return array;
 }
@@ -87,10 +84,8 @@ object_array *object_array_create(GLfloat src_w, GLfloat src_h) {
 void object_array_free(object_array **array) {
     object_array *obj = *array;
     if(obj != NULL) {
-        for(int i = 0; i < BUFFER_COUNT; i++) {
-            vbo_free(obj->vbo_ids[i]);
-            vao_free(obj->vao_ids[i]);
-        }
+        vbo_free(obj->vbo_id);
+        vao_free(obj->vao_id);
         omf_free(obj);
         *array = NULL;
     }
@@ -101,14 +96,12 @@ void object_array_prepare(object_array *array) {
         PERROR("VBO is already mapped! Remember to call object_array_finish.");
         return;
     }
-    array->vbo_flip = (array->vbo_flip + 1) % BUFFER_COUNT;
-    array->mapping = vbo_map(array->vbo_ids[array->vbo_flip], VBO_SIZE);
-    vao_use(array->vao_ids[array->vbo_flip]);
+    array->mapping = vbo_map(array->vbo_id, VBO_SIZE);
     array->item_count = 0;
 }
 
 void object_array_finish(object_array *array) {
-    vbo_unmap(array->vbo_ids[array->vbo_flip], array->item_count * OBJ_BYTES);
+    vbo_unmap(array->vbo_id, array->item_count * OBJ_BYTES);
     array->mapping = NULL;
 }
 
