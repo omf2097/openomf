@@ -40,7 +40,7 @@ if(MSVC)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /permissive- /W4")
 else()
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wno-unused-parameter -Wformat -pedantic -Wvla")
-    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -ggdb -DDEBUGMODE -Werror -fno-omit-frame-pointer")
+    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -ggdb -Werror -fno-omit-frame-pointer")
     set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -g -O2 -fno-omit-frame-pointer -DNDEBUG")
     set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O2 -DNDEBUG")
     set(CMAKE_C_FLAGS_MINSIZEREL "${CMAKE_C_FLAGS_MINSIZEREL} -Os -DNDEBUG")
@@ -204,6 +204,7 @@ include_directories(${COREINCS})
 # this can then be reused in tests and main executable to speed things up
 add_library(openomf_core OBJECT ${OPENOMF_SRC})
 target_link_libraries(openomf_core PRIVATE ${XMP_LIBRARY})
+target_compile_definitions(openomf_core PUBLIC "$<$<CONFIG:Debug>:DEBUGMODE>")
 omf_target_precompile_headers(openomf_core PUBLIC
     "<SDL.h>"
     "<enet/enet.h>"
