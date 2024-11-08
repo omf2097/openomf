@@ -154,13 +154,17 @@ int cutscene_create(scene *scene) {
         case SCENE_WORLD:
             audio_play_music(PSM_END);
 
-            palette_load_player_cutscene_colors(&p1->pilot->palette);
+            // Load colors for the HAR -- note that cutscenes use an expanded HAR color slides.
+            palette_set_player_expanded_color(p1->chr->pilot.color_3, PRIMARY);
+            palette_set_player_expanded_color(p1->chr->pilot.color_2, SECONDARY);
+            palette_set_player_expanded_color(p1->chr->pilot.color_1, TERTIARY);
 
             // load all the animations, in order
             // including the one for our HAR
             for(int i = 0; i < 256; i++) {
                 if(i >= 10 && i <= 20 && i != 10 + p1->pilot->har_id) {
                     continue;
+
                 }
                 bk_info *bki = bk_get_info(scene->bk_data, i);
                 if(bki) {
