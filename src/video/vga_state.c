@@ -1,10 +1,8 @@
 #include "video/vga_state.h"
 
 #include "game/game_state.h"
-#include "utils/miscmath.h"
 #include "utils/png_writer.h"
 #include <assert.h>
-#include <string.h>
 
 #define MAX_TRANSFORMER_COUNT 8
 
@@ -49,25 +47,27 @@ void vga_state_pop_palette(void) {
 }
 
 void vga_state_render(void) {
+    damage_tracker tmp;
+
     // We only want to render new state if something has changed. Otherwise, no-op.
-    if(state.dmg_base.dirty || state.transformer_count) {
+    if(state.dmg_previous.dirty || state.dmg_base.dirty || state.transformer_count) {
         // Copy base palette as the starting state, along with dirtiness data.
         memcpy(&state.current, &state.base, sizeof(vga_palette));
-        damage_copy(&state.dmg_current, &state.dmg_base);
+        damage_copy(&tmp, &state.dmg_base);
         damage_reset(&state.dmg_base);
 
         // Run transformers on top. These may modify the current palette and change dirtiness state.
         for(unsigned int i = 0; i < state.transformer_count; i++) {
-            state.transformers[i].callback(&state.dmg_current, &state.current, state.transformers[i].userdata);
+            state.transformers[i].callback(&tmp, &state.current, state.transformers[i].userdata);
         }
-        damage_copy(&state.dmg_previous, &state.dmg_current);
+        damage_copy(&state.dmg_previous, &tmp);
+        damage_copy(&state.dmg_current, &tmp);
         state.transformer_count = 0;
     }
 }
 
 void vga_state_mark_palette_flushed(void) {
     damage_reset(&state.dmg_current);
-    damage_reset(&state.dmg_previous);
 }
 
 void vga_state_mark_remaps_flushed(void) {
@@ -91,10 +91,10 @@ bool vga_state_is_palette_dirty(vga_palette **palette, vga_index *dirty_range_st
     if(state.dmg_current.dirty) {
         *palette = &state.current;
         if(dirty_range_start != NULL) {
-            *dirty_range_start = min2(state.dmg_current.dirty_range_start, state.dmg_previous.dirty_range_start);
+            *dirty_range_start = state.dmg_current.dirty_range_start;
         }
         if(dirty_range_end != NULL) {
-            *dirty_range_end = max2(state.dmg_current.dirty_range_end, state.dmg_previous.dirty_range_end);
+            *dirty_range_end = state.dmg_current.dirty_range_end;
         }
         return true;
     }
