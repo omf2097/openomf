@@ -207,6 +207,10 @@ void video_render_finish_offscreen(void) {
     activate_program(g_video_state.palette_prog_id);
     render_target_activate(g_video_state.target);
 
+#if DEBUGMODE
+    glClear(GL_COLOR_BUFFER_BIT);
+#endif
+
     object_array_blend_mode mode;
     while(object_array_get_batch(g_video_state.objects, &batch, &mode)) {
         video_set_blend_mode(mode);
