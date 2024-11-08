@@ -1,12 +1,11 @@
 #include "engine.h"
 #include "audio/audio.h"
 #include "console/console.h"
-#include "controller/controller.h"
 #include "formats/altpal.h"
 #include "game/game_player.h"
 #include "game/game_state.h"
-#include "game/gui/text_render.h"
 #include "game/utils/settings.h"
+#include "game/fps_counter.h"
 #include "resources/languages.h"
 #include "resources/sounds_loader.h"
 #include "utils/allocator.h"
@@ -25,9 +24,11 @@ static int run = 0;
 static int start_timeout = 30;
 static int enable_screen_updates = 1;
 static int debug_palette_number = 0;
+static bool render_fps = false;
 
 int engine_init(void) {
     settings *setting = settings_get();
+    fps_counter_init();
 
     int w = setting->video.screen_w;
     int h = setting->video.screen_h;
@@ -140,9 +141,9 @@ void engine_run(engine_init_flags *init_flags) {
     }
 
     // Game loop
-    uint64_t frame_start = SDL_GetTicks64(); // Set game tick timer
-    int dynamic_wait = 0;
-    int static_wait = 0;
+    uint64_t frame_start = SDL_GetPerformanceCounter(); // Set game tick timer
+    double dynamic_wait = 0;
+    double static_wait = 0;
     while(run && game_state_is_running(gs)) {
         // Handle events
         int check_fs;
@@ -159,20 +160,23 @@ void engine_run(engine_init_flags *init_flags) {
                     if(e.key.keysym.sym == SDLK_F2) {
                         save_palette_shot();
                     }
+                    if(e.key.keysym.sym == SDLK_F5) {
+                        visual_debugger = !visual_debugger;
+                    }
+                    if(e.key.keysym.sym == SDLK_F6) {
+                        debugger_render = !debugger_render;
+                    }
+                    if(e.key.keysym.sym == SDLK_F8) {
+                        render_fps = !render_fps;
+                    }
                     if(e.key.keysym.sym == SDLK_F9) {
                         video_draw_atlas(true);
                     }
                     if(e.key.keysym.sym == SDLK_F10) {
                         video_draw_atlas(false);
                     }
-                    if(e.key.keysym.sym == SDLK_F5) {
-                        visual_debugger = !visual_debugger;
-                    }
                     if(e.key.keysym.sym == SDLK_SPACE) {
                         debugger_proceed = 1;
-                    }
-                    if(e.key.keysym.sym == SDLK_F6) {
-                        debugger_render = !debugger_render;
                     }
                     break;
                 case SDL_MOUSEMOTION:
@@ -252,11 +256,14 @@ void engine_run(engine_init_flags *init_flags) {
         }
 
         // Render scene
-        uint64_t frame_dt = SDL_GetTicks64() - frame_start;
-        frame_start = SDL_GetTicks64();
+        uint64_t frame_dt = SDL_GetPerformanceCounter() - frame_start;
+        frame_start = SDL_GetPerformanceCounter();
+        double seconds = (double)frame_dt / (double)SDL_GetPerformanceFrequency();
+        double millis = 1000.0 * seconds;
+        fps_counter_add_measurement(seconds);
         if(!visual_debugger) {
-            dynamic_wait += frame_dt;
-            static_wait += frame_dt;
+            dynamic_wait += millis;
+            static_wait += millis;
         } else if(debugger_proceed) {
             dynamic_wait += 20;
             static_wait += 20;
@@ -295,6 +302,9 @@ void engine_run(engine_init_flags *init_flags) {
             vga_state_render();
             video_render_prepare();
             game_state_render(gs);
+            if (render_fps) {
+                fps_counter_render();
+            }
             if(debugger_render) {
                 game_state_debug(gs);
             }
