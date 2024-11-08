@@ -185,6 +185,13 @@ void newsroom_overlay_render(scene *scene) {
         text_render(&tconf_yellow, TEXT_DEFAULT, 34, 155, 250, 6, str_c(&local->news_str));
     }
 
+    // If the player has just become a new champion, show the sprite on top of the photo.
+    if(local->champion && local->screen >= 2) {
+        animation *photo_overlays = &bk_get_info(scene->bk_data, 4)->ani;
+        sprite *new_champion = animation_get_sprite(photo_overlays, 1);
+        video_draw(new_champion->data, new_champion->pos.x, new_champion->pos.y);
+    }
+
     // Dialog
     if(dialog_is_visible(&local->continue_dialog)) {
         dialog_render(&local->continue_dialog);

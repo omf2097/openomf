@@ -166,7 +166,6 @@ int cutscene_create(scene *scene) {
             for(int i = 0; i < 256; i++) {
                 if(i >= 10 && i <= 20 && i != 10 + p1->pilot->har_id) {
                     continue;
-
                 }
                 bk_info *bki = bk_get_info(scene->bk_data, i);
                 if(bki) {
