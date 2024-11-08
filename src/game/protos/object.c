@@ -460,7 +460,7 @@ void object_palette_transform(object *obj) {
     }
 
     if(obj->sprite_state.pal_tricks_off) { // BPO tag is on
-        vga_state_enable_palette_transform(object_palette_copy_transform, obj);
+        vga_state_enable_palette_transform_sticky(object_palette_copy_transform, obj);
     } else if(obj->sprite_state.pal_entry_count > 0 && obj->sprite_state.duration > 0) { // BPO tag is off
         vga_state_enable_palette_transform(object_scenewide_palette_transform, obj);
     }

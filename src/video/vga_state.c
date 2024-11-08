@@ -11,6 +11,7 @@
 typedef struct palette_transformer {
     vga_palette_transform callback;
     void *userdata;
+    bool sticky;
 } palette_transformer;
 
 typedef struct vga_state {
@@ -69,7 +70,8 @@ void vga_state_render(void) {
 
         // Run transformers on top. These may modify the current palette and change dirtiness state.
         for(unsigned int i = 0; i < state.transformer_count; i++) {
-            state.transformers[i].callback(&state.dmg_transform, &state.current, state.transformers[i].userdata);
+            damage_tracker *dmg = state.transformers[i].sticky ? &state.dmg_current : &state.dmg_transform;
+            state.transformers[i].callback(dmg, &state.current, state.transformers[i].userdata);
         }
         damage_combine(&state.dmg_current, &state.dmg_transform);
         damage_copy(&state.dmg_previous, &state.dmg_current);
@@ -161,7 +163,8 @@ void vga_state_copy_base_palette_range(vga_index dst, vga_index src, vga_index c
     damage_set_range(&state.dmg_base, dst, dst + count);
 }
 
-void vga_state_enable_palette_transform(vga_palette_transform transform_callback, void *userdata) {
+static void vga_state_enable_palette_transform_impl(vga_palette_transform transform_callback, void *userdata,
+                                                    bool sticky) {
 #ifndef NDEBUG
     for(unsigned int i = 0; i < state.transformer_count; i++) {
         if(state.transformers[i].callback == transform_callback && state.transformers[i].userdata == userdata) {
@@ -173,7 +176,16 @@ void vga_state_enable_palette_transform(vga_palette_transform transform_callback
     assert(state.transformer_count < MAX_TRANSFORMER_COUNT - 1);
     state.transformers[state.transformer_count].callback = transform_callback;
     state.transformers[state.transformer_count].userdata = userdata;
+    state.transformers[state.transformer_count].sticky = sticky;
     state.transformer_count++;
+}
+
+void vga_state_enable_palette_transform(vga_palette_transform transform_callback, void *userdata) {
+    vga_state_enable_palette_transform_impl(transform_callback, userdata, false);
+}
+
+void vga_state_enable_palette_transform_sticky(vga_palette_transform transform_callback, void *userdata) {
+    vga_state_enable_palette_transform_impl(transform_callback, userdata, true);
 }
 
 /**

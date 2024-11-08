@@ -39,6 +39,7 @@ void vga_state_set_base_palette_range(vga_index start, vga_index count, vga_colo
 void vga_state_copy_base_palette_range(vga_index dst, vga_index src, vga_index count);
 
 void vga_state_enable_palette_transform(vga_palette_transform transform_callback, void *userdata);
+void vga_state_enable_palette_transform_sticky(vga_palette_transform transform_callback, void *userdata);
 
 // Take debug snapshot of the current palette state.
 void vga_state_debug_screenshot(const char *filename);
