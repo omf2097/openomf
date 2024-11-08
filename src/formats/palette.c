@@ -207,16 +207,6 @@ void palette_load_player_colors(vga_palette *src, int player) {
     vga_state_set_base_palette_from_range(src, dst_offset, 1, 47);
 }
 
-void palette_load_player_cutscene_colors(vga_palette *src) {
-    vga_palette pal;
-    for(int i = 1; i < 48; i++) {
-        memcpy(pal.colors + i * 2, src->colors + i, 3);
-        memcpy(pal.colors + i * 2 + 1, src->colors + i, 3);
-        // TODO do real palette interpolation
-    }
-    vga_state_set_base_palette_from_range(&pal, 1, 1, 47);
-}
-
 void palette_load_altpal_player_color(vga_palette *dst, int player, int src_color, int dst_color) {
     int dst_index = dst_color * 16 + player * 48;
     int src_index = src_color * 16;
@@ -234,6 +224,26 @@ void palette_set_player_color(int player, int src_color, int dst_color) {
     vga_palette_init(&pal);
     palette_load_altpal_player_color(&pal, player, src_color, dst_color);
     vga_state_set_base_palette_from_range(&pal, dst_index, src_index, 16 * 3);
+}
+
+void palette_set_player_expanded_color(int src_row, int dst_row) {
+    int dst_index = dst_row * 32;
+    int src_index = src_row * 16;
+    vga_palette tmp;
+    vga_color start = altpals->palettes[0].colors[src_index];
+    vga_color end = altpals->palettes[0].colors[src_index + 15];
+
+    // Slide the colors over 32 indexes
+    float r = (end.r - start.r) / 32.0;
+    float g = (end.g - start.g) / 32.0;
+    float b = (end.b - start.b) / 32.0;
+    for (int i = 0; i < 32; i++) {
+        tmp.colors[i].r = start.r + (int)(r * i);
+        tmp.colors[i].g = start.g + (int)(g * i);
+        tmp.colors[i].b = start.b + (int)(b * i);
+    }
+
+    vga_state_set_base_palette_from_range(&tmp, dst_index, 0, 32);
 }
 
 void palette_copy(vga_palette *dst, const vga_palette *src, int index_start, int index_count) {
