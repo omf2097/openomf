@@ -66,8 +66,7 @@ add_definitions(-DV_MAJOR=${VERSION_MAJOR} -DV_MINOR=${VERSION_MINOR} -DV_PATCH=
 # Enable AddressSanitizer if requested
 if(USE_SANITIZERS)
     if(CMAKE_C_COMPILER_ID STREQUAL "MSVC")
-        add_compile_options("-fsanitize=address")
-        add_link_options("-fsanitize=address")
+        add_compile_options("/fsanitize=address")
         message(STATUS "Development: Asan enabled. Ubsan is unsupported by MSVC.")
     else()
         add_compile_options("-fsanitize=address,undefined")
