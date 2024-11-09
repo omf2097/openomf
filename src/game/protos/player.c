@@ -30,7 +30,6 @@ static void player_clear_frame(object *obj) {
 
 void player_create(object *obj) {
     memset(&obj->animation_state, 0, sizeof(player_animation_state));
-    obj->animation_state.end_frame = UINT32_MAX;
     obj->animation_state.previous_tick = -1;
     sd_script_create(&obj->animation_state.parser);
     player_clear_frame(obj);
@@ -685,10 +684,6 @@ void player_set_repeat(object *obj, int repeat) {
 
 int player_get_repeat(const object *obj) {
     return obj->animation_state.repeat;
-}
-
-void player_set_end_frame(object *obj, int end_frame) {
-    obj->animation_state.end_frame = end_frame;
 }
 
 void player_next_frame(object *obj) {
