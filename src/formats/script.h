@@ -20,7 +20,7 @@
  *
  * Describes a single tag in animation frame.
  */
-typedef struct {
+typedef struct sd_script_tag {
     const char *key;  ///< Tag name
     const char *desc; ///< Tag description
     int has_param;    ///< Tells if the tag has a parameter
@@ -31,7 +31,7 @@ typedef struct {
  *
  * Describes a single frame in animation string.
  */
-typedef struct {
+typedef struct sd_script_frame {
     int sprite;   ///< Sprite ID that the frame relates to
     int tick_len; ///< Length of the frame in ticks
     vector tags;  ///< A list of tags in this frame
@@ -42,7 +42,7 @@ typedef struct {
  * A single animation string. Contains multiple frames, which then contain tags.
  * A valid string must contain at least a single frame.
  */
-typedef struct {
+typedef struct sd_script {
     vector frames; ///< List of frames in this string
 } sd_script;
 
