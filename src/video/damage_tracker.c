@@ -20,6 +20,7 @@ void damage_combine(damage_tracker *dst, const damage_tracker *src) {
     dst->dirty_range_start = min2(dst->dirty_range_start, src->dirty_range_start);
     dst->dirty_range_end = max2(dst->dirty_range_end, src->dirty_range_end);
 }
+
 void damage_set_range(damage_tracker *tracker, vga_index start, vga_index end) {
     tracker->dirty = true;
     tracker->dirty_range_start = min2(tracker->dirty_range_start, start);
