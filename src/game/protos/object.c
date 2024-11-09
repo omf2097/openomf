@@ -62,7 +62,6 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
     obj->sprite_override = 0;
     obj->sound_translation_table = NULL;
     obj->cur_surface = NULL;
-    obj->cur_remap = -1;
     obj->pal_offset = 0;
     obj->pal_limit = 255;
     obj->halt = 0;
