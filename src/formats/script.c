@@ -61,7 +61,7 @@ static void sd_script_tag_create(sd_script_tag *tag) {
 bool sd_script_frame_add_tag(sd_script_frame *frame, const char *key, int value) {
     sd_script_tag tag;
     sd_script_tag_create(&tag);
-    if(!sd_tag_info(key, &tag.has_param, &tag.key, &tag.desc) == 0) {
+    if(sd_tag_info(key, &tag.has_param, &tag.key, &tag.desc) != 0) {
         return false;
     }
     if(tag.has_param) {
