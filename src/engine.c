@@ -83,7 +83,7 @@ void save_screenshot(const SDL_Rect *r, unsigned char *data, bool flip) {
     char *filename = omf_malloc(256);
     snprintf(filename, 256, "screenshot_%s.png", time);
     if(png_write_rgb(filename, r->w, r->h, data, false, flip)) {
-        DEBUG("Got a capture_screen: %s", filename);
+        DEBUG("Got a screenshot: %s", filename);
     } else {
         PERROR("Screenshot write operation failed (%s)", filename);
     }
