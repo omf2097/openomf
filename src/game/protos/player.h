@@ -51,7 +51,6 @@ typedef struct player_enemy_slide_op_t {
 typedef struct player_animation_state_t {
     uint32_t previous_tick;
     uint32_t current_tick;
-    uint32_t end_frame;
     int previous;
     int entered_frame;
     sd_script parser;
@@ -83,7 +82,6 @@ int player_frame_get(const object *obj, const char *tag);
 void player_run(object *obj);
 void player_set_repeat(object *obj, int repeat);
 int player_get_repeat(const object *obj);
-void player_set_end_frame(object *obj, int end_frame);
 void player_next_frame(object *obj);
 void player_goto_frame(object *obj, int frame_id);
 int player_get_frame(const object *obj);

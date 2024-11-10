@@ -285,13 +285,16 @@ void engine_run(engine_init_flags *init_flags) {
                 game_state_dynamic_tick(gs, false);
                 dynamic_wait -= game_state_ms_per_dyntick(gs);
             }
+
+            // Ensure any pending palette changes are handled after any ticks are made.
+            if(has_dynamic || has_static) {
+                game_state_palette_transform(gs);
+                vga_state_render();
+            }
         } while(tick_limit-- && (has_dynamic || has_static));
 
         // Do the actual video rendering jobs
         if(enable_screen_updates) {
-            game_state_palette_transform(gs);
-
-            vga_state_render();
             video_render_prepare();
             game_state_render(gs);
             if(debugger_render) {
