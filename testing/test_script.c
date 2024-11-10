@@ -60,6 +60,22 @@ void test_script_encode(void) {
     str_free(&dst);
 }
 
+void test_script_encode_frame(void) {
+    str dst;
+    sd_script_frame frame;
+
+    str_create(&dst);
+    sd_script_frame_create(&frame, 100, 0);
+    sd_script_frame_add_tag(&frame, "bpn", 1);
+    sd_script_frame_add_tag(&frame, "m", 12);
+
+    CU_ASSERT(sd_script_encode_frame(&frame, &dst) == SD_SUCCESS);
+    CU_ASSERT(strcmp("bpn1m12A100", str_c(&dst)) == 0);
+
+    sd_script_frame_free(&frame);
+    str_free(&dst);
+}
+
 void test_script_get_frame(void) {
     CU_ASSERT(sd_script_get_frame(&script, -1) == NULL);
     CU_ASSERT(sd_script_get_frame(&script, 0) != NULL);
@@ -433,6 +449,9 @@ void script_test_suite(CU_pSuite suite) {
         return;
     }
     if(CU_add_test(suite, "test of sd_script_frame_to_letter", test_frame_to_letter) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "test of sd_script_encode_frame", test_script_encode_frame) == NULL) {
         return;
     }
     if(CU_add_test(suite, "testing odd tags", test_script_tag_vars) == NULL) {

@@ -18,10 +18,10 @@ int sd_script_create(sd_script *script) {
     return SD_SUCCESS;
 }
 
-static void sd_script_frame_create(sd_script_frame *frame) {
+void sd_script_frame_create(sd_script_frame *frame, int tick_len, int sprite) {
     vector_create(&frame->tags, sizeof(sd_script_tag));
-    frame->tick_len = 0;
-    frame->sprite = 0;
+    frame->tick_len = tick_len;
+    frame->sprite = sprite;
 }
 
 int sd_script_frame_clone(sd_script_frame *src, sd_script_frame *dst) {
@@ -41,16 +41,14 @@ int sd_script_clone(sd_script *src, sd_script *dst) {
     vector_iter_begin(&src->frames, &it);
     while((frame = iter_next(&it)) != NULL) {
         sd_script_frame new_frame;
-        sd_script_frame_create(&new_frame);
-        new_frame.sprite = frame->sprite;
-        new_frame.tick_len = frame->tick_len;
+        sd_script_frame_create(&new_frame, frame->tick_len, frame->sprite);
         sd_script_frame_clone(frame, &new_frame);
         vector_append(&dst->frames, &new_frame);
     }
     return SD_SUCCESS;
 }
 
-static void sd_script_frame_free(sd_script_frame *frame) {
+void sd_script_frame_free(sd_script_frame *frame) {
     if(frame == NULL)
         return;
     vector_free(&frame->tags);
@@ -58,6 +56,19 @@ static void sd_script_frame_free(sd_script_frame *frame) {
 
 static void sd_script_tag_create(sd_script_tag *tag) {
     memset(tag, 0, sizeof(sd_script_tag));
+}
+
+bool sd_script_frame_add_tag(sd_script_frame *frame, const char *key, int value) {
+    sd_script_tag tag;
+    sd_script_tag_create(&tag);
+    if(!sd_tag_info(key, &tag.has_param, &tag.key, &tag.desc) == 0) {
+        return false;
+    }
+    if(tag.has_param) {
+        tag.value = value;
+    }
+    vector_append(&frame->tags, &tag);
+    return true;
 }
 
 void sd_script_free(sd_script *script) {
@@ -78,9 +89,7 @@ int sd_script_append_frame(sd_script *script, int tick_len, int sprite_id) {
     }
 
     sd_script_frame frame;
-    sd_script_frame_create(&frame);
-    frame.tick_len = tick_len;
-    frame.sprite = sprite_id;
+    sd_script_frame_create(&frame, tick_len, sprite_id);
     vector_append(&script->frames, &frame);
     return SD_SUCCESS;
 }
@@ -324,14 +333,14 @@ int sd_script_decode(sd_script *script, const char *input, int *invalid_pos) {
     sd_script_frame frame;
     sd_script_tag tag;
     str_from_c(&src, input);
-    sd_script_frame_create(&frame);
+    sd_script_frame_create(&frame, 0, 0);
     sd_script_tag_create(&tag);
 
     int now = 0;
     while(now < (int)str_size(&src)) {
         if(parse_frame(&frame, &src, &now)) {
             vector_append(&script->frames, &frame);
-            sd_script_frame_create(&frame);
+            sd_script_frame_create(&frame, 0, 0);
             continue;
         }
         if(parse_tag(&tag, &src, &now)) {
@@ -352,7 +361,7 @@ int sd_script_decode(sd_script *script, const char *input, int *invalid_pos) {
         // There are a couple of cases where uppercase frame letter is lowercase. Try to fix.
         if(try_parse_bad_frame(&frame, &src, &now)) {
             vector_append(&script->frames, &frame);
-            sd_script_frame_create(&frame);
+            sd_script_frame_create(&frame, 0, 0);
             continue;
         }
         goto failed_parse;
@@ -381,28 +390,37 @@ int sd_script_encode(const sd_script *script, str *output) {
     }
 
     // Frames exist. Walk through each, and output tags and ending frame tag + duration
-    str tmp;
-    iterator frame_it, tag_it;
+    iterator it;
     sd_script_frame *frame;
-    sd_script_tag *tag;
-
-    vector_iter_begin(&script->frames, &frame_it);
-    while((frame = iter_next(&frame_it)) != NULL) {
-        vector_iter_begin(&frame->tags, &tag_it);
-        while((tag = iter_next(&tag_it)) != NULL) {
-            str_append_c(output, tag->key);
-            if(tag->has_param) {
-                str_from_format(&tmp, "%d", tag->value);
-                str_append(output, &tmp);
-                str_free(&tmp);
-            }
-        }
-        str_from_format(&tmp, "%c%d-", sd_script_frame_to_letter(frame->sprite), frame->tick_len);
-        str_append(output, &tmp);
-        str_free(&tmp);
+    vector_iter_begin(&script->frames, &it);
+    while((frame = iter_next(&it)) != NULL) {
+        sd_script_encode_frame(frame, output);
+        str_append_c(output, "-");
     }
 
     str_cut(output, 1); // Remove the last '-'
+    return SD_SUCCESS;
+}
+
+int sd_script_encode_frame(const sd_script_frame *frame, str *dst) {
+    if(frame == NULL || dst == NULL)
+        return SD_INVALID_INPUT;
+
+    str tmp;
+    iterator tag_it;
+    sd_script_tag *tag;
+    vector_iter_begin(&frame->tags, &tag_it);
+    while((tag = iter_next(&tag_it)) != NULL) {
+        str_append_c(dst, tag->key);
+        if(tag->has_param) {
+            str_from_format(&tmp, "%d", tag->value);
+            str_append(dst, &tmp);
+            str_free(&tmp);
+        }
+    }
+    str_from_format(&tmp, "%c%d", sd_script_frame_to_letter(frame->sprite), frame->tick_len);
+    str_append(dst, &tmp);
+    str_free(&tmp);
     return SD_SUCCESS;
 }
 

@@ -99,6 +99,18 @@ int sd_script_decode(sd_script *script, const char *str, int *invalid_pos);
  */
 int sd_script_encode(const sd_script *script, str *dst);
 
+/*! \brief Encode animation frame string
+ *
+ * Encodes the animation frame structure to an animation string.
+ *
+ * \retval SD_INVALID_INPUT Script or str parameter was NULL
+ * \retval SD_SUCCESS Successful operation
+ *
+ * \param frame Script frame to encode
+ * \param dst Target string object. Must be initialized!
+ */
+int sd_script_encode_frame(const sd_script_frame *frame, str *dst);
+
 /*! \brief Find the total duration of the script
  *
  * Finds the total duration of the script in game ticks. Essentially
@@ -423,5 +435,28 @@ int sd_script_letter_to_frame(char letter);
  * \return Frame letter (0 => 'A', ...)
  */
 char sd_script_frame_to_letter(int frame_id);
+
+/** Initializes a script frame.
+ *
+ * @param frame Frame struct to initialize
+ * @param tick_len Frame length in ticks
+ * @param sprite Sprite ID to use
+ */
+void sd_script_frame_create(sd_script_frame *frame, int tick_len, int sprite);
+
+/** Frees a script frame
+ *
+ * @param frame Frame to free
+ */
+void sd_script_frame_free(sd_script_frame *frame);
+
+/** Add a tag to a frame.
+ *
+ * @param frame Frame to add into
+ * @param key Key name, e.h. "bpp" or "m"
+ * @param value Value. This is only used if tag supports it.
+ * @return True if tag was valid, false if not.
+ */
+bool sd_script_frame_add_tag(sd_script_frame *frame, const char *key, int value);
 
 #endif // SD_SCRIPT_H
