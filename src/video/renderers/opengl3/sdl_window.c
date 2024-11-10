@@ -1,4 +1,4 @@
-#include "video/sdl_window.h"
+#include "video/renderers/opengl3/sdl_window.h"
 #include "utils/log.h"
 
 #include <epoxy/gl.h>

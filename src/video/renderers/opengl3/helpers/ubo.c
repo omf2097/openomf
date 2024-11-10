@@ -1,5 +1,5 @@
-#include "video/opengl/ubo.h"
-#include "video/opengl/bindings.h"
+#include "video/renderers/opengl3/helpers/ubo.h"
+#include "video/renderers/opengl3/helpers/bindings.h"
 
 GLuint ubo_create(GLsizeiptr size) {
     GLuint id;

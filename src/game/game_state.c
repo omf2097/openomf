@@ -453,7 +453,7 @@ int game_load_new(game_state *gs, int scene_id) {
     }
 
     // Free texture items, we are going to create new ones.
-    video_reset_atlas();
+    video_signal_scene_change();
 
     // Initialize new scene with BK data etc.
     gs->sc = omf_calloc(1, sizeof(scene));

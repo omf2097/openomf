@@ -5,8 +5,8 @@
 #include "utils/hashmap.h"
 #include "utils/log.h"
 #include "utils/vector.h"
-#include "video/opengl/texture.h"
-#include "video/opengl/texture_atlas.h"
+#include "video/renderers/opengl3/helpers/texture.h"
+#include "video/renderers/opengl3/helpers/texture_atlas.h"
 
 // WIP
 

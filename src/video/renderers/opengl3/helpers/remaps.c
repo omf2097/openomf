@@ -1,8 +1,8 @@
 #include <stdlib.h>
 
 #include "utils/allocator.h"
-#include "video/opengl/remaps.h"
-#include "video/opengl/texture.h"
+#include "video/renderers/opengl3/helpers/remaps.h"
+#include "video/renderers/opengl3/helpers/texture.h"
 
 #define REMAPS_WIDTH 256
 #define REMAPS_HEIGHT 19

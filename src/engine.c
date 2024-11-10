@@ -40,7 +40,7 @@ int engine_init(void) {
     float sound_volume = setting->sound.sound_vol / 10.0;
 
     // Initialize everything.
-    if(video_init(w, h, fs, vsync))
+    if(!video_init(w, h, fs, vsync))
         goto exit_0;
     if(!audio_init(frequency, mono, resampler, music_volume, sound_volume))
         goto exit_1;
@@ -83,7 +83,7 @@ void save_screenshot(const SDL_Rect *r, unsigned char *data, bool flip) {
     char *filename = omf_malloc(256);
     snprintf(filename, 256, "screenshot_%s.png", time);
     if(png_write_rgb(filename, r->w, r->h, data, false, flip)) {
-        DEBUG("Got a screenshot: %s", filename);
+        DEBUG("Got a capture_screen: %s", filename);
     } else {
         PERROR("Screenshot write operation failed (%s)", filename);
     }
@@ -145,7 +145,7 @@ void engine_run(engine_init_flags *init_flags) {
     int static_wait = 0;
     while(run && game_state_is_running(gs)) {
         // Handle events
-        int check_fs;
+        bool check_fs;
         while(SDL_PollEvent(&e)) {
             // Handle other events
             switch(e.type) {
