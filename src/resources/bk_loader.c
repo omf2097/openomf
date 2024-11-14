@@ -61,12 +61,17 @@ int load_bk_file_incremental(bk_inc *b, int id) {
         case 2:
             b->bk = omf_calloc(1, sizeof(bk));
             DEBUG("creating BK %p", b->bk);
-            // this should be fast, so do it in one pass
-            bk_create(b->bk, &b->sd_bk);
-            sd_bk_free(&b->sd_bk);
-            sd_reader_close(b->r);
+            bk_create_inc(b->bk, &b->sd_bk);
             b->state = 3;
-            return SD_SUCCESS;
+            return SD_AGAIN;
+        case 3:
+            ret = bk_convert_inc(b->bk, &b->sd_bk);
+            if(ret != SD_AGAIN) {
+                sd_bk_free(&b->sd_bk);
+                sd_reader_close(b->r);
+                b->state = 4;
+            }
+            return ret;
     }
     return ret;
 }
