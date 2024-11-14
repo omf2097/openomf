@@ -76,6 +76,11 @@ static int textbutton_action(component *c, int action) {
     return 1;
 }
 
+void textbutton_set_userdata(component *c, void *userdata) {
+    textbutton *tb = widget_get_obj(c);
+    tb->userdata = userdata;
+}
+
 static void textbutton_free(component *c) {
     textbutton *tb = widget_get_obj(c);
     if(tb->border_created) {

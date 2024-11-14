@@ -10,5 +10,6 @@ component *textbutton_create(const text_settings *tconf, const char *text, const
                              textbutton_click_cb cb, void *userdata);
 void textbutton_set_border(component *c, uint8_t color);
 void textbutton_set_text(component *c, const char *text);
+void textbutton_set_userdata(component *c, void *userdata);
 
 #endif // TEXTBUTTON_H
