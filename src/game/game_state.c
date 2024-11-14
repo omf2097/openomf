@@ -1034,6 +1034,8 @@ int game_state_clone(game_state *src, game_state *dst) {
     dst->sc = omf_calloc(1, sizeof(scene));
     scene_clone(src->sc, dst->sc, dst);
 
+    dst->new_state = NULL;
+
     return 0;
 }
 

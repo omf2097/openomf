@@ -11,6 +11,7 @@
 #include "formats/rec.h"
 #include "game/game_player.h"
 #include "game/game_state.h"
+#include "game/gui/widget.h"
 #include "game/gui/filler.h"
 #include "game/gui/frame.h"
 #include "game/gui/label.h"
@@ -40,6 +41,9 @@
 
 #define HAR1_START_POS 110
 #define HAR2_START_POS 211
+
+#define GAME_MENU_RETURN_ID 100
+#define GAME_MENU_QUIT_ID 101
 
 typedef struct arena_local_t {
     guiframe *game_menu;
@@ -1164,6 +1168,12 @@ void arena_clone(scene *src, scene *dst) {
     dst->userdata = local;
     memcpy(dst->userdata, src->userdata, sizeof(arena_local));
     maybe_install_har_hooks(dst);
+
+    component *c = guiframe_find(local->game_menu, GAME_MENU_QUIT_ID);
+    textbutton_set_userdata(c, dst);
+    c = guiframe_find(local->game_menu, GAME_MENU_RETURN_ID);
+    textbutton_set_userdata(c, dst);
+
 }
 
 void arena_startup(scene *scene, int id, int *m_load, int *m_repeat) {
@@ -1370,6 +1380,7 @@ int arena_create(scene *scene) {
     menu_attach(menu, filler_create());
     component *return_button =
         textbutton_create(&tconf, "RETURN TO GAME", "Continue fighting.", COM_ENABLED, game_menu_return, scene);
+    widget_set_id(return_button, GAME_MENU_RETURN_ID);
     menu_attach(menu, return_button);
 
     menu_attach(menu,
@@ -1395,8 +1406,10 @@ int arena_create(scene *scene) {
                                         "Obtain detailed and thorough explanation of the various options for which you "
                                         "may need a detailed and thorough explanation.",
                                         COM_DISABLED, NULL, NULL));
-    menu_attach(menu, textbutton_create(&tconf, "QUIT", "Quit game and return to main menu.", COM_ENABLED,
-                                        game_menu_quit, scene));
+    component *quit_button = textbutton_create(&tconf, "QUIT", "Quit game and return to main menu.", COM_ENABLED,
+                                        game_menu_quit, scene);
+    widget_set_id(quit_button, GAME_MENU_QUIT_ID);
+    menu_attach(menu, quit_button);
 
     guiframe_set_root(local->game_menu, menu);
     guiframe_layout(local->game_menu);
