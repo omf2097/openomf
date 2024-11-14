@@ -651,6 +651,9 @@ void game_state_call_tick(game_state *gs, int mode) {
 
 // This function is always called with the same interval, and game speed does not affect it
 void game_state_static_tick(game_state *gs, bool replay) {
+    uint64_t ticks = SDL_GetTicks64();
+    uint64_t limit = game_state_ms_per_dyntick(gs) / 2;
+
     // Set scene crossfade values
     if(gs->this_wait_ticks > 0) {
         gs->this_wait_ticks--;
@@ -669,10 +672,21 @@ void game_state_static_tick(game_state *gs, bool replay) {
         }
 
         // Load up new scene
-        int ret = game_load_new(gs, gs->next_id);
+
+        int ret;
+        while((ret = game_load_new(gs, gs->next_id)) == SD_AGAIN) {
+            uint64_t now = SDL_GetTicks64();
+            if(now - ticks > limit) {
+                // taking too long for the dynamic tick time
+                break;
+            }
+        }
         if(ret > 0 && ret != SD_AGAIN) {
             PERROR("Error while loading new scene! bailing.");
             gs->run = 0;
+            return;
+        }
+        if(ret == SD_AGAIN) {
             return;
         }
         if(settings_get()->video.crossfade_on) {
