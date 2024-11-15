@@ -445,7 +445,6 @@ int game_load_new(game_state *gs, int scene_id) {
     int ret = scene_create_incremental(gs->sc, gs, scene_id);
 
     if(ret == SD_AGAIN) {
-        DEBUG("scene still loading");
         return SD_AGAIN;
     }
 
