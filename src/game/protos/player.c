@@ -108,7 +108,7 @@ void player_set_delay(object *obj, int delay) {
     }
 
     // No frame found, just quit now.
-    if(!frames) {
+    if(!frames || !delay || frames == 99) {
         return;
     }
 

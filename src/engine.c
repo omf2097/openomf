@@ -284,7 +284,7 @@ void engine_run(engine_init_flags *init_flags) {
                     DEBUG("replacing game state! %p %p", old_gs, new_gs);
                     gs = new_gs;
                     DEBUG("gs new state %p", gs->new_state);
-                    //gs->new_state = NULL;
+                    // gs->new_state = NULL;
                     game_state_clone_free(old_gs);
                     omf_free(old_gs);
                 }

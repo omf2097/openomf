@@ -11,7 +11,6 @@
 #include "formats/rec.h"
 #include "game/game_player.h"
 #include "game/game_state.h"
-#include "game/gui/widget.h"
 #include "game/gui/filler.h"
 #include "game/gui/frame.h"
 #include "game/gui/label.h"
@@ -20,6 +19,7 @@
 #include "game/gui/text_render.h"
 #include "game/gui/textbutton.h"
 #include "game/gui/textslider.h"
+#include "game/gui/widget.h"
 #include "game/objects/arena_constraints.h"
 #include "game/objects/har.h"
 #include "game/objects/hazard.h"
@@ -1173,7 +1173,6 @@ void arena_clone(scene *src, scene *dst) {
     textbutton_set_userdata(c, dst);
     c = guiframe_find(local->game_menu, GAME_MENU_RETURN_ID);
     textbutton_set_userdata(c, dst);
-
 }
 
 void arena_startup(scene *scene, int id, int *m_load, int *m_repeat) {
@@ -1406,8 +1405,8 @@ int arena_create(scene *scene) {
                                         "Obtain detailed and thorough explanation of the various options for which you "
                                         "may need a detailed and thorough explanation.",
                                         COM_DISABLED, NULL, NULL));
-    component *quit_button = textbutton_create(&tconf, "QUIT", "Quit game and return to main menu.", COM_ENABLED,
-                                        game_menu_quit, scene);
+    component *quit_button =
+        textbutton_create(&tconf, "QUIT", "Quit game and return to main menu.", COM_ENABLED, game_menu_quit, scene);
     widget_set_id(quit_button, GAME_MENU_QUIT_ID);
     menu_attach(menu, quit_button);
 
