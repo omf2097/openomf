@@ -152,7 +152,7 @@ void menu_connect_tick(component *c) {
             break;
         }
 
-        if(difftime(time(NULL), local->connect_start) > 5.0) {
+        if(!local->controllers_created && difftime(time(NULL), local->connect_start) > 5.0) {
             DEBUG("connection timed out");
             menu_connect_cancel(local->cancel_button, local->s);
         }

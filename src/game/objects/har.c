@@ -2091,6 +2091,7 @@ int har_clone(object *src, object *dst) {
     list_create(&local->har_hooks);
     object_set_userdata(dst, local);
     object_set_spawn_cb(dst, cb_har_spawn_object, local);
+    local->delay = 0;
     return 0;
 }
 
@@ -2336,6 +2337,11 @@ void har_reset(object *obj) {
 
     har_set_ani(obj, ANIM_IDLE, 1);
     object_set_stride(obj, h->stride);
+}
+
+void har_set_delay(object *obj, int delay) {
+    har *h = object_get_userdata(obj);
+    h->delay = delay;
 }
 
 uint8_t har_player_id(object *obj) {
