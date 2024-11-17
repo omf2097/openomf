@@ -62,6 +62,7 @@ int sd_vga_image_decode(sd_rgba_image *dst, const sd_vga_image *src, const vga_p
 }
 
 int sd_vga_image_from_png(sd_vga_image *img, const char *filename) {
+    // This is not a functional change.
     png_structp png_ptr;
     png_infop info_ptr;
     int ret = SD_SUCCESS;

@@ -237,6 +237,10 @@ add_dependencies(openomf copy_shaders)
 set(TOOL_TARGET_NAMES)
 # always build languagetool, for BuildLanguages.cmake
 add_executable(languagetool tools/languagetool/main.c)
+if (WIN32 AND NOT MINGW)
+target_link_libraries(languagetool PRIVATE ${PNG_LIBRARY})
+endif()
+
 list(APPEND TOOL_TARGET_NAMES languagetool)
 if (USE_TOOLS)
     add_executable(bktool tools/bktool/main.c
