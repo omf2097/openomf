@@ -81,13 +81,13 @@ static bool video_find_renderer(const char *try_name) {
     memset(&current_renderer, 0, sizeof(renderer));
     if(try_name != NULL && strlen(try_name) > 0) {
         if(hunt_renderer_by_name(try_name)) {
-            INFO("Selected renderer '%s' is available!", current_renderer.get_name());
+            INFO("Found configured renderer '%s'!", current_renderer.get_name());
             return true;
         }
         PERROR("Unable to find specified renderer '%s', trying other alternatives ...", try_name);
     }
     if(find_best_renderer()) {
-        INFO("Selected renderer '%s'", current_renderer.get_name());
+        INFO("Found available renderer '%s'!", current_renderer.get_name());
         return true;
     }
     PERROR("Unable to find any available renderer!");
