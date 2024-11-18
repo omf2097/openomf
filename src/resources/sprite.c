@@ -13,10 +13,16 @@ void sprite_create(sprite *sp, void *src, int id) {
     sd_sprite *sdsprite = (sd_sprite *)src;
     sp->id = id;
     sp->pos = vec2i_create(sdsprite->pos_x, sdsprite->pos_y);
-    sp->data = omf_calloc(1, sizeof(surface));
-    sp->owned = true;
+
+    if(sdsprite->width == 0 || sdsprite->height == 0) {
+        sp->data = NULL;
+        sp->owned = false;
+        return;
+    }
 
     // Load data
+    sp->data = omf_calloc(1, sizeof(surface));
+    sp->owned = true;
     sd_vga_image raw;
     sd_sprite_vga_decode(&raw, sdsprite);
     surface_create_from_data(sp->data, raw.w, raw.h, (unsigned char *)raw.data);
