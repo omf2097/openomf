@@ -6,6 +6,9 @@
 
 // If-def the includes here
 #include "video/renderers/opengl3/gl3_renderer.h"
+#ifdef ENABLE_NULL_RENDERER
+#include "video/renderers/null/null_renderer.h"
+#endif
 
 typedef void (*renderer_init)(renderer *renderer);
 typedef struct renderer_status {
@@ -17,7 +20,10 @@ typedef struct renderer_status {
 
 // If-def the renderers here. Most preferred renderers at the top.
 static renderer_status renderer_statuses[] = {
-    {gl3_renderer_init, false, NULL, NULL},
+    {gl3_renderer_init,  false, NULL, NULL},
+#ifdef ENABLE_NULL_RENDERER
+    {null_renderer_init, false, NULL, NULL},
+#endif
 };
 
 static const int renderer_count = sizeof(renderer_statuses) / sizeof(renderer_status);
