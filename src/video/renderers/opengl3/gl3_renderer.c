@@ -37,6 +37,7 @@ typedef struct gl3_context {
     int target_move_x;
     int target_move_y;
     bool draw_atlas;
+    SDL_Rect culling_area;
 
     object_array_blend_mode current_blend_mode;
     GLuint palette_prog_id;
@@ -312,20 +313,26 @@ static void render_finish(void *userdata) {
     SDL_GL_SwapWindow(ctx->window);
 }
 
+void render_area_prepare(void *userdata, const SDL_Rect *area) {
+    gl3_context *ctx = userdata;
+    object_array_prepare(ctx->objects);
+    ctx->culling_area = *area;
+}
+
+void render_area_finish(void *userdata, surface *dst) {
+    gl3_context *ctx = userdata;
+    finish_offscreen(ctx);
+    SDL_Rect *r = &ctx->culling_area;
+    unsigned char *buffer = omf_malloc(r->w * r->h);
+    glReadPixels(r->x, r->y, r->w, r->h, GL_RED, GL_UNSIGNED_BYTE, buffer);
+    surface_create_from_data_flip(dst, r->w, r->h, buffer);
+    surface_set_transparency(dst, -1);
+    omf_free(buffer);
+}
+
 static void capture_screen(void *userdata, video_screenshot_signal screenshot_cb) {
     gl3_context *ctx = userdata;
     ctx->screenshot_cb = screenshot_cb;
-}
-
-static void capture_area(void *userdata, surface *dst, int x, int y, int w, int h) {
-    gl3_context *ctx = userdata;
-    render_target_activate(ctx->target);
-    unsigned char *buffer = omf_calloc(1, w * h);
-    glPixelStorei(GL_PACK_ALIGNMENT, 1);
-    glReadPixels(x, y, w, h, GL_RED, GL_UNSIGNED_BYTE, buffer);
-    surface_create_from_data_flip(dst, w, h, buffer);
-    surface_set_transparency(dst, -1);
-    omf_free(buffer);
 }
 
 static void signal_scene_change(void *userdata) {
@@ -356,9 +363,10 @@ void gl3_renderer_init(renderer *gl3_renderer) {
     gl3_renderer->move_target = move_target;
     gl3_renderer->render_prepare = render_prepare;
     gl3_renderer->render_finish = render_finish;
+    gl3_renderer->render_area_prepare = render_area_prepare;
+    gl3_renderer->render_area_finish = render_area_finish;
 
     gl3_renderer->capture_screen = capture_screen;
-    gl3_renderer->capture_area = capture_area;
     gl3_renderer->signal_scene_change = signal_scene_change;
     gl3_renderer->signal_draw_atlas = signal_draw_atlas;
 }

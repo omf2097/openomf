@@ -46,12 +46,11 @@ static vec2i camera_position_for(object *obj) {
 }
 
 void har_screencaps_capture(har_screencaps *caps, object *obj, object *obj2, int id) {
+    game_state *gs = obj->gs;
     if(caps->ok[id]) {
         surface_free(&caps->cap[id]);
         caps->ok[id] = false;
     }
-
-    // game_state *gs = obj->gs;
 
     // Position
     vec2i pos = camera_position_for(obj);
@@ -65,16 +64,13 @@ void har_screencaps_capture(har_screencaps *caps, object *obj, object *obj2, int
         pos.y -= (size.y - SCREENCAP_H) / 2;
     }
 
-    /*
-    video_render_prepare();
+    // Render offscreen and capture.
+    SDL_Rect clip_area = {pos.x, pos.y, size.x, size.y};
+    video_render_area_prepare(&clip_area);
     gs->hide_ui = true;
     game_state_render(gs);
     gs->hide_ui = false;
-    video_render_finish_offscreen();
-     */
-
-    // Capture
-    video_area_capture(&caps->cap[id], pos.x, pos.y, size.x, size.y);
+    video_render_area_finish(&caps->cap[id]);
     caps->ok[id] = true;
 }
 

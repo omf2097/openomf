@@ -91,10 +91,11 @@ void video_draw_full(const surface *src_surface, int x, int y, int w, int h, int
 void video_signal_scene_change(void);
 
 void video_render_prepare(void);
-void video_render_finish_offscreen(void);
 void video_render_finish(void);
+void video_render_area_prepare(const SDL_Rect *area);
+void video_render_area_finish(surface *dst);
+
 void video_close(void);
-void video_area_capture(surface *sur, int x, int y, int w, int h);
 void video_schedule_screenshot(video_screenshot_signal callback);
 
 void video_draw_atlas(bool draw_atlas);

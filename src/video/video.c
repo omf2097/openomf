@@ -35,12 +35,16 @@ void video_render_prepare(void) {
     current_renderer.render_prepare(current_renderer.ctx);
 }
 
-void video_area_capture(surface *sur, int x, int y, int w, int h) {
-    current_renderer.capture_area(current_renderer.ctx, sur, x, y, w, h);
-}
-
 void video_render_finish(void) {
     current_renderer.render_finish(current_renderer.ctx);
+}
+
+void video_render_area_prepare(const SDL_Rect *area) {
+    current_renderer.render_area_prepare(current_renderer.ctx, area);
+}
+
+void video_render_area_finish(surface *dst) {
+    current_renderer.render_area_finish(current_renderer.ctx, dst);
 }
 
 void video_close(void) {
