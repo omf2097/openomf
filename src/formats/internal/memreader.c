@@ -62,14 +62,22 @@ uint8_t memread_ubyte(memreader *reader) {
 
 uint16_t memread_uword(memreader *reader) {
     uint16_t r;
+#ifdef BIG_ENDIAN_BUILD
+    r = __builtin_bswap16(*((uint16_t *)(reader->buf + reader->pos)));
+#else
     memcpy(&r, reader->buf + reader->pos, sizeof(r));
+#endif
     reader->pos += sizeof(r);
     return r;
 }
 
 uint32_t memread_udword(memreader *reader) {
     uint32_t r;
+#ifdef BIG_ENDIAN_BUILD
+    r = __builtin_bswap32(*((uint32_t *)(reader->buf + reader->pos)));
+#else
     memcpy(&r, reader->buf + reader->pos, sizeof(r));
+#endif
     reader->pos += sizeof(r);
     return r;
 }
@@ -83,22 +91,37 @@ int8_t memread_byte(memreader *reader) {
 
 int16_t memread_word(memreader *reader) {
     int16_t r;
+#ifdef BIG_ENDIAN_BUILD
+    r = __builtin_bswap16(*((uint16_t *)(reader->buf + reader->pos)));
+#else
     memcpy(&r, reader->buf + reader->pos, sizeof(r));
+#endif
     reader->pos += sizeof(r);
     return r;
 }
 
 int32_t memread_dword(memreader *reader) {
     int32_t r;
+#ifdef BIG_ENDIAN_BUILD
+    r = __builtin_bswap32(*((int32_t *)(reader->buf + reader->pos)));
+#else
     memcpy(&r, reader->buf + reader->pos, sizeof(r));
+#endif
     reader->pos += sizeof(r);
     return r;
 }
 
 float memread_float(memreader *reader) {
     float r;
+#ifdef BIG_ENDIAN_BUILD
+    uint32_t fl;
+    memcpy(&fl, reader->buf + reader->pos, sizeof(fl));
+    fl = __builtin_bswap32(fl);
+    reader->pos += sizeof(fl);
+#else
     memcpy(&r, reader->buf + reader->pos, sizeof(r));
     reader->pos += sizeof(r);
+#endif
     return r;
 }
 

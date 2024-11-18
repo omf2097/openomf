@@ -15,7 +15,6 @@ struct sd_writer {
 
 sd_writer *sd_writer_open(const char *file) {
     sd_writer *writer = omf_calloc(1, sizeof(sd_writer));
-
     writer->handle = fopen(file, "wb");
     writer->sd_errno = 0;
     if(!writer->handle) {
@@ -76,10 +75,16 @@ void sd_write_ubyte(sd_writer *writer, uint8_t data) {
 }
 
 void sd_write_uword(sd_writer *writer, uint16_t data) {
+#ifdef BIG_ENDIAN_BUILD
+    data = __builtin_bswap16(data);
+#endif
     sd_write_buf(writer, (char *)&data, 2);
 }
 
 void sd_write_udword(sd_writer *writer, uint32_t data) {
+#ifdef BIG_ENDIAN_BUILD
+    data = __builtin_bswap32(data);
+#endif
     sd_write_buf(writer, (char *)&data, 4);
 }
 
@@ -88,15 +93,28 @@ void sd_write_byte(sd_writer *writer, int8_t data) {
 }
 
 void sd_write_word(sd_writer *writer, int16_t data) {
+#ifdef BIG_ENDIAN_BUILD
+    data = __builtin_bswap16(data);
+#endif
     sd_write_buf(writer, (char *)&data, 2);
 }
 
 void sd_write_dword(sd_writer *writer, int32_t data) {
+#ifdef BIG_ENDIAN_BUILD
+    data = __builtin_bswap32(data);
+#endif
     sd_write_buf(writer, (char *)&data, 4);
 }
 
 void sd_write_float(sd_writer *writer, float data) {
+#ifdef BIG_ENDIAN_BUILD
+    uint32_t fl;
+    memcpy(&fl, &data, sizeof(fl));
+    fl = __builtin_bswap32(fl);
+    sd_write_buf(writer, (char *)&fl, sizeof(fl));
+#else
     sd_write_buf(writer, (char *)&data, sizeof(float));
+#endif
 }
 
 void sd_write_fill(sd_writer *writer, char content, size_t len) {

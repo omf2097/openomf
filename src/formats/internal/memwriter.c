@@ -7,7 +7,6 @@
 #include "formats/internal/memwriter.h"
 #include "formats/internal/writer.h"
 #include "utils/allocator.h"
-
 #define GROW 64
 
 #define CHECK_SIZE                                                                                                     \
@@ -57,11 +56,23 @@ void memwrite_ubyte(memwriter *writer, uint8_t value) {
 }
 
 void memwrite_uword(memwriter *writer, uint16_t value) {
+#ifdef BIG_ENDIAN_BUILD
+    uint16_t t = value;
+    t = __builtin_bswap16(t);
+    memwrite_buf(writer, (char *)&t, 2);
+#else
     memwrite_buf(writer, (char *)&value, 2);
+#endif
 }
 
 void memwrite_udword(memwriter *writer, uint32_t value) {
+#ifdef BIG_ENDIAN_BUILD
+    uint32_t t = value;
+    t = __builtin_bswap32(t);
+    memwrite_buf(writer, (char *)&t, 4);
+#else
     memwrite_buf(writer, (char *)&value, 4);
+#endif
 }
 
 void memwrite_byte(memwriter *writer, int8_t value) {
@@ -69,15 +80,34 @@ void memwrite_byte(memwriter *writer, int8_t value) {
 }
 
 void memwrite_word(memwriter *writer, int16_t value) {
+#ifdef BIG_ENDIAN_BUILD
+    int16_t t = value;
+    t = __builtin_bswap16(t);
+    memwrite_buf(writer, (char *)&t, 2);
+#else
     memwrite_buf(writer, (char *)&value, 2);
+#endif
 }
 
 void memwrite_dword(memwriter *writer, int32_t value) {
+#ifdef BIG_ENDIAN_BUILD
+    int32_t t = value;
+    t = __builtin_bswap32(t);
+    memwrite_buf(writer, (char *)&t, 4);
+#else
     memwrite_buf(writer, (char *)&value, 4);
+#endif
 }
 
 void memwrite_float(memwriter *writer, float value) {
+#ifdef BIG_ENDIAN_BUILD
+    uint32_t t;
+    memcpy(&t, &value, 4);
+    t = __builtin_bswap32(t);
+    memwrite_buf(writer, (char *)&t, 4);
+#else
     memwrite_buf(writer, (char *)&value, sizeof(float));
+#endif
 }
 
 void memwrite_fill(memwriter *writer, char content, int len) {
