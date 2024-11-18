@@ -15,12 +15,11 @@
 typedef void (*video_screenshot_signal)(const SDL_Rect *rect, unsigned char *data,
                                         bool flipped); // Asynchronous screenshot signal
 
-/**
- * Try to find and initialize renderer by name. If one is not found, initialize the first available one.
- */
-bool video_find_renderer(const char *try_name);
+void video_scan_renderers(void);
+int video_get_renderer_count(void);
+bool video_get_renderer_info(int index, bool *is_available, const char **name, const char **description);
 
-bool video_init(int window_w, int window_h, bool fullscreen, bool vsync);
+bool video_init(const char *try_name, int window_w, int window_h, bool fullscreen, bool vsync);
 bool video_reinit(int window_w, int window_h, bool fullscreen, bool vsync);
 void video_reinit_renderer(void);
 void video_get_state(int *w, int *h, bool *fs, bool *vsync);

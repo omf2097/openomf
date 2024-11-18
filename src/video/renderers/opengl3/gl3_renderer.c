@@ -47,11 +47,7 @@ typedef struct gl3_context {
 } gl3_context;
 
 static bool is_available(void) {
-    if(has_gl_available(3, 3)) {
-        INFO("OpenGL 3.3 renderer is available!");
-        return true;
-    }
-    return false;
+    return has_gl_available(3, 3);
 }
 
 static const char *get_description(void) {

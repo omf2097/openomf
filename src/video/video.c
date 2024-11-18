@@ -8,40 +8,76 @@
 #include "video/renderers/opengl3/gl3_renderer.h"
 
 typedef void (*renderer_init)(renderer *renderer);
+typedef struct renderer_status {
+    renderer_init init;
+    bool is_available;
+    const char *name;
+    const char *description;
+} renderer_status;
 
 // If-def the renderers here. Most preferred renderers at the top.
-static renderer_init initializers[] = {
-    gl3_renderer_init,
+static renderer_status renderer_statuses[] = {
+    {gl3_renderer_init, false, NULL, NULL},
 };
 
-static const int initializers_count = sizeof(initializers) / sizeof(renderer_init);
+static const int renderer_count = sizeof(renderer_statuses) / sizeof(renderer_status);
 static renderer current_renderer;
 
-static bool hunt_renderer_by_name(const char *try_name) {
-    for(int i = 0; i < initializers_count; i++) {
-        initializers[i](&current_renderer);
-        if(strcmp(current_renderer.get_name(), try_name) == 0) {
-            if(current_renderer.is_available()) {
-                return true;
-            }
-        }
+/**
+ * This is run at start to hunt the available renderers.
+ */
+void video_scan_renderers(void) {
+    renderer tmp;
+    bool available;
+    for(int i = 0; i < renderer_count; i++) {
+        renderer_statuses[i].init(&tmp);
+        available = tmp.is_available();
+        renderer_statuses[i].is_available = available;
+        renderer_statuses[i].name = tmp.get_name();
+        renderer_statuses[i].description = tmp.get_description();
+        DEBUG("Renderer '%s' is %s", tmp.get_name(), available ? "available" : "not available");
     }
-    memset(&current_renderer, 0, sizeof(renderer));
+}
+
+bool video_get_renderer_info(int index, bool *is_available, const char **name, const char **description) {
+    if(index < 0 && index >= renderer_count)
+        return false;
+    if(is_available != NULL)
+        *is_available = renderer_statuses[index].is_available;
+    if(name != NULL)
+        *name = renderer_statuses[index].name;
+    if(description != NULL)
+        *description = renderer_statuses[index].description;
+    return true;
+}
+
+int video_get_renderer_count(void) {
+    return renderer_count;
+}
+
+static bool hunt_renderer_by_name(const char *try_name) {
+    for(int i = 0; i < renderer_count; i++) {
+        if(strcmp(renderer_statuses[i].name, try_name) != 0)
+            continue;
+        if(!renderer_statuses[i].is_available)
+            continue;
+        renderer_statuses[i].init(&current_renderer);
+        return true;
+    }
     return false;
 }
 
 static bool find_best_renderer(void) {
-    for(int i = 0; i < initializers_count; i++) {
-        initializers[i](&current_renderer);
-        if(current_renderer.is_available()) {
+    for(int i = 0; i < renderer_count; i++) {
+        if(renderer_statuses[i].is_available) {
+            renderer_statuses[i].init(&current_renderer);
             return true;
         }
     }
-    memset(&current_renderer, 0, sizeof(renderer));
     return false;
 }
 
-bool video_find_renderer(const char *try_name) {
+static bool video_find_renderer(const char *try_name) {
     memset(&current_renderer, 0, sizeof(renderer));
     if(try_name != NULL && strlen(try_name) > 0) {
         if(hunt_renderer_by_name(try_name)) {
@@ -55,16 +91,23 @@ bool video_find_renderer(const char *try_name) {
         return true;
     }
     PERROR("Unable to find any available renderer!");
+    memset(&current_renderer, 0, sizeof(renderer));
     return false;
 }
 
-bool video_init(int window_w, int window_h, bool fullscreen, bool vsync) {
+bool video_init(const char *try_name, int window_w, int window_h, bool fullscreen, bool vsync) {
+    if(!video_find_renderer(try_name))
+        goto exit_0;
     current_renderer.init(&current_renderer);
     if(!current_renderer.setup_context(current_renderer.ctx, window_w, window_h, fullscreen, vsync)) {
-        current_renderer.close(&current_renderer);
-        return false;
+        goto exit_1;
     }
     return true;
+
+exit_1:
+    current_renderer.close(&current_renderer);
+exit_0:
+    return false;
 }
 
 void video_draw_atlas(bool draw_atlas) {

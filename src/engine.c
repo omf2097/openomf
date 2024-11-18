@@ -41,9 +41,8 @@ int engine_init(void) {
     const char *renderer = setting->video.renderer;
 
     // Initialize everything.
-    if(!video_find_renderer(renderer))
-        goto exit_0;
-    if(!video_init(w, h, fs, vsync))
+    video_scan_renderers();
+    if(!video_init(renderer, w, h, fs, vsync))
         goto exit_0;
     if(!audio_init(frequency, mono, resampler, music_volume, sound_volume))
         goto exit_1;
