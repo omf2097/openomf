@@ -103,7 +103,6 @@ find_package(confuse)
 find_package(argtable2)
 find_package(Argtable3 CONFIG)
 find_package(PNG)
-find_package(ZLIB)
 find_package(miniupnpc)
 find_package(natpmp)
 
@@ -142,15 +141,11 @@ set(COREINCS
     ${CONFUSE_INCLUDE_DIR}
     ${XMP_INCLUDE_DIR}
     ${ENET_INCLUDE_DIR}
-    ${PNG_INCLUDE_DIR}
-    ${ZLIB_INCLUDE_DIR}
 )
 
 set(CORELIBS
     ${CONFUSE_LIBRARY}
     ${ENET_LIBRARY}
-    ${PNG_LIBRARY}
-    ${ZLIB_LIBRARY}
 )
 
 if(ARGTABLE2_FOUND)
@@ -203,7 +198,10 @@ include_directories(${COREINCS})
 # Build core sources first as an object library
 # this can then be reused in tests and main executable to speed things up
 add_library(openomf_core OBJECT ${OPENOMF_SRC})
-target_link_libraries(openomf_core PRIVATE ${XMP_LIBRARY})
+target_link_libraries(openomf_core PRIVATE
+    ${XMP_LIBRARY}
+    PNG::PNG
+)
 omf_target_precompile_headers(openomf_core PUBLIC
     "<SDL.h>"
     "<enet/enet.h>"
