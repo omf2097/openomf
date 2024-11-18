@@ -1,5 +1,6 @@
 #include <stdlib.h>
 
+#include "formats/transparent.h"
 #include "game/gui/progressbar.h"
 #include "game/gui/widget.h"
 #include "utils/allocator.h"
@@ -95,7 +96,7 @@ static void progressbar_render(component *c) {
             if(bar->block == NULL) {
                 bar->block = omf_calloc(1, sizeof(surface));
             }
-            surface_create_from_image(bar->block, &tmp);
+            surface_create_from_image(bar->block, &tmp, MENU_TRANSPARENT_INDEX);
             image_free(&tmp);
         } else {
             omf_free(bar->block);
@@ -153,14 +154,14 @@ static void progressbar_layout(component *c, int x, int y, int w, int h) {
     image_clear(&tmp, bar->theme.bg_color);
     image_rect_bevel(&tmp, 0, 0, w - 1, h - 1, bar->theme.border_topleft_color, bar->theme.border_bottomright_color,
                      bar->theme.border_bottomright_color, bar->theme.border_topleft_color);
-    surface_create_from_image(bar->background, &tmp);
+    surface_create_from_image(bar->background, &tmp, MENU_TRANSPARENT_INDEX);
     image_free(&tmp);
 
     image_create(&tmp, w, h);
     image_clear(&tmp, bar->theme.bg_color_alt);
     image_rect_bevel(&tmp, 0, 0, w - 1, h - 1, bar->theme.border_topleft_color, bar->theme.border_bottomright_color,
                      bar->theme.border_bottomright_color, bar->theme.border_topleft_color);
-    surface_create_from_image(bar->background_alt, &tmp);
+    surface_create_from_image(bar->background_alt, &tmp, MENU_TRANSPARENT_INDEX);
     image_free(&tmp);
 }
 

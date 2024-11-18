@@ -1,4 +1,5 @@
 #include "game/gui/gauge.h"
+#include "formats/transparent.h"
 #include "game/gui/widget.h"
 #include "utils/allocator.h"
 #include "utils/miscmath.h"
@@ -74,7 +75,7 @@ typedef struct {
 } gauge;
 
 static void surface_from_pix_img(surface *sur, const pixel_image *pix) {
-    surface_create_from_data(sur, pix->width, pix->height, pix->data);
+    surface_create_from_data(sur, pix->width, pix->height, pix->data, GAUGE_TRANSPARENT_INDEX);
 }
 
 static void gauge_render(component *c) {

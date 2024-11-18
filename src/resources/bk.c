@@ -10,7 +10,7 @@ void bk_create(bk *b, void *src) {
     b->file_id = sdbk->file_id;
 
     // Copy VGA image
-    surface_create_from_vga(&b->background, sdbk->background);
+    surface_create_from_vga(&b->background, sdbk->background, sdbk->background->transparent);
 
     // Copy sound translation table
     memcpy(b->sound_translation_table, sdbk->soundtable, 30);

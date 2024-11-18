@@ -27,6 +27,7 @@ typedef struct {
     unsigned int h;   ///< Pixel height
     unsigned int len; ///< Byte length
     char *data;       ///< Palette representation of image data
+    int transparent;
 } sd_vga_image;
 
 /*! \brief Initialize VGA image structure
@@ -41,7 +42,7 @@ typedef struct {
  * \param w Image width in pixels
  * \param h Image height in pixels
  */
-int sd_vga_image_create(sd_vga_image *img, unsigned int w, unsigned int h);
+int sd_vga_image_create(sd_vga_image *img, unsigned int w, unsigned int h, int transparent);
 
 /*! \brief Copy VGA image structure
  *

@@ -306,18 +306,44 @@ static void text_render_len(const text_settings *settings, text_mode mode, int x
 
         surface *sur;
         // Render characters
+        int mxstart = mx;
+        int mystart = my;
+        int kstart = k;
         for(; k < line_len; k++) {
             // Skip line endings.
             if(text[ptr + k] == '\n')
                 continue;
 
-            // Render character
+            // Render character shadow.
             sur = get_font_surface(settings, text[ptr + k]);
             if(sur == NULL) {
                 continue;
             }
 
             render_char_shadow_surface(settings, sur, mx + start_x, my + start_y);
+
+            // Render to the right direction
+            if(settings->direction == TEXT_HORIZONTAL) {
+                mx += sur->w + settings->cspacing;
+            } else {
+                my += char_h;
+            }
+        }
+
+        mx = mxstart;
+        my = mystart;
+        k = kstart;
+        for(; k < line_len; k++) {
+            // Skip line endings.
+            if(text[ptr + k] == '\n')
+                continue;
+
+            // Render character image.
+            sur = get_font_surface(settings, text[ptr + k]);
+            if(sur == NULL) {
+                continue;
+            }
+
             render_char_surface(settings, mode, sur, mx + start_x, my + start_y);
 
             // Render to the right direction

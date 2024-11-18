@@ -9,6 +9,7 @@ typedef struct sprite_t {
     vec2i pos;
     surface *data;
     bool owned; // if we own the surface data
+    int transparent;
 } sprite;
 
 void sprite_create(sprite *sp, void *src, int id);

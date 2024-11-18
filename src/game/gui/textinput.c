@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "formats/transparent.h"
 #include "game/gui/textinput.h"
 #include "game/gui/widget.h"
 #include "utils/allocator.h"
@@ -244,7 +245,7 @@ component *textinput_create(const text_settings *tconf, int max_chars, const cha
     image_create(&img, tb->max_chars * tsize + 2, tsize + 3);
     image_clear(&img, COLOR_MENU_BG);
     image_rect(&img, 0, 0, tb->max_chars * tsize + 1, tsize + 2, COLOR_MENU_BORDER);
-    surface_create_from_image(&tb->sur, &img);
+    surface_create_from_image(&tb->sur, &img, BACKGROUND_TRANSPARENT_INDEX);
     image_free(&img);
 
     // Copy over the initial value
