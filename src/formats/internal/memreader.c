@@ -16,6 +16,10 @@ memreader *memreader_open(char *buf, long len) {
 }
 
 memreader *memreader_open_from_reader(sd_reader *reader, int len) {
+    if(len == 0) {
+        return memreader_open(NULL, 0);
+    }
+
     char *buf = omf_calloc(1, len);
     sd_read_buf(reader, buf, len);
     memreader *mreader = memreader_open(buf, len);
