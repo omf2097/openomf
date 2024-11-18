@@ -46,12 +46,18 @@ typedef struct gl3_context {
     video_screenshot_signal screenshot_cb;
 } gl3_context;
 
-static bool is_available(void *userdata) {
-    return true;
+static bool is_available(void) {
+    if(has_gl_available(3, 3)) {
+        INFO("OpenGL 3.3 renderer is available!");
+        return true;
+    }
+    return false;
 }
+
 static const char *get_description(void) {
     return "Hardware OpenGL 3.3 renderer";
 }
+
 static const char *get_name(void) {
     return "OpenGL3";
 }
@@ -176,7 +182,6 @@ static void close_context(void *userdata) {
     delete_program(ctx->rgba_prog_id);
     SDL_GL_DeleteContext(ctx->gl_context);
     SDL_DestroyWindow(ctx->window);
-    omf_free(ctx);
     INFO("OpenGL3 renderer closed.");
 }
 
@@ -313,13 +318,13 @@ static void render_finish(void *userdata) {
     SDL_GL_SwapWindow(ctx->window);
 }
 
-void render_area_prepare(void *userdata, const SDL_Rect *area) {
+static void render_area_prepare(void *userdata, const SDL_Rect *area) {
     gl3_context *ctx = userdata;
     object_array_prepare(ctx->objects);
     ctx->culling_area = *area;
 }
 
-void render_area_finish(void *userdata, surface *dst) {
+static void render_area_finish(void *userdata, surface *dst) {
     gl3_context *ctx = userdata;
     finish_offscreen(ctx);
     SDL_Rect *r = &ctx->culling_area;
@@ -345,13 +350,21 @@ static void signal_draw_atlas(void *userdata, bool toggle) {
     ctx->draw_atlas = toggle;
 }
 
-void gl3_renderer_init(renderer *gl3_renderer) {
-    memset(gl3_renderer, 0, sizeof(renderer));
+static void init(renderer *gl3_renderer) {
     gl3_renderer->ctx = omf_calloc(1, sizeof(gl3_context));
+}
 
+static void close(renderer *gl3_renderer) {
+    omf_free(gl3_renderer);
+}
+
+void gl3_renderer_init(renderer *gl3_renderer) {
     gl3_renderer->is_available = is_available;
     gl3_renderer->get_description = get_description;
     gl3_renderer->get_name = get_name;
+
+    gl3_renderer->init = init;
+    gl3_renderer->close = close;
 
     gl3_renderer->setup_context = setup_context;
     gl3_renderer->get_context_state = get_context_state;

@@ -1,18 +1,70 @@
 #include <SDL.h>
-#include <stdlib.h>
 
-#include "utils/allocator.h"
 #include "utils/log.h"
-
-#include "video/renderers/opengl3/gl3_renderer.h"
 #include "video/renderers/renderer.h"
 #include "video/video.h"
 
+// If-def the includes here
+#include "video/renderers/opengl3/gl3_renderer.h"
+
+typedef void (*renderer_init)(renderer *renderer);
+
+// If-def the renderers here. Most preferred renderers at the top.
+static renderer_init initializers[] = {
+    gl3_renderer_init,
+};
+
+static const int initializers_count = sizeof(initializers) / sizeof(renderer_init);
 static renderer current_renderer;
 
+static bool hunt_renderer_by_name(const char *try_name) {
+    for(int i = 0; i < initializers_count; i++) {
+        initializers[i](&current_renderer);
+        if(strcmp(current_renderer.get_name(), try_name) == 0) {
+            if(current_renderer.is_available()) {
+                return true;
+            }
+        }
+    }
+    memset(&current_renderer, 0, sizeof(renderer));
+    return false;
+}
+
+static bool find_best_renderer(void) {
+    for(int i = 0; i < initializers_count; i++) {
+        initializers[i](&current_renderer);
+        if(current_renderer.is_available()) {
+            return true;
+        }
+    }
+    memset(&current_renderer, 0, sizeof(renderer));
+    return false;
+}
+
+bool video_find_renderer(const char *try_name) {
+    memset(&current_renderer, 0, sizeof(renderer));
+    if(try_name != NULL && strlen(try_name) > 0) {
+        if(hunt_renderer_by_name(try_name)) {
+            INFO("Selected renderer '%s' is available!", current_renderer.get_name());
+            return true;
+        }
+        PERROR("Unable to find specified renderer '%s', trying other alternatives ...", try_name);
+    }
+    if(find_best_renderer()) {
+        INFO("Selected renderer '%s'", current_renderer.get_name());
+        return true;
+    }
+    PERROR("Unable to find any available renderer!");
+    return false;
+}
+
 bool video_init(int window_w, int window_h, bool fullscreen, bool vsync) {
-    gl3_renderer_init(&current_renderer);
-    return current_renderer.setup_context(current_renderer.ctx, window_w, window_h, fullscreen, vsync);
+    current_renderer.init(&current_renderer);
+    if(!current_renderer.setup_context(current_renderer.ctx, window_w, window_h, fullscreen, vsync)) {
+        current_renderer.close(&current_renderer);
+        return false;
+    }
+    return true;
 }
 
 void video_draw_atlas(bool draw_atlas) {
@@ -49,6 +101,7 @@ void video_render_area_finish(surface *dst) {
 
 void video_close(void) {
     current_renderer.close_context(current_renderer.ctx);
+    current_renderer.close(&current_renderer);
 }
 
 void video_move_target(int x, int y) {

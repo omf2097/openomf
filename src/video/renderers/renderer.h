@@ -3,13 +3,19 @@
 
 #include "video/surface.h"
 
+typedef struct renderer renderer;
+
 // Asynchronous screenshot signal, renderer must call this when it has the screenshot data.
 typedef void (*video_screenshot_signal)(const SDL_Rect *rect, unsigned char *data, bool flipped);
 
-// Metadata functions, all must be implemented
-typedef bool (*is_available_fn)(void *ctx);
+// Metadata functions, all must be implemented. These must NOT require context or renderer state to be initialized!
+typedef bool (*is_available_fn)(void);
 typedef const char *(*get_description_fn)(void);
 typedef const char *(*get_name_fn)(void);
+
+// These initialize the renderer itself; they should be used to reserve and free internal context objects.
+typedef void (*init_renderer_fn)(renderer *renderer);
+typedef void (*close_renderer_fn)(renderer *renderer);
 
 // Renderer initialization and de-initialization, these must be implemented.
 typedef bool (*setup_context_fn)(void *ctx, int window_w, int window_h, bool fullscreen, bool vsync);
@@ -39,10 +45,13 @@ typedef void (*capture_screen_fn)(void *ctx, video_screenshot_signal screenshot_
 typedef void (*signal_scene_change_fn)(void *ctx);
 typedef void (*signal_draw_atlas_fn)(void *ctx, bool toggle);
 
-typedef struct renderer {
+struct renderer {
     is_available_fn is_available;
     get_description_fn get_description;
     get_name_fn get_name;
+
+    init_renderer_fn init;
+    close_renderer_fn close;
 
     setup_context_fn setup_context;
     reset_context_with_fn reset_context_with;
@@ -64,6 +73,6 @@ typedef struct renderer {
     signal_draw_atlas_fn signal_draw_atlas;
 
     void *ctx;
-} renderer;
+};
 
 #endif // RENDERER_H

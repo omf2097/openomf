@@ -38,8 +38,11 @@ int engine_init(void) {
     bool mono = setting->sound.music_mono;
     float music_volume = setting->sound.music_vol / 10.0;
     float sound_volume = setting->sound.sound_vol / 10.0;
+    const char *renderer = setting->video.renderer;
 
     // Initialize everything.
+    if(!video_find_renderer(renderer))
+        goto exit_0;
     if(!video_init(w, h, fs, vsync))
         goto exit_0;
     if(!audio_init(frequency, mono, resampler, music_volume, sound_volume))
