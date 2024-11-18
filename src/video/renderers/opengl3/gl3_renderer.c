@@ -87,6 +87,10 @@ static bool setup_context(void *userdata, int window_w, int window_h, bool fulls
     // Reset background color to black.
     glClearColor(0.0, 0.0, 0.0, 1.0);
 
+    // Our texture alignment is always 1, so just set it once at start.
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glPixelStorei(GL_PACK_ALIGNMENT, 1);
+
     // Create the rest of the graphics objects
     ctx->atlas = atlas_create(TEX_UNIT_ATLAS, 2048, 2048);
     ctx->objects = object_array_create(2048.0f, 2048.0f);

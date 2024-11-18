@@ -5,7 +5,6 @@ GLuint texture_create(GLuint tex_unit, GLsizei w, GLsizei h, GLint internal_form
     GLuint id = 0;
     glGenTextures(1, &id);
     bindings_bind_tex(tex_unit, id);
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
