@@ -123,21 +123,6 @@ if (NOT SDL2_FOUND)
     unset(SDL2_MIXER_SDL2_NOT_FOUND)
 endif ()
 
-if(VCPKG_TOOLCHAIN)
-    find_package(SDL2_mixer CONFIG)
-    if(SDL2_mixer_FOUND)
-        set(SDL2_MIXER_FOUND TRUE)
-        if(TARGET SDL2_mixer::SDL2_mixer)
-            add_library(SDL2::Mixer ALIAS SDL2_mixer::SDL2_mixer)
-            get_target_property(SDL2_MIXER_INCLUDE_DIRS SDL2_mixer::SDL2_mixer INTERFACE_INCLUDE_DIRECTORIES)
-        else()
-            add_library(SDL2::Mixer ALIAS SDL2_mixer::SDL2_mixer-static)
-            get_target_property(SDL2_MIXER_INCLUDE_DIRS SDL2_mixer::SDL2_mixer-static INTERFACE_INCLUDE_DIRECTORIES)
-        endif()
-        return()
-    endif(SDL2_mixer_FOUND)
-endif(VCPKG_TOOLCHAIN)
-
 
 # Define options for searching SDL2_mixer Library in a custom path
 

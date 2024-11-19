@@ -23,7 +23,20 @@
     "enet",
     "libconfuse",
     "argtable3",
-    "libpng",
-    "cunit"
-  ]
+    "libpng"
+  ],
+  "features": {
+    "use-tests": {
+      "description": "build cunit for USE_TESTS",
+      "dependencies": [ "cunit" ]
+    },
+    "miniupnpc": {
+      "description": "build miniupnpc",
+      "dependencies": [ "miniupnpc" ]
+    },
+    "natpmp": {
+      "description": "build natpmp",
+      "dependencies": [ "libnatpmp" ]
+    }
+  }
 }

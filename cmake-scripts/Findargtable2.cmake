@@ -1,17 +1,3 @@
-if(VCPKG_TOOLCHAIN)
-    find_package(Argtable2 CONFIG)
-    if(Argtable2_FOUND)
-        set(ARGTABLE2_FOUND ON)
-        set(ARGTABLE2_LIBRARY argtable2::argtable2)
-        set(ARGTABLE2_INCLUDE_DIR)
-        set(ARGTABLE2_INCLUDE_DIRS)
-        set(ARGTABLE2_LIBRARIES ${ARGTABLE2_LIBRARY})
-
-        mark_as_advanced(ARGTABLE2_INCLUDE_DIR ARGTABLE2_LIBRARY)
-        return()
-    endif(Argtable2_FOUND)
-endif(VCPKG_TOOLCHAIN)
-
 set(ARGTABLE2_SEARCH_PATHS
     /usr/local
     /usr
@@ -29,14 +15,10 @@ find_library(ARGTABLE2_LIBRARY argtable2
     PATHS ${ARGTABLE2_SEARCH_PATHS}
 )
 
-if(ARGTABLE2_INCLUDE_DIR AND ARGTABLE2_LIBRARY)
-   set(ARGTABLE2_FOUND TRUE)
-endif()
-
-if(ARGTABLE2_FOUND)
-    set(ARGTABLE2_LIBRARIES ${ARGTABLE2_LIBRARY})
-    set(ARGTABLE2_INCLUDE_DIRS ${ARGTABLE2_INCLUDE_DIR})
-    message(STATUS "Found Argtable2: ${ARGTABLE2_LIBRARIES}")
-endif()
+include(FindPackageHandleStandardArgs)
+# handle the QUIETLY and REQUIRED arguments
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(argtable2
+    REQUIRED_VARS ARGTABLE2_LIBRARY ARGTABLE2_INCLUDE_DIR
+)
 
 mark_as_advanced(ARGTABLE2_INCLUDE_DIR ARGTABLE2_LIBRARY ARGTABLE2_SEARCH_PATHS)
