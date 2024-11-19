@@ -354,7 +354,7 @@ static void renderer_close(renderer *gl3_renderer) {
     omf_free(gl3_renderer);
 }
 
-void gl3_renderer_init(renderer *gl3_renderer) {
+void gl3_renderer_set_callbacks(renderer *gl3_renderer) {
     gl3_renderer->is_available = is_available;
     gl3_renderer->get_description = get_description;
     gl3_renderer->get_name = get_name;

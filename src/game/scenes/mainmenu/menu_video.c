@@ -82,7 +82,7 @@ void resolution_toggled(component *c, void *userdata, int pos) {
 
 void renderer_toggled(component *c, void *userdata, int pos) {
     settings_video *v = &settings_get()->video;
-    video_get_renderer_info(pos, NULL, &v->renderer, NULL);
+    video_get_renderer_info(pos, &v->renderer, NULL);
 }
 
 void menu_video_done(component *c, void *u) {
@@ -139,13 +139,10 @@ component *menu_video_create(scene *s) {
     menu_attach(menu, renderer_selector);
 
     // Add standard resolutions
-    bool r_available;
     const char *r_name;
     for(int r = 0; r < video_get_renderer_count(); r++) {
-        video_get_renderer_info(r, &r_available, &r_name, NULL);
-        if(r_available) {
-            textselector_add_option(renderer_selector, r_name);
-        }
+        video_get_renderer_info(r, &r_name, NULL);
+        textselector_add_option(renderer_selector, r_name);
     }
 
     // Resolution selector

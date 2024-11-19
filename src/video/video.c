@@ -10,23 +10,29 @@
 #include "video/renderers/null/null_renderer.h"
 #endif
 
-typedef void (*renderer_init)(renderer *renderer);
-typedef struct renderer_status {
-    renderer_init init;
-    bool is_available;
-    const char *name;
-    const char *description;
-} renderer_status;
+#define MAX_AVAILABLE_RENDERERS 8
 
+typedef void (*renderer_init)(renderer *renderer);
+
+// This is the list of all built-in renderers.
 // If-def the renderers here. Most preferred renderers at the top.
-static renderer_status renderer_statuses[] = {
-    {gl3_renderer_init,  false, NULL, NULL},
+static renderer_init all_renderers[] = {
+    gl3_renderer_set_callbacks,
 #ifdef ENABLE_NULL_RENDERER
-    {null_renderer_init, false, NULL, NULL},
+    null_renderer_set_callbacks,
 #endif
 };
+static int all_renderers_count = sizeof(all_renderers) / sizeof(renderer_init);
 
-static const int renderer_count = sizeof(renderer_statuses) / sizeof(renderer_status);
+// All renderers that are available. This is filled by video_scan_renderers().
+static struct available_renderer {
+    renderer_init set_callbacks;
+    const char *name;
+    const char *description;
+} available_renderers[MAX_AVAILABLE_RENDERERS];
+static int renderer_count = 0;
+
+// Currently selected renderer
 static renderer current_renderer;
 
 /**
@@ -34,57 +40,75 @@ static renderer current_renderer;
  */
 void video_scan_renderers(void) {
     renderer tmp;
-    bool available;
-    for(int i = 0; i < renderer_count; i++) {
-        renderer_statuses[i].init(&tmp);
-        available = tmp.is_available();
-        renderer_statuses[i].is_available = available;
-        renderer_statuses[i].name = tmp.get_name();
-        renderer_statuses[i].description = tmp.get_description();
-        DEBUG("Renderer '%s' is %s", tmp.get_name(), available ? "available" : "not available");
+    renderer_count = 0;
+    for(int i = 0; i < all_renderers_count; i++) {
+        all_renderers[i](&tmp);
+        if(renderer_count >= MAX_AVAILABLE_RENDERERS)
+            break;
+        if(tmp.is_available()) {
+            available_renderers[renderer_count].set_callbacks = all_renderers[i];
+            available_renderers[renderer_count].name = tmp.get_name();
+            available_renderers[renderer_count].description = tmp.get_description();
+            DEBUG("Renderer '%s' is available", available_renderers[renderer_count].name);
+            renderer_count++;
+        }
     }
 }
 
-bool video_get_renderer_info(int index, bool *is_available, const char **name, const char **description) {
+/**
+ * Get information about a renderer by its index.
+ * @param index Renderer index
+ * @param name Renderer name
+ * @param description Renderer description
+ * @return true if data was read, false if there was no renderer at this index.
+ */
+bool video_get_renderer_info(int index, const char **name, const char **description) {
     if(index < 0 && index >= renderer_count)
         return false;
-    if(is_available != NULL)
-        *is_available = renderer_statuses[index].is_available;
     if(name != NULL)
-        *name = renderer_statuses[index].name;
+        *name = available_renderers[index].name;
     if(description != NULL)
-        *description = renderer_statuses[index].description;
+        *description = available_renderers[index].description;
     return true;
 }
 
+/**
+ * Get the number of currently available renderers.
+ * @return Number of available renderers
+ */
 int video_get_renderer_count(void) {
     return renderer_count;
 }
 
+/**
+ * Attempt to find the renderer by name
+ * @param try_name Renderer name
+ * @return true if renderer was found, false if not.
+ */
 static bool hunt_renderer_by_name(const char *try_name) {
     for(int i = 0; i < renderer_count; i++) {
-        if(strcmp(renderer_statuses[i].name, try_name) != 0)
+        if(strcmp(available_renderers[i].name, try_name) != 0)
             continue;
-        if(!renderer_statuses[i].is_available)
-            continue;
-        renderer_statuses[i].init(&current_renderer);
+        available_renderers[i].set_callbacks(&current_renderer);
         return true;
     }
     return false;
 }
 
+/**
+ * Attempt to find the best renderer to use, if one is not selected.
+ * We just assume the first available renderer is the best one :)
+ * @return true if renderer was found, false if not.
+ */
 static bool find_best_renderer(void) {
-    for(int i = 0; i < renderer_count; i++) {
-        if(renderer_statuses[i].is_available) {
-            renderer_statuses[i].init(&current_renderer);
-            return true;
-        }
+    if(renderer_count > 0) {
+        available_renderers[0].set_callbacks(&current_renderer);
+        return true;
     }
     return false;
 }
 
 static bool video_find_renderer(const char *try_name) {
-    memset(&current_renderer, 0, sizeof(renderer));
     if(try_name != NULL && strlen(try_name) > 0) {
         if(hunt_renderer_by_name(try_name)) {
             INFO("Found configured renderer '%s'!", current_renderer.get_name());
