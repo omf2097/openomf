@@ -350,9 +350,8 @@ static void renderer_create(renderer *gl3_renderer) {
     gl3_renderer->ctx = omf_calloc(1, sizeof(gl3_context));
 }
 
-static void renderer_close(renderer *gl3_renderer) {
-    omf_free(gl3_renderer);
 static void renderer_destroy(renderer *gl3_renderer) {
+    omf_free(gl3_renderer->ctx);
 }
 
 void gl3_renderer_set_callbacks(renderer *gl3_renderer) {
