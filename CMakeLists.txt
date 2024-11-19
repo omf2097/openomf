@@ -1,9 +1,4 @@
 cmake_minimum_required(VERSION 3.16)
-project(OpenOMF C)
-set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-scripts)
-
-INCLUDE(CheckFunctionExists)
-INCLUDE(CheckSymbolExists)
 
 set(VERSION_MAJOR "0")
 set(VERSION_MINOR "6")
@@ -17,6 +12,22 @@ OPTION(USE_SANITIZERS "Enable Asan and Ubsan" OFF)
 OPTION(USE_FATAL_SANITIZERS "Make Asan and Ubsan errors fatal" OFF)
 OPTION(USE_TIDY "Use clang-tidy for checks" OFF)
 OPTION(USE_FORMAT "Use clang-format for checks" OFF)
+
+OPTION(USE_MINIUPNPC "Use miniupnpc for port forwarding" OFF)
+OPTION(USE_NATPMP "Use natpmp for port forwarding" OFF)
+
+# vcpkg features must be set before project()
+if(USE_TESTS)
+    list(APPEND VCPKG_MANIFEST_FEATURES use-tests)
+endif()
+if(USE_MINIUPNPC)
+    list(APPEND VCPKG_MANIFEST_FEATURES miniupnpc)
+endif()
+if(USE_NATPMP)
+    list(APPEND VCPKG_MANIFEST_FEATURES natpmp)
+endif()
+
+project(OpenOMF C)
 
 set(USE_PCH ON)
 # clang-tidy only works with clang when PCH is enabled
@@ -99,29 +110,8 @@ if(WIN32)
     endif()
 endif()
 
-# System packages (hard dependencies)
-find_package(SDL2 REQUIRED)
-find_package(SDL2_mixer REQUIRED)
-find_package(xmp)
-find_package(Epoxy REQUIRED)
-find_package(enet)
-find_package(confuse)
-find_package(argtable2)
-find_package(Argtable3 CONFIG)
-find_package(PNG)
-find_package(miniupnpc)
-find_package(natpmp)
-
-# If tests are enabled, find CUnit
-if(USE_TESTS)
-    find_package(CUnit REQUIRED)
-endif()
-
-# Only strip on GCC (clang does not appreciate)
-if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
-    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -Wl,-s")
-    set(CMAKE_C_FLAGS_MINSIZEREL "${CMAKE_C_FLAGS_MINSIZEREL} -Wl,-s")
-endif()
+# openomf core dependencies
+include("cmake-scripts/Dependencies.cmake")
 
 # Find OpenOMF core sources
 file(GLOB_RECURSE OPENOMF_SRC
@@ -185,51 +175,56 @@ foreach(PLUGIN ${ENABLED_RENDER_PLUGINS})
 endforeach()
 set_source_files_properties("src/video/video.c" PROPERTIES COMPILE_DEFINITIONS "${VIDEO_C_DEFINES}")
 
+# Build core sources first as an object library
+# this can then be reused in tests and main executable to speed things up
+add_library(openomf_core OBJECT ${OPENOMF_SRC})
+omf_target_precompile_headers(openomf_core PUBLIC
+    "<SDL.h>"
+    "<enet/enet.h>"
+    "<epoxy/gl.h>"
+)
+target_link_libraries(openomf_core PRIVATE
+    openomf::confuse
+    openomf::enet
+    openomf::epoxy
+    openomf::png
+    openomf::SDL2
+    openomf::SDL2_mixer
+    openomf::xmp
+)
+if(USE_MINIUPNPC)
+    target_link_libraries(openomf_core PUBLIC
+        openomf::miniupnpc
+    )
+endif()
+if(USE_NATPMP)
+    target_link_libraries(openomf_core PUBLIC
+        openomf::natpmp
+    )
+endif()
+list(APPEND CORELIBS openomf_core)
+
+if(WIN32 AND NOT MINGW)
+    omf_target_precompile_headers(openomf_core PUBLIC
+        "<windows.h>"
+    )
+endif()
+
+# Set icon for windows executable
+if(WIN32)
+    SET(ICON_RESOURCE "resources/icons/openomf.rc")
+endif()
+
+# Only strip on GCC (clang does not appreciate)
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -Wl,-s")
+    set(CMAKE_C_FLAGS_MINSIZEREL "${CMAKE_C_FLAGS_MINSIZEREL} -Wl,-s")
+endif()
+
 set(COREINCS
     src
     ${CMAKE_CURRENT_BINARY_DIR}/src/
-    ${SDL2_INCLUDE_DIRS}
-    ${SDL2_MIXER_INCLUDE_DIRS}
-    ${OPENGL_INCLUDE_DIR}
-    ${EPOXY_INCLUDE_DIR}
-    ${CONFUSE_INCLUDE_DIR}
-    ${XMP_INCLUDE_DIR}
-    ${ENET_INCLUDE_DIR}
 )
-
-set(CORELIBS
-    ${CONFUSE_LIBRARY}
-    ${ENET_LIBRARY}
-)
-
-if(ARGTABLE2_FOUND)
-  set(COREINCS ${COREINCS} ${ARGTABLE2_INCLUDE_DIR})
-  set(CORELIBS ${CORELIBS} ${ARGTABLE2_LIBRARY})
-  add_compile_definitions(ARGTABLE2_FOUND)
-elseif(Argtable3_FOUND)
-  set(CORELIBS ${CORELIBS} argtable3::argtable3)
-  add_compile_definitions(ARGTABLE3_FOUND)
-else()
-  message(FATAL_ERROR "Neither argtable2 or argtable3 was found")
-endif()
-
-if(ARGTABLE2_FOUND)
-  set(CORELIBS ${CORELIBS} ${ARGTABLE2_LIBRARY})
-elseif(ARGTABLE3_FOUND)
-  set(CORELIBS ${CORELIBS} ${ARGTABLE3_LIBRARY})
-endif()
-
-if(MINIUPNPC_FOUND)
-    set(CORELIBS ${CORELIBS} ${MINIUPNPC_LIBRARY})
-    set(COREINCS ${COREINCS} ${MINIUPNPC_INCLUDE_DIR})
-    add_compile_definitions(MINIUPNPC_FOUND)
-endif()
-
-if(LIBNATPMP_FOUND)
-    set(CORELIBS ${CORELIBS} ${LIBNATPMP_LIBRARY})
-    set(COREINCS ${COREINCS} ${LIBNATPMP_INCLUDE_DIR})
-    add_compile_definitions(NATPMP_FOUND)
-endif()
 
 # MingW build should add mingw32 lib
 if(MINGW)
@@ -248,31 +243,6 @@ endif()
 
 # Set include directories for all builds
 include_directories(${COREINCS})
-
-# Build core sources first as an object library
-# this can then be reused in tests and main executable to speed things up
-add_library(openomf_core OBJECT ${OPENOMF_SRC})
-target_link_libraries(openomf_core PRIVATE
-    ${XMP_LIBRARY}
-    PNG::PNG
-)
-omf_target_precompile_headers(openomf_core PUBLIC
-    "<SDL.h>"
-    "<enet/enet.h>"
-    "<epoxy/gl.h>"
-)
-set(CORELIBS openomf_core ${CORELIBS})
-
-if(WIN32 AND NOT MINGW)
-    omf_target_precompile_headers(openomf_core PUBLIC
-        "<windows.h>"
-    )
-endif()
-
-# Set icon for windows executable
-if(WIN32)
-    SET(ICON_RESOURCE "resources/icons/openomf.rc")
-endif()
 
 # Build the game binary
 add_executable(openomf src/main.c src/engine.c ${ICON_RESOURCE})
@@ -390,19 +360,16 @@ if(MINGW)
 endif()
 
 # Make sure libraries are linked
-target_link_libraries(openomf ${CORELIBS})
-target_link_libraries(openomf SDL2::Main SDL2::Mixer Epoxy::Main)
+target_link_libraries(openomf PRIVATE ${CORELIBS})
+target_link_libraries(openomf PRIVATE openomf::argtable openomf::SDL2main openomf::epoxy)
 foreach(TARGET ${TOOL_TARGET_NAMES})
-    target_link_libraries(${TARGET} ${CORELIBS})
-    target_link_libraries(${TARGET} SDL2::Main SDL2::Mixer Epoxy::Main)
+    target_link_libraries(${TARGET} PRIVATE ${CORELIBS})
+    target_link_libraries(${TARGET} PRIVATE openomf::argtable openomf::SDL2main openomf::epoxy)
 endforeach()
 
 # Testing stuff
 if(CUNIT_FOUND)
     enable_testing()
-
-    include_directories(${CUNIT_INCLUDE_DIR} testing/ src/)
-    SET(CORELIBS ${CORELIBS} ${CUNIT_LIBRARY})
 
     file(GLOB_RECURSE TEST_SRC
         LIST_DIRECTORIES OFF
@@ -417,7 +384,8 @@ if(CUNIT_FOUND)
     target_compile_definitions(openomf_test_main PRIVATE
                                TESTS_ROOT_DIR="${CMAKE_SOURCE_DIR}/testing")
 
-    target_link_libraries(openomf_test_main ${CORELIBS} SDL2::Main SDL2::Mixer Epoxy::Main)
+    target_include_directories(openomf_test_main PRIVATE testing/ src/)
+    target_link_libraries(openomf_test_main ${CORELIBS} openomf::SDL2main openomf::epoxy openomf::cunit)
 
     if(MSVC)
         target_precompile_headers(openomf_test_main PRIVATE "<stdio.h>")

@@ -145,27 +145,6 @@ This needed to change because "proper" SDL convention is #include
 because not all systems place things in SDL/ (see FreeBSD).
 #]=======================================================================]
 
-if(VCPKG_TOOLCHAIN)
-  if(TARGET SDL2::Main)
-    return()
-  endif()
-  find_package(SDL2 CONFIG)
-  if(SDL2_FOUND)
-    if(TARGET SDL2::SDL2)
-      set(SDL2_LIBRARIES SDL2::SDL2)
-    else()
-      set(SDL2_LIBRARIES SDL2::SDL2-static)
-    endif()
-    get_target_property(SDL2_INCLUDE_DIR "${SDL2_LIBRARIES}" INTERFACE_INCLUDE_DIRECTORIES)
-    add_library(SDL2::Main INTERFACE IMPORTED)
-    target_link_libraries(SDL2::Main INTERFACE
-      SDL2::SDL2main
-      "${SDL2_LIBRARIES}"
-    )
-    return()
-  endif(SDL2_FOUND)
-endif(VCPKG_TOOLCHAIN)
-
 # Define options for searching SDL2 Library in a custom path
 
 set(SDL2_PATH "" CACHE STRING "Custom SDL2 Library path")

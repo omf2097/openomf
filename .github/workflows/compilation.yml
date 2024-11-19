@@ -109,6 +109,8 @@ jobs:
         -DCMAKE_BUILD_TYPE="Release"
         -DVCPKG_BUILD_TYPE="release"
         -DVCPKG_TARGET_TRIPLET="x64-windows-static"
+        -DUSE_NATPMP=ON
+        -DUSE_MINIUPNPC=ON
     - name: Build openomf
       run: cmake --build build-msvc --target openomf
 
@@ -177,7 +179,7 @@ jobs:
     - name: Generate Release
       run: |
         mkdir build-release && cd build-release
-        cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=release/usr ..
+        cmake -DUSE_NATPMP=ON -DUSE_MINIUPNPC=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=release/usr ..
         make -j $(getconf _NPROCESSORS_ONLN)
         make -j $(getconf _NPROCESSORS_ONLN) install
 
@@ -256,7 +258,7 @@ jobs:
     - name: Generate Release
       run: |
         mkdir build-release && cd build-release
-        cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=release/usr ..
+        cmake -DUSE_NATPMP=ON -DUSE_MINIUPNPC=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=release/usr ..
         make -j $(getconf _NPROCESSORS_ONLN)
         make -j $(getconf _NPROCESSORS_ONLN) install
 
@@ -329,6 +331,8 @@ jobs:
               -DCMAKE_LIBRARY_PATH="${GITHUB_WORKSPACE}/openomf-win-build-main/lib/" \
               -DCMAKE_FIND_ROOT_PATH="${GITHUB_WORKSPACE}/openomf-win-build-main/" \
               -DOMF_COMMAND_WRAPPER="wine" \
+              -DUSE_NATPMP=ON \
+              -DUSE_MINIUPNPC=ON \
               "${GITHUB_WORKSPACE}"
         make -j $(getconf _NPROCESSORS_ONLN)
         make -j $(getconf _NPROCESSORS_ONLN) install
