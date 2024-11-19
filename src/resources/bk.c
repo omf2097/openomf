@@ -1,9 +1,10 @@
 #include "formats/bk.h"
+#include "formats/error.h"
 #include "resources/bk.h"
 #include "utils/allocator.h"
 #include <string.h>
 
-void bk_create(bk *b, void *src) {
+void bk_create_inc(bk *b, void *src) {
     sd_bk_file *sdbk = (sd_bk_file *)src;
 
     // File ID
@@ -26,15 +27,28 @@ void bk_create(bk *b, void *src) {
     // Array for sprites, since we know we will fill most slots.
     array_create(&b->sprites);
 
-    // Copy info structs
     hashmap_create(&b->infos);
+}
+
+void bk_create(bk *b, void *src) {
+    bk_create_inc(b, src);
+
+    // Copy info structs
+    while(SD_AGAIN == bk_convert_inc(b, src)) {
+    }
+}
+
+int bk_convert_inc(bk *b, void *src) {
+    sd_bk_file *sdbk = (sd_bk_file *)src;
     bk_info tmp_bk_info;
     for(int i = 0; i < 50; i++) {
-        if(sdbk->anims[i] != NULL) {
+        if(sdbk->anims[i] != NULL && hashmap_iget(&b->infos, i, (void **)&tmp_bk_info, NULL)) {
             bk_info_create(&tmp_bk_info, &b->sprites, (void *)sdbk->anims[i], i);
             hashmap_iput(&b->infos, i, &tmp_bk_info, sizeof(bk_info));
+            return SD_AGAIN;
         }
     }
+    return SD_SUCCESS;
 }
 
 bk_info *bk_get_info(bk *b, int id) {
