@@ -1,4 +1,4 @@
-#include "video/opengl/shaders.h"
+#include "video/renderers/opengl3/helpers/shaders.h"
 #include "resources/pathmanager.h"
 #include "utils/allocator.h"
 #include "utils/log.h"

@@ -1,6 +1,6 @@
 #include <assert.h>
 
-#include "video/opengl/bindings.h"
+#include "video/renderers/opengl3/helpers/bindings.h"
 
 static GLuint bound_ubo = 0;
 static GLuint bound_vbo = 0;

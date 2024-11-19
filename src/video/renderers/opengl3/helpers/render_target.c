@@ -1,10 +1,10 @@
 #include <stdlib.h>
 
 #include "utils/allocator.h"
-#include "video/opengl/bindings.h"
-#include "video/opengl/fbo.h"
-#include "video/opengl/render_target.h"
-#include "video/opengl/texture.h"
+#include "video/renderers/opengl3/helpers/bindings.h"
+#include "video/renderers/opengl3/helpers/fbo.h"
+#include "video/renderers/opengl3/helpers/render_target.h"
+#include "video/renderers/opengl3/helpers/texture.h"
 
 typedef struct render_target {
     GLuint texture_id;

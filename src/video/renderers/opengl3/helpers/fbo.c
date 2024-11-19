@@ -1,6 +1,6 @@
-#include "video/opengl/fbo.h"
+#include "video/renderers/opengl3/helpers/fbo.h"
 #include "utils/log.h"
-#include "video/opengl/bindings.h"
+#include "video/renderers/opengl3/helpers/bindings.h"
 
 GLuint fbo_create(GLuint texture_id) {
     GLuint id;

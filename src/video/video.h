@@ -15,10 +15,14 @@
 typedef void (*video_screenshot_signal)(const SDL_Rect *rect, unsigned char *data,
                                         bool flipped); // Asynchronous screenshot signal
 
-int video_init(int window_w, int window_h, bool fullscreen, bool vsync);
-int video_reinit(int window_w, int window_h, bool fullscreen, bool vsync);
+void video_scan_renderers(void);
+int video_get_renderer_count(void);
+bool video_get_renderer_info(int index, const char **name, const char **description);
+
+bool video_init(const char *try_name, int window_w, int window_h, bool fullscreen, bool vsync);
+bool video_reinit(int window_w, int window_h, bool fullscreen, bool vsync);
 void video_reinit_renderer(void);
-void video_get_state(int *w, int *h, int *fs, int *vsync);
+void video_get_state(int *w, int *h, bool *fs, bool *vsync);
 void video_move_target(int x, int y);
 
 /**
@@ -88,13 +92,14 @@ void video_draw_size(const surface *src_surface, int x, int y, int w, int h);
 void video_draw_full(const surface *src_surface, int x, int y, int w, int h, int remap_offset, int remap_rounds,
                      int palette_offset, int palette_limit, int opacity, unsigned int flip_mode, unsigned int options);
 
-void video_reset_atlas(void);
+void video_signal_scene_change(void);
 
 void video_render_prepare(void);
-void video_render_finish_offscreen(void);
 void video_render_finish(void);
+void video_render_area_prepare(const SDL_Rect *area);
+void video_render_area_finish(surface *dst);
+
 void video_close(void);
-void video_area_capture(surface *sur, int x, int y, int w, int h);
 void video_schedule_screenshot(video_screenshot_signal callback);
 
 void video_draw_atlas(bool draw_atlas);

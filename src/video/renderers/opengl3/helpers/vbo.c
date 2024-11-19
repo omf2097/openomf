@@ -1,5 +1,5 @@
-#include "video/opengl/vbo.h"
-#include "video/opengl/bindings.h"
+#include "video/renderers/opengl3/helpers/vbo.h"
+#include "video/renderers/opengl3/helpers/bindings.h"
 
 GLuint vbo_create(GLsizeiptr size) {
     GLuint id;

@@ -1,5 +1,5 @@
-#include "video/opengl/vao.h"
-#include "video/opengl/bindings.h"
+#include "video/renderers/opengl3/helpers/vao.h"
+#include "video/renderers/opengl3/helpers/bindings.h"
 
 GLuint vao_create(void) {
     GLuint id;

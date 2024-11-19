@@ -38,9 +38,11 @@ int engine_init(void) {
     bool mono = setting->sound.music_mono;
     float music_volume = setting->sound.music_vol / 10.0;
     float sound_volume = setting->sound.sound_vol / 10.0;
+    const char *renderer = setting->video.renderer;
 
     // Initialize everything.
-    if(video_init(w, h, fs, vsync))
+    video_scan_renderers();
+    if(!video_init(renderer, w, h, fs, vsync))
         goto exit_0;
     if(!audio_init(frequency, mono, resampler, music_volume, sound_volume))
         goto exit_1;
@@ -145,7 +147,7 @@ void engine_run(engine_init_flags *init_flags) {
     int static_wait = 0;
     while(run && game_state_is_running(gs)) {
         // Handle events
-        int check_fs;
+        bool check_fs;
         while(SDL_PollEvent(&e)) {
             // Handle other events
             switch(e.type) {

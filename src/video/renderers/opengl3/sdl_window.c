@@ -1,4 +1,4 @@
-#include "video/sdl_window.h"
+#include "video/renderers/opengl3/sdl_window.h"
 #include "utils/log.h"
 
 #include <epoxy/gl.h>
@@ -46,6 +46,32 @@ void ortho2d(GLfloat *matrix, float left, float right, float bottom, float top) 
     *matrix++ = 1.0f;
 }
 
+bool has_gl_available(int version_major, int version_minor) {
+    SDL_Window *w;
+    SDL_GLContext *c;
+    bool ret = false;
+
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, version_major);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, version_minor);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+
+    if((w = SDL_CreateWindow("", 0, 0, 320, 200, SDL_WINDOW_HIDDEN | SDL_WINDOW_OPENGL)) == NULL) {
+        goto exit_0;
+    }
+    if((c = SDL_GL_CreateContext(w)) == NULL) {
+        goto exit_1;
+    }
+
+    // All succeeded! We got support!
+    ret = true;
+
+    SDL_GL_DeleteContext(c);
+exit_1:
+    SDL_DestroyWindow(w);
+exit_0:
+    return ret;
+}
+
 bool create_window(SDL_Window **window, int width, int height, bool fullscreen) {
     char title[32];
     snprintf(title, 32, "OpenOMF v%d.%d.%d", V_MAJOR, V_MINOR, V_PATCH);
@@ -54,10 +80,6 @@ bool create_window(SDL_Window **window, int width, int height, bool fullscreen) 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-
-    // TODO: Probably not required
-    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
     // RGBA8888
     SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);

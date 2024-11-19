@@ -80,6 +80,11 @@ void resolution_toggled(component *c, void *userdata, int pos) {
     }
 }
 
+void renderer_toggled(component *c, void *userdata, int pos) {
+    settings_video *v = &settings_get()->video;
+    video_get_renderer_info(pos, &v->renderer, NULL);
+}
+
 void menu_video_done(component *c, void *u) {
     scene *s = u;
     video_menu_data *local = menu_get_userdata(c->parent);
@@ -127,6 +132,18 @@ component *menu_video_create(scene *s) {
     component *menu = menu_create(11);
     menu_attach(menu, label_create(&tconf, "VIDEO"));
     menu_attach(menu, filler_create());
+
+    // Renderer selector
+    component *renderer_selector =
+        textselector_create(&tconf, "API:", "Choose the video renderer API to use", renderer_toggled, local);
+    menu_attach(menu, renderer_selector);
+
+    // Add standard resolutions
+    const char *r_name;
+    for(int r = 0; r < video_get_renderer_count(); r++) {
+        video_get_renderer_info(r, &r_name, NULL);
+        textselector_add_option(renderer_selector, r_name);
+    }
 
     // Resolution selector
     component *res_selector =

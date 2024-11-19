@@ -6,9 +6,9 @@
 #include "utils/allocator.h"
 #include "utils/log.h"
 #include "video/enums.h"
-#include "video/opengl/object_array.h"
-#include "video/opengl/vao.h"
-#include "video/opengl/vbo.h"
+#include "video/renderers/opengl3/helpers/object_array.h"
+#include "video/renderers/opengl3/helpers/vao.h"
+#include "video/renderers/opengl3/helpers/vbo.h"
 
 #define OBJ_BYTES (sizeof(object_data) * 4)
 #define MAX_FANS 2048
