@@ -132,6 +132,26 @@ file(GLOB_RECURSE OPENOMF_SRC
     "src/*/*.c" "src/*/*.h"
 )
 
+# Remove all render plugin source code from OPENOMF_SRC
+list(FILTER OPENOMF_SRC EXCLUDE REGEX "^src/video/renderers/.*/")
+# and enable select render plugins
+set(ENABLED_RENDER_PLUGINS opengl3)
+foreach(PLUGIN ${ENABLED_RENDER_PLUGINS})
+    # add render plugin sources
+    file(GLOB_RECURSE PLUGIN_SRC
+        LIST_DIRECTORIES OFF
+        CONFIGURE_DEPENDS
+        RELATIVE ${CMAKE_SOURCE_DIR}
+        "src/video/renderers/${PLUGIN}/*.c"
+        "src/video/renderers/${PLUGIN}/*.h"
+    )
+    list(APPEND OPENOMF_SRC ${PLUGIN_SRC})
+    # hook render plugin into video.c
+    string(TOUPPER "${PLUGIN}" PLUGIN_UPPER)
+    list(APPEND VIDEO_C_DEFINES "ENABLE_${PLUGIN_UPPER}_RENDERER")
+endforeach()
+set_source_files_properties("src/video/video.c" PROPERTIES COMPILE_DEFINITIONS "${VIDEO_C_DEFINES}")
+
 set(COREINCS
     src
     ${CMAKE_CURRENT_BINARY_DIR}/src/
