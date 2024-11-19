@@ -66,9 +66,9 @@ static void signal_scene_change(void *userdata) {
 static void signal_draw_atlas(void *userdata, bool toggle) {
 }
 
-static void renderer_init(renderer *gl3_renderer) {
+static void renderer_create(renderer *gl3_renderer) {
 }
-static void renderer_close(renderer *gl3_renderer) {
+static void renderer_destroy(renderer *gl3_renderer) {
 }
 
 void null_renderer_set_callbacks(renderer *gl3_renderer) {
@@ -76,8 +76,8 @@ void null_renderer_set_callbacks(renderer *gl3_renderer) {
     gl3_renderer->get_description = get_description;
     gl3_renderer->get_name = get_name;
 
-    gl3_renderer->init = renderer_init;
-    gl3_renderer->close = renderer_close;
+    gl3_renderer->create = renderer_create;
+    gl3_renderer->destroy = renderer_destroy;
 
     gl3_renderer->setup_context = setup_context;
     gl3_renderer->get_context_state = get_context_state;

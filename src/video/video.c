@@ -128,14 +128,14 @@ static bool video_find_renderer(const char *try_name) {
 bool video_init(const char *try_name, int window_w, int window_h, bool fullscreen, bool vsync) {
     if(!video_find_renderer(try_name))
         goto exit_0;
-    current_renderer.init(&current_renderer);
+    current_renderer.create(&current_renderer);
     if(!current_renderer.setup_context(current_renderer.ctx, window_w, window_h, fullscreen, vsync)) {
         goto exit_1;
     }
     return true;
 
 exit_1:
-    current_renderer.close(&current_renderer);
+    current_renderer.destroy(&current_renderer);
 exit_0:
     return false;
 }
@@ -174,7 +174,7 @@ void video_render_area_finish(surface *dst) {
 
 void video_close(void) {
     current_renderer.close_context(current_renderer.ctx);
-    current_renderer.close(&current_renderer);
+    current_renderer.destroy(&current_renderer);
 }
 
 void video_move_target(int x, int y) {

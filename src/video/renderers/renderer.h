@@ -50,8 +50,8 @@ struct renderer {
     get_description_fn get_description;
     get_name_fn get_name;
 
-    init_renderer_fn init;
-    close_renderer_fn close;
+    init_renderer_fn create;
+    close_renderer_fn destroy;
 
     setup_context_fn setup_context;
     reset_context_with_fn reset_context_with;
