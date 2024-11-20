@@ -11,7 +11,7 @@
 static sd_language *language;
 static sd_language *language2;
 
-int lang_init(void) {
+bool lang_init(void) {
     language = NULL;
     language2 = NULL;
 
@@ -90,12 +90,12 @@ int lang_init(void) {
 
     // XXX we're wasting 32KB of memory on language->strings[...].description
 
-    return 0;
+    return true;
 
 error_0:
     str_free(&filename_str);
     lang_close();
-    return 1;
+    return false;
 }
 
 void lang_close(void) {

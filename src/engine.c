@@ -46,15 +46,15 @@ int engine_init(void) {
         goto exit_0;
     if(!audio_init(frequency, mono, resampler, music_volume, sound_volume))
         goto exit_1;
-    if(sounds_loader_init())
+    if(!sounds_loader_init())
         goto exit_2;
-    if(lang_init())
+    if(!lang_init())
         goto exit_3;
-    if(fonts_init())
+    if(!fonts_init())
         goto exit_4;
     if(altpals_init())
         goto exit_5;
-    if(console_init())
+    if(!console_init())
         goto exit_6;
     vga_state_init();
 

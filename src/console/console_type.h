@@ -3,12 +3,13 @@
 
 #include "game/protos/scene.h"
 #include <SDL.h>
+#include <stdbool.h>
 
-typedef struct {
+typedef struct console {
     font font;
     list history;
-    int histpos;
-    int histpos_changed;
+    int hist_pos;
+    int hist_pos_changed;
     char output[4810];
     unsigned int output_head;
     unsigned int output_tail;
@@ -17,13 +18,13 @@ typedef struct {
     char input[41];
     surface background1;
     surface background2;
-    int isopen;
-    int ownsinput;
-    int ypos;
+    bool is_open;
+    bool owns_input;
+    int y_pos;
     hashmap cmds; // string -> command
 } console;
 
-typedef struct {
+typedef struct command {
     command_func func;
     const char *doc;
 } command;

@@ -9,8 +9,7 @@
 
 static sd_sound_file *sound_data = NULL;
 
-int sounds_loader_init(void) {
-    // Get filename
+bool sounds_loader_init(void) {
     const char *filename = pm_get_resource_path(DAT_SOUNDS);
 
     // Load sounds
@@ -23,32 +22,28 @@ int sounds_loader_init(void) {
         goto error_1;
     }
     INFO("Loaded sounds file '%s'.", filename);
-    return 0;
+    return true;
 
 error_1:
     sd_sounds_free(sound_data);
 error_0:
     omf_free(sound_data);
-    return 1;
+    return false;
 }
 
-int sounds_loader_get(int id, char **buffer, int *len) {
+bool sounds_loader_get(int id, char **buffer, int *len) {
     // Make sure the data is ok and sound exists
     if(sound_data == NULL)
-        return 1;
+        return false;
 
-    // Get sound
     const sd_sound *sample = sd_sounds_get(sound_data, id);
     if(sample == NULL) {
         PERROR("Requested sound %d does not exist!", id);
-        return 1;
+        return false;
     }
-
-    // Get much data!
     *buffer = sample->data;
     *len = sample->len;
-
-    return 0; // Success
+    return true;
 }
 
 void sounds_loader_close(void) {

@@ -2,6 +2,7 @@
 #define FONTS_H
 
 #include "utils/vector.h"
+#include <stdbool.h>
 
 typedef enum
 {
@@ -22,7 +23,7 @@ extern font font_large;
 extern font font_net1;
 extern font font_net2;
 
-int fonts_init(void);
+bool fonts_init(void);
 void fonts_close(void);
 
 #endif // FONTS_H
