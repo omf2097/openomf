@@ -50,7 +50,7 @@ int engine_init(void) {
         goto exit_2;
     if(!lang_init())
         goto exit_3;
-    if(fonts_init())
+    if(!fonts_init())
         goto exit_4;
     if(altpals_init())
         goto exit_5;

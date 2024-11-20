@@ -114,7 +114,7 @@ int pcx_font_load(font *font, const char *filename, int8_t palette_offset) {
     return 0;
 }
 
-int fonts_init(void) {
+bool fonts_init(void) {
     font_create(&font_small);
     font_create(&font_large);
     font_create(&font_net1);
@@ -155,7 +155,7 @@ int fonts_init(void) {
 
     // All done.
     fonts_loaded = 1;
-    return 0;
+    return true;
 
 error_1:
     font_free(&font_net2);
@@ -165,7 +165,7 @@ error_3:
     font_free(&font_large);
 error_4:
     font_free(&font_small);
-    return 1;
+    return false;
 }
 
 void fonts_close(void) {
