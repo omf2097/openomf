@@ -75,7 +75,7 @@ static Mix_Chunk *audio_get_chunk(int id, float volume, float pitch) {
     SDL_AudioCVT cvt;
 
     // Load sample (8000Hz, mono, 8bit)
-    if(!sounds_loader_get(id, &src_buf, &src_len) != 0) {
+    if(!sounds_loader_get(id, &src_buf, &src_len)) {
         PERROR("Requested sound sample %d not found", id);
         return NULL;
     }
