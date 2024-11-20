@@ -46,7 +46,7 @@ int engine_init(void) {
         goto exit_0;
     if(!audio_init(frequency, mono, resampler, music_volume, sound_volume))
         goto exit_1;
-    if(sounds_loader_init())
+    if(!sounds_loader_init())
         goto exit_2;
     if(lang_init())
         goto exit_3;
