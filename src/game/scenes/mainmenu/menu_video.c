@@ -82,7 +82,12 @@ void resolution_toggled(component *c, void *userdata, int pos) {
 
 void renderer_toggled(component *c, void *userdata, int pos) {
     settings_video *v = &settings_get()->video;
-    video_get_renderer_info(pos, &v->renderer, NULL);
+    const char *renderer;
+    video_get_renderer_info(pos, &renderer, NULL);
+    if(v->renderer) {
+        omf_free(v->renderer);
+    }
+    v->renderer = strdup(renderer);
 }
 
 void menu_video_done(component *c, void *u) {

@@ -39,7 +39,7 @@ typedef struct {
 } settings_language;
 
 typedef struct {
-    const char *renderer;
+    char *renderer;
     int screen_w;
     int screen_h;
     int vsync;
