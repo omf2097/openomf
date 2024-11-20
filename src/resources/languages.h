@@ -1,13 +1,15 @@
 #ifndef LANGUAGES_H
 #define LANGUAGES_H
 
+#include <stdbool.h>
+
 /*
  * This file should handle loading language file(s)
  * and support getting text. Maybe some function to rendering text index on
  * texture with the help of text.h ?
  */
 
-int lang_init(void);
+bool lang_init(void);
 void lang_close(void);
 
 /*! \brief OMF 2097 String ID

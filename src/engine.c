@@ -48,7 +48,7 @@ int engine_init(void) {
         goto exit_1;
     if(!sounds_loader_init())
         goto exit_2;
-    if(lang_init())
+    if(!lang_init())
         goto exit_3;
     if(fonts_init())
         goto exit_4;
