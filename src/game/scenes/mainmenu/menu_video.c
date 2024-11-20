@@ -141,7 +141,7 @@ component *menu_video_create(scene *s) {
         textselector_create(&tconf, "API:", "Choose the video renderer API to use", renderer_toggled, local);
     menu_attach(menu, renderer_selector);
 
-    // Add standard resolutions
+    // Add available renderers
     const char *r_name;
     for(int r = 0; r < video_get_renderer_count(); r++) {
         video_get_renderer_info(r, &r_name, NULL);
