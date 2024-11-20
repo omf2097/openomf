@@ -122,11 +122,11 @@ void lab_menu_main_sim(component *c, void *userdata) {
     trnmenu_set_submenu(c->parent, mechlab_sim_menu_create(s));
 }
 
+// clang-format off
 static const button_details details_list[] = {
-  // CB, Text, Text align, Halign, Valigh, Pad top, Pad bottom, Pad left, Pad right, Disable by default
+    // CB, Text, Text align, Halign, Valigh, Pad top, Pad bottom, Pad left, Pad right, Disable by default
     {lab_menu_main_arena,          "ARENA",            TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP,    2, 0, 0,  0, COM_DISABLED},
-    {lab_menu_main_training_enter, "TRAINING COURSES", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 28, 0,
-     COM_DISABLED                                                                                                          },
+    {lab_menu_main_training_enter, "TRAINING COURSES", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 28, 0, COM_DISABLED},
     {lab_menu_main_buy_enter,      "BUY",              TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP,    2, 0, 0,  0, COM_DISABLED},
     {lab_menu_main_sell_enter,     "SELL",             TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP,    2, 0, 0,  0, COM_DISABLED},
     {lab_menu_main_load,           "LOAD",             TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 14, 0, COM_DISABLED},
@@ -136,6 +136,7 @@ static const button_details details_list[] = {
     {lab_menu_main_quit,           "QUIT",             TEXT_VERTICAL,   TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0,  0, COM_ENABLED },
     {lab_menu_main_tournament,     "NEW TOURNAMENT",   TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0,  0, COM_DISABLED},
 };
+// clang-format on
 
 void lab_menu_focus_arena(component *c, bool focused, void *userdata) {
     if(focused) {

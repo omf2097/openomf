@@ -87,6 +87,7 @@ bool nat_create_mapping(nat_ctx *ctx, uint16_t int_port, uint16_t ext_port) {
     }
 }
 
+// clang-format off
 void nat_try_upnp(nat_ctx *ctx) {
 #ifdef MINIUPNPC_FOUND
     int error = 0;
@@ -99,15 +100,15 @@ void nat_try_upnp(nat_ctx *ctx) {
                                  &error); // error condition
     // TODO check error here?
     // try to look up our lan address, to test it
-#if(MINIUPNPC_API_VERSION >= 18)
-    int status = UPNP_GetValidIGD(ctx->upnp_dev, &ctx->upnp_urls, &ctx->upnp_data, ctx->lan_address,
-                                  sizeof(ctx->lan_address), NULL, 0);
-#else
-    int status =
-        UPNP_GetValidIGD(ctx->upnp_dev, &ctx->upnp_urls, &ctx->upnp_data, ctx->lan_address, sizeof(ctx->lan_address));
-#endif
-    // look up possible "status" values, the number "1" indicates a valid IGD was found
+    #if(MINIUPNPC_API_VERSION >= 18)
+        int status = UPNP_GetValidIGD(ctx->upnp_dev, &ctx->upnp_urls, &ctx->upnp_data, ctx->lan_address,
+                                      sizeof(ctx->lan_address), NULL, 0);
+    #else
+        int status =
+            UPNP_GetValidIGD(ctx->upnp_dev, &ctx->upnp_urls, &ctx->upnp_data, ctx->lan_address, sizeof(ctx->lan_address));
+    #endif
 
+    // look up possible "status" values, the number "1" indicates a valid IGD was found
     if(status == 1) {
         DEBUG("discovered uPNP server");
         ctx->type = NAT_TYPE_UPNP;
@@ -116,6 +117,7 @@ void nat_try_upnp(nat_ctx *ctx) {
     DEBUG("NAT-uPNP support not available");
 #endif
 }
+// clang-format on
 
 void nat_try_pmp(nat_ctx *ctx) {
 #ifdef NATPMP_FOUND
