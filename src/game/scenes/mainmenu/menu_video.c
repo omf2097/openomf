@@ -84,9 +84,7 @@ void renderer_toggled(component *c, void *userdata, int pos) {
     settings_video *v = &settings_get()->video;
     const char *renderer;
     video_get_renderer_info(pos, &renderer, NULL);
-    if(v->renderer) {
-        omf_free(v->renderer);
-    }
+    omf_free(v->renderer);
     v->renderer = strdup(renderer);
 }
 
