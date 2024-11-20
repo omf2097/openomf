@@ -54,7 +54,7 @@ int engine_init(void) {
         goto exit_4;
     if(altpals_init())
         goto exit_5;
-    if(console_init())
+    if(!console_init())
         goto exit_6;
     vga_state_init();
 

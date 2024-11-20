@@ -58,7 +58,7 @@ void console_add_history(const char *input, unsigned int len) {
     } else if(input2 == NULL) {
         list_prepend(&con->history, input, len);
     }
-    con->histpos = -1;
+    con->hist_pos = -1;
 }
 
 void console_handle_line(game_state *gs) {
@@ -197,27 +197,27 @@ void console_output_render(void) {
             lines++;
         } else {
             // TODO add word wrapping?
-            text_render_char(&tconf, TEXT_DEFAULT, x, y + con->ypos - 100, c);
+            text_render_char(&tconf, TEXT_DEFAULT, x, y + con->y_pos - 100, c);
             x += font_small.w;
         }
     }
 }
 
-int console_init(void) {
+bool console_init(void) {
     if(con != NULL)
-        return 1;
+        return false;
     con = omf_calloc(1, sizeof(console));
-    con->isopen = 0;
-    con->ownsinput = 0;
-    con->ypos = 0;
+    con->is_open = false;
+    con->owns_input = false;
+    con->y_pos = 0;
     con->input[0] = '\0';
     con->output[0] = '\0';
     con->output_head = 0;
     con->output_tail = 0;
     con->output_pos = 0;
     con->output_overflowing = 0;
-    con->histpos = -1;
-    con->histpos_changed = 0;
+    con->hist_pos = -1;
+    con->hist_pos_changed = 0;
     list_create(&con->history);
     hashmap_create(&con->cmds);
     menu_transparent_bg_create(&con->background1, 322, 101);
@@ -247,7 +247,7 @@ int console_init(void) {
     }
     console_output_addline("\n");
 
-    return 0;
+    return true;
 }
 
 void console_close(void) {
@@ -277,14 +277,14 @@ void console_event(game_state *gs, SDL_Event *e) {
          * SDLK) {*/
         // SDLK_UP and SDLK_DOWN does not work here
         if(scancode == SDL_SCANCODE_UP) {
-            if(con->histpos < HISTORY_MAX && con->histpos < (signed int)(list_size(&con->history) - 1)) {
-                con->histpos++;
-                con->histpos_changed = 1;
+            if(con->hist_pos < HISTORY_MAX && con->hist_pos < (signed int)(list_size(&con->history) - 1)) {
+                con->hist_pos++;
+                con->hist_pos_changed = 1;
             }
         } else if(scancode == SDL_SCANCODE_DOWN) {
-            if(con->histpos > -1) {
-                con->histpos--;
-                con->histpos_changed = 1;
+            if(con->hist_pos > -1) {
+                con->hist_pos--;
+                con->hist_pos_changed = 1;
             }
         } else if(scancode == SDL_SCANCODE_LEFT) {
             // TODO move cursor to the left
@@ -307,42 +307,42 @@ void console_event(game_state *gs, SDL_Event *e) {
 }
 
 void console_render(void) {
-    if(con->ypos > 0) {
-        if(con->histpos != -1 && con->histpos_changed) {
-            char *input = list_get(&con->history, con->histpos);
+    if(con->y_pos > 0) {
+        if(con->hist_pos != -1 && con->hist_pos_changed) {
+            char *input = list_get(&con->history, con->hist_pos);
             memcpy(con->input, input, sizeof(con->input));
-            con->histpos_changed = 0;
+            con->hist_pos_changed = 0;
         }
-        if(con->histpos == -1 && con->histpos_changed) {
+        if(con->hist_pos == -1 && con->hist_pos_changed) {
             con->input[0] = '\0';
-            con->histpos_changed = 0;
+            con->hist_pos_changed = 0;
         }
-        video_draw_remap(&con->background1, -1, con->ypos - 101, 4, 1, 0);
-        video_draw(&con->background2, -1, con->ypos - 101);
+        video_draw_remap(&con->background1, -1, con->y_pos - 101, 4, 1, 0);
+        video_draw(&con->background2, -1, con->y_pos - 101);
         text_settings tconf;
         text_defaults(&tconf);
         tconf.font = FONT_SMALL;
         // input line
         tconf.cforeground = TEXT_MEDIUM_GREEN;
-        text_render(&tconf, TEXT_DEFAULT, 0, con->ypos - 7, 300, 6, con->input);
+        text_render(&tconf, TEXT_DEFAULT, 0, con->y_pos - 7, 300, 6, con->input);
 
         // cursor
         tconf.cforeground = TEXT_BLINKY_GREEN;
-        text_render(&tconf, TEXT_DEFAULT, strlen(con->input) * font_small.w, con->ypos - 7, 6, 6, CURSOR_STR);
+        text_render(&tconf, TEXT_DEFAULT, strlen(con->input) * font_small.w, con->y_pos - 7, 6, 6, CURSOR_STR);
         console_output_render();
     }
 }
 
 void console_tick(void) {
-    if(con->isopen && con->ypos < 100) {
-        con->ypos += 4;
+    if(con->is_open && con->y_pos < 100) {
+        con->y_pos += 4;
         if(settings_get()->video.instant_console) {
-            con->ypos = 100;
+            con->y_pos = 100;
         }
-    } else if(!con->isopen && con->ypos > 0) {
-        con->ypos -= 4;
+    } else if(!con->is_open && con->y_pos > 0) {
+        con->y_pos -= 4;
         if(settings_get()->video.instant_console) {
-            con->ypos = 0;
+            con->y_pos = 0;
         }
     }
 }
@@ -358,23 +358,23 @@ void console_remove_cmd(const char *name) {
     hashmap_sdel(&con->cmds, name);
 }
 
-int console_window_is_open(void) {
-    return con->isopen;
+bool console_window_is_open(void) {
+    return con->is_open;
 }
 
 void console_window_open(void) {
     if(!SDL_IsTextInputActive()) {
         SDL_StartTextInput();
-        con->ownsinput = 1;
+        con->owns_input = true;
     } else {
-        con->ownsinput = 0;
+        con->owns_input = false;
     }
-    con->isopen = 1;
+    con->is_open = true;
 }
 
 void console_window_close(void) {
-    if(con->ownsinput) {
+    if(con->owns_input) {
         SDL_StopTextInput();
     }
-    con->isopen = 0;
+    con->is_open = false;
 }
