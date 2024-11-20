@@ -99,13 +99,17 @@ void nat_try_upnp(nat_ctx *ctx) {
                                  &error); // error condition
     // TODO check error here?
     // try to look up our lan address, to test it
-#if(MINIUPNPC_API_VERSION >= 18)
-    int status = UPNP_GetValidIGD(ctx->upnp_dev, &ctx->upnp_urls, &ctx->upnp_data, ctx->lan_address,
-                                  sizeof(ctx->lan_address), NULL, 0);
-#else
-    int status =
-        UPNP_GetValidIGD(ctx->upnp_dev, &ctx->upnp_urls, &ctx->upnp_data, ctx->lan_address, sizeof(ctx->lan_address));
-#endif
+
+    // clang-format off
+    #if(MINIUPNPC_API_VERSION >= 18)
+        int status = UPNP_GetValidIGD(ctx->upnp_dev, &ctx->upnp_urls, &ctx->upnp_data, ctx->lan_address,
+                                      sizeof(ctx->lan_address), NULL, 0);
+    #else
+        int status =
+            UPNP_GetValidIGD(ctx->upnp_dev, &ctx->upnp_urls, &ctx->upnp_data, ctx->lan_address, sizeof(ctx->lan_address));
+    #endif
+    // clang-format on
+
     // look up possible "status" values, the number "1" indicates a valid IGD was found
 
     if(status == 1) {
