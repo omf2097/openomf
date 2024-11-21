@@ -13,7 +13,7 @@
 #define END1_TEXT 993
 #define END2_TEXT 1003
 
-typedef struct cutscene_local_t {
+typedef struct cutscene_local {
     char *text;
     char *current;
     size_t len;
@@ -24,7 +24,7 @@ typedef struct cutscene_local_t {
     text_settings text_conf;
 } cutscene_local;
 
-int cutscene_next_scene(scene *scene) {
+static int cutscene_next_scene(scene *scene) {
     game_player *player1 = game_state_get_player(scene->gs, 0);
     switch(scene->id) {
         case SCENE_END:
@@ -41,7 +41,7 @@ int cutscene_next_scene(scene *scene) {
     }
 }
 
-void cutscene_input_tick(scene *scene) {
+static void cutscene_input_tick(scene *scene) {
     cutscene_local *local = scene_get_userdata(scene);
     game_player *player1 = game_state_get_player(scene->gs, 0);
     ctrl_event *p1 = NULL, *i;
@@ -70,24 +70,24 @@ void cutscene_input_tick(scene *scene) {
                     }
                 }
             }
-        } while((i = i->next));
+        } while((i = i->next) != NULL);
     }
     controller_free_chain(p1);
 }
 
-void cutscene_render_overlay(scene *scene) {
+static void cutscene_render_overlay(scene *scene) {
     cutscene_local *local = scene_get_userdata(scene);
     text_render(&local->text_conf, TEXT_DEFAULT, local->text_x, local->text_y, local->text_width, 200, local->current);
 }
 
-void cutscene_free(scene *scene) {
+static void cutscene_free(scene *scene) {
     cutscene_local *local = scene_get_userdata(scene);
     omf_free(local->text);
     omf_free(local);
     scene_set_userdata(scene, local);
 }
 
-void cutscene_startup(scene *scene, int id, int *m_load, int *m_repeat) {
+static void cutscene_startup(scene *scene, int id, int *m_load, int *m_repeat) {
     if(scene->id == SCENE_END || scene->id == SCENE_END1) {
         if(id == 1) {
             *m_load = 1;
@@ -95,6 +95,35 @@ void cutscene_startup(scene *scene, int id, int *m_load, int *m_repeat) {
     } else if(scene->id == SCENE_END2 && (id == 1 || id == 11)) {
         *m_load = 1;
     }
+}
+
+static void cutscene_spawn_random(scene *scene) {
+    iterator it;
+    hashmap_iter_begin(&scene->bk_data->infos, &it);
+    hashmap_pair *pair = NULL;
+
+    while((pair = iter_next(&it)) != NULL) {
+        bk_info *info = (bk_info *)pair->value;
+        if(info->probability > 1) {
+            if(random_int(&scene->gs->rand, info->probability) != 1) {
+                continue;
+            }
+            object *obj = omf_calloc(1, sizeof(object));
+            object_create(obj, scene->gs, info->ani.start_pos, vec2f_create(0, 0));
+            object_set_stl(obj, scene->bk_data->sound_translation_table);
+            object_set_animation(obj, &info->ani);
+
+            // If there was already playing instance, free the object.
+            if(game_state_add_object(scene->gs, obj, RENDER_LAYER_BOTTOM, 1, 0) == 1) {
+                object_free(obj);
+                omf_free(obj);
+            }
+        }
+    }
+}
+
+static void cutscene_dynamic_tick(scene *scene, int paused) {
+    cutscene_spawn_random(scene);
 }
 
 int cutscene_create(scene *scene) {
@@ -208,6 +237,7 @@ int cutscene_create(scene *scene) {
     scene_set_input_poll_cb(scene, cutscene_input_tick);
     scene_set_startup_cb(scene, cutscene_startup);
     scene_set_render_overlay_cb(scene, cutscene_render_overlay);
+    scene_set_dynamic_tick_cb(scene, cutscene_dynamic_tick);
 
     return 0;
 }
