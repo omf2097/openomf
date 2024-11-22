@@ -230,7 +230,7 @@ int main(int argc, char *argv[]) {
     }
 
     // Initialize engine
-    if(engine_init()) {
+    if(engine_init(&init_flags)) {
         err_msgbox("Failed to initialize game engine.");
         goto exit_4;
     }

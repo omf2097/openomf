@@ -26,7 +26,7 @@ static int start_timeout = 30;
 static int enable_screen_updates = 1;
 static int debug_palette_number = 0;
 
-int engine_init(void) {
+int engine_init(engine_init_flags *init_flags) {
     settings *setting = settings_get();
 
     int w = setting->video.screen_w;
