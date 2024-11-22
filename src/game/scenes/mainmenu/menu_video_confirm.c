@@ -20,14 +20,22 @@ void video_confirm_ok_clicked(component *c, void *userdata) {
     m->finished = 1;
 
     video_menu_confirm_data *local = userdata;
+    omf_free(local->old_video_settings->renderer);
     *local->old_video_settings = settings_get()->video;
 }
 
 void video_confirm_cancel_clicked(component *c, void *userdata) {
     video_menu_confirm_data *local = userdata;
     settings_video *v = &settings_get()->video;
+    bool render_plugin_changed = strcmp(v->renderer, local->old_video_settings->renderer) != 0;
+    omf_free(v->renderer);
     *v = *local->old_video_settings;
-    video_reinit(v->screen_w, v->screen_h, v->fullscreen, v->vsync);
+    if(render_plugin_changed) {
+        video_close();
+        video_init(v->renderer, v->screen_w, v->screen_h, v->fullscreen, v->vsync);
+    } else {
+        video_reinit(v->screen_w, v->screen_h, v->fullscreen, v->vsync);
+    }
 
     // Finish the menu
     menu *m = sizer_get_obj(c->parent);
