@@ -133,8 +133,14 @@ file(GLOB_RECURSE OPENOMF_SRC
 
 # Remove all render plugin source code from OPENOMF_SRC
 list(FILTER OPENOMF_SRC EXCLUDE REGEX "^src/video/renderers/.*/")
+# Enable "NULL" renderer in debug builds, for automated testing
+list(APPEND OPENOMF_SRC
+  "$<$<CONFIG:Debug>:src/video/renderers/null/null_renderer.c>"
+  "$<$<CONFIG:Debug>:src/video/renderers/null/null_renderer.h>"
+)
+list(APPEND VIDEO_C_DEFINES "$<$<CONFIG:Debug>:ENABLE_NULL_RENDERER>")
 # and enable select render plugins
-set(ENABLED_RENDER_PLUGINS opengl3 null)
+set(ENABLED_RENDER_PLUGINS opengl3)
 foreach(PLUGIN ${ENABLED_RENDER_PLUGINS})
     # add render plugin sources
     file(GLOB_RECURSE PLUGIN_SRC
