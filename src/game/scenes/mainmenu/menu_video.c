@@ -145,6 +145,8 @@ component *menu_video_create(scene *s) {
     const char *r_name;
     for(int r = 0; r < video_get_renderer_count(); r++) {
         video_get_renderer_info(r, &r_name, NULL);
+        if(strcmp(r_name, "NULL") == 0)
+            continue;
         textselector_add_option(renderer_selector, r_name);
         if(strcmp(r_name, setting->video.renderer) == 0) {
             textselector_set_pos(renderer_selector, r);
