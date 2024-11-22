@@ -92,10 +92,16 @@ void menu_video_done(component *c, void *u) {
     scene *s = u;
     video_menu_data *local = menu_get_userdata(c->parent);
     settings_video *v = &settings_get()->video;
-    video_reinit(v->screen_w, v->screen_h, v->fullscreen, v->vsync);
 
-    if(local->old_video_settings.screen_w != v->screen_w || local->old_video_settings.screen_h != v->screen_h ||
-       local->old_video_settings.fullscreen != v->fullscreen || local->old_video_settings.vsync != v->vsync) {
+    bool render_plugin_changed = strcmp(v->renderer, local->old_video_settings.renderer) != 0;
+    if(render_plugin_changed) {
+        video_close();
+        video_init(v->renderer, v->screen_w, v->screen_h, v->fullscreen, v->vsync);
+
+        menu_set_submenu(c->parent, menu_video_confirm_create(s, &local->old_video_settings));
+    } else if(local->old_video_settings.screen_w != v->screen_w || local->old_video_settings.screen_h != v->screen_h ||
+              local->old_video_settings.fullscreen != v->fullscreen || local->old_video_settings.vsync != v->vsync) {
+        video_reinit(v->screen_w, v->screen_h, v->fullscreen, v->vsync);
 
         menu_set_submenu(c->parent, menu_video_confirm_create(s, &local->old_video_settings));
     } else {
@@ -119,6 +125,7 @@ component *menu_video_create(scene *s) {
     // Menu userdata
     video_menu_data *local = omf_calloc(1, sizeof(video_menu_data));
     local->old_video_settings = settings_get()->video;
+    local->old_video_settings.renderer = omf_strdup(local->old_video_settings.renderer);
 
     // Load settings etc.
     const char *offon_opts[] = {"OFF", "ON"};
