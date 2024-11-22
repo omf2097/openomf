@@ -75,6 +75,11 @@ void vga_state_mark_remaps_flushed(void) {
     state.dirty_remaps = false;
 }
 
+void vga_state_mark_dirty(void) {
+    damage_set_range(&state.dmg_base, 0, 255);
+    state.dirty_remaps = true;
+}
+
 void vga_state_mul_base_palette(vga_index start, vga_index end, float multiplier) {
     assert(multiplier >= 0 && multiplier <= 1.0);
     vga_color *c;
