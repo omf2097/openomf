@@ -108,10 +108,6 @@ find_package(natpmp)
 
 
 
-# Check functions and generate platform configuration file
-check_symbol_exists(strdup "string.h" HAVE_STD_STRDUP)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/platform.h.in ${CMAKE_CURRENT_BINARY_DIR}/src/platform.h)
-
 # If tests are enabled, find CUnit
 if(USE_TESTS)
     find_package(CUnit REQUIRED)
