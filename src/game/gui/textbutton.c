@@ -6,6 +6,7 @@
 #include "game/gui/textbutton.h"
 #include "game/gui/widget.h"
 #include "utils/allocator.h"
+#include "utils/c_string_util.h"
 #include "video/video.h"
 
 typedef struct {
@@ -40,7 +41,7 @@ void textbutton_set_text(component *c, const char *text) {
     if(tb->text) {
         omf_free(tb->text);
     }
-    tb->text = strdup(text);
+    tb->text = omf_strdup(text);
     component_set_size_hints(c, text_width(&tb->tconf, text), 10);
 }
 
@@ -91,7 +92,7 @@ component *textbutton_create(const text_settings *tconf, const char *text, const
     component_disable(c, disabled);
 
     textbutton *tb = omf_calloc(1, sizeof(textbutton));
-    tb->text = strdup(text);
+    tb->text = omf_strdup(text);
     component_set_size_hints(c, text_width(tconf, text), 8);
     component_set_help_text(c, help);
     memcpy(&tb->tconf, tconf, sizeof(text_settings));

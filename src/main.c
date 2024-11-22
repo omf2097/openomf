@@ -7,7 +7,6 @@
 #include "resources/sgmanager.h"
 #include "utils/allocator.h"
 #include "utils/c_string_util.h"
-#include "utils/compat.h"
 #include "utils/log.h"
 #include "utils/msgbox.h"
 #include "utils/random.h"
@@ -120,7 +119,7 @@ int main(int argc, char *argv[]) {
     if(connect->count > 0) {
         init_flags.net_mode = NET_MODE_CLIENT;
         connect_port = 2097;
-        ip = strdup(connect->sval[0]);
+        ip = omf_strdup(connect->sval[0]);
         if(port->count > 0) {
             connect_port = port->ival[0] & 0xFFFF;
         }
@@ -141,7 +140,7 @@ int main(int argc, char *argv[]) {
     }
 
     if(trace->count > 0) {
-        trace_file = strdup(trace->sval[0]);
+        trace_file = omf_strdup(trace->sval[0]);
     }
 
     // Init log

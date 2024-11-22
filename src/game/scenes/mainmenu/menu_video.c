@@ -6,7 +6,7 @@
 #include "game/gui/gui.h"
 #include "game/utils/settings.h"
 #include "utils/allocator.h"
-#include "utils/compat.h"
+#include "utils/c_string_util.h"
 #include "video/video.h"
 
 struct resolution_t {
@@ -85,7 +85,7 @@ void renderer_toggled(component *c, void *userdata, int pos) {
     const char *renderer;
     video_get_renderer_info(pos, &renderer, NULL);
     omf_free(v->renderer);
-    v->renderer = strdup(renderer);
+    v->renderer = omf_strdup(renderer);
 }
 
 void menu_video_done(component *c, void *u) {

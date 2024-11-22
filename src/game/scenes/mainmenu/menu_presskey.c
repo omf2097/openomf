@@ -2,7 +2,7 @@
 #include "game/gui/gui.h"
 #include "game/utils/settings.h"
 #include "utils/allocator.h"
-#include "utils/compat.h"
+#include "utils/c_string_util.h"
 #include "utils/log.h"
 
 typedef struct {
@@ -96,7 +96,7 @@ void menu_presskey_tick(component *c) {
                 return;
             } else {
                 omf_free(*(local->key));
-                *(local->key) = strdup(SDL_GetScancodeName(i));
+                *(local->key) = omf_strdup(SDL_GetScancodeName(i));
                 m->finished = 1;
                 return;
             }

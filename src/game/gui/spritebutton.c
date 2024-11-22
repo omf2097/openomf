@@ -5,6 +5,7 @@
 #include "game/gui/spritebutton.h"
 #include "game/gui/widget.h"
 #include "utils/allocator.h"
+#include "utils/c_string_util.h"
 #include "utils/log.h"
 #include "video/video.h"
 
@@ -92,7 +93,7 @@ component *spritebutton_create(const text_settings *tconf, const char *text, sur
 
     spritebutton *sb = omf_calloc(1, sizeof(spritebutton));
     if(text != NULL)
-        sb->text = strdup(text);
+        sb->text = omf_strdup(text);
     memcpy(&sb->tconf, tconf, sizeof(text_settings));
     sb->click_cb = cb;
     sb->img = img;

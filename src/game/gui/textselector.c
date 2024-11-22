@@ -6,6 +6,7 @@
 #include "game/gui/textselector.h"
 #include "game/gui/widget.h"
 #include "utils/allocator.h"
+#include "utils/c_string_util.h"
 
 typedef struct {
     char *text;
@@ -37,7 +38,7 @@ void textselector_clear_options(component *c) {
 
 void textselector_add_option(component *c, const char *value) {
     textselector *tb = widget_get_obj(c);
-    char *new = strdup(value);
+    char *new = omf_strdup(value);
     vector_append(&tb->options, &new);
 }
 
@@ -154,7 +155,7 @@ component *textselector_create(const text_settings *tconf, const char *text, con
 
     textselector *tb = omf_calloc(1, sizeof(textselector));
     component_set_help_text(c, help);
-    tb->text = strdup(text);
+    tb->text = omf_strdup(text);
     memcpy(&tb->tconf, tconf, sizeof(text_settings));
     tb->pos = &tb->pos_;
     tb->userdata = userdata;

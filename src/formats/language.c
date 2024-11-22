@@ -9,6 +9,7 @@
 #include "formats/internal/writer.h"
 #include "formats/language.h"
 #include "utils/allocator.h"
+#include "utils/c_string_util.h"
 
 int sd_language_create(sd_language *language) {
     if(language == NULL) {
@@ -112,7 +113,7 @@ void sd_language_append(sd_language *language, const char *description, const ch
 
     language->strings = omf_realloc(language->strings, language->count * sizeof(sd_lang_string));
     strncpy(language->strings[language->count - 1].description, description, 32);
-    language->strings[language->count - 1].data = strdup(data);
+    language->strings[language->count - 1].data = omf_strdup(data);
 }
 
 int sd_language_save(sd_language *language, const char *filename) {

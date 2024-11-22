@@ -1,7 +1,7 @@
 #include "game/gui/label.h"
 #include "game/gui/widget.h"
 #include "utils/allocator.h"
-#include "utils/compat.h"
+#include "utils/c_string_util.h"
 
 typedef struct {
     char *text;
@@ -24,7 +24,7 @@ void label_set_text(component *c, const char *text) {
     if(local->text) {
         omf_free(local->text);
     }
-    local->text = strdup(text);
+    local->text = omf_strdup(text);
 }
 
 text_settings *label_get_text_settings(component *c) {
@@ -41,7 +41,7 @@ component *label_create_with_width(const text_settings *tconf, const char *text,
 
     label *local = omf_calloc(1, sizeof(label));
     memcpy(&local->tconf, tconf, sizeof(text_settings));
-    local->text = strdup(text);
+    local->text = omf_strdup(text);
 
     int tsize = text_char_width(tconf);
     int longest = 0;

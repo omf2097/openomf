@@ -14,6 +14,7 @@
 #include "resources/languages.h"
 #include "resources/sgmanager.h"
 #include "utils/allocator.h"
+#include "utils/c_string_util.h"
 #include "utils/log.h"
 #include "video/video.h"
 
@@ -82,7 +83,7 @@ void lab_dash_main_chr_load(component *c, void *userdata) {
     }
 
     omf_free(settings_get()->tournament.last_name);
-    settings_get()->tournament.last_name = strdup(p1->pilot->name);
+    settings_get()->tournament.last_name = omf_strdup(p1->pilot->name);
     settings_save();
     trnmenu_finish(c);
 }
