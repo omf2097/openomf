@@ -39,6 +39,8 @@ int engine_init(engine_init_flags *init_flags) {
     float music_volume = setting->sound.music_vol / 10.0;
     float sound_volume = setting->sound.sound_vol / 10.0;
     const char *renderer = setting->video.renderer;
+    if(strlen(init_flags->force_renderer) > 0)
+        renderer = init_flags->force_renderer;
 
     // Initialize everything.
     video_scan_renderers();
