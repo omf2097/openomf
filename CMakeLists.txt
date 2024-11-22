@@ -134,7 +134,7 @@ file(GLOB_RECURSE OPENOMF_SRC
 # Remove all render plugin source code from OPENOMF_SRC
 list(FILTER OPENOMF_SRC EXCLUDE REGEX "^src/video/renderers/.*/")
 # and enable select render plugins
-set(ENABLED_RENDER_PLUGINS opengl3)
+set(ENABLED_RENDER_PLUGINS opengl3 null)
 foreach(PLUGIN ${ENABLED_RENDER_PLUGINS})
     # add render plugin sources
     file(GLOB_RECURSE PLUGIN_SRC
