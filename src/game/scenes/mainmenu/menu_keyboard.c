@@ -7,7 +7,6 @@
 #include "game/gui/gui.h"
 #include "game/utils/settings.h"
 #include "utils/allocator.h"
-#include "utils/compat.h"
 #include "utils/log.h"
 
 static const char *keynames[] = {"JUMP UP",   "JUMP RIGHT", "WALK RIGHT", "DUCK FORWARD", "DUCK",

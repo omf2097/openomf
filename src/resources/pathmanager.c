@@ -13,6 +13,7 @@
 
 #include "resources/pathmanager.h"
 #include "utils/allocator.h"
+#include "utils/c_string_util.h"
 #include "utils/log.h"
 
 // Files
@@ -234,7 +235,7 @@ char *pm_get_local_base_dir(void) {
         snprintf(errormessage, 128, "Error getting config path: %s", SDL_GetError());
         return NULL;
     }
-    out = strdup(sdl_path);
+    out = omf_strdup(sdl_path);
     SDL_free(sdl_path);
 
     // Ensure the path exists before continuing on

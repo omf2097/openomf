@@ -3,7 +3,7 @@
 #include "game/game_state.h"
 #include "game/objects/arena_constraints.h"
 #include "utils/allocator.h"
-#include "utils/compat.h"
+#include "utils/c_string_util.h"
 #include "utils/log.h"
 #include "utils/miscmath.h"
 #include "video/vga_state.h"
@@ -99,7 +99,7 @@ int object_clone(object *src, object *dst, game_state *gs) {
     dst->gs = gs;
     player_clone(src, dst);
     if(src->custom_str) {
-        dst->custom_str = strdup(src->custom_str);
+        dst->custom_str = omf_strdup(src->custom_str);
     }
 
     if(src->cur_animation_own == OWNER_OBJECT) {
@@ -577,7 +577,7 @@ void object_set_animation(object *obj, animation *ani) {
  */
 void object_set_custom_string(object *obj, const char *str) {
     omf_free(obj->custom_str);
-    obj->custom_str = strdup(str);
+    obj->custom_str = omf_strdup(str);
     player_reload_with_str(obj, obj->custom_str);
     // DEBUG("Set animation string to %s", obj->custom_str);
 }

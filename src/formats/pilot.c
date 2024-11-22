@@ -4,6 +4,7 @@
 #include "formats/error.h"
 #include "formats/pilot.h"
 #include "utils/allocator.h"
+#include "utils/c_string_util.h"
 
 #define PILOT_BLOCK_LENGTH 428
 
@@ -20,7 +21,7 @@ void sd_pilot_clone(sd_pilot *dest, const sd_pilot *src) {
     memcpy(dest, src, sizeof(sd_pilot));
     for(int m = 0; m < 10; m++) {
         if(src->quotes[m] != NULL) {
-            dest->quotes[m] = strdup(src->quotes[m]);
+            dest->quotes[m] = omf_strdup(src->quotes[m]);
         }
     }
 }

@@ -1,6 +1,7 @@
 #include "game/utils/settings.h"
 #include "controller/controller.h"
 #include "utils/allocator.h"
+#include "utils/c_string_util.h"
 #include "utils/config.h"
 #include "utils/log.h"
 #include <stddef.h> //offsetof
@@ -219,7 +220,7 @@ void settings_load_fields(void *st, const field *fields, int nfields) {
                 char **s = fieldstr(st, f->offset);
                 omf_free(*s);
                 if(conf_string(f->name)) {
-                    *s = strdup(conf_string(f->name));
+                    *s = omf_strdup(conf_string(f->name));
                 }
             } break;
         }

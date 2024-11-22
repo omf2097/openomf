@@ -3,6 +3,7 @@
 #include "game/protos/scene.h"
 #include "game/utils/serial.h"
 #include "utils/allocator.h"
+#include "utils/c_string_util.h"
 #include "utils/log.h"
 #include "utils/miscmath.h"
 #include "video/video.h"
@@ -584,7 +585,7 @@ void lobby_entered_name(component *c, void *userdata) {
             const char *name = textinput_value(c);
             serial_write(&ser, name, strlen(name));
 
-            settings_get()->net.net_username = strdup(name);
+            settings_get()->net.net_username = omf_strdup(name);
 
             ENetPacket *packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
             serial_free(&ser);

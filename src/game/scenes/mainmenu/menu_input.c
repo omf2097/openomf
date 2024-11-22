@@ -6,7 +6,7 @@
 #include "game/gui/gui.h"
 #include "game/utils/settings.h"
 #include "utils/allocator.h"
-#include "utils/compat.h"
+#include "utils/c_string_util.h"
 
 typedef struct {
     int selected_player;
@@ -14,7 +14,7 @@ typedef struct {
 
 #define KEY_RESET(key, scancode)                                                                                       \
     omf_free(key);                                                                                                     \
-    key = strdup(SDL_GetScancodeName(scancode))
+    key = omf_strdup(SDL_GetScancodeName(scancode))
 
 void menu_set_right_keyboard(component *c, void *userdata) {
     menu_input_local *local = menu_get_userdata(c->parent);
@@ -130,12 +130,12 @@ void menu_set_joystick1(component *c, void *userdata) {
     if(local->selected_player == 1) {
         k->ctrl_type1 = CTRL_TYPE_GAMEPAD;
         omf_free(k->joy_name1);
-        k->joy_name1 = strdup(SDL_JoystickNameForIndex(joystick_nth_id(1)));
+        k->joy_name1 = omf_strdup(SDL_JoystickNameForIndex(joystick_nth_id(1)));
         k->joy_offset1 = joystick_offset(joystick_nth_id(1), k->joy_name1);
     } else {
         k->ctrl_type2 = CTRL_TYPE_GAMEPAD;
         omf_free(k->joy_name2);
-        k->joy_name2 = strdup(SDL_JoystickNameForIndex(joystick_nth_id(1)));
+        k->joy_name2 = omf_strdup(SDL_JoystickNameForIndex(joystick_nth_id(1)));
         k->joy_offset2 = joystick_offset(joystick_nth_id(1), k->joy_name2);
     }
     reconfigure_controller(((scene *)userdata)->gs);
@@ -147,12 +147,12 @@ void menu_set_joystick2(component *c, void *userdata) {
     if(local->selected_player == 1) {
         k->ctrl_type1 = CTRL_TYPE_GAMEPAD;
         omf_free(k->joy_name1);
-        k->joy_name1 = strdup(SDL_GameControllerNameForIndex(joystick_nth_id(2)));
+        k->joy_name1 = omf_strdup(SDL_GameControllerNameForIndex(joystick_nth_id(2)));
         k->joy_offset1 = joystick_offset(joystick_nth_id(2), k->joy_name1);
     } else {
         k->ctrl_type2 = CTRL_TYPE_GAMEPAD;
         omf_free(k->joy_name2);
-        k->joy_name2 = strdup(SDL_GameControllerNameForIndex(joystick_nth_id(2)));
+        k->joy_name2 = omf_strdup(SDL_GameControllerNameForIndex(joystick_nth_id(2)));
         k->joy_offset2 = joystick_offset(joystick_nth_id(2), k->joy_name2);
     }
     reconfigure_controller(((scene *)userdata)->gs);

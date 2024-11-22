@@ -4,6 +4,7 @@
 #include "game/utils/settings.h"
 #include "resources/pathmanager.h"
 #include "utils/allocator.h"
+#include "utils/c_string_util.h"
 #include "utils/log.h"
 #include "utils/scandir.h"
 #include <stdio.h>
@@ -144,7 +145,7 @@ int sg_save(sd_chr_file *chr) {
     if(ret == SD_SUCCESS) {
         DEBUG("Saved pilot %s in %s", chr->pilot.name, filename);
         omf_free(settings_get()->tournament.last_name);
-        settings_get()->tournament.last_name = strdup(chr->pilot.name);
+        settings_get()->tournament.last_name = omf_strdup(chr->pilot.name);
         settings_save();
     }
     return ret;
