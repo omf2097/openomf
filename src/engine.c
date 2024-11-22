@@ -33,20 +33,22 @@ int engine_init(engine_init_flags *init_flags) {
     int h = setting->video.screen_h;
     int fs = setting->video.fullscreen;
     int vsync = setting->video.vsync;
-    int frequency = setting->sound.music_frequency;
+    int frequency = setting->sound.sample_rate;
     int resampler = setting->sound.music_resampler;
     bool mono = setting->sound.music_mono;
     float music_volume = setting->sound.music_vol / 10.0;
     float sound_volume = setting->sound.sound_vol / 10.0;
+    const char *player = setting->sound.player;
     const char *renderer = setting->video.renderer;
     if(strlen(init_flags->force_renderer) > 0)
         renderer = init_flags->force_renderer;
 
     // Initialize everything.
     video_scan_renderers();
+    audio_scan_backends();
     if(!video_init(renderer, w, h, fs, vsync))
         goto exit_0;
-    if(!audio_init(frequency, mono, resampler, music_volume, sound_volume))
+    if(!audio_init(player, frequency, mono, resampler, music_volume, sound_volume))
         goto exit_1;
     if(!sounds_loader_init())
         goto exit_2;

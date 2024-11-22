@@ -28,10 +28,11 @@ typedef enum
 
 typedef struct {
     int music_mono;
-    int music_frequency;
+    unsigned int sample_rate;
     int music_resampler;
     int sound_vol;
     int music_vol;
+    const char *player;
 } settings_sound;
 
 typedef struct {

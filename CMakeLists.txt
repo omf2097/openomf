@@ -112,8 +112,6 @@ find_package(PNG)
 find_package(miniupnpc)
 find_package(natpmp)
 
-
-
 # If tests are enabled, find CUnit
 if(USE_TESTS)
     find_package(CUnit REQUIRED)
@@ -132,6 +130,33 @@ file(GLOB_RECURSE OPENOMF_SRC
     RELATIVE ${CMAKE_SOURCE_DIR}
     "src/*/*.c" "src/*/*.h"
 )
+
+# Remove all player plugin source code from OPENOMF_SRC
+list(FILTER OPENOMF_SRC EXCLUDE REGEX "^src/audio/backends/.*/")
+# Enable "NULL" player in debug builds, for automated testing
+list(APPEND OPENOMF_SRC
+    "$<$<CONFIG:Debug>:src/audio/backends/null/null_backend.c>"
+    "$<$<CONFIG:Debug>:src/audio/backends/null/null_backend.h>"
+)
+list(APPEND AUDIO_C_DEFINES "$<$<CONFIG:Debug>:ENABLE_NULL_AUDIO_BACKEND>")
+# and enable select render plugins
+set(ENABLED_AUDIO_BACKEND_PLUGINS sdl)
+foreach (PLUGIN ${ENABLED_AUDIO_BACKEND_PLUGINS})
+    # add render plugin sources
+    file(GLOB_RECURSE PLUGIN_SRC
+        LIST_DIRECTORIES OFF
+        CONFIGURE_DEPENDS
+        RELATIVE ${CMAKE_SOURCE_DIR}
+        "src/audio/backends/${PLUGIN}/*.c"
+        "src/audio/backends/${PLUGIN}/*.h"
+    )
+    list(APPEND OPENOMF_SRC ${PLUGIN_SRC})
+    # hook render plugin into video.c
+    string(TOUPPER "${PLUGIN}" PLUGIN_UPPER)
+    list(APPEND AUDIO_C_DEFINES "ENABLE_${PLUGIN_UPPER}_AUDIO_BACKEND")
+    message(STATUS "Enabled audio backend plugin '${PLUGIN}'")
+endforeach ()
+set_source_files_properties("src/audio/audio.c" PROPERTIES COMPILE_DEFINITIONS "${AUDIO_C_DEFINES}")
 
 # Remove all render plugin source code from OPENOMF_SRC
 list(FILTER OPENOMF_SRC EXCLUDE REGEX "^src/video/renderers/.*/")
@@ -156,6 +181,7 @@ foreach(PLUGIN ${ENABLED_RENDER_PLUGINS})
     # hook render plugin into video.c
     string(TOUPPER "${PLUGIN}" PLUGIN_UPPER)
     list(APPEND VIDEO_C_DEFINES "ENABLE_${PLUGIN_UPPER}_RENDERER")
+    message(STATUS "Enabled video backend plugin '${PLUGIN}'")
 endforeach()
 set_source_files_properties("src/video/video.c" PROPERTIES COMPILE_DEFINITIONS "${VIDEO_C_DEFINES}")
 
