@@ -17,6 +17,7 @@ OPTION(USE_SANITIZERS "Enable Asan and Ubsan" OFF)
 OPTION(USE_TIDY "Use clang-tidy for checks" OFF)
 OPTION(USE_FORMAT "Use clang-format for checks" OFF)
 
+set(ENABLED_RENDER_PLUGINS "opengl3" CACHE STRING "Renderers to build. Available: opengl3, null")
 set(USE_PCH ON)
 # clang-tidy only works with clang when PCH is enabled
 if(USE_PCH AND USE_TIDY AND NOT CMAKE_C_COMPILER_ID MATCHES ".*Clang")
@@ -134,7 +135,6 @@ file(GLOB_RECURSE OPENOMF_SRC
 # Remove all render plugin source code from OPENOMF_SRC
 list(FILTER OPENOMF_SRC EXCLUDE REGEX "^src/video/renderers/.*/")
 # and enable select render plugins
-set(ENABLED_RENDER_PLUGINS opengl3)
 foreach(PLUGIN ${ENABLED_RENDER_PLUGINS})
     # add render plugin sources
     file(GLOB_RECURSE PLUGIN_SRC
