@@ -101,6 +101,8 @@ static bool setup_context(void *userdata, int window_w, int window_h, bool fulls
     ctx->target = render_target_create(TEX_UNIT_FBO, NATIVE_W, NATIVE_H, GL_RGBA8, GL_RGBA);
     ctx->remaps = remaps_create(TEX_UNIT_REMAPS);
 
+    vga_state_mark_dirty();
+
     // Create orthographic projection matrix for 2d stuff.
     GLfloat projection_matrix[16];
     ortho2d(projection_matrix, 0.0f, NATIVE_W, NATIVE_H, 0.0f);
