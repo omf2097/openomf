@@ -307,7 +307,7 @@ void console_event(game_state *gs, SDL_Event *e) {
 }
 
 void console_render(void) {
-    if (con == NULL) {
+    if(con == NULL) {
         return;
     }
 
@@ -333,7 +333,8 @@ void console_render(void) {
 
         // cursor
         tconf.cforeground = TEXT_BLINKY_GREEN;
-        text_render(&text_cache[1], &tconf, TEXT_DEFAULT, strlen(con->input) * font_small.w, con->y_pos - 7, 6, 6, CURSOR_STR);
+        text_render(&text_cache[1], &tconf, TEXT_DEFAULT, strlen(con->input) * font_small.w, con->y_pos - 7, 6, 6,
+                    CURSOR_STR);
         console_output_render();
     }
 }

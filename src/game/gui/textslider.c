@@ -17,36 +17,40 @@ typedef struct {
     int *pos;
     int has_off;
     int positions;
+    str txt;
 
     void *userdata;
     textslider_slide_cb slide;
     text_object text_cache[1];
 } textslider;
 
-static void textslider_render(component *c) {
-    textslider *tb = widget_get_obj(c);
-    str txt;
-    str_from_format(&txt, "%s ", tb->text);
+void textslider_refresh(textslider *tb) {
     if(tb->has_off && *tb->pos == 0) {
-        str_append_c(&txt, "OFF");
+        str_format(&tb->txt, "%s OFF", tb->text);
     } else {
+        str_format(&tb->txt, "%s ", tb->text);
+        str_truncate(&tb->txt, strlen(tb->text) + 1);
         for(int i = 0; i < tb->positions; i++) {
             if(i + 1 > *tb->pos) {
-                str_append_c(&txt, "|");
+                str_append_c(&tb->txt, "|");
             } else {
-                str_append_c(&txt, "\x7f");
+                str_append_c(&tb->txt, "\x7f");
             }
         }
     }
+    tb->text_cache[0].dirty = true;
+}
 
+static void textslider_render(component *c) {
+    textslider *tb = widget_get_obj(c);
     text_mode mode = TEXT_UNSELECTED;
+
     if(component_is_selected(c)) {
         mode = TEXT_SELECTED;
     } else if(component_is_disabled(c)) {
         mode = TEXT_DISABLED;
     }
-    text_render(&(tb->text_cache[0]), &tb->tconf, mode, c->x, c->y, c->w, c->h, str_c(&txt));
-    str_free(&txt);
+    text_render(&(tb->text_cache[0]), &tb->tconf, mode, c->x, c->y, c->w, c->h, str_c(&tb->txt));
 }
 
 static int textslider_action(component *c, int action) {
@@ -65,6 +69,7 @@ static int textslider_action(component *c, int action) {
         // reset ticks so text is bright
         tb->ticks = 0;
         tb->dir = 0;
+        textslider_refresh(tb);
         return 0;
     } else if(action == ACT_LEFT) {
         (*tb->pos)--;
@@ -80,6 +85,7 @@ static int textslider_action(component *c, int action) {
         // reset ticks so text is bright
         tb->ticks = 0;
         tb->dir = 0;
+        textslider_refresh(tb);
         return 0;
     }
     return 1;
@@ -103,6 +109,7 @@ static void textslider_tick(component *c) {
 static void textslider_free(component *c) {
     textslider *tb = widget_get_obj(c);
     text_objects_free(tb->text_cache, (sizeof(tb->text_cache) / sizeof(tb->text_cache[0])));
+    str_free(&tb->txt);
     omf_free(tb->text);
     omf_free(tb);
 }
@@ -123,7 +130,10 @@ component *textslider_create(const text_settings *tconf, const char *text, const
     tb->positions = positions;
     tb->userdata = userdata;
     tb->slide = cb;
+    str_create(&tb->txt);
     widget_set_obj(c, tb);
+
+    textslider_refresh(tb);
 
     component_set_size_hints(c, text_width(&tb->tconf, text), 8);
 
@@ -140,5 +150,6 @@ component *textslider_create_bind(const text_settings *tconf, const char *text, 
     component *c = textslider_create(tconf, text, help, positions, has_off, cb, userdata);
     textslider *ts = widget_get_obj(c);
     ts->pos = (bind) ? bind : &ts->pos_;
+    textslider_refresh(ts);
     return c;
 }

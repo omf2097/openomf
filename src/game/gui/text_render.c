@@ -2,11 +2,11 @@
 #include <math.h>
 
 #include "game/gui/text_render.h"
+#include "utils/allocator.h"
 #include "utils/log.h"
 #include "utils/miscmath.h"
 #include "utils/vector.h"
 #include "video/video.h"
-#include "utils/allocator.h"
 
 static unsigned char FIRST_PRINTABLE_CHAR = (unsigned char)' ';
 
@@ -55,7 +55,6 @@ static inline surface *get_font_surface(const text_settings *settings, char ch) 
     return (ret == NULL) ? NULL : *ret;
 }
 
-
 int text_render_char_uncached(const text_settings *settings, text_mode state, int x, int y, char ch, bool shadow) {
     surface *sur = get_font_surface(settings, ch);
 
@@ -63,7 +62,7 @@ int text_render_char_uncached(const text_settings *settings, text_mode state, in
         return 0;
     }
     // Handle shadows if necessary
-    if (shadow != false) {
+    if(shadow != false) {
         if(settings->shadow & TEXT_SHADOW_RIGHT)
             video_draw_offset(sur, x + 1, y, settings->cshadow, 255);
         if(settings->shadow & TEXT_SHADOW_LEFT)
@@ -96,44 +95,7 @@ int text_render_char_uncached(const text_settings *settings, text_mode state, in
     return sur->w;
 }
 
-/*static inline void render_char_shadow_surface(const text_settings *settings, const surface *sur, int x, int y) {
-    if(settings->shadow & TEXT_SHADOW_RIGHT)
-        video_draw_offset(sur, x + 1, y, settings->cshadow, 255);
-    if(settings->shadow & TEXT_SHADOW_LEFT)
-        video_draw_offset(sur, x - 1, y, settings->cshadow, 255);
-    if(settings->shadow & TEXT_SHADOW_BOTTOM)
-        video_draw_offset(sur, x, y + 1, settings->cshadow, 255);
-    if(settings->shadow & TEXT_SHADOW_TOP)
-        video_draw_offset(sur, x, y - 1, settings->cshadow, 255);
-}*/
-
-/*static inline void render_char_surface(const text_settings *settings, text_mode state, surface *sur, int x, int y) {
-    int color;
-    switch(state) {
-        case TEXT_SELECTED:
-            color = settings->cselected;
-            break;
-        case TEXT_UNSELECTED:
-            color = settings->cinactive;
-            break;
-        case TEXT_DISABLED:
-            color = settings->cdisabled;
-            break;
-        default:
-            color = settings->cforeground;
-    }
-    video_draw_offset(sur, x, y, color - 1, 255);
-}*/
-
-/*int text_render_char(const text_settings *settings, text_mode state, int x, int y, char ch) {
-    surface *sur = get_font_surface(settings, ch);
-    render_char_shadow_surface(settings, sur, x, y);
-    render_char_surface(settings, state, sur, x, y);
-    return sur->w;
-}*/
-
-void letter_set_parameters(text_object *cached_text, surface *sur, int x, int y, int offset, int limit)
-{
+void letter_set_parameters(text_object *cached_text, surface *sur, int x, int y, int offset, int limit) {
     cached_text->cur_letter->x = x;
     cached_text->cur_letter->y = y;
     cached_text->cur_letter->sur = sur;
@@ -143,7 +105,8 @@ void letter_set_parameters(text_object *cached_text, surface *sur, int x, int y,
     cached_text->letter_count++;
 }
 
-int text_render_char(text_object *cached_text, const text_settings *settings, text_mode state, int x, int y, char ch, bool shadow) {
+int text_render_char(text_object *cached_text, const text_settings *settings, text_mode state, int x, int y, char ch,
+                     bool shadow) {
     // Make sure code is valid
     int code = ch - 32;
     surface **sur = NULL;
@@ -167,12 +130,12 @@ int text_render_char(text_object *cached_text, const text_settings *settings, te
     }
 
     // Empty character's don't need to be rendered just skip the space.
-    if (ch == ' ') {
+    if(ch == ' ') {
         return (*sur)->w;
     }
- 
+
     // Handle shadows if necessary
-    if (shadow != false) {
+    if(shadow != false) {
         if(settings->shadow & TEXT_SHADOW_RIGHT)
             letter_set_parameters(cached_text, *sur, x + 1, y, settings->cshadow, 255);
         if(settings->shadow & TEXT_SHADOW_LEFT)
@@ -211,7 +174,7 @@ int text_find_max_strlen(const text_settings *settings, int max_chars, const cha
 
     // Skip whitespace at the start of the string
     if(settings->strip_leading_whitespace) {
-        while ((*ptr != 0) && (*ptr == ' ')) {
+        while((*ptr != 0) && (*ptr == ' ')) {
             ptr++;
             i++;
         }
@@ -240,7 +203,7 @@ int text_find_max_strlen(const text_settings *settings, int max_chars, const cha
     }
 
     // If we detect a newline, this line ends here.
-    if (*ptr == '\n') {
+    if(*ptr == '\n') {
         return i + 1;
     }
 
@@ -277,7 +240,7 @@ int text_char_width(const text_settings *settings) {
 }
 
 int text_find_line_count(const text_settings *settings, int cols, int rows, const char *text, int *longest) {
-    const char* ptr = text;
+    const char *ptr = text;
     int lines = 0;
     int space;
     if(settings->direction == TEXT_HORIZONTAL) {
@@ -296,32 +259,14 @@ int text_find_line_count(const text_settings *settings, int cols, int rows, cons
     return lines;
 }
 
-/*static void text_render_len(const text_settings *settings, text_mode mode, int x, int y, int w, int h, const char *text,
-                            int len) {
-    int size = text_char_width(settings);
-    int x_space = w - settings->padding.left - settings->padding.right;
-    int y_space = h - settings->padding.top - settings->padding.bottom;
-    int char_w = size + settings->cspacing;
-    int char_h = size + settings->lspacing;
-    int rows = (y_space + settings->lspacing) / char_h;
-    int cols = (x_space + settings->cspacing) / char_w;
-    int longest = 0;
-    int fit_lines = text_find_line_count(settings, cols, rows, text, &longest);
-    int max_chars = settings->direction == TEXT_HORIZONTAL ? cols : rows;
-    if(max_chars == 0) {
-        DEBUG("Warning: Text has zero size! text: '%s'");
-        max_chars = 1;
-    }
-}*/
-
-void text_object_invalidate_cache(text_object *obj)
-{
+void text_object_invalidate_cache(text_object *obj) {
     obj->dirty = true;
 }
 
-// This function should not be called outside of the text_render.c because it is heavy and may cause significant performance drops
-// on slow systems.
-static void setup_letter_locations(text_object *cached_text, const text_settings *settings, text_mode mode, int x, int y, int w, int h, const char *text) {
+// This function should not be called outside of the text_render.c because it is heavy and may cause significant
+// performance drops on slow systems.
+static void setup_letter_locations(text_object *cached_text, const text_settings *settings, text_mode mode, int x,
+                                   int y, int w, int h, const char *text) {
     int size = text_char_width(settings);
     int x_space = w - settings->padding.left - settings->padding.right;
     int y_space = h - settings->padding.top - settings->padding.bottom;
@@ -366,7 +311,7 @@ static void setup_letter_locations(text_object *cached_text, const text_settings
             break;
     }
 
-    const char* ptr = text;
+    const char *ptr = text;
     int line = 0;
     int space;
     if(settings->direction == TEXT_HORIZONTAL) {
@@ -381,8 +326,8 @@ static void setup_letter_locations(text_object *cached_text, const text_settings
         int my = 0;
         int line_pw;
         int line_ph;
-        const char* prevptr = ptr;
-        const char* line_end;
+        const char *prevptr = ptr;
+        const char *line_end;
         // Find out how many characters for this row/col
         line_len = text_find_max_strlen(settings, space, ptr);
         line_end = ptr + line_len;
@@ -433,12 +378,12 @@ static void setup_letter_locations(text_object *cached_text, const text_settings
         int w = 0;
         int mxstart = mx;
         int mystart = my;
-        const char* shadow_ptr = ptr;
+        const char *shadow_ptr = ptr;
 
         // Render shadow characters.
         while((*shadow_ptr != 0) && (shadow_ptr < line_end)) {
             // Skip line endings.
-            if (*shadow_ptr == '\n') {
+            if(*shadow_ptr == '\n') {
                 shadow_ptr++;
                 continue;
             }
@@ -458,7 +403,7 @@ static void setup_letter_locations(text_object *cached_text, const text_settings
         // Render regular color characters.
         mx = mxstart;
         my = mystart;
-        while ((*ptr != 0) && (ptr < line_end)) {
+        while((*ptr != 0) && (ptr < line_end)) {
             // Skip line endings.
             if(*ptr == '\n') {
                 ptr++;
@@ -482,44 +427,47 @@ static void setup_letter_locations(text_object *cached_text, const text_settings
     }
 }
 
-void text_objects_free(text_object *cached_text, size_t count)
-{
-    for (size_t i = 0; i < count; i += 1) {
+void text_objects_free(text_object *cached_text, size_t count) {
+    for(size_t i = 0; i < count; i += 1) {
         omf_free(cached_text[i].letters);
     }
 }
 
-void text_objects_invalidate(text_object *text_cache, size_t cache_size)
-{
-    for (size_t i = 0; i < cache_size; i++) {
+void text_objects_invalidate(text_object *text_cache, size_t cache_size) {
+    for(size_t i = 0; i < cache_size; i++) {
         text_cache[i].dirty = true;
     }
 }
 
-void text_render(text_object *cached_text, const text_settings *settings, text_mode mode, int x, int y, int w, int h, const char *text)
-{
+void text_render(text_object *cached_text, const text_settings *settings, text_mode mode, int x, int y, int w, int h,
+                 const char *text) {
     bool dirty = false;
     dirty |= (cached_text->x != x);
     dirty |= (cached_text->y != y);
-    if (w > 0) {
+    if(w > 0) {
         dirty |= (cached_text->w != w);
     }
-    if (h > 0) {
+    if(h > 0) {
         dirty |= (cached_text->h != h);
     }
-    dirty |= (cached_text->text != text);
+    // dirty |= (cached_text->text != text);
+    if(cached_text->text) {
+        dirty |= (cached_text->text != text);
+        // dirty |= strncmp(cached_text->text, text, min2(strlen(cached_text->text), strlen(text))) != 0;
+    }
     dirty |= (cached_text->mode != mode);
     dirty |= (memcmp(&cached_text->settings, settings, sizeof(cached_text->settings)) != 0);
 
-    if (cached_text->dirty || dirty) {
+    if(cached_text->dirty || dirty) {
         size_t text_len = strlen(text);
-        if (text_len == 0) {
+        if(text_len == 0) {
             return;
         }
 
-        if (cached_text->max_letters < (text_len * 4)) {
+        if(cached_text->max_letters < (text_len * 4)) {
             size_t size = (text_len * sizeof(letter) * 4);
-            //assertf(size < (1024 * 40), "%i %s", size, text); // Allow up to 40KB of cache per text block. Support up to 3 shadows per char.
+            // assertf(size < (1024 * 40), "%i %s", size, text); // Allow up to 40KB of cache per text block. Support up
+            // to 3 shadows per char.
             cached_text->letters = omf_realloc(cached_text->letters, size);
             cached_text->max_letters = text_len * 4;
         }
@@ -538,39 +486,45 @@ void text_render(text_object *cached_text, const text_settings *settings, text_m
         memcpy(&cached_text->settings, settings, sizeof(cached_text->settings));
         cached_text->dirty = true;
         // This is kind of annoying.. h and w can be less than zero to specify a "figure it out" value.
-        if ((h <= 0) || (w <= 0)) {
+        if((h <= 0) || (w <= 0)) {
             int height = 0;
             int width = 0;
-            for (uint32_t i = 0; i < cached_text->letter_count; i += 1) {
-                const letter* letterptr = &(cached_text->letters[i]);
+            for(uint32_t i = 0; i < cached_text->letter_count; i += 1) {
+                const letter *letterptr = &(cached_text->letters[i]);
                 int calculated_height = (letterptr->y + letterptr->sur->h) - y;
-                if (calculated_height > height) {
+                if(calculated_height > height) {
                     height = calculated_height;
                 }
 
                 int calculated_width = (letterptr->x + letterptr->sur->w) - x;
-                if (calculated_width > width) {
+                if(calculated_width > width) {
                     width = calculated_width;
                 }
             }
 
-            cached_text->h = height;
-            cached_text->w = width;
+            if(h <= 0) {
+                cached_text->h = height;
+            }
+
+            if(w <= 0) {
+                cached_text->w = width;
+            }
         }
 
         // Validate all letterptrs are non null
-        for (unsigned int i = 0; i < cached_text->letter_count; i += 1) {
-            const letter* letterptr = &(cached_text->letters[i]);
-            assert(letterptr != NULL);//, "%i", i);
+        for(unsigned int i = 0; i < cached_text->letter_count; i += 1) {
+            const letter *letterptr = &(cached_text->letters[i]);
+            assert(letterptr != NULL); //, "%i", i);
         }
 
-        //assertf((cached_text->max_letters > cached_text->letter_count), "Max:%u < Count:%u TextLen:%i %s", (unsigned int)cached_text->max_letters, (unsigned int)cached_text->letter_count, text_len, text);
-        //assertf(cached_text->h > 0, "%s", text);
-        //assertf(cached_text->w > 0, "%s", text);
-        //assertf(cached_text->x < 320, "%s", text);
-        //assertf(cached_text->y < 240, "%s", text);
-        //assertf(cached_text->x > 0, "%i %s", cached_text->x, text);
-        //assertf(cached_text->y > 0, "%i %s", cached_text->y, text);
+        // assertf((cached_text->max_letters > cached_text->letter_count), "Max:%u < Count:%u TextLen:%i %s", (unsigned
+        // int)cached_text->max_letters, (unsigned int)cached_text->letter_count, text_len, text);
+        // assertf(cached_text->h > 0, "%s", text);
+        // assertf(cached_text->w > 0, "%s", text);
+        // assertf(cached_text->x < 320, "%s", text);
+        // assertf(cached_text->y < 240, "%s", text);
+        // assertf(cached_text->x > 0, "%i %s", cached_text->x, text);
+        // assertf(cached_text->y > 0, "%i %s", cached_text->y, text);
     }
 
     video_render_text_block(cached_text);
@@ -580,4 +534,3 @@ void text_render(text_object *cached_text, const text_settings *settings, text_m
 /*void text_render_str(const text_settings *settings, text_mode mode, int x, int y, int w, int h, const str *text) {
     text_render_len(settings, mode, x, y, w, h, str_c(text), str_size(text));
 }*/
-

@@ -4,11 +4,11 @@
 #include <stdbool.h>
 
 #include "formats/palette.h"
+#include "game/gui/text_render.h"
 #include "video/color.h"
 #include "video/enums.h"
 #include "video/image.h"
 #include "video/surface.h"
-#include "game/gui/text_render.h"
 
 #define NATIVE_W 320
 #define NATIVE_H 200

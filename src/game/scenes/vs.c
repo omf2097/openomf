@@ -131,7 +131,7 @@ void cb_vs_destroy_object(object *parent, int id, void *userdata) {
 void vs_free(scene *scene) {
     vs_local *local = scene_get_userdata(scene);
     size_t cache_size = sizeof(local->text_cache) / sizeof(local->text_cache[0]);
-    for (size_t i = 0; i < cache_size; i++) {
+    for(size_t i = 0; i < cache_size; i++) {
         local->text_cache[i].dirty = true;
     }
 
@@ -287,11 +287,13 @@ void vs_render(scene *scene) {
         video_draw(&local->arena_select_bg, 55, 150);
 
         // arena name
-        text_render(&(local->text_cache[1]), &tconf_green, TEXT_DEFAULT, 56 + 72, 152, (211 - 72), 8, lang_get(56 + local->arena));
+        text_render(&(local->text_cache[1]), &tconf_green, TEXT_DEFAULT, 56 + 72, 152, (211 - 72), 8,
+                    lang_get(56 + local->arena));
 
         tconf_green.valign = TEXT_MIDDLE;
         // arena description
-        text_render(&(local->text_cache[2]), &tconf_green, TEXT_DEFAULT, 56 + 72, 153, (211 - 72), 50, lang_get(66 + local->arena));
+        text_render(&(local->text_cache[2]), &tconf_green, TEXT_DEFAULT, 56 + 72, 153, (211 - 72), 50,
+                    lang_get(66 + local->arena));
     } else if(player2->pilot && player2->pilot->pilot_id == PILOT_KREISSACK &&
               settings_get()->gameplay.difficulty < 2) {
         // kreissack, but not on Veteran or higher
@@ -318,10 +320,10 @@ void vs_render(scene *scene) {
         char money[16];
         fight_stats *fight_stats = &scene->gs->fight_stats;
         static int force_redraw = 1;
-        if (force_redraw) {
+        if(force_redraw) {
             // TODO: Find out why this caching doesn't work. The cache is built before the stats are correct.
             // Rendering the first time, after a scene switch should fill the cache correctly but it doesn't.
-            // The text_render cache should never do a strcmp or memcmp on the text. However setting dirty 
+            // The text_render cache should never do a strcmp or memcmp on the text. However setting dirty
             // here every time would bypass the cache and therefore is not desirable.
             size_t cache_size = sizeof(local->text_cache) / sizeof(local->text_cache[0]);
             text_objects_invalidate(local->text_cache, cache_size);

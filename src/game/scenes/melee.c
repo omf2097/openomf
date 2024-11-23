@@ -52,8 +52,8 @@ typedef struct {
 #define CURSORS_DONE(local) (local->cursor[0].done && local->cursor[1].done)
 #define CURSOR_NOVA_SELECT(local, player) (local->cursor[player].row == 1 && local->cursor[player].column == 2)
 
-static const char* p1_bio_prev = NULL;
-static const char* p2_bio_prev = NULL;
+static const char *p1_bio_prev = NULL;
+static const char *p2_bio_prev = NULL;
 static text_object text_cache[18];
 
 typedef enum
@@ -532,9 +532,12 @@ static void render_pilot_select(melee_local *local, bool player2_is_selectable) 
                     lang_get(135 + current_b));
 
         // player stats
-        text_render(&text_cache[6], &tconf_green, TEXT_DEFAULT, 320 - 66 - local->bg_player_stats.w, 4, 85, 6, lang_get(216));
-        text_render(&text_cache[7], &tconf_green, TEXT_DEFAULT, 320 - 66 - local->bg_player_stats.w, 22, 85, 6, lang_get(217));
-        text_render(&text_cache[8], &tconf_green, TEXT_DEFAULT, 320 - 66 - local->bg_player_stats.w, 40, 85, 6, lang_get(218));
+        text_render(&text_cache[6], &tconf_green, TEXT_DEFAULT, 320 - 66 - local->bg_player_stats.w, 4, 85, 6,
+                    lang_get(216));
+        text_render(&text_cache[7], &tconf_green, TEXT_DEFAULT, 320 - 66 - local->bg_player_stats.w, 22, 85, 6,
+                    lang_get(217));
+        text_render(&text_cache[8], &tconf_green, TEXT_DEFAULT, 320 - 66 - local->bg_player_stats.w, 40, 85, 6,
+                    lang_get(218));
 
         component_render(local->bar_power[1]);
         component_render(local->bar_agility[1]);
