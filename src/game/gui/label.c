@@ -57,7 +57,7 @@ component *label_create_with_width(const text_settings *tconf, const char *text,
     widget_set_obj(c, local);
     widget_set_render_cb(c, label_render);
     widget_set_free_cb(c, label_free);
-    //local->text_cache[0].dynamic = true;
+    // local->text_cache[0].dynamic = true;
     return c;
 }
 

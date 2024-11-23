@@ -1,10 +1,11 @@
 #include <SDL.h>
 
+#include "game/gui/text_render.h"
+#include "utils/allocator.h"
 #include "utils/c_array_util.h"
 #include "utils/log.h"
 #include "video/renderers/renderer.h"
 #include "video/video.h"
-#include "game/gui/text_render.h"
 
 // If-def the includes here
 #ifdef ENABLE_OPENGL3_RENDERER
@@ -249,10 +250,9 @@ void video_draw_remap(const surface *src_surface, int x, int y, int remap_offset
     draw_args(src_surface, &dst, remap_offset, remap_rounds, 0, 255, 255, 0, options);
 }
 
-void video_render_text_block(text_object *text)
-{
-    for (uint32_t i = 0; i < text->letter_count;i += 1) {
-        const letter* letterptr = &(text->letters[i]);
+void video_render_text_block(text_object *text) {
+    for(uint32_t i = 0; i < text->letter_count; i += 1) {
+        const letter *letterptr = &(text->letters[i]);
         video_draw_offset(letterptr->sur, letterptr->x, letterptr->y, letterptr->offset, letterptr->limit);
     }
 }

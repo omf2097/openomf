@@ -111,9 +111,10 @@ static void menu_render(component *c) {
                 video_draw(m->help_bg2, m->help_x - 8, m->help_y - 8);
             }
             // TODO: The text_cache should move into inner component. In this case the one of the s->objs.
-            // Right now it will get invalidated on every render. For help text it usually doesn't matter because there is
-            // usually only 1 help text on the screen per time.
-            text_render(&(m->text_cache[0]), &m->help_text_conf, TEXT_DEFAULT, m->help_x, m->help_y, m->help_w, m->help_h, (*tmp)->help);
+            // Right now it will get invalidated on every render. For help text it usually doesn't matter because there
+            // is usually only 1 help text on the screen per time.
+            text_render(&(m->text_cache[0]), &m->help_text_conf, TEXT_DEFAULT, m->help_x, m->help_y, m->help_w,
+                        m->help_h, (*tmp)->help);
         }
         i++;
     }

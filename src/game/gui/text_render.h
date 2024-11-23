@@ -83,7 +83,7 @@ typedef struct letter {
     int y;
     int offset;
     int limit;
-    surface* sur;
+    surface *sur;
 } letter;
 
 typedef struct text_object {
@@ -95,12 +95,12 @@ typedef struct text_object {
     int y;
     int w;
     int h;
-    letter* letters;
-    letter* cur_letter;
+    letter *letters;
+    letter *cur_letter;
     text_mode mode;
     text_settings settings;
-    const char* text;
-    void* render_private;
+    const char *text;
+    void *render_private;
 } text_object;
 
 // New text rendering functions
@@ -110,9 +110,11 @@ int text_find_max_strlen(const text_settings *settings, int max_chars, const cha
 
 void text_render_str(const text_settings *settings, text_mode mode, int x, int y, int w, int h, const str *text);
 int text_find_line_count(const text_settings *settings, int cols, int rows, const char *text, int *longest_line_len);
-int text_render_char(text_object *cached_text, const text_settings *settings, text_mode mode, int x, int y, char ch, bool shadow);
+int text_render_char(text_object *cached_text, const text_settings *settings, text_mode mode, int x, int y, char ch,
+                     bool shadow);
 int text_render_char_uncached(const text_settings *settings, text_mode mode, int x, int y, char ch, bool shadow);
-void text_render(text_object *cached_text, const text_settings *settings, text_mode mode, int x, int y, int w, int h, const char *text);
+void text_render(text_object *cached_text, const text_settings *settings, text_mode mode, int x, int y, int w, int h,
+                 const char *text);
 int text_char_width(const text_settings *settings);
 int text_width(const text_settings *settings, const char *text);
 void text_objects_free(text_object *cached_text, size_t count);

@@ -16,6 +16,7 @@ typedef struct {
     int pos_;
     int *pos;
     vector options;
+    str buf;
 
     void *userdata;
     textselector_toggle_cb toggle;
@@ -54,19 +55,6 @@ const char *textselector_get_current_text(const component *c) {
 
 static void textselector_render(component *c) {
     textselector *tb = widget_get_obj(c);
-    str buf;
-    if(vector_size(&tb->options) > 0 && tb->text[0] != '\0') {
-        // label & options
-        char **opt = vector_get(&tb->options, *tb->pos);
-        str_from_format(&buf, "%s %s", tb->text, *opt);
-    } else if(vector_size(&tb->options) > 0) {
-        // no label, just options
-        char **opt = vector_get(&tb->options, *tb->pos);
-        str_from_format(&buf, "%s", *opt);
-    } else {
-        // no options, just label
-        str_from_format(&buf, "%s -", tb->text);
-    }
 
     // Render text
     text_mode mode = TEXT_UNSELECTED;
@@ -75,8 +63,23 @@ static void textselector_render(component *c) {
     } else if(component_is_disabled(c)) {
         mode = TEXT_DISABLED;
     }
-    text_render(&(tb->text_cache[0]), &tb->tconf, mode, c->x, c->y, c->w, c->h, str_c(&buf));
-    str_free(&buf);
+    text_render(&(tb->text_cache[0]), &tb->tconf, mode, c->x, c->y, c->w, c->h, str_c(&tb->buf));
+}
+
+void textselector_refresh(textselector *tb) {
+    if(vector_size(&tb->options) > 0 && tb->text[0] != '\0') {
+        // label & options
+        char **opt = vector_get(&tb->options, *tb->pos);
+        str_format(&tb->buf, "%s %s", tb->text, *opt);
+    } else if(vector_size(&tb->options) > 0) {
+        // no label, just options
+        char **opt = vector_get(&tb->options, *tb->pos);
+        str_format(&tb->buf, "%s", *opt);
+    } else {
+        // no options, just label
+        str_format(&tb->buf, "%s -", tb->text);
+    }
+    tb->text_cache[0].dirty = true;
 }
 
 static int textselector_action(component *c, int action) {
@@ -107,6 +110,7 @@ static int textselector_action(component *c, int action) {
         // reset ticks so text is bright
         tb->ticks = 0;
         tb->dir = 0;
+        textselector_refresh(tb);
         return 0;
     }
     return 1;
@@ -141,6 +145,7 @@ static void textselector_free(component *c) {
     textselector *tb = widget_get_obj(c);
     textselector_clear_options(c);
     text_objects_free(tb->text_cache, (sizeof(tb->text_cache) / sizeof(tb->text_cache[0])));
+    str_free(&tb->buf);
     vector_free(&tb->options);
     omf_free(tb->text);
     omf_free(tb);
@@ -159,6 +164,9 @@ component *textselector_create(const text_settings *tconf, const char *text, con
     tb->toggle = cb;
     vector_create(&tb->options, sizeof(char *));
     widget_set_obj(c, tb);
+    str_create(&tb->buf);
+
+    textselector_refresh(tb);
 
     component_set_size_hints(c, text_width(&tb->tconf, text), 8);
 
@@ -175,6 +183,7 @@ component *textselector_create_bind(const text_settings *tconf, const char *text
     component *c = textselector_create(tconf, text, help, toggle_cb, userdata);
     textselector *ts = widget_get_obj(c);
     ts->pos = (bind) ? bind : &ts->pos_;
+    textselector_refresh(widget_get_obj(c));
     return c;
 }
 
@@ -185,5 +194,6 @@ component *textselector_create_bind_opts(const text_settings *tconf, const char 
     for(int i = 0; i < opt_size; i++) {
         textselector_add_option(c, opts[i]);
     }
+    textselector_refresh(widget_get_obj(c));
     return c;
 }

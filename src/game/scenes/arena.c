@@ -96,7 +96,6 @@ void game_menu_return(component *c, void *userdata) {
     game_state_set_paused(((scene *)userdata)->gs, 0);
     // invalidate the cache of the menu items.
     menu_invalidate_help_text_cache(local->game_menu->root_node);
-
 }
 
 void arena_music_slide(component *c, void *userdata, int pos) {
@@ -1158,7 +1157,8 @@ void arena_render_overlay(scene *scene) {
         }
 
         text_render(&text_cache[2], &tconf_players, TEXT_DEFAULT, 5, 19, 250, 6, player1_name);
-        text_render(&text_cache[3], &tconf_players, TEXT_DEFAULT, 5, 26, 250, 6, lang_get((player[0]->pilot->har_id) + 31));
+        text_render(&text_cache[3], &tconf_players, TEXT_DEFAULT, 5, 26, 250, 6,
+                    lang_get((player[0]->pilot->har_id) + 31));
 
         if(player[1]->pilot) {
             // when quitting, this can go null
@@ -1184,7 +1184,8 @@ void arena_render_overlay(scene *scene) {
         }
         if(player[1]->ctrl->type == CTRL_TYPE_NETWORK) {
             snprintf(buf, 40, "ping %d", player[1]->ctrl->rtt);
-            text_render(&text_cache[7], &tconf_debug, TEXT_DEFAULT, 315 - (strlen(buf) * font_small.w), 40, 250, 6, buf);
+            text_render(&text_cache[7], &tconf_debug, TEXT_DEFAULT, 315 - (strlen(buf) * font_small.w), 40, 250, 6,
+                        buf);
         }
     }
 
@@ -1240,7 +1241,7 @@ int arena_create(scene *scene) {
     settings *setting;
     arena_local *local;
     memset(text_cache, 0, sizeof(text_cache));
-    for (size_t i = 0; i < (sizeof(text_cache)/sizeof(text_cache[0])); i++) {
+    for(size_t i = 0; i < (sizeof(text_cache) / sizeof(text_cache[0])); i++) {
         text_cache[i].dynamic = true;
     }
 
