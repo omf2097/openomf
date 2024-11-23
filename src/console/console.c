@@ -285,6 +285,7 @@ void console_event(game_state *gs, SDL_Event *e) {
             if(isprint(c) && len < CONSOLE_LINE_MAX - 1) {
                 c = tolower(c);
                 str_append_buf(&con->input, &c, 1);
+                con->text_cache[0].dirty = true;
             }
         }
     } else if(e->type == SDL_KEYDOWN) {
@@ -310,11 +311,13 @@ void console_event(game_state *gs, SDL_Event *e) {
         } else if(scancode == SDL_SCANCODE_BACKSPACE || scancode == SDL_SCANCODE_DELETE) {
             if(len > 0) {
                 str_truncate(&con->input, len - 1);
+                con->text_cache[0].dirty = true;
             }
         } else if(scancode == SDL_SCANCODE_RETURN || scancode == SDL_SCANCODE_KP_ENTER) {
             // send the input somewhere and clear the input line
             console_handle_line(gs);
             str_truncate(&con->input, 0);
+            con->text_cache[0].dirty = true;
         } else if(scancode == SDL_SCANCODE_PAGEUP) {
             console_output_scroll_up(1);
         } else if(scancode == SDL_SCANCODE_PAGEDOWN) {
@@ -328,7 +331,6 @@ void console_render(void) {
         return;
     }
 
-    static text_object text_cache[2] = {0};
     if(con->y_pos > 0) {
         if(con->hist_pos != -1 && con->hist_pos_changed) {
             const char *input = list_get(&con->history, con->hist_pos);
@@ -347,12 +349,12 @@ void console_render(void) {
         tconf.font = FONT_SMALL;
         // input line
         tconf.cforeground = TEXT_MEDIUM_GREEN;
-        text_render(&text_cache[0], &tconf, TEXT_DEFAULT, 0, con->y_pos - 7, 300, 6, con->input);
+        text_render(&con->text_cache[0], &tconf, TEXT_DEFAULT, 0, con->y_pos - 7, 300, 6, str_c(&con->input));
 
         // cursor
         tconf.cforeground = TEXT_BLINKY_GREEN;
-        text_render(&text_cache[1], &tconf, TEXT_DEFAULT, strlen(con->input) * font_small.w, con->y_pos - 7, 6, 6,
-                    CURSOR_STR);
+        text_render(&con->text_cache[1], &tconf, TEXT_DEFAULT, str_size(&con->input) * font_small.w, con->y_pos - 7, 6,
+                    6, CURSOR_STR);
         console_output_render();
     }
 }

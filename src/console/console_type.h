@@ -22,6 +22,7 @@ typedef struct console {
     bool is_open;
     bool owns_input;
     int y_pos;
+    text_object text_cache[2];
     hashmap cmds; // string -> command
 } console;
 
