@@ -12,18 +12,47 @@
 #include <string.h>
 
 #define STR_STACK_SIZE sizeof(str)
+// NOTE: fbstring has 2 flag bits so they can signal their "large" (>255 byte)
+// string copy-on-write semantics. Hopefully we don't need that optimization.
 #define STR_FLAGBIT_COUNT 1
+
+// ------------------------ Memory Layout ------------------------
+
+// here are both str string representations, "normal" and then "small":
+//+------------+------------+------------+------------+------------+-----------+
+//| char *data              | size_t size             | capacity               |
+//+------------+------------+------------+------------+------------+-----------+
+//| char small[]                                                   | spare     |
+//+------------+------------+------------+------------+------------+-----------+
+//
+// `spare` is shorthand for referring to the last index of the small array, and
+// will become the null terminating byte when the small string is at capacity.
+// In a small string, `spare` counts the unused bytes.. the spare capacity.
+//
+// There is a flag bit to signal small/normal at the very end of the structure,
+// overlapping both capacity and spare. Because small strings must have a null
+// byte as their final byte for termination, a flag bit of 0 signals "small,"
+// and a bit of 1 signals "large."
+//
+// Since the flag bits are stored in the last bits of capacity/spare, they are
+// the most significant bits on little-endian architectures and least signif.
+// on big-endian.
 
 // ------------------------ Basic Accessors ------------------------
 
-// the number of spare capacity in the small string representation.
-// also contains the flag bits for detecting small/large strings.
+// access the 'spare' field described in the above memory layout.
+// Do not add new calls to this function even on known-small strings, as
+// seperating the flag bits from the spare capacity is finicky work.
+//
+// Use instead: str_issmall() or str_size().
 static inline uint8_t str_smallspare(str const *s) {
     uint8_t spare;
     memcpy(&spare, &s->small[STR_STACK_SIZE - 1], 1);
     return spare;
 }
 
+// access the heap-allocated capacity of a "normal" string.
+// meaningless for small strings, which always have a capacity of STR_STACK_SIZE.
 static inline size_t str_normalcapacity(str const *s) {
 #ifdef BIG_ENDIAN_BUILD
     // last bit (LSB) of capacity contains flag bit. mask it off.
@@ -34,9 +63,11 @@ static inline size_t str_normalcapacity(str const *s) {
 #endif
 }
 
+// Sets the capacity and flag bits of a normal (heap-allocated) string.
 static inline void str_normalsetcapacity(str *s, size_t capacity) {
-    // LSB should never be set-- guaranteed by str_roundupcapacity.
-    assert((capacity & 0x1) == 0);
+    // capacity's least significant bits must be zero, so we can repurpose them
+    // as flag bits. This is guaranteed by str_roundupcapacity.
+    assert((capacity & ((1 << STR_FLAGBIT_COUNT) - 1)) == 0);
 #ifdef BIG_ENDIAN_BUILD
     // use last bit (LSB) of capacity as flag bit
     size_t flag = 1;
@@ -49,17 +80,22 @@ static inline void str_normalsetcapacity(str *s, size_t capacity) {
 #endif
 }
 
+// Sets the size (a la str_size) and flag bits of a small string.
 static inline void str_smallsetsize(str *s, uint8_t size) {
+    assert(size < STR_STACK_SIZE);
     uint8_t spare = STR_STACK_SIZE - 1 - size;
 #ifdef BIG_ENDIAN_BUILD
-    // shift spare over to make space for flagbits
+    // shift spare over to create zero flag bits on the end of spare.
     spare <<= STR_FLAGBIT_COUNT;
+#else
+    // no-op, flag bits are MSB on little-endian; and are already zeroed.
 #endif
     memcpy(&s->small[STR_STACK_SIZE - 1], &spare, 1);
 }
 
 static bool str_issmall(str const *s) {
-    // last bit of capacity contains !issmall flag
+    // last bit of capacity contains flag bits
+    // 0 is "small", 1 is "normal"
 #ifdef BIG_ENDIAN_BUILD
     // last bit is least significant
     return (str_smallspare(s) & 0x01) == 0;
@@ -72,7 +108,10 @@ static bool str_issmall(str const *s) {
 size_t str_size(str const *s) {
     uint8_t spare = str_smallspare(s);
 #ifdef BIG_ENDIAN_BUILD
+    // shift away the flag bits.
     spare >>= STR_FLAGBIT_COUNT;
+#else
+    // no-op on little endian, because the flag bits (MSB) are zero for small strings.
 #endif
     return str_issmall(s) ? (STR_STACK_SIZE - 1 - spare) : s->normal.size;
 }
@@ -90,6 +129,7 @@ static inline void str_zero(str *s) {
 }
 
 static inline size_t str_roundupcapacity(size_t capacity) {
+    // we could set granularity even larger, if we wanted to realloc less often (& use more memory).
     size_t const granularity = 1 << STR_FLAGBIT_COUNT;
     // round up to nearest multiple of granularity (a power of 2)
     return (capacity + (granularity - 1)) & ~(granularity - 1);
