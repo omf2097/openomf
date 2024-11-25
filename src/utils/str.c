@@ -200,7 +200,7 @@ static size_t _strip_size(const str *src, bool left) {
     const char *ptr = str_c(src);
     for(size_t i = 0; i < src->len; i++) {
         pos = left ? i : src->len - i - 1;
-        if(!isspace(ptr[pos])) {
+        if(!isspace((unsigned char)ptr[pos])) {
             return pos;
         }
     }

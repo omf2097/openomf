@@ -121,7 +121,7 @@ void scoreboard_render_overlay(scene *scene) {
     scoreboard_local *local = scene_get_userdata(scene);
     char row[128];
     char score_text[15];
-    const char *score_row_format = "%-18s%-9s%-9s%11s";
+    const char *score_row_format = "%-18.16s%-9s%-9s%11s";
 
     text_settings big_text;
     text_defaults(&big_text);

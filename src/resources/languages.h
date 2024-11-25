@@ -1,6 +1,7 @@
 #ifndef LANGUAGES_H
 #define LANGUAGES_H
 
+#include "resources/generated_languages.h" // for Lang enum
 #include <stdbool.h>
 
 /*
@@ -12,36 +13,22 @@
 bool lang_init(void);
 void lang_close(void);
 
-/*! \brief OMF 2097 String ID
- *
- * These string IDs match OMFv2.1 (Epic Challenge Arena)
- */
 enum
 {
-    // there are 10 HARs
-    LANG_STR_HAR = 31,
-    LANG_STR_NEWSROOM_NEWCHAMPION = 79,
-    // there are 3*2 pronouns
-    LANG_STR_PRONOUN = 81,
-    // there are 24*2 newsroom texts
-    LANG_STR_NEWSROOM_TEXT = 87,
-
+    // OMFv2.1 (Epic Challenge Arena) ships 1013 strings.
+    // (latest official ENGLISH.DAT has this many strings)
     LANG_STR_COUNT = 1013,
+
+    // OMF versions before 2.1 shipped 990 strings.
+    // (GERMAN.DAT, and old ENGLISH.DAT have this many strings)
+    OLD_LANG_STR_COUNT = 990,
 };
 
-/*! \brief OpenOMF String ID
- *
- * These string IDs should match BuildLanguages.cmake and the various ${LANG}2.TXT files
- */
-enum
-{
-    LANG2_STR_LANGUAGE,
-    LANG2_STR_COUNT
-};
-
-// Gets an OMF 2097 localization string
-const char *lang_get(unsigned int id);
 // Gets an openomf localization string
-const char *lang_get2(unsigned int id);
+const char *lang_get(unsigned int id);
+
+// Gets an openomf localization string (from one of the tables)
+#define lang_get_offset(id, offset) lang_get_offset_impl(id, id##_LAST, (offset))
+const char *lang_get_offset_impl(unsigned int id, unsigned int id_last, unsigned int offset);
 
 #endif // LANGUAGES_H

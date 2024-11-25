@@ -80,8 +80,8 @@ component *lab_menu_difficultyselect_create(scene *s) {
         tconf.direction = details_list[i].dir;
 
         sprite *bsprite = animation_get_sprite(main_buttons, i);
-        component *button =
-            spritebutton_create(&tconf, lang_get(444 + i), bsprite->data, COM_ENABLED, details_list[i].cb, s);
+        component *button = spritebutton_create(&tconf, lang_get_offset(LangTournamentDifficulty, i), bsprite->data,
+                                                COM_ENABLED, details_list[i].cb, s);
         component_set_size_hints(button, bsprite->data->w, bsprite->data->h);
         component_set_pos_hints(button, bsprite->pos.x, bsprite->pos.y);
         trnmenu_attach(menu, button);

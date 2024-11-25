@@ -1,3 +1,7 @@
-ID: 0
+ID: 457
 Title: Translation Name
 Data: English
+
+ID: 458
+Title: LNG Text Encoding
+Data: cp437

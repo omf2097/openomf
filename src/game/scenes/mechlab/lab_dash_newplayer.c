@@ -25,7 +25,7 @@ component *lab_dash_newplayer_create(scene *s, newplayer_widgets *nw) {
     xysizer_attach(xy, spriteimage_create(msprite->data), msprite->pos.x, msprite->pos.y, -1, -1);
 
     // Dialog text
-    xysizer_attach(xy, label_create(&tconf, lang_get(192)), 110, 43, 100, 50);
+    xysizer_attach(xy, label_create(&tconf, lang_get(LangPromptChrName)), 110, 43, 100, 50);
 
     // Input field
     tconf.cselected = TEXT_BRIGHT_GREEN;

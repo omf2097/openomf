@@ -16,6 +16,7 @@ OPTION(USE_TOOLS "Build tools" OFF)
 OPTION(USE_SANITIZERS "Enable Asan and Ubsan" OFF)
 OPTION(USE_TIDY "Use clang-tidy for checks" OFF)
 OPTION(USE_FORMAT "Use clang-format for checks" OFF)
+OPTION(BUILD_LANGUAGES "Build Language Files" ON)
 
 set(USE_PCH ON)
 # clang-tidy only works with clang when PCH is enabled
@@ -244,6 +245,9 @@ endif()
 
 # Build the game binary
 add_executable(openomf src/main.c src/engine.c ${ICON_RESOURCE})
+set_property(TARGET openomf PROPERTY
+    VS_DEBUGGER_ENVIRONMENT "OPENOMF_SHADER_DIR=${CMAKE_CURRENT_BINARY_DIR}/shaders
+OPENOMF_RESOURCE_DIR=${CMAKE_CURRENT_BINARY_DIR}/resources")
 set_property(DIRECTORY ${CMAKE_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT openomf)
 
 # This is used to copy shader files from source directory to the binary output directory during compile.
@@ -255,9 +259,10 @@ add_dependencies(openomf copy_shaders)
 
 # Build tools if requested
 set(TOOL_TARGET_NAMES)
-# always build languagetool, for BuildLanguages.cmake
-add_executable(languagetool tools/languagetool/main.c)
-list(APPEND TOOL_TARGET_NAMES languagetool)
+if(BUILD_LANGUAGES OR USE_TOOLS)
+    add_executable(languagetool tools/languagetool/main.c)
+    list(APPEND TOOL_TARGET_NAMES languagetool)
+endif()
 if (USE_TOOLS)
     add_executable(bktool tools/bktool/main.c
         tools/shared/animation_misc.c
