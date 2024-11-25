@@ -35,6 +35,7 @@ typedef struct {
     dashboard_widgets dw;
     newplayer_widgets nw;
     trnselect_widgets tw;
+    bool hide_mech;
     bool selling;
     component *hint;
 } mechlab_local;
@@ -196,12 +197,17 @@ void mechlab_update(scene *scene) {
     lab_dash_main_update(scene, &local->dw);
 }
 
+void mechlab_hide_mech(scene *scene) {
+    mechlab_local *local = scene_get_userdata(scene);
+    local->hide_mech = true;
+}
+
 void mechlab_tick(scene *scene, int paused) {
     mechlab_local *local = scene_get_userdata(scene);
 
     guiframe_tick(local->frame);
     guiframe_tick(local->dashboard);
-    if(local->mech != NULL) {
+    if(!local->hide_mech && local->mech != NULL) {
         object_dynamic_tick(local->mech);
     }
 
