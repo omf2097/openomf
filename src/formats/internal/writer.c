@@ -56,6 +56,14 @@ int sd_writer_seek_end(const sd_writer *writer, long offset) {
 }
 
 int sd_write_buf(sd_writer *writer, const char *buf, size_t len) {
+    if(buf == NULL) {
+        if(len == 0) {
+            return 1;
+        } else {
+            writer->sd_errno = EINVAL;
+            return 0;
+        }
+    }
     if(fwrite(buf, 1, len, writer->handle) != len) {
         writer->sd_errno = ferror(writer->handle);
         return 0;
