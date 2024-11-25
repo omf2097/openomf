@@ -32,6 +32,7 @@ typedef struct scoreboard_local_t {
 
 void scoreboard_free(scene *scene) {
     scoreboard_local *local = scene_get_userdata(scene);
+    text_objects_free(local->text_cache, 22);
     omf_free(local);
     scene_set_userdata(scene, local);
 }

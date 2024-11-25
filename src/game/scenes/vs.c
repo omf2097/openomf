@@ -130,11 +130,8 @@ void cb_vs_destroy_object(object *parent, int id, void *userdata) {
 
 void vs_free(scene *scene) {
     vs_local *local = scene_get_userdata(scene);
-    size_t cache_size = sizeof(local->text_cache) / sizeof(local->text_cache[0]);
-    for(size_t i = 0; i < cache_size; i++) {
-        local->text_cache[i].dirty = true;
-    }
 
+    text_objects_free(local->text_cache, 34);
     dialog_free(&local->quit_dialog);
     dialog_free(&local->too_pathetic_dialog);
     surface_free(&local->arena_select_bg);
