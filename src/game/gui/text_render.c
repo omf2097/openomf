@@ -99,8 +99,8 @@ void letter_set_parameters(text_object *cached_text, surface *sur, int x, int y,
     cached_text->cur_letter->x = x;
     cached_text->cur_letter->y = y;
     cached_text->cur_letter->sur = sur;
-    cached_text->cur_letter->offset = offset;
-    cached_text->cur_letter->limit = limit;
+    cached_text->cur_letter->palette_offset = offset;
+    cached_text->cur_letter->palette_limit = limit;
     cached_text->cur_letter++;
     cached_text->letter_count++;
 }

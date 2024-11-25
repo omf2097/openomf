@@ -79,11 +79,11 @@ typedef struct {
 } text_settings;
 
 typedef struct letter {
-    int x;
-    int y;
-    int offset;
-    int limit;
-    surface *sur;
+    uint16_t x;
+    uint16_t y;
+    uint8_t palette_offset;
+    uint8_t palette_limit;
+    const surface *sur;
 } letter;
 
 typedef struct text_object {
@@ -91,10 +91,10 @@ typedef struct text_object {
     uint32_t max_letters;
     bool dirty;
     bool dynamic;
-    int x;
-    int y;
-    int w;
-    int h;
+    uint16_t x;
+    uint16_t y;
+    uint16_t w;
+    uint16_t h;
     letter *letters;
     letter *cur_letter;
     text_mode mode;
