@@ -1,12 +1,24 @@
 #include <CUnit/Basic.h>
 #include <CUnit/CUnit.h>
+#include <assert.h>
 #include <utils/str.h>
+
+// NOTE: this is an implementation detail, so shouldn't really be covered by unit tests. oh well!
+#define STR_STACK_SIZE sizeof(str)
+// implementation-independent small-string detection
+static bool is_small(str const *s) {
+    void const *s_start = s;
+    void const *s_end = s + 1;
+    void const *s_str = str_c(s);
+    // the string is small if the contents are stored within.
+    return s_str >= s_start && s_str < s_end;
+}
 
 void test_str_create(void) {
     str m;
     str_create(&m);
-    CU_ASSERT(m.len == 0);
-    CU_ASSERT_PTR_NULL(m.data);
+    CU_ASSERT(str_size(&m) == 0);
+    CU_ASSERT(is_small(&m));
     CU_ASSERT(m.small[0] == 0);
     str_free(&m);
 }
@@ -18,9 +30,9 @@ void test_str_from(void) {
     str d;
     str_from(&d, &src);
     CU_ASSERT(str_size(&d) == 8);
-    CU_ASSERT_PTR_NULL(d.data);
-    CU_ASSERT(d.small[7] == 'a');
-    CU_ASSERT(d.small[8] == 0);
+    CU_ASSERT(is_small(&d));
+    CU_ASSERT(str_c(&d)[7] == 'a');
+    CU_ASSERT(str_c(&d)[8] == 0);
 
     str_free(&d);
     str_free(&src);
@@ -32,7 +44,7 @@ void test_str_from_threshold_short(void) {
     memset(short_str, 'A', sizeof short_str);
     short_str[sizeof short_str - 1] = '\0';
     str_from_c(&d, short_str);
-    CU_ASSERT_PTR_NULL(d.data);
+    CU_ASSERT(is_small(&d));
     str_free(&d);
 }
 
@@ -42,7 +54,7 @@ void test_str_from_threshold_long(void) {
     memset(long_str, 'A', sizeof long_str);
     long_str[sizeof long_str - 1] = '\0';
     str_from_c(&d, long_str);
-    CU_ASSERT_PTR_NOT_NULL(d.data);
+    CU_ASSERT(!is_small(&d));
     str_free(&d);
 }
 
@@ -53,10 +65,9 @@ void test_str_from_long(void) {
     str d;
     str_from(&d, &src);
     CU_ASSERT(str_size(&d) == 33);
-    CU_ASSERT_PTR_NOT_NULL(d.data);
-    CU_ASSERT(d.data[32] == '1');
-    CU_ASSERT(d.data[33] == 0);
-    CU_ASSERT(d.small[0] == 0);
+    CU_ASSERT(!is_small(&d));
+    CU_ASSERT(str_c(&d)[32] == '1');
+    CU_ASSERT(str_c(&d)[33] == 0);
 
     str_free(&d);
     str_free(&src);
@@ -66,9 +77,9 @@ void test_str_from_c(void) {
     str d;
     str_from_c(&d, "testdata");
     CU_ASSERT(str_size(&d) == 8);
-    CU_ASSERT_PTR_NULL(d.data);
-    CU_ASSERT(d.small[7] == 'a');
-    CU_ASSERT(d.small[8] == 0);
+    CU_ASSERT(is_small(&d));
+    CU_ASSERT(str_c(&d)[7] == 'a');
+    CU_ASSERT(str_c(&d)[8] == 0);
     str_free(&d);
 }
 
@@ -76,10 +87,9 @@ void test_str_from_c_long(void) {
     str d;
     str_from_c(&d, "testdatatestdatatestdatatestdata1");
     CU_ASSERT(str_size(&d) == 33);
-    CU_ASSERT_PTR_NOT_NULL(d.data);
-    CU_ASSERT(d.data[32] == '1');
-    CU_ASSERT(d.data[33] == 0);
-    CU_ASSERT(d.small[0] == 0);
+    CU_ASSERT(!is_small(&d));
+    CU_ASSERT(str_c(&d)[32] == '1');
+    CU_ASSERT(str_c(&d)[33] == 0);
     str_free(&d);
 }
 
@@ -87,9 +97,9 @@ void test_str_from_buf(void) {
     str d;
     str_from_buf(&d, "testdata", 8);
     CU_ASSERT(str_size(&d) == 8);
-    CU_ASSERT_PTR_NULL(d.data);
-    CU_ASSERT(d.small[7] == 'a');
-    CU_ASSERT(d.small[8] == 0);
+    CU_ASSERT(is_small(&d));
+    CU_ASSERT(str_c(&d)[7] == 'a');
+    CU_ASSERT(str_c(&d)[8] == 0);
     str_free(&d);
 }
 
@@ -97,10 +107,9 @@ void test_str_from_buf_long(void) {
     str d;
     str_from_buf(&d, "testdatatestdatatestdatatestdata1", 33);
     CU_ASSERT(str_size(&d) == 33);
-    CU_ASSERT_PTR_NOT_NULL(d.data);
-    CU_ASSERT(d.data[32] == '1');
-    CU_ASSERT(d.data[33] == 0);
-    CU_ASSERT(d.small[0] == 0);
+    CU_ASSERT(!is_small(&d));
+    CU_ASSERT(str_c(&d)[32] == '1');
+    CU_ASSERT(str_c(&d)[33] == 0);
     str_free(&d);
 }
 
@@ -109,9 +118,9 @@ void test_str_from_format(void) {
     str_from_format(&d, "%s, %d\n", "this is a test", 100);
 
     CU_ASSERT_STRING_EQUAL(str_c(&d), "this is a test, 100\n")
-    CU_ASSERT(d.len == 20);
-    CU_ASSERT_PTR_NOT_NULL(d.data);
-    CU_ASSERT(d.data[20] == 0);
+    CU_ASSERT(str_size(&d) == 20);
+    CU_ASSERT(is_small(&d));
+    CU_ASSERT(str_c(&d)[20] == 0);
 
     str_free(&d);
 }
@@ -121,10 +130,9 @@ void test_str_from_format_long(void) {
     str_from_format(&d, "%s, %d\n", "this is a test this is a test this is a test", 100);
 
     CU_ASSERT_STRING_EQUAL(str_c(&d), "this is a test this is a test this is a test, 100\n")
-    CU_ASSERT(d.len == 50);
-    CU_ASSERT_PTR_NOT_NULL(d.data);
-    CU_ASSERT(d.data[50] == 0);
-    CU_ASSERT(d.small[0] == 0);
+    CU_ASSERT(str_size(&d) == 50);
+    CU_ASSERT(!is_small(&d));
+    CU_ASSERT(str_c(&d)[50] == 0);
 
     str_free(&d);
 }
@@ -134,10 +142,10 @@ void test_str_from_slice(void) {
     str dst;
 
     str_from_c(&src, "test-data-a");
-    str_from_slice(&dst, &src, 0, 4);
+    str_from_slice(&dst, &src, 5, 5 + 4);
 
-    CU_ASSERT(dst.len == 4);
-    CU_ASSERT_NSTRING_EQUAL(dst.small, "test", 5);
+    CU_ASSERT(str_size(&dst) == 4);
+    CU_ASSERT_NSTRING_EQUAL(str_c(&dst), "data", 5);
 
     str_free(&src);
     str_free(&dst);
@@ -150,19 +158,11 @@ void test_str_from_slice_long(void) {
     str_from_c(&src, "test-data-a-test-data-a-test-data-a-test-data-a-test-data-a");
     str_from_slice(&dst, &src, 0, 33);
 
-    CU_ASSERT(dst.len == 33);
-    CU_ASSERT_NSTRING_EQUAL(dst.data, "test-data-a-test-data-a-test-data", 33);
+    CU_ASSERT(str_size(&dst) == 33);
+    CU_ASSERT_NSTRING_EQUAL(str_c(&dst), "test-data-a-test-data-a-test-data", 33);
 
     str_free(&src);
     str_free(&dst);
-}
-
-void test_str_free(void) {
-    str m;
-    str_create(&m);
-    str_free(&m);
-    CU_ASSERT(m.len == 0)
-    CU_ASSERT_PTR_NULL(m.data);
 }
 
 void test_str_toupper(void) {
@@ -193,7 +193,7 @@ void test_str_rstrip(void) {
     str_rstrip(&d);
 
     CU_ASSERT_NSTRING_EQUAL(str_c(&d), "  test", 6);
-    CU_ASSERT(str_c(&d)[d.len] == 0);
+    CU_ASSERT(str_c(&d)[str_size(&d)] == 0);
 
     str_free(&d);
 }
@@ -204,7 +204,7 @@ void test_str_lstrip(void) {
     str_lstrip(&d);
 
     CU_ASSERT_NSTRING_EQUAL(str_c(&d), "test  ", 6);
-    CU_ASSERT(str_c(&d)[d.len] == 0);
+    CU_ASSERT(str_c(&d)[str_size(&d)] == 0);
 
     str_free(&d);
 }
@@ -214,8 +214,8 @@ void test_str_strip(void) {
     str_from_c(&d, "  test  ");
     str_strip(&d);
 
-    CU_ASSERT_NSTRING_EQUAL(d.small, "test", 4);
-    CU_ASSERT(d.small[d.len] == 0);
+    CU_ASSERT_NSTRING_EQUAL(str_c(&d), "test", 4);
+    CU_ASSERT(str_c(&d)[str_size(&d)] == 0);
 
     str_free(&d);
 }
@@ -227,9 +227,9 @@ void test_str_append(void) {
     str_from_c(&dst, "base_string");
     str_append(&dst, &src);
     CU_ASSERT(str_size(&dst) == 26);
-    CU_ASSERT_PTR_NOT_NULL(dst.data);
-    CU_ASSERT_NSTRING_EQUAL(dst.data, "base_stringappended_string", 27);
-    CU_ASSERT(dst.data[dst.len] == 0);
+    CU_ASSERT_PTR_NOT_NULL(str_c(&dst));
+    CU_ASSERT_NSTRING_EQUAL(str_c(&dst), "base_stringappended_string", 27);
+    CU_ASSERT(str_c(&dst)[str_size(&dst)] == '\0');
     str_free(&src);
     str_free(&dst);
 }
@@ -239,9 +239,9 @@ void test_str_append_c(void) {
     str_from_c(&dst, "base_string");
     str_append_c(&dst, "appended_string");
     CU_ASSERT(str_size(&dst) == 26);
-    CU_ASSERT_PTR_NOT_NULL(dst.data);
-    CU_ASSERT_NSTRING_EQUAL(dst.data, "base_stringappended_string", 27);
-    CU_ASSERT(dst.data[dst.len] == 0);
+    CU_ASSERT_PTR_NOT_NULL(str_c(&dst));
+    CU_ASSERT_NSTRING_EQUAL(str_c(&dst), "base_stringappended_string", 27);
+    CU_ASSERT(str_c(&dst)[str_size(&dst)] == 0);
     str_free(&dst);
 }
 
@@ -250,9 +250,9 @@ void test_str_append_buf(void) {
     str_from_c(&dst, "base_string");
     str_append_buf(&dst, "appended_string", 15);
     CU_ASSERT(str_size(&dst) == 26);
-    CU_ASSERT_PTR_NOT_NULL(dst.data);
-    CU_ASSERT_NSTRING_EQUAL(dst.data, "base_stringappended_string", 27);
-    CU_ASSERT(dst.data[dst.len] == 0);
+    CU_ASSERT_PTR_NOT_NULL(str_c(&dst));
+    CU_ASSERT_NSTRING_EQUAL(str_c(&dst), "base_stringappended_string", 27);
+    CU_ASSERT(str_c(&dst)[str_size(&dst)] == 0);
     str_free(&dst);
 }
 
@@ -300,11 +300,11 @@ void test_str_equal(void) {
 
 void test_str_equal_c(void) {
     str d;
-    str_from_c(&d, "prepended_testdataappended_X");
-    CU_ASSERT(str_equal_c(&d, "prepended_testdataappended_X") == true);
-
-    str_toupper(&d);
-    CU_ASSERT(str_equal_c(&d, "prepended_testdataappended_X") == false);
+    str_from_c(&d, "TestData");
+    CU_ASSERT(str_equal_c(&d, "TestData") == true);
+    CU_ASSERT(str_equal_c(&d, "testdata") == false);
+    CU_ASSERT(str_equal_c(&d, "Test") == false);
+    CU_ASSERT(str_equal_c(&d, "TestDataData") == false);
 
     str_free(&d);
 }
@@ -326,7 +326,7 @@ void test_str_replace_lg(void) {
     str_from_c(&d, "test $1 string $2");
     str_replace(&d, "$1", "one", -1);
     str_replace(&d, "$2", "two", -1);
-    CU_ASSERT(str_c(&d)[d.len] == 0);
+    CU_ASSERT(str_c(&d)[str_size(&d)] == 0);
     CU_ASSERT_STRING_EQUAL(str_c(&d), "test one string two");
     str_free(&d);
 }
@@ -336,7 +336,7 @@ void test_str_replace_eq(void) {
     str_from_c(&d, "test $1 string $2");
     str_replace(&d, "$1", "11", -1);
     str_replace(&d, "$2", "22", -1);
-    CU_ASSERT(str_c(&d)[d.len] == 0);
+    CU_ASSERT(str_c(&d)[str_size(&d)] == 0);
     CU_ASSERT_STRING_EQUAL(str_c(&d), "test 11 string 22");
     str_free(&d);
 }
@@ -346,7 +346,7 @@ void test_str_replace_sm(void) {
     str_from_c(&d, "test $1 string $2");
     str_replace(&d, "$1", "1", -1);
     str_replace(&d, "$2", "2", -1);
-    CU_ASSERT(str_c(&d)[d.len] == 0);
+    CU_ASSERT(str_c(&d)[str_size(&d)] == 0);
     CU_ASSERT_STRING_EQUAL(str_c(&d), "test 1 string 2");
     str_free(&d);
 }
@@ -358,11 +358,11 @@ void test_str_replace_sm_regression(void) {
     long_str[sizeof long_str - 2] = 'B';
     long_str[sizeof long_str - 1] = '\0';
     str_from_c(&d, long_str);
-    CU_ASSERT_PTR_NOT_NULL(d.data);
+    CU_ASSERT(!is_small(&d));
 
     str_replace(&d, "AA", "C", 1);
-    CU_ASSERT(str_c(&d)[d.len] == '\0');
-    CU_ASSERT(str_c(&d)[d.len - 1] == 'B');
+    CU_ASSERT(str_c(&d)[str_size(&d)] == '\0');
+    CU_ASSERT(str_c(&d)[str_size(&d) - 1] == 'B');
     str_free(&d);
 }
 
@@ -370,7 +370,7 @@ void test_str_replace_multi(void) {
     str d;
     str_from_c(&d, "test $1 string $1");
     str_replace(&d, "$1", "one", -1);
-    CU_ASSERT(str_c(&d)[d.len] == 0);
+    CU_ASSERT(str_c(&d)[str_size(&d)] == 0);
     CU_ASSERT_STRING_EQUAL(str_c(&d), "test one string one");
     str_free(&d);
 }
@@ -379,7 +379,7 @@ void test_str_replace_multi_regression(void) {
     str d;
     str_from_c(&d, "test $1 string");
     str_replace(&d, "$1", "$2 $1", 2);
-    CU_ASSERT(str_c(&d)[d.len] == 0);
+    CU_ASSERT(str_c(&d)[str_size(&d)] == 0);
     CU_ASSERT_STRING_EQUAL(str_c(&d), "test $2 $1 string");
     str_free(&d);
 }
@@ -388,7 +388,7 @@ void test_str_replace_multi_consecutive(void) {
     str d;
     str_from_c(&d, "test $1$1 string");
     str_replace(&d, "$1", "", -1);
-    CU_ASSERT(str_c(&d)[d.len] == 0);
+    CU_ASSERT(str_c(&d)[str_size(&d)] == 0);
     CU_ASSERT_STRING_EQUAL(str_c(&d), "test  string");
     str_free(&d);
 }
@@ -397,7 +397,7 @@ void test_str_replace_multi_limit(void) {
     str d;
     str_from_c(&d, "test $1 string $1");
     str_replace(&d, "$1", "one", 1);
-    CU_ASSERT(str_c(&d)[d.len] == 0);
+    CU_ASSERT(str_c(&d)[str_size(&d)] == 0);
     CU_ASSERT_STRING_EQUAL(str_c(&d), "test one string $1");
     str_free(&d);
 }
@@ -431,15 +431,15 @@ void test_str_delete_at_big(void) {
         str_append_c(&d, "A");
     }
     CU_ASSERT(str_size(&d) == STR_STACK_SIZE + 1);
-    CU_ASSERT(str_c(&d)[d.len] == '\0');
-    CU_ASSERT(str_c(&d)[d.len - 1] == 'A');
+    CU_ASSERT(str_c(&d)[str_size(&d)] == '\0');
+    CU_ASSERT(str_c(&d)[str_size(&d) - 1] == 'A');
     CU_ASSERT(str_c(&d)[0] == 'A');
     CU_ASSERT(str_delete_at(&d, STR_STACK_SIZE + 1) == false);
     for(size_t i = 0; i < STR_STACK_SIZE + 1; ++i) {
-        CU_ASSERT(str_delete_at(&d, d.len - 1) == true);
+        CU_ASSERT(str_delete_at(&d, str_size(&d) - 1) == true);
     }
     CU_ASSERT(str_size(&d) == 0);
-    CU_ASSERT(str_c(&d)[d.len] == '\0');
+    CU_ASSERT(str_c(&d)[str_size(&d)] == '\0');
     CU_ASSERT(str_c(&d)[0] == '\0');
 
     str_free(&d);
@@ -513,8 +513,8 @@ void test_str_insert_at(void) {
         CU_ASSERT(str_insert_at(&d, 4, 'W') == true);
         CU_ASSERT(str_size(&d) == orig_size + i + 1);
     }
-    // This needs to follow changes in STR_STACK_SIZE.
-    CU_ASSERT_STRING_EQUAL(str_c(&d), "XAYBWWWWWWWWWWWWWWWWCDZ");
+    static_assert(STR_STACK_SIZE == 24, "following line needs to follow changes in STR_STACK_SIZE");
+    CU_ASSERT_STRING_EQUAL(str_c(&d), "XAYBWWWWWWWWWWWWWWWWWWWWWWWWCDZ");
 
     str_free(&d);
 }
@@ -537,9 +537,6 @@ void test_str_insert_c_at(void) {
 
 void str_test_suite(CU_pSuite suite) {
     if(CU_add_test(suite, "Test for str_create", test_str_create) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for string free operation", test_str_free) == NULL) {
         return;
     }
     if(CU_add_test(suite, "Test for str_from", test_str_from) == NULL) {

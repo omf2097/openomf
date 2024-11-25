@@ -1562,7 +1562,7 @@ af_move *match_move(object *obj, char *inputs) {
     size_t len;
     for(int i = 0; i < 70; i++) {
         if((move = af_get_move(h->af_data, i))) {
-            len = move->move_string.len;
+            len = str_size(&move->move_string);
             if(!strncmp(str_c(&move->move_string), inputs, len)) {
                 if(move->category == CAT_CLOSE && h->close != 1) {
                     // not standing close enough

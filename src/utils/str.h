@@ -1,16 +1,20 @@
 #ifndef STR_H
 #define STR_H
 
-#include <stdarg.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include <string.h>
 
-#define STR_STACK_SIZE (16)
-
-typedef struct str {
-    size_t len;
+struct internal_str_normal {
     char *data;
-    char small[STR_STACK_SIZE];
+    size_t size;
+    size_t capacity;
+};
+
+typedef union str {
+    // do not access the internals of this union, use the methods.
+    char small[sizeof(struct internal_str_normal)];
+    struct internal_str_normal normal;
 } str;
 
 /**
@@ -30,14 +34,6 @@ void str_create(str *dst);
 void str_from(str *dst, const str *src);
 
 /**
- * @brief Create a string object from C string (null terminated buffer).
- * @details Source string contents will be copied.
- * @param dst Target string object
- * @param src Source C string to copy
- */
-void str_from_c(str *dst, const char *src);
-
-/**
  * @brief Create a string object from memory buffer.
  * @details Source buffer content will be copied. Please make sure that the source
  *          buffer contains no null characters, and is actual printable text string.
@@ -46,6 +42,16 @@ void str_from_c(str *dst, const char *src);
  * @param len Source buffer object length (bytes)
  */
 void str_from_buf(str *dst, const char *buf, size_t len);
+
+/**
+ * @brief Create a string object from C string (null terminated buffer).
+ * @details Source string contents will be copied.
+ * @param dst Target string object
+ * @param src Source C string to copy
+ */
+static inline void str_from_c(str *dst, const char *src) {
+    str_from_buf(dst, src, strlen(src));
+}
 
 /**
  * Create a string object from file contents
@@ -143,17 +149,19 @@ void str_strip(str *dst);
 void str_append(str *dst, const str *src);
 
 /**
- * @brief Append a C string (null terminated) to a string object.
- * @details Source string content will be copied.
- */
-void str_append_c(str *dst, const char *src);
-
-/**
  * @brief Append a C buffer (NOT null terminated) to a string object.
  * @details Source buffer content will be copied. Please make sure that the source
  *          buffer contains no null characters, and is actual printable text string.
  */
 void str_append_buf(str *dst, const char *buf, size_t len);
+
+/**
+ * @brief Append a C string (null terminated) to a string object.
+ * @details Source string content will be copied.
+ */
+static inline void str_append_c(str *dst, const char *src) {
+    str_append_buf(dst, src, strlen(src));
+}
 
 /**
  * @brief Replace content in string with something else.
@@ -168,7 +176,7 @@ void str_append_buf(str *dst, const char *buf, size_t len);
 void str_replace(str *dst, const char *seek, const char *replacement, int limit);
 
 /**
- * @brief Get string length.
+ * @brief Get string length, not counting the NUL byte (conceptually the same as strlen).
  */
 size_t str_size(const str *string);
 
@@ -193,14 +201,19 @@ bool str_last_of(const str *string, char find, size_t *pos);
 bool str_equal(const str *a, const str *b);
 
 /**
- * @brief Check if strings match (match with C null terminated string)
- */
-bool str_equal_c(const str *a, const char *b);
-
-/**
  * @brief Check if strings match (match with C buffer)
  */
 bool str_equal_buf(const str *a, const char *buf, size_t len);
+
+/**
+ * @brief Check if strings match (match with C null terminated string)
+ */
+static inline bool str_equal_c(const str *a, const char *b) {
+    // NOTE: optimization: using `strlen(b)` here instead of
+    // `omf_strnlen_s(b, str_size(a))` as the compiler can eliminate calls to
+    // strlen so long as the argument is a known constant.
+    return str_equal_buf(a, b, strlen(b));
+}
 
 /**
  * @brief Get a character at given index.
@@ -224,9 +237,16 @@ bool str_set_at(str *string, size_t pos, char value);
 bool str_insert_at(str *string, size_t pos, char value);
 
 /**
+ * @brief Insert a buffer's contents at given index.
+ */
+bool str_insert_buf_at(str *string, size_t pos, char const *buf, size_t buf_len);
+
+/**
  * @brief Insert a C string starting at the given index.
  */
-bool str_insert_c_at(str *dst, size_t pos, const char *src);
+static inline bool str_insert_c_at(str *dst, size_t pos, const char *src) {
+    return str_insert_buf_at(dst, pos, src, strlen(src));
+}
 
 /**
  * @brief Convert string to float
@@ -259,8 +279,8 @@ bool str_to_long(const str *string, long *m);
 bool str_to_int(const str *string, int *m);
 
 /**
- * @brief Returns a C string compatible represantation of a string object.
- * @details Note! This will become invalid if any changes are performanced on the string
+ * @brief Returns a C string compatible representation of a string object.
+ * @details Note! This will become invalid if any changes are performed on the string
  *          object. Use with care!
  * @param src String to convert
  * @return const char*

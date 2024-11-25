@@ -1,5 +1,6 @@
 #include "utils/str.h"
 #include "utils/allocator.h"
+#include "utils/compat.h"
 #include "utils/io.h"
 #include "utils/log.h"
 #include "utils/miscmath.h"
@@ -10,84 +11,164 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define READ_BLOCK_SIZE (1024)
+#define STR_STACK_SIZE sizeof(str)
+#define STR_FLAGBIT_COUNT 1
+
+// ------------------------ Basic Accessors ------------------------
+
+// the number of spare capacity in the small string representation.
+// also contains the flag bits for detecting small/large strings.
+static inline uint8_t str_smallspare(str const *s) {
+    uint8_t spare;
+    memcpy(&spare, &s->small[STR_STACK_SIZE - 1], 1);
+    return spare;
+}
+
+static inline size_t str_normalcapacity(str const *s) {
+#ifdef BIG_ENDIAN_BUILD
+    // last bit (LSB) of capacity contains flag bit. mask it off.
+    return s->normal.capacity >> STR_FLAGBIT_COUNT << STR_FLAGBIT_COUNT;
+#else
+    // last bit (MSB) of capacity contains flag bit. shift it off.
+    return s->normal.capacity << STR_FLAGBIT_COUNT;
+#endif
+}
+
+static inline void str_normalsetcapacity(str *s, size_t capacity) {
+    // LSB should never be set-- guaranteed by str_roundupcapacity.
+    assert((capacity & 0x1) == 0);
+#ifdef BIG_ENDIAN_BUILD
+    // use last bit (LSB) of capacity as flag bit
+    size_t flag = 1;
+    s->normal.capacity = capacity | flag;
+#else
+    // use last bit (MSB) of capacity as flag bit
+    size_t flag = SIZE_MAX ^ (SIZE_MAX >> 1);
+    // shift LSB of input capacity off, as we know its never set.
+    s->normal.capacity = (capacity >> 1) | flag;
+#endif
+}
+
+static inline void str_smallsetsize(str *s, uint8_t size) {
+    uint8_t spare = STR_STACK_SIZE - 1 - size;
+#ifdef BIG_ENDIAN_BUILD
+    // shift spare over to make space for flagbits
+    spare <<= STR_FLAGBIT_COUNT;
+#endif
+    memcpy(&s->small[STR_STACK_SIZE - 1], &spare, 1);
+}
+
+static bool str_issmall(str const *s) {
+    // last bit of capacity contains !issmall flag
+#ifdef BIG_ENDIAN_BUILD
+    // last bit is least significant
+    return (str_smallspare(s) & 0x01) == 0;
+#else
+    // last bit is most significant
+    return (str_smallspare(s) & 0x80) == 0;
+#endif
+}
+
+size_t str_size(str const *s) {
+    uint8_t spare = str_smallspare(s);
+#ifdef BIG_ENDIAN_BUILD
+    spare >>= STR_FLAGBIT_COUNT;
+#endif
+    return str_issmall(s) ? (STR_STACK_SIZE - 1 - spare) : s->normal.size;
+}
+
+static inline char *str_ptr(str *s) {
+    return str_issmall(s) ? s->small : s->normal.data;
+}
+
+char const *str_c(str const *s) {
+    return str_issmall(s) ? s->small : s->normal.data;
+}
+
+static inline void str_zero(str *s) {
+    str_ptr(s)[str_size(s)] = '\0';
+}
+
+static inline size_t str_roundupcapacity(size_t capacity) {
+    size_t const granularity = 1 << STR_FLAGBIT_COUNT;
+    // round up to nearest multiple of granularity (a power of 2)
+    return (capacity + (granularity - 1)) & ~(granularity - 1);
+}
 
 // ------------------------ Create & destroy ------------------------
 
-static void str_resize_buffer(str *dst, size_t size) {
+// destructively resizes str to size
+// returns a char * which the caller must write size non-null bytes to, followed by a null byte.
+static char *str_resize_buffer(str *s, size_t size) {
     size_t size_with_zero = size + 1;
-    if(size_with_zero > STR_STACK_SIZE) {
-        dst->data = omf_realloc(dst->data, size_with_zero);
-        dst->small[0] = 0;
-    } else {
-        if(dst->data != NULL) {
-            omf_free(dst->data);
+    bool become_small = size_with_zero <= STR_STACK_SIZE;
+    bool is_small = str_issmall(s);
+    if(become_small && is_small) {
+        str_smallsetsize(s, size);
+        return s->small;
+    } else if(become_small && !is_small) {
+        omf_free(s->normal.data);
+        str_smallsetsize(s, size);
+        return s->small;
+    } else if(!become_small && is_small) {
+        size_t capacity = str_roundupcapacity(size_with_zero);
+        str_normalsetcapacity(s, capacity);
+        s->normal.data = omf_malloc(capacity);
+        s->normal.size = size;
+        return s->normal.data;
+    } else /* if(!become_small && !is_small) */ {
+        if(size_with_zero > str_normalcapacity(s)) {
+            size_t capacity = str_roundupcapacity(size_with_zero);
+            str_normalsetcapacity(s, capacity);
+            s->normal.data = omf_realloc(s->normal.data, capacity);
         }
-        dst->small[size] = 0;
+        s->normal.size = size;
+        return s->normal.data;
     }
-    dst->len = size;
 }
 
-static void str_resize_and_copy_buffer(str *dst, size_t size) {
-    if(size == dst->len) {
-        return;
-    }
+// resizes str to size while preserving the contents (or as much will fit)
+static void str_resize_and_copy_buffer(str *s, size_t size) {
     size_t size_with_zero = size + 1;
-    if(size_with_zero > STR_STACK_SIZE) {
-        // New size is larger than the stack buffer; do malloc.
-        if(dst->data == NULL) {
-            // Old string is in stack, move to heap
-            dst->data = omf_malloc(size_with_zero);
-            memcpy(dst->data, dst->small, dst->len);
-            dst->data[dst->len] = 0;
-            dst->small[0] = 0;
-        } else {
-            // Old string is already in heap, keep it there.
-            dst->data = omf_realloc(dst->data, size_with_zero);
+    bool become_small = size_with_zero <= STR_STACK_SIZE;
+    bool is_small = str_issmall(s);
+    if(become_small && is_small) {
+        str_smallsetsize(s, size);
+    } else if(become_small && !is_small) {
+        char *old_data = s->normal.data;
+        memcpy(s->small, old_data, size);
+        str_smallsetsize(s, size);
+        omf_free(old_data);
+    } else if(!become_small && is_small) {
+        // can't write to s until we've copied s->small to the heap
+        size_t capacity = str_roundupcapacity(size_with_zero);
+        char *data = omf_malloc(capacity);
+        memcpy(data, s->small, STR_STACK_SIZE);
+        s->normal.data = data;
+        str_normalsetcapacity(s, capacity);
+        s->normal.size = size;
+    } else /* if (!become_small && !is_small) */ {
+        if(size_with_zero > str_normalcapacity(s)) {
+            size_t capacity = str_roundupcapacity(size_with_zero);
+            str_normalsetcapacity(s, capacity);
+            s->normal.data = omf_realloc(s->normal.data, capacity);
         }
-    } else {
-        // New size is small enough to move back to stack.
-        if(dst->data != NULL) {
-            // Old string is in heap, move to stack.
-            memcpy(dst->small, dst->data, size);
-            omf_free(dst->data);
-            dst->small[size] = 0;
-        }
-    }
-    dst->len = size;
-}
-
-static char *str_ptr(str *src) {
-    if(src->data != NULL) {
-        return src->data;
-    }
-    return src->small;
-}
-
-static void str_zero(str *dst) {
-    if(dst->data == NULL) {
-        dst->small[dst->len] = 0;
-    } else {
-        dst->data[dst->len] = 0;
+        s->normal.size = size;
     }
 }
 
-void str_create(str *dst) {
-    memset(dst, 0, sizeof(str));
+void str_create(str *s) {
+    memset(s, 0, sizeof(str));
+    str_smallsetsize(s, 0);
 }
 
 void str_from(str *dst, const str *src) {
-    str_from_buf(dst, str_c(src), src->len);
-}
-
-void str_from_c(str *dst, const char *src) {
-    str_from_buf(dst, src, strlen(src));
+    str_from_buf(dst, str_c(src), str_size(src));
 }
 
 void str_from_buf(str *dst, const char *buf, size_t len) {
     str_create(dst);
-    str_resize_buffer(dst, len);
-    memcpy(str_ptr(dst), buf, len);
+    memcpy(str_resize_buffer(dst, len), buf, len);
     str_zero(dst);
 }
 
@@ -95,8 +176,7 @@ void str_from_file(str *dst, const char *file_name) {
     FILE *handle = file_open(file_name, "rb");
     long size = file_size(handle);
     str_create(dst);
-    str_resize_buffer(dst, size);
-    file_read(handle, str_ptr(dst), size);
+    file_read(handle, str_resize_buffer(dst, size), size);
     file_close(handle);
     str_zero(dst);
 }
@@ -121,7 +201,7 @@ void str_format(str *dst, const char *format, ...) {
 
     // Make sure there is enough room for our vsnprintf call plus ending NULL,
     // then render the output to our new buffer.
-    if((int)dst->len < size) {
+    if((int)str_size(dst) < size) {
         str_resize_buffer(dst, size);
     }
     vsnprintf(str_ptr(dst), size + 1, format, args2);
@@ -149,29 +229,28 @@ void str_from_format(str *dst, const char *format, ...) {
     // Make sure there is enough room for our vsnprintf call plus ending NULL,
     // then render the output to our new buffer.
     str_create(dst);
-    str_resize_buffer(dst, size);
-    vsnprintf(str_ptr(dst), size + 1, format, args2);
+    vsnprintf(str_resize_buffer(dst, size), size + 1, format, args2);
     va_end(args2);
 }
 
 void str_from_slice(str *dst, const str *src, size_t start, size_t end) {
     assert(dst != src);
     assert(start < end);
-    if(end > src->len)
-        end = src->len;
+    size_t src_len = str_size(src);
+    if(end > src_len)
+        end = src_len;
+    if(start > end)
+        start = end;
     size_t len = end - start;
-    str_create(dst);
-    str_resize_buffer(dst, len);
-    memcpy(str_ptr(dst), str_c(src) + start, len);
-    str_zero(dst);
+    str_from_buf(dst, str_c(src) + start, len);
 }
 
 void str_free(str *dst) {
     if(dst == NULL) {
         return;
     }
-    if(dst->data != NULL) {
-        omf_free(dst->data);
+    if(!str_issmall(dst)) {
+        omf_free(dst->normal.data);
     }
     memset(dst, 0, sizeof(str));
 }
@@ -180,26 +259,28 @@ void str_free(str *dst) {
 
 void str_toupper(str *dst) {
     char *ptr = str_ptr(dst);
-    for(size_t i = 0; i < dst->len; i++) {
+    size_t len = str_size(dst);
+    for(size_t i = 0; i < len; i++) {
         ptr[i] = toupper(ptr[i]);
     }
 }
 
 void str_tolower(str *dst) {
     char *ptr = str_ptr(dst);
-    for(size_t i = 0; i < dst->len; i++) {
+    size_t len = str_size(dst);
+    for(size_t i = 0; i < len; i++) {
         ptr[i] = tolower(ptr[i]);
     }
 }
 
 static size_t _strip_size(const str *src, bool left) {
-    if(src->len == 0) {
+    size_t len = str_size(src);
+    if(len == 0) {
         return 0;
     }
-    size_t pos;
     const char *ptr = str_c(src);
-    for(size_t i = 0; i < src->len; i++) {
-        pos = left ? i : src->len - i - 1;
+    for(size_t i = 0; i < len; i++) {
+        size_t pos = left ? i : len - i - 1;
         if(!isspace(ptr[pos])) {
             return pos;
         }
@@ -218,8 +299,9 @@ void str_lstrip(str *dst) {
     // More complex. Move data first (memmmove!), then reduce size.
     size_t skip = _strip_size(dst, true);
     char *ptr = str_ptr(dst);
-    memmove(ptr, ptr + skip, dst->len - skip);
-    str_resize_and_copy_buffer(dst, dst->len - skip);
+    size_t len = str_size(dst);
+    memmove(ptr, ptr + skip, len - skip);
+    str_resize_and_copy_buffer(dst, len - skip);
     str_zero(dst);
 }
 
@@ -230,23 +312,20 @@ void str_strip(str *dst) {
 
 void str_append(str *dst, const str *src) {
     assert(dst != src);
-    str_append_buf(dst, str_c(src), src->len);
-}
-
-void str_append_c(str *dst, const char *src) {
-    str_append_buf(dst, src, strlen(src));
+    str_append_buf(dst, str_c(src), str_size(src));
 }
 
 void str_append_buf(str *dst, const char *buf, size_t len) {
-    size_t offset = dst->len;
-    str_resize_and_copy_buffer(dst, dst->len + len);
+    size_t offset = str_size(dst);
+    str_resize_and_copy_buffer(dst, offset + len);
     memcpy(str_ptr(dst) + offset, buf, len);
     str_zero(dst);
 }
 
 bool str_find_next(const str *string, char find, size_t *pos) {
     const char *ptr = str_c(string);
-    for(size_t i = *pos; i < string->len; i++) {
+    size_t len = str_size(string);
+    for(size_t i = *pos; i < len; i++) {
         if(ptr[i] == find) {
             *pos = i;
             return true;
@@ -256,15 +335,16 @@ bool str_find_next(const str *string, char find, size_t *pos) {
 }
 
 void str_cut(str *dst, size_t len) {
-    if(len > dst->len)
-        len = dst->len;
-    dst->len -= len;
-    str_resize_and_copy_buffer(dst, dst->len);
+    size_t dst_len = str_size(dst);
+    if(len > dst_len)
+        len = dst_len;
+    dst_len -= len;
+    str_resize_and_copy_buffer(dst, dst_len);
     str_zero(dst);
 }
 
 void str_truncate(str *dst, size_t max_len) {
-    size_t old_len = dst->len;
+    size_t old_len = str_size(dst);
     if(old_len > max_len) {
         str_resize_and_copy_buffer(dst, max_len);
         str_zero(dst);
@@ -278,19 +358,20 @@ void str_replace(str *dst, const char *seek, const char *replacement, int limit)
     int found = 0;
     ptrdiff_t diff = replacement_len - (ptrdiff_t)seek_len;
     size_t current_pos = 0;
+    size_t len = str_size(dst);
     while(str_find_next(dst, seek[0], &current_pos) && (found < limit || limit < 0)) {
         if(strncmp(str_ptr(dst) + current_pos, seek, seek_len) == 0) {
             if(diff > 0) { // Grow first, before move.
-                str_resize_and_copy_buffer(dst, dst->len + diff);
+                len += diff;
+                str_resize_and_copy_buffer(dst, len);
             }
-            char *ptr = str_ptr(dst);
-            memmove(ptr + current_pos + replacement_len, ptr + current_pos + seek_len,
-                    dst->len - current_pos - max2(replacement_len, seek_len));
-            memcpy(ptr + current_pos, replacement, replacement_len);
-            if(diff < 0) { // Reduce after all is done.
-                str_resize_and_copy_buffer(dst, dst->len + diff);
+            char *ptr = str_ptr(dst) + current_pos;
+            memmove(ptr + replacement_len, ptr + seek_len, len - current_pos - max2(seek_len, replacement_len));
+            memcpy(ptr, replacement, replacement_len);
+
+            if(diff < 0) { // defer actual resize til after the loop
+                len += diff;
             }
-            str_zero(dst);
 
             found++;
             current_pos += replacement_len;
@@ -298,17 +379,18 @@ void str_replace(str *dst, const char *seek, const char *replacement, int limit)
             current_pos++;
         }
     }
+    if(diff < 0 && found) { // Reduce after all is done.
+        str_resize_and_copy_buffer(dst, len);
+    }
+    str_zero(dst);
 }
 
 // ------------------------ Getters ------------------------
 
-size_t str_size(const str *string) {
-    return string->len;
-}
-
 bool str_first_of(const str *string, char find, size_t *pos) {
     const char *ptr = str_c(string);
-    for(size_t i = 0; i < string->len; i++) {
+    size_t len = str_size(string);
+    for(size_t i = 0; i < len; i++) {
         if(ptr[i] == find) {
             *pos = i;
             return true;
@@ -318,10 +400,10 @@ bool str_first_of(const str *string, char find, size_t *pos) {
 }
 
 bool str_last_of(const str *string, char find, size_t *pos) {
-    size_t tmp;
     const char *ptr = str_c(string);
-    for(size_t i = 0; i < string->len; i++) {
-        tmp = string->len - i - 1;
+    size_t len = str_size(string);
+    for(size_t i = 0; i < len; i++) {
+        size_t tmp = len - i - 1;
         if(ptr[tmp] == find) {
             *pos = tmp;
             return true;
@@ -331,34 +413,24 @@ bool str_last_of(const str *string, char find, size_t *pos) {
 }
 
 bool str_equal(const str *a, const str *b) {
-    if(a->len != b->len) {
+    size_t len = str_size(a);
+    if(len != str_size(b)) {
         return false;
     }
     const char *ptr_a = str_c(a);
     const char *ptr_b = str_c(b);
-    if(strncmp(ptr_a, ptr_b, a->len) != 0) {
-        return false;
-    }
-    return true;
-}
-
-bool str_equal_c(const str *a, const char *b) {
-    if(a->len != strlen(b)) {
-        return false;
-    }
-    const char *ptr = str_c(a);
-    if(strncmp(ptr, b, a->len) != 0) {
+    if(memcmp(ptr_a, ptr_b, len) != 0) {
         return false;
     }
     return true;
 }
 
 bool str_equal_buf(const str *a, const char *buf, size_t len) {
-    if(a->len != len) {
+    if(str_size(a) != len) {
         return false;
     }
     const char *ptr = str_c(a);
-    if(strncmp(ptr, buf, a->len) != 0) {
+    if(memcmp(ptr, buf, len) != 0) {
         return false;
     }
     return true;
@@ -366,27 +438,28 @@ bool str_equal_buf(const str *a, const char *buf, size_t len) {
 
 char str_at(const str *string, size_t pos) {
     if(pos >= str_size(string)) {
-        return 0;
+        return '\0';
     }
     const char *ptr = str_c(string);
     return ptr[pos];
 }
 
 bool str_delete_at(str *string, size_t pos) {
-    if(pos >= string->len) {
+    size_t len = str_size(string);
+    if(pos >= len) {
         return false;
     }
     char *buf = str_ptr(string);
-    size_t n = string->len - pos - 1;
+    size_t n = len - pos - 1;
     memmove(&buf[pos], &buf[pos + 1], n);
-    string->len--;
-    str_resize_and_copy_buffer(string, string->len);
+    len--;
+    str_resize_and_copy_buffer(string, len);
     str_zero(string);
     return true;
 }
 
 bool str_set_at(str *string, size_t pos, char value) {
-    if(pos >= string->len) {
+    if(pos >= str_size(string)) {
         return false;
     }
     char *buf = str_ptr(string);
@@ -395,25 +468,26 @@ bool str_set_at(str *string, size_t pos, char value) {
 }
 
 bool str_insert_at(str *string, size_t pos, char value) {
-    if(pos > string->len) {
+    size_t len = str_size(string);
+    if(pos > len) {
         return false;
     }
-    str_resize_and_copy_buffer(string, string->len + 1);
+    str_resize_and_copy_buffer(string, len + 1);
     str_zero(string);
     char *buf = str_ptr(string);
-    size_t n = string->len - pos;
+    size_t n = len - pos;
     memmove(&buf[pos + 1], &buf[pos], n);
     buf[pos] = value;
     return true;
 }
 
-bool str_insert_c_at(str *dst, size_t pos, const char *src) {
-    if(pos > dst->len) {
+bool str_insert_buf_at(str *dst, size_t pos, const char *src, size_t src_len) {
+    size_t len = str_size(dst);
+    if(pos > len) {
         return false;
     }
-    size_t src_len = strlen(src);
-    size_t n = dst->len - pos;
-    str_resize_and_copy_buffer(dst, dst->len + src_len);
+    size_t n = len - pos;
+    str_resize_and_copy_buffer(dst, len + src_len);
     str_zero(dst);
     char *buf = str_ptr(dst);
     memmove(&buf[pos + src_len], &buf[pos], n);
@@ -444,11 +518,4 @@ bool str_to_int(const str *string, int *result) {
         *result = clamp_long_to_int(value);
     }
     return got;
-}
-
-const char *str_c(const str *string) {
-    // At the moment, the internal representation of
-    // string is compatible with C strings. So just return
-    // a pointer to that data
-    return string->data ? string->data : string->small;
 }
