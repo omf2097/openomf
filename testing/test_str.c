@@ -3,9 +3,9 @@
 #include <assert.h>
 #include <utils/str.h>
 
-// NOTE: this is an implementation detail, so shouldn't really be covered by unit tests. oh well!
+// The number of bytes (including null terminating byte) that can be stored in a small string.
 #define STR_STACK_SIZE sizeof(str)
-// implementation-independent small-string detection
+// detects whether a string is currently small-string-optimized
 static bool is_small(str const *s) {
     void const *s_start = s;
     void const *s_end = s + 1;
@@ -21,6 +21,17 @@ void test_str_create(void) {
     CU_ASSERT(is_small(&m));
     CU_ASSERT(m.small[0] == 0);
     str_free(&m);
+}
+
+void test_str_free(void) {
+    str zeroed;
+    memset(&zeroed, 0, sizeof zeroed);
+    str m;
+    str_create(&m);
+    str_from_c(&m, "testdata");
+    CU_ASSERT(memcmp(&m, &zeroed, sizeof(str)) != 0);
+    str_free(&m);
+    CU_ASSERT(memcmp(&m, &zeroed, sizeof(str)) == 0);
 }
 
 void test_str_from(void) {
@@ -537,6 +548,9 @@ void test_str_insert_c_at(void) {
 
 void str_test_suite(CU_pSuite suite) {
     if(CU_add_test(suite, "Test for str_create", test_str_create) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_free", test_str_free) == NULL) {
         return;
     }
     if(CU_add_test(suite, "Test for str_from", test_str_from) == NULL) {
