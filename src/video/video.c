@@ -252,6 +252,7 @@ void video_draw_remap(const surface *src_surface, int x, int y, int remap_offset
 void video_render_text_block(text_object *text) {
     for(uint32_t i = 0; i < text->letter_count; i += 1) {
         const letter *letterptr = &(text->letters[i]);
-        video_draw_offset(letterptr->sur, letterptr->x, letterptr->y, letterptr->offset, letterptr->limit);
+        video_draw_offset(letterptr->sur, letterptr->x, letterptr->y, letterptr->palette_offset,
+                          letterptr->palette_limit);
     }
 }
