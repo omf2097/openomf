@@ -197,7 +197,7 @@ void console_output_render(void) {
             lines++;
         } else {
             // TODO add word wrapping?
-            text_render_char(&tconf, TEXT_DEFAULT, x, y + con->y_pos - 100, c);
+            text_render_char_uncached(&tconf, TEXT_DEFAULT, x, y + con->y_pos - 100, c, false);
             x += font_small.w;
         }
     }
@@ -268,6 +268,7 @@ void console_event(game_state *gs, SDL_Event *e) {
             if(isprint(c) && len < sizeof(con->input) - 1) {
                 con->input[len + 1] = '\0';
                 con->input[len] = tolower(c);
+                con->text_cache[0].dirty = true;
             }
         }
     } else if(e->type == SDL_KEYDOWN) {
@@ -293,11 +294,13 @@ void console_event(game_state *gs, SDL_Event *e) {
         } else if(scancode == SDL_SCANCODE_BACKSPACE || scancode == SDL_SCANCODE_DELETE) {
             if(len > 0) {
                 con->input[len - 1] = '\0';
+                con->text_cache[0].dirty = true;
             }
         } else if(scancode == SDL_SCANCODE_RETURN || scancode == SDL_SCANCODE_KP_ENTER) {
             // send the input somewhere and clear the input line
             console_handle_line(gs);
             con->input[0] = '\0';
+            con->text_cache[0].dirty = true;
         } else if(scancode == SDL_SCANCODE_PAGEUP) {
             console_output_scroll_up(1);
         } else if(scancode == SDL_SCANCODE_PAGEDOWN) {
@@ -307,6 +310,10 @@ void console_event(game_state *gs, SDL_Event *e) {
 }
 
 void console_render(void) {
+    if(con == NULL) {
+        return;
+    }
+
     if(con->y_pos > 0) {
         if(con->hist_pos != -1 && con->hist_pos_changed) {
             char *input = list_get(&con->history, con->hist_pos);
@@ -324,11 +331,12 @@ void console_render(void) {
         tconf.font = FONT_SMALL;
         // input line
         tconf.cforeground = TEXT_MEDIUM_GREEN;
-        text_render(&tconf, TEXT_DEFAULT, 0, con->y_pos - 7, 300, 6, con->input);
+        text_render(&con->text_cache[0], &tconf, TEXT_DEFAULT, 0, con->y_pos - 7, 300, 6, con->input);
 
         // cursor
         tconf.cforeground = TEXT_BLINKY_GREEN;
-        text_render(&tconf, TEXT_DEFAULT, strlen(con->input) * font_small.w, con->y_pos - 7, 6, 6, CURSOR_STR);
+        text_render(&con->text_cache[1], &tconf, TEXT_DEFAULT, strlen(con->input) * font_small.w, con->y_pos - 7, 6, 6,
+                    CURSOR_STR);
         console_output_render();
     }
 }

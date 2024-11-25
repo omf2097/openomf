@@ -273,12 +273,12 @@ component *lab_dash_main_create(scene *s, dashboard_widgets *dw) {
     dw->tournament = label_create(&tconf_light, "NO TOURNAMENT");
     dw->har_name = label_create(&tconf_light_centered, "HAR NAME");
     dw->har_moves = label_create(&tconf_light_centered, "HAR MOVES");
-    xysizer_attach(xy, dw->name, 12, 58, 200, 6);
-    xysizer_attach(xy, dw->rank, 18, 64, 200, 6);
-    xysizer_attach(xy, dw->wins, 18, 70, 200, 6);
-    xysizer_attach(xy, dw->losses, 12, 76, 200, 6);
-    xysizer_attach(xy, dw->money, 12, 82, 200, 6);
-    xysizer_attach(xy, dw->tournament, 12, 88, 200, 6);
+    xysizer_attach(xy, dw->name, 12, 58, 120, 6);
+    xysizer_attach(xy, dw->rank, 18, 64, 120, 6);
+    xysizer_attach(xy, dw->wins, 18, 70, 120, 6);
+    xysizer_attach(xy, dw->losses, 12, 76, 120, 6);
+    xysizer_attach(xy, dw->money, 12, 82, 120, 6);
+    xysizer_attach(xy, dw->tournament, 12, 88, 120, 6);
     xysizer_attach(xy, dw->har_name, 220, 2, 100, 6);
     xysizer_attach(xy, dw->har_moves, 220, 19, 100, 70);
 

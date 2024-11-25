@@ -27,6 +27,7 @@ typedef struct newsroom_local_t {
     int won;
     bool champion;
     dialog continue_dialog;
+    text_object text_cache[1];
 } newsroom_local;
 
 // their
@@ -140,6 +141,7 @@ void newsroom_free(scene *scene) {
     newsroom_local *local = scene_get_userdata(scene);
     surface_free(&local->news_bg1);
     surface_free(&local->news_bg2);
+    text_objects_free(local->text_cache, (sizeof(local->text_cache) / sizeof(local->text_cache[0])));
     str_free(&local->news_str);
     str_free(&local->pilot1);
     str_free(&local->pilot2);
@@ -182,7 +184,8 @@ void newsroom_overlay_render(scene *scene) {
         tconf_yellow.strip_leading_whitespace = false;
         tconf_yellow.strip_trailing_whitespace = true;
         tconf_yellow.max_lines = 9;
-        text_render(&tconf_yellow, TEXT_DEFAULT, 34, 155, 250, 6, str_c(&local->news_str));
+        local->text_cache->dirty = true;
+        text_render(local->text_cache, &tconf_yellow, TEXT_DEFAULT, 34, 155, 250, 6, str_c(&local->news_str));
     }
 
     // If the player has just become a new champion, show the sprite on top of the photo.

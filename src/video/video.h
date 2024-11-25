@@ -4,6 +4,7 @@
 #include <stdbool.h>
 
 #include "formats/palette.h"
+#include "game/gui/text_render.h"
 #include "video/color.h"
 #include "video/enums.h"
 #include "video/image.h"
@@ -73,6 +74,8 @@ void video_draw_offset(const surface *src_surface, int x, int y, int palette_off
  */
 void video_draw_size(const surface *src_surface, int x, int y, int w, int h);
 
+void video_copy_block(int x, int y, int w, int h);
+
 /**
  * Render a sprite on the screen.
  *
@@ -93,6 +96,8 @@ void video_draw_full(const surface *src_surface, int x, int y, int w, int h, int
                      int palette_offset, int palette_limit, int opacity, unsigned int flip_mode, unsigned int options);
 
 void video_signal_scene_change(void);
+
+void video_render_text_block(text_object *text);
 
 void video_render_prepare(void);
 void video_render_finish(void);

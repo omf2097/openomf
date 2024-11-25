@@ -1,6 +1,8 @@
 #ifndef OBJECT_ARRAY_H
 #define OBJECT_ARRAY_H
 
+#include <epoxy/gl.h>
+
 #include "video/enums.h"
 
 typedef struct object_array object_array;

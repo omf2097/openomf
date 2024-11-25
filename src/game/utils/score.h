@@ -33,6 +33,7 @@ typedef struct chr_score_t {
     int combo_hit_score;
     int scrap;
     int destruction;
+    text_object text_cache[2];
 } chr_score;
 
 void chr_score_create(chr_score *score);
