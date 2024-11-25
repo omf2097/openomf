@@ -1,4 +1,5 @@
 #include "parser_test_strings.h"
+#include <assert.h>
 
 const char *test_strings[] = {
     "A120-B20-C10-D10-E10-F10-G10-rfE10-rfF10-rfG10-rfH10-D10-C10-B20-A120",
@@ -2782,3 +2783,5 @@ const char *test_strings[] = {
     "A1-B1-C1-D1-E1-D1-C1-B1",
     "A1-B1-C1-D1-E1-F1-G1-H1",
 };
+
+static_assert(sizeof(test_strings) / sizeof(test_strings[0]) == TEST_STRING_COUNT, "array size mismatch");

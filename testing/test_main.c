@@ -23,36 +23,6 @@ int main(int argc, char **argv) {
         return CU_get_error();
     }
 
-    suite = CU_add_suite("AF files", NULL, NULL);
-    if(suite == NULL)
-        goto end;
-    af_test_suite(suite);
-
-    suite = CU_add_suite("BK files", NULL, NULL);
-    if(suite == NULL)
-        goto end;
-    bk_test_suite(suite);
-
-    suite = CU_add_suite("Palettes", NULL, NULL);
-    if(suite == NULL)
-        goto end;
-    palette_test_suite(suite);
-
-    suite = CU_add_suite("REC files", NULL, NULL);
-    if(suite == NULL)
-        goto end;
-    rec_test_suite(suite);
-
-    suite = CU_add_suite("TRN files", NULL, NULL);
-    if(suite == NULL)
-        goto end;
-    trn_test_suite(suite);
-
-    suite = CU_add_suite("Script", NULL, NULL);
-    if(suite == NULL)
-        goto end;
-    script_test_suite(suite);
-
     // Init suites
     CU_pSuite str_suite = CU_add_suite("String", NULL, NULL);
     if(str_suite == NULL)
@@ -88,6 +58,36 @@ int main(int argc, char **argv) {
     if(cp437_suite == NULL)
         goto end;
     cp437_test_suite(cp437_suite);
+
+    suite = CU_add_suite("AF files", NULL, NULL);
+    if(suite == NULL)
+        goto end;
+    af_test_suite(suite);
+
+    suite = CU_add_suite("BK files", NULL, NULL);
+    if(suite == NULL)
+        goto end;
+    bk_test_suite(suite);
+
+    suite = CU_add_suite("Palettes", NULL, NULL);
+    if(suite == NULL)
+        goto end;
+    palette_test_suite(suite);
+
+    suite = CU_add_suite("REC files", NULL, NULL);
+    if(suite == NULL)
+        goto end;
+    rec_test_suite(suite);
+
+    suite = CU_add_suite("TRN files", NULL, NULL);
+    if(suite == NULL)
+        goto end;
+    trn_test_suite(suite);
+
+    suite = CU_add_suite("Script", NULL, NULL);
+    if(suite == NULL)
+        goto end;
+    script_test_suite(suite);
 
     // Run tests
     CU_basic_set_mode(CU_BRM_VERBOSE);
