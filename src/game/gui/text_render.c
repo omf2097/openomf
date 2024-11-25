@@ -171,15 +171,16 @@ int text_render_char(text_object *cached_text, const text_settings *settings, te
 // TODO: Make this function return a char* instead of an int.
 int text_find_max_strlen(const text_settings *settings, int max_chars, const char *ptr) {
     int i = 0;
+    int len = strlen(ptr);
 
     // Skip whitespace at the start of the string
     if(settings->strip_leading_whitespace) {
-        while((*ptr != 0) && (*ptr == ' ')) {
-            ptr++;
-            i++;
+        for(i = 0; i < len; i++) {
+            if(ptr[i] != ' ')
+                break;
         }
 
-        if(*ptr == 0) {
+        if(i == len) {
             return i;
         }
     }
@@ -188,8 +189,13 @@ int text_find_max_strlen(const text_settings *settings, int max_chars, const cha
     int max = max_chars + i;
     int breakpoint = max;
     int next_breakpoint = breakpoint;
-    while((*ptr != 0) && (*ptr != '\n')) {
-        if(*ptr == ' ') {
+    for(; i < len; i++) {
+        // If we detect newline, this line ends here
+        if(ptr[i] == '\n') {
+            return i + 1;
+        }
+
+        if(ptr[i] == ' ') {
             next_breakpoint = i + 1;
         } else {
             breakpoint = next_breakpoint;
@@ -198,13 +204,6 @@ int text_find_max_strlen(const text_settings *settings, int max_chars, const cha
         if(i >= max) {
             return breakpoint;
         }
-        ptr++;
-        i++;
-    }
-
-    // If we detect a newline, this line ends here.
-    if(*ptr == '\n') {
-        return i + 1;
     }
 
     return i;
@@ -240,20 +239,20 @@ int text_char_width(const text_settings *settings) {
 }
 
 int text_find_line_count(const text_settings *settings, int cols, int rows, const char *text, int *longest) {
-    const char *ptr = text;
+    int ptr = 0;
+    int len = strlen(text);
     int lines = 0;
-    int space;
-    if(settings->direction == TEXT_HORIZONTAL) {
-        space = cols;
-    } else {
-        space = rows;
-    }
-
-    while(*ptr != 0) {
+    *longest = 0;
+    while(lines < settings->max_lines && ptr < len) {
         // Find out how many characters for this row/col
-        int length = text_find_max_strlen(settings, space, ptr);
-        ptr += length;
-        *longest = max2(*longest, length);
+        int line_len;
+        if(settings->direction == TEXT_HORIZONTAL) {
+            line_len = text_find_max_strlen(settings, cols, text + ptr);
+        } else {
+            line_len = text_find_max_strlen(settings, rows, text + ptr);
+        }
+        *longest = max2(*longest, line_len);
+        ptr += line_len;
         lines++;
     }
     return lines;
