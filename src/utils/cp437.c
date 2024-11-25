@@ -202,7 +202,10 @@ cp437_result cp437_to_utf8(unsigned char *out_utf8, size_t sizeof_out_utf8, size
     if(out_utf8_len) {
         *out_utf8_len = 0;
     }
-    unsigned char *out_utf8_end = out_utf8 + sizeof_out_utf8;
+    unsigned char *out_utf8_end = NULL;
+    if(out_utf8 != NULL) {
+        out_utf8_end = out_utf8 + sizeof_out_utf8;
+    }
     while(cp437_len > 0) {
         char32_t utf32;
         cp437_to_utf32(&utf32, *cp437);
