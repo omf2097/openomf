@@ -520,7 +520,10 @@ void arena_har_defeat_hook(int player_id, scene *scene) {
     } else if(player_winner->ctrl->type == CTRL_TYPE_NETWORK && player_loser->ctrl->type != CTRL_TYPE_NETWORK) {
         scene_youlose_anim_start(scene->gs);
     } else {
-        if(!is_singleplayer(gs)) {
+        if(is_demoplay(gs)) {
+            // in demo mode, "you lose" should always be displayed
+            scene_youlose_anim_start(scene->gs);
+        } else if(!is_singleplayer(gs)) {
             // XXX in two player mode, "you win" should always be displayed
             scene_youwin_anim_start(scene->gs);
         } else {
