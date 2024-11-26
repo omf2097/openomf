@@ -10,11 +10,11 @@
 #endif
 
 static void check_valid_directory(char const *dir) {
-#if !NDEBUG
+#ifndef NDEBUG
     assert(dir != NULL);
     assert(dir[0] != '\0');
     size_t end = strlen(dir) - 1;
-#if _WIN32
+#ifdef _WIN32
     assert(dir[end] == '\\');
 #else
     assert(dir[end] == '/');
