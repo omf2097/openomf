@@ -4,7 +4,6 @@
 #include "game/utils/settings.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
-#include <stdio.h>
 
 typedef struct {
     settings_sound old_audio_settings;
@@ -32,11 +31,11 @@ void menu_audio_done(component *c, void *userdata) {
 
     // Reload music if changes made
     settings_sound *s = &settings_get()->sound;
-    if(s->music_frequency != local->old_audio_settings.music_frequency ||
+    if(s->sample_rate != local->old_audio_settings.sample_rate ||
        s->music_resampler != local->old_audio_settings.music_resampler ||
        s->music_mono != local->old_audio_settings.music_mono) {
         audio_close();
-        if(audio_init(s->music_frequency, s->music_mono, s->music_resampler, s->music_vol / 10.0f,
+        if(audio_init(s->player, s->sample_rate, s->music_mono, s->music_resampler, s->music_vol / 10.0f,
                       s->sound_vol / 10.0f)) {
             audio_play_music(PSM_MENU);
         }
@@ -44,11 +43,13 @@ void menu_audio_done(component *c, void *userdata) {
 }
 
 void menu_audio_reset_freqs(audio_menu_data *local, int use_settings) {
-    const audio_freq *freqs = audio_get_freqs();
+    const audio_sample_rate *sample_rates;
+    unsigned sample_rate_count = audio_get_sample_rates(&sample_rates);
     textselector_clear_options(local->freq_selector);
-    for(int i = 0; freqs[i].name != 0; i++) {
-        textselector_add_option(local->freq_selector, freqs[i].name);
-        int use = (use_settings) ? (settings_get()->sound.music_frequency == freqs[i].freq) : freqs[i].is_default;
+    for(unsigned i = 0; i < sample_rate_count; i++) {
+        textselector_add_option(local->freq_selector, sample_rates[i].name);
+        int use = (use_settings) ? (settings_get()->sound.sample_rate == sample_rates[i].sample_rate)
+                                 : sample_rates[i].is_default;
         if(use) {
             textselector_set_pos(local->freq_selector, i);
         }
@@ -56,9 +57,10 @@ void menu_audio_reset_freqs(audio_menu_data *local, int use_settings) {
 }
 
 void menu_audio_reset_resamplers(audio_menu_data *local, int use_settings) {
-    const audio_mod_resampler *resamplers = audio_get_resamplers();
+    const audio_resampler *resamplers;
+    unsigned resampler_count = audio_get_resamplers(&resamplers);
     textselector_clear_options(local->resampler_selector);
-    for(int i = 0; resamplers[i].name != 0; i++) {
+    for(unsigned i = 0; i < resampler_count; i++) {
         textselector_add_option(local->resampler_selector, resamplers[i].name);
         int use = (use_settings) ? (settings_get()->sound.music_resampler == resamplers[i].internal_id)
                                  : resamplers[i].is_default;
@@ -69,12 +71,14 @@ void menu_audio_reset_resamplers(audio_menu_data *local, int use_settings) {
 }
 
 void menu_audio_freq_toggled(component *c, void *userdata, int pos) {
-    const audio_freq *freqs = audio_get_freqs();
-    settings_get()->sound.music_frequency = freqs[pos].freq;
+    const audio_sample_rate *sample_rates;
+    audio_get_sample_rates(&sample_rates);
+    settings_get()->sound.sample_rate = sample_rates[pos].sample_rate;
 }
 
 void menu_audio_resampler_toggled(component *c, void *userdata, int pos) {
-    const audio_mod_resampler *resamplers = audio_get_resamplers();
+    const audio_resampler *resamplers;
+    audio_get_resamplers(&resamplers);
     settings_get()->sound.music_resampler = resamplers[pos].internal_id;
 }
 

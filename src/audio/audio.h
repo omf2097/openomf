@@ -3,43 +3,26 @@
 
 #include <stdbool.h>
 
+#include "audio/backends/audio_backend.h"
 #include "resources/ids.h"
 
-#define VOLUME_DEFAULT 1.0f
-#define PANNING_DEFAULT 0.0f
-#define PITCH_DEFAULT 1.0f
-
-#define VOLUME_MAX 1.0f
-#define PANNING_MAX 1.0f
-#define PITCH_MAX 2.0f
-
-#define VOLUME_MIN 0.0f
-#define PANNING_MIN -1.0f
-#define PITCH_MIN 0.5f
-
-typedef struct audio_mod_resampler {
-    int internal_id;
-    int is_default;
-    const char *name;
-} audio_mod_resampler;
-
-typedef struct audio_freq {
-    int freq;
-    int is_default;
-    const char *name;
-} audio_freq;
+void audio_scan_backends(void);
+bool audio_get_backend_info(int index, const char **name, const char **description);
+int audio_get_backend_count(void);
 
 /**
  * Initializes the audio subsystem
  *
- * @param freq Wanted output frequency (48000 should be fine)
+ * @param try_name Audio player backend to use
+ * @param sample_rate Wanted output frequency (48000 should be fine)
  * @param mono True if 1 channel, False for 2.
  * @param resampler Music module resampler interpolation
  * @param music_volume Initial music volume
  * @param sound_volume Initial audio volume
  * @return True if initialized, false if not.
  */
-bool audio_init(int freq, bool mono, int resampler, float music_volume, float sound_volume);
+bool audio_init(const char *try_name, int sample_rate, bool mono, int resampler, float music_volume,
+                float sound_volume);
 
 /**
  * Closes the audio subsystem.
@@ -83,11 +66,11 @@ void audio_set_sound_volume(float volume);
 /**
  * Get supported audio frequencies list
  */
-const audio_freq *audio_get_freqs(void);
+unsigned audio_get_sample_rates(const audio_sample_rate **sample_rates);
 
 /**
  * Get supported music resamplers list
  */
-const audio_mod_resampler *audio_get_resamplers(void);
+unsigned audio_get_resamplers(const audio_resampler **resamplers);
 
 #endif // AUDIO_H
