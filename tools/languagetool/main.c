@@ -35,31 +35,31 @@ char *extract_value(char *line, const char *field_name, int line_number, bool al
         size_t line_len = strlen(line);
         size_t field_name_len = strlen(field_name);
         if(field_name_len > line_len || memcmp(line, field_name, field_name_len) != 0) {
-            char error[100];
-            snprintf(error, sizeof(error), "Expected %s field", field_name);
-            error_exit(error, line_number);
+            str error;
+            str_from_format(&error, "Expected %s field", field_name);
+            error_exit(str_c(&error), line_number);
         }
         line += field_name_len;
     }
 
     if(':' != line[0]) {
-        char error[100];
-        snprintf(error, sizeof(error), "Missing colon in %s field", field_name);
-        error_exit(error, line_number);
+        str error;
+        str_from_format(&error, "Missing colon in %s field", field_name);
+        error_exit(str_c(&error), line_number);
     }
     line++;
 
     if(' ' != line[0]) {
-        char error[100];
-        snprintf(error, sizeof(error), "Missing space following colon in %s field", field_name);
-        error_exit(error, line_number);
+        str error;
+        str_from_format(&error, "Missing space following colon in %s field", field_name);
+        error_exit(str_c(&error), line_number);
     }
     line++;
 
     if(!allow_empty && line[0] == '\0') {
-        char error[100];
-        snprintf(error, sizeof(error), "Empty %s field", field_name);
-        error_exit(error, line_number);
+        str error;
+        str_from_format(&error, "Empty %s field", field_name);
+        error_exit(str_c(&error), line_number);
     }
 
     return line;
@@ -85,9 +85,9 @@ int read_entry(FILE *file, sd_language *language, int *line_number) {
     }
 
     if(language->count != (unsigned int)id) {
-        char error[100];
-        snprintf(error, sizeof error, "Nonsequential ID. Expected %u, got %ld.", language->count, id);
-        error_exit(error, *line_number);
+        str error;
+        str_from_format(&error, "Nonsequential ID. Expected %u, got %ld.", language->count, id);
+        error_exit(str_c(&error), *line_number);
     }
 
     *line_number += 1;
