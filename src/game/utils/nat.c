@@ -40,8 +40,9 @@ bool nat_create_upnp_mapping(nat_ctx *ctx, uint16_t int_port, uint16_t ext_port)
         // like overly short lifetimes
         return false;
     }
-#endif
+#else
     return false;
+#endif
 }
 
 bool nat_create_pmp_mapping(nat_ctx *ctx, uint16_t int_port, uint16_t ext_port) {
@@ -70,8 +71,9 @@ bool nat_create_pmp_mapping(nat_ctx *ctx, uint16_t int_port, uint16_t ext_port) 
         // TODO handle some errors here
         return false;
     }
-#endif
+#else
     return false;
+#endif
 }
 
 bool nat_create_mapping(nat_ctx *ctx, uint16_t int_port, uint16_t ext_port) {
