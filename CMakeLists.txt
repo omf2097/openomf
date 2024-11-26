@@ -50,9 +50,28 @@ if(MSVC)
     string(REGEX REPLACE "/W3" "" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
     # we would probably like to pass /Wall instead of /W4, but there's a lot
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /permissive- /W4")
-    # Disable warning C4100: unreferenced formal parameter
+    # Disable select warnings:
+    # C4100: unreferenced formal parameter
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4100")
-    # Error on warning C4013: call to undefined function
+    # C4456: declaration hides previous local declaration
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4456")
+    # C4459: declaration hides previous global declaration
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4459")
+    # C4244: implicit conversion, possible loss of data
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4244")
+    # C4267: implicit conversion from size_t, possible loss of data
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4267")
+    # C4305: truncation from double to float
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4305")
+    # C4389: 'equality-operator' : signed/unsigned mismatch
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4389")
+    # _CRT_SECURE_NO_WARNINGS: disable warnings when calling functions like strncpy or sscanf
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /D_CRT_SECURE_NO_WARNINGS")
+    # _CRT_NONSTDC_NO_WARNINGS: disable warnings when calling POSIX functions like fileno
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /D_CRT_NONSTDC_NO_WARNINGS")
+
+    # Error on certain warnings:
+    # C4013: call to undefined function
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /we4013")
 else()
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wno-unused-parameter -Wformat -pedantic -Wvla")
