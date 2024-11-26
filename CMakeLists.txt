@@ -75,6 +75,8 @@ if(MSVC)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /we4013")
     # C4146: unary minus operator applied to unsigned type, result still unsigned
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /we4146")
+    # C4701: potentially uninitialized local variable used
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /we4701")
 else()
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wno-unused-parameter -Wformat -pedantic -Wvla")
     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -ggdb -Werror -fno-omit-frame-pointer")

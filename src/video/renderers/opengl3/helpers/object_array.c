@@ -117,11 +117,12 @@ bool object_array_get_batch(const object_array *array, object_array_batch *state
     }
     state->start = state->end;
     object_array_blend_mode next;
-    for(; state->end < array->item_count; state->end++) {
+    do {
         next = array->modes[state->end];
         if(next != state->mode)
             break;
-    }
+        state->end++;
+    } while(state->end < array->item_count);
     *mode = state->mode;
     state->mode = next;
     return true;
