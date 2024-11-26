@@ -103,12 +103,12 @@ int main(int argc, char *argv[]) {
 
     // Load bkfile if necessary
     sd_bk_file bk;
+    sd_bk_create(&bk);
     if(bkfile->count > 0) {
-        sd_bk_create(&bk);
         int ret = sd_bk_load(&bk, bkfile->filename[0]);
         if(ret != SD_SUCCESS) {
             printf("Unable to load BK file %s: %s.\n", bkfile->filename[0], sd_get_error(ret));
-            goto exit_2;
+            goto exit_1;
         }
     }
 
@@ -116,7 +116,7 @@ int main(int argc, char *argv[]) {
     if(export->count > 0 && bkfile->count > 0) {
         if(bk.palette_count < 1) {
             printf("BK file %s does not have palettes.\n", bkfile->filename[0]);
-            goto exit_2;
+            goto exit_1;
         }
 
         sd_rgba_image img;
@@ -159,11 +159,8 @@ int main(int argc, char *argv[]) {
     }
 
     // Quit
-exit_2:
-    if(bkfile->count > 0) {
-        sd_bk_free(&bk);
-    }
 exit_1:
+    sd_bk_free(&bk);
     sd_chr_free(&chr);
 exit_0:
     arg_freetable(argtable, sizeof(argtable) / sizeof(argtable[0]));
