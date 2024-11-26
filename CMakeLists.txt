@@ -75,6 +75,8 @@ if(MSVC)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /we4013")
     # C4146: unary minus operator applied to unsigned type, result still unsigned
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /we4146")
+    # C4245: signed const to unsigned
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /we4245")
     # C4701: potentially uninitialized local variable used
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /we4701")
 else()

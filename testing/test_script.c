@@ -126,8 +126,8 @@ void test_script_get_frame_index(void) {
 }
 
 void test_script_get_frame_index_at(void) {
-    CU_ASSERT(sd_script_get_frame_index_at(NULL, -1) == -1);
-    CU_ASSERT(sd_script_get_frame_index_at(&script, -1) == -1);
+    CU_ASSERT(sd_script_get_frame_index_at(NULL, ~0u) == -1);
+    CU_ASSERT(sd_script_get_frame_index_at(&script, ~0u) == -1);
     CU_ASSERT(sd_script_get_frame_index_at(&script, 0) == 0);
     CU_ASSERT(sd_script_get_frame_index_at(&script, 99) == 0);
     CU_ASSERT(sd_script_get_frame_index_at(&script, 100) == 1);

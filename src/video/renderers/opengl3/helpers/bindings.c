@@ -7,7 +7,7 @@ static GLuint bound_vbo = 0;
 static GLuint bound_vao = 0;
 static GLuint bound_tex[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 static GLuint bound_fbo = 0;
-static GLuint active_tex = -1;
+static GLuint active_tex = ~0u;
 
 void binding_active_tex(GLuint unit_id) {
     if(active_tex != unit_id) {
