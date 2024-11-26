@@ -11,9 +11,9 @@
 #include "utils/msgbox.h"
 #include "utils/random.h"
 #include <SDL.h>
-#if ARGTABLE2_FOUND
+#if defined(ARGTABLE2_FOUND)
 #include <argtable2.h>
-#elif ARGTABLE3_FOUND
+#elif defined(ARGTABLE3_FOUND)
 #include <argtable3.h>
 #endif
 #include <enet/enet.h>

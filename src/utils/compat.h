@@ -3,7 +3,7 @@
 
 #include <string.h>
 
-#if __APPLE__
+#ifdef __APPLE__
 // MacOS X does not ship uchar.h
 #include <stdint.h>
 typedef uint_least16_t char16_t;
