@@ -797,8 +797,8 @@ void reset_pilot_personality(sd_pilot *pilot) {
             pilot->pref_jump = -10;
             pilot->pref_fwd = 30;
             pilot->pref_back = 10;
-            pilot->learning = 1.5;
-            pilot->forget = 0.25;
+            pilot->learning = 1.5f;
+            pilot->forget = 0.25f;
             break;
         case 1:
             // steffan
@@ -813,8 +813,8 @@ void reset_pilot_personality(sd_pilot *pilot) {
             pilot->pref_jump = 6;
             pilot->pref_fwd = 20;
             pilot->pref_back = -9;
-            pilot->learning = 1.0;
-            pilot->forget = 0.4;
+            pilot->learning = 1.0f;
+            pilot->forget = 0.4f;
             break;
         case 2:
             // milano
@@ -831,8 +831,8 @@ void reset_pilot_personality(sd_pilot *pilot) {
             pilot->pref_jump = 8;
             pilot->pref_fwd = 30;
             pilot->pref_back = -3;
-            pilot->learning = 0.9;
-            pilot->forget = 0.1;
+            pilot->learning = 0.9f;
+            pilot->forget = 0.1f;
             break;
         case 3:
             // christian
@@ -848,8 +848,8 @@ void reset_pilot_personality(sd_pilot *pilot) {
             pilot->pref_jump = 2;
             pilot->pref_fwd = 10;
             pilot->pref_back = -10;
-            pilot->learning = 2.5;
-            pilot->forget = 0.35;
+            pilot->learning = 2.5f;
+            pilot->forget = 0.35f;
             break;
         case 4:
             // shirro
@@ -867,8 +867,8 @@ void reset_pilot_personality(sd_pilot *pilot) {
             pilot->pref_jump = -20;
             pilot->pref_fwd = 10;
             pilot->pref_back = 10;
-            pilot->learning = 2.0;
-            pilot->forget = 0.2;
+            pilot->learning = 2.0f;
+            pilot->forget = 0.2f;
             break;
         case 5:
             // jean-paul
@@ -884,8 +884,8 @@ void reset_pilot_personality(sd_pilot *pilot) {
             pilot->ap_low = 100;
             pilot->ap_middle = -50;
             pilot->pref_fwd = 20;
-            pilot->learning = 1.2;
-            pilot->forget = 0.07;
+            pilot->learning = 1.2f;
+            pilot->forget = 0.07f;
             break;
         case 6:
             // ibrahim
@@ -902,8 +902,8 @@ void reset_pilot_personality(sd_pilot *pilot) {
             pilot->pref_jump = 2;
             pilot->pref_fwd = 10;
             pilot->pref_back = -10;
-            pilot->learning = 2.5;
-            pilot->forget = 0.05;
+            pilot->learning = 2.5f;
+            pilot->forget = 0.05f;
             break;
         case 7:
             // angel
@@ -919,8 +919,8 @@ void reset_pilot_personality(sd_pilot *pilot) {
             pilot->pref_jump = 40;
             pilot->pref_fwd = 40;
             pilot->pref_back = -9;
-            pilot->learning = 3.0;
-            pilot->forget = 0.15;
+            pilot->learning = 3.0f;
+            pilot->forget = 0.15f;
             break;
         case 8:
             // cossette
@@ -937,8 +937,8 @@ void reset_pilot_personality(sd_pilot *pilot) {
             pilot->ap_middle = -50;
             pilot->pref_jump = -10;
             pilot->pref_back = 10;
-            pilot->learning = 0.7;
-            pilot->forget = 0.2;
+            pilot->learning = 0.7f;
+            pilot->forget = 0.2f;
             break;
         case 9:
             // raven

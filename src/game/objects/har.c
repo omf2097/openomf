@@ -695,8 +695,8 @@ void har_spawn_oil(object *obj, vec2i pos, int amount, float gravity, int layer)
 
         // Make sure the oil drops have somekind of velocity
         // (to prevent floating scrap objects)
-        if(vely < 0.1 && vely > -0.1)
-            vely += 0.21;
+        if(vely < 0.1f && vely > -0.1f)
+            vely += 0.21f;
 
         // Create the object
         object *scrap = omf_calloc(1, sizeof(object));
@@ -754,8 +754,8 @@ void har_spawn_scrap(object *obj, vec2i pos, int amount) {
 
         // Make sure scrap has somekind of velocity
         // (to prevent floating scrap objects)
-        if(vely < 0.1 && vely > -0.1)
-            vely += 0.21;
+        if(vely < 0.1f && vely > -0.1f)
+            vely += 0.21f;
 
         // Create the object
         object *scrap = omf_calloc(1, sizeof(object));

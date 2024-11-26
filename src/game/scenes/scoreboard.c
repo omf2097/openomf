@@ -222,7 +222,7 @@ int scoreboard_create(scene *scene) {
     }
 
     // Darken the colors for the background a bit.
-    vga_state_mul_base_palette(0, 0xEF, 0.6);
+    vga_state_mul_base_palette(0, 0xEF, 0.6f);
 
     if(local->has_pending_data) {
         text_settings small_text;
