@@ -80,6 +80,8 @@ if(MSVC)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /we4701")
     # C4668: undefined symbol used as compiler directive (will evaluate to 0).
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /we4668")
+    # C4702: unreachable code
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /we4702")
 else()
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wno-unused-parameter -Wformat -pedantic -Wvla")
     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -ggdb -Werror -fno-omit-frame-pointer")
