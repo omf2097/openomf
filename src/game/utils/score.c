@@ -126,25 +126,26 @@ void chr_score_tick(chr_score *score) {
     }
 }
 
-void chr_score_render(chr_score *score) {
-    // Render all texts in list to right spot
-    char tmp[50];
-    score_format(score->score, tmp, 50);
-
+void chr_score_render(chr_score *score, bool render_total_points) {
     text_settings tconf_score;
     text_defaults(&tconf_score);
     tconf_score.font = FONT_SMALL;
     tconf_score.cforeground = TEXT_COLOR;
     tconf_score.shadow = TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM;
 
-    if(score->direction == OBJECT_FACE_RIGHT) {
-        text_render(&tconf_score, TEXT_DEFAULT, score->x, score->y, 200, 6, tmp);
+    if(render_total_points) {
+        char tmp[50];
+        score_format(score->score, tmp, 50);
 
-    } else {
-        int s2len = strlen(tmp) * font_small.w;
-        text_render(&tconf_score, TEXT_DEFAULT, score->x - s2len, score->y, 200, 6, tmp);
+        if(score->direction == OBJECT_FACE_RIGHT) {
+            text_render(&tconf_score, TEXT_DEFAULT, score->x, score->y, 200, 6, tmp);
+        } else {
+            int s2len = strlen(tmp) * font_small.w;
+            text_render(&tconf_score, TEXT_DEFAULT, score->x - s2len, score->y, 200, 6, tmp);
+        }
     }
 
+    // Render all texts in list to right spot
     iterator it;
     score_text *t;
     int lastage = -1;
@@ -252,8 +253,11 @@ int chr_score_interrupt(chr_score *score, vec2i pos) {
     if(score->consecutive_hits > 3) {
         char *text = omf_calloc(64, 1);
         ret = 1;
-        int len = snprintf(text, 64, "%d consecutive hits ", score->consecutive_hits);
-        score_format(score->consecutive_hit_score, text + len, 64 - len);
+        int len = snprintf(text, 64, "%d consecutive hits", score->consecutive_hits);
+        if(score->consecutive_hit_score > 0) {
+            text[len++] = ' ';
+            score_format(score->consecutive_hit_score, text + len, 64 - len);
+        }
         // XXX hardcode the y coordinate for now
         chr_score_add(score, text, score->consecutive_hit_score, vec2i_create(pos.x, 130), 1.0f);
     }
@@ -268,8 +272,11 @@ int chr_score_end_combo(chr_score *score, vec2i pos) {
     if(score->combo_hits > 1) {
         char *text = omf_calloc(64, 1);
         ret = 1;
-        int len = snprintf(text, 64, "%d hit combo ", score->combo_hits);
-        score_format(score->combo_hit_score * 4, text + len, 64 - len);
+        int len = snprintf(text, 64, "%d hit combo", score->combo_hits);
+        if(score->combo_hit_score > 0) {
+            text[len++] = ' ';
+            score_format(score->combo_hit_score * 4, text + len, 64 - len);
+        }
         // XXX hardcode the y coordinate for now
         chr_score_add(score, text, score->combo_hit_score * 4, vec2i_create(pos.x, 130), 1.0f);
     }

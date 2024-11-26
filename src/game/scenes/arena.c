@@ -353,7 +353,8 @@ void arena_har_take_hit_hook(int hittee, af_move *move, scene *scene) {
     if(h->state == STATE_RECOIL) {
         DEBUG("COMBO!");
     }
-    chr_score_hit(score, move->points);
+    bool no_points = is_demoplay(scene->gs) || !game_state_get_player(scene->gs, hitter)->selectable;
+    chr_score_hit(score, no_points ? 0 : move->points);
     chr_score_interrupt(otherscore, object_get_pos(hit_har));
 }
 
@@ -1116,13 +1117,13 @@ void arena_render_overlay(scene *scene) {
                         lang_get((player[1]->pilot->har_id) + 31));
         }
 
+        // dont render total score in demo play
+        bool render_totalscore = !is_demoplay(scene->gs);
         // Render score stuff
-        chr_score_render(game_player_get_score(player[0]));
+        chr_score_render(game_player_get_score(player[0]), render_totalscore);
 
-        // Do not render player 2 score in 1 player mode
-        if(game_player_get_selectable(player[1])) {
-            chr_score_render(game_player_get_score(player[1]));
-        }
+        // Do not render player 2 total score in 1 player mode
+        chr_score_render(game_player_get_score(player[1]), render_totalscore && game_player_get_selectable(player[1]));
 
         // render ping, if player is networked
         if(player[0]->ctrl->type == CTRL_TYPE_NETWORK) {

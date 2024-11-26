@@ -5,6 +5,7 @@
 #include "game/protos/object.h"
 #include "utils/list.h"
 #include "video/surface.h"
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -43,7 +44,7 @@ void chr_score_set_pos(chr_score *score, int x, int y, int direction);
 unsigned int chr_score_get_num_texts(chr_score *score);
 void chr_score_free(chr_score *score);
 void chr_score_tick(chr_score *score);
-void chr_score_render(chr_score *score);
+void chr_score_render(chr_score *score, bool render_total_points);
 int chr_score_onscreen(chr_score *score);
 
 void chr_score_hit(chr_score *score, int points);
