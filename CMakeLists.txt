@@ -73,6 +73,8 @@ if(MSVC)
     # Error on certain warnings:
     # C4013: call to undefined function
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /we4013")
+    # C4146: unary minus operator applied to unsigned type, result still unsigned
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /we4146")
 else()
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wno-unused-parameter -Wformat -pedantic -Wvla")
     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -ggdb -Werror -fno-omit-frame-pointer")

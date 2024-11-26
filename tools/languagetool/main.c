@@ -127,7 +127,7 @@ int read_entry(FILE *file, sd_language *language, int *line_number) {
         // Check if this is the start of a new entry
         if(strncmp(line, "ID:", 3) == 0) {
             // Rewind to start of this line
-            fseek(file, -strlen(line), SEEK_CUR);
+            fseek(file, -(long)strlen(line), SEEK_CUR);
             *line_number -= 1;
             break;
         }
