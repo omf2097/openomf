@@ -30,7 +30,7 @@ static void player_clear_frame(object *obj) {
 
 void player_create(object *obj) {
     memset(&obj->animation_state, 0, sizeof(player_animation_state));
-    obj->animation_state.previous_tick = -1;
+    obj->animation_state.previous_tick = ~0u;
     sd_script_create(&obj->animation_state.parser);
     player_clear_frame(obj);
 }
@@ -71,7 +71,7 @@ void player_reload(object *obj) {
 }
 
 void player_reset(object *obj) {
-    obj->animation_state.previous_tick = -1;
+    obj->animation_state.previous_tick = ~0u;
     obj->animation_state.current_tick = 0;
     obj->animation_state.finished = 0;
     obj->animation_state.previous = -1;
