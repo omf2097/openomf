@@ -61,8 +61,6 @@ if(MSVC)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4244")
     # C4267: implicit conversion from size_t, possible loss of data
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4267")
-    # C4305: truncation from double to float
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4305")
     # C4389: 'equality-operator' : signed/unsigned mismatch
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4389")
     # _CRT_SECURE_NO_WARNINGS: disable warnings when calling functions like strncpy or sscanf
@@ -77,6 +75,8 @@ if(MSVC)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /we4146")
     # C4245: signed const to unsigned
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /we4245")
+    # C4305: truncation from double to float
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /we4305")
     # C4701: potentially uninitialized local variable used
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /we4701")
     # C4668: undefined symbol used as compiler directive (will evaluate to 0).

@@ -23,13 +23,13 @@ typedef struct score_text {
 } score_text;
 
 float multipliers[] = {
-    0.2, // punching bag
-    0.4, // rookie
-    0.6, // veteran
-    0.8, // world class
-    1.0, // champion
-    1.2, // deadly
-    1.4  // ultimate
+    0.2f, // punching bag
+    0.4f, // rookie
+    0.6f, // veteran
+    0.8f, // world class
+    1.0f, // champion
+    1.2f, // deadly
+    1.4f  // ultimate
 };
 
 vec2i interpolate(vec2i start, vec2i end, float fraction) {

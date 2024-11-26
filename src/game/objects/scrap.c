@@ -16,7 +16,7 @@ void scrap_move(object *obj) {
     vel.y += obj->gravity;
     pos.y += vel.y;
 
-    float dampen = 0.4;
+    float dampen = 0.4f;
 
     if(pos.x < ARENA_LEFT_WALL) {
         pos.x = ARENA_LEFT_WALL;
