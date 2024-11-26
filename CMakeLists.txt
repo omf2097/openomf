@@ -315,7 +315,7 @@ endif()
 
 # Formatting via clang-format
 if(USE_FORMAT)
-    include(ClangFormat)
+    include(cmake-scripts/ClangFormat.cmake)
     file(GLOB_RECURSE SRC_FILES
         LIST_DIRECTORIES OFF
         CONFIGURE_DEPENDS
