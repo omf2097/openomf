@@ -55,13 +55,18 @@ jobs:
         cd build-test
         ctest --verbose --output-on-failure
 
-  # Build windows package, release artifact (MSVC)
+  # Build windows release artifacts with MSVC
   # -----------------------------------------------------------------------------------------------
   build_msvc:
-    needs: [unittest, formatting-check]
-
-    name: Build windows-amd64 (MSVC)
+    needs: [unittest]
+    name: Build Windows ${{ matrix.config.arch }}
     runs-on: windows-latest
+
+    strategy:
+      matrix:
+        config:
+        - { arch: "x64", build_languages: "ON" }
+        - { arch: "arm64", build_languages: "OFF" }
 
     env:
       VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
@@ -82,18 +87,17 @@ jobs:
         path: 'vcpkg'
     - uses: lukka/get-cmake@latest
     - uses: ilammy/msvc-dev-cmd@v1
-    - name: Install VCPKG Dependencies, Configure CMake
+    - name: Install VCPKG Dependencies, Configure CMake (${{ matrix.config.arch }})
       run: >
         cmake -S . -B build-msvc
-        -G "Ninja"
         --toolchain vcpkg/scripts/buildsystems/vcpkg.cmake
-        -DCMAKE_BUILD_TYPE="Release"
-        -DVCPKG_BUILD_TYPE="release"
-        -DVCPKG_TARGET_TRIPLET="x64-windows-static"
+        -DVCPKG_TARGET_TRIPLET="${{ matrix.config.arch }}-windows-static"
+        -A ${{ matrix.config.arch }}
+        -DBUILD_LANGUAGES=${{ matrix.config.build_languages }}
         -DUSE_NATPMP=ON
         -DUSE_MINIUPNPC=ON
     - name: Build openomf
-      run: cmake --build build-msvc --target openomf
+      run: cmake --build build-msvc --config Release --target openomf
 
     - name: Restore omf2097-assets.zip
       id: cache-assets
@@ -120,7 +124,7 @@ jobs:
         Move-Item -Path omf2097-assets/OMF2097/* -Destination install/openomf/resources/ -Force -PassThru
 
     - name: Install openomf
-      run: cmake --install build-msvc --prefix install
+      run: cmake --install build-msvc --config Release --prefix install
 
     - name: Get short SHA
       shell: bash
@@ -130,13 +134,13 @@ jobs:
     - name: Generate ZIP package
       run: |
         cd install
-        Compress-Archive -Path openomf -DestinationPath openomf_${{ env.OPENOMF_VERSION }}-${{ steps.slug.outputs.sha8 }}_windows_msvc_amd64.zip -PassThru
+        Compress-Archive -Path openomf -DestinationPath openomf_${{ env.OPENOMF_VERSION }}-${{ steps.slug.outputs.sha8 }}_windows_msvc_${{ matrix.config.arch }}.zip -PassThru
 
     - name: Upload ZIP artifact
       uses: actions/upload-artifact@v4
       with:
-        name: openomf_${{ env.OPENOMF_VERSION }}-${{ steps.slug.outputs.sha8 }}_windows_msvc_amd64
-        path: install/openomf_${{ env.OPENOMF_VERSION }}-${{ steps.slug.outputs.sha8 }}_windows_msvc_amd64.zip
+        name: openomf_${{ env.OPENOMF_VERSION }}-${{ steps.slug.outputs.sha8 }}_windows_msvc_${{ matrix.config.arch }}
+        path: install/openomf_${{ env.OPENOMF_VERSION }}-${{ steps.slug.outputs.sha8 }}_windows_msvc_${{ matrix.config.arch }}.zip
         if-no-files-found: error
 
   # Build ubuntu package, release artifact
@@ -333,6 +337,10 @@ jobs:
     - uses: actions/download-artifact@v4
       with:
         path: artifacts/
+
+    - name: Get short SHA
+      id: slug
+      run: echo "sha8=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_OUTPUT
     
     - name: Advance tag
       uses: actions/github-script@v7
@@ -359,9 +367,29 @@ jobs:
             console.log("Unable to create 'latest' tag", e)
           }
 
-    - name: Extract ubuntu releases
+    - name: Organize release artifacts
       run: |
         mkdir upload
+        mkdir windows_all
+
+        combine_windows() {
+            if [ "$#" -ne 2 ]; then
+              echo "wrong argc to combine_windows"
+              exit 1
+            fi
+            unzip -d windows_all -o -u "$1"
+            rm "$1"
+            if [ "$2" != "openomf.exe" ]; then
+                mv "windows_all/openomf/openomf.exe" "windows_all/openomf/$2"
+            fi
+        }
+        combine_windows artifacts/openomf_*_windows_msvc_arm64/*.zip openomf_arm64.exe
+        combine_windows artifacts/openomf_*_windows_msvc_x64/*.zip openomf.exe
+
+        cd windows_all/
+        zip -r ${GITHUB_WORKSPACE}/upload/openomf_${{ env.OPENOMF_VERSION }}-${{ steps.slug.outputs.sha8 }}_windows.zip *
+        cd ..
+
         shopt -s globstar
         for file in artifacts/**; do
           if [ -f "$file" ]; then
