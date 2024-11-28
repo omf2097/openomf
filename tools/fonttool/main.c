@@ -6,6 +6,7 @@
 
 #include "formats/error.h"
 #include "formats/fonts.h"
+#include "utils/c_array_util.h"
 #include <SDL2/SDL.h>
 #if defined(ARGTABLE2_FOUND)
 #include <argtable2.h>
@@ -253,6 +254,6 @@ int main(int argc, char *argv[]) {
 exit_1:
     sd_font_free(&font);
 exit_0:
-    arg_freetable(argtable, sizeof(argtable) / sizeof(argtable[0]));
+    arg_freetable(argtable, N_ELEMENTS(argtable));
     return 0;
 }

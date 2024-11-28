@@ -7,6 +7,7 @@
 #include "formats/bk.h"
 #include "formats/chr.h"
 #include "formats/error.h"
+#include "utils/c_array_util.h"
 #if defined(ARGTABLE2_FOUND)
 #include <argtable2.h>
 #elif defined(ARGTABLE3_FOUND)
@@ -163,6 +164,6 @@ exit_1:
     sd_bk_free(&bk);
     sd_chr_free(&chr);
 exit_0:
-    arg_freetable(argtable, sizeof(argtable) / sizeof(argtable[0]));
+    arg_freetable(argtable, N_ELEMENTS(argtable));
     return 0;
 }

@@ -1,5 +1,6 @@
 #include <SDL.h>
 
+#include "utils/c_array_util.h"
 #include "utils/log.h"
 #include "video/renderers/renderer.h"
 #include "video/video.h"
@@ -26,7 +27,7 @@ static renderer_init all_renderers[] = {
     null_renderer_set_callbacks,
 #endif
 };
-static int all_renderers_count = sizeof(all_renderers) / sizeof(renderer_init);
+static int all_renderers_count = N_ELEMENTS(all_renderers);
 
 // All renderers that are available. This is filled by video_scan_renderers().
 static struct available_renderer {

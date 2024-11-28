@@ -5,6 +5,7 @@
 
 #include "formats/altpal.h"
 #include "formats/error.h"
+#include "utils/c_array_util.h"
 #if defined(ARGTABLE2_FOUND)
 #include <argtable2.h>
 #elif defined(ARGTABLE3_FOUND)
@@ -121,6 +122,6 @@ int main(int argc, char *argv[]) {
 exit_1:
     altpal_free(&alt);
 exit_0:
-    arg_freetable(argtable, sizeof(argtable) / sizeof(argtable[0]));
+    arg_freetable(argtable, N_ELEMENTS(argtable));
     return 0;
 }

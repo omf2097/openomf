@@ -26,6 +26,7 @@
 #include "game/utils/ticktimer.h"
 #include "resources/pilots.h"
 #include "utils/allocator.h"
+#include "utils/c_array_util.h"
 #include "utils/log.h"
 #include "utils/miscmath.h"
 #include "video/vga_state.h"
@@ -779,7 +780,7 @@ game_player *game_state_get_player(const game_state *gs, int player_id) {
 }
 
 int game_state_num_players(game_state *gs) {
-    return sizeof(gs->players) / sizeof(game_player *);
+    return N_ELEMENTS(gs->players);
 }
 
 void _setup_keyboard(game_state *gs, int player_id) {

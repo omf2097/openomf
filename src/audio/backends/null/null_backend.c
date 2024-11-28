@@ -1,5 +1,6 @@
 #include "audio/backends/null/null_backend.h"
 #include "audio/backends/audio_backend.h"
+#include "utils/c_array_util.h"
 #include "utils/log.h"
 
 #include <assert.h>
@@ -9,12 +10,12 @@
 static const audio_sample_rate supported_sample_rates[] = {
     {44100, 1, "44100Hz"},
 };
-static const int supported_sample_rate_count = sizeof(supported_sample_rates) / sizeof(audio_resampler);
+static const int supported_sample_rate_count = N_ELEMENTS(supported_sample_rates);
 
 static const audio_resampler supported_resamplers[] = {
     {0, 1, "Linear"},
 };
-static const int supported_resamplers_count = sizeof(supported_resamplers) / sizeof(audio_resampler);
+static const int supported_resamplers_count = N_ELEMENTS(supported_resamplers);
 
 static bool is_available(void) {
     return true; // This is always available if compiled in.

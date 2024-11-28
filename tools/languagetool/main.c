@@ -7,6 +7,7 @@
 #include "formats/error.h"
 #include "formats/language.h"
 #include "utils/allocator.h"
+#include "utils/c_array_util.h"
 #include "utils/cp437.h"
 #include "utils/str.h"
 #include <assert.h>
@@ -392,7 +393,7 @@ int main(int argc, char *argv[]) {
     if(output->count > 0) {
         char const *expected_output_extensions[] = {".DAT", ".DAT2", ".LNG", ".LNG2"};
         bool unexpected_extension = true;
-        for(size_t i = 0; i < (sizeof expected_output_extensions) / (sizeof expected_output_extensions[0]); i++) {
+        for(size_t i = 0; i < N_ELEMENTS(expected_output_extensions); i++) {
             if(output->extension[0] && strcmp(expected_output_extensions[i], output->extension[0]) == 0) {
                 unexpected_extension = false;
                 break;
@@ -424,6 +425,6 @@ int main(int argc, char *argv[]) {
     main_ret = EXIT_SUCCESS;
 exit_0:
     sd_language_free(&language);
-    arg_freetable(argtable, sizeof(argtable) / sizeof(argtable[0]));
+    arg_freetable(argtable, N_ELEMENTS(argtable));
     return main_ret;
 }

@@ -1,6 +1,7 @@
 #include "audio/backends/sdl/sdl_backend.h"
 #include "audio/backends/audio_backend.h"
 #include "utils/allocator.h"
+#include "utils/c_array_util.h"
 #include "utils/log.h"
 #include "utils/miscmath.h"
 
@@ -19,14 +20,14 @@ static const audio_sample_rate supported_sample_rates[] = {
     {44100, 0, "44100Hz"},
     {48000, 1, "48000Hz"},
 };
-static const int supported_sample_rate_count = sizeof(supported_sample_rates) / sizeof(audio_resampler);
+static const int supported_sample_rate_count = N_ELEMENTS(supported_sample_rates);
 
 static const audio_resampler supported_resamplers[] = {
     {XMP_INTERP_NEAREST, 0, "Nearest"},
     {XMP_INTERP_LINEAR,  1, "Linear" },
     {XMP_INTERP_SPLINE,  0, "Cubic"  },
 };
-static const int supported_resamplers_count = sizeof(supported_resamplers) / sizeof(audio_resampler);
+static const int supported_resamplers_count = N_ELEMENTS(supported_resamplers);
 
 typedef struct sdl_audio_context {
     int sample_rate;

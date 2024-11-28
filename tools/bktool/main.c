@@ -8,6 +8,7 @@
 #include "../shared/conversions.h"
 #include "formats/bk.h"
 #include "formats/error.h"
+#include "utils/c_array_util.h"
 #include <SDL.h>
 #if defined(ARGTABLE2_FOUND)
 #include <argtable2.h>
@@ -899,6 +900,6 @@ exit_1:
     sd_bk_free(&bk);
     SDL_Quit();
 exit_0:
-    arg_freetable(argtable, sizeof(argtable) / sizeof(argtable[0]));
+    arg_freetable(argtable, N_ELEMENTS(argtable));
     return 0;
 }

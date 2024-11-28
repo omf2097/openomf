@@ -6,6 +6,7 @@
 #include "resources/pathmanager.h"
 #include "resources/sgmanager.h"
 #include "utils/allocator.h"
+#include "utils/c_array_util.h"
 #include "utils/c_string_util.h"
 #include "utils/log.h"
 #include "utils/msgbox.h"
@@ -258,7 +259,7 @@ exit_0:
     if(trace_file) {
         omf_free(trace_file);
     }
-    arg_freetable(argtable, sizeof(argtable) / sizeof(argtable[0]));
+    arg_freetable(argtable, N_ELEMENTS(argtable));
     pm_free();
     return ret;
 }

@@ -9,6 +9,7 @@
 #include "resources/af_loader.h"
 #include "resources/ids.h"
 #include "utils/allocator.h"
+#include "utils/c_array_util.h"
 #include "utils/log.h"
 #include "utils/random.h"
 #include "utils/vec.h"
@@ -36,8 +37,6 @@
 #define TACTIC_JUMP_ATTACK_TIMER_MAX 12
 /* likelihood of attempting a random attack/tactic (lower is more likely) */
 #define RANDOM_ATTACK_CHANCE 10
-
-#define N_ELEMENTS(array) (sizeof(array) / sizeof((array)[0]))
 
 typedef struct {
     int max_hit_dist;

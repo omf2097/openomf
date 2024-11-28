@@ -1,4 +1,5 @@
 #include "cp437.h"
+#include "utils/c_array_util.h"
 #include <assert.h>
 
 char const *cp437_result_to_string(cp437_result result) {
@@ -40,8 +41,7 @@ char32_t const cp437_toutf32_lookup[] = {
     // clang-format on
 };
 
-static_assert(256 == (sizeof cp437_toutf32_lookup) / sizeof cp437_toutf32_lookup[0],
-              "cp437 lookup table must be 256 entries long");
+static_assert(256 == N_ELEMENTS(cp437_toutf32_lookup), "cp437 lookup table must be 256 entries long");
 
 inline static size_t code_utf8len(char32_t utf32) {
     if(utf32 <= 0x7F) {
