@@ -67,6 +67,13 @@ const char *scene_get_name(unsigned int id) {
     return scene_type_names[id];
 }
 
+int scene_get_id(const char *name) {
+    for(unsigned i = 0; i < N_ELEMENTS(scene_type_names); ++i)
+        if(strcmp(scene_type_names[i], name) == 0)
+            return (int)i;
+    return -1;
+}
+
 // For these to work, the resources table has to match the ID tables
 int har_to_resource(unsigned int id) {
     return AF_JAGUAR + id;

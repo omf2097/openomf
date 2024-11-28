@@ -7,6 +7,8 @@ const char *pilot_get_name(unsigned int id);
 const char *round_get_name(unsigned int id);
 const char *scene_get_name(unsigned int id);
 
+int scene_get_id(const char *);
+
 int har_to_resource(unsigned int id);
 int scene_to_resource(unsigned int id);
 
