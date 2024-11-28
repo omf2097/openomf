@@ -279,7 +279,7 @@ void engine_run(engine_init_flags *init_flags) {
             has_static = static_wait > STATIC_TICKS;
             if(has_static) {
                 game_state_static_tick(gs, false);
-                console_tick();
+                console_tick(gs);
                 static_wait -= STATIC_TICKS;
             }
 

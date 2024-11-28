@@ -12,7 +12,7 @@ bool console_init(void);
 void console_close(void);
 void console_event(game_state *scene, SDL_Event *event);
 void console_render(void);
-void console_tick(void);
+void console_tick(game_state *gs);
 void console_add_cmd(const char *name, command_func func, const char *doc);
 void console_remove_cmd(const char *name);
 
