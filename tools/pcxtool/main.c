@@ -6,6 +6,7 @@
 #include "formats/error.h"
 #include "formats/pcx.h"
 #include "utils/allocator.h"
+#include "utils/c_array_util.h"
 #include <SDL.h>
 #include <errno.h>
 #include <inttypes.h>
@@ -188,6 +189,6 @@ int main(int argc, char *argv[]) {
     }
 
 exit_0:
-    arg_freetable(argtable, sizeof(argtable) / sizeof(argtable[0]));
+    arg_freetable(argtable, N_ELEMENTS(argtable));
     return 0;
 }

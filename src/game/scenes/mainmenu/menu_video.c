@@ -6,6 +6,7 @@
 #include "game/gui/gui.h"
 #include "game/utils/settings.h"
 #include "utils/allocator.h"
+#include "utils/c_array_util.h"
 #include "utils/c_string_util.h"
 #include "video/video.h"
 
@@ -54,7 +55,7 @@ resolution *find_resolution_by_settings(settings *s) {
     int w = s->video.screen_w;
     int h = s->video.screen_h;
 
-    for(unsigned i = 0; i < sizeof(_resolutions) / sizeof(resolution); i++) {
+    for(unsigned i = 0; i < N_ELEMENTS(_resolutions); i++) {
         if(w == _resolutions[i].w && h == _resolutions[i].h) {
             return &_resolutions[i];
         }
@@ -177,7 +178,7 @@ component *menu_video_create(scene *s) {
     }
 
     // Add standard resolutions
-    for(unsigned i = 0; i < sizeof(_resolutions) / sizeof(resolution); i++) {
+    for(unsigned i = 0; i < N_ELEMENTS(_resolutions); i++) {
         textselector_add_option(res_selector, _resolutions[i].name);
         if(!local->is_custom_resolution && _resolutions[i].w == res->w && _resolutions[i].h == res->h) {
             textselector_set_pos(res_selector, i);

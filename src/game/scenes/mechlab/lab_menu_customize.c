@@ -13,6 +13,7 @@
 #include "game/utils/formatting.h"
 #include "resources/bk.h"
 #include "resources/languages.h"
+#include "utils/c_array_util.h"
 #include "utils/log.h"
 
 // TODO put these somewhere central
@@ -813,7 +814,7 @@ int sell_highest_value_upgrade(sd_pilot *pilot, char *sold) {
     };
     int max_idx = -1;
     int32_t max_price = 0;
-    for(unsigned i = 0; i < sizeof(prices) / sizeof(prices[0]); ++i) {
+    for(unsigned i = 0; i < N_ELEMENTS(prices); ++i) {
         if(prices[i] > max_price) {
             max_price = prices[i];
             max_idx = i;

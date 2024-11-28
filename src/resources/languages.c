@@ -4,6 +4,7 @@
 #include "game/utils/settings.h"
 #include "resources/pathmanager.h"
 #include "utils/allocator.h"
+#include "utils/c_array_util.h"
 #include "utils/log.h"
 #include "utils/str.h"
 #include <string.h>
@@ -38,7 +39,7 @@ bool lang_init(void) {
         // OMF 2.1 added netplay, and with it 23 new localization strings
         unsigned new_ids[] = {149, 150, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181,
                               182, 183, 184, 185, 267, 269, 270, 271, 284, 295, 305};
-        unsigned *new_ids_end = new_ids + sizeof(new_ids) / sizeof(new_ids[0]);
+        unsigned *new_ids_end = new_ids + N_ELEMENTS(new_ids);
 
         // insert dummy entries
         sd_lang_string *expanded_strings = omf_malloc(LANG_STR_COUNT * sizeof(sd_lang_string));

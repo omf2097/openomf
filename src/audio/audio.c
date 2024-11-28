@@ -4,6 +4,7 @@
 #include "audio/backends/audio_backend.h"
 #include "resources/pathmanager.h"
 #include "resources/sounds_loader.h"
+#include "utils/c_array_util.h"
 #include "utils/log.h"
 
 // If-def the includes here
@@ -28,7 +29,7 @@ static audio_backend_init all_backends[] = {
     null_audio_backend_set_callbacks,
 #endif
 };
-static int all_backends_count = sizeof(all_backends) / sizeof(audio_backend_init);
+static int all_backends_count = N_ELEMENTS(all_backends);
 
 // All backends that are available. This is filled by audio_scan_backends().
 static struct available_backend {

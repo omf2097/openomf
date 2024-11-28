@@ -14,6 +14,7 @@
 
 #include "formats/af.h"
 #include "formats/error.h"
+#include "utils/c_array_util.h"
 
 #define VNAME(n) a->n, b->n
 
@@ -224,6 +225,6 @@ exit_2:
 exit_1:
     sd_af_free(&af_a);
 exit_0:
-    arg_freetable(argtable, sizeof(argtable) / sizeof(argtable[0]));
+    arg_freetable(argtable, N_ELEMENTS(argtable));
     return 0;
 }

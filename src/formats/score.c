@@ -4,6 +4,7 @@
 #include "formats/internal/reader.h"
 #include "formats/internal/writer.h"
 #include "formats/score.h"
+#include "utils/c_array_util.h"
 
 int sd_score_create(sd_score *score) {
     if(score == NULL) {
@@ -26,8 +27,8 @@ int sd_score_load(sd_score *score, const char *filename) {
         return SD_FILE_OPEN_ERROR;
     }
 
-    for(unsigned i = 0; i < sizeof(score->scores) / sizeof(score->scores[0]); i++) {
-        for(unsigned j = 0; j < sizeof(score->scores[0]) / sizeof(score->scores[0][0]); j++) {
+    for(unsigned i = 0; i < N_ELEMENTS(score->scores); i++) {
+        for(unsigned j = 0; j < N_ELEMENTS(score->scores[0]); j++) {
             sd_score_entry *e = &score->scores[i][j];
             e->score = sd_read_udword(r);
             sd_read_buf(r, e->name, sizeof(e->name));
@@ -59,8 +60,8 @@ int sd_score_save(const sd_score *score, const char *filename) {
         return SD_FILE_OPEN_ERROR;
     }
 
-    for(unsigned i = 0; i < sizeof(score->scores) / sizeof(score->scores[0]); i++) {
-        for(unsigned j = 0; j < sizeof(score->scores[0]) / sizeof(score->scores[0][0]); j++) {
+    for(unsigned i = 0; i < N_ELEMENTS(score->scores); i++) {
+        for(unsigned j = 0; j < N_ELEMENTS(score->scores[0]); j++) {
             const sd_score_entry *e = &score->scores[i][j];
             sd_write_udword(w, e->score);
             sd_write_buf(w, e->name, sizeof(e->name));

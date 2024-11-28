@@ -1,5 +1,6 @@
 #include "game/common_defines.h"
 #include "resources/ids.h"
+#include "utils/c_array_util.h"
 #include "utils/random.h"
 #include <stddef.h>
 

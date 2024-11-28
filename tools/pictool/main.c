@@ -7,6 +7,7 @@
 #include "formats/bk.h"
 #include "formats/error.h"
 #include "formats/pic.h"
+#include "utils/c_array_util.h"
 #if defined(ARGTABLE2_FOUND)
 #include <argtable2.h>
 #elif defined(ARGTABLE3_FOUND)
@@ -137,6 +138,6 @@ exit_2:
 exit_1:
     sd_pic_free(&pic);
 exit_0:
-    arg_freetable(argtable, sizeof(argtable) / sizeof(argtable[0]));
+    arg_freetable(argtable, N_ELEMENTS(argtable));
     return 0;
 }
