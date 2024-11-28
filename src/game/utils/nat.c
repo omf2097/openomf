@@ -54,7 +54,15 @@ bool nat_create_pmp_mapping(nat_ctx *ctx, uint16_t int_port, uint16_t ext_port) 
         fd_set fds;
         struct timeval timeout;
         FD_ZERO(&fds);
+#ifdef _WIN32
+        DEBUG("praying that winapi socket '%d' hasn't been truncated", ctx->natpmp.s);
+        // XXX : libnatpmp stores winapi SOCKETs as an `int`, which is terrible because SOCKET is pointer-sized.
+        // WinAPI seems to be kind to us, and is returning small values like 0x00000114.. but this is far from
+        // guaranteed! (using ptrdiff for sign-extension in case `s` is INVALID_SOCKET -1)
+        FD_SET((SOCKET)(ptrdiff_t)ctx->natpmp.s, &fds);
+#else
         FD_SET(ctx->natpmp.s, &fds);
+#endif
         getnatpmprequesttimeout(&ctx->natpmp, &timeout);
         select(FD_SETSIZE, &fds, NULL, NULL, &timeout);
         r = readnatpmpresponseorretry(&ctx->natpmp, &response);
@@ -160,7 +168,15 @@ void nat_release_pmp(nat_ctx *ctx) {
         fd_set fds;
         struct timeval timeout;
         FD_ZERO(&fds);
+#ifdef _WIN32
+        DEBUG("praying that winapi socket '%d' hasn't been truncated", ctx->natpmp.s);
+        // XXX : libnatpmp stores winapi SOCKETs as an `int`, which is terrible because SOCKET is pointer-sized.
+        // WinAPI seems to be kind to us, and is returning small values like 0x00000114.. but this is far from
+        // guaranteed! (using ptrdiff for sign-extension in case `s` is INVALID_SOCKET -1)
+        FD_SET((SOCKET)(ptrdiff_t)ctx->natpmp.s, &fds);
+#else
         FD_SET(ctx->natpmp.s, &fds);
+#endif
         getnatpmprequesttimeout(&ctx->natpmp, &timeout);
         select(FD_SETSIZE, &fds, NULL, NULL, &timeout);
         r = readnatpmpresponseorretry(&ctx->natpmp, &response);
