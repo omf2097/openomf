@@ -89,7 +89,7 @@ static void test_text_find_line_count_newsroom(void) {
     int longest = 0;
 
     // trailing spaces are counted as part of the previous word
-    //clang-format off
+    // clang-format off
     CU_ASSERT_EQUAL(text_find_line_count_(&tconf, 31, 999,
                                           "Whoa, this challenger meant "
                                           "business tonight.  Shirro "
