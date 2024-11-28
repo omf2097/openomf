@@ -3,8 +3,14 @@
 #include "game/gui/menu_background.h"
 #include "game/utils/settings.h"
 #include "utils/allocator.h"
+#include "utils/log.h"
 #include "video/video.h"
 #include <stdio.h>
+
+#if !defined(WIN32) && !defined(_WIN32)
+#include <fcntl.h>
+#include <unistd.h>
+#endif
 
 #define HISTORY_MAX 100
 #define BUFFER_INC(b) (((b) + 1) % sizeof(con->output))
@@ -223,6 +229,11 @@ bool console_init(void) {
     menu_transparent_bg_create(&con->background1, 322, 101);
     menu_background_create(&con->background2, 322, 101);
 
+    // Read from stdin needs to be nonblocking
+#if !defined(WIN32) && !defined(_WIN32)
+    fcntl(0, F_SETFL, fcntl(0, F_GETFL) | O_NONBLOCK);
+#endif
+
     console_init_cmd();
 
     // Print the header
@@ -333,7 +344,23 @@ void console_render(void) {
     }
 }
 
-void console_tick(void) {
+static size_t get_stdin_line(char *line, size_t size) {
+#if !defined(WIN32) && !defined(_WIN32)
+    ssize_t n = read(0, line, size);
+    if(n > 0) {
+        line[n - 1] = '\0';
+        return (size_t)(n - 1);
+    }
+#endif
+    return 0;
+}
+
+void console_tick(game_state *gs) {
+    if(get_stdin_line(con->input, sizeof(con->input)) > 0) {
+        DEBUG("Console line from stdin: %s", con->input, strlen(con->input));
+        console_handle_line(gs);
+        con->input[0] = '\0';
+    }
     if(con->is_open && con->y_pos < 100) {
         con->y_pos += 4;
         if(settings_get()->video.instant_console) {
