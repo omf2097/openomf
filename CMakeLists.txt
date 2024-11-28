@@ -12,6 +12,7 @@ OPTION(USE_SANITIZERS "Enable Asan and Ubsan" OFF)
 OPTION(USE_FATAL_SANITIZERS "Make Asan and Ubsan errors fatal" OFF)
 OPTION(USE_TIDY "Use clang-tidy for checks" OFF)
 OPTION(USE_FORMAT "Use clang-format for checks" OFF)
+OPTION(BUILD_LANGUAGES "Build Language Files" ON)
 
 OPTION(USE_MINIUPNPC "Use miniupnpc for port forwarding" OFF)
 OPTION(USE_NATPMP "Use natpmp for port forwarding" OFF)
@@ -292,9 +293,10 @@ add_dependencies(openomf copy_shaders)
 
 # Build tools if requested
 set(TOOL_TARGET_NAMES)
-# always build languagetool, for BuildLanguages.cmake
-add_executable(languagetool tools/languagetool/main.c)
-list(APPEND TOOL_TARGET_NAMES languagetool)
+if(BUILD_LANGUAGES OR USE_TOOLS)
+    add_executable(languagetool tools/languagetool/main.c)
+    list(APPEND TOOL_TARGET_NAMES languagetool)
+endif()
 if (USE_TOOLS)
     add_executable(bktool tools/bktool/main.c
         tools/shared/animation_misc.c
