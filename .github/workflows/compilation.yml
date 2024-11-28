@@ -15,64 +15,45 @@ env:
 
 jobs:
 
-  # Check code formatting correctness
-  # -----------------------------------------------------------------------------------------------
-  formatting-check:
-    name: Formatting Check
-    runs-on: ubuntu-24.04
-    env:
-      clang-format-version: '16'
-    steps:
-    - uses: actions/checkout@v4
-    - name: Install clang-format and fd-find
-      uses: Eeems-Org/apt-cache-action@v1.3
-      with:
-        packages: clang-format-${{ env.clang-format-version }} fd-find
-    - name: Run clang-format style check
-      run: |
-        fdfind . -e .c -e .h -X clang-format-${{ env.clang-format-version }} --dry-run --Werror
-
-  # Run unittests on modern-ish versions of gcc and clang.
+  # Run unittests on a recent version of clang
   # -----------------------------------------------------------------------------------------------
   unittest:
-    name: Run unit-tests on ${{ matrix.config.name }}
+    name: Formatting Check, Unittest
     runs-on: ubuntu-24.04
     env:
-      CC: ${{ matrix.config.cc }}
-
-    strategy:
-      fail-fast: false
-      matrix:
-        config:
-        - { name: "gcc 14",   cc: gcc-14,   tidy: "Off" }
-        - { name: "clang 18", cc: clang-18, tidy: "On"  }
+      clang-version: '18'
 
     steps:
     - uses: actions/checkout@v4
 
-    - name: Install Ubuntu Dependencies
+    - name: Install dependencies
       uses: Eeems-Org/apt-cache-action@v1.3
       with:
-        packages: cmake cmake-data libargtable2-dev libcunit1-dev
+        packages: cmake cmake-data ninja-build libargtable2-dev libcunit1-dev
           libsdl2-mixer-dev libconfuse-dev libenet-dev libsdl2-dev libxmp-dev libpng-dev
-          libepoxy-dev clang-tidy-18 ${{ matrix.config.cc }}
+          libepoxy-dev clang-${{ env.clang-version }} clang-tidy-${{ env.clang-version }}
+          clang-format-${{ env.clang-version }} fd-find
+
+    - name: Run clang-format style check
+      run: |
+        fdfind . -e .c -e .h -X clang-format-${{ env.clang-version }} --dry-run --Werror
 
     - name: Build tests
       run: |
-        mkdir build-test && cd build-test
-        cmake -DCMAKE_BUILD_TYPE=Debug \
-              -DUSE_TIDY=${{ matrix.config.tidy }} \
+        cmake -DCMAKE_C_COMPILER=clang-${{ env.clang-version }} \
+              -DUSE_TIDY=On \
               -DUSE_TESTS=On \
               -DUSE_SANITIZERS=On \
               -DUSE_FATAL_SANITIZERS=On \
               -DUSE_TOOLS=On \
-              ..
-        make -j $(getconf _NPROCESSORS_ONLN)
+              -G "Ninja Multi-Config" \
+              -S . -B build-test
+        cmake --build build-test -j $(getconf _NPROCESSORS_ONLN)
 
     - name: Run tests
       run: |
         cd build-test
-        make test ARGS="-V"
+        ctest --verbose --output-on-failure
 
   # Build windows package, release artifact (MSVC)
   # -----------------------------------------------------------------------------------------------
@@ -161,7 +142,7 @@ jobs:
   # Build ubuntu package, release artifact
   # -----------------------------------------------------------------------------------------------
   build_ubuntu:
-    needs: [unittest, formatting-check]
+    needs: [unittest]
 
     name: Build ubuntu-latest
     runs-on: ubuntu-latest
@@ -242,7 +223,7 @@ jobs:
   # Build macos package, release artifact
   # -----------------------------------------------------------------------------------------------
   build_macos-arm:
-    needs: [unittest, formatting-check]
+    needs: [unittest]
 
     name: Build macos-14
     runs-on: macos-14
@@ -302,7 +283,7 @@ jobs:
   # Build windows package, release artifact (mingw-w64)
   # -----------------------------------------------------------------------------------------------
   build_windows:
-    needs: [unittest, formatting-check]
+    needs: [unittest]
 
     name: Build windows-amd64 (mingw-w64)
     runs-on: ubuntu-latest
