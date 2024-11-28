@@ -8,6 +8,7 @@
 #include "utils/miscmath.h"
 #include "video/vga_state.h"
 #include "video/video.h"
+#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
