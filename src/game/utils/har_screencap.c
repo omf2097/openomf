@@ -75,5 +75,7 @@ void har_screencaps_capture(har_screencaps *caps, object *obj, object *obj2, int
 }
 
 void har_screencaps_compress(har_screencaps *caps, const vga_palette *pal, int id) {
-    surface_convert_to_grayscale(&caps->cap[id], pal, 0xD0, 0xDF, 0x60);
+    if(caps->ok[id]) {
+        surface_convert_to_grayscale(&caps->cap[id], pal, 0xD0, 0xDF, 0x60);
+    }
 }
