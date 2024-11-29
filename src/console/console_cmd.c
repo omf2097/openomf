@@ -157,6 +157,8 @@ int console_cmd_win(game_state *gs, int argc, char **argv) {
     if(argc == 1) {
         game_player *player = game_state_get_player(gs, 1);
         object *har_obj = game_state_find_object(gs, game_player_get_har_obj_id(player));
+        if(!har_obj)
+            return 1;
         har *har = object_get_userdata(har_obj);
         har->health = 0;
         return 0;
@@ -168,6 +170,8 @@ int console_cmd_lose(game_state *gs, int argc, char **argv) {
     if(argc == 1) {
         game_player *player = game_state_get_player(gs, 0);
         object *har_obj = game_state_find_object(gs, game_player_get_har_obj_id(player));
+        if(!har_obj)
+            return 1;
         har *har = object_get_userdata(har_obj);
         har->health = 0;
         return 0;
@@ -179,6 +183,8 @@ int console_cmd_stun(game_state *gs, int argc, char **argv) {
     if(argc == 1) {
         game_player *player = game_state_get_player(gs, 1);
         object *har_obj = game_state_find_object(gs, game_player_get_har_obj_id(player));
+        if(!har_obj)
+            return 1;
         har *har = object_get_userdata(har_obj);
         har->endurance = 0;
         har->state = STATE_RECOIL;
