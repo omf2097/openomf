@@ -773,8 +773,8 @@ void object_set_vel(object *obj, vec2f vel) {
 }
 
 vec2i object_get_size(const object *obj) {
-    if(obj->cur_sprite_id >= 0) {
-        sprite *cur_sprite = animation_get_sprite(obj->cur_animation, obj->cur_sprite_id);
+    sprite *cur_sprite = animation_get_sprite(obj->cur_animation, obj->cur_sprite_id);
+    if(cur_sprite) {
         return sprite_get_size(cur_sprite);
     }
     return vec2i_create(0, 0);
