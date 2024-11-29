@@ -199,9 +199,12 @@ void player_run(object *obj) {
             player_reset(obj);
             frame = sd_script_get_frame_at(&state->parser, state->current_tick);
         } else if(obj->finish != NULL) {
-            obj->cur_sprite_id = -1;
             state->finished = 1;
             obj->finish(obj);
+            // let har_finish hold last sprite of victory animation indefinitely
+            if(state->finished) {
+                obj->cur_sprite_id = -1;
+            }
             return;
         } else {
             obj->cur_sprite_id = -1;
