@@ -11,6 +11,7 @@
 #include "resources/sounds_loader.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
+#include "utils/miscmath.h"
 #include "utils/png_writer.h"
 #include "utils/time_fmt.h"
 #include "video/vga_state.h"
@@ -20,6 +21,7 @@
 
 #define STATIC_TICKS 10
 #define MAX_TICKS_PER_FRAME 10
+#define TICK_EXPIRY_MS 100
 
 static int run = 0;
 static int start_timeout = 30;
@@ -268,6 +270,10 @@ void engine_run(engine_init_flags *init_flags) {
             static_wait += 20;
             debugger_proceed = 0;
         }
+
+        // drop ticks if it's been too long since they were due
+        dynamic_wait = min2(dynamic_wait, TICK_EXPIRY_MS);
+        static_wait = min2(static_wait, TICK_EXPIRY_MS);
 
         // In warp mode, allow more ticks to happen per vsync period.
         bool has_dynamic = true;
