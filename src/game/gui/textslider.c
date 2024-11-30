@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -17,6 +18,7 @@ typedef struct {
     int *pos;
     int has_off;
     int positions;
+    bool disable_panning;
 
     void *userdata;
     textslider_slide_cb slide;
@@ -51,7 +53,7 @@ static void textslider_render(component *c) {
 static int textslider_action(component *c, int action) {
     textslider *tb = widget_get_obj(c);
     int old_pos = *tb->pos;
-    float panning = 0.5f;
+    float panning = tb->disable_panning ? 0.0f : 0.5f;
     if(action == ACT_KICK || action == ACT_PUNCH || action == ACT_RIGHT) {
         (*tb->pos)++;
         if(*tb->pos > tb->positions) {
@@ -75,6 +77,19 @@ static int textslider_action(component *c, int action) {
         tb->dir = 0;
         return 0;
     }
+
+    if(old_pos != *tb->pos) {
+        // Play menu sound
+        audio_play_sound(20, 0.5f, panning, 2.0f);
+        if(tb->slide) {
+            tb->slide(c, tb->userdata, *tb->pos);
+        }
+        // reset ticks so text is bright
+        tb->ticks = 0;
+        tb->dir = 0;
+        return 0;
+    }
+
     return 1;
 }
 
@@ -133,4 +148,9 @@ component *textslider_create_bind(const text_settings *tconf, const char *text, 
     textslider *ts = widget_get_obj(c);
     ts->pos = (bind) ? bind : &ts->pos_;
     return c;
+}
+
+void textslider_disable_panning(component *c) {
+    textslider *tb = widget_get_obj(c);
+    tb->disable_panning = true;
 }
