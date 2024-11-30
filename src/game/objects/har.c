@@ -1444,7 +1444,7 @@ void har_tick(object *obj) {
     if(h->endurance < h->endurance_max &&
        !(h->executing_move || h->state == STATE_RECOIL || h->state == STATE_STUNNED || h->state == STATE_FALLEN ||
          h->state == STATE_STANDING_UP || h->state == STATE_DEFEAT)) {
-        h->endurance += 0.025f; // made up but plausible number
+        h->endurance += 0.0025f * h->endurance_max; // made up but plausible number
     }
 
     // Leave shadow trail
