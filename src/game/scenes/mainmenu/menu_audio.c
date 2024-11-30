@@ -102,12 +102,14 @@ component *menu_audio_create(scene *s) {
 
     // Create menu and its header
     component *menu = menu_create(11);
+    component *volume_textslider;
     menu_attach(menu, label_create(&tconf, "AUDIO"));
     menu_attach(menu, filler_create());
     menu_attach(menu,
-                textslider_create_bind(&tconf, "SOUND",
-                                       "Raise or lower the volume of all sound effects. Press right or left to change.",
-                                       10, 1, menu_audio_sound_slide, NULL, &settings_get()->sound.sound_vol));
+                volume_textslider = textslider_create_bind(
+                    &tconf, "SOUND", "Raise or lower the volume of all sound effects. Press right or left to change.",
+                    10, 1, menu_audio_sound_slide, NULL, &settings_get()->sound.sound_vol));
+    textslider_disable_panning(volume_textslider);
     menu_attach(menu, textslider_create_bind(&tconf, "MUSIC",
                                              "Raise or lower the volume of music. Press right or left to change.", 10,
                                              1, menu_audio_music_slide, NULL, &settings_get()->sound.music_vol));
