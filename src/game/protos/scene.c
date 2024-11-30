@@ -201,6 +201,10 @@ void scene_input_poll(scene *scene) {
         // don't bleed to this one.
         return;
     }
+    if(scene->gs->this_id != scene->gs->next_id) {
+        // Ignore inputs during scene fadeout
+        return;
+    }
     if(scene->input_poll != NULL) {
         scene->input_poll(scene);
     }
