@@ -2024,9 +2024,6 @@ void har_finished(object *obj) {
         h->state = STATE_DONE;
         har_set_ani(obj, ANIM_VICTORY, 0);
     } else if(h->state == STATE_VICTORY || h->state == STATE_DONE) {
-        // end the arena
-        DEBUG("ending arena!");
-        game_state_set_next(obj->gs, SCENE_MENU);
         // prevent object from being freed, hold last sprite of animation indefinitely
         obj->animation_state.finished = 0;
     } else if(h->state == STATE_RECOIL && h->health <= 0) {
