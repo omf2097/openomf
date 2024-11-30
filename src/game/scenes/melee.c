@@ -391,7 +391,8 @@ void handle_action(scene *scene, int player, int action) {
     }
 
     if(old_row != *row || old_column != *column) {
-        audio_play_sound(19, 0.5f, 0.0f, 2.0f);
+        float panning = (float)(*column) * (2.0f / 5.0f) - 0.5f;
+        audio_play_sound(19, 0.5f, panning, 2.0f);
         update_har(scene, player);
     }
 
