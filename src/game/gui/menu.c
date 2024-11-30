@@ -160,6 +160,7 @@ static int menu_action(component *mc, int action) {
     if(c != NULL && c->supports_select &&
        (((action == ACT_DOWN || action == ACT_UP) && !m->horizontal) ||
         ((action == ACT_LEFT || action == ACT_RIGHT) && m->horizontal))) {
+        component *old_c = c;
         component_select(c, 0);
         do {
             if(action == ACT_DOWN && !m->horizontal) {
@@ -184,9 +185,11 @@ static int menu_action(component *mc, int action) {
             c = sizer_get(mc, m->selected);
 
         } while(component_is_disabled(c));
-        // Play menu sound
-        audio_play_sound(19, 0.5f, 0.0f, 2.0f);
-        component_select(c, 1);
+        if(c != old_c) {
+            // Play menu sound
+            audio_play_sound(19, 0.5f, 0.0f, 2.0f);
+            component_select(c, 1);
+        }
         return 0;
     }
 
