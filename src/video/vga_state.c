@@ -60,7 +60,7 @@ void vga_state_render(void) {
         for(unsigned int i = 0; i < state.transformer_count; i++) {
             state.transformers[i].callback(&tmp, &state.current, state.transformers[i].userdata);
         }
-        damage_copy(&state.dmg_current, &tmp);
+        damage_combine(&state.dmg_current, &tmp);
         damage_combine(&state.dmg_current, &state.dmg_previous);
         damage_copy(&state.dmg_previous, &tmp);
         state.transformer_count = 0;
