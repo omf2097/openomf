@@ -253,34 +253,26 @@ void handle_action(scene *scene, int player, int action) {
         return;
     }
 
+    int old_row = *row;
+    int old_column = *column;
+
     switch(action) {
         case ACT_LEFT:
             (*column)--;
             if(*column < 0) {
                 *column = 4;
             }
-
-            audio_play_sound(19, 0.5f, 0.0f, 2.0f);
-            update_har(scene, player);
-
             break;
         case ACT_RIGHT:
             (*column)++;
             if(*column > 4) {
                 *column = 0;
             }
-
-            audio_play_sound(19, 0.5f, 0.0f, 2.0f);
-            update_har(scene, player);
-
             break;
         case ACT_UP:
             if(*row == 1) {
                 *row = 0;
             }
-
-            audio_play_sound(19, 0.5f, 0.0f, 2.0f);
-            update_har(scene, player);
             break;
         case ACT_DOWN:
             if(*row == 0) {
@@ -293,9 +285,6 @@ void handle_action(scene *scene, int player, int action) {
                     local->katana_down_count[player - 1] = 11;
                 }
             }
-
-            audio_play_sound(19, 0.5f, 0.0f, 2.0f);
-            update_har(scene, player);
             break;
         case ACT_KICK:
         case ACT_PUNCH:
@@ -399,6 +388,11 @@ void handle_action(scene *scene, int player, int action) {
                 }
             }
             break;
+    }
+
+    if(old_row != *row || old_column != *column) {
+        audio_play_sound(19, 0.5f, 0.0f, 2.0f);
+        update_har(scene, player);
     }
 
     if(local->page == PILOT_SELECT) {

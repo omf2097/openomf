@@ -80,34 +80,29 @@ static void textselector_render(component *c) {
 
 static int textselector_action(component *c, int action) {
     textselector *tb = widget_get_obj(c);
+    if(vector_size(&tb->options) <= 1) {
+        return 0;
+    }
+    int old_pos = *tb->pos;
+    float panning = 0.0f;
     if(action == ACT_KICK || action == ACT_PUNCH || action == ACT_RIGHT) {
-        if(vector_size(&tb->options) == 0) {
-            return 0;
-        }
+        panning = 0.5f;
         (*tb->pos)++;
         if(*tb->pos >= (int)vector_size(&tb->options)) {
             *tb->pos = 0;
         }
-        if(tb->toggle) {
-            tb->toggle(c, tb->userdata, *tb->pos);
-        }
-        audio_play_sound(20, 0.5f, 0.5f, 2.0f);
-        // reset ticks so text is bright
-        tb->ticks = 0;
-        tb->dir = 0;
-        return 0;
     } else if(action == ACT_LEFT) {
-        if(vector_size(&tb->options) == 0) {
-            return 0;
-        }
+        panning = -0.5f;
         (*tb->pos)--;
         if(*tb->pos < 0) {
             *tb->pos = vector_size(&tb->options) - 1;
         }
+    }
+    if(old_pos != *tb->pos) {
         if(tb->toggle) {
             tb->toggle(c, tb->userdata, *tb->pos);
         }
-        audio_play_sound(20, 0.5f, -0.5f, 2.0f);
+        audio_play_sound(20, 0.5f, panning, 2.0f);
         // reset ticks so text is bright
         tb->ticks = 0;
         tb->dir = 0;

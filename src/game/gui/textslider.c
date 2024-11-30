@@ -50,29 +50,23 @@ static void textslider_render(component *c) {
 
 static int textslider_action(component *c, int action) {
     textslider *tb = widget_get_obj(c);
+    int old_pos = *tb->pos;
+    float panning = 0.5f;
     if(action == ACT_KICK || action == ACT_PUNCH || action == ACT_RIGHT) {
         (*tb->pos)++;
         if(*tb->pos > tb->positions) {
             *tb->pos = tb->positions;
-        } else {
-            // Play menu sound
-            audio_play_sound(20, 0.5f, 0.5f, 2.0f);
         }
-        if(tb->slide) {
-            tb->slide(c, tb->userdata, *tb->pos);
-        }
-        // reset ticks so text is bright
-        tb->ticks = 0;
-        tb->dir = 0;
-        return 0;
     } else if(action == ACT_LEFT) {
+        panning = -panning;
         (*tb->pos)--;
         if(*tb->pos < 0) {
             *tb->pos = 0;
-        } else {
-            // Play menu sound
-            audio_play_sound(20, 0.5f, -0.5f, 2.0f);
         }
+    }
+    if(old_pos != *tb->pos) {
+        // Play menu sound
+        audio_play_sound(20, 0.5f, panning, 2.0f);
         if(tb->slide) {
             tb->slide(c, tb->userdata, *tb->pos);
         }
