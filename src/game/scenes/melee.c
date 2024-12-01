@@ -86,6 +86,7 @@ typedef struct {
     surface select_hilight;
 
     unsigned int ticks;
+    unsigned int tickbase[2];
 
     str vs_text;
     str wins_text_a;
@@ -137,12 +138,20 @@ void melee_free(scene *scene) {
     scene_set_userdata(scene, local);
 }
 
-static void set_cursor_colors(int offset, bool a_done, bool b_done) {
-    int base = 120;
+static int ticks_to_blinky(int ticks) {
+    float rate = ((float)ticks) / 25.0f;
+    int offset = roundf((cosf(rate) + 1.0f) * 64.0f);
+    return offset;
+}
 
-    vga_color red_cursor_color = {base + (a_done ? 64 : offset), 0, 0};
-    vga_color blue_cursor_color = {0, 0, base + (b_done ? 64 : offset)};
-    vga_color violet_cursor_color = {base + offset, 0, base + offset};
+static void set_cursor_colors(int a_ticks, int b_ticks, bool a_done, bool b_done) {
+    int base = 120;
+    int a_offset = ticks_to_blinky(a_ticks);
+    int b_offset = ticks_to_blinky(b_ticks);
+
+    vga_color red_cursor_color = {base + (a_done ? 64 : a_offset), 0, 0};
+    vga_color blue_cursor_color = {0, 0, base + (b_done ? 64 : b_offset)};
+    vga_color violet_cursor_color = {base + a_offset, 0, base + a_offset};
 
     vga_state_set_base_palette_index(RED_CURSOR_INDEX, &red_cursor_color);
     vga_state_set_base_palette_index(BLUE_CURSOR_INDEX, &blue_cursor_color);
@@ -201,10 +210,9 @@ void melee_tick(scene *scene, int paused) {
     }
 
     // Tick cursor colors
+    set_cursor_colors(local->ticks - local->tickbase[0], local->ticks - local->tickbase[1], CURSOR_A_DONE(local),
+                      CURSOR_B_DONE(local));
     local->ticks++;
-    double rate = ((double)local->ticks) / 25.0;
-    int num = round((sin(rate) + 1.0) * 64);
-    set_cursor_colors(num, CURSOR_A_DONE(local), CURSOR_B_DONE(local));
 }
 
 void refresh_pilot_stats(melee_local *local) {
@@ -241,6 +249,15 @@ void update_har(scene *scene, int player) {
     }
 }
 
+static void reset_cursor_blinky(melee_local *local, int player) {
+    if(CURSORS_MATCH(local) || player == 0) {
+        local->tickbase[0] = local->ticks;
+    }
+    if(CURSORS_MATCH(local) || player == 1) {
+        local->tickbase[1] = local->ticks;
+    }
+}
+
 void handle_action(scene *scene, int player, int action) {
     game_player *player1 = game_state_get_player(scene->gs, 0);
     game_player *player2 = game_state_get_player(scene->gs, 1);
@@ -262,22 +279,26 @@ void handle_action(scene *scene, int player, int action) {
             if(*column < 0) {
                 *column = 4;
             }
+            reset_cursor_blinky(local, player);
             break;
         case ACT_RIGHT:
             (*column)++;
             if(*column > 4) {
                 *column = 0;
             }
+            reset_cursor_blinky(local, player);
             break;
         case ACT_UP:
             if(*row == 1) {
                 *row = 0;
             }
+            reset_cursor_blinky(local, player);
             break;
         case ACT_DOWN:
             if(*row == 0) {
                 *row = 1;
             }
+            reset_cursor_blinky(local, player);
             // nova selection cheat
             if(*row == 1 && *column == 0) {
                 local->katana_down_count[player]++;
@@ -805,7 +826,7 @@ int melee_create(scene *scene) {
     component_layout(local->bar_endurance[1], 320 - 66 - local->bg_player_stats.w, 48, 20 * 4, 8);
 
     refresh_pilot_stats(local);
-    set_cursor_colors(0, false, false);
+    set_cursor_colors(0, 0, false, false);
 
     // initialize nova selection cheat
     memset(local->har_selected, 0, sizeof(local->har_selected));
