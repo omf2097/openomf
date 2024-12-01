@@ -8,19 +8,13 @@ void keyboard_free(controller *ctrl) {
     omf_free(k);
 }
 
-void keyboard_cmd(controller *ctrl, int action, ctrl_event **ev) {
-    keyboard *k = ctrl->data;
-    if(ctrl->repeat && action != ACT_KICK && action != ACT_PUNCH && action != ACT_ESC) {
-        controller_cmd(ctrl, action, ev);
-    } else if(!(k->last & action)) {
-        controller_cmd(ctrl, action, ev);
-    }
-    k->current |= action;
+static inline void keyboard_cmd(controller *ctrl, int action, ctrl_event **ev) {
+    controller_cmd(ctrl, action, ev);
 }
 
 int keyboard_poll(controller *ctrl, ctrl_event **ev) {
     keyboard *k = ctrl->data;
-    k->current = 0;
+    ctrl->current = 0;
     const unsigned char *state = SDL_GetKeyboardState(NULL);
     if(state[k->keys->jump_left]) {
         keyboard_cmd(ctrl, ACT_UP | ACT_LEFT, ev);
@@ -60,11 +54,11 @@ int keyboard_poll(controller *ctrl, ctrl_event **ev) {
         keyboard_cmd(ctrl, ACT_ESC, ev);
     }
 
-    if(k->current == 0) {
+    if(ctrl->current == 0) {
         keyboard_cmd(ctrl, ACT_STOP, ev);
     }
 
-    k->last = k->current;
+    ctrl->last = ctrl->current;
     return 0;
 }
 
@@ -82,7 +76,6 @@ int keyboard_binds_key(controller *ctrl, SDL_Event *event) {
 void keyboard_create(controller *ctrl, keyboard_keys *keys, int delay) {
     keyboard *k = omf_calloc(1, sizeof(keyboard));
     k->keys = keys;
-    k->last = 0;
     ctrl->data = k;
     ctrl->type = CTRL_TYPE_KEYBOARD;
     ctrl->poll_fun = &keyboard_poll;

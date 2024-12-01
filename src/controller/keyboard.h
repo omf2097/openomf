@@ -25,8 +25,6 @@ struct keyboard_keys_t {
 
 struct keyboard_t {
     keyboard_keys *keys;
-    int last;
-    int current;
 };
 
 void keyboard_create(controller *ctrl, keyboard_keys *keys, int delay);

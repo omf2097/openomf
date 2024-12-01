@@ -19,14 +19,8 @@ void joystick_free(controller *ctrl) {
     omf_free(k);
 }
 
-void joystick_cmd(controller *ctrl, int action, ctrl_event **ev) {
-    joystick *k = ctrl->data;
-    if(ctrl->repeat && action != ACT_KICK && action != ACT_PUNCH && action != ACT_ESC) {
-        controller_cmd(ctrl, action, ev);
-    } else if(!(k->last & action)) {
-        controller_cmd(ctrl, action, ev);
-    }
-    k->current |= action;
+static inline void joystick_cmd(controller *ctrl, int action, ctrl_event **ev) {
+    controller_cmd(ctrl, action, ev);
 }
 
 int joystick_count(void) {
@@ -87,7 +81,7 @@ int joystick_name_to_id(const char *name, int offset) {
 int joystick_poll(controller *ctrl, ctrl_event **ev) {
     joystick *k = ctrl->data;
 
-    k->current = 0;
+    ctrl->current = 0;
 
     Sint16 x_axis = SDL_GameControllerGetAxis(k->joy, k->keys->x_axis);
     Sint16 y_axis = SDL_GameControllerGetAxis(k->joy, k->keys->y_axis);
@@ -146,11 +140,11 @@ int joystick_poll(controller *ctrl, ctrl_event **ev) {
         joystick_cmd(ctrl, ACT_ESC, ev);
     }
 
-    if(k->current == 0) {
+    if(ctrl->current == 0) {
         joystick_cmd(ctrl, ACT_STOP, ev);
     }
 
-    k->last = k->current;
+    ctrl->last = ctrl->current;
     return 0;
 }
 
@@ -174,7 +168,6 @@ int joystick_create(controller *ctrl, int joystick_id) {
     k->keys->punch = SDL_CONTROLLER_BUTTON_A;
     k->keys->kick = SDL_CONTROLLER_BUTTON_B;
     k->keys->escape = SDL_CONTROLLER_BUTTON_START;
-    k->last = 0;
     k->rumble = 0;
     ctrl->data = k;
     ctrl->type = CTRL_TYPE_GAMEPAD;

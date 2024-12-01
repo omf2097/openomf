@@ -66,6 +66,8 @@ struct controller_t {
     int type;
     int rtt;
     int repeat;
+    int current;
+    int last;
 };
 
 void controller_init(controller *ctrl, game_state *gs);
