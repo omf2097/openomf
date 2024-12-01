@@ -49,6 +49,8 @@ void memreader_close(memreader *reader) {
 }
 
 int memread_buf(memreader *reader, char *buf, int len) {
+    assert(reader->buf != NULL);
+    assert(buf != NULL);
     if(reader->pos + len > reader->len) {
         return 0;
     }
