@@ -50,10 +50,6 @@ int keyboard_poll(controller *ctrl, ctrl_event **ev) {
         keyboard_cmd(ctrl, ACT_KICK, ev);
     }
 
-    if(state[k->keys->escape]) {
-        keyboard_cmd(ctrl, ACT_ESC, ev);
-    }
-
     if(ctrl->current == 0) {
         keyboard_cmd(ctrl, ACT_STOP, ev);
     }
@@ -67,7 +63,7 @@ int keyboard_binds_key(controller *ctrl, SDL_Event *event) {
     SDL_Scancode sc = event->key.keysym.scancode;
     if(sc == k->keys->jump_up || sc == k->keys->jump_right || sc == k->keys->walk_right ||
        sc == k->keys->duck_forward || sc == k->keys->duck || sc == k->keys->duck_back || sc == k->keys->walk_back ||
-       sc == k->keys->jump_left || sc == k->keys->kick || sc == k->keys->punch || sc == k->keys->escape) {
+       sc == k->keys->jump_left || sc == k->keys->kick || sc == k->keys->punch) {
         return 1;
     }
     return 0;
