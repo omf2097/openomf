@@ -79,6 +79,11 @@ int joystick_name_to_id(const char *name, int offset) {
 }
 
 static int internal_joystick_poll(joystick *k, controller *ctrl, ctrl_event **ev) {
+    if(!SDL_GameControllerGetAttached(k->joy)) {
+        controller_close(ctrl, ev);
+        return 0;
+    }
+
     Sint16 x_axis = SDL_GameControllerGetAxis(k->joy, k->keys->x_axis);
     Sint16 y_axis = SDL_GameControllerGetAxis(k->joy, k->keys->y_axis);
     int dpadup = SDL_GameControllerGetButton(k->joy, k->keys->dpad[0]);
