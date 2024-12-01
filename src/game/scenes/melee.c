@@ -174,7 +174,7 @@ void melee_tick(scene *scene, int paused) {
     if(i) {
         do {
             if(i->type == EVENT_TYPE_ACTION) {
-                handle_action(scene, 1, i->event_data.action);
+                handle_action(scene, 0, i->event_data.action);
             } else if(i->type == EVENT_TYPE_CLOSE) {
                 game_state_set_next(scene->gs, SCENE_MENU);
                 return;
@@ -185,7 +185,7 @@ void melee_tick(scene *scene, int paused) {
     if(i) {
         do {
             if(i->type == EVENT_TYPE_ACTION) {
-                handle_action(scene, 2, i->event_data.action);
+                handle_action(scene, 1, i->event_data.action);
             } else if(i->type == EVENT_TYPE_CLOSE) {
                 game_state_set_next(scene->gs, SCENE_MENU);
                 return;
@@ -230,7 +230,7 @@ void update_har(scene *scene, int player) {
             har = &local->har_player2;
         }
 
-        ani = &bk_get_info(scene->bk_data, 18 + CURSOR_INDEX(local, player - 1))->ani;
+        ani = &bk_get_info(scene->bk_data, 18 + CURSOR_INDEX(local, player))->ani;
         object_set_animation(har, ani);
         object_select_sprite(har, 0);
         object_set_repeat(har, 1);
@@ -245,9 +245,9 @@ void handle_action(scene *scene, int player, int action) {
     game_player *player1 = game_state_get_player(scene->gs, 0);
     game_player *player2 = game_state_get_player(scene->gs, 1);
     melee_local *local = scene_get_userdata(scene);
-    int *row = &local->cursor[player - 1].row;
-    int *column = &local->cursor[player - 1].column;
-    bool *done = &local->cursor[player - 1].done;
+    int *row = &local->cursor[player].row;
+    int *column = &local->cursor[player].column;
+    bool *done = &local->cursor[player].done;
 
     if(*done) {
         return;
@@ -280,9 +280,9 @@ void handle_action(scene *scene, int player, int action) {
             }
             // nova selection cheat
             if(*row == 1 && *column == 0) {
-                local->katana_down_count[player - 1]++;
-                if(local->katana_down_count[player - 1] > 11) {
-                    local->katana_down_count[player - 1] = 11;
+                local->katana_down_count[player]++;
+                if(local->katana_down_count[player] > 11) {
+                    local->katana_down_count[player] = 11;
                 }
             }
             break;
@@ -295,8 +295,8 @@ void handle_action(scene *scene, int player, int action) {
                 local->cursor[1].done = 0;
                 if(local->page == PILOT_SELECT) {
                     local->page = HAR_SELECT;
+                    update_har(scene, 0);
                     update_har(scene, 1);
-                    update_har(scene, 2);
                     local->pilot_id_a = CURSOR_INDEX(local, 0);
                     local->pilot_id_b = CURSOR_INDEX(local, 1);
 
@@ -405,7 +405,7 @@ void handle_action(scene *scene, int player, int action) {
 
     // nova selection cheat
     if(local->page == HAR_SELECT) {
-        local->har_selected[player - 1][5 * (*row) + *column] = 1;
+        local->har_selected[player][5 * (*row) + *column] = 1;
     }
 
     refresh_pilot_stats(local);
@@ -422,7 +422,7 @@ void melee_input_tick(scene *scene) {
     if(i) {
         do {
             if(i->type == EVENT_TYPE_ACTION) {
-                handle_action(scene, 1, i->event_data.action);
+                handle_action(scene, 0, i->event_data.action);
             } else if(i->type == EVENT_TYPE_CLOSE) {
                 game_state_set_next(scene->gs, SCENE_MENU);
             }
@@ -433,7 +433,7 @@ void melee_input_tick(scene *scene) {
     if(i) {
         do {
             if(i->type == EVENT_TYPE_ACTION) {
-                handle_action(scene, 2, i->event_data.action);
+                handle_action(scene, 1, i->event_data.action);
             } else if(i->type == EVENT_TYPE_CLOSE) {
                 game_state_set_next(scene->gs, SCENE_MENU);
             }
