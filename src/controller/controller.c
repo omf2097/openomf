@@ -74,9 +74,22 @@ static inline void ctrl_action_push(ctrl_event **ev, int action) {
 
 void controller_cmd(controller *ctrl, int action, ctrl_event **ev) {
     ctrl->current |= action;
-    if((ctrl->last & action) && (!ctrl->repeat || action == ACT_KICK || action == ACT_PUNCH || action == ACT_ESC)) {
-        return;
+    if((ctrl->last & action)) {
+        if(action & (ACT_KICK | ACT_PUNCH | ACT_ESC))
+            // never keyrepeat these actions
+            return;
+        else if(ctrl->repeat)
+            // keyrepeat is on for all other actions
+            ;
+        else if(ctrl->repeat_tick == 0 && (action & ACT_Mask_Dirs))
+            // we are keyrepeating a direction with a keyrepeat delay.
+            ;
+        else
+            // keyrepeat is off
+            return;
     }
+    if(action & ACT_Mask_Dirs)
+        ctrl->repeat_tick = 30;
 
     // fire any installed hooks
     iterator it;
@@ -98,6 +111,9 @@ void controller_close(controller *ctrl, ctrl_event **ev) {
 }
 
 int controller_tick(controller *ctrl, uint32_t ticks, ctrl_event **ev) {
+    if(ctrl->repeat_tick) {
+        ctrl->repeat_tick--;
+    }
     if(ctrl->tick_fun != NULL) {
         return ctrl->tick_fun(ctrl, ticks, ev);
     }
