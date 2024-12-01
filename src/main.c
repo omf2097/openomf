@@ -75,13 +75,15 @@ int main(int argc, char *argv[]) {
     struct arg_lit *vers = arg_lit0("v", "version", "print version information and exit");
     struct arg_lit *listen = arg_lit0("l", "listen", "Start a network game server");
     struct arg_str *connect = arg_str0("c", "connect", "<host>", "Connect to a remote game");
+    struct arg_str *force_audio_backend =
+        arg_str0(NULL, "force-audio-backend", "<force-audio-backend>", "Force an audio backend to use");
     struct arg_str *force_renderer = arg_str0(NULL, "force-renderer", "<force-renderer>", "Force a renderer to use");
     struct arg_str *trace = arg_str0("t", "trace", "<file>", "Trace netplay events to file");
     struct arg_int *port = arg_int0("p", "port", "<port>", "Port to connect or listen (default: 2097)");
     struct arg_file *play = arg_file0("P", "play", "<file>", "Play an existing recfile");
     struct arg_file *rec = arg_file0("R", "rec", "<file>", "Record a new recfile");
     struct arg_end *end = arg_end(30);
-    void *argtable[] = {help, vers, listen, connect, force_renderer, trace, port, play, rec, end};
+    void *argtable[] = {help, vers, listen, connect, force_audio_backend, force_renderer, trace, port, play, rec, end};
     const char *progname = "openomf";
 
     // Make sure everything got allocated
@@ -132,8 +134,13 @@ int main(int argc, char *argv[]) {
     } else if(rec->count > 0) {
         init_flags.record = 1;
         strncpy(init_flags.rec_file, rec->filename[0], 254);
-    } else if(force_renderer->count > 0) {
+    }
+    if(force_renderer->count > 0) {
         strncpy_or_truncate(init_flags.force_renderer, force_renderer->sval[0], sizeof(init_flags.force_renderer));
+    }
+    if(force_audio_backend->count > 0) {
+        strncpy_or_truncate(init_flags.force_audio_backend, force_audio_backend->sval[0],
+                            sizeof(init_flags.force_audio_backend));
     }
 
     if(port->count > 0) {
