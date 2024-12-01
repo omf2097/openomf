@@ -55,6 +55,23 @@ void controller_free(controller *ctrl) {
     ctrl->free_fun(ctrl);
 }
 
+static inline void ctrl_action_push(ctrl_event **ev, int action) {
+    ctrl_event *new = omf_calloc(1, sizeof(ctrl_event));
+
+    new->type = EVENT_TYPE_ACTION;
+    new->event_data.action = action;
+
+    if(*ev == NULL) {
+        *ev = new;
+    } else {
+        ctrl_event *i = *ev;
+        while(i->next) {
+            i = i->next;
+        }
+        i->next = new;
+    }
+}
+
 void controller_cmd(controller *ctrl, int action, ctrl_event **ev) {
     ctrl->current |= action;
     if((ctrl->last & action) && (!ctrl->repeat || action == ACT_KICK || action == ACT_PUNCH || action == ACT_ESC)) {
@@ -64,27 +81,12 @@ void controller_cmd(controller *ctrl, int action, ctrl_event **ev) {
     // fire any installed hooks
     iterator it;
     hook_function **p = 0;
-    ctrl_event *i;
-    ctrl_event *new;
-
     list_iter_begin(&ctrl->hooks, &it);
     while((p = iter_next(&it)) != NULL) {
         ((*p)->fp)((*p)->source, action);
     }
 
-    new = omf_calloc(1, sizeof(ctrl_event));
-    new->type = EVENT_TYPE_ACTION;
-    new->event_data.action = action;
-
-    if(*ev == NULL) {
-        *ev = new;
-    } else {
-        i = *ev;
-        while(i->next) {
-            i = i->next;
-        }
-        i->next = new;
-    }
+    ctrl_action_push(ev, action);
 }
 
 void controller_close(controller *ctrl, ctrl_event **ev) {

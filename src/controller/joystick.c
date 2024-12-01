@@ -198,3 +198,7 @@ int joystick_create(controller *ctrl, int joystick_id) {
     PERROR("Failed to open game controller: %s", SDL_GetError());
     return 0;
 }
+
+void joystick_menu_poll_all(controller *menu_ctrl, ctrl_event **ev) {
+    // TODO: Poll all detected joysticks for menu inputs
+}

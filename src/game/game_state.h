@@ -11,6 +11,7 @@
 typedef struct scene_t scene;
 typedef struct game_player_t game_player;
 typedef struct object_t object;
+typedef struct ctrl_event_t ctrl_event;
 
 int game_state_create(game_state *gs, engine_init_flags *init_flags);
 void game_state_free(game_state **gs);
@@ -42,6 +43,8 @@ void _setup_keyboard(game_state *gs, int player_id);
 void _setup_ai(game_state *gs, int player_id);
 int _setup_joystick(game_state *gs, int player_id, const char *joyname, int offset);
 void reconfigure_controller(game_state *gs);
+
+void game_state_menu_poll(game_state *gs, ctrl_event **ev);
 
 int game_state_rewind(game_state *gs, int rtt);
 void game_state_replay(game_state *gs, int rtt);

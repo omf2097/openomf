@@ -31,4 +31,6 @@ void keyboard_create(controller *ctrl, keyboard_keys *keys, int delay);
 void keyboard_free(controller *ctrl);
 int keyboard_binds_key(controller *ctrl, SDL_Event *event);
 
+void keyboard_menu_poll(controller *ctrl, ctrl_event **ev);
+
 #endif // KEYBOARD_H
