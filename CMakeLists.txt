@@ -75,6 +75,8 @@ if(MSVC)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /we4146")
     # C4245: signed const to unsigned
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /we4245")
+    # C4255: function declaration missing arguments
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /we4255")
     # C4305: truncation from double to float
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /we4305")
     # C4701: potentially uninitialized local variable used

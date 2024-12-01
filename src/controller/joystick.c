@@ -209,7 +209,7 @@ int joystick_create(controller *ctrl, int joystick_id) {
 
 static vector every_gamepad;
 
-void joystick_init() {
+void joystick_init(void) {
     int num_joysticks = SDL_NumJoysticks();
     vector_create_with_size(&every_gamepad, sizeof(SDL_GameController *), num_joysticks);
 
@@ -218,7 +218,7 @@ void joystick_init() {
     }
 }
 
-void joystick_close() {
+void joystick_close(void) {
     iterator it;
     vector_iter_begin(&every_gamepad, &it);
     SDL_GameController **gamepad;
