@@ -822,7 +822,6 @@ void _setup_keyboard(game_state *gs, int player_id) {
         keys->jump_left = SDL_GetScancodeFromName(k->key1_jump_left);
         keys->punch = SDL_GetScancodeFromName(k->key1_punch);
         keys->kick = SDL_GetScancodeFromName(k->key1_kick);
-        keys->escape = SDL_GetScancodeFromName(k->key1_escape);
     } else {
         keys->jump_up = SDL_GetScancodeFromName(k->key2_jump_up);
         keys->jump_right = SDL_GetScancodeFromName(k->key2_jump_right);
@@ -834,7 +833,6 @@ void _setup_keyboard(game_state *gs, int player_id) {
         keys->jump_left = SDL_GetScancodeFromName(k->key2_jump_left);
         keys->punch = SDL_GetScancodeFromName(k->key2_punch);
         keys->kick = SDL_GetScancodeFromName(k->key2_kick);
-        keys->escape = SDL_GetScancodeFromName(k->key2_escape);
     }
 
     keyboard_create(ctrl, keys, 0);

@@ -140,7 +140,6 @@ void menu_connect_tick(component *c) {
             keys->jump_left = SDL_GetScancodeFromName(k->key1_jump_left);
             keys->punch = SDL_GetScancodeFromName(k->key1_punch);
             keys->kick = SDL_GetScancodeFromName(k->key1_kick);
-            keys->escape = SDL_GetScancodeFromName(k->key1_escape);
             keyboard_create(player2_ctrl, keys, 0);
             game_player_set_ctrl(p2, player2_ctrl);
             game_player_set_selectable(p2, 1);

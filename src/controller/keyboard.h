@@ -20,7 +20,6 @@ struct keyboard_keys_t {
     unsigned jump_left;
     unsigned punch;
     unsigned kick;
-    unsigned escape;
 };
 
 struct keyboard_t {
