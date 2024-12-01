@@ -42,6 +42,8 @@ int engine_init(engine_init_flags *init_flags) {
     float sound_volume = setting->sound.sound_vol / 10.0;
     const char *player = setting->sound.player;
     const char *renderer = setting->video.renderer;
+    if(strlen(init_flags->force_audio_backend) > 0)
+        player = init_flags->force_audio_backend;
     if(strlen(init_flags->force_renderer) > 0)
         renderer = init_flags->force_renderer;
 
