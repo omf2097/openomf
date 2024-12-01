@@ -1082,14 +1082,18 @@ void arena_input_tick(scene *scene) {
     arena_handle_events(scene, player2, p2);
     controller_free_chain(p1);
     controller_free_chain(p2);
-}
 
-int arena_event(scene *scene, SDL_Event *e) {
-    // ESC during demo mode jumps you back to the main menu
-    if(e->type == SDL_KEYDOWN && is_demoplay(scene) && e->key.keysym.sym == SDLK_ESCAPE) {
-        game_state_set_next(scene->gs, SCENE_MENU);
+    if(is_demoplay(scene)) {
+        ctrl_event *p = NULL;
+        game_state_menu_poll(scene->gs, &p);
+        for(ctrl_event *i = p; i; i = i->next) {
+            if(i->type == EVENT_TYPE_ACTION && i->event_data.action == ACT_ESC) {
+                game_state_set_next(scene->gs, SCENE_MENU);
+                break;
+            }
+        }
+        controller_free_chain(p);
     }
-    return 0;
 }
 
 void arena_render_overlay(scene *scene) {
@@ -1517,7 +1521,6 @@ int arena_create(scene *scene) {
     }
 
     // Callbacks
-    scene_set_event_cb(scene, arena_event);
     scene_set_free_cb(scene, arena_free);
     scene_set_dynamic_tick_cb(scene, arena_dynamic_tick);
     scene_set_static_tick_cb(scene, arena_static_tick);
