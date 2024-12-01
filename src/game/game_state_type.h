@@ -32,6 +32,7 @@ enum
 typedef struct scene_t scene;
 typedef struct game_player_t game_player;
 typedef struct ticktimer_t ticktimer;
+typedef struct controller_t controller;
 
 typedef struct game_state_t {
     unsigned int run;
@@ -71,6 +72,8 @@ typedef struct game_state_t {
     fight_stats fight_stats;
     void *new_state;
     struct random_t rand;
+
+    controller *menu_ctrl;
 } game_state;
 
 #endif // GAME_STATE_TYPE_H

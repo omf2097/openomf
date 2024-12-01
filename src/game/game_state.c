@@ -86,6 +86,7 @@ int game_state_create(game_state *gs, engine_init_flags *init_flags) {
     gs->warp_speed = 0;
 
     gs->hide_ui = false;
+    gs->menu_ctrl = omf_calloc(1, sizeof(controller));
 
     // Set up players
     gs->sc = omf_calloc(1, sizeof(scene));
@@ -916,6 +917,15 @@ void game_state_init_demo(game_state *gs) {
     }
 }
 
+void game_state_menu_poll(game_state *gs, ctrl_event **ev) {
+    gs->menu_ctrl->last = gs->menu_ctrl->current;
+    gs->menu_ctrl->current = 0;
+    // poll keyboard
+    keyboard_menu_poll(gs->menu_ctrl, ev);
+    // poll joysticks
+    joystick_menu_poll_all(gs->menu_ctrl, ev);
+}
+
 void game_state_clone_free(game_state *gs) {
     // Free objects
     render_obj *robj;
@@ -966,6 +976,7 @@ void game_state_free(game_state **_gs) {
         game_player_free(gs->players[i]);
         omf_free(gs->players[i]);
     }
+    omf_free(gs->menu_ctrl);
     omf_free(gs);
 }
 
