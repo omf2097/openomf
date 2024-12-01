@@ -71,8 +71,7 @@ typedef struct {
     portrait pilot_portraits[10];
     portrait har_portraits[10];
 
-    object har_player1;
-    object har_player2;
+    object har[2];
 
     component *bar_power[2];
     component *bar_agility[2];
@@ -112,10 +111,8 @@ void melee_free(scene *scene) {
         component_free(local->bar_endurance[i]);
     }
 
-    object_free(&local->har_player1);
-    if(player2->selectable) {
-        object_free(&local->har_player2);
-    }
+    object_free(&local->har[0]);
+    object_free(&local->har[1]);
 
     for(int i = 0; i < 10; i++) {
         surface_free(&local->har_portraits[i].enabled);
@@ -203,9 +200,9 @@ void melee_tick(scene *scene, int paused) {
     }
 
     if(local->page == HAR_SELECT && local->ticks % 10 == 1) {
-        object_dynamic_tick(&local->har_player1);
+        object_dynamic_tick(&local->har[0]);
         if(player2->selectable) {
-            object_dynamic_tick(&local->har_player2);
+            object_dynamic_tick(&local->har[1]);
         }
     }
 
@@ -233,10 +230,7 @@ void update_har(scene *scene, int player) {
     if(local->page == HAR_SELECT) {
         game_player *player2 = game_state_get_player(scene->gs, 1);
         animation *ani;
-        object *har = &local->har_player1;
-        if(player == 2) {
-            har = &local->har_player2;
-        }
+        object *har = &local->har[player];
 
         ani = &bk_get_info(scene->bk_data, 18 + CURSOR_INDEX(local, player))->ani;
         object_set_animation(har, ani);
@@ -597,7 +591,7 @@ static void render_har_select(melee_local *local, bool player2_is_selectable) {
 
     // currently selected HAR
     render_enabled_portrait(local->har_portraits, &local->cursor[0], 0);
-    object_render(&local->har_player1);
+    object_render(&local->har[0]);
 
     text_settings tconf_green;
     text_defaults(&tconf_green);
@@ -627,7 +621,7 @@ static void render_har_select(melee_local *local, bool player2_is_selectable) {
 
         // currently selected HAR
         render_enabled_portrait(local->har_portraits, &local->cursor[1], 1);
-        object_render(&local->har_player2);
+        object_render(&local->har[1]);
 
         // render HAR name (Har1 VS. Har2)
         text_render(&tconf_black, TEXT_DEFAULT, 80, 107, 150, 6, str_c(&local->vs_text));
@@ -721,20 +715,20 @@ static void load_har_portraits(scene *scene, melee_local *local) {
 static void load_hars(scene *scene, melee_local *local, bool player2_is_selectable) {
     animation *ani;
     ani = &bk_get_info(scene->bk_data, 18)->ani;
-    object_create(&local->har_player1, scene->gs, vec2i_create(110, 95), vec2f_create(0, 0));
-    object_set_animation(&local->har_player1, ani);
-    object_select_sprite(&local->har_player1, 0);
-    object_set_repeat(&local->har_player1, 1);
+    object_create(&local->har[0], scene->gs, vec2i_create(110, 95), vec2f_create(0, 0));
+    object_set_animation(&local->har[0], ani);
+    object_select_sprite(&local->har[0], 0);
+    object_set_repeat(&local->har[0], 1);
 
     if(player2_is_selectable) {
         ani = &bk_get_info(scene->bk_data, 18 + 4)->ani;
-        object_create(&local->har_player2, scene->gs, vec2i_create(210, 95), vec2f_create(0, 0));
-        object_set_animation(&local->har_player2, ani);
-        object_select_sprite(&local->har_player2, 0);
-        object_set_repeat(&local->har_player2, 1);
-        object_set_direction(&local->har_player2, OBJECT_FACE_LEFT);
-        object_set_pal_offset(&local->har_player2, 48);
-        object_set_pal_limit(&local->har_player2, 96);
+        object_create(&local->har[1], scene->gs, vec2i_create(210, 95), vec2f_create(0, 0));
+        object_set_animation(&local->har[1], ani);
+        object_select_sprite(&local->har[1], 0);
+        object_set_repeat(&local->har[1], 1);
+        object_set_direction(&local->har[1], OBJECT_FACE_LEFT);
+        object_set_pal_offset(&local->har[1], 48);
+        object_set_pal_limit(&local->har[1], 96);
     }
 }
 
