@@ -56,6 +56,11 @@ void controller_free(controller *ctrl) {
 }
 
 void controller_cmd(controller *ctrl, int action, ctrl_event **ev) {
+    ctrl->current |= action;
+    if((ctrl->last & action) && (!ctrl->repeat || action == ACT_KICK || action == ACT_PUNCH || action == ACT_ESC)) {
+        return;
+    }
+
     // fire any installed hooks
     iterator it;
     hook_function **p = 0;

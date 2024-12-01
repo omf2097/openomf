@@ -18,8 +18,6 @@ typedef struct {
     SDL_Haptic *haptic;
     joystick_keys *keys;
     int rumble;
-    int last;
-    int current;
 } joystick;
 
 int joystick_create(controller *ctrl, int joystick_id);
