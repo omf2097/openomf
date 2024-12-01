@@ -10,10 +10,8 @@ typedef struct openomf_local_t {
 } openomf_local;
 
 void openomf_input_tick(scene *scene) {
-    game_player *player1 = game_state_get_player(scene->gs, 0);
-
     ctrl_event *p1 = NULL, *i;
-    controller_poll(player1->ctrl, &p1);
+    game_state_menu_poll(scene->gs, &p1);
 
     i = p1;
     if(i) {

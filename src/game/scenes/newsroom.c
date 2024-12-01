@@ -218,9 +218,11 @@ void newsroom_continue_dialog_clicked(dialog *dlg, dialog_result result) {
 void newsroom_input_tick(scene *scene) {
     newsroom_local *local = scene_get_userdata(scene);
 
-    game_player *player1 = game_state_get_player(scene->gs, 0);
+    game_player *p1 = game_state_get_player(scene->gs, 0);
+    game_player *p2 = game_state_get_player(scene->gs, 1);
+
     ctrl_event *event = NULL, *i;
-    controller_poll(player1->ctrl, &event);
+    game_state_menu_poll(scene->gs, &event);
     i = event;
     if(i) {
         do {
@@ -238,10 +240,8 @@ void newsroom_input_tick(scene *scene) {
                     }
 
                     if((local->screen >= 2 && !local->champion) || local->screen >= 3) {
-                        if(local->won || player1->chr) {
+                        if(local->won || p1->chr) {
                             // pick a new player
-                            game_player *p1 = game_state_get_player(scene->gs, 0);
-                            game_player *p2 = game_state_get_player(scene->gs, 1);
                             if(p1->chr) {
                                 // clear the opponent as a signal to display plug on the VS
                                 p2->pilot = NULL;

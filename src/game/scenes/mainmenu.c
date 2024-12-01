@@ -13,7 +13,6 @@
 
 typedef struct mainmenu_local_t {
     guiframe *frame;
-    int prev_key[2];
 } mainmenu_local;
 
 void mainmenu_free(scene *scene) {
@@ -33,30 +32,16 @@ void mainmenu_tick(scene *scene, int paused) {
 void mainmenu_input_tick(scene *scene) {
     mainmenu_local *local = scene_get_userdata(scene);
 
-    for(int i = 0; i < 2; i++) {
-        game_player *player = game_state_get_player(scene->gs, i);
-
-        // Poll the controller
-        ctrl_event *p = NULL, *orig_p = NULL;
-        controller_poll(player->ctrl, &orig_p);
-        p = orig_p;
-        if(p) {
-            do {
-                if(p->type == EVENT_TYPE_ACTION) {
-                    // Skip repeated keys
-                    if(local->prev_key[i] == p->event_data.action) {
-                        continue;
-                    }
-
-                    local->prev_key[i] = p->event_data.action;
-
-                    // Pass on the event
-                    guiframe_action(local->frame, p->event_data.action);
-                }
-            } while((p = p->next));
+    // Poll the controller
+    ctrl_event *ev = NULL, *p;
+    game_state_menu_poll(scene->gs, &ev);
+    for(p = ev; p; p = p->next) {
+        if(p->type == EVENT_TYPE_ACTION) {
+            // Pass on the event
+            guiframe_action(local->frame, p->event_data.action);
         }
-        controller_free_chain(orig_p);
     }
+    controller_free_chain(ev);
 }
 
 int mainmenu_event(scene *scene, SDL_Event *event) {
@@ -157,9 +142,6 @@ int mainmenu_create(scene *scene) {
 
     // clear it, so this only happens the first time
     scene->gs->net_mode = NET_MODE_NONE;
-
-    // prev_key is used to prevent multiple clicks while key is down
-    local->prev_key[0] = local->prev_key[1] = ACT_PUNCH;
 
     // Music and renderer
     audio_play_music(PSM_MENU);
