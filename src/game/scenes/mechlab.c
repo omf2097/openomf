@@ -412,7 +412,7 @@ void mechlab_input_tick(scene *scene) {
 
     // Poll the controller
     ctrl_event *p1 = NULL, *i;
-    controller_poll(player1->ctrl, &p1);
+    game_state_menu_poll(scene->gs, &p1);
     i = p1;
     if(i == NULL) {
         return;
