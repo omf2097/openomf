@@ -81,3 +81,35 @@ void keyboard_create(controller *ctrl, keyboard_keys *keys, int delay) {
     ctrl->poll_fun = &keyboard_poll;
     ctrl->free_fun = &keyboard_free;
 }
+
+void keyboard_menu_poll(controller *ctrl, ctrl_event **ev) {
+    const unsigned char *state = SDL_GetKeyboardState(NULL);
+
+    if(state[SDL_SCANCODE_LEFT] && state[SDL_SCANCODE_UP]) {
+        controller_cmd(ctrl, ACT_UP | ACT_LEFT, ev);
+    } else if(state[SDL_SCANCODE_LEFT] && state[SDL_SCANCODE_DOWN]) {
+        controller_cmd(ctrl, ACT_DOWN | ACT_LEFT, ev);
+    } else if(state[SDL_SCANCODE_RIGHT] && state[SDL_SCANCODE_UP]) {
+        controller_cmd(ctrl, ACT_UP | ACT_RIGHT, ev);
+    } else if(state[SDL_SCANCODE_RIGHT] && state[SDL_SCANCODE_DOWN]) {
+        controller_cmd(ctrl, ACT_DOWN | ACT_RIGHT, ev);
+    } else if(state[SDL_SCANCODE_RIGHT]) {
+        controller_cmd(ctrl, ACT_RIGHT, ev);
+    } else if(state[SDL_SCANCODE_LEFT]) {
+        controller_cmd(ctrl, ACT_LEFT, ev);
+    } else if(state[SDL_SCANCODE_UP]) {
+        controller_cmd(ctrl, ACT_UP, ev);
+    } else if(state[SDL_SCANCODE_DOWN]) {
+        controller_cmd(ctrl, ACT_DOWN, ev);
+    }
+
+    if(state[SDL_SCANCODE_RETURN]) {
+        controller_cmd(ctrl, ACT_PUNCH, ev);
+    } else if(state[SDL_SCANCODE_RSHIFT]) {
+        controller_cmd(ctrl, ACT_KICK, ev);
+    }
+
+    if(state[SDL_SCANCODE_ESCAPE]) {
+        controller_cmd(ctrl, ACT_ESC, ev);
+    }
+}
