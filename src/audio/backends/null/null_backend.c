@@ -67,7 +67,7 @@ static bool setup_backend_context(void *userdata, unsigned sample_rate, bool mon
 }
 
 static void close_backend_context(void *userdata) {
-    INFO("NULL Renderer closed!");
+    INFO("NULL Player closed!");
 }
 
 void null_audio_backend_set_callbacks(audio_backend *sdl_backend) {
