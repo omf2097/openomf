@@ -43,9 +43,6 @@ int is_key_bound(int key) {
     CHECK_KEY(k->key2_punch)
     CHECK_KEY(k->key2_kick)
 
-    CHECK_KEY(k->key1_escape)
-    CHECK_KEY(k->key2_escape)
-
     return 0;
 }
 

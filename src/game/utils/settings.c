@@ -121,7 +121,6 @@ const field f_keyboard[] = {
     F_STRING(settings_keyboard, key1_jump_left, "Home"),
     F_STRING(settings_keyboard, key1_kick, "Right Shift"),
     F_STRING(settings_keyboard, key1_punch, "Return"),
-    F_STRING(settings_keyboard, key1_escape, "Escape"),
 
     // Player two
     F_INT(settings_keyboard, ctrl_type2, CTRL_TYPE_KEYBOARD),
@@ -137,7 +136,7 @@ const field f_keyboard[] = {
     F_STRING(settings_keyboard, key2_jump_left, "Q"),
     F_STRING(settings_keyboard, key2_kick, "Left Shift"),
     F_STRING(settings_keyboard, key2_punch, "Left Ctrl"),
-    F_STRING(settings_keyboard, key2_escape, "Escape")};
+};
 
 const field f_net[] = {
     F_STRING(settings_network, net_connect_ip, "localhost"),
