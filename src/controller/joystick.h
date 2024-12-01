@@ -28,8 +28,8 @@ int joystick_nth_id(int n);
 int joystick_name_to_id(const char *name, int offset);
 int joystick_offset(int id, const char *name);
 
-void joystick_init();
-void joystick_close();
+void joystick_init(void);
+void joystick_close(void);
 void joystick_menu_poll_all(controller *menu_ctrl, ctrl_event **ev);
 void joystick_deviceadded(int sdl_joystick_index);
 void joystick_deviceremoved(int sdl_joystick_instance_id);
