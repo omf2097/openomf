@@ -109,11 +109,23 @@ int vector_delete_at(vector *vec, unsigned index) {
     }
 
     // We deleted an entry, so blocks-1
-    if(vec->blocks > 0) {
-        vec->blocks--;
-    }
+    vec->blocks--;
 
     // Return success
+    return 0;
+}
+
+int vector_swapdelete_at(vector *vec, unsigned index) {
+    if(vec->blocks == 0)
+        return 1;
+
+    unsigned last = vec->blocks - 1;
+    if(index != last) {
+        memcpy(vector_get(vec, index), vector_get(vec, last), vec->block_size);
+    }
+
+    vec->blocks--;
+
     return 0;
 }
 
