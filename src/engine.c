@@ -149,6 +149,8 @@ void engine_run(engine_init_flags *init_flags) {
         return;
     }
 
+    joystick_init();
+
     // Game loop
     uint64_t frame_start = SDL_GetTicks64(); // Set game tick timer
     int dynamic_wait = 0;
@@ -184,6 +186,12 @@ void engine_run(engine_init_flags *init_flags) {
                     if(e.key.keysym.sym == SDLK_F6) {
                         debugger_render = !debugger_render;
                     }
+                    break;
+                case SDL_JOYDEVICEADDED:
+                    joystick_deviceadded(e.jdevice.which);
+                    break;
+                case SDL_JOYDEVICEREMOVED:
+                    joystick_deviceremoved(e.jdevice.which);
                     break;
                 case SDL_MOUSEMOTION:
                     mouse_visible_ticks = 1000;
@@ -322,6 +330,8 @@ void engine_run(engine_init_flags *init_flags) {
             SDL_Delay(1);
         }
     }
+
+    joystick_close();
 
     // Free scene object
     game_state_free(&gs);
