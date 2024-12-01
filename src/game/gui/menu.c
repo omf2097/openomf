@@ -141,18 +141,21 @@ static int menu_action(component *mc, int action) {
         return component_action(m->submenu, action);
     }
 
-    // Select last item if ESC is pressed
-    if(m->selected == sizer_size(mc) - 1 && action == ACT_ESC) {
-        // If the last item is already selected, and ESC if punched, change the action to punch
-        // This is then passed to the quit (last) component and its callback is called
-        // Hacky, but works well in menu sizer.
-        m->finished = 1;
-        action = ACT_PUNCH;
-    } else if(action == ACT_ESC) {
-        // Select last item when ESC is pressed and it's not already selected.
+    if(action == ACT_ESC) {
+        bool was_last_selected = m->selected == sizer_size(mc) - 1;
+        // Select last item when ESC is pressed
         c = sizer_get(mc, sizer_size(mc) - 1);
         menu_select(mc, c);
-        return 0;
+
+        if((m->is_submenu || was_last_selected) && action == ACT_ESC) {
+            // If the last item is already selected, and ESC if punched, change the action to punch
+            // This is then passed to the quit (last) component and its callback is called
+            // Hacky, but works well in menu sizer.
+            m->finished = 1;
+            action = ACT_PUNCH;
+        } else {
+            return 0;
+        }
     }
 
     // Handle down/up selection movement
@@ -205,6 +208,8 @@ static int menu_action(component *mc, int action) {
 
 void menu_set_submenu(component *mc, component *submenu) {
     menu *m = sizer_get_obj(mc);
+    menu *subm = sizer_get_obj(submenu);
+    subm->is_submenu = true;
     if(m->submenu) {
         component_free(m->submenu);
     }
