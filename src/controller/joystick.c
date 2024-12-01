@@ -78,11 +78,7 @@ int joystick_name_to_id(const char *name, int offset) {
     return -1;
 }
 
-int joystick_poll(controller *ctrl, ctrl_event **ev) {
-    joystick *k = ctrl->data;
-
-    ctrl->current = 0;
-
+static int internal_joystick_poll(joystick *k, controller *ctrl, ctrl_event **ev) {
     Sint16 x_axis = SDL_GameControllerGetAxis(k->joy, k->keys->x_axis);
     Sint16 y_axis = SDL_GameControllerGetAxis(k->joy, k->keys->y_axis);
     int dpadup = SDL_GameControllerGetButton(k->joy, k->keys->dpad[0]);
@@ -144,8 +140,16 @@ int joystick_poll(controller *ctrl, ctrl_event **ev) {
         joystick_cmd(ctrl, ACT_STOP, ev);
     }
 
-    ctrl->last = ctrl->current;
     return 0;
+}
+
+int joystick_poll(controller *ctrl, ctrl_event **ev) {
+    joystick *k = ctrl->data;
+
+    ctrl->last = ctrl->current;
+    ctrl->current = 0;
+
+    return internal_joystick_poll(k, ctrl, ev);
 }
 
 int joystick_rumble(controller *ctrl, float magnitude, int duration) {
@@ -156,18 +160,22 @@ int joystick_rumble(controller *ctrl, float magnitude, int duration) {
     return 0;
 }
 
+static inline void internal_joystick_default_keys(joystick_keys *keys) {
+    keys->x_axis = SDL_CONTROLLER_AXIS_LEFTX;
+    keys->y_axis = SDL_CONTROLLER_AXIS_LEFTY;
+    keys->dpad[0] = SDL_CONTROLLER_BUTTON_DPAD_UP;
+    keys->dpad[1] = SDL_CONTROLLER_BUTTON_DPAD_DOWN;
+    keys->dpad[2] = SDL_CONTROLLER_BUTTON_DPAD_LEFT;
+    keys->dpad[3] = SDL_CONTROLLER_BUTTON_DPAD_RIGHT;
+    keys->punch = SDL_CONTROLLER_BUTTON_A;
+    keys->kick = SDL_CONTROLLER_BUTTON_B;
+    keys->escape = SDL_CONTROLLER_BUTTON_START;
+}
+
 int joystick_create(controller *ctrl, int joystick_id) {
     joystick *k = omf_calloc(1, sizeof(joystick));
     k->keys = omf_calloc(1, sizeof(joystick_keys));
-    k->keys->x_axis = SDL_CONTROLLER_AXIS_LEFTX;
-    k->keys->y_axis = SDL_CONTROLLER_AXIS_LEFTY;
-    k->keys->dpad[0] = SDL_CONTROLLER_BUTTON_DPAD_UP;
-    k->keys->dpad[1] = SDL_CONTROLLER_BUTTON_DPAD_DOWN;
-    k->keys->dpad[2] = SDL_CONTROLLER_BUTTON_DPAD_LEFT;
-    k->keys->dpad[3] = SDL_CONTROLLER_BUTTON_DPAD_RIGHT;
-    k->keys->punch = SDL_CONTROLLER_BUTTON_A;
-    k->keys->kick = SDL_CONTROLLER_BUTTON_B;
-    k->keys->escape = SDL_CONTROLLER_BUTTON_START;
+    internal_joystick_default_keys(k->keys);
     k->rumble = 0;
     ctrl->data = k;
     ctrl->type = CTRL_TYPE_GAMEPAD;
@@ -199,6 +207,62 @@ int joystick_create(controller *ctrl, int joystick_id) {
     return 0;
 }
 
+static vector every_gamepad;
+
+void joystick_init() {
+    int num_joysticks = SDL_NumJoysticks();
+    vector_create_with_size(&every_gamepad, sizeof(SDL_GameController *), num_joysticks);
+
+    for(int idx = 0; idx < num_joysticks; idx++) {
+        joystick_deviceadded(idx);
+    }
+}
+
+void joystick_close() {
+    iterator it;
+    vector_iter_begin(&every_gamepad, &it);
+    SDL_GameController **gamepad;
+    while((gamepad = iter_next(&it)) != NULL) {
+        SDL_GameControllerClose(*gamepad);
+    }
+    vector_free(&every_gamepad);
+}
+
 void joystick_menu_poll_all(controller *menu_ctrl, ctrl_event **ev) {
-    // TODO: Poll all detected joysticks for menu inputs
+    if(vector_size(&every_gamepad) == 0)
+        return;
+
+    joystick k;
+    memset(&k, 0, sizeof k);
+    joystick_keys keys;
+    internal_joystick_default_keys(&keys);
+    k.keys = &keys;
+
+    iterator it;
+    vector_iter_begin(&every_gamepad, &it);
+    SDL_GameController **gamepad;
+    while((gamepad = iter_next(&it)) != NULL) {
+        k.joy = *gamepad;
+        internal_joystick_poll(&k, menu_ctrl, ev);
+    }
+}
+
+void joystick_deviceadded(int sdl_joystick_index) {
+    SDL_GameController *gamepad = SDL_GameControllerOpen(sdl_joystick_index);
+    if(!gamepad)
+        return;
+    vector_append(&every_gamepad, &gamepad);
+}
+
+void joystick_deviceremoved(int sdl_joystick_instance_id) {
+    unsigned gamepad_count = vector_size(&every_gamepad);
+    for(unsigned idx = 0; idx < gamepad_count; idx++) {
+        SDL_GameController *gamepad = *(SDL_GameController **)vector_get(&every_gamepad, idx);
+        SDL_Joystick *joy = SDL_GameControllerGetJoystick(gamepad);
+        if(SDL_JoystickInstanceID(joy) == sdl_joystick_instance_id) {
+            SDL_GameControllerClose(gamepad);
+            vector_swapdelete_at(&every_gamepad, idx);
+            return;
+        }
+    }
 }

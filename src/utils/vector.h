@@ -23,6 +23,8 @@ int vector_prepend(vector *vector, const void *value);
 void vector_sort(vector *vector, vector_compare_func cf);
 unsigned int vector_size(const vector *vector);
 int vector_delete_at(vector *vec, unsigned index);
+// removes an element by swapping it with the last element before popping.
+int vector_swapdelete_at(vector *vec, unsigned index);
 int vector_delete(vector *vector, iterator *iterator);
 void vector_pop(vector *vector);
 void *vector_back(const vector *vector);
