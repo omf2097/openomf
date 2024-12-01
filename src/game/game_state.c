@@ -619,6 +619,7 @@ void game_state_call_move(game_state *gs) {
 }
 
 void game_state_tick_controllers(game_state *gs) {
+    controller_tick(gs->menu_ctrl, gs->int_tick, &gs->menu_ctrl->extra_events);
     for(int i = 0; i < game_state_num_players(gs); i++) {
         game_player *gp = game_state_get_player(gs, i);
         controller *c = game_player_get_ctrl(gp);

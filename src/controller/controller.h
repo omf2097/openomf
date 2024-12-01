@@ -16,7 +16,9 @@ enum
     ACT_DOWN = 0x10,
     ACT_LEFT = 0x20,
     ACT_ESC = 0x40,
-    ACT_RIGHT = 0x80
+    ACT_RIGHT = 0x80,
+
+    ACT_Mask_Dirs = (ACT_UP | ACT_DOWN | ACT_LEFT | ACT_RIGHT),
 };
 
 enum
@@ -66,6 +68,7 @@ struct controller_t {
     int type;
     int rtt;
     int repeat;
+    int repeat_tick;
     int current;
     int last;
 };
