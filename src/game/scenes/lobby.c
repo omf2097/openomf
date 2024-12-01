@@ -121,9 +121,8 @@ static int lobby_event(scene *scene, SDL_Event *e) {
 
 void lobby_input_tick(scene *scene) {
     lobby_local *local = scene_get_userdata(scene);
-    game_player *player1 = game_state_get_player(scene->gs, 0);
     ctrl_event *p1 = NULL, *i;
-    controller_poll(player1->ctrl, &p1);
+    game_state_menu_poll(scene->gs, &p1);
 
     i = p1;
     if(i) {

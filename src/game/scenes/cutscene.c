@@ -45,9 +45,9 @@ static int cutscene_next_scene(scene *scene) {
 static void cutscene_input_tick(scene *scene) {
     cutscene_local *local = scene_get_userdata(scene);
     game_player *player1 = game_state_get_player(scene->gs, 0);
-    ctrl_event *p1 = NULL, *i;
 
-    controller_poll(player1->ctrl, &p1);
+    ctrl_event *p1 = NULL, *i;
+    game_state_menu_poll(scene->gs, &p1);
 
     i = p1;
     if(i) {
