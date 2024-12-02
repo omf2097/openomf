@@ -95,8 +95,9 @@ void controller_cmd(controller *ctrl, int action, ctrl_event **ev) {
     iterator it;
     hook_function **p = 0;
     list_iter_begin(&ctrl->hooks, &it);
-    while((p = iter_next(&it)) != NULL) {
-        ((*p)->fp)((*p)->source, action);
+    while((p = iter_next(&it))) {
+        hook_function hook = **p;
+        (hook.fp)(hook.source, action);
     }
 
     ctrl_action_push(ev, action);

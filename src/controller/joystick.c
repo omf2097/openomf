@@ -238,7 +238,7 @@ void joystick_menu_poll_all(controller *menu_ctrl, ctrl_event **ev) {
         return;
 
     joystick k;
-    memset(&k, 0, sizeof k);
+    memset(&k, 0, sizeof(k));
     joystick_keys keys;
     internal_joystick_default_keys(&keys);
     k.keys = &keys;
