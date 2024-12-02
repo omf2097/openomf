@@ -554,8 +554,8 @@ static void render_har_select(melee_local *local, bool player2_is_selectable) {
 
     // render the stupid unselected HAR portraits before anything
     // so we can render anything else on top of them
+    object_render(&local->unselected_har_portraits);
     render_highlights(local, player2_is_selectable);
-    render_disabled_portraits(local->har_portraits);
 
     // currently selected player
     object_render(&local->big_portrait_1);
@@ -654,18 +654,10 @@ static void load_pilot_portraits(scene *scene, melee_local *local) {
 }
 
 static void load_har_portraits(scene *scene, melee_local *local) {
-    sprite *current;
     portrait *target;
     int row, col;
     animation *har_portraits = &bk_get_info(scene->bk_data, 1)->ani;
-    vga_palette *bk_pal = bk_get_palette(scene->bk_data, 0);
-
-    // Use a composite palette to help grayscale rendering
-    vga_palette pal;
-    palette_copy(&pal, bk_pal, 0, 255);
-    palette_load_altpal_player_color(&pal, 0, 16, 0);
-    palette_load_altpal_player_color(&pal, 0, 16, 1);
-    palette_load_altpal_player_color(&pal, 0, 16, 2);
+    sprite *sheet = animation_get_sprite(har_portraits, 0);
 
     for(int i = 0; i < 10; i++) {
         row = i / 5;
@@ -673,16 +665,17 @@ static void load_har_portraits(scene *scene, melee_local *local) {
         target = &local->har_portraits[i];
 
         // Copy the HAR image in full color (shown when selected)
-        current = animation_get_sprite(har_portraits, 0);
-        target->x = current->pos.x + 62 * col;
-        target->y = current->pos.y + 42 * row;
-        surface_create_from_surface(&target->enabled, 51, 36, 62 * col, 42 * row, current->data);
+        target->x = sheet->pos.x + 62 * col;
+        target->y = sheet->pos.y + 42 * row;
+        surface_create_from_surface(&target->enabled, 51, 36, 62 * col, 42 * row, sheet->data);
         surface_set_transparency(&target->enabled, 0xD0);
-
-        // Copy the enabled image, and compress the colors to grayscale
-        surface_create_from(&target->disabled, &target->enabled);
-        surface_convert_to_grayscale(&target->disabled, &pal, 0xD0, 0xDF, 0);
     }
+
+    // convert BK's sheet sprite to grayscale and use it for the unselected_har_portraits
+    surface_convert_har_to_grayscale(sheet->data, 8);
+    object_create_static(&local->unselected_har_portraits, scene->gs);
+    object_set_animation(&local->unselected_har_portraits, har_portraits);
+    object_select_sprite(&local->unselected_har_portraits, 0);
 }
 
 static void load_hars(scene *scene, melee_local *local, bool player2_is_selectable) {

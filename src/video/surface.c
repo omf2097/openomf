@@ -154,6 +154,17 @@ void surface_convert_to_grayscale(surface *sur, const vga_palette *pal, int rang
     sur->guid = guid++;
 }
 
+void surface_convert_har_to_grayscale(surface *sur, uint8_t brightness) {
+    uint8_t idx;
+    for(int i = 0; i < sur->w * sur->h; i++) {
+        idx = sur->data[i];
+        if(idx != sur->transparent && idx < 0x60) {
+            sur->data[i] = 0xD0 + brightness * (idx % 0x10) / 0x0F;
+        }
+    }
+    sur->guid = guid++;
+}
+
 void surface_compress_index_blocks(surface *sur, int range_start, int range_end, int block_size, int amount) {
     uint8_t idx, real_start, old_idx, new_idx;
     for(int i = 0; i < sur->w * sur->h; i++) {
