@@ -81,6 +81,16 @@ void surface_convert_to_grayscale(surface *sur, const vga_palette *pal, int rang
                                   int ignore_below);
 
 /**
+ * Convert surface's har colors to grayscale.
+ * Remaps blocks of 16 colors in the range 0x00..0x5F to 0xD0..=0xDF.
+ * Leaves other colors, and the transparent color alone.
+ *
+ * @param sur Surface to convert
+ * @param brightness How bright to make the result (range 0x0.=0xF)
+ */
+void surface_convert_har_to_grayscale(surface *sur, uint8_t brightness);
+
+/**
  * Write surface to a PNG file.
  *
  * @param sur Source surface
