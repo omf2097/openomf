@@ -65,6 +65,7 @@ typedef struct {
     object big_portrait_1;
     object big_portrait_2;
     object player2_placeholder;
+    object unselected_pilot_portraits;
     object unselected_har_portraits;
 
     portrait pilot_portraits[10];
@@ -123,6 +124,7 @@ void melee_free(scene *scene) {
     }
 
     object_free(&local->player2_placeholder);
+    object_free(&local->unselected_pilot_portraits);
     object_free(&local->unselected_har_portraits);
     object_free(&local->big_portrait_1);
     if(player2->selectable) {
@@ -145,6 +147,20 @@ static void set_cursor_colors(int offset, bool a_done, bool b_done) {
     vga_state_set_base_palette_index(RED_CURSOR_INDEX, &red_cursor_color);
     vga_state_set_base_palette_index(BLUE_CURSOR_INDEX, &blue_cursor_color);
     vga_state_set_base_palette_index(VIOLET_CURSOR_INDEX, &violet_cursor_color);
+}
+
+static void load_pilot_portraits_palette(scene *scene) {
+    vga_palette *bk_pal = bk_get_palette(scene->bk_data, 0);
+    // copy and dim for unselected pilot portraits
+    for(uint8_t idx = 0x01; idx < 0x60; idx++) {
+        uint8_t src_idx = idx + 0xA0;
+        vga_color src = bk_pal->colors[src_idx];
+        src.r /= 2;
+        src.g /= 2;
+        src.b /= 2;
+        bk_pal->colors[idx] = src;
+    }
+    vga_state_set_base_palette_from_range(bk_pal, 0x00, 0x00, 0x60);
 }
 
 void melee_tick(scene *scene, int paused) {
@@ -419,6 +435,7 @@ void melee_input_tick(scene *scene) {
                         local->cursor[1].row = local->pilot_id_b / 5;
                         local->cursor[1].done = 0;
                         local->page = PILOT_SELECT;
+                        load_pilot_portraits_palette(scene);
                     } else {
                         game_state_set_next(scene->gs, SCENE_MENU);
                     }
@@ -458,13 +475,6 @@ static void render_highlights(const melee_local *local, bool player2_is_selectab
             draw_highlight(local, &local->cursor[1], BLUE_CURSOR_INDEX);
         }
         draw_highlight(local, &local->cursor[0], RED_CURSOR_INDEX);
-    }
-}
-
-static void render_disabled_portraits(const portrait *portraits) {
-    for(int i = 0; i < 10; i++) {
-        const portrait *p = &portraits[i];
-        video_draw_offset(&p->disabled, p->x, p->y, p->disabled_offset, 255);
     }
 }
 
@@ -539,8 +549,8 @@ static void render_pilot_select(melee_local *local, bool player2_is_selectable) 
     // player 1 name
     text_render(&tconf_black, TEXT_DEFAULT, 0, 52, 66, 6, lang_get(20 + current_a));
 
+    object_render(&local->unselected_pilot_portraits);
     render_highlights(local, player2_is_selectable);
-    render_disabled_portraits(local->pilot_portraits);
     render_enabled_portrait(local->pilot_portraits, &local->cursor[0], -1);
     object_render(&local->big_portrait_1);
     if(player2_is_selectable) {
@@ -651,6 +661,11 @@ static void load_pilot_portraits(scene *scene, melee_local *local) {
         surface_compress_index_blocks(&target->disabled, 0xE0, 0xF0, 8, 2);
         surface_compress_remap(&target->disabled, 0xF0, 0xF7, 0xB6, 3);
     }
+
+    animation *har_portraits = &bk_get_info(scene->bk_data, 0)->ani;
+    object_create_static(&local->unselected_pilot_portraits, scene->gs);
+    object_set_animation(&local->unselected_pilot_portraits, har_portraits);
+    object_select_sprite(&local->unselected_pilot_portraits, 0);
 }
 
 static void load_har_portraits(scene *scene, melee_local *local) {
@@ -742,6 +757,7 @@ int melee_create(scene *scene) {
 
     // Load HAR and Pilot face portraits and har sprites for the selection grid
     load_pilot_portraits(scene, local);
+    load_pilot_portraits_palette(scene);
     load_har_portraits(scene, local);
     load_hars(scene, local, player2->selectable);
 
