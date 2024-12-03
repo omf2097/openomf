@@ -271,6 +271,7 @@ void console_close(void) {
     surface_free(&con->background2);
     list_free(&con->history);
     hashmap_free(&con->cmds);
+    str_free(&con->input);
     omf_free(con);
 }
 
