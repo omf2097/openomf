@@ -2,6 +2,7 @@
 #define CONSOLE_TYPE_H
 
 #include "game/protos/scene.h"
+#include "utils/str.h"
 #include <SDL.h>
 #include <stdbool.h>
 
@@ -15,7 +16,7 @@ typedef struct console {
     unsigned int output_tail;
     unsigned int output_pos;
     int output_overflowing;
-    char input[41];
+    str input;
     surface background1;
     surface background2;
     bool is_open;
@@ -31,5 +32,7 @@ typedef struct command {
 
 // Console State
 extern console *con;
+
+#define CONSOLE_LINE_MAX 41
 
 #endif // CONSOLE_TYPE_H
