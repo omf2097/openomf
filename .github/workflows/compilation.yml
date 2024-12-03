@@ -148,8 +148,8 @@ jobs:
   build_ubuntu:
     needs: [unittest]
 
-    name: Build ubuntu-latest
-    runs-on: ubuntu-latest
+    name: Build ubuntu-24.04
+    runs-on: ubuntu-24.04
 
     steps:
     - uses: actions/checkout@v4
@@ -290,7 +290,7 @@ jobs:
     needs: [unittest]
 
     name: Check MinGW-w64 cross
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
     - uses: actions/checkout@v4
@@ -327,7 +327,7 @@ jobs:
     if: github.ref == 'refs/heads/master'
 
     name: Make "latest" release
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
     - uses: actions/checkout@v4
