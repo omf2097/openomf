@@ -3,6 +3,7 @@
 #include "game/gui/menu_background.h"
 #include "game/utils/settings.h"
 #include "utils/allocator.h"
+#include "utils/c_string_util.h"
 #include "utils/log.h"
 #include "video/video.h"
 #include <stdio.h>
@@ -68,17 +69,18 @@ void console_add_history(const char *input, unsigned int len) {
 }
 
 void console_handle_line(game_state *gs) {
-    if(con->input[0] == '\0') {
+    str_strip(&con->input);
+    if(str_size(&con->input) == 0) {
         console_output_addline(">");
     } else {
-        char input_copy[sizeof(con->input)];
-        memcpy(input_copy, con->input, sizeof(con->input));
-        int argc = make_argv(con->input, NULL);
+        char input_copy[CONSOLE_LINE_MAX];
+        strncpy_or_truncate(input_copy, str_c(&con->input), sizeof(input_copy));
+        int argc = make_argv(input_copy, NULL);
         if(argc > 0) {
             char **argv = omf_calloc(argc, sizeof(char *));
             void *val = 0;
             unsigned int len;
-            make_argv(con->input, argv);
+            make_argv(input_copy, argv);
             if(!hashmap_sget(&con->cmds, argv[0], &val, &len)) {
                 command *cmd = val;
                 int err = cmd->func(gs, argc, argv);
@@ -216,7 +218,7 @@ bool console_init(void) {
     con->is_open = false;
     con->owns_input = false;
     con->y_pos = 0;
-    con->input[0] = '\0';
+    str_create(&con->input);
     con->output[0] = '\0';
     con->output_head = 0;
     con->output_tail = 0;
@@ -271,18 +273,18 @@ void console_close(void) {
 
 void console_event(game_state *gs, SDL_Event *e) {
     if(e->type == SDL_TEXTINPUT) {
-        size_t len = strlen(con->input);
+        size_t len = str_size(&con->input);
         if(strlen(e->text.text) == 1) {
             // make sure it is not a unicode sequence
-            unsigned char c = e->text.text[0];
+            char c = e->text.text[0];
             // only allow ASCII through
-            if(isprint(c) && len < sizeof(con->input) - 1) {
-                con->input[len + 1] = '\0';
-                con->input[len] = tolower(c);
+            if(isprint(c) && len < CONSOLE_LINE_MAX - 1) {
+                c = tolower(c);
+                str_append_buf(&con->input, &c, 1);
             }
         }
     } else if(e->type == SDL_KEYDOWN) {
-        size_t len = strlen(con->input);
+        size_t len = str_size(&con->input);
         unsigned char scancode = e->key.keysym.scancode;
         /*if ((code >= SDLK_a && code <= SDLK_z) || (code >= SDLK_0 && code <= SDLK_9) || code == SDLK_SPACE || code ==
          * SDLK) {*/
@@ -303,12 +305,12 @@ void console_event(game_state *gs, SDL_Event *e) {
             // TODO move cursor to the right
         } else if(scancode == SDL_SCANCODE_BACKSPACE || scancode == SDL_SCANCODE_DELETE) {
             if(len > 0) {
-                con->input[len - 1] = '\0';
+                str_truncate(&con->input, len - 1);
             }
         } else if(scancode == SDL_SCANCODE_RETURN || scancode == SDL_SCANCODE_KP_ENTER) {
             // send the input somewhere and clear the input line
             console_handle_line(gs);
-            con->input[0] = '\0';
+            str_truncate(&con->input, 0);
         } else if(scancode == SDL_SCANCODE_PAGEUP) {
             console_output_scroll_up(1);
         } else if(scancode == SDL_SCANCODE_PAGEDOWN) {
@@ -320,12 +322,13 @@ void console_event(game_state *gs, SDL_Event *e) {
 void console_render(void) {
     if(con->y_pos > 0) {
         if(con->hist_pos != -1 && con->hist_pos_changed) {
-            char *input = list_get(&con->history, con->hist_pos);
-            memcpy(con->input, input, sizeof(con->input));
+            const char *input = list_get(&con->history, con->hist_pos);
+            str_free(&con->input);
+            str_from_c(&con->input, input);
             con->hist_pos_changed = 0;
         }
         if(con->hist_pos == -1 && con->hist_pos_changed) {
-            con->input[0] = '\0';
+            str_truncate(&con->input, 0);
             con->hist_pos_changed = 0;
         }
         video_draw_remap(&con->background1, -1, con->y_pos - 101, 4, 1, 0);
@@ -335,11 +338,11 @@ void console_render(void) {
         tconf.font = FONT_SMALL;
         // input line
         tconf.cforeground = TEXT_MEDIUM_GREEN;
-        text_render(&tconf, TEXT_DEFAULT, 0, con->y_pos - 7, 300, 6, con->input);
+        text_render_str(&tconf, TEXT_DEFAULT, 0, con->y_pos - 7, 300, 6, &con->input);
 
         // cursor
         tconf.cforeground = TEXT_BLINKY_GREEN;
-        text_render(&tconf, TEXT_DEFAULT, strlen(con->input) * font_small.w, con->y_pos - 7, 6, 6, CURSOR_STR);
+        text_render(&tconf, TEXT_DEFAULT, str_size(&con->input) * font_small.w, con->y_pos - 7, 6, 6, CURSOR_STR);
         console_output_render();
     }
 }
@@ -356,10 +359,13 @@ static size_t get_stdin_line(char *line, size_t size) {
 }
 
 void console_tick(game_state *gs) {
-    if(get_stdin_line(con->input, sizeof(con->input)) > 0) {
-        DEBUG("Console line from stdin: %s", con->input, strlen(con->input));
+    char buf[CONSOLE_LINE_MAX];
+    if(get_stdin_line(buf, sizeof(buf)) > 0) {
+        str_free(&con->input);
+        str_from_c(&con->input, buf);
+        DEBUG("Console line from stdin: %s", str_c(&con->input));
         console_handle_line(gs);
-        con->input[0] = '\0';
+        str_truncate(&con->input, 0);
     }
     if(con->is_open && con->y_pos < 100) {
         con->y_pos += 4;
