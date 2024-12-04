@@ -175,6 +175,7 @@ void lab_dash_sim_init(component *menu, component *submenu) {
     dashboard_widgets *dw = trnmenu_get_userdata(submenu);
     game_player *p1 = game_state_get_player(dw->scene->gs, 0);
     dw->sim_rank = p1->pilot->rank;
+    mechlab_hide_mech(dw->scene);
 }
 
 void lab_dash_sim_done(component *menu, component *submenu) {
