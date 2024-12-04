@@ -1,0 +1,5 @@
+# libconfuse
+leak:libconfuse
+
+# SDL leak
+leak:has_gl_available
