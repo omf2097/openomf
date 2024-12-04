@@ -8,19 +8,13 @@ void keyboard_free(controller *ctrl) {
     omf_free(k);
 }
 
-void keyboard_cmd(controller *ctrl, int action, ctrl_event **ev) {
-    keyboard *k = ctrl->data;
-    if(ctrl->repeat && action != ACT_KICK && action != ACT_PUNCH && action != ACT_ESC) {
-        controller_cmd(ctrl, action, ev);
-    } else if(!(k->last & action)) {
-        controller_cmd(ctrl, action, ev);
-    }
-    k->current |= action;
+static inline void keyboard_cmd(controller *ctrl, int action, ctrl_event **ev) {
+    controller_cmd(ctrl, action, ev);
 }
 
 int keyboard_poll(controller *ctrl, ctrl_event **ev) {
     keyboard *k = ctrl->data;
-    k->current = 0;
+    ctrl->current = 0;
     const unsigned char *state = SDL_GetKeyboardState(NULL);
     if(state[k->keys->jump_left]) {
         keyboard_cmd(ctrl, ACT_UP | ACT_LEFT, ev);
@@ -56,15 +50,11 @@ int keyboard_poll(controller *ctrl, ctrl_event **ev) {
         keyboard_cmd(ctrl, ACT_KICK, ev);
     }
 
-    if(state[k->keys->escape]) {
-        keyboard_cmd(ctrl, ACT_ESC, ev);
-    }
-
-    if(k->current == 0) {
+    if(ctrl->current == 0) {
         keyboard_cmd(ctrl, ACT_STOP, ev);
     }
 
-    k->last = k->current;
+    ctrl->last = ctrl->current;
     return 0;
 }
 
@@ -73,7 +63,7 @@ int keyboard_binds_key(controller *ctrl, SDL_Event *event) {
     SDL_Scancode sc = event->key.keysym.scancode;
     if(sc == k->keys->jump_up || sc == k->keys->jump_right || sc == k->keys->walk_right ||
        sc == k->keys->duck_forward || sc == k->keys->duck || sc == k->keys->duck_back || sc == k->keys->walk_back ||
-       sc == k->keys->jump_left || sc == k->keys->kick || sc == k->keys->punch || sc == k->keys->escape) {
+       sc == k->keys->jump_left || sc == k->keys->kick || sc == k->keys->punch) {
         return 1;
     }
     return 0;
@@ -82,9 +72,35 @@ int keyboard_binds_key(controller *ctrl, SDL_Event *event) {
 void keyboard_create(controller *ctrl, keyboard_keys *keys, int delay) {
     keyboard *k = omf_calloc(1, sizeof(keyboard));
     k->keys = keys;
-    k->last = 0;
     ctrl->data = k;
     ctrl->type = CTRL_TYPE_KEYBOARD;
     ctrl->poll_fun = &keyboard_poll;
     ctrl->free_fun = &keyboard_free;
+}
+
+void keyboard_menu_poll(controller *ctrl, ctrl_event **ev) {
+    const unsigned char *state = SDL_GetKeyboardState(NULL);
+
+    if(state[SDL_SCANCODE_RIGHT] || state[SDL_SCANCODE_KP_6]) {
+        controller_cmd(ctrl, ACT_RIGHT, ev);
+    }
+    if(state[SDL_SCANCODE_LEFT] || state[SDL_SCANCODE_KP_4]) {
+        controller_cmd(ctrl, ACT_LEFT, ev);
+    }
+    if(state[SDL_SCANCODE_UP] || state[SDL_SCANCODE_KP_8]) {
+        controller_cmd(ctrl, ACT_UP, ev);
+    }
+    if(state[SDL_SCANCODE_DOWN] || state[SDL_SCANCODE_KP_2]) {
+        controller_cmd(ctrl, ACT_DOWN, ev);
+    }
+    if(state[SDL_SCANCODE_RETURN] || state[SDL_SCANCODE_KP_ENTER]) {
+        controller_cmd(ctrl, ACT_PUNCH, ev);
+    }
+    if(state[SDL_SCANCODE_RSHIFT] || state[SDL_SCANCODE_KP_0]) {
+        controller_cmd(ctrl, ACT_KICK, ev);
+    }
+
+    if(state[SDL_SCANCODE_ESCAPE]) {
+        controller_cmd(ctrl, ACT_ESC, ev);
+    }
 }

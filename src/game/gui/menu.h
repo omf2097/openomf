@@ -19,10 +19,11 @@ typedef struct {
     int obj_h;
     int margin_top;
     int padding;
-    int finished;
+    bool finished;
     bool horizontal;
     bool background;
     bool centered;
+    bool is_submenu;
 
     int help_x;
     int help_y;
