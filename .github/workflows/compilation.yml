@@ -55,6 +55,35 @@ jobs:
         cd build-test
         ctest --verbose --output-on-failure
 
+    - name: Restore omf2097-assets.zip
+      id: cache-assets
+      uses: actions/cache/restore@v4
+      with:
+        path: omf2097-assets.zip
+        key: omf2097-assets.zip
+
+    - name: Download omf 2097 assets
+      if: steps.cache-assets.outputs.cache-hit != 'true'
+      run: wget -q "${{ env.OPENOMF_ASSETS_URL }}"
+
+    - name: Cache omf2097-assets.zip
+      if: steps.cache-assets.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v4
+      with:
+        path: omf2097-assets.zip
+        key: omf2097-assets.zip
+
+    - name: Extract omf 2097 assets
+      run: unzip -j omf2097-assets.zip -d build-test/resources
+
+    - name: Install pytest requirements
+      run: |
+        pipx install poetry
+        poetry install
+
+    - name: Run pytest tests
+      run: ./run_pytest.sh build-test ./Debug/openomf
+
   # Build windows release artifacts with MSVC
   # -----------------------------------------------------------------------------------------------
   build_msvc:
