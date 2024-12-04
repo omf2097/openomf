@@ -17,3 +17,5 @@ cmake-build-debug/
 cmake-build-release/
 .cache
 compile_commands.json
+__pycache__
+*.pyc
