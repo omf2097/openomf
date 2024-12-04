@@ -409,6 +409,11 @@ void vs_too_pathetic_dialog_clicked(dialog *dlg, dialog_result result) {
 }
 
 int vs_create(scene *scene) {
+    // Initialize Demo
+    if(is_demoplay(scene->gs)) {
+        game_state_init_demo(scene->gs);
+    }
+
     // Init local data
     vs_local *local = omf_calloc(1, sizeof(vs_local));
     scene_set_userdata(scene, local);
@@ -635,7 +640,7 @@ int vs_create(scene *scene) {
     }
 
     // Background tex
-    menu_background2_create(&local->arena_select_bg, 211, 50);
+    menu_background_create(&local->arena_select_bg, 211, 50, MenuBackgroundMeleeVs);
 
     // Quit Dialog
     dialog_create(&local->quit_dialog, DIALOG_STYLE_YES_NO, "Are you sure you want to quit this game?", 72, 60);

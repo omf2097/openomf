@@ -731,8 +731,8 @@ int melee_create(scene *scene) {
     palette_set_player_color(0, 8, 1);
     palette_set_player_color(0, 8, 2);
 
-    menu_background2_create(&local->bg_player_stats, 90, 61);
-    menu_background2_create(&local->bg_player_bio, 160, 43);
+    menu_background_create(&local->bg_player_stats, 90, 61, MenuBackgroundMeleeVs);
+    menu_background_create(&local->bg_player_bio, 160, 43, MenuBackgroundMeleeVs);
 
     // Create a black surface for the highlight box. We modify the palette in renderer.
     unsigned char *black = omf_calloc(1, 51 * 36);

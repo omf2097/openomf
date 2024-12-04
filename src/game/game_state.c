@@ -320,6 +320,20 @@ void game_state_set_paused(game_state *gs, unsigned int paused) {
 
 // Return 0 if event was handled here
 int game_state_handle_event(game_state *gs, SDL_Event *event) {
+    if(event->type == SDL_KEYDOWN && is_demoplay(gs) && event->key.keysym.sym == SDLK_ESCAPE) {
+        // ESC during demo mode jumps you back to the main menu
+        game_state_set_next(gs, SCENE_MENU);
+        return 0;
+    } else if(event->type == SDL_KEYDOWN && is_demoplay(gs) && event->key.keysym.sym == SDLK_RETURN) {
+        // ENTER during demo mode skips menus
+        if(gs->sc->id < SCENE_ARENA0 || gs->sc->id > SCENE_ARENA4) {
+            if(gs->sc->id != SCENE_VS) {
+                game_state_init_demo(gs);
+            }
+            game_state_set_next(gs, rand_arena());
+            return 0;
+        }
+    }
     if(scene_event(gs->sc, event) == 0) {
         return 0;
     }
@@ -882,11 +896,11 @@ void game_state_init_demo(game_state *gs) {
         sd_pilot *pl = game_player_get_pilot(player);
         ai_controller_create(ctrl, 4, pl, player->pilot->pilot_id);
         game_player_set_ctrl(player, ctrl);
-        game_player_set_selectable(player, 1);
+        game_player_set_selectable(player, 0);
 
         // select random pilot and har
-        player->pilot->pilot_id = rand_int(10);
-        player->pilot->har_id = rand_int(11);
+        player->pilot->pilot_id = rand_int(NUMBER_OF_PLAYABLE_PILOT_TYPES);
+        player->pilot->har_id = rand_int(NUMBER_OF_HAR_TYPES);
         chr_score_reset(&player->score, 1);
 
         // set proper color
@@ -1021,4 +1035,26 @@ int game_state_clone(game_state *src, game_state *dst) {
     scene_clone(src->sc, dst->sc, dst);
 
     return 0;
+}
+
+bool is_netplay(game_state *gs) {
+    return game_state_get_player(gs, 0)->ctrl->type == CTRL_TYPE_NETWORK ||
+           game_state_get_player(gs, 1)->ctrl->type == CTRL_TYPE_NETWORK;
+}
+
+bool is_singleplayer(game_state *gs) {
+    return game_state_get_player(gs, 1)->ctrl->type == CTRL_TYPE_AI;
+}
+
+bool is_tournament(game_state *gs) {
+    return game_state_get_player(gs, 0)->chr;
+}
+
+bool is_demoplay(game_state *gs) {
+    return game_state_get_player(gs, 0)->ctrl->type == CTRL_TYPE_AI &&
+           game_state_get_player(gs, 1)->ctrl->type == CTRL_TYPE_AI;
+}
+
+bool is_twoplayer(game_state *gs) {
+    return !is_demoplay(gs) && !is_netplay(gs) && !is_singleplayer(gs);
 }
