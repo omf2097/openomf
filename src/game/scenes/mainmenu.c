@@ -145,6 +145,9 @@ int mainmenu_create(scene *scene) {
     } else if(scene->gs->net_mode == NET_MODE_SERVER) {
         component_action(guiframe_find(local->frame, NETWORK_BUTTON_ID), ACT_PUNCH);
         component_action(guiframe_find(local->frame, NETWORK_LISTEN_BUTTON_ID), ACT_PUNCH);
+    } else if(scene->gs->net_mode == NET_MODE_LOBBY) {
+        component_action(guiframe_find(local->frame, NETWORK_BUTTON_ID), ACT_PUNCH);
+        component_action(guiframe_find(local->frame, NETWORK_LOBBY_BUTTON_ID), ACT_PUNCH);
     }
 
     // clear it, so this only happens the first time
