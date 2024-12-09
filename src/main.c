@@ -74,6 +74,7 @@ int main(int argc, char *argv[]) {
     struct arg_lit *help = arg_lit0("h", "help", "print this help and exit");
     struct arg_lit *vers = arg_lit0("v", "version", "print version information and exit");
     struct arg_lit *listen = arg_lit0("l", "listen", "Start a network game server");
+    struct arg_lit *lobby = arg_lit0(NULL, "lobby", "Enter network game lobby");
     struct arg_str *connect = arg_str0("c", "connect", "<host>", "Connect to a remote game");
     struct arg_str *force_audio_backend =
         arg_str0(NULL, "force-audio-backend", "<force-audio-backend>", "Force an audio backend to use");
@@ -83,7 +84,8 @@ int main(int argc, char *argv[]) {
     struct arg_file *play = arg_file0("P", "play", "<file>", "Play an existing recfile");
     struct arg_file *rec = arg_file0("R", "rec", "<file>", "Record a new recfile");
     struct arg_end *end = arg_end(30);
-    void *argtable[] = {help, vers, listen, connect, force_audio_backend, force_renderer, trace, port, play, rec, end};
+    void *argtable[] = {help,           vers,  listen, lobby, connect, force_audio_backend,
+                        force_renderer, trace, port,   play,  rec,     end};
     const char *progname = "openomf";
 
     // Make sure everything got allocated
@@ -129,6 +131,8 @@ int main(int argc, char *argv[]) {
     } else if(listen->count > 0) {
         init_flags.net_mode = NET_MODE_SERVER;
         listen_port = 2097;
+    } else if(lobby->count > 0) {
+        init_flags.net_mode = NET_MODE_LOBBY;
     } else if(play->count > 0) {
         strncpy(init_flags.rec_file, play->filename[0], 254);
     } else if(rec->count > 0) {
