@@ -64,7 +64,7 @@ int sd_vga_image_decode(sd_rgba_image *dst, const sd_vga_image *src, const vga_p
 int sd_vga_image_from_png(sd_vga_image *img, const char *filename) {
     png_structp png_ptr;
     png_infop info_ptr;
-    int ret = SD_SUCCESS;
+    volatile int ret = SD_SUCCESS;
     int got = 0;
     png_bytep *row_pointers;
 
@@ -95,7 +95,7 @@ int sd_vga_image_from_png(sd_vga_image *img, const char *filename) {
     info_ptr = png_create_info_struct(png_ptr);
     if(!info_ptr) {
         ret = SD_OUT_OF_MEMORY;
-        goto error_2;
+        goto error_1;
     }
 
     if(setjmp(png_jmpbuf(png_ptr))) {
@@ -154,7 +154,7 @@ error_3:
     }
     omf_free(row_pointers);
 error_2:
-    png_destroy_read_struct(&png_ptr, NULL, NULL);
+    png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
 error_1:
     fclose(handle);
 error_0:
