@@ -6,6 +6,7 @@
 #include "formats/error.h"
 #include "formats/sprite.h"
 #include "utils/allocator.h"
+#include "utils/c_string_util.h"
 #include "utils/log.h"
 
 int sd_animation_create(sd_animation *ani) {
@@ -64,7 +65,7 @@ int sd_animation_set_anim_string(sd_animation *ani, const char *str) {
     if(strlen(str) >= SD_ANIMATION_STRING_MAX) {
         return SD_INVALID_INPUT;
     }
-    strncpy(ani->anim_string, str, sizeof(ani->anim_string));
+    strncpy_or_truncate(ani->anim_string, str, sizeof(ani->anim_string));
     return SD_SUCCESS;
 }
 
