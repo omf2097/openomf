@@ -16,6 +16,7 @@
 #include "resources/pathmanager.h"
 #include "resources/trnmanager.h"
 #include "utils/allocator.h"
+#include "utils/c_string_util.h"
 #include "utils/log.h"
 
 int sd_chr_create(sd_chr_file *chr) {
@@ -41,9 +42,9 @@ int sd_chr_from_trn(sd_chr_file *chr, sd_tournament_file *trn, sd_pilot *pilot) 
     chr->pilot.enemies_inc_unranked = trn->enemy_count;
     chr->pilot.enemies_ex_unranked = ranked;
     chr->pilot.rank = ranked + 1;
-    strncpy(chr->pilot.trn_name, trn->filename, sizeof(chr->pilot.trn_name));
-    strncpy(chr->pilot.trn_desc, trn->locales[0]->title, sizeof(chr->pilot.trn_desc));
-    strncpy(chr->pilot.trn_image, trn->pic_file, sizeof(chr->pilot.trn_image));
+    strncpy_or_truncate(chr->pilot.trn_name, trn->filename, sizeof(chr->pilot.trn_name));
+    strncpy_or_truncate(chr->pilot.trn_desc, trn->locales[0]->title, sizeof(chr->pilot.trn_desc));
+    strncpy_or_truncate(chr->pilot.trn_image, trn->pic_file, sizeof(chr->pilot.trn_image));
     chr->photo = omf_calloc(1, sizeof(sd_sprite));
     sd_sprite_copy(chr->photo, pilot->photo);
     return SD_SUCCESS;
@@ -95,9 +96,7 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
     if(trn_loaded) {
         for(int i = 0; i < 10; i++) {
             if(trn.locales[0]->end_texts[0][i]) {
-                chr->cutscene_text[i] = omf_calloc(1, strlen(trn.locales[0]->end_texts[0][i]) + 1);
-                strncpy(chr->cutscene_text[i], trn.locales[0]->end_texts[0][i],
-                        strlen(trn.locales[0]->end_texts[0][i]));
+                chr->cutscene_text[i] = omf_strdup(trn.locales[0]->end_texts[0][i]);
             }
         }
         // TODO do something better here
@@ -180,8 +179,7 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
         memread_buf(mr, chr->enemies[i]->unknown, 25);
         for(int m = 0; m < 10; m++) {
             if(trn_loaded && trn.enemies[i]->quotes[m]) {
-                chr->enemies[i]->pilot.quotes[m] = omf_calloc(1, strlen(trn.enemies[i]->quotes[m]) + 1);
-                strncpy(chr->enemies[i]->pilot.quotes[m], trn.enemies[i]->quotes[m], strlen(trn.enemies[i]->quotes[m]));
+                chr->enemies[i]->pilot.quotes[m] = omf_strdup(trn.enemies[i]->quotes[m]);
             }
         }
     }

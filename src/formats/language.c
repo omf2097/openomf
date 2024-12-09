@@ -115,7 +115,7 @@ void sd_language_append(sd_language *language, const char *description, const ch
     language->count++;
 
     language->strings = omf_realloc(language->strings, language->count * sizeof(sd_lang_string));
-    strncpy(language->strings[language->count - 1].description, description, 32);
+    strncpy_or_truncate(language->strings[language->count - 1].description, description, 32);
     language->strings[language->count - 1].data = omf_strdup(data);
 }
 

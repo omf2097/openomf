@@ -10,6 +10,7 @@
 #include "game/utils/settings.h"
 #include "resources/scores.h"
 #include "utils/allocator.h"
+#include "utils/c_string_util.h"
 #include "utils/log.h"
 #include "video/surface.h"
 #include "video/vga_state.h"
@@ -41,7 +42,7 @@ void handle_scoreboard_save(scoreboard_local *local) {
     if(!strlen(name)) {
         return;
     }
-    strncpy(local->pending_data.name, name, sizeof(local->pending_data.name));
+    strncpy_or_truncate(local->pending_data.name, name, sizeof(local->pending_data.name));
     for(int i = 0; i < 20; i++) {
         unsigned int ex_score = local->data.entries[local->page][i].score;
         unsigned int my_score = local->pending_data.score;

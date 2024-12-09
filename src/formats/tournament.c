@@ -8,6 +8,7 @@
 #include "formats/tournament.h"
 #include "resources/pathmanager.h"
 #include "utils/allocator.h"
+#include "utils/c_string_util.h"
 
 int sd_tournament_create(sd_tournament_file *trn) {
     if(trn == NULL) {
@@ -94,9 +95,9 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
 
     char *justfile = strrchr(filename, pm_path_sep);
     if(justfile == NULL) {
-        strncpy(trn->filename, filename, sizeof(trn->filename));
+        strncpy_or_truncate(trn->filename, filename, sizeof(trn->filename));
     } else {
-        strncpy(trn->filename, justfile + 1, sizeof(trn->filename));
+        strncpy_or_truncate(trn->filename, justfile + 1, sizeof(trn->filename));
     }
     trn->enemy_count = enemy_count;
 
