@@ -5,6 +5,7 @@
 #include "formats/bkanim.h"
 #include "formats/error.h"
 #include "utils/allocator.h"
+#include "utils/c_string_util.h"
 #include "utils/log.h"
 
 int sd_bk_anim_create(sd_bk_anim *bka) {
@@ -153,6 +154,6 @@ int sd_bk_set_anim_string(sd_bk_anim *bka, const char *data) {
     if(strlen(data) >= SD_BK_FOOTER_STRING_MAX - 1) {
         return SD_INVALID_INPUT;
     }
-    strncpy(bka->footer_string, data, sizeof(bka->footer_string));
+    strncpy_or_truncate(bka->footer_string, data, sizeof(bka->footer_string));
     return SD_SUCCESS;
 }

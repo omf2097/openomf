@@ -5,6 +5,7 @@
 #include "formats/error.h"
 #include "formats/move.h"
 #include "utils/allocator.h"
+#include "utils/c_string_util.h"
 #include "utils/log.h"
 
 int sd_move_create(sd_move *move) {
@@ -208,7 +209,7 @@ int sd_move_set_footer_string(sd_move *move, const char *str) {
     if(strlen(str) >= SD_MOVE_FOOTER_STRING_MAX - 1) {
         return SD_INVALID_INPUT;
     }
-    strncpy(move->footer_string, str, sizeof(move->footer_string));
+    strncpy_or_truncate(move->footer_string, str, sizeof(move->footer_string));
     return SD_SUCCESS;
 }
 
@@ -216,6 +217,6 @@ int sd_move_set_move_string(sd_move *move, const char *str) {
     if(strlen(str) >= SD_MOVE_STRING_MAX - 1) {
         return SD_INVALID_INPUT;
     }
-    strncpy(move->move_string, str, sizeof(move->move_string));
+    strncpy_or_truncate(move->move_string, str, sizeof(move->move_string));
     return SD_SUCCESS;
 }

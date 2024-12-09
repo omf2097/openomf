@@ -565,7 +565,7 @@ void lobby_entered_name(component *c, void *userdata) {
             DEBUG("remote peer connect id %d", event.peer->connectID);
 
             event.peer->data = nat;
-            strncpy(local->name, textinput_value(c), sizeof(local->name));
+            strncpy_or_truncate(local->name, textinput_value(c), sizeof(local->name));
 
             char version[15];
             // TODO support git version when not on a tag
@@ -901,13 +901,13 @@ void lobby_tick(scene *scene, int paused) {
                     case PACKET_YELL: {
                         log_event log;
                         log.color = YELL_COLOR;
-                        strncpy(log.msg, (char *)event.packet->data + 1, sizeof(log.msg));
+                        strncpy_or_truncate(log.msg, (char *)event.packet->data + 1, sizeof(log.msg));
                         list_append(&local->log, &log, sizeof(log));
                     } break;
                     case PACKET_WHISPER: {
                         log_event log;
                         log.color = WHISPER_COLOR;
-                        strncpy(log.msg, (char *)event.packet->data + 1, sizeof(log.msg));
+                        strncpy_or_truncate(log.msg, (char *)event.packet->data + 1, sizeof(log.msg));
                         list_append(&local->log, &log, sizeof(log));
                     } break;
                     case PACKET_DISCONNECT: {
