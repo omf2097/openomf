@@ -84,6 +84,41 @@ jobs:
     - name: Run pytest tests
       run: ./run_pytest.sh build-test ./Debug/openomf
 
+  # Run unittests on gcc build
+  # -----------------------------------------------------------------------------------------------
+  unittest_gcc:
+    needs: [unittest]
+    name: Unittests on gcc
+    runs-on: ubuntu-24.04
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install dependencies
+      uses: Eeems-Org/apt-cache-action@v1.3
+      with:
+        packages: ninja-build libargtable2-dev libcunit1-dev libsdl2-mixer-dev
+          libconfuse-dev libenet-dev libsdl2-dev libxmp-dev libpng-dev
+          libepoxy-dev gcc
+
+    - name: Build openomf
+      run: |
+        mkdir build-test
+        cd build-test
+        cmake -DCMAKE_BUILD_TYPE=Release \
+              -DCMAKE_C_FLAGS_RELEASE="-Werror" \
+              -DUSE_TESTS=On \
+              -DUSE_SANITIZERS=On \
+              -DUSE_FATAL_SANITIZERS=On \
+              -DUSE_TOOLS=On \
+              ..
+        make -j $(getconf _NPROCESSORS_ONLN)
+
+    - name: Run tests
+      run: |
+        cd build-test
+        ctest --verbose --output-on-failure
+
   # Build windows release artifacts with MSVC
   # -----------------------------------------------------------------------------------------------
   build_msvc:
