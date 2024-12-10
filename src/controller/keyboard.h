@@ -20,17 +20,16 @@ struct keyboard_keys_t {
     unsigned jump_left;
     unsigned punch;
     unsigned kick;
-    unsigned escape;
 };
 
 struct keyboard_t {
     keyboard_keys *keys;
-    int last;
-    int current;
 };
 
 void keyboard_create(controller *ctrl, keyboard_keys *keys, int delay);
 void keyboard_free(controller *ctrl);
 int keyboard_binds_key(controller *ctrl, SDL_Event *event);
+
+void keyboard_menu_poll(controller *ctrl, ctrl_event **ev);
 
 #endif // KEYBOARD_H

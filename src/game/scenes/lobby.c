@@ -121,9 +121,8 @@ static int lobby_event(scene *scene, SDL_Event *e) {
 
 void lobby_input_tick(scene *scene) {
     lobby_local *local = scene_get_userdata(scene);
-    game_player *player1 = game_state_get_player(scene->gs, 0);
     ctrl_event *p1 = NULL, *i;
-    controller_poll(player1->ctrl, &p1);
+    game_state_menu_poll(scene->gs, &p1);
 
     i = p1;
     if(i) {
@@ -762,7 +761,6 @@ void lobby_tick(scene *scene, int paused) {
                     keys->jump_left = SDL_GetScancodeFromName(k->key1_jump_left);
                     keys->punch = SDL_GetScancodeFromName(k->key1_punch);
                     keys->kick = SDL_GetScancodeFromName(k->key1_kick);
-                    keys->escape = SDL_GetScancodeFromName(k->key1_escape);
                     keyboard_create(player1_ctrl, keys, 0);
                     game_player_set_ctrl(p1, player1_ctrl);
 
@@ -881,7 +879,6 @@ void lobby_tick(scene *scene, int paused) {
                             keys->jump_left = SDL_GetScancodeFromName(k->key1_jump_left);
                             keys->punch = SDL_GetScancodeFromName(k->key1_punch);
                             keys->kick = SDL_GetScancodeFromName(k->key1_kick);
-                            keys->escape = SDL_GetScancodeFromName(k->key1_escape);
                             keyboard_create(player2_ctrl, keys, 0);
                             game_player_set_ctrl(p2, player2_ctrl);
                             game_player_set_selectable(p2, 1);

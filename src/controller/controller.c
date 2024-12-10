@@ -55,31 +55,52 @@ void controller_free(controller *ctrl) {
     ctrl->free_fun(ctrl);
 }
 
-void controller_cmd(controller *ctrl, int action, ctrl_event **ev) {
-    // fire any installed hooks
-    iterator it;
-    hook_function **p = 0;
-    ctrl_event *i;
-    ctrl_event *new;
+static inline void ctrl_action_push(ctrl_event **ev, int action) {
+    ctrl_event *new = omf_calloc(1, sizeof(ctrl_event));
 
-    list_iter_begin(&ctrl->hooks, &it);
-    while((p = iter_next(&it)) != NULL) {
-        ((*p)->fp)((*p)->source, action);
-    }
-
-    new = omf_calloc(1, sizeof(ctrl_event));
     new->type = EVENT_TYPE_ACTION;
     new->event_data.action = action;
 
     if(*ev == NULL) {
         *ev = new;
     } else {
-        i = *ev;
+        ctrl_event *i = *ev;
         while(i->next) {
             i = i->next;
         }
         i->next = new;
     }
+}
+
+void controller_cmd(controller *ctrl, int action, ctrl_event **ev) {
+    ctrl->current |= action;
+    if((ctrl->last & action)) {
+        if(action & (ACT_KICK | ACT_PUNCH | ACT_ESC))
+            // never keyrepeat these actions
+            return;
+        else if(ctrl->repeat)
+            // keyrepeat is on for all other actions
+            ;
+        else if(ctrl->repeat_tick == 0 && (action & ACT_Mask_Dirs))
+            // we are keyrepeating a direction with a keyrepeat delay.
+            ;
+        else
+            // keyrepeat is off
+            return;
+    }
+    if(action & ACT_Mask_Dirs)
+        ctrl->repeat_tick = 30;
+
+    // fire any installed hooks
+    iterator it;
+    hook_function **p = 0;
+    list_iter_begin(&ctrl->hooks, &it);
+    while((p = iter_next(&it))) {
+        hook_function hook = **p;
+        (hook.fp)(hook.source, action);
+    }
+
+    ctrl_action_push(ev, action);
 }
 
 void controller_close(controller *ctrl, ctrl_event **ev) {
@@ -91,6 +112,9 @@ void controller_close(controller *ctrl, ctrl_event **ev) {
 }
 
 int controller_tick(controller *ctrl, uint32_t ticks, ctrl_event **ev) {
+    if(ctrl->repeat_tick) {
+        ctrl->repeat_tick--;
+    }
     if(ctrl->tick_fun != NULL) {
         return ctrl->tick_fun(ctrl, ticks, ev);
     }
