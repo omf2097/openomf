@@ -1,6 +1,7 @@
 #ifndef LANGUAGES_H
 #define LANGUAGES_H
 
+#include "resources/generated_languages.h"
 #include <stdbool.h>
 
 /*
@@ -39,9 +40,7 @@ enum
     LANG2_STR_COUNT
 };
 
-// Gets an OMF 2097 localization string
+// Gets a localization string
 const char *lang_get(unsigned int id);
-// Gets an openomf localization string
-const char *lang_get2(unsigned int id);
 
 #endif // LANGUAGES_H
