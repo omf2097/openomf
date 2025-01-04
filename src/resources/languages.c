@@ -7,6 +7,7 @@
 #include "utils/c_array_util.h"
 #include "utils/log.h"
 #include "utils/str.h"
+#include <assert.h>
 #include <string.h>
 
 static sd_language *language;
@@ -61,10 +62,16 @@ void lang_close(void) {
     omf_free(language);
 }
 
-const char *lang_get(unsigned int id) {
-    if(id > language->count || !language->strings[id].data) {
-        PERROR("unsupported lang id %u!", id);
-        return "!INVALID!";
-    }
+const char *lang_get(int id) {
+    assert(id >= 0);
+    assert(id < Lang_Count);
     return language->strings[id].data;
+}
+
+const char *lang_get_offset_impl(int id, int last, int offset) {
+    assert(id >= 0);
+    assert(last >= id);
+    assert(last < Lang_Count);
+    assert(id + offset <= last);
+    return lang_get(id + offset);
 }
