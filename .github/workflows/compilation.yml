@@ -25,6 +25,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        submodules: true
 
     - name: Install dependencies
       uses: Eeems-Org/apt-cache-action@v1.3
@@ -111,6 +113,8 @@ jobs:
           core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
           core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
     - uses: actions/checkout@v4
+      with:
+        submodules: true
     - name: Check out VCPKG
       # must be checked out *after* openomf.git
       uses: actions/checkout@v4
@@ -186,6 +190,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        submodules: true
 
     - name: Install Ubuntu Dependencies
       uses: Eeems-Org/apt-cache-action@v1.3
@@ -269,6 +275,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        submodules: true
 
     - name: Install Mac Dependencies
       run: |
@@ -332,6 +340,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        # mingw does not build languages
+        submodules: false
 
     - name: Install apt Dependencies
       uses: Eeems-Org/apt-cache-action@v1.3
