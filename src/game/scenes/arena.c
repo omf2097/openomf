@@ -32,6 +32,7 @@
 #include "resources/languages.h"
 #include "resources/sgmanager.h"
 #include "utils/allocator.h"
+#include "utils/c_string_util.h"
 #include "utils/log.h"
 #include "utils/random.h"
 #include "video/video.h"
@@ -1538,9 +1539,7 @@ int arena_create(scene *scene) {
             local->rec->pilots[i].info.color_1 = player->pilot->color_1;
             local->rec->pilots[i].info.color_2 = player->pilot->color_2;
             local->rec->pilots[i].info.color_3 = player->pilot->color_3;
-            // XXX ugly strncpy, implicit truncation, no nul termination guarantee, why are we even copying the pilot's
-            // name in here?
-            strncpy(local->rec->pilots[i].info.name, lang_get_offset(LangPilot, player->pilot->pilot_id), 18);
+            strncpy_or_assert(local->rec->pilots[i].info.name, lang_get_offset(LangPilot, player->pilot->pilot_id), 18);
         }
         local->rec->arena_id = scene->id - SCENE_ARENA0;
     } else {

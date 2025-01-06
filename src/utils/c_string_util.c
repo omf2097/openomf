@@ -10,6 +10,14 @@ char *strncpy_or_truncate(char *dest, const char *src, size_t n) {
     return ret;
 }
 
+char *strncpy_or_assert(char *dest, const char *src, size_t n) {
+    char *ret = strncpy(dest, src, n);
+    assert(ret[n - 1] == '\0' || !"truncating in strncpy!");
+    if(n > 0)
+        dest[n - 1] = '\0';
+    return ret;
+}
+
 char *omf_strdup_real(char const *s, char const *file, int line) {
     assert(s != NULL);
     size_t valid_range = strlen(s) + 1;
