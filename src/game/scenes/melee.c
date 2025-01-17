@@ -554,7 +554,7 @@ static void render_pilot_select(melee_local *local, bool player2_is_selectable) 
     render_enabled_portrait(local->pilot_portraits, &local->cursor[0], -1);
     object_render(&local->big_portrait_1);
     if(player2_is_selectable) {
-        render_enabled_portrait(local->pilot_portraits, &local->cursor[0], -1);
+        render_enabled_portrait(local->pilot_portraits, &local->cursor[1], -1);
         object_render(&local->big_portrait_2);
     }
 }
