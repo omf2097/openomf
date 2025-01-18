@@ -10,7 +10,7 @@ on:
     types: [run_build]
 
 env:
-  OPENOMF_VERSION: '0.6.6'
+  OPENOMF_VERSION: '0.7.0'
   OPENOMF_ASSETS_URL: 'https://www.omf2097.com/pub/files/omf/omf2097-assets.zip'
 
 jobs:
