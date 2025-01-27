@@ -130,6 +130,9 @@ void cb_vs_destroy_object(object *parent, int id, void *userdata) {
 void vs_free(scene *scene) {
     vs_local *local = scene_get_userdata(scene);
 
+    // null out the p2 pilot
+    game_state_get_player(scene->gs, 1)->pilot = NULL;
+
     dialog_free(&local->quit_dialog);
     dialog_free(&local->too_pathetic_dialog);
     surface_free(&local->arena_select_bg);
@@ -194,8 +197,6 @@ void vs_handle_action(scene *scene, int action) {
                     dialog_show(&local->quit_dialog, 1);
                 } else {
                     if(player1->chr) {
-                        // null out the  p2 pilot
-                        game_state_get_player(scene->gs, 1)->pilot = NULL;
                         game_state_set_next(scene->gs, SCENE_MECHLAB);
                     } else {
                         game_state_set_next(scene->gs, SCENE_MELEE);
