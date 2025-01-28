@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <string.h>
 
 #include "audio/audio.h"
 #include "audio/backends/audio_backend.h"

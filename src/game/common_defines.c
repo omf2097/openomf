@@ -3,6 +3,7 @@
 #include "utils/c_array_util.h"
 #include "utils/random.h"
 #include <stddef.h>
+#include <string.h>
 
 const char *ai_difficulty_names[] = {
     "PUNCHING BAG", "ROOKIE", "VETERAN", "WORLD CLASS", "CHAMPION", "DEADLY", "ULTIMATE",

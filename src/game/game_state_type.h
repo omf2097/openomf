@@ -1,6 +1,8 @@
 #ifndef GAME_STATE_TYPE_H
 #define GAME_STATE_TYPE_H
 
+#include <stdbool.h>
+
 #include "engine.h"
 #include "game/protos/fight_stats.h"
 #include "utils/random.h"

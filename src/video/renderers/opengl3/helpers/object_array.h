@@ -2,6 +2,7 @@
 #define OBJECT_ARRAY_H
 
 #include "video/enums.h"
+#include <epoxy/gl.h>
 
 typedef struct object_array object_array;
 
