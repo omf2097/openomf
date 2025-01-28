@@ -288,7 +288,7 @@ static bool setup_backend_context(void *userdata, unsigned sample_rate, bool mon
     INFO(" * Format: %s", get_sdl_audio_format_string(AUDIO_S16SYS));
 
     // Setup audio. We request for configuration, but we're not sure what we get.
-    if(Mix_OpenAudio(sample_rate, AUDIO_S16SYS, mono ? 1 : 2, 2048) != 0) {
+    if(Mix_OpenAudioDevice(sample_rate, AUDIO_S16SYS, mono ? 1 : 2, 2048, NULL, 0) != 0) {
         PERROR("Unable to initialize audio device: %s", SDL_GetError());
         goto error_3;
     }
