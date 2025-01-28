@@ -275,6 +275,7 @@ int sd_chr_save(sd_chr_file *chr, const char *filename) {
         sd_pilot_save_player_to_mem(mw, &chr->enemies[i]->pilot);
         memwrite_buf(mw, chr->enemies[i]->unknown_a, 9);
         memwrite_ubyte(mw, chr->enemies[i]->photo_id);
+        memwrite_buf(mw, chr->enemies[i]->unknown_b, 15);
     }
     memwriter_xor(mw, (chr->pilot.enemies_inc_unranked * 68) & 0xFF);
     memwriter_save(mw, w);
