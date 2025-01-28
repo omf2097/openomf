@@ -194,6 +194,8 @@ void vs_handle_action(scene *scene, int action) {
                     dialog_show(&local->quit_dialog, 1);
                 } else {
                     if(player1->chr) {
+                        // Match cancelled, no winner
+                        scene->gs->fight_stats.winner = -1;
                         // null out the  p2 pilot
                         game_state_get_player(scene->gs, 1)->pilot = NULL;
                         game_state_set_next(scene->gs, SCENE_MECHLAB);
@@ -249,6 +251,83 @@ void vs_input_tick(scene *scene) {
     controller_free_chain(p1);
 }
 
+void vs_render_fight_stats(scene *scene, text_settings *tconf_yellow) {
+    text_settings dark_green;
+    text_defaults(&dark_green);
+    dark_green.font = FONT_SMALL;
+    dark_green.cforeground = TEXT_DARK_GREEN;
+
+    text_settings light_green;
+    text_defaults(&light_green);
+    light_green.font = FONT_SMALL;
+    light_green.cforeground = TEXT_GREEN;
+
+    // render plug's bitching
+    char text[256];
+    char money[16];
+    fight_stats *fight_stats = &scene->gs->fight_stats;
+    snprintf(text, sizeof(text), lang_get(fight_stats->plug_text + PLUG_TEXT_START), fight_stats->sold);
+    text_render(tconf_yellow, TEXT_DEFAULT, 90, 156, 198, 6, text);
+
+    text_render(&light_green, TEXT_DEFAULT, 190, 6, 140, 6, "FINANCIAL REPORT");
+
+    text_render(&dark_green, TEXT_DEFAULT, 190, 16, 90, 6, "WINNINGS:");
+    score_format(fight_stats->winnings, money, sizeof(money));
+    snprintf(text, sizeof(text), "$ %sK", money);
+    text_render(&light_green, TEXT_DEFAULT, 250, 16, 140, 6, text);
+
+    text_render(&dark_green, TEXT_DEFAULT, 196, 24, 90, 6, "BONUSES:");
+    score_format(fight_stats->bonuses, money, sizeof(money));
+    snprintf(text, sizeof(text), "$ %sK", money);
+    text_render(&light_green, TEXT_DEFAULT, 250, 24, 140, 6, text);
+
+    text_render(&dark_green, TEXT_DEFAULT, 172, 32, 90, 6, "REPAIR COST:");
+    score_format(fight_stats->repair_cost, money, sizeof(money));
+    snprintf(text, sizeof(text), "$ %sK", money);
+    text_render(&light_green, TEXT_DEFAULT, 250, 32, 140, 6, text);
+
+    text_render(&dark_green, TEXT_DEFAULT, 202, 40, 120, 6, "PROFIT:");
+    score_format(fight_stats->profit, money, sizeof(money));
+    snprintf(text, sizeof(text), "$ %sK", money);
+    text_render(&light_green, TEXT_DEFAULT, 250, 40, 140, 6, text);
+
+    text_render(&light_green, TEXT_DEFAULT, 210, 60, 60, 6, "FIGHT STATISTICS");
+
+    text_render(&dark_green, TEXT_DEFAULT, 202, 79, 90, 6, "HITS LANDED:");
+    snprintf(text, sizeof(text), "%u", fight_stats->hits_landed[0]);
+    text_render(&light_green, TEXT_DEFAULT, 276, 79, 80, 6, text);
+
+    text_render(&dark_green, TEXT_DEFAULT, 184, 86, 90, 6, "AVERAGE DAMAGE:");
+    snprintf(text, sizeof(text), "%.1f", fight_stats->average_damage[0]);
+    text_render(&light_green, TEXT_DEFAULT, 276, 86, 80, 6, text);
+
+    text_render(&dark_green, TEXT_DEFAULT, 184, 93, 90, 6, "FAILED ATTACKS:");
+    snprintf(text, sizeof(text), "%u", fight_stats->total_attacks[0] - fight_stats->hits_landed[0]);
+    text_render(&light_green, TEXT_DEFAULT, 276, 93, 80, 6, text);
+
+    text_render(&dark_green, TEXT_DEFAULT, 184, 100, 90, 6, "HIT/MISS RATIO:");
+    snprintf(text, sizeof(text), "%u%%", fight_stats->hit_miss_ratio[0]);
+    text_render(&light_green, TEXT_DEFAULT, 276, 100, 80, 6, text);
+
+    text_render(&light_green, TEXT_DEFAULT, 210, 108, 80, 6, "OPPONENT");
+
+    text_render(&dark_green, TEXT_DEFAULT, 202, 115, 90, 6, "HITS LANDED:");
+    snprintf(text, sizeof(text), "%u", fight_stats->hits_landed[1]);
+    text_render(&light_green, TEXT_DEFAULT, 276, 115, 80, 6, text);
+
+    text_render(&dark_green, TEXT_DEFAULT, 184, 123, 90, 6, "AVERAGE DAMAGE:");
+    snprintf(text, sizeof(text), "%.1f", fight_stats->average_damage[1]);
+    text_render(&light_green, TEXT_DEFAULT, 276, 123, 80, 6, text);
+
+    text_render(&dark_green, TEXT_DEFAULT, 184, 130, 90, 6, "FAILED ATTACKS:");
+    snprintf(text, sizeof(text), "%u", fight_stats->total_attacks[1] - fight_stats->hits_landed[1]);
+    text_render(&light_green, TEXT_DEFAULT, 276, 130, 30, 6, text);
+
+    text_render(&dark_green, TEXT_DEFAULT, 184, 137, 90, 6, "HIT/MISS RATIO:");
+    snprintf(text, sizeof(text), "%u%%", fight_stats->hit_miss_ratio[1]);
+    text_render(&light_green, TEXT_DEFAULT, 276, 137, 40, 6, text);
+}
+
 void vs_render(scene *scene) {
     vs_local *local = scene_get_userdata(scene);
 
@@ -297,81 +376,10 @@ void vs_render(scene *scene) {
         // tournament mode insult
         tconf_yellow.halign = TEXT_RIGHT;
         text_render(&tconf_yellow, TEXT_DEFAULT, 100, 165, 150, 60, player2->pilot->quotes[0]);
-    } else if(!player2->pilot) {
-        text_settings dark_green;
-        text_defaults(&dark_green);
-        dark_green.font = FONT_SMALL;
-        dark_green.cforeground = TEXT_DARK_GREEN;
-
-        text_settings light_green;
-        text_defaults(&light_green);
-        light_green.font = FONT_SMALL;
-        light_green.cforeground = TEXT_GREEN;
-
-        // render plug's bitching
-        char text[256];
-        char money[16];
-        fight_stats *fight_stats = &scene->gs->fight_stats;
-        snprintf(text, sizeof(text), lang_get(fight_stats->plug_text + PLUG_TEXT_START), fight_stats->sold);
-        text_render(&tconf_yellow, TEXT_DEFAULT, 90, 156, 198, 6, text);
-
-        text_render(&light_green, TEXT_DEFAULT, 190, 6, 140, 6, "FINANCIAL REPORT");
-
-        text_render(&dark_green, TEXT_DEFAULT, 190, 16, 90, 6, "WINNINGS:");
-        score_format(fight_stats->winnings, money, sizeof(money));
-        snprintf(text, sizeof(text), "$ %sK", money);
-        text_render(&light_green, TEXT_DEFAULT, 250, 16, 140, 6, text);
-
-        text_render(&dark_green, TEXT_DEFAULT, 196, 24, 90, 6, "BONUSES:");
-        score_format(fight_stats->bonuses, money, sizeof(money));
-        snprintf(text, sizeof(text), "$ %sK", money);
-        text_render(&light_green, TEXT_DEFAULT, 250, 24, 140, 6, text);
-
-        text_render(&dark_green, TEXT_DEFAULT, 172, 32, 90, 6, "REPAIR COST:");
-        score_format(fight_stats->repair_cost, money, sizeof(money));
-        snprintf(text, sizeof(text), "$ %sK", money);
-        text_render(&light_green, TEXT_DEFAULT, 250, 32, 140, 6, text);
-
-        text_render(&dark_green, TEXT_DEFAULT, 202, 40, 120, 6, "PROFIT:");
-        score_format(fight_stats->profit, money, sizeof(money));
-        snprintf(text, sizeof(text), "$ %sK", money);
-        text_render(&light_green, TEXT_DEFAULT, 250, 40, 140, 6, text);
-
-        text_render(&light_green, TEXT_DEFAULT, 210, 60, 60, 6, "FIGHT STATISTICS");
-
-        text_render(&dark_green, TEXT_DEFAULT, 202, 79, 90, 6, "HITS LANDED:");
-        snprintf(text, sizeof(text), "%u", fight_stats->hits_landed[0]);
-        text_render(&light_green, TEXT_DEFAULT, 276, 79, 80, 6, text);
-
-        text_render(&dark_green, TEXT_DEFAULT, 184, 86, 90, 6, "AVERAGE DAMAGE:");
-        snprintf(text, sizeof(text), "%.1f", fight_stats->average_damage[0]);
-        text_render(&light_green, TEXT_DEFAULT, 276, 86, 80, 6, text);
-
-        text_render(&dark_green, TEXT_DEFAULT, 184, 93, 90, 6, "FAILED ATTACKS:");
-        snprintf(text, sizeof(text), "%u", fight_stats->total_attacks[0] - fight_stats->hits_landed[0]);
-        text_render(&light_green, TEXT_DEFAULT, 276, 93, 80, 6, text);
-
-        text_render(&dark_green, TEXT_DEFAULT, 184, 100, 90, 6, "HIT/MISS RATIO:");
-        snprintf(text, sizeof(text), "%u%%", fight_stats->hit_miss_ratio[0]);
-        text_render(&light_green, TEXT_DEFAULT, 276, 100, 80, 6, text);
-
-        text_render(&light_green, TEXT_DEFAULT, 210, 108, 80, 6, "OPPONENT");
-
-        text_render(&dark_green, TEXT_DEFAULT, 202, 115, 90, 6, "HITS LANDED:");
-        snprintf(text, sizeof(text), "%u", fight_stats->hits_landed[1]);
-        text_render(&light_green, TEXT_DEFAULT, 276, 115, 80, 6, text);
-
-        text_render(&dark_green, TEXT_DEFAULT, 184, 123, 90, 6, "AVERAGE DAMAGE:");
-        snprintf(text, sizeof(text), "%.1f", fight_stats->average_damage[1]);
-        text_render(&light_green, TEXT_DEFAULT, 276, 123, 80, 6, text);
-
-        text_render(&dark_green, TEXT_DEFAULT, 184, 130, 90, 6, "FAILED ATTACKS:");
-        snprintf(text, sizeof(text), "%u", fight_stats->total_attacks[1] - fight_stats->hits_landed[1]);
-        text_render(&light_green, TEXT_DEFAULT, 276, 130, 30, 6, text);
-
-        text_render(&dark_green, TEXT_DEFAULT, 184, 137, 90, 6, "HIT/MISS RATIO:");
-        snprintf(text, sizeof(text), "%u%%", fight_stats->hit_miss_ratio[1]);
-        text_render(&light_green, TEXT_DEFAULT, 276, 137, 40, 6, text);
+    } else if(player2->pilot == NULL) {
+        if(scene->gs->fight_stats.winner >= 0) {
+            vs_render_fight_stats(scene, &tconf_yellow);
+        }
     } else {
         // 1 player insult
         tconf_yellow.valign = TEXT_MIDDLE;
