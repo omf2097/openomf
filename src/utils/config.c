@@ -47,7 +47,7 @@ void conf_addstring(char *name, char *default_val) {
 
 int conf_init_internal(const char *filename) {
     conf_ensure_opt_init();
-    cfg = cfg_init((cfg_opt_t *)cfg_opts.data, 0);
+    cfg = cfg_init((cfg_opt_t *)cfg_opts.data, CFGF_IGNORE_UNKNOWN);
     int ret = cfg_parse(cfg, filename);
     if(ret == CFG_FILE_ERROR) {
         PERROR("Error while attempting to read config file '%s' !", filename);
