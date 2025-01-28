@@ -108,6 +108,8 @@ typedef struct {
 
     char *quotes[10]; ///< Pilot quotes for each supported language
 
+    int sex;
+
     sd_sprite *photo; ///< Pilot photo, in tournament mode only
 } sd_pilot;
 

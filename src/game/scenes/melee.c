@@ -322,6 +322,7 @@ void handle_action(scene *scene, int player, int action) {
                     player1->pilot->endurance = p_a.endurance;
                     player1->pilot->power = p_a.power;
                     player1->pilot->agility = p_a.agility;
+                    player1->pilot->sex = p_a.sex;
                     sd_pilot_set_player_color(player1->pilot, TERTIARY, p_a.colors[0]);
                     sd_pilot_set_player_color(player1->pilot, SECONDARY, p_a.colors[1]);
                     sd_pilot_set_player_color(player1->pilot, PRIMARY, p_a.colors[2]);
@@ -334,6 +335,7 @@ void handle_action(scene *scene, int player, int action) {
                         player2->pilot->endurance = p_a.endurance;
                         player2->pilot->power = p_a.power;
                         player2->pilot->agility = p_a.agility;
+                        player2->pilot->sex = p_a.sex;
                         sd_pilot_set_player_color(player2->pilot, TERTIARY, p_a.colors[0]);
                         sd_pilot_set_player_color(player2->pilot, SECONDARY, p_a.colors[1]);
                         sd_pilot_set_player_color(player2->pilot, PRIMARY, p_a.colors[2]);
@@ -388,6 +390,7 @@ void handle_action(scene *scene, int player, int action) {
                         player2->pilot->endurance = p_a.endurance;
                         player2->pilot->power = p_a.power;
                         player2->pilot->agility = p_a.agility;
+                        player2->pilot->sex = p_a.sex;
                         sd_pilot_set_player_color(player2->pilot, TERTIARY, p_a.colors[0]);
                         sd_pilot_set_player_color(player2->pilot, SECONDARY, p_a.colors[1]);
                         sd_pilot_set_player_color(player2->pilot, PRIMARY, p_a.colors[2]);

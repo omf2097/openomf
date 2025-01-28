@@ -5,6 +5,7 @@ typedef struct pilot_t {
     int power, agility, endurance;
     char colors[3];
     void *userdata;
+    int sex;
 } pilot;
 
 void pilot_get_info(pilot *pilot, int id);
