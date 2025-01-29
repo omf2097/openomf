@@ -166,11 +166,6 @@ typedef struct har_t {
 
     list har_hooks;
 
-    har_action_hook_cb action_hook_cb;
-    void *action_hook_cb_data;
-
-    action_buffer act_buf[OBJECT_EVENT_BUFFER_SIZE];
-
 #ifdef DEBUGMODE
     surface cd_debug;
 #endif
@@ -187,6 +182,8 @@ int har_is_walking(har *h);
 int har_is_blocking(har *h, af_move *move);
 void har_copy_actions(object *new, object *old);
 void har_reset(object *obj);
+
+void har_set_delay(object *obj, int delay);
 
 uint8_t har_player_id(object *obj);
 

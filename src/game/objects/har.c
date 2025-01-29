@@ -259,17 +259,6 @@ void har_stunned_done(object *har_obj) {
     }
 }
 
-void har_action_hook(object *obj, int action) {
-    har *h = object_get_userdata(obj);
-    if(h->action_hook_cb) {
-        h->action_hook_cb(action, h->action_hook_cb_data);
-    }
-    int pos = obj->age % OBJECT_EVENT_BUFFER_SIZE;
-    h->act_buf[pos].actions[h->act_buf[pos].count] = (unsigned char)action;
-    h->act_buf[pos].count++;
-    h->act_buf[pos].age = obj->age;
-}
-
 // Simple helper function
 void har_set_ani(object *obj, int animation_id, int repeat) {
     har *h = object_get_userdata(obj);
@@ -493,7 +482,6 @@ void har_move(object *obj) {
             h->state = STATE_STANDING;
             har_set_ani(obj, ANIM_IDLE, 1);
             object_set_stride(obj, h->stride);
-            har_action_hook(obj, ACT_STOP);
             har_event_land(h, ctrl);
             har_floor_landing_effects(obj);
 
@@ -1468,18 +1456,6 @@ void har_tick(object *obj) {
         object_dynamic_tick(nobj);
         game_state_add_object(obj->gs, nobj, RENDER_LAYER_BOTTOM, 0, 0);
     }
-
-    // Network motion replay
-    int act_pos = obj->age % OBJECT_EVENT_BUFFER_SIZE;
-    if(h->act_buf[act_pos].age == obj->age) {
-        DEBUG("REPLAYING %d inputs", h->act_buf[act_pos].count);
-        for(int i = 0; i < h->act_buf[act_pos].count; i++) {
-            har_act(obj, h->act_buf[act_pos].actions[i]);
-        }
-    } else {
-        // clear the action buffer because we're onto a new tick
-        h->act_buf[act_pos].count = 0;
-    }
 }
 
 void add_input_to_buffer(char *buf, char c) {
@@ -1763,68 +1739,6 @@ int har_act(object *obj, int act_type) {
     }
 
     if(move) {
-        char *s = (char *)str_c(&move->move_string); // start
-        for(int j = str_size(&move->move_string) - 1; j >= 0; j--) {
-            switch(s[j]) {
-                case '1':
-                    if(direction == OBJECT_FACE_LEFT) {
-                        har_action_hook(obj, ACT_DOWN | ACT_RIGHT);
-                    } else {
-                        har_action_hook(obj, ACT_DOWN | ACT_LEFT);
-                    }
-                    break;
-                case '2':
-                    har_action_hook(obj, ACT_DOWN);
-                    break;
-                case '3':
-                    if(direction == OBJECT_FACE_LEFT) {
-                        har_action_hook(obj, ACT_DOWN | ACT_LEFT);
-                    } else {
-                        har_action_hook(obj, ACT_DOWN | ACT_RIGHT);
-                    }
-                    break;
-                case '4':
-                    if(direction == OBJECT_FACE_LEFT) {
-                        har_action_hook(obj, ACT_RIGHT);
-                    } else {
-                        har_action_hook(obj, ACT_LEFT);
-                    }
-                    break;
-                case '5':
-                    har_action_hook(obj, ACT_STOP);
-                    break;
-                case '6':
-                    if(direction == OBJECT_FACE_LEFT) {
-                        har_action_hook(obj, ACT_LEFT);
-                    } else {
-                        har_action_hook(obj, ACT_RIGHT);
-                    }
-                    break;
-                case '7':
-                    if(direction == OBJECT_FACE_LEFT) {
-                        har_action_hook(obj, ACT_UP | ACT_RIGHT);
-                    } else {
-                        har_action_hook(obj, ACT_UP | ACT_LEFT);
-                    }
-                    break;
-                case '8':
-                    har_action_hook(obj, ACT_UP);
-                    break;
-                case '9':
-                    if(direction == OBJECT_FACE_LEFT) {
-                        har_action_hook(obj, ACT_UP | ACT_LEFT);
-                    } else {
-                        har_action_hook(obj, ACT_UP | ACT_RIGHT);
-                    }
-                    break;
-                case 'K':
-                    har_action_hook(obj, ACT_KICK);
-                    break;
-                case 'P':
-                    har_action_hook(obj, ACT_PUNCH);
-                    break;
-            }
-        }
         // Set correct animation etc.
         // executing_move = 1 prevents new moves while old one is running.
         har_set_ani(obj, move->id, 0);
@@ -1995,7 +1909,6 @@ int har_act(object *obj, int act_type) {
                 har_event_jump(h, jump_dir, ctrl);
                 break;
         }
-        har_action_hook(obj, act_type);
         return 1;
     }
 
@@ -2070,11 +1983,6 @@ void har_finished(object *obj) {
     h->flinching = 0;
 }
 
-void har_install_action_hook(har *h, har_action_hook_cb hook, void *data) {
-    h->action_hook_cb = hook;
-    h->action_hook_cb_data = data;
-}
-
 void har_install_hook(har *h, har_hook_cb hook, void *data) {
     har_hook hk;
     hk.cb = hook;
@@ -2091,6 +1999,7 @@ int har_clone(object *src, object *dst) {
     list_create(&local->har_hooks);
     object_set_userdata(dst, local);
     object_set_spawn_cb(dst, cb_har_spawn_object, local);
+    local->delay = 0;
     return 0;
 }
 
@@ -2105,12 +2014,6 @@ int har_clone_free(object *obj) {
 void har_bootstrap(object *obj) {
     obj->clone = har_clone;
     obj->clone_free = har_clone_free;
-}
-
-void har_copy_actions(object *new, object *old) {
-    har *h_new = object_get_userdata(new);
-    har *h_old = object_get_userdata(old);
-    memcpy(h_new->act_buf, h_old->act_buf, sizeof(action_buffer) * OBJECT_EVENT_BUFFER_SIZE);
 }
 
 int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int player_id) {
@@ -2176,9 +2079,6 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
 
     local->enqueued = 0;
 
-    local->action_hook_cb = NULL;
-    local->action_hook_cb_data = NULL;
-
     // Last damage value, for convenience
     local->last_damage_value = 0.0f;
 
@@ -2229,11 +2129,6 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     surface_create(&local->cd_debug, 320, 200);
     surface_clear(&local->cd_debug);
 #endif
-
-    for(int i = 0; i < OBJECT_EVENT_BUFFER_SIZE; i++) {
-        local->act_buf[i].count = 0;
-        local->act_buf[i].age = 0;
-    }
 
     // fixup a bunch of stuff based on player stats
 
@@ -2336,6 +2231,11 @@ void har_reset(object *obj) {
 
     har_set_ani(obj, ANIM_IDLE, 1);
     object_set_stride(obj, h->stride);
+}
+
+void har_set_delay(object *obj, int delay) {
+    har *h = object_get_userdata(obj);
+    h->delay = delay;
 }
 
 uint8_t har_player_id(object *obj) {

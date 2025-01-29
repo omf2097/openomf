@@ -19,6 +19,7 @@
 #include "game/gui/text_render.h"
 #include "game/gui/textbutton.h"
 #include "game/gui/textslider.h"
+#include "game/gui/widget.h"
 #include "game/objects/arena_constraints.h"
 #include "game/objects/har.h"
 #include "game/objects/hazard.h"
@@ -40,6 +41,9 @@
 
 #define HAR1_START_POS 110
 #define HAR2_START_POS 211
+
+#define GAME_MENU_RETURN_ID 100
+#define GAME_MENU_QUIT_ID 101
 
 typedef struct arena_local_t {
     guiframe *game_menu;
@@ -693,20 +697,6 @@ void maybe_install_har_hooks(scene *scene) {
     har1 = obj_har1->userdata;
     har2 = obj_har2->userdata;
 
-    // TODO investigate fixing these
-    if(scene->gs->role == ROLE_CLIENT && false) {
-        game_player *_player[2];
-        for(int i = 0; i < 2; i++) {
-            _player[i] = game_state_get_player(scene->gs, i);
-        }
-        if(game_player_get_ctrl(_player[0])->type == CTRL_TYPE_NETWORK) {
-            har_install_action_hook(har2, &net_controller_har_hook, _player[0]->ctrl);
-        }
-        if(game_player_get_ctrl(_player[1])->type == CTRL_TYPE_NETWORK) {
-            har_install_action_hook(har1, &net_controller_har_hook, _player[1]->ctrl);
-        }
-    }
-
     har_install_hook(har1, &arena_har_hook, scene);
     har_install_hook(har2, &arena_har_hook, scene);
 }
@@ -1164,6 +1154,11 @@ void arena_clone(scene *src, scene *dst) {
     dst->userdata = local;
     memcpy(dst->userdata, src->userdata, sizeof(arena_local));
     maybe_install_har_hooks(dst);
+
+    component *c = guiframe_find(local->game_menu, GAME_MENU_QUIT_ID);
+    textbutton_set_userdata(c, dst);
+    c = guiframe_find(local->game_menu, GAME_MENU_RETURN_ID);
+    textbutton_set_userdata(c, dst);
 }
 
 void arena_startup(scene *scene, int id, int *m_load, int *m_repeat) {
@@ -1370,6 +1365,7 @@ int arena_create(scene *scene) {
     menu_attach(menu, filler_create());
     component *return_button =
         textbutton_create(&tconf, "RETURN TO GAME", "Continue fighting.", COM_ENABLED, game_menu_return, scene);
+    widget_set_id(return_button, GAME_MENU_RETURN_ID);
     menu_attach(menu, return_button);
 
     menu_attach(menu,
@@ -1395,8 +1391,10 @@ int arena_create(scene *scene) {
                                         "Obtain detailed and thorough explanation of the various options for which you "
                                         "may need a detailed and thorough explanation.",
                                         COM_DISABLED, NULL, NULL));
-    menu_attach(menu, textbutton_create(&tconf, "QUIT", "Quit game and return to main menu.", COM_ENABLED,
-                                        game_menu_quit, scene));
+    component *quit_button =
+        textbutton_create(&tconf, "QUIT", "Quit game and return to main menu.", COM_ENABLED, game_menu_quit, scene);
+    widget_set_id(quit_button, GAME_MENU_QUIT_ID);
+    menu_attach(menu, quit_button);
 
     guiframe_set_root(local->game_menu, menu);
     guiframe_layout(local->game_menu);

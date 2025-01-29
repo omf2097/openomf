@@ -698,6 +698,10 @@ void game_state_static_tick(game_state *gs, bool replay) {
     // Tick controllers
     game_state_tick_controllers(gs);
 
+    if(gs->new_state) {
+        gs = gs->new_state;
+    }
+
     // Call static ticks for scene
     scene_static_tick(gs->sc, game_state_is_paused(gs));
 
@@ -1014,15 +1018,11 @@ int game_state_clone(game_state *src, game_state *dst) {
     iterator it;
     vector_iter_begin(&src->objects, &it);
     render_obj *robj;
-    int i = 0;
     while((robj = iter_next(&it)) != NULL) {
         render_obj d;
         render_obj_clone(robj, &d, dst);
-        DEBUG("cloned object %d", d.obj->id);
         vector_append(&dst->objects, &d);
-        i++;
     }
-    DEBUG("cloned %d objects into new game state", i);
 
     for(int i = 0; i < 2; i++) {
         dst->players[i] = omf_calloc(1, sizeof(game_player));
@@ -1033,6 +1033,8 @@ int game_state_clone(game_state *src, game_state *dst) {
 
     dst->sc = omf_calloc(1, sizeof(scene));
     scene_clone(src->sc, dst->sc, dst);
+
+    dst->new_state = NULL;
 
     return 0;
 }
