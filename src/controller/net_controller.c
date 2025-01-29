@@ -89,6 +89,7 @@ int avg_rtt(int data[], int n) {
     return truncf(average);
 }
 
+// insert an event into the event trace
 void insert_event(wtf *data, uint32_t tick, uint16_t action, int id) {
 
     iterator it;
@@ -141,6 +142,7 @@ void insert_event(wtf *data, uint32_t tick, uint16_t action, int id) {
     list_append(transcript, &event, sizeof(tick_events));
 }
 
+// check if we have any events for this tick
 bool has_event(wtf *data, uint32_t tick) {
 
     iterator it;
@@ -163,6 +165,7 @@ void print_transcript(list *transcript) {
     }
 }
 
+// send any events we've made that are older than the last acked event from the peer
 void send_events(wtf *data) {
     serial ser;
     ENetPacket *packet;
@@ -207,6 +210,7 @@ void send_events(wtf *data) {
     enet_host_flush(host);
 }
 
+// replay the game state, using the input logs from both sides
 int rewind_and_replay(wtf *data, game_state *gs_current) {
     // first, find the last frame we have input from the other side
     // this will be our next checkpoint (as no events can come in before
@@ -249,10 +253,8 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
             continue;
         }
 
-        // XXX TODO disable this for now, for unknown reason
-        // if(false && gs_new == NULL && ev->tick > umin2(data->last_acked_tick, data->last_received_tick) &&
-        // ev->seen_peer == 3) {
-        // if(gs_new == NULL && gs->int_tick > gs_old->int_tick && last_seen_peer == 3 && ev->seen_peer != 3) {
+        // The next tick is past when we have agreement, so we need to save the last known good game state
+        // for future replays
         if(gs_new == NULL && ev->tick > data->last_acked_tick) {
             // DEBUG("tick %" PRIu32 " is newer than last acked tick %" PRIu32, ev->tick, data->last_acked_tick);
             DEBUG("saving game state at last agreed on tick %d", gs->int_tick - data->local_proposal);
@@ -350,6 +352,9 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
 
     uint64_t replay_end = SDL_GetTicks64();
 
+    // we have not made a new state checkpoint, and the game state tick is less than the last_acked tick
+    // this means we need to increment the tick count to reflect the peer's updates, but we want to take a backup first
+    // This probably should not actually happen?
     if(gs_new == NULL && gs->int_tick - data->local_proposal <= data->last_acked_tick) {
         // XXX what is the tick condition here?
         gs_new = omf_calloc(1, sizeof(game_state));
@@ -783,7 +788,7 @@ void controller_hook(controller *ctrl, int action) {
     object *har_obj = game_state_find_object(ctrl->gs, game_player_get_har_obj_id(player));
     if(har_obj) {
         har *har = object_get_userdata(har_obj);
-        if(action == ACT_STOP && action == data->last_action && har->state == data->last_har_state) {
+        if(action == ACT_STOP && har->state == data->last_har_state) {
             return;
         }
         /*if(data->last_action == action && har->state == data->last_har_state) {
