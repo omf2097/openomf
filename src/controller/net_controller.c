@@ -193,6 +193,7 @@ void send_events(wtf *data) {
     }
 
     if(!events) {
+        // nothing to send, so send a blank event
         serial_write_int16(&ser, 0);
         serial_write_int32(&ser, data->last_tick - data->local_proposal);
     }
@@ -475,10 +476,6 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
         DEBUG("sending events %d -- %d", ticks - data->local_proposal, data->last_acked_tick);
         data->last_tick = ticks;
         send_events(data);
-        // if(rewind_and_replay(data, ctrl->gs)) {
-        //     enet_peer_disconnect(data->peer, 0);
-        //     return 0;
-        // }
     }
 
     data->last_tick = ticks;
@@ -572,9 +569,6 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                             data->last_received_tick = max2(data->last_received_tick, last_received);
                             data->last_acked_tick = max2(data->last_acked_tick, last_acked);
 
-                            // mark everything since the last acked tick as seen by the peer and ourselves
-                            insert_event(data, data->last_acked_tick, 0, abs(data->id - 1));
-                            insert_event(data, data->last_acked_tick, 0, data->id);
                             if(peer_last_hash_tick > data->peer_last_hash_tick) {
                                 data->peer_last_hash_tick = peer_last_hash_tick;
                                 data->peer_last_hash = peer_last_hash;
@@ -781,8 +775,6 @@ void controller_hook(controller *ctrl, int action) {
     wtf *data = ctrl->data;
     ENetPeer *peer = data->peer;
     ENetHost *host = data->host;
-    // if(action == ACT_STOP && data->last_action == ACT_STOP) {
-    // data->last_action = -1;
 
     game_player *player = game_state_get_player(ctrl->gs, data->id);
     object *har_obj = game_state_find_object(ctrl->gs, game_player_get_har_obj_id(player));
@@ -791,9 +783,6 @@ void controller_hook(controller *ctrl, int action) {
         if(action == ACT_STOP && har->state == data->last_har_state) {
             return;
         }
-        /*if(data->last_action == action && har->state == data->last_har_state) {
-            return;
-        }*/
         int arena_state = arena_get_state(game_state_get_scene(ctrl->gs));
         if(arena_state != ARENA_STATE_FIGHTING) {
             return;
@@ -808,9 +797,6 @@ void controller_hook(controller *ctrl, int action) {
             DEBUG("inserting event %d at tick %" PRIu32, action,
                   ctrl->gs->int_tick - data->local_proposal /*+ (ctrl->rtt / 2)*/);
             insert_event(data, ctrl->gs->int_tick - data->local_proposal /*+ (ctrl->rtt / 2)*/, action, data->id);
-            // print_transcript(&data->transcript);
-            // send_events(data);
-            // rewind_and_replay(data, ctrl->gs);
         } else {
             serial ser;
             ENetPacket *packet;
