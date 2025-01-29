@@ -195,7 +195,7 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
         chr->enemies[i]->photo_id = memread_ubyte(mr);
         memread_buf(mr, chr->enemies[i]->unknown_b, 15);
         if(trn_loaded) {
-            chr->enemies[i]->pilot.sex = pic.photos[(uint8_t)chr->enemies[i]->photo_id]->sex;
+            chr->enemies[i]->pilot.sex = pic.photos[(uint16_t)chr->enemies[i]->photo_id]->sex;
         }
         for(int m = 0; m < 10; m++) {
             if(trn_loaded && trn.enemies[i]->quotes[m]) {
