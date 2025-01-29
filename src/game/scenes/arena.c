@@ -697,20 +697,6 @@ void maybe_install_har_hooks(scene *scene) {
     har1 = obj_har1->userdata;
     har2 = obj_har2->userdata;
 
-    // TODO investigate fixing these
-    if(scene->gs->role == ROLE_CLIENT && false) {
-        game_player *_player[2];
-        for(int i = 0; i < 2; i++) {
-            _player[i] = game_state_get_player(scene->gs, i);
-        }
-        if(game_player_get_ctrl(_player[0])->type == CTRL_TYPE_NETWORK) {
-            har_install_action_hook(har2, &net_controller_har_hook, _player[0]->ctrl);
-        }
-        if(game_player_get_ctrl(_player[1])->type == CTRL_TYPE_NETWORK) {
-            har_install_action_hook(har1, &net_controller_har_hook, _player[1]->ctrl);
-        }
-    }
-
     har_install_hook(har1, &arena_har_hook, scene);
     har_install_hook(har2, &arena_har_hook, scene);
 }

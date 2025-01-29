@@ -248,7 +248,6 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
     while((ev = (tick_events *)list_iter_next(&it))) {
         if(ev->tick + data->local_proposal < data->gs_bak->int_tick) {
             // tick too old to matter
-            DEBUG("tick %" PRIu32 " is older than %" PRIu32, ev->tick, data->gs_bak->int_tick - data->local_proposal);
             assert(ev->seen_peer == 3);
             list_delete(transcript, &it);
             continue;
