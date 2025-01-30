@@ -1035,6 +1035,18 @@ void arena_input_tick(scene *scene) {
     arena_handle_events(scene, player2, p2);
     controller_free_chain(p1);
     controller_free_chain(p2);
+
+    if(is_demoplay(scene)) {
+        ctrl_event *p = NULL;
+        game_state_menu_poll(scene->gs, &p);
+        for(ctrl_event *i = p; i; i = i->next) {
+            if(i->type == EVENT_TYPE_ACTION && i->event_data.action == ACT_ESC) {
+                game_state_set_next(scene->gs, SCENE_MENU);
+                break;
+            }
+        }
+        controller_free_chain(p);
+    }
 }
 
 int arena_event(scene *scene, SDL_Event *e) {
