@@ -828,26 +828,9 @@ void write_rec_move(scene *scene, game_player *player, int action) {
 
 int arena_handle_events(scene *scene, game_player *player, ctrl_event *i) {
     int need_sync = 0;
-    arena_local *local = scene_get_userdata(scene);
     if(i) {
         do {
-            if(i->type == EVENT_TYPE_ACTION && i->event_data.action == ACT_ESC &&
-               player == game_state_get_player(scene->gs, 0)) {
-                // toggle menu
-                local->menu_visible = !local->menu_visible;
-                game_state_set_paused(scene->gs, local->menu_visible);
-                need_sync = 1;
-                controller_set_repeat(game_player_get_ctrl(player), !local->menu_visible);
-                controller_set_repeat(game_player_get_ctrl(game_state_get_player(scene->gs, 1)), !local->menu_visible);
-                DEBUG("local menu %d, controller repeat %d", local->menu_visible, game_player_get_ctrl(player)->repeat);
-            } else if(i->type == EVENT_TYPE_ACTION && local->menu_visible &&
-                      (player->ctrl->type == CTRL_TYPE_KEYBOARD || player->ctrl->type == CTRL_TYPE_GAMEPAD) &&
-                      i->event_data.action != ACT_ESC && /* take AST_ESC only from player 1 */
-                      !is_demoplay(scene->gs)) {
-                DEBUG("menu event %d", i->event_data.action);
-                // menu events
-                guiframe_action(local->game_menu, i->event_data.action);
-            } else if(i->type == EVENT_TYPE_ACTION) {
+            if(i->type == EVENT_TYPE_ACTION) {
                 need_sync += object_act(game_state_find_object(scene->gs, game_player_get_har_obj_id(player)),
                                         i->event_data.action);
                 write_rec_move(scene, player, i->event_data.action);
@@ -1024,29 +1007,40 @@ void arena_static_tick(scene *scene, int paused) {
 }
 
 void arena_input_tick(scene *scene) {
-    game_player *player1 = game_state_get_player(scene->gs, 0);
-    game_player *player2 = game_state_get_player(scene->gs, 1);
+    arena_local *local = scene_get_userdata(scene);
 
-    ctrl_event *p1 = NULL, *p2 = NULL;
-    controller_poll(player1->ctrl, &p1);
-    controller_poll(player2->ctrl, &p2);
+    if(!local->menu_visible) {
+        game_player *player1 = game_state_get_player(scene->gs, 0);
+        game_player *player2 = game_state_get_player(scene->gs, 1);
 
-    arena_handle_events(scene, player1, p1);
-    arena_handle_events(scene, player2, p2);
-    controller_free_chain(p1);
-    controller_free_chain(p2);
+        ctrl_event *p1 = NULL, *p2 = NULL;
+        controller_poll(player1->ctrl, &p1);
+        controller_poll(player2->ctrl, &p2);
 
-    if(is_demoplay(scene)) {
-        ctrl_event *p = NULL;
-        game_state_menu_poll(scene->gs, &p);
-        for(ctrl_event *i = p; i; i = i->next) {
-            if(i->type == EVENT_TYPE_ACTION && i->event_data.action == ACT_ESC) {
-                game_state_set_next(scene->gs, SCENE_MENU);
-                break;
-            }
-        }
-        controller_free_chain(p);
+        arena_handle_events(scene, player1, p1);
+        arena_handle_events(scene, player2, p2);
+        controller_free_chain(p1);
+        controller_free_chain(p2);
     }
+
+    ctrl_event *menu_ev = NULL;
+    game_state_menu_poll(scene->gs, &menu_ev);
+    for(ctrl_event *i = menu_ev; i; i = i->next) {
+        if(i->type == EVENT_TYPE_ACTION && i->event_data.action == ACT_ESC && is_demoplay(scene->gs)) {
+            // exit demoplay
+            game_state_set_next(scene->gs, SCENE_MENU);
+        } else if(i->type == EVENT_TYPE_ACTION && i->event_data.action == ACT_ESC) {
+            // toggle menu
+            local->menu_visible = !local->menu_visible;
+            game_state_set_paused(scene->gs, local->menu_visible);
+            controller_set_repeat(game_player_get_ctrl(game_state_get_player(scene->gs, 0)), !local->menu_visible);
+            controller_set_repeat(game_player_get_ctrl(game_state_get_player(scene->gs, 1)), !local->menu_visible);
+        } else if(i->type == EVENT_TYPE_ACTION && local->menu_visible && i->event_data.action != ACT_ESC) {
+            // menu events
+            guiframe_action(local->game_menu, i->event_data.action);
+        }
+    }
+    controller_free_chain(menu_ev);
 }
 
 int arena_event(scene *scene, SDL_Event *e) {
