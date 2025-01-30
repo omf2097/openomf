@@ -75,8 +75,6 @@ component *menu_language_create(scene *s) {
     list dirlist;
     // Seek all files
     list_create(&dirlist);
-    list_append(&dirlist, "ENGLISH.DAT", strlen("ENGLISH.DAT") + 1);
-    list_append(&dirlist, "GERMAN.DAT", strlen("GERMAN.DAT") + 1);
     scan_directory_suffix(&dirlist, dirname, ".LNG");
     local->language_filenames = omf_malloc(list_size(&dirlist) * sizeof(char *));
     local->language_names = omf_malloc(list_size(&dirlist) * sizeof(char *));
@@ -84,31 +82,31 @@ component *menu_language_create(scene *s) {
 
     iterator it;
     list_iter_begin(&dirlist, &it);
-    char const *filename;
-    str filename2;
-    str_create(&filename2);
-    while((filename = (char *)list_iter_next(&it))) {
-        // Get localized language name from OpenOMF .DAT2 or .LNG2 file
-        str_format(&filename2, "%s%s2", dirname, filename);
-        sd_language lang2;
-        if(sd_language_create(&lang2) != SD_SUCCESS) {
+    char const *lang_name;
+    str filename;
+    str_create(&filename);
+    while((lang_name = (char *)list_iter_next(&it))) {
+        // Get localized language name from OpenOMF .LNG file
+        str_format(&filename, "%s%s", dirname, lang_name);
+        sd_language lang;
+        if(sd_language_create(&lang) != SD_SUCCESS) {
             continue;
         }
-        if(sd_language_load(&lang2, str_c(&filename2))) {
-            INFO("Warning: Unable to load OpenOMF language file '%s'!", str_c(&filename2));
-            sd_language_free(&lang2);
+        if(sd_language_load(&lang, str_c(&filename))) {
+            INFO("Warning: Unable to load language file '%s'!", str_c(&filename));
+            sd_language_free(&lang);
             continue;
         }
-        if(lang2.count != LANG2_STR_COUNT) {
-            INFO("Warning: Invalid OpenOMF language file '%s', got %d entries!", str_c(&filename2), lang2.count);
-            sd_language_free(&lang2);
+        if(lang.count != Lang_Count) {
+            INFO("Warning: Invalid language file '%s', got %d entries!", str_c(&filename), lang.count);
+            sd_language_free(&lang);
             continue;
         }
-        char *language_name = lang2.strings[LANG2_STR_LANGUAGE].data;
-        lang2.strings[LANG2_STR_LANGUAGE].data = NULL;
-        sd_language_free(&lang2);
+        char *language_name = lang.strings[LangLanguage].data;
+        lang.strings[LangLanguage].data = NULL;
+        sd_language_free(&lang);
 
-        if(strcmp(setting->language.language, filename) == 0) {
+        if(strcmp(setting->language.language, lang_name) == 0) {
             local->selected_language = local->language_count;
         }
 
@@ -120,6 +118,7 @@ component *menu_language_create(scene *s) {
         local->language_filenames[id] = now->data;
         now->data = NULL;
     }
+    str_free(&filename);
     list_free(&dirlist);
 
     // Text config

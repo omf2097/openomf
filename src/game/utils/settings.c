@@ -58,7 +58,7 @@ typedef struct {
 
 // clang-format off
 static const field f_language[] = {
-    F_STRING(settings_language, language, "ENGLISH.DAT"),
+    F_STRING(settings_language, language, "ENGLISH.LNG"),
 };
 
 const field f_video[] = {

@@ -31,29 +31,17 @@ typedef struct newsroom_local_t {
 
 // their
 const char *possessive_pronoun(int sex) {
-    return lang_get(LANG_STR_PRONOUN + sex);
+    return lang_get_offset(LangPronoun, sex);
 }
 
 // them
 const char *object_pronoun(int sex) {
-    return lang_get(LANG_STR_PRONOUN + 2 + sex);
+    return lang_get_offset(LangPronoun, 2 + sex);
 }
 
 // they
 const char *subject_pronoun(int sex) {
-    return lang_get(LANG_STR_PRONOUN + 4 + sex);
-}
-
-char const *pronoun_strip(char const *pronoun, char *buf, size_t buf_size) {
-    size_t pronoun_len = strlen(pronoun);
-    while(pronoun_len && pronoun[pronoun_len - 1] == '\n') {
-        pronoun_len--;
-    }
-    if(pronoun_len >= buf_size)
-        pronoun_len = buf_size - 1;
-    memcpy(buf, pronoun, pronoun_len);
-    buf[pronoun_len] = '\0';
-    return buf;
+    return lang_get_offset(LangPronoun, 4 + sex);
 }
 
 static void newsroom_fixup_capitalization(str *tmp) {
@@ -91,26 +79,25 @@ void newsroom_fixup_str(newsroom_local *local) {
        11= P2 Subjective pronoun - He
     */
 
-    unsigned int translation_id;
+    char const *raw_translation;
 
     if(local->champion && local->screen >= 2) {
-        translation_id = LANG_STR_NEWSROOM_NEWCHAMPION;
+        raw_translation = lang_get(LangNewsroomNewChampion);
     } else {
-        translation_id = LANG_STR_NEWSROOM_TEXT + local->news_id + min2(local->screen, 1);
+        raw_translation = lang_get_offset(LangNewsroomReport, local->news_id + min2(local->screen, 1));
     }
 
-    char scratch[9];
     str tmp;
-    str_from_c(&tmp, lang_get(translation_id));
-    str_replace(&tmp, "~11", pronoun_strip(subject_pronoun(local->sex2), scratch, sizeof scratch), -1);
-    str_replace(&tmp, "~10", pronoun_strip(object_pronoun(local->sex2), scratch, sizeof scratch), -1);
-    str_replace(&tmp, "~9", pronoun_strip(possessive_pronoun(local->sex2), scratch, sizeof scratch), -1);
-    str_replace(&tmp, "~8", pronoun_strip(subject_pronoun(local->sex1), scratch, sizeof scratch), -1);
-    str_replace(&tmp, "~7", pronoun_strip(object_pronoun(local->sex1), scratch, sizeof scratch), -1);
-    str_replace(&tmp, "~6", pronoun_strip(possessive_pronoun(local->sex1), scratch, sizeof scratch), -1);
+    str_from_c(&tmp, raw_translation);
+    str_replace(&tmp, "~11", subject_pronoun(local->sex2), -1);
+    str_replace(&tmp, "~10", object_pronoun(local->sex2), -1);
+    str_replace(&tmp, "~9", possessive_pronoun(local->sex2), -1);
+    str_replace(&tmp, "~8", subject_pronoun(local->sex1), -1);
+    str_replace(&tmp, "~7", object_pronoun(local->sex1), -1);
+    str_replace(&tmp, "~6", possessive_pronoun(local->sex1), -1);
     str_replace(&tmp, "~5", "Stadium", -1);
-    str_replace(&tmp, "~4", pronoun_strip(lang_get(local->har2 + LANG_STR_HAR), scratch, sizeof scratch), -1);
-    str_replace(&tmp, "~3", pronoun_strip(lang_get(local->har1 + LANG_STR_HAR), scratch, sizeof scratch), -1);
+    str_replace(&tmp, "~4", lang_get_offset(LangRobot, local->har2), -1);
+    str_replace(&tmp, "~3", lang_get_offset(LangRobot, local->har1), -1);
     str_replace(&tmp, "~2", str_c(&local->pilot2), -1);
     str_replace(&tmp, "~1", str_c(&local->pilot1), -1);
 
@@ -120,11 +107,29 @@ void newsroom_fixup_str(newsroom_local *local) {
     local->news_str = tmp;
 }
 
+static void title_case(str *str) {
+    bool start = true;
+
+    unsigned char c;
+    // XXX this is not Unicode-aware
+    for(size_t pos = 0; (c = (unsigned char)str_at(str, pos)); pos++) {
+        if(c == ' ') {
+            start = true;
+        } else {
+            c = (unsigned char)(start ? toupper(c) : tolower(c));
+            str_set_at(str, pos, (char)c);
+            start = false;
+        }
+    }
+}
+
 void newsroom_set_names(newsroom_local *local, const char *pilot1, const char *pilot2, int har1, int har2, int sex1,
                         int sex2) {
 
     str_from_c(&local->pilot1, pilot1);
+    title_case(&local->pilot1);
     str_from_c(&local->pilot2, pilot2);
+    title_case(&local->pilot2);
     local->har1 = har1;
     local->har2 = har2;
     local->sex1 = sex1;
@@ -388,9 +393,9 @@ int newsroom_create(scene *scene) {
         newsroom_set_names(local, p1->pilot->name, p2->pilot->name, p1->pilot->har_id, p2->pilot->har_id,
                            pilot_sex(p1->pilot->pilot_id), pilot_sex(p2->pilot->pilot_id));
     } else {
-        newsroom_set_names(local, lang_get(20 + p1->pilot->pilot_id), lang_get(20 + p2->pilot->pilot_id),
-                           p1->pilot->har_id, p2->pilot->har_id, pilot_sex(p1->pilot->pilot_id),
-                           pilot_sex(p2->pilot->pilot_id));
+        newsroom_set_names(local, lang_get_offset(LangPilot, p1->pilot->pilot_id),
+                           lang_get_offset(LangPilot, p2->pilot->pilot_id), p1->pilot->har_id, p2->pilot->har_id,
+                           pilot_sex(p1->pilot->pilot_id), pilot_sex(p2->pilot->pilot_id));
     }
     newsroom_fixup_str(local);
 

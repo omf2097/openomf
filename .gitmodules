@@ -1,0 +1,4 @@
+[submodule "resources/translations"]
+	path = resources/translations
+	url = git@github.com:omf2097/openomf-translations.git
+	branch = master

@@ -19,7 +19,6 @@ typedef struct fight_stats_t {
     unsigned hit_miss_ratio[2];
 } fight_stats;
 
-#define PLUG_TEXT_START 587
 #define PLUG_FORFEIT 1
 #define PLUG_LOSE 2
 #define PLUG_WIN 7

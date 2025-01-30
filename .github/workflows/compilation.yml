@@ -25,6 +25,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        submodules: true
 
     - name: Install dependencies
       uses: Eeems-Org/apt-cache-action@v1.3
@@ -74,7 +76,10 @@ jobs:
         key: omf2097-assets.zip
 
     - name: Extract omf 2097 assets
-      run: unzip -j omf2097-assets.zip -d build-test/resources
+      shell: bash
+      run: |
+          unzip -j omf2097-assets.zip -d build-test/resources
+          rm -f build-test/resources/{ENGLISH.DAT,GERMAN.DAT}
 
     - name: Install pytest requirements
       run: |
@@ -108,6 +113,8 @@ jobs:
           core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
           core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
     - uses: actions/checkout@v4
+      with:
+        submodules: true
     - name: Check out VCPKG
       # must be checked out *after* openomf.git
       uses: actions/checkout@v4
@@ -147,10 +154,11 @@ jobs:
         key: omf2097-assets.zip
 
     - name: Extract omf 2097 assets
+      shell: bash
       run: |
-        Expand-Archive omf2097-assets.zip -PassThru
-        mkdir install/openomf/resources
-        Move-Item -Path omf2097-assets/OMF2097/* -Destination install/openomf/resources/ -Force -PassThru
+          mkdir -p install/openomf/resources
+          unzip -j omf2097-assets.zip -d install/openomf/resources
+          rm -f install/openomf/resources/{ENGLISH.DAT,GERMAN.DAT}
 
     - name: Install openomf
       run: cmake --install build-msvc --config Release --prefix install
@@ -182,6 +190,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        submodules: true
 
     - name: Install Ubuntu Dependencies
       uses: Eeems-Org/apt-cache-action@v1.3
@@ -220,7 +230,9 @@ jobs:
         key: omf2097-assets.zip
 
     - name: Extract omf 2097 assets
-      run: unzip -j omf2097-assets.zip -d build-release/release/usr/share/games/openomf
+      run: |
+          unzip -j omf2097-assets.zip -d build-release/release/usr/share/games/openomf
+          rm -f build-release/release/usr/share/games/openomf/{ENGLISH.DAT,GERMAN.DAT}
 
     - name: Generate TGZ package
       run: tar cvfz ${GITHUB_WORKSPACE}/openomf_${{ env.OPENOMF_VERSION }}-${{ steps.slug.outputs.sha8 }}_linux_amd64.tar.gz -C build-release/release/ .
@@ -263,6 +275,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        submodules: true
 
     - name: Install Mac Dependencies
       run: |
@@ -295,7 +309,10 @@ jobs:
         key: omf2097-assets.zip
 
     - name: Extract omf 2097 assets
-      run: unzip -j omf2097-assets.zip -d build-release/release/usr/share/games/openomf
+      shell: bash
+      run: |
+          unzip -j omf2097-assets.zip -d build-release/release/usr/share/games/openomf
+          rm -f build-release/release/usr/share/games/openomf/{ENGLISH.DAT,GERMAN.DAT}
 
     - name: Get short SHA
       id: slug
@@ -323,6 +340,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        # mingw does not build languages
+        submodules: false
 
     - name: Install apt Dependencies
       uses: Eeems-Org/apt-cache-action@v1.3

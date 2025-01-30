@@ -1,13 +1,11 @@
+#
+# BuildLanguages.cmake has one job:
+# if option BUILD_LANGUAGES is on, builds the .LNG files from resources/translations/*.TXT
+#
+
 if(NOT BUILD_LANGUAGES)
     return()
 endif()
-
-# OMF 2097 Epic Challenge Arena
-set(LANG_STRCOUNT 1013)
-set(OMF_LANGS ENGLISH GERMAN)
-# OpenOMF-specific
-set(LANG2_STRCOUNT 1)
-set(OPENOMF_LANGS DANISH)
 
 if(WIN32)
     set(LANGUAGE_INSTALL_PATH "openomf/resources/")
@@ -15,37 +13,32 @@ else()
     set(LANGUAGE_INSTALL_PATH "share/games/openomf/")
 endif()
 
+# glob all language sources
+set(LANG_SRC "${PROJECT_SOURCE_DIR}/resources/translations")
+file(GLOB OPENOMF_LANGS
+    LIST_DIRECTORIES false
+    CONFIGURE_DEPENDS
+    "${LANG_SRC}/*.TXT"
+)
+
+file(READ "${LANG_SRC}/langstr_count" Lang_Count)
+string(REGEX REPLACE "\n+$" "" Lang_Count "${Lang_Count}")
+
 # generate custom target info
 set(BUILD_LANG_COMMANDS)
 set(BUILD_LANG_SOURCES)
-foreach(LANG ${OMF_LANGS})
-    set(TXT2 "${PROJECT_SOURCE_DIR}/resources/${LANG}2.TXT")
-    set(DAT2 "${CMAKE_CURRENT_BINARY_DIR}/resources/${LANG}.DAT2")
-    list(APPEND BUILD_LANG_SORUCES "${TXT2}")
-    list(APPEND BUILD_LANG_COMMANDS
-        DEPENDS "${TXT2}"
-        BYPRODUCTS "${DAT2}"
-        COMMAND ${CMAKE_COMMAND} -E echo_append "${LANG}, "
-        COMMAND "$<TARGET_FILE:languagetool>" -i "${TXT2}" -o "${DAT2}" --check-count ${LANG2_STRCOUNT}
-    )
-    install(FILES "${DAT2}" DESTINATION "${LANGUAGE_INSTALL_PATH}")
-endforeach()
-foreach(LANG ${OPENOMF_LANGS})
-    set(TXT "${PROJECT_SOURCE_DIR}/resources/${LANG}.TXT")
-    set(TXT2 "${PROJECT_SOURCE_DIR}/resources/${LANG}2.TXT")
+foreach(TXT ${OPENOMF_LANGS})
+    get_filename_component(LANG "${TXT}" NAME_WE)
     set(LNG "${CMAKE_CURRENT_BINARY_DIR}/resources/${LANG}.LNG")
-    set(LNG2 "${CMAKE_CURRENT_BINARY_DIR}/resources/${LANG}.LNG2")
-    list(APPEND BUILD_LANG_SORUCES "${TXT}" "${TXT2}")
+    list(APPEND BUILD_LANG_SORUCES "${TXT}")
     list(APPEND BUILD_LANG_COMMANDS
-        DEPENDS "${TXT}" "${TXT2}"
-        BYPRODUCTS "${LNG}" "{LNG2}"
+        DEPENDS "${TXT}"
+        BYPRODUCTS "${LNG}"
         COMMAND ${CMAKE_COMMAND} -E echo_append "${LANG}, "
-        COMMAND "$<TARGET_FILE:languagetool>" -i "${TXT}" -o "${LNG}" --check-count ${LANG_STRCOUNT}
-        COMMAND "$<TARGET_FILE:languagetool>" -i "${TXT2}" -o "${LNG2}" --check-count ${LANG2_STRCOUNT}
+        COMMAND "$<TARGET_FILE:languagetool>" --import "${TXT}" --output "${LNG}" --check-count "${Lang_Count}"
     )
-    install(FILES "${LNG}" "${LNG2}" DESTINATION "${LANGUAGE_INSTALL_PATH}")
+    install(FILES "${LNG}" DESTINATION "${LANGUAGE_INSTALL_PATH}")
 endforeach()
-
 
 
 add_custom_target(build_languages
@@ -53,6 +46,6 @@ add_custom_target(build_languages
     ${BUILD_LANG_COMMANDS}
     COMMAND ${CMAKE_COMMAND} -E echo_append "done"
 )
-target_sources(build_languages PRIVATE ${BUILD_LANG_SORUCES})
+target_sources(build_languages PRIVATE ${BUILD_LANG_SOURCES})
 add_dependencies(openomf build_languages)
 add_dependencies(build_languages languagetool)

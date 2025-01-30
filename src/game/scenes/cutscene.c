@@ -9,10 +9,6 @@
 #include "utils/allocator.h"
 #include "video/video.h"
 
-#define END_TEXT 992
-#define END1_TEXT 993
-#define END2_TEXT 1003
-
 typedef struct cutscene_local {
     char *text;
     char *current;
@@ -138,7 +134,7 @@ int cutscene_create(scene *scene) {
     switch(scene->id) {
         case SCENE_END:
             audio_play_music(PSM_END);
-            text = lang_get(END_TEXT);
+            text = lang_get(LangSceneEnd);
             local->text_x = 10;
             local->text_y = 5;
             local->text_width = 300;
@@ -146,7 +142,7 @@ int cutscene_create(scene *scene) {
             break;
 
         case SCENE_END1:
-            text = lang_get(END1_TEXT + p1->pilot->pilot_id);
+            text = lang_get_offset(LangSceneEnd1, p1->pilot->pilot_id);
             local->text_x = 10;
             local->text_y = 157;
             local->text_width = 300;
@@ -170,7 +166,7 @@ int cutscene_create(scene *scene) {
             break;
 
         case SCENE_END2:
-            text = lang_get(END2_TEXT + p1->pilot->pilot_id);
+            text = lang_get_offset(LangSceneEnd2, p1->pilot->pilot_id);
             local->text_x = 10;
             local->text_y = 160;
             local->text_width = 300;

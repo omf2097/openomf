@@ -512,11 +512,11 @@ static void render_pilot_select(melee_local *local, bool player2_is_selectable) 
     tconf_black.cshadow = TEXT_SHADOW_BLACK;
 
     // player bio
-    text_render(&tconf_green, TEXT_DEFAULT, 4, 66, 156, 34, lang_get(135 + current_a));
+    text_render(&tconf_green, TEXT_DEFAULT, 4, 66, 156, 34, lang_get_offset(LangPilotDescription, current_a));
     // player stats
-    text_render(&tconf_green, TEXT_DEFAULT, 74, 4, 85, 6, lang_get(216));
-    text_render(&tconf_green, TEXT_DEFAULT, 74, 22, 85, 6, lang_get(217));
-    text_render(&tconf_green, TEXT_DEFAULT, 74, 40, 85, 6, lang_get(218));
+    text_render(&tconf_green, TEXT_DEFAULT, 74, 4, 85, 6, lang_get(LangPilotStatPower));
+    text_render(&tconf_green, TEXT_DEFAULT, 74, 22, 85, 6, lang_get(LangPilotStatSpeed));
+    text_render(&tconf_green, TEXT_DEFAULT, 74, 40, 85, 6, lang_get(LangPilotStatEndurance));
     component_render(local->bar_power[0]);
     component_render(local->bar_agility[0]);
     component_render(local->bar_endurance[0]);
@@ -525,29 +525,32 @@ static void render_pilot_select(melee_local *local, bool player2_is_selectable) 
 
     if(player2_is_selectable) {
         // player 2 name
-        text_render(&tconf_black, TEXT_DEFAULT, 320 - 66, 52, 66, 6, lang_get(20 + current_b));
+        text_render(&tconf_black, TEXT_DEFAULT, 320 - 66, 52, 66, 6, lang_get_offset(LangPilot, current_b));
 
         video_draw(&local->bg_player_stats, 320 - 70 - local->bg_player_stats.w, 0);
         video_draw(&local->bg_player_bio, 320 - local->bg_player_bio.w, 62);
         // player bio
         text_render(&tconf_green, TEXT_DEFAULT, 320 - local->bg_player_bio.w + 4, 66, 156, 34,
-                    lang_get(135 + current_b));
+                    lang_get_offset(LangPilotDescription, current_b));
 
         // player stats
-        text_render(&tconf_green, TEXT_DEFAULT, 320 - 66 - local->bg_player_stats.w, 4, 85, 6, lang_get(216));
-        text_render(&tconf_green, TEXT_DEFAULT, 320 - 66 - local->bg_player_stats.w, 22, 85, 6, lang_get(217));
-        text_render(&tconf_green, TEXT_DEFAULT, 320 - 66 - local->bg_player_stats.w, 40, 85, 6, lang_get(218));
+        text_render(&tconf_green, TEXT_DEFAULT, 320 - 66 - local->bg_player_stats.w, 4, 85, 6,
+                    lang_get(LangPilotStatPower));
+        text_render(&tconf_green, TEXT_DEFAULT, 320 - 66 - local->bg_player_stats.w, 22, 85, 6,
+                    lang_get(LangPilotStatSpeed));
+        text_render(&tconf_green, TEXT_DEFAULT, 320 - 66 - local->bg_player_stats.w, 40, 85, 6,
+                    lang_get(LangPilotStatEndurance));
 
         component_render(local->bar_power[1]);
         component_render(local->bar_agility[1]);
         component_render(local->bar_endurance[1]);
     } else {
         // 'choose your pilot'
-        text_render(&tconf_green, TEXT_DEFAULT, 160, 97, 160, 6, lang_get(187));
+        text_render(&tconf_green, TEXT_DEFAULT, 160, 97, 160, 6, lang_get(LangChooseYourPilot));
     }
 
     // player 1 name
-    text_render(&tconf_black, TEXT_DEFAULT, 0, 52, 66, 6, lang_get(20 + current_a));
+    text_render(&tconf_black, TEXT_DEFAULT, 0, 52, 66, 6, lang_get_offset(LangPilot, current_a));
 
     object_render(&local->unselected_pilot_portraits);
     render_highlights(local, player2_is_selectable);
@@ -591,11 +594,11 @@ static void render_har_select(melee_local *local, bool player2_is_selectable) {
     tconf_black.cshadow = TEXT_SHADOW_BLACK;
 
     // player 1 name
-    text_render(&tconf_black, TEXT_DEFAULT, 0, 52, 66, 6, lang_get(20 + local->pilot_id_a));
+    text_render(&tconf_black, TEXT_DEFAULT, 0, 52, 66, 6, lang_get_offset(LangPilot, local->pilot_id_a));
 
     if(player2_is_selectable) {
         // player 2 name
-        text_render(&tconf_black, TEXT_DEFAULT, 320 - 66, 52, 66, 6, lang_get(20 + local->pilot_id_b));
+        text_render(&tconf_black, TEXT_DEFAULT, 320 - 66, 52, 66, 6, lang_get_offset(LangPilot, local->pilot_id_b));
 
         // currently selected player
         object_render(&local->big_portrait_2);
@@ -608,7 +611,7 @@ static void render_har_select(melee_local *local, bool player2_is_selectable) {
         text_render(&tconf_black, TEXT_DEFAULT, 80, 107, 150, 6, str_c(&local->vs_text));
     } else {
         // 'choose your Robot'
-        text_render(&tconf_green, TEXT_DEFAULT, 160, 97, 160, 6, lang_get(186));
+        text_render(&tconf_green, TEXT_DEFAULT, 160, 97, 160, 6, lang_get(LangChooseYourRobot));
 
         // render HAR name
         text_render(&tconf_black, TEXT_DEFAULT, 120, 107, 60, 6, har_get_name(CURSOR_INDEX(local, 0)));
