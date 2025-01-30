@@ -7,6 +7,7 @@
 #include "resources/ids.h"
 #include "resources/languages.h"
 #include "utils/allocator.h"
+#include "utils/c_string_util.h"
 #include "video/video.h"
 
 #define END_TEXT 992
@@ -220,8 +221,7 @@ int cutscene_create(scene *scene) {
         size_t text_len = strlen(text);
         local->len = text_len - 1;
         local->pos = 0;
-        local->text = omf_calloc(text_len + 1, 1);
-        strncpy(local->text, text, text_len);
+        local->text = omf_strdup(text);
         local->current = local->text;
 
         char *p;
