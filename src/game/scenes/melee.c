@@ -511,7 +511,7 @@ void handle_action(scene *scene, int player, int action) {
                             player2->pilot->har_id = HAR_NOVA;
                         } else {
                             // pick an opponent we have not yet beaten
-                            while(1) {
+                            while(0) {
                                 int i = rand_int(10);
                                 if((2 << i) & player1->sp_wins || i == player1->pilot->pilot_id) {
                                     continue;
