@@ -293,8 +293,8 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
                 SDL_RWwrite(data->trace_file, buf, sz, 1);
             }
 
-            if(gs->int_tick - data->local_proposal == data->peer_last_hash_tick &&
-               data->peer_last_hash != arena_hash && ev->seen_peer == 3) {
+            if(gs->int_tick - data->local_proposal == data->peer_last_hash_tick && data->peer_last_hash != arena_hash &&
+               ev->seen_peer == 3) {
                 if(data->trace_file) {
                     int sz = snprintf(buf, sizeof(buf), "---MISMATCH at %d (%d) got %" PRIu32 " expected %" PRIu32 "\n",
                                       gs->int_tick - data->local_proposal, data->peer_last_hash_tick,
@@ -303,8 +303,7 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
                 }
 
                 DEBUG("arena hash mismatch at %d (%d) -- got %" PRIu32 " expected %" PRIu32 "!",
-                      gs->int_tick - data->local_proposal, data->peer_last_hash_tick, data->peer_last_hash,
-                      arena_hash);
+                      gs->int_tick - data->local_proposal, data->peer_last_hash_tick, data->peer_last_hash, arena_hash);
                 for(int i = 0; i < game_state_num_players(gs); i++) {
                     game_player *gp = game_state_get_player(gs, i);
                     controller *c = game_player_get_ctrl(gp);
