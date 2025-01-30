@@ -819,28 +819,6 @@ void controller_hook(controller *ctrl, int action) {
     }
 }
 
-void net_controller_har_hook(int action, void *cb_data) {
-    controller *ctrl = cb_data;
-    wtf *data = ctrl->data;
-    ENetPeer *peer = data->peer;
-
-    if(action == ACT_STOP && data->last_action == ACT_STOP) {
-        // data->last_action = -1;
-        return;
-    }
-    data->last_action = action;
-    if(peer) {
-        DEBUG("har hook!");
-        if(data->synchronized && data->gs_bak) {
-            insert_event(data, data->last_tick - data->local_proposal, action, data->id);
-            send_events(data);
-            // print_transcript(&data->transcript);
-        }
-    } else {
-        DEBUG("peer is null~");
-    }
-}
-
 void net_controller_create(controller *ctrl, ENetHost *host, ENetPeer *peer, ENetPeer *lobby, int id) {
     wtf *data = omf_calloc(1, sizeof(wtf));
     data->id = id;
