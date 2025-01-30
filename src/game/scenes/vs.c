@@ -139,7 +139,6 @@ void vs_free(scene *scene) {
 
 void vs_handle_action(scene *scene, int action) {
     vs_local *local = scene_get_userdata(scene);
-    game_player *player1 = game_state_get_player(scene->gs, 0);
     if(dialog_is_visible(&local->too_pathetic_dialog)) {
         dialog_event(&local->too_pathetic_dialog, action);
     } else if(dialog_is_visible(&local->quit_dialog)) {
@@ -184,26 +183,6 @@ void vs_handle_action(scene *scene, int action) {
                     object_select_sprite(arena_select, local->arena);
                 }
                 break;
-            case ACT_ESC:
-                if(dialog_is_visible(&local->too_pathetic_dialog)) {
-                    dialog_event(&local->too_pathetic_dialog, action);
-                } else if(dialog_is_visible(&local->quit_dialog)) {
-                    dialog_event(&local->quit_dialog, action);
-                } else if(vs_is_singleplayer(scene) && player1->sp_wins != 0 && !player1->chr) {
-                    // there's an active singleplayer campaign, confirm quitting
-                    dialog_show(&local->quit_dialog, 1);
-                } else {
-                    if(player1->chr) {
-                        // Match cancelled, no winner
-                        scene->gs->fight_stats.winner = -1;
-                        // null out the  p2 pilot
-                        game_state_get_player(scene->gs, 1)->pilot = NULL;
-                        game_state_set_next(scene->gs, SCENE_MECHLAB);
-                    } else {
-                        game_state_set_next(scene->gs, SCENE_MELEE);
-                    }
-                }
-                break;
         }
     }
 }
@@ -235,8 +214,36 @@ void vs_static_tick(scene *scene, int paused) {
 }
 
 void vs_input_tick(scene *scene) {
-    ctrl_event *p1 = NULL, *i;
+    vs_local *local = scene->userdata;
     game_player *player1 = game_state_get_player(scene->gs, 0);
+    ctrl_event *menu_ev = NULL;
+    game_state_menu_poll(scene->gs, &menu_ev);
+
+    for(ctrl_event *i = menu_ev; i; i = i->next) {
+        if(i->type == EVENT_TYPE_ACTION && i->event_data.action == ACT_ESC) {
+            if(dialog_is_visible(&local->too_pathetic_dialog)) {
+                dialog_event(&local->too_pathetic_dialog, i->event_data.action);
+            } else if(dialog_is_visible(&local->quit_dialog)) {
+                dialog_event(&local->quit_dialog, i->event_data.action);
+            } else if(vs_is_singleplayer(scene) && player1->sp_wins != 0 && !player1->chr) {
+                // there's an active singleplayer campaign, confirm quitting
+                dialog_show(&local->quit_dialog, 1);
+            } else {
+                if(player1->chr) {
+                    // Match cancelled, no winner
+                    scene->gs->fight_stats.winner = -1;
+                    // null out the  p2 pilot
+                    game_state_get_player(scene->gs, 1)->pilot = NULL;
+                    game_state_set_next(scene->gs, SCENE_MECHLAB);
+                } else {
+                    game_state_set_next(scene->gs, SCENE_MELEE);
+                }
+            }
+        }
+    }
+    controller_free_chain(menu_ev);
+
+    ctrl_event *p1 = NULL, *i;
     controller_poll(player1->ctrl, &p1);
     i = p1;
     if(i) {

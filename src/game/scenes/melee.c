@@ -422,24 +422,7 @@ void melee_input_tick(scene *scene) {
     if(i) {
         do {
             if(i->type == EVENT_TYPE_ACTION) {
-                if(i->event_data.action == ACT_ESC) {
-                    audio_play_sound(20, 0.5f, 0.0f, 2.0f);
-                    if(local->page == HAR_SELECT) {
-                        // restore the player selection
-                        local->cursor[0].column = local->pilot_id_a % 5;
-                        local->cursor[0].row = local->pilot_id_a / 5;
-                        local->cursor[0].done = 0;
-                        local->cursor[1].column = local->pilot_id_b % 5;
-                        local->cursor[1].row = local->pilot_id_b / 5;
-                        local->cursor[1].done = 0;
-                        local->page = PILOT_SELECT;
-                        load_pilot_portraits_palette(scene);
-                    } else {
-                        game_state_set_next(scene->gs, SCENE_MENU);
-                    }
-                } else {
-                    handle_action(scene, 1, i->event_data.action);
-                }
+                handle_action(scene, 1, i->event_data.action);
             } else if(i->type == EVENT_TYPE_CLOSE) {
                 game_state_set_next(scene->gs, SCENE_MENU);
             }
@@ -457,6 +440,29 @@ void melee_input_tick(scene *scene) {
         } while((i = i->next) != NULL);
     }
     controller_free_chain(p2);
+
+    ctrl_event *menu_ev = NULL;
+    game_state_menu_poll(scene->gs, &menu_ev);
+
+    for(i = menu_ev; i; i = i->next) {
+        if(i->type == EVENT_TYPE_ACTION && i->event_data.action == ACT_ESC) {
+            audio_play_sound(20, 0.5f, 0.0f, 2.0f);
+            if(local->page == HAR_SELECT) {
+                // restore the player selection
+                local->cursor[0].column = local->pilot_id_a % 5;
+                local->cursor[0].row = local->pilot_id_a / 5;
+                local->cursor[0].done = 0;
+                local->cursor[1].column = local->pilot_id_b % 5;
+                local->cursor[1].row = local->pilot_id_b / 5;
+                local->cursor[1].done = 0;
+                local->page = PILOT_SELECT;
+                load_pilot_portraits_palette(scene);
+            } else {
+                game_state_set_next(scene->gs, SCENE_MENU);
+            }
+        }
+    }
+    controller_free_chain(menu_ev);
 }
 
 static void draw_highlight(const melee_local *local, const cursor_data *cursor, int offset) {
