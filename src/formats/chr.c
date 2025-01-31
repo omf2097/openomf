@@ -74,7 +74,7 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
     str pic_file;
     str trn_file;
     sd_tournament_file trn;
-    sd_pic_file pic;
+    sd_pic_file pic, players;
     bool trn_loaded = false;
 
     if(dirname) {
@@ -84,6 +84,21 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
         str_free(&pic_file);
         sd_pic_create(&pic);
         sd_pic_load(&pic, tmp);
+
+        const char *players_filename = pm_get_resource_path(PIC_PLAYERS);
+        if(players_filename) {
+            DEBUG("trying to load players.pic from %s", players_filename);
+            // Load PIC file and make a surface
+            sd_pic_create(&players);
+            int ret = sd_pic_load(&players, players_filename);
+            if(ret == SD_SUCCESS) {
+                // Load player gender from PLAYERS.PIC
+                DEBUG("loading %d from players.pic", chr->pilot.photo_id);
+                const sd_pic_photo *photo = sd_pic_get(&players, chr->pilot.photo_id);
+                chr->pilot.sex = photo->sex;
+                sd_pic_free(&players);
+            }
+        }
 
         if(*chr->pilot.trn_name != '\0') {
             str_from_c(&trn_file, chr->pilot.trn_name);
@@ -176,7 +191,12 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
             chr->enemies[i]->pilot.total_value = trn.enemies[i]->total_value;
             chr->enemies[i]->pilot.photo_id = trn.enemies[i]->photo_id;
         }
-        memread_buf(mr, chr->enemies[i]->unknown, 25);
+        memread_buf(mr, chr->enemies[i]->unknown_a, 9);
+        chr->enemies[i]->photo_id = memread_ubyte(mr);
+        memread_buf(mr, chr->enemies[i]->unknown_b, 15);
+        if(trn_loaded) {
+            chr->enemies[i]->pilot.sex = pic.photos[chr->enemies[i]->photo_id]->sex;
+        }
         for(int m = 0; m < 10; m++) {
             if(trn_loaded && trn.enemies[i]->quotes[m]) {
                 chr->enemies[i]->pilot.quotes[m] = omf_strdup(trn.enemies[i]->quotes[m]);
@@ -253,7 +273,9 @@ int sd_chr_save(sd_chr_file *chr, const char *filename) {
     mw = memwriter_open();
     for(int i = 0; i < chr->pilot.enemies_inc_unranked; i++) {
         sd_pilot_save_player_to_mem(mw, &chr->enemies[i]->pilot);
-        memwrite_buf(mw, chr->enemies[i]->unknown, 25);
+        memwrite_buf(mw, chr->enemies[i]->unknown_a, 9);
+        memwrite_ubyte(mw, chr->enemies[i]->photo_id);
+        memwrite_buf(mw, chr->enemies[i]->unknown_b, 15);
     }
     memwriter_xor(mw, (chr->pilot.enemies_inc_unranked * 68) & 0xFF);
     memwriter_save(mw, w);

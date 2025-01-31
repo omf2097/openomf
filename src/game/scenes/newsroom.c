@@ -301,18 +301,6 @@ void newsroom_input_tick(scene *scene) {
     controller_free_chain(event);
 }
 
-int pilot_sex(int pilot_id) {
-    switch(pilot_id) {
-        case PILOT_CRYSTAL:
-        case PILOT_ANGEL:
-        case PILOT_COSSETTE:
-            return PILOT_SEX_FEMALE;
-        default:
-            // everyone else is male
-            return PILOT_SEX_MALE;
-    }
-}
-
 void newsroom_startup(scene *scene, int id, int *m_load, int *m_repeat) {
     switch(id) {
         case 5:
@@ -380,17 +368,14 @@ int newsroom_create(scene *scene) {
         local->news_id = 42 + rand_int(3) * 2;
     }
 
-    // XXX TODO get the real sex of pilot
     // XXX TODO strip spaces from the end of the pilots name
     // XXX TODO set winner/loser names properly
     if(p1->chr) {
-        // TODO pilot genders
         newsroom_set_names(local, p1->pilot->name, p2->pilot->name, p1->pilot->har_id, p2->pilot->har_id,
-                           pilot_sex(p1->pilot->pilot_id), pilot_sex(p2->pilot->pilot_id));
+                           p1->pilot->sex, p2->pilot->sex);
     } else {
         newsroom_set_names(local, lang_get(20 + p1->pilot->pilot_id), lang_get(20 + p2->pilot->pilot_id),
-                           p1->pilot->har_id, p2->pilot->har_id, pilot_sex(p1->pilot->pilot_id),
-                           pilot_sex(p2->pilot->pilot_id));
+                           p1->pilot->har_id, p2->pilot->har_id, p1->pilot->sex, p2->pilot->sex);
     }
     newsroom_fixup_str(local);
 

@@ -22,8 +22,10 @@
  * Contains information about the current state of an enemy in the selected tournament.
  */
 typedef struct {
-    sd_pilot pilot;   ///< Enemy pilot data
-    char unknown[25]; ///< Unknown data TODO: Find out what this does
+    sd_pilot pilot;    ///< Enemy pilot data
+    char unknown_a[9]; ///< Unknown data TODO: Find out what this does
+    uint8_t photo_id;
+    char unknown_b[15];
 } sd_chr_enemy;
 
 /*! \brief CHR Saved game

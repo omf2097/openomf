@@ -104,4 +104,10 @@ enum
     NUMBER_OF_ROUND_TYPES,
 };
 
+enum
+{
+    PILOT_SEX_MALE,
+    PILOT_SEX_FEMALE
+};
+
 #endif // COMMON_DEFINES_H

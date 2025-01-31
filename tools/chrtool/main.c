@@ -35,7 +35,10 @@ void print_enemy_info(sd_chr_file *chr, int i) {
     printf("Enemy %d:\n", i);
     print_pilot_info(&chr->enemies[i]->pilot);
     printf("  - Some unknown thingy: \n");
-    print_bytes(chr->enemies[i]->unknown, sizeof(chr->enemies[i]->unknown), 10, 5);
+    print_bytes(chr->enemies[i]->unknown_a, sizeof(chr->enemies[i]->unknown_a), 10, 5);
+    printf("\n  - PIC ID: %d\n", chr->enemies[i]->photo_id);
+    printf("  - Some unknown thingy: \n");
+    print_bytes(chr->enemies[i]->unknown_b, sizeof(chr->enemies[i]->unknown_b), 10, 5);
     printf("\n");
 }
 
