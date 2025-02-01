@@ -27,6 +27,7 @@ void label_set_text(component *c, const char *text) {
         omf_free(local->text);
     }
     local->text = omf_strdup(text);
+    local->text_cache[0].dirty = true;
 }
 
 text_settings *label_get_text_settings(component *c) {
