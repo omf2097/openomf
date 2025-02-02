@@ -539,9 +539,7 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
     int last_received = 0;
     int has_received = 0;
 
-    int receive_count = 0;
-    while(receive_count < 3 && enet_host_service(host, &event, 0) > 0) {
-        receive_count++;
+    while(enet_host_service(host, &event, 0) > 0) {
         switch(event.type) {
             case ENET_EVENT_TYPE_RECEIVE:
                 serial_create_from(&ser, (const char *)event.packet->data, event.packet->dataLength);
@@ -721,6 +719,11 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                 if(data->gs_bak) {
                     game_state_clone_free(data->gs_bak);
                     omf_free(data->gs_bak);
+                }
+                if(data->lobby) {
+                    game_state_set_next(ctrl->gs, SCENE_LOBBY);
+                } else {
+                    game_state_set_next(ctrl->gs, SCENE_MENU);
                 }
                 controller_close(ctrl, ev);
                 return 1; // bail the fuck out
