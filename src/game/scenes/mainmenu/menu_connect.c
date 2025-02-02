@@ -133,7 +133,7 @@ void menu_connect_tick(component *c) {
 
             log_debug("connected to server!");
             controller *player1_ctrl, *player2_ctrl;
-            //keyboard_keys *keys;
+            // keyboard_keys *keys;
             game_player *p1 = game_state_get_player(gs, 0);
             game_player *p2 = game_state_get_player(gs, 1);
 
