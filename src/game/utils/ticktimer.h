@@ -14,4 +14,6 @@ void ticktimer_add(ticktimer *tt, int ticks, ticktimer_cb cb, void *userdata);
 void ticktimer_run(ticktimer *tt, void *scenedata);
 void ticktimer_close(ticktimer *tt);
 
+void ticktimer_clone(ticktimer *src, ticktimer *dst);
+
 #endif // TICKTIMER_H

@@ -717,14 +717,16 @@ uint32_t arena_state_hash(game_state *gs) {
     return hash;
 }
 
-void arena_state_dump(game_state *gs) {
+void arena_state_dump(game_state *gs, char *buf) {
+    int off = 0;
     for(int i = 0; i < 2; i++) {
         object *obj_har = game_state_find_object(gs, game_player_get_har_obj_id(game_state_get_player(gs, i)));
         har *har = obj_har->userdata;
         vec2i pos = object_get_pos(obj_har);
         vec2f vel = object_get_vel(obj_har);
-        DEBUG("har %d pos %d,%d, health %d, endurance %f, velocity %f,%f, state %d, executing_move %d", i, pos.x, pos.y,
-              har->health, (float)har->endurance, vel.x, vel.y, har->state, har->executing_move);
+        off = snprintf(buf + off, 255 - off,
+                       "har %d pos %d,%d, health %d, endurance %f, velocity %f,%f, state %d, executing_move %d\n", i,
+                       pos.x, pos.y, har->health, (float)har->endurance, vel.x, vel.y, har->state, har->executing_move);
     }
 }
 
@@ -893,8 +895,6 @@ void arena_spawn_hazard(scene *scene) {
 void arena_dynamic_tick(scene *scene, int paused) {
     arena_local *local = scene_get_userdata(scene);
     game_state *gs = scene->gs;
-    game_player *player1 = game_state_get_player(gs, 0);
-    game_player *player2 = game_state_get_player(gs, 1);
 
     if(!paused) {
         object *obj_har[2];
@@ -987,10 +987,6 @@ void arena_dynamic_tick(scene *scene, int paused) {
             }
         }
     } // if(!paused)
-
-    // allow enemy HARs to move during a network game
-    arena_handle_events(scene, player1, player1->ctrl->extra_events);
-    arena_handle_events(scene, player2, player2->ctrl->extra_events);
 }
 
 void arena_static_tick(scene *scene, int paused) {
