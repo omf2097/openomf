@@ -1009,7 +1009,7 @@ void arena_static_tick(scene *scene, int paused) {
 void arena_input_tick(scene *scene) {
     arena_local *local = scene_get_userdata(scene);
 
-    if(!local->menu_visible) {
+    if(!game_state_is_paused(scene->gs)) {
         game_player *player1 = game_state_get_player(scene->gs, 0);
         game_player *player2 = game_state_get_player(scene->gs, 1);
 

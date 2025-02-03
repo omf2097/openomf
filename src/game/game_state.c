@@ -316,6 +316,11 @@ unsigned int game_state_is_paused(game_state *gs) {
 }
 
 void game_state_set_paused(game_state *gs, unsigned int paused) {
+    // don't pause netplay games
+    if(is_netplay(gs)) {
+        return;
+    }
+
     gs->paused = paused;
 }
 
