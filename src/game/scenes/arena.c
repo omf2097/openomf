@@ -191,12 +191,6 @@ void scene_youlose_anim_start(void *userdata) {
     /*arena->state = ARENA_STATE_ENDING;*/
 }
 
-void arena_repeat_controller(void *userdata) {
-    game_state *gs = userdata;
-    game_player *player1 = game_state_get_player(gs, 0);
-    controller_set_repeat(game_player_get_ctrl(player1), 1);
-}
-
 void arena_screengrab_winner(scene *sc) {
     game_state *gs = sc->gs;
 
