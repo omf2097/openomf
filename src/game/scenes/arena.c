@@ -90,8 +90,6 @@ void game_menu_quit(component *c, void *userdata) {
 
 void game_menu_return(component *c, void *userdata) {
     arena_local *local = scene_get_userdata((scene *)userdata);
-    game_player *player1 = game_state_get_player(((scene *)userdata)->gs, 0);
-    controller_set_repeat(game_player_get_ctrl(player1), 1);
     local->menu_visible = 0;
     game_state_set_paused(((scene *)userdata)->gs, 0);
 }
@@ -1027,8 +1025,6 @@ void arena_input_tick(scene *scene) {
             // toggle menu
             local->menu_visible = !local->menu_visible;
             game_state_set_paused(scene->gs, local->menu_visible);
-            controller_set_repeat(game_player_get_ctrl(game_state_get_player(scene->gs, 0)), !local->menu_visible);
-            controller_set_repeat(game_player_get_ctrl(game_state_get_player(scene->gs, 1)), !local->menu_visible);
         } else if(i->type == EVENT_TYPE_ACTION && local->menu_visible && i->event_data.action != ACT_ESC) {
             // menu events
             guiframe_action(local->game_menu, i->event_data.action);
