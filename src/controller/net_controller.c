@@ -871,10 +871,6 @@ void controller_hook(controller *ctrl, int action) {
         if(action == ACT_STOP && har->state == data->last_har_state) {
             return;
         }
-        // int arena_state = arena_get_state(game_state_get_scene(ctrl->gs));
-        // if(arena_state != ARENA_STATE_FIGHTING) {
-        //     return;
-        // }
         data->last_har_state = har->state;
         data->last_action = action;
     }

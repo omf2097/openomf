@@ -295,22 +295,6 @@ void engine_run(engine_init_flags *init_flags) {
                     // gs->new_state = NULL;
                     game_state_clone_free(old_gs);
                     omf_free(old_gs);
-                    frame_dt = SDL_GetTicks64() - frame_start;
-                    frame_start = SDL_GetTicks64();
-                    if(!visual_debugger) {
-                        dynamic_wait += frame_dt;
-                        static_wait += frame_dt;
-                    } else if(debugger_proceed) {
-                        dynamic_wait += 20;
-                        static_wait += 20;
-                        debugger_proceed = 0;
-                    }
-                    // drop ticks if it's been too long since they were due
-                    dynamic_wait = min2(dynamic_wait, TICK_EXPIRY_MS);
-                    static_wait = min2(static_wait, TICK_EXPIRY_MS);
-                    tick_limit = MAX_TICKS_PER_FRAME;
-
-                    continue;
                 }
                 console_tick(gs);
                 static_wait -= STATIC_TICKS;
