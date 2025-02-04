@@ -311,7 +311,6 @@ void engine_run(engine_init_flags *init_flags) {
                     tick_limit = MAX_TICKS_PER_FRAME;
 
                     continue;
-
                 }
                 console_tick(gs);
                 static_wait -= STATIC_TICKS;

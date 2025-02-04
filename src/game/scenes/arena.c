@@ -739,7 +739,7 @@ uint32_t arena_state_hash(game_state *gs) {
     return hash;
 }
 
-char* state_name(int state) {
+char *state_name(int state) {
     switch(state) {
         case STATE_STANDING:
             return "standing";
@@ -771,7 +771,7 @@ char* state_name(int state) {
             return "destruction";
         case STATE_WALLDAMAGE: // Took damage from wall (electrocution)
             return "wall_damage";
-        case STATE_DONE:        // destruction or scrap has completed
+        case STATE_DONE: // destruction or scrap has completed
             return "done";
         default:
             return "unknown!!!";
@@ -787,7 +787,8 @@ void arena_state_dump(game_state *gs, char *buf) {
         vec2f vel = object_get_vel(obj_har);
         off = snprintf(buf + off, 255 - off,
                        "har %d pos %d,%d, health %d, endurance %f, velocity %f,%f, state %s, executing_move %d\n", i,
-                       pos.x, pos.y, har->health, (float)har->endurance, vel.x, vel.y, state_name(har->state), har->executing_move);
+                       pos.x, pos.y, har->health, (float)har->endurance, vel.x, vel.y, state_name(har->state),
+                       har->executing_move);
     }
 }
 
