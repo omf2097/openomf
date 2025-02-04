@@ -145,7 +145,7 @@ bool has_event(wtf *data, uint32_t tick) {
     list_iter_begin(&data->transcript, &it);
     tick_events *ev = NULL;
     while((ev = (tick_events *)list_iter_next(&it))) {
-        if(ev->tick == tick - data->local_proposal && ev->events[data->id]) {
+        if(ev->tick == tick - data->local_proposal && ev->events[data->id][0]) {
             return true;
         }
     }
@@ -230,7 +230,7 @@ void send_events(wtf *data) {
     int last_sent = 0;
 
     while((ev = (tick_events *)list_iter_next(&it))) {
-        if(ev->events[data->id] != 0 && ev->tick > data->last_acked_tick &&
+        if(ev->events[data->id][0] != 0 && ev->tick > data->last_acked_tick &&
            ev->tick < data->last_tick - data->local_proposal) {
             serial_write_uint32(&ser, ev->tick);
             int i = 0;
@@ -366,7 +366,7 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
 
         arena_hash = arena_state_hash(gs);
 
-        if(data->trace_file && (ev->events[0] || ev->events[1]) && ev->tick <= last_agreed &&
+        if(data->trace_file && (ev->events[0][0] || ev->events[1][0]) && ev->tick <= last_agreed &&
            ev->tick > data->last_traced_tick) {
             data->last_traced_tick = ev->tick;
             char buf0[12];
