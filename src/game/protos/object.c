@@ -39,7 +39,7 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
 
     // Physics
     obj->layers = OBJECT_DEFAULT_LAYER;
-    obj->group = OBJECT_NO_GROUP;
+    obj->group = GROUP_UNKNOWN;
     obj->gravity = 0.0f;
 
     // Video effect stuff

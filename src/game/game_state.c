@@ -282,12 +282,12 @@ void game_state_get_projectiles(game_state *gs, vector *obj_proj) {
     }
 }
 
-void game_state_clear_hazards_projectiles(game_state *gs) {
+void game_state_clear_objects(game_state *gs, int mask) {
     iterator it;
     render_obj *robj;
     vector_iter_begin(&gs->objects, &it);
     while((robj = iter_next(&it)) != NULL) {
-        if(object_get_group(robj->obj) == GROUP_PROJECTILE) {
+        if(object_get_group(robj->obj) & mask) {
             object_free(robj->obj);
             omf_free(robj->obj);
             vector_delete(&gs->objects, &it);
@@ -591,7 +591,7 @@ void game_state_call_collide(game_state *gs) {
         a = ((render_obj *)vector_get(&gs->objects, i))->obj;
         for(unsigned k = i + 1; k < size; k++) {
             b = ((render_obj *)vector_get(&gs->objects, k))->obj;
-            if(a->group != b->group || a->group == OBJECT_NO_GROUP || b->group == OBJECT_NO_GROUP) {
+            if(a->group != b->group || a->group == GROUP_UNKNOWN || b->group == GROUP_UNKNOWN) {
                 if(a->layers & b->layers) {
                     object_collide(a, b);
                 }
