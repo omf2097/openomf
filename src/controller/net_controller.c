@@ -425,7 +425,8 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
         // controller_cmd(ctrl, action, ev);
     }
 
-    DEBUG("game state is %" PRIu32 ", want %" PRIu32, gs->int_tick - data->local_proposal, data->last_tick - data->local_proposal);
+    DEBUG("game state is %" PRIu32 ", want %" PRIu32, gs->int_tick - data->local_proposal,
+          data->last_tick - data->local_proposal);
     uint32_t ticks = data->last_tick - gs->int_tick;
     // tick the number of required times
     for(int dynamic_wait = (int)ticks; dynamic_wait > 0; dynamic_wait--) {
