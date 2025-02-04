@@ -298,7 +298,7 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
 
     uint32_t arena_hash = 0; // arena_state_hash(gs);
 
-    uint32_t last_agreed = data->last_acked_tick;
+    uint32_t last_agreed = min2(data->last_acked_tick, data->last_received_tick);
 
     while((ev = (tick_events *)list_iter_next(&it))) {
         if(ev->tick + data->local_proposal <= data->gs_bak->int_tick) {
@@ -309,7 +309,7 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
 
         // The next tick is past when we have agreement, so we need to save the last known good game state
         // for future replays
-        if(gs_new == NULL && ev->tick > last_agreed && gs->int_tick - data->local_proposal == last_agreed &&
+        if(gs_new == NULL && ev->tick > last_agreed && gs->int_tick - data->local_proposal <= last_agreed &&
            gs->int_tick > gs_old->int_tick) {
             // DEBUG("tick %" PRIu32 " is newer than last acked tick %" PRIu32, ev->tick, data->last_acked_tick);
             DEBUG("saving game state at last agreed on tick %d with hash %" PRIu32, gs->int_tick - data->local_proposal,
@@ -571,6 +571,8 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
         arena_reset(ctrl->gs->sc);
         data->gs_bak = omf_calloc(1, sizeof(game_state));
         game_state_clone(ctrl->gs, data->gs_bak);
+        // bypass counter that tries to suppress input from previous scene
+        data->gs_bak->sc->static_ticks_since_start = 25;
         DEBUG("cloned game state at arena tick %d hash %" PRIu32, data->gs_bak->int_tick - data->local_proposal,
               arena_state_hash(data->gs_bak));
         data->local_proposal = ticks; // reset the tick offset to the start of the match
