@@ -22,7 +22,7 @@ typedef struct score_text {
     int age;
 } score_text;
 
-float multipliers[] = {
+float std_multipliers[] = {
     0.2f, // punching bag
     0.4f, // rookie
     0.6f, // veteran
@@ -30,6 +30,17 @@ float multipliers[] = {
     1.0f, // champion
     1.2f, // deadly
     1.4f  // ultimate
+};
+
+// Some of the difficulties do not map to tournament.
+float tournament_multipliers[] = {
+    0.0f, // unused
+    0.0f, // unused
+    0.5f, // aluminum - veteran
+    0.0f, // unused
+    1.0f, // iron - champion
+    1.5f, // steel - deadly
+    2.0f, // heavy metal - ultimate
 };
 
 vec2i interpolate(vec2i start, vec2i end, float fraction) {
@@ -43,6 +54,7 @@ void chr_score_create(chr_score *score) {
     score->x = 0;
     score->y = 0;
     score->direction = OBJECT_FACE_RIGHT;
+    score->multipliers = std_multipliers;
     list_create(&score->texts);
     chr_score_reset(score, 1);
     chr_score_reset_wins(score);
@@ -50,6 +62,10 @@ void chr_score_create(chr_score *score) {
 
 void chr_score_set_difficulty(chr_score *score, int difficulty) {
     score->difficulty = difficulty;
+}
+
+void chr_score_set_tournament_mode(chr_score *score, bool tournament) {
+    score->multipliers = tournament ? tournament_multipliers : std_multipliers;
 }
 
 void chr_score_reset(chr_score *score, bool wipe) {
@@ -182,7 +198,7 @@ void chr_score_add(chr_score *score, char *text, int points, vec2i pos, float po
 }
 
 void chr_score_hit(chr_score *score, int points) {
-    points = points * multipliers[score->difficulty];
+    points = points * score->multipliers[score->difficulty];
     score->score += points;
     score->consecutive_hits++;
     score->consecutive_hit_score += points;
@@ -198,7 +214,7 @@ void chr_score_victory(chr_score *score, int health) {
     if(health == 100) {
         text = omf_calloc(64, 1);
         int len = snprintf(text, 64, "perfect round ");
-        int points = DESTRUCTION * multipliers[score->difficulty];
+        int points = DESTRUCTION * score->multipliers[score->difficulty];
         score_format(points, text + len, 64 - len);
         // XXX hardcode the y coordinate for now
         chr_score_add(score, text, points, vec2i_create(160, 100), 1.0f);
@@ -206,7 +222,7 @@ void chr_score_victory(chr_score *score, int health) {
     text = omf_calloc(64, 1);
 
     int len = snprintf(text, 64, "vitality ");
-    int points = truncf((DESTRUCTION * multipliers[score->difficulty]) * (health / 100.0f));
+    int points = truncf((DESTRUCTION * score->multipliers[score->difficulty]) * (health / 100.0f));
     score_format(points, text + len, 64 - len);
     // XXX hardcode the y coordinate for now
     chr_score_add(score, text, points, vec2i_create(160, 100), 1.0f);
@@ -226,7 +242,7 @@ void chr_score_done(chr_score *score) {
         if(score->destruction) {
             char *text = omf_calloc(64, 1);
             int len = snprintf(text, 64, "destruction bonus ");
-            int points = DESTRUCTION * multipliers[score->difficulty];
+            int points = DESTRUCTION * score->multipliers[score->difficulty];
             score_format(points, text + len, 64 - len);
             // XXX hardcode the y coordinate for now
             chr_score_add(score, text, points, vec2i_create(160, 100), 1.0f);
@@ -234,7 +250,7 @@ void chr_score_done(chr_score *score) {
         } else if(score->scrap) {
             char *text = omf_calloc(64, 1);
             int len = snprintf(text, 64, "scrap bonus ");
-            int points = SCRAP * multipliers[score->difficulty];
+            int points = SCRAP * score->multipliers[score->difficulty];
             score_format(points, text + len, 64 - len);
             // XXX hardcode the y coordinate for now
             chr_score_add(score, text, points, vec2i_create(160, 100), 1.0f);
