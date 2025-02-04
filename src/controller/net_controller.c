@@ -354,8 +354,6 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
                 game_player *player = game_state_get_player(gs, player_id);
                 int k = 0;
                 while(ev->events[j][k]) {
-                    DEBUG("replaying input %d from player %d at tick %d %d", ev->events[j][k], player_id, ev->tick,
-                          gs->int_tick - data->local_proposal);
                     object_act(game_state_find_object(gs, game_player_get_har_obj_id(player)), ev->events[j][k]);
                     k++;
                 }
@@ -427,7 +425,7 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
         // controller_cmd(ctrl, action, ev);
     }
 
-    DEBUG("game state is %" PRIu32 ", want %" PRIu32, gs->int_tick, data->last_tick);
+    DEBUG("game state is %" PRIu32 ", want %" PRIu32, gs->int_tick - data->local_proposal, data->last_tick - data->local_proposal);
     uint32_t ticks = data->last_tick - gs->int_tick;
     // tick the number of required times
     for(int dynamic_wait = (int)ticks; dynamic_wait > 0; dynamic_wait--) {
