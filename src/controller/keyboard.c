@@ -1,5 +1,6 @@
 #include "controller/keyboard.h"
 #include "utils/allocator.h"
+#include "utils/log.h"
 #include <stdlib.h>
 
 void keyboard_free(controller *ctrl) {
@@ -13,6 +14,7 @@ static inline void keyboard_cmd(controller *ctrl, int action, ctrl_event **ev) {
 }
 
 int keyboard_poll(controller *ctrl, ctrl_event **ev) {
+    DEBUG("keyboard poll");
     keyboard *k = ctrl->data;
     ctrl->current = 0;
     const unsigned char *state = SDL_GetKeyboardState(NULL);

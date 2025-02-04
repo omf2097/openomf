@@ -107,6 +107,10 @@ void insert_event(wtf *data, uint32_t tick, uint16_t action, int id) {
             list_prepend(transcript, &event, sizeof(tick_events));
             return;
         } else if(ev->tick == tick) {
+            // if there's already a STOP for this frame, replace it
+            if (ev->events[id] == ACT_STOP) {
+                ev->events[id] = 0;
+            }
             ev->events[id] |= action;
             DEBUG("merging event on tick %d: action 0 %d action 1 %d id %d action %d", tick, ev->events[0],
                   ev->events[1], id, action);
@@ -136,6 +140,53 @@ bool has_event(wtf *data, uint32_t tick) {
     }
     return false;
 }
+
+void event_name(char *buf, int action) {
+
+    if(action == ACT_STOP) {
+        buf[0] = '5';
+        buf[1] = '\0';
+        return;
+    }
+
+    if (action & ACT_STOP) {
+        // should not appear with others
+        assert(false);
+    }
+
+    if (action & ACT_DOWN && action & ACT_LEFT) {
+        *buf++ = '1';
+    } else if (action & ACT_DOWN && action & ACT_RIGHT) {
+        *buf++ = '3';
+    } else if (action & ACT_DOWN) {
+        *buf++ = '2';
+    } else if (action & ACT_UP && action & ACT_LEFT) {
+        *buf++ = '7';
+    } else if (action & ACT_UP && action & ACT_RIGHT) {
+        *buf++ = '9';
+    } else if (action & ACT_UP) {
+        *buf++ = '8';
+    } else if (action & ACT_LEFT) {
+        *buf++ = '4';
+    } else if (action & ACT_RIGHT) {
+        *buf++ = '4';
+    } else if (action & ACT_DOWN || action & ACT_LEFT || action & ACT_RIGHT || action & ACT_LEFT) {
+        // invalid combination of arrow keys
+        assert(false);
+    }
+
+    if (action & ACT_KICK) {
+        *buf++ = 'k';
+    }
+
+    if (action & ACT_PUNCH) {
+        *buf++ = 'p';
+    }
+
+    *buf++ = '\0';
+}
+
+
 
 void print_transcript(list *transcript) {
     iterator it;
@@ -283,6 +334,8 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
         // feed in the inputs
         // XXX this is a hack for now
 
+        int arena_state = arena_get_state(game_state_get_scene(gs));
+        if(arena_state == ARENA_STATE_FIGHTING) {
         for(int j = 0; j < 2; j++) {
             int player_id = j;
             game_player *player = game_state_get_player(gs, player_id);
@@ -302,14 +355,21 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
             //} else {
             //    object_act(game_state_find_object(gs, game_player_get_har_obj_id(player)), ACT_STOP);
         }
+        }
 
         arena_hash = arena_state_hash(gs);
 
         if(data->trace_file && (ev->events[0] || ev->events[1]) && ev->tick <= last_agreed &&
            ev->tick > data->last_traced_tick) {
             data->last_traced_tick = ev->tick;
-            int sz = snprintf(buf, sizeof(buf), "tick %d -- player 1 %d -- player 2 %d -- hash %" PRIu32 "\n", ev->tick,
-                              ev->events[0], ev->events[1], arena_hash);
+            char buf0[5];
+            char buf1[5];
+
+            event_name(buf0, ev->events[0]);
+            event_name(buf1, ev->events[1]);
+
+            int sz = snprintf(buf, sizeof(buf), "tick %d -- player 1 %s (%d) -- player 2 %s (%d) -- hash %" PRIu32 "\n", ev->tick,
+                              buf0, ev->events[0], buf1, ev->events[1], arena_hash);
             SDL_RWwrite(data->trace_file, buf, sz, 1);
             arena_state_dump(gs, buf);
             SDL_RWwrite(data->trace_file, buf, strlen(buf), 1);
@@ -323,8 +383,14 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
                                   arena_hash);
                 SDL_RWwrite(data->trace_file, buf, sz, 1);
 
-                sz = snprintf(buf, sizeof(buf), "tick %d -- player 1 %d -- player 2 %d -- hash %" PRIu32 "\n", ev->tick,
-                              ev->events[0], ev->events[1], arena_hash);
+                char buf0[5];
+                char buf1[5];
+
+                event_name(buf0, ev->events[0]);
+                event_name(buf1, ev->events[1]);
+
+                sz = snprintf(buf, sizeof(buf), "tick %d -- player 1 %s (%d) -- player 2 %s (%d) -- hash %" PRIu32 "\n", ev->tick,
+                              buf0, ev->events[0], buf1, ev->events[1], arena_hash);
                 SDL_RWwrite(data->trace_file, buf, sz, 1);
                 arena_state_dump(gs, buf);
                 SDL_RWwrite(data->trace_file, buf, strlen(buf), 1);
@@ -424,8 +490,13 @@ void net_controller_free(controller *ctrl) {
         tick_events *ev = NULL;
         while((ev = (tick_events *)list_iter_next(&it))) {
             DEBUG("tick %" PRIu32 " has events %d -- %d", ev->tick, ev->events[0], ev->events[1]);
-            int sz = snprintf(buf, sizeof(buf), "tick %" PRIu32 " -- player 1 %d -- player 2 %d\n", ev->tick,
-                              ev->events[0], ev->events[1]);
+            char buf0[5];
+            char buf1[5];
+
+            event_name(buf0, ev->events[0]);
+            event_name(buf1, ev->events[1]);
+            int sz = snprintf(buf, sizeof(buf), "tick %" PRIu32 " -- player 1 %s (%d) -- player 2 %s (%d)\n", ev->tick,
+                              buf0, ev->events[0], buf1, ev->events[1]);
             SDL_RWwrite(data->trace_file, buf, sz, 1);
         }
 
@@ -720,7 +791,7 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                     game_state_clone_free(data->gs_bak);
                     omf_free(data->gs_bak);
                 }
-                if(data->lobby) {
+                if(data->lobby){
                     game_state_set_next(ctrl->gs, SCENE_LOBBY);
                 } else {
                     game_state_set_next(ctrl->gs, SCENE_MENU);
@@ -735,8 +806,7 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
 
     // if the match is actually proceeding (don't rewind during round/fight animation)
     // AND we've received events then try a rewind/replay
-    int arena_state = arena_get_state(game_state_get_scene(ctrl->gs));
-    if(arena_state == ARENA_STATE_FIGHTING && has_received) {
+    if( has_received) {
         if(rewind_and_replay(data, ctrl->gs)) {
             enet_peer_disconnect(data->peer, 0);
             return 0;

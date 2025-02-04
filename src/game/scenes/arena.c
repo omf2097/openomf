@@ -301,6 +301,10 @@ void arena_reset(scene *sc) {
         chr_score_clear_done(&player->score);
     }
 
+    // wipe any tick timers
+    ticktimer_close(&sc->tick_timer);
+    ticktimer_init(&sc->tick_timer);
+
     sc->bk_data->sound_translation_table[3] = 23 + local->round; // NUMBER
     // ROUND animation
     animation *round_ani = &bk_get_info(sc->bk_data, 6)->ani;
@@ -717,6 +721,45 @@ uint32_t arena_state_hash(game_state *gs) {
     return hash;
 }
 
+char* state_name(int state) {
+    switch(state) {
+        case STATE_STANDING:
+            return "standing";
+        case STATE_WALKTO:
+            return "walk_to";
+        case STATE_WALKFROM:
+            return "walk_from";
+        case STATE_CROUCHING:
+            return "crouching";
+        case STATE_CROUCHBLOCK:
+            return "crouchblock";
+        case STATE_JUMPING:
+            return "jumping";
+        case STATE_RECOIL:
+            return "recoil";
+        case STATE_FALLEN:
+            return "fallen";
+        case STATE_STANDING_UP:
+            return "standing_up";
+        case STATE_STUNNED:
+            return "stunned";
+        case STATE_VICTORY:
+            return "victory";
+        case STATE_DEFEAT:
+            return "defeat";
+        case STATE_SCRAP:
+            return "scrap";
+        case STATE_DESTRUCTION:
+            return "destruction";
+        case STATE_WALLDAMAGE: // Took damage from wall (electrocution)
+            return "wall_damage";
+        case STATE_DONE:        // destruction or scrap has completed
+            return "done";
+        default:
+            return "unknown!!!";
+    }
+}
+
 void arena_state_dump(game_state *gs, char *buf) {
     int off = 0;
     for(int i = 0; i < 2; i++) {
@@ -725,8 +768,8 @@ void arena_state_dump(game_state *gs, char *buf) {
         vec2i pos = object_get_pos(obj_har);
         vec2f vel = object_get_vel(obj_har);
         off = snprintf(buf + off, 255 - off,
-                       "har %d pos %d,%d, health %d, endurance %f, velocity %f,%f, state %d, executing_move %d\n", i,
-                       pos.x, pos.y, har->health, (float)har->endurance, vel.x, vel.y, har->state, har->executing_move);
+                       "har %d pos %d,%d, health %d, endurance %f, velocity %f,%f, state %s, executing_move %d\n", i,
+                       pos.x, pos.y, har->health, (float)har->endurance, vel.x, vel.y, state_name(har->state), har->executing_move);
     }
 }
 
