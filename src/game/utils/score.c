@@ -52,7 +52,7 @@ void chr_score_set_difficulty(chr_score *score, int difficulty) {
     score->difficulty = difficulty;
 }
 
-void chr_score_reset(chr_score *score, int wipe) {
+void chr_score_reset(chr_score *score, bool wipe) {
     iterator it;
     score_text *t;
 
@@ -60,13 +60,13 @@ void chr_score_reset(chr_score *score, int wipe) {
         score->score = 0;
     }
     score->rounds = 0;
-    score->done = 0;
     score->consecutive_hits = 0;
     score->consecutive_hit_score = 0;
     score->combo_hits = 0;
     score->combo_hit_score = 0;
-    score->scrap = 0;
-    score->destruction = 0;
+    score->done = false;
+    score->scrap = false;
+    score->destruction = false;
     list_iter_begin(&score->texts, &it);
     while((t = iter_next(&it)) != NULL) {
         omf_free(t->text);
@@ -213,16 +213,16 @@ void chr_score_victory(chr_score *score, int health) {
 }
 
 void chr_score_scrap(chr_score *score) {
-    score->scrap = 1;
+    score->scrap = true;
 }
 
 void chr_score_destruction(chr_score *score) {
-    score->destruction = 1;
+    score->destruction = true;
 }
 
 void chr_score_done(chr_score *score) {
     if(!score->done) {
-        score->done = 1;
+        score->done = true;
         if(score->destruction) {
             char *text = omf_calloc(64, 1);
             int len = snprintf(text, 64, "destruction bonus ");
@@ -230,7 +230,7 @@ void chr_score_done(chr_score *score) {
             score_format(points, text + len, 64 - len);
             // XXX hardcode the y coordinate for now
             chr_score_add(score, text, points, vec2i_create(160, 100), 1.0f);
-            score->destruction = 0;
+            score->destruction = false;
         } else if(score->scrap) {
             char *text = omf_calloc(64, 1);
             int len = snprintf(text, 64, "scrap bonus ");
@@ -238,13 +238,13 @@ void chr_score_done(chr_score *score) {
             score_format(points, text + len, 64 - len);
             // XXX hardcode the y coordinate for now
             chr_score_add(score, text, points, vec2i_create(160, 100), 1.0f);
-            score->scrap = 0;
+            score->scrap = false;
         }
     }
 }
 
 void chr_score_clear_done(chr_score *score) {
-    score->done = 0;
+    score->done = false;
 }
 
 int chr_score_interrupt(chr_score *score, vec2i pos) {
