@@ -19,7 +19,6 @@ enum
 
 typedef struct chr_score_t {
     int score;
-    int done;
     int rounds;
     int wins;
     int health;
@@ -32,13 +31,14 @@ typedef struct chr_score_t {
     int consecutive_hit_score;
     int combo_hits;
     int combo_hit_score;
-    int scrap;
-    int destruction;
+    bool done;
+    bool scrap;
+    bool destruction;
 } chr_score;
 
 void chr_score_create(chr_score *score);
 void chr_score_set_difficulty(chr_score *score, int difficulty);
-void chr_score_reset(chr_score *score, int wipe);
+void chr_score_reset(chr_score *score, bool wipe);
 void chr_score_reset_wins(chr_score *score);
 void chr_score_set_pos(chr_score *score, int x, int y, int direction);
 unsigned int chr_score_get_num_texts(chr_score *score);
