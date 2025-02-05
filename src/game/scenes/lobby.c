@@ -967,7 +967,7 @@ void lobby_tick(scene *scene, int paused) {
 
                             // Challengee -- Network
                             net_controller_create(challengee_ctrl, local->client, event.peer, local->peer,
-                                                  local->mode == ROLE_CHALLENGER ? ROLE_SERVER : ROLE_CLIENT);
+                                                  local->role == ROLE_CHALLENGER ? ROLE_SERVER : ROLE_CLIENT);
                             game_player_set_ctrl(challengee, challengee_ctrl);
 
                             // Challenger controller -- Keyboard
@@ -1119,7 +1119,9 @@ void lobby_tick(scene *scene, int paused) {
                                 dialog_show(local->dialog, 1);
                                 local->dialog->userdata = scene;
                                 local->dialog->clicked = lobby_dialog_close;
-                                enet_peer_reset(local->opponent_peer);
+                                if(local->opponent_peer) {
+                                    enet_peer_reset(local->opponent_peer);
+                                }
                                 local->opponent_peer = NULL;
                                 break;
                         }
