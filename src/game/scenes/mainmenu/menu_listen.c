@@ -129,17 +129,21 @@ component *menu_listen_create(scene *s) {
     address.port = settings_get()->net.net_listen_port_start;
 
     if(address.port == 0) {
-        address.port = rand_int(65525 - 1024) + 1024;
+        address.port = rand_int(65535 - 1024) + 1024;
     }
 
     // Set up host
     local->controllers_created = 0;
     int randtries = 0;
+    int end_port = settings_get()->net.net_listen_port_end;
+    if(!end_port) {
+        end_port = 65535;
+    }
     while(local->host == NULL) {
         local->host = enet_host_create(&address, 1, 2, 0, 0);
         if(local->host == NULL) {
             if(settings_get()->net.net_listen_port_start == 0) {
-                address.port = rand_int(65525 - 1024) + 1024;
+                address.port = rand_int(65535 - 1024) + 1024;
                 randtries++;
                 if(randtries > 10) {
                     DEBUG("Failed to initialize ENet server with random ports");
@@ -148,8 +152,9 @@ component *menu_listen_create(scene *s) {
                 }
             } else {
                 address.port++;
-                if(address.port > settings_get()->net.net_listen_port_end) {
-                    DEBUG("Failed to initialize ENet server");
+                if(address.port > end_port || randtries > 10) {
+                    DEBUG("Failed to initialize ENet server between ports %d and %d after 10 attempts",
+                          settings_get()->net.net_listen_port_start, end_port);
                     omf_free(local);
                     return NULL;
                 }
@@ -169,7 +174,7 @@ component *menu_listen_create(scene *s) {
         randtries = 0;
         while(!nat_create_mapping(&local->nat, address.port, ext_port)) {
             if(settings_get()->net.net_ext_port_start == 0) {
-                ext_port = rand_int(65525 - 1024) + 1024;
+                ext_port = rand_int(65535 - 1024) + 1024;
                 randtries++;
                 if(randtries > 10) {
                     ext_port = 0;
@@ -177,7 +182,7 @@ component *menu_listen_create(scene *s) {
                 }
             } else {
                 ext_port++;
-                if(ext_port > settings_get()->net.net_ext_port_end) {
+                if(settings_get()->net.net_ext_port_end && ext_port > settings_get()->net.net_ext_port_end) {
                     ext_port = 0;
                     break;
                 }

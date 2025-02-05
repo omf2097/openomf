@@ -499,23 +499,31 @@ void lobby_entered_name(component *c, void *userdata) {
         nat_create(nat);
 
         ENetAddress address;
+        ENetAddress lobby_address;
         address.host = ENET_HOST_ANY;
         address.port = settings_get()->net.net_listen_port_start;
 
         DEBUG("attempting to bind to port %d", address.port);
 
         if(address.port == 0) {
-            address.port = rand_int(65525 - 1024) + 1024;
+            address.port = rand_int(65535 - 1024) + 1024;
         }
 
         // Set up host
         local->controllers_created = 0;
         int randtries = 0;
+
+        int end_port = settings_get()->net.net_listen_port_end;
+        if(!end_port) {
+            end_port = 65535;
+        }
         while(local->client == NULL) {
             local->client = enet_host_create(&address, 2, 2, 0, 0);
             if(local->client == NULL) {
+                DEBUG("requested port %d unavailable, trying ports %d to %d", address.port,
+                      settings_get()->net.net_listen_port_start, end_port);
                 if(settings_get()->net.net_listen_port_start == 0) {
-                    address.port = rand_int(65525 - 1024) + 1024;
+                    address.port = rand_int(65535 - 1024) + 1024;
                     randtries++;
                     if(randtries > 10) {
                         DEBUG("Failed to initialize ENet server, could not allocate random port");
@@ -523,8 +531,15 @@ void lobby_entered_name(component *c, void *userdata) {
                     }
                 } else {
                     address.port++;
-                    if(address.port > settings_get()->net.net_listen_port_end) {
+                    if(address.port > end_port) {
                         DEBUG("Failed to initialize ENet server, port range exhausted");
+                        return;
+                    }
+                    randtries++;
+                    if(randtries > 10) {
+                        DEBUG("Failed to initialize ENet server, could not allocate port between %d and %d after 10 "
+                              "tries",
+                              settings_get()->net.net_listen_port_start, end_port);
                         return;
                     }
                 }
@@ -539,17 +554,20 @@ void lobby_entered_name(component *c, void *userdata) {
             ext_port = address.port;
         }
         randtries = 0;
+
         if(nat->type != NAT_TYPE_NONE) {
             while(!nat_create_mapping(nat, address.port, ext_port)) {
                 if(settings_get()->net.net_ext_port_start == 0) {
-                    ext_port = rand_int(65525 - 1024) + 1024;
+                    ext_port = rand_int(65535 - 1024) + 1024;
                     randtries++;
                     if(randtries > 10) {
+                        ext_port = 0;
                         break;
                     }
                 } else {
                     ext_port++;
                     if(ext_port > settings_get()->net.net_ext_port_end) {
+                        ext_port = 0;
                         break;
                     }
                 }
@@ -559,12 +577,12 @@ void lobby_entered_name(component *c, void *userdata) {
 
         ENetEvent event;
         ENetPeer *peer = NULL;
-        enet_address_set_host(&address, "lobby.openomf.org");
+        enet_address_set_host(&lobby_address, "lobby.openomf.org");
         // enet_address_set_host(&address, "127.0.0.1");
-        address.port = 2098;
-        DEBUG("server address is %d", address.host);
+        lobby_address.port = 2098;
+        DEBUG("server address is %d", lobby_address.host);
         /* Initiate the connection, allocating the two channels 0 and 1. */
-        local->peer = enet_host_connect(local->client, &address, 2, 0);
+        local->peer = enet_host_connect(local->client, &lobby_address, 2, 0);
 
         if(local->peer == NULL) {
             DEBUG("No available peers for initiating an ENet connection.\n");
@@ -587,10 +605,10 @@ void lobby_entered_name(component *c, void *userdata) {
             serial_create(&ser);
             serial_write_int8(&ser, PACKET_JOIN << 4);
             // if we mapped an external port, send it to the server
-            if(nat->type != NAT_TYPE_NONE) {
+            if(nat->type != NAT_TYPE_NONE && ext_port) {
                 serial_write_int16(&ser, nat->ext_port);
             } else {
-                serial_write_int16(&ser, 0);
+                serial_write_int16(&ser, address.port);
             }
             serial_write_int8(&ser, strlen(version));
             serial_write(&ser, version, strlen(version));
