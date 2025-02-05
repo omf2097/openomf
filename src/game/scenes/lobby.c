@@ -47,7 +47,7 @@ enum
     PACKET_DISCONNECT,
     PACKET_PRESENCE,
     PACKET_CONNECTED,
-    PACKET_COUNT
+    PACKET_REFRESH,
 };
 
 enum
@@ -460,6 +460,17 @@ void lobby_yell(component *c, void *userdata) {
 }
 
 void lobby_refresh(component *c, void *userdata) {
+    scene *s = userdata;
+    lobby_local *local = scene_get_userdata(s);
+
+    serial ser;
+    serial_create(&ser);
+    serial_write_int8(&ser, (int8_t)(PACKET_REFRESH << 4));
+
+    ENetPacket *packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
+    serial_free(&ser);
+
+    enet_peer_send(local->peer, 0, packet);
 }
 
 void lobby_do_exit(component *c, void *userdata) {
@@ -491,7 +502,7 @@ void lobby_entered_name(component *c, void *userdata) {
         address.host = ENET_HOST_ANY;
         address.port = settings_get()->net.net_listen_port_start;
 
-        DEBUG("attemotinfg to bind to port %d", address.port);
+        DEBUG("attempting to bind to port %d", address.port);
 
         if(address.port == 0) {
             address.port = rand_int(65525 - 1024) + 1024;
@@ -519,6 +530,8 @@ void lobby_entered_name(component *c, void *userdata) {
                 }
             }
         }
+
+        DEBUG("bound to port %d", address.port);
 
         int ext_port = settings_get()->net.net_ext_port_start;
         if(ext_port == 0) {
@@ -806,12 +819,32 @@ void lobby_tick(scene *scene, int paused) {
                             if(name_len > 0 && name_len < 16) {
                                 serial_read(&ser, user.name, name_len);
                                 user.name[name_len] = 0;
-                                list_append(&local->users, &user, sizeof(lobby_user));
-                                if(control_byte & 0x8) {
-                                    log_event log;
-                                    log.color = JOIN_COLOR;
-                                    snprintf(log.msg, sizeof(log.msg), "%s has entered the Arena", user.name),
-                                        list_append(&local->log, &log, sizeof(log));
+                                // check if this user already exists and update it if it does
+                                iterator it;
+                                list_iter_begin(&local->users, &it);
+                                lobby_user *u;
+                                bool found = false;
+                                while((u = list_iter_next(&it)) && !found) {
+                                    if(u->id == user.id) {
+                                        found = true;
+                                        u->wins = user.wins;
+                                        u->losses = user.losses;
+                                        u->address.host = user.address.host;
+                                        u->port = user.port;
+                                        u->ext_port = user.ext_port;
+                                        u->address.port = user.address.port;
+                                        memcpy(user.version, u->version, sizeof(user.version));
+                                    }
+                                }
+
+                                if(!found) {
+                                    list_append(&local->users, &user, sizeof(lobby_user));
+                                    if(control_byte & 0x8) {
+                                        log_event log;
+                                        log.color = JOIN_COLOR;
+                                        snprintf(log.msg, sizeof(log.msg), "%s has entered the Arena", user.name),
+                                            list_append(&local->log, &log, sizeof(log));
+                                    }
                                 }
                             }
                         }
@@ -1187,6 +1220,14 @@ int lobby_create(scene *scene) {
         menu_set_submenu(menu, name_menu);
     } else {
         // TODO send the server a REFRESH command so we can get the userlist, our username, etc
+        serial ser;
+        serial_create(&ser);
+        serial_write_int8(&ser, (int8_t)(PACKET_REFRESH << 4));
+
+        ENetPacket *packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
+        serial_free(&ser);
+
+        enet_peer_send(local->peer, 0, packet);
     }
 
     scene_set_input_poll_cb(scene, lobby_input_tick);
