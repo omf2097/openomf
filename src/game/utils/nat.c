@@ -38,6 +38,8 @@ bool nat_create_upnp_mapping(nat_ctx *ctx, uint16_t int_port, uint16_t ext_port)
         DEBUG("NAT-uPNP port %d -> %d mapping failed with %d", int_port, ext_port, error);
         // TODO there are some errors we can work around here
         // like overly short lifetimes
+        FreeUPNPUrls(&ctx->upnp_urls);
+        freeUPNPDevlist(ctx->upnp_dev);
         return false;
     }
 #else
@@ -69,7 +71,7 @@ bool nat_create_pmp_mapping(nat_ctx *ctx, uint16_t int_port, uint16_t ext_port) 
     } while(r == NATPMP_TRYAGAIN);
 
     if(r == 0) {
-        DEBUG("mapped public port %hu to localport %hu liftime %u\n", response.pnu.newportmapping.mappedpublicport,
+        DEBUG("mapped public port %hu to localport %hu lifetime %u", response.pnu.newportmapping.mappedpublicport,
               response.pnu.newportmapping.privateport, response.pnu.newportmapping.lifetime);
         ctx->int_port = response.pnu.newportmapping.privateport;
         ctx->ext_port = response.pnu.newportmapping.mappedpublicport;
@@ -77,6 +79,8 @@ bool nat_create_pmp_mapping(nat_ctx *ctx, uint16_t int_port, uint16_t ext_port) 
     } else {
         DEBUG("NAT-PMP %d -> %d failed with error %d", int_port, ext_port, r);
         // TODO handle some errors here
+
+        closenatpmp(&ctx->natpmp);
         return false;
     }
 #else
@@ -122,6 +126,9 @@ void nat_try_upnp(nat_ctx *ctx) {
     if(status == 1) {
         DEBUG("discovered uPNP server");
         ctx->type = NAT_TYPE_UPNP;
+    } else {
+        FreeUPNPUrls(&ctx->upnp_urls);
+        freeUPNPDevlist(ctx->upnp_dev);
     }
 #else
     DEBUG("NAT-uPNP support not available");
@@ -182,8 +189,7 @@ void nat_release_pmp(nat_ctx *ctx) {
         r = readnatpmpresponseorretry(&ctx->natpmp, &response);
     } while(r == NATPMP_TRYAGAIN);
     if(r == 0) {
-        DEBUG("released public port %hu to localport %huu\n", response.pnu.newportmapping.mappedpublicport,
-              response.pnu.newportmapping.privateport);
+        DEBUG("released public port %hu to localport %hu", ctx->int_port, response.pnu.newportmapping.privateport);
     } else {
         DEBUG("NAT-PMP release failed with error %d", r);
     }
@@ -193,6 +199,9 @@ void nat_release_pmp(nat_ctx *ctx) {
 
 void nat_create(nat_ctx *ctx) {
 
+    if(ctx->type != NAT_TYPE_NONE) {
+        nat_free(ctx);
+    }
     ctx->type = NAT_TYPE_NONE;
     ctx->int_port = 0;
     ctx->ext_port = 0;
