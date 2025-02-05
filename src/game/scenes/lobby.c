@@ -648,6 +648,9 @@ void lobby_dialog_cancel_connect(dialog *dlg, dialog_result result) {
     ENetPacket *packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
     serial_free(&ser);
     enet_peer_send(local->peer, 0, packet);
+    if(local->opponent_peer) {
+        enet_peer_reset(local->opponent_peer);
+    }
     local->opponent_peer = NULL;
 }
 
@@ -659,7 +662,9 @@ void lobby_try_connect(void *scenedata, void *userdata) {
               (local->opponent->address.host >> 8) & 0xFF, (local->opponent->address.host >> 16) & 0xF,
               (local->opponent->address.host >> 24) & 0xFF, local->opponent->address.port);
         local->opponent_peer = enet_host_connect(local->client, &local->opponent->address, 2, 0);
-        enet_peer_timeout(local->opponent_peer, 4, 1000, 1000);
+        if(local->opponent_peer) {
+            enet_peer_timeout(local->opponent_peer, 4, 1000, 1000);
+        }
     }
 }
 
@@ -1034,7 +1039,9 @@ void lobby_tick(scene *scene, int paused) {
                                       local->opponent->address.host & 0xFF, (local->opponent->address.host >> 8) & 0xFF,
                                       (local->opponent->address.host >> 16) & 0xF,
                                       (local->opponent->address.host >> 24) & 0xFF, local->opponent->address.port);
-                                enet_peer_timeout(local->opponent_peer, 4, 1000, 1000);
+                                if(local->opponent_peer) {
+                                    enet_peer_timeout(local->opponent_peer, 4, 1000, 1000);
+                                }
                                 local->connection_count = 0;
 
                                 dialog_show(local->dialog, 1);
@@ -1066,6 +1073,7 @@ void lobby_tick(scene *scene, int paused) {
                                 dialog_show(local->dialog, 1);
                                 local->dialog->userdata = scene;
                                 local->dialog->clicked = lobby_dialog_close;
+                                enet_peer_reset(local->opponent_peer);
                                 local->opponent_peer = NULL;
                                 break;
                         }
@@ -1084,6 +1092,7 @@ void lobby_tick(scene *scene, int paused) {
                 if(event.peer == local->opponent_peer) {
                     local->connection_count++;
                     DEBUG("outbound peer connection failed");
+                    enet_peer_reset(local->opponent_peer);
                     local->opponent_peer = NULL;
 
                     if(local->connection_count < 2) {
