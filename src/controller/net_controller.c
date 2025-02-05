@@ -565,7 +565,7 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
         DEBUG("missed synchronize tick %" PRIu32 " -- @ %" PRIu32, data->local_proposal, ticks);
     }
 
-    if(data->gs_bak == NULL && data->disconnected == 0 && is_arena(game_state_get_scene(ctrl->gs)->id) &&
+    if(data->gs_bak == NULL && data->disconnected == 0 && scene_is_arena(game_state_get_scene(ctrl->gs)) &&
        (ticks - data->local_proposal) % 7 == 0 &&
        game_state_find_object(ctrl->gs, game_player_get_har_obj_id(game_state_get_player(ctrl->gs, 1)))) {
         arena_reset(ctrl->gs->sc);
@@ -578,7 +578,7 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
         data->local_proposal = ticks; // reset the tick offset to the start of the match
         data->last_hash_tick = data->gs_bak->int_tick - data->local_proposal;
         data->last_hash = arena_state_hash(data->gs_bak);
-    } else if(data->gs_bak != NULL && !is_arena(game_state_get_scene(ctrl->gs)->id)) {
+    } else if(data->gs_bak != NULL && !scene_is_arena(game_state_get_scene(ctrl->gs))) {
         // changed scene and no longer need a game state backup, release it
         game_state_clone_free(data->gs_bak);
         omf_free(data->gs_bak);

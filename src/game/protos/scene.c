@@ -261,6 +261,10 @@ void scene_set_anim_prio_override_cb(scene *scene, scene_anim_prio_override_cb c
     scene->prio_override = cbfunc;
 }
 
+bool scene_is_arena(scene *scene) {
+    return (scene->id >= SCENE_ARENA0 && scene->id <= SCENE_ARENA4);
+}
+
 void scene_set_input_poll_cb(scene *scene, scene_input_poll_cb cbfunc) {
     scene->input_poll = cbfunc;
 }

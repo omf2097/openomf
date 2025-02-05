@@ -2598,7 +2598,7 @@ int ai_controller_poll(controller *ctrl, ctrl_event **ev) {
     // Do not run AI while match is starting or ending
     // XXX this prevents the AI from doing scrap/destruction moves
     // XXX this could be fixed by providing a "scene changed" event
-    if(is_arena(game_state_get_scene(o->gs)->id) &&
+    if(scene_is_arena(game_state_get_scene(o->gs)) &&
        arena_get_state(game_state_get_scene(o->gs)) != ARENA_STATE_FIGHTING) {
 
         // null out selected move to fix the "AI not moving problem"

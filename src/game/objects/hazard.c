@@ -12,12 +12,12 @@ int orb_almost_there(vec2f a, vec2f b) {
 }
 
 void hazard_tick(object *obj) {
-    bk *bk_data = (bk *)object_get_userdata(obj);
+    scene *sc = obj->gs->sc;
 
     if(obj->animation_state.finished) {
-        bk_info *anim = bk_get_info(bk_data, obj->cur_animation->id);
+        bk_info *anim = bk_get_info(sc->bk_data, obj->cur_animation->id);
         if(anim->chain_no_hit) {
-            object_set_animation(obj, &bk_get_info(bk_data, anim->chain_no_hit)->ani);
+            object_set_animation(obj, &bk_get_info(sc->bk_data, anim->chain_no_hit)->ani);
             object_set_repeat(obj, 0);
             obj->animation_state.finished = 0;
         }
@@ -49,7 +49,7 @@ void hazard_tick(object *obj) {
 }
 
 void hazard_spawn_cb(object *parent, int id, vec2i pos, vec2f vel, uint8_t mp_flags, int s, int g, void *userdata) {
-    scene *sc = (scene *)userdata;
+    scene *sc = parent->gs->sc;
 
     // Get next animation
     bk_info *info = bk_get_info(sc->bk_data, id);
@@ -179,8 +179,8 @@ void hazard_move(object *obj) {
 
 int hazard_create(object *obj, scene *scene) {
 
-    object_set_spawn_cb(obj, hazard_spawn_cb, (void *)scene);
-    object_set_destroy_cb(obj, cb_scene_destroy_object, (void *)scene);
+    object_set_spawn_cb(obj, hazard_spawn_cb, NULL);
+    object_set_destroy_cb(obj, cb_scene_destroy_object, NULL);
     object_set_move_cb(obj, hazard_move);
     object_set_dynamic_tick_cb(obj, hazard_tick);
 
