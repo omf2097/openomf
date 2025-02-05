@@ -12,12 +12,12 @@ int orb_almost_there(vec2f a, vec2f b) {
 }
 
 void hazard_tick(object *obj) {
-    bk *bk_data = (bk *)object_get_userdata(obj);
+    scene *sc = obj->gs->sc;
 
     if(obj->animation_state.finished) {
-        bk_info *anim = bk_get_info(bk_data, obj->cur_animation->id);
+        bk_info *anim = bk_get_info(sc->bk_data, obj->cur_animation->id);
         if(anim->chain_no_hit) {
-            object_set_animation(obj, &bk_get_info(bk_data, anim->chain_no_hit)->ani);
+            object_set_animation(obj, &bk_get_info(sc->bk_data, anim->chain_no_hit)->ani);
             object_set_repeat(obj, 0);
             obj->animation_state.finished = 0;
         }
@@ -34,7 +34,8 @@ void hazard_tick(object *obj) {
             float mag;
             int limit = 10;
             do {
-                obj->orbit_dest = vec2f_create(rand_float() * 320.0f, rand_float() * 200.0f);
+                obj->orbit_dest =
+                    vec2f_create(random_float(&obj->gs->rand) * 320.0f, random_float(&obj->gs->rand) * 200.0f);
                 obj->orbit_dest_dir = vec2f_sub(obj->orbit_dest, obj->orbit_pos);
                 mag = sqrtf(obj->orbit_dest_dir.x * obj->orbit_dest_dir.x +
                             obj->orbit_dest_dir.y * obj->orbit_dest_dir.y);
@@ -48,7 +49,7 @@ void hazard_tick(object *obj) {
 }
 
 void hazard_spawn_cb(object *parent, int id, vec2i pos, vec2f vel, uint8_t mp_flags, int s, int g, void *userdata) {
-    scene *sc = (scene *)userdata;
+    scene *sc = parent->gs->sc;
 
     // Get next animation
     bk_info *info = bk_get_info(sc->bk_data, id);
@@ -75,10 +76,13 @@ void hazard_spawn_cb(object *parent, int id, vec2i pos, vec2f vel, uint8_t mp_fl
     }
 }
 
-vec2f generate_destination(vec2f old) {
-    vec2f new = vec2f_create((rand_float() * 280.0f) + 20.0f, (rand_float() * 160.0f) + 20.0f);
+vec2f generate_destination(object *obj) {
+    vec2f old = obj->orbit_dest;
+    vec2f new =
+        vec2f_create((random_float(&obj->gs->rand) * 280.0f) + 20.0f, (random_float(&obj->gs->rand) * 160.0f) + 20.0f);
     while(vec2f_dist(old, new) < 100) {
-        new = vec2f_create((rand_float() * 280.0f) + 20.0f, (rand_float() * 160.0f) + 20.0f);
+        new = vec2f_create((random_float(&obj->gs->rand) * 280.0f) + 20.0f,
+                           (random_float(&obj->gs->rand) * 160.0f) + 20.0f);
     }
     return new;
 }
@@ -121,7 +125,7 @@ void hazard_move(object *obj) {
            (dist(obj->pos.y, obj->orbit_pos.y) >= dist(obj->orbit_dest.y, obj->orbit_pos.y))) {
             obj->orbit_pos.x = obj->pos.x;
             obj->orbit_pos.y = obj->pos.y;
-            obj->orbit_dest = generate_destination(obj->orbit_dest);
+            obj->orbit_dest = generate_destination(obj);
             DEBUG("new position is %f, %f", obj->orbit_dest.x, obj->orbit_dest.y);
         }
 
@@ -175,14 +179,15 @@ void hazard_move(object *obj) {
 
 int hazard_create(object *obj, scene *scene) {
 
-    object_set_spawn_cb(obj, hazard_spawn_cb, (void *)scene);
-    object_set_destroy_cb(obj, cb_scene_destroy_object, (void *)scene);
+    object_set_spawn_cb(obj, hazard_spawn_cb, NULL);
+    object_set_destroy_cb(obj, cb_scene_destroy_object, NULL);
     object_set_move_cb(obj, hazard_move);
     object_set_dynamic_tick_cb(obj, hazard_tick);
 
     obj->orbit_pos.x = obj->pos.x;
     obj->orbit_pos.y = obj->pos.y;
-    obj->orbit_dest = vec2f_create((rand_float() * 280.0f) + 20.0f, (rand_float() * 160.0f) + 20.0f);
+    obj->orbit_dest =
+        vec2f_create((random_float(&obj->gs->rand) * 280.0f) + 20.0f, (random_float(&obj->gs->rand) * 160.0f) + 20.0f);
     DEBUG("new position is %f, %f", obj->orbit_dest.x, obj->orbit_dest.y);
 
     return 0;

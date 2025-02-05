@@ -195,7 +195,7 @@ int console_cmd_stun(game_state *gs, int argc, char **argv) {
 
 int console_cmd_rein(game_state *gs, int argc, char **argv) {
     scene *sc = game_state_get_scene(gs);
-    if(is_arena(sc->id)) {
+    if(scene_is_arena(sc)) {
         arena_toggle_rein(sc);
         return 0;
     }

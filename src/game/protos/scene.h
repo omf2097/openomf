@@ -61,6 +61,7 @@ void scene_static_tick(scene *scene, int paused);
 void scene_input_poll(scene *scene);
 void scene_startup(scene *scene, int id, int *m_load, int *m_startup);
 int scene_anim_prio_override(scene *scene, int anim_id);
+bool scene_is_arena(scene *scene);
 
 int scene_clone(scene *src, scene *dst, game_state *gs);
 int scene_clone_free(scene *sc);

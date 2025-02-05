@@ -12,7 +12,6 @@
 #include "video/vga_state.h"
 
 #define OBJECT_DEFAULT_LAYER 0x01
-#define OBJECT_NO_GROUP -1
 
 #define OBJECT_EVENT_BUFFER_SIZE 16
 
@@ -32,6 +31,16 @@ enum
 {
     PLAY_BACKWARDS,
     PLAY_FORWARDS
+};
+
+enum
+{
+    GROUP_UNKNOWN = 0x1,
+    GROUP_HAR = 0x2,
+    GROUP_SCRAP = 0x4,
+    GROUP_PROJECTILE = 0x8,
+    GROUP_HAZARD = 0x10,
+    GROUP_ANNOUNCEMENT = 0x20,
 };
 
 enum

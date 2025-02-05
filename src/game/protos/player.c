@@ -384,7 +384,7 @@ void player_run(object *obj) {
             if(sd_script_isset(frame, "mrx")) {
                 int mrx = sd_script_get(frame, "mrx");
                 int mm = sd_script_isset(frame, "mm") ? sd_script_get(frame, "mm") : mrx;
-                mx = random_int(&obj->rand_state, 320 - 2 * mm) + mrx;
+                mx = random_int(&obj->gs->rand, 320 - 2 * mm) + mrx;
                 DEBUG("randomized mx as %d", mx);
             } else if(sd_script_isset(frame, "mx")) {
                 mx = obj->start.x + (sd_script_get(frame, "mx") * object_get_direction(obj));
@@ -394,7 +394,7 @@ void player_run(object *obj) {
             if(sd_script_isset(frame, "mry")) {
                 int mry = sd_script_get(frame, "mry");
                 int mm = sd_script_isset(frame, "mm") ? sd_script_get(frame, "mm") : mry;
-                my = random_int(&obj->rand_state, 320 - 2 * mm) + mry;
+                my = random_int(&obj->gs->rand, 320 - 2 * mm) + mry;
                 DEBUG("randomized my as %d", my);
             } else if(sd_script_isset(frame, "my")) {
                 my = obj->start.y + sd_script_get(frame, "my");

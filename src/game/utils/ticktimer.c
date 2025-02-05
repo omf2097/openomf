@@ -37,3 +37,13 @@ void ticktimer_run(ticktimer *tt, void *scenedata) {
         }
     }
 }
+
+void ticktimer_clone(ticktimer *src, ticktimer *dst) {
+    ticktimer_init(dst);
+    iterator it;
+    vector_iter_begin(&src->units, &it);
+    ticktimer_unit *unit;
+    while((unit = iter_next(&it)) != NULL) {
+        vector_append(&dst->units, unit);
+    }
+}

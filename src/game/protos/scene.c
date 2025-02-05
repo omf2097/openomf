@@ -117,6 +117,7 @@ void scene_init(scene *scene) {
 
 int scene_clone(scene *src, scene *dst, game_state *gs) {
     memcpy(dst, src, sizeof(scene));
+    ticktimer_clone(&src->tick_timer, &dst->tick_timer);
     dst->gs = gs;
     if(src->clone) {
         src->clone(src, dst);
@@ -128,6 +129,7 @@ int scene_clone_free(scene *sc) {
     if(sc->clone_free) {
         sc->clone_free(sc);
     }
+    ticktimer_close(&sc->tick_timer);
     omf_free(sc);
     return 0;
 }
@@ -257,6 +259,10 @@ void scene_set_static_tick_cb(scene *scene, scene_tick_cb cbfunc) {
 
 void scene_set_anim_prio_override_cb(scene *scene, scene_anim_prio_override_cb cbfunc) {
     scene->prio_override = cbfunc;
+}
+
+bool scene_is_arena(scene *scene) {
+    return (scene->id >= SCENE_ARENA0 && scene->id <= SCENE_ARENA4);
 }
 
 void scene_set_input_poll_cb(scene *scene, scene_input_poll_cb cbfunc) {

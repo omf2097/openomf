@@ -285,7 +285,7 @@ void engine_run(engine_init_flags *init_flags) {
             if(has_static) {
                 game_state_static_tick(gs, false);
                 // check if we need to replace the game state
-                while(gs->new_state) {
+                if(gs->new_state) {
                     // one of the controllers wants to replace the game state
                     game_state *old_gs = gs;
                     game_state *new_gs = gs->new_state;

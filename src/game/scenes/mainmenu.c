@@ -134,11 +134,6 @@ int mainmenu_create(scene *scene) {
         component_action(guiframe_find(local->frame, NETWORK_BUTTON_ID), ACT_PUNCH);
         component_action(guiframe_find(local->frame, NETWORK_LOBBY_BUTTON_ID), ACT_PUNCH);
     }
-#ifndef DEBUGMODE
-    if(scene->gs->net_mode == NET_MODE_NONE) {
-        component_disable(guiframe_find(local->frame, NETWORK_BUTTON_ID), 1);
-    }
-#endif
 
     // clear it, so this only happens the first time
     scene->gs->net_mode = NET_MODE_NONE;

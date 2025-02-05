@@ -281,7 +281,7 @@ void arena_reset(scene *sc) {
     DEBUG("resetting arena");
 
     // Kill all hazards and projectiles
-    game_state_clear_hazards_projectiles(sc->gs);
+    game_state_clear_objects(sc->gs, GROUP_PROJECTILE | GROUP_SCRAP | GROUP_ANNOUNCEMENT);
 
     // Initial har data
     vec2i pos[2];
@@ -301,25 +301,47 @@ void arena_reset(scene *sc) {
         chr_score_clear_done(&player->score);
     }
 
-    sc->bk_data->sound_translation_table[3] = 23 + local->round; // NUMBER
-    // ROUND animation
-    animation *round_ani = &bk_get_info(sc->bk_data, 6)->ani;
-    object *round = omf_calloc(1, sizeof(object));
-    object_create(round, sc->gs, round_ani->start_pos, vec2f_create(0, 0));
-    object_set_stl(round, sc->bk_data->sound_translation_table);
-    object_set_animation(round, round_ani);
-    object_set_finish_cb(round, scene_ready_anim_done);
-    game_state_add_object(sc->gs, round, RENDER_LAYER_TOP, 0, 0);
+    // wipe any tick timers
+    ticktimer_close(&sc->tick_timer);
+    ticktimer_init(&sc->tick_timer);
 
-    // Round number
-    animation *number_ani = &bk_get_info(sc->bk_data, 7)->ani;
-    object *number = omf_calloc(1, sizeof(object));
-    object_create(number, sc->gs, number_ani->start_pos, vec2f_create(0, 0));
-    object_set_stl(number, sc->bk_data->sound_translation_table);
-    object_set_animation(number, number_ani);
-    object_select_sprite(number, local->round);
-    object_set_sprite_override(number, 1);
-    game_state_add_object(sc->gs, number, RENDER_LAYER_TOP, 0, 0);
+    // Set correct sounds for ready, round and number STL fields
+    sc->bk_data->sound_translation_table[14] = 10;               // READY
+    sc->bk_data->sound_translation_table[15] = 16;               // ROUND
+    sc->bk_data->sound_translation_table[3] = 23 + local->round; // NUMBER
+
+    if(local->rounds == 1) {
+        // Start READY animation
+        animation *ready_ani = &bk_get_info(sc->bk_data, 11)->ani;
+        object *ready = omf_calloc(1, sizeof(object));
+        object_create(ready, sc->gs, ready_ani->start_pos, vec2f_create(0, 0));
+        object_set_stl(ready, sc->bk_data->sound_translation_table);
+        object_set_animation(ready, ready_ani);
+        object_set_finish_cb(ready, scene_ready_anim_done);
+        object_set_group(ready, GROUP_ANNOUNCEMENT);
+        game_state_add_object(sc->gs, ready, RENDER_LAYER_TOP, 0, 0);
+    } else {
+        // ROUND animation
+        animation *round_ani = &bk_get_info(sc->bk_data, 6)->ani;
+        object *round = omf_calloc(1, sizeof(object));
+        object_create(round, sc->gs, round_ani->start_pos, vec2f_create(0, 0));
+        object_set_stl(round, sc->bk_data->sound_translation_table);
+        object_set_animation(round, round_ani);
+        object_set_finish_cb(round, scene_ready_anim_done);
+        object_set_group(round, GROUP_ANNOUNCEMENT);
+        game_state_add_object(sc->gs, round, RENDER_LAYER_TOP, 0, 0);
+
+        // Round number
+        animation *number_ani = &bk_get_info(sc->bk_data, 7)->ani;
+        object *number = omf_calloc(1, sizeof(object));
+        object_create(number, sc->gs, number_ani->start_pos, vec2f_create(0, 0));
+        object_set_stl(number, sc->bk_data->sound_translation_table);
+        object_set_animation(number, number_ani);
+        object_select_sprite(number, local->round);
+        object_set_sprite_override(number, 1);
+        object_set_group(number, GROUP_ANNOUNCEMENT);
+        game_state_add_object(sc->gs, number, RENDER_LAYER_TOP, 0, 0);
+    }
 }
 
 void arena_har_take_hit_hook(int hittee, af_move *move, scene *scene) {
@@ -717,14 +739,56 @@ uint32_t arena_state_hash(game_state *gs) {
     return hash;
 }
 
-void arena_state_dump(game_state *gs) {
+char *state_name(int state) {
+    switch(state) {
+        case STATE_STANDING:
+            return "standing";
+        case STATE_WALKTO:
+            return "walk_to";
+        case STATE_WALKFROM:
+            return "walk_from";
+        case STATE_CROUCHING:
+            return "crouching";
+        case STATE_CROUCHBLOCK:
+            return "crouchblock";
+        case STATE_JUMPING:
+            return "jumping";
+        case STATE_RECOIL:
+            return "recoil";
+        case STATE_FALLEN:
+            return "fallen";
+        case STATE_STANDING_UP:
+            return "standing_up";
+        case STATE_STUNNED:
+            return "stunned";
+        case STATE_VICTORY:
+            return "victory";
+        case STATE_DEFEAT:
+            return "defeat";
+        case STATE_SCRAP:
+            return "scrap";
+        case STATE_DESTRUCTION:
+            return "destruction";
+        case STATE_WALLDAMAGE: // Took damage from wall (electrocution)
+            return "wall_damage";
+        case STATE_DONE: // destruction or scrap has completed
+            return "done";
+        default:
+            return "unknown!!!";
+    }
+}
+
+void arena_state_dump(game_state *gs, char *buf) {
+    int off = 0;
     for(int i = 0; i < 2; i++) {
         object *obj_har = game_state_find_object(gs, game_player_get_har_obj_id(game_state_get_player(gs, i)));
         har *har = obj_har->userdata;
         vec2i pos = object_get_pos(obj_har);
         vec2f vel = object_get_vel(obj_har);
-        DEBUG("har %d pos %d,%d, health %d, endurance %f, velocity %f,%f, state %d, executing_move %d", i, pos.x, pos.y,
-              har->health, (float)har->endurance, vel.x, vel.y, har->state, har->executing_move);
+        off = snprintf(buf + off, 255 - off,
+                       "har %d pos %d,%d, health %d, endurance %f, velocity %f,%f, state %s, executing_move %d\n", i,
+                       pos.x, pos.y, har->health, (float)har->endurance, vel.x, vel.y, state_name(har->state),
+                       har->executing_move);
     }
 }
 
@@ -893,8 +957,6 @@ void arena_spawn_hazard(scene *scene) {
 void arena_dynamic_tick(scene *scene, int paused) {
     arena_local *local = scene_get_userdata(scene);
     game_state *gs = scene->gs;
-    game_player *player1 = game_state_get_player(gs, 0);
-    game_player *player2 = game_state_get_player(gs, 1);
 
     if(!paused) {
         object *obj_har[2];
@@ -980,6 +1042,7 @@ void arena_dynamic_tick(scene *scene, int paused) {
                     object_set_pal_limit(scrap, object_get_pal_limit(h_obj));
                     object_set_layers(scrap, LAYER_SCRAP);
                     object_set_shadow(scrap, 1);
+                    object_set_group(scrap, GROUP_SCRAP);
                     object_dynamic_tick(scrap);
                     scrap_create(scrap);
                     game_state_add_object(gs, scrap, RENDER_LAYER_TOP, 0, 0);
@@ -987,10 +1050,6 @@ void arena_dynamic_tick(scene *scene, int paused) {
             }
         }
     } // if(!paused)
-
-    // allow enemy HARs to move during a network game
-    arena_handle_events(scene, player1, player1->ctrl->extra_events);
-    arena_handle_events(scene, player2, player2->ctrl->extra_events);
 }
 
 void arena_static_tick(scene *scene, int paused) {
@@ -1228,6 +1287,11 @@ int arena_create(scene *scene) {
             local->rounds = 1;
             break;
     }
+
+    if(is_netplay(scene->gs)) {
+        // XXX hardcode netplay rounds to 3 for now
+        local->rounds = 3;
+    }
     local->tournament = false;
     local->over = 0;
 
@@ -1443,6 +1507,7 @@ int arena_create(scene *scene) {
         object_set_stl(ready, scene->bk_data->sound_translation_table);
         object_set_animation(ready, ready_ani);
         object_set_finish_cb(ready, scene_ready_anim_done);
+        object_set_group(ready, GROUP_ANNOUNCEMENT);
         game_state_add_object(scene->gs, ready, RENDER_LAYER_TOP, 0, 0);
     } else {
         // ROUND
@@ -1452,6 +1517,7 @@ int arena_create(scene *scene) {
         object_set_stl(round, scene->bk_data->sound_translation_table);
         object_set_animation(round, round_ani);
         object_set_finish_cb(round, scene_ready_anim_done);
+        object_set_group(round, GROUP_ANNOUNCEMENT);
         game_state_add_object(scene->gs, round, RENDER_LAYER_TOP, 0, 0);
 
         // Number
@@ -1461,6 +1527,7 @@ int arena_create(scene *scene) {
         object_set_stl(number, scene->bk_data->sound_translation_table);
         object_set_animation(number, number_ani);
         object_select_sprite(number, local->round);
+        object_set_group(number, GROUP_ANNOUNCEMENT);
         game_state_add_object(scene->gs, number, RENDER_LAYER_TOP, 0, 0);
     }
 
