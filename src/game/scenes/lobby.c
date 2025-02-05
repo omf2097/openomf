@@ -465,7 +465,7 @@ void lobby_refresh(component *c, void *userdata) {
 
     serial ser;
     serial_create(&ser);
-    serial_write_int8(&ser, (int8_t)(PACKET_REFRESH << 4));
+    serial_write_int8(&ser, (uint8_t)(PACKET_REFRESH << 4));
 
     ENetPacket *packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
     serial_free(&ser);
@@ -1222,7 +1222,7 @@ int lobby_create(scene *scene) {
         // TODO send the server a REFRESH command so we can get the userlist, our username, etc
         serial ser;
         serial_create(&ser);
-        serial_write_int8(&ser, (int8_t)(PACKET_REFRESH << 4));
+        serial_write_int8(&ser, (uint8_t)(PACKET_REFRESH << 4));
 
         ENetPacket *packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
         serial_free(&ser);
