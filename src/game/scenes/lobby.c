@@ -57,6 +57,12 @@ enum
     CHALLENGE_FLAG_CANCEL = 1 << 2
 };
 
+enum
+{
+    ROLE_CHALLENGER,
+    ROLE_CHALLENGEE,
+};
+
 typedef struct lobby_user_t {
     char name[16];
     char version[15];
@@ -90,6 +96,7 @@ typedef struct lobby_local_t {
     menu *joinmenu;
 
     guiframe *frame;
+    uint8_t role;
 } lobby_local;
 
 typedef struct log_event_t {
@@ -257,6 +264,8 @@ void lobby_do_challenge(component *c, void *userdata) {
     dialog_create(local->dialog, DIALOG_STYLE_CANCEL, buf, 72, 60);
     local->dialog->userdata = s;
     local->dialog->clicked = lobby_dialog_cancel_challenge;
+
+    local->role = ROLE_CHALLENGER;
 
     dialog_show(local->dialog, 1);
 
@@ -687,6 +696,7 @@ void lobby_dialog_accept_challenge(dialog *dlg, dialog_result result) {
         dialog_create(local->dialog, DIALOG_STYLE_CANCEL, "Establishing connection...", 72, 60);
 
         local->connection_count = 0;
+        local->role = ROLE_CHALLENGEE;
         ticktimer_add(&s->tick_timer, 500, lobby_try_connect, NULL);
 
         dialog_show(local->dialog, 1);
@@ -784,7 +794,29 @@ void lobby_tick(scene *scene, int paused) {
                     controller_init(player2_ctrl, gs);
                     player2_ctrl->har_obj_id = p2->har_obj_id;
 
-                    // Player 1 controller -- Keyboard
+                    game_player *challenger, *challengee;
+                    controller *challenger_ctrl, *challengee_ctrl;
+
+                    if(local->role == ROLE_CHALLENGER) {
+                        // we did the connecting and we're the challenger
+                        // so we are player 1
+                        challenger = p1;
+                        challengee = p2;
+                        challenger_ctrl = player1_ctrl;
+                        challengee_ctrl = player2_ctrl;
+                    } else {
+                        challenger = p2;
+                        challengee = p1;
+                        challenger_ctrl = player2_ctrl;
+                        challengee_ctrl = player1_ctrl;
+                    }
+
+                    // Challenger -- Network
+                    net_controller_create(challengee_ctrl, local->client, event.peer, local->peer,
+                                          local->role == ROLE_CHALLENGER ? ROLE_SERVER : ROLE_CLIENT);
+                    game_player_set_ctrl(challengee, challengee_ctrl);
+
+                    // Challengee controller -- Keyboard
                     settings_keyboard *k = &settings_get()->keys;
                     keys = omf_calloc(1, sizeof(keyboard_keys));
                     keys->jump_up = SDL_GetScancodeFromName(k->key1_jump_up);
@@ -797,13 +829,9 @@ void lobby_tick(scene *scene, int paused) {
                     keys->jump_left = SDL_GetScancodeFromName(k->key1_jump_left);
                     keys->punch = SDL_GetScancodeFromName(k->key1_punch);
                     keys->kick = SDL_GetScancodeFromName(k->key1_kick);
-                    keyboard_create(player1_ctrl, keys, 0);
-                    game_player_set_ctrl(p1, player1_ctrl);
-
-                    // Player 2 controller -- Network
-                    net_controller_create(player2_ctrl, local->client, event.peer, local->peer, ROLE_SERVER);
-                    game_player_set_ctrl(p2, player2_ctrl);
-                    game_player_set_selectable(p2, 1);
+                    keyboard_create(challenger_ctrl, keys, 0);
+                    game_player_set_ctrl(challenger, challenger_ctrl);
+                    game_player_set_selectable(challengee, 1);
 
                     chr_score_set_difficulty(game_player_get_score(game_state_get_player(gs, 0)),
                                              AI_DIFFICULTY_CHAMPION);
@@ -920,11 +948,29 @@ void lobby_tick(scene *scene, int paused) {
                             controller_init(player2_ctrl, gs);
                             player2_ctrl->har_obj_id = p2->har_obj_id;
 
-                            // Player 1 controller -- Network
-                            net_controller_create(player1_ctrl, local->client, event.peer, local->peer, ROLE_CLIENT);
-                            game_player_set_ctrl(p1, player1_ctrl);
+                            game_player *challenger, *challengee;
+                            controller *challenger_ctrl, *challengee_ctrl;
 
-                            // Player 2 controller -- Keyboard
+                            if(local->role == ROLE_CHALLENGER) {
+                                // we were connected TO but we are the challenger
+                                // so we are player 1
+                                challenger = p1;
+                                challengee = p2;
+                                challenger_ctrl = player1_ctrl;
+                                challengee_ctrl = player2_ctrl;
+                            } else {
+                                challenger = p2;
+                                challengee = p1;
+                                challenger_ctrl = player2_ctrl;
+                                challengee_ctrl = player1_ctrl;
+                            }
+
+                            // Challengee -- Network
+                            net_controller_create(challengee_ctrl, local->client, event.peer, local->peer,
+                                                  local->mode == ROLE_CHALLENGER ? ROLE_SERVER : ROLE_CLIENT);
+                            game_player_set_ctrl(challengee, challengee_ctrl);
+
+                            // Challenger controller -- Keyboard
                             settings_keyboard *k = &settings_get()->keys;
                             keys = omf_calloc(1, sizeof(keyboard_keys));
                             keys->jump_up = SDL_GetScancodeFromName(k->key1_jump_up);
@@ -937,9 +983,9 @@ void lobby_tick(scene *scene, int paused) {
                             keys->jump_left = SDL_GetScancodeFromName(k->key1_jump_left);
                             keys->punch = SDL_GetScancodeFromName(k->key1_punch);
                             keys->kick = SDL_GetScancodeFromName(k->key1_kick);
-                            keyboard_create(player2_ctrl, keys, 0);
-                            game_player_set_ctrl(p2, player2_ctrl);
-                            game_player_set_selectable(p2, 1);
+                            keyboard_create(challenger_ctrl, keys, 0);
+                            game_player_set_ctrl(challenger, challenger_ctrl);
+                            game_player_set_selectable(challengee, 1);
 
                             chr_score_set_difficulty(game_player_get_score(game_state_get_player(gs, 0)),
                                                      AI_DIFFICULTY_CHAMPION);
