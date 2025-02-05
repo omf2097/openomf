@@ -1287,6 +1287,11 @@ int arena_create(scene *scene) {
             local->rounds = 1;
             break;
     }
+
+    if(is_netplay(scene->gs)) {
+        // XXX hardcode netplay rounds to 3 for now
+        local->rounds = 3;
+    }
     local->tournament = false;
     local->over = 0;
 

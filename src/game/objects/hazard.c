@@ -34,7 +34,7 @@ void hazard_tick(object *obj) {
             float mag;
             int limit = 10;
             do {
-                obj->orbit_dest = vec2f_create(rand_float() * 320.0f, rand_float() * 200.0f);
+                obj->orbit_dest = vec2f_create(random_float(&obj->gs->rand) * 320.0f, random_float(&obj->gs->rand) * 200.0f);
                 obj->orbit_dest_dir = vec2f_sub(obj->orbit_dest, obj->orbit_pos);
                 mag = sqrtf(obj->orbit_dest_dir.x * obj->orbit_dest_dir.x +
                             obj->orbit_dest_dir.y * obj->orbit_dest_dir.y);
@@ -75,10 +75,11 @@ void hazard_spawn_cb(object *parent, int id, vec2i pos, vec2f vel, uint8_t mp_fl
     }
 }
 
-vec2f generate_destination(vec2f old) {
-    vec2f new = vec2f_create((rand_float() * 280.0f) + 20.0f, (rand_float() * 160.0f) + 20.0f);
+vec2f generate_destination(object *obj) {
+    vec2f old = obj->orbit_dest;
+    vec2f new = vec2f_create((random_float(&obj->gs->rand) * 280.0f) + 20.0f, (random_float(&obj->gs->rand) * 160.0f) + 20.0f);
     while(vec2f_dist(old, new) < 100) {
-        new = vec2f_create((rand_float() * 280.0f) + 20.0f, (rand_float() * 160.0f) + 20.0f);
+        new = vec2f_create((random_float(&obj->gs->rand) * 280.0f) + 20.0f, (random_float(&obj->gs->rand) * 160.0f) + 20.0f);
     }
     return new;
 }
@@ -121,7 +122,7 @@ void hazard_move(object *obj) {
            (dist(obj->pos.y, obj->orbit_pos.y) >= dist(obj->orbit_dest.y, obj->orbit_pos.y))) {
             obj->orbit_pos.x = obj->pos.x;
             obj->orbit_pos.y = obj->pos.y;
-            obj->orbit_dest = generate_destination(obj->orbit_dest);
+            obj->orbit_dest = generate_destination(obj);
             DEBUG("new position is %f, %f", obj->orbit_dest.x, obj->orbit_dest.y);
         }
 
@@ -182,7 +183,7 @@ int hazard_create(object *obj, scene *scene) {
 
     obj->orbit_pos.x = obj->pos.x;
     obj->orbit_pos.y = obj->pos.y;
-    obj->orbit_dest = vec2f_create((rand_float() * 280.0f) + 20.0f, (rand_float() * 160.0f) + 20.0f);
+    obj->orbit_dest = vec2f_create((random_float(&obj->gs->rand) * 280.0f) + 20.0f, (random_float(&obj->gs->rand) * 160.0f) + 20.0f);
     DEBUG("new position is %f, %f", obj->orbit_dest.x, obj->orbit_dest.y);
 
     return 0;
