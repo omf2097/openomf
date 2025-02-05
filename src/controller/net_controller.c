@@ -600,9 +600,6 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
 
         list_free(&data->transcript);
         list_create(&data->transcript);
-        //} else if (data->gs_bak) {
-        // object *har_obj = game_state_find_object(ctrl->gs, game_player_get_har_obj_id(game_state_get_player(ctrl->gs,
-        // data->id))); har_set_delay(har_obj, ctrl->rtt / 2);
     }
 
     int last_received = 0;
@@ -638,7 +635,6 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                                         if(action != 0) {
                                             has_received = 1;
                                         }
-                                        // print_transcript(&data->transcript);
                                     } else {
                                         DEBUG("Remote event %d at %" PRIu32, action, remote_tick);
                                         controller_cmd(ctrl, action, ev);
@@ -649,7 +645,6 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                             i += 4 + k;
                         }
                         if(data->synchronized && data->gs_bak) {
-                            // print_transcript(&data->transcript);
                             data->last_received_tick = max2(data->last_received_tick, last_received);
                             data->last_acked_tick = max2(data->last_acked_tick, last_acked);
 
