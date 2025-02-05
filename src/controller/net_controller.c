@@ -543,7 +543,7 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
     serial ser;
     uint32_t ticks = ctrl->gs->int_tick;
 
-    if(/*has_event(data, ticks - 1) &&*/ ticks > data->last_tick) {
+    if(data->gs_bak && /*has_event(data, ticks - 1) &&*/ ticks > data->last_tick) {
         DEBUG("sending events %d -- %d", ticks - data->local_proposal, data->last_acked_tick);
         data->last_tick = ticks;
         send_events(data);
@@ -627,6 +627,7 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                             int k = 0;
                             do {
                                 action = serial_read_int8(&ser);
+                                k++;
 
                                 if(action) {
                                     if(data->synchronized && data->gs_bak) {

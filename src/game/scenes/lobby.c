@@ -873,7 +873,9 @@ void lobby_tick(scene *scene, int paused) {
                                 case 0:
                                     local->id = serial_read_uint32(&ser);
                                     DEBUG("successfully joined lobby and assigned ID %d", local->id);
-                                    local->joinmenu->finished = 1;
+                                    if(local->joinmenu) {
+                                        local->joinmenu->finished = 1;
+                                    }
                                     local->mode = LOBBY_MAIN;
                                     break;
                                 default:
