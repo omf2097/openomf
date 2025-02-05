@@ -10,7 +10,6 @@ on:
     types: [run_build]
 
 env:
-  OPENOMF_VERSION: '0.8.0'
   OPENOMF_ASSETS_URL: 'https://www.omf2097.com/pub/files/omf/omf2097-assets.zip'
 
 jobs:
@@ -25,6 +24,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: '0'
 
     - name: Install dependencies
       uses: Eeems-Org/apt-cache-action@v1.3
@@ -107,7 +108,15 @@ jobs:
         script: |
           core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
           core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: '0'
+
+    - name: Set OPENOMF_VERSION
+      # git describe uses glob to match the tag, so no repeated character classes.
+      run: echo "OPENOMF_VERSION=$(git describe --tags --match '[0-9]*.[0-9]*.[0-9]*')" >> "$GITHUB_ENV"
+
     - name: Check out VCPKG
       # must be checked out *after* openomf.git
       uses: actions/checkout@v4
@@ -155,21 +164,16 @@ jobs:
     - name: Install openomf
       run: cmake --install build-msvc --config Release --prefix install
 
-    - name: Get short SHA
-      shell: bash
-      id: slug
-      run: echo "sha8=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_OUTPUT
-
     - name: Generate ZIP package
       run: |
         cd install
-        Compress-Archive -Path openomf -DestinationPath openomf_${{ env.OPENOMF_VERSION }}-${{ steps.slug.outputs.sha8 }}_windows_msvc_${{ matrix.config.arch }}.zip -PassThru
+        Compress-Archive -Path openomf -DestinationPath openomf_${{ env.OPENOMF_VERSION }}_windows_msvc_${{ matrix.config.arch }}.zip -PassThru
 
     - name: Upload ZIP artifact
       uses: actions/upload-artifact@v4
       with:
-        name: openomf_${{ env.OPENOMF_VERSION }}-${{ steps.slug.outputs.sha8 }}_windows_msvc_${{ matrix.config.arch }}
-        path: install/openomf_${{ env.OPENOMF_VERSION }}-${{ steps.slug.outputs.sha8 }}_windows_msvc_${{ matrix.config.arch }}.zip
+        name: openomf_${{ env.OPENOMF_VERSION }}_windows_msvc_${{ matrix.config.arch }}
+        path: install/openomf_${{ env.OPENOMF_VERSION }}_windows_msvc_${{ matrix.config.arch }}.zip
         if-no-files-found: error
 
   # Build ubuntu package, release artifact
@@ -182,6 +186,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: '0'
+
+    - name: Set OPENOMF_VERSION
+      run: echo "OPENOMF_VERSION=$(git describe --tags --match '[0-9]*.[0-9]*.[0-9]*')" >> "$GITHUB_ENV"
 
     - name: Install Ubuntu Dependencies
       uses: Eeems-Org/apt-cache-action@v1.3
@@ -196,10 +205,6 @@ jobs:
         cmake -DUSE_NATPMP=ON -DUSE_MINIUPNPC=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=release/usr ..
         make -j $(getconf _NPROCESSORS_ONLN)
         make -j $(getconf _NPROCESSORS_ONLN) install
-
-    - name: Get short SHA
-      id: slug
-      run: echo "sha8=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_OUTPUT
 
     - name: Restore omf2097-assets.zip
       id: cache-assets
@@ -223,13 +228,13 @@ jobs:
       run: unzip -j omf2097-assets.zip -d build-release/release/usr/share/games/openomf
 
     - name: Generate TGZ package
-      run: tar cvfz ${GITHUB_WORKSPACE}/openomf_${{ env.OPENOMF_VERSION }}-${{ steps.slug.outputs.sha8 }}_linux_amd64.tar.gz -C build-release/release/ .
+      run: tar cvfz ${GITHUB_WORKSPACE}/openomf_${{ env.OPENOMF_VERSION }}_linux_amd64.tar.gz -C build-release/release/ .
 
     - name: Upload TGZ artifact
       uses: actions/upload-artifact@v4
       with:
-        name: openomf_${{ env.OPENOMF_VERSION }}-${{ steps.slug.outputs.sha8 }}_linux_amd64
-        path: openomf_${{ env.OPENOMF_VERSION }}-${{ steps.slug.outputs.sha8 }}_linux_amd64.tar.gz
+        name: openomf_${{ env.OPENOMF_VERSION }}_linux_amd64
+        path: openomf_${{ env.OPENOMF_VERSION }}_linux_amd64.tar.gz
         if-no-files-found: error
 
     - name: Generate DEB package
@@ -238,19 +243,19 @@ jobs:
         package: openomf
         package_root: build-release/release
         maintainer: ${{ github.repository_owner }}
-        version: ${{ env.OPENOMF_VERSION }}-${{ steps.slug.outputs.sha8 }}
+        version: ${{ env.OPENOMF_VERSION }}
         arch: 'amd64'
         depends: 'libargtable2-0, libsdl2-mixer-2.0-0, libconfuse2, libenet7, libsdl2-2.0-0, libxmp4, libpng16-16, libepoxy0, libminiupnpc17, libnatpmp1'
         desc: 'One Must Fall 2097 Remake'
 
     - name: Install the DEB package
-      run: sudo apt install ./openomf_${{ env.OPENOMF_VERSION }}-${{ steps.slug.outputs.sha8 }}_amd64.deb
+      run: sudo apt install ./openomf_${{ env.OPENOMF_VERSION }}_amd64.deb
 
     - name: Upload DEB artifact
       uses: actions/upload-artifact@v4
       with:
-        name: openomf_${{ env.OPENOMF_VERSION }}-${{ steps.slug.outputs.sha8 }}_deb_amd64
-        path: openomf_${{ env.OPENOMF_VERSION }}-${{ steps.slug.outputs.sha8 }}_amd64.deb
+        name: openomf_${{ env.OPENOMF_VERSION }}_deb_amd64
+        path: openomf_${{ env.OPENOMF_VERSION }}_amd64.deb
         if-no-files-found: error
 
   # Build macos package, release artifact
@@ -263,6 +268,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: '0'
+
+    - name: Set OPENOMF_VERSION
+      run: echo "OPENOMF_VERSION=$(git describe --tags --match '[0-9]*.[0-9]*.[0-9]*')" >> "$GITHUB_ENV"
 
     - name: Install Mac Dependencies
       run: |
@@ -297,20 +307,16 @@ jobs:
     - name: Extract omf 2097 assets
       run: unzip -j omf2097-assets.zip -d build-release/release/usr/share/games/openomf
 
-    - name: Get short SHA
-      id: slug
-      run: echo "sha8=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_OUTPUT
-
     - name: Generate ZIP package
       run: |
         cd build-release/release
-        zip -r ${GITHUB_WORKSPACE}/openomf_${{ env.OPENOMF_VERSION }}-${{ steps.slug.outputs.sha8 }}_macos14_arm.zip .
+        zip -r ${GITHUB_WORKSPACE}/openomf_${{ env.OPENOMF_VERSION }}_macos14_arm.zip .
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: openomf_${{ env.OPENOMF_VERSION }}-${{ steps.slug.outputs.sha8 }}_macos14_arm
-        path: openomf_${{ env.OPENOMF_VERSION }}-${{ steps.slug.outputs.sha8 }}_macos14_arm.zip
+        name: openomf_${{ env.OPENOMF_VERSION }}_macos14_arm
+        path: openomf_${{ env.OPENOMF_VERSION }}_macos14_arm.zip
         if-no-files-found: error
 
   # Build MinGW, just so we know it still compiles
@@ -323,6 +329,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: '0'
 
     - name: Install apt Dependencies
       uses: Eeems-Org/apt-cache-action@v1.3
@@ -363,14 +371,13 @@ jobs:
       with:
         fetch-depth: '0'
 
+    - name: Set OPENOMF_VERSION
+      run: echo "OPENOMF_VERSION=$(git describe --tags --match '[0-9]*.[0-9]*.[0-9]*')" >> "$GITHUB_ENV"
+
     - uses: actions/download-artifact@v4
       with:
         path: artifacts/
 
-    - name: Get short SHA
-      id: slug
-      run: echo "sha8=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_OUTPUT
-    
     - name: Advance tag
       uses: actions/github-script@v7
       with:
@@ -416,7 +423,7 @@ jobs:
         combine_windows artifacts/openomf_*_windows_msvc_x64/*.zip openomf.exe
 
         cd windows_all/
-        zip -r ${GITHUB_WORKSPACE}/upload/openomf_${{ env.OPENOMF_VERSION }}-${{ steps.slug.outputs.sha8 }}_windows.zip *
+        zip -r ${GITHUB_WORKSPACE}/upload/openomf_${{ env.OPENOMF_VERSION }}_windows.zip *
         cd ..
 
         shopt -s globstar
