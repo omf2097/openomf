@@ -214,7 +214,6 @@ int main(int argc, char *argv[]) {
     if(listen_port > 0 && listen_port < 0xFFFF) {
         DEBUG("Listen Port overridden to %u", listen_port & 0xFFFF);
         settings_get()->net.net_listen_port_start = listen_port;
-        settings_get()->net.net_listen_port_end = listen_port;
     }
 
     // Init SDL2

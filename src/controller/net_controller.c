@@ -543,8 +543,7 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
     serial ser;
     uint32_t ticks = ctrl->gs->int_tick;
 
-    if(/*has_event(data, ticks - 1) &&*/ ticks > data->last_tick) {
-        DEBUG("sending events %d -- %d", ticks - data->local_proposal, data->last_acked_tick);
+    if(data->gs_bak && /*has_event(data, ticks - 1) &&*/ ticks > data->last_tick) {
         data->last_tick = ticks;
         send_events(data);
     }
@@ -601,9 +600,6 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
 
         list_free(&data->transcript);
         list_create(&data->transcript);
-        //} else if (data->gs_bak) {
-        // object *har_obj = game_state_find_object(ctrl->gs, game_player_get_har_obj_id(game_state_get_player(ctrl->gs,
-        // data->id))); har_set_delay(har_obj, ctrl->rtt / 2);
     }
 
     int last_received = 0;
@@ -627,6 +623,7 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                             int k = 0;
                             do {
                                 action = serial_read_int8(&ser);
+                                k++;
 
                                 if(action) {
                                     if(data->synchronized && data->gs_bak) {
@@ -638,7 +635,6 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                                         if(action != 0) {
                                             has_received = 1;
                                         }
-                                        // print_transcript(&data->transcript);
                                     } else {
                                         DEBUG("Remote event %d at %" PRIu32, action, remote_tick);
                                         controller_cmd(ctrl, action, ev);
@@ -649,7 +645,6 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                             i += 4 + k;
                         }
                         if(data->synchronized && data->gs_bak) {
-                            // print_transcript(&data->transcript);
                             data->last_received_tick = max2(data->last_received_tick, last_received);
                             data->last_acked_tick = max2(data->last_acked_tick, last_acked);
 
@@ -824,8 +819,6 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
         // rewind/replay
         DEBUG("sending blank events in response");
         send_events(data);
-    } else {
-        DEBUG("last sent was %d, ticks is %d", data->last_sent - data->local_proposal, ticks - data->local_proposal);
     }
 
     unsigned tick_interval = 5;

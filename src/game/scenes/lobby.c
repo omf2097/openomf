@@ -57,6 +57,12 @@ enum
     CHALLENGE_FLAG_CANCEL = 1 << 2
 };
 
+enum
+{
+    ROLE_CHALLENGER,
+    ROLE_CHALLENGEE,
+};
+
 typedef struct lobby_user_t {
     char name[16];
     char version[15];
@@ -90,6 +96,7 @@ typedef struct lobby_local_t {
     menu *joinmenu;
 
     guiframe *frame;
+    uint8_t role;
 } lobby_local;
 
 typedef struct log_event_t {
@@ -206,18 +213,18 @@ void lobby_render_overlay(scene *scene) {
         log_event *logmsg;
         while((logmsg = list_iter_prev(&it)) && i < 4) {
             font_big.cforeground = logmsg->color;
-            text_render(&font_big, TEXT_DEFAULT, 10, 188 - (8 * i), 300, 8, logmsg->msg);
             i += text_find_line_count(&font_big, 300 / 8, 3, strlen(logmsg->msg), logmsg->msg, &longest);
+            text_render(&font_big, TEXT_DEFAULT, 10, 198 - (8 * i), 300, 8, logmsg->msg);
         }
     } else if(local->mode == LOBBY_YELL) {
         iterator it;
         int i = 0;
         list_iter_end(&local->log, &it);
         log_event *logmsg;
-        while((logmsg = list_iter_prev(&it)) && i < 13) {
+        while((logmsg = list_iter_prev(&it)) && i < 17) {
             font_big.cforeground = logmsg->color;
-            text_render(&font_big, TEXT_DEFAULT, 10, 120 - (8 * i), 300, 8, logmsg->msg);
             i += text_find_line_count(&font_big, 300 / 8, 3, strlen(logmsg->msg), logmsg->msg, &longest);
+            text_render(&font_big, TEXT_DEFAULT, 10, 140 - (8 * i), 300, 8, logmsg->msg);
         }
     }
 
@@ -257,6 +264,8 @@ void lobby_do_challenge(component *c, void *userdata) {
     dialog_create(local->dialog, DIALOG_STYLE_CANCEL, buf, 72, 60);
     local->dialog->userdata = s;
     local->dialog->clicked = lobby_dialog_cancel_challenge;
+
+    local->role = ROLE_CHALLENGER;
 
     dialog_show(local->dialog, 1);
 
@@ -499,23 +508,31 @@ void lobby_entered_name(component *c, void *userdata) {
         nat_create(nat);
 
         ENetAddress address;
+        ENetAddress lobby_address;
         address.host = ENET_HOST_ANY;
         address.port = settings_get()->net.net_listen_port_start;
 
         DEBUG("attempting to bind to port %d", address.port);
 
         if(address.port == 0) {
-            address.port = rand_int(65525 - 1024) + 1024;
+            address.port = rand_int(65535 - 1024) + 1024;
         }
 
         // Set up host
         local->controllers_created = 0;
         int randtries = 0;
+
+        int end_port = settings_get()->net.net_listen_port_end;
+        if(!end_port) {
+            end_port = 65535;
+        }
         while(local->client == NULL) {
             local->client = enet_host_create(&address, 2, 2, 0, 0);
             if(local->client == NULL) {
+                DEBUG("requested port %d unavailable, trying ports %d to %d", address.port,
+                      settings_get()->net.net_listen_port_start, end_port);
                 if(settings_get()->net.net_listen_port_start == 0) {
-                    address.port = rand_int(65525 - 1024) + 1024;
+                    address.port = rand_int(65535 - 1024) + 1024;
                     randtries++;
                     if(randtries > 10) {
                         DEBUG("Failed to initialize ENet server, could not allocate random port");
@@ -523,8 +540,15 @@ void lobby_entered_name(component *c, void *userdata) {
                     }
                 } else {
                     address.port++;
-                    if(address.port > settings_get()->net.net_listen_port_end) {
+                    if(address.port > end_port) {
                         DEBUG("Failed to initialize ENet server, port range exhausted");
+                        return;
+                    }
+                    randtries++;
+                    if(randtries > 10) {
+                        DEBUG("Failed to initialize ENet server, could not allocate port between %d and %d after 10 "
+                              "tries",
+                              settings_get()->net.net_listen_port_start, end_port);
                         return;
                     }
                 }
@@ -539,17 +563,20 @@ void lobby_entered_name(component *c, void *userdata) {
             ext_port = address.port;
         }
         randtries = 0;
+
         if(nat->type != NAT_TYPE_NONE) {
             while(!nat_create_mapping(nat, address.port, ext_port)) {
                 if(settings_get()->net.net_ext_port_start == 0) {
-                    ext_port = rand_int(65525 - 1024) + 1024;
+                    ext_port = rand_int(65535 - 1024) + 1024;
                     randtries++;
                     if(randtries > 10) {
+                        ext_port = 0;
                         break;
                     }
                 } else {
                     ext_port++;
                     if(ext_port > settings_get()->net.net_ext_port_end) {
+                        ext_port = 0;
                         break;
                     }
                 }
@@ -559,12 +586,12 @@ void lobby_entered_name(component *c, void *userdata) {
 
         ENetEvent event;
         ENetPeer *peer = NULL;
-        enet_address_set_host(&address, "lobby.openomf.org");
+        enet_address_set_host(&lobby_address, "lobby.openomf.org");
         // enet_address_set_host(&address, "127.0.0.1");
-        address.port = 2098;
-        DEBUG("server address is %d", address.host);
+        lobby_address.port = 2098;
+        DEBUG("server address is %d", lobby_address.host);
         /* Initiate the connection, allocating the two channels 0 and 1. */
-        local->peer = enet_host_connect(local->client, &address, 2, 0);
+        local->peer = enet_host_connect(local->client, &lobby_address, 2, 0);
 
         if(local->peer == NULL) {
             DEBUG("No available peers for initiating an ENet connection.\n");
@@ -587,10 +614,10 @@ void lobby_entered_name(component *c, void *userdata) {
             serial_create(&ser);
             serial_write_int8(&ser, PACKET_JOIN << 4);
             // if we mapped an external port, send it to the server
-            if(nat->type != NAT_TYPE_NONE) {
+            if(nat->type != NAT_TYPE_NONE && ext_port) {
                 serial_write_int16(&ser, nat->ext_port);
             } else {
-                serial_write_int16(&ser, 0);
+                serial_write_int16(&ser, address.port);
             }
             serial_write_int8(&ser, strlen(version));
             serial_write(&ser, version, strlen(version));
@@ -630,6 +657,9 @@ void lobby_dialog_cancel_connect(dialog *dlg, dialog_result result) {
     ENetPacket *packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
     serial_free(&ser);
     enet_peer_send(local->peer, 0, packet);
+    if(local->opponent_peer) {
+        enet_peer_reset(local->opponent_peer);
+    }
     local->opponent_peer = NULL;
 }
 
@@ -641,7 +671,9 @@ void lobby_try_connect(void *scenedata, void *userdata) {
               (local->opponent->address.host >> 8) & 0xFF, (local->opponent->address.host >> 16) & 0xF,
               (local->opponent->address.host >> 24) & 0xFF, local->opponent->address.port);
         local->opponent_peer = enet_host_connect(local->client, &local->opponent->address, 2, 0);
-        enet_peer_timeout(local->opponent_peer, 4, 1000, 1000);
+        if(local->opponent_peer) {
+            enet_peer_timeout(local->opponent_peer, 4, 1000, 1000);
+        }
     }
 }
 
@@ -664,6 +696,7 @@ void lobby_dialog_accept_challenge(dialog *dlg, dialog_result result) {
         dialog_create(local->dialog, DIALOG_STYLE_CANCEL, "Establishing connection...", 72, 60);
 
         local->connection_count = 0;
+        local->role = ROLE_CHALLENGEE;
         ticktimer_add(&s->tick_timer, 500, lobby_try_connect, NULL);
 
         dialog_show(local->dialog, 1);
@@ -761,7 +794,29 @@ void lobby_tick(scene *scene, int paused) {
                     controller_init(player2_ctrl, gs);
                     player2_ctrl->har_obj_id = p2->har_obj_id;
 
-                    // Player 1 controller -- Keyboard
+                    game_player *challenger, *challengee;
+                    controller *challenger_ctrl, *challengee_ctrl;
+
+                    if(local->role == ROLE_CHALLENGER) {
+                        // we did the connecting and we're the challenger
+                        // so we are player 1
+                        challenger = p1;
+                        challengee = p2;
+                        challenger_ctrl = player1_ctrl;
+                        challengee_ctrl = player2_ctrl;
+                    } else {
+                        challenger = p2;
+                        challengee = p1;
+                        challenger_ctrl = player2_ctrl;
+                        challengee_ctrl = player1_ctrl;
+                    }
+
+                    // Challenger -- Network
+                    net_controller_create(challengee_ctrl, local->client, event.peer, local->peer,
+                                          local->role == ROLE_CHALLENGER ? ROLE_SERVER : ROLE_CLIENT);
+                    game_player_set_ctrl(challengee, challengee_ctrl);
+
+                    // Challengee controller -- Keyboard
                     settings_keyboard *k = &settings_get()->keys;
                     keys = omf_calloc(1, sizeof(keyboard_keys));
                     keys->jump_up = SDL_GetScancodeFromName(k->key1_jump_up);
@@ -774,13 +829,9 @@ void lobby_tick(scene *scene, int paused) {
                     keys->jump_left = SDL_GetScancodeFromName(k->key1_jump_left);
                     keys->punch = SDL_GetScancodeFromName(k->key1_punch);
                     keys->kick = SDL_GetScancodeFromName(k->key1_kick);
-                    keyboard_create(player1_ctrl, keys, 0);
-                    game_player_set_ctrl(p1, player1_ctrl);
-
-                    // Player 2 controller -- Network
-                    net_controller_create(player2_ctrl, local->client, event.peer, local->peer, ROLE_SERVER);
-                    game_player_set_ctrl(p2, player2_ctrl);
-                    game_player_set_selectable(p2, 1);
+                    keyboard_create(challenger_ctrl, keys, 0);
+                    game_player_set_ctrl(challenger, challenger_ctrl);
+                    game_player_set_selectable(challengee, 1);
 
                     chr_score_set_difficulty(game_player_get_score(game_state_get_player(gs, 0)),
                                              AI_DIFFICULTY_CHAMPION);
@@ -855,7 +906,9 @@ void lobby_tick(scene *scene, int paused) {
                                 case 0:
                                     local->id = serial_read_uint32(&ser);
                                     DEBUG("successfully joined lobby and assigned ID %d", local->id);
-                                    local->joinmenu->finished = 1;
+                                    if(local->joinmenu) {
+                                        local->joinmenu->finished = 1;
+                                    }
                                     local->mode = LOBBY_MAIN;
                                     break;
                                 default:
@@ -895,11 +948,29 @@ void lobby_tick(scene *scene, int paused) {
                             controller_init(player2_ctrl, gs);
                             player2_ctrl->har_obj_id = p2->har_obj_id;
 
-                            // Player 1 controller -- Network
-                            net_controller_create(player1_ctrl, local->client, event.peer, local->peer, ROLE_CLIENT);
-                            game_player_set_ctrl(p1, player1_ctrl);
+                            game_player *challenger, *challengee;
+                            controller *challenger_ctrl, *challengee_ctrl;
 
-                            // Player 2 controller -- Keyboard
+                            if(local->role == ROLE_CHALLENGER) {
+                                // we were connected TO but we are the challenger
+                                // so we are player 1
+                                challenger = p1;
+                                challengee = p2;
+                                challenger_ctrl = player1_ctrl;
+                                challengee_ctrl = player2_ctrl;
+                            } else {
+                                challenger = p2;
+                                challengee = p1;
+                                challenger_ctrl = player2_ctrl;
+                                challengee_ctrl = player1_ctrl;
+                            }
+
+                            // Challengee -- Network
+                            net_controller_create(challengee_ctrl, local->client, event.peer, local->peer,
+                                                  local->role == ROLE_CHALLENGER ? ROLE_SERVER : ROLE_CLIENT);
+                            game_player_set_ctrl(challengee, challengee_ctrl);
+
+                            // Challenger controller -- Keyboard
                             settings_keyboard *k = &settings_get()->keys;
                             keys = omf_calloc(1, sizeof(keyboard_keys));
                             keys->jump_up = SDL_GetScancodeFromName(k->key1_jump_up);
@@ -912,9 +983,9 @@ void lobby_tick(scene *scene, int paused) {
                             keys->jump_left = SDL_GetScancodeFromName(k->key1_jump_left);
                             keys->punch = SDL_GetScancodeFromName(k->key1_punch);
                             keys->kick = SDL_GetScancodeFromName(k->key1_kick);
-                            keyboard_create(player2_ctrl, keys, 0);
-                            game_player_set_ctrl(p2, player2_ctrl);
-                            game_player_set_selectable(p2, 1);
+                            keyboard_create(challenger_ctrl, keys, 0);
+                            game_player_set_ctrl(challenger, challenger_ctrl);
+                            game_player_set_selectable(challengee, 1);
 
                             chr_score_set_difficulty(game_player_get_score(game_state_get_player(gs, 0)),
                                                      AI_DIFFICULTY_CHAMPION);
@@ -1014,7 +1085,9 @@ void lobby_tick(scene *scene, int paused) {
                                       local->opponent->address.host & 0xFF, (local->opponent->address.host >> 8) & 0xFF,
                                       (local->opponent->address.host >> 16) & 0xF,
                                       (local->opponent->address.host >> 24) & 0xFF, local->opponent->address.port);
-                                enet_peer_timeout(local->opponent_peer, 4, 1000, 1000);
+                                if(local->opponent_peer) {
+                                    enet_peer_timeout(local->opponent_peer, 4, 1000, 1000);
+                                }
                                 local->connection_count = 0;
 
                                 dialog_show(local->dialog, 1);
@@ -1046,6 +1119,9 @@ void lobby_tick(scene *scene, int paused) {
                                 dialog_show(local->dialog, 1);
                                 local->dialog->userdata = scene;
                                 local->dialog->clicked = lobby_dialog_close;
+                                if(local->opponent_peer) {
+                                    enet_peer_reset(local->opponent_peer);
+                                }
                                 local->opponent_peer = NULL;
                                 break;
                         }
@@ -1064,6 +1140,7 @@ void lobby_tick(scene *scene, int paused) {
                 if(event.peer == local->opponent_peer) {
                     local->connection_count++;
                     DEBUG("outbound peer connection failed");
+                    enet_peer_reset(local->opponent_peer);
                     local->opponent_peer = NULL;
 
                     if(local->connection_count < 2) {
