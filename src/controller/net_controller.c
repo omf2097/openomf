@@ -798,11 +798,12 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                     omf_free(data->gs_bak);
                 }
                 if(data->lobby) {
+                    // lobby will handle the controller
                     game_state_set_next(ctrl->gs, SCENE_LOBBY);
                 } else {
+                    controller_close(ctrl, ev);
                     game_state_set_next(ctrl->gs, SCENE_MENU);
                 }
-                controller_close(ctrl, ev);
                 return 1; // bail the fuck out
                 break;
             default:
