@@ -544,7 +544,6 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
     uint32_t ticks = ctrl->gs->int_tick;
 
     if(data->gs_bak && /*has_event(data, ticks - 1) &&*/ ticks > data->last_tick) {
-        DEBUG("sending events %d -- %d", ticks - data->local_proposal, data->last_acked_tick);
         data->last_tick = ticks;
         send_events(data);
     }
@@ -825,8 +824,6 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
         // rewind/replay
         DEBUG("sending blank events in response");
         send_events(data);
-    } else {
-        DEBUG("last sent was %d, ticks is %d", data->last_sent - data->local_proposal, ticks - data->local_proposal);
     }
 
     unsigned tick_interval = 5;
