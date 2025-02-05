@@ -1,10 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
 
-set(VERSION_MAJOR "0")
-set(VERSION_MINOR "6")
-set(VERSION_PATCH "6")
-set(VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
-
 # Options
 OPTION(USE_TESTS "Build unittests" OFF)
 OPTION(USE_TOOLS "Build tools" OFF)
@@ -92,7 +87,6 @@ else()
     set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O2 -DNDEBUG")
     set(CMAKE_C_FLAGS_MINSIZEREL "${CMAKE_C_FLAGS_MINSIZEREL} -Os -DNDEBUG")
 endif()
-add_definitions(-DV_MAJOR=${VERSION_MAJOR} -DV_MINOR=${VERSION_MINOR} -DV_PATCH=${VERSION_PATCH})
 
 # Enable AddressSanitizer if requested
 if(USE_SANITIZERS)
@@ -132,6 +126,24 @@ if(GIT_FOUND)
     )
     message(STATUS "Git SHA1 Hash: ${SHA1_HASH}")
     set_source_files_properties(src/main.c PROPERTIES COMPILE_DEFINITIONS SHA1_HASH="${SHA1_HASH}")
+
+    # git describe uses glob to match the tag, so no repeated character classes.
+    execute_process(
+        COMMAND ${GIT_EXECUTABLE} "describe" "--tags" "--match" "[0-9]*.[0-9]*.[0-9]*"
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+        OUTPUT_VARIABLE GIT_VERSION
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+    string(REGEX MATCH "^([0-9]+)\\.([0-9]+)\\.([0-9]+)(-.*)?" GIT_VERSION ${GIT_VERSION})
+    set(VERSION_MAJOR ${CMAKE_MATCH_1})
+    set(VERSION_MINOR ${CMAKE_MATCH_2})
+    set(VERSION_PATCH ${CMAKE_MATCH_3})
+    set(VERSION_LABEL ${CMAKE_MATCH_4})
+    add_definitions(-DV_MAJOR=${VERSION_MAJOR} -DV_MINOR=${VERSION_MINOR}
+                    -DV_PATCH=${VERSION_PATCH} -DV_LABEL=${VERSION_LABEL})
+
+    set(VERSION ${GIT_VERSION})
+    message(STATUS "Version: ${VERSION}")
 endif()
 
 if(WIN32)
