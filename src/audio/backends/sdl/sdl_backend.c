@@ -240,7 +240,7 @@ static void play_sound(void *userdata, const char *src_buf, size_t src_len, floa
         return;
     }
     Mix_SetPanning(channel, clamp(pan_left * 255, 0, 255), clamp(pan_right * 255, 0, 255));
-    if(Mix_PlayChannel(channel, &ctx->channel_chunks[channel], 0) == -1) {
+    if(Mix_PlayChannelTimed(channel, &ctx->channel_chunks[channel], 0, -1) == -1) {
         PERROR("Unable to play sound: %s", Mix_GetError());
     }
 }
