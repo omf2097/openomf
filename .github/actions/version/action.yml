@@ -6,13 +6,19 @@ runs:
       shell: bash
       run: |
         VERSION=$(git describe --tags --match "[0-9].[0-9].[0-9]" --match "[0-9].[0-9].[0-9][0-9]" --match "[0-9].[0-9].[0-9][0-9]-*" --match "[0-9].[0-9].[0-9]-*")
+        VERSION_NO_ABBREV=$(git describe --tags --match "[0-9].[0-9].[0-9]" --match "[0-9].[0-9].[0-9][0-9]" --match "[0-9].[0-9].[0-9][0-9]-*" --match "[0-9].[0-9].[0-9]-*" --no-abbrev)
         if [[ $VERSION =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)(-.*)?$ ]]; then
           MAJOR="${BASH_REMATCH[1]}"
           MINOR="${BASH_REMATCH[2]}"
           PATCH="${BASH_REMATCH[3]}"
           LABEL="${BASH_REMATCH[4]}"
+          LABEL_NO_ABBREV="$LABEL"
 
-          if [ ! -z "$LABEL" ]; then
+          if [[ $VERSION_NO_ABBREV =~ ^[0-9]+\.[0-9]+\.[0-9]+(-.*)?$ ]]; then
+            LABEL_NO_ABBREV="${BASH_REMATCH[1]}"
+          fi
+
+          if [[ ! -z "$LABEL" && -z "$LABEL_NO_ABBREV" ]]; then
             PATCH=$((PATCH + 1))
           fi
 

@@ -134,12 +134,22 @@ if(GIT_FOUND)
         OUTPUT_VARIABLE GIT_VERSION
         OUTPUT_STRIP_TRAILING_WHITESPACE
     )
+    execute_process(
+        COMMAND ${GIT_EXECUTABLE} "describe" "--tags" "--match" "[0-9].[0-9].[0-9]" "--match" "[0-9].[0-9].[0-9][0-9]" "--match" "[0-9].[0-9].[0-9]-*" "--match" "[0-9].[0-9].[0-9][0-9]-*" "--no-abbrev"
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+        OUTPUT_VARIABLE GIT_VERSION_NO_ABBREV
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+
     string(REGEX MATCH "^([0-9]+)\\.([0-9]+)\\.([0-9]+)(-.*)?" GIT_VERSION ${GIT_VERSION})
     set(VERSION_MAJOR ${CMAKE_MATCH_1})
     set(VERSION_MINOR ${CMAKE_MATCH_2})
     set(VERSION_PATCH ${CMAKE_MATCH_3})
     set(VERSION_LABEL ${CMAKE_MATCH_4})
-    if(NOT "${VERSION_LABEL}" STREQUAL "")
+
+    string(REGEX MATCH "^[0-9]+\\.[0-9]+\\.[0-9]+(-.*)?" GIT_VERSION_NO_ABBREV ${GIT_VERSION_NO_ABBREV})
+    set(VERSION_NO_ABBREV_LABEL ${CMAKE_MATCH_1})
+    if(NOT "${VERSION_LABEL}" STREQUAL "" AND "${VERSION_NO_ABBREV_LABEL}" STREQUAL "")
         math(EXPR VERSION_PATCH "${VERSION_PATCH} + 1")
     endif()
     add_definitions(-DV_MAJOR=${VERSION_MAJOR} -DV_MINOR=${VERSION_MINOR}
