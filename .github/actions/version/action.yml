@@ -1,0 +1,20 @@
+name: OpenOMF Version
+runs:
+  using: "composite"
+  steps:
+    - name: Set OPENOMF_VERSION
+      shell: bash
+      run: |
+        VERSION=$(git describe --tags --match "[0-9].[0-9].[0-9]" --match "[0-9].[0-9].[0-9][0-9]" --match "[0-9].[0-9].[0-9][0-9]-*" --match "[0-9].[0-9].[0-9]-*")
+        if [[ $VERSION =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)(-.*)?$ ]]; then
+          MAJOR="${BASH_REMATCH[1]}"
+          MINOR="${BASH_REMATCH[2]}"
+          PATCH="${BASH_REMATCH[3]}"
+          LABEL="${BASH_REMATCH[4]}"
+
+          if [ ! -z "$LABEL" ]; then
+            PATCH=$((PATCH + 1))
+          fi
+
+          echo "OPENOMF_VERSION=$MAJOR.$MINOR.$PATCH$LABEL"
+        fi >> $GITHUB_ENV
