@@ -132,9 +132,15 @@ int text_find_max_strlen(const text_settings *settings, int max_chars, const cha
 int text_width(const text_settings *settings, const char *text) {
 
     int len = strlen(text);
+    return text_width_limit(settings, text, len);
+}
+
+int text_width_limit(const text_settings *settings, const char *text, int limit) {
+
+    int len = strlen(text);
     int width = 0;
     surface *sur = NULL;
-    for(int i = 0; i < len; i++) {
+    for(int i = 0; i < min2(len, limit); i++) {
         sur = get_font_surface(settings, text[i]);
         if(sur != NULL) {
             width += sur->w;

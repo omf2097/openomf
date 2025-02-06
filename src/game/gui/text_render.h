@@ -88,5 +88,6 @@ void text_render(const text_settings *settings, text_mode mode, int x, int y, in
 void text_render_str(const text_settings *settings, text_mode mode, int x, int y, int w, int h, const str *text);
 int text_char_width(const text_settings *settings);
 int text_width(const text_settings *settings, const char *text);
+int text_width_limit(const text_settings *settings, const char *text, int limit);
 
 #endif // TEXT_RENDER_H

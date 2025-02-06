@@ -44,7 +44,8 @@ static void textinput_render(component *c) {
             i = 16 - i;
         }
         tb->tconf.cforeground = 216 + i;
-        int offset = tb->pos * text_char_width(&tb->tconf);
+
+        int offset = text_width_limit(&tb->tconf, str_c(&tb->text), tb->pos);
 
         int start_x = c->x + tb->tconf.padding.left;
         if(tb->tconf.halign == TEXT_CENTER) {
