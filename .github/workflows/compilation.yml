@@ -113,9 +113,8 @@ jobs:
       with:
         fetch-depth: '0'
 
-    - name: Set OPENOMF_VERSION
-      # git describe uses glob to match the tag, so no repeated character classes.
-      run: echo "OPENOMF_VERSION=$(git describe --tags --match '[0-9]*.[0-9]*.[0-9]*')" >> "$GITHUB_ENV"
+    - name: Get OpenOMF Version
+      uses: ./.github/actions/version
 
     - name: Check out VCPKG
       # must be checked out *after* openomf.git
@@ -189,8 +188,8 @@ jobs:
       with:
         fetch-depth: '0'
 
-    - name: Set OPENOMF_VERSION
-      run: echo "OPENOMF_VERSION=$(git describe --tags --match '[0-9]*.[0-9]*.[0-9]*')" >> "$GITHUB_ENV"
+    - name: Get OpenOMF Version
+      uses: ./.github/actions/version
 
     - name: Install Ubuntu Dependencies
       uses: Eeems-Org/apt-cache-action@v1.3
@@ -271,8 +270,8 @@ jobs:
       with:
         fetch-depth: '0'
 
-    - name: Set OPENOMF_VERSION
-      run: echo "OPENOMF_VERSION=$(git describe --tags --match '[0-9]*.[0-9]*.[0-9]*')" >> "$GITHUB_ENV"
+    - name: Get OpenOMF Version
+      uses: ./.github/actions/version
 
     - name: Install Mac Dependencies
       run: |
@@ -371,8 +370,8 @@ jobs:
       with:
         fetch-depth: '0'
 
-    - name: Set OPENOMF_VERSION
-      run: echo "OPENOMF_VERSION=$(git describe --tags --match '[0-9]*.[0-9]*.[0-9]*')" >> "$GITHUB_ENV"
+    - name: Get OpenOMF Version
+      uses: ./.github/actions/version
 
     - uses: actions/download-artifact@v4
       with:

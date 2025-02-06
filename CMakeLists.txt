@@ -129,7 +129,7 @@ if(GIT_FOUND)
 
     # git describe uses glob to match the tag, so no repeated character classes.
     execute_process(
-        COMMAND ${GIT_EXECUTABLE} "describe" "--tags" "--match" "[0-9]*.[0-9]*.[0-9]*"
+        COMMAND ${GIT_EXECUTABLE} "describe" "--tags" "--match" "[0-9].[0-9].[0-9]" "--match" "[0-9].[0-9].[0-9][0-9]" "--match" "[0-9].[0-9].[0-9]-*" "--match" "[0-9].[0-9].[0-9][0-9]-*"
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
         OUTPUT_VARIABLE GIT_VERSION
         OUTPUT_STRIP_TRAILING_WHITESPACE
@@ -139,10 +139,13 @@ if(GIT_FOUND)
     set(VERSION_MINOR ${CMAKE_MATCH_2})
     set(VERSION_PATCH ${CMAKE_MATCH_3})
     set(VERSION_LABEL ${CMAKE_MATCH_4})
+    if(NOT "${VERSION_LABEL}" STREQUAL "")
+        math(EXPR VERSION_PATCH "${VERSION_PATCH} + 1")
+    endif()
     add_definitions(-DV_MAJOR=${VERSION_MAJOR} -DV_MINOR=${VERSION_MINOR}
                     -DV_PATCH=${VERSION_PATCH} -DV_LABEL=${VERSION_LABEL})
 
-    set(VERSION ${GIT_VERSION})
+    set(VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}${VERSION_LABEL})
     message(STATUS "Version: ${VERSION}")
 endif()
 
