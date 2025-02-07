@@ -154,8 +154,10 @@ if(GIT_FOUND)
     if(NOT "${VERSION_LABEL}" STREQUAL "" AND "${VERSION_NO_ABBREV_LABEL}" STREQUAL "")
         math(EXPR VERSION_PATCH "${VERSION_PATCH} + 1")
     endif()
-    add_definitions(-DV_MAJOR=${VERSION_MAJOR} -DV_MINOR=${VERSION_MINOR}
-                    -DV_PATCH=${VERSION_PATCH} -DV_LABEL="${VERSION_LABEL}")
+
+    set(VERSION_DEFINITIONS V_MAJOR=${VERSION_MAJOR} V_MINOR=${VERSION_MINOR} V_PATCH=${VERSION_PATCH} V_LABEL="${VERSION_LABEL}")
+    set_source_files_properties(src/main.c src/game/scenes/lobby.c src/video/renderers/opengl3/sdl_window.c
+      PROPERTIES COMPILE_DEFINITIONS "${VERSION_DEFINITIONS}")
 
     set(VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}${VERSION_LABEL})
     message(STATUS "Version: ${VERSION}")
