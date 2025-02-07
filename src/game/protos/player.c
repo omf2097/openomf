@@ -453,7 +453,7 @@ void player_run(object *obj) {
             }
             if(obj->sound_translation_table) {
                 int sound_id = obj->sound_translation_table[sd_script_get(frame, "s")] - 1;
-                audio_play_sound(sound_id, volume, panning, pitch);
+                game_state_play_sound(obj->gs, sound_id, volume, panning, pitch);
             }
         }
 
