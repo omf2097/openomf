@@ -58,6 +58,7 @@ typedef struct arena_local_t {
     int round;
     int rounds;
     int over;
+    int winner;
     bool tournament;
 
     int player_rounds[2][4];
@@ -205,6 +206,7 @@ void arena_screengrab_winner(scene *sc) {
 
 void arena_end(scene *sc) {
     game_state *gs = sc->gs;
+    arena_local *local = scene_get_userdata(sc);
     const scene *scene = game_state_get_scene(gs);
     fight_stats *fight_stats = &gs->fight_stats;
 
@@ -268,6 +270,12 @@ void arena_end(scene *sc) {
     } else if(is_twoplayer(gs)) {
         game_state_set_next(gs, SCENE_MELEE);
     } else if(gs->net_mode == NET_MODE_LOBBY) {
+        if(game_state_get_player(scene->gs, 0)->ctrl->type == CTRL_TYPE_NETWORK) {
+            net_controller_set_winner(game_state_get_player(scene->gs, 0)->ctrl, local->winner);
+        }
+        if(game_state_get_player(scene->gs, 1)->ctrl->type == CTRL_TYPE_NETWORK) {
+            net_controller_set_winner(game_state_get_player(scene->gs, 1)->ctrl, local->winner);
+        }
         game_state_set_next(gs, SCENE_LOBBY);
     } else {
         game_state_set_next(gs, SCENE_MELEE);
@@ -342,6 +350,16 @@ void arena_reset(scene *sc) {
         object_set_group(number, GROUP_ANNOUNCEMENT);
         game_state_add_object(sc->gs, number, RENDER_LAYER_TOP, 0, 0);
     }
+}
+
+int arena_is_over(scene *sc) {
+    arena_local *local = scene_get_userdata(sc);
+
+    if(local->over) {
+        return local->winner;
+    }
+
+    return -1;
 }
 
 void arena_har_take_hit_hook(int hittee, af_move *move, scene *scene) {
@@ -579,6 +597,8 @@ void arena_har_defeat_hook(int player_id, scene *scene) {
         har_set_ani(winner, ANIM_VICTORY, 0);
         winner_har->state = STATE_VICTORY;
         local->over = 1;
+        local->winner = player_id;
+
         if(is_singleplayer(gs)) {
             player_winner->sp_wins |= 2 << player_loser->pilot->pilot_id;
             if(player_loser->pilot->pilot_id == PILOT_KREISSACK) {
@@ -895,6 +915,13 @@ int arena_handle_events(scene *scene, game_player *player, ctrl_event *i) {
                     game_state_set_next(scene->gs, SCENE_NONE);
                 } else {
                     if(scene->gs->net_mode == NET_MODE_LOBBY) {
+                        arena_local *local = scene_get_userdata(scene);
+                        if(game_state_get_player(scene->gs, 0)->ctrl->type == CTRL_TYPE_NETWORK) {
+                            net_controller_set_winner(game_state_get_player(scene->gs, 0)->ctrl, local->winner);
+                        }
+                        if(game_state_get_player(scene->gs, 1)->ctrl->type == CTRL_TYPE_NETWORK) {
+                            net_controller_set_winner(game_state_get_player(scene->gs, 1)->ctrl, local->winner);
+                        }
                         game_state_set_next(scene->gs, SCENE_LOBBY);
                     }
                     game_state_set_next(scene->gs, SCENE_MENU);
@@ -1294,6 +1321,7 @@ int arena_create(scene *scene) {
     }
     local->tournament = false;
     local->over = 0;
+    local->winner = 0;
 
     // Initial har data
     vec2i pos[2];

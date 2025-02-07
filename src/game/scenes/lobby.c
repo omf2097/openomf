@@ -54,13 +54,26 @@ enum
 {
     CHALLENGE_FLAG_ACCEPT = 1 << 0,
     CHALLENGE_FLAG_REJECT = 1 << 1,
-    CHALLENGE_FLAG_CANCEL = 1 << 2
+    CHALLENGE_FLAG_CANCEL = 1 << 2,
+    CHALLENGE_FLAG_DONE = 1 << 3,
 };
 
 enum
 {
     ROLE_CHALLENGER,
     ROLE_CHALLENGEE,
+};
+
+enum
+{
+    PRESENCE_UNKNOWN = 1,
+    PRESENCE_STARTING,
+    PRESENCE_AVAILABLE,
+    PRESENCE_PRACTICING,
+    PRESENCE_CHALLENGING,
+    PRESENCE_PONDERING,
+    PRESENCE_FIGHTING,
+    PRESENCE_WATCHING,
 };
 
 typedef struct lobby_user_t {
@@ -73,6 +86,7 @@ typedef struct lobby_user_t {
     uint32_t id;
     uint8_t wins;
     uint8_t losses;
+    uint8_t status;
 } lobby_user;
 
 typedef struct lobby_local_t {
@@ -199,7 +213,28 @@ void lobby_render_overlay(scene *scene) {
             text_render(&font_big, TEXT_DEFAULT, 16, 18 + (10 * i), 90, 8, user->name);
             // TODO status
             font_small.cforeground = 40;
-            text_render(&font_small, TEXT_DEFAULT, 117, 18 + (10 * i), 60, 6, "available");
+            switch(user->status) {
+                case PRESENCE_STARTING:
+                    text_render(&font_small, TEXT_DEFAULT, 117, 18 + (10 * i), 70, 6, "starting");
+                    break;
+                case PRESENCE_AVAILABLE:
+                    text_render(&font_small, TEXT_DEFAULT, 117, 18 + (10 * i), 70, 6, "available");
+                    break;
+                case PRESENCE_FIGHTING:
+                    text_render(&font_small, TEXT_DEFAULT, 117, 18 + (10 * i), 70, 6, "fighting");
+                    break;
+                case PRESENCE_CHALLENGING:
+                    text_render(&font_small, TEXT_DEFAULT, 117, 18 + (10 * i), 70, 6, "challenging");
+                    break;
+                case PRESENCE_PONDERING:
+                    text_render(&font_small, TEXT_DEFAULT, 117, 18 + (10 * i), 70, 6, "pondering");
+                    break;
+                case PRESENCE_WATCHING:
+                    text_render(&font_small, TEXT_DEFAULT, 117, 18 + (10 * i), 70, 6, "watching");
+                    break;
+                default:
+                    text_render(&font_small, TEXT_DEFAULT, 117, 18 + (10 * i), 70, 6, "unknown");
+            }
             char wins[8];
             snprintf(wins, sizeof(wins), "%d/%d", user->wins, user->losses);
             font_small.cforeground = 56;
@@ -862,6 +897,7 @@ void lobby_tick(scene *scene, int paused) {
                         }
                         user.wins = serial_read_int8(&ser);
                         user.losses = serial_read_int8(&ser);
+                        user.status = serial_read_int8(&ser);
                         uint8_t version_len = serial_read_int8(&ser);
                         if(version_len < 15) {
                             serial_read(&ser, user.version, version_len);
@@ -880,6 +916,7 @@ void lobby_tick(scene *scene, int paused) {
                                         found = true;
                                         u->wins = user.wins;
                                         u->losses = user.losses;
+                                        u->status = user.status;
                                         u->address.host = user.address.host;
                                         u->port = user.port;
                                         u->ext_port = user.ext_port;
@@ -1257,15 +1294,18 @@ int lobby_create(scene *scene) {
                 textbutton_create(&tconf, "Refresh", "Refresh the player list.", COM_ENABLED, lobby_refresh, scene));
     menu_attach(menu, textbutton_create(&tconf, "Exit", "Exit and disconnect.", COM_ENABLED, lobby_exit, scene));
 
+    int winner = -1;
     // check if there's already a net controller provisioned
     // and harvest the information from it, if possible
     if(game_state_get_player(scene->gs, 0)->ctrl->type == CTRL_TYPE_NETWORK) {
         local->peer = net_controller_get_lobby_connection(game_state_get_player(scene->gs, 0)->ctrl);
         local->client = net_controller_get_host(game_state_get_player(scene->gs, 0)->ctrl);
+        winner = net_controller_get_winner(game_state_get_player(scene->gs, 0)->ctrl);
         local->mode = LOBBY_MAIN;
     } else if(game_state_get_player(scene->gs, 1)->ctrl->type == CTRL_TYPE_NETWORK) {
         local->peer = net_controller_get_lobby_connection(game_state_get_player(scene->gs, 1)->ctrl);
         local->client = net_controller_get_host(game_state_get_player(scene->gs, 1)->ctrl);
+        winner = net_controller_get_winner(game_state_get_player(scene->gs, 1)->ctrl);
         local->mode = LOBBY_MAIN;
     }
 
@@ -1300,6 +1340,15 @@ int lobby_create(scene *scene) {
         // TODO send the server a REFRESH command so we can get the userlist, our username, etc
         serial ser;
         serial_create(&ser);
+
+        if(winner >= 0) {
+            serial_write_int8(&ser, PACKET_CHALLENGE << 4 | CHALLENGE_FLAG_DONE);
+            serial_write_int8(&ser, (uint8_t)winner);
+            ENetPacket *packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
+            enet_peer_send(local->peer, 0, packet);
+            serial_free(&ser);
+        }
+
         serial_write_int8(&ser, (uint8_t)(PACKET_REFRESH << 4));
 
         ENetPacket *packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);

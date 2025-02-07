@@ -47,6 +47,7 @@ typedef struct {
     uint32_t last_hash_tick;
     SDL_RWops *trace_file;
     game_state *gs_bak;
+    int winner;
 } wtf;
 
 typedef struct {
@@ -463,6 +464,22 @@ ENetHost *net_controller_get_host(controller *ctrl) {
     return data->host;
 }
 
+void net_controller_set_winner(controller *ctrl, int winner) {
+    wtf *data = ctrl->data;
+    data->winner = winner;
+}
+
+int net_controller_get_winner(controller *ctrl) {
+    wtf *data = ctrl->data;
+    if(data->winner < 0) {
+        return -1;
+    }
+    if(data->winner != data->id) {
+        return 0;
+    }
+    return 1;
+}
+
 bool net_controller_ready(controller *ctrl) {
     wtf *data = ctrl->data;
     return data->synchronized;
@@ -793,6 +810,7 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                     omf_free(data->gs_bak);
                 }
                 if(data->lobby) {
+                    data->winner = arena_is_over(ctrl->gs->sc);
                     // lobby will handle the controller
                     game_state_set_next(ctrl->gs, SCENE_LOBBY);
                 } else {
@@ -925,6 +943,7 @@ void net_controller_create(controller *ctrl, ENetHost *host, ENetPeer *peer, ENe
     data->last_har_state = -1;
     data->trace_file = NULL;
     data->last_traced_tick = 0;
+    data->winner = -1;
     char *trace_file = settings_get()->net.trace_file;
     if(trace_file) {
         data->trace_file = SDL_RWFromFile(trace_file, "w");
