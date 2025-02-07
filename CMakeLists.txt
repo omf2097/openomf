@@ -153,7 +153,7 @@ if(GIT_FOUND)
         math(EXPR VERSION_PATCH "${VERSION_PATCH} + 1")
     endif()
     add_definitions(-DV_MAJOR=${VERSION_MAJOR} -DV_MINOR=${VERSION_MINOR}
-                    -DV_PATCH=${VERSION_PATCH} -DV_LABEL=${VERSION_LABEL})
+                    -DV_PATCH=${VERSION_PATCH} -DV_LABEL="${VERSION_LABEL}")
 
     set(VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}${VERSION_LABEL})
     message(STATUS "Version: ${VERSION}")

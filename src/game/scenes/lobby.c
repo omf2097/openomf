@@ -25,6 +25,8 @@
 #define WHISPER_COLOR 6
 #define LEAVE_COLOR 5
 
+#define VERSION_BUF_SIZE 30
+
 enum
 {
     LOBBY_STARTING,
@@ -78,7 +80,7 @@ enum
 
 typedef struct lobby_user_t {
     char name[16];
-    char version[15];
+    char version[VERSION_BUF_SIZE];
     bool self;
     ENetAddress address;
     uint16_t port;     // port the server sees this user connecting from
@@ -239,7 +241,7 @@ void lobby_render_overlay(scene *scene) {
             snprintf(wins, sizeof(wins), "%d/%d", user->wins, user->losses);
             font_small.cforeground = 56;
             text_render(&font_small, TEXT_DEFAULT, 200, 18 + (10 * i), 50, 6, wins);
-            text_render(&font_small, TEXT_DEFAULT, 240, 18 + (10 * i), 50, 6, user->version);
+            text_render(&font_small, TEXT_DEFAULT, 240, 18 + (10 * i), 140, 6, user->version);
             i++;
         }
 
@@ -641,10 +643,9 @@ void lobby_entered_name(component *c, void *userdata) {
             event.peer->data = nat;
             strncpy_or_truncate(local->name, textinput_value(c), sizeof(local->name));
 
-            char version[15];
+            char version[VERSION_BUF_SIZE];
             // TODO support git version when not on a tag
-            snprintf(version, 14, "%d.%d.%d", V_MAJOR, V_MINOR, V_PATCH);
-            version[14] = 0;
+            snprintf(version, sizeof(version), "%d.%d.%d%s", V_MAJOR, V_MINOR, V_PATCH, V_LABEL);
             serial ser;
             serial_create(&ser);
             serial_write_int8(&ser, PACKET_JOIN << 4);
@@ -899,7 +900,7 @@ void lobby_tick(scene *scene, int paused) {
                         user.losses = serial_read_int8(&ser);
                         user.status = serial_read_int8(&ser);
                         uint8_t version_len = serial_read_int8(&ser);
-                        if(version_len < 15) {
+                        if(version_len < sizeof(user.version)) {
                             serial_read(&ser, user.version, version_len);
                             user.version[version_len] = 0;
                             uint8_t name_len = ser.wpos - ser.rpos;
