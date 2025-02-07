@@ -16,5 +16,7 @@ int net_controller_tick_offset(controller *ctrl);
 ENetPeer *net_controller_get_lobby_connection(controller *ctrl);
 
 ENetHost *net_controller_get_host(controller *ctrl);
+int net_controller_get_winner(controller *ctrl);
+void net_controller_set_winner(controller *ctrl, int winner);
 
 #endif // NET_CONTROLLER_H

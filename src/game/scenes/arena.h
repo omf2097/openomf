@@ -19,5 +19,6 @@ void maybe_install_har_hooks(scene *scene);
 uint32_t arena_state_hash(game_state *gs);
 void arena_state_dump(game_state *gs, char *buf);
 void arena_reset(scene *sc);
+int arena_is_over(scene *sc);
 
 #endif // ARENA_H
