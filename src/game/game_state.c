@@ -1150,14 +1150,11 @@ void game_state_play_sound(game_state *gs, int id, float volume, float panning, 
     s.id = id;
     s.length = src_len;
     // TODO factor in pitch
-    s.duration = (int)((src_len / 8000.0f) * 1000.0f);
+    s.duration = (int)((src_len / 8000.0f) * 1000.0f); // used to track when a sound is done
     s.volume = volume;
     s.panning = panning;
     s.pitch = pitch;
     s.playback_id = -1;
-
-    // TODO calculate what tick this sound should be finished after
-    // so we can remove it when it is no longer relevant
 
     if(!gs->clone) {
         // do not actually begin playback if this is a cloned game state
