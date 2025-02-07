@@ -368,7 +368,7 @@ component *lobby_yell_create(scene *s) {
     menu_set_help_text_settings(menu, &help_text);
     menu_set_horizontal(menu, true);
     menu_set_background(menu, false);
-    menu_set_padding(menu, 0);
+    menu_set_padding(menu, -8);
 
     menu_attach(menu, label_create(&tconf, "Yell:"));
     component *yell_input =
@@ -442,7 +442,7 @@ component *lobby_whisper_create(scene *s) {
     menu_set_help_text_settings(menu, &help_text);
     menu_set_horizontal(menu, true);
     menu_set_background(menu, false);
-    menu_set_padding(menu, 0);
+    menu_set_padding(menu, -6);
 
     menu_attach(menu, label_create(&tconf, "Whisper:"));
     lobby_user *user = list_get(&local->users, local->active_user);
@@ -908,6 +908,7 @@ void lobby_tick(scene *scene, int paused) {
                                     DEBUG("successfully joined lobby and assigned ID %d", local->id);
                                     if(local->joinmenu) {
                                         local->joinmenu->finished = 1;
+                                        local->joinmenu = NULL;
                                     }
                                     local->mode = LOBBY_MAIN;
                                     break;
