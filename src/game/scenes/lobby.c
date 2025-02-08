@@ -958,12 +958,13 @@ void lobby_tick(scene *scene, int paused) {
                             local->opponent_peer = event.peer;
 
                             // signal the server we're connected
-                            serial_create(&ser);
-                            serial_write_int8(&ser, PACKET_CONNECTED << 4);
+                            serial reply_ser;
+                            serial_create(&reply_ser);
+                            serial_write_int8(&reply_ser, PACKET_CONNECTED << 4);
                             ENetPacket *packet =
-                                enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
+                                enet_packet_create(reply_ser.data, serial_len(&reply_ser), ENET_PACKET_FLAG_RELIABLE);
                             enet_peer_send(local->peer, 0, packet);
-                            serial_free(&ser);
+                            serial_free(&reply_ser);
 
                             controller *player1_ctrl, *player2_ctrl;
                             keyboard_keys *keys;

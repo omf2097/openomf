@@ -849,6 +849,11 @@ void arena_free(scene *scene) {
     scene_set_userdata(scene, local);
 }
 
+void arena_clone_free(scene *scene) {
+    arena_local *local = scene_get_userdata(scene);
+    omf_free(local);
+}
+
 void write_rec_move(scene *scene, game_player *player, int action) {
     arena_local *local = scene_get_userdata(scene);
     sd_rec_move move;
@@ -1566,6 +1571,7 @@ int arena_create(scene *scene) {
     // Callbacks
     scene_set_event_cb(scene, arena_event);
     scene_set_free_cb(scene, arena_free);
+    scene_set_clone_free_cb(scene, arena_clone_free);
     scene_set_dynamic_tick_cb(scene, arena_dynamic_tick);
     scene_set_static_tick_cb(scene, arena_static_tick);
     scene_set_startup_cb(scene, arena_startup);

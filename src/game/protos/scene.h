@@ -70,6 +70,7 @@ void scene_set_userdata(scene *scene, void *userdata);
 void *scene_get_userdata(const scene *scene);
 
 void scene_set_free_cb(scene *scene, scene_free_cb cbfunc);
+void scene_set_clone_free_cb(scene *scene, scene_free_cb cbfunc);
 void scene_set_event_cb(scene *scene, scene_event_cb cbfunc);
 void scene_set_render_cb(scene *scene, scene_render_cb cbfunc);
 void scene_set_render_overlay_cb(scene *scene, scene_render_overlay_cb cbfunc);
