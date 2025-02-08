@@ -32,7 +32,7 @@ void bk_create(bk *b, void *src) {
     for(int i = 0; i < 50; i++) {
         if(sdbk->anims[i] != NULL) {
             bk_info_create(&tmp_bk_info, &b->sprites, (void *)sdbk->anims[i], i);
-            hashmap_iput(&b->infos, i, &tmp_bk_info, sizeof(bk_info));
+            hashmap_put_int(&b->infos, i, &tmp_bk_info, sizeof(bk_info));
         }
     }
 }
@@ -40,7 +40,7 @@ void bk_create(bk *b, void *src) {
 bk_info *bk_get_info(bk *b, int id) {
     bk_info *val;
     unsigned int tmp;
-    if(hashmap_iget(&b->infos, id, (void **)&val, &tmp) == 1) {
+    if(hashmap_get_int(&b->infos, id, (void **)&val, &tmp) == 1) {
         return NULL;
     }
     return val;

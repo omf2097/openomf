@@ -81,7 +81,7 @@ void console_handle_line(game_state *gs) {
             void *val = 0;
             unsigned int len;
             make_argv(input_copy, argv);
-            if(!hashmap_sget(&con->cmds, argv[0], &val, &len)) {
+            if(!hashmap_get_str(&con->cmds, argv[0], &val, &len)) {
                 command *cmd = val;
                 int err = cmd->func(gs, argc, argv);
                 if(err == 0) {
@@ -388,11 +388,11 @@ void console_add_cmd(const char *name, command_func func, const char *doc) {
     command c;
     c.func = func;
     c.doc = doc;
-    hashmap_sput(&con->cmds, name, &c, sizeof(command));
+    hashmap_put_str(&con->cmds, name, &c, sizeof(command));
 }
 
 void console_remove_cmd(const char *name) {
-    hashmap_sdel(&con->cmds, name);
+    hashmap_del_str(&con->cmds, name);
 }
 
 bool console_window_is_open(void) {

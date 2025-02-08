@@ -166,7 +166,7 @@ bool atlas_insert(texture_atlas *atlas, const char *bytes, uint16_t w, uint16_t 
 bool atlas_get(texture_atlas *atlas, const surface *surface, uint16_t *x, uint16_t *y, uint16_t *w, uint16_t *h) {
     // First, check if item is already in the texture atlas. If it is, return coords immediately.
     zone *coords;
-    if(hashmap_iget(&atlas->items, surface->guid, (void **)&coords, NULL) == 0) {
+    if(hashmap_get_int(&atlas->items, surface->guid, (void **)&coords, NULL) == 0) {
         *x = coords->x;
         *y = coords->y;
         *w = surface->w;
@@ -182,7 +182,7 @@ bool atlas_get(texture_atlas *atlas, const surface *surface, uint16_t *x, uint16
         *w = surface->w;
         *h = surface->h;
         zone cached = {nx, ny, surface->w, surface->h};
-        hashmap_iput(&atlas->items, surface->guid, &cached, sizeof(zone));
+        hashmap_put_int(&atlas->items, surface->guid, &cached, sizeof(zone));
         return true;
     }
 

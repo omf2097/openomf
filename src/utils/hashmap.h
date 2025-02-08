@@ -45,27 +45,27 @@ static inline unsigned int hashmap_reserved(const hashmap *hm) {
     return hm->reserved;
 }
 
-static inline void hashmap_sput(hashmap *hm, const char *key, void *value, unsigned int value_len) {
+static inline void hashmap_put_str(hashmap *hm, const char *key, void *value, unsigned int value_len) {
     hashmap_put(hm, key, strlen(key) + 1, value, value_len);
 }
 
-static inline void hashmap_iput(hashmap *hm, unsigned int key, void *value, unsigned int value_len) {
+static inline void hashmap_put_int(hashmap *hm, unsigned int key, void *value, unsigned int value_len) {
     hashmap_put(hm, (char *)&key, sizeof(unsigned int), value, value_len);
 }
 
-static inline int hashmap_sget(hashmap *hm, const char *key, void **value, unsigned int *value_len) {
+static inline int hashmap_get_str(hashmap *hm, const char *key, void **value, unsigned int *value_len) {
     return hashmap_get(hm, (void *)key, strlen(key) + 1, value, value_len);
 }
 
-static inline int hashmap_iget(hashmap *hm, unsigned int key, void **value, unsigned int *value_len) {
+static inline int hashmap_get_int(hashmap *hm, unsigned int key, void **value, unsigned int *value_len) {
     return hashmap_get(hm, (void *)&key, sizeof(unsigned int), value, value_len);
 }
 
-static inline void hashmap_sdel(hashmap *hm, const char *key) {
+static inline void hashmap_del_str(hashmap *hm, const char *key) {
     hashmap_del(hm, key, strlen(key) + 1);
 }
 
-static inline void hashmap_idel(hashmap *hm, unsigned int key) {
+static inline void hashmap_del_int(hashmap *hm, unsigned int key) {
     hashmap_del(hm, (char *)&key, sizeof(unsigned int));
 }
 
