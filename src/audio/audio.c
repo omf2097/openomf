@@ -7,6 +7,7 @@
 #include "resources/sounds_loader.h"
 #include "utils/c_array_util.h"
 #include "utils/log.h"
+#include "utils/miscmath.h"
 
 // If-def the includes here
 #ifdef ENABLE_SDL_AUDIO_BACKEND
