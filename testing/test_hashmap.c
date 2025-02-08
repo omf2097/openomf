@@ -2,8 +2,6 @@
 #include <utils/hashmap.h>
 #include <utils/iterator.h>
 
-#define TEST_VAL_COUNT 1000
-
 void test_hashmap_create(void) {
     hashmap test_map;
     hashmap_create(&test_map);
@@ -80,7 +78,7 @@ void test_hashmap_clear(void) {
     hashmap_create(&test_map);
 
     // Some test values
-    for(unsigned int i = 0; i < TEST_VAL_COUNT; i++) {
+    for(unsigned int i = 0; i < 1000; i++) {
         hashmap_put(&test_map, &i, sizeof(int), &i, sizeof(int));
     }
 
