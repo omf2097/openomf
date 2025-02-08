@@ -67,7 +67,7 @@ void bk_free(bk *b) {
     iterator it;
     hashmap_iter_begin(&b->infos, &it);
     hashmap_pair *pair = NULL;
-    while((pair = iter_next(&it)) != NULL) {
+    foreach(it, pair) {
         bk_info_free((bk_info *)pair->value);
     }
     hashmap_free(&b->infos);

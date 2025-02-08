@@ -169,7 +169,7 @@ void *list_get(const list *list, unsigned int i) {
     list_iter_begin(list, &it);
     list_node *node;
     unsigned n = 0;
-    while((node = iter_next(&it)) != NULL) {
+    foreach(it, node) {
         if(i == n) {
             return node;
         }

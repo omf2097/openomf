@@ -46,7 +46,7 @@ void test_hashmap_iterator(void) {
     hashmap_iter_begin(&test_map, &it);
     hashmap_pair *pair;
 
-    while((pair = iter_next(&it)) != NULL) {
+    foreach(it, pair) {
         CU_ASSERT_EQUAL(pair->key_len, 7);
         CU_ASSERT_EQUAL(pair->value_len, 6);
         CU_ASSERT(memcmp(pair->key, "test_a", 6) == 0 || memcmp(pair->key, "test_b", 6) == 0);
@@ -65,7 +65,7 @@ void test_hashmap_iter_del(void) {
     iterator it;
     hashmap_iter_begin(&test_map, &it);
     hashmap_pair *pair;
-    while((pair = iter_next(&it)) != NULL) {
+    foreach(it, pair) {
         CU_ASSERT(memcmp(pair->key, "test_a", 6) == 0);
         CU_ASSERT(memcmp(pair->value, "test_a", 6) == 0);
         CU_ASSERT(hashmap_delete(&test_map, &it) == 0);

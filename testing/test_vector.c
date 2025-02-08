@@ -52,7 +52,7 @@ void test_vector_iterator(void) {
     unsigned *val;
 
     // Read values from the vector
-    while((val = iter_next(&it)) != NULL) {
+    foreach(it, val) {
         CU_ASSERT(test_values[*val] == TEST_VAL_COUNT - *val);
         test_values[*val] = 0;
     }
@@ -67,7 +67,7 @@ void test_vector_delete(void) {
     iterator it;
     vector_iter_begin(&test_vector, &it);
     int *val;
-    while((val = iter_next(&it)) != NULL) {
+    foreach(it, val) {
         CU_ASSERT(vector_delete(&test_vector, &it) == 0);
     }
 

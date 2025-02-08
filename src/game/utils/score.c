@@ -84,7 +84,7 @@ void chr_score_reset(chr_score *score, bool wipe) {
     score->scrap = false;
     score->destruction = false;
     list_iter_begin(&score->texts, &it);
-    while((t = iter_next(&it)) != NULL) {
+    foreach(it, t) {
         omf_free(t->text);
         list_delete(&score->texts, &it);
     }
@@ -113,7 +113,7 @@ void chr_score_free(chr_score *score) {
     score_text *t;
 
     list_iter_begin(&score->texts, &it);
-    while((t = iter_next(&it)) != NULL) {
+    foreach(it, t) {
         omf_free(t->text);
     }
     list_free(&score->texts);
@@ -125,7 +125,7 @@ void chr_score_tick(chr_score *score) {
     int lastage = -1;
 
     list_iter_begin(&score->texts, &it);
-    while((t = iter_next(&it)) != NULL) {
+    foreach(it, t) {
         // don't allow them to get too close together, if a bunch are added at once
         if(lastage > 0 && (lastage - t->age) < SLIDER_DISTANCE) {
             break;
@@ -168,7 +168,7 @@ void chr_score_render(chr_score *score, bool render_total_points) {
     vec2i pos;
 
     list_iter_begin(&score->texts, &it);
-    while((t = iter_next(&it)) != NULL) {
+    foreach(it, t) {
         if(lastage > 0 && (lastage - t->age) < SLIDER_DISTANCE) {
             break;
         }
@@ -307,7 +307,7 @@ int chr_score_clone(chr_score *src, chr_score *dst) {
     memcpy(dst, src, sizeof(chr_score));
     list_create(&dst->texts);
     list_iter_begin(&src->texts, &it);
-    while((t = iter_next(&it)) != NULL) {
+    foreach(it, t) {
         score_text t2;
         memcpy(&t2, t, sizeof(score_text));
         t2.text = omf_strdup(t->text);

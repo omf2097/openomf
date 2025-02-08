@@ -204,7 +204,7 @@ void lobby_render_overlay(scene *scene) {
         lobby_user *user;
         list_iter_begin(&local->users, &it);
         int i = 0;
-        while((user = list_iter_next(&it)) && i < 8) {
+        while((user = iter_next(&it)) && i < 8) {
             if(i == local->active_user) {
                 font_big.cforeground = 7;
             } else {
@@ -911,7 +911,7 @@ void lobby_tick(scene *scene, int paused) {
                                 list_iter_begin(&local->users, &it);
                                 lobby_user *u;
                                 bool found = false;
-                                while((u = list_iter_next(&it)) && !found) {
+                                foreach(it, u) {
                                     if(u->id == user.id) {
                                         found = true;
                                         u->wins = user.wins;
@@ -922,6 +922,7 @@ void lobby_tick(scene *scene, int paused) {
                                         u->ext_port = user.ext_port;
                                         u->address.port = user.address.port;
                                         memcpy(user.version, u->version, sizeof(user.version));
+                                        break;
                                     }
                                 }
 
@@ -1055,7 +1056,7 @@ void lobby_tick(scene *scene, int paused) {
                         iterator it;
                         list_iter_begin(&local->users, &it);
                         lobby_user *user;
-                        while((user = list_iter_next(&it))) {
+                        foreach(it, user) {
                             if(user->id == connect_id) {
                                 log_event log;
                                 log.color = LEAVE_COLOR;
@@ -1085,7 +1086,7 @@ void lobby_tick(scene *scene, int paused) {
                                 list_iter_begin(&local->users, &it);
                                 lobby_user *user;
                                 bool found = false;
-                                while((user = list_iter_next(&it)) && !found) {
+                                foreach(it, user) {
                                     if(user->id == connect_id) {
                                         found = true;
                                         break;

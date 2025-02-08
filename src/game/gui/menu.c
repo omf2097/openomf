@@ -16,7 +16,7 @@ void menu_select(component *c, component *sc) {
     iterator it;
     int i = 0;
     vector_iter_begin(&s->objs, &it);
-    while((tmp = iter_next(&it)) != NULL) {
+    foreach(it, tmp) {
         if(*tmp == sc) {
             break;
         }
@@ -101,7 +101,7 @@ static void menu_render(component *c) {
     }
     vector_iter_begin(&s->objs, &it);
     int i = 0;
-    while((tmp = iter_next(&it)) != NULL) {
+    foreach(it, tmp) {
         component_render(*tmp);
         if(m->selected == i && (*tmp)->help) {
             if(m->help_bg1) {
@@ -255,7 +255,7 @@ static void menu_layout(component *c, int x, int y, int w, int h) {
     int centerwidth = 0;
     component *filler = NULL;
     y += m->margin_top;
-    while((tmp = iter_next(&it)) != NULL) {
+    foreach(it, tmp) {
         // Select first non-disabled component
         if(!component_is_disabled(*tmp) && !first_selected) {
             component_select(*tmp, 1);
@@ -287,7 +287,7 @@ static void menu_layout(component *c, int x, int y, int w, int h) {
         int x_offset = (w - centerwidth) / 2;
         height = 0;
         vector_iter_begin(&s->objs, &it);
-        while((tmp = iter_next(&it)) != NULL) {
+        foreach(it, tmp) {
             component_layout(*tmp, x + x_offset, m->margin_top + y, w, -1);
             x_offset += (*tmp)->w_hint + m->padding;
             height = max2(height, (*tmp)->h_hint);

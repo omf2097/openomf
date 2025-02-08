@@ -24,7 +24,7 @@ void font_free(font *font) {
     iterator it;
     vector_iter_begin(&font->surfaces, &it);
     surface **sur = NULL;
-    while((sur = iter_next(&it)) != NULL) {
+    foreach(it, sur) {
         surface_free(*sur);
         omf_free(*sur);
     }

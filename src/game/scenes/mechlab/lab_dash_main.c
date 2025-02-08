@@ -73,7 +73,7 @@ void lab_dash_main_chr_load(component *c, void *userdata) {
         list_iter_begin(dw->savegames, &it);
         sd_chr_file *chr = NULL;
 
-        while((chr = (sd_chr_file *)list_iter_next(&it))) {
+        foreach(it, chr) {
             DEBUG("freeing CHR %s", chr->pilot.name);
             sd_chr_free(chr);
         }
@@ -133,7 +133,7 @@ void lab_dash_main_chr_init(component *menu, component *submenu) {
     list_iter_begin(dw->savegames, &it);
 
     sd_chr_file *chr = NULL;
-    while((chr = (sd_chr_file *)list_iter_next(&it))) {
+    foreach(it, chr) {
         if(p1->chr && strcmp(p1->chr->pilot.name, chr->pilot.name) == 0) {
             sd_chr_free(chr);
             list_delete(dw->savegames, &it);
@@ -210,7 +210,7 @@ void lab_dash_main_chr_done(component *menu, component *submenu) {
 
     if(dw->savegames) {
         list_iter_begin(dw->savegames, &it);
-        while((chr = (sd_chr_file *)list_iter_next(&it))) {
+        foreach(it, chr) {
             DEBUG("freeing CHR %s", chr->pilot.name);
             sd_chr_free(chr);
         }

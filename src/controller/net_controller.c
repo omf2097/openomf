@@ -104,7 +104,7 @@ void insert_event(wtf *data, uint32_t tick, uint16_t action, int id) {
     event.events[id][0] = action;
     int i = 0;
 
-    while((ev = (tick_events *)list_iter_next(&it))) {
+    foreach (it, ev) {
         if(i == 0 && ev->tick > tick) {
             list_prepend(transcript, &event, sizeof(tick_events));
             return;
@@ -145,7 +145,7 @@ bool has_event(wtf *data, uint32_t tick) {
     iterator it;
     list_iter_begin(&data->transcript, &it);
     tick_events *ev = NULL;
-    while((ev = (tick_events *)list_iter_next(&it))) {
+    foreach (it, ev) {
         if(ev->tick == tick - data->local_proposal && ev->events[data->id][0]) {
             return true;
         }
@@ -205,7 +205,7 @@ void print_transcript(list *transcript) {
     iterator it;
     list_iter_begin(transcript, &it);
     tick_events *ev = NULL;
-    while((ev = (tick_events *)list_iter_next(&it))) {
+    foreach (it, ev) {
         DEBUG("tick %d has events %d -- %d", ev->tick, ev->events[0], ev->events[1]);
     }
 }
@@ -230,7 +230,7 @@ void send_events(wtf *data) {
 
     int last_sent = 0;
 
-    while((ev = (tick_events *)list_iter_next(&it))) {
+    foreach (it, ev) {
         if(ev->events[data->id][0] != 0 && ev->tick > data->last_acked_tick &&
            ev->tick < data->last_tick - data->local_proposal) {
             serial_write_uint32(&ser, ev->tick);
@@ -301,7 +301,7 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
 
     uint32_t last_agreed = min2(data->last_acked_tick, data->last_received_tick);
 
-    while((ev = (tick_events *)list_iter_next(&it))) {
+    foreach (it, ev) {
         if(ev->tick + data->local_proposal <= data->gs_bak->int_tick) {
             // tick too old to matter
             list_delete(transcript, &it);
@@ -506,7 +506,7 @@ void net_controller_free(controller *ctrl) {
         iterator it;
         list_iter_begin(&data->transcript, &it);
         tick_events *ev = NULL;
-        while((ev = (tick_events *)list_iter_next(&it))) {
+        foreach (it, ev) {
             DEBUG("tick %" PRIu32 " has events %d -- %d", ev->tick, ev->events[0], ev->events[1]);
             char buf0[12];
             char buf1[12];

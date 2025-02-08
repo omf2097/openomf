@@ -1581,7 +1581,7 @@ int ai_block_projectile(controller *ctrl, ctrl_event **ev) {
     iterator it;
     object **o_tmp;
     vector_iter_begin(&a->active_projectiles, &it);
-    while((o_tmp = iter_next(&it)) != NULL) {
+    foreach(it, o_tmp) {
         object *o_prj = *o_tmp;
         if(projectile_get_owner(o_prj) == har_player_id(o)) {
             continue;

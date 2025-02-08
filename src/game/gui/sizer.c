@@ -79,7 +79,7 @@ static void sizer_tick(component *c) {
     iterator it;
     component **tmp;
     vector_iter_begin(&local->objs, &it);
-    while((tmp = iter_next(&it)) != NULL) {
+    foreach(it, tmp) {
         component_tick(*tmp);
     }
 }
@@ -125,7 +125,7 @@ static void sizer_free(component *c) {
     iterator it;
     component **tmp;
     vector_iter_begin(&local->objs, &it);
-    while((tmp = iter_next(&it)) != NULL) {
+    foreach(it, tmp) {
         component_free(*tmp);
     }
 
@@ -145,7 +145,7 @@ static component *sizer_find(component *c, int id) {
     iterator it;
     component **tmp;
     vector_iter_begin(&local->objs, &it);
-    while((tmp = iter_next(&it)) != NULL) {
+    foreach(it, tmp) {
         // Find out if the component is what we're looking for.
         // If it is, return pointer.
         component *out = component_find(*tmp, id);

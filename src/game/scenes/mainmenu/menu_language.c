@@ -87,7 +87,7 @@ component *menu_language_create(scene *s) {
     char const *filename;
     str filename2;
     str_create(&filename2);
-    while((filename = (char *)list_iter_next(&it))) {
+    foreach(it, filename) {
         // Get localized language name from OpenOMF .DAT2 or .LNG2 file
         str_format(&filename2, "%s%s2", dirname, filename);
         sd_language lang2;

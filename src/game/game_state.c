@@ -207,7 +207,7 @@ int game_state_add_object(game_state *gs, object *obj, int layer, int singleton,
         iterator it;
         render_obj *robj;
         vector_iter_begin(&gs->objects, &it);
-        while((robj = iter_next(&it)) != NULL) {
+        foreach(it, robj) {
             animation *ani = object_get_animation(robj->obj);
             if(ani != NULL && ani->id == new_ani->id && robj->singleton) {
                 return 1;
@@ -247,7 +247,7 @@ void game_state_del_animation(game_state *gs, int anim_id) {
     iterator it;
     render_obj *robj;
     vector_iter_begin(&gs->objects, &it);
-    while((robj = iter_next(&it)) != NULL) {
+    foreach(it, robj) {
         animation *ani = object_get_animation(robj->obj);
         if(ani != NULL && ani->id == anim_id) {
             object_free(robj->obj);
@@ -264,7 +264,7 @@ void game_state_del_object(game_state *gs, object *target) {
     iterator it;
     render_obj *robj;
     vector_iter_begin(&gs->objects, &it);
-    while((robj = iter_next(&it)) != NULL) {
+    foreach(it, robj) {
         if(target == robj->obj) {
             object_free(robj->obj);
             omf_free(robj->obj);
@@ -278,7 +278,7 @@ void game_state_del_object_by_id(game_state *gs, uint32_t target) {
     iterator it;
     render_obj *robj;
     vector_iter_begin(&gs->objects, &it);
-    while((robj = iter_next(&it)) != NULL) {
+    foreach(it, robj) {
         if(target == robj->obj->id) {
             object_free(robj->obj);
             omf_free(robj->obj);
@@ -292,7 +292,7 @@ void game_state_get_projectiles(game_state *gs, vector *obj_proj) {
     iterator it;
     render_obj *robj;
     vector_iter_begin(&gs->objects, &it);
-    while((robj = iter_next(&it)) != NULL) {
+    foreach(it, robj) {
         if(object_get_layers(robj->obj) & LAYER_PROJECTILE) {
             vector_append(obj_proj, &robj->obj);
         }
@@ -303,7 +303,7 @@ void game_state_clear_objects(game_state *gs, int mask) {
     iterator it;
     render_obj *robj;
     vector_iter_begin(&gs->objects, &it);
-    while((robj = iter_next(&it)) != NULL) {
+    foreach(it, robj) {
         if(object_get_group(robj->obj) & mask) {
             object_free(robj->obj);
             omf_free(robj->obj);
@@ -398,7 +398,7 @@ void game_state_render(game_state *gs) {
 
     // Render BOTTOM layer
     vector_iter_begin(&gs->objects, &it);
-    while((robj = iter_next(&it)) != NULL) {
+    foreach(it, robj) {
         if(robj->layer == RENDER_LAYER_BOTTOM) {
             if(robj->obj == har[0] || robj->obj == har[1])
                 continue;
@@ -408,7 +408,7 @@ void game_state_render(game_state *gs) {
 
     // cast object shadows (scrap, projectiles, etc)
     vector_iter_begin(&gs->objects, &it);
-    while((robj = iter_next(&it)) != NULL) {
+    foreach(it, robj) {
         object_render_shadow(robj->obj);
     }
 
@@ -421,7 +421,7 @@ void game_state_render(game_state *gs) {
 
     // Render MIDDLE layer
     vector_iter_begin(&gs->objects, &it);
-    while((robj = iter_next(&it)) != NULL) {
+    foreach(it, robj) {
         if(robj->layer == RENDER_LAYER_MIDDLE) {
             if(robj->obj == har[0] || robj->obj == har[1])
                 continue;
@@ -438,7 +438,7 @@ void game_state_render(game_state *gs) {
 
     // Render TOP layer
     vector_iter_begin(&gs->objects, &it);
-    while((robj = iter_next(&it)) != NULL) {
+    foreach(it, robj) {
         if(robj->layer == RENDER_LAYER_TOP) {
             if(robj->obj == har[0] || robj->obj == har[1])
                 continue;
@@ -455,7 +455,7 @@ void game_state_palette_transform(game_state *gs) {
     render_obj *robj;
     iterator it;
     vector_iter_begin(&gs->objects, &it);
-    while((robj = iter_next(&it)) != NULL) {
+    foreach(it, robj) {
         object_palette_transform(robj->obj);
     }
 
@@ -486,7 +486,7 @@ int game_load_new(game_state *gs, int scene_id) {
     render_obj *robj;
     iterator it;
     vector_iter_begin(&gs->objects, &it);
-    while((robj = iter_next(&it)) != NULL) {
+    foreach(it, robj) {
         if(!robj->persistent) {
             object_free(robj->obj);
             omf_free(robj->obj);
@@ -621,7 +621,7 @@ void game_state_cleanup(game_state *gs) {
     render_obj *robj;
     iterator it;
     vector_iter_begin(&gs->objects, &it);
-    while((robj = iter_next(&it)) != NULL) {
+    foreach(it, robj) {
         if(object_finished(robj->obj)) {
             /*DEBUG("Animation object %d is finished, removing.", robj->obj->cur_animation->id);*/
             object_free(robj->obj);
@@ -635,7 +635,7 @@ void game_state_call_move(game_state *gs) {
     render_obj *robj;
     iterator it;
     vector_iter_begin(&gs->objects, &it);
-    while((robj = iter_next(&it)) != NULL) {
+    foreach(it, robj) {
         object_move(robj->obj);
     }
 }
@@ -677,7 +677,7 @@ void game_state_call_tick(game_state *gs, int mode) {
     render_obj *robj;
     iterator it;
     vector_iter_begin(&gs->objects, &it);
-    while((robj = iter_next(&it)) != NULL) {
+    foreach(it, robj) {
         if(mode == TICK_DYNAMIC) {
             object_dynamic_tick(robj->obj);
         } else {
@@ -1047,7 +1047,7 @@ void game_state_clone_free(game_state *gs) {
     render_obj *robj;
     iterator it;
     vector_iter_begin(&gs->objects, &it);
-    while((robj = iter_next(&it)) != NULL) {
+    foreach(it, robj) {
         object_clone_free(robj->obj);
         omf_free(robj->obj);
         vector_delete(&gs->objects, &it);
@@ -1076,7 +1076,7 @@ void game_state_free(game_state **_gs) {
     render_obj *robj;
     iterator it;
     vector_iter_begin(&gs->objects, &it);
-    while((robj = iter_next(&it)) != NULL) {
+    foreach(it, robj) {
         object_free(robj->obj);
         omf_free(robj->obj);
         vector_delete(&gs->objects, &it);
@@ -1127,7 +1127,7 @@ object *game_state_find_object(game_state *gs, uint32_t object_id) {
     iterator it;
     vector_iter_begin(&gs->objects, &it);
     render_obj *robj;
-    while((robj = iter_next(&it)) != NULL) {
+    foreach(it, robj) {
         if(robj->obj->id == object_id) {
             return robj->obj;
         }
@@ -1188,7 +1188,7 @@ int game_state_clone(game_state *src, game_state *dst) {
     iterator it;
     vector_iter_begin(&src->objects, &it);
     render_obj *robj;
-    while((robj = iter_next(&it)) != NULL) {
+    foreach(it, robj) {
         render_obj d;
         render_obj_clone(robj, &d, dst);
         vector_append(&dst->objects, &d);

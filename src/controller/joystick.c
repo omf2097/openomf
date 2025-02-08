@@ -227,7 +227,7 @@ void joystick_close(void) {
     iterator it;
     vector_iter_begin(&every_gamepad, &it);
     SDL_GameController **gamepad;
-    while((gamepad = iter_next(&it)) != NULL) {
+    foreach(it, gamepad) {
         SDL_GameControllerClose(*gamepad);
     }
     vector_free(&every_gamepad);
@@ -246,7 +246,7 @@ void joystick_menu_poll_all(controller *menu_ctrl, ctrl_event **ev) {
     iterator it;
     vector_iter_begin(&every_gamepad, &it);
     SDL_GameController **gamepad;
-    while((gamepad = iter_next(&it)) != NULL) {
+    foreach(it, gamepad) {
         k.joy = *gamepad;
         internal_joystick_poll(&k, menu_ctrl, ev);
     }

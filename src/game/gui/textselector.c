@@ -28,7 +28,7 @@ void textselector_clear_options(component *c) {
     iterator it;
     char **text;
     vector_iter_begin(&tb->options, &it);
-    while((text = iter_next(&it)) != NULL) {
+    foreach(it, text) {
         omf_free(*text);
     }
 

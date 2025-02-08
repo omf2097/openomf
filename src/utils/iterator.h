@@ -15,4 +15,6 @@ struct iterator_t {
 void *iter_next(iterator *iterator);
 void *iter_prev(iterator *iterator);
 
+#define foreach(iterator, item) while ((item = iter_next(&iterator)) != NULL)
+
 #endif // ITERATOR_H
