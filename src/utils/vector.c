@@ -81,7 +81,7 @@ int vector_prepend(vector *vec, const void *value) {
     }
     char *dst = (char *)(vec->data + vec->block_size);
     memmove(dst, vec->data, vec->block_size * vec->blocks);
-    memcpy(dst, value, vec->block_size);
+    memcpy(vec->data, value, vec->block_size);
     vec->blocks++;
     return 0;
 }
