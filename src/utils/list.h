@@ -4,21 +4,22 @@
 #include "iterator.h"
 #include <stddef.h>
 
-typedef struct list_node_t list_node;
+typedef struct list_node list_node;
+typedef struct list list;
 typedef void (*list_node_free_cb)(void *data);
 
-struct list_node_t {
+struct list_node {
     list_node *prev;
     list_node *next;
     void *data;
 };
 
-typedef struct list_t {
+struct list {
     list_node *first;
     list_node *last;
     unsigned int size;
     list_node_free_cb free;
-} list;
+};
 
 void list_create(list *list);
 void list_free(list *list);

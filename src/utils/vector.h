@@ -3,7 +3,7 @@
 
 #include "iterator.h"
 
-typedef struct vector_t {
+typedef struct vector {
     char *data;
     unsigned int block_size;
     unsigned int blocks;

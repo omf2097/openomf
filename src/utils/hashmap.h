@@ -3,24 +3,24 @@
 
 #include "utils/iterator.h"
 
-typedef struct hashmap_pair_t hashmap_pair;
-typedef struct hashmap_node_t hashmap_node;
-typedef struct hashmap_t hashmap;
+typedef struct hashmap_pair hashmap_pair;
+typedef struct hashmap_node hashmap_node;
+typedef struct hashmap hashmap;
 typedef void (*hashmap_free_cb)(void *);
 
-struct hashmap_pair_t {
+struct hashmap_pair {
     unsigned int key_len;
     unsigned int value_len;
     void *key;
     void *value;
 };
 
-struct hashmap_node_t {
+struct hashmap_node {
     hashmap_pair pair;
     hashmap_node *next;
 };
 
-struct hashmap_t {
+struct hashmap {
     hashmap_node **buckets;
     unsigned int capacity;
     unsigned int reserved;

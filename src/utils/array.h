@@ -3,7 +3,7 @@
 
 #include "iterator.h"
 
-typedef struct array_t {
+typedef struct array {
     unsigned int allocated_size;
     unsigned int filled;
     void **data;
