@@ -45,19 +45,19 @@ if(VCPKG_TOOLCHAIN)
     target_link_libraries(openomf::argtable INTERFACE argtable3::argtable3)
     target_compile_definitions(openomf::argtable INTERFACE ARGTABLE3_FOUND)
 else()
-    find_package(argtable2)
-    find_package(Argtable3 CONFIG)
-
-    if(ARGTABLE2_FOUND)
-        target_link_libraries(openomf::argtable INTERFACE ${ARGTABLE2_LIBRARY})
-        target_include_directories(openomf::argtable INTERFACE ${ARGTABLE2_INCLUDE_DIR})
-        target_compile_definitions(openomf::argtable INTERFACE ARGTABLE2_FOUND)
-    elseif(Argtable3_FOUND)
-        target_link_libraries(openomf::argtable INTERFACE argtable3::argtable3)
-        target_compile_definitions(openomf::argtable INTERFACE ARGTABLE3_FOUND)
-    else()
-        message(FATAL_ERROR "Neither argtable2 or argtable3 was found")
-    endif()
+    set(ARGTABLE3_ENABLE_CONAN    OFF CACHE BOOL "Enable Conan dependency manager")
+    set(ARGTABLE3_ENABLE_TESTS    OFF CACHE BOOL "Enable unit tests")
+    set(ARGTABLE3_ENABLE_EXAMPLES OFF CACHE BOOL "Enable examples")
+    include(FetchContent)
+    FetchContent_Declare(
+        argtable3
+        GIT_REPOSITORY https://github.com/mrannanj/argtable3.git
+        GIT_TAG sanitizer-fixes
+    )
+    FetchContent_MakeAvailable(argtable3)
+    target_include_directories(openomf::argtable INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/_deps/argtable3-src/src)
+    target_link_libraries(openomf::argtable INTERFACE argtable3::argtable3)
+    target_compile_definitions(openomf::argtable INTERFACE ARGTABLE3_FOUND)
 endif()
 
 # enet
