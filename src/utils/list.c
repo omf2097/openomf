@@ -94,10 +94,6 @@ void list_delete(list *list, iterator *iter) {
     list->size--;
 }
 
-unsigned int list_size(const list *list) {
-    return list->size;
-}
-
 void *list_iter_next(iterator *iter) {
     if(iter->vnow == NULL) {
         iter->vnow = ((list *)iter->data)->first;

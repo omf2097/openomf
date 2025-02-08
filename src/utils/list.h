@@ -26,11 +26,14 @@ void list_free(list *list);
 void list_prepend(list *list, const void *ptr, size_t size);
 void list_append(list *list, const void *ptr, size_t size);
 void list_delete(list *list, iterator *iter);
-unsigned int list_size(const list *list);
 void list_iter_begin(const list *list, iterator *iter);
 void list_iter_end(const list *list, iterator *iter);
 void list_iter_append(iterator *iter, const void *ptr, size_t size);
 void *list_get(const list *list, unsigned int i);
 void list_set_node_free_cb(list *list, list_node_free_cb cb);
+
+static inline unsigned int list_size(const list *list) {
+    return list->size;
+}
 
 #endif // LIST_H
