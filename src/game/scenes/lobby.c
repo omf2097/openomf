@@ -246,7 +246,7 @@ void lobby_render_overlay(scene *scene) {
         i = 0;
         list_iter_end(&local->log, &it);
         log_event *logmsg;
-        while((logmsg = list_iter_prev(&it)) && i < 4) {
+        while((logmsg = iter_prev(&it)) && i < 4) {
             font_big.cforeground = logmsg->color;
             i += text_find_line_count(&font_big, 300 / 8, 3, strlen(logmsg->msg), logmsg->msg, &longest);
             text_render(&font_big, TEXT_DEFAULT, 10, 198 - (8 * i), 300, 8, logmsg->msg);
@@ -256,7 +256,7 @@ void lobby_render_overlay(scene *scene) {
         int i = 0;
         list_iter_end(&local->log, &it);
         log_event *logmsg;
-        while((logmsg = list_iter_prev(&it)) && i < 17) {
+        while((logmsg = iter_prev(&it)) && i < 17) {
             font_big.cforeground = logmsg->color;
             i += text_find_line_count(&font_big, 300 / 8, 3, strlen(logmsg->msg), logmsg->msg, &longest);
             text_render(&font_big, TEXT_DEFAULT, 10, 140 - (8 * i), 300, 8, logmsg->msg);
