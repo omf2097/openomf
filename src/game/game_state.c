@@ -694,7 +694,6 @@ void game_state_call_tick(game_state *gs, int mode) {
             s->duration -= STATIC_TICKS; // static ticks are 10ms
         }
         if(s->duration <= 0) {
-            DEBUG("removing finished sound %d of length %d started on tick %d", s->playback_id, s->length, s->tick);
             vector_delete(&gs->sounds, &it);
         }
     }
@@ -750,7 +749,7 @@ void game_state_merge_sounds(game_state *old, game_state *new) {
             int total_duration = (int)((s->length / (8000.0f * clampf(s->pitch, PITCH_MIN, PITCH_MAX))) * 1000.0f);
             int elapsed_ms = total_duration - s->duration;
             // with 8khz 8 bit mono, we can just multiply ms by 8
-            int offset = elapsed_ms * 8;
+            int offset = elapsed_ms * 8 * clampf(s->pitch, PITCH_MIN, PITCH_MAX);
 
             // Load sample (8000Hz, mono, 8bit)
             char *src_buf;
@@ -764,9 +763,14 @@ void game_state_merge_sounds(game_state *old, game_state *new) {
                 return;
             }
 
-            // TODO decide on a fade in time
-            s->playback_id =
-                audio_play_sound_buf(src_buf + offset, src_len - offset, s->volume, s->panning, s->pitch, 500);
+            DEBUG("playing sound %d with pitch %f added after rollback at tick %d otf length %d at offset %d (duration total %d, remaining %d)", s->id, s->pitch, s->tick, src_len, offset, total_duration, s->duration);
+
+            // guard against playing beyond the end of the buffer
+            if(offset < src_len) {
+                // TODO decide on a fade in time
+                s->playback_id =
+                    audio_play_sound_buf(src_buf + offset, src_len - offset, s->volume, s->panning, s->pitch, 500);
+            }
         }
     }
 }
@@ -1047,6 +1051,7 @@ void game_state_clone_free(game_state *gs) {
         vector_delete(&gs->objects, &it);
     }
     vector_free(&gs->objects);
+    vector_free(&gs->sounds);
 
     // Free scene
     scene_clone_free(gs->sc);
@@ -1075,6 +1080,7 @@ void game_state_free(game_state **_gs) {
         vector_delete(&gs->objects, &it);
     }
     vector_free(&gs->objects);
+    vector_free(&gs->sounds);
 
     // Free scene
     scene_free(gs->sc);
