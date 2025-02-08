@@ -220,7 +220,8 @@ void settings_load_fields(void *st, const field *fields, int nfields) {
                 // make a copy of the string
                 char **s = fieldstr(st, f->offset);
                 omf_free(*s);
-                if(conf_string(f->name)) {
+                if(conf_string(f->name) != NULL) {
+                    printf("Processing: %s\n", conf_string(f->name));
                     *s = omf_strdup(conf_string(f->name));
                 }
             } break;
