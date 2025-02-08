@@ -19,7 +19,6 @@
 #include <SDL.h>
 #include <stdio.h>
 
-#define STATIC_TICKS 10
 #define MAX_TICKS_PER_FRAME 10
 #define TICK_EXPIRY_MS 100
 

@@ -38,7 +38,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#define MS_PER_OMF_TICK 10
+// slowest dynamic tick, in ms
 #define MS_PER_OMF_TICK_SLOWEST 60
 
 enum
@@ -691,7 +691,7 @@ void game_state_call_tick(game_state *gs, int mode) {
         if(mode == TICK_DYNAMIC) {
             s->duration -= game_state_ms_per_dyntick(gs);
         } else {
-            s->duration -= 10; // static ticks are 10ms??
+            s->duration -= STATIC_TICKS; // static ticks are 10ms
         }
         if(s->duration <= 0) {
             DEBUG("removing finished sound %d of length %d started on tick %d", s->playback_id, s->length, s->tick);
@@ -747,11 +747,9 @@ void game_state_merge_sounds(game_state *old, game_state *new) {
             assert(s->playback_id == -1);
 
             // calculate the offset into the buffer we need
-
-            // TODO factor in pitch here
-            int total_duration = (int)((s->length / 8000.0f) * 1000.0f);
+            int total_duration = (int)((s->length / (8000.0f * clampf(s->pitch, PITCH_MIN, PITCH_MAX))) * 1000.0f);
             int elapsed_ms = total_duration - s->duration;
-            // TODO with 8khz mono, we can just multiply ms by 8, I think?
+            // with 8khz 8 bit mono, we can just multiply ms by 8
             int offset = elapsed_ms * 8;
 
             // Load sample (8000Hz, mono, 8bit)
@@ -1108,7 +1106,7 @@ int game_state_ms_per_dyntick(game_state *gs) {
             tmp = 8.0f + MS_PER_OMF_TICK_SLOWEST - ((float)gs->speed / 15.0f) * MS_PER_OMF_TICK_SLOWEST;
             return (int)tmp;
     }
-    return MS_PER_OMF_TICK;
+    return STATIC_TICKS;
 }
 
 int render_obj_clone(render_obj *src, render_obj *dst, game_state *gs) {
@@ -1149,8 +1147,7 @@ void game_state_play_sound(game_state *gs, int id, float volume, float panning, 
     s.tick = gs->int_tick;
     s.id = id;
     s.length = src_len;
-    // TODO factor in pitch
-    s.duration = (int)((src_len / 8000.0f) * 1000.0f); // used to track when a sound is done
+    s.duration = (int)((src_len / (8000.0f * clampf(pitch, PITCH_MIN, PITCH_MAX))) * 1000.0f);
     s.volume = volume;
     s.panning = panning;
     s.pitch = pitch;
