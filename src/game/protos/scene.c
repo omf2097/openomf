@@ -233,6 +233,10 @@ void scene_set_free_cb(scene *scene, scene_free_cb cbfunc) {
     scene->free = cbfunc;
 }
 
+void scene_set_clone_free_cb(scene *scene, scene_clone_free_cb cbfunc) {
+    scene->clone_free = cbfunc;
+}
+
 void scene_set_event_cb(scene *scene, scene_event_cb cbfunc) {
     scene->event = cbfunc;
 }

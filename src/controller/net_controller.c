@@ -449,6 +449,10 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
 
     // replace the game state with the replayed one
     gs->new_state = NULL;
+    if(gs_current->new_state) {
+        game_state_clone_free(gs_current->new_state);
+        omf_free(gs_current->new_state);
+    }
     gs_current->new_state = gs;
     data->gs_bak->new_state = NULL;
     return 0;
