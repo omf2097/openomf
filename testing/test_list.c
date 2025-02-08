@@ -83,6 +83,48 @@ void test_list_iter_prev(void) {
     list_free(&test_list);
 }
 
+void test_list_delete(void) {
+    list test_list;
+    list_create(&test_list);
+    list_append(&test_list, test_str, strlen(test_str) + 1);
+    list_append(&test_list, test_str_b, strlen(test_str_b) + 1);
+    list_append(&test_list, test_str, strlen(test_str) + 1);
+
+    // Delete middle entry
+    iterator it;
+    list_iter_begin(&test_list, &it);
+    iter_next(&it);
+    iter_next(&it);
+    list_delete(&test_list, &it);
+
+    // Reset iterator and assert
+    list_iter_begin(&test_list, &it);
+    CU_ASSERT_STRING_EQUAL(iter_next(&it), test_str);
+    CU_ASSERT_STRING_EQUAL(iter_next(&it), test_str);
+    CU_ASSERT(iter_next(&it) == NULL);
+
+    list_free(&test_list);
+}
+
+void test_list_iter_append(void) {
+    list test_list;
+    list_create(&test_list);
+    list_append(&test_list, test_str, strlen(test_str) + 1);
+
+    // Add to beginning
+    iterator it;
+    list_iter_begin(&test_list, &it);
+    list_iter_append(&it, test_str_b, strlen(test_str_b) + 1);
+
+    // Reset iterator and assert
+    list_iter_begin(&test_list, &it);
+    CU_ASSERT_STRING_EQUAL(iter_next(&it), test_str_b);
+    CU_ASSERT_STRING_EQUAL(iter_next(&it), test_str);
+    CU_ASSERT(iter_next(&it) == NULL);
+
+    list_free(&test_list);
+}
+
 void test_list_get(void) {
     list test_list;
     list_create(&test_list);
@@ -115,6 +157,12 @@ void list_test_suite(CU_pSuite suite) {
         return;
     }
     if(CU_add_test(suite, "Test for list get", test_list_get) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for list delete", test_list_delete) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for list iter_append", test_list_iter_append) == NULL) {
         return;
     }
 }
