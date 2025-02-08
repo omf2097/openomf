@@ -746,9 +746,9 @@ void game_state_merge_sounds(game_state *old, game_state *new) {
             assert(s->playback_id == -1);
 
             // calculate the offset into the buffer we need
-            int total_duration = (int)((s->length / (8000.0f * clampf(s->pitch, PITCH_MIN, PITCH_MAX))) * 1000.0f);
+            int total_duration = (int)(s->length / (pitched_samplerate(s->pitch) * 1000));
             int elapsed_ms = total_duration - s->duration;
-            // with 8khz 8 bit mono, we can just multiply ms by 8
+            // with 8khz 8 bit mono, we can just multiply ms by 8, adjusted by the pitch
             int offset = elapsed_ms * 8 * clampf(s->pitch, PITCH_MIN, PITCH_MAX);
 
             // Load sample (8000Hz, mono, 8bit)
@@ -763,7 +763,9 @@ void game_state_merge_sounds(game_state *old, game_state *new) {
                 return;
             }
 
-            DEBUG("playing sound %d with pitch %f added after rollback at tick %d otf length %d at offset %d (duration total %d, remaining %d)", s->id, s->pitch, s->tick, src_len, offset, total_duration, s->duration);
+            DEBUG("playing sound %d with pitch %f added after rollback at tick %d otf length %d at offset %d (duration "
+                  "total %d, remaining %d)",
+                  s->id, s->pitch, s->tick, src_len, offset, total_duration, s->duration);
 
             // guard against playing beyond the end of the buffer
             if(offset < src_len) {
@@ -1153,7 +1155,7 @@ void game_state_play_sound(game_state *gs, int id, float volume, float panning, 
     s.tick = gs->int_tick;
     s.id = id;
     s.length = src_len;
-    s.duration = (int)((src_len / (8000.0f * clampf(pitch, PITCH_MIN, PITCH_MAX))) * 1000.0f);
+    s.duration = src_len / (pitched_samplerate(pitch) * 1000);
     s.volume = volume;
     s.panning = panning;
     s.pitch = pitch;

@@ -215,3 +215,8 @@ unsigned audio_get_sample_rates(const audio_sample_rate **sample_rates) {
 unsigned audio_get_resamplers(const audio_resampler **resamplers) {
     return current_backend.get_resamplers(resamplers);
 }
+
+int pitched_samplerate(float pitch) {
+    // all our audio is 8khz for now
+    return (int)(8000 * clampf(pitch, PITCH_MIN, PITCH_MAX));
+}
