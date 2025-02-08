@@ -15,8 +15,6 @@ void array_set(array *array, unsigned int key, const void *ptr);
 void *array_get(const array *array, unsigned int key);
 
 void array_iter_begin(const array *array, iterator *iterator);
-void *array_iter_next(iterator *iter);
-void *array_iter_prev(iterator *iter);
-void array_iter_end(const array *arrat, iterator *iterator);
+void array_iter_end(const array *array, iterator *iterator);
 
 #endif // ARRAY_H

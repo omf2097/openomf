@@ -429,6 +429,7 @@ void hashmap_iter_begin(const hashmap *hm, iterator *iter) {
     iter->vnow = NULL;
     iter->inow = 0;
     iter->next = hashmap_iter_next;
+    iter->peek = NULL;
     iter->prev = NULL;
     iter->ended = (hm->reserved == 0);
 }

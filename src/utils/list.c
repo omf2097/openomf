@@ -124,18 +124,17 @@ void *list_iter_prev(iterator *iter) {
     return ((list_node *)iter->vnow)->data;
 }
 
-void *list_iter_peek(iterator *iter) {
-
-    void *vnow = NULL;
+void *list_iter_peek_next(iterator *iter) {
+    void *now = NULL;
     if(iter->vnow == NULL) {
-        vnow = ((list *)iter->data)->first;
+        now = ((list *)iter->data)->first;
     } else {
-        vnow = ((list_node *)iter->vnow)->next;
+        now = ((list_node *)iter->vnow)->next;
     }
-    if(vnow == NULL) {
+    if(now == NULL) {
         return NULL;
     }
-    return ((list_node *)vnow)->data;
+    return ((list_node *)now)->data;
 }
 
 void list_iter_append(iterator *iter, const void *ptr, size_t size) {
@@ -183,6 +182,7 @@ void list_iter_begin(const list *list, iterator *iter) {
     iter->vnow = NULL;
     iter->inow = 0;
     iter->next = list_iter_next;
+    iter->peek = list_iter_peek_next;
     iter->prev = NULL;
     iter->ended = (list->first == NULL);
 }
@@ -192,6 +192,7 @@ void list_iter_end(const list *list, iterator *iter) {
     iter->vnow = NULL;
     iter->inow = 0;
     iter->next = NULL;
+    iter->peek = NULL;
     iter->prev = list_iter_prev;
     iter->ended = (list->first == NULL);
 }

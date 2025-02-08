@@ -193,6 +193,7 @@ void vector_iter_begin(const vector *vec, iterator *iter) {
     iter->vnow = NULL;
     iter->inow = 0;
     iter->next = vector_iter_next;
+    iter->peek = NULL;
     iter->prev = NULL;
     iter->ended = (vec->blocks == 0);
 }
@@ -202,6 +203,7 @@ void vector_iter_end(const vector *vec, iterator *iter) {
     iter->vnow = NULL;
     iter->inow = vector_size(vec) - 1;
     iter->next = NULL;
+    iter->peek = NULL;
     iter->prev = vector_iter_prev;
     iter->ended = (vec->blocks == 0);
 }
