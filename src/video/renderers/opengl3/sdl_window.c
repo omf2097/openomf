@@ -74,7 +74,7 @@ exit_0:
 
 bool create_window(SDL_Window **window, int width, int height, bool fullscreen) {
     char title[32];
-    snprintf(title, 32, "OpenOMF v%d.%d.%d", V_MAJOR, V_MINOR, V_PATCH);
+    snprintf(title, 32, "OpenOMF v%d.%d.%d%s", V_MAJOR, V_MINOR, V_PATCH, V_LABEL);
 
     // Request OpenGL 3.3 core context. This also gives us GLSL 330.
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
