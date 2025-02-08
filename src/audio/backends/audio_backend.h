@@ -53,9 +53,12 @@ typedef bool (*setup_backend_context_fn)(void *ctx, unsigned sample_rate, bool m
 typedef void (*close_backend_context_fn)(void *ctx);
 
 // Playback handling.
-typedef void (*play_sound_fn)(void *ctx, const char *buf, size_t len, float volume, float panning, float pitch);
+typedef int (*play_sound_fn)(void *ctx, const char *buf, size_t len, float volume, float panning, float pitch,
+                             int fade);
 typedef void (*play_music_fn)(void *ctx, const char *file_name);
 typedef void (*stop_music_fn)(void *ctx);
+
+typedef void (*fade_out_fn)(int playback_id, int ms);
 
 struct audio_backend {
     is_backend_available_fn is_available;
@@ -77,6 +80,8 @@ struct audio_backend {
     play_sound_fn play_sound;
     play_music_fn play_music;
     stop_music_fn stop_music;
+
+    fade_out_fn fade_out;
 
     void *ctx;
 };

@@ -7,6 +7,7 @@
 #include "resources/sounds_loader.h"
 #include "utils/c_array_util.h"
 #include "utils/log.h"
+#include "utils/miscmath.h"
 
 // If-def the includes here
 #ifdef ENABLE_SDL_AUDIO_BACKEND
@@ -156,24 +157,33 @@ void audio_close(void) {
     current_music = NUMBER_OF_RESOURCES;
 }
 
-void audio_play_sound(int id, float volume, float panning, float pitch) {
+int audio_play_sound(int id, float volume, float panning, float pitch) {
     if(id < 0 || id > 299)
-        return;
+        return -1;
 
     // Load sample (8000Hz, mono, 8bit)
     char *src_buf;
     int src_len;
     if(!sounds_loader_get(id, &src_buf, &src_len)) {
         PERROR("Requested sound sample %d not found", id);
-        return;
+        return -1;
     }
     if(src_len == 0) {
         DEBUG("Requested sound sample %d has nothing to play", id);
-        return;
+        return -1;
     }
 
     // Tell the backend to play it.
-    current_backend.play_sound(current_backend.ctx, src_buf, src_len, volume, panning, pitch);
+    return current_backend.play_sound(current_backend.ctx, src_buf, src_len, volume, panning, pitch, 0);
+}
+
+int audio_play_sound_buf(char *src_buf, int src_len, float volume, float panning, float pitch, int fade) {
+    // Tell the backend to play it.
+    return current_backend.play_sound(current_backend.ctx, src_buf, src_len, volume, panning, pitch, fade);
+}
+
+void audio_fade_out(int playback_id, int ms) {
+    current_backend.fade_out(playback_id, ms);
 }
 
 void audio_play_music(resource_id id) {
@@ -205,4 +215,9 @@ unsigned audio_get_sample_rates(const audio_sample_rate **sample_rates) {
 
 unsigned audio_get_resamplers(const audio_resampler **resamplers) {
     return current_backend.get_resamplers(resamplers);
+}
+
+int pitched_samplerate(float pitch) {
+    // all our audio is 8khz for now
+    return (int)(8000 * clampf(pitch, PITCH_MIN, PITCH_MAX));
 }

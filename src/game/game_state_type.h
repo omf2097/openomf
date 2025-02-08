@@ -67,10 +67,12 @@ typedef struct game_state_t {
     int net_mode; // NET_MODE_NONE, NET_MODE_CLIENT, NET_MODE_SERVER
     scene *sc;
     vector objects;
+    vector sounds;
     game_player *players[2];
 
     fight_stats fight_stats;
     void *new_state;
+    bool clone;
     struct random_t rand;
 
     controller *menu_ctrl;

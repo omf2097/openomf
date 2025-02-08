@@ -51,7 +51,12 @@ static void set_backend_sound_volume(void *userdata, float volume) {
 static void set_backend_music_volume(void *userdata, float volume) {
 }
 
-static void play_sound(void *userdata, const char *src_buf, size_t src_len, float volume, float panning, float pitch) {
+static int play_sound(void *userdata, const char *src_buf, size_t src_len, float volume, float panning, float pitch,
+                      int fade) {
+    return -1;
+}
+
+static void fade_out(int playback_id, int ms) {
 }
 
 static void stop_music(void *ctx) {
@@ -85,4 +90,5 @@ void null_audio_backend_set_callbacks(audio_backend *sdl_backend) {
     sdl_backend->play_music = play_music;
     sdl_backend->play_sound = play_sound;
     sdl_backend->stop_music = stop_music;
+    sdl_backend->fade_out = fade_out;
 }

@@ -218,7 +218,8 @@ static void set_backend_music_volume(void *userdata, float volume) {
     xmp_set_player(ctx->xmp_context, XMP_PLAYER_VOLUME, ctx->music_volume * 100);
 }
 
-static void play_sound(void *userdata, const char *src_buf, size_t src_len, float volume, float panning, float pitch) {
+static int play_sound(void *userdata, const char *src_buf, size_t src_len, float volume, float panning, float pitch,
+                      int fade) {
     assert(userdata);
     sdl_audio_context *ctx = userdata;
 
@@ -232,17 +233,20 @@ static void play_sound(void *userdata, const char *src_buf, size_t src_len, floa
     pan_right = (panning < 0) ? 1.0f + panning : 1.0f;
 
     if((channel = Mix_GroupAvailable(-1)) == -1) {
-        return;
+        return -1;
     }
     free_chunk(ctx, channel); // Make sure old chunk is deallocated, if one exists.
     if(!audio_get_chunk(ctx, &ctx->channel_chunks[channel], src_buf, src_len, volume, pitch)) {
         PERROR("Unable to play sound: Failed to load chunk");
-        return;
+        return -1;
     }
     Mix_SetPanning(channel, clamp(pan_left * 255, 0, 255), clamp(pan_right * 255, 0, 255));
-    if(Mix_PlayChannelTimed(channel, &ctx->channel_chunks[channel], 0, -1) == -1) {
+    if(Mix_FadeInChannelTimed(channel, &ctx->channel_chunks[channel], 0, fade, -1) == -1) {
         PERROR("Unable to play sound: %s", Mix_GetError());
+        return -1;
     }
+
+    return channel;
 }
 
 static void stop_music(void *ctx) {
@@ -261,6 +265,10 @@ static void play_music(void *userdata, const char *file_name) {
         return;
     }
     Mix_HookMusic(audio_xmp_render, ctx);
+}
+
+static void fade_out(int channel, int ms) {
+    Mix_FadeOutChannel(channel, ms);
 }
 
 static bool setup_backend_context(void *userdata, unsigned sample_rate, bool mono, unsigned resampler,
@@ -353,4 +361,5 @@ void sdl_audio_backend_set_callbacks(audio_backend *sdl_backend) {
     sdl_backend->play_music = play_music;
     sdl_backend->play_sound = play_sound;
     sdl_backend->stop_music = stop_music;
+    sdl_backend->fade_out = fade_out;
 }

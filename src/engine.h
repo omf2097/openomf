@@ -1,6 +1,9 @@
 #ifndef ENGINE_H
 #define ENGINE_H
 
+// static tick duration, in ms
+#define STATIC_TICKS 10
+
 typedef struct engine_init_flags_t {
     unsigned int net_mode;
     unsigned int record;

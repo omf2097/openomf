@@ -1,4 +1,5 @@
 #include "game/game_state.h"
+#include "audio/audio.h"
 #include "console/console.h"
 #include "controller/joystick.h"
 #include "controller/keyboard.h"
@@ -25,6 +26,7 @@
 #include "game/utils/settings.h"
 #include "game/utils/ticktimer.h"
 #include "resources/pilots.h"
+#include "resources/sounds_loader.h"
 #include "utils/allocator.h"
 #include "utils/c_array_util.h"
 #include "utils/log.h"
@@ -36,7 +38,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#define MS_PER_OMF_TICK 10
+// slowest dynamic tick, in ms
 #define MS_PER_OMF_TICK_SLOWEST 60
 
 enum
@@ -58,6 +60,17 @@ typedef struct {
     object *obj;
 } render_obj;
 
+typedef struct {
+    int tick;
+    int id;
+    int length;
+    int duration;
+    float volume;
+    float panning;
+    float pitch;
+    int playback_id;
+} playing_sound;
+
 int game_state_create(game_state *gs, engine_init_flags *init_flags) {
     gs->run = 1;
     gs->paused = 0;
@@ -68,7 +81,9 @@ int game_state_create(game_state *gs, engine_init_flags *init_flags) {
     gs->speed = settings_get()->gameplay.speed + 5;
     gs->init_flags = init_flags;
     gs->new_state = NULL;
+    gs->clone = false;
     vector_create(&gs->objects, sizeof(render_obj));
+    vector_create(&gs->sounds, sizeof(playing_sound));
 
     // For screen shake
     gs->screen_shake_horizontal = 0;
@@ -126,6 +141,7 @@ int game_state_create(game_state *gs, engine_init_flags *init_flags) {
         }
 
         // XXX use playback controller once it exista
+
         _setup_rec_controller(gs, 0, &rec);
         _setup_rec_controller(gs, 1, &rec);
         if(arena_create(gs->sc)) {
@@ -169,6 +185,7 @@ error_1:
 error_0:
     omf_free(gs->sc);
     vector_free(&gs->objects);
+    vector_free(&gs->sounds);
     return 1;
 }
 
@@ -667,6 +684,97 @@ void game_state_call_tick(game_state *gs, int mode) {
             object_static_tick(robj->obj);
         }
     }
+
+    playing_sound *s;
+    vector_iter_begin(&gs->sounds, &it);
+    while((s = iter_next(&it)) != NULL) {
+        if(mode == TICK_DYNAMIC) {
+            s->duration -= game_state_ms_per_dyntick(gs);
+        } else {
+            s->duration -= STATIC_TICKS; // static ticks are 10ms
+        }
+        if(s->duration <= 0) {
+            vector_delete(&gs->sounds, &it);
+        }
+    }
+}
+
+void game_state_merge_sounds(game_state *old, game_state *new) {
+    // We need to do several things here:
+    // * Leave any sounds that are playing in both states alone
+    // * Fade out any sounds only playing in the old state
+    // * Fade in any new sounds, and start playing them at the appropriate offset
+
+    playing_sound *s, *s2;
+    iterator it, it2;
+    vector_iter_begin(&old->sounds, &it);
+    while((s = iter_next(&it)) != NULL) {
+        bool found = false;
+        vector_iter_begin(&new->sounds, &it2);
+        while((s2 = iter_next(&it2)) != NULL) {
+            if(s->id == s2->id && s->tick == s2->tick) {
+                // same sound, same frame
+                found = true;
+                break;
+            }
+        }
+
+        if(!found) {
+            // this sound no longer exists after a rollback, so we need to fade it out
+            audio_fade_out(s->id, 500);
+            // don't bother adding it to the new sound vector though
+        }
+    }
+
+    vector_iter_begin(&new->sounds, &it);
+    while((s = iter_next(&it)) != NULL) {
+        bool found = false;
+        vector_iter_begin(&old->sounds, &it2);
+        while((s2 = iter_next(&it2)) != NULL) {
+            if(s->id == s2->id && s->tick == s2->tick) {
+                // same sound, same frame
+                found = true;
+                break;
+            }
+        }
+
+        if(!found) {
+            // this sound was added during the rollback, so we need to start playing it
+            // but we need to determine the playback offset AND fade it in
+            //
+            // this sound should NOT have been played already!
+            assert(s->playback_id == -1);
+
+            // calculate the offset into the buffer we need
+            int total_duration = (int)(s->length / (pitched_samplerate(s->pitch) * 1000));
+            int elapsed_ms = total_duration - s->duration;
+            // with 8khz 8 bit mono, we can just multiply ms by 8, adjusted by the pitch
+            int offset = elapsed_ms * 8 * clampf(s->pitch, PITCH_MIN, PITCH_MAX);
+
+            // Load sample (8000Hz, mono, 8bit)
+            char *src_buf;
+            int src_len;
+            if(!sounds_loader_get(s->id, &src_buf, &src_len)) {
+                PERROR("Requested sound sample %d not found", s->id);
+                return;
+            }
+            if(src_len == 0) {
+                DEBUG("Requested sound sample %d has nothing to play", s->id);
+                return;
+            }
+
+            DEBUG("playing sound %d with pitch %f added after rollback at tick %d otf length %d at offset %d (duration "
+                  "total %d, remaining %d)",
+                  s->id, s->pitch, s->tick, src_len, offset, total_duration, s->duration);
+
+            // guard against playing beyond the end of the buffer
+            if(offset < src_len) {
+                // TODO decide on a fade in time
+                s->playback_id =
+                    audio_play_sound_buf(src_buf + offset, src_len - offset, s->volume, s->panning, s->pitch, 500);
+            }
+        }
+    }
 }
 
 // This function is always called with the same interval, and game speed does not affect it
@@ -706,7 +814,11 @@ void game_state_static_tick(game_state *gs, bool replay) {
     game_state_tick_controllers(gs);
 
     if(gs->new_state) {
+        // merge the sounds
+        game_state_merge_sounds(gs, gs->new_state);
         gs = gs->new_state;
+        // remove the cloned flag
+        gs->clone = false;
     }
 
     // Call static ticks for scene
@@ -941,6 +1053,7 @@ void game_state_clone_free(game_state *gs) {
         vector_delete(&gs->objects, &it);
     }
     vector_free(&gs->objects);
+    vector_free(&gs->sounds);
 
     // Free scene
     scene_clone_free(gs->sc);
@@ -969,6 +1082,7 @@ void game_state_free(game_state **_gs) {
         vector_delete(&gs->objects, &it);
     }
     vector_free(&gs->objects);
+    vector_free(&gs->sounds);
 
     // Free scene
     scene_free(gs->sc);
@@ -1000,7 +1114,7 @@ int game_state_ms_per_dyntick(game_state *gs) {
             tmp = 8.0f + MS_PER_OMF_TICK_SLOWEST - ((float)gs->speed / 15.0f) * MS_PER_OMF_TICK_SLOWEST;
             return (int)tmp;
     }
-    return MS_PER_OMF_TICK;
+    return STATIC_TICKS;
 }
 
 int render_obj_clone(render_obj *src, render_obj *dst, game_state *gs) {
@@ -1021,11 +1135,52 @@ object *game_state_find_object(game_state *gs, uint32_t object_id) {
     return NULL;
 }
 
+void game_state_play_sound(game_state *gs, int id, float volume, float panning, float pitch) {
+    if(id < 0 || id > 299)
+        return;
+
+    // Load sample (8000Hz, mono, 8bit)
+    char *src_buf;
+    int src_len;
+    if(!sounds_loader_get(id, &src_buf, &src_len)) {
+        PERROR("Requested sound sample %d not found", id);
+        return;
+    }
+    if(src_len == 0) {
+        DEBUG("Requested sound sample %d has nothing to play", id);
+        return;
+    }
+
+    playing_sound s;
+    s.tick = gs->int_tick;
+    s.id = id;
+    s.length = src_len;
+    s.duration = src_len / (pitched_samplerate(pitch) * 1000);
+    s.volume = volume;
+    s.panning = panning;
+    s.pitch = pitch;
+    s.playback_id = -1;
+
+    if(!gs->clone) {
+        // do not actually begin playback if this is a cloned game state
+        // cloned game states that are promoted to the active game state
+        // will have this flag removed
+        s.playback_id = audio_play_sound_buf(src_buf, src_len, volume, panning, pitch, 0);
+        if(s.playback_id == -1) {
+            // don't track sounds that failed to play
+            return;
+        }
+    }
+
+    vector_append(&gs->sounds, &s);
+}
+
 int game_state_clone(game_state *src, game_state *dst) {
     // copy all the static fields
     memcpy(dst, src, sizeof(game_state));
     // fix any pointers to volatile data
     vector_create(&dst->objects, sizeof(render_obj));
+    vector_create(&dst->sounds, sizeof(playing_sound));
 
     dst->next_wait_ticks = 0;
     dst->this_wait_ticks = 0;
@@ -1039,6 +1194,12 @@ int game_state_clone(game_state *src, game_state *dst) {
         vector_append(&dst->objects, &d);
     }
 
+    vector_iter_begin(&src->sounds, &it);
+    playing_sound *s;
+    while((s = iter_next(&it)) != NULL) {
+        vector_append(&dst->sounds, s);
+    }
+
     for(int i = 0; i < 2; i++) {
         dst->players[i] = omf_calloc(1, sizeof(game_player));
         game_player_clone(src->players[i], dst->players[i]);
@@ -1050,6 +1211,8 @@ int game_state_clone(game_state *src, game_state *dst) {
     scene_clone(src->sc, dst->sc, dst);
 
     dst->new_state = NULL;
+
+    dst->clone = true;
 
     return 0;
 }
