@@ -126,7 +126,7 @@ void log_msg(log_level level, const char *fmt, ...) {
     format_timestamp(dt, 16);
     for(int i = 0; i < state->target_count; i++) {
         target = &state->targets[i];
-        if(level < state->level) {
+        if(level < target->level) {
             continue;
         }
         if(SDL_LockMutex(target->lock) != 0) {
