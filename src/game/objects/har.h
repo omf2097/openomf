@@ -39,6 +39,7 @@ enum
 
 enum
 {
+    STATE_NONE,
     STATE_STANDING = 1,
     STATE_WALKTO,
     STATE_WALKFROM,

@@ -9,6 +9,7 @@
 
 enum
 {
+    ACT_NONE = 0x00,
     ACT_STOP = 0x01,
     ACT_KICK = 0x02,
     ACT_PUNCH = 0x04,

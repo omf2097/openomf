@@ -29,6 +29,7 @@ typedef struct {
     int rttpos;
     int rttfilled;
     int tick_offset;
+    int frame_advantage;
     bool synchronized;
     int guesses;
     uint32_t peer_proposal;
@@ -97,6 +98,7 @@ void insert_event(wtf *data, uint32_t tick, uint16_t action, int id) {
     list_iter_begin(transcript, &it);
     tick_events *ev = NULL;
     tick_events *nev = NULL;
+    tick_events *last = NULL;
     tick_events event;
     event.tick = tick;
     memset(event.events[id], 0, 11);
@@ -105,6 +107,7 @@ void insert_event(wtf *data, uint32_t tick, uint16_t action, int id) {
     int i = 0;
 
     foreach(it, ev) {
+        last = ev;
         if(i == 0 && ev->tick > tick) {
             list_prepend(transcript, &event, sizeof(tick_events));
             return;
@@ -113,7 +116,6 @@ void insert_event(wtf *data, uint32_t tick, uint16_t action, int id) {
             for(int i = 0; i < 11; i++) {
                 if(ev->events[id][i] == 0) {
                     if(action == last) {
-                        log_debug("deduping %d at tick %d", action, tick);
                         // dedup;
                         break;
                     }
@@ -136,6 +138,10 @@ void insert_event(wtf *data, uint32_t tick, uint16_t action, int id) {
         i++;
     }
     // either the list is empty, or this tick is later than anything else
+    if(last && last->events[id][0] == action) {
+        // dedup, this is not needed
+        return;
+    }
     list_append(transcript, &event, sizeof(tick_events));
 }
 
@@ -225,6 +231,8 @@ void send_events(wtf *data) {
     serial_write_uint32(&ser, data->last_received_tick);
     serial_write_uint32(&ser, data->last_hash_tick);
     serial_write_uint32(&ser, data->last_hash);
+    serial_write_uint32(&ser, data->last_tick - data->local_proposal);
+    serial_write_int8(&ser, data->frame_advantage);
 
     int events = 0;
 
@@ -354,10 +362,10 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
                 int player_id = j;
                 game_player *player = game_state_get_player(gs, player_id);
                 int k = 0;
-                while(ev->events[j][k]) {
+                do {
                     object_act(game_state_find_object(gs, game_player_get_har_obj_id(player)), ev->events[j][k]);
                     k++;
-                }
+                } while(ev->events[j][k]);
 
                 // write_rec_move(gs->sc, player, ev->events[j]);
                 //} else {
@@ -564,7 +572,7 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
     serial ser;
     uint32_t ticks = ctrl->gs->int_tick;
 
-    if(data->gs_bak && /*has_event(data, ticks - 1) &&*/ ticks > data->last_tick) {
+    if(data->gs_bak && has_event(data, ticks - 1) && ticks > data->last_tick) {
         data->last_tick = ticks;
         send_events(data);
     }
@@ -636,8 +644,25 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                         uint32_t last_acked = serial_read_uint32(&ser);
                         uint32_t peer_last_hash_tick = serial_read_uint32(&ser);
                         uint32_t peer_last_hash = serial_read_uint32(&ser);
+                        uint32_t peerticks = serial_read_uint32(&ser);
+                        int8_t peer_frame_advantage = serial_read_int8(&ser);
 
-                        for(size_t i = 13; i < event.packet->dataLength;) {
+                        data->frame_advantage =
+                            (ticks - data->local_proposal) - (peerticks + (avg_rtt(data->rttbuf, 100) / 2));
+
+                        if(data->gs_bak && data->synchronized && data->frame_advantage > peer_frame_advantage + 1) {
+                            log_debug("%d %d (%d) frame advantage %d > %d", ticks - data->local_proposal, peerticks,
+                                  (avg_rtt(data->rttbuf, 100) / 2), data->frame_advantage, peer_frame_advantage);
+                            ctrl->gs->delay = (data->frame_advantage - peer_frame_advantage) * 2;
+                            data->gs_bak->delay = (data->frame_advantage - peer_frame_advantage) * 2;
+                        } else {
+                            ctrl->gs->delay = 0;
+                            if(data->gs_bak) {
+                                data->gs_bak->delay = 0;
+                            }
+                        }
+
+                        for(size_t i = 18; i < event.packet->dataLength;) {
                             unsigned remote_tick = serial_read_uint32(&ser);
                             // dispatch keypress to scene
                             int action = 0;
@@ -649,7 +674,6 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                                 if(action) {
                                     if(data->synchronized && data->gs_bak) {
                                         if(remote_tick > data->last_received_tick) {
-                                            log_debug("inserting event %d at tick %" PRIu32, action, remote_tick);
                                             insert_event(data, remote_tick, action, abs(data->id - 1));
                                         }
                                         last_received = remote_tick;
@@ -837,7 +861,7 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
             return 0;
         }
     }
-    if(data->last_sent < ticks - 50 && has_received) {
+    if(data->last_acked_tick < ticks - 50 && has_received) {
         // if we haven't sent an event in a while, send a dummy event to force the peer to
         // rewind/replay
         log_debug("sending blank events in response");
@@ -886,9 +910,9 @@ void controller_hook(controller *ctrl, int action) {
     object *har_obj = game_state_find_object(ctrl->gs, game_player_get_har_obj_id(player));
     if(har_obj) {
         har *har = object_get_userdata(har_obj);
-        if(action == ACT_STOP && har->state == data->last_har_state) {
-            return;
-        }
+        // if(action == ACT_STOP && har->state == data->last_har_state) {
+        //     return;
+        // }
         data->last_har_state = har->state;
         data->last_action = action;
     }
@@ -896,8 +920,6 @@ void controller_hook(controller *ctrl, int action) {
     if(peer) {
         // log_debug("Local event %d at %d", action, data->last_tick - data->local_proposal);
         if(data->synchronized && data->gs_bak) {
-            log_debug("inserting event %d at tick %" PRIu32, action,
-                      ctrl->gs->int_tick - data->local_proposal /*+ (ctrl->rtt / 2)*/);
             insert_event(data, ctrl->gs->int_tick - data->local_proposal /*+ (ctrl->rtt / 2)*/, action, data->id);
         } else {
             serial ser;
@@ -907,6 +929,8 @@ void controller_hook(controller *ctrl, int action) {
             serial_write_uint32(&ser, 0);
             serial_write_uint32(&ser, 0);
             serial_write_uint32(&ser, 0);
+            serial_write_uint32(&ser, 0);
+            serial_write_int8(&ser, 0);
             serial_write_uint32(&ser, udist(data->last_tick, data->local_proposal));
             serial_write_int8(&ser, action);
             serial_write_int8(&ser, 0);

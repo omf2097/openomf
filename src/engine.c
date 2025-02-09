@@ -306,6 +306,12 @@ void engine_run(engine_init_flags *init_flags) {
             if(has_dynamic) {
                 game_state_dynamic_tick(gs, false);
                 dynamic_wait -= game_state_ms_per_dyntick(gs);
+                if(gs->delay > 0) {
+                    DEBUG("applying delay %d", gs->delay);
+                    SDL_Delay(4);
+                    gs->delay--;
+                    dynamic_wait -= 4;
+                }
             }
 
             // Ensure any pending palette changes are handled after any ticks are made.
