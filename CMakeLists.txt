@@ -8,6 +8,7 @@ OPTION(USE_FATAL_SANITIZERS "Make Asan and Ubsan errors fatal" OFF)
 OPTION(USE_TIDY "Use clang-tidy for checks" OFF)
 OPTION(USE_FORMAT "Use clang-format for checks" OFF)
 OPTION(BUILD_LANGUAGES "Build Language Files" ON)
+OPTION(USE_COLORS "Use colors in log output" ON)
 
 OPTION(USE_MINIUPNPC "Use miniupnpc for port forwarding" OFF)
 OPTION(USE_NATPMP "Use natpmp for port forwarding" OFF)
@@ -269,6 +270,12 @@ if(WIN32 AND NOT MINGW)
         "<windows.h>"
     )
 endif()
+
+if (USE_COLORS)
+    # If user wants terminal colors. This is mainly for log, but can be used elsewhere too.
+    add_definitions(-DUSE_COLORS)
+    message(STATUS "Enabled terminal colors")
+endif ()
 
 # Set icon for windows executable
 if(WIN32)

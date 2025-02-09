@@ -3,22 +3,27 @@
 
 #include <stdlib.h>
 
-#ifdef DEBUGMODE
-#define DEBUG(...) log_print('D', __func__, __VA_ARGS__)
-#define PERROR(...) log_print('E', __func__, __VA_ARGS__)
-#define INFO(...) log_print('I', __func__, __VA_ARGS__)
-#else
-#define DEBUG(...) log_hide('D', NULL, __VA_ARGS__)
-#define PERROR(...) log_print('E', NULL, __VA_ARGS__)
-#define INFO(...) log_print('I', NULL, __VA_ARGS__)
-#endif
+typedef enum log_level
+{
+    LOG_DEBUG,
+    LOG_INFO,
+    LOG_WARN,
+    LOG_ERROR
+} log_level;
 
-#define LOGTICK(x) _log_tick = x;
-extern unsigned int _log_tick;
+#define log_debug(...) log_msg(LOG_DEBUG, __VA_ARGS__)
+#define log_info(...) log_msg(LOG_INFO, __VA_ARGS__)
+#define log_warn(...) log_msg(LOG_WARN, __VA_ARGS__)
+#define log_error(...) log_msg(LOG_ERROR, __VA_ARGS__)
 
-void log_hide(char mode, const char *fn, const char *fmt, ...); // no-op
-void log_print(char mode, const char *fn, const char *fmt, ...);
-int log_init(const char *filename);
+void log_init(void);
 void log_close(void);
+
+void log_set_level(log_level level);
+void log_set_colors(bool toggle);
+void log_add_stderr(log_level level, bool colors);
+void log_add_file(const char *filename, log_level level);
+
+void log_msg(log_level level, const char *fmt, ...);
 
 #endif // LOG_H

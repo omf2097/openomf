@@ -156,18 +156,18 @@ int main(int argc, char *argv[]) {
     }
 
     // Init log
-#if defined(DEBUGMODE)
-    if(log_init(0)) {
-        err_msgbox("Error while initializing log!");
-        printf("Error while initializing log!\n");
-        goto exit_0;
-    }
+    log_init();
+    log_add_file(pm_get_local_path(LOG_PATH), LOG_INFO);
+#if defined(USE_COLORS)
+    log_set_colors(true);
 #else
-    if(log_init(pm_get_local_path(LOG_PATH))) {
-        err_msgbox("Error while initializing log '%s'!", pm_get_local_path(LOG_PATH));
-        printf("Error while initializing log '%s'!", pm_get_local_path(LOG_PATH));
-        goto exit_0;
-    }
+    log_set_colors(false);
+#endif
+#if defined(DEBUGMODE)
+    log_add_stderr(LOG_DEBUG, true);
+    log_set_level(LOG_DEBUG);
+#else
+    log_set_level(LOG_INFO); // In release mode, drop debugs.
 #endif
 
     // Simple header
