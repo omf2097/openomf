@@ -1,8 +1,9 @@
 #include "utils/png_writer.h"
 #include "utils/log.h"
+
+#ifdef USE_LIBPNG
 #include <assert.h>
 #include <png.h>
-#include <string.h>
 
 bool png_write_rgb(const char *filename, int w, int h, const unsigned char *data, bool has_alpha, bool flip) {
     FILE *fp = fopen(filename, "wb");
@@ -56,3 +57,17 @@ bool png_write_paletted(const char *filename, int w, int h, const vga_palette *p
     }
     return true;
 }
+
+#else // USE_LIBPNG
+
+bool png_write_rgb(const char *filename, int w, int h, const unsigned char *data, bool has_alpha, bool flip) {
+    PERROR("PNG writing is not supported in current build!");
+    return false;
+}
+
+bool png_write_paletted(const char *filename, int w, int h, const vga_palette *pal, const unsigned char *data) {
+    PERROR("PNG writing is not supported in current build!");
+    return false;
+}
+
+#endif // USE_LIBPNG

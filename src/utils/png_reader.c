@@ -1,6 +1,7 @@
 #include "utils/png_reader.h"
 #include "utils/log.h"
 
+#ifdef USE_LIBPNG
 #include <assert.h>
 #include <png.h>
 #include <stdint.h>
@@ -83,3 +84,12 @@ error_1:
 error_0:
     return ret;
 }
+
+#else // USE_LIBPNG
+
+bool png_read_paletted(const char *filename, unsigned char *dst) {
+    PERROR("PNG reading is not supported in current build!");
+    return false;
+}
+
+#endif // USE_LIBPNG

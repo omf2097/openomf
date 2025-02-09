@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.16)
 # Options
 OPTION(USE_TESTS "Build unittests" OFF)
 OPTION(USE_TOOLS "Build tools" OFF)
+OPTION(USE_LIBPNG "Build with libpng support" ON)
 OPTION(USE_SANITIZERS "Enable Asan and Ubsan" OFF)
 OPTION(USE_FATAL_SANITIZERS "Make Asan and Ubsan errors fatal" OFF)
 OPTION(USE_TIDY "Use clang-tidy for checks" OFF)
@@ -248,11 +249,18 @@ target_link_libraries(openomf_core PRIVATE
     openomf::confuse
     openomf::enet
     openomf::epoxy
-    openomf::png
     openomf::SDL2
     openomf::SDL2_mixer
     openomf::xmp
 )
+
+if (USE_LIBPNG)
+    target_link_libraries(openomf_core PUBLIC
+        openomf::png
+    )
+    add_definitions(-DUSE_LIBPNG=1)
+endif ()
+
 if(USE_MINIUPNPC)
     target_link_libraries(openomf_core PUBLIC
         openomf::miniupnpc
