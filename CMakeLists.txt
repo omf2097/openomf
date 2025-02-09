@@ -271,11 +271,11 @@ if(WIN32 AND NOT MINGW)
     )
 endif()
 
-if (USE_COLORS)
+if(USE_COLORS)
     # If user wants terminal colors. This is mainly for log, but can be used elsewhere too.
     add_definitions(-DUSE_COLORS)
     message(STATUS "Enabled terminal colors")
-endif ()
+endif()
 
 # Set icon for windows executable
 if(WIN32)
