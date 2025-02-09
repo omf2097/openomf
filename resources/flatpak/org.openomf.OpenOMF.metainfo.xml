@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>org.openomf.OpenOMF</id>
+
+  <releases>
+    <release version="0.7.0" date="2025-01-18">
+      <url type="details">https://github.com/omf2097/openomf/releases/tag/0.7.0</url>
+      <description>
+        <p>The first OpenOMF release in 10 years, it has a tremendous amount of changes, but these are the highlights</p>
+        <ul>
+          <li>Tournament mode</li>
+          <li>New enemy AI</li>
+          <li>New graphics renderer with more correct visuals</li>
+          <li>New audio backend/</li>
+          <li>Many bugfixes</li>
+        </ul>
+      </description>
+    </release>
+  </releases>
+
+  <content_rating type="oars-1.1">
+    <content_attribute id="violence-cartoon">moderate</content_attribute>
+    <content_attribute id="drugs-alcohol">mild</content_attribute>
+    <content_attribute id="language-profanity">mild</content_attribute>
+    <content_attribute id="language-humor">mild</content_attribute>
+    <content_attribute id="social-chat">moderate</content_attribute>
+  </content_rating>
+
+  <developer id="org.openomf.OpenOMF">
+    <name>The OpenOMF developers</name>
+  </developer>
+
+  <url type="homepage">https://openomf.org/</url>
+  <url type="bugtracker">https://github.com/omf2097/openomf/issues</url>
+  <url type="vcs-browser">https://github.com/omf2097/openomf</url>
+  
+  <name>OpenOMF</name>
+  <summary>An open-source remake of the DOS fighting game One Must Fall 2097</summary>
+  
+  <metadata_license>MIT</metadata_license>
+  <project_license>MIT</project_license>
+  
+  <description>
+    <p>
+      OpenOMF is an open-source remake of the DOS fighting classic One Must Fall 2097.
+    </p>
+    <p>
+      One Must Fall 2097 is a 2D fighting game set in the year 2097 where pilots use Human Assisted Robots (HARs) to battle in various arenas.
+    </p>
+    <p>
+      One Must Fall 2097 features a 1 player story mode, a 2 player mode, a tournament mode with RPG elements and network play.
+    </p>
+  </description>
+  
+  <launchable type="desktop-id">org.openomf.OpenOMF.desktop</launchable>
+  <screenshots>
+    <screenshot type="default">
+      <image>https://github.com/omf2097/openomf/raw/master/doc/flail.png</image>
+      <caption>Milano, piloting a Gargoyle, is thrown into the electrified walls of the power plant arena by Shirro piloting a Flail</caption>
+    </screenshot>
+  </screenshots>
+</component>
