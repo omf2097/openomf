@@ -45,7 +45,7 @@ void menu_listen_tick(component *c) {
             enet_peer_send(event.peer, 0, packet);
             enet_host_flush(local->host);
 
-            DEBUG("client connected!");
+            log_debug("client connected!");
             controller *player1_ctrl, *player2_ctrl;
             keyboard_keys *keys;
             game_player *p1 = game_state_get_player(gs, 0);
@@ -96,7 +96,8 @@ void menu_listen_tick(component *c) {
         game_player *p2 = game_state_get_player(gs, 1);
         controller *c2 = game_player_get_ctrl(p2);
         if(c2->type == CTRL_TYPE_NETWORK && net_controller_ready(c2) == 1) {
-            DEBUG("network peer is ready, tick offset is %d and rtt is %d", net_controller_tick_offset(c2), c2->rtt);
+            log_debug("network peer is ready, tick offset is %d and rtt is %d", net_controller_tick_offset(c2),
+                      c2->rtt);
             local->host = NULL;
             local->controllers_created = 0;
             game_state_set_next(gs, SCENE_MELEE);
@@ -146,15 +147,15 @@ component *menu_listen_create(scene *s) {
                 address.port = rand_int(65535 - 1024) + 1024;
                 randtries++;
                 if(randtries > 10) {
-                    DEBUG("Failed to initialize ENet server with random ports");
+                    log_debug("Failed to initialize ENet server with random ports");
                     omf_free(local);
                     return NULL;
                 }
             } else {
                 address.port++;
                 if(address.port > end_port || randtries > 10) {
-                    DEBUG("Failed to initialize ENet server between ports %d and %d after 10 attempts",
-                          settings_get()->net.net_listen_port_start, end_port);
+                    log_debug("Failed to initialize ENet server between ports %d and %d after 10 attempts",
+                              settings_get()->net.net_listen_port_start, end_port);
                     omf_free(local);
                     return NULL;
                 }

@@ -50,20 +50,20 @@ int conf_init_internal(const char *filename) {
     cfg = cfg_init((cfg_opt_t *)cfg_opts.data, CFGF_IGNORE_UNKNOWN);
     int ret = cfg_parse(cfg, filename);
     if(ret == CFG_FILE_ERROR) {
-        PERROR("Error while attempting to read config file '%s' !", filename);
+        log_error("Error while attempting to read config file '%s' !", filename);
         return 1;
     } else if(ret == CFG_PARSE_ERROR) {
-        PERROR("Error while attempting to parse config file '%s' !", filename);
+        log_error("Error while attempting to parse config file '%s' !", filename);
         return 1;
     }
-    INFO("Configfile read!");
+    log_info("Configfile read!");
     return 0;
 }
 
 int conf_init(const char *filename) {
     int ret = conf_init_internal(filename);
     if(ret == 1) {
-        DEBUG("Trying to write a default config file.");
+        log_debug("Trying to write a default config file.");
         if(!conf_write_config(filename)) {
             return conf_init_internal(filename);
         } else {

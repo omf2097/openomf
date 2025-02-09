@@ -264,7 +264,7 @@ void arena_end(scene *sc) {
         }
 
         if(p1->chr && sg_save(p1->chr) != SD_SUCCESS) {
-            PERROR("Failed to save pilot %s", p1->chr->pilot.name);
+            log_error("Failed to save pilot %s", p1->chr->pilot.name);
         }
         game_state_set_next(gs, SCENE_NEWSROOM);
     } else if(is_twoplayer(gs)) {
@@ -286,7 +286,7 @@ void arena_reset(scene *sc) {
     arena_local *local = scene_get_userdata(sc);
     local->state = ARENA_STATE_STARTING;
 
-    DEBUG("resetting arena");
+    log_debug("resetting arena");
 
     // Kill all hazards and projectiles
     game_state_clear_objects(sc->gs, GROUP_PROJECTILE | GROUP_SCRAP | GROUP_ANNOUNCEMENT);
@@ -387,7 +387,7 @@ void arena_har_take_hit_hook(int hittee, af_move *move, scene *scene) {
     }
     h = hit_har->userdata;
     if(h->state == STATE_RECOIL) {
-        DEBUG("COMBO!");
+        log_debug("COMBO!");
     }
     bool no_points = is_demoplay(scene->gs) || !game_state_get_player(scene->gs, hitter)->selectable;
     chr_score_hit(score, no_points ? 0 : move->points);
@@ -414,7 +414,7 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
         game_state_find_object(scene->gs, game_player_get_har_obj_id(game_state_get_player(scene->gs, player_id)));
     har *h = object_get_userdata(o_har);
 
-    // DEBUG("Player %d hit wall %d", player_id, wall);
+    // log_debug("Player %d hit wall %d", player_id, wall);
 
     // HAR must be in the air to be get faceplanted to a wall.
     if(o_har->pos.y >= ARENA_FLOOR - 10) {
@@ -437,7 +437,7 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
      * When hitting the lightning arena wall, the HAr needs to get hit by lightning thingy.
      */
     if(scene->id == SCENE_ARENA2 && (h->state == STATE_FALLEN || h->state == STATE_RECOIL)) {
-        DEBUG("hit lightning wall %d", wall);
+        log_debug("hit lightning wall %d", wall);
         h->state = STATE_WALLDAMAGE;
 
         // Spawn wall animation
@@ -469,7 +469,7 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
      * On arena wall, the wall needs to pulse. Handle it here
      */
     if(scene->id == SCENE_ARENA4 && (h->state == STATE_FALLEN || h->state == STATE_RECOIL)) {
-        // DEBUG("hit desert wall %d", wall);
+        // log_debug("hit desert wall %d", wall);
         h->state = STATE_WALLDAMAGE;
 
         // desert always shows the 'hit' animation when you touch the wall
@@ -490,14 +490,14 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
      */
     if(scene->id != SCENE_ARENA4 && scene->id != SCENE_ARENA2 &&
        (h->state == STATE_FALLEN || h->state == STATE_RECOIL)) {
-        // DEBUG("hit dusty wall %d", wall);
+        // log_debug("hit dusty wall %d", wall);
         h->state = STATE_WALLDAMAGE;
 
         int amount = rand_int(2) + 3;
         for(int i = 0; i < amount; i++) {
             int variance = rand_int(20) - 10;
             int anim_no = rand_int(2) + 24;
-            // DEBUG("XXX anim = %d, variance = %d", anim_no, variance);
+            // log_debug("XXX anim = %d, variance = %d", anim_no, variance);
             int pos_y = o_har->pos.y - object_get_size(o_har).y + variance + i * 25;
             vec2i coord = vec2i_create(o_har->pos.x, pos_y);
             object *dust = omf_calloc(1, sizeof(object));
@@ -626,17 +626,17 @@ void arena_maybe_turn_har(int player_id, scene *scene) {
     object *obj_har2 = game_state_find_object(
         scene->gs, game_player_get_har_obj_id(game_state_get_player(scene->gs, other_player_id)));
     if(obj_har1->pos.x > obj_har2->pos.x) {
-        DEBUG("ARENA facing player %d LEFT", player_id);
+        log_debug("ARENA facing player %d LEFT", player_id);
         object_set_direction(obj_har1, OBJECT_FACE_LEFT);
     } else {
-        DEBUG("ARENA facing player %d RIGHT", player_id);
+        log_debug("ARENA facing player %d RIGHT", player_id);
         object_set_direction(obj_har1, OBJECT_FACE_RIGHT);
     }
 
     // there isn;t an idle event hook, so do the best we can...
     har *har2 = obj_har2->userdata;
     if((har2->state == STATE_STANDING || har_is_crouching(har2) || har_is_walking(har2)) && !har2->executing_move) {
-        DEBUG("ARENA facing player %d", other_player_id);
+        log_debug("ARENA facing player %d", other_player_id);
         object_set_direction(obj_har2, object_get_direction(obj_har1) * -1);
     }
 }
@@ -653,7 +653,7 @@ void arena_har_hook(har_event event, void *data) {
         scene->gs, game_player_get_har_obj_id(game_state_get_player(scene->gs, other_player_id)));
     har *har1 = obj_har1->userdata;
     har *har2 = obj_har2->userdata;
-    DEBUG("HAR %d HOOK FIRED WITH %d at %d", event.player_id, event.type, scene->gs->int_tick);
+    log_debug("HAR %d HOOK FIRED WITH %d at %d", event.player_id, event.type, scene->gs->int_tick);
     switch(event.type) {
         case HAR_EVENT_WALK:
             arena_maybe_turn_har(event.player_id, scene);
@@ -675,7 +675,7 @@ void arena_har_hook(har_event event, void *data) {
             fight_stats->total_attacks[event.player_id]++;
             if(object_is_airborne(obj_har1)) {
                 har1->air_attacked = 1;
-                DEBUG("AIR ATTACK %u", event.player_id);
+                log_debug("AIR ATTACK %u", event.player_id);
             } else {
                 // XXX this breaks the backwards razor spin and anything else using the 'ar' tag, so lets disable it for
                 // now
@@ -689,17 +689,17 @@ void arena_har_hook(har_event event, void *data) {
                 // jaguar ending up facing backwards after an overhead throw.
                 arena_maybe_turn_har(event.player_id, scene);
             }
-            DEBUG("LAND %u", event.player_id);
+            log_debug("LAND %u", event.player_id);
             break;
         case HAR_EVENT_AIR_ATTACK_DONE:
             har1->air_attacked = 0;
-            DEBUG("AIR_ATTACK_DONE %u", event.player_id);
+            log_debug("AIR_ATTACK_DONE %u", event.player_id);
             break;
         case HAR_EVENT_RECOVER:
             arena_har_recover_hook(event.player_id, scene);
             if(!object_is_airborne(obj_har1)) {
                 arena_maybe_turn_har(event.player_id, scene);
-                DEBUG("RECOVER %u", event.player_id);
+                log_debug("RECOVER %u", event.player_id);
             }
             break;
         case HAR_EVENT_DEFEAT:
@@ -714,11 +714,11 @@ void arena_har_hook(har_event event, void *data) {
             break;
         case HAR_EVENT_DESTRUCTION:
             chr_score_destruction(score);
-            DEBUG("DESTRUCTION!");
+            log_debug("DESTRUCTION!");
             break;
         case HAR_EVENT_DONE:
             chr_score_done(score);
-            DEBUG("DONE!");
+            log_debug("DONE!");
             break;
     }
 }
@@ -903,7 +903,7 @@ void write_rec_move(scene *scene, game_player *player, int action) {
     int ret;
 
     if((ret = sd_rec_insert_action(local->rec, local->rec->move_count, &move)) != SD_SUCCESS) {
-        DEBUG("recoding move failed %d", ret);
+        log_debug("recoding move failed %d", ret);
     }
 }
 
@@ -976,7 +976,7 @@ void arena_spawn_hazard(scene *scene) {
                         }
                     }
 
-                    DEBUG("Arena tick: Hazard with probability %d started.", info->probability, info->ani.id);
+                    log_debug("Arena tick: Hazard with probability %d started.", info->probability, info->ani.id);
                 } else {
                     object_free(obj);
                     omf_free(obj);
@@ -1586,7 +1586,7 @@ int arena_create(scene *scene) {
         for(int i = 0; i < 2; i++) {
             // Declare some vars
             game_player *player = game_state_get_player(scene->gs, i);
-            DEBUG("player %d using har %d", i, player->pilot->har_id);
+            log_debug("player %d using har %d", i, player->pilot->har_id);
             local->rec->pilots[i].info.har_id = (unsigned char)player->pilot->har_id;
             local->rec->pilots[i].info.pilot_id = player->pilot->pilot_id;
             local->rec->pilots[i].info.color_1 = player->pilot->color_1;

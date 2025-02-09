@@ -116,7 +116,7 @@ int sd_move_load(sd_reader *r, sd_move *move) {
     // Footer string
     size = sd_read_uword(r);
     if(size >= SD_MOVE_FOOTER_STRING_MAX) {
-        DEBUG("Move footer too big! Expected max %d bytes, got %hu bytes.", SD_MOVE_FOOTER_STRING_MAX, size);
+        log_debug("Move footer too big! Expected max %d bytes, got %hu bytes.", SD_MOVE_FOOTER_STRING_MAX, size);
         return SD_FILE_PARSE_ERROR;
     }
     if(size > 0) {

@@ -196,19 +196,19 @@ int joystick_create(controller *ctrl, int joystick_id) {
                     k->rumble = 1;
                     ctrl->rumble_fun = joystick_rumble;
                 } else {
-                    PERROR("Failed to initialize rumble: %s", SDL_GetError());
+                    log_error("Failed to initialize rumble: %s", SDL_GetError());
                 }
             } else {
-                DEBUG("Rumble not supported");
+                log_debug("Rumble not supported");
             }
         } else {
-            DEBUG("Haptic not supported");
+            log_debug("Haptic not supported");
         }
-        DEBUG("Game controller initialized");
+        log_debug("Game controller initialized");
         return 1;
     }
 
-    PERROR("Failed to open game controller: %s", SDL_GetError());
+    log_error("Failed to open game controller: %s", SDL_GetError());
     return 0;
 }
 

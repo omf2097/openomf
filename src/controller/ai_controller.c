@@ -566,37 +566,37 @@ void queue_tactic(controller *ctrl, int tactic_type) {
     // log when we queue a tactic
     switch(tactic_type) {
         case TACTIC_GRAB:
-            DEBUG("\033[33mHAR %d queued tactic:\033[0m \033[32mGRAB\033[0m", h->id);
+            log_debug("HAR %d queued tactic: GRAB", h->id);
             break;
         case TACTIC_TRIP:
-            DEBUG("\033[33mHAR %d queued tactic:\033[0m \033[32mTRIP\033[0m", h->id);
+            log_debug("HAR %d queued tactic: TRIP", h->id);
             break;
         case TACTIC_QUICK:
-            DEBUG("\033[33mHAR %d queued tactic:\033[0m \033[32mQUICK\033[0m", h->id);
+            log_debug("HAR %d queued tactic: QUICK", h->id);
             break;
         case TACTIC_CLOSE:
-            DEBUG("\033[33mHAR %d queued tactic:\033[0m \033[32mCLOSE\033[0m", h->id);
+            log_debug("HAR %d queued tactic: CLOSE", h->id);
             break;
         case TACTIC_FLY:
-            DEBUG("\033[33mHAR %d queued tactic:\033[0m \033[32mFLY\033[0m", h->id);
+            log_debug("HAR %d queued tactic: FLY", h->id);
             break;
         case TACTIC_SHOOT:
-            DEBUG("\033[33mHAR %d queued tactic:\033[0m \033[32mSHOOT\033[0m", h->id);
+            log_debug("HAR %d queued tactic: SHOOT", h->id);
             break;
         case TACTIC_PUSH:
-            DEBUG("\033[33mHAR %d queued tactic:\033[0m \033[32mPUSH\033[0m", h->id);
+            log_debug("HAR %d queued tactic: PUSH", h->id);
             break;
         case TACTIC_SPAM:
-            DEBUG("\033[33mHAR %d queued tactic:\033[0m \033[32mSPAM\033[0m", h->id);
+            log_debug("HAR %d queued tactic: SPAM", h->id);
             break;
         case TACTIC_ESCAPE:
-            DEBUG("\033[33mHAR %d queued tactic:\033[0m \033[32mESCAPE\033[0m", h->id);
+            log_debug("HAR %d queued tactic: ESCAPE", h->id);
             break;
         case TACTIC_TURTLE:
-            DEBUG("\033[33mHAR %d queued tactic:\033[0m \033[32mTURTLE\033[0m", h->id);
+            log_debug("HAR %d queued tactic: TURTLE", h->id);
             break;
         case TACTIC_COUNTER:
-            DEBUG("\033[33mHAR %d queued tactic:\033[0m \033[32mCOUNTER\033[0m", h->id);
+            log_debug("HAR %d queued tactic: COUNTER", h->id);
             break;
     }
 
@@ -779,7 +779,7 @@ void reset_tactic_state(ai *a) {
  * \return Void.
  */
 void reset_pilot_personality(sd_pilot *pilot) {
-    // DEBUG("\033[90mReset pilot personality: %d\033[0m", pilot->pilot_id);
+    // log_debug("\033[90mReset pilot personality: %d", pilot->pilot_id);
     switch(pilot->pilot_id) {
         case 0:
             // crystal
@@ -1054,7 +1054,7 @@ int ai_har_event(controller *ctrl, har_event event) {
                    (a->tactic->chain_hit_on == 0 || a->tactic->chain_hit_on != event.move->category)) {
                     reset_tactic_state(a);
                     has_queued_tactic = false;
-                    DEBUG("\033[90mReset tactic queue: EVENT_BLOCK\033[0m");
+                    log_debug("\033[90mReset tactic queue: EVENT_BLOCK");
                 }
                 break;
             case HAR_EVENT_TAKE_HIT:
@@ -1063,18 +1063,18 @@ int ai_har_event(controller *ctrl, har_event event) {
                    (a->tactic->tactic_type == TACTIC_TURTLE && !pilot->att_def)) {
                     reset_tactic_state(a);
                     has_queued_tactic = false;
-                    DEBUG("\033[90mReset tactic queue: EVENT_TAKE_HIT\033[0m");
+                    log_debug("\033[90mReset tactic queue: EVENT_TAKE_HIT");
                 }
                 break;
             case HAR_EVENT_ENEMY_STUN: {
                 if(a->tactic->tactic_type == TACTIC_GRAB || a->tactic->tactic_type == TACTIC_CLOSE ||
                    a->tactic->tactic_type == TACTIC_TRIP) {
-                    DEBUG("\033[35mExtend tactic move timer to capitalize on stun\033[0m");
+                    log_debug("Extend tactic move timer to capitalize on stun");
                     a->tactic->move_timer = TACTIC_MOVE_TIMER_MAX;
                 } else if(a->tactic->tactic_type != TACTIC_SHOOT) {
                     reset_tactic_state(a);
                     has_queued_tactic = false;
-                    DEBUG("\033[90mReset tactic queue: EVENT_ENEMY_STUN\033[0m");
+                    log_debug("\033[90mReset tactic queue: EVENT_ENEMY_STUN");
                 }
             } break;
         }
@@ -1101,7 +1101,7 @@ int ai_har_event(controller *ctrl, har_event event) {
                 a->blocked = 0;
                 a->thrown = 0;
                 a->shot = 0;
-                // DEBUG("\033[33mHAR %d forgot their learning.\033[0m", h->id);
+                // log_debug("HAR %d forgot their learning.", h->id);
             }
 
             if(ms->max_hit_dist == -1 || ms->last_dist > ms->max_hit_dist) {
@@ -1120,7 +1120,7 @@ int ai_har_event(controller *ctrl, har_event event) {
             a->last_move_id = event.move->id;
 
             if(a->tactic->chain_hit_on == event.move->category) {
-                DEBUG("\033[33mQueueing chained tactic\033[0m");
+                log_debug("Queueing chained tactic");
                 queue_tactic(ctrl, a->tactic->chain_hit_tactic);
                 break;
             }
@@ -1171,7 +1171,7 @@ int ai_har_event(controller *ctrl, har_event event) {
 
             if(has_queued_tactic && a->tactic->attack_on == HAR_EVENT_BLOCK) {
                 // do the attack now
-                DEBUG("\033[94mAttempting counter move\033[0m");
+                log_debug("\033[94mAttempting counter move");
                 a->tactic->move_timer = 0;
                 break;
             }
@@ -1198,7 +1198,7 @@ int ai_har_event(controller *ctrl, har_event event) {
 
             if(has_queued_tactic && a->tactic->attack_on == HAR_EVENT_LAND && h->state == STATE_STANDING) {
                 // do the attack now
-                DEBUG("\033[94mAttempting landing move\033[0m");
+                log_debug("\033[94mAttempting landing move");
                 a->tactic->move_timer = 0;
                 a->tactic->attack_on = 0;
                 break;
@@ -1234,7 +1234,7 @@ int ai_har_event(controller *ctrl, har_event event) {
                 // keep track of how many times we have been thrown
                 a->thrown++;
                 if(learning_moment(a) && a->thrown >= MAX_TIMES_THROWN) {
-                    DEBUG("\033[33mAI adjusting in response to repeated throws.\033[0m");
+                    log_debug("AI adjusting in response to repeated throws.");
                     // avoid defensive tactics
                     if(pilot->att_def > 90)
                         pilot->att_def = 10;
@@ -1257,7 +1257,7 @@ int ai_har_event(controller *ctrl, har_event event) {
                 // keep track of how many times we have been shot
                 a->shot++;
                 if(learning_moment(a) && a->shot >= MAX_TIMES_SHOT) {
-                    DEBUG("\033[33mAI adjusting in response to repeated projectiles.\033[0m");
+                    log_debug("AI adjusting in response to repeated projectiles.");
                     // avoid defensive tactics
                     if(pilot->att_def > 90)
                         pilot->att_def = 10;
@@ -1311,7 +1311,7 @@ int ai_har_event(controller *ctrl, har_event event) {
             if(has_queued_tactic || !smart_usually(a))
                 break;
 
-            DEBUG("\033[35mHAR capitalize on hazard:\033[0m %d", h->id);
+            log_debug("HAR capitalize on hazard: %d", h->id);
 
             int tacs[] = {TACTIC_GRAB, TACTIC_TRIP, TACTIC_QUICK, TACTIC_CLOSE, TACTIC_SHOOT};
             chain_consider_tactics(ctrl, tacs, N_ELEMENTS(tacs));
@@ -1320,7 +1320,7 @@ int ai_har_event(controller *ctrl, har_event event) {
             if(has_queued_tactic || !smart_usually(a))
                 break;
 
-            DEBUG("\033[35mHAR capitalize on stun:\033[0m %d", h->id);
+            log_debug("HAR capitalize on stun: %d", h->id);
 
             int tacs[] = {TACTIC_GRAB, TACTIC_CLOSE, TACTIC_TRIP, TACTIC_SHOOT};
             chain_consider_tactics(ctrl, tacs, N_ELEMENTS(tacs));
@@ -1425,7 +1425,7 @@ void set_selected_move(controller *ctrl, af_move *selected_move) {
         game_state_find_object(ctrl->gs, game_state_get_player(ctrl->gs, h->player_id == 1 ? 0 : 1)->har_obj_id);
     a->move_stats[a->selected_move->id].last_dist = fabsf(o->pos.x - o_enemy->pos.x);
     a->blocked = 0;
-    // DEBUG("AI selected move %s", str_c(&selected_move->move_string));
+    // log_debug("AI selected move %s", str_c(&selected_move->move_string));
 }
 
 /**
@@ -1524,7 +1524,7 @@ bool assign_move_by_id(controller *ctrl, int move_id) {
                     continue;
                 }
 
-                // DEBUG("=== assign_move_by_id === id %d", move_id);
+                // log_debug("=== assign_move_by_id === id %d", move_id);
                 set_selected_move(ctrl, move);
                 return true;
             }
@@ -1712,7 +1712,7 @@ void handle_movement(controller *ctrl, ctrl_event **ev) {
 
     // Jump once in a while if they like to jump
     if(jump_chance > 0 && roll_chance(jump_chance) && roll_pref(a->pilot->pref_jump)) {
-        // DEBUG("\033[35mJump chance\033[0m %d", jump_chance);
+        // log_debug("Jump chance %d", jump_chance);
         if(smart_usually(a) && roll_pref(a->pilot->att_jump)) {
             // double jump
             controller_cmd(ctrl, ACT_DOWN, ev);
@@ -1793,7 +1793,7 @@ bool attempt_attack(controller *ctrl, bool highest_damage) {
 
                     // sometimes skip move if it is too powerful for difficulty
                     if(move_too_powerful(a, move)) {
-                        DEBUG("skipping move %s because of difficulty", str_c(&move->move_string));
+                        log_debug("skipping move %s because of difficulty", str_c(&move->move_string));
                         continue;
                     }
                 }
@@ -1814,7 +1814,7 @@ bool attempt_attack(controller *ctrl, bool highest_damage) {
             a->move_stats[i].consecutive /= 2;
         }
 
-        // DEBUG("\033[35mRandom attack\033[0m %d", selected_move->id);
+        // log_debug("Random attack %d", selected_move->id);
         set_selected_move(ctrl, selected_move);
         return true;
     }
@@ -1850,10 +1850,10 @@ bool attempt_charge_attack(controller *ctrl, ctrl_event **ev) {
             return false;
     }
 
-    // DEBUG("\033[35mHAR attempting charge:\033[0m %d", h->id);
+    // log_debug("HAR attempting charge: %d", h->id);
     switch(h->id) {
         case HAR_JAGUAR: {
-            // DEBUG("\033[35mJaguar move:\033[0m Leap");
+            // log_debug("Jaguar move: Leap");
             if(enemy_range >= RANGE_MID && roll_pref(a->pilot->ap_special) && diff_scale(a)) {
                 // Shadow Leap : B,D,F+P
                 int cmds[] = {(o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT : ACT_RIGHT),
@@ -1866,14 +1866,14 @@ bool attempt_charge_attack(controller *ctrl, ctrl_event **ev) {
             chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
         } break;
         case HAR_SHADOW: {
-            // DEBUG("\033[35mShadow move:\033[0m Shadow Grab");
+            // log_debug("Shadow move: Shadow Grab");
             // Shadow Grab       : D,D+P
             int cmds[] = {ACT_DOWN, ACT_STOP, ACT_DOWN, ACT_DOWN | ACT_PUNCH, ACT_PUNCH};
             chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
         } break;
         case HAR_KATANA: {
             if(roll_chance(2) && roll_pref(a->pilot->ap_low)) {
-                // DEBUG("\033[35mKatana move:\033[0m Trip-slide");
+                // log_debug("Katana move: Trip-slide");
                 // Trip-Slide attack : D+B+K
                 int cmds[] = {ACT_DOWN,
                               (o->direction == OBJECT_FACE_RIGHT ? ACT_DOWN | ACT_LEFT : ACT_DOWN | ACT_RIGHT),
@@ -1881,14 +1881,14 @@ bool attempt_charge_attack(controller *ctrl, ctrl_event **ev) {
                 chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
             } else {
                 if(enemy_range >= RANGE_MID && roll_chance(2)) {
-                    // DEBUG("\033[35mKatana move:\033[0m Foward Razor Spin");
+                    // log_debug("Katana move: Foward Razor Spin");
                     // Foward Razor Spin : D,F+K
                     int cmds[] = {ACT_DOWN, (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT),
                                   (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT | ACT_KICK : ACT_LEFT | ACT_KICK),
                                   (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT)};
                     chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
                 } else {
-                    // DEBUG("\033[35mKatana move:\033[0m Rising Blade ");
+                    // log_debug("Katana move: Rising Blade ");
                     if(enemy_range >= RANGE_CLOSE && roll_pref(a->pilot->ap_special) && diff_scale(a)) {
                         // Triple Blade : B,D,F+P
                         int cmds[] = {(o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT : ACT_RIGHT),
@@ -1905,7 +1905,7 @@ bool attempt_charge_attack(controller *ctrl, ctrl_event **ev) {
             }
         } break;
         case HAR_FLAIL: {
-            // DEBUG("\033[35mFlail move:\033[0m Charging Punch");
+            // log_debug("Flail move: Charging Punch");
             if(enemy_range > RANGE_MID && roll_pref(a->pilot->ap_special) && diff_scale(a)) {
                 // Shadow Punch : D,B,B,P
                 int cmds[] = {ACT_DOWN,
@@ -1920,7 +1920,7 @@ bool attempt_charge_attack(controller *ctrl, ctrl_event **ev) {
             chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
         } break;
         case HAR_THORN: {
-            // DEBUG("\033[35mThorn move:\033[0m Spike-charge");
+            // log_debug("Thorn move: Spike-charge");
             // Spike-Charge : F,F+P
             int cmds[] = {(o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT),
                           (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT),
@@ -1929,7 +1929,7 @@ bool attempt_charge_attack(controller *ctrl, ctrl_event **ev) {
             chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
         } break;
         case HAR_PYROS: {
-            // DEBUG("\033[35mPyros move:\033[0m Thrust");
+            // log_debug("Pyros move: Thrust");
             if(enemy_range > RANGE_MID && roll_pref(a->pilot->ap_special) && diff_scale(a)) {
                 // Shadow Thrust : F,F,F+P
                 int cmds[] = {(o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT), ACT_STOP};
@@ -1943,7 +1943,7 @@ bool attempt_charge_attack(controller *ctrl, ctrl_event **ev) {
             chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
         } break;
         case HAR_ELECTRA: {
-            // DEBUG("\033[35mElectra move:\033[0m Rolling Thunder");
+            // log_debug("Electra move: Rolling Thunder");
             if(enemy_range >= RANGE_MID && roll_pref(a->pilot->ap_special) && diff_scale(a)) {
                 // Super R.T. : B,D,F,F+P
                 int cmds[] = {(o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT : ACT_RIGHT), ACT_DOWN};
@@ -1958,7 +1958,7 @@ bool attempt_charge_attack(controller *ctrl, ctrl_event **ev) {
         } break;
         case HAR_CHRONOS: {
             if(enemy_range >= RANGE_MID && roll_pref(a->pilot->ap_special) && diff_scale(a)) {
-                // DEBUG("\033[35mChronos move:\033[0m Teleport");
+                // log_debug("Chronos move: Teleport");
                 // Teleportation : D,P
                 int cmds[] = {ACT_DOWN, ACT_STOP, ACT_PUNCH};
                 chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
@@ -1966,7 +1966,7 @@ bool attempt_charge_attack(controller *ctrl, ctrl_event **ev) {
                 int tacs[] = {TACTIC_GRAB, TACTIC_PUSH, TACTIC_SHOOT, TACTIC_SPAM, TACTIC_TRIP};
                 chain_consider_tactics(ctrl, tacs, N_ELEMENTS(tacs));
             } else {
-                // DEBUG("\033[35mChronos move\033[0m: Trip-slide");
+                // log_debug("Chronos move: Trip-slide");
                 // Trip-Slide attack : D,B+K
                 int cmds[] = {ACT_DOWN,
                               (o->direction == OBJECT_FACE_RIGHT ? ACT_DOWN | ACT_LEFT : ACT_DOWN | ACT_RIGHT),
@@ -1976,12 +1976,12 @@ bool attempt_charge_attack(controller *ctrl, ctrl_event **ev) {
         } break;
         case HAR_SHREDDER: {
             if(enemy_range > RANGE_MID && roll_pref(a->pilot->att_jump) && diff_scale(a)) {
-                // DEBUG("\033[35mShredder move:\033[0m Flip-kick");
+                // log_debug("Shredder move: Flip-kick");
                 // Flip Kick : D,D+K
                 int cmds[] = {ACT_DOWN, ACT_STOP, ACT_DOWN, ACT_DOWN | ACT_KICK, ACT_KICK};
                 chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
             } else {
-                // DEBUG("\033[35mShredder move:\033[0m Head-butt");
+                // log_debug("Shredder move: Head-butt");
                 if(enemy_range >= RANGE_MID && roll_pref(a->pilot->ap_special) && diff_scale(a)) {
                     // Shadow Head-Butt : B,D,F+P
                     int cmds[] = {(o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT : ACT_RIGHT),
@@ -1998,7 +1998,7 @@ bool attempt_charge_attack(controller *ctrl, ctrl_event **ev) {
         } break;
         case HAR_GARGOYLE: {
             if(enemy_range > RANGE_MID && roll_pref(a->pilot->att_jump) && diff_scale(a)) {
-                // DEBUG("\033[35mGargoyle move:\033[0m Wing-charge");
+                // log_debug("Gargoyle move: Wing-charge");
                 // Wing Charge : F,F,P
                 int cmds[] = {(o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT),
                               (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT),
@@ -2006,7 +2006,7 @@ bool attempt_charge_attack(controller *ctrl, ctrl_event **ev) {
                               ACT_PUNCH};
                 chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
             } else {
-                // DEBUG("\033[35mGargoyle move:\033[0m Talon");
+                // log_debug("Gargoyle move: Talon");
                 int cmds[] = {(o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT : ACT_RIGHT),
                               (o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT | ACT_DOWN : ACT_RIGHT | ACT_DOWN)};
                 if(enemy_range >= RANGE_MID && roll_pref(a->pilot->ap_special) && diff_scale(a)) {
@@ -2054,17 +2054,17 @@ bool attempt_push_attack(controller *ctrl, ctrl_event **ev) {
             return false;
     }
 
-    // DEBUG("\033[35mHAR attempting push:\033[0m %d", h->id);
+    // log_debug("HAR attempting push: %d", h->id);
     switch(h->id) {
         case HAR_JAGUAR: {
-            // DEBUG("\033[35mJaguar move:\033[0m High Kick");
+            // log_debug("Jaguar move: High Kick");
             // High Kick : B+K
             int cmds[] = {(o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT : ACT_RIGHT),
                           (o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT | ACT_KICK : ACT_RIGHT | ACT_KICK), ACT_KICK};
             chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
         } break;
         case HAR_KATANA: {
-            // DEBUG("\033[35mKatana move:\033[0m Rising Blade");
+            // log_debug("Katana move: Rising Blade");
             if(enemy_range >= RANGE_CLOSE && roll_pref(a->pilot->ap_special) && diff_scale(a)) {
                 // Triple Blade : B,D,F+P
                 int cmds[] = {(o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT : ACT_RIGHT),
@@ -2078,19 +2078,19 @@ bool attempt_push_attack(controller *ctrl, ctrl_event **ev) {
         } break;
         case HAR_FLAIL: {
             if(roll_chance(3)) {
-                // DEBUG("\033[35mFlail move:\033[0m Slow Swing Chains");
+                // log_debug("Flail move: Slow Swing Chains");
                 // Slow Swing Chain : D,K
                 int cmds[] = {ACT_DOWN, ACT_STOP, ACT_KICK};
                 chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
             } else {
-                // DEBUG("\033[35mFlail move:\033[0m Swinging Chains");
+                // log_debug("Flail move: Swinging Chains");
                 // Swinging Chains : D,P
                 int cmds[] = {ACT_DOWN, ACT_STOP, ACT_PUNCH};
                 chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
             }
         } break;
         case HAR_THORN: {
-            // DEBUG("\033[35mThorn move:\033[0m Speed Kick");
+            // log_debug("Thorn move: Speed Kick");
             if(enemy_range >= RANGE_CLOSE && roll_pref(a->pilot->ap_special) && diff_scale(a)) {
                 // Shadow Kick : B,D,F+K
                 int cmds[] = {(o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT : ACT_RIGHT),
@@ -2105,13 +2105,13 @@ bool attempt_push_attack(controller *ctrl, ctrl_event **ev) {
             chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
         } break;
         case HAR_PYROS: {
-            // DEBUG("\033[35mPyros move:\033[0m Fire Spin");
+            // log_debug("Pyros move: Fire Spin");
             // Fire Spin : D+P
             int cmds[] = {ACT_DOWN, ACT_STOP, ACT_PUNCH};
             chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
         } break;
         case HAR_ELECTRA: {
-            // DEBUG("\033[35mElectra move:\033[0m Electric Shards");
+            // log_debug("Electra move: Electric Shards");
             // Electric Shards : D,F+P
             int cmds[] = {ACT_DOWN, (o->direction == OBJECT_FACE_RIGHT ? ACT_DOWN | ACT_RIGHT : ACT_DOWN | ACT_LEFT),
                           (o->direction == OBJECT_FACE_RIGHT ? ACT_RIGHT : ACT_LEFT),
@@ -2121,12 +2121,12 @@ bool attempt_push_attack(controller *ctrl, ctrl_event **ev) {
         } break;
         case HAR_NOVA: {
             if(diff_scale(a)) {
-                // DEBUG("\033[35mNova move:\033[0m Earthquake Slam");
+                // log_debug("Nova move: Earthquake Slam");
                 // Earthquake Slam : D,D,P
                 int cmds[] = {ACT_DOWN, ACT_STOP, ACT_DOWN, ACT_PUNCH};
                 chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
             } else {
-                // DEBUG("\033[35mNova move:\033[0m Heavy Kick");
+                // log_debug("Nova move: Heavy Kick");
                 // Heavy Kick : B+K
                 int cmds[] = {(o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT | ACT_KICK : ACT_RIGHT | ACT_KICK),
                               ACT_KICK};
@@ -2163,7 +2163,7 @@ bool attempt_trip_attack(controller *ctrl, ctrl_event **ev) {
             return false;
     }
 
-    // DEBUG("\033[35mHar move:\033[0m Trip");
+    // log_debug("Har move: Trip");
     // Standard Trip : D+B+K
     int cmds[] = {ACT_DOWN, (o->direction == OBJECT_FACE_RIGHT ? ACT_DOWN | ACT_LEFT : ACT_DOWN | ACT_RIGHT),
                   (o->direction == OBJECT_FACE_RIGHT ? ACT_LEFT | ACT_KICK : ACT_RIGHT | ACT_KICK), ACT_KICK};
@@ -2188,7 +2188,7 @@ bool attempt_projectile_attack(controller *ctrl, ctrl_event **ev) {
         controller_cmd(ctrl, ACT_STOP, ev);
     }
 
-    // DEBUG("\033[35mHAR attempting projectile:\033[0m %d", h->id);
+    // log_debug("HAR attempting projectile: %d", h->id);
     switch(h->id) {
         case HAR_JAGUAR:     // Concussion Cannon : D, B+P
         case HAR_ELECTRA:    // Ball Lightning : D, B+P
@@ -2273,7 +2273,7 @@ bool handle_queued_tactic(controller *ctrl, ctrl_event **ev) {
                     tactic->move_timer--;
                 } else {
                     tactic->move_timer = 0;
-                    // DEBUG("\033[34mMovement close success\033[0m: %d", h->id);
+                    // log_debug("Movement close success: %d", h->id);
                     if(tactic->attack_type == 0 && smart_usually(a)) {
                         queue_tactic(ctrl, TACTIC_GRAB);
                     }
@@ -2300,7 +2300,7 @@ bool handle_queued_tactic(controller *ctrl, ctrl_event **ev) {
                     tactic->move_timer--;
                 }
 
-                // if (tactic->move_timer == 0) DEBUG("\033[34mMovement avoid finished\033[0m: %d", h->id);
+                // if (tactic->move_timer == 0) log_debug("Movement avoid finished: %d", h->id);
                 break;
             case MOVE_JUMP:
             case MOVE_HIGH_JUMP:
@@ -2330,7 +2330,7 @@ bool handle_queued_tactic(controller *ctrl, ctrl_event **ev) {
                     tactic->move_timer = 0;
                 }
 
-                // if (tactic->move_timer == 0) DEBUG("\033[34mMovement jump finished\033[0m: %d", h->id);
+                // if (tactic->move_timer == 0) log_debug("Movement jump finished: %d", h->id);
                 break;
             case MOVE_BLOCK:
                 if(wall_close || har_is_crouching(h)) {
@@ -2344,10 +2344,10 @@ bool handle_queued_tactic(controller *ctrl, ctrl_event **ev) {
                 controller_cmd(ctrl, a->cur_act, ev);
                 tactic->move_timer--;
 
-                // if (tactic->move_timer == 0) DEBUG("\033[34mMovement block finished\033[0m: %d", h->id);
+                // if (tactic->move_timer == 0) log_debug("Movement block finished: %d", h->id);
                 break;
             default:
-                // DEBUG("\033[31mFlushing invalid move type\033[0m: %d", h->id);
+                // log_debug("Flushing invalid move type: %d", h->id);
                 tactic->move_type = 0;
                 tactic->move_timer = 0;
                 acted = false;
@@ -2366,7 +2366,7 @@ bool handle_queued_tactic(controller *ctrl, ctrl_event **ev) {
 
                     if(assign_move_by_id(ctrl, tactic->attack_id)) {
                         reset_tactic_state(a);
-                        // DEBUG("\033[32mSpecific attack success\033[0m: %d", h->id);
+                        // log_debug("Specific attack success: %d", h->id);
                     }
                 } break;
                 case ATTACK_TRIP: {
@@ -2390,7 +2390,7 @@ bool handle_queued_tactic(controller *ctrl, ctrl_event **ev) {
 
                     if(attack_cat > 0) {
                         reset_tactic_state(a);
-                        // DEBUG("\033[32mGrab attack success\033[0m: %d", h->id);
+                        // log_debug("Grab attack success: %d", h->id);
 
                         // chain another tactic
                         if(smart_sometimes(a)) {
@@ -2421,7 +2421,7 @@ bool handle_queued_tactic(controller *ctrl, ctrl_event **ev) {
                     int light_cat = roll_chance(2) ? CAT_BASIC : CAT_MEDIUM;
                     if(assign_move_by_cat(ctrl, light_cat, false)) {
                         reset_tactic_state(a);
-                        // DEBUG("\033[32mLight attack success\033[0m: %d", h->id);
+                        // log_debug("Light attack success: %d", h->id);
 
                         // chain another tactic
                         if(smart_sometimes(a)) {
@@ -2448,7 +2448,7 @@ bool handle_queued_tactic(controller *ctrl, ctrl_event **ev) {
                     int heavy_cat = roll_chance(2) ? CAT_MEDIUM : CAT_HIGH;
                     if(assign_move_by_cat(ctrl, heavy_cat, true)) {
                         reset_tactic_state(a);
-                        // DEBUG("\033[32mHeavy attack success\033[0m: %d", h->id);
+                        // log_debug("Heavy attack success: %d", h->id);
 
                         // chain another tactic
                         if(smart_sometimes(a)) {
@@ -2470,7 +2470,7 @@ bool handle_queued_tactic(controller *ctrl, ctrl_event **ev) {
                 } break;
                 case ATTACK_JUMP: {
                     if(!in_attempt_range && a->tactic->attack_timer > 0) {
-                        // DEBUG("\033[35mWaiting for jump attack range\033[0m");
+                        // log_debug("Waiting for jump attack range");
                         // when not in range we wait until last tick of attack timer
                         // that way the attack won't fizzle out before we reach them
                         return acted;
@@ -2478,7 +2478,7 @@ bool handle_queued_tactic(controller *ctrl, ctrl_event **ev) {
 
                     if(attempt_attack(ctrl, false)) {
                         reset_tactic_state(a);
-                        // DEBUG("\033[32mJump attack success\033[0m: %d", h->id);
+                        // log_debug("Jump attack success: %d", h->id);
 
                         // chain another tactic
                         if(smart_usually(a)) {
@@ -2540,7 +2540,7 @@ bool handle_queued_tactic(controller *ctrl, ctrl_event **ev) {
                 case ATTACK_RANDOM: {
                     if(attempt_attack(ctrl, false)) {
                         reset_tactic_state(a);
-                        // DEBUG("\033[32mRandom attack success\033[0m: %d", h->id);
+                        // log_debug("Random attack success: %d", h->id);
 
                         // chain another tactic
                         if(smart_usually(a)) {
@@ -2561,7 +2561,7 @@ bool handle_queued_tactic(controller *ctrl, ctrl_event **ev) {
                     }
                 } break;
                 default:
-                    DEBUG("\033[31mFlushing invalid attack type\033[0m: %d", h->id);
+                    log_debug("Flushing invalid attack type: %d", h->id);
                     tactic->attack_type = 0;
                     tactic->attack_timer = 0;
             }
@@ -2569,7 +2569,7 @@ bool handle_queued_tactic(controller *ctrl, ctrl_event **ev) {
     } else {
         // reset queued tactic
         reset_tactic_state(a);
-        // DEBUG("\033[31mFlushing failed tactic queue\033[0m: %d", h->id);
+        // log_debug("Flushing failed tactic queue: %d", h->id);
     }
 
     return acted;
@@ -2627,7 +2627,7 @@ int ai_controller_poll(controller *ctrl, ctrl_event **ev) {
     if(a->selected_move) {
         // finish doing the selected move first
         process_selected_move(ctrl, ev);
-        // DEBUG("=== POLL === process_selected_move");
+        // log_debug("=== POLL === process_selected_move");
         return 0;
     }
 
@@ -2644,7 +2644,7 @@ int ai_controller_poll(controller *ctrl, ctrl_event **ev) {
         int enemy_range = get_enemy_range(ctrl);
         if((enemy_range == RANGE_CRAMPED || (enemy_range == RANGE_CLOSE && a->thrown >= 2)) &&
            (assign_move_by_cat(ctrl, CAT_LOW, false) || attempt_attack(ctrl, false))) {
-            // DEBUG("\033[35mSpamming random attacks to avoid being thrown\033[0m");
+            // log_debug("Spamming random attacks to avoid being thrown");
             reset_tactic_state(a);
             return 0;
         }
@@ -2670,7 +2670,7 @@ int ai_controller_poll(controller *ctrl, ctrl_event **ev) {
     // attempt a random attack
     if((roll_chance(RANDOM_ATTACK_CHANCE) || diff_scale(a)) && (enemy_range <= RANGE_CLOSE || dumb_sometimes(a)) &&
        attempt_attack(ctrl, false)) {
-        // DEBUG("\033[32mRandom attack\033[0m: %d", h->id);
+        // log_debug("Random attack: %d", h->id);
         // reset movement act timer
         reset_act_timer(a);
         return 0;
@@ -2679,12 +2679,12 @@ int ai_controller_poll(controller *ctrl, ctrl_event **ev) {
     // handle movement
     if(can_move)
         handle_movement(ctrl, ev);
-    // DEBUG("=== POLL === handle_movement");
+    // log_debug("=== POLL === handle_movement");
 
     // queue a random tactic for next poll
     if(a->last_move_id > 0 && (roll_chance(RANDOM_ATTACK_CHANCE) && diff_scale(a)) && a->tactic->tactic_type == 0 &&
        can_move) {
-        // DEBUG("\033[35mAttempt to queue random tactic[0m");
+        // log_debug("Attempt to queue random tactic[0m");
         int tacs[] = {TACTIC_SHOOT, TACTIC_CLOSE, TACTIC_FLY, TACTIC_PUSH, TACTIC_TRIP, TACTIC_GRAB, TACTIC_QUICK};
         chain_consider_tactics(ctrl, tacs, N_ELEMENTS(tacs));
     }

@@ -268,7 +268,7 @@ void har_set_ani(object *obj, int animation_id, int repeat) {
     object_set_animation(obj, &move->ani);
     obj->animation_state.shadow_corner_hack = has_corner_hack;
     if(s != NULL && strcmp(s, "!") != 0 && strcmp(s, "0") != 0 && h->delay > 0) {
-        DEBUG("delaying move %d %s by %d ticks", move->id, s, h->delay);
+        log_debug("delaying move %d %s by %d ticks", move->id, s, h->delay);
         object_set_delay(obj, h->delay);
     }
 
@@ -454,7 +454,7 @@ void har_move(object *obj) {
     if(obj->pos.x <= ARENA_LEFT_WALL || obj->pos.x >= ARENA_RIGHT_WALL) {
         h->is_wallhugging = 1;
         if(player_frame_isset(obj, "cw") && player_frame_isset(obj, "d")) {
-            DEBUG("disabling d tag on animation because of wall hit");
+            log_debug("disabling d tag on animation because of wall hit");
             obj->animation_state.disable_d = 1;
         }
 
@@ -489,18 +489,18 @@ void har_move(object *obj) {
             object *obj_enemy =
                 game_state_find_object(obj->gs, game_state_get_player(obj->gs, h->player_id == 1 ? 0 : 1)->har_obj_id);
             if(object_get_direction(obj) == object_get_direction(obj_enemy)) {
-                DEBUG("HARS facing same direction");
+                log_debug("HARS facing same direction");
                 vec2i pos = object_get_pos(obj);
                 vec2i pos_enemy = object_get_pos(obj_enemy);
                 if(pos.x > pos_enemy.x) {
-                    DEBUG("HARS facing player %d LEFT", h->player_id);
+                    log_debug("HARS facing player %d LEFT", h->player_id);
                     object_set_direction(obj, OBJECT_FACE_LEFT);
                 } else {
-                    DEBUG("HARS facing player %d RIGHT", h->player_id);
+                    log_debug("HARS facing player %d RIGHT", h->player_id);
                     object_set_direction(obj, OBJECT_FACE_RIGHT);
                 }
 
-                DEBUG("HARS facing enemy player %d", abs(h->player_id - 1));
+                log_debug("HARS facing enemy player %d", abs(h->player_id - 1));
                 object_set_direction(obj_enemy, object_get_direction(obj) * -1);
             }
             /*}*/
@@ -573,7 +573,8 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
         if(player->pilot->photo) {
             // in tournament mode, damage is mitigated by armor
             // (Armor + 2.5) * .25
-            DEBUG("applying %f to %d modulated by armor %f", damage, h->health, 0.25f * (2.5f + player->pilot->armor));
+            log_debug("applying %f to %d modulated by armor %f", damage, h->health,
+                      0.25f * (2.5f + player->pilot->armor));
             h->health -= damage / (0.25f * (2.5f + player->pilot->armor));
         } else {
             h->health -= damage;
@@ -586,7 +587,7 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
         h->endurance = 0.0f;
     }
 
-    DEBUG("applying %f stun damage to %f", stun, h->endurance);
+    log_debug("applying %f stun damage to %f", stun, h->endurance);
     h->endurance -= stun;
     if(h->endurance < 1.0f) {
         if(h->state == STATE_STUNNED) {
@@ -607,8 +608,8 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
     // If damage is high enough, slow down the game for a bit
     // Also slow down game more for last shot
     if(damage > 24.0f || h->health == 0) {
-        DEBUG("Slowdown: Slowing from %d to %d.", game_state_get_speed(obj->gs),
-              h->health == 0 ? game_state_get_speed(obj->gs) - 10 : game_state_get_speed(obj->gs) - 6);
+        log_debug("Slowdown: Slowing from %d to %d.", game_state_get_speed(obj->gs),
+                  h->health == 0 ? game_state_get_speed(obj->gs) - 10 : game_state_get_speed(obj->gs) - 6);
         game_state_slowdown(obj->gs, 12,
                             h->health == 0 ? game_state_get_speed(obj->gs) - 10 : game_state_get_speed(obj->gs) - 6);
     }
@@ -640,7 +641,7 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
                 h->state = STATE_FALLEN;
             }
         } else if(object_is_airborne(obj)) {
-            DEBUG("airborne knockback");
+            log_debug("airborne knockback");
             // append the 'airborne knockback' string to the hit string, replacing the final frame
             size_t last_line = 0;
             if(!str_last_of(string, '-', &last_line)) {
@@ -979,8 +980,8 @@ void har_debug(object *obj) {
         if(cc->frame_index != obj->cur_sprite_id)
             continue;
         image_set_pixel(&img, pos_a.x + (cc->pos.x * flip), pos_a.y + cc->pos.y, c);
-        // DEBUG("%d drawing hit point at %d %d ->%d %d", obj->cur_sprite->id, pos_a.x, pos_a.y, pos_a.x + (cc->pos.x *
-        // flip), pos_a.y + cc->pos.y);
+        // log_debug("%d drawing hit point at %d %d ->%d %d", obj->cur_sprite->id, pos_a.x, pos_a.y, pos_a.x +
+        // (cc->pos.x *// flip), pos_a.y + cc->pos.y);
     }
 
     image_set_pixel(&img, pos_a.x, pos_a.y, red);
@@ -1040,7 +1041,7 @@ void har_collide_with_har(object *obj_a, object *obj_b, int loop) {
         vec2i hit_coord2 = vec2i_create(0, 0);
 
         if(b->damage_done == 0 && loop == 0 && intersect_sprite_hitpoint(obj_b, obj_a, level, &hit_coord2)) {
-            DEBUG("both hars hit at the same time!");
+            log_debug("both hars hit at the same time!");
             har_collide_with_har(obj_b, obj_a, 1);
         }
 
@@ -1082,12 +1083,12 @@ void har_collide_with_har(object *obj_a, object *obj_b, int loop) {
             har_spawn_scrap(obj_b, hit_coord, move->block_stun);
         }
 
-        DEBUG("HAR %s to HAR %s collision at %d,%d!", har_get_name(a->id), har_get_name(b->id), hit_coord.x,
-              hit_coord.y);
-        DEBUG("HAR %s animation set to %s", har_get_name(b->id), str_c(&move->footer_string));
+        log_debug("HAR %s to HAR %s collision at %d,%d!", har_get_name(a->id), har_get_name(b->id), hit_coord.x,
+                  hit_coord.y);
+        log_debug("HAR %s animation set to %s", har_get_name(b->id), str_c(&move->footer_string));
 
         if(move->next_move) {
-            DEBUG("HAR %s going to next move %d", har_get_name(b->id), move->next_move);
+            log_debug("HAR %s going to next move %d", har_get_name(b->id), move->next_move);
             object_set_animation(obj_a, &af_get_move(a->af_data, move->next_move)->ani);
             object_set_repeat(obj_a, 0);
             // bail out early, the next move can still brutalize the oppopent so don't set them immune to further damage
@@ -1142,11 +1143,11 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
             return;
         }
 
-        DEBUG("PROJECTILE %d to HAR %s collision at %d,%d!", object_get_animation(o_pjt)->id, har_get_name(h->id),
-              hit_coord.x, hit_coord.y);
+        log_debug("PROJECTILE %d to HAR %s collision at %d,%d!", object_get_animation(o_pjt)->id, har_get_name(h->id),
+                  hit_coord.x, hit_coord.y);
 
         if(move->next_move) {
-            DEBUG("PROJECTILE %d going to next move %d on HIT", object_get_animation(o_pjt)->id, move->next_move);
+            log_debug("PROJECTILE %d going to next move %d on HIT", object_get_animation(o_pjt)->id, move->next_move);
             object_set_animation(o_pjt, &af_get_move(prog_owner_af_data, move->next_move)->ani);
             object_set_repeat(o_pjt, 0);
             return;
@@ -1157,7 +1158,7 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
         object_set_vel(o_har, vel);
 
         // Just take damage normally if there is no footer string in successor
-        DEBUG("projectile dealt damage of %f", move->damage);
+        log_debug("projectile dealt damage of %f", move->damage);
         har_take_damage(o_har, &move->footer_string, move->damage, move->stun);
 
         projectile_mark_hit(o_pjt);
@@ -1187,8 +1188,8 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
             object_set_repeat(o_pjt, 0);
             o_pjt->animation_state.finished = 0;
             projectile_clear_hit(o_pjt);
-            DEBUG("SUCCESSOR: Selecting anim %d with string %s", object_get_animation(o_pjt)->id,
-                  str_c(&object_get_animation(o_pjt)->animation_string));
+            log_debug("SUCCESSOR: Selecting anim %d with string %s", object_get_animation(o_pjt)->id,
+                      str_c(&object_get_animation(o_pjt)->animation_string));
         }
     }
 }
@@ -1358,7 +1359,7 @@ void har_tick(object *obj) {
         if(hit && wall_flag) {
             af_move *move = af_get_move(h->af_data, obj->cur_animation->id);
             if(move->next_move) {
-                DEBUG("wall hit chaining to next animation %d", move->next_move);
+                log_debug("wall hit chaining to next animation %d", move->next_move);
                 har_set_ani(obj, move->next_move, 0);
             }
         }
@@ -1395,7 +1396,7 @@ void har_tick(object *obj) {
     }
 
     if(pos.y < ARENA_FLOOR && h->state == STATE_RECOIL) {
-        DEBUG("switching to fallen");
+        log_debug("switching to fallen");
         h->state = STATE_FALLEN;
         har_event_recover(h, ctrl);
     }
@@ -1567,12 +1568,12 @@ af_move *match_move(object *obj, char *inputs) {
                 }
 
                 if(h->state != STATE_JUMPING && move->pos_constraints & 0x2) {
-                    DEBUG("Position contraint prevents move when not jumping!");
+                    log_debug("Position contraint prevents move when not jumping!");
                     // required to be jumping
                     continue;
                 }
                 if(h->is_wallhugging != 1 && move->pos_constraints & 0x1) {
-                    DEBUG("Position contraint prevents move when not wallhugging!");
+                    log_debug("Position contraint prevents move when not wallhugging!");
                     // required to be wall hugging
                     continue;
                 }
@@ -1612,7 +1613,7 @@ af_move *match_move(object *obj, char *inputs) {
                         }
                     }
                     if(player_get_current_tick(obj) >= player_get_len_ticks(obj)) {
-                        DEBUG("enqueueing %d %s", i, str_c(&move->move_string));
+                        log_debug("enqueueing %d %s", i, str_c(&move->move_string));
                         h->enqueued = i;
                         return NULL;
                     }
@@ -1621,11 +1622,11 @@ af_move *match_move(object *obj, char *inputs) {
                         // not allowed
                         continue;
                     }
-                    DEBUG("CHAINING");
+                    log_debug("CHAINING");
                 }
 
-                DEBUG("matched move %d with string %s", i, str_c(&move->move_string));
-                /*DEBUG("input was %s", h->inputs);*/
+                log_debug("matched move %d with string %s", i, str_c(&move->move_string));
+                /*log_debug("input was %s", h->inputs);*/
                 return move;
             }
         }
@@ -1774,11 +1775,11 @@ int har_act(object *obj, int act_type) {
         }
 
         if(move->category == CAT_SCRAP) {
-            DEBUG("going to scrap state");
+            log_debug("going to scrap state");
             h->state = STATE_SCRAP;
             har_event_scrap(h, ctrl);
         } else if(move->category == CAT_DESTRUCTION) {
-            DEBUG("going to destruction state");
+            log_debug("going to destruction state");
             h->state = STATE_DESTRUCTION;
             har_event_destruction(h, ctrl);
         } else {
@@ -1804,10 +1805,10 @@ int har_act(object *obj, int act_type) {
         if(obj->pos.y < ARENA_FLOOR) {
             // XXX I think 'i' is for 'not interruptable'
             if(h->state < STATE_JUMPING && !player_frame_isset(obj, "i")) {
-                DEBUG("standing move led to airborne one");
+                log_debug("standing move led to airborne one");
                 h->state = STATE_JUMPING;
             } else if(h->state != STATE_JUMPING) {
-                DEBUG("state is %d", h->state);
+                log_debug("state is %d", h->state);
             }
         }
         return 0;
@@ -1928,7 +1929,7 @@ void har_finished(object *obj) {
     har *h = object_get_userdata(obj);
     controller *ctrl = game_player_get_ctrl(game_state_get_player(obj->gs, h->player_id));
     if(h->enqueued) {
-        DEBUG("playing enqueued animation %d", h->enqueued);
+        log_debug("playing enqueued animation %d", h->enqueued);
         har_set_ani(obj, h->enqueued, 0);
         h->enqueued = 0;
         h->executing_move = 1;
@@ -2036,13 +2037,13 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     // HP is
     // (HAR hp * (Pilot Endurance + 25) / 35) * 1.1
     local->health_max = local->health = (af_data->health * (pilot->endurance + 25) / 35) * 1.1;
-    // DEBUG("HAR health is %d with pilot endurance %d and base health %d", local->health, pilot->endurance,
+    // log_debug("HAR health is %d with pilot endurance %d and base health %d", local->health, pilot->endurance,
     // af_data->health);
     //  The stun cap is calculated as follows
     //  HAR Endurance * 3.6 * (Pilot Endurance + 16) / 23
     local->endurance_max = local->endurance = af_data->endurance * 3.6 * (pilot->endurance + 16) / 23;
-    DEBUG("HAR endurance is %f with pilot endurance %d and base endurance %f", local->endurance, pilot->endurance,
-          af_data->endurance);
+    log_debug("HAR endurance is %f with pilot endurance %d and base endurance %f", local->endurance, pilot->endurance,
+              af_data->endurance);
     // fwd speed = (Agility + 20) / 30 * fwd speed
     // back speed = (Agility + 20) / 30 * back speed
     // up speed = (Agility + 35) / 45 * up speed (edited)
@@ -2065,7 +2066,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     local->back_speed = (((float)gp->pilot->agility + 20) / 30) * af_data->reverse_speed;
     // TODO calculate a better value here
     local->stride = lrint(1 + (gp->pilot->agility / 20));
-    DEBUG("setting HAR stride to %d", local->stride);
+    log_debug("setting HAR stride to %d", local->stride);
     local->close = 0;
     local->hard_close = 0;
     local->state = STATE_STANDING;

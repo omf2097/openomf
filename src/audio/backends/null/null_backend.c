@@ -67,12 +67,12 @@ static void play_music(void *userdata, const char *file_name) {
 
 static bool setup_backend_context(void *userdata, unsigned sample_rate, bool mono, unsigned resampler,
                                   float music_volume, float sound_volume) {
-    INFO("NULL Player initialized!");
+    log_info("NULL Player initialized!");
     return true;
 }
 
 static void close_backend_context(void *userdata) {
-    INFO("NULL Player closed!");
+    log_info("NULL Player closed!");
 }
 
 void null_audio_backend_set_callbacks(audio_backend *sdl_backend) {

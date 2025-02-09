@@ -41,7 +41,7 @@ texture_atlas *atlas_create(GLuint tex_unit, uint16_t width, uint16_t height) {
     atlas->texture_id = texture_create(tex_unit, width, height, GL_R8, GL_RED);
     zone item = {0, 0, width, height};
     vector_append(&atlas->free_space, &item);
-    DEBUG("Texture atlas %dx%d created", width, height);
+    log_debug("Texture atlas %dx%d created", width, height);
     return atlas;
 }
 
@@ -53,7 +53,7 @@ void atlas_free(texture_atlas **atlas) {
         texture_free(obj->tex_unit, obj->texture_id);
         omf_free(obj);
         *atlas = NULL;
-        DEBUG("Texture atlas freed");
+        log_debug("Texture atlas freed");
     }
 }
 
@@ -129,7 +129,7 @@ bool atlas_insert(texture_atlas *atlas, const char *bytes, uint16_t w, uint16_t 
     zone free;
     int index;
     if(!find_free_space(atlas, w, h, &index, &free)) {
-        PERROR("Texture atlas has no room for %dx%d area", w, h);
+        log_error("Texture atlas has no room for %dx%d area", w, h);
         return false;
     }
 
@@ -194,5 +194,5 @@ void atlas_reset(texture_atlas *atlas) {
     vector_clear(&atlas->free_space);
     zone item = {0, 0, atlas->w, atlas->h};
     vector_append(&atlas->free_space, &item);
-    INFO("Texture atlas reset");
+    log_info("Texture atlas reset");
 }

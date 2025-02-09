@@ -13,7 +13,7 @@
 #include "utils/log.h"
 
 void lab_menu_difficultyselect_aluminium(component *c, void *userdata) {
-    DEBUG("ALUMINIUM");
+    log_debug("ALUMINIUM");
     scene *s = userdata;
     game_player *player1 = game_state_get_player(s->gs, 0);
     player1->pilot->difficulty = 0;
@@ -21,7 +21,7 @@ void lab_menu_difficultyselect_aluminium(component *c, void *userdata) {
 }
 
 void lab_menu_difficultyselect_iron(component *c, void *userdata) {
-    DEBUG("IRON");
+    log_debug("IRON");
     scene *s = userdata;
     game_player *player1 = game_state_get_player(s->gs, 0);
     player1->pilot->difficulty = 1;
@@ -29,7 +29,7 @@ void lab_menu_difficultyselect_iron(component *c, void *userdata) {
 }
 
 void lab_menu_difficultyselect_steel(component *c, void *userdata) {
-    DEBUG("STEEL");
+    log_debug("STEEL");
     scene *s = userdata;
     game_player *player1 = game_state_get_player(s->gs, 0);
     player1->pilot->difficulty = 2;
@@ -37,7 +37,7 @@ void lab_menu_difficultyselect_steel(component *c, void *userdata) {
 }
 
 void lab_menu_difficultyselect_heavy(component *c, void *userdata) {
-    DEBUG("HEAVY");
+    log_debug("HEAVY");
     scene *s = userdata;
     game_player *player1 = game_state_get_player(s->gs, 0);
     player1->pilot->difficulty = 3;

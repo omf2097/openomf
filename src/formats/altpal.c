@@ -21,10 +21,10 @@ int altpals_init(void) {
         goto error_0;
     }
     if(altpals_load(altpals, filename) != SD_SUCCESS) {
-        PERROR("Unable to load altpals file '%s'!", filename);
+        log_error("Unable to load altpals file '%s'!", filename);
         goto error_1;
     }
-    INFO("Loaded altpals file '%s'.", filename);
+    log_info("Loaded altpals file '%s'.", filename);
     return 0;
 
 error_1:

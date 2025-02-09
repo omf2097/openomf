@@ -117,17 +117,17 @@ int game_state_create(game_state *gs, engine_init_flags *init_flags) {
         sd_rec_create(&rec);
         int ret = sd_rec_load(&rec, init_flags->rec_file);
         if(ret != SD_SUCCESS) {
-            PERROR("Unable to load recording %s.", init_flags->rec_file);
+            log_error("Unable to load recording %s.", init_flags->rec_file);
             goto error_0;
         }
 
         nscene = SCENE_ARENA0 + rec.arena_id;
-        DEBUG("playing recording file %s", init_flags->rec_file);
+        log_debug("playing recording file %s", init_flags->rec_file);
         gs->this_id = nscene;
         gs->next_id = nscene;
 
         if(scene_create(gs->sc, gs, nscene)) {
-            PERROR("Error while loading scene %d.", nscene);
+            log_error("Error while loading scene %d.", nscene);
             goto error_0;
         }
 
@@ -145,7 +145,7 @@ int game_state_create(game_state *gs, engine_init_flags *init_flags) {
         _setup_rec_controller(gs, 0, &rec);
         _setup_rec_controller(gs, 1, &rec);
         if(arena_create(gs->sc)) {
-            PERROR("Error while creating arena scene.");
+            log_error("Error while creating arena scene.");
             goto error_1;
         }
     } else {
@@ -155,18 +155,18 @@ int game_state_create(game_state *gs, engine_init_flags *init_flags) {
         gs->next_id = nscene;
 
         if(scene_create(gs->sc, gs, nscene)) {
-            PERROR("Error while loading scene %d.", nscene);
+            log_error("Error while loading scene %d.", nscene);
             goto error_0;
         }
         if(init_flags->net_mode == NET_MODE_NONE) {
             if(openomf_create(gs->sc)) {
-                PERROR("Error while creating intro scene.");
+                log_error("Error while creating intro scene.");
                 goto error_1;
             }
         } else {
             // if connecting to the server or listening, jump straight to the menu
             if(mainmenu_create(gs->sc)) {
-                PERROR("Error while creating menu scene.");
+                log_error("Error while creating menu scene.");
                 goto error_1;
             }
         }
@@ -218,7 +218,7 @@ int game_state_add_object(game_state *gs, object *obj, int layer, int singleton,
 
 #ifdef DEBUGMODE_STFU
     animation *ani = object_get_animation(obj);
-    DEBUG("Added animation %i to game_state on layer %d.", ani->id, layer);
+    log_debug("Added animation %i to game_state on layer %d.", ani->id, layer);
 #endif
     return 0;
 }
@@ -236,7 +236,7 @@ void game_state_slowdown(game_state *gs, int ticks, int rate) {
 
 void game_state_set_speed(game_state *gs, int rate) {
     gs->speed = max2(rate, 0);
-    DEBUG("game speed set to %d", gs->speed);
+    log_debug("game speed set to %d", gs->speed);
 }
 
 unsigned int game_state_get_speed(game_state *gs) {
@@ -253,11 +253,11 @@ void game_state_del_animation(game_state *gs, int anim_id) {
             object_free(robj->obj);
             omf_free(robj->obj);
             vector_delete(&gs->objects, &it);
-            DEBUG("Deleted animation %i from game_state.", anim_id);
+            log_debug("Deleted animation %i from game_state.", anim_id);
             return;
         }
     }
-    DEBUG("Attempted to delete animation %i from game_state, but no such animation was playing.", anim_id);
+    log_debug("Attempted to delete animation %i from game_state, but no such animation was playing.", anim_id);
 }
 
 void game_state_del_object(game_state *gs, object *target) {
@@ -503,7 +503,7 @@ int game_load_new(game_state *gs, int scene_id) {
     // Initialize new scene with BK data etc.
     gs->sc = omf_calloc(1, sizeof(scene));
     if(scene_create(gs->sc, gs, scene_id)) {
-        PERROR("Error while loading scene %d.", scene_id);
+        log_error("Error while loading scene %d.", scene_id);
         goto error_0;
     }
 
@@ -511,61 +511,61 @@ int game_load_new(game_state *gs, int scene_id) {
     switch(scene_id) {
         case SCENE_OPENOMF:
             if(openomf_create(gs->sc)) {
-                PERROR("Error while creating openomf-intro scene.");
+                log_error("Error while creating openomf-intro scene.");
                 goto error_1;
             }
             break;
         case SCENE_INTRO:
             if(intro_create(gs->sc)) {
-                PERROR("Error while creating intro scene.");
+                log_error("Error while creating intro scene.");
                 goto error_1;
             }
             break;
         case SCENE_MENU:
             if(mainmenu_create(gs->sc)) {
-                PERROR("Error while creating mainmenu scene.");
+                log_error("Error while creating mainmenu scene.");
                 goto error_1;
             }
             break;
         case SCENE_SCOREBOARD:
             if(scoreboard_create(gs->sc)) {
-                PERROR("Error while creating scoreboard scene.");
+                log_error("Error while creating scoreboard scene.");
                 goto error_1;
             }
             break;
         case SCENE_CREDITS:
             if(credits_create(gs->sc)) {
-                PERROR("Error while creating credits scene.");
+                log_error("Error while creating credits scene.");
                 goto error_1;
             }
             break;
         case SCENE_MELEE:
             if(melee_create(gs->sc)) {
-                PERROR("Error while creating melee scene.");
+                log_error("Error while creating melee scene.");
                 goto error_1;
             }
             break;
         case SCENE_VS:
             if(vs_create(gs->sc)) {
-                PERROR("Error while creating VS scene.");
+                log_error("Error while creating VS scene.");
                 goto error_1;
             }
             break;
         case SCENE_MECHLAB:
             if(mechlab_create(gs->sc)) {
-                PERROR("Error while creating Mechlab scene.");
+                log_error("Error while creating Mechlab scene.");
                 goto error_1;
             }
             break;
         case SCENE_NEWSROOM:
             if(newsroom_create(gs->sc)) {
-                PERROR("Error while creating Newsroom scene.");
+                log_error("Error while creating Newsroom scene.");
                 goto error_1;
             }
             break;
         case SCENE_LOBBY:
             if(lobby_create(gs->sc)) {
-                PERROR("Error creating Lobby scene.");
+                log_error("Error creating Lobby scene.");
                 goto error_1;
             }
             break;
@@ -575,13 +575,13 @@ int game_load_new(game_state *gs, int scene_id) {
         case SCENE_ARENA3:
         case SCENE_ARENA4:
             if(arena_create(gs->sc)) {
-                PERROR("Error while creating arena scene.");
+                log_error("Error while creating arena scene.");
                 goto error_1;
             }
             break;
         default:
             if(cutscene_create(gs->sc)) {
-                PERROR("Error while creating cut scene.");
+                log_error("Error while creating cut scene.");
                 goto error_1;
             }
             break;
@@ -623,7 +623,7 @@ void game_state_cleanup(game_state *gs) {
     vector_iter_begin(&gs->objects, &it);
     foreach(it, robj) {
         if(object_finished(robj->obj)) {
-            /*DEBUG("Animation object %d is finished, removing.", robj->obj->cur_animation->id);*/
+            /*log_debug("Animation object %d is finished, removing.", robj->obj->cur_animation->id);*/
             object_free(robj->obj);
             omf_free(robj->obj);
             vector_delete(&gs->objects, &it);
@@ -755,17 +755,18 @@ void game_state_merge_sounds(game_state *old, game_state *new) {
             char *src_buf;
             int src_len;
             if(!sounds_loader_get(s->id, &src_buf, &src_len)) {
-                PERROR("Requested sound sample %d not found", s->id);
+                log_error("Requested sound sample %d not found", s->id);
                 return;
             }
             if(src_len == 0) {
-                DEBUG("Requested sound sample %d has nothing to play", s->id);
+                log_debug("Requested sound sample %d has nothing to play", s->id);
                 return;
             }
 
-            DEBUG("playing sound %d with pitch %f added after rollback at tick %d otf length %d at offset %d (duration "
-                  "total %d, remaining %d)",
-                  s->id, s->pitch, s->tick, src_len, offset, total_duration, s->duration);
+            log_debug(
+                "playing sound %d with pitch %f added after rollback at tick %d otf length %d at offset %d (duration "
+                "total %d, remaining %d)",
+                s->id, s->pitch, s->tick, src_len, offset, total_duration, s->duration);
 
             // guard against playing beyond the end of the buffer
             if(offset < src_len) {
@@ -791,14 +792,14 @@ void game_state_static_tick(game_state *gs, bool replay) {
     if(gs->this_id != gs->next_id && (gs->next_wait_ticks <= 1 || !settings_get()->video.crossfade_on)) {
         // If this is the end, set run to 0 so that engine knows to close here
         if(gs->next_id == SCENE_NONE) {
-            DEBUG("Next ID is SCENE_NONE! bailing.");
+            log_debug("Next ID is SCENE_NONE! bailing.");
             gs->run = 0;
             return;
         }
 
         // Load up new scene
         if(game_load_new(gs, gs->next_id)) {
-            PERROR("Error while loading new scene! bailing.");
+            log_error("Error while loading new scene! bailing.");
             gs->run = 0;
             return;
         }
@@ -854,7 +855,7 @@ void game_state_dynamic_tick(game_state *gs, bool replay) {
             }
         }
     } else {
-        // XXX Ocasionally the screen does not return back to normal position
+        // XXX Occasionally the screen does not return back to normal position
         if(!replay) {
             video_move_target(0, 0);
         }
@@ -887,7 +888,6 @@ void game_state_dynamic_tick(game_state *gs, bool replay) {
 
         // Increment tick
         gs->tick++;
-        LOGTICK(gs->tick);
     }
 
     if(!replay) {
@@ -897,7 +897,7 @@ void game_state_dynamic_tick(game_state *gs, bool replay) {
 
     // Speed back up
     if(gs->speed_slowdown_time == 0) {
-        DEBUG("Slowdown: Speed back up from %d to %d.", gs->speed, gs->speed_slowdown_previous);
+        log_debug("Slowdown: Speed back up from %d to %d.", gs->speed, gs->speed_slowdown_previous);
         gs->speed = gs->speed_slowdown_previous;
     }
     if(gs->speed_slowdown_time >= 0) {
@@ -1143,11 +1143,11 @@ void game_state_play_sound(game_state *gs, int id, float volume, float panning, 
     char *src_buf;
     int src_len;
     if(!sounds_loader_get(id, &src_buf, &src_len)) {
-        PERROR("Requested sound sample %d not found", id);
+        log_error("Requested sound sample %d not found", id);
         return;
     }
     if(src_len == 0) {
-        DEBUG("Requested sound sample %d has nothing to play", id);
+        log_debug("Requested sound sample %d has nothing to play", id);
         return;
     }
 

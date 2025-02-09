@@ -22,10 +22,10 @@ int scores_read(scoreboard *sb) {
         goto error_0;
     }
     if(sd_score_load(&score_file, pm_get_local_path(SCORE_PATH)) != SD_SUCCESS) {
-        PERROR("Failure while attempting to open scores file!");
+        log_error("Failure while attempting to open scores file!");
         goto error_1;
     }
-    DEBUG("Loaded scores file successfully!");
+    log_debug("Loaded scores file successfully!");
 
     // Fetch data
     for(int i = 0; i < 4; i++) {

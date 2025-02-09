@@ -67,7 +67,7 @@ int engine_init(engine_init_flags *init_flags) {
 
     // Return successfully
     run = 1;
-    INFO("Engine initialization successful.");
+    log_info("Engine initialization successful.");
     return 0;
 
     // If something failed, close in correct order
@@ -92,9 +92,9 @@ void save_screenshot(const SDL_Rect *r, unsigned char *data, bool flip) {
     char *filename = omf_malloc(256);
     snprintf(filename, 256, "screenshot_%s.png", time);
     if(png_write_rgb(filename, r->w, r->h, data, false, flip)) {
-        DEBUG("Got a screenshot: %s", filename);
+        log_debug("Got a screenshot: %s", filename);
     } else {
-        PERROR("Screenshot write operation failed (%s)", filename);
+        log_error("Screenshot write operation failed (%s)", filename);
     }
     omf_free(filename);
     omf_free(time);
@@ -105,7 +105,7 @@ void save_palette_shot(void) {
     char *filename = omf_malloc(256);
     snprintf(filename, 256, "debug_palette_%s_%d.png", time, debug_palette_number++);
     vga_state_debug_screenshot(filename);
-    DEBUG("Palette saved: %s", filename);
+    log_debug("Palette saved: %s", filename);
     omf_free(filename);
     omf_free(time);
 }
@@ -119,7 +119,7 @@ void engine_run(engine_init_flags *init_flags) {
     // if mouse_visible_ticks <= 0, hide mouse
     uint64_t mouse_visible_ticks = 1000;
 
-    INFO(" --- BEGIN GAME LOG ---");
+    log_info(" --- BEGIN GAME LOG ---");
 
     // Game start timeout.
     // Wait a moment so that people are mentally prepared
@@ -199,15 +199,15 @@ void engine_run(engine_init_flags *init_flags) {
                 case SDL_WINDOWEVENT:
                     switch(e.window.event) {
                         case SDL_WINDOWEVENT_MINIMIZED:
-                            DEBUG("MINIMIZED");
+                            log_debug("MINIMIZED");
                             enable_screen_updates = 0;
                             break;
                         case SDL_WINDOWEVENT_HIDDEN:
-                            DEBUG("HIDDEN");
+                            log_debug("HIDDEN");
                             enable_screen_updates = 0;
                             break;
                         case SDL_WINDOWEVENT_MAXIMIZED:
-                            DEBUG("MAXIMIZED");
+                            log_debug("MAXIMIZED");
                             enable_screen_updates = 1;
                             break;
                         case SDL_WINDOWEVENT_RESTORED:
@@ -215,12 +215,12 @@ void engine_run(engine_init_flags *init_flags) {
                             if(check_fs) {
                                 video_reinit_renderer();
                             }
-                            DEBUG("RESTORED");
+                            log_debug("RESTORED");
                             enable_screen_updates = 1;
                             break;
                         case SDL_WINDOWEVENT_SHOWN:
                             enable_screen_updates = 1;
-                            DEBUG("SHOWN");
+                            log_debug("SHOWN");
                             break;
                     }
                     break;
@@ -288,9 +288,9 @@ void engine_run(engine_init_flags *init_flags) {
                     // one of the controllers wants to replace the game state
                     game_state *old_gs = gs;
                     game_state *new_gs = gs->new_state;
-                    DEBUG("replacing game state! %p %p", old_gs, new_gs);
+                    log_debug("replacing game state! %p %p", old_gs, new_gs);
                     gs = new_gs;
-                    DEBUG("gs new state %p", gs->new_state);
+                    log_debug("gs new state %p", gs->new_state);
                     // gs->new_state = NULL;
                     game_state_clone_free(old_gs);
                     omf_free(old_gs);
@@ -335,7 +335,7 @@ void engine_run(engine_init_flags *init_flags) {
     // Free scene object
     game_state_free(&gs);
 
-    INFO(" --- END GAME LOG ---");
+    log_info(" --- END GAME LOG ---");
 }
 
 void engine_close(void) {
@@ -347,5 +347,5 @@ void engine_close(void) {
     audio_close();
     video_close();
     vga_state_close();
-    INFO("Engine deinit successful.");
+    log_info("Engine deinit successful.");
 }

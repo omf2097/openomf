@@ -12,7 +12,7 @@
 FILE *file_open(const char *file_name, const char *mode) {
     FILE *handle = fopen(file_name, mode);
     if(handle == NULL) {
-        PERROR("Unable to open file '%s'", file_name);
+        log_error("Unable to open file '%s'", file_name);
         abort();
     }
     return handle;
@@ -32,7 +32,7 @@ void file_read(FILE *handle, char *buffer, long size) {
             break;
         }
         if(ferror(handle)) {
-            PERROR("Error while reading file");
+            log_error("Error while reading file");
             abort();
         }
         read_size = min2(size - ptr, READ_BLOCK_SIZE);

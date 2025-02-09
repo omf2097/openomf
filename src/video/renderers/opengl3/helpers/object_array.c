@@ -93,7 +93,7 @@ void object_array_free(object_array **array) {
 
 void object_array_prepare(object_array *array) {
     if(array->mapping != NULL) {
-        PERROR("VBO is already mapped! Remember to call object_array_finish.");
+        log_error("VBO is already mapped! Remember to call object_array_finish.");
         return;
     }
     array->mapping = vbo_map(array->vbo_id, VBO_SIZE);
@@ -194,7 +194,7 @@ void object_array_add(object_array *array, int x, int y, int w, int h, int tx, i
                       int transparency, int remap_offset, int remap_rounds, int pal_offset, int pal_limit, int opacity,
                       unsigned int options) {
     if(array->item_count >= MAX_FANS) {
-        PERROR("Too many objects!");
+        log_error("Too many objects!");
         return;
     }
     float dx = 1.0f / array->src_w;

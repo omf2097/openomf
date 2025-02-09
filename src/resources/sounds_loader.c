@@ -18,10 +18,10 @@ bool sounds_loader_init(void) {
         goto error_0;
     }
     if(sd_sounds_load(sound_data, filename)) {
-        PERROR("Unable to load sounds file '%s'!", filename);
+        log_error("Unable to load sounds file '%s'!", filename);
         goto error_1;
     }
-    INFO("Loaded sounds file '%s'.", filename);
+    log_info("Loaded sounds file '%s'.", filename);
     return true;
 
 error_1:
@@ -38,7 +38,7 @@ bool sounds_loader_get(int id, char **buffer, int *len) {
 
     const sd_sound *sample = sd_sounds_get(sound_data, id);
     if(sample == NULL) {
-        PERROR("Requested sound %d does not exist!", id);
+        log_error("Requested sound %d does not exist!", id);
         return false;
     }
     *buffer = sample->data;

@@ -17,21 +17,21 @@ static void print_log(const char *buffer, long len, const char *header) {
 
     // Print line by line
     size_t pos = 0, last = 0;
-    PERROR("--- %s ---", header);
+    log_error("--- %s ---", header);
     while(str_find_next(&log, '\n', &pos)) {
         str_from_slice(&sub, &log, last, pos);
-        PERROR("%s", str_c(&sub));
+        log_error("%s", str_c(&sub));
         str_free(&sub);
         last = ++pos;
     }
-    PERROR("--- end log ---", header);
+    log_error("--- end log ---", header);
 
     str_free(&log);
 }
 
 static void print_shader_log(const GLuint shader, const char *header) {
     if(!glIsShader(shader)) {
-        PERROR("Attempted to print logs for shader %d: not a shader", shader);
+        log_error("Attempted to print logs for shader %d: not a shader", shader);
         return;
     }
 
@@ -45,7 +45,7 @@ static void print_shader_log(const GLuint shader, const char *header) {
 
 static void print_program_log(const GLuint program) {
     if(!glIsProgram(program)) {
-        PERROR("Attempted to print logs for program %d: not a program", program);
+        log_error("Attempted to print logs for program %d: not a program", program);
         return;
     }
 
@@ -75,11 +75,11 @@ static bool load_shader(GLuint program_id, GLenum shader_type, const char *shade
     GLint status = GL_FALSE;
     glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
     if(status != GL_TRUE) {
-        PERROR("Compilation error for shader %d (file=%s)", shader, shader_file);
+        log_error("Compilation error for shader %d (file=%s)", shader, shader_file);
         print_shader_log(shader, shader_file);
         return false;
     }
-    DEBUG("Compilation succeeded for shader %d (file=%s)", shader, shader_file);
+    log_debug("Compilation succeeded for shader %d (file=%s)", shader, shader_file);
     glAttachShader(program_id, shader);
     return true;
 }
@@ -91,11 +91,11 @@ void delete_program(GLuint program_id) {
     glUseProgram(0);
     glGetAttachedShaders(program_id, attached_count, NULL, shaders);
     for(int i = 0; i < attached_count; i++) {
-        DEBUG("Shader %d deleted", shaders[i]);
+        log_debug("Shader %d deleted", shaders[i]);
         glDeleteShader(shaders[i]); // Mark for removal, glDeleteProgram will handle deletion.
     }
     glDeleteProgram(program_id);
-    DEBUG("Program %d deleted", program_id);
+    log_debug("Program %d deleted", program_id);
     omf_free(shaders);
 }
 
@@ -110,13 +110,13 @@ bool create_program(GLuint *program_id, const char *vertex_shader, const char *f
     GLint status = GL_TRUE;
     glGetProgramiv(id, GL_LINK_STATUS, &status);
     if(status != GL_TRUE) {
-        PERROR("Compilation error for program %d (vert=%s, frag=%s)", id, vertex_shader, fragment_shader);
+        log_error("Compilation error for program %d (vert=%s, frag=%s)", id, vertex_shader, fragment_shader);
         print_program_log(id);
         goto error_0;
     }
 
     *program_id = id;
-    DEBUG("Compilation succeeded for program %d (vert=%s, frag=%s)", id, vertex_shader, fragment_shader);
+    log_debug("Compilation succeeded for program %d (vert=%s, frag=%s)", id, vertex_shader, fragment_shader);
     return true;
 
 error_0:
@@ -127,7 +127,7 @@ error_0:
 void bind_uniform_4fv(GLuint program_id, const char *name, GLfloat *data) {
     GLint ref = glGetUniformLocation(program_id, name);
     if(ref == -1) {
-        PERROR("Unable to find uniform '%s'; glGetUniformLocation() returned -1", name);
+        log_error("Unable to find uniform '%s'; glGetUniformLocation() returned -1", name);
         return;
     }
     glUniformMatrix4fv(ref, 1, GL_FALSE, data);
@@ -136,7 +136,7 @@ void bind_uniform_4fv(GLuint program_id, const char *name, GLfloat *data) {
 void bind_uniform_1i(GLuint program_id, const char *name, GLuint value) {
     GLint ref = glGetUniformLocation(program_id, name);
     if(ref == -1) {
-        PERROR("Unable to find uniform '%s'; glGetUniformLocation() returned -1", name);
+        log_error("Unable to find uniform '%s'; glGetUniformLocation() returned -1", name);
         return;
     }
     glUniform1i(ref, value);
@@ -145,7 +145,7 @@ void bind_uniform_1i(GLuint program_id, const char *name, GLuint value) {
 void bind_uniform_block(GLuint program_id, const char *name, GLuint binding_id, GLuint buffer) {
     GLuint ref = glGetUniformBlockIndex(program_id, name);
     if(ref == GL_INVALID_INDEX) {
-        PERROR("Unable to find ubo '%s'; glGetUniformBlockIndex() returned GL_INVALID_INDEX", name);
+        log_error("Unable to find ubo '%s'; glGetUniformBlockIndex() returned GL_INVALID_INDEX", name);
         return;
     }
     glUniformBlockBinding(program_id, ref, binding_id);

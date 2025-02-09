@@ -296,7 +296,7 @@ void settings_save(void) {
         settings_save_fields(s2f->_struct, s2f->fields, s2f->num_fields);
     }
     if(conf_write_config(settings_path)) {
-        PERROR("Failed to write config file!\n");
+        log_error("Failed to write config file!\n");
     }
 }
 

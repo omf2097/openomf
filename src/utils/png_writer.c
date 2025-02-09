@@ -7,7 +7,7 @@
 bool png_write_rgb(const char *filename, int w, int h, const unsigned char *data, bool has_alpha, bool flip) {
     FILE *fp = fopen(filename, "wb");
     if(fp == NULL) {
-        PERROR("Unable to write PNG file: Could not open file for writing");
+        log_error("Unable to write PNG file: Could not open file for writing");
         return false;
     }
 
@@ -51,7 +51,7 @@ bool png_write_paletted(const char *filename, int w, int h, const vga_palette *p
     png_image_write_to_file(&out, filename, 0, data, w, pal->colors);
 
     if(PNG_IMAGE_FAILED(out)) {
-        PERROR("Unable to write PNG file: %s", out.message);
+        log_error("Unable to write PNG file: %s", out.message);
         return false;
     }
     return true;

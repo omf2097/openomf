@@ -18,7 +18,7 @@ int is_key_bound(int key) {
 
 #define CHECK_KEY(keyname)                                                                                             \
     if(strcmp(keyname, compare) == 0) {                                                                                \
-        DEBUG("Key %s is already bound.", compare);                                                                    \
+        log_debug("Key %s is already bound.", compare);                                                                \
         return 1;                                                                                                      \
     }
 

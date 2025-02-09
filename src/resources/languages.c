@@ -28,7 +28,7 @@ bool lang_init(void) {
         goto error_0;
     }
     if(sd_language_load(language, filename)) {
-        PERROR("Unable to load language file '%s'!", filename);
+        log_error("Unable to load language file '%s'!", filename);
         goto error_0;
     }
 
@@ -62,11 +62,11 @@ bool lang_init(void) {
         language->strings = expanded_strings;
     }
     if(language->count != LANG_STR_COUNT) {
-        PERROR("Unable to load language file '%s', unsupported or corrupt file!", filename);
+        log_error("Unable to load language file '%s', unsupported or corrupt file!", filename);
         goto error_0;
     }
 
-    INFO("Loaded language file '%s'.", filename);
+    log_info("Loaded language file '%s'.", filename);
 
     // Load up language2 file (OpenOMF)
     str_append_c(&filename_str, "2");
@@ -77,15 +77,15 @@ bool lang_init(void) {
         goto error_0;
     }
     if(sd_language_load(language2, filename)) {
-        PERROR("Unable to load OpenOMF language file '%s'!", filename);
+        log_error("Unable to load OpenOMF language file '%s'!", filename);
         goto error_0;
     }
     if(language2->count != LANG2_STR_COUNT) {
-        PERROR("Unable to load OpenOMF language file '%s', unsupported or corrupt file!", filename);
+        log_error("Unable to load OpenOMF language file '%s', unsupported or corrupt file!", filename);
         goto error_0;
     }
 
-    INFO("Loaded OpenOMF language file '%s'.", filename);
+    log_info("Loaded OpenOMF language file '%s'.", filename);
 
     str_free(&filename_str);
 
@@ -108,7 +108,7 @@ void lang_close(void) {
 
 const char *lang_get(unsigned int id) {
     if(id > language->count || !language->strings[id].data) {
-        PERROR("unsupported lang id %u!", id);
+        log_error("unsupported lang id %u!", id);
         return "!INVALID!";
     }
     return language->strings[id].data;
@@ -116,7 +116,7 @@ const char *lang_get(unsigned int id) {
 
 const char *lang_get2(unsigned int id) {
     if(id > language2->count || !language2->strings[id].data) {
-        PERROR("unsupported lang2 id %u!", id);
+        log_error("unsupported lang2 id %u!", id);
         return "!INVALID2!";
     }
     return language2->strings[id].data;

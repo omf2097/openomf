@@ -124,34 +124,34 @@ bool fonts_init(void) {
     // Load small font
     filename = pm_get_resource_path(DAT_CHARSMAL);
     if(font_load(&font_small, filename, FONT_SMALL)) {
-        PERROR("Unable to load font file '%s'!", filename);
+        log_error("Unable to load font file '%s'!", filename);
         goto error_4;
     }
-    INFO("Loaded font file '%s'", filename);
+    log_info("Loaded font file '%s'", filename);
 
     // Load big font
     filename = pm_get_resource_path(DAT_GRAPHCHR);
     if(font_load(&font_large, filename, FONT_BIG)) {
-        PERROR("Unable to load font file '%s'!", filename);
+        log_error("Unable to load font file '%s'!", filename);
         goto error_3;
     }
-    INFO("Loaded font file '%s'", filename);
+    log_info("Loaded font file '%s'", filename);
 
     // Load big net font
     filename = pm_get_resource_path(PCX_NETFONT1);
     if(pcx_font_load(&font_net1, filename, 3)) {
-        PERROR("Unable to load font file '%s'!", filename);
+        log_error("Unable to load font file '%s'!", filename);
         goto error_2;
     }
-    INFO("Loaded font file '%s'", filename);
+    log_info("Loaded font file '%s'", filename);
 
     // Load small net font
     filename = pm_get_resource_path(PCX_NETFONT2);
     if(pcx_font_load(&font_net2, filename, 16)) {
-        PERROR("Unable to load font file '%s'!", filename);
+        log_error("Unable to load font file '%s'!", filename);
         goto error_1;
     }
-    INFO("Loaded font file '%s'", filename);
+    log_info("Loaded font file '%s'", filename);
 
     // All done.
     fonts_loaded = 1;

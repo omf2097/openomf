@@ -197,7 +197,7 @@ static void text_render_len(const text_settings *settings, text_mode mode, int x
     int fit_lines = text_find_line_count(settings, cols, rows, len, text, &longest);
     int max_chars = settings->direction == TEXT_HORIZONTAL ? cols : rows;
     if(max_chars == 0) {
-        DEBUG("Warning: Text has zero size! text: '%s'");
+        log_debug("Warning: Text has zero size! text: '%s'");
         max_chars = 1;
     }
 

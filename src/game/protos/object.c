@@ -563,9 +563,9 @@ void object_set_animation(object *obj, animation *ani) {
 
     // Debug texts
     if(obj->cur_animation->id == -1) {
-        DEBUG("Custom object set to (x,y) = (%f,%f).", obj->pos.x, obj->pos.y);
+        log_debug("Custom object set to (x,y) = (%f,%f).", obj->pos.x, obj->pos.y);
     } else {
-        /*DEBUG("Animation object %d set to (x,y) = (%f,%f) with \"%s\".", */
+        /*log_debug("Animation object %d set to (x,y) = (%f,%f) with \"%s\".", */
         /*obj->cur_animation->id,*/
         /*obj->pos.x, obj->pos.y,*/
         /*str_c(&obj->cur_animation->animation_string));*/
@@ -580,7 +580,7 @@ void object_set_custom_string(object *obj, const char *str) {
     omf_free(obj->custom_str);
     obj->custom_str = omf_strdup(str);
     player_reload_with_str(obj, obj->custom_str);
-    // DEBUG("Set animation string to %s", obj->custom_str);
+    // log_debug("Set animation string to %s", obj->custom_str);
 }
 
 /** Returns a pointer to the currently playing animation

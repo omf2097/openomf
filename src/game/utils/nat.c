@@ -29,13 +29,13 @@ bool nat_create_upnp_mapping(nat_ctx *ctx, uint16_t int_port, uint16_t ext_port)
                             NULL,      // remote (peer) host address or nullptr for no restriction
                             "86400");  // port map lease duration (in seconds) or zero for "as long as possible"
     if(error == 0) {
-        DEBUG("NAT-uPNP Port map successfully created from %d to %d!", int_port, ext_port);
+        log_debug("NAT-uPNP Port map successfully created from %d to %d!", int_port, ext_port);
 
         ctx->int_port = int_port;
         ctx->ext_port = ext_port;
         return true;
     } else {
-        DEBUG("NAT-uPNP port %d -> %d mapping failed with %d", int_port, ext_port, error);
+        log_debug("NAT-uPNP port %d -> %d mapping failed with %d", int_port, ext_port, error);
         // TODO there are some errors we can work around here
         // like overly short lifetimes
         FreeUPNPUrls(&ctx->upnp_urls);
@@ -57,7 +57,7 @@ bool nat_create_pmp_mapping(nat_ctx *ctx, uint16_t int_port, uint16_t ext_port) 
         struct timeval timeout;
         FD_ZERO(&fds);
 #ifdef _WIN32
-        DEBUG("praying that winapi socket '%d' hasn't been truncated", ctx->natpmp.s);
+        log_debug("praying that winapi socket '%d' hasn't been truncated", ctx->natpmp.s);
         // XXX : libnatpmp stores winapi SOCKETs as an `int`, which is terrible because SOCKET is pointer-sized.
         // WinAPI seems to be kind to us, and is returning small values like 0x00000114.. but this is far from
         // guaranteed! (using ptrdiff for sign-extension in case `s` is INVALID_SOCKET -1)
@@ -71,13 +71,13 @@ bool nat_create_pmp_mapping(nat_ctx *ctx, uint16_t int_port, uint16_t ext_port) 
     } while(r == NATPMP_TRYAGAIN);
 
     if(r == 0) {
-        DEBUG("mapped public port %hu to localport %hu lifetime %u", response.pnu.newportmapping.mappedpublicport,
-              response.pnu.newportmapping.privateport, response.pnu.newportmapping.lifetime);
+        log_debug("mapped public port %hu to localport %hu lifetime %u", response.pnu.newportmapping.mappedpublicport,
+                  response.pnu.newportmapping.privateport, response.pnu.newportmapping.lifetime);
         ctx->int_port = response.pnu.newportmapping.privateport;
         ctx->ext_port = response.pnu.newportmapping.mappedpublicport;
         return true;
     } else {
-        DEBUG("NAT-PMP %d -> %d failed with error %d", int_port, ext_port, r);
+        log_debug("NAT-PMP %d -> %d failed with error %d", int_port, ext_port, r);
         // TODO handle some errors here
 
         closenatpmp(&ctx->natpmp);
@@ -124,14 +124,14 @@ void nat_try_upnp(nat_ctx *ctx) {
 
     // look up possible "status" values, the number "1" indicates a valid IGD was found
     if(status == 1) {
-        DEBUG("discovered uPNP server");
+        log_debug("discovered uPNP server");
         ctx->type = NAT_TYPE_UPNP;
     } else {
         FreeUPNPUrls(&ctx->upnp_urls);
         freeUPNPDevlist(ctx->upnp_dev);
     }
 #else
-    DEBUG("NAT-uPNP support not available");
+    log_debug("NAT-uPNP support not available");
 #endif
 }
 // clang-format on
@@ -141,11 +141,11 @@ void nat_try_pmp(nat_ctx *ctx) {
     // try nat-pmp
     in_addr_t forcedgw = {0};
     if(initnatpmp(&ctx->natpmp, 0, forcedgw) == 0) {
-        DEBUG("discovered NAT-PMP server");
+        log_debug("discovered NAT-PMP server");
         ctx->type = NAT_TYPE_PMP;
     }
 #else
-    DEBUG("NAT-PMP support not available");
+    log_debug("NAT-PMP support not available");
 #endif
 }
 
@@ -157,9 +157,9 @@ void nat_release_upnp(nat_ctx *ctx) {
     int error =
         UPNP_DeletePortMapping(ctx->upnp_urls.controlURL, ctx->upnp_data.first.servicetype, ext_portstr, "UDP", NULL);
     if(error == 0) {
-        DEBUG("successfully removed NAT-uPNP port mapping for %d -> %d", ctx->int_port, ctx->ext_port);
+        log_debug("successfully removed NAT-uPNP port mapping for %d -> %d", ctx->int_port, ctx->ext_port);
     } else {
-        DEBUG("failed to remove port mapping with %d", error);
+        log_debug("failed to remove port mapping with %d", error);
     }
     FreeUPNPUrls(&ctx->upnp_urls);
     freeUPNPDevlist(ctx->upnp_dev);
@@ -176,7 +176,7 @@ void nat_release_pmp(nat_ctx *ctx) {
         struct timeval timeout;
         FD_ZERO(&fds);
 #ifdef _WIN32
-        DEBUG("praying that winapi socket '%d' hasn't been truncated", ctx->natpmp.s);
+        log_debug("praying that winapi socket '%d' hasn't been truncated", ctx->natpmp.s);
         // XXX : libnatpmp stores winapi SOCKETs as an `int`, which is terrible because SOCKET is pointer-sized.
         // WinAPI seems to be kind to us, and is returning small values like 0x00000114.. but this is far from
         // guaranteed! (using ptrdiff for sign-extension in case `s` is INVALID_SOCKET -1)
@@ -189,9 +189,9 @@ void nat_release_pmp(nat_ctx *ctx) {
         r = readnatpmpresponseorretry(&ctx->natpmp, &response);
     } while(r == NATPMP_TRYAGAIN);
     if(r == 0) {
-        DEBUG("released public port %hu to localport %hu", ctx->int_port, response.pnu.newportmapping.privateport);
+        log_debug("released public port %hu to localport %hu", ctx->int_port, response.pnu.newportmapping.privateport);
     } else {
-        DEBUG("NAT-PMP release failed with error %d", r);
+        log_debug("NAT-PMP release failed with error %d", r);
     }
     closenatpmp(&ctx->natpmp);
 #endif

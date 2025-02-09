@@ -152,7 +152,7 @@ void vs_handle_action(scene *scene, int action) {
                     if(vs_is_netplay(scene)) {
                         game_player *player2 = game_state_get_player(scene->gs, 1);
                         if(player2->ctrl->type == CTRL_TYPE_NETWORK) {
-                            DEBUG("delaying arena start for %d ticks", player2->ctrl->rtt / 2);
+                            log_debug("delaying arena start for %d ticks", player2->ctrl->rtt / 2);
                             scene->gs->next_wait_ticks += player2->ctrl->rtt;
                         }
                     }
