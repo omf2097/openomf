@@ -50,7 +50,7 @@ void fire_hooks(har *h, har_event event, controller *ctrl) {
     har_hook *hook;
 
     list_iter_begin(&h->har_hooks, &it);
-    while((hook = iter_next(&it)) != NULL) {
+    foreach(it, hook) {
         hook->cb(event, ctrl->gs->sc);
     }
     if(object_get_userdata(game_state_find_object(ctrl->gs, ctrl->har_obj_id)) == h) {
@@ -962,7 +962,7 @@ void har_debug(object *obj) {
     vector_iter_begin(&obj->cur_animation->collision_coords, &it);
 
     int found = 0;
-    while((cc = iter_next(&it)) != NULL) {
+    foreach(it, cc) {
         if(cc->frame_index != obj->cur_sprite_id)
             continue;
         found = 1;
@@ -975,7 +975,7 @@ void har_debug(object *obj) {
     }
 
     vector_iter_begin(&obj->cur_animation->collision_coords, &it);
-    while((cc = iter_next(&it)) != NULL) {
+    foreach(it, cc) {
         if(cc->frame_index != obj->cur_sprite_id)
             continue;
         image_set_pixel(&img, pos_a.x + (cc->pos.x * flip), pos_a.y + cc->pos.y, c);

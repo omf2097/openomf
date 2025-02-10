@@ -84,6 +84,7 @@ void array_iter_begin(const array *array, iterator *iter) {
     iter->vnow = NULL;
     iter->inow = 0;
     iter->next = array_iter_next;
+    iter->peek = NULL;
     iter->prev = NULL;
     iter->ended = (array->filled == 0);
 }
@@ -93,6 +94,7 @@ void array_iter_end(const array *array, iterator *iter) {
     iter->vnow = NULL;
     iter->inow = array->allocated_size - 1;
     iter->next = NULL;
+    iter->peek = NULL;
     iter->prev = array_iter_prev;
     iter->ended = (array->filled == 0);
 }

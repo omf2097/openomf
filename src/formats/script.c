@@ -28,7 +28,7 @@ int sd_script_frame_clone(sd_script_frame *src, sd_script_frame *dst) {
     iterator it;
     sd_script_tag *tag;
     vector_iter_begin(&src->tags, &it);
-    while((tag = iter_next(&it)) != NULL) {
+    foreach(it, tag) {
         vector_append(&dst->tags, tag);
     }
     return SD_SUCCESS;
@@ -39,7 +39,7 @@ int sd_script_clone(sd_script *src, sd_script *dst) {
     iterator it;
     sd_script_frame *frame;
     vector_iter_begin(&src->frames, &it);
-    while((frame = iter_next(&it)) != NULL) {
+    foreach(it, frame) {
         sd_script_frame new_frame;
         sd_script_frame_create(&new_frame, frame->tick_len, frame->sprite);
         sd_script_frame_clone(frame, &new_frame);
@@ -77,7 +77,7 @@ void sd_script_free(sd_script *script) {
     iterator it;
     sd_script_frame *frame;
     vector_iter_begin(&script->frames, &it);
-    while((frame = iter_next(&it)) != NULL) {
+    foreach(it, frame) {
         sd_script_frame_free(frame);
     }
     vector_free(&script->frames);
@@ -393,7 +393,7 @@ int sd_script_encode(const sd_script *script, str *output) {
     iterator it;
     sd_script_frame *frame;
     vector_iter_begin(&script->frames, &it);
-    while((frame = iter_next(&it)) != NULL) {
+    foreach(it, frame) {
         sd_script_encode_frame(frame, output);
         str_append_c(output, "-");
     }
@@ -410,7 +410,7 @@ int sd_script_encode_frame(const sd_script_frame *frame, str *dst) {
     iterator tag_it;
     sd_script_tag *tag;
     vector_iter_begin(&frame->tags, &tag_it);
-    while((tag = iter_next(&tag_it)) != NULL) {
+    foreach(tag_it, tag) {
         str_append_c(dst, tag->key);
         if(tag->has_param) {
             str_from_format(&tmp, "%d", tag->value);
@@ -435,7 +435,7 @@ const sd_script_frame *sd_script_get_frame_at(const sd_script *script, int ticks
     int next, pos = 0;
 
     vector_iter_begin(&script->frames, &it);
-    while((frame = iter_next(&it)) != NULL) {
+    foreach(it, frame) {
         next = pos + frame->tick_len;
         if(pos <= ticks && ticks < next) {
             return frame;
@@ -518,7 +518,7 @@ const sd_script_tag *sd_script_get_tag(const sd_script_frame *frame, const char 
     iterator it;
     sd_script_tag *now;
     vector_iter_begin(&frame->tags, &it);
-    while((now = iter_next(&it)) != NULL) {
+    foreach(it, now) {
         if(strcmp(tag, now->key) == 0) {
             return now;
         }
@@ -592,7 +592,7 @@ int sd_script_delete_tag(sd_script *script, int frame_id, const char *tag) {
     iterator it;
     sd_script_tag *now;
     vector_iter_begin(&frame->tags, &it);
-    while((now = iter_next(&it)) != NULL) {
+    foreach(it, now) {
         if(strcmp(now->key, tag) == 0) {
             vector_delete(&frame->tags, &it);
             return SD_SUCCESS;

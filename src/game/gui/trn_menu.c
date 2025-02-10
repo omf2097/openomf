@@ -108,7 +108,7 @@ static void trnmenu_layout(component *c, int x, int y, int w, int h) {
     vector_iter_begin(&s->objs, &it);
     int i = 0;
     int first_selected = 0;
-    while((tmp = iter_next(&it)) != NULL) {
+    foreach(it, tmp) {
         // Select first selectable component
         if(component_is_selectable(*tmp) && !first_selected) {
             component_select(*tmp, 1);
@@ -158,7 +158,7 @@ static int find_next_button(component *c, int act) {
     float best_dist = 9999.0f;
     int best_idx = -1;
     int idx_now = 0;
-    while((tmp = iter_next(&it)) != NULL) {
+    foreach(it, tmp) {
         component *t = *tmp;
         if(!component_is_selectable(t)) {
             idx_now++;
@@ -268,7 +268,7 @@ static void trnmenu_render(component *c) {
     iterator it;
     component **tmp;
     vector_iter_begin(&s->objs, &it);
-    while((tmp = iter_next(&it)) != NULL) {
+    foreach(it, tmp) {
         component_render(*tmp);
     }
 

@@ -33,7 +33,7 @@ void controller_clear_hooks(controller *ctrl) {
     iterator it;
     hook_function **tmp = 0;
     list_iter_begin(&ctrl->hooks, &it);
-    while((tmp = iter_next(&it)) != NULL) {
+    foreach(it, tmp) {
         omf_free(*tmp);
         list_delete(&ctrl->hooks, &it);
     }
@@ -95,7 +95,7 @@ void controller_cmd(controller *ctrl, int action, ctrl_event **ev) {
     iterator it;
     hook_function **p = 0;
     list_iter_begin(&ctrl->hooks, &it);
-    while((p = iter_next(&it))) {
+    foreach(it, p) {
         hook_function hook = **p;
         (hook.fp)(hook.source, action);
     }

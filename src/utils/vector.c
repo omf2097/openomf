@@ -25,10 +25,6 @@ void vector_create_with_size(vector *vec, unsigned int block_size, unsigned int 
     vector_init(vec);
 }
 
-void vector_clear(vector *vec) {
-    vec->blocks = 0;
-}
-
 void vector_free(vector *vec) {
     vec->blocks = 0;
     vec->reserved = 0;
@@ -81,13 +77,9 @@ int vector_prepend(vector *vec, const void *value) {
     }
     char *dst = (char *)(vec->data + vec->block_size);
     memmove(dst, vec->data, vec->block_size * vec->blocks);
-    memcpy(dst, value, vec->block_size);
+    memcpy(vec->data, value, vec->block_size);
     vec->blocks++;
     return 0;
-}
-
-unsigned int vector_size(const vector *vec) {
-    return vec->blocks;
 }
 
 void vector_pop(vector *vec) {
@@ -193,6 +185,7 @@ void vector_iter_begin(const vector *vec, iterator *iter) {
     iter->vnow = NULL;
     iter->inow = 0;
     iter->next = vector_iter_next;
+    iter->peek = NULL;
     iter->prev = NULL;
     iter->ended = (vec->blocks == 0);
 }
@@ -202,6 +195,7 @@ void vector_iter_end(const vector *vec, iterator *iter) {
     iter->vnow = NULL;
     iter->inow = vector_size(vec) - 1;
     iter->next = NULL;
+    iter->peek = NULL;
     iter->prev = vector_iter_prev;
     iter->ended = (vec->blocks == 0);
 }

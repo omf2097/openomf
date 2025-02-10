@@ -104,7 +104,7 @@ int intersect_sprite_hitpoint(object *obj, object *target, int level, vec2i *poi
     iterator it;
     collision_coord *cc;
     vector_iter_begin(&obj->cur_animation->collision_coords, &it);
-    while((cc = iter_next(&it)) != NULL) {
+    foreach(it, cc) {
         // Skip coords that don't belong to the frame we are checking
         if(cc->frame_index != obj->cur_sprite_id)
             continue;

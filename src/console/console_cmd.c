@@ -31,7 +31,7 @@ int console_cmd_history(game_state *gs, int argc, char **argv) {
     int i = 1;
 
     list_iter_begin(&con->history, &it);
-    while((input = iter_next(&it)) != NULL) {
+    foreach(it, input) {
         snprintf(buf, sizeof buf, "%d. %s", i, input);
         console_output_addline(buf);
         i++;
@@ -61,12 +61,12 @@ int console_cmd_help(game_state *gs, int argc, char **argv) {
 
     vector_create(&sorted, sizeof(hashmap_pair *));
     hashmap_iter_begin(&con->cmds, &it);
-    while((pair = iter_next(&it)) != NULL) {
+    foreach(it, pair) {
         vector_append(&sorted, &pair);
     }
     vector_sort(&sorted, &sort_command_by_name);
     vector_iter_begin(&sorted, &it);
-    while((ppair = iter_next(&it)) != NULL) {
+    foreach(it, ppair) {
         char *name = (*ppair)->key;
         command *cmd = (*ppair)->value;
         console_output_add(name);

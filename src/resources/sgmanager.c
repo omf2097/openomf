@@ -63,7 +63,7 @@ int sg_count(void) {
     char *ext = NULL;
 
     list_iter_begin(&dirlist, &it);
-    while((filename = (char *)list_iter_next(&it))) {
+    foreach(it, filename) {
         if((ext = strrchr(filename, '.')) && strcmp(".CHR", ext) == 0) {
             continue;
         }
@@ -100,7 +100,7 @@ list *sg_load_all(void) {
     list_iter_begin(&dirlist, &it);
     char *chrfile;
     char *ext;
-    while((chrfile = (char *)list_iter_next(&it))) {
+    foreach(it, chrfile) {
         if(strcmp(".", chrfile) == 0 || strcmp("..", chrfile) == 0) {
             continue;
         }

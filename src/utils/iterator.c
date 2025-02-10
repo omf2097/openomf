@@ -1,17 +1,22 @@
 #include "utils/iterator.h"
-#include <stdlib.h>
+#include <assert.h>
 
 void *iter_next(iterator *iter) {
-    if(iter->next == NULL)
-        return NULL;
+    assert(iter->next);
     if(iter->ended)
         return NULL;
     return iter->next(iter);
 }
 
-void *iter_prev(iterator *iter) {
-    if(iter->prev == NULL)
+void *iter_peek(iterator *iter) {
+    assert(iter->peek);
+    if(iter->ended)
         return NULL;
+    return iter->peek(iter);
+}
+
+void *iter_prev(iterator *iter) {
+    assert(iter->prev);
     if(iter->ended)
         return NULL;
     return iter->prev(iter);

@@ -45,7 +45,7 @@ void af_free(af *a) {
     iterator it;
     af_move *move = NULL;
     array_iter_begin(&a->moves, &it);
-    while((move = array_iter_next(&it))) {
+    foreach(it, move) {
         af_move_free(move);
         omf_free(move);
     }

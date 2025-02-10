@@ -102,7 +102,7 @@ void player_set_delay(object *obj, int delay) {
     iterator it;
     collision_coord *cc;
     vector_iter_begin(&obj->cur_animation->collision_coords, &it);
-    while((cc = iter_next(&it)) != NULL) {
+    foreach(it, cc) {
         r = sd_script_next_frame_with_sprite(&obj->animation_state.parser, cc->frame_index, 0);
         frames = (r >= 0 && r < frames) ? r : frames;
     }

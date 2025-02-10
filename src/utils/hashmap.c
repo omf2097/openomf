@@ -132,26 +132,6 @@ void hashmap_free(hashmap *hm) {
     hm->reserved = 0;
 }
 
-/** \brief Gets hashmap size
- *
- * Returns the hashmap size. This is the amount of hashmap allocated buckets.
- *
- * \param hm Hashmap
- * \return Amount of hashmap buckets
- */
-unsigned int hashmap_size(const hashmap *hm) {
-    return hm->capacity;
-}
-
-/** \brief Gets hashmap reserved buckets
- *
- * \param hm Hashmap
- * \return Amount of items in the hashmap
- */
-unsigned int hashmap_reserved(const hashmap *hm) {
-    return hm->reserved;
-}
-
 /** \brief Puts an item to the hashmap
  *
  * Puts a new item to the hashmap. Note that the
@@ -296,30 +276,6 @@ int hashmap_get(hashmap *hm, const void *key, unsigned int key_len, void **value
     return 1;
 }
 
-void hashmap_sput(hashmap *hm, const char *key, void *value, unsigned int value_len) {
-    hashmap_put(hm, key, strlen(key) + 1, value, value_len);
-}
-
-void hashmap_iput(hashmap *hm, unsigned int key, void *value, unsigned int value_len) {
-    hashmap_put(hm, (char *)&key, sizeof(unsigned int), value, value_len);
-}
-
-int hashmap_sget(hashmap *hm, const char *key, void **value, unsigned int *value_len) {
-    return hashmap_get(hm, (void *)key, strlen(key) + 1, value, value_len);
-}
-
-int hashmap_iget(hashmap *hm, unsigned int key, void **value, unsigned int *value_len) {
-    return hashmap_get(hm, (void *)&key, sizeof(unsigned int), value, value_len);
-}
-
-void hashmap_sdel(hashmap *hm, const char *key) {
-    hashmap_del(hm, key, strlen(key) + 1);
-}
-
-void hashmap_idel(hashmap *hm, unsigned int key) {
-    hashmap_del(hm, (char *)&key, sizeof(unsigned int));
-}
-
 /** \brief Deletes an item from the hashmap by iterator key
  *
  * Deletes an item from the hashmap by a matching iterator key.
@@ -429,6 +385,7 @@ void hashmap_iter_begin(const hashmap *hm, iterator *iter) {
     iter->vnow = NULL;
     iter->inow = 0;
     iter->next = hashmap_iter_next;
+    iter->peek = NULL;
     iter->prev = NULL;
     iter->ended = (hm->reserved == 0);
 }

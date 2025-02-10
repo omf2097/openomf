@@ -27,7 +27,7 @@ static void xysizer_render(component *c) {
     iterator it;
     component **tmp;
     vector_iter_begin(&s->objs, &it);
-    while((tmp = iter_next(&it)) != NULL) {
+    foreach(it, tmp) {
         component_render(*tmp);
     }
 }
@@ -39,7 +39,7 @@ static void xysizer_layout(component *c, int x, int y, int w, int h) {
     iterator it;
     component **tmp;
     vector_iter_begin(&s->objs, &it);
-    while((tmp = iter_next(&it)) != NULL) {
+    foreach(it, tmp) {
         // Set component position and size from the component hint
         int m_x = ((*tmp)->x_hint < x) ? x : (*tmp)->x_hint;
         int m_y = ((*tmp)->y_hint < y) ? y : (*tmp)->y_hint;
@@ -59,7 +59,7 @@ static int xysizer_event(component *c, SDL_Event *event) {
     iterator it;
     component **tmp;
     vector_iter_begin(&s->objs, &it);
-    while((tmp = iter_next(&it)) != NULL) {
+    foreach(it, tmp) {
         if(component_event(*tmp, event) == 0) {
             return 0;
         }
@@ -77,7 +77,7 @@ static int xysizer_action(component *c, int action) {
     iterator it;
     component **tmp;
     vector_iter_begin(&s->objs, &it);
-    while((tmp = iter_next(&it)) != NULL) {
+    foreach(it, tmp) {
         if(component_action(*tmp, action) == 0) {
             return 0;
         }

@@ -82,13 +82,13 @@ int animation_clone(animation *src, animation *dst) {
     vector_create_with_size(&dst->collision_coords, sizeof(collision_coord), vector_size(&src->collision_coords));
     vector_iter_begin(&src->collision_coords, &it);
     collision_coord *tmp_coord = NULL;
-    while((tmp_coord = iter_next(&it)) != NULL) {
+    foreach(it, tmp_coord) {
         vector_append(&dst->collision_coords, tmp_coord);
     }
     str *tmp_str = NULL;
     vector_create_with_size(&dst->extra_strings, sizeof(str), vector_size(&src->extra_strings));
     vector_iter_begin(&src->extra_strings, &it);
-    while((tmp_str = iter_next(&it)) != NULL) {
+    foreach(it, tmp_str) {
         str new_str;
         str_create(&new_str);
         str_from(&new_str, tmp_str);
@@ -97,7 +97,7 @@ int animation_clone(animation *src, animation *dst) {
     vector_create_with_size(&dst->sprites, sizeof(sprite_reference), vector_size(&src->sprites));
     vector_iter_begin(&src->sprites, &it);
     sprite_reference *spr = NULL;
-    while((spr = iter_next(&it)) != NULL) {
+    foreach(it, spr) {
         sprite_reference spr_clone;
         spr_clone.sprite = sprite_copy(spr->sprite);
         vector_append(&dst->sprites, &spr_clone);
@@ -111,14 +111,14 @@ void animation_fixup_coordinates(animation *ani, int fix_x, int fix_y) {
     sprite_reference *spr;
     // Fix sprite positions
     vector_iter_begin(&ani->sprites, &it);
-    while((spr = iter_next(&it)) != NULL) {
+    foreach(it, spr) {
         spr->sprite->pos.x += fix_x;
         spr->sprite->pos.y += fix_y;
     }
     // Fix collisions coordinates
     collision_coord *c;
     vector_iter_begin(&ani->collision_coords, &it);
-    while((c = iter_next(&it)) != NULL) {
+    foreach(it, c) {
         c->pos.x += fix_x;
         c->pos.y += fix_y;
     }
@@ -148,14 +148,14 @@ void animation_free(animation *ani) {
     // Free extra strings
     vector_iter_begin(&ani->extra_strings, &it);
     str *tmp_str = NULL;
-    while((tmp_str = iter_next(&it)) != NULL) {
+    foreach(it, tmp_str) {
         str_free(tmp_str);
     }
     vector_free(&ani->extra_strings);
 
     vector_iter_begin(&ani->sprites, &it);
     sprite_reference *spr;
-    while((spr = iter_next(&it)) != NULL) {
+    foreach(it, spr) {
         sprite_free(spr->sprite);
         omf_free(spr->sprite);
     }

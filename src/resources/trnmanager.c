@@ -42,7 +42,7 @@ list *trnlist_init(void) {
     list_iter_begin(&dirlist, &it);
     char *trn_file;
     char tmp[1024];
-    while((trn_file = iter_next(&it)) != NULL) {
+    foreach(it, trn_file) {
         sd_tournament_file trn;
         sd_tournament_create(&trn);
         snprintf(tmp, 1024, "%s%s", dirname, trn_file);

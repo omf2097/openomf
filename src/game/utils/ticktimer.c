@@ -28,7 +28,7 @@ void ticktimer_run(ticktimer *tt, void *scenedata) {
     iterator it;
     vector_iter_begin(&tt->units, &it);
     ticktimer_unit *unit;
-    while((unit = iter_next(&it)) != NULL) {
+    foreach(it, unit) {
         if(unit->ticks <= 0) {
             unit->callback(scenedata, unit->userdata);
             vector_delete(&tt->units, &it);
@@ -43,7 +43,7 @@ void ticktimer_clone(ticktimer *src, ticktimer *dst) {
     iterator it;
     vector_iter_begin(&src->units, &it);
     ticktimer_unit *unit;
-    while((unit = iter_next(&it)) != NULL) {
+    foreach(it, unit) {
         vector_append(&dst->units, unit);
     }
 }

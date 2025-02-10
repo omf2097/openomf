@@ -31,7 +31,7 @@ int rec_controller_tick(controller *ctrl, uint32_t ticks, ctrl_event **ev) {
     }
 
     if(data->last_tick != ticks) {
-        if(hashmap_iget(&data->tick_lookup, ticks, (void **)(&move), &len) == 0) {
+        if(hashmap_get_int(&data->tick_lookup, ticks, (void **)(&move), &len) == 0) {
             if(move->action == SD_ACT_NONE) {
                 controller_cmd(ctrl, ACT_STOP, ev);
                 data->last_action = ACT_STOP;
@@ -80,7 +80,7 @@ void rec_controller_create(controller *ctrl, int player, sd_rec_file *rec) {
     hashmap_create(&data->tick_lookup);
     for(unsigned int i = 0; i < rec->move_count; i++) {
         if(rec->moves[i].player_id == player && rec->moves[i].lookup_id == 2) {
-            hashmap_iput(&data->tick_lookup, rec->moves[i].tick, &rec->moves[i], sizeof(sd_rec_move));
+            hashmap_put_int(&data->tick_lookup, rec->moves[i].tick, &rec->moves[i], sizeof(sd_rec_move));
         }
     }
     data->max_tick = rec->moves[rec->move_count - 1].tick;

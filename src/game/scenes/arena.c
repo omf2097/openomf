@@ -943,7 +943,7 @@ void arena_spawn_hazard(scene *scene) {
     hashmap_iter_begin(&scene->bk_data->infos, &it);
     hashmap_pair *pair = NULL;
 
-    while((pair = iter_next(&it)) != NULL) {
+    foreach(it, pair) {
         bk_info *info = (bk_info *)pair->value;
         if(info->probability > 1) {
             if(random_int(&scene->gs->rand, info->probability) == 1) {

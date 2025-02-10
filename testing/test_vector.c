@@ -3,71 +3,99 @@
 #include <utils/iterator.h>
 #include <utils/vector.h>
 
-#define TEST_VAL_COUNT 1000
-
-vector test_vector;
-static unsigned int test_values[TEST_VAL_COUNT];
-
 void test_vector_create(void) {
+    vector test_vector;
     vector_create(&test_vector, sizeof(int));
     CU_ASSERT_PTR_NOT_NULL(test_vector.data);
     CU_ASSERT(vector_size(&test_vector) == 0);
-    return;
-}
-
-void test_vector_free(void) {
     vector_free(&test_vector);
     CU_ASSERT_PTR_NULL(test_vector.data);
-    return;
 }
 
 void test_vector_append(void) {
-    for(unsigned i = 0; i < TEST_VAL_COUNT / 2; i++) {
-        CU_ASSERT(vector_append(&test_vector, (void *)&i) == 0);
-        test_values[i] = TEST_VAL_COUNT - i;
-        CU_ASSERT(vector_size(&test_vector) == i + 1);
-    }
+    int values[2] = {1, 2};
+    vector test_vector;
+    vector_create(&test_vector, sizeof(int));
+    vector_append(&test_vector, &values[0]);
+    vector_append(&test_vector, &values[1]);
+
+    CU_ASSERT(vector_size(&test_vector) == 2);
+    CU_ASSERT(*(int *)vector_get(&test_vector, 0) == values[0]);
+    CU_ASSERT(*(int *)vector_get(&test_vector, 1) == values[1]);
+    CU_ASSERT(vector_get(&test_vector, 2) == NULL);
+
+    vector_free(&test_vector);
 }
 
 void test_vector_prepend(void) {
-    for(unsigned i = TEST_VAL_COUNT / 2; i < TEST_VAL_COUNT; i++) {
-        CU_ASSERT(vector_prepend(&test_vector, (void *)&i) == 0);
-        test_values[i] = TEST_VAL_COUNT - i;
-        CU_ASSERT(vector_size(&test_vector) == i + 1);
-    }
+    int values[2] = {1, 2};
+    vector test_vector;
+    vector_create(&test_vector, sizeof(int));
+    vector_append(&test_vector, &values[0]);
+    vector_prepend(&test_vector, &values[1]);
+
+    CU_ASSERT(vector_size(&test_vector) == 2);
+    CU_ASSERT(*(int *)vector_get(&test_vector, 0) == values[1]);
+    CU_ASSERT(*(int *)vector_get(&test_vector, 1) == values[0]);
+    CU_ASSERT(vector_get(&test_vector, 2) == NULL);
+
+    vector_free(&test_vector);
 }
 
 void test_vector_get(void) {
-    for(int i = 0; i < TEST_VAL_COUNT; i++) {
-        CU_ASSERT_PTR_NOT_NULL(vector_get(&test_vector, i));
-    }
+    int values[1] = {1};
+    vector test_vector;
+    vector_create(&test_vector, sizeof(int));
+    vector_append(&test_vector, &values[0]);
+    CU_ASSERT(*(int *)vector_get(&test_vector, 0) == values[0]);
+    CU_ASSERT(vector_get(&test_vector, 1) == NULL);
 
-    // We try to fetch a too high an index; this should return NULL
-    CU_ASSERT_PTR_NULL(vector_get(&test_vector, TEST_VAL_COUNT + 1));
+    vector_free(&test_vector);
 }
 
-void test_vector_iterator(void) {
+void test_vector_iter_next(void) {
+    int values[2] = {1, 2};
+    vector test_vector;
+    vector_create(&test_vector, sizeof(int));
+    vector_append(&test_vector, &values[0]);
+    vector_append(&test_vector, &values[1]);
+
     iterator it;
     vector_iter_begin(&test_vector, &it);
-    unsigned *val;
+    CU_ASSERT(*(int *)iter_next(&it) == values[0]);
+    CU_ASSERT(*(int *)iter_next(&it) == values[1]);
+    CU_ASSERT(iter_next(&it) == NULL);
 
-    // Read values from the vector
-    while((val = iter_next(&it)) != NULL) {
-        CU_ASSERT(test_values[*val] == TEST_VAL_COUNT - *val);
-        test_values[*val] = 0;
-    }
+    vector_free(&test_vector);
+}
 
-    // Make sure we got all values from the iterator
-    for(int i = 0; i < TEST_VAL_COUNT; i++) {
-        CU_ASSERT(test_values[i] == 0);
-    }
+void test_vector_iter_prev(void) {
+    int values[2] = {1, 2};
+    vector test_vector;
+    vector_create(&test_vector, sizeof(int));
+    vector_append(&test_vector, &values[0]);
+    vector_append(&test_vector, &values[1]);
+
+    iterator it;
+    vector_iter_end(&test_vector, &it);
+    CU_ASSERT(*(int *)iter_prev(&it) == values[1]);
+    CU_ASSERT(*(int *)iter_prev(&it) == values[0]);
+    CU_ASSERT(iter_prev(&it) == NULL);
+
+    vector_free(&test_vector);
 }
 
 void test_vector_delete(void) {
+    int values[2] = {1, 2};
+    vector test_vector;
+    vector_create(&test_vector, sizeof(int));
+    vector_append(&test_vector, &values[0]);
+    vector_append(&test_vector, &values[1]);
+
     iterator it;
     vector_iter_begin(&test_vector, &it);
     int *val;
-    while((val = iter_next(&it)) != NULL) {
+    foreach(it, val) {
         CU_ASSERT(vector_delete(&test_vector, &it) == 0);
     }
 
@@ -77,6 +105,57 @@ void test_vector_delete(void) {
     // Make sure the iterator returns nothing
     vector_iter_begin(&test_vector, &it);
     CU_ASSERT_PTR_NULL(iter_next(&it));
+
+    vector_free(&test_vector);
+}
+
+void test_vector_swap_delete_at(void) {
+    int values[2] = {1, 2};
+    vector test_vector;
+    vector_create(&test_vector, sizeof(int));
+    vector_append(&test_vector, &values[0]);
+    vector_append(&test_vector, &values[1]);
+
+    vector_swapdelete_at(&test_vector, 0);
+
+    CU_ASSERT(vector_size(&test_vector) == 1);
+    iterator it;
+    vector_iter_begin(&test_vector, &it);
+    CU_ASSERT(*(int *)iter_next(&it) == values[1]);
+    CU_ASSERT_PTR_NULL(iter_next(&it));
+
+    vector_free(&test_vector);
+}
+
+void test_vector_pop(void) {
+    int values[2] = {1, 2};
+    vector test_vector;
+    vector_create(&test_vector, sizeof(int));
+    vector_append(&test_vector, &values[0]);
+    vector_append(&test_vector, &values[1]);
+
+    vector_pop(&test_vector);
+
+    CU_ASSERT(vector_size(&test_vector) == 1);
+    iterator it;
+    vector_iter_begin(&test_vector, &it);
+    CU_ASSERT(*(int *)iter_next(&it) == values[0]);
+    CU_ASSERT_PTR_NULL(iter_next(&it));
+
+    vector_free(&test_vector);
+}
+
+void test_vector_back(void) {
+    int values[2] = {1, 2};
+    vector test_vector;
+    vector_create(&test_vector, sizeof(int));
+    vector_append(&test_vector, &values[0]);
+    vector_append(&test_vector, &values[1]);
+
+    const void *ptr = vector_back(&test_vector);
+    CU_ASSERT(*(int *)ptr == values[1]);
+
+    vector_free(&test_vector);
 }
 
 void test_vector_zero_size(void) {
@@ -84,18 +163,18 @@ void test_vector_zero_size(void) {
     vector zero_vector;
     vector_create_with_size(&zero_vector, sizeof(int), 0);
     vector_iter_begin(&zero_vector, &it);
-    for(unsigned i = 0; i < TEST_VAL_COUNT / 2; i++) {
+
+    for(unsigned i = 0; i < 100; i++) {
         CU_ASSERT(vector_append(&zero_vector, (void *)&i) == 0);
-        test_values[i] = TEST_VAL_COUNT - i;
         CU_ASSERT(vector_size(&zero_vector) == i + 1);
     }
 
-    for(unsigned i = 0; i < TEST_VAL_COUNT / 2; i++) {
+    for(unsigned i = 0; i < 100; i++) {
         CU_ASSERT_PTR_NOT_NULL(vector_get(&zero_vector, i));
     }
 
     // We try to fetch a too high an index; this should return NULL
-    CU_ASSERT_PTR_NULL(vector_get(&zero_vector, TEST_VAL_COUNT + 1));
+    CU_ASSERT_PTR_NULL(vector_get(&zero_vector, 101));
     vector_free(&zero_vector);
 }
 
@@ -113,19 +192,25 @@ void vector_test_suite(CU_pSuite suite) {
     if(CU_add_test(suite, "Test for vector get", test_vector_get) == NULL) {
         return;
     }
-    if(CU_add_test(suite, "Test for vector iterator", test_vector_iterator) == NULL) {
+    if(CU_add_test(suite, "Test for vector iter_next", test_vector_iter_next) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for vector iter_prev", test_vector_iter_prev) == NULL) {
         return;
     }
     if(CU_add_test(suite, "Test for vector delete", test_vector_delete) == NULL) {
         return;
     }
-    if(CU_add_test(suite, "Test for vector free operation", test_vector_free) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for vector free operation", test_vector_free) == NULL) {
+    if(CU_add_test(suite, "Test for vector swap_delete_at", test_vector_swap_delete_at) == NULL) {
         return;
     }
     if(CU_add_test(suite, "Test for zero size vector operation", test_vector_zero_size) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for vector pop", test_vector_pop) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for vector back", test_vector_back) == NULL) {
         return;
     }
 }
