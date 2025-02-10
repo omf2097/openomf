@@ -473,7 +473,7 @@ void har_move(object *obj) {
         }
 
         // Change animation from jump to walk or idle,
-        // depending on horizontal velocity
+        // depending on held inputs
         if(h->state == STATE_JUMPING) {
             if(h->inputs[0] == '6') {
                 h->state = STATE_WALKTO;
@@ -519,11 +519,12 @@ void har_move(object *obj) {
                 object_set_vel(obj, vec2f_create(vx, vy));
                 har_event_jump(h, jump_dir, ctrl);
             } else {
+                object_set_vel(obj, vec2f_create(0, 0));
                 h->state = STATE_STANDING;
                 har_set_ani(obj, ANIM_IDLE, 1);
                 object_set_stride(obj, h->stride);
-                har_event_land(h, ctrl);
             }
+            har_event_land(h, ctrl);
             har_floor_landing_effects(obj);
 
             // make sure HAR's are facing each other
@@ -1667,8 +1668,8 @@ af_move *match_move(object *obj, char *inputs) {
                     log_debug("CHAINING");
                 }
 
-                log_debug("matched move %d with string %s", i, str_c(&move->move_string));
-                /*log_debug("input was %s", h->inputs);*/
+                log_debug("matched move %d with string %s in state %d", i, str_c(&move->move_string), h->state);
+                /*DEBUG("input was %s", h->inputs);*/
                 return move;
             }
         }
@@ -1993,6 +1994,7 @@ void har_finished(object *obj) {
         har_event_recover(h, ctrl);
         h->state = STATE_STANDING;
         har_set_ani(obj, ANIM_IDLE, 1);
+        har_act(obj, ACT_NONE);
     } else if(h->state != STATE_CROUCHING && h->state != STATE_CROUCHBLOCK) {
         // Don't transition to standing state while in midair
         if(object_is_airborne(obj) && h->state == STATE_FALLEN) {
@@ -2005,9 +2007,10 @@ void har_finished(object *obj) {
             har_set_ani(obj, ANIM_IDLE, 1);
         } else {
             har_set_ani(obj, ANIM_IDLE, 1);
+            har_act(obj, ACT_NONE);
         }
     } else {
-        h->state = STATE_NONE;
+        har_set_ani(obj, ANIM_CROUCHING, 1);
         har_act(obj, ACT_NONE);
     }
 }
