@@ -8,7 +8,7 @@
 
 #include "utils/allocator.h"
 
-bool png_read_paletted(const char *filename, unsigned char *dst) {
+bool read_paletted_png(const char *filename, unsigned char *dst) {
     assert(filename != NULL);
     assert(dst != NULL);
     bool ret = false;

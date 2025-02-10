@@ -66,7 +66,7 @@ int sd_vga_image_from_png(sd_vga_image *img, const char *filename) {
     if(sd_vga_image_create(img, 320, 200) != SD_SUCCESS) {
         return SD_FAILURE;
     }
-    if(!png_read_paletted(filename, (unsigned char *)img->data)) {
+    if(!read_paletted_png(filename, (unsigned char *)img->data)) {
         return SD_FAILURE;
     }
     return SD_SUCCESS;
@@ -76,7 +76,7 @@ int sd_vga_image_to_png(const sd_vga_image *img, const vga_palette *pal, const c
     if(img == NULL || filename == NULL) {
         return SD_INVALID_INPUT;
     }
-    if(!png_write_paletted(filename, img->w, img->h, pal, (unsigned char *)img->data)) {
+    if(!write_paletted_png(filename, img->w, img->h, pal, (unsigned char *)img->data)) {
         return SD_FILE_OPEN_ERROR;
     }
     return SD_SUCCESS;

@@ -97,7 +97,7 @@ int sd_rgba_image_clear(sd_rgba_image *img, char r, char g, char b, char a) {
 }
 
 int sd_rgba_image_to_png(const sd_rgba_image *img, const char *filename) {
-    return png_write_rgb(filename, img->w, img->h, (const unsigned char *)img->data, true, false);
+    return write_rgb_png(filename, img->w, img->h, (const unsigned char *)img->data, true, false);
 }
 
 void sd_rgba_image_free(sd_rgba_image *img) {

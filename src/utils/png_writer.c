@@ -5,7 +5,7 @@
 #include <assert.h>
 #include <png.h>
 
-bool png_write_rgb(const char *filename, int w, int h, const unsigned char *data, bool has_alpha, bool flip) {
+bool write_rgb_png(const char *filename, int w, int h, const unsigned char *data, bool has_alpha, bool flip) {
     FILE *fp = fopen(filename, "wb");
     if(fp == NULL) {
         log_error("Unable to write PNG file: Could not open file for writing");
@@ -35,7 +35,7 @@ bool png_write_rgb(const char *filename, int w, int h, const unsigned char *data
     return true;
 }
 
-bool png_write_paletted(const char *filename, int w, int h, const vga_palette *pal, const unsigned char *data) {
+bool write_paletted_png(const char *filename, int w, int h, const vga_palette *pal, const unsigned char *data) {
     assert(filename != NULL);
     assert(data != NULL);
     assert(w * h > 0);

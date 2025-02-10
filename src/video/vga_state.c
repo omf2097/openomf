@@ -179,5 +179,5 @@ void vga_state_debug_screenshot(const char *filename) {
     for(int i = 0; i < 256; i++) {
         img[i] = i;
     }
-    png_write_paletted(filename, 16, 16, &state.current, img);
+    write_paletted_png(filename, 16, 16, &state.current, img);
 }
