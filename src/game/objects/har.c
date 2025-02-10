@@ -444,6 +444,10 @@ void har_floor_landing_effects(object *obj) {
     game_state_play_sound(obj->gs, 56, 0.3f, pos_pan, 2.2f);
 }
 
+char get_last_input(har *har) {
+    return har->inputs[0];
+}
+
 void har_move(object *obj) {
     vec2f vel = object_get_vel(obj);
     obj->pos.x += vel.x;
@@ -472,36 +476,37 @@ void har_move(object *obj) {
             object_set_vel(obj, vec2f_create(vel.x, 0));
         }
 
+        char last_input = get_last_input(h);
         // Change animation from jump to walk or idle,
         // depending on held inputs
         if(h->state == STATE_JUMPING) {
-            if(h->inputs[0] == '6') {
+            if(last_input == '6') {
                 h->state = STATE_WALKTO;
                 har_set_ani(obj, ANIM_WALKING, 1);
                 float vx = h->fwd_speed * object_get_direction(obj);
                 object_set_vel(obj, vec2f_create(vx * (h->hard_close ? 0.5 : 1.0), 0));
                 object_set_stride(obj, h->stride);
                 har_event_walk(h, 1, ctrl);
-            } else if(h->inputs[0] == '4') {
+            } else if(last_input == '4') {
                 h->state = STATE_WALKFROM;
                 har_set_ani(obj, ANIM_WALKING, 1);
                 float vx = h->back_speed * object_get_direction(obj) * -1;
                 object_set_vel(obj, vec2f_create(vx * (h->hard_close ? 0.5 : 1.0), 0));
                 object_set_stride(obj, h->stride);
                 har_event_walk(h, -1, ctrl);
-            } else if(h->inputs[0] == '7' || h->inputs[0] == '8' || h->inputs[0] == '9') {
+            } else if(last_input == '7' || last_input == '8' || last_input == '9') {
                 har_set_ani(obj, ANIM_JUMPING, 0);
                 h->state = STATE_JUMPING;
                 float vx = 0.0f;
                 float vy = h->jump_speed;
                 int jump_dir = 0;
                 int direction = object_get_direction(obj);
-                if(h->inputs[0] == '9') {
+                if(last_input == '9') {
                     vx = (h->fwd_speed * direction);
                     object_set_tick_pos(obj, 110);
                     object_set_stride(obj, 7); // Pass 7 frames per tick
                     jump_dir = 1;
-                } else if(h->inputs[0] == '7') {
+                } else if(last_input == '7') {
                     // If we are jumping backwards, start animation from end
                     // at -100 frames (seems to be about right)
                     object_set_playback_direction(obj, PLAY_BACKWARDS);
@@ -1575,6 +1580,8 @@ void add_input(char *buf, int act_type, int direction) {
         case ACT_STOP:
             add_input_to_buffer(buf, '5');
             break;
+        default:
+            assert(false);
     }
 }
 
@@ -1841,6 +1848,7 @@ int har_act(object *obj, int act_type) {
         return 0;
     }
 
+    char last_input = get_last_input(h);
     if(obj->pos.y < ARENA_FLOOR) {
         // airborne
 
@@ -1848,7 +1856,7 @@ int har_act(object *obj, int act_type) {
         int opp_id = h->player_id ? 0 : 1;
         object *opp =
             game_state_find_object(obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, opp_id)));
-        if(h->inputs[0] == '4' || h->inputs[0] == '6' || h->inputs[0] == '1' || h->inputs[0] == '3') {
+        if(last_input == '4' || last_input == '6' || last_input == '1' || last_input == '3') {
             if(object_get_pos(obj).x > object_get_pos(opp).x) {
                 if(direction != OBJECT_FACE_LEFT) {
                     har_event_air_turn(h, ctrl);
@@ -1872,7 +1880,7 @@ int har_act(object *obj, int act_type) {
     float vx, vy;
     // no moves matched, do player movement
     int newstate;
-    if((newstate = maybe_har_change_state(h->state, direction, h->inputs[0]))) {
+    if((newstate = maybe_har_change_state(h->state, direction, last_input))) {
         h->state = newstate;
         switch(newstate) {
             case STATE_CROUCHBLOCK:
@@ -1908,12 +1916,12 @@ int har_act(object *obj, int act_type) {
                 vx = 0.0f;
                 vy = h->jump_speed;
                 int jump_dir = 0;
-                if(h->inputs[0] == '9') {
+                if(last_input == '9') {
                     vx = (h->fwd_speed * direction);
                     object_set_tick_pos(obj, 110);
                     object_set_stride(obj, 7); // Pass 7 frames per tick
                     jump_dir = 1;
-                } else if(h->inputs[0] == '7') {
+                } else if(last_input == '7') {
                     // If we are jumping backwards, start animation from end
                     // at -100 frames (seems to be about right)
                     object_set_playback_direction(obj, PLAY_BACKWARDS);
@@ -1921,7 +1929,7 @@ int har_act(object *obj, int act_type) {
                     vx = (h->back_speed * direction * -1);
                     object_set_stride(obj, 7); // Pass 7 frames per tick
                     jump_dir = -1;
-                } else if(h->inputs[0] == '8') {
+                } else if(last_input == '8') {
                     // If we are jumping upwards
                     object_set_tick_pos(obj, 110);
                     if(h->id == HAR_GARGOYLE) {
