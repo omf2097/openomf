@@ -11,7 +11,7 @@ on:
 
 jobs:
 
-  # Run unittests on a recent version of clang
+  # Run formatting check and unit tests on a recent version of clang
   # -----------------------------------------------------------------------------------------------
   unittest:
     name: Formatting Check, Unittest
@@ -30,7 +30,7 @@ jobs:
         packages: cmake cmake-data ninja-build libargtable2-dev libcunit1-dev
           libsdl2-mixer-dev libconfuse-dev libenet-dev libsdl2-dev libxmp-dev libpng-dev
           libepoxy-dev clang-${{ env.clang-version }} clang-tidy-${{ env.clang-version }}
-          clang-format-${{ env.clang-version }} fd-find
+          clang-format-${{ env.clang-version }} fd-find valgrind
 
     - name: Run clang-format style check
       run: |
@@ -48,24 +48,88 @@ jobs:
               -S . -B build-test
         cmake --build build-test -j $(getconf _NPROCESSORS_ONLN)
 
-    - name: Run tests
+    - name: Run tests on Valgrind
       run: |
         cd build-test
+        valgrind --tool=memcheck --leak-check=full --track-origins=yes \
+          --show-leak-kinds=all ctest --verbose --output-on-failure
+
+  # Run tests with ASan, MSan, and UBSan
+  # -----------------------------------------------------------------------------------------------
+  sanitizers:
+    needs: [unittest]
+    name: Tests on sanitizers
+    runs-on: ubuntu-24.04
+    env:
+      clang-version: '18'
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: '0'
+
+    - name: Install dependencies
+      uses: Eeems-Org/apt-cache-action@v1.3
+      with:
+        packages: cmake cmake-data ninja-build libargtable2-dev libcunit1-dev
+          libsdl2-mixer-dev libconfuse-dev libenet-dev libsdl2-dev libxmp-dev libpng-dev
+          libepoxy-dev clang-${{ env.clang-version }} clang-tidy-${{ env.clang-version }}
+          clang-format-${{ env.clang-version }} fd-find
+
+    - name: Build tests with ASan
+      run: |
+        cmake -DCMAKE_C_COMPILER=clang-${{ env.clang-version }} \
+              -DUSE_TIDY=On \
+              -DUSE_TESTS=On \
+              -DUSE_SANITIZERS=On \
+              -DUSE_FATAL_SANITIZERS=On \
+              -DUSE_TOOLS=On \
+              -G "Ninja Multi-Config" \
+              -S . -B build-asan
+        cmake --build build-asan -j $(getconf _NPROCESSORS_ONLN)
+
+    - name: Run tests with ASan
+      run: |
+        cd build-asan
+        ctest --verbose --output-on-failure
+
+    - name: Build tests with MSan
+      run: |
+        cmake -DCMAKE_C_COMPILER=clang-${{ env.clang-version }} \
+              -DUSE_TIDY=On \
+              -DUSE_TESTS=On \
+              -DUSE_SANITIZERS=On \
+              -DUSE_MSAN=On \
+              -DUSE_FATAL_SANITIZERS=On \
+              -DUSE_TOOLS=On \
+              -G "Ninja Multi-Config" \
+              -S . -B build-msan
+        cmake --build build-msan -j $(getconf _NPROCESSORS_ONLN)
+
+    - name: Run tests with ASan
+      run: |
+        cd build-msan
         ctest --verbose --output-on-failure
 
     - name: Get OMF2097 assets
       uses: ./.github/actions/assets
 
     - name: Extract omf 2097 assets
-      run: unzip -j omf2097-assets.zip -d build-test/resources
+      run: unzip -j omf2097-assets.zip -d build-asan/resources
+
+    - name: Extract omf 2097 assets
+      run: unzip -j omf2097-assets.zip -d build-msan/resources
 
     - name: Install pytest requirements
       run: |
         pipx install poetry
         poetry install
 
-    - name: Run pytest tests
-      run: ./run_pytest.sh build-test ./Debug/openomf
+    - name: Run pytest tests with ASan
+      run: ./run_pytest.sh build-asan ./Debug/openomf
+
+    - name: Run pytest tests with MSan
+      run: ./run_pytest.sh build-msan ./Debug/openomf
 
   # Build windows release artifacts with MSVC
   # -----------------------------------------------------------------------------------------------

@@ -256,6 +256,7 @@ static conversion_result sd_language_from_utf8(sd_language *language) {
     return result;
 }
 
+__attribute__((no_sanitize("memory")))
 int main(int argc, char *argv[]) {
     // commandline argument parser options
     struct arg_lit *help = arg_lit0("h", "help", "print this help and exit");
