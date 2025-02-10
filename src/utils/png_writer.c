@@ -1,7 +1,7 @@
 #include "utils/png_writer.h"
 #include "utils/log.h"
 
-#ifdef USE_LIBPNG
+#ifdef PNG_FOUND
 #include <assert.h>
 #include <png.h>
 
@@ -58,7 +58,7 @@ bool png_write_paletted(const char *filename, int w, int h, const vga_palette *p
     return true;
 }
 
-#else // USE_LIBPNG
+#else // PNG_FOUND
 
 bool png_write_rgb(const char *filename, int w, int h, const unsigned char *data, bool has_alpha, bool flip) {
     PERROR("PNG writing is not supported in current build!");
@@ -70,4 +70,4 @@ bool png_write_paletted(const char *filename, int w, int h, const vga_palette *p
     return false;
 }
 
-#endif // USE_LIBPNG
+#endif // PNG_FOUND

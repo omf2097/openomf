@@ -254,23 +254,21 @@ target_link_libraries(openomf_core PRIVATE
     openomf::xmp
 )
 
-if (USE_LIBPNG)
-    target_link_libraries(openomf_core PUBLIC
-        openomf::png
-    )
-    add_definitions(-DUSE_LIBPNG=1)
-endif ()
+if(USE_LIBPNG)
+    message(STATUS "libpng support is enabled.")
+    target_link_libraries(openomf_core PRIVATE openomf::png)
+else()
+    message(STATUS "libpng support is disabled -- screenshots not available!")
+endif()
 
 if(USE_MINIUPNPC)
-    target_link_libraries(openomf_core PUBLIC
-        openomf::miniupnpc
-    )
+    target_link_libraries(openomf_core PUBLIC openomf::miniupnpc)
 endif()
+
 if(USE_NATPMP)
-    target_link_libraries(openomf_core PUBLIC
-        openomf::natpmp
-    )
+    target_link_libraries(openomf_core PUBLIC openomf::natpmp)
 endif()
+
 list(APPEND CORELIBS openomf_core)
 
 if(WIN32 AND NOT MINGW)
