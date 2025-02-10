@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.16)
 # Options
 OPTION(USE_TESTS "Build unittests" OFF)
 OPTION(USE_TOOLS "Build tools" OFF)
+OPTION(USE_LIBPNG "Build with libpng support" ON)
 OPTION(USE_SANITIZERS "Enable Asan and Ubsan" OFF)
 OPTION(USE_FATAL_SANITIZERS "Make Asan and Ubsan errors fatal" OFF)
 OPTION(USE_TIDY "Use clang-tidy for checks" OFF)
@@ -248,21 +249,26 @@ target_link_libraries(openomf_core PRIVATE
     openomf::confuse
     openomf::enet
     openomf::epoxy
-    openomf::png
     openomf::SDL2
     openomf::SDL2_mixer
     openomf::xmp
 )
+
+if(USE_LIBPNG)
+    message(STATUS "libpng support is enabled.")
+    target_link_libraries(openomf_core PRIVATE openomf::png)
+else()
+    message(STATUS "libpng support is disabled -- screenshots not available!")
+endif()
+
 if(USE_MINIUPNPC)
-    target_link_libraries(openomf_core PUBLIC
-        openomf::miniupnpc
-    )
+    target_link_libraries(openomf_core PUBLIC openomf::miniupnpc)
 endif()
+
 if(USE_NATPMP)
-    target_link_libraries(openomf_core PUBLIC
-        openomf::natpmp
-    )
+    target_link_libraries(openomf_core PUBLIC openomf::natpmp)
 endif()
+
 list(APPEND CORELIBS openomf_core)
 
 if(WIN32 AND NOT MINGW)

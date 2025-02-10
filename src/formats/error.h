@@ -27,6 +27,7 @@ enum SD_ERRORCODE
     SD_FILE_WRITE_ERROR,     ///< File could not be written
     SD_FILE_READ_ERROR,      ///< File could not be read
     SD_FILE_UNLINK_ERROR,    ///< File could not be unlinked
+    SD_FAILURE,              ///< General failure
 };
 
 /*! \brief Get text error for error ID

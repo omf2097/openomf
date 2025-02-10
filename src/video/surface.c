@@ -195,5 +195,5 @@ void surface_compress_remap(surface *sur, int range_start, int range_end, int re
 }
 
 bool surface_write_png(const surface *sur, const vga_palette *pal, const char *filename) {
-    return png_write_paletted(filename, sur->w, sur->h, pal, sur->data);
+    return write_paletted_png(filename, sur->w, sur->h, pal, sur->data);
 }

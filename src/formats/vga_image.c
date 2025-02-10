@@ -7,6 +7,7 @@
 #include "formats/error.h"
 #include "formats/vga_image.h"
 #include "utils/allocator.h"
+#include "utils/png_reader.h"
 #include "utils/png_writer.h"
 
 int sd_vga_image_create(sd_vga_image *img, unsigned int w, unsigned int h) {
@@ -62,110 +63,20 @@ int sd_vga_image_decode(sd_rgba_image *dst, const sd_vga_image *src, const vga_p
 }
 
 int sd_vga_image_from_png(sd_vga_image *img, const char *filename) {
-    png_structp png_ptr;
-    png_infop info_ptr;
-    volatile int ret = SD_SUCCESS;
-    int got = 0;
-    png_bytep *row_pointers;
-
-    if(img == NULL || filename == NULL) {
-        ret = SD_INVALID_INPUT;
-        goto error_0;
+    if(sd_vga_image_create(img, 320, 200) != SD_SUCCESS) {
+        return SD_FAILURE;
     }
-
-    FILE *handle = fopen(filename, "rb");
-    if(handle == NULL) {
-        ret = SD_FILE_OPEN_ERROR;
-        goto error_0;
+    if(!read_paletted_png(filename, (unsigned char *)img->data)) {
+        return SD_FAILURE;
     }
-
-    uint8_t sig[8];
-    got = fread(sig, 1, 8, handle);
-    if(got != 8 || !png_check_sig(sig, 8)) {
-        ret = SD_FILE_INVALID_TYPE;
-        goto error_1;
-    }
-
-    png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-    if(!png_ptr) {
-        ret = SD_OUT_OF_MEMORY;
-        goto error_1;
-    }
-
-    info_ptr = png_create_info_struct(png_ptr);
-    if(!info_ptr) {
-        ret = SD_OUT_OF_MEMORY;
-        goto error_1;
-    }
-
-    if(setjmp(png_jmpbuf(png_ptr))) {
-        ret = SD_FILE_INVALID_TYPE;
-        goto error_2;
-    }
-
-    png_init_io(png_ptr, handle);
-    png_set_sig_bytes(png_ptr, 8);
-    png_read_info(png_ptr, info_ptr);
-    int w = png_get_image_width(png_ptr, info_ptr);
-    int h = png_get_image_height(png_ptr, info_ptr);
-    png_byte color_type = png_get_color_type(png_ptr, info_ptr);
-    png_byte bit_depth = png_get_bit_depth(png_ptr, info_ptr);
-
-    if(w > 320 || w < 1 || h > 200 || h < 1) {
-        ret = SD_FILE_INVALID_TYPE;
-        goto error_2;
-    }
-
-    // We need paletted images.
-    if(color_type != PNG_COLOR_TYPE_PALETTE || bit_depth != 8) {
-        ret = SD_FILE_INVALID_TYPE;
-        goto error_2;
-    }
-
-    // Allocate memory for the data
-    row_pointers = omf_calloc(h, sizeof(png_bytep));
-    for(int y = 0; y < h; y++) {
-        row_pointers[y] = omf_calloc(1, png_get_rowbytes(png_ptr, info_ptr));
-    }
-
-    if(setjmp(png_jmpbuf(png_ptr))) {
-        ret = SD_FILE_INVALID_TYPE;
-        goto error_3;
-    }
-
-    png_read_image(png_ptr, row_pointers);
-
-    // Convert
-    if(sd_vga_image_create(img, w, h) != SD_SUCCESS) {
-        ret = SD_OUT_OF_MEMORY;
-        goto error_3;
-    }
-    for(int y = 0; y < h; y++) {
-        png_byte *row = row_pointers[y];
-        for(int x = 0; x < w; x++) {
-            img->data[w * y + x] = row[x];
-        }
-    }
-
-    // Free up everything
-error_3:
-    for(int y = 0; y < h; y++) {
-        omf_free(row_pointers[y]);
-    }
-    omf_free(row_pointers);
-error_2:
-    png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-error_1:
-    fclose(handle);
-error_0:
-    return ret;
+    return SD_SUCCESS;
 }
 
 int sd_vga_image_to_png(const sd_vga_image *img, const vga_palette *pal, const char *filename) {
     if(img == NULL || filename == NULL) {
         return SD_INVALID_INPUT;
     }
-    if(!png_write_paletted(filename, img->w, img->h, pal, (unsigned char *)img->data)) {
+    if(!write_paletted_png(filename, img->w, img->h, pal, (unsigned char *)img->data)) {
         return SD_FILE_OPEN_ERROR;
     }
     return SD_SUCCESS;
