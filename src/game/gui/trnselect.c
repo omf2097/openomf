@@ -77,7 +77,7 @@ void load_description(component **c, const char *desc) {
         start++;
     }
 
-    DEBUG("width %d, center %d, vmove %d size %d color %d", width, center, vmove, size, color);
+    log_debug("width %d, center %d, vmove %d size %d color %d", width, center, vmove, size, color);
 
     text_settings tconf;
     text_defaults(&tconf);

@@ -364,7 +364,7 @@ void lobby_do_yell(component *c, void *userdata) {
     const char *yell = textinput_value(c);
 
     if(strlen(yell) > 0) {
-        DEBUG("yelled %s", textinput_value(c));
+        log_debug("yelled %s", textinput_value(c));
 
         serial ser;
         serial_create(&ser);
@@ -425,12 +425,12 @@ void lobby_do_whisper(component *c, void *userdata) {
     const char *whisper = textinput_value(c);
 
     if(strlen(whisper) > 0) {
-        DEBUG("whispered %s", whisper);
+        log_debug("whispered %s", whisper);
 
         lobby_local *local = scene_get_userdata(s);
         lobby_user *user = list_get(&local->users, local->active_user);
-        DEBUG("active_user is %d", local->active_user);
-        DEBUG("whispered %s", textinput_value(c));
+        log_debug("active_user is %d", local->active_user);
+        log_debug("whispered %s", textinput_value(c));
         serial ser;
         serial_create(&ser);
         serial_write_int8(&ser, PACKET_WHISPER << 4);
@@ -547,7 +547,7 @@ void lobby_entered_name(component *c, void *userdata) {
         address.host = ENET_HOST_ANY;
         address.port = settings_get()->net.net_listen_port_start;
 
-        DEBUG("attempting to bind to port %d", address.port);
+        log_debug("attempting to bind to port %d", address.port);
 
         if(address.port == 0) {
             address.port = rand_int(65535 - 1024) + 1024;
@@ -564,33 +564,34 @@ void lobby_entered_name(component *c, void *userdata) {
         while(local->client == NULL) {
             local->client = enet_host_create(&address, 2, 2, 0, 0);
             if(local->client == NULL) {
-                DEBUG("requested port %d unavailable, trying ports %d to %d", address.port,
-                      settings_get()->net.net_listen_port_start, end_port);
+                log_debug("requested port %d unavailable, trying ports %d to %d", address.port,
+                          settings_get()->net.net_listen_port_start, end_port);
                 if(settings_get()->net.net_listen_port_start == 0) {
                     address.port = rand_int(65535 - 1024) + 1024;
                     randtries++;
                     if(randtries > 10) {
-                        DEBUG("Failed to initialize ENet server, could not allocate random port");
+                        log_debug("Failed to initialize ENet server, could not allocate random port");
                         return;
                     }
                 } else {
                     address.port++;
                     if(address.port > end_port) {
-                        DEBUG("Failed to initialize ENet server, port range exhausted");
+                        log_debug("Failed to initialize ENet server, port range exhausted");
                         return;
                     }
                     randtries++;
                     if(randtries > 10) {
-                        DEBUG("Failed to initialize ENet server, could not allocate port between %d and %d after 10 "
-                              "tries",
-                              settings_get()->net.net_listen_port_start, end_port);
+                        log_debug(
+                            "Failed to initialize ENet server, could not allocate port between %d and %d after 10 "
+                            "tries",
+                            settings_get()->net.net_listen_port_start, end_port);
                         return;
                     }
                 }
             }
         }
 
-        DEBUG("bound to port %d", address.port);
+        log_debug("bound to port %d", address.port);
 
         int ext_port = settings_get()->net.net_ext_port_start;
         if(ext_port == 0) {
@@ -624,19 +625,19 @@ void lobby_entered_name(component *c, void *userdata) {
         enet_address_set_host(&lobby_address, "lobby.openomf.org");
         // enet_address_set_host(&address, "127.0.0.1");
         lobby_address.port = 2098;
-        DEBUG("server address is %d", lobby_address.host);
+        log_debug("server address is %d", lobby_address.host);
         /* Initiate the connection, allocating the two channels 0 and 1. */
         local->peer = enet_host_connect(local->client, &lobby_address, 2, 0);
 
         if(local->peer == NULL) {
-            DEBUG("No available peers for initiating an ENet connection.\n");
+            log_debug("No available peers for initiating an ENet connection.\n");
         }
         /* Wait up to 5 seconds for the connection attempt to succeed. */
         else if(enet_host_service(local->client, &event, 5000) > 0 && event.type == ENET_EVENT_TYPE_CONNECT) {
-            DEBUG("Connection to server succeeded.");
+            log_debug("Connection to server succeeded.");
 
-            DEBUG("local peer connect id %d", local->peer->connectID);
-            DEBUG("remote peer connect id %d", event.peer->connectID);
+            log_debug("local peer connect id %d", local->peer->connectID);
+            log_debug("remote peer connect id %d", event.peer->connectID);
 
             event.peer->data = nat;
             strncpy_or_truncate(local->name, textinput_value(c), sizeof(local->name));
@@ -676,7 +677,7 @@ void lobby_entered_name(component *c, void *userdata) {
             /* had run out without any significant event.            */
             enet_peer_reset(peer);
 
-            DEBUG("Connection to server failed.");
+            log_debug("Connection to server failed.");
         }
     }
 }
@@ -702,9 +703,9 @@ void lobby_try_connect(void *scenedata, void *userdata) {
     scene *s = scenedata;
     lobby_local *local = scene_get_userdata(s);
     if(!local->opponent_peer) {
-        DEBUG("doing scheduled outbound connection to %d.%d.%d.%d port %d", local->opponent->address.host & 0xFF,
-              (local->opponent->address.host >> 8) & 0xFF, (local->opponent->address.host >> 16) & 0xF,
-              (local->opponent->address.host >> 24) & 0xFF, local->opponent->address.port);
+        log_debug("doing scheduled outbound connection to %d.%d.%d.%d port %d", local->opponent->address.host & 0xFF,
+                  (local->opponent->address.host >> 8) & 0xFF, (local->opponent->address.host >> 16) & 0xF,
+                  (local->opponent->address.host >> 24) & 0xFF, local->opponent->address.port);
         local->opponent_peer = enet_host_connect(local->client, &local->opponent->address, 2, 0);
         if(local->opponent_peer) {
             enet_peer_timeout(local->opponent_peer, 4, 1000, 1000);
@@ -783,15 +784,15 @@ void lobby_tick(scene *scene, int paused) {
             case ENET_EVENT_TYPE_NONE:
                 break;
             case ENET_EVENT_TYPE_CONNECT:
-                DEBUG("A new client connected from %x:%u.", event.peer->address.host, event.peer->address.port);
+                log_debug("A new client connected from %x:%u.", event.peer->address.host, event.peer->address.port);
 
                 /* Store any relevant client information here. */
                 event.peer->data = NULL;
-                DEBUG("new peer was %d, server peer was %d, opponent peer was %d", event.peer, local->peer,
-                      local->opponent_peer);
+                log_debug("new peer was %d, server peer was %d, opponent peer was %d", event.peer, local->peer,
+                          local->opponent_peer);
 
                 if(local->opponent_peer && event.peer->address.host == local->opponent->address.host) {
-                    DEBUG("connected to peer outbound!");
+                    log_debug("connected to peer outbound!");
                     local->opponent_peer = event.peer;
                     serial_create(&ser);
                     serial_write_int8(&ser, PACKET_JOIN << 4);
@@ -881,8 +882,8 @@ void lobby_tick(scene *scene, int paused) {
 
                 serial_create_from(&ser, (const char *)event.packet->data, event.packet->dataLength);
                 uint8_t control_byte = serial_read_int8(&ser);
-                DEBUG("A packet of length %u with control byte %d was received on channel %u.",
-                      event.packet->dataLength, control_byte, event.channelID);
+                log_debug("A packet of length %u with control byte %d was received on channel %u.",
+                          event.packet->dataLength, control_byte, event.channelID);
                 switch(control_byte >> 4) {
                     case PACKET_PRESENCE: {
                         lobby_user user;
@@ -943,7 +944,7 @@ void lobby_tick(scene *scene, int paused) {
                             switch(control_byte & 0xf) {
                                 case 0:
                                     local->id = serial_read_uint32(&ser);
-                                    DEBUG("successfully joined lobby and assigned ID %d", local->id);
+                                    log_debug("successfully joined lobby and assigned ID %d", local->id);
                                     if(local->joinmenu) {
                                         local->joinmenu->finished = 1;
                                         local->joinmenu = NULL;
@@ -955,7 +956,7 @@ void lobby_tick(scene *scene, int paused) {
                                     break;
                             }
                         } else if(!local->opponent_peer && event.peer->address.host == local->opponent->address.host) {
-                            DEBUG("connected to peer inbound!");
+                            log_debug("connected to peer inbound!");
                             local->opponent_peer = event.peer;
 
                             // signal the server we're connected
@@ -1035,8 +1036,8 @@ void lobby_tick(scene *scene, int paused) {
                             local->controllers_created = true;
 
                         } else {
-                            DEBUG("opponent peer %d, host %d %d", local->opponent_peer, event.peer->address.host,
-                                  local->opponent->address.host);
+                            log_debug("opponent peer %d, host %d %d", local->opponent_peer, event.peer->address.host,
+                                      local->opponent->address.host);
                         }
                         break;
                     case PACKET_YELL: {
@@ -1081,7 +1082,7 @@ void lobby_tick(scene *scene, int paused) {
                             case 0: {
                                 uint32_t connect_id = serial_read_uint32(&ser);
 
-                                DEBUG("got challenge from %d, we are %d", connect_id, local->id);
+                                log_debug("got challenge from %d, we are %d", connect_id, local->id);
                                 iterator it;
                                 list_iter_begin(&local->users, &it);
                                 lobby_user *user;
@@ -1104,7 +1105,7 @@ void lobby_tick(scene *scene, int paused) {
                                     local->dialog->clicked = lobby_dialog_accept_challenge;
                                     dialog_show(local->dialog, 1);
                                 } else {
-                                    DEBUG("unable to find user with id %d", connect_id);
+                                    log_debug("unable to find user with id %d", connect_id);
                                 }
                             } break;
                             case CHALLENGE_FLAG_ACCEPT:
@@ -1121,10 +1122,11 @@ void lobby_tick(scene *scene, int paused) {
                                 local->opponent_peer =
                                     enet_host_connect(local->client, &local->opponent->address, 2, 0);
 
-                                DEBUG("doing immediate outbound connection to %d.%d.%d.%d port %d",
-                                      local->opponent->address.host & 0xFF, (local->opponent->address.host >> 8) & 0xFF,
-                                      (local->opponent->address.host >> 16) & 0xF,
-                                      (local->opponent->address.host >> 24) & 0xFF, local->opponent->address.port);
+                                log_debug("doing immediate outbound connection to %d.%d.%d.%d port %d",
+                                          local->opponent->address.host & 0xFF,
+                                          (local->opponent->address.host >> 8) & 0xFF,
+                                          (local->opponent->address.host >> 16) & 0xF,
+                                          (local->opponent->address.host >> 24) & 0xFF, local->opponent->address.port);
                                 if(local->opponent_peer) {
                                     enet_peer_timeout(local->opponent_peer, 4, 1000, 1000);
                                 }
@@ -1167,7 +1169,7 @@ void lobby_tick(scene *scene, int paused) {
                         }
                     } break;
                     default:
-                        DEBUG("unknown packet of type %d received", event.packet->data[0] >> 4);
+                        log_debug("unknown packet of type %d received", event.packet->data[0] >> 4);
                         break;
                 }
                 serial_free(&ser);
@@ -1179,7 +1181,7 @@ void lobby_tick(scene *scene, int paused) {
 
                 if(event.peer == local->opponent_peer) {
                     local->connection_count++;
-                    DEBUG("outbound peer connection failed");
+                    log_debug("outbound peer connection failed");
                     enet_peer_reset(local->opponent_peer);
                     local->opponent_peer = NULL;
 
@@ -1231,7 +1233,7 @@ void lobby_tick(scene *scene, int paused) {
     game_player *p1 = game_state_get_player(gs, 0);
     controller *c1 = game_player_get_ctrl(p1);
     if(c1->type == CTRL_TYPE_NETWORK && net_controller_ready(c1)) {
-        DEBUG("network peer is ready, tick offset is %d and rtt is %d", net_controller_tick_offset(c1), c1->rtt);
+        log_debug("network peer is ready, tick offset is %d and rtt is %d", net_controller_tick_offset(c1), c1->rtt);
         local->client = NULL;
         game_state_set_next(gs, SCENE_MELEE);
     }
@@ -1239,7 +1241,7 @@ void lobby_tick(scene *scene, int paused) {
     game_player *p2 = game_state_get_player(gs, 1);
     controller *c2 = game_player_get_ctrl(p2);
     if(c2->type == CTRL_TYPE_NETWORK && net_controller_ready(c2) == 1) {
-        DEBUG("network peer is ready, tick offset is %d and rtt is %d", net_controller_tick_offset(c2), c2->rtt);
+        log_debug("network peer is ready, tick offset is %d and rtt is %d", net_controller_tick_offset(c2), c2->rtt);
         local->client = NULL;
         game_state_set_next(gs, SCENE_MELEE);
     }

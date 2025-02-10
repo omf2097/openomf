@@ -72,7 +72,7 @@ void hazard_spawn_cb(object *parent, int id, vec2i pos, vec2f vel, uint8_t mp_fl
         }
         game_state_add_object(parent->gs, obj, RENDER_LAYER_BOTTOM, 0, 0);
     } else {
-        DEBUG("failed to spawn hazard child");
+        log_debug("failed to spawn hazard child");
     }
 }
 
@@ -126,7 +126,7 @@ void hazard_move(object *obj) {
             obj->orbit_pos.x = obj->pos.x;
             obj->orbit_pos.y = obj->pos.y;
             obj->orbit_dest = generate_destination(obj);
-            DEBUG("new position is %f, %f", obj->orbit_dest.x, obj->orbit_dest.y);
+            log_debug("new position is %f, %f", obj->orbit_dest.x, obj->orbit_dest.y);
         }
 
         // accelerate_orbit(obj);
@@ -140,25 +140,25 @@ void hazard_move(object *obj) {
 
         if(obj->orbit_dest.x > obj->pos.x) {
             if(obj->vel.x < 1.0f) {
-                DEBUG("accel +%f", x_dist / (bigger * 10));
+                log_debug("accel +%f", x_dist / (bigger * 10));
                 obj->vel.x += x_dist / (bigger * 10);
             }
         }
         if(obj->orbit_dest.x < obj->pos.x) {
             if(obj->vel.x < 1.0f) {
-                DEBUG("accel -%f", x_dist / (bigger * 10));
+                log_debug("accel -%f", x_dist / (bigger * 10));
                 obj->vel.x -= x_dist / (bigger * 10);
             }
         }
         if(obj->orbit_dest.y > obj->pos.y) {
             if(obj->vel.y < 1.0f) {
-                DEBUG("accel +%f", y_dist / (bigger * 10));
+                log_debug("accel +%f", y_dist / (bigger * 10));
                 obj->vel.y += y_dist / (bigger * 10);
             }
         }
         if(obj->orbit_dest.y < obj->pos.y) {
             if(obj->vel.y < 1.0f) {
-                DEBUG("accel -%f", y_dist / (bigger * 10));
+                log_debug("accel -%f", y_dist / (bigger * 10));
                 obj->vel.y -= y_dist / (bigger * 10);
             }
         }
@@ -188,7 +188,7 @@ int hazard_create(object *obj, scene *scene) {
     obj->orbit_pos.y = obj->pos.y;
     obj->orbit_dest =
         vec2f_create((random_float(&obj->gs->rand) * 280.0f) + 20.0f, (random_float(&obj->gs->rand) * 160.0f) + 20.0f);
-    DEBUG("new position is %f, %f", obj->orbit_dest.x, obj->orbit_dest.y);
+    log_debug("new position is %f, %f", obj->orbit_dest.x, obj->orbit_dest.y);
 
     return 0;
 }

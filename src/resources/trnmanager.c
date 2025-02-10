@@ -21,7 +21,7 @@ list *trnlist_init(void) {
     // Find path to savegame directory
     const char *dirname = pm_get_local_path(RESOURCE_PATH);
     if(dirname == NULL) {
-        PERROR("Could not find resources path! Something is wrong with tournament manager!");
+        log_error("Could not find resources path! Something is wrong with tournament manager!");
         return NULL;
     }
 
@@ -32,7 +32,7 @@ list *trnlist_init(void) {
         goto error_0;
     }
 
-    DEBUG("Found %d tournaments.", list_size(&dirlist));
+    log_debug("Found %d tournaments.", list_size(&dirlist));
 
     list *trnlist = omf_calloc(1, sizeof(list));
     list_create(trnlist);
@@ -49,12 +49,12 @@ list *trnlist_init(void) {
         if(SD_SUCCESS == sd_tournament_load(&trn, tmp)) {
             list_append(trnlist, &trn, sizeof(sd_tournament_file));
         } else {
-            PERROR("Could not load tournament %s", trn_file);
+            log_error("Could not load tournament %s", trn_file);
         }
     }
     list_iter_end(&dirlist, &it);
 
-    DEBUG("Loaded %d tournaments", list_size(trnlist));
+    log_debug("Loaded %d tournaments", list_size(trnlist));
 
     list_free(&dirlist);
     return trnlist;
@@ -75,7 +75,7 @@ int trn_load(sd_tournament_file *trn, const char *trnname) {
     sd_tournament_create(trn);
     int ret = sd_tournament_load(trn, tmp);
     if(ret != SD_SUCCESS) {
-        PERROR("Unable to load tournament file '%s'.", tmp);
+        log_error("Unable to load tournament file '%s'.", tmp);
         return 1;
     }
 

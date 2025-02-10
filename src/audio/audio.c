@@ -59,7 +59,7 @@ void audio_scan_backends(void) {
             available_backends[audio_backend_count].set_callbacks = all_backends[i];
             available_backends[audio_backend_count].name = tmp.get_name();
             available_backends[audio_backend_count].description = tmp.get_description();
-            DEBUG("Audio backend '%s' is available", available_backends[audio_backend_count].name);
+            log_debug("Audio backend '%s' is available", available_backends[audio_backend_count].name);
             audio_backend_count++;
         }
     }
@@ -121,16 +121,16 @@ static bool find_best_backend(void) {
 static bool audio_find_backend(const char *try_name) {
     if(try_name != NULL && strlen(try_name) > 0) {
         if(hunt_backend_by_name(try_name)) {
-            INFO("Found configured audio backend '%s'!", current_backend.get_name());
+            log_info("Found configured audio backend '%s'!", current_backend.get_name());
             return true;
         }
-        PERROR("Unable to find specified audio backend '%s', trying other alternatives ...", try_name);
+        log_error("Unable to find specified audio backend '%s', trying other alternatives ...", try_name);
     }
     if(find_best_backend()) {
-        INFO("Found available audio backend '%s'!", current_backend.get_name());
+        log_info("Found available audio backend '%s'!", current_backend.get_name());
         return true;
     }
-    PERROR("Unable to find any available audio backend!");
+    log_error("Unable to find any available audio backend!");
     memset(&current_backend, 0, sizeof(audio_backend));
     return false;
 }
@@ -165,11 +165,11 @@ int audio_play_sound(int id, float volume, float panning, float pitch) {
     char *src_buf;
     int src_len;
     if(!sounds_loader_get(id, &src_buf, &src_len)) {
-        PERROR("Requested sound sample %d not found", id);
+        log_error("Requested sound sample %d not found", id);
         return -1;
     }
     if(src_len == 0) {
-        DEBUG("Requested sound sample %d has nothing to play", id);
+        log_debug("Requested sound sample %d has nothing to play", id);
         return -1;
     }
 

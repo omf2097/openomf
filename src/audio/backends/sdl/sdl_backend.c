@@ -110,13 +110,13 @@ static bool audio_get_chunk(sdl_audio_context *ctx, Mix_Chunk *chunk, const char
     // Converter for sound samples.
     int src_freq = 8000 * pitch;
     if(SDL_BuildAudioCVT(&cvt, AUDIO_U8, 1, src_freq, ctx->format, ctx->channels, ctx->sample_rate) < 0) {
-        PERROR("Unable to build audio converter: %s", SDL_GetError());
+        log_error("Unable to build audio converter: %s", SDL_GetError());
         goto exit_0;
     }
 
     // Create a buffer that can hold the source data and final converted data.
     if((dst_buf = SDL_malloc(src_len * cvt.len_mult + 1)) == NULL) {
-        PERROR("Unable to allocate memory for sound buffer");
+        log_error("Unable to allocate memory for sound buffer");
         goto exit_0;
     }
     SDL_memcpy((void *)dst_buf, (void *)src_buf, src_len);
@@ -125,7 +125,7 @@ static bool audio_get_chunk(sdl_audio_context *ctx, Mix_Chunk *chunk, const char
     cvt.buf = dst_buf;
     cvt.len = src_len;
     if(SDL_ConvertAudio(&cvt) != 0) {
-        PERROR("Unable to convert audio sample: %s", SDL_GetError());
+        log_error("Unable to convert audio sample: %s", SDL_GetError());
         goto exit_1;
     }
 
@@ -146,36 +146,36 @@ static bool audio_load_module(sdl_audio_context *ctx, const char *file) {
 
     if(!ctx->xmp_context) {
         if((ctx->xmp_context = xmp_create_context()) == NULL) {
-            PERROR("Unable to initialize XMP context.");
+            log_error("Unable to initialize XMP context.");
             goto exit_0;
         }
     }
 
     // Load the module file
     if(xmp_load_module(ctx->xmp_context, (char *)file) < 0) {
-        PERROR("Unable to open module file");
+        log_error("Unable to open module file");
         goto exit_0;
     }
 
     // Show some information
     struct xmp_module_info mi;
     xmp_get_module_info(ctx->xmp_context, &mi);
-    DEBUG("Loaded music track %s (%s)", mi.mod->name, mi.mod->type);
+    log_debug("Loaded music track %s (%s)", mi.mod->name, mi.mod->type);
 
     // Start the player
     int flags = 0;
     if(ctx->channels == 1)
         flags |= XMP_FORMAT_MONO;
     if(xmp_start_player(ctx->xmp_context, ctx->sample_rate, flags) != 0) {
-        PERROR("Unable to start module playback");
+        log_error("Unable to start module playback");
         goto exit_1;
     }
     if(xmp_set_player(ctx->xmp_context, XMP_PLAYER_INTERP, ctx->resampler) != 0) {
-        PERROR("Unable to set music resampler");
+        log_error("Unable to set music resampler");
         goto exit_2;
     }
     if(xmp_set_player(ctx->xmp_context, XMP_PLAYER_VOLUME, ctx->music_volume * 100) != 0) {
-        PERROR("Unable to set music volume");
+        log_error("Unable to set music volume");
         goto exit_2;
     }
     return true;
@@ -237,12 +237,12 @@ static int play_sound(void *userdata, const char *src_buf, size_t src_len, float
     }
     free_chunk(ctx, channel); // Make sure old chunk is deallocated, if one exists.
     if(!audio_get_chunk(ctx, &ctx->channel_chunks[channel], src_buf, src_len, volume, pitch)) {
-        PERROR("Unable to play sound: Failed to load chunk");
+        log_error("Unable to play sound: Failed to load chunk");
         return -1;
     }
     Mix_SetPanning(channel, clamp(pan_left * 255, 0, 255), clamp(pan_right * 255, 0, 255));
     if(Mix_FadeInChannelTimed(channel, &ctx->channel_chunks[channel], 0, fade, -1) == -1) {
-        PERROR("Unable to play sound: %s", Mix_GetError());
+        log_error("Unable to play sound: %s", Mix_GetError());
         return -1;
     }
 
@@ -261,7 +261,7 @@ static void play_music(void *userdata, const char *file_name) {
     stop_music(ctx);
     audio_close_module(ctx);
     if(!audio_load_module(ctx, file_name)) {
-        PERROR("Unable to load music track: %s", file_name);
+        log_error("Unable to load music track: %s", file_name);
         return;
     }
     Mix_HookMusic(audio_xmp_render, ctx);
@@ -278,26 +278,26 @@ static bool setup_backend_context(void *userdata, unsigned sample_rate, bool mon
     memset(ctx, 0, sizeof(sdl_audio_context));
 
     if(SDL_InitSubSystem(SDL_INIT_AUDIO) != 0) {
-        PERROR("Unable to initialize audio subsystem: %s", SDL_GetError());
+        log_error("Unable to initialize audio subsystem: %s", SDL_GetError());
         goto error_0;
     }
     if(Mix_Init(0) != 0) {
-        PERROR("Unable to initialize mixer subsystem: %s", Mix_GetError());
+        log_error("Unable to initialize mixer subsystem: %s", Mix_GetError());
         goto error_1;
     }
     if((ctx->xmp_context = xmp_create_context()) == NULL) {
-        PERROR("Unable to initialize XMP context.");
+        log_error("Unable to initialize XMP context.");
         goto error_2;
     }
 
-    INFO("Requested audio device with options:");
-    INFO(" * Sample rate: %dHz", sample_rate);
-    INFO(" * Channels: %d", mono ? 1 : 2);
-    INFO(" * Format: %s", get_sdl_audio_format_string(AUDIO_S16SYS));
+    log_info("Requested audio device with options:");
+    log_info(" * Sample rate: %dHz", sample_rate);
+    log_info(" * Channels: %d", mono ? 1 : 2);
+    log_info(" * Format: %s", get_sdl_audio_format_string(AUDIO_S16SYS));
 
     // Setup audio. We request for configuration, but we're not sure what we get.
     if(Mix_OpenAudioDevice(sample_rate, AUDIO_S16SYS, mono ? 1 : 2, 2048, NULL, 0) != 0) {
-        PERROR("Unable to initialize audio device: %s", SDL_GetError());
+        log_error("Unable to initialize audio device: %s", SDL_GetError());
         goto error_3;
     }
 
@@ -311,10 +311,10 @@ static bool setup_backend_context(void *userdata, unsigned sample_rate, bool mon
 
     // Get the actual device configuration we got.
     Mix_QuerySpec(&ctx->sample_rate, &ctx->format, &ctx->channels);
-    INFO("Opened audio device:");
-    INFO(" * Sample rate: %dHz", ctx->sample_rate);
-    INFO(" * Channels: %d", ctx->channels);
-    INFO(" * Format: %s", get_sdl_audio_format_string(ctx->format));
+    log_info("Opened audio device:");
+    log_info(" * Sample rate: %dHz", ctx->sample_rate);
+    log_info(" * Channels: %d", ctx->channels);
+    log_info(" * Format: %s", get_sdl_audio_format_string(ctx->format));
     return true;
 
 error_3:
@@ -330,7 +330,7 @@ error_0:
 static void close_backend_context(void *userdata) {
     assert(userdata);
     sdl_audio_context *ctx = userdata;
-    DEBUG("closing audio");
+    log_debug("closing audio");
     stop_music(ctx);
     audio_close_module(ctx);
     Mix_ChannelFinished(NULL);

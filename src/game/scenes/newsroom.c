@@ -249,7 +249,7 @@ void newsroom_input_tick(scene *scene) {
                                 // we keep losing
                                 p2->sp_wins = 0;
                             } else {
-                                DEBUG("wins are %d", p1->sp_wins);
+                                log_debug("wins are %d", p1->sp_wins);
                                 if(p1->sp_wins == (4094 ^ (2 << p1->pilot->pilot_id))) {
                                     // won the game
                                     game_state_set_next(scene->gs, SCENE_END);
@@ -335,7 +335,7 @@ int newsroom_create(scene *scene) {
         health = game_player_get_score(p1)->health;
     }
 
-    DEBUG("health is %d", health);
+    log_debug("health is %d", health);
 
     // there's 3 random messages for
     // each situation for winner/loser

@@ -29,7 +29,7 @@ static const char *git_sha1_hash = SHA1_HASH;
 #endif
 
 void scan_game_controllers(void) {
-    INFO("Found %d joysticks attached", SDL_NumJoysticks());
+    log_info("Found %d joysticks attached", SDL_NumJoysticks());
     SDL_Joystick *joy;
     char guid_str[33];
     for(int i = 0; i < SDL_NumJoysticks(); i++) {
@@ -37,15 +37,15 @@ void scan_game_controllers(void) {
         if(joy) {
             SDL_JoystickGUID guid = SDL_JoystickGetGUID(joy);
             SDL_JoystickGetGUIDString(guid, guid_str, 33);
-            INFO("Opened Joystick %d", i);
-            INFO(" * Name:              %s", SDL_JoystickNameForIndex(i));
-            INFO(" * Number of Axes:    %d", SDL_JoystickNumAxes(joy));
-            INFO(" * Number of Buttons: %d", SDL_JoystickNumButtons(joy));
-            INFO(" * Number of Balls:   %d", SDL_JoystickNumBalls(joy));
-            INFO(" * Number of Hats:    %d", SDL_JoystickNumHats(joy));
-            INFO(" * GUID          :    %s", guid_str);
+            log_info("Opened Joystick %d", i);
+            log_info(" * Name:              %s", SDL_JoystickNameForIndex(i));
+            log_info(" * Number of Axes:    %d", SDL_JoystickNumAxes(joy));
+            log_info(" * Number of Buttons: %d", SDL_JoystickNumButtons(joy));
+            log_info(" * Number of Balls:   %d", SDL_JoystickNumBalls(joy));
+            log_info(" * Number of Hats:    %d", SDL_JoystickNumHats(joy));
+            log_info(" * GUID          :    %s", guid_str);
         } else {
-            INFO("Joystick %d is unsupported", i);
+            log_info("Joystick %d is unsupported", i);
         }
 
         if(SDL_JoystickGetAttached(joy)) {
@@ -156,24 +156,24 @@ int main(int argc, char *argv[]) {
     }
 
     // Init log
-#if defined(DEBUGMODE)
-    if(log_init(0)) {
-        err_msgbox("Error while initializing log!");
-        printf("Error while initializing log!\n");
-        goto exit_0;
-    }
+    log_init();
+    log_add_file(pm_get_local_path(LOG_PATH), LOG_INFO);
+#if defined(USE_COLORS)
+    log_set_colors(true);
 #else
-    if(log_init(pm_get_local_path(LOG_PATH))) {
-        err_msgbox("Error while initializing log '%s'!", pm_get_local_path(LOG_PATH));
-        printf("Error while initializing log '%s'!", pm_get_local_path(LOG_PATH));
-        goto exit_0;
-    }
+    log_set_colors(false);
+#endif
+#if defined(DEBUGMODE)
+    log_add_stderr(LOG_DEBUG, true);
+    log_set_level(LOG_DEBUG);
+#else
+    log_set_level(LOG_INFO); // In release mode, drop debugs.
 #endif
 
     // Simple header
-    INFO("Starting OpenOMF v%d.%d.%d", V_MAJOR, V_MINOR, V_PATCH);
+    log_info("Starting OpenOMF v%d.%d.%d", V_MAJOR, V_MINOR, V_PATCH);
     if(strlen(git_sha1_hash) > 0) {
-        INFO("Git SHA1 hash: %s", git_sha1_hash);
+        log_info("Git SHA1 hash: %s", git_sha1_hash);
     }
 
     // Dump path manager log
@@ -185,7 +185,7 @@ int main(int argc, char *argv[]) {
     // Init config
     if(settings_init(pm_get_local_path(CONFIG_PATH))) {
         err_msgbox("Failed to initialize settings file");
-        PERROR("Failed to initialize settings file");
+        log_error("Failed to initialize settings file");
         goto exit_1;
     }
     settings_load();
@@ -196,7 +196,7 @@ int main(int argc, char *argv[]) {
 
     // Network game override stuff
     if(ip) {
-        DEBUG("Connect IP overridden to %s", ip);
+        log_debug("Connect IP overridden to %s", ip);
         omf_free(settings_get()->net.net_connect_ip);
         settings_get()->net.net_connect_ip = ip;
         // Set ip to NULL here since it will be freed by the settings.
@@ -208,11 +208,11 @@ int main(int argc, char *argv[]) {
         trace_file = NULL;
     }
     if(connect_port > 0 && connect_port < 0xFFFF) {
-        DEBUG("Connect Port overridden to %u", connect_port & 0xFFFF);
+        log_debug("Connect Port overridden to %u", connect_port & 0xFFFF);
         settings_get()->net.net_connect_port = connect_port;
     }
     if(listen_port > 0 && listen_port < 0xFFFF) {
-        DEBUG("Listen Port overridden to %u", listen_port & 0xFFFF);
+        log_debug("Listen Port overridden to %u", listen_port & 0xFFFF);
         settings_get()->net.net_listen_port_start = listen_port;
     }
 
@@ -223,8 +223,8 @@ int main(int argc, char *argv[]) {
     }
     SDL_version sdl_linked;
     SDL_GetVersion(&sdl_linked);
-    INFO("Found SDL v%d.%d.%d", sdl_linked.major, sdl_linked.minor, sdl_linked.patch);
-    INFO("Running on platform: %s", SDL_GetPlatform());
+    log_info("Found SDL v%d.%d.%d", sdl_linked.major, sdl_linked.minor, sdl_linked.patch);
+    log_info("Running on platform: %s", SDL_GetPlatform());
 
     if(SDL_InitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC)) {
         err_msgbox("SDL2 Initialization failed: %s", SDL_GetError());
@@ -260,7 +260,7 @@ exit_2:
     settings_save();
     settings_free();
 exit_1:
-    INFO("Exit.");
+    log_info("Exit.");
     log_close();
 exit_0:
     if(ip) {

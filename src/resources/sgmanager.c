@@ -17,7 +17,7 @@ int sg_init(void) {
     // Find path to savegame directory
     const char *dirname = pm_get_local_path(SAVE_PATH);
     if(dirname == NULL) {
-        PERROR("Could not find save path! Something is wrong with path manager!");
+        log_error("Could not find save path! Something is wrong with path manager!");
         return 0;
     }
 
@@ -25,18 +25,18 @@ int sg_init(void) {
     list_create(&dirlist);
     ret = scan_directory(&dirlist, dirname);
     if(ret != 0) {
-        INFO("Savegame directory does not exist. Attempting to create ...");
+        log_info("Savegame directory does not exist. Attempting to create ...");
         if(pm_create_dir(dirname) != 0) {
-            PERROR("Unable to create savegame directory!");
+            log_error("Unable to create savegame directory!");
             goto error_0;
         } else {
-            INFO("Savegame directory created at '%s'.", dirname);
+            log_info("Savegame directory created at '%s'.", dirname);
         }
 
         // New attempt
         ret = scan_directory(&dirlist, dirname);
         if(ret != 0) {
-            PERROR("Still could not read from savegame directory, giving up.");
+            log_error("Still could not read from savegame directory, giving up.");
             goto error_0;
         }
     }
@@ -67,12 +67,12 @@ int sg_count(void) {
         if((ext = strrchr(filename, '.')) && strcmp(".CHR", ext) == 0) {
             continue;
         }
-        DEBUG("ignoring file %s", filename);
+        log_debug("ignoring file %s", filename);
         // not a CHR file, get lost
         list_delete(&dirlist, &it);
     }
 
-    DEBUG("Found %d savegames.", list_size(&dirlist));
+    log_debug("Found %d savegames.", list_size(&dirlist));
     int size = list_size(&dirlist);
 
     list_free(&dirlist);
@@ -92,7 +92,7 @@ list *sg_load_all(void) {
     list_create(&dirlist);
     scan_directory(&dirlist, dirname);
 
-    DEBUG("Found %d savegames.", list_size(&dirlist) - 2);
+    log_debug("Found %d savegames.", list_size(&dirlist) - 2);
 
     list *chrlist = omf_calloc(1, sizeof(list));
 
@@ -107,7 +107,7 @@ list *sg_load_all(void) {
         if((ext = strrchr(chrfile, '.')) && strcmp(".CHR", ext) == 0) {
             sd_chr_file *chr = omf_calloc(1, sizeof(sd_chr_file));
             ext[0] = 0;
-            DEBUG("%s", chrfile);
+            log_debug("%s", chrfile);
             if(sg_load(chr, chrfile) == SD_SUCCESS) {
                 list_append(chrlist, chr, sizeof(sd_chr_file));
             }
@@ -130,7 +130,7 @@ int sg_load(sd_chr_file *chr, const char *pilotname) {
     sd_chr_create(chr);
     int ret = sd_chr_load(chr, tmp);
     if(ret != SD_SUCCESS) {
-        PERROR("Unable to load savegame file '%s'.", tmp);
+        log_error("Unable to load savegame file '%s'.", tmp);
         return ret;
     }
 
@@ -143,7 +143,7 @@ int sg_save(sd_chr_file *chr) {
     snprintf(filename, sizeof(filename), "%s%s.CHR", dirname, chr->pilot.name);
     int ret = sd_chr_save(chr, filename);
     if(ret == SD_SUCCESS) {
-        DEBUG("Saved pilot %s in %s", chr->pilot.name, filename);
+        log_debug("Saved pilot %s in %s", chr->pilot.name, filename);
         omf_free(settings_get()->tournament.last_name);
         settings_get()->tournament.last_name = omf_strdup(chr->pilot.name);
         settings_save();
@@ -158,7 +158,7 @@ int sg_delete(const char *pilotname) {
     snprintf(pathname, sizeof(pathname), "%s%s.CHR", dirname, pilotname);
     int ret = remove(pathname);
     if(ret != 0) {
-        PERROR("Failed to delete %s: %m", pathname);
+        log_error("Failed to delete %s: %m", pathname);
         return SD_FILE_UNLINK_ERROR;
     }
     return SD_SUCCESS;

@@ -46,7 +46,7 @@ static void xysizer_layout(component *c, int x, int y, int w, int h) {
         int m_w = ((*tmp)->w_hint < 0) ? 0 : (*tmp)->w_hint;
         int m_h = ((*tmp)->h_hint < 0) ? 0 : (*tmp)->h_hint;
         if(m_w == 0 || m_h == 0) {
-            DEBUG("Warning: Gui component hidden, because size is 0. Make sure size hints are set!");
+            log_debug("Warning: Gui component hidden, because size is 0. Make sure size hints are set!");
         }
         component_layout(*tmp, m_x, m_y, m_w, m_h);
     }
@@ -71,7 +71,7 @@ static int xysizer_event(component *c, SDL_Event *event) {
 static int xysizer_action(component *c, int action) {
     sizer *s = component_get_obj(c);
 
-    DEBUG("sizer action %d", action);
+    log_debug("sizer action %d", action);
 
     // Just pass events to all children
     iterator it;

@@ -1,5 +1,6 @@
 #include "utils/iterator.h"
 #include <assert.h>
+#include <stddef.h>
 
 void *iter_next(iterator *iter) {
     assert(iter->next);

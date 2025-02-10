@@ -237,7 +237,7 @@ void str_format(str *dst, const char *format, ...) {
 
     // vsnprintf may return -1 for errors, catch that here.
     if(size < 0) {
-        PERROR("Call to vsnprintf returned -1");
+        log_error("Call to vsnprintf returned -1");
         abort();
     }
 
@@ -264,7 +264,7 @@ void str_from_format(str *dst, const char *format, ...) {
 
     // vsnprintf may return -1 for errors, catch that here.
     if(size < 0) {
-        PERROR("Call to vsnprintf returned -1");
+        log_error("Call to vsnprintf returned -1");
         abort();
     }
 

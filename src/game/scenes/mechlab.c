@@ -56,11 +56,11 @@ bool mechlab_find_last_player(scene *scene) {
         int ret = sg_load(chr, last_name);
         if(ret != SD_SUCCESS) {
             omf_free(chr);
-            PERROR("Could not load saved game for playername '%s': %s!", last_name, sd_get_error(ret));
+            log_error("Could not load saved game for playername '%s': %s!", last_name, sd_get_error(ret));
             last_name = NULL;
         } else {
             p1->chr = chr;
-            DEBUG("Loaded savegame for playername '%s'.", last_name);
+            log_debug("Loaded savegame for playername '%s'.", last_name);
         }
     }
 
@@ -68,14 +68,14 @@ bool mechlab_find_last_player(scene *scene) {
     // or just show old savegame stats directly if it was.
     local->dashtype = DASHBOARD_NONE;
     if(p1->chr == NULL) {
-        DEBUG("No previous savegame found");
+        log_debug("No previous savegame found");
         object_free(local->mech);
         omf_free(local->mech);
         p1->pilot->money = 0;
         p1->pilot->har_id = 0;
         return false;
     } else {
-        DEBUG("Previous savegame found; loading as default.");
+        log_debug("Previous savegame found; loading as default.");
         // Load HAR
         animation *initial_har_ani = &bk_get_info(scene->bk_data, 15 + p1->chr->pilot.har_id)->ani;
         object_free(local->mech);
@@ -128,7 +128,7 @@ void mechlab_free(scene *scene) {
     game_player *player1 = game_state_get_player(scene->gs, 0);
     // save the character file
     if(player1->chr != NULL && sg_save(player1->chr) != SD_SUCCESS) {
-        PERROR("Failed to save pilot %s", player1->chr->pilot.name);
+        log_error("Failed to save pilot %s", player1->chr->pilot.name);
     }
 
     for(unsigned i = 0; i < N_ELEMENTS(local->bg_obj); i++) {
@@ -260,7 +260,7 @@ void mechlab_tick(scene *scene, int paused) {
             }
 
             if(sg_save(player1->chr) != SD_SUCCESS) {
-                PERROR("Failed to save pilot %s", player1->chr->pilot.name);
+                log_error("Failed to save pilot %s", player1->chr->pilot.name);
             }
             // force the character to reload because its just easier
 
@@ -278,7 +278,7 @@ void mechlab_tick(scene *scene, int paused) {
         } else {
             if(player1->chr) {
                 if(sg_save(player1->chr) != SD_SUCCESS) {
-                    PERROR("Failed to save pilot %s", player1->chr->pilot.name);
+                    log_error("Failed to save pilot %s", player1->chr->pilot.name);
                 }
                 sd_chr_free(player1->chr);
                 omf_free(player1->chr);
@@ -356,7 +356,7 @@ void mechlab_select_dashboard(scene *scene, dashboard_type type) {
             break;
         // No dashboard selection. This shouldn't EVER happen.
         case DASHBOARD_NONE:
-            PERROR("No dashboard selected; this should not happen!");
+            log_error("No dashboard selected; this should not happen!");
             local->dashboard = NULL;
             break;
     }
@@ -436,7 +436,7 @@ void mechlab_input_tick(scene *scene) {
                             guiframe_get_root(local->frame)); // This will trigger exception case in mechlab_tick
                     }
                 } else {
-                    DEBUG("sending input %d to new player dash", i->event_data.action);
+                    log_debug("sending input %d to new player dash", i->event_data.action);
                     guiframe_action(local->dashboard, i->event_data.action);
                 }
 

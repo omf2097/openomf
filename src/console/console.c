@@ -88,7 +88,7 @@ void console_handle_line(game_state *gs) {
                     console_output_add("> ");
                     console_output_add(argv[0]);
                     console_output_addline(" SUCCESS");
-                    DEBUG("Console command %s succeeded", argv[0]);
+                    log_debug("Console command %s succeeded", argv[0]);
                 } else {
                     char buf[12];
                     snprintf(buf, 12, "%d", err);
@@ -96,14 +96,14 @@ void console_handle_line(game_state *gs) {
                     console_output_add(argv[0]);
                     console_output_add(" ERROR:");
                     console_output_addline(buf);
-                    DEBUG("Error in console command %s: %s", argv[0], buf);
+                    log_debug("Error in console command %s: %s", argv[0], buf);
                 }
                 console_add_history(input_copy, sizeof(input_copy));
             } else {
                 console_output_add("> ");
                 console_output_add(argv[0]);
                 console_output_addline(" NOT RECOGNIZED");
-                DEBUG("Console command %s not recognized", argv[0]);
+                log_debug("Console command %s not recognized", argv[0]);
             }
             omf_free(argv);
         } else {
@@ -367,7 +367,7 @@ void console_tick(game_state *gs) {
     if(get_stdin_line(buf, sizeof(buf)) > 0) {
         str_free(&con->input);
         str_from_c(&con->input, buf);
-        DEBUG("Console line from stdin: %s", str_c(&con->input));
+        log_debug("Console line from stdin: %s", str_c(&con->input));
         console_handle_line(gs);
         str_truncate(&con->input, 0);
     }

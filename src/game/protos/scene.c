@@ -26,7 +26,7 @@ int scene_create(scene *scene, game_state *gs, int scene_id) {
     int resource_id = scene_to_resource(scene_id);
     scene->bk_data = omf_calloc(1, sizeof(bk));
     if(load_bk_file(scene->bk_data, resource_id)) {
-        PERROR("Unable to load scene %s (%s)!", scene_get_name(scene_id), get_resource_name(resource_id));
+        log_error("Unable to load scene %s (%s)!", scene_get_name(scene_id), get_resource_name(resource_id));
         return 1;
     }
     scene->id = scene_id;
@@ -59,7 +59,7 @@ int scene_create(scene *scene, game_state *gs, int scene_id) {
     vga_state_set_base_palette_index(0, &c);
 
     // All done.
-    DEBUG("Loaded scene %s (%s).", scene_get_name(scene_id), get_resource_name(resource_id));
+    log_debug("Loaded scene %s (%s).", scene_get_name(scene_id), get_resource_name(resource_id));
     return 0;
 }
 
@@ -73,11 +73,11 @@ int scene_load_har(scene *scene, int player_id) {
 
     int resource_id = har_to_resource(player->pilot->har_id);
     if(load_af_file(scene->af_data[player_id], resource_id)) {
-        PERROR("Unable to load HAR %s (%s)!", har_get_name(player->pilot->har_id), get_resource_name(resource_id));
+        log_error("Unable to load HAR %s (%s)!", har_get_name(player->pilot->har_id), get_resource_name(resource_id));
         return 1;
     }
 
-    DEBUG("Loaded HAR %s (%s).", har_get_name(player->pilot->har_id), get_resource_name(resource_id));
+    log_debug("Loaded HAR %s (%s).", har_get_name(player->pilot->har_id), get_resource_name(resource_id));
     return 0;
 }
 
@@ -107,7 +107,7 @@ void scene_init(scene *scene) {
             int o_prio = scene_anim_prio_override(scene, info->ani.id);
             o_prio = (o_prio != -1) ? o_prio : RENDER_LAYER_BOTTOM;
             game_state_add_object(scene->gs, obj, o_prio, 0, 0);
-            DEBUG("Scene bootstrap: Animation %d started.", info->ani.id);
+            log_debug("Scene bootstrap: Animation %d started.", info->ani.id);
         }
     }
 

@@ -67,7 +67,7 @@ component *menu_language_create(scene *s) {
     // Find path to languages
     const char *dirname = pm_get_local_path(RESOURCE_PATH);
     if(dirname == NULL) {
-        PERROR("Could not find resources path for menu_language!");
+        log_error("Could not find resources path for menu_language!");
         omf_free(local);
         return NULL;
     }
@@ -95,12 +95,12 @@ component *menu_language_create(scene *s) {
             continue;
         }
         if(sd_language_load(&lang2, str_c(&filename2))) {
-            INFO("Warning: Unable to load OpenOMF language file '%s'!", str_c(&filename2));
+            log_info("Warning: Unable to load OpenOMF language file '%s'!", str_c(&filename2));
             sd_language_free(&lang2);
             continue;
         }
         if(lang2.count != LANG2_STR_COUNT) {
-            INFO("Warning: Invalid OpenOMF language file '%s', got %d entries!", str_c(&filename2), lang2.count);
+            log_info("Warning: Invalid OpenOMF language file '%s', got %d entries!", str_c(&filename2), lang2.count);
             sd_language_free(&lang2);
             continue;
         }

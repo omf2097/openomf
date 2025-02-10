@@ -177,7 +177,7 @@ error_0:
 void pm_log(void) {
     // Debug info
     for(unsigned int i = 0; i < NUMBER_OF_LOCAL_PATHS; i++) {
-        DEBUG("%s: %s", pm_get_local_path_type_name(i), pm_get_local_path(i));
+        log_debug("%s: %s", pm_get_local_path_type_name(i), pm_get_local_path(i));
     }
 }
 
@@ -292,12 +292,12 @@ const char *pm_get_local_path_type_name(unsigned int path_id) {
 int pm_create_dir(const char *dirname) {
 #if defined(_WIN32) || defined(WIN32)
     if(SHCreateDirectoryEx(NULL, dirname, NULL) != ERROR_SUCCESS) {
-        PERROR("Error while attempting to create directory '%s'.", dirname);
+        log_error("Error while attempting to create directory '%s'.", dirname);
         return 1;
     }
 #else
     if(mkdir(dirname, 0755) != 0) {
-        PERROR("Error while attempting to create directory '%s'.", dirname);
+        log_error("Error while attempting to create directory '%s'.", dirname);
         return 1;
     }
 #endif

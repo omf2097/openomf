@@ -201,7 +201,7 @@ int scoreboard_create(scene *scene) {
     // Load scores
     if(scores_read(&local->data) == 1) {
         scores_clear(&local->data);
-        DEBUG("No score data found; using empty score array.");
+        log_debug("No score data found; using empty score array.");
     }
 
     // Check for pending score

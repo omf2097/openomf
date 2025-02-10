@@ -33,7 +33,7 @@ static void pilotpic_free(component *c) {
 int pilotpic_load(sd_sprite *sprite, vga_palette *pal, int pic_id, int pilot_id) {
     const char *filename = pm_get_resource_path(pic_id);
     if(filename == NULL) {
-        PERROR("Could not find requested PIC file handle.");
+        log_error("Could not find requested PIC file handle.");
         return SD_FILE_OPEN_ERROR;
     }
 
@@ -42,10 +42,10 @@ int pilotpic_load(sd_sprite *sprite, vga_palette *pal, int pic_id, int pilot_id)
     sd_pic_create(&pics);
     int ret = sd_pic_load(&pics, filename);
     if(ret != SD_SUCCESS) {
-        PERROR("Could not load PIC file %s: %s", filename, sd_get_error(ret));
+        log_error("Could not load PIC file %s: %s", filename, sd_get_error(ret));
         return ret;
     } else {
-        DEBUG("PIC file %s loaded, selecting picture %d.", get_resource_name(pic_id), pilot_id);
+        log_debug("PIC file %s loaded, selecting picture %d.", get_resource_name(pic_id), pilot_id);
     }
 
     sd_sprite_free(sprite);

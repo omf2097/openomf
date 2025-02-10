@@ -17,7 +17,7 @@ static const char *get_name(void) {
 }
 
 static bool setup_context(void *userdata, int window_w, int window_h, bool fullscreen, bool vsync) {
-    INFO("NULL Renderer initialized!");
+    log_info("NULL Renderer initialized!");
     return true;
 }
 
@@ -33,13 +33,13 @@ static void get_context_state(void *userdata, int *window_w, int *window_h, bool
 }
 
 static bool reset_context_with(void *userdata, int window_w, int window_h, bool fullscreen, bool vsync) {
-    INFO("NULL renderer reset.");
+    log_info("NULL renderer reset.");
     return true;
 }
 static void reset_context(void *userdata) {
 }
 static void close_context(void *userdata) {
-    INFO("NULL renderer closed.");
+    log_info("NULL renderer closed.");
 }
 
 static void draw_surface(void *userdata, const surface *src_surface, SDL_Rect *dst, int remap_offset, int remap_rounds,

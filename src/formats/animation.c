@@ -207,8 +207,8 @@ int sd_animation_load(sd_reader *r, sd_animation *ani) {
 
     // Enforce limits
     if(ani->coord_count > SD_COLCOORD_COUNT_MAX) {
-        DEBUG("Animation contains too many coordinates! Expected max %d coords, got %hu coords.", SD_COLCOORD_COUNT_MAX,
-              ani->coord_count);
+        log_debug("Animation contains too many coordinates! Expected max %d coords, got %hu coords.",
+                  SD_COLCOORD_COUNT_MAX, ani->coord_count);
         return SD_FILE_PARSE_ERROR;
     }
 
@@ -226,32 +226,33 @@ int sd_animation_load(sd_reader *r, sd_animation *ani) {
     // Animation string header
     size = sd_read_uword(r);
     if(size >= SD_ANIMATION_STRING_MAX) {
-        DEBUG("Animation string header too big! Expected max %hu bytes, got %hu bytes.", SD_ANIMATION_STRING_MAX, size);
+        log_debug("Animation string header too big! Expected max %hu bytes, got %hu bytes.", SD_ANIMATION_STRING_MAX,
+                  size);
         return SD_FILE_PARSE_ERROR;
     }
     sd_read_buf(r, ani->anim_string, size + 1);
     if(ani->anim_string[size] != 0) {
-        DEBUG("Animation string header did not end in null byte!");
+        log_debug("Animation string header did not end in null byte!");
         return SD_FILE_PARSE_ERROR;
     }
 
     // Extra animation strings
     ani->extra_string_count = sd_read_ubyte(r);
     if(ani->extra_string_count > SD_EXTRASTR_COUNT_MAX) {
-        DEBUG("Animation has too many extra strings! Expected max %hhu strings, got %hhu strings.",
-              SD_EXTRASTR_COUNT_MAX, ani->extra_string_count);
+        log_debug("Animation has too many extra strings! Expected max %hhu strings, got %hhu strings.",
+                  SD_EXTRASTR_COUNT_MAX, ani->extra_string_count);
         return SD_FILE_PARSE_ERROR;
     }
     for(int i = 0; i < ani->extra_string_count; i++) {
         size = sd_read_uword(r);
         if(size >= SD_EXTRA_STRING_MAX) {
-            DEBUG("Animation extra string %d is too long! Expected max %hu bytes, got %hu bytes.", i,
-                  SD_EXTRA_STRING_MAX, size);
+            log_debug("Animation extra string %d is too long! Expected max %hu bytes, got %hu bytes.", i,
+                      SD_EXTRA_STRING_MAX, size);
             return SD_FILE_PARSE_ERROR;
         }
         sd_read_buf(r, ani->extra_strings[i], size + 1);
         if(ani->extra_strings[i][size] != 0) {
-            DEBUG("Animation extra string %d did not end in null byte!", i);
+            log_debug("Animation extra string %d did not end in null byte!", i);
             return SD_FILE_PARSE_ERROR;
         }
     }

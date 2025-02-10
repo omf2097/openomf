@@ -25,7 +25,7 @@ int rec_controller_tick(controller *ctrl, uint32_t ticks, ctrl_event **ev) {
     sd_rec_move *move;
     unsigned int len;
     if(ticks > data->max_tick) {
-        DEBUG("closing controller");
+        log_debug("closing controller");
         controller_close(ctrl, ev);
         return 0;
     }
@@ -84,7 +84,7 @@ void rec_controller_create(controller *ctrl, int player, sd_rec_file *rec) {
         }
     }
     data->max_tick = rec->moves[rec->move_count - 1].tick;
-    DEBUG("max tick is %" PRIu32, data->last_tick);
+    log_debug("max tick is %" PRIu32, data->last_tick);
     ctrl->data = data;
     ctrl->type = CTRL_TYPE_REC;
     ctrl->dyntick_fun = &rec_controller_tick;

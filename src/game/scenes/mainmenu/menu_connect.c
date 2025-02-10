@@ -47,7 +47,7 @@ void menu_connect_start(component *c, void *userdata) {
     // Set up enet host
     local->host = enet_host_create(NULL, 1, 2, 0, 0);
     if(local->host == NULL) {
-        DEBUG("Failed to initialize ENet client");
+        log_debug("Failed to initialize ENet client");
         return;
     }
 
@@ -62,7 +62,7 @@ void menu_connect_start(component *c, void *userdata) {
 
     ENetPeer *peer = enet_host_connect(local->host, &address, 2, 0);
     if(peer == NULL) {
-        DEBUG("Unable to connect to %s", addr);
+        log_debug("Unable to connect to %s", addr);
         enet_host_destroy(local->host);
         local->host = NULL;
     }
@@ -102,7 +102,7 @@ void menu_connect_tick(component *c) {
             enet_peer_send(event.peer, 0, packet);
             enet_host_flush(local->host);
 
-            DEBUG("connected to server!");
+            log_debug("connected to server!");
             controller *player1_ctrl, *player2_ctrl;
             keyboard_keys *keys;
             game_player *p1 = game_state_get_player(gs, 0);
@@ -152,14 +152,15 @@ void menu_connect_tick(component *c) {
         }
 
         if(!local->controllers_created && difftime(time(NULL), local->connect_start) > 5.0) {
-            DEBUG("connection timed out");
+            log_debug("connection timed out");
             menu_connect_cancel(local->cancel_button, local->s);
         }
 
         game_player *p1 = game_state_get_player(gs, 0);
         controller *c1 = game_player_get_ctrl(p1);
         if(c1->type == CTRL_TYPE_NETWORK && net_controller_ready(c1)) {
-            DEBUG("network peer is ready, tick offset is %d and rtt is %d", net_controller_tick_offset(c1), c1->rtt);
+            log_debug("network peer is ready, tick offset is %d and rtt is %d", net_controller_tick_offset(c1),
+                      c1->rtt);
             game_state_set_next(gs, SCENE_MELEE);
         }
     }

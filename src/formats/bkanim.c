@@ -70,8 +70,8 @@ int sd_bk_anim_load(sd_reader *r, sd_bk_anim *bka) {
     // Footer string
     size = sd_read_uword(r);
     if(size >= SD_BK_FOOTER_STRING_MAX) {
-        DEBUG("BK specific animation footer too big! Expected max %d bytes, got %hu bytes.", SD_BK_FOOTER_STRING_MAX,
-              size);
+        log_debug("BK specific animation footer too big! Expected max %d bytes, got %hu bytes.",
+                  SD_BK_FOOTER_STRING_MAX, size);
         return SD_FILE_PARSE_ERROR;
     }
     if(size > 0) {

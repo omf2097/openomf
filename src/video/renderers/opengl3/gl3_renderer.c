@@ -121,7 +121,7 @@ static bool setup_context(void *userdata, int window_w, int window_h, bool fulls
     bind_uniform_1i(ctx->rgba_prog_id, "framebuffer", TEX_UNIT_FBO);
     bind_uniform_1i(ctx->rgba_prog_id, "remaps", TEX_UNIT_REMAPS);
 
-    INFO("OpenGL3 Renderer initialized!");
+    log_info("OpenGL3 Renderer initialized!");
     return true;
 
 error_3:
@@ -161,7 +161,7 @@ static bool reset_context_with(void *userdata, int window_w, int window_h, bool 
     // Fetch viewport size which may be different from window size.
     SDL_GL_GetDrawableSize(ctx->window, &ctx->viewport_w, &ctx->viewport_h);
 
-    INFO("OpenGL3 renderer reset.");
+    log_info("OpenGL3 renderer reset.");
     return success;
 }
 
@@ -180,7 +180,7 @@ static void close_context(void *userdata) {
     delete_program(ctx->rgba_prog_id);
     SDL_GL_DeleteContext(ctx->gl_context);
     SDL_DestroyWindow(ctx->window);
-    INFO("OpenGL3 renderer closed.");
+    log_info("OpenGL3 renderer closed.");
 }
 
 static void draw_surface(void *userdata, const surface *src_surface, SDL_Rect *dst, int remap_offset, int remap_rounds,

@@ -16,7 +16,7 @@
 
 void lab_menu_trade_done(component *menu, component *submenu) {
     scene *s = trnmenu_get_userdata(submenu);
-    DEBUG("trade done");
+    log_debug("trade done");
     game_player *p1 = game_state_get_player(s->gs, 0);
     if(p1->pilot != &p1->chr->pilot) {
         omf_free(p1->pilot);
@@ -245,10 +245,10 @@ component *lab_menu_trade_create(scene *s) {
     // Init GUI buttons with locations from the "select" button sprites
     for(int i = 0; i < animation_get_sprite_count(main_buttons); i++) {
         if(i == p1->pilot->har_id || 0 == ((p1->pilot->har_trades >> i) & 1)) {
-            DEBUG("skipping har %d", i, p1->pilot->har_trades);
+            log_debug("skipping har %d", i, p1->pilot->har_trades);
             continue;
         }
-        DEBUG("adding button");
+        log_debug("adding button");
         tconf.valign = details_list[i].valign;
         tconf.halign = details_list[i].halign;
         tconf.padding.top = details_list[i].top;

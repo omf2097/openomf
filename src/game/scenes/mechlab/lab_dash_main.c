@@ -61,7 +61,7 @@ void lab_dash_main_chr_load(component *c, void *userdata) {
         return;
     }
     if(oldchr) {
-        DEBUG("freeing loaded CHR %s", oldchr->pilot.name);
+        log_debug("freeing loaded CHR %s", oldchr->pilot.name);
         sd_chr_free(oldchr);
         omf_free(oldchr);
     }
@@ -74,7 +74,7 @@ void lab_dash_main_chr_load(component *c, void *userdata) {
         sd_chr_file *chr = NULL;
 
         foreach(it, chr) {
-            DEBUG("freeing CHR %s", chr->pilot.name);
+            log_debug("freeing CHR %s", chr->pilot.name);
             sd_chr_free(chr);
         }
 
@@ -97,7 +97,7 @@ void lab_dash_main_chr_delete(component *c, void *userdata) {
 }
 
 void lab_dash_main_chr_left(component *c, void *userdata) {
-    DEBUG("CHAR LEFT");
+    log_debug("CHAR LEFT");
     dashboard_widgets *dw = userdata;
     dw->index--;
     if(dw->index < 0) {
@@ -109,7 +109,7 @@ void lab_dash_main_chr_left(component *c, void *userdata) {
 }
 
 void lab_dash_main_chr_right(component *c, void *userdata) {
-    DEBUG("CHAR RIGHT");
+    log_debug("CHAR RIGHT");
     dashboard_widgets *dw = userdata;
     dw->index++;
     if(dw->index >= (int16_t)list_size(dw->savegames)) {
@@ -121,7 +121,7 @@ void lab_dash_main_chr_right(component *c, void *userdata) {
 }
 
 void lab_dash_main_chr_init(component *menu, component *submenu) {
-    DEBUG("init chr select submenu");
+    log_debug("init chr select submenu");
     dashboard_widgets *dw = trnmenu_get_userdata(submenu);
     dw->savegames = sg_load_all();
     game_player *p1 = game_state_get_player(dw->scene->gs, 0);
@@ -184,7 +184,7 @@ void lab_dash_sim_done(component *menu, component *submenu) {
 }
 
 void lab_dash_main_chr_done(component *menu, component *submenu) {
-    DEBUG("end chr select submenu");
+    log_debug("end chr select submenu");
     dashboard_widgets *dw = trnmenu_get_userdata(submenu);
     // We can get here either when the user backs out of the menu
     // or when they select something. In either case we want to makes
@@ -211,10 +211,9 @@ void lab_dash_main_chr_done(component *menu, component *submenu) {
     if(dw->savegames) {
         list_iter_begin(dw->savegames, &it);
         foreach(it, chr) {
-            DEBUG("freeing CHR %s", chr->pilot.name);
+            log_debug("freeing CHR %s", chr->pilot.name);
             sd_chr_free(chr);
         }
-
         list_free(dw->savegames);
         omf_free(dw->savegames);
     }
@@ -251,12 +250,12 @@ component *lab_dash_main_create(scene *s, dashboard_widgets *dw) {
     // Pilot image
     dw->photo = pilotpic_create(PIC_PLAYERS, 0);
     if(p1->pilot->photo) {
-        DEBUG("loading pilot photo from pilot");
+        log_debug("loading pilot photo from pilot");
         pilotpic_set_photo(dw->photo, dw->pilot->photo);
     } else {
         dw->pilot->photo = omf_calloc(1, sizeof(sd_sprite));
         sd_sprite_create(dw->pilot->photo);
-        DEBUG("seletng default pilot photo");
+        log_debug("seletng default pilot photo");
         dw->pilot->photo_id = pilotpic_selected(dw->photo);
         pilotpic_load(dw->pilot->photo, &dw->pilot->palette, PIC_PLAYERS, 0);
     }
@@ -311,12 +310,12 @@ component *lab_dash_sim_create(scene *s, dashboard_widgets *dw) {
     // Pilot image
     dw->photo = pilotpic_create(PIC_PLAYERS, 0);
     if(p1->pilot->photo) {
-        DEBUG("loading pilot photo from pilot");
+        log_debug("loading pilot photo from pilot");
         pilotpic_set_photo(dw->photo, dw->pilot->photo);
     } else {
         dw->pilot->photo = omf_calloc(1, sizeof(sd_sprite));
         sd_sprite_create(dw->pilot->photo);
-        DEBUG("seletng default pilot photo");
+        log_debug("seletng default pilot photo");
         dw->pilot->photo_id = pilotpic_selected(dw->photo);
         pilotpic_load(dw->pilot->photo, &dw->pilot->palette, PIC_PLAYERS, 0);
     }
@@ -454,10 +453,10 @@ void lab_dash_main_update_gauges(dashboard_widgets *dw, sd_pilot *pilot) {
     SET_GAUGE_X(stun_resistance);
 
     if(pilot->photo) {
-        DEBUG("loading pilot photo from pilot");
+        log_debug("loading pilot photo from pilot");
         pilotpic_set_photo(dw->photo, pilot->photo);
     } else {
-        DEBUG("seletng default pilot photo");
+        log_debug("seletng default pilot photo");
         // Select pilot picture
         pilotpic_select(dw->photo, PIC_PLAYERS, 0);
     }

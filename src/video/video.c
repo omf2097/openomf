@@ -54,7 +54,7 @@ void video_scan_renderers(void) {
             available_renderers[renderer_count].set_callbacks = all_renderers[i];
             available_renderers[renderer_count].name = tmp.get_name();
             available_renderers[renderer_count].description = tmp.get_description();
-            DEBUG("Renderer '%s' is available", available_renderers[renderer_count].name);
+            log_debug("Renderer '%s' is available", available_renderers[renderer_count].name);
             renderer_count++;
         }
     }
@@ -116,16 +116,16 @@ static bool find_best_renderer(void) {
 static bool video_find_renderer(const char *try_name) {
     if(try_name != NULL && strlen(try_name) > 0) {
         if(hunt_renderer_by_name(try_name)) {
-            INFO("Found configured renderer '%s'!", current_renderer.get_name());
+            log_info("Found configured renderer '%s'!", current_renderer.get_name());
             return true;
         }
-        PERROR("Unable to find specified renderer '%s', trying other alternatives ...", try_name);
+        log_error("Unable to find specified renderer '%s', trying other alternatives ...", try_name);
     }
     if(find_best_renderer()) {
-        INFO("Found available renderer '%s'!", current_renderer.get_name());
+        log_info("Found available renderer '%s'!", current_renderer.get_name());
         return true;
     }
-    PERROR("Unable to find any available renderer!");
+    log_error("Unable to find any available renderer!");
     memset(&current_renderer, 0, sizeof(renderer));
     return false;
 }

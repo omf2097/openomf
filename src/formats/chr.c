@@ -87,13 +87,13 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
 
         const char *players_filename = pm_get_resource_path(PIC_PLAYERS);
         if(players_filename) {
-            DEBUG("trying to load players.pic from %s", players_filename);
+            log_debug("trying to load players.pic from %s", players_filename);
             // Load PIC file and make a surface
             sd_pic_create(&players);
             int ret = sd_pic_load(&players, players_filename);
             if(ret == SD_SUCCESS) {
                 // Load player gender from PLAYERS.PIC
-                DEBUG("loading %d from players.pic", chr->pilot.photo_id);
+                log_debug("loading %d from players.pic", chr->pilot.photo_id);
                 const sd_pic_photo *photo = sd_pic_get(&players, chr->pilot.photo_id);
                 chr->pilot.sex = photo->sex;
                 sd_pic_free(&players);

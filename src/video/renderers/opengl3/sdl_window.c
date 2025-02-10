@@ -7,14 +7,14 @@
 bool create_gl_context(SDL_GLContext **context, SDL_Window *window) {
     SDL_GLContext *ctx = SDL_GL_CreateContext(window);
     if(ctx == NULL) {
-        PERROR("Could not acquire OpenGL context: %s", SDL_GetError());
+        log_error("Could not acquire OpenGL context: %s", SDL_GetError());
         return false;
     }
-    INFO("OpenGL context acquired!");
-    INFO(" * Vendor: %s", glGetString(GL_VENDOR));
-    INFO(" * Renderer: %s", glGetString(GL_RENDERER));
-    INFO(" * Version: %s", glGetString(GL_VERSION));
-    INFO(" * GLSL: %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
+    log_info("OpenGL context acquired!");
+    log_info(" * Vendor: %s", glGetString(GL_VENDOR));
+    log_info(" * Renderer: %s", glGetString(GL_RENDERER));
+    log_info(" * Version: %s", glGetString(GL_VERSION));
+    log_info(" * GLSL: %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
     *context = ctx;
     return true;
 }
@@ -90,15 +90,15 @@ bool create_window(SDL_Window **window, int width, int height, bool fullscreen) 
     SDL_Window *w = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height,
                                      SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
     if(w == NULL) {
-        PERROR("Could not create window: %s", SDL_GetError());
+        log_error("Could not create window: %s", SDL_GetError());
         return false;
     }
 
     if(fullscreen) {
         if(SDL_SetWindowFullscreen(w, SDL_WINDOW_FULLSCREEN) != 0) {
-            PERROR("Could not set fullscreen mode: %s", SDL_GetError());
+            log_error("Could not set fullscreen mode: %s", SDL_GetError());
         } else {
-            INFO("Fullscreen mode enabled!");
+            log_info("Fullscreen mode enabled!");
         }
     } else {
         SDL_SetWindowFullscreen(w, 0);
@@ -112,7 +112,7 @@ bool create_window(SDL_Window **window, int width, int height, bool fullscreen) 
 bool resize_window(SDL_Window *window, int width, int height, bool fullscreen) {
     SDL_SetWindowSize(window, width, height);
     if(SDL_SetWindowFullscreen(window, fullscreen ? SDL_WINDOW_FULLSCREEN : 0) < 0) {
-        PERROR("Could not set fullscreen mode: %s", SDL_GetError());
+        log_error("Could not set fullscreen mode: %s", SDL_GetError());
         return false;
     }
     return true;
@@ -121,29 +121,29 @@ bool resize_window(SDL_Window *window, int width, int height, bool fullscreen) {
 bool set_vsync(bool enable) {
     // If we don't want to enable vsync, just log and okay out.
     if(!enable) {
-        INFO("VSYNC is disabled!");
+        log_info("VSYNC is disabled!");
         return true;
     }
     // Try for adaptive vsync first.
     if(SDL_GL_SetSwapInterval(-1) == 0) {
-        INFO("Adaptive VSYNC enabled!");
+        log_info("Adaptive VSYNC enabled!");
         return true;
     } else {
-        PERROR("Adaptive VSYNC not supported: %s", SDL_GetError());
+        log_error("Adaptive VSYNC not supported: %s", SDL_GetError());
     }
     // Fallback to normal, static vsync
     if(SDL_GL_SetSwapInterval(1) == 0) {
-        INFO("Non-adaptive VSYNC enabled!");
+        log_info("Non-adaptive VSYNC enabled!");
         return true;
     } else {
-        PERROR("VSYNC not supported: %s", SDL_GetError());
+        log_error("VSYNC not supported: %s", SDL_GetError());
     }
     // Fallback to no vsync, in which case we do SDL_Delay.
     if(SDL_GL_SetSwapInterval(0) == 0) {
-        INFO("VSYNC is disabled!");
+        log_info("VSYNC is disabled!");
         return true;
     } else {
-        PERROR("Unable to set any VSYNC mode -- something is really broken.");
+        log_error("Unable to set any VSYNC mode -- something is really broken.");
     }
     // We're out of fallbacks to give -- fail.
     return false;

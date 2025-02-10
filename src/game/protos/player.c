@@ -51,7 +51,7 @@ void player_reload_with_str(object *obj, const char *custom_str) {
     int err_pos;
     ret = sd_script_decode(&obj->animation_state.parser, custom_str, &err_pos);
     if(ret != SD_SUCCESS) {
-        PERROR("Decoder error %s at position %d in string \"%s\"", sd_get_error(ret), err_pos, custom_str);
+        log_error("Decoder error %s at position %d in string \"%s\"", sd_get_error(ret), err_pos, custom_str);
     }
 
     // Set player state
@@ -112,7 +112,7 @@ void player_set_delay(object *obj, int delay) {
         return;
     }
 
-    DEBUG("Animation has %d initializer frames", frames);
+    log_debug("Animation has %d initializer frames", frames);
 
     int delay_per_frame = delay / frames;
     int rem = delay % frames;
@@ -127,57 +127,57 @@ void player_set_delay(object *obj, int delay) {
 
         sd_script_set_tick_len_at_frame(&obj->animation_state.parser, i, new_duration);
         duration = sd_script_get_tick_len_at_frame(&obj->animation_state.parser, i);
-        DEBUG("changed duration of frame %d from %d to %d", i, old_dur, duration);
+        log_debug("changed duration of frame %d from %d to %d", i, old_dur, duration);
     }
 }
 
 #ifdef DEBUGMODE
 void player_describe_frame(const sd_script_frame *frame) {
-    DEBUG("Frame %c%d", 65 + frame->sprite, frame->tick_len);
+    log_debug("Frame %c%d", 65 + frame->sprite, frame->tick_len);
     for(unsigned i = 0; i < vector_size(&frame->tags); i++) {
         sd_script_tag *tag = vector_get(&frame->tags, i);
         if(tag->has_param) {
-            DEBUG("    %3s%5d   %s", tag->key, tag->value, tag->desc);
+            log_debug("    %3s%5d   %s", tag->key, tag->value, tag->desc);
         } else {
-            DEBUG("    %3s        %s", tag->key, tag->desc);
+            log_debug("    %3s        %s", tag->key, tag->desc);
         }
     }
 }
 
 void player_describe_object(object *obj) {
-    DEBUG("Object:");
-    DEBUG("  - Start: %d, %d", obj->start.x, obj->start.y);
-    DEBUG("  - Position: %d, %d", obj->pos.x, obj->pos.y);
-    DEBUG("  - Velocity: %d, %d", obj->vel.x, obj->vel.y);
+    log_debug("Object:");
+    log_debug("  - Start: %d, %d", obj->start.x, obj->start.y);
+    log_debug("  - Position: %d, %d", obj->pos.x, obj->pos.y);
+    log_debug("  - Velocity: %d, %d", obj->vel.x, obj->vel.y);
     if(obj->cur_sprite_id) {
         sprite *cur_sprite = animation_get_sprite(obj->cur_animation, obj->cur_sprite_id);
-        DEBUG("  - Pos: %d, %d", cur_sprite->pos.x, cur_sprite->pos.y);
-        DEBUG("  - Size: %d, %d", cur_sprite->data->w, cur_sprite->data->h);
+        log_debug("  - Pos: %d, %d", cur_sprite->pos.x, cur_sprite->pos.y);
+        log_debug("  - Size: %d, %d", cur_sprite->data->w, cur_sprite->data->h);
         player_sprite_state *rstate = &obj->sprite_state;
-        DEBUG("CURRENT = %d - %d + %d - %d", obj->pos.y, cur_sprite->pos.y, rstate->o_correction.y,
-              cur_sprite->data->h);
+        log_debug("CURRENT = %d - %d + %d - %d", obj->pos.y, cur_sprite->pos.y, rstate->o_correction.y,
+                  cur_sprite->data->h);
     }
 }
 
 void player_describe_mp_flags(const sd_script_frame *frame, int mp) {
     if(mp != 0) {
-        DEBUG("mp flags set for new animation %d:", sd_script_get(frame, "m"));
+        log_debug("mp flags set for new animation %d:", sd_script_get(frame, "m"));
         if(mp & 0x1)
-            DEBUG(" * 0x01: NON-HAR Sprite");
+            log_debug(" * 0x01: NON-HAR Sprite");
         if(mp & 0x2)
-            DEBUG(" * 0x02: Unknown");
+            log_debug(" * 0x02: Unknown");
         if(mp & 0x4)
-            DEBUG(" * 0x04: HAR 1 related");
+            log_debug(" * 0x04: HAR 1 related");
         if(mp & 0x8)
-            DEBUG(" * 0x08: Something timer related is skipped ?");
+            log_debug(" * 0x08: Something timer related is skipped ?");
         if(mp & 0x10)
-            DEBUG(" * 0x10: HAR 2 related");
+            log_debug(" * 0x10: HAR 2 related");
         if(mp & 0x20)
-            DEBUG(" * 0x20: Flip x operations");
+            log_debug(" * 0x20: Flip x operations");
         if(mp & 0x40)
-            DEBUG(" * 0x40: Something about wall collisions ?");
+            log_debug(" * 0x40: Something about wall collisions ?");
         if(mp & 0x80)
-            DEBUG(" * 0x80: Sprite timer related ?");
+            log_debug(" * 0x80: Sprite timer related ?");
     }
 }
 #endif /* DEBUGMODE */
@@ -187,7 +187,7 @@ void player_run(object *obj) {
     player_animation_state *state = &obj->animation_state;
     player_sprite_state *rstate = &obj->sprite_state;
     object *enemy = game_state_find_object(obj->gs, state->enemy_obj_id);
-    // DEBUG("i am %d, enemy is %d", obj->id, state->enemy_obj_id);
+    // log_debug("i am %d, enemy is %d", obj->id, state->enemy_obj_id);
     if(state->finished)
         return;
 
@@ -269,8 +269,8 @@ void player_run(object *obj) {
         /*if (sd_script_isset(frame, "bm")) {
             if (sd_script_isset(frame, "am") && sd_script_isset(frame, "e")) {
                 // destination is the enemy's position
-                DEBUG("BE tag with x/y offsets: %d %d %d %d", trans_x, trans_y, object_get_direction(obj),
-        object_get_direction(state->enemy)); DEBUG("enemy x %d modified trans_x: %d (%d * %d * %d)",
+                log_debug("BE tag with x/y offsets: %d %d %d %d", trans_x, trans_y, object_get_direction(obj),
+        object_get_direction(state->enemy)); log_debug("enemy x %d modified trans_x: %d (%d * %d * %d)",
                     state->enemy->pos.x,
                     (trans_x * object_get_direction(obj) * object_get_direction(state->enemy)),
                     trans_x,
@@ -289,7 +289,7 @@ void player_run(object *obj) {
                 // flip the HAR's position for this animation
                 obj->animation_state.shadow_corner_hack = 1;
             } else {
-                PERROR("unknown end position for BE tag");
+                log_error("unknown end position for BE tag");
             }
             player_next_frame(state->enemy);
         }*/
@@ -297,7 +297,7 @@ void player_run(object *obj) {
 
     if(sd_script_isset(frame, "e") && enemy) {
 
-        DEBUG("my position %f, %f, their position %f %f", obj->pos.x, obj->pos.y, enemy->pos.x, enemy->pos.y);
+        log_debug("my position %f, %f, their position %f %f", obj->pos.x, obj->pos.y, enemy->pos.x, enemy->pos.y);
         // Set speed to 0, since we're being controlled by animation tag system
         obj->vel.x = 0;
         obj->vel.y = 0;
@@ -306,7 +306,7 @@ void player_run(object *obj) {
         obj->pos.x = enemy->pos.x;
         obj->pos.y = enemy->pos.y;
         object_set_direction(obj, object_get_direction(enemy) * -1);
-        // DEBUG("E: pos.x = %f, pos.y = %f", obj->pos.x, obj->pos.y);
+        // log_debug("E: pos.x = %f, pos.y = %f", obj->pos.x, obj->pos.y);
     }
 
     // Set to ground
@@ -323,7 +323,7 @@ void player_run(object *obj) {
 
     if(sd_script_isset(frame, "at") && enemy) {
 
-        DEBUG("my position %f, %f, their position %f %f", obj->pos.x, obj->pos.y, enemy->pos.x, enemy->pos.y);
+        log_debug("my position %f, %f, their position %f %f", obj->pos.x, obj->pos.y, enemy->pos.x, enemy->pos.y);
         // set the object's X position to be behind the opponent
 
         if(obj->pos.x > enemy->pos.x) { // From right to left
@@ -339,11 +339,13 @@ void player_run(object *obj) {
         if(sd_script_isset(frame, "v")) {
             obj->vel.x = (trans_x * (mp & 0x20 ? -1 : 1)) * obj->horizontal_velocity_modifier;
             obj->vel.y = trans_y * obj->vertical_velocity_modifier;
-            // DEBUG("vel x+%d, y+%d to x=%f, y=%f", trans_x * (mp & 0x20 ? -1 : 1), trans_y, obj->vel.x, obj->vel.y);
+            // log_debug("vel x+%d, y+%d to x=%f, y=%f", trans_x * (mp & 0x20 ? -1 : 1), trans_y, obj->vel.x,
+            // obj->vel.y);
         } else {
             obj->pos.x += trans_x * (mp & 0x20 ? -1 : 1);
             obj->pos.y += trans_y;
-            // DEBUG("pos x+%d, y+%d to x=%f, y=%f", trans_x * (mp & 0x20 ? -1 : 1), trans_y, obj->pos.x, obj->pos.y);
+            // log_debug("pos x+%d, y+%d to x=%f, y=%f", trans_x * (mp & 0x20 ? -1 : 1), trans_y, obj->pos.x,
+            // obj->pos.y);
         }
     }
 
@@ -357,7 +359,7 @@ void player_run(object *obj) {
     // Handle slide in relation to enemy
     if(obj->enemy_slide_state.timer > 0 && enemy) {
 
-        DEBUG("my position %f, %f, their position %f %f", obj->pos.x, obj->pos.y, enemy->pos.x, enemy->pos.y);
+        log_debug("my position %f, %f, their position %f %f", obj->pos.x, obj->pos.y, enemy->pos.x, enemy->pos.y);
         obj->enemy_slide_state.duration++;
         obj->pos.x = enemy->pos.x + obj->enemy_slide_state.dest.x;
         obj->pos.y = enemy->pos.y + obj->enemy_slide_state.dest.y;
@@ -375,7 +377,8 @@ void player_run(object *obj) {
 
             if(obj->animation_state.shadow_corner_hack && sd_script_get(frame, "m") == 65 && enemy) {
 
-                DEBUG("my position %f, %f, their position %f %f", obj->pos.x, obj->pos.y, enemy->pos.x, enemy->pos.y);
+                log_debug("my position %f, %f, their position %f %f", obj->pos.x, obj->pos.y, enemy->pos.x,
+                          enemy->pos.y);
                 mx = enemy->pos.x;
                 my = enemy->pos.y;
             }
@@ -385,7 +388,7 @@ void player_run(object *obj) {
                 int mrx = sd_script_get(frame, "mrx");
                 int mm = sd_script_isset(frame, "mm") ? sd_script_get(frame, "mm") : mrx;
                 mx = random_int(&obj->gs->rand, 320 - 2 * mm) + mrx;
-                DEBUG("randomized mx as %d", mx);
+                log_debug("randomized mx as %d", mx);
             } else if(sd_script_isset(frame, "mx")) {
                 mx = obj->start.x + (sd_script_get(frame, "mx") * object_get_direction(obj));
             }
@@ -395,7 +398,7 @@ void player_run(object *obj) {
                 int mry = sd_script_get(frame, "mry");
                 int mm = sd_script_isset(frame, "mm") ? sd_script_get(frame, "mm") : mry;
                 my = random_int(&obj->gs->rand, 320 - 2 * mm) + mry;
-                DEBUG("randomized my as %d", my);
+                log_debug("randomized my as %d", my);
             } else if(sd_script_isset(frame, "my")) {
                 my = obj->start.y + sd_script_get(frame, "my");
             }
@@ -405,7 +408,7 @@ void player_run(object *obj) {
                 int ma = sd_script_get(frame, "ma");
                 vx = cosf(ma);
                 vy = sinf(ma);
-                DEBUG("MA is set! angle = %d, vx = %f, vy = %f", ma, vx, vy);
+                log_debug("MA is set! angle = %d, vx = %f, vy = %f", ma, vx, vy);
             }
 
             // Special positioning for certain desert arena sprites
@@ -516,13 +519,13 @@ void player_run(object *obj) {
 
         // Handle position correction
         if(sd_script_isset(frame, "ox")) {
-            DEBUG("O_CORRECTION: X = %d", sd_script_get(frame, "ox"));
+            log_debug("O_CORRECTION: X = %d", sd_script_get(frame, "ox"));
             rstate->o_correction.x = sd_script_get(frame, "ox");
         } else {
             rstate->o_correction.x = 0;
         }
         if(sd_script_isset(frame, "oy")) {
-            DEBUG("O_CORRECTION: Y = %d", sd_script_get(frame, "oy"));
+            log_debug("O_CORRECTION: Y = %d", sd_script_get(frame, "oy"));
             rstate->o_correction.y = sd_script_get(frame, "oy");
         } else {
             rstate->o_correction.y = 0;
@@ -531,7 +534,7 @@ void player_run(object *obj) {
         // If UA is set, force other HAR to damage animation
         if(sd_script_isset(frame, "ua") && enemy && enemy->cur_animation->id != 9) {
 
-            DEBUG("my position %f, %f, their position %f %f", obj->pos.x, obj->pos.y, enemy->pos.x, enemy->pos.y);
+            log_debug("my position %f, %f, their position %f %f", obj->pos.x, obj->pos.y, enemy->pos.x, enemy->pos.y);
             har_set_ani(enemy, 9, 0);
         }
 
@@ -575,7 +578,7 @@ void player_run(object *obj) {
                 if(slide != obj->pos.x) {
                     obj->slide_state.vel.x = dist(obj->pos.x, slide) / (float)(frame->tick_len + r);
                     obj->slide_state.timer = frame->tick_len + r;
-                    /* DEBUG("Slide object %d for X = %f for a total of %d + %d = %d ticks.",
+                    /* log_debug("Slide object %d for X = %f for a total of %d + %d = %d ticks.",
                             obj->cur_animation->id,
                             obj->slide_state.vel.x,
                             frame->tick_len,
@@ -599,7 +602,7 @@ void player_run(object *obj) {
                 if(slide != obj->pos.y) {
                     obj->slide_state.vel.y = dist(obj->pos.y, slide) / (float)(frame->tick_len + r);
                     obj->slide_state.timer = frame->tick_len + r;
-                    /* DEBUG("Slide object %d for Y = %f for a total of %d + %d = %d ticks.",
+                    /* log_debug("Slide object %d for Y = %f for a total of %d + %d = %d ticks.",
                             obj->cur_animation->id,
                             obj->slide_state.vel.y,
                             frame->tick_len,
