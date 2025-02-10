@@ -2,6 +2,7 @@
 #define HASHMAP_H
 
 #include "utils/iterator.h"
+#include <string.h>
 
 typedef struct hashmap_pair hashmap_pair;
 typedef struct hashmap_node hashmap_node;

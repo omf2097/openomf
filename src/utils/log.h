@@ -1,6 +1,7 @@
 #ifndef LOG_H
 #define LOG_H
 
+#include <stdbool.h>
 #include <stdlib.h>
 
 typedef enum log_level
