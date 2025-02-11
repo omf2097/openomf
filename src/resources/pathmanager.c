@@ -32,22 +32,41 @@ char const pm_path_sep = '\\';
 char const pm_path_sep = '/';
 #endif
 
-// Build directory
-static void local_path_build(int path_id, const char *path, const char *ext) {
-    int len = strlen(path) + strlen(ext) + 1;
-    local_paths[path_id] = omf_realloc(local_paths[path_id], len);
-    snprintf(local_paths[path_id], len, "%s%s", path, ext);
-}
-
-static void resource_path_build(int path_id, const char *path, const char *ext) {
-    int len = strlen(path) + strlen(ext) + 1;
-    resource_paths[path_id] = omf_realloc(resource_paths[path_id], len);
-    snprintf(resource_paths[path_id], len, "%s%s", path, ext);
+static char get_platform_sep(void) {
+    if(strcmp(SDL_GetPlatform(), "Windows") == 0) {
+        return '\\';
+    }
+    return '/';
 }
 
 int str_ends_with_sep(const char *str) {
     int pos = strlen(str) - 1;
     return (str[pos] == '/' || str[pos] == '\\');
+}
+
+// Build directory
+static void local_path_build(int path_id, const char *path, const char *ext) {
+    if(str_ends_with_sep(path)) {
+        int len = strlen(path) + strlen(ext) + 1;
+        local_paths[path_id] = omf_realloc(local_paths[path_id], len);
+        snprintf(local_paths[path_id], len, "%s%s", path, ext);
+    } else {
+        int len = strlen(path) + strlen(ext) + 2;
+        local_paths[path_id] = omf_realloc(local_paths[path_id], len);
+        snprintf(local_paths[path_id], len, "%s%c%s", path, get_platform_sep(), ext);
+    }
+}
+
+static void resource_path_build(int path_id, const char *path, const char *ext) {
+    if(str_ends_with_sep(path)) {
+        int len = strlen(path) + strlen(ext) + 1;
+        resource_paths[path_id] = omf_realloc(resource_paths[path_id], len);
+        snprintf(resource_paths[path_id], len, "%s%s", path, ext);
+    } else {
+        int len = strlen(path) + strlen(ext) + 2;
+        resource_paths[path_id] = omf_realloc(resource_paths[path_id], len);
+        snprintf(resource_paths[path_id], len, "%s%c%s", path, get_platform_sep(), ext);
+    }
 }
 
 // Makes sure resource file exists
@@ -70,7 +89,8 @@ int pm_validate_resources(void) {
 }
 
 int pm_init(void) {
-    char *local_base_dir;
+    char *config_base_dir;
+    char *state_base_dir;
     char *bin_base_dir;
 
     // Clear everything
@@ -79,19 +99,26 @@ int pm_init(void) {
     memset(resource_paths, 0, sizeof(resource_paths));
 
     // Find local basedir
-    local_base_dir = pm_get_local_base_dir();
-    if(local_base_dir == NULL) {
+    config_base_dir = pm_get_local_base_dir();
+    if(config_base_dir == NULL) {
         goto error_0;
     }
 
-    // Other paths
-    local_path_build(LOG_PATH, local_base_dir, logfile_name);
-    local_path_build(CONFIG_PATH, local_base_dir, configfile_name);
-    local_path_build(SCORE_PATH, local_base_dir, scorefile_name);
-    if(strcmp(SDL_GetPlatform(), "Windows") == 0) {
-        local_path_build(SAVE_PATH, local_base_dir, "save\\");
+    char *xdg_env = getenv("XDG_STATE_HOME");
+    if(xdg_env) {
+        state_base_dir = omf_strdup(xdg_env);
     } else {
-        local_path_build(SAVE_PATH, local_base_dir, "save/");
+        state_base_dir = config_base_dir;
+    }
+
+    // Other paths
+    local_path_build(LOG_PATH, state_base_dir, logfile_name);
+    local_path_build(CONFIG_PATH, config_base_dir, configfile_name);
+    local_path_build(SCORE_PATH, state_base_dir, scorefile_name);
+    if(strcmp(SDL_GetPlatform(), "Windows") == 0) {
+        local_path_build(SAVE_PATH, state_base_dir, "save\\");
+    } else {
+        local_path_build(SAVE_PATH, state_base_dir, "save/");
     }
 
     // Set default base dirs for resources
@@ -135,22 +162,17 @@ int pm_init(void) {
         }
     }
 
-    char *platform_sep = "/";
-    if(strcmp(SDL_GetPlatform(), "Windows") == 0) {
-        platform_sep = "\\";
-    }
-
     // check if we have overrides from the environment
     char *resource_env = getenv("OPENOMF_RESOURCE_DIR");
     if(resource_env) {
-        char *ext = str_ends_with_sep(resource_env) ? "" : platform_sep;
-        local_path_build(RESOURCE_PATH, resource_env, ext);
+        // make sure it ends with a separator
+        local_path_build(RESOURCE_PATH, resource_env, "");
     }
 
     char *shader_env = getenv("OPENOMF_SHADER_DIR");
     if(shader_env) {
-        char *ext = str_ends_with_sep(shader_env) ? "" : platform_sep;
-        local_path_build(SHADER_PATH, shader_env, ext);
+        // make sure it ends with a separator
+        local_path_build(SHADER_PATH, shader_env, "");
     }
 
     // Set resource paths
@@ -164,12 +186,15 @@ int pm_init(void) {
     }
 
     // All done
-    omf_free(local_base_dir);
+    if(config_base_dir != state_base_dir) {
+        omf_free(state_base_dir);
+    }
+    omf_free(config_base_dir);
     return 0;
 
 error_1:
     pm_free();
-    omf_free(local_base_dir);
+    omf_free(config_base_dir);
 error_0:
     return 1;
 }
@@ -230,13 +255,18 @@ char *pm_get_local_base_dir(void) {
     }
 
     // Attempt to open up locally writable directory
-    char *sdl_path = SDL_GetPrefPath("openomfproject", "OpenOMF");
-    if(sdl_path == NULL) {
-        snprintf(errormessage, 128, "Error getting config path: %s", SDL_GetError());
-        return NULL;
+    char *xdg_env = getenv("XDG_CONFIG_HOME");
+    if(xdg_env) {
+        out = omf_strdup(xdg_env);
+    } else {
+        char *sdl_path = SDL_GetPrefPath("openomfproject", "OpenOMF");
+        if(sdl_path == NULL) {
+            snprintf(errormessage, 128, "Error getting config path: %s", SDL_GetError());
+            return NULL;
+        }
+        out = omf_strdup(sdl_path);
+        SDL_free(sdl_path);
     }
-    out = omf_strdup(sdl_path);
-    SDL_free(sdl_path);
 
     // Ensure the path exists before continuing on
     // XXX shouldn't SDL_GetPrefPath automatically create the path if it doesn't exist?
