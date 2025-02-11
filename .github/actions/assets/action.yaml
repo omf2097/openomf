@@ -1,0 +1,32 @@
+name: Fetch assets
+description: Fetch omf2097 assets and cache them for later use
+inputs:
+  asset_url:
+    description: 'Asset ZIP package URL'
+    required: false
+    default: 'https://www.omf2097.com/pub/files/omf/omf2097-assets.zip'
+  filename:
+    description: 'Downloaded asset filename'
+    required: false
+    default: 'omf2097-assets.zip'
+runs:
+  using: "composite"
+  steps:
+    - name: Restore assets file
+      id: cache-assets
+      uses: actions/cache/restore@v4
+      with:
+        path: "${{ inputs.filename }}"
+        key: omf2097-assets.zip
+
+    - name: Download assets file
+      if: steps.cache-assets.outputs.cache-hit != 'true'
+      shell: bash
+      run: wget -q "${{ inputs.asset_url }}" -O "${{ inputs.filename }}"
+
+    - name: Cache assets file
+      if: steps.cache-assets.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v4
+      with:
+        path: "${{ inputs.filename }}"
+        key: omf2097-assets.zip
