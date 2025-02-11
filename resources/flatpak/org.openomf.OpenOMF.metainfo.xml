@@ -3,6 +3,16 @@
   <id>org.openomf.OpenOMF</id>
 
   <releases>
+    <release version="0.7.1" date="2025-02-11">
+      <url type="details">https://github.com/omf2097/openomf/releases/tag/0.7.1</url>
+      <description>
+        <p>Small bugfix release to 0.7.1 that also adds support for Flatpak</p>
+        <ul>
+          <li>Flatpak support</li>
+          <li>Fix HAR colors in tournament cutscenes</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.7.0" date="2025-01-18">
       <url type="details">https://github.com/omf2097/openomf/releases/tag/0.7.0</url>
       <description>
