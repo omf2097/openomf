@@ -2,6 +2,7 @@
 #include "formats/altpal.h"
 #include "formats/error.h"
 #include "utils/allocator.h"
+#include "utils/miscmath.h"
 #include "video/vga_state.h"
 #include <stdlib.h>
 #include <string.h>
@@ -232,16 +233,19 @@ void palette_set_player_expanded_color(vga_palette *src) {
 
     vga_palette tmp;
     vga_color lower, upper;
+    float position, t;
+    int lower_index, upper_index;
     for(int j = 0; j < 3; j++) {
         for(int i = 0; i < 32; ++i) {
-            float position = (float)i * 15.0f / 31.0f;
-            int lower_index = (int)position;
-            float t = position - lower_index;
-            int upper_index = lower_index + 1;
-            if(upper_index >= 16) {
-                // don't go beyond the last color in this HAR color
-                upper_index = 15;
-            }
+            position = (float)i * 15.0f / 31.0f;
+            lower_index = (int)position;
+            // interpolation factor to position the color between the lower and upper color
+            // 0 means use the low color entirely, and 1.0 means use the upper color entirely
+            t = position - lower_index;
+            // don't go beyond the last color in this HAR color
+            // if the clamp happens, the t factor will also be 0, so it will use the 15th color exactly at the final
+            // position at index 0, the t factor is 0, so it will also use the original 0th color
+            upper_index = min2(lower_index + 1, 15);
 
             lower = src->colors[lower_index + (j * 16)];
             upper = src->colors[upper_index + (j * 16)];
