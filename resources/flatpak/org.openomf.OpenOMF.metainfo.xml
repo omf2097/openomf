@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>org.openomf.OpenOMF</id>
+
+  <releases>
+    <release version="0.7.1" date="2025-02-11">
+      <url type="details">https://github.com/omf2097/openomf/releases/tag/0.7.1</url>
+      <description>
+        <p>Small bugfix release to 0.7.1 that also adds support for Flatpak</p>
+        <ul>
+          <li>Flatpak support</li>
+          <li>Fix HAR colors in tournament cutscenes</li>
+        </ul>
+      </description>
+    </release>
+    <release version="0.7.0" date="2025-01-18">
+      <url type="details">https://github.com/omf2097/openomf/releases/tag/0.7.0</url>
+      <description>
+        <p>The first OpenOMF release in 10 years, it has a tremendous amount of changes, but these are the highlights</p>
+        <ul>
+          <li>Tournament mode</li>
+          <li>New enemy AI</li>
+          <li>New graphics renderer with more correct visuals</li>
+          <li>New audio backend/</li>
+          <li>Many bugfixes</li>
+        </ul>
+      </description>
+    </release>
+  </releases>
+
+  <content_rating type="oars-1.1">
+    <content_attribute id="violence-cartoon">moderate</content_attribute>
+    <content_attribute id="drugs-alcohol">mild</content_attribute>
+    <content_attribute id="language-profanity">mild</content_attribute>
+    <content_attribute id="language-humor">mild</content_attribute>
+    <content_attribute id="social-chat">moderate</content_attribute>
+  </content_rating>
+
+  <developer id="org.openomf.OpenOMF">
+    <name>The OpenOMF developers</name>
+  </developer>
+
+  <url type="homepage">https://openomf.org/</url>
+  <url type="bugtracker">https://github.com/omf2097/openomf/issues</url>
+  <url type="vcs-browser">https://github.com/omf2097/openomf</url>
+  
+  <name>OpenOMF</name>
+  <summary>An open-source remake of the DOS fighting game One Must Fall 2097</summary>
+  
+  <metadata_license>MIT</metadata_license>
+  <project_license>MIT</project_license>
+  
+  <description>
+    <p>
+      OpenOMF is an open-source remake of the DOS fighting classic One Must Fall 2097.
+    </p>
+    <p>
+      One Must Fall 2097 is a 2D fighting game set in the year 2097 where pilots use Human Assisted Robots (HARs) to battle in various arenas.
+    </p>
+    <p>
+      One Must Fall 2097 features a 1 player story mode, a 2 player mode, a tournament mode with RPG elements and network play.
+    </p>
+  </description>
+  
+  <launchable type="desktop-id">org.openomf.OpenOMF.desktop</launchable>
+  <screenshots>
+    <screenshot type="default">
+      <image>https://openomf.org/assets/dangerroom.png</image>
+      <caption>Jean-Paul, piloting a Gargoyle, is jump kicking a Shredder, piloted by Ibrahim in the Danger Room arena.</caption>
+    </screenshot>
+    <screenshot type="default">
+      <image>https://openomf.org/assets/intro.png</image>
+      <caption>A screenshot from the game intro, showing the One Must Fall 2097 logo.</caption>
+    </screenshot>
+    <screenshot type="default">
+      <image>https://openomf.org/assets/menu.png</image>
+      <caption>The One Must Fall 2097 main menu.</caption>
+    </screenshot>
+    <screenshot type="default">
+      <image>https://openomf.org/assets/melee.png</image>
+      <caption>The 1 player pilot select screen, showing the pilot Milano selected.</caption>
+    </screenshot>
+    <screenshot type="default">
+      <image>https://openomf.org/assets/vs.png</image>
+      <caption>The 1 player pilot VS screen, showing the pilot Milano, piloting a Pyros, challenging Steffan, piloting a Shredder.</caption>
+    </screenshot>
+    <screenshot type="default">
+      <image>https://openomf.org/assets/newsroom.png</image>
+      <caption>The post match newsroom announcer screen showing a Jaguar in its victory pose in the Stadium arena.</caption>
+    </screenshot>
+    <screenshot type="default">
+      <image>https://openomf.org/assets/mechlab.png</image>
+      <caption>The tournament mode screen, showing a pilot and their current Jaguar HAR's stats.</caption>
+    </screenshot>
+    <screenshot type="default">
+      <image>https://openomf.org/assets/plug.png</image>
+      <caption>The tournament mode post match screen showing the financial report and the fight statistics.</caption>
+    </screenshot>
+    <screenshot type="default">
+      <image>https://openomf.org/assets/cutscene.png</image>
+      <caption>The cutscene for when you win the North American tournament in tournament mode. Hangar doors are gradually closing on a Jaguar HAR.</caption>
+    </screenshot>
+  </screenshots>
+</component>

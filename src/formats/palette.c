@@ -2,6 +2,7 @@
 #include "formats/altpal.h"
 #include "formats/error.h"
 #include "utils/allocator.h"
+#include "utils/miscmath.h"
 #include "video/vga_state.h"
 #include <stdlib.h>
 #include <string.h>
@@ -226,24 +227,35 @@ void palette_set_player_color(int player, int src_color, int dst_color) {
     vga_state_set_base_palette_from_range(&pal, dst_index, src_index, 16 * 3);
 }
 
-void palette_set_player_expanded_color(int src_row, int dst_row) {
-    int dst_index = dst_row * 32;
-    int src_index = src_row * 16;
+void palette_set_player_expanded_color(vga_palette *src) {
+    // expand the player 1 colors, which are 3 shades of 16 colors
+    // into 3 shades of 32 colors
+
     vga_palette tmp;
-    vga_color start = altpals->palettes[0].colors[src_index];
-    vga_color end = altpals->palettes[0].colors[src_index + 15];
+    vga_color lower, upper;
+    float position, t;
+    int lower_index, upper_index;
+    for(int j = 0; j < 3; j++) {
+        for(int i = 0; i < 32; ++i) {
+            position = (float)i * 15.0f / 31.0f;
+            lower_index = (int)position;
+            // interpolation factor to position the color between the lower and upper color
+            // 0 means use the low color entirely, and 1.0 means use the upper color entirely
+            t = position - lower_index;
+            // don't go beyond the last color in this HAR color
+            // if the clamp happens, the t factor will also be 0, so it will use the 15th color exactly at the final
+            // position at index 0, the t factor is 0, so it will also use the original 0th color
+            upper_index = min2(lower_index + 1, 15);
 
-    // Slide the colors over 32 indexes
-    float r = (end.r - start.r) / 32.0;
-    float g = (end.g - start.g) / 32.0;
-    float b = (end.b - start.b) / 32.0;
-    for(int i = 0; i < 32; i++) {
-        tmp.colors[i].r = start.r + (int)(r * i);
-        tmp.colors[i].g = start.g + (int)(g * i);
-        tmp.colors[i].b = start.b + (int)(b * i);
+            lower = src->colors[lower_index + (j * 16)];
+            upper = src->colors[upper_index + (j * 16)];
+
+            tmp.colors[i + (j * 32)].r = (uint8_t)((1.0f - t) * lower.r + t * upper.r + 0.5f);
+            tmp.colors[i + (j * 32)].g = (uint8_t)((1.0f - t) * lower.g + t * upper.g + 0.5f);
+            tmp.colors[i + (j * 32)].b = (uint8_t)((1.0f - t) * lower.b + t * upper.b + 0.5f);
+        }
     }
-
-    vga_state_set_base_palette_from_range(&tmp, dst_index, 0, 32);
+    vga_state_set_base_palette_from_range(&tmp, 1, 1, 96);
 }
 
 void palette_copy(vga_palette *dst, const vga_palette *src, int index_start, int index_count) {

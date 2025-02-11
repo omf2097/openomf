@@ -73,7 +73,7 @@ void palette_remaps_save(sd_writer *writer, const vga_remap_tables *remaps);
 void palette_load_player_colors(vga_palette *src, int player);
 void palette_load_altpal_player_color(vga_palette *dst, int player, int src_color, int dst_color);
 void palette_set_player_color(int player, int src_color, int dst_color);
-void palette_set_player_expanded_color(int src_row, int dst_row);
+void palette_set_player_expanded_color(vga_palette *pal);
 void palette_copy(vga_palette *dst, const vga_palette *src, int index_start, int index_count);
 
 #endif // PALETTE_H

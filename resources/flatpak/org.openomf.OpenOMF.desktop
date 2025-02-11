@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+
+Name=OpenOMF
+Comment=An open-source remake of the DOS fighting game One Must Fall 2097
+Categories=Game;ArcadeGame;
+
+Icon=org.openomf.OpenOMF
+Exec=openomf
+Terminal=false
