@@ -8,6 +8,7 @@
 #include "resources/languages.h"
 #include "utils/allocator.h"
 #include "utils/c_string_util.h"
+#include "utils/log.h"
 #include "video/video.h"
 
 #define END_TEXT 992
@@ -127,6 +128,17 @@ static void cutscene_dynamic_tick(scene *scene, int paused) {
     cutscene_spawn_random(scene);
 }
 
+static void load_arena_object(scene *scene, int anim_number) {
+    bk_info *info = bk_get_info(scene->bk_data, anim_number);
+    if(info && info->probability == 1) {
+        object *obj = omf_calloc(1, sizeof(object));
+        object_create(obj, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
+        object_set_stl(obj, scene->bk_data->sound_translation_table);
+        object_set_animation(obj, &info->ani);
+        game_state_add_object(scene->gs, obj, RENDER_LAYER_TOP, 0, 0);
+    }
+}
+
 int cutscene_create(scene *scene) {
     cutscene_local *local = omf_calloc(1, sizeof(cutscene_local));
     text_defaults(&local->text_conf);
@@ -193,20 +205,14 @@ int cutscene_create(scene *scene) {
 
             // load all the animations, in order
             // including the one for our HAR
-            for(int i = 0; i < 256; i++) {
-                if(i >= 10 && i <= 20 && i != 10 + p1->pilot->har_id) {
-                    continue;
-                }
-                bk_info *bki = bk_get_info(scene->bk_data, i);
-                if(bki) {
-                    ani = &bki->ani;
-                    obj = omf_calloc(1, sizeof(object));
-                    object_create(obj, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
-                    object_set_stl(obj, scene->bk_data->sound_translation_table);
-                    object_set_animation(obj, ani);
-                    game_state_add_object(scene->gs, obj, RENDER_LAYER_TOP, 0, 0);
-                }
+            for(int i = 0; i < 10; i++) {
+                load_arena_object(scene, i);
             }
+            load_arena_object(scene, 10 + p1->pilot->har_id);
+            for(int i = 21; i < 50; i++) {
+                load_arena_object(scene, i);
+            }
+
             local->text_x = 10;
             local->text_y = 160;
             local->text_width = 300;
