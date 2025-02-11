@@ -55,8 +55,40 @@
   <launchable type="desktop-id">org.openomf.OpenOMF.desktop</launchable>
   <screenshots>
     <screenshot type="default">
-      <image>https://github.com/omf2097/openomf/raw/master/doc/flail.png</image>
-      <caption>Milano, piloting a Gargoyle, is thrown into the electrified walls of the power plant arena by Shirro piloting a Flail</caption>
+      <image>https://openomf.org/assets/dangerroom.png</image>
+      <caption>Jean-Paul, piloting a Gargoyle, is jump kicking a Shredder, piloted by Ibrahim in the Danger Room arena.</caption>
+    </screenshot>
+    <screenshot type="default">
+      <image>https://openomf.org/assets/intro.png</image>
+      <caption>A screenshot from the game intro, showing the One Must Fall 2097 logo.</caption>
+    </screenshot>
+    <screenshot type="default">
+      <image>https://openomf.org/assets/menu.png</image>
+      <caption>The One Must Fall 2097 main menu.</caption>
+    </screenshot>
+    <screenshot type="default">
+      <image>https://openomf.org/assets/melee.png</image>
+      <caption>The 1 player pilot select screen, showing the pilot Milano selected.</caption>
+    </screenshot>
+    <screenshot type="default">
+      <image>https://openomf.org/assets/vs.png</image>
+      <caption>The 1 player pilot VS screen, showing the pilot Milano, piloting a Pyros, challenging Steffan, piloting a Shredder.</caption>
+    </screenshot>
+    <screenshot type="default">
+      <image>https://openomf.org/assets/newsroom.png</image>
+      <caption>The post match newsroom announcer screen showing a Jaguar in its victory pose in the Stadium arena.</caption>
+    </screenshot>
+    <screenshot type="default">
+      <image>https://openomf.org/assets/mechlab.png</image>
+      <caption>The tournament mode screen, showing a pilot and their current Jaguar HAR's stats.</caption>
+    </screenshot>
+    <screenshot type="default">
+      <image>https://openomf.org/assets/plug.png</image>
+      <caption>The tournament mode post match screen showing the financial report and the fight statistics.</caption>
+    </screenshot>
+    <screenshot type="default">
+      <image>https://openomf.org/assets/cutscene.png</image>
+      <caption>The cutscene for when you win the North American tournament in tournament mode. Hangar doors are gradually closing on a Jaguar HAR.</caption>
     </screenshot>
   </screenshots>
 </component>
