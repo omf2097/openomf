@@ -1,0 +1,76 @@
+name: Build MSVC
+description: Build MSVC binary
+inputs:
+  arch:
+    description: Architecture
+    required: true
+  build_languages:
+    description: Whether to build languages files or not
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Get OpenOMF Version
+      uses: ./.github/actions/version
+
+    - name: Export Github Actions cache environment variables
+      uses: actions/github-script@v7
+      with:
+        script: |
+          core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+          core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+
+    - name: Check out VCPKG
+      # must be checked out *after* openomf.git
+      uses: actions/checkout@v4
+      with:
+        repository: 'microsoft/vcpkg'
+        path: 'vcpkg'
+
+    - uses: lukka/get-cmake@latest
+
+    - uses: ilammy/msvc-dev-cmd@v1
+
+    - name: Install VCPKG Dependencies, Configure CMake (${{ inputs.arch }})
+      shell: powershell
+      env:
+        VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
+      run: >
+        cmake -S . -B build-msvc
+        --toolchain vcpkg/scripts/buildsystems/vcpkg.cmake
+        -DVCPKG_TARGET_TRIPLET="${{ inputs.arch }}-windows-static"
+        -A ${{ inputs.arch }}
+        -DBUILD_LANGUAGES=${{ inputs.build_languages }}
+        -DUSE_NATPMP=ON
+        -DUSE_MINIUPNPC=ON
+
+    - name: Build openomf
+      shell: powershell
+      run: cmake --build build-msvc --config Release --target openomf
+
+    - name: Get OMF2097 assets
+      uses: ./.github/actions/assets
+
+    - name: Extract omf 2097 assets
+      shell: powershell
+      run: |
+        Expand-Archive omf2097-assets.zip -PassThru
+        mkdir install/openomf/resources
+        Move-Item -Path omf2097-assets/OMF2097/* -Destination install/openomf/resources/ -Force -PassThru
+
+    - name: Install openomf
+      shell: powershell
+      run: cmake --install build-msvc --config Release --prefix install
+
+    - name: Generate ZIP package
+      shell: powershell
+      run: |
+        cd install
+        Compress-Archive -Path openomf -DestinationPath openomf_${{ env.OPENOMF_VERSION }}_windows_msvc_${{ inputs.arch }}.zip -PassThru
+
+    - name: Upload ZIP artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: openomf_${{ env.OPENOMF_VERSION }}_windows_msvc_${{ inputs.arch }}
+        path: install/openomf_${{ env.OPENOMF_VERSION }}_windows_msvc_${{ inputs.arch }}.zip
+        if-no-files-found: error

@@ -1,0 +1,62 @@
+name: Build Ubuntu
+description: Build Ubuntu linux binary
+runs:
+  using: "composite"
+  steps:
+    - name: Get OpenOMF Version
+      uses: ./.github/actions/version
+
+    - name: Install Ubuntu Dependencies
+      uses: Eeems-Org/apt-cache-action@v1.3
+      with:
+        packages: cmake libargtable2-dev libcunit1-dev libsdl2-mixer-dev
+          libconfuse-dev libenet-dev libsdl2-dev libxmp-dev libpng-dev libepoxy-dev
+          libminiupnpc-dev libnatpmp-dev
+
+    - name: Generate Release
+      shell: bash
+      run: |
+        mkdir build-release && cd build-release
+        cmake -DUSE_NATPMP=ON -DUSE_MINIUPNPC=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=release/usr ..
+        make -j $(getconf _NPROCESSORS_ONLN)
+        make -j $(getconf _NPROCESSORS_ONLN) install
+
+    - name: Get OMF2097 assets
+      uses: ./.github/actions/assets
+
+    - name: Extract omf 2097 assets
+      shell: bash
+      run: unzip -j omf2097-assets.zip -d build-release/release/usr/share/games/openomf
+
+    - name: Generate TGZ package
+      shell: bash
+      run: tar cvfz ${GITHUB_WORKSPACE}/openomf_${{ env.OPENOMF_VERSION }}_linux_amd64.tar.gz -C build-release/release/ .
+
+    - name: Upload TGZ artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: openomf_${{ env.OPENOMF_VERSION }}_linux_amd64
+        path: openomf_${{ env.OPENOMF_VERSION }}_linux_amd64.tar.gz
+        if-no-files-found: error
+
+    - name: Generate DEB package
+      uses: jiro4989/build-deb-action@v3
+      with:
+        package: openomf
+        package_root: build-release/release
+        maintainer: ${{ github.repository_owner }}
+        version: ${{ env.OPENOMF_VERSION }}
+        arch: 'amd64'
+        depends: 'libargtable2-0, libsdl2-mixer-2.0-0, libconfuse2, libenet7, libsdl2-2.0-0, libxmp4, libpng16-16, libepoxy0, libminiupnpc17, libnatpmp1'
+        desc: 'One Must Fall 2097 Remake'
+
+    - name: Install the DEB package
+      shell: bash
+      run: sudo apt install ./openomf_${{ env.OPENOMF_VERSION }}_amd64.deb
+
+    - name: Upload DEB artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: openomf_${{ env.OPENOMF_VERSION }}_deb_amd64
+        path: openomf_${{ env.OPENOMF_VERSION }}_amd64.deb
+        if-no-files-found: error
