@@ -140,6 +140,7 @@ const field f_keyboard[] = {
 
 const field f_net[] = {
     F_STRING(settings_network, net_connect_ip, "localhost"),
+    F_STRING(settings_network, net_lobby_address, "lobby.openomf.org"),
     F_STRING(settings_network, net_username, ""),
     F_STRING(settings_network, trace_file, NULL),
     F_INT(settings_network, net_connect_port, 2097),
