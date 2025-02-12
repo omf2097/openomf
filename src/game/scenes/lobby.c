@@ -103,20 +103,18 @@ typedef struct lobby_user_t {
 } lobby_user;
 
 typedef struct lobby_local_t {
-    char name[16];
-    char helptext[80];
+    ENetHost *client;
+    ENetPeer *peer;
+    ENetPeer *opponent_peer;
     uint32_t id;
     list log;
     list users;
     bool named;
     uint8_t mode;
-    ENetHost *client;
-    ENetPeer *peer;
-    ENetPeer *opponent_peer;
     uint8_t connection_count;
     uint8_t active_user;
-    lobby_user *opponent;
     bool controllers_created;
+    lobby_user *opponent;
 
     dialog *dialog;
 
@@ -124,9 +122,11 @@ typedef struct lobby_local_t {
 
     guiframe *frame;
     uint8_t role;
-    nat_ctx *nat;
     uint8_t nat_tries;
     bool disconnected;
+    nat_ctx *nat;
+    char name[16];
+    char helptext[80];
 } lobby_local;
 
 typedef struct log_event_t {
@@ -854,6 +854,7 @@ void lobby_tick(scene *scene, int paused) {
             // TODO dialog and exit
             log_debug("No available peers for initiating an ENet connection.\n");
             local->disconnected = true;
+            return;
         }
     }
 
