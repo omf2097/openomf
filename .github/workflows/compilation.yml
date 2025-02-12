@@ -101,9 +101,6 @@ jobs:
         fetch-depth: '0'
     - name: Build Ubuntu binary
       uses: ./.github/actions/build_ubuntu
-      with:
-        arch: ${{ matrix.config.arch }}
-        build_languages: ${{ matrix.config.build_languages }}
 
   # Build macos package, release artifact
   # -----------------------------------------------------------------------------------------------
