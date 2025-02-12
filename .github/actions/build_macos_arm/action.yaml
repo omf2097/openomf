@@ -1,0 +1,41 @@
+name: Build MacOS ARM
+description: Build MacOS ARM binary
+runs:
+  using: "composite"
+  steps:
+    - name: Get OpenOMF Version
+      uses: ./.github/actions/version
+
+    - name: Install Mac Dependencies
+      shell: bash
+      run: |
+        brew update
+        brew install cmake argtable cunit sdl2_mixer confuse enet sdl2 libxmp libpng libepoxy miniupnpc libnatpmp
+
+    - name: Generate Release
+      shell: bash
+      run: |
+        mkdir build-release && cd build-release
+        cmake -DUSE_NATPMP=ON -DUSE_MINIUPNPC=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=release/usr ..
+        make -j $(getconf _NPROCESSORS_ONLN)
+        make -j $(getconf _NPROCESSORS_ONLN) install
+
+    - name: Get OMF2097 assets
+      uses: ./.github/actions/assets
+
+    - name: Extract omf 2097 assets
+      shell: bash
+      run: unzip -j omf2097-assets.zip -d build-release/release/usr/share/games/openomf
+
+    - name: Generate ZIP package
+      shell: bash
+      run: |
+        cd build-release/release
+        zip -r ${GITHUB_WORKSPACE}/openomf_${{ env.OPENOMF_VERSION }}_macos14_arm.zip .
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: openomf_${{ env.OPENOMF_VERSION }}_macos14_arm
+        path: openomf_${{ env.OPENOMF_VERSION }}_macos14_arm.zip
+        if-no-files-found: error
