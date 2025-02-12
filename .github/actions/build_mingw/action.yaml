@@ -1,0 +1,34 @@
+name: Build MingW
+description: Build Windows MingW-w64 binary
+runs:
+  using: "composite"
+  steps:
+    - name: Get OpenOMF Version
+      uses: ./.github/actions/version
+
+    - name: Install apt Dependencies
+      uses: Eeems-Org/apt-cache-action@v1.3
+      with:
+        packages: mingw-w64 unzip wine64 wine
+
+    - name: Install Dependencies
+      shell: bash
+      run: |
+        wget -q https://github.com/omf2097/openomf-win-build/archive/refs/heads/main.zip
+        unzip -q main.zip && rm main.zip
+
+    - name: Build MinGW-w64
+      shell: bash
+      run: |
+        cmake -DCMAKE_BUILD_TYPE=Release \
+              -DCMAKE_INSTALL_PREFIX=release \
+              --toolchain "cmake-scripts/mingw-w64-toolchain.cmake" \
+              -DCMAKE_PREFIX_PATH="${GITHUB_WORKSPACE}/openomf-win-build-main/" \
+              -DCMAKE_INCLUDE_PATH="${GITHUB_WORKSPACE}/openomf-win-build-main/include/" \
+              -DCMAKE_LIBRARY_PATH="${GITHUB_WORKSPACE}/openomf-win-build-main/lib/" \
+              -DCMAKE_FIND_ROOT_PATH="${GITHUB_WORKSPACE}/openomf-win-build-main/" \
+              -DBUILD_LANGUAGES=OFF \
+              -DUSE_NATPMP=ON \
+              -DUSE_MINIUPNPC=ON \
+              -S . -B build
+        cmake --build build -j $(getconf _NPROCESSORS_ONLN)
