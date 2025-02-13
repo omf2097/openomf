@@ -697,7 +697,7 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                                     log_debug("peer @ %d guessed our ticks INcorrectly! %d %d %d, actually  %d",
                                               peerticks, start, peerguess, peerguess - start, ticks - start);
                                 }
-                                data->guesses = 0;
+                                data->guesses--;
                             }
                             int newrtt = udist(ticks, start);
                             if(data->guesses >= 10 &&
@@ -722,7 +722,7 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                                 serial_write_uint32(&start_ser, seed);
 
                                 start_packet = enet_packet_create(start_ser.data, serial_len(&start_ser),
-                                                                  ENET_PACKET_FLAG_UNSEQUENCED);
+                                                                  ENET_PACKET_FLAG_RELIABLE);
                                 enet_peer_send(peer, 0, start_packet);
                                 enet_host_flush(host);
                                 serial_free(&start_ser);
@@ -781,8 +781,8 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                             serial_write_int8(&start_ser, EVENT_TYPE_CONFIRM_START);
                             serial_write_uint32(&start_ser, peer_proposal);
 
-                            start_packet = enet_packet_create(start_ser.data, serial_len(&start_ser),
-                                                              ENET_PACKET_FLAG_UNSEQUENCED);
+                            start_packet =
+                                enet_packet_create(start_ser.data, serial_len(&start_ser), ENET_PACKET_FLAG_RELIABLE);
                             enet_peer_send(peer, 0, start_packet);
                             enet_host_flush(host);
                             serial_free(&start_ser);
