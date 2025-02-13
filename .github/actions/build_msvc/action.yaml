@@ -32,7 +32,7 @@ runs:
     - uses: ilammy/msvc-dev-cmd@v1
 
     - name: Install VCPKG Dependencies, Configure CMake (${{ inputs.arch }})
-      shell: powershell
+      shell: pwsh
       env:
         VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
       run: >
@@ -45,28 +45,28 @@ runs:
         -DUSE_MINIUPNPC=ON
 
     - name: Build openomf
-      shell: powershell
+      shell: pwsh
       run: cmake --build build-msvc --config Release --target openomf
 
     - name: Get OMF2097 assets
       uses: ./.github/actions/assets
 
     - name: Extract omf 2097 assets
-      shell: powershell
+      shell: pwsh
       run: |
-        Expand-Archive omf2097-assets.zip -Verbose
+        Expand-Archive omf2097-assets.zip -PassThru
         mkdir install/openomf/resources
-        Move-Item -Path omf2097-assets/OMF2097/* -Destination install/openomf/resources/ -Force -Verbose
+        Move-Item -Path omf2097-assets/OMF2097/* -Destination install/openomf/resources/ -Force -PassThru
 
     - name: Install openomf
-      shell: powershell
+      shell: pwsh
       run: cmake --install build-msvc --config Release --prefix install
 
     - name: Generate ZIP package
-      shell: powershell
+      shell: pwsh
       run: |
         cd install
-        Compress-Archive -Path openomf -DestinationPath openomf_${{ env.OPENOMF_VERSION }}_windows_msvc_${{ inputs.arch }}.zip -Verbose
+        Compress-Archive -Path openomf -DestinationPath openomf_${{ env.OPENOMF_VERSION }}_windows_msvc_${{ inputs.arch }}.zip -PassThru
 
     - name: Upload ZIP artifact
       uses: actions/upload-artifact@v4
