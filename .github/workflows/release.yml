@@ -75,6 +75,7 @@ jobs:
       uses: ./.github/actions/version
 
     - name: Organize release artifacts
+      shell: bash
       run: |
         mkdir upload
         mkdir windows_all
