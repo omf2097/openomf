@@ -2,6 +2,11 @@
 <component type="desktop-application">
   <id>org.openomf.OpenOMF</id>
 
+  <branding>
+    <color type="primary" scheme_preference="light">#deddda</color>
+    <color type="primary" scheme_preference="dark">#00152b</color>
+  </branding>
+
   <releases>
     <release version="0.7.1" date="2025-02-11">
       <url type="details">https://github.com/omf2097/openomf/releases/tag/0.7.1</url>
@@ -45,14 +50,14 @@
   <url type="vcs-browser">https://github.com/omf2097/openomf</url>
   
   <name>OpenOMF</name>
-  <summary>An open-source remake of the DOS fighting game One Must Fall 2097</summary>
+  <summary>Remake of One Must Fall 2097</summary>
   
   <metadata_license>MIT</metadata_license>
   <project_license>MIT</project_license>
   
   <description>
     <p>
-      OpenOMF is an open-source remake of the DOS fighting classic One Must Fall 2097.
+      OpenOMF is an open-source remake of the 1994 DOS fighting classic One Must Fall 2097.
     </p>
     <p>
       One Must Fall 2097 is a 2D fighting game set in the year 2097 where pilots use Human Assisted Robots (HARs) to battle in various arenas.
