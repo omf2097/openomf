@@ -9,9 +9,6 @@ on:
   repository_dispatch:
     types: [run_build]
 
-env:
-  OPENOMF_ASSETS_URL: 'https://www.omf2097.com/pub/files/omf/omf2097-assets.zip'
-
 jobs:
 
   # Run unittests on a recent version of clang
@@ -56,23 +53,8 @@ jobs:
         cd build-test
         ctest --verbose --output-on-failure
 
-    - name: Restore omf2097-assets.zip
-      id: cache-assets
-      uses: actions/cache/restore@v4
-      with:
-        path: omf2097-assets.zip
-        key: omf2097-assets.zip
-
-    - name: Download omf 2097 assets
-      if: steps.cache-assets.outputs.cache-hit != 'true'
-      run: wget -q "${{ env.OPENOMF_ASSETS_URL }}"
-
-    - name: Cache omf2097-assets.zip
-      if: steps.cache-assets.outputs.cache-hit != 'true'
-      uses: actions/cache/save@v4
-      with:
-        path: omf2097-assets.zip
-        key: omf2097-assets.zip
+    - name: Get OMF2097 assets
+      uses: ./.github/actions/assets
 
     - name: Extract omf 2097 assets
       run: unzip -j omf2097-assets.zip -d build-test/resources
@@ -91,270 +73,59 @@ jobs:
     needs: [unittest]
     name: Build Windows ${{ matrix.config.arch }}
     runs-on: windows-latest
-
     strategy:
       matrix:
         config:
         - { arch: "x64", build_languages: "ON" }
         - { arch: "arm64", build_languages: "OFF" }
-
-    env:
-      VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
-
     steps:
-    - name: Export Github Actions cache environment variables
-      uses: actions/github-script@v7
-      with:
-        script: |
-          core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
-          core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
-
     - uses: actions/checkout@v4
       with:
         fetch-depth: '0'
-
-    - name: Get OpenOMF Version
-      uses: ./.github/actions/version
-
-    - name: Check out VCPKG
-      # must be checked out *after* openomf.git
-      uses: actions/checkout@v4
+    - name: Build MSVC binary
+      uses: ./.github/actions/build_msvc
       with:
-        repository: 'microsoft/vcpkg'
-        path: 'vcpkg'
-    - uses: lukka/get-cmake@latest
-    - uses: ilammy/msvc-dev-cmd@v1
-    - name: Install VCPKG Dependencies, Configure CMake (${{ matrix.config.arch }})
-      run: >
-        cmake -S . -B build-msvc
-        --toolchain vcpkg/scripts/buildsystems/vcpkg.cmake
-        -DVCPKG_TARGET_TRIPLET="${{ matrix.config.arch }}-windows-static"
-        -A ${{ matrix.config.arch }}
-        -DBUILD_LANGUAGES=${{ matrix.config.build_languages }}
-        -DUSE_NATPMP=ON
-        -DUSE_MINIUPNPC=ON
-    - name: Build openomf
-      run: cmake --build build-msvc --config Release --target openomf
-
-    - name: Restore omf2097-assets.zip
-      id: cache-assets
-      uses: actions/cache/restore@v4
-      with:
-        path: omf2097-assets.zip
-        key: omf2097-assets.zip
-
-    - name: Download omf 2097 assets
-      if: steps.cache-assets.outputs.cache-hit != 'true'
-      run: Invoke-WebRequest -URI "${{ env.OPENOMF_ASSETS_URL }}" -OutFile omf2097-assets.zip
-
-    - name: Cache omf2097-assets.zip
-      if: steps.cache-assets.outputs.cache-hit != 'true'
-      uses: actions/cache/save@v4
-      with:
-        path: omf2097-assets.zip
-        key: omf2097-assets.zip
-
-    - name: Extract omf 2097 assets
-      run: |
-        Expand-Archive omf2097-assets.zip -PassThru
-        mkdir install/openomf/resources
-        Move-Item -Path omf2097-assets/OMF2097/* -Destination install/openomf/resources/ -Force -PassThru
-
-    - name: Install openomf
-      run: cmake --install build-msvc --config Release --prefix install
-
-    - name: Generate ZIP package
-      run: |
-        cd install
-        Compress-Archive -Path openomf -DestinationPath openomf_${{ env.OPENOMF_VERSION }}_windows_msvc_${{ matrix.config.arch }}.zip -PassThru
-
-    - name: Upload ZIP artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: openomf_${{ env.OPENOMF_VERSION }}_windows_msvc_${{ matrix.config.arch }}
-        path: install/openomf_${{ env.OPENOMF_VERSION }}_windows_msvc_${{ matrix.config.arch }}.zip
-        if-no-files-found: error
+        arch: ${{ matrix.config.arch }}
+        build_languages: ${{ matrix.config.build_languages }}
 
   # Build ubuntu package, release artifact
   # -----------------------------------------------------------------------------------------------
   build_ubuntu:
     needs: [unittest]
-
     name: Build ubuntu-latest
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v4
       with:
         fetch-depth: '0'
-
-    - name: Get OpenOMF Version
-      uses: ./.github/actions/version
-
-    - name: Install Ubuntu Dependencies
-      uses: Eeems-Org/apt-cache-action@v1.3
-      with:
-        packages: cmake libargtable2-dev libcunit1-dev libsdl2-mixer-dev
-          libconfuse-dev libenet-dev libsdl2-dev libxmp-dev libpng-dev libepoxy-dev
-          libminiupnpc-dev libnatpmp-dev
-
-    - name: Generate Release
-      run: |
-        mkdir build-release && cd build-release
-        cmake -DUSE_NATPMP=ON -DUSE_MINIUPNPC=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=release/usr ..
-        make -j $(getconf _NPROCESSORS_ONLN)
-        make -j $(getconf _NPROCESSORS_ONLN) install
-
-    - name: Restore omf2097-assets.zip
-      id: cache-assets
-      uses: actions/cache/restore@v4
-      with:
-        path: omf2097-assets.zip
-        key: omf2097-assets.zip
-
-    - name: Download omf 2097 assets
-      if: steps.cache-assets.outputs.cache-hit != 'true'
-      run: wget -q "${{ env.OPENOMF_ASSETS_URL }}"
-
-    - name: Cache omf2097-assets.zip
-      if: steps.cache-assets.outputs.cache-hit != 'true'
-      uses: actions/cache/save@v4
-      with:
-        path: omf2097-assets.zip
-        key: omf2097-assets.zip
-
-    - name: Extract omf 2097 assets
-      run: unzip -j omf2097-assets.zip -d build-release/release/usr/share/games/openomf
-
-    - name: Generate TGZ package
-      run: tar cvfz ${GITHUB_WORKSPACE}/openomf_${{ env.OPENOMF_VERSION }}_linux_amd64.tar.gz -C build-release/release/ .
-
-    - name: Upload TGZ artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: openomf_${{ env.OPENOMF_VERSION }}_linux_amd64
-        path: openomf_${{ env.OPENOMF_VERSION }}_linux_amd64.tar.gz
-        if-no-files-found: error
-
-    - name: Generate DEB package
-      uses: jiro4989/build-deb-action@v3
-      with:
-        package: openomf
-        package_root: build-release/release
-        maintainer: ${{ github.repository_owner }}
-        version: ${{ env.OPENOMF_VERSION }}
-        arch: 'amd64'
-        depends: 'libargtable2-0, libsdl2-mixer-2.0-0, libconfuse2, libenet7, libsdl2-2.0-0, libxmp4, libpng16-16, libepoxy0, libminiupnpc17, libnatpmp1'
-        desc: 'One Must Fall 2097 Remake'
-
-    - name: Install the DEB package
-      run: sudo apt install ./openomf_${{ env.OPENOMF_VERSION }}_amd64.deb
-
-    - name: Upload DEB artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: openomf_${{ env.OPENOMF_VERSION }}_deb_amd64
-        path: openomf_${{ env.OPENOMF_VERSION }}_amd64.deb
-        if-no-files-found: error
+    - name: Build Ubuntu binary
+      uses: ./.github/actions/build_ubuntu
 
   # Build macos package, release artifact
   # -----------------------------------------------------------------------------------------------
   build_macos-arm:
     needs: [unittest]
-
     name: Build macos-14
     runs-on: macos-14
-
     steps:
     - uses: actions/checkout@v4
       with:
         fetch-depth: '0'
-
-    - name: Get OpenOMF Version
-      uses: ./.github/actions/version
-
-    - name: Install Mac Dependencies
-      run: |
-        brew update
-        brew install cmake argtable cunit sdl2_mixer confuse enet sdl2 libxmp libpng libepoxy miniupnpc libnatpmp
-
-    - name: Generate Release
-      run: |
-        mkdir build-release && cd build-release
-        cmake -DUSE_NATPMP=ON -DUSE_MINIUPNPC=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=release/usr ..
-        make -j $(getconf _NPROCESSORS_ONLN)
-        make -j $(getconf _NPROCESSORS_ONLN) install
-
-    - name: Restore omf2097-assets.zip
-      id: cache-assets
-      uses: actions/cache/restore@v4
-      with:
-        path: omf2097-assets.zip
-        key: omf2097-assets.zip
-
-    - name: Download omf 2097 assets
-      if: steps.cache-assets.outputs.cache-hit != 'true'
-      run: wget -q "${{ env.OPENOMF_ASSETS_URL }}"
-
-    - name: Cache omf2097-assets.zip
-      if: steps.cache-assets.outputs.cache-hit != 'true'
-      uses: actions/cache/save@v4
-      with:
-        path: omf2097-assets.zip
-        key: omf2097-assets.zip
-
-    - name: Extract omf 2097 assets
-      run: unzip -j omf2097-assets.zip -d build-release/release/usr/share/games/openomf
-
-    - name: Generate ZIP package
-      run: |
-        cd build-release/release
-        zip -r ${GITHUB_WORKSPACE}/openomf_${{ env.OPENOMF_VERSION }}_macos14_arm.zip .
-
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: openomf_${{ env.OPENOMF_VERSION }}_macos14_arm
-        path: openomf_${{ env.OPENOMF_VERSION }}_macos14_arm.zip
-        if-no-files-found: error
+    - name: Build MacOS ARM binary
+      uses: ./.github/actions/build_macos_arm
 
   # Build MinGW, just so we know it still compiles
   # -----------------------------------------------------------------------------------------------
   check_mingw:
     needs: [unittest]
-
     name: Check MinGW-w64 cross
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v4
       with:
         fetch-depth: '0'
-
-    - name: Install apt Dependencies
-      uses: Eeems-Org/apt-cache-action@v1.3
-      with:
-        packages: mingw-w64 unzip wine64 wine
-    - name: Install Dependencies
-      run: |
-        wget -q https://github.com/omf2097/openomf-win-build/archive/refs/heads/main.zip
-        unzip -q main.zip && rm main.zip
-
-    - name: Build MinGW-w64
-      run: |
-        cmake -DCMAKE_BUILD_TYPE=Release \
-              -DCMAKE_INSTALL_PREFIX=release \
-              --toolchain "cmake-scripts/mingw-w64-toolchain.cmake" \
-              -DCMAKE_PREFIX_PATH="${GITHUB_WORKSPACE}/openomf-win-build-main/" \
-              -DCMAKE_INCLUDE_PATH="${GITHUB_WORKSPACE}/openomf-win-build-main/include/" \
-              -DCMAKE_LIBRARY_PATH="${GITHUB_WORKSPACE}/openomf-win-build-main/lib/" \
-              -DCMAKE_FIND_ROOT_PATH="${GITHUB_WORKSPACE}/openomf-win-build-main/" \
-              -DBUILD_LANGUAGES=OFF \
-              -DUSE_NATPMP=ON \
-              -DUSE_MINIUPNPC=ON \
-              -S . -B build
-        cmake --build build -j $(getconf _NPROCESSORS_ONLN)
-
+    - name: Build Mingw-w64 binary
+      uses: ./.github/actions/build_mingw
 
   # Create a "latest" release
   # -----------------------------------------------------------------------------------------------
