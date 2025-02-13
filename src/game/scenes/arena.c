@@ -598,6 +598,7 @@ void arena_har_defeat_hook(int player_id, scene *scene) {
         winner_har->state = STATE_VICTORY;
         local->over = 1;
         local->winner = player_id;
+        game_player_get_score(player_winner)->wins++;
 
         if(is_singleplayer(gs)) {
             player_winner->sp_wins |= 2 << player_loser->pilot->pilot_id;
