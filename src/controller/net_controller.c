@@ -340,7 +340,7 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
                 int sz = snprintf(buf, sizeof(buf), "tick %d -- player 1 _ -- player 2 _ -- hash %" PRIu32 "\n",
                                   gs->int_tick - data->local_proposal, arena_hash);
                 SDL_RWwrite(data->trace_file, buf, sz, 1);
-                arena_state_dump(gs, buf);
+                arena_state_dump(gs, buf, sizeof(buf));
                 SDL_RWwrite(data->trace_file, buf, strlen(buf), 1);
             }
         }
@@ -379,7 +379,7 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
             int sz = snprintf(buf, sizeof(buf), "tick %d -- player 1 %s (%d) -- player 2 %s (%d) -- hash %" PRIu32 "\n",
                               ev->tick, buf0, ev->events[0][0], buf1, ev->events[1][0], arena_hash);
             SDL_RWwrite(data->trace_file, buf, sz, 1);
-            arena_state_dump(gs, buf);
+            arena_state_dump(gs, buf, sizeof(buf));
             SDL_RWwrite(data->trace_file, buf, strlen(buf), 1);
         }
 
@@ -400,7 +400,7 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
                 sz = snprintf(buf, sizeof(buf), "tick %d -- player 1 %s (%d) -- player 2 %s (%d) -- hash %" PRIu32 "\n",
                               ev->tick, buf0, ev->events[0][0], buf1, ev->events[1][0], arena_hash);
                 SDL_RWwrite(data->trace_file, buf, sz, 1);
-                arena_state_dump(gs, buf);
+                arena_state_dump(gs, buf, sizeof(buf));
                 SDL_RWwrite(data->trace_file, buf, strlen(buf), 1);
             }
 

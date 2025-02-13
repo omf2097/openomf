@@ -807,7 +807,7 @@ char *state_name(int state) {
     }
 }
 
-void arena_state_dump(game_state *gs, char *buf) {
+void arena_state_dump(game_state *gs, char *buf, size_t bufsize) {
     int off = 0;
     for(int i = 0; i < 2; i++) {
         game_player *player = game_state_get_player(gs, i);
@@ -815,7 +815,7 @@ void arena_state_dump(game_state *gs, char *buf) {
         har *har = obj_har->userdata;
         vec2i pos = object_get_pos(obj_har);
         vec2f vel = object_get_vel(obj_har);
-        off = snprintf(buf + off, 512 - off,
+        off = snprintf(buf + off, bufsize - off,
                        "player %d  power %d agility %d endurance %d HAR id %d  pos %d,%d, health %d, endurance %f, "
                        "velocity %f,%f, state %s, executing_move %d cur_anim %d\n",
                        i, player->pilot->power, player->pilot->agility, player->pilot->endurance, har->id, pos.x, pos.y,
