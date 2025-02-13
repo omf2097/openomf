@@ -738,8 +738,11 @@ void maybe_install_har_hooks(scene *scene) {
 // djb hash
 uint32_t arena_state_hash(game_state *gs) {
     uint32_t hash = 5381;
+    // include the arena ID
+    hash = ((hash << 5) + hash) + gs->sc->id;
     for(int i = 0; i < 2; i++) {
-        object *obj_har = game_state_find_object(gs, game_player_get_har_obj_id(game_state_get_player(gs, i)));
+        game_player *player = game_state_get_player(gs, i);
+        object *obj_har = game_state_find_object(gs, game_player_get_har_obj_id(player));
         har *har = obj_har->userdata;
         vec2i pos = object_get_pos(obj_har);
         vec2f vel = object_get_vel(obj_har);
@@ -747,14 +750,20 @@ uint32_t arena_state_hash(game_state *gs) {
         uint32_t y = (uint32_t)pos.y;
         uint32_t health = (uint32_t)har->health;
         uint32_t endurance = (uint32_t)har->endurance;
+        hash = ((hash << 5) + hash) + har->id;
+        hash = ((hash << 5) + hash) + player->pilot->power;
+        hash = ((hash << 5) + hash) + player->pilot->agility;
+        hash = ((hash << 5) + hash) + player->pilot->endurance;
         hash = ((hash << 5) + hash) + x;
         hash = ((hash << 5) + hash) + y;
         hash = ((hash << 5) + hash) + health;
         hash = ((hash << 5) + hash) + endurance;
         hash = ((hash << 5) + hash) + (uint32_t)vel.x;
+        // we are inconsistent on applying gravity
         // hash = ((hash << 5) + hash) + (uint32_t)vel.y;
         hash = ((hash << 5) + hash) + har->state;
         hash = ((hash << 5) + hash) + har->executing_move;
+        hash = ((hash << 5) + hash) + obj_har->cur_animation->id;
     }
     return hash;
 }
@@ -801,14 +810,17 @@ char *state_name(int state) {
 void arena_state_dump(game_state *gs, char *buf) {
     int off = 0;
     for(int i = 0; i < 2; i++) {
-        object *obj_har = game_state_find_object(gs, game_player_get_har_obj_id(game_state_get_player(gs, i)));
+        game_player *player = game_state_get_player(gs, i);
+        object *obj_har = game_state_find_object(gs, game_player_get_har_obj_id(player));
         har *har = obj_har->userdata;
         vec2i pos = object_get_pos(obj_har);
         vec2f vel = object_get_vel(obj_har);
-        off = snprintf(buf + off, 255 - off,
-                       "har %d pos %d,%d, health %d, endurance %f, velocity %f,%f, state %s, executing_move %d\n", i,
-                       pos.x, pos.y, har->health, (float)har->endurance, vel.x, vel.y, state_name(har->state),
-                       har->executing_move);
+        off = snprintf(buf + off, 512 - off,
+                       "player %d  power %d agility %d endurance %d HAR id %d  pos %d,%d, health %d, endurance %f, "
+                       "velocity %f,%f, state %s, executing_move %d cur_anim %d\n",
+                       i, player->pilot->power, player->pilot->agility, player->pilot->endurance, har->id, pos.x, pos.y,
+                       har->health, (float)har->endurance, vel.x, vel.y, state_name(har->state), har->executing_move,
+                       obj_har->cur_animation->id);
     }
 }
 

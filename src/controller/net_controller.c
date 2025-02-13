@@ -275,7 +275,7 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
     tick_events *ev = NULL;
     game_state *gs = data->gs_bak;
     game_state *gs_new = NULL;
-    char buf[255];
+    char buf[512];
 
     game_state *gs_old = omf_calloc(1, sizeof(game_state));
     game_state_clone(gs, gs_old);
