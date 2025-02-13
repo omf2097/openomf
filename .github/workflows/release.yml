@@ -64,16 +64,12 @@ jobs:
       with:
         github-token: ${{secrets.GITHUB_TOKEN}}
         script: |
-          try {
-              await github.rest.git.createRef({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                ref: "refs/tags/${{ github.event.inputs.version }}",
-                sha: context.sha
-              })
-          } catch (e) {
-            console.log("Unable to create '${{ github.event.inputs.version }}' tag", e)
-          }
+          await github.rest.git.createRef({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            ref: "refs/tags/${{ github.event.inputs.version }}",
+            sha: context.sha
+          })
 
     - name: Get OpenOMF Version
       uses: ./.github/actions/version
@@ -112,7 +108,7 @@ jobs:
       with:
         artifacts: "upload/*"
         body: "Release ${{ github.event.inputs.version }}"
-        name: Latest
+        name: "Release ${{ github.event.inputs.version }}"
         tag: "${{ github.event.inputs.version }}"
         allowUpdates: false
         prerelease: true
