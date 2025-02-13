@@ -652,7 +652,7 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
 
                         if(data->gs_bak && data->synchronized && data->frame_advantage > peer_frame_advantage + 1) {
                             log_debug("%d %d (%d) frame advantage %d > %d", ticks - data->local_proposal, peerticks,
-                                  (avg_rtt(data->rttbuf, 100) / 2), data->frame_advantage, peer_frame_advantage);
+                                      (avg_rtt(data->rttbuf, 100) / 2), data->frame_advantage, peer_frame_advantage);
                             ctrl->gs->delay = (data->frame_advantage - peer_frame_advantage) * 2;
                             data->gs_bak->delay = (data->frame_advantage - peer_frame_advantage) * 2;
                         } else {
