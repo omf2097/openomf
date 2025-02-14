@@ -1119,6 +1119,7 @@ void arena_input_tick(scene *scene) {
     }
 
     if(is_netplay(scene->gs)) {
+        // no pause menu during netplay
         return;
     }
 
