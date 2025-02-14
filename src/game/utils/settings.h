@@ -109,6 +109,7 @@ typedef struct {
 
 typedef struct {
     char *net_connect_ip;
+    char *net_lobby_address;
     char *trace_file;
     char *net_username;
     int net_connect_port;

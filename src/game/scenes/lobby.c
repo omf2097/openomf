@@ -27,6 +27,8 @@
 #define LEAVE_COLOR 5
 
 #define VERSION_BUF_SIZE 30
+// increment this when the protocol with the lobby server changes
+#define PROTOCOL_VERSION 0
 
 enum
 {
@@ -51,6 +53,14 @@ enum
     PACKET_PRESENCE,
     PACKET_CONNECTED,
     PACKET_REFRESH,
+};
+
+enum
+{
+    JOIN_SUCCESS = 0,
+    JOIN_ERROR_NAME_USED,
+    JOIN_ERROR_NAME_INVALID,
+    JOIN_ERROR_UNSUPPORTED_PROTOCOL,
 };
 
 enum
@@ -93,20 +103,26 @@ typedef struct lobby_user_t {
 } lobby_user;
 
 typedef struct lobby_local_t {
-    char name[16];
-    char helptext[80];
-    uint32_t id;
-    list log;
-    list users;
-    bool named;
-    uint8_t mode;
     ENetHost *client;
     ENetPeer *peer;
     ENetPeer *opponent_peer;
+    // our enet connection id
+    uint32_t id;
+    // list of log messages (chat/join/etc)
+    list log;
+    // list of online users (includes ourself)
+    list users;
+    // what submenu we're in (STARTING/MAIN/YELL, etc)
+    uint8_t mode;
+    // when challening a peer, tracks how many connection attempts we've made
+    // each side will make several attempts, depending on whether the 'external port' has been provided
     uint8_t connection_count;
+    // the index of the currently selected user in the user list
     uint8_t active_user;
-    lobby_user *opponent;
+    // have we created the controllers needed to start a match
     bool controllers_created;
+    // the user we are challenging, or is challenging us
+    lobby_user *opponent;
 
     dialog *dialog;
 
@@ -114,6 +130,15 @@ typedef struct lobby_local_t {
 
     guiframe *frame;
     uint8_t role;
+    // how many attempts we've made to get a working NAT address
+    uint8_t nat_tries;
+    // track if the client has failed to initialize/connect to the lobby
+    bool disconnected;
+    nat_ctx *nat;
+    // the name of the user
+    char name[16];
+    // holds various helptext labels
+    char helptext[80];
 } lobby_local;
 
 typedef struct log_event_t {
@@ -141,6 +166,20 @@ void lobby_free(scene *scene) {
 static int lobby_event(scene *scene, SDL_Event *e) {
     lobby_local *local = scene_get_userdata(scene);
     return guiframe_event(local->frame, e);
+}
+
+void lobby_show_dialog(scene *scene, int dialog_style, char *dialog_text, dialog_clicked_cb callback) {
+    lobby_local *local = scene_get_userdata(scene);
+    if(local->dialog) {
+        dialog_free(local->dialog);
+        omf_free(local->dialog);
+    }
+    local->dialog = omf_calloc(1, sizeof(dialog));
+    dialog_create(local->dialog, dialog_style, dialog_text, 72, 60);
+    local->dialog->userdata = scene;
+    local->dialog->clicked = callback;
+
+    dialog_show(local->dialog, 1);
 }
 
 void lobby_input_tick(scene *scene) {
@@ -211,10 +250,10 @@ void lobby_render_overlay(scene *scene) {
             if(i == local->active_user) {
                 font_big.cforeground = 7;
             } else {
-                font_big.cforeground = 8;
+                font_big.cforeground = 36;
             }
             text_render(&font_big, TEXT_DEFAULT, 16, 18 + (10 * i), 90, 8, user->name);
-            // TODO status
+            // render player status
             font_small.cforeground = 40;
             switch(user->status) {
                 case PRESENCE_STARTING:
@@ -289,23 +328,14 @@ void lobby_dialog_cancel_challenge(dialog *dlg, dialog_result result) {
 void lobby_do_challenge(component *c, void *userdata) {
     scene *s = userdata;
     lobby_local *local = scene_get_userdata(s);
-    if(local->dialog) {
-        dialog_free(local->dialog);
-        omf_free(local->dialog);
-    }
-    local->dialog = omf_calloc(1, sizeof(dialog));
     lobby_user *user = list_get(&local->users, local->active_user);
     local->opponent = user;
     char buf[80];
 
     snprintf(buf, sizeof(buf), "Challenging %s...", user->name);
-    dialog_create(local->dialog, DIALOG_STYLE_CANCEL, buf, 72, 60);
-    local->dialog->userdata = s;
-    local->dialog->clicked = lobby_dialog_cancel_challenge;
-
     local->role = ROLE_CHALLENGER;
 
-    dialog_show(local->dialog, 1);
+    lobby_show_dialog(s, DIALOG_STYLE_CANCEL, buf, lobby_dialog_cancel_challenge);
 
     serial ser;
     serial_create(&ser);
@@ -542,145 +572,34 @@ void lobby_entered_name(component *c, void *userdata) {
         scene *scene = userdata;
         lobby_local *local = scene_get_userdata(scene);
 
-        nat_ctx *nat = omf_calloc(1, sizeof(nat_ctx));
-        nat_create(nat);
+        strncpy_or_truncate(local->name, textinput_value(c), sizeof(local->name));
 
-        ENetAddress address;
-        ENetAddress lobby_address;
-        address.host = ENET_HOST_ANY;
-        address.port = settings_get()->net.net_listen_port_start;
-
-        log_debug("attempting to bind to port %d", address.port);
-
-        if(address.port == 0) {
-            address.port = rand_int(65535 - 1024) + 1024;
-        }
-
-        // Set up host
-        local->controllers_created = 0;
-        int randtries = 0;
-
-        int end_port = settings_get()->net.net_listen_port_end;
-        if(!end_port) {
-            end_port = 65535;
-        }
-        while(local->client == NULL) {
-            local->client = enet_host_create(&address, 2, 2, 0, 0);
-            if(local->client == NULL) {
-                log_debug("requested port %d unavailable, trying ports %d to %d", address.port,
-                          settings_get()->net.net_listen_port_start, end_port);
-                if(settings_get()->net.net_listen_port_start == 0) {
-                    address.port = rand_int(65535 - 1024) + 1024;
-                    randtries++;
-                    if(randtries > 10) {
-                        log_debug("Failed to initialize ENet server, could not allocate random port");
-                        return;
-                    }
-                } else {
-                    address.port++;
-                    if(address.port > end_port) {
-                        log_debug("Failed to initialize ENet server, port range exhausted");
-                        return;
-                    }
-                    randtries++;
-                    if(randtries > 10) {
-                        log_debug(
-                            "Failed to initialize ENet server, could not allocate port between %d and %d after 10 "
-                            "tries",
-                            settings_get()->net.net_listen_port_start, end_port);
-                        return;
-                    }
-                }
-            }
-        }
-
-        log_debug("bound to port %d", address.port);
-
-        int ext_port = settings_get()->net.net_ext_port_start;
-        if(ext_port == 0) {
-            // try to use the internal port first
-            ext_port = address.port;
-        }
-        randtries = 0;
-
-        if(nat->type != NAT_TYPE_NONE) {
-            while(!nat_create_mapping(nat, address.port, ext_port)) {
-                if(settings_get()->net.net_ext_port_start == 0) {
-                    ext_port = rand_int(65535 - 1024) + 1024;
-                    randtries++;
-                    if(randtries > 10) {
-                        ext_port = 0;
-                        break;
-                    }
-                } else {
-                    ext_port++;
-                    if(ext_port > settings_get()->net.net_ext_port_end) {
-                        ext_port = 0;
-                        break;
-                    }
-                }
-            }
-        }
-        enet_socket_set_option(local->client->socket, ENET_SOCKOPT_REUSEADDR, 1);
-
-        ENetEvent event;
-        ENetPeer *peer = NULL;
-        enet_address_set_host(&lobby_address, "lobby.openomf.org");
-        // enet_address_set_host(&address, "127.0.0.1");
-        lobby_address.port = 2098;
-        log_debug("server address is %d", lobby_address.host);
-        /* Initiate the connection, allocating the two channels 0 and 1. */
-        local->peer = enet_host_connect(local->client, &lobby_address, 2, 0);
-
-        if(local->peer == NULL) {
-            log_debug("No available peers for initiating an ENet connection.\n");
-        }
-        /* Wait up to 5 seconds for the connection attempt to succeed. */
-        else if(enet_host_service(local->client, &event, 5000) > 0 && event.type == ENET_EVENT_TYPE_CONNECT) {
-            log_debug("Connection to server succeeded.");
-
-            log_debug("local peer connect id %d", local->peer->connectID);
-            log_debug("remote peer connect id %d", event.peer->connectID);
-
-            event.peer->data = nat;
-            strncpy_or_truncate(local->name, textinput_value(c), sizeof(local->name));
-
-            char version[VERSION_BUF_SIZE];
-            // TODO support git version when not on a tag
-            snprintf(version, sizeof(version), "%s", get_version_string());
-            serial ser;
-            serial_create(&ser);
-            serial_write_int8(&ser, PACKET_JOIN << 4);
-            // if we mapped an external port, send it to the server
-            if(nat->type != NAT_TYPE_NONE && ext_port) {
-                serial_write_int16(&ser, nat->ext_port);
-            } else {
-                serial_write_int16(&ser, address.port);
-            }
-            serial_write_int8(&ser, strlen(version));
-            serial_write(&ser, version, strlen(version));
-            const char *name = textinput_value(c);
-            serial_write(&ser, name, strlen(name));
-
-            settings_get()->net.net_username = omf_strdup(name);
-
-            ENetPacket *packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
-            serial_free(&ser);
-
-            enet_peer_send(local->peer, 0, packet);
-
-            local->joinmenu = sizer_get_obj(c->parent);
-            // menu *m = sizer_get_obj(c->parent);
-            // m->finished = 1;
-            // local->mode = LOBBY_MAIN;
+        char version[VERSION_BUF_SIZE];
+        // TODO support git version when not on a tag
+        snprintf(version, sizeof(version), "%s", get_version_string());
+        serial ser;
+        serial_create(&ser);
+        serial_write_int8(&ser, PACKET_JOIN << 4 | (PROTOCOL_VERSION & 0x0f));
+        // if we mapped an external port, send it to the server
+        if(local->nat->type != NAT_TYPE_NONE) {
+            serial_write_int16(&ser, local->nat->ext_port ? local->nat->ext_port : local->client->address.port);
         } else {
-            /* Either the 5 seconds are up or a disconnect event was */
-            /* received. Reset the peer in the event the 5 seconds   */
-            /* had run out without any significant event.            */
-            enet_peer_reset(peer);
-
-            log_debug("Connection to server failed.");
+            serial_write_int16(&ser, local->client->address.port);
         }
+        serial_write_int8(&ser, strlen(version));
+        serial_write(&ser, version, strlen(version));
+        const char *name = textinput_value(c);
+        serial_write(&ser, name, strlen(name));
+
+        omf_free(settings_get()->net.net_username);
+        settings_get()->net.net_username = omf_strdup(name);
+
+        ENetPacket *packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
+        serial_free(&ser);
+
+        enet_peer_send(local->peer, 0, packet);
+
+        local->joinmenu = sizer_get_obj(c->parent);
     }
 }
 
@@ -730,16 +649,10 @@ void lobby_dialog_accept_challenge(dialog *dlg, dialog_result result) {
     enet_peer_send(local->peer, 0, packet);
 
     if(result == DIALOG_RESULT_YES_OK) {
-        dialog_free(local->dialog);
-        dialog_create(local->dialog, DIALOG_STYLE_CANCEL, "Establishing connection...", 72, 60);
-
+        lobby_show_dialog(s, DIALOG_STYLE_CANCEL, "Establishing connection...", lobby_dialog_cancel_connect);
         local->connection_count = 0;
         local->role = ROLE_CHALLENGEE;
         ticktimer_add(&s->tick_timer, 500, lobby_try_connect, NULL);
-
-        dialog_show(local->dialog, 1);
-        local->dialog->userdata = s;
-        local->dialog->clicked = lobby_dialog_cancel_connect;
     }
 }
 
@@ -775,17 +688,177 @@ void lobby_dialog_close(dialog *dlg, dialog_result result) {
     dialog_show(dlg, 0);
 }
 
+void lobby_dialog_close_exit(dialog *dlg, dialog_result result) {
+    scene *s = dlg->userdata;
+    dialog_show(dlg, 0);
+    game_state_set_next(s->gs, SCENE_MENU);
+}
+
+void lobby_dialog_nat_cancel(dialog *dlg, dialog_result result) {
+    scene *s = dlg->userdata;
+    lobby_local *local = scene_get_userdata(s);
+    local->nat_tries = 10;
+}
+
 void lobby_tick(scene *scene, int paused) {
     lobby_local *local = scene_get_userdata(scene);
 
     game_state *gs = scene->gs;
     ENetEvent event;
     serial ser;
+
+    if(gs->this_wait_ticks) {
+        // wait for the cross fade to finish
+        // so the dialogs are visible
+        return;
+    }
+
+    if(local->disconnected) {
+        return;
+    }
+
+    // local->client goes NULL when entering a match, so avoid this code in that case
+    if(!local->client && local->controllers_created == false) {
+        ENetAddress address;
+        address.host = ENET_HOST_ANY;
+        address.port = settings_get()->net.net_listen_port_start;
+
+        log_debug("attempting to bind to port %d", address.port);
+
+        if(address.port == 0) {
+            address.port = rand_int(65535 - 1024) + 1024;
+        }
+
+        // Set up host
+        local->controllers_created = false;
+        int randtries = 0;
+
+        int end_port = settings_get()->net.net_listen_port_end;
+        if(!end_port) {
+            end_port = 65535;
+        }
+        while(local->client == NULL) {
+            local->client = enet_host_create(&address, 2, 2, 0, 0);
+            log_debug("requested port %d unavailable, trying ports %d to %d", address.port,
+                      settings_get()->net.net_listen_port_start, end_port);
+            if(settings_get()->net.net_listen_port_start == 0) {
+                address.port = rand_int(65535 - 1024) + 1024;
+                randtries++;
+                if(randtries > 10) {
+                    log_debug("Failed to initialize ENet server, could not allocate random port");
+
+                    lobby_show_dialog(scene, DIALOG_STYLE_OK,
+                                      "Failed to initialize ENet server; could not allocate random port.",
+                                      lobby_dialog_close_exit);
+
+                    local->disconnected = true;
+                    return;
+                }
+            } else {
+                address.port++;
+                if(address.port > end_port) {
+                    log_debug("Failed to initialize ENet server, port range exhausted");
+
+                    lobby_show_dialog(scene, DIALOG_STYLE_OK, "Failed to initialize ENet server; port range exhausted.",
+                                      lobby_dialog_close_exit);
+
+                    local->disconnected = true;
+                    return;
+                }
+                randtries++;
+                if(randtries > 10) {
+                    log_debug("Failed to initialize ENet server, could not allocate port between %d and %d after 10 "
+                              "tries",
+                              settings_get()->net.net_listen_port_start, end_port);
+
+                    lobby_show_dialog(
+                        scene, DIALOG_STYLE_OK,
+                        "Failed to initialize ENet server; could not allocate random port after 10 attempts.",
+                        lobby_dialog_close_exit);
+
+                    local->disconnected = true;
+                    return;
+                }
+            }
+        }
+
+        log_debug("bound to port %d", address.port);
+
+        enet_socket_set_option(local->client->socket, ENET_SOCKOPT_REUSEADDR, 1);
+
+        return;
+    }
+
+    if(!local->nat) {
+        local->nat = omf_calloc(1, sizeof(nat_ctx));
+        nat_create(local->nat);
+        local->nat_tries = 0;
+        if(local->nat->type != NAT_TYPE_NONE) {
+            lobby_show_dialog(scene, DIALOG_STYLE_CANCEL, "Attempting NAT traversal...", lobby_dialog_nat_cancel);
+        }
+    }
+
+    if(local->client && local->nat_tries < 10 && local->nat->type != NAT_TYPE_NONE) {
+        uint16_t ext_port;
+        if(settings_get()->net.net_ext_port_start == 0) {
+            ext_port = rand_int(65535 - 1024) + 1024;
+        } else {
+            ext_port = settings_get()->net.net_ext_port_start + local->nat_tries;
+        }
+
+        if(!nat_create_mapping(local->nat, local->client->address.port, ext_port)) {
+            local->nat_tries++;
+            return;
+        }
+    }
+
+    if(local->nat_tries < 11) {
+        // nat has either finished or failed
+        // increment this so far it won't trip again
+        local->nat_tries = 12;
+
+        lobby_show_dialog(scene, DIALOG_STYLE_CANCEL, "Connecting to lobby...", lobby_dialog_close_exit);
+    }
+
+    if(!local->peer) {
+        ENetAddress lobby_address;
+        enet_address_set_host(&lobby_address, settings_get()->net.net_lobby_address);
+        // enet_address_set_host(&address, "127.0.0.1");
+        lobby_address.port = 2098;
+        log_debug("server address is %s", settings_get()->net.net_lobby_address);
+        /* Initiate the connection, allocating the two channels 0 and 1. */
+        local->peer = enet_host_connect(local->client, &lobby_address, 2, 0);
+        if(local->peer == NULL) {
+            lobby_show_dialog(scene, DIALOG_STYLE_OK, "No available peers for initiating an ENet connection.",
+                              lobby_dialog_close_exit);
+            local->disconnected = true;
+            return;
+        }
+        enet_peer_ping_interval(local->peer, 100);
+    }
+
     while(local->client && !local->controllers_created && enet_host_service(local->client, &event, 0) > 0) {
         switch(event.type) {
             case ENET_EVENT_TYPE_NONE:
                 break;
             case ENET_EVENT_TYPE_CONNECT:
+                // check both address and port in case everything is running on localhost
+                if(event.peer->address.host == local->peer->address.host &&
+                   event.peer->address.port == local->peer->address.port) {
+                    log_debug("Connection to server succeeded.");
+
+                    log_debug("local peer connect id %d", local->peer->connectID);
+                    log_debug("remote peer connect id %d", event.peer->connectID);
+
+                    event.peer->data = local->nat;
+
+                    // close any active dialogs
+                    dialog_show(local->dialog, 0);
+                    dialog_free(local->dialog);
+                    omf_free(local->dialog);
+
+                    break;
+                }
                 log_debug("A new client connected from %x:%u.", event.peer->address.host, event.peer->address.port);
 
                 /* Store any relevant client information here. */
@@ -795,6 +868,8 @@ void lobby_tick(scene *scene, int paused) {
 
                 if(local->opponent_peer && event.peer->address.host == local->opponent->address.host) {
                     log_debug("connected to peer outbound!");
+
+                    lobby_show_dialog(scene, DIALOG_STYLE_CANCEL, "Connected, synchronizing clocks...", NULL);
                     local->opponent_peer = event.peer;
                     serial_create(&ser);
                     serial_write_int8(&ser, PACKET_JOIN << 4);
@@ -944,7 +1019,7 @@ void lobby_tick(scene *scene, int paused) {
                     case PACKET_JOIN:
                         if(event.peer == local->peer) {
                             switch(control_byte & 0xf) {
-                                case 0:
+                                case JOIN_SUCCESS:
                                     local->id = serial_read_uint32(&ser);
                                     log_debug("successfully joined lobby and assigned ID %d", local->id);
                                     if(local->joinmenu) {
@@ -953,13 +1028,29 @@ void lobby_tick(scene *scene, int paused) {
                                     }
                                     local->mode = LOBBY_MAIN;
                                     break;
-                                default:
-                                    // TODO something went wrong show a dialog box
+                                case JOIN_ERROR_NAME_USED:
+                                    lobby_show_dialog(scene, DIALOG_STYLE_OK, "Username already in use.",
+                                                      lobby_dialog_close);
                                     break;
+                                case JOIN_ERROR_NAME_INVALID:
+                                    lobby_show_dialog(scene, DIALOG_STYLE_OK, "Username invalid.", lobby_dialog_close);
+                                    break;
+                                case JOIN_ERROR_UNSUPPORTED_PROTOCOL:
+                                    lobby_show_dialog(scene, DIALOG_STYLE_OK,
+                                                      "Lobby server does not support this protocol version.",
+                                                      lobby_dialog_close_exit);
+                                    break;
+                                default: {
+                                    char buf[80];
+                                    snprintf(buf, sizeof(buf), "Unknown join error %d", control_byte & 0xf);
+                                    lobby_show_dialog(scene, DIALOG_STYLE_OK, buf, lobby_dialog_close_exit);
+                                } break;
                             }
                         } else if(!local->opponent_peer && event.peer->address.host == local->opponent->address.host) {
                             log_debug("connected to peer inbound!");
                             local->opponent_peer = event.peer;
+
+                            lobby_show_dialog(scene, DIALOG_STYLE_CANCEL, "Connected, synchronizing clocks...", NULL);
 
                             // signal the server we're connected
                             serial reply_ser;
@@ -1098,27 +1189,18 @@ void lobby_tick(scene *scene, int paused) {
 
                                 if(found) {
                                     local->opponent = user;
-                                    local->dialog = omf_calloc(1, sizeof(dialog));
                                     char buf[80];
-
+                                    local->role = ROLE_CHALLENGEE;
                                     snprintf(buf, sizeof(buf), "Accept challenge from %s?", user->name);
-                                    dialog_create(local->dialog, DIALOG_STYLE_YES_NO, buf, 72, 60);
-                                    local->dialog->userdata = scene;
-                                    local->dialog->clicked = lobby_dialog_accept_challenge;
-                                    dialog_show(local->dialog, 1);
+                                    lobby_show_dialog(scene, DIALOG_STYLE_YES_NO, buf, lobby_dialog_accept_challenge);
                                 } else {
                                     log_debug("unable to find user with id %d", connect_id);
                                 }
                             } break;
                             case CHALLENGE_FLAG_ACCEPT:
                                 // peer accepted, try to connect to them
-                                if(local->dialog) {
-                                    dialog_show(local->dialog, 0);
-                                    dialog_free(local->dialog);
-                                } else {
-                                    local->dialog = omf_calloc(1, sizeof(dialog));
-                                }
-                                dialog_create(local->dialog, DIALOG_STYLE_CANCEL, "Establishing connection...", 72, 60);
+                                lobby_show_dialog(scene, DIALOG_STYLE_CANCEL, "Establishing connection...",
+                                                  lobby_dialog_cancel_connect);
 
                                 // try to connect immediately
                                 local->opponent_peer =
@@ -1133,36 +1215,15 @@ void lobby_tick(scene *scene, int paused) {
                                     enet_peer_timeout(local->opponent_peer, 4, 1000, 1000);
                                 }
                                 local->connection_count = 0;
-
-                                dialog_show(local->dialog, 1);
-                                local->dialog->userdata = scene;
-                                local->dialog->clicked = lobby_dialog_cancel_connect;
                                 break;
                             case CHALLENGE_FLAG_REJECT:
-                                // peer accepted, try to connect to them
-                                if(local->dialog) {
-                                    dialog_show(local->dialog, 0);
-                                    dialog_free(local->dialog);
-                                } else {
-                                    local->dialog = omf_calloc(1, sizeof(dialog));
-                                }
-                                dialog_create(local->dialog, DIALOG_STYLE_OK, "Challenge rejected.", 72, 60);
-                                dialog_show(local->dialog, 1);
-                                local->dialog->userdata = scene;
-                                local->dialog->clicked = lobby_dialog_close;
+                                // peer rejected our challenge
+                                lobby_show_dialog(scene, DIALOG_STYLE_OK, "Challenge rejected.", lobby_dialog_close);
                                 break;
                             case CHALLENGE_FLAG_CANCEL:
-                                // peer accepted, try to connect to them
-                                if(local->dialog) {
-                                    dialog_show(local->dialog, 0);
-                                    dialog_free(local->dialog);
-                                } else {
-                                    local->dialog = omf_calloc(1, sizeof(dialog));
-                                }
-                                dialog_create(local->dialog, DIALOG_STYLE_OK, "Challenge cancelled by peer.", 72, 60);
-                                dialog_show(local->dialog, 1);
-                                local->dialog->userdata = scene;
-                                local->dialog->clicked = lobby_dialog_close;
+                                // peer cancelled their challenge
+                                lobby_show_dialog(scene, DIALOG_STYLE_OK, "Challenge cancelled by peer.",
+                                                  lobby_dialog_close);
                                 if(local->opponent_peer) {
                                     enet_peer_reset(local->opponent_peer);
                                 }
@@ -1267,6 +1328,9 @@ int lobby_create(scene *scene) {
     local->mode = LOBBY_STARTING;
     list_create(&local->log);
 
+    local->nat_tries = 0;
+    local->disconnected = false;
+
     text_settings tconf;
     text_defaults(&tconf);
     tconf.font = FONT_NET1;
@@ -1306,13 +1370,17 @@ int lobby_create(scene *scene) {
     if(game_state_get_player(scene->gs, 0)->ctrl->type == CTRL_TYPE_NETWORK) {
         local->peer = net_controller_get_lobby_connection(game_state_get_player(scene->gs, 0)->ctrl);
         local->client = net_controller_get_host(game_state_get_player(scene->gs, 0)->ctrl);
+        local->nat = local->peer->data;
         winner = net_controller_get_winner(game_state_get_player(scene->gs, 0)->ctrl);
         local->mode = LOBBY_MAIN;
+        local->nat_tries = 12;
     } else if(game_state_get_player(scene->gs, 1)->ctrl->type == CTRL_TYPE_NETWORK) {
         local->peer = net_controller_get_lobby_connection(game_state_get_player(scene->gs, 1)->ctrl);
         local->client = net_controller_get_host(game_state_get_player(scene->gs, 1)->ctrl);
+        local->nat = local->peer->data;
         winner = net_controller_get_winner(game_state_get_player(scene->gs, 1)->ctrl);
         local->mode = LOBBY_MAIN;
+        local->nat_tries = 12;
     }
 
     // Cleanups and resets
@@ -1335,15 +1403,17 @@ int lobby_create(scene *scene) {
         menu_set_padding(menu, 0);
 
         menu_attach(name_menu, label_create(&tconf, "Enter your name:"));
-        // TODO pull the last used name from settings
+        // pull the last used name from settings
         component *name_input = textinput_create(&tconf, 14, "", settings_get()->net.net_username);
         textinput_enable_background(name_input, 0);
         textinput_set_done_cb(name_input, lobby_entered_name, scene);
         menu_attach(name_menu, name_input);
 
         menu_set_submenu(menu, name_menu);
+
+        lobby_show_dialog(scene, DIALOG_STYLE_CANCEL, "Establishing network socket...", lobby_dialog_close_exit);
+
     } else {
-        // TODO send the server a REFRESH command so we can get the userlist, our username, etc
         serial ser;
         serial_create(&ser);
 
@@ -1355,6 +1425,7 @@ int lobby_create(scene *scene) {
             serial_free(&ser);
         }
 
+        // send the server a REFRESH command so we can get the userlist, our username, etc
         serial_write_int8(&ser, (uint8_t)(PACKET_REFRESH << 4));
 
         ENetPacket *packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);

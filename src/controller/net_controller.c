@@ -718,7 +718,7 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                                 data->guesses++;
                             } else {
                                 if(!data->synchronized) {
-                                    log_debug("peer @ %d guessed our ticks INcorrectly! %d %d %d, actually  %d",
+                                    log_debug("peer %d @ %d guessed our ticks INcorrectly! %d %d %d, actually  %d", id,
                                               peerticks, start, peerguess, peerguess - start, ticks - start);
                                 }
                                 data->guesses--;

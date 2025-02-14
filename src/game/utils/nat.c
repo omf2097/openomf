@@ -76,11 +76,13 @@ bool nat_create_pmp_mapping(nat_ctx *ctx, uint16_t int_port, uint16_t ext_port) 
         ctx->int_port = response.pnu.newportmapping.privateport;
         ctx->ext_port = response.pnu.newportmapping.mappedpublicport;
         return true;
+    } else if(r == NATPMP_ERR_NOGATEWAYSUPPORT) {
+        closenatpmp(&ctx->natpmp);
+        ctx->type = NAT_TYPE_NONE;
+        return false;
     } else {
         log_debug("NAT-PMP %d -> %d failed with error %d", int_port, ext_port, r);
         // TODO handle some errors here
-
-        closenatpmp(&ctx->natpmp);
         return false;
     }
 #else
@@ -105,30 +107,32 @@ bool nat_create_mapping(nat_ctx *ctx, uint16_t int_port, uint16_t ext_port) {
 void nat_try_upnp(nat_ctx *ctx) {
 #ifdef MINIUPNPC_FOUND
     int error = 0;
-    ctx->upnp_dev = upnpDiscover(2000,    // time to wait (milliseconds)
+    ctx->upnp_dev = upnpDiscover(500,    // time to wait (milliseconds)
                                  NULL,    // multicast interface (or null defaults to 239.255.255.250)
                                  NULL,    // path to minissdpd socket (or null defaults to /var/run/minissdpd.sock)
                                  0,       // source port to use (or zero defaults to port 1900)
                                  0,       // 0==IPv4, 1==IPv6
                                  2,       // TTL
                                  &error); // error condition
-    // TODO check error here?
-    // try to look up our lan address, to test it
-    #if(MINIUPNPC_API_VERSION >= 18)
+    if(ctx->upnp_dev) {
+        // TODO check error here?
+        // try to look up our lan address, to test it
+#if(MINIUPNPC_API_VERSION >= 18)
         int status = UPNP_GetValidIGD(ctx->upnp_dev, &ctx->upnp_urls, &ctx->upnp_data, ctx->lan_address,
-                                      sizeof(ctx->lan_address), NULL, 0);
-    #else
+                sizeof(ctx->lan_address), NULL, 0);
+#else
         int status =
             UPNP_GetValidIGD(ctx->upnp_dev, &ctx->upnp_urls, &ctx->upnp_data, ctx->lan_address, sizeof(ctx->lan_address));
-    #endif
+#endif
 
-    // look up possible "status" values, the number "1" indicates a valid IGD was found
-    if(status == 1) {
-        log_debug("discovered uPNP server");
-        ctx->type = NAT_TYPE_UPNP;
-    } else {
-        FreeUPNPUrls(&ctx->upnp_urls);
-        freeUPNPDevlist(ctx->upnp_dev);
+        // look up possible "status" values, the number "1" indicates a valid IGD was found
+        if(ctx->upnp_dev && status == 1) {
+            log_debug("discovered uPNP server %d");
+            ctx->type = NAT_TYPE_UPNP;
+        } else {
+            FreeUPNPUrls(&ctx->upnp_urls);
+            freeUPNPDevlist(ctx->upnp_dev);
+        }
     }
 #else
     log_debug("NAT-uPNP support not available");
