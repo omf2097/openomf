@@ -10,22 +10,22 @@
 static const char *_version_string =
     EXPAND_AND_STRINGIFY(V_MAJOR) "." EXPAND_AND_STRINGIFY(V_MINOR) "." EXPAND_AND_STRINGIFY(V_PATCH) LABEL_STR;
 
-const char *get_version_string() {
+const char *get_version_string(void) {
     return _version_string;
 }
 
-int get_version_major() {
+int get_version_major(void) {
     return V_MAJOR;
 }
 
-int get_version_minor() {
+int get_version_minor(void) {
     return V_MINOR;
 }
 
-int get_version_patch() {
+int get_version_patch(void) {
     return V_MINOR;
 }
 
-char *get_version_label() {
+char *get_version_label(void) {
     return LABEL_STR;
 }
