@@ -179,8 +179,6 @@ void lobby_show_dialog(scene *scene, int dialog_style, char *dialog_text, dialog
     local->dialog->userdata = scene;
     local->dialog->clicked = callback;
 
-    local->role = ROLE_CHALLENGER;
-
     dialog_show(local->dialog, 1);
 }
 
@@ -719,7 +717,8 @@ void lobby_tick(scene *scene, int paused) {
         return;
     }
 
-    if(!local->client) {
+    // local->client goes NULL when entering a match, so avoid this code in that case
+    if(!local->client && local->controllers_created == false) {
         ENetAddress address;
         address.host = ENET_HOST_ANY;
         address.port = settings_get()->net.net_listen_port_start;
@@ -740,49 +739,45 @@ void lobby_tick(scene *scene, int paused) {
         }
         while(local->client == NULL) {
             local->client = enet_host_create(&address, 2, 2, 0, 0);
-            if(local->client == NULL) {
-                log_debug("requested port %d unavailable, trying ports %d to %d", address.port,
-                          settings_get()->net.net_listen_port_start, end_port);
-                if(settings_get()->net.net_listen_port_start == 0) {
-                    address.port = rand_int(65535 - 1024) + 1024;
-                    randtries++;
-                    if(randtries > 10) {
-                        log_debug("Failed to initialize ENet server, could not allocate random port");
+            log_debug("requested port %d unavailable, trying ports %d to %d", address.port,
+                      settings_get()->net.net_listen_port_start, end_port);
+            if(settings_get()->net.net_listen_port_start == 0) {
+                address.port = rand_int(65535 - 1024) + 1024;
+                randtries++;
+                if(randtries > 10) {
+                    log_debug("Failed to initialize ENet server, could not allocate random port");
 
-                        lobby_show_dialog(scene, DIALOG_STYLE_OK,
-                                          "Failed to initialize ENet server; could not allocate random port.",
-                                          lobby_dialog_close_exit);
+                    lobby_show_dialog(scene, DIALOG_STYLE_OK,
+                                      "Failed to initialize ENet server; could not allocate random port.",
+                                      lobby_dialog_close_exit);
 
-                        local->disconnected = true;
-                        return;
-                    }
-                } else {
-                    address.port++;
-                    if(address.port > end_port) {
-                        log_debug("Failed to initialize ENet server, port range exhausted");
+                    local->disconnected = true;
+                    return;
+                }
+            } else {
+                address.port++;
+                if(address.port > end_port) {
+                    log_debug("Failed to initialize ENet server, port range exhausted");
 
-                        lobby_show_dialog(scene, DIALOG_STYLE_OK,
-                                          "Failed to initialize ENet server; port range exhausted.",
-                                          lobby_dialog_close_exit);
+                    lobby_show_dialog(scene, DIALOG_STYLE_OK, "Failed to initialize ENet server; port range exhausted.",
+                                      lobby_dialog_close_exit);
 
-                        local->disconnected = true;
-                        return;
-                    }
-                    randtries++;
-                    if(randtries > 10) {
-                        log_debug(
-                            "Failed to initialize ENet server, could not allocate port between %d and %d after 10 "
-                            "tries",
-                            settings_get()->net.net_listen_port_start, end_port);
+                    local->disconnected = true;
+                    return;
+                }
+                randtries++;
+                if(randtries > 10) {
+                    log_debug("Failed to initialize ENet server, could not allocate port between %d and %d after 10 "
+                              "tries",
+                              settings_get()->net.net_listen_port_start, end_port);
 
-                        lobby_show_dialog(
-                            scene, DIALOG_STYLE_OK,
-                            "Failed to initialize ENet server; could not allocate random port after 10 attempts.",
-                            lobby_dialog_close_exit);
+                    lobby_show_dialog(
+                        scene, DIALOG_STYLE_OK,
+                        "Failed to initialize ENet server; could not allocate random port after 10 attempts.",
+                        lobby_dialog_close_exit);
 
-                        local->disconnected = true;
-                        return;
-                    }
+                    local->disconnected = true;
+                    return;
                 }
             }
         }
@@ -791,11 +786,6 @@ void lobby_tick(scene *scene, int paused) {
 
         enet_socket_set_option(local->client->socket, ENET_SOCKOPT_REUSEADDR, 1);
 
-        // close the connecting dialog
-        dialog_show(local->dialog, 0);
-        dialog_free(local->dialog);
-        omf_free(local->dialog);
-        // yield control back
         return;
     }
 
@@ -852,7 +842,9 @@ void lobby_tick(scene *scene, int paused) {
             case ENET_EVENT_TYPE_NONE:
                 break;
             case ENET_EVENT_TYPE_CONNECT:
-                if(event.peer->address.host == local->peer->address.host) {
+                // check both address and port in case everything is running on localhost
+                if(event.peer->address.host == local->peer->address.host &&
+                   event.peer->address.port == local->peer->address.port) {
                     log_debug("Connection to server succeeded.");
 
                     log_debug("local peer connect id %d", local->peer->connectID);
@@ -876,6 +868,8 @@ void lobby_tick(scene *scene, int paused) {
 
                 if(local->opponent_peer && event.peer->address.host == local->opponent->address.host) {
                     log_debug("connected to peer outbound!");
+
+                    lobby_show_dialog(scene, DIALOG_STYLE_CANCEL, "Connected, synchronizing clocks...", NULL);
                     local->opponent_peer = event.peer;
                     serial_create(&ser);
                     serial_write_int8(&ser, PACKET_JOIN << 4);
@@ -1056,6 +1050,8 @@ void lobby_tick(scene *scene, int paused) {
                             log_debug("connected to peer inbound!");
                             local->opponent_peer = event.peer;
 
+                            lobby_show_dialog(scene, DIALOG_STYLE_CANCEL, "Connected, synchronizing clocks...", NULL);
+
                             // signal the server we're connected
                             serial reply_ser;
                             serial_create(&reply_ser);
@@ -1194,6 +1190,7 @@ void lobby_tick(scene *scene, int paused) {
                                 if(found) {
                                     local->opponent = user;
                                     char buf[80];
+                                    local->role = ROLE_CHALLENGEE;
                                     snprintf(buf, sizeof(buf), "Accept challenge from %s?", user->name);
                                     lobby_show_dialog(scene, DIALOG_STYLE_YES_NO, buf, lobby_dialog_accept_challenge);
                                 } else {
@@ -1373,13 +1370,17 @@ int lobby_create(scene *scene) {
     if(game_state_get_player(scene->gs, 0)->ctrl->type == CTRL_TYPE_NETWORK) {
         local->peer = net_controller_get_lobby_connection(game_state_get_player(scene->gs, 0)->ctrl);
         local->client = net_controller_get_host(game_state_get_player(scene->gs, 0)->ctrl);
+        local->nat = local->peer->data;
         winner = net_controller_get_winner(game_state_get_player(scene->gs, 0)->ctrl);
         local->mode = LOBBY_MAIN;
+        local->nat_tries = 12;
     } else if(game_state_get_player(scene->gs, 1)->ctrl->type == CTRL_TYPE_NETWORK) {
         local->peer = net_controller_get_lobby_connection(game_state_get_player(scene->gs, 1)->ctrl);
         local->client = net_controller_get_host(game_state_get_player(scene->gs, 1)->ctrl);
+        local->nat = local->peer->data;
         winner = net_controller_get_winner(game_state_get_player(scene->gs, 1)->ctrl);
         local->mode = LOBBY_MAIN;
+        local->nat_tries = 12;
     }
 
     // Cleanups and resets
