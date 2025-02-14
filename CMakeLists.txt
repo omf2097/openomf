@@ -156,7 +156,7 @@ if(GIT_FOUND)
     endif()
 
     set(VERSION_DEFINITIONS V_MAJOR=${VERSION_MAJOR} V_MINOR=${VERSION_MINOR} V_PATCH=${VERSION_PATCH} V_LABEL="${VERSION_LABEL}")
-    set_source_files_properties(src/main.c src/game/scenes/lobby.c src/video/renderers/opengl3/sdl_window.c
+    set_source_files_properties(src/game/utils/version.c
       PROPERTIES COMPILE_DEFINITIONS "${VERSION_DEFINITIONS}")
 
     set(VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}${VERSION_LABEL})
