@@ -106,14 +106,22 @@ typedef struct lobby_local_t {
     ENetHost *client;
     ENetPeer *peer;
     ENetPeer *opponent_peer;
+    // our enet connection id
     uint32_t id;
+    // list of log messages (chat/join/etc)
     list log;
+    // list of online users (includes ourself)
     list users;
-    bool named;
+    // what submenu we're in (STARTING/MAIN/YELL, etc)
     uint8_t mode;
+    // when challening a peer, tracks how many connection attempts we've made
+    // each side will make several attempts, depending on whether the 'external port' has been provided
     uint8_t connection_count;
+    // the index of the currently selected user in the user list
     uint8_t active_user;
+    // have we created the controllers needed to start a match
     bool controllers_created;
+    // the user we are challenging, or is challenging us
     lobby_user *opponent;
 
     dialog *dialog;
@@ -122,10 +130,14 @@ typedef struct lobby_local_t {
 
     guiframe *frame;
     uint8_t role;
+    // how many attempts we've made to get a working NAT address
     uint8_t nat_tries;
+    // track if the client has failed to initialize/connect to the lobby
     bool disconnected;
     nat_ctx *nat;
+    // the name of the user
     char name[16];
+    // holds various helptext labels
     char helptext[80];
 } lobby_local;
 
@@ -154,6 +166,22 @@ void lobby_free(scene *scene) {
 static int lobby_event(scene *scene, SDL_Event *e) {
     lobby_local *local = scene_get_userdata(scene);
     return guiframe_event(local->frame, e);
+}
+
+void lobby_show_dialog(scene *scene, int dialog_style, char *dialog_text, dialog_clicked_cb callback) {
+    lobby_local *local = scene_get_userdata(scene);
+    if(local->dialog) {
+        dialog_free(local->dialog);
+        omf_free(local->dialog);
+    }
+    local->dialog = omf_calloc(1, sizeof(dialog));
+    dialog_create(local->dialog, dialog_style, dialog_text, 72, 60);
+    local->dialog->userdata = scene;
+    local->dialog->clicked = callback;
+
+    local->role = ROLE_CHALLENGER;
+
+    dialog_show(local->dialog, 1);
 }
 
 void lobby_input_tick(scene *scene) {
@@ -302,23 +330,14 @@ void lobby_dialog_cancel_challenge(dialog *dlg, dialog_result result) {
 void lobby_do_challenge(component *c, void *userdata) {
     scene *s = userdata;
     lobby_local *local = scene_get_userdata(s);
-    if(local->dialog) {
-        dialog_free(local->dialog);
-        omf_free(local->dialog);
-    }
-    local->dialog = omf_calloc(1, sizeof(dialog));
     lobby_user *user = list_get(&local->users, local->active_user);
     local->opponent = user;
     char buf[80];
 
     snprintf(buf, sizeof(buf), "Challenging %s...", user->name);
-    dialog_create(local->dialog, DIALOG_STYLE_CANCEL, buf, 72, 60);
-    local->dialog->userdata = s;
-    local->dialog->clicked = lobby_dialog_cancel_challenge;
-
     local->role = ROLE_CHALLENGER;
 
-    dialog_show(local->dialog, 1);
+    lobby_show_dialog(s, DIALOG_STYLE_CANCEL, buf, lobby_dialog_cancel_challenge);
 
     serial ser;
     serial_create(&ser);
@@ -632,16 +651,10 @@ void lobby_dialog_accept_challenge(dialog *dlg, dialog_result result) {
     enet_peer_send(local->peer, 0, packet);
 
     if(result == DIALOG_RESULT_YES_OK) {
-        dialog_free(local->dialog);
-        dialog_create(local->dialog, DIALOG_STYLE_CANCEL, "Establishing connection...", 72, 60);
-
+        lobby_show_dialog(s, DIALOG_STYLE_CANCEL, "Establishing connection...", lobby_dialog_cancel_connect);
         local->connection_count = 0;
         local->role = ROLE_CHALLENGEE;
         ticktimer_add(&s->tick_timer, 500, lobby_try_connect, NULL);
-
-        dialog_show(local->dialog, 1);
-        local->dialog->userdata = s;
-        local->dialog->clicked = lobby_dialog_cancel_connect;
     }
 }
 
@@ -696,6 +709,12 @@ void lobby_tick(scene *scene, int paused) {
     ENetEvent event;
     serial ser;
 
+    if(gs->this_wait_ticks) {
+        // wait for the cross fade to finish
+        // so the dialogs are visible
+        return;
+    }
+
     if(local->disconnected) {
         return;
     }
@@ -729,16 +748,10 @@ void lobby_tick(scene *scene, int paused) {
                     randtries++;
                     if(randtries > 10) {
                         log_debug("Failed to initialize ENet server, could not allocate random port");
-                        if(local->dialog) {
-                            dialog_free(local->dialog);
-                            omf_free(local->dialog);
-                        }
-                        local->dialog = omf_calloc(1, sizeof(dialog));
-                        dialog_create(local->dialog, DIALOG_STYLE_CANCEL,
-                                      "Failed to initialize ENet server; could not allocate random port.", 72, 60);
-                        dialog_show(local->dialog, 1);
-                        local->dialog->userdata = scene;
-                        local->dialog->clicked = lobby_dialog_close_exit;
+
+                        lobby_show_dialog(scene, DIALOG_STYLE_OK,
+                                          "Failed to initialize ENet server; could not allocate random port.",
+                                          lobby_dialog_close_exit);
 
                         local->disconnected = true;
                         return;
@@ -747,16 +760,10 @@ void lobby_tick(scene *scene, int paused) {
                     address.port++;
                     if(address.port > end_port) {
                         log_debug("Failed to initialize ENet server, port range exhausted");
-                        if(local->dialog) {
-                            dialog_free(local->dialog);
-                            omf_free(local->dialog);
-                        }
-                        local->dialog = omf_calloc(1, sizeof(dialog));
-                        dialog_create(local->dialog, DIALOG_STYLE_CANCEL,
-                                      "Failed to initialize ENet server; port range exhausted.", 72, 60);
-                        dialog_show(local->dialog, 1);
-                        local->dialog->userdata = scene;
-                        local->dialog->clicked = lobby_dialog_close_exit;
+
+                        lobby_show_dialog(scene, DIALOG_STYLE_OK,
+                                          "Failed to initialize ENet server; port range exhausted.",
+                                          lobby_dialog_close_exit);
 
                         local->disconnected = true;
                         return;
@@ -767,18 +774,11 @@ void lobby_tick(scene *scene, int paused) {
                             "Failed to initialize ENet server, could not allocate port between %d and %d after 10 "
                             "tries",
                             settings_get()->net.net_listen_port_start, end_port);
-                        if(local->dialog) {
-                            dialog_free(local->dialog);
-                            omf_free(local->dialog);
-                        }
-                        local->dialog = omf_calloc(1, sizeof(dialog));
-                        dialog_create(
-                            local->dialog, DIALOG_STYLE_CANCEL,
-                            "Failed to initialize ENet server; could not allocate random port after 10 attempts.", 72,
-                            60);
-                        dialog_show(local->dialog, 1);
-                        local->dialog->userdata = scene;
-                        local->dialog->clicked = lobby_dialog_close_exit;
+
+                        lobby_show_dialog(
+                            scene, DIALOG_STYLE_OK,
+                            "Failed to initialize ENet server; could not allocate random port after 10 attempts.",
+                            lobby_dialog_close_exit);
 
                         local->disconnected = true;
                         return;
@@ -804,11 +804,7 @@ void lobby_tick(scene *scene, int paused) {
         nat_create(local->nat);
         local->nat_tries = 0;
         if(local->nat->type != NAT_TYPE_NONE) {
-            local->dialog = omf_calloc(1, sizeof(dialog));
-            dialog_create(local->dialog, DIALOG_STYLE_CANCEL, "Attempting NAT traversal...", 72, 60);
-            dialog_show(local->dialog, 1);
-            local->dialog->userdata = scene;
-            local->dialog->clicked = lobby_dialog_nat_cancel;
+            lobby_show_dialog(scene, DIALOG_STYLE_CANCEL, "Attempting NAT traversal...", lobby_dialog_nat_cancel);
         }
     }
 
@@ -828,18 +824,10 @@ void lobby_tick(scene *scene, int paused) {
 
     if(local->nat_tries < 11) {
         // nat has either finished or failed
-        // close the connecting dialog
-        dialog_show(local->dialog, 0);
-        dialog_free(local->dialog);
-        omf_free(local->dialog);
         // increment this so far it won't trip again
         local->nat_tries = 12;
 
-        local->dialog = omf_calloc(1, sizeof(dialog));
-        dialog_create(local->dialog, DIALOG_STYLE_CANCEL, "Connecting to lobby...", 72, 60);
-        dialog_show(local->dialog, 1);
-        local->dialog->userdata = scene;
-        local->dialog->clicked = lobby_dialog_close_exit;
+        lobby_show_dialog(scene, DIALOG_STYLE_CANCEL, "Connecting to lobby...", lobby_dialog_close_exit);
     }
 
     if(!local->peer) {
@@ -851,11 +839,12 @@ void lobby_tick(scene *scene, int paused) {
         /* Initiate the connection, allocating the two channels 0 and 1. */
         local->peer = enet_host_connect(local->client, &lobby_address, 2, 0);
         if(local->peer == NULL) {
-            // TODO dialog and exit
-            log_debug("No available peers for initiating an ENet connection.\n");
+            lobby_show_dialog(scene, DIALOG_STYLE_OK, "No available peers for initiating an ENet connection.",
+                              lobby_dialog_close_exit);
             local->disconnected = true;
             return;
         }
+        enet_peer_ping_interval(local->peer, 100);
     }
 
     while(local->client && !local->controllers_created && enet_host_service(local->client, &event, 0) > 0) {
@@ -871,6 +860,7 @@ void lobby_tick(scene *scene, int paused) {
 
                     event.peer->data = local->nat;
 
+                    // close any active dialogs
                     dialog_show(local->dialog, 0);
                     dialog_free(local->dialog);
                     omf_free(local->dialog);
@@ -1045,51 +1035,21 @@ void lobby_tick(scene *scene, int paused) {
                                     local->mode = LOBBY_MAIN;
                                     break;
                                 case JOIN_ERROR_NAME_USED:
-                                    if(local->dialog) {
-                                        dialog_free(local->dialog);
-                                        omf_free(local->dialog);
-                                    }
-                                    local->dialog = omf_calloc(1, sizeof(dialog));
-                                    dialog_create(local->dialog, DIALOG_STYLE_OK, "Username already in use.", 72, 60);
-                                    dialog_show(local->dialog, 1);
-                                    local->dialog->userdata = scene;
-                                    local->dialog->clicked = lobby_dialog_close;
+                                    lobby_show_dialog(scene, DIALOG_STYLE_OK, "Username already in use.",
+                                                      lobby_dialog_close);
                                     break;
                                 case JOIN_ERROR_NAME_INVALID:
-                                    if(local->dialog) {
-                                        dialog_free(local->dialog);
-                                        omf_free(local->dialog);
-                                    }
-                                    local->dialog = omf_calloc(1, sizeof(dialog));
-                                    dialog_create(local->dialog, DIALOG_STYLE_OK, "Username invalid.", 72, 60);
-                                    dialog_show(local->dialog, 1);
-                                    local->dialog->userdata = scene;
-                                    local->dialog->clicked = lobby_dialog_close;
+                                    lobby_show_dialog(scene, DIALOG_STYLE_OK, "Username invalid.", lobby_dialog_close);
                                     break;
                                 case JOIN_ERROR_UNSUPPORTED_PROTOCOL:
-                                    if(local->dialog) {
-                                        dialog_free(local->dialog);
-                                        omf_free(local->dialog);
-                                    }
-                                    local->dialog = omf_calloc(1, sizeof(dialog));
-                                    dialog_create(local->dialog, DIALOG_STYLE_OK,
-                                                  "Lobby server does not support this protocol version.", 72, 60);
-                                    dialog_show(local->dialog, 1);
-                                    local->dialog->userdata = scene;
-                                    local->dialog->clicked = lobby_dialog_close_exit;
+                                    lobby_show_dialog(scene, DIALOG_STYLE_OK,
+                                                      "Lobby server does not support this protocol version.",
+                                                      lobby_dialog_close_exit);
                                     break;
                                 default: {
-                                    if(local->dialog) {
-                                        dialog_free(local->dialog);
-                                        omf_free(local->dialog);
-                                    }
-                                    local->dialog = omf_calloc(1, sizeof(dialog));
                                     char buf[80];
                                     snprintf(buf, sizeof(buf), "Unknown join error %d", control_byte & 0xf);
-                                    dialog_create(local->dialog, DIALOG_STYLE_OK, buf, 72, 60);
-                                    dialog_show(local->dialog, 1);
-                                    local->dialog->userdata = scene;
-                                    local->dialog->clicked = lobby_dialog_close_exit;
+                                    lobby_show_dialog(scene, DIALOG_STYLE_OK, buf, lobby_dialog_close_exit);
                                 } break;
                             }
                         } else if(!local->opponent_peer && event.peer->address.host == local->opponent->address.host) {
@@ -1233,27 +1193,17 @@ void lobby_tick(scene *scene, int paused) {
 
                                 if(found) {
                                     local->opponent = user;
-                                    local->dialog = omf_calloc(1, sizeof(dialog));
                                     char buf[80];
-
                                     snprintf(buf, sizeof(buf), "Accept challenge from %s?", user->name);
-                                    dialog_create(local->dialog, DIALOG_STYLE_YES_NO, buf, 72, 60);
-                                    local->dialog->userdata = scene;
-                                    local->dialog->clicked = lobby_dialog_accept_challenge;
-                                    dialog_show(local->dialog, 1);
+                                    lobby_show_dialog(scene, DIALOG_STYLE_YES_NO, buf, lobby_dialog_accept_challenge);
                                 } else {
                                     log_debug("unable to find user with id %d", connect_id);
                                 }
                             } break;
                             case CHALLENGE_FLAG_ACCEPT:
                                 // peer accepted, try to connect to them
-                                if(local->dialog) {
-                                    dialog_show(local->dialog, 0);
-                                    dialog_free(local->dialog);
-                                } else {
-                                    local->dialog = omf_calloc(1, sizeof(dialog));
-                                }
-                                dialog_create(local->dialog, DIALOG_STYLE_CANCEL, "Establishing connection...", 72, 60);
+                                lobby_show_dialog(scene, DIALOG_STYLE_CANCEL, "Establishing connection...",
+                                                  lobby_dialog_cancel_connect);
 
                                 // try to connect immediately
                                 local->opponent_peer =
@@ -1268,36 +1218,15 @@ void lobby_tick(scene *scene, int paused) {
                                     enet_peer_timeout(local->opponent_peer, 4, 1000, 1000);
                                 }
                                 local->connection_count = 0;
-
-                                dialog_show(local->dialog, 1);
-                                local->dialog->userdata = scene;
-                                local->dialog->clicked = lobby_dialog_cancel_connect;
                                 break;
                             case CHALLENGE_FLAG_REJECT:
-                                // peer accepted, try to connect to them
-                                if(local->dialog) {
-                                    dialog_show(local->dialog, 0);
-                                    dialog_free(local->dialog);
-                                } else {
-                                    local->dialog = omf_calloc(1, sizeof(dialog));
-                                }
-                                dialog_create(local->dialog, DIALOG_STYLE_OK, "Challenge rejected.", 72, 60);
-                                dialog_show(local->dialog, 1);
-                                local->dialog->userdata = scene;
-                                local->dialog->clicked = lobby_dialog_close;
+                                // peer rejected our challenge
+                                lobby_show_dialog(scene, DIALOG_STYLE_OK, "Challenge rejected.", lobby_dialog_close);
                                 break;
                             case CHALLENGE_FLAG_CANCEL:
-                                // peer accepted, try to connect to them
-                                if(local->dialog) {
-                                    dialog_show(local->dialog, 0);
-                                    dialog_free(local->dialog);
-                                } else {
-                                    local->dialog = omf_calloc(1, sizeof(dialog));
-                                }
-                                dialog_create(local->dialog, DIALOG_STYLE_OK, "Challenge cancelled by peer.", 72, 60);
-                                dialog_show(local->dialog, 1);
-                                local->dialog->userdata = scene;
-                                local->dialog->clicked = lobby_dialog_close;
+                                // peer cancelled their challenge
+                                lobby_show_dialog(scene, DIALOG_STYLE_OK, "Challenge cancelled by peer.",
+                                                  lobby_dialog_close);
                                 if(local->opponent_peer) {
                                     enet_peer_reset(local->opponent_peer);
                                 }
@@ -1481,11 +1410,7 @@ int lobby_create(scene *scene) {
 
         menu_set_submenu(menu, name_menu);
 
-        local->dialog = omf_calloc(1, sizeof(dialog));
-        dialog_create(local->dialog, DIALOG_STYLE_CANCEL, "Establishing network socket...", 72, 60);
-        dialog_show(local->dialog, 1);
-        local->dialog->userdata = scene;
-        local->dialog->clicked = lobby_dialog_close_exit;
+        lobby_show_dialog(scene, DIALOG_STYLE_CANCEL, "Establishing network socket...", lobby_dialog_close_exit);
 
     } else {
         serial ser;

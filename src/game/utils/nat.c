@@ -107,7 +107,7 @@ bool nat_create_mapping(nat_ctx *ctx, uint16_t int_port, uint16_t ext_port) {
 void nat_try_upnp(nat_ctx *ctx) {
 #ifdef MINIUPNPC_FOUND
     int error = 0;
-    ctx->upnp_dev = upnpDiscover(2000,    // time to wait (milliseconds)
+    ctx->upnp_dev = upnpDiscover(500,    // time to wait (milliseconds)
                                  NULL,    // multicast interface (or null defaults to 239.255.255.250)
                                  NULL,    // path to minissdpd socket (or null defaults to /var/run/minissdpd.sock)
                                  0,       // source port to use (or zero defaults to port 1900)
