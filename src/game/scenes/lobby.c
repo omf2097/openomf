@@ -798,7 +798,7 @@ void lobby_tick(scene *scene, int paused) {
         }
     }
 
-    if(local->nat_tries < 10 && local->nat->type != NAT_TYPE_NONE) {
+    if(local->client && local->nat_tries < 10 && local->nat->type != NAT_TYPE_NONE) {
         uint16_t ext_port;
         if(settings_get()->net.net_ext_port_start == 0) {
             ext_port = rand_int(65535 - 1024) + 1024;
