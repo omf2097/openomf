@@ -1218,11 +1218,11 @@ void arena_render_overlay(scene *scene) {
 
         // render ping, if player is networked
         if(player[0]->ctrl->type == CTRL_TYPE_NETWORK) {
-            snprintf(buf, 40, "ping %d", (player[0]->ctrl->rtt / 2) * game_state_ms_per_dyntick(scene->gs));
+            snprintf(buf, 40, "ping %d", player[0]->ctrl->rtt / 2);
             text_render(&tconf_debug, TEXT_DEFAULT, 5, 40, 250, 6, buf);
         }
         if(player[1]->ctrl->type == CTRL_TYPE_NETWORK) {
-            snprintf(buf, 40, "ping %d", (player[1]->ctrl->rtt / 2) * game_state_ms_per_dyntick(scene->gs));
+            snprintf(buf, 40, "ping %d", player[1]->ctrl->rtt / 2);
             text_render(&tconf_debug, TEXT_DEFAULT, 315 - (strlen(buf) * font_small.w), 40, 250, 6, buf);
         }
     }

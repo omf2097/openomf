@@ -761,7 +761,7 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                                 data->rttfilled = 1;
                             }
                             if(data->rttfilled == 1) {
-                                ctrl->rtt = avg_rtt(data->rttbuf, 100);
+                                ctrl->rtt = peer->roundTripTime;
                                 // data->tick_offset = (peerticks + (ctrl->rtt / 2)) - ticks;
                                 // log_debug("I am %d ticks away from server: %d %d RTT %d", data->tick_offset, ticks,
                                 // peerticks, ctrl->rtt);
