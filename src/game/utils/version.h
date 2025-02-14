@@ -1,7 +1,10 @@
+#ifndef VERSION_H
+#define VERSION_H
 
+const char *get_version_string(void);
+int get_version_major(void);
+int get_version_minor(void);
+int get_version_patch(void);
+char *get_version_label(void);
 
-const char *get_version_string();
-int get_version_major();
-int get_version_minor();
-int get_version_patch();
-char *get_version_label();
+#endif // VERSION_H
