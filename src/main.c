@@ -211,7 +211,7 @@ int main(int argc, char *argv[]) {
         // Set ip to NULL here since it will be freed by the settings.
         ip = NULL;
     }
-    if(lobby) {
+    if(lobbyaddr) {
         log_debug("Lobby address overridden to %s", lobby);
         oldlobbyaddr = settings_get()->net.net_lobby_address;
         settings_get()->net.net_lobby_address = lobbyaddr;
