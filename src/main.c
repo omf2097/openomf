@@ -58,6 +58,8 @@ void scan_game_controllers(void) {
 int main(int argc, char *argv[]) {
     // Set up initial state for misc things
     char *ip = NULL;
+    char *lobbyaddr = NULL;
+    char *oldlobbyaddr = NULL;
     char *trace_file = NULL;
     unsigned short connect_port = 0;
     unsigned short listen_port = 0;
@@ -76,6 +78,8 @@ int main(int argc, char *argv[]) {
     struct arg_lit *vers = arg_lit0("v", "version", "print version information and exit");
     struct arg_lit *listen = arg_lit0("l", "listen", "Start a network game server");
     struct arg_lit *lobby = arg_lit0(NULL, "lobby", "Enter network game lobby");
+    struct arg_str *lobbyarg =
+        arg_str0(NULL, "lobby-addr", "<lobby server>", "Use <lobby server> as the lobby address to connect to");
     struct arg_str *connect = arg_str0("c", "connect", "<host>", "Connect to a remote game");
     struct arg_str *force_audio_backend =
         arg_str0(NULL, "force-audio-backend", "<force-audio-backend>", "Force an audio backend to use");
@@ -85,8 +89,8 @@ int main(int argc, char *argv[]) {
     struct arg_file *play = arg_file0("P", "play", "<file>", "Play an existing recfile");
     struct arg_file *rec = arg_file0("R", "rec", "<file>", "Record a new recfile");
     struct arg_end *end = arg_end(30);
-    void *argtable[] = {help,           vers,  listen, lobby, connect, force_audio_backend,
-                        force_renderer, trace, port,   play,  rec,     end};
+    void *argtable[] = {help,           vers,  listen, lobby, lobbyarg, connect, force_audio_backend,
+                        force_renderer, trace, port,   play,  rec,      end};
     const char *progname = "openomf";
 
     // Make sure everything got allocated
@@ -119,6 +123,10 @@ int main(int argc, char *argv[]) {
         arg_print_errors(stderr, end, progname);
         fprintf(stderr, "Try '%s --help' for more information.\n", progname);
         goto exit_0;
+    }
+
+    if(lobbyarg->count > 0) {
+        lobbyaddr = omf_strdup(lobbyarg->sval[0]);
     }
 
     // Check other flags
@@ -203,6 +211,12 @@ int main(int argc, char *argv[]) {
         // Set ip to NULL here since it will be freed by the settings.
         ip = NULL;
     }
+    if(lobby) {
+        log_debug("Lobby address overridden to %s", lobby);
+        oldlobbyaddr = settings_get()->net.net_lobby_address;
+        settings_get()->net.net_lobby_address = lobbyaddr;
+    }
+
     if(trace_file) {
         omf_free(settings_get()->net.trace_file);
         settings_get()->net.trace_file = trace_file;
@@ -258,6 +272,10 @@ exit_4:
 exit_3:
     SDL_Quit();
 exit_2:
+    if(oldlobbyaddr) {
+        // we probably don't want to save this override
+        settings_get()->net.net_lobby_address = oldlobbyaddr;
+    }
     settings_save();
     settings_free();
 exit_1:
@@ -266,6 +284,9 @@ exit_1:
 exit_0:
     if(ip) {
         omf_free(ip);
+    }
+    if(lobbyaddr) {
+        omf_free(lobbyaddr);
     }
     if(trace_file) {
         omf_free(trace_file);

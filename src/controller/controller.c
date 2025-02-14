@@ -136,7 +136,6 @@ int controller_poll(controller *ctrl, ctrl_event **ev) {
 }
 
 int controller_har_hook(controller *ctrl, har_event event) {
-    log_debug("trying to fire HAR hook");
     if(ctrl->har_hook != NULL) {
         return ctrl->har_hook(ctrl, event);
     }

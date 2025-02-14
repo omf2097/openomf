@@ -654,7 +654,6 @@ void arena_har_hook(har_event event, void *data) {
         scene->gs, game_player_get_har_obj_id(game_state_get_player(scene->gs, other_player_id)));
     har *har1 = obj_har1->userdata;
     har *har2 = obj_har2->userdata;
-    log_debug("HAR %d HOOK FIRED WITH %d at %d", event.player_id, event.type, scene->gs->int_tick);
     switch(event.type) {
         case HAR_EVENT_WALK:
             arena_maybe_turn_har(event.player_id, scene);
@@ -1219,11 +1218,11 @@ void arena_render_overlay(scene *scene) {
 
         // render ping, if player is networked
         if(player[0]->ctrl->type == CTRL_TYPE_NETWORK) {
-            snprintf(buf, 40, "ping %d", player[0]->ctrl->rtt * game_state_ms_per_dyntick(scene->gs));
+            snprintf(buf, 40, "ping %d", (player[0]->ctrl->rtt / 2) * game_state_ms_per_dyntick(scene->gs));
             text_render(&tconf_debug, TEXT_DEFAULT, 5, 40, 250, 6, buf);
         }
         if(player[1]->ctrl->type == CTRL_TYPE_NETWORK) {
-            snprintf(buf, 40, "ping %d", player[1]->ctrl->rtt * game_state_ms_per_dyntick(scene->gs));
+            snprintf(buf, 40, "ping %d", (player[1]->ctrl->rtt / 2) * game_state_ms_per_dyntick(scene->gs));
             text_render(&tconf_debug, TEXT_DEFAULT, 315 - (strlen(buf) * font_small.w), 40, 250, 6, buf);
         }
     }

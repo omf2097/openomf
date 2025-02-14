@@ -444,6 +444,10 @@ void har_floor_landing_effects(object *obj) {
     game_state_play_sound(obj->gs, 56, 0.3f, pos_pan, 2.2f);
 }
 
+char get_last_input(har *har) {
+    return har->inputs[0];
+}
+
 void har_move(object *obj) {
     vec2f vel = object_get_vel(obj);
     obj->pos.x += vel.x;
@@ -472,16 +476,59 @@ void har_move(object *obj) {
             object_set_vel(obj, vec2f_create(vel.x, 0));
         }
 
+        char last_input = get_last_input(h);
         // Change animation from jump to walk or idle,
-        // depending on horizontal velocity
+        // depending on held inputs
         if(h->state == STATE_JUMPING) {
-            /*if(object_get_hstate(obj) == OBJECT_MOVING) {*/
-            /*h->state = STATE_WALKING;*/
-            /*har_set_ani(obj, ANIM_WALKING, 1);*/
-            /*} else {*/
-            h->state = STATE_STANDING;
-            har_set_ani(obj, ANIM_IDLE, 1);
-            object_set_stride(obj, h->stride);
+            if(last_input == '6') {
+                h->state = STATE_WALKTO;
+                har_set_ani(obj, ANIM_WALKING, 1);
+                float vx = h->fwd_speed * object_get_direction(obj);
+                object_set_vel(obj, vec2f_create(vx * (h->hard_close ? 0.5 : 1.0), 0));
+                object_set_stride(obj, h->stride);
+                har_event_walk(h, 1, ctrl);
+            } else if(last_input == '4') {
+                h->state = STATE_WALKFROM;
+                har_set_ani(obj, ANIM_WALKING, 1);
+                float vx = h->back_speed * object_get_direction(obj) * -1;
+                object_set_vel(obj, vec2f_create(vx * (h->hard_close ? 0.5 : 1.0), 0));
+                object_set_stride(obj, h->stride);
+                har_event_walk(h, -1, ctrl);
+            } else if(last_input == '7' || last_input == '8' || last_input == '9') {
+                har_set_ani(obj, ANIM_JUMPING, 0);
+                h->state = STATE_JUMPING;
+                float vx = 0.0f;
+                float vy = h->jump_speed;
+                int jump_dir = 0;
+                int direction = object_get_direction(obj);
+                if(last_input == '9') {
+                    vx = (h->fwd_speed * direction);
+                    object_set_tick_pos(obj, 110);
+                    object_set_stride(obj, 7); // Pass 7 frames per tick
+                    jump_dir = 1;
+                } else if(last_input == '7') {
+                    // If we are jumping backwards, start animation from end
+                    // at -100 frames (seems to be about right)
+                    object_set_playback_direction(obj, PLAY_BACKWARDS);
+                    object_set_tick_pos(obj, -110);
+                    vx = (h->back_speed * direction * -1);
+                    object_set_stride(obj, 7); // Pass 7 frames per tick
+                    jump_dir = -1;
+                } else {
+                    // we are jumping upwards
+                    object_set_tick_pos(obj, 110);
+                    if(h->id == HAR_GARGOYLE) {
+                        object_set_stride(obj, 7);
+                    }
+                }
+                object_set_vel(obj, vec2f_create(vx, vy));
+                har_event_jump(h, jump_dir, ctrl);
+            } else {
+                object_set_vel(obj, vec2f_create(0, 0));
+                h->state = STATE_STANDING;
+                har_set_ani(obj, ANIM_IDLE, 1);
+                object_set_stride(obj, h->stride);
+            }
             har_event_land(h, ctrl);
             har_floor_landing_effects(obj);
 
@@ -503,7 +550,6 @@ void har_move(object *obj) {
                 log_debug("HARS facing enemy player %d", abs(h->player_id - 1));
                 object_set_direction(obj_enemy, object_get_direction(obj) * -1);
             }
-            /*}*/
         } else if(h->state == STATE_FALLEN || h->state == STATE_RECOIL) {
             float dampen = 0.2f;
             vec2f vel = object_get_vel(obj);
@@ -1475,6 +1521,8 @@ void add_input_to_buffer(char *buf, char c) {
 void add_input(char *buf, int act_type, int direction) {
     // for the reason behind the numbers, look at a numpad sometime
     switch(act_type) {
+        case ACT_NONE:
+            return;
         case ACT_UP:
             add_input_to_buffer(buf, '8');
             break;
@@ -1532,6 +1580,8 @@ void add_input(char *buf, int act_type, int direction) {
         case ACT_STOP:
             add_input_to_buffer(buf, '5');
             break;
+        default:
+            assert(false);
     }
 }
 
@@ -1625,8 +1675,8 @@ af_move *match_move(object *obj, char *inputs) {
                     log_debug("CHAINING");
                 }
 
-                log_debug("matched move %d with string %s", i, str_c(&move->move_string));
-                /*log_debug("input was %s", h->inputs);*/
+                log_debug("matched move %d with string %s in state %d", i, str_c(&move->move_string), h->state);
+                /*DEBUG("input was %s", h->inputs);*/
                 return move;
             }
         }
@@ -1651,50 +1701,34 @@ af_move *scrap_destruction_cheat(object *obj, char *inputs) {
     return NULL;
 }
 
-int maybe_har_change_state(int oldstate, int direction, int act_type) {
+int maybe_har_change_state(int oldstate, int direction, char act_type) {
     int state = 0;
     switch(act_type) {
-        case ACT_DOWN | ACT_RIGHT:
-            if(direction == OBJECT_FACE_LEFT) {
-                state = STATE_CROUCHBLOCK;
-            } else {
-                state = STATE_CROUCHING;
-            }
+        case '1':
+            state = STATE_CROUCHBLOCK;
             break;
-        case ACT_DOWN | ACT_LEFT:
-            if(direction == OBJECT_FACE_RIGHT) {
-                state = STATE_CROUCHBLOCK;
-            } else {
-                state = STATE_CROUCHING;
-            }
-            break;
-        case ACT_DOWN:
+        case '2':
             state = STATE_CROUCHING;
             break;
-        case ACT_STOP:
+        case '3':
+            state = STATE_CROUCHING;
+            break;
+        case '5':
             state = STATE_STANDING;
             break;
-        case ACT_LEFT:
-            if(direction == OBJECT_FACE_LEFT) {
-                state = STATE_WALKTO;
-            } else {
-                state = STATE_WALKFROM;
-            }
+        case '4':
+            state = STATE_WALKFROM;
             break;
-        case ACT_RIGHT:
-            if(direction == OBJECT_FACE_RIGHT) {
-                state = STATE_WALKTO;
-            } else {
-                state = STATE_WALKFROM;
-            }
+        case '6':
+            state = STATE_WALKTO;
             break;
-        case ACT_UP:
+        case '8':
             state = STATE_JUMPING;
             break;
-        case ACT_UP | ACT_LEFT:
+        case '7':
             state = STATE_JUMPING;
             break;
-        case ACT_UP | ACT_RIGHT:
+        case '9':
             state = STATE_JUMPING;
             break;
     }
@@ -1714,7 +1748,7 @@ int har_act(object *obj, int act_type) {
     add_input(h->inputs, act_type, direction);
 
     if(!(h->state == STATE_STANDING || har_is_walking(h) || har_is_crouching(h) || h->state == STATE_JUMPING ||
-         h->state == STATE_VICTORY || h->state == STATE_SCRAP) ||
+         h->state == STATE_VICTORY || h->state == STATE_SCRAP || h->state == STATE_NONE) ||
        object_get_halt(obj)) {
         // doing something else, ignore input
         return 0;
@@ -1814,6 +1848,7 @@ int har_act(object *obj, int act_type) {
         return 0;
     }
 
+    char last_input = get_last_input(h);
     if(obj->pos.y < ARENA_FLOOR) {
         // airborne
 
@@ -1821,8 +1856,7 @@ int har_act(object *obj, int act_type) {
         int opp_id = h->player_id ? 0 : 1;
         object *opp =
             game_state_find_object(obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, opp_id)));
-        if(act_type == ACT_LEFT || act_type == ACT_RIGHT || act_type == (ACT_DOWN | ACT_LEFT) ||
-           act_type == (ACT_DOWN | ACT_RIGHT)) {
+        if(last_input == '4' || last_input == '6' || last_input == '1' || last_input == '3') {
             if(object_get_pos(obj).x > object_get_pos(opp).x) {
                 if(direction != OBJECT_FACE_LEFT) {
                     har_event_air_turn(h, ctrl);
@@ -1846,7 +1880,7 @@ int har_act(object *obj, int act_type) {
     float vx, vy;
     // no moves matched, do player movement
     int newstate;
-    if((newstate = maybe_har_change_state(h->state, direction, act_type))) {
+    if((newstate = maybe_har_change_state(h->state, direction, last_input))) {
         h->state = newstate;
         switch(newstate) {
             case STATE_CROUCHBLOCK:
@@ -1882,13 +1916,12 @@ int har_act(object *obj, int act_type) {
                 vx = 0.0f;
                 vy = h->jump_speed;
                 int jump_dir = 0;
-                if((act_type == (ACT_UP | ACT_LEFT) && direction == OBJECT_FACE_LEFT) ||
-                   (act_type == (ACT_UP | ACT_RIGHT) && direction == OBJECT_FACE_RIGHT)) {
+                if(last_input == '9') {
                     vx = (h->fwd_speed * direction);
                     object_set_tick_pos(obj, 110);
                     object_set_stride(obj, 7); // Pass 7 frames per tick
                     jump_dir = 1;
-                } else if(act_type == (ACT_UP | ACT_LEFT) || act_type == (ACT_UP | ACT_RIGHT)) {
+                } else if(last_input == '7') {
                     // If we are jumping backwards, start animation from end
                     // at -100 frames (seems to be about right)
                     object_set_playback_direction(obj, PLAY_BACKWARDS);
@@ -1896,7 +1929,7 @@ int har_act(object *obj, int act_type) {
                     vx = (h->back_speed * direction * -1);
                     object_set_stride(obj, 7); // Pass 7 frames per tick
                     jump_dir = -1;
-                } else if(act_type == ACT_UP) {
+                } else if(last_input == '8') {
                     // If we are jumping upwards
                     object_set_tick_pos(obj, 110);
                     if(h->id == HAR_GARGOYLE) {
@@ -1919,7 +1952,7 @@ int har_act(object *obj, int act_type) {
     int opp_id = h->player_id ? 0 : 1;
     object *opp = game_state_find_object(obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, opp_id)));
     if(object_is_airborne(opp)) {
-        har_event_walk(h, 1, ctrl);
+        // har_event_walk(h, 1, ctrl);
     }
 
     return 0;
@@ -1934,7 +1967,12 @@ void har_finished(object *obj) {
         h->enqueued = 0;
         h->executing_move = 1;
         return;
-    } else if(h->state == STATE_SCRAP || h->state == STATE_DESTRUCTION) {
+    }
+
+    h->executing_move = 0;
+    h->flinching = 0;
+
+    if(h->state == STATE_SCRAP || h->state == STATE_DESTRUCTION) {
         // play vistory animation again, but do not allow any more moves to be executed
         h->state = STATE_DONE;
         har_set_ani(obj, ANIM_VICTORY, 0);
@@ -1964,6 +2002,7 @@ void har_finished(object *obj) {
         har_event_recover(h, ctrl);
         h->state = STATE_STANDING;
         har_set_ani(obj, ANIM_IDLE, 1);
+        har_act(obj, ACT_NONE);
     } else if(h->state != STATE_CROUCHING && h->state != STATE_CROUCHBLOCK) {
         // Don't transition to standing state while in midair
         if(object_is_airborne(obj) && h->state == STATE_FALLEN) {
@@ -1976,13 +2015,12 @@ void har_finished(object *obj) {
             har_set_ani(obj, ANIM_IDLE, 1);
         } else {
             har_set_ani(obj, ANIM_IDLE, 1);
+            har_act(obj, ACT_NONE);
         }
     } else {
         har_set_ani(obj, ANIM_CROUCHING, 1);
-        object_set_vel(obj, vec2f_create(0, 0));
+        har_act(obj, ACT_NONE);
     }
-    h->executing_move = 0;
-    h->flinching = 0;
 }
 
 void har_install_hook(har *h, har_hook_cb hook, void *data) {
