@@ -2,6 +2,7 @@
 #include "engine.h"
 #include "game/game_state.h"
 #include "game/utils/settings.h"
+#include "game/utils/version.h"
 #include "resources/ids.h"
 #include "resources/pathmanager.h"
 #include "resources/sgmanager.h"
@@ -107,7 +108,7 @@ int main(int argc, char *argv[]) {
         goto exit_0;
     }
     if(vers->count > 0) {
-        printf("OpenOMF v%d.%d.%d\n", V_MAJOR, V_MINOR, V_PATCH);
+        printf("OpenOMF v%s\n", get_version_string());
         printf("Source available at https://github.com/omf2097/ under MIT License\n");
         printf("(C) 2097 Tuomas Virtanen, Andrew Thompson, Hunter and others\n");
         goto exit_0;
@@ -171,7 +172,7 @@ int main(int argc, char *argv[]) {
 #endif
 
     // Simple header
-    log_info("Starting OpenOMF v%d.%d.%d", V_MAJOR, V_MINOR, V_PATCH);
+    log_info("Starting OpenOMF v%s", get_version_string());
     if(strlen(git_sha1_hash) > 0) {
         log_info("Git SHA1 hash: %s", git_sha1_hash);
     }

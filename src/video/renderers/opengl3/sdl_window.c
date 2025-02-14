@@ -1,4 +1,5 @@
 #include "video/renderers/opengl3/sdl_window.h"
+#include "game/utils/version.h"
 #include "utils/log.h"
 
 #include <epoxy/gl.h>
@@ -74,7 +75,7 @@ exit_0:
 
 bool create_window(SDL_Window **window, int width, int height, bool fullscreen) {
     char title[32];
-    snprintf(title, 32, "OpenOMF v%d.%d.%d", V_MAJOR, V_MINOR, V_PATCH);
+    snprintf(title, 32, "OpenOMF v%s", get_version_string());
 
     // Request OpenGL 3.3 core context. This also gives us GLSL 330.
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
