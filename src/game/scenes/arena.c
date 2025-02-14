@@ -1118,6 +1118,10 @@ void arena_input_tick(scene *scene) {
         controller_free_chain(p2);
     }
 
+    if(is_netplay(scene->gs)) {
+        return;
+    }
+
     ctrl_event *menu_ev = NULL;
     game_state_menu_poll(scene->gs, &menu_ev);
     for(ctrl_event *i = menu_ev; i; i = i->next) {
