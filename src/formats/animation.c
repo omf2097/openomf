@@ -217,11 +217,10 @@ int sd_animation_load(sd_reader *r, sd_animation *ani) {
         uint32_t tmp = sd_read_udword(r);
         uint16_t a = tmp & 0xffff;
         uint16_t b = (tmp & 0xffff0000) >> 16;
-        int16_t x = a & 0x3ff;
-        int16_t y = b & 0x3ff;
-        ani->coord_table[i].x = x < 512 ? x : x - 1024;
+        // Extract 10 bit signed integers to x and y
+        ani->coord_table[i].x = ((a & 0x3ff) ^ 0x200) - 0x200;
         ani->coord_table[i].null = (a >> 10);
-        ani->coord_table[i].y = y < 512 ? y : y - 1024;
+        ani->coord_table[i].y = ((b & 0x3ff) ^ 0x200) - 0x200;
         ani->coord_table[i].frame_id = (b >> 10);
     }
 
