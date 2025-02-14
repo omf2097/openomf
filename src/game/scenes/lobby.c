@@ -2,6 +2,7 @@
 #include "game/gui/frame.h"
 #include "game/protos/scene.h"
 #include "game/utils/serial.h"
+#include "game/utils/version.h"
 #include "utils/allocator.h"
 #include "utils/c_string_util.h"
 #include "utils/log.h"
@@ -645,7 +646,7 @@ void lobby_entered_name(component *c, void *userdata) {
 
             char version[VERSION_BUF_SIZE];
             // TODO support git version when not on a tag
-            snprintf(version, sizeof(version), "%d.%d.%d%s", V_MAJOR, V_MINOR, V_PATCH, V_LABEL);
+            snprintf(version, sizeof(version), "%s", get_version_string());
             serial ser;
             serial_create(&ser);
             serial_write_int8(&ser, PACKET_JOIN << 4);
