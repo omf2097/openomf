@@ -266,7 +266,11 @@ void arena_end(scene *sc) {
         if(p1->chr && sg_save(p1->chr) != SD_SUCCESS) {
             log_error("Failed to save pilot %s", p1->chr->pilot.name);
         }
-        game_state_set_next(gs, SCENE_NEWSROOM);
+        if(is_demoplay(gs)) {
+            game_state_set_next(gs, SCENE_VS);
+        } else {
+            game_state_set_next(gs, SCENE_NEWSROOM);
+        }
     } else if(is_twoplayer(gs)) {
         game_state_set_next(gs, SCENE_MELEE);
     } else if(gs->net_mode == NET_MODE_LOBBY) {
