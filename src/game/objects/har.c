@@ -1581,7 +1581,7 @@ void add_input(char *buf, int act_type, int direction) {
             add_input_to_buffer(buf, '5');
             break;
         default:
-            assert(false);
+            log_warn("Ignored input: buf %s, act_type 0x%x, direction %d", buf, act_type, direction);
     }
 }
 
