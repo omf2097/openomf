@@ -232,6 +232,16 @@ bool str_delete_at(str *string, size_t pos);
 bool str_set_at(str *string, size_t pos, char value);
 
 /**
+ * @brief Set the whole string value (replaces old string content).
+ */
+void str_set_c(str *string, const char *value);
+
+/**
+ * @brief Set the whole string value (replaces old string content).
+ */
+void str_set(str *string, const str *value);
+
+/**
  * @brief Insert a character at given index.
  */
 bool str_insert_at(str *string, size_t pos, char value);
