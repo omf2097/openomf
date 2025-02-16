@@ -37,6 +37,9 @@ static void free_locales(sd_tournament_file *trn) {
             if(trn->locales[i]->description) {
                 omf_free(trn->locales[i]->description);
             }
+            if(trn->locales[i]->stripped_description) {
+                omf_free(trn->locales[i]->stripped_description);
+            }
             if(trn->locales[i]->title) {
                 omf_free(trn->locales[i]->title);
             }
@@ -68,6 +71,66 @@ int sd_tournament_set_pic_name(sd_tournament_file *trn, const char *pic_name) {
     trn->pic_file = omf_realloc(trn->pic_file, len);
     snprintf(trn->pic_file, len, "%s", pic_name);
     return SD_SUCCESS;
+}
+
+static void parse_tournament_description(sd_tournament_locale *locale) {
+    int width = 320, center = 0, vmove = 0, size = -1, color = -1;
+    const char *desc = locale->description;
+    const char *end = desc;
+    char *ptr = NULL;
+    ptr = strstr(desc, "{WIDTH ");
+    if(ptr != NULL) {
+        sscanf(ptr, "{WIDTH %d}", &width);
+        if(ptr > end) {
+            end = ptr;
+        }
+    }
+    ptr = strstr(desc, "{CENTER ");
+    if(ptr != NULL) {
+        sscanf(ptr, "{CENTER %d}", &center);
+        if(ptr > end) {
+            end = ptr;
+        }
+    }
+    ptr = strstr(desc, "{VMOVE ");
+    if(ptr != NULL) {
+        sscanf(ptr, "{VMOVE %d}", &vmove);
+        if(ptr > end) {
+            end = ptr;
+        }
+    }
+    ptr = strstr(desc, "{SIZE ");
+    if(ptr != NULL) {
+        sscanf(ptr, "{SIZE %d}", &size);
+        if(ptr > end) {
+            end = ptr;
+        }
+    }
+    ptr = strstr(desc, "{COLOR ");
+    if(ptr != NULL) {
+        sscanf(ptr, "{COLOR %d}", &color);
+        if(ptr > end) {
+            end = ptr;
+        }
+    }
+    const char *start = strchr(end, '}');
+    if(start == NULL) {
+        start = desc;
+    } else {
+        start++;
+    }
+    locale->desc_width = width;
+    locale->desc_center = center;
+    locale->desc_vmove = vmove;
+    locale->desc_size = size;
+    locale->desc_color = color;
+    // Ignore the rest of the possible metadata.
+    ptr = strchr(start, '{');
+    if(ptr != NULL) {
+        locale->stripped_description = omf_strndup(start, ptr - start);
+    } else {
+        locale->stripped_description = omf_strdup(start);
+    }
 }
 
 int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
@@ -141,14 +204,6 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
     // Allocate locales
     for(int i = 0; i < MAX_TRN_LOCALES; i++) {
         trn->locales[i] = omf_calloc(1, sizeof(sd_tournament_locale));
-        trn->locales[i]->logo = NULL;
-        trn->locales[i]->description = NULL;
-        trn->locales[i]->title = NULL;
-        for(int har = 0; har < 11; har++) {
-            for(int page = 0; page < 10; page++) {
-                trn->locales[i]->end_texts[har][page] = NULL;
-            }
-        }
     }
 
     // Load logos to locales
@@ -172,6 +227,7 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
     for(int i = 0; i < MAX_TRN_LOCALES; i++) {
         trn->locales[i]->title = sd_read_variable_str(r);
         trn->locales[i]->description = sd_read_variable_str(r);
+        parse_tournament_description(trn->locales[i]);
     }
 
     // Make sure we are in correct position

@@ -40,10 +40,16 @@ enum
  * Translated resources for the tournament.
  */
 typedef struct {
-    sd_sprite *logo;         ///< Tournament logo
-    char *title;             ///< Tournament title (eg. World Championship)
-    char *description;       ///< Tournament description; A short text about the tournament.
-    char *end_texts[11][10]; ///< Tournament victory texts that are visible at the ending.
+    sd_sprite *logo;            ///< Tournament logo
+    char *title;                ///< Tournament title (eg. World Championship)
+    char *description;          ///< Tournament description; A short text about the tournament.
+    char *stripped_description; ///< Tournament description stripped of metadata.
+    int desc_width;             ///< Tournament description width.
+    int desc_center;            ///< Tournament description center.
+    int desc_vmove;             ///< Tournament description vmove.
+    int desc_size;              ///< Tournament description size.
+    int desc_color;             ///< Tournament description color.
+    char *end_texts[11][10];    ///< Tournament victory texts that are visible at the ending.
 } sd_tournament_locale;
 
 /*! \brief Tournament data
