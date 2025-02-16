@@ -509,6 +509,18 @@ bool str_set_at(str *string, size_t pos, char value) {
     return true;
 }
 
+void str_set_c(str *string, const char *value) {
+    size_t size = strlen(value);
+    memcpy(str_resize_buffer(string, size), value, size);
+    str_zero(string);
+}
+
+void str_set(str *string, const str *value) {
+    size_t size = str_size(value);
+    memcpy(str_resize_buffer(string, size), str_c(value), size);
+    str_zero(string);
+}
+
 bool str_insert_at(str *string, size_t pos, char value) {
     size_t len = str_size(string);
     if(pos > len) {

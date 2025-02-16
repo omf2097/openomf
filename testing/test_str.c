@@ -84,6 +84,26 @@ void test_str_from_long(void) {
     str_free(&src);
 }
 
+void test_str_set_c(void) {
+    str a;
+    str_from_c(&a, "test");
+    str_set_c(&a, "2222222");
+    CU_ASSERT_STRING_EQUAL(a.small, "2222222");
+    str_free(&a);
+}
+
+void test_str_set(void) {
+    str a, b;
+    str_from_c(&a, "test");
+    str_from_c(&b, "2222222");
+
+    str_set(&a, &b);
+    CU_ASSERT_STRING_EQUAL(a.small, "2222222");
+
+    str_free(&a);
+    str_free(&b);
+}
+
 void test_str_from_c(void) {
     str d;
     str_from_c(&d, "testdata");
@@ -668,6 +688,12 @@ void str_test_suite(CU_pSuite suite) {
         return;
     }
     if(CU_add_test(suite, "Test for str_set_at", test_str_set_at) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_set_c", test_str_set_c) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_set", test_str_set) == NULL) {
         return;
     }
     if(CU_add_test(suite, "Test for str_truncate", test_str_truncate) == NULL) {
