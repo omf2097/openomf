@@ -140,9 +140,7 @@ void object_set_playback_direction(object *obj, int dir) {
 
 void object_scenewide_palette_transform(damage_tracker *damage, vga_palette *pal, void *userdata) {
     object *obj = userdata;
-    float u, k, step, bp;
-    uint8_t m;
-    vga_color ref;
+    float k, step, bp;
     vga_index start, end;
     player_sprite_state *state = &obj->sprite_state;
 
@@ -153,24 +151,13 @@ void object_scenewide_palette_transform(damage_tracker *damage, vga_palette *pal
     step = state->timer / (float)state->duration;
     bp = (float)state->pal_begin + (state->pal_end - state->pal_begin) * step;
     k = bp / 255.0f;
-    ref = pal->colors[state->pal_ref_index];
     start = state->pal_start_index;
     end = state->pal_start_index + state->pal_entry_count;
 
     if(state->pal_tint) {
-        for(vga_index i = start; i < end; i++) {
-            m = max3(pal->colors[i].r, pal->colors[i].g, pal->colors[i].b);
-            u = m / 255.0f;
-            pal->colors[i].r = clamp(pal->colors[i].r + u * k * (ref.r - pal->colors[i].r), 0, 255);
-            pal->colors[i].g = clamp(pal->colors[i].g + u * k * (ref.g - pal->colors[i].g), 0, 255);
-            pal->colors[i].b = clamp(pal->colors[i].b + u * k * (ref.b - pal->colors[i].b), 0, 255);
-        }
+        vga_palette_tint_range(pal, state->pal_ref_index, start, end, k);
     } else {
-        for(vga_index i = start; i < end; i++) {
-            pal->colors[i].r = clamp(pal->colors[i].r * (1 - k) + (ref.r * k), 0, 255);
-            pal->colors[i].g = clamp(pal->colors[i].g * (1 - k) + (ref.g * k), 0, 255);
-            pal->colors[i].b = clamp(pal->colors[i].b * (1 - k) + (ref.b * k), 0, 255);
-        }
+        vga_palette_mix_range(pal, state->pal_ref_index, start, end, k);
     }
 
     // Mark the palette as damaged
