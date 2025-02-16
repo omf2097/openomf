@@ -15,6 +15,7 @@
 #include "game/protos/intersect.h"
 #include "game/scenes/arena.h"
 #include "game/utils/serial.h"
+#include "game/utils/settings.h"
 #include "resources/af_loader.h"
 #include "resources/animation.h"
 #include "resources/pilots.h"
@@ -2193,21 +2194,66 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     }
 
     af_move *move;
-    // apply pilot stats and HAR upgrades/enhancements to the HAR
+    int extra_index;
+    int fight_mode = settings_get()->gameplay.fight_mode;
+    // apply pilot stats and HAR upgrades/enhancements/hyper mode to the HAR
     for(int i = 0; i < MAX_AF_MOVES; i++) {
         move = af_get_move(af_data, i);
-        if(move != NULL && move->damage) {
+        if(move != NULL) {
             if(!is_tournament) {
                 // Single Player
                 // Damage = Base Damage * (20 + Power) / 30 + 1
                 //  Stun = (Base Damage + 6) * 512
                 move->stun = (move->damage + 6) * 512;
                 move->damage = move->damage * (20 + pilot->power) / 30 + 1;
+                // projectiles have hyper mode, but may have extra_string_selector of 0
+                if(move->ani.extra_string_count > 0 && move->extra_string_selector != 1 &&
+                   move->extra_string_selector != 2) {
+                    str *str = vector_get(&move->ani.extra_strings, fight_mode);
+                    if(str && str_size(str) != 0 && !str_equal_c(str, "!")) {
+                        // its not the empty string and its not the string '!'
+                        // so we should use it
+                        str_free(&move->ani.animation_string);
+                        str_from(&move->ani.animation_string, vector_get(&move->ani.extra_strings, fight_mode));
+                        log_debug("using %s mode string '%s' for animation %d on har %d",
+                                  fight_mode == 1 ? "hyper" : "normal", str_c(str), i, har_id);
+                    }
+                }
             } else {
+                // normal or hyper
+                extra_index = fight_mode;
                 // Tournament Mode
                 // Damage = (Base Damage * (25 + Power) / 35 + 1) * leg/arm power / armor
                 // Stun = ((Base Damage * (35 + Power) / 45) * 2 + 12) * 256
                 move->stun = ((move->damage * (35 + pilot->power) / 45) * 2 + 12) * 256;
+
+                // check for enhancements
+                if(move->ani.extra_string_count > 0 && move->extra_string_selector != 1 &&
+                   move->extra_string_selector != 2) {
+                    // if you have 1 enhancement choose extra string 2
+                    // if you have 2 enhancements choose extra string 3
+                    // if you have 3 enhancements choose extra string 4
+                    // if that string doesn't exist, pick the highest one
+                    if(pilot->enhancements[har_id] > 0) {
+                        // find the last populated enhancement index, or 1 (hyper)
+                        extra_index = min2(1 + pilot->enhancements[har_id], move->ani.extra_string_count - 1);
+                    }
+
+                    str *str = vector_get(&move->ani.extra_strings, extra_index);
+                    if(str && str_size(str) != 0 && !str_equal_c(str, "!")) {
+                        // its not the empty string and its not the string '!'
+                        // so we should use it
+                        str_free(&move->ani.animation_string);
+                        str_from(&move->ani.animation_string, str);
+                        if(pilot->enhancements[har_id] > 0) {
+                            log_debug("using enhancement %d string '%s' for animation %d on har %d",
+                                      pilot->enhancements[har_id], str_c(str), i, har_id);
+                        } else {
+                            log_debug("using %s mode string '%s' for animation %d on har %d",
+                                      fight_mode == 1 ? "hyper" : "normal", str_c(str), i, har_id);
+                        }
+                    }
+                }
                 switch(move->extra_string_selector) {
                     case 0:
                         break;
@@ -2234,24 +2280,25 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
                         }
                         break;
                     case 3:
-                        // check if you have the enhancement(s) (and apply arm power for damage)
+                        // apply arm power for damage
                         move->damage = (move->damage * (25 + pilot->power) / 35 + 1) * arm_power;
-                        // TODO if you have 1 enhancement choose extra string 2
-                        // if you have 2 enhancements choose extra string 3
                         break;
                     case 4:
-                        // check if you have the enhancement(s) (and apply leg power for damage)
+                        // apply leg power for damage
                         move->damage = (move->damage * (25 + pilot->power) / 35 + 1) * leg_power;
-                        // TODO if you have 1 enhancement choose extra string 2
-                        // if you have 2 enhancements choose extra string 3
                         break;
                     case 5:
-                        // check if you have the enhancement(s) (and apply leg and arm power for damage)
+                        // apply leg and arm power for damage
                         move->damage = (move->damage * (25 + pilot->power) / 35 + 1) * leg_power * leg_power;
-                        // TODO if you have 1 enhancement choose extra string 2
-                        // if you have 2 enhancements choose extra string 3
                         break;
                 }
+            }
+            if(str_equal_c(&move->ani.animation_string, "A1")) {
+                // this is a nonsense string, so we should not allow this animation to be matched
+                // scramble the move string
+                log_debug("disabling move %d on har %d because it has no-op animation string '%s'", i, har_id,
+                          str_c(&move->ani.animation_string));
+                str_set_at(&move->move_string, 0, '!');
             }
         }
     }
