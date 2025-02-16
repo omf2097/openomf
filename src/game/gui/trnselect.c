@@ -31,76 +31,33 @@ static void trnselect_render(component *c) {
     }
 }
 
-void load_description(component **c, const char *desc) {
-    int width = 320, center = 0, vmove = 0, size = -1, color = -1, x = 0;
-    const char *end = desc;
-    char *ptr = NULL;
-    // don't judge me!
-    ptr = strstr(desc, "{WIDTH ");
-    if(ptr) {
-        sscanf(ptr, "{WIDTH %d}", &width);
-        end = ptr;
-    }
-    ptr = strstr(desc, "{CENTER ");
-    if(ptr) {
-        sscanf(ptr, "{CENTER %d}", &center);
-        if(ptr > end) {
-            end = ptr;
-        }
-    }
-    ptr = strstr(desc, "{VMOVE ");
-    if(ptr) {
-        sscanf(ptr, "{VMOVE %d}", &vmove);
-        if(ptr > end) {
-            end = ptr;
-        }
-    }
-    ptr = strstr(desc, "{SIZE ");
-    if(ptr) {
-        sscanf(ptr, "{SIZE %d}", &size);
-        if(ptr > end) {
-            end = ptr;
-        }
-    }
-    ptr = strstr(desc, "{COLOR ");
-    if(ptr) {
-        sscanf(ptr, "{COLOR %d}", &color);
-        if(ptr > end) {
-            end = ptr;
-        }
-    }
-
-    const char *start = strchr(end, '}');
-    if(!start) {
-        start = desc;
-    } else {
-        start++;
-    }
-
-    log_debug("width %d, center %d, vmove %d size %d color %d", width, center, vmove, size, color);
+static void load_description(component **c, const sd_tournament_locale *locale) {
+    log_debug("width %d, center %d, vmove %d size %d color %d", locale->desc_width, locale->desc_center,
+              locale->desc_vmove, locale->desc_size, locale->desc_color);
 
     text_settings tconf;
     text_defaults(&tconf);
     tconf.font = FONT_SMALL;
     tconf.halign = TEXT_CENTER;
     tconf.valign = TEXT_MIDDLE;
-    if(color >= 0) {
-        tconf.cforeground = color;
+    if(locale->desc_color >= 0) {
+        tconf.cforeground = locale->desc_color;
     } else {
         // WAR invitational seems to use this color, none is specified
         tconf.cforeground = 0xa5;
     }
 
     component_free(*c);
-    *c = label_create(&tconf, start);
+    *c = label_create(&tconf, locale->stripped_description);
 
-    if(center) {
-        x = center - (width / 2);
-    } else if(width != 320) {
-        x = (320 - width) / 2;
+    int x = 0;
+    if(locale->desc_center != 0) {
+        x = locale->desc_center - (locale->desc_width / 2);
+    } else if(locale->desc_width != 320) {
+        x = (320 - locale->desc_width) / 2;
     }
 
-    component_layout(*c, x, vmove, width, 130 - vmove);
+    component_layout(*c, x, locale->desc_vmove, locale->desc_width, 130 - locale->desc_vmove);
 }
 
 static void trnselect_free(component *c) {
@@ -123,7 +80,7 @@ void trnselect_next(component *c) {
     sd_tournament_file *trn = list_get(local->tournaments, local->selected);
     sd_sprite *logo = trn->locales[0]->logo;
     vga_state_set_base_palette_from_range(&trn->pal, 128, 128, 40);
-    load_description(&local->label, trn->locales[0]->description);
+    load_description(&local->label, trn->locales[0]);
     sprite_free(local->img);
     sprite_create(local->img, logo, -1);
 }
@@ -137,7 +94,7 @@ void trnselect_prev(component *c) {
     sd_tournament_file *trn = list_get(local->tournaments, local->selected);
     sd_sprite *logo = trn->locales[0]->logo;
     vga_state_set_base_palette_from_range(&trn->pal, 128, 128, 40);
-    load_description(&local->label, trn->locales[0]->description);
+    load_description(&local->label, trn->locales[0]);
     sprite_free(local->img);
     sprite_create(local->img, logo, -1);
 }
@@ -167,7 +124,7 @@ component *trnselect_create(void) {
     sd_tournament_file *trn = list_get(local->tournaments, local->selected);
     sd_sprite *logo = trn->locales[0]->logo;
     vga_state_set_base_palette_from_range(&trn->pal, 128, 128, 40);
-    load_description(&local->label, trn->locales[0]->description);
+    load_description(&local->label, trn->locales[0]);
 
     sprite_create(local->img, logo, -1);
 
