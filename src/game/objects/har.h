@@ -153,11 +153,15 @@ typedef struct har_t {
     uint8_t delay; // used for 'stretching' frames in netplay
 
     // ptr, pe, etc. stuff
-    uint8_t p_pal_ref;
-    uint8_t p_har_switch;
-    uint8_t p_color_ref;
-    int p_ticks_left;
-    unsigned int p_ticks_length;
+    uint8_t p_pal_ref;    // "pd"
+    uint8_t p_har_switch; // "pe"
+    int16_t p_fade_out_ticks;
+    int16_t p_fade_out_ticks_left;
+    int16_t p_fade_in_ticks;
+    int16_t p_fade_in_ticks_left;
+    int16_t p_sustain_ticks_left;
+    // int16_t p_base_intensity; // "pb"
+    // int16_t p_max_intensity;  // "pp"
     uint8_t p_color_fn;
 
     uint32_t linked_obj;

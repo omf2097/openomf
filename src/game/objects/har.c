@@ -32,7 +32,6 @@
 void har_finished(object *obj);
 int har_act(object *obj, int act_type);
 void har_spawn_scrap(object *obj, vec2i pos, int amount);
-void har_palette_transform(damage_tracker *damage, vga_palette *pal, void *obj);
 
 void har_free(object *obj) {
     har *h = object_get_userdata(obj);
@@ -1331,55 +1330,49 @@ void har_collide(object *obj_a, object *obj_b) {
     har_collide_with_har(obj_b, obj_a, 0);
 }
 
-void har_palette_transform(damage_tracker *damage, vga_palette *pal, void *obj) {
-    har *h = object_get_userdata(obj);
-    int step, max;
-    vga_color ref, tmp;
-
-    // Select palette start and length.
-    // For player 0, we should use palette indexes 0-47. For player 1, 48-96.
+static void process_range(const har *h, damage_tracker *damage, vga_palette *pal, const float step) {
+    // For player 0, we should use palette indexes 1-47. For player 1, 49-96 (skip black).
     // If pe flag is on, we need to switch to handling the other HAR.
-    int pal_start = 48 * (h->player_id ^ h->p_har_switch);
-    int pal_length = 47 + h->player_id;
-
-    // Handle palette transformation
-    ref = pal->colors[h->p_pal_ref];
-    step = (h->p_color_ref * 4) * ((float)h->p_ticks_left / (float)h->p_ticks_length);
+    const int start = 48 * (h->player_id ^ h->p_har_switch) + 1;
+    const int end = start + 47;
     if(h->p_color_fn) {
-        for(int i = pal_start; i < pal_start + pal_length; i++) {
-            max = max3(pal->colors[i].r, pal->colors[i].g, pal->colors[i].b);
-            tmp.r = (max * (step * (ref.r * pal->colors[i].r) / 255.0f) / 255.0f) * pal->colors[i].r;
-            tmp.g = (max * (step * (ref.g * pal->colors[i].g) / 255.0f) / 255.0f) * pal->colors[i].g;
-            tmp.b = (max * (step * (ref.b * pal->colors[i].b) / 255.0f) / 255.0f) * pal->colors[i].b;
-            pal->colors[i].r = min2(max2(tmp.r, 0), 255);
-            pal->colors[i].g = min2(max2(tmp.g, 0), 255);
-            pal->colors[i].b = min2(max2(tmp.b, 0), 255);
-        }
+        vga_palette_tint_range(pal, h->p_pal_ref, start, end, step);
     } else {
-        for(int i = pal_start; i < pal_start + pal_length; i++) {
-            tmp.r = (step * ref.r) / 255.0f + (255 - step) * (pal->colors[i].r / 255.0f);
-            tmp.g = (step * ref.g) / 255.0f + (255 - step) * (pal->colors[i].g / 255.0f);
-            tmp.b = (step * ref.b) / 255.0f + (255 - step) * (pal->colors[i].b / 255.0f);
-            pal->colors[i].r = min2(max2(tmp.r, 0), 255);
-            pal->colors[i].g = min2(max2(tmp.g, 0), 255);
-            pal->colors[i].b = min2(max2(tmp.b, 0), 255);
-        }
+        vga_palette_mix_range(pal, h->p_pal_ref, start, end, step);
     }
+    damage_set_range(damage, start, end);
+}
 
-    // Mark the palette as damaged.
-    damage_set_range(damage, pal_start, pal_start + pal_length);
+static void har_palette_transform(damage_tracker *damage, vga_palette *pal, void *obj) {
+    const har *h = object_get_userdata(obj);
+    float step;
+    if(h->p_fade_in_ticks_left > 0) {
+        step = 1.0f - h->p_fade_in_ticks_left / (float)h->p_fade_in_ticks;
+        process_range(h, damage, pal, step);
+    } else if(h->p_sustain_ticks_left > 0) {
+        process_range(h, damage, pal, 1.0f);
+    } else if(h->p_fade_out_ticks_left > 0) {
+        step = h->p_fade_out_ticks_left / (float)h->p_fade_out_ticks;
+        process_range(h, damage, pal, step);
+    }
 }
 
 void har_tick(object *obj) {
     har *h = object_get_userdata(obj);
     controller *ctrl = game_player_get_ctrl(game_state_get_player(obj->gs, h->player_id));
 
-    if(h->p_ticks_left > 0) {
+    if(h->p_fade_in_ticks_left > 0 || h->p_fade_out_ticks_left > 0 || h->p_sustain_ticks_left > 0) {
         object_set_palette_transform_cb(obj, har_palette_transform);
-        h->p_ticks_left--;
     } else {
         object_set_palette_transform_cb(obj, NULL);
     }
+
+    if(h->p_fade_in_ticks_left > 0)
+        h->p_fade_in_ticks_left--;
+    if(h->p_sustain_ticks_left > 0)
+        h->p_sustain_ticks_left--;
+    if(h->p_fade_out_ticks_left > 0)
+        h->p_fade_out_ticks_left--;
 
     if(h->in_stasis_ticks > 0) {
         h->in_stasis_ticks--;
@@ -1427,12 +1420,14 @@ void har_tick(object *obj) {
     }
 
     // Check for HAR specific palette tricks
-    if(player_frame_isset(obj, "ptr")) {
-        h->p_pal_ref = player_frame_isset(obj, "pd") ? player_frame_get(obj, "pd") : 0;
+    if(player_frame_isset(obj, "ptr") || player_frame_isset(obj, "ptd") || player_frame_isset(obj, "ptp")) {
+        h->p_pal_ref = player_frame_get(obj, "pd");
         h->p_har_switch = player_frame_isset(obj, "pe");
-        h->p_color_ref = player_frame_get(obj, "ptr");
-        h->p_ticks_length = player_frame_isset(obj, "pp") ? player_frame_get(obj, "pp") : 0;
-        h->p_ticks_left = h->p_ticks_length;
+        h->p_fade_out_ticks = h->p_fade_out_ticks_left = player_frame_get(obj, "ptr");
+        h->p_fade_in_ticks = h->p_fade_in_ticks_left = player_frame_get(obj, "ptd");
+        h->p_sustain_ticks_left = player_frame_get(obj, "ptp");
+        // h->p_max_intensity = player_frame_get(obj, "pp");
+        // h->p_base_intensity = player_frame_get(obj, "pb");
         h->p_color_fn = player_frame_isset(obj, "pa");
     }
 
@@ -2120,11 +2115,9 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     local->last_damage_value = 0.0f;
 
     // p<x> stuff
-    local->p_ticks_left = 0;
-    local->p_ticks_length = 0;
-
-    /*local->hook_cb = NULL;*/
-    /*local->hook_cb_data = NULL;*/
+    local->p_fade_in_ticks_left = local->p_fade_in_ticks = 0;
+    local->p_fade_out_ticks_left = local->p_fade_out_ticks = 0;
+    local->p_sustain_ticks_left = 0;
 
     list_create(&local->har_hooks);
 
