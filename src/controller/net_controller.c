@@ -109,7 +109,6 @@ void insert_event(wtf *data, uint32_t tick, uint16_t action, int id, int directi
     event.direction[id] = direction;
     int i = 0;
 
-
     foreach(it, ev) {
         if(id == data->id && ev->events[id][0]) {
             // we had events this tick, so get the last action and direction
@@ -125,7 +124,8 @@ void insert_event(wtf *data, uint32_t tick, uint16_t action, int id, int directi
             list_prepend(transcript, &event, sizeof(tick_events));
             goto done;
         } else if(ev->tick == tick) {
-            if(id == data->id && action == data->last_action && data->last_direction && data->last_direction == direction) {
+            if(id == data->id && action == data->last_action && data->last_direction &&
+               data->last_direction == direction) {
                 // dedup;
                 return;
             }
@@ -141,7 +141,8 @@ void insert_event(wtf *data, uint32_t tick, uint16_t action, int id, int directi
         }
         nev = iter_peek(&it);
         if(ev->tick < tick && nev && nev->tick > tick) {
-            if(id == data->id && action == data->last_action && data->last_direction && data->last_direction == direction) {
+            if(id == data->id && action == data->last_action && data->last_direction &&
+               data->last_direction == direction) {
                 // dedup
                 return;
             }
@@ -693,7 +694,8 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                                 if(action) {
                                     if(data->synchronized && data->gs_bak) {
                                         if(remote_tick > data->last_received_tick) {
-                                            insert_event(data, remote_tick, action, abs(data->id - 1), OBJECT_FACE_NONE);
+                                            insert_event(data, remote_tick, action, abs(data->id - 1),
+                                                         OBJECT_FACE_NONE);
                                         }
                                         last_received = remote_tick;
                                         if(action != 0) {
@@ -940,7 +942,8 @@ void controller_hook(controller *ctrl, int action) {
     if(peer) {
         // log_debug("Local event %d at %d", action, data->last_tick - data->local_proposal);
         if(data->synchronized && data->gs_bak) {
-            insert_event(data, ctrl->gs->int_tick - data->local_proposal /*+ (ctrl->rtt / 2)*/, action, data->id, direction);
+            insert_event(data, ctrl->gs->int_tick - data->local_proposal /*+ (ctrl->rtt / 2)*/, action, data->id,
+                         direction);
         } else {
             serial ser;
             ENetPacket *packet;
