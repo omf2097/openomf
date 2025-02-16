@@ -593,7 +593,21 @@ void har_move(object *obj) {
         } else if(h->state != STATE_WALKFROM && h->state != STATE_WALKTO) {
             // add some friction from the floor if we're not walking
             // This is important to dampen/eliminate the velocity added from pushing away from the other HAR
-            object_set_vel(obj, vec2f_create(vel.x / 2.0f, vel.y));
+            if(vel.x > 0.0f) {
+                if(vel.x - 0.2f > 0.0f) {
+                    vel.x = 0.0f;
+                } else {
+                    vel.x -= 0.2f;
+                }
+                object_set_vel(obj, vec2f_create(vel.x, vel.y));
+            } else if(vel.x < 0.0f) {
+                if(vel.x + 0.2f > 0.0f) {
+                    vel.x = 0.0f;
+                } else {
+                    vel.x += 0.2f;
+                }
+                object_set_vel(obj, vec2f_create(vel.x, vel.y));
+            }
         }
     } else {
         object_set_vel(obj, vec2f_create(vel.x, vel.y + obj->gravity));
@@ -1123,14 +1137,9 @@ void har_collide_with_har(object *obj_a, object *obj_b, int loop) {
                 vec2f push = object_get_vel(obj_a);
                 push.x += 2.0f * object_get_direction(obj_b);
                 object_set_vel(obj_a, push);
-            }
-            if(b->is_wallhugging) {
-                vec2f push = object_get_vel(obj_a);
-                push.x += 3.0f * object_get_direction(obj_b);
-                object_set_vel(obj_a, push);
             } else {
                 vec2f push = object_get_vel(obj_b);
-                push.x += 3.0f * object_get_direction(obj_a);
+                push.x += 2.0f * object_get_direction(obj_a);
                 object_set_vel(obj_b, push);
             }
         }
@@ -1468,23 +1477,6 @@ void har_tick(object *obj) {
         }
         if(h->stun_timer > 100) {
             har_stunned_done(obj);
-        }
-    }
-
-    // Stop HAR from sliding if touching the ground
-    if(h->state != STATE_JUMPING && h->state != STATE_FALLEN && h->state != STATE_RECOIL) {
-
-        // af_move *move = af_get_move(h->af_data, obj->cur_animation->id);
-        if(h->state == STATE_CROUCHBLOCK) {
-            vec2f vel = object_get_vel(obj);
-            if(vel.x != 0.0f) {
-                vel.x -= 0.2f * -object_get_direction(obj);
-            }
-            object_set_vel(obj, vel);
-        } else if(!har_is_walking(h) && h->executing_move == 0) {
-            vec2f vel = object_get_vel(obj);
-            vel.x = 0;
-            object_set_vel(obj, vel);
         }
     }
 
