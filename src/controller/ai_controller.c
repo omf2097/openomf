@@ -1996,6 +1996,8 @@ bool attempt_charge_attack(controller *ctrl, ctrl_event **ev) {
                 chain_controller_cmd(ctrl, cmds2, N_ELEMENTS(cmds2), ev);
             }
         } break;
+        default:
+            return false;
     }
 
     return true;
@@ -2097,6 +2099,8 @@ bool attempt_push_attack(controller *ctrl, ctrl_event **ev) {
                 chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
             }
         } break;
+        default:
+            return false;
     }
 
     return true;
@@ -2146,6 +2150,7 @@ bool attempt_trip_attack(controller *ctrl, ctrl_event **ev) {
 bool attempt_projectile_attack(controller *ctrl, ctrl_event **ev) {
     object *o = game_state_find_object(ctrl->gs, ctrl->har_obj_id);
     har *h = object_get_userdata(o);
+    int enemy_range = get_enemy_range(ctrl);
 
     if(h->state == STATE_WALKTO || h->state == STATE_WALKFROM || h->state == STATE_CROUCHBLOCK) {
         controller_cmd(ctrl, ACT_STOP, ev);
@@ -2156,8 +2161,12 @@ bool attempt_projectile_attack(controller *ctrl, ctrl_event **ev) {
         case HAR_JAGUAR:     // Concussion Cannon : D, B+P
         case HAR_ELECTRA:    // Ball Lightning : D, B+P
         case HAR_SHREDDER: { // Flying Hands : D, B+P
+            if(h->id == HAR_SHREDDER && enemy_range > RANGE_MID) {
+                return false;
+            }
             int cmds[] = {ACT_DOWN, DOWNBACK, BACK, ACT_PUNCH};
             chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
+            return true;
         } break;
         case HAR_SHADOW: {
             int cmds[] = {ACT_DOWN, DOWNBACK, BACK};
@@ -2171,15 +2180,20 @@ bool attempt_projectile_attack(controller *ctrl, ctrl_event **ev) {
                 int cmds2[] = {ACT_KICK};
                 chain_controller_cmd(ctrl, cmds2, N_ELEMENTS(cmds2), ev);
             }
+            return true;
         } break;
         case HAR_CHRONOS: {
+            if(enemy_range < RANGE_MID) {
+                return false;
+            }
             // Stasis : D, B, P
             int cmds[] = {ACT_DOWN, DOWNBACK, BACK, ACT_PUNCH};
             chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
+            return true;
         } break;
         case HAR_NOVA: {
             controller_cmd(ctrl, ACT_DOWN, ev);
-            if(roll_chance(3)) {
+            if(roll_chance(3) && enemy_range >= RANGE_MID) {
                 // Mini-Grenade : D, B, P
                 int cmds[] = {ACT_DOWN, DOWNBACK, BACK};
                 chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
@@ -2189,10 +2203,11 @@ bool attempt_projectile_attack(controller *ctrl, ctrl_event **ev) {
                 chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
             }
             controller_cmd(ctrl, ACT_PUNCH, ev);
+            return true;
         } break;
     }
 
-    return true;
+    return false;
 }
 
 /**
