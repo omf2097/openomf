@@ -93,6 +93,18 @@ bool mechlab_find_last_player(scene *scene) {
     return true;
 }
 
+void mechlab_load_har(scene *scene, sd_pilot *pilot) {
+    mechlab_local *local = scene_get_userdata(scene);
+    animation *initial_har_ani = &bk_get_info(scene->bk_data, 15 + pilot->har_id)->ani;
+    object_free(local->mech);
+    omf_free(local->mech);
+    local->mech = omf_calloc(1, sizeof(object));
+    object_create(local->mech, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
+    object_set_animation(local->mech, initial_har_ani);
+    object_set_repeat(local->mech, 1);
+    object_dynamic_tick(local->mech);
+}
+
 void mechlab_set_selling(scene *scene, bool selling) {
     mechlab_local *local = scene_get_userdata(scene);
     local->selling = selling;
@@ -185,16 +197,20 @@ component *mechlab_sim_menu_create(scene *scene) {
 void mechlab_update(scene *scene) {
     mechlab_local *local = scene_get_userdata(scene);
     game_player *p1 = game_state_get_player(scene->gs, 0);
-    animation *initial_har_ani = &bk_get_info(scene->bk_data, 15 + p1->pilot->har_id)->ani;
-    if(local->mech && object_get_animation(local->mech) != initial_har_ani) {
+    if(p1->pilot) {
+        animation *initial_har_ani = &bk_get_info(scene->bk_data, 15 + p1->pilot->har_id)->ani;
+        if(local->mech && object_get_animation(local->mech) != initial_har_ani) {
+            object_free(local->mech);
+            object_create(local->mech, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
+            object_set_animation(local->mech, initial_har_ani);
+            object_set_repeat(local->mech, 1);
+            object_dynamic_tick(local->mech);
+        }
+        lab_dash_main_update(scene, &local->dw);
+    } else {
         object_free(local->mech);
-        object_create(local->mech, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
-        object_set_animation(local->mech, initial_har_ani);
-        object_set_repeat(local->mech, 1);
-        object_dynamic_tick(local->mech);
+        omf_free(local->mech);
     }
-
-    lab_dash_main_update(scene, &local->dw);
 }
 
 void mechlab_tick(scene *scene, int paused) {
