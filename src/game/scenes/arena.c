@@ -1423,7 +1423,7 @@ int arena_create(scene *scene) {
                 game_state_add_object(scene->gs, portrait, RENDER_LAYER_TOP, 0, 0);
             }
 
-        } else {
+        } else if(local->rounds > 1) {
             // Create round tokens
             for(int j = 0; j < 4; j++) {
                 if(j < ceilf(local->rounds / 2.0f)) {
