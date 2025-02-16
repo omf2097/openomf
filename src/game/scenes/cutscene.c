@@ -212,7 +212,7 @@ int cutscene_create(scene *scene) {
     }
 
     // World championship victory scene has text at the top.
-    if (scene->id == SCENE_WORLD) {
+    if(scene->id == SCENE_WORLD) {
         local->text_y = 10;
     }
 
