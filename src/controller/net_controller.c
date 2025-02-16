@@ -375,21 +375,18 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
         assert(gs->int_tick - data->local_proposal == ev->tick);
 
         // feed in the inputs
-        int arena_state = arena_get_state(game_state_get_scene(gs));
-        if(arena_state == ARENA_STATE_FIGHTING) {
-            for(int j = 0; j < 2; j++) {
-                int player_id = j;
-                game_player *player = game_state_get_player(gs, player_id);
-                int k = 0;
-                do {
-                    object_act(game_state_find_object(gs, game_player_get_har_obj_id(player)), ev->events[j][k]);
-                    k++;
-                } while(ev->events[j][k]);
+        for(int j = 0; j < 2; j++) {
+            int player_id = j;
+            game_player *player = game_state_get_player(gs, player_id);
+            int k = 0;
+            do {
+                object_act(game_state_find_object(gs, game_player_get_har_obj_id(player)), ev->events[j][k]);
+                k++;
+            } while(ev->events[j][k]);
 
-                // write_rec_move(gs->sc, player, ev->events[j]);
-                //} else {
-                //    object_act(game_state_find_object(gs, game_player_get_har_obj_id(player)), ACT_STOP);
-            }
+            // write_rec_move(gs->sc, player, ev->events[j]);
+            //} else {
+            //    object_act(game_state_find_object(gs, game_player_get_har_obj_id(player)), ACT_STOP);
         }
 
         arena_hash = arena_state_hash(gs);
