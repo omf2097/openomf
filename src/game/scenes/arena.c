@@ -1349,6 +1349,15 @@ int arena_create(scene *scene) {
     local->over = 0;
     local->winner = 0;
 
+    // If this is the desert arena, randomly pick a palette. This changes the time of day.
+    if(scene->bk_data->file_id == 128) {
+        int pal_index = rand_int(vector_size(&scene->bk_data->palettes));
+        if(pal_index > 0) {
+            // 0 is selected by default, so nothing to do if we hit that.
+            vga_state_set_base_palette_from(bk_get_palette(scene->bk_data, pal_index));
+        }
+    }
+
     // Initial har data
     vec2i pos[2];
     int dir[2] = {OBJECT_FACE_RIGHT, OBJECT_FACE_LEFT};
