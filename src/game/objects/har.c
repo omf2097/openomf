@@ -467,7 +467,7 @@ void har_move(object *obj) {
     }
 
     // Handle floor collisions
-    if(obj->pos.y > ARENA_FLOOR) {
+    if(obj->pos.y >= ARENA_FLOOR) {
         controller *ctrl = game_player_get_ctrl(game_state_get_player(obj->gs, h->player_id));
         if(h->state != STATE_FALLEN) {
             // We collided with ground, so set vertical velocity to 0 and
@@ -590,6 +590,10 @@ void har_move(object *obj) {
                     har_finished(obj);
                 }
             }
+        } else if(h->state != STATE_WALKFROM && h->state != STATE_WALKTO) {
+            // add some friction from the floor if we're not walking
+            // This is important to dampen/eliminate the velocity added from pushing away from the other HAR
+            object_set_vel(obj, vec2f_create(vel.x / 2.0f, vel.y));
         }
     } else {
         object_set_vel(obj, vec2f_create(vel.x, vel.y + obj->gravity));
@@ -927,6 +931,7 @@ void har_check_closeness(object *obj_a, object *obj_b) {
         }
     }
 
+    int was_close = a->hard_close;
     // Reset closeness state
     a->close = 0;
     a->hard_close = 0;
@@ -948,7 +953,6 @@ void har_check_closeness(object *obj_a, object *obj_b) {
             if(b->state == STATE_STANDING || b->state == STATE_STUNNED || har_is_walking(b) || har_is_crouching(b)) {
                 a->close = 1;
             }
-            a->hard_close = 1;
         }
     }
     if(har_is_walking(a) && object_get_direction(obj_a) == OBJECT_FACE_RIGHT) {
@@ -967,8 +971,16 @@ void har_check_closeness(object *obj_a, object *obj_b) {
             if(b->state == STATE_STANDING || b->state == STATE_STUNNED || har_is_walking(b) || har_is_crouching(b)) {
                 a->close = 1;
             }
-            a->hard_close = 1;
         }
+    }
+
+    // apply or remove slowdown from closeness if the hard_close value changed
+    if(a->state == STATE_WALKFROM && a->hard_close != was_close) {
+        float vx = a->back_speed * object_get_direction(obj_a) * -1;
+        object_set_vel(obj_a, vec2f_create(vx * (a->hard_close ? 0.5 : 1.0), 0));
+    } else if(a->state == STATE_WALKTO && a->hard_close != was_close) {
+        float vx = a->fwd_speed * object_get_direction(obj_a);
+        object_set_vel(obj_a, vec2f_create(vx * (a->hard_close ? 0.5 : 1.0), 0));
     }
 }
 
@@ -1794,6 +1806,10 @@ int har_act(object *obj, int act_type) {
             spd.x = 0.0f;
         }
         object_set_vel(obj, spd);
+        if(h->state == STATE_WALKTO || h->state == STATE_WALKFROM) {
+            // switch to standing to cancel any walk velocity changes
+            h->state = STATE_STANDING;
+        }
 
         // Prefetch enemy object & har links, they may be needed
         object *enemy_obj =
@@ -1901,14 +1917,14 @@ int har_act(object *obj, int act_type) {
             case STATE_WALKTO:
                 har_set_ani(obj, ANIM_WALKING, 1);
                 vx = h->fwd_speed * direction;
-                object_set_vel(obj, vec2f_create(vx * (h->hard_close ? 0.5 : 1.0), 0));
+                object_set_vel(obj, vec2f_create(vx, 0));
                 object_set_stride(obj, h->stride);
                 har_event_walk(h, 1, ctrl);
                 break;
             case STATE_WALKFROM:
                 har_set_ani(obj, ANIM_WALKING, 1);
                 vx = h->back_speed * direction * -1;
-                object_set_vel(obj, vec2f_create(vx * (h->hard_close ? 0.5 : 1.0), 0));
+                object_set_vel(obj, vec2f_create(vx, 0));
                 object_set_stride(obj, h->stride);
                 har_event_walk(h, -1, ctrl);
                 break;
