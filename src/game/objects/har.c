@@ -851,7 +851,7 @@ void har_check_closeness(object *obj_a, object *obj_b) {
     har *b = object_get_userdata(obj_b);
     sprite *sprite_a = animation_get_sprite(obj_a->cur_animation, obj_a->cur_sprite_id);
     sprite *sprite_b = animation_get_sprite(obj_b->cur_animation, obj_b->cur_sprite_id);
-    int hard_limit = 35; // Push opponent if HARs too close. Harrison-Stetson method value.
+    int hard_limit = 32; // Push opponent if HARs too close. Harrison-Stetson method value.
     int soft_limit = 45; // Sets HAR A as being close to HAR B if closer than this.
 
     if(!sprite_a || !sprite_b) {
