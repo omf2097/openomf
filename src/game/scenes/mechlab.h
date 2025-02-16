@@ -23,6 +23,8 @@ typedef enum
 int mechlab_create(scene *scene);
 void mechlab_update(scene *scene);
 
+void mechlab_load_har(scene *scene, sd_pilot *pilot);
+
 void mechlab_enter_trnselect_menu(scene *s);
 component *mechlab_chrload_menu_create(scene *scene);
 component *mechlab_chrdelete_menu_create(scene *scene);

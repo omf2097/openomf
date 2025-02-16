@@ -142,6 +142,9 @@ void lab_dash_main_chr_init(component *menu, component *submenu) {
     dw->index = 0;
     chr = list_get(dw->savegames, 0);
     p1->pilot = &chr->pilot;
+    if(!p1->chr) {
+        mechlab_load_har(dw->scene, p1->pilot);
+    }
     mechlab_update(dw->scene);
 }
 
@@ -203,9 +206,7 @@ void lab_dash_main_chr_done(component *menu, component *submenu) {
         // no character is loaded, we need to go back to nothing
         sd_sprite_free(dw->pilot->photo);
         omf_free(dw->pilot->photo);
-        sd_pilot_free(p1->pilot);
-        omf_free(p1->pilot);
-        // p1->pilot = NULL;
+        p1->pilot = NULL; // freed below
     }
 
     if(dw->savegames) {
