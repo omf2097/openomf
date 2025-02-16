@@ -211,6 +211,11 @@ int cutscene_create(scene *scene) {
             break;
     }
 
+    // World championship victory scene has text at the top.
+    if(scene->id == SCENE_WORLD) {
+        local->text_y = 10;
+    }
+
     if(p1->chr) {
         local->pos = 0;
         local->current = p1->chr->cutscene_text[local->pos];
