@@ -255,7 +255,9 @@ void palette_set_player_expanded_color(vga_palette *src) {
             tmp.colors[i + (j * 32)].b = (uint8_t)((1.0f - t) * lower.b + t * upper.b + 0.5f);
         }
     }
-    vga_state_set_base_palette_from_range(&tmp, 1, 1, 96);
+    // setting 3 shades of 32 colors, and skipping palette index 0
+    vga_index set_count = 3 * 32 - 1;
+    vga_state_set_base_palette_from_range(&tmp, 1, 1, set_count);
 }
 
 void palette_copy(vga_palette *dst, const vga_palette *src, int index_start, int index_count) {
