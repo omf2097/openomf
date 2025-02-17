@@ -198,17 +198,16 @@ void player_run(object *obj) {
         if(state->repeat) {
             player_reset(obj);
             frame = sd_script_get_frame_at(&state->parser, state->current_tick);
-        } else if(obj->finish != NULL) {
+        } else {
             state->finished = 1;
-            obj->finish(obj);
+            if(obj->finish != NULL) {
+                obj->finish(obj);
+            }
             // let har_finish hold last sprite of victory animation indefinitely
+            // Note that state->finished can be modified by the obj->finish() call.
             if(state->finished) {
                 obj->cur_sprite_id = -1;
             }
-            return;
-        } else {
-            obj->cur_sprite_id = -1;
-            state->finished = 1;
             return;
         }
     }
