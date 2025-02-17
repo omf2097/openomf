@@ -220,12 +220,6 @@ void object_dynamic_tick(object *obj) {
         obj->halt = (obj->halt_ticks > 0);
     }
 
-    // Run animation player
-    if(obj->cur_animation != NULL && obj->halt == 0) {
-        for(int i = 0; i < obj->stride; i++)
-            player_run(obj);
-    }
-
     // Tick object implementation
     if(obj->dynamic_tick != NULL) {
         obj->dynamic_tick(obj);
@@ -239,6 +233,13 @@ void object_dynamic_tick(object *obj) {
     if(obj->sprite_state.screen_shake_horizontal > 0) {
         obj->gs->screen_shake_horizontal = obj->sprite_state.screen_shake_horizontal * 4;
         obj->sprite_state.screen_shake_horizontal = 0;
+    }
+
+    // Run animation player LAST, so that we have operated what we want on the current tick.
+    if(obj->cur_animation != NULL && obj->halt == 0) {
+        for(int i = 0; i < obj->stride; i++) {
+            player_run(obj);
+        }
     }
 }
 
