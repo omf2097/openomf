@@ -18,6 +18,7 @@
 enum
 {
     OBJECT_FACE_LEFT = -1,
+    OBJECT_FACE_NONE = 0,
     OBJECT_FACE_RIGHT = 1
 };
 

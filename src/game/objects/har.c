@@ -2020,14 +2020,13 @@ void har_finished(object *obj) {
             // never get fired.
             h->state = STATE_JUMPING;
             har_set_ani(obj, ANIM_JUMPING, 0);
-        } else if(h->state != STATE_JUMPING) {
-            h->state = STATE_STANDING;
-            har_set_ani(obj, ANIM_IDLE, 1);
         } else {
+            h->state = STATE_NONE;
             har_set_ani(obj, ANIM_IDLE, 1);
             har_act(obj, ACT_NONE);
         }
     } else {
+        h->state = STATE_NONE;
         har_set_ani(obj, ANIM_CROUCHING, 1);
         har_act(obj, ACT_NONE);
     }
