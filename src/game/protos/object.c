@@ -72,8 +72,6 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
     obj->age = 0;
     player_create(obj);
 
-    obj->custom_str = NULL;
-
     random_seed(&obj->rand_state, rand_intmax());
 
     // For enabling hit on the current and the next n-1 frames
@@ -99,9 +97,6 @@ int object_clone(object *src, object *dst, game_state *gs) {
     memcpy(dst, src, sizeof(object));
     dst->gs = gs;
     player_clone(src, dst);
-    if(src->custom_str) {
-        dst->custom_str = omf_strdup(src->custom_str);
-    }
 
     if(src->cur_animation_own == OWNER_OBJECT) {
         dst->cur_animation = omf_calloc(1, sizeof(animation));
@@ -498,9 +493,6 @@ void object_free(object *obj) {
         animation_free(obj->cur_animation);
         omf_free(obj->cur_animation);
     }
-    if(obj->custom_str) {
-        omf_free(obj->custom_str);
-    }
     obj->cur_surface = NULL;
     obj->cur_animation = NULL;
 }
@@ -513,9 +505,6 @@ int object_clone_free(object *obj) {
     if(obj->cur_animation_own == OWNER_OBJECT) {
         animation_free(obj->cur_animation);
         omf_free(obj->cur_animation);
-    }
-    if(obj->custom_str) {
-        omf_free(obj->custom_str);
     }
     obj->cur_surface = NULL;
     obj->cur_animation = NULL;
@@ -555,7 +544,6 @@ void object_set_animation(object *obj, animation *ani) {
         animation_free(obj->cur_animation);
         omf_free(obj->cur_animation);
     }
-    omf_free(obj->custom_str);
 
     obj->cur_animation = ani;
     obj->cur_animation_own = OWNER_EXTERNAL;
@@ -577,9 +565,7 @@ void object_set_animation(object *obj, animation *ani) {
  * \param str New animation string
  */
 void object_set_custom_string(object *obj, const char *str) {
-    omf_free(obj->custom_str);
-    obj->custom_str = omf_strdup(str);
-    player_reload_with_str(obj, obj->custom_str);
+    player_reload_with_str(obj, str);
     // log_debug("Set animation string to %s", obj->custom_str);
 }
 

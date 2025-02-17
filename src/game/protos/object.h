@@ -132,8 +132,6 @@ struct object_t {
     // state ringbuffer
     uint32_t age;
 
-    char *custom_str;
-
     void *userdata;
     object_free_cb free;
     object_act_cb act;
