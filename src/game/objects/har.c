@@ -284,7 +284,6 @@ void har_set_ani(object *obj, int animation_id, int repeat) {
     h->damage_done = 0;
     h->damage_received = 0;
     h->executing_move = 0;
-    h->flinching = 0;
 }
 
 int har_is_active(object *obj) {
@@ -726,7 +725,6 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
             object_set_custom_string(obj, str_c(string));
         }
         object_dynamic_tick(obj);
-        h->flinching = 1;
 
         // XXX hack - if the first frame has the 'k' tag, treat it as some vertical knockback
         // we can't do this in player.c because it breaks the jaguar leap, which also uses the 'k' tag.
@@ -858,9 +856,6 @@ void har_block(object *obj, vec2i hit_coord) {
     game_state_play_sound(obj->gs, 3, 0.7f, 0.5f, 1.0f);
     game_state_add_object(obj->gs, scrape, RENDER_LAYER_MIDDLE, 0, 0);
     h->damage_received = 1;
-    if(h->state == STATE_CROUCHBLOCK) {
-        h->flinching = 1;
-    }
 }
 
 void har_check_closeness(object *obj_a, object *obj_b) {
@@ -1166,12 +1161,6 @@ void har_collide_with_har(object *obj_a, object *obj_b, int loop) {
 
         a->damage_done = 1;
         b->damage_received = 1;
-
-        if(move->category == CAT_CLOSE) {
-            // never flinch from a throw
-            b->flinching = 0;
-            a->flinching = 0;
-        }
     }
 }
 
@@ -1980,7 +1969,6 @@ void har_finished(object *obj) {
     }
 
     h->executing_move = 0;
-    h->flinching = 0;
 
     if(h->state == STATE_SCRAP || h->state == STATE_DESTRUCTION) {
         // play vistory animation again, but do not allow any more moves to be executed

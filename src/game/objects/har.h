@@ -125,7 +125,6 @@ typedef struct har_t {
     uint8_t pilot_id;  // Pilot ID
     uint8_t state;
     uint8_t executing_move;
-    uint8_t flinching;
     uint8_t close;
     uint8_t enqueued;
     const af *af_data;
