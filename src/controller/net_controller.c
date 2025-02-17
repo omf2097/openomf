@@ -320,7 +320,6 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
         }
     }
 
-    // int gs_start = gs->int_tick - data->local_proposal;
     uint64_t replay_start = SDL_GetTicks64();
     int tick_count = 0;
 
@@ -339,7 +338,6 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
         // for future replays
         if(gs_new == NULL && ev->tick > last_agreed && gs->int_tick - data->local_proposal <= last_agreed &&
            gs->int_tick > gs_old->int_tick) {
-            // log_debug("tick %" PRIu32 " is newer than last acked tick %" PRIu32, ev->tick, data->last_acked_tick);
             log_debug("saving game state at last agreed on tick %d with hash %" PRIu32,
                       gs->int_tick - data->local_proposal, arena_state_hash(gs));
             // save off the game state at the point we last agreed
@@ -383,10 +381,6 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
                 object_act(game_state_find_object(gs, game_player_get_har_obj_id(player)), ev->events[j][k]);
                 k++;
             } while(ev->events[j][k]);
-
-            // write_rec_move(gs->sc, player, ev->events[j]);
-            //} else {
-            //    object_act(game_state_find_object(gs, game_player_get_har_obj_id(player)), ACT_STOP);
         }
 
         arena_hash = arena_state_hash(gs);
@@ -731,8 +725,6 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                             uint32_t peerguess = serial_read_int32(&ser);
 
                             if(udist(peerguess, ticks) < 2) {
-                                // log_debug("peer @ %d guessed our ticks correctly! %d %d %d", peerticks, start,
-                                // peerguess,// peerguess - start);
                                 data->guesses++;
                             } else {
                                 if(!data->synchronized) {
@@ -768,7 +760,6 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                                 enet_peer_send(peer, 0, start_packet);
                                 enet_host_flush(host);
                                 serial_free(&start_ser);
-                                // enet_packet_destroy(start_packet);
                             }
 
                             // log_debug("RTT was %d ticks", newrtt);
@@ -778,12 +769,7 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                                 data->rttpos = 0;
                                 data->rttfilled = 1;
                             }
-                            if(data->rttfilled == 1) {
-                                ctrl->rtt = peer->roundTripTime;
-                                // data->tick_offset = (peerticks + (ctrl->rtt / 2)) - ticks;
-                                // log_debug("I am %d ticks away from server: %d %d RTT %d", data->tick_offset, ticks,
-                                // peerticks, ctrl->rtt);
-                            }
+                            ctrl->rtt = peer->roundTripTime;
                             data->outstanding_hb = 0;
                             data->last_hb = ticks;
                         } else {
@@ -828,7 +814,6 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                             enet_peer_send(peer, 0, start_packet);
                             enet_host_flush(host);
                             serial_free(&start_ser);
-                            // enet_packet_destroy(start_packet);
                         }
                     } break;
                     case EVENT_TYPE_CONFIRM_START: {
@@ -913,9 +898,6 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
         }
     }
 
-    /*if(!handled) {*/
-    /*controller_cmd(ctrl, ACT_STOP, ev);*/
-    /*}*/
     return 0;
 }
 
@@ -929,9 +911,6 @@ void controller_hook(controller *ctrl, int action) {
     int direction = OBJECT_FACE_NONE;
     if(har_obj) {
         har *har = object_get_userdata(har_obj);
-        // if(action == ACT_STOP && har->state == data->last_har_state) {
-        //     return;
-        // }
         data->last_har_state = har->state;
         direction = object_get_direction(har_obj);
     }
@@ -955,7 +934,6 @@ void controller_hook(controller *ctrl, int action) {
             serial_write_int8(&ser, action);
             serial_write_int8(&ser, 0);
             log_debug("controller hook fired with %d", action);
-            /*sprintf(buf, "k%d", action);*/
             // non gameplay events are not repeated, so they need to be reliable
             packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
             serial_free(&ser);
