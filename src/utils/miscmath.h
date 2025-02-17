@@ -12,6 +12,7 @@ int min2(int a, int b);
 unsigned umax2(unsigned a, unsigned b);
 unsigned umin2(unsigned a, unsigned b);
 unsigned udist(unsigned a, unsigned b);
+size_t smin2(size_t a, size_t b);
 int clamp_long_to_int(long val);
 unsigned powu(unsigned x, unsigned y);
 
