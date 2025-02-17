@@ -2213,8 +2213,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
                     if(str && str_size(str) != 0 && !str_equal_c(str, "!")) {
                         // its not the empty string and its not the string '!'
                         // so we should use it
-                        str_free(&move->ani.animation_string);
-                        str_from(&move->ani.animation_string, vector_get(&move->ani.extra_strings, fight_mode));
+                        str_set(&move->ani.animation_string, vector_get(&move->ani.extra_strings, fight_mode));
                         log_debug("using %s mode string '%s' for animation %d on har %d",
                                   fight_mode == 1 ? "hyper" : "normal", str_c(str), i, har_id);
                     }
@@ -2243,8 +2242,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
                     if(str && str_size(str) != 0 && !str_equal_c(str, "!")) {
                         // its not the empty string and its not the string '!'
                         // so we should use it
-                        str_free(&move->ani.animation_string);
-                        str_from(&move->ani.animation_string, str);
+                        str_set(&move->ani.animation_string, str);
                         if(pilot->enhancements[har_id] > 0) {
                             log_debug("using enhancement %d string '%s' for animation %d on har %d",
                                       pilot->enhancements[har_id], str_c(str), i, har_id);
@@ -2261,22 +2259,20 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
                         // arm speed and power
                         move->damage = (move->damage * (25 + pilot->power) / 35 + 1) * arm_power;
                         if(move->ani.extra_string_count > 0) {
-                            str_free(&move->ani.animation_string);
                             // sometimes there's not enough extra strings, so take the last available
-                            str_from(&move->ani.animation_string,
-                                     vector_get(&move->ani.extra_strings,
-                                                min2(pilot->arm_speed, move->ani.extra_string_count - 1)));
+                            str_set(&move->ani.animation_string,
+                                    vector_get(&move->ani.extra_strings,
+                                               min2(pilot->arm_speed, move->ani.extra_string_count - 1)));
                         }
                         break;
                     case 2:
                         // leg speed and power
                         move->damage = (move->damage * (25 + pilot->power) / 35 + 1) * leg_power;
                         if(move->ani.extra_string_count > 0) {
-                            str_free(&move->ani.animation_string);
                             // sometimes there's not enough extra strings, so take the last available
-                            str_from(&move->ani.animation_string,
-                                     vector_get(&move->ani.extra_strings,
-                                                min2(pilot->leg_speed, move->ani.extra_string_count - 1)));
+                            str_set(&move->ani.animation_string,
+                                    vector_get(&move->ani.extra_strings,
+                                               min2(pilot->leg_speed, move->ani.extra_string_count - 1)));
                         }
                         break;
                     case 3:
@@ -2298,7 +2294,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
                 // scramble the move string
                 log_debug("disabling move %d on har %d because it has no-op animation string '%s'", i, har_id,
                           str_c(&move->ani.animation_string));
-                str_set_at(&move->move_string, 0, '!');
+                str_set_c(&move->move_string, "!");
             }
         }
     }
