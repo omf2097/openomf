@@ -1331,7 +1331,7 @@ void har_collide(object *obj_a, object *obj_b) {
 }
 
 static void process_range(const har *h, damage_tracker *damage, vga_palette *pal, const float step) {
-    // For player 0, we should use palette indexes 1-47. For player 1, 49-96 (skip black).
+    // For player 0, we should use palette indexes 1 through 47. For player 1, 49 through 95 (skip black).
     // If pe flag is on, we need to switch to handling the other HAR.
     const int start = 48 * (h->player_id ^ h->p_har_switch) + 1;
     const int end = start + 47;
