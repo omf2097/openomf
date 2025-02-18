@@ -65,7 +65,7 @@ jobs:
         poetry install
 
     - name: Run pytest tests
-      run: ./run_pytest.sh build-test ./Debug/openomf
+      run: ./run_pytest.sh build-test
 
   # Build windows release artifacts with MSVC
   # -----------------------------------------------------------------------------------------------
