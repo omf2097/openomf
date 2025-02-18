@@ -140,9 +140,8 @@ void object_set_playback_direction(object *obj, int dir) {
 
 void object_scenewide_palette_transform(damage_tracker *damage, vga_palette *pal, void *userdata) {
     object *obj = userdata;
-    float u, k, step, bp;
-    uint8_t m;
-    vga_color ref;
+    float step;
+    int bp;
     vga_index start, end;
     player_sprite_state *state = &obj->sprite_state;
 
@@ -151,26 +150,14 @@ void object_scenewide_palette_transform(damage_tracker *damage, vga_palette *pal
     assert(state->pal_start_index + state->pal_entry_count <= 256);
 
     step = state->timer / (float)state->duration;
-    bp = (float)state->pal_begin + (state->pal_end - state->pal_begin) * step;
-    k = bp / 255.0f;
-    ref = pal->colors[state->pal_ref_index];
+    bp = clamp(state->pal_begin + (state->pal_end - state->pal_begin) * step, 0, 255);
     start = state->pal_start_index;
     end = state->pal_start_index + state->pal_entry_count;
 
     if(state->pal_tint) {
-        for(vga_index i = start; i < end; i++) {
-            m = max3(pal->colors[i].r, pal->colors[i].g, pal->colors[i].b);
-            u = m / 255.0f;
-            pal->colors[i].r = clamp(pal->colors[i].r + u * k * (ref.r - pal->colors[i].r), 0, 255);
-            pal->colors[i].g = clamp(pal->colors[i].g + u * k * (ref.g - pal->colors[i].g), 0, 255);
-            pal->colors[i].b = clamp(pal->colors[i].b + u * k * (ref.b - pal->colors[i].b), 0, 255);
-        }
+        vga_palette_tint_range(pal, state->pal_ref_index, start, end, bp);
     } else {
-        for(vga_index i = start; i < end; i++) {
-            pal->colors[i].r = clamp(pal->colors[i].r * (1 - k) + (ref.r * k), 0, 255);
-            pal->colors[i].g = clamp(pal->colors[i].g * (1 - k) + (ref.g * k), 0, 255);
-            pal->colors[i].b = clamp(pal->colors[i].b * (1 - k) + (ref.b * k), 0, 255);
-        }
+        vga_palette_mix_range(pal, state->pal_ref_index, start, end, bp);
     }
 
     // Mark the palette as damaged
@@ -233,12 +220,6 @@ void object_dynamic_tick(object *obj) {
         obj->halt = (obj->halt_ticks > 0);
     }
 
-    // Run animation player
-    if(obj->cur_animation != NULL && obj->halt == 0) {
-        for(int i = 0; i < obj->stride; i++)
-            player_run(obj);
-    }
-
     // Tick object implementation
     if(obj->dynamic_tick != NULL) {
         obj->dynamic_tick(obj);
@@ -252,6 +233,13 @@ void object_dynamic_tick(object *obj) {
     if(obj->sprite_state.screen_shake_horizontal > 0) {
         obj->gs->screen_shake_horizontal = obj->sprite_state.screen_shake_horizontal * 4;
         obj->sprite_state.screen_shake_horizontal = 0;
+    }
+
+    // Run animation player LAST, so that we have operated what we want on the current tick.
+    if(obj->cur_animation != NULL && obj->halt == 0) {
+        for(int i = 0; i < obj->stride; i++) {
+            player_run(obj);
+        }
     }
 }
 

@@ -1,5 +1,4 @@
 #include "formats/taglist.h"
-#include <stdlib.h>
 
 // This file is generated automatically
 
@@ -48,7 +47,7 @@ const sd_tag sd_taglist[] = {
     {"bg",  0, "Credits fade effect unknown"                                                                          },
     {"bi",  1, "Credits fade effect color start index"                                                                },
     {"bk",  1, NULL                                                                                                   },
-    {"bn",  0, NULL                                                                                                   },
+    {"bn",  0, "Unblockable move"                                                                                     },
     {"bo",  1, NULL                                                                                                   },
     {"br",  0, "Draw additively"                                                                                      },
     {"bt",  0, "Dark tint, used by shadow HAR"                                                                        },
@@ -56,10 +55,10 @@ const sd_tag sd_taglist[] = {
     {"cf",  0, "Only used by shadow scrap, works with 'bm' tag to walk to far corner of arena"                        },
     {"cg",  0, NULL                                                                                                   },
     {"cl",  0, NULL                                                                                                   },
-    {"cp",  0, NULL                                                                                                   },
+    {"cp",  0, "If hit collision succeeds, perform hit pause"                                                         },
     {"cw",  0, NULL                                                                                                   },
-    {"cx",  1, NULL                                                                                                   },
-    {"cy",  1, NULL                                                                                                   },
+    {"cx",  1, "Set X axis movement speed, if object is already moving (pixels / frame)."                             },
+    {"cy",  1, "Set Y axis movement speed, if object is already moving. Only works if CX is also set."                },
     {"d",   1, "Re-enter animation at N ticks"                                                                        },
     {"e",   0, "Set position to enemy position"                                                                       },
     {"f",   0, "Flip sprite vertically"                                                                               },
@@ -103,11 +102,11 @@ const sd_tag sd_taglist[] = {
     {"pd",  1, "n < 256. Reference color index."                                                                      },
     {"pe",  0, "Switch HAR palette effect handling to the other HAR."                                                 },
     {"ph",  0, "Disable HAR palette effects if HAR is not in damage animation (9)"                                    },
-    {"pp",  1, "Duration of HAR palette effect in ticks."                                                             },
+    {"pp",  1, "Effect intensity"                                                                                     },
     {"ps",  0, "Update the color palette"                                                                             },
-    {"ptd", 1, "n < 128 Effect intensity."                                                                            },
-    {"ptp", 1, "N < 128"                                                                                              },
-    {"ptr", 1, "N < 128"                                                                                              },
+    {"ptd", 1, "Effect fade-in time in ticks (0-127)"                                                                 },
+    {"ptp", 1, "Effect constant max-value time in ticks (0-127)"                                                      },
+    {"ptr", 1, "Effect fade-out time in ticks (0-127)"                                                                },
     {"q",   1, "Enable hit on current and next n-1 frames."                                                           },
     {"r",   0, "Flip sprite horizontally"                                                                             },
     {"s",   1, "Play sound N from sound table footer"                                                                 },
