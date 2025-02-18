@@ -21,7 +21,7 @@ static_assert(768 == sizeof(vga_palette), "vga_palette should pack into 768 byte
 
 void vga_palette_init(vga_palette *palette);
 
-void vga_palette_tint_range(vga_palette *pal, vga_index ref_index, vga_index start, vga_index end, float step);
-void vga_palette_mix_range(vga_palette *pal, vga_index ref_index, vga_index start, vga_index end, float step);
+void vga_palette_tint_range(vga_palette *pal, vga_index ref_index, vga_index start, vga_index end, uint8_t step);
+void vga_palette_mix_range(vga_palette *pal, vga_index ref_index, vga_index start, vga_index end, uint8_t step);
 
 #endif // VGA_PALETTE_H

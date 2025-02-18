@@ -1330,7 +1330,7 @@ void har_collide(object *obj_a, object *obj_b) {
     har_collide_with_har(obj_b, obj_a, 0);
 }
 
-static void process_range(const har *h, damage_tracker *damage, vga_palette *pal, const float step) {
+static void process_range(const har *h, damage_tracker *damage, vga_palette *pal, uint8_t step) {
     // For player 0, we should use palette indexes 1 through 47. For player 1, 49 through 95 (skip black).
     // If pe flag is on, we need to switch to handling the other HAR.
     const int start = 48 * (h->player_id ^ h->p_har_switch) + 1;
@@ -1348,12 +1348,12 @@ static void har_palette_transform(damage_tracker *damage, vga_palette *pal, void
     float step;
     if(h->p_fade_in_ticks_left > 0) {
         step = 1.0f - h->p_fade_in_ticks_left / (float)h->p_fade_in_ticks;
-        process_range(h, damage, pal, step);
+        process_range(h, damage, pal, clamp(step * 255, 0, 255));
     } else if(h->p_sustain_ticks_left > 0) {
-        process_range(h, damage, pal, 1.0f);
+        process_range(h, damage, pal, 255);
     } else if(h->p_fade_out_ticks_left > 0) {
         step = h->p_fade_out_ticks_left / (float)h->p_fade_out_ticks;
-        process_range(h, damage, pal, step);
+        process_range(h, damage, pal, clamp(step * 255, 0, 255));
     }
 }
 

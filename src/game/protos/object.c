@@ -140,7 +140,8 @@ void object_set_playback_direction(object *obj, int dir) {
 
 void object_scenewide_palette_transform(damage_tracker *damage, vga_palette *pal, void *userdata) {
     object *obj = userdata;
-    float k, step, bp;
+    float step;
+    int bp;
     vga_index start, end;
     player_sprite_state *state = &obj->sprite_state;
 
@@ -149,15 +150,14 @@ void object_scenewide_palette_transform(damage_tracker *damage, vga_palette *pal
     assert(state->pal_start_index + state->pal_entry_count <= 256);
 
     step = state->timer / (float)state->duration;
-    bp = (float)state->pal_begin + (state->pal_end - state->pal_begin) * step;
-    k = bp / 255.0f;
+    bp = clamp(state->pal_begin + (state->pal_end - state->pal_begin) * step, 0, 255);
     start = state->pal_start_index;
     end = state->pal_start_index + state->pal_entry_count;
 
     if(state->pal_tint) {
-        vga_palette_tint_range(pal, state->pal_ref_index, start, end, k);
+        vga_palette_tint_range(pal, state->pal_ref_index, start, end, bp);
     } else {
-        vga_palette_mix_range(pal, state->pal_ref_index, start, end, k);
+        vga_palette_mix_range(pal, state->pal_ref_index, start, end, bp);
     }
 
     // Mark the palette as damaged

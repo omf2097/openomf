@@ -15,18 +15,17 @@ void vga_palette_init(vga_palette *palette) {
  * @param ref_index Reference colour index for the mixed color
  * @param start Palette start index
  * @param end Palette end index
- * @param step Strength of the effect (0.0 - 1.0).
+ * @param step Strength of the effect (0 - 255).
  */
-void vga_palette_tint_range(vga_palette *pal, vga_index ref_index, vga_index start, vga_index end, float step) {
+void vga_palette_tint_range(vga_palette *pal, vga_index ref_index, vga_index start, vga_index end, uint8_t step) {
     vga_color ref = pal->colors[ref_index];
-    int u;
-    float k;
+    uint32_t m, u;
     for(vga_index i = start; i < end; i++) {
-        u = max3(pal->colors[i].r, pal->colors[i].g, pal->colors[i].b);
-        k = u / 255.0f * step;
-        pal->colors[i].r = clamp(pal->colors[i].r + k * (ref.r - pal->colors[i].r), 0, 255);
-        pal->colors[i].g = clamp(pal->colors[i].g + k * (ref.g - pal->colors[i].g), 0, 255);
-        pal->colors[i].b = clamp(pal->colors[i].b + k * (ref.b - pal->colors[i].b), 0, 255);
+        m = max3(pal->colors[i].r, pal->colors[i].g, pal->colors[i].b);
+        u = (step * m) >> 8;
+        pal->colors[i].r += u * (ref.r - pal->colors[i].r) >> 8;
+        pal->colors[i].g += u * (ref.g - pal->colors[i].g) >> 8;
+        pal->colors[i].b += u * (ref.b - pal->colors[i].b) >> 8;
     }
 }
 
@@ -37,14 +36,14 @@ void vga_palette_tint_range(vga_palette *pal, vga_index ref_index, vga_index sta
  * @param ref_index Reference colour index for the mixed color
  * @param start Palette start index
  * @param end Palette end index
- * @param step How much is mixed (0.0 - 1.0).
+ * @param step How much is mixed (0 - 255).
  */
-void vga_palette_mix_range(vga_palette *pal, vga_index ref_index, vga_index start, vga_index end, float step) {
+void vga_palette_mix_range(vga_palette *pal, vga_index ref_index, vga_index start, vga_index end, uint8_t step) {
     vga_color ref = pal->colors[ref_index];
-    float inv = 1 - step;
+    uint32_t inv = 255 - step;
     for(vga_index i = start; i < end; i++) {
-        pal->colors[i].r = clamp((pal->colors[i].r * inv) + (ref.r * step), 0, 255);
-        pal->colors[i].g = clamp((pal->colors[i].g * inv) + (ref.g * step), 0, 255);
-        pal->colors[i].b = clamp((pal->colors[i].b * inv) + (ref.b * step), 0, 255);
+        pal->colors[i].r = (pal->colors[i].r * inv + ref.r * step) >> 8;
+        pal->colors[i].g = (pal->colors[i].g * inv + ref.g * step) >> 8;
+        pal->colors[i].b = (pal->colors[i].b * inv + ref.b * step) >> 8;
     }
 }
