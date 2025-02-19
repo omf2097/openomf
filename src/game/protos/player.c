@@ -258,20 +258,14 @@ void player_run(object *obj) {
             int destination = 160;
             if(sd_script_isset(frame, "am") && sd_script_isset(frame, "e")) {
                 // destination is the enemy's position
-                destination = enemy->pos.x;
-                if(sd_script_isset(frame, "x")) {
-                    if(object_get_direction(obj) == OBJECT_FACE_RIGHT) {
-                        destination += sd_script_get(frame, "x");
-                    } else {
-                        destination -= sd_script_get(frame, "x");
-                    }
-                }
+                log_debug("adjusting walkto %d by %d", destination, trans_x);
+                destination = enemy->pos.x - trans_x;
                 if(obj->pos.x > enemy->pos.x) {
                     object_set_direction(obj, OBJECT_FACE_LEFT);
                 } else {
                     object_set_direction(obj, OBJECT_FACE_RIGHT);
                 }
-                destination = max2(ARENA_LEFT_WALL, min2(ARENA_RIGHT_WALL, (int)enemy->pos.x));
+                destination = max2(ARENA_LEFT_WALL, min2(ARENA_RIGHT_WALL, destination));
             } else if(sd_script_isset(frame, "cf")) {
                 // shadow's scrap, position is in the corner behind shadow
                 if(object_get_direction(enemy) == OBJECT_FACE_RIGHT) {
@@ -279,19 +273,15 @@ void player_run(object *obj) {
                 } else {
                     destination = ARENA_LEFT_WALL;
                 }
-                if(sd_script_isset(frame, "x")) {
-                    if(object_get_direction(obj) == OBJECT_FACE_RIGHT) {
-                        destination += sd_script_get(frame, "x");
-                    } else {
-                        destination -= sd_script_get(frame, "x");
-                    }
-                }
+                destination += trans_x;
                 object_set_direction(obj, object_get_direction(enemy));
                 // flip the HAR's position for this animation
                 obj->animation_state.shadow_corner_hack = 1;
             } else {
                 destination = -1;
             }
+            // clear this
+            trans_x = 0;
             if(sd_script_get(frame, "bm") == 10 && destination > 0 && fabsf(obj->pos.x - destination) > 5.0) {
                 log_debug("HAR walk to %d from %d", destination, obj->pos.x);
                 har_walk_to(obj, destination);
