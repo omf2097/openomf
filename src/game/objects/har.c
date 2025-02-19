@@ -264,9 +264,9 @@ void har_set_ani(object *obj, int animation_id, int repeat) {
     har *h = object_get_userdata(obj);
     af_move *move = af_get_move(h->af_data, animation_id);
     char *s = (char *)str_c(&move->move_string);
-    uint8_t has_corner_hack = obj->animation_state.shadow_corner_hack;
+    // uint8_t has_corner_hack = obj->animation_state.shadow_corner_hack;
     object_set_animation(obj, &move->ani);
-    obj->animation_state.shadow_corner_hack = has_corner_hack;
+    // obj->animation_state.shadow_corner_hack = has_corner_hack;
     if(s != NULL && strcmp(s, "!") != 0 && strcmp(s, "0") != 0 && h->delay > 0) {
         log_debug("delaying move %d %s by %d ticks", move->id, s, h->delay);
         object_set_delay(obj, h->delay);
@@ -295,6 +295,25 @@ int har_is_active(object *obj) {
         return 0;
     }
     return h->executing_move;
+}
+
+void har_walk_to(object *obj, int destination) {
+    har *h = object_get_userdata(obj);
+    af_move *move = af_get_move(h->af_data, 10);
+
+    h->walk_done_anim = obj->cur_animation->id;
+
+    float vx = h->fwd_speed * object_get_direction(obj);
+    log_debug("set velocity to %f", vx);
+    object_set_vel(obj, vec2f_create(vx, 0));
+
+    object_set_animation(obj, &move->ani);
+    object_set_repeat(obj, 1);
+    object_set_stride(obj, 1);
+    h->walk_destination = destination;
+    object_dynamic_tick(obj);
+    // update this so mx/my have correct origins
+    obj->start = obj->pos;
 }
 
 int har_is_walking(har *h) {
@@ -453,6 +472,35 @@ void har_move(object *obj) {
     obj->pos.y += vel.y;
     har *h = object_get_userdata(obj);
 
+    if(h->walk_destination > 0 && h->walk_done_anim &&
+       ((obj->pos.x >= h->walk_destination && object_get_direction(obj) == OBJECT_FACE_RIGHT) ||
+        (obj->pos.x <= h->walk_destination && object_get_direction(obj) == OBJECT_FACE_LEFT))) {
+        obj->pos.x = h->walk_destination;
+        log_debug("reached destination!");
+        if(obj->animation_state.shadow_corner_hack) {
+            object_set_direction(obj, object_get_direction(obj) * -1);
+        }
+
+        object_set_vel(obj, vec2f_create(0, 0));
+        har_set_ani(obj, h->walk_done_anim, 0);
+        object *enemy_obj =
+            game_state_find_object(obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
+
+        har *enemy_har = object_get_userdata(enemy_obj);
+
+        af_move *move = af_get_move(h->af_data, h->walk_done_anim);
+        object_set_animation(enemy_obj, &af_get_move(enemy_har->af_data, ANIM_DAMAGE)->ani);
+        object_set_repeat(enemy_obj, 0);
+        object_set_custom_string(enemy_obj, str_c(&move->footer_string));
+        object_dynamic_tick(enemy_obj);
+
+        h->walk_destination = -1;
+        h->walk_done_anim = 0;
+        return;
+    } else if(h->walk_destination > 0) {
+        log_debug("still walking to %d, at %f", h->walk_destination, obj->pos.x);
+    }
+
     // Check for wall hits
     if(obj->pos.x <= ARENA_LEFT_WALL || obj->pos.x >= ARENA_RIGHT_WALL) {
         h->is_wallhugging = 1;
@@ -589,7 +637,7 @@ void har_move(object *obj) {
                     har_finished(obj);
                 }
             }
-        } else if(h->state != STATE_WALKFROM && h->state != STATE_WALKTO) {
+        } else if(h->state != STATE_WALKFROM && h->state != STATE_WALKTO && h->state != STATE_SCRAP) {
             // add some friction from the floor if we're not walking
             // This is important to dampen/eliminate the velocity added from pushing away from the other HAR
             if(vel.x > 0.0f) {
@@ -1595,11 +1643,13 @@ af_move *match_move(object *obj, char *inputs) {
                     // jumping but this move is not a jumping move
                     continue;
                 }
-                if(move->category == CAT_SCRAP && h->state != STATE_VICTORY) {
+                if((move->category == CAT_SCRAP && h->state != STATE_VICTORY) ||
+                   (h->state == STATE_VICTORY && move->category != CAT_SCRAP)) {
                     continue;
                 }
 
-                if(move->category == CAT_DESTRUCTION && h->state != STATE_SCRAP) {
+                if((move->category == CAT_DESTRUCTION && h->state != STATE_SCRAP) ||
+                   (h->state == STATE_SCRAP && move->category != CAT_DESTRUCTION)) {
                     continue;
                 }
 
@@ -1679,11 +1729,14 @@ af_move *scrap_destruction_cheat(object *obj, char *inputs) {
     for(int i = 0; i < 70; i++) {
         af_move *move;
         if((move = af_get_move(h->af_data, i))) {
-            if(move->category == CAT_SCRAP && h->state == STATE_VICTORY && inputs[0] == 'K') {
+            if(move->category == CAT_SCRAP && h->state == STATE_VICTORY && inputs[0] == 'K' &&
+               (player_frame_isset(obj, "jf") || (player_frame_isset(obj, "jn") && i == player_frame_get(obj, "jn")))) {
                 return move;
             }
 
-            if(move->category == CAT_DESTRUCTION && h->state == STATE_SCRAP && inputs[0] == 'P') {
+            if(move->category == CAT_DESTRUCTION && h->state == STATE_SCRAP && inputs[0] == 'P' &&
+               (player_frame_isset(obj, "jf2") ||
+                (player_frame_isset(obj, "jn") && i == player_frame_get(obj, "jn")))) {
                 return move;
             }
         }
@@ -1765,12 +1818,6 @@ int har_act(object *obj, int act_type) {
     }
 
     if(move) {
-        // Set correct animation etc.
-        // executing_move = 1 prevents new moves while old one is running.
-        har_set_ani(obj, move->id, 0);
-        h->inputs[0] = '\0';
-        h->executing_move = 1;
-
         // Move flag is on -- make the HAR move backwards to avoid overlap.
         if(move->collision_opts & 0x20) {
             obj->pos.x -= object_get_size(obj).x / 2 * object_get_direction(obj);
@@ -1787,6 +1834,12 @@ int har_act(object *obj, int act_type) {
             // switch to standing to cancel any walk velocity changes
             h->state = STATE_STANDING;
         }
+
+        // Set correct animation etc.
+        // executing_move = 1 prevents new moves while old one is running.
+        har_set_ani(obj, move->id, 0);
+        h->inputs[0] = '\0';
+        h->executing_move = 1;
 
         // Prefetch enemy object & har links, they may be needed
         object *enemy_obj =
@@ -1814,9 +1867,8 @@ int har_act(object *obj, int act_type) {
             har_event_attack(h, move, ctrl);
         }
 
-        // make the other har participate in the scrap/destruction
-        if(move->category == CAT_SCRAP || move->category == CAT_DESTRUCTION) {
-            af_move *move = af_get_move(h->af_data, obj->cur_animation->id);
+        // make the other har participate in the scrap/destruction if there's not a walk involved
+        if((move->category == CAT_SCRAP || move->category == CAT_DESTRUCTION) && h->walk_destination < 0) {
             object_set_animation(enemy_obj, &af_get_move(enemy_har->af_data, ANIM_DAMAGE)->ani);
             object_set_repeat(enemy_obj, 0);
             object_set_custom_string(enemy_obj, str_c(&move->footer_string));
@@ -2111,6 +2163,9 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
 
     local->enqueued = 0;
 
+    local->walk_destination = -1;
+    local->walk_done_anim = 0;
+
     // Last damage value, for convenience
     local->last_damage_value = 0.0f;
 
@@ -2300,6 +2355,8 @@ void har_reset(object *obj) {
     h->in_stasis_ticks = 0;
 
     h->enqueued = 0;
+    h->walk_destination = -1;
+    h->walk_done_anim = 0;
 
     har_set_ani(obj, ANIM_IDLE, 1);
     object_set_stride(obj, h->stride);

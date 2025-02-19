@@ -1046,7 +1046,8 @@ void arena_dynamic_tick(scene *scene, int paused) {
             chr_score *s1 = game_player_get_score(game_state_get_player(scene->gs, 0));
             chr_score *s2 = game_player_get_score(game_state_get_player(scene->gs, 1));
             if(player_frame_isset(obj_har[0], "be") || player_frame_isset(obj_har[1], "be") || chr_score_onscreen(s1) ||
-               chr_score_onscreen(s2)) {
+               chr_score_onscreen(s2) ||
+               (obj_har[0]->cur_animation->id != ANIM_VICTORY && obj_har[1]->cur_animation->id != ANIM_VICTORY)) {
             } else {
                 local->ending_ticks++;
             }
