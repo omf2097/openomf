@@ -245,17 +245,6 @@ void player_run(object *obj) {
             rstate->dir_correction = -1;
         }
 
-        if(sd_script_isset(frame, "cf")) {
-            // shadow's scrap, position is in the corner behind shadow
-            if(object_get_direction(obj) == OBJECT_FACE_RIGHT) {
-                obj->pos.x = 0;
-            } else {
-                obj->pos.x = 320;
-            }
-            // flip the HAR's position for this animation
-            obj->animation_state.shadow_corner_hack = 1;
-        }
-
         if(sd_script_isset(frame, "ac")) {
             // force the har to face the center of the arena
             if(obj->pos.x > 160) {
@@ -265,33 +254,50 @@ void player_run(object *obj) {
             }
         }
 
-        /*if (sd_script_isset(frame, "bm")) {
-            if (sd_script_isset(frame, "am") && sd_script_isset(frame, "e")) {
+        if(sd_script_isset(frame, "bm")) {
+            int destination = 160;
+            if(sd_script_isset(frame, "am") && sd_script_isset(frame, "e")) {
                 // destination is the enemy's position
-                log_debug("BE tag with x/y offsets: %d %d %d %d", trans_x, trans_y, object_get_direction(obj),
-        object_get_direction(state->enemy)); log_debug("enemy x %d modified trans_x: %d (%d * %d * %d)",
-                    state->enemy->pos.x,
-                    (trans_x * object_get_direction(obj) * object_get_direction(state->enemy)),
-                    trans_x,
-                    object_get_direction(obj),
-                    object_get_direction(state->enemy));
-                // hack because we don't have 'walk to other HAR' implemented
-                obj->pos.x = state->enemy->pos.x + (trans_x * object_get_direction(obj) *
-        object_get_direction(state->enemy)); obj->pos.y = state->enemy->pos.y + trans_y; } else if
-        (sd_script_isset(frame, "cf")) {
-                // shadow's scrap, position is in the corner behind shadow
-                if (object_get_direction(obj) == OBJECT_FACE_RIGHT) {
-                    obj->pos.x = 0;
-                } else {
-                    obj->pos.x = 320;
+                destination = enemy->pos.x;
+                if(sd_script_isset(frame, "x")) {
+                    if(object_get_direction(obj) == OBJECT_FACE_RIGHT) {
+                        destination += sd_script_get(frame, "x");
+                    } else {
+                        destination -= sd_script_get(frame, "x");
+                    }
                 }
+                if(obj->pos.x > enemy->pos.x) {
+                    object_set_direction(obj, OBJECT_FACE_LEFT);
+                } else {
+                    object_set_direction(obj, OBJECT_FACE_RIGHT);
+                }
+                destination = max2(ARENA_LEFT_WALL, min2(ARENA_RIGHT_WALL, (int)enemy->pos.x));
+            } else if(sd_script_isset(frame, "cf")) {
+                // shadow's scrap, position is in the corner behind shadow
+                if(object_get_direction(enemy) == OBJECT_FACE_RIGHT) {
+                    destination = ARENA_RIGHT_WALL;
+                } else {
+                    destination = ARENA_LEFT_WALL;
+                }
+                if(sd_script_isset(frame, "x")) {
+                    if(object_get_direction(obj) == OBJECT_FACE_RIGHT) {
+                        destination += sd_script_get(frame, "x");
+                    } else {
+                        destination -= sd_script_get(frame, "x");
+                    }
+                }
+                object_set_direction(obj, object_get_direction(enemy));
                 // flip the HAR's position for this animation
                 obj->animation_state.shadow_corner_hack = 1;
             } else {
-                log_error("unknown end position for BE tag");
+                destination = -1;
             }
-            player_next_frame(state->enemy);
-        }*/
+            if(sd_script_get(frame, "bm") == 10 && destination > 0 && fabsf(obj->pos.x - destination) > 5.0) {
+                log_debug("HAR walk to %d from %d", destination, obj->pos.x);
+                har_walk_to(obj, destination);
+                return;
+            }
+        }
     }
 
     if(sd_script_isset(frame, "e") && enemy) {
@@ -641,7 +647,7 @@ void player_run(object *obj) {
         object_select_sprite(obj, frame->sprite);
         if(obj->cur_sprite_id >= 0) {
             rstate->duration = frame->tick_len;
-            if(sd_script_isset(frame, "r") || obj->animation_state.shadow_corner_hack) {
+            if(sd_script_isset(frame, "r")) { // || obj->animation_state.shadow_corner_hack) {
                 rstate->flipmode ^= FLIP_HORIZONTAL;
             }
             if(sd_script_isset(frame, "f")) {
