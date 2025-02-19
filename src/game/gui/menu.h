@@ -41,7 +41,7 @@ typedef struct menu {
     menu_tick_cb tick;
 } menu;
 
-component *menu_create(int obj_h);
+component *menu_create(void);
 void menu_attach(component *menu, component *c);
 void menu_select(component *menu, component *c);
 component *menu_selected(const component *menu);

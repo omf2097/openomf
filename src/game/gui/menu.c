@@ -108,7 +108,7 @@ static void menu_render(component *c) {
             if(m->help_bg2) {
                 video_draw(m->help_bg2, m->help_x - 8, m->help_y - 8);
             }
-            text_render(&m->help_text_conf, TEXT_DEFAULT, m->help_x, m->help_y, m->help_w, m->help_h, (*tmp)->help);
+            text_render_mode(&m->help_text_conf, TEXT_DEFAULT, m->help_x, m->help_y, m->help_w, m->help_h, (*tmp)->help);
         }
         i++;
     }
@@ -214,6 +214,7 @@ void menu_set_submenu(component *mc, component *submenu) {
     m->submenu = submenu;
     m->prev_submenu_state = 0;
     submenu->parent = mc; // Set correct parent
+    component_init(m->submenu, component_get_theme(mc));
     component_layout(m->submenu, mc->x, mc->y, mc->w_hint, mc->h_hint);
 }
 
@@ -228,6 +229,7 @@ void menu_link_menu(component *mc, gui_frame *linked_menu) {
     m->submenu = root;
     m->prev_submenu_state = 0;
     root->parent = mc; // Set correct parent
+    component_init(m->submenu, component_get_theme(mc));
     component_layout(m->submenu, x, y, w, h);
 }
 
@@ -269,14 +271,14 @@ static void menu_layout(component *c, int x, int y, int w, int h) {
 
         // Set component position and size
         if(m->horizontal) {
-            component_layout(*tmp, x + x_offset, m->margin_top + y, w, -1);
+            component_layout(*tmp, x + x_offset, m->margin_top + y, w, (*tmp)->h_hint);
             if(m->centered) {
                 centerwidth += (*tmp)->w_hint;
             }
             x_offset += (*tmp)->w_hint + m->padding;
             height = max2(height, (*tmp)->h_hint);
         } else {
-            component_layout(*tmp, x, y + height, w, -1);
+            component_layout(*tmp, x, y + height, w, (*tmp)->h_hint);
             height += max2(0, (*tmp)->h_hint) + m->padding;
         }
         i++;
@@ -288,7 +290,7 @@ static void menu_layout(component *c, int x, int y, int w, int h) {
         height = 0;
         sizer_begin_iterator(c, &it);
         foreach(it, tmp) {
-            component_layout(*tmp, x + x_offset, m->margin_top + y, w, -1);
+            component_layout(*tmp, x + x_offset, m->margin_top + y, w, (*tmp)->h_hint);
             x_offset += (*tmp)->w_hint + m->padding;
             height = max2(height, (*tmp)->h_hint);
         }
@@ -419,13 +421,12 @@ void menu_set_padding(component *c, int padding) {
     m->padding = padding;
 }
 
-component *menu_create(int obj_h) {
+component *menu_create(void) {
     component *c = sizer_create();
 
     menu *m = omf_calloc(1, sizeof(menu));
     m->margin_top = 8;
     m->padding = 3;
-    // m->obj_h = obj_h;
     m->horizontal = false;
     m->background = true;
     m->centered = false;
