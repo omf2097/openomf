@@ -38,8 +38,6 @@ bool nat_create_upnp_mapping(nat_ctx *ctx, uint16_t int_port, uint16_t ext_port)
         log_debug("NAT-uPNP port %d -> %d mapping failed with %d", int_port, ext_port, error);
         // TODO there are some errors we can work around here
         // like overly short lifetimes
-        FreeUPNPUrls(&ctx->upnp_urls);
-        freeUPNPDevlist(ctx->upnp_dev);
         return false;
     }
 #else
