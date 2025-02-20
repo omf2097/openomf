@@ -8,23 +8,23 @@ on:
         description: Version tag
 
 jobs:
-  build_msvc:
-    name: Build Windows ${{ matrix.config.arch }}
-    runs-on: windows-latest
-    strategy:
-      matrix:
-        config:
-        - { arch: "x64", build_languages: "ON" }
-        - { arch: "arm64", build_languages: "OFF" }
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: '0'
-    - name: Build MSVC binary
-      uses: ./.github/actions/build_msvc
-      with:
-        arch: ${{ matrix.config.arch }}
-        build_languages: ${{ matrix.config.build_languages }}
+#  build_msvc:
+#    name: Build Windows ${{ matrix.config.arch }}
+#    runs-on: windows-latest
+#    strategy:
+#      matrix:
+#        config:
+#        - { arch: "x64", build_languages: "ON" }
+#        - { arch: "arm64", build_languages: "OFF" }
+#    steps:
+#    - uses: actions/checkout@v4
+#      with:
+#        fetch-depth: '0'
+#    - name: Build MSVC binary
+#      uses: ./.github/actions/build_msvc
+#      with:
+#        arch: ${{ matrix.config.arch }}
+#        build_languages: ${{ matrix.config.build_languages }}
 
   build_ubuntu:
     name: Build ubuntu-latest
@@ -36,18 +36,19 @@ jobs:
     - name: Build Ubuntu binary
       uses: ./.github/actions/build_ubuntu
 
-  build_macos-arm:
-    name: Build macos-14
-    runs-on: macos-14
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: '0'
-    - name: Build MacOS ARM binary
-      uses: ./.github/actions/build_macos_arm
+#  build_macos-arm:
+#    name: Build macos-14
+#    runs-on: macos-14
+#    steps:
+#    - uses: actions/checkout@v4
+#      with:
+#        fetch-depth: '0'
+#    - name: Build MacOS ARM binary
+#      uses: ./.github/actions/build_macos_arm
 
   make_release:
-    needs: [build_macos-arm, build_ubuntu, build_msvc]
+    #needs: [build_macos-arm, build_ubuntu, build_msvc]
+    needs: [build_ubuntu]
     name: Roll a release
     runs-on: ubuntu-latest
     steps:
@@ -77,26 +78,26 @@ jobs:
     - name: Organize release artifacts
       shell: bash
       run: |
-        mkdir upload
-        mkdir windows_all
-
-        combine_windows() {
-            if [ "$#" -ne 2 ]; then
-              echo "wrong argc to combine_windows"
-              exit 1
-            fi
-            unzip -d windows_all -o -u "$1"
-            rm "$1"
-            if [ "$2" != "openomf.exe" ]; then
-                mv "windows_all/openomf/openomf.exe" "windows_all/openomf/$2"
-            fi
-        }
-        combine_windows artifacts/openomf_*_windows_msvc_arm64/*.zip openomf_arm64.exe
-        combine_windows artifacts/openomf_*_windows_msvc_x64/*.zip openomf.exe
-
-        cd windows_all/
-        zip -r ${GITHUB_WORKSPACE}/upload/openomf_${{ env.OPENOMF_VERSION }}_windows.zip *
-        cd ..
+        #mkdir upload
+        #mkdir windows_all
+        #
+        #combine_windows() {
+        #    if [ "$#" -ne 2 ]; then
+        #      echo "wrong argc to combine_windows"
+        #      exit 1
+        #    fi
+        #    unzip -d windows_all -o -u "$1"
+        #    rm "$1"
+        #    if [ "$2" != "openomf.exe" ]; then
+        #        mv "windows_all/openomf/openomf.exe" "windows_all/openomf/$2"
+        #    fi
+        #}
+        #combine_windows artifacts/openomf_*_windows_msvc_arm64/*.zip openomf_arm64.exe
+        #combine_windows artifacts/openomf_*_windows_msvc_x64/*.zip openomf.exe
+        #
+        #cd windows_all/
+        #zip -r ${GITHUB_WORKSPACE}/upload/openomf_${{ env.OPENOMF_VERSION }}_windows.zip *
+        #cd ..
 
         shopt -s globstar
         for file in artifacts/**; do
