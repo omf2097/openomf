@@ -23,7 +23,7 @@ runs:
     - name: Install Ubuntu Dependencies
       uses: Eeems-Org/apt-cache-action@v1.3
       with:
-        packages: cmake libx11-dev libgles2-mesa-dev libxext-dev
+        packages: cmake ninja-build libx11-dev libgles2-mesa-dev libxext-dev
 
 
     - name: Install VCPKG Dependencies, Configure CMake (${{ inputs.arch }})
