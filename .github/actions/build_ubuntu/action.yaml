@@ -52,11 +52,11 @@ runs:
 
     - name: Extract omf 2097 assets
       shell: bash
-      run: unzip -j omf2097-assets.zip -d build-release/release/usr/share/games/openomf
+      run: unzip -j omf2097-assets.zip -d release/usr/share/games/openomf
 
     - name: Generate TGZ package
       shell: bash
-      run: tar cvfz ${GITHUB_WORKSPACE}/openomf_${{ env.OPENOMF_VERSION }}_linux_amd64.tar.gz -C build-release/release/ .
+      run: tar cvfz ${GITHUB_WORKSPACE}/openomf_${{ env.OPENOMF_VERSION }}_linux_amd64.tar.gz -C release/ .
 
     - name: Upload TGZ artifact
       uses: actions/upload-artifact@v4
@@ -69,7 +69,7 @@ runs:
       uses: jiro4989/build-deb-action@v3
       with:
         package: openomf
-        package_root: build-release/release
+        package_root: release
         maintainer: ${{ github.repository_owner }}
         version: ${{ env.OPENOMF_VERSION }}
         arch: 'amd64'
