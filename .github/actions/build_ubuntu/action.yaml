@@ -6,20 +6,38 @@ runs:
     - name: Get OpenOMF Version
       uses: ./.github/actions/version
 
+    - name: Check out VCPKG
+      # must be checked out *after* openomf.git
+      uses: actions/checkout@v4
+      with:
+        repository: 'microsoft/vcpkg'
+        path: 'vcpkg'
+
     - name: Install Ubuntu Dependencies
       uses: Eeems-Org/apt-cache-action@v1.3
       with:
-        packages: cmake libargtable2-dev libcunit1-dev libsdl2-mixer-dev
-          libconfuse-dev libenet-dev libsdl2-dev libxmp-dev libpng-dev libepoxy-dev
-          libminiupnpc-dev libnatpmp-dev
+        packages: cmake
 
-    - name: Generate Release
+    - name: Install VCPKG Dependencies, Configure CMake (${{ inputs.arch }})
       shell: bash
-      run: |
-        mkdir build-release && cd build-release
-        cmake -DUSE_NATPMP=ON -DUSE_MINIUPNPC=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=release/usr ..
-        make -j $(getconf _NPROCESSORS_ONLN)
-        make -j $(getconf _NPROCESSORS_ONLN) install
+      env:
+        VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
+      run: >
+        cmake -S . -B build-release
+        -G "Ninja Multi-Config"
+        --toolchain vcpkg/scripts/buildsystems/vcpkg.cmake
+        -DVCPKG_TARGET_TRIPLET="x64-linux"
+        -DUSE_NATPMP=ON
+        -DUSE_MINIUPNPC=ON
+        -DCMAKE_INSTALL_PREFIX=release/usr
+
+    - name: Build openomf
+      shell: bash
+      run: cmake --build build-release --config Release --target openomf
+
+    - name: Install openomf
+      shell: bash
+      run: cmake --install build-release --config Release
 
     - name: Get OMF2097 assets
       uses: ./.github/actions/assets
