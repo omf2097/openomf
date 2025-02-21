@@ -28,7 +28,5 @@ runs:
               -DCMAKE_LIBRARY_PATH="${GITHUB_WORKSPACE}/openomf-win-build-main/lib/" \
               -DCMAKE_FIND_ROOT_PATH="${GITHUB_WORKSPACE}/openomf-win-build-main/" \
               -DBUILD_LANGUAGES=OFF \
-              -DUSE_NATPMP=ON \
-              -DUSE_MINIUPNPC=ON \
               -S . -B build
         cmake --build build -j $(getconf _NPROCESSORS_ONLN)
