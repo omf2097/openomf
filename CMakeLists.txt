@@ -11,8 +11,8 @@ OPTION(USE_FORMAT "Use clang-format for checks" OFF)
 OPTION(BUILD_LANGUAGES "Build Language Files" ON)
 OPTION(USE_COLORS "Use colors in log output" ON)
 
-OPTION(USE_MINIUPNPC "Use miniupnpc for port forwarding" OFF)
-OPTION(USE_NATPMP "Use natpmp for port forwarding" OFF)
+OPTION(USE_MINIUPNPC "Use miniupnpc for port forwarding" ON)
+OPTION(USE_NATPMP "Use natpmp for port forwarding" ON)
 
 # vcpkg features must be set before project()
 if(USE_TESTS)

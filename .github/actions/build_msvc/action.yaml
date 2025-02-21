@@ -41,8 +41,6 @@ runs:
         -DVCPKG_TARGET_TRIPLET="${{ inputs.arch }}-windows-static"
         -A ${{ inputs.arch }}
         -DBUILD_LANGUAGES=${{ inputs.build_languages }}
-        -DUSE_NATPMP=ON
-        -DUSE_MINIUPNPC=ON
 
     - name: Build openomf
       shell: pwsh

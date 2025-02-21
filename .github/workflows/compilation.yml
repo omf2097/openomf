@@ -44,6 +44,8 @@ jobs:
               -DUSE_SANITIZERS=On \
               -DUSE_FATAL_SANITIZERS=On \
               -DUSE_TOOLS=On \
+              -DUSE_MINIUPNPC=Off \
+              -DUSE_NATPMP=Off \
               -G "Ninja Multi-Config" \
               -S . -B build-test
         cmake --build build-test -j $(getconf _NPROCESSORS_ONLN)
