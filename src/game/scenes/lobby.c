@@ -55,6 +55,7 @@ enum
     PACKET_CONNECTED,
     PACKET_REFRESH,
     PACKET_ANNOUNCEMENT,
+    PACKET_RELAY,
 };
 
 enum
@@ -1163,6 +1164,94 @@ void lobby_tick(scene *scene, int paused) {
                         log.color = ANNOUNCEMENT_COLOR;
                         strncpy_or_truncate(log.msg, (char *)event.packet->data + 1, sizeof(log.msg));
                         list_append(&local->log, &log, sizeof(log));
+                    } break;
+                    case PACKET_RELAY: {
+                        lobby_show_dialog(scene, DIALOG_STYLE_CANCEL, "Connected via relay, synchronizing clocks...",
+                                          NULL);
+                        // lobby and opponent peer are now the same
+                        local->opponent_peer = local->peer;
+                        serial_create(&ser);
+                        serial_write_int8(&ser, PACKET_JOIN << 4);
+
+                        ENetPacket *packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
+                        serial_free(&ser);
+
+                        enet_peer_send(local->opponent_peer, 0, packet);
+
+                        // signal the server we're connected
+                        serial_create(&ser);
+                        serial_write_int8(&ser, PACKET_CONNECTED << 4);
+                        packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
+                        enet_peer_send(local->peer, 0, packet);
+                        serial_free(&ser);
+
+                        controller *player1_ctrl, *player2_ctrl;
+                        keyboard_keys *keys;
+                        game_player *p1 = game_state_get_player(gs, 0);
+                        game_player *p2 = game_state_get_player(gs, 1);
+                        gs->net_mode = NET_MODE_LOBBY;
+
+                        // force the speed to 3
+                        game_state_set_speed(gs, 10);
+
+                        p1->pilot->har_id = HAR_JAGUAR;
+                        p1->pilot->pilot_id = 0;
+                        p2->pilot->har_id = HAR_JAGUAR;
+                        p2->pilot->pilot_id = 0;
+
+                        player1_ctrl = omf_calloc(1, sizeof(controller));
+                        controller_init(player1_ctrl, gs);
+                        player1_ctrl->har_obj_id = p1->har_obj_id;
+                        player2_ctrl = omf_calloc(1, sizeof(controller));
+                        controller_init(player2_ctrl, gs);
+                        player2_ctrl->har_obj_id = p2->har_obj_id;
+
+                        game_player *challenger, *challengee;
+                        controller *challenger_ctrl, *challengee_ctrl;
+
+                        if(local->role == ROLE_CHALLENGER) {
+                            // we did the connecting and we're the challenger
+                            // so we are player 1
+                            challenger = p1;
+                            challengee = p2;
+                            challenger_ctrl = player1_ctrl;
+                            challengee_ctrl = player2_ctrl;
+                        } else {
+                            challenger = p2;
+                            challengee = p1;
+                            challenger_ctrl = player2_ctrl;
+                            challengee_ctrl = player1_ctrl;
+                        }
+
+                        // Challenger -- Network
+                        net_controller_create(challengee_ctrl, local->client, event.peer, local->peer,
+                                              local->role == ROLE_CHALLENGER ? ROLE_SERVER : ROLE_CLIENT);
+                        game_player_set_ctrl(challengee, challengee_ctrl);
+
+                        // Challengee controller -- Keyboard
+                        settings_keyboard *k = &settings_get()->keys;
+                        keys = omf_calloc(1, sizeof(keyboard_keys));
+                        keys->jump_up = SDL_GetScancodeFromName(k->key1_jump_up);
+                        keys->jump_right = SDL_GetScancodeFromName(k->key1_jump_right);
+                        keys->walk_right = SDL_GetScancodeFromName(k->key1_walk_right);
+                        keys->duck_forward = SDL_GetScancodeFromName(k->key1_duck_forward);
+                        keys->duck = SDL_GetScancodeFromName(k->key1_duck);
+                        keys->duck_back = SDL_GetScancodeFromName(k->key1_duck_back);
+                        keys->walk_back = SDL_GetScancodeFromName(k->key1_walk_back);
+                        keys->jump_left = SDL_GetScancodeFromName(k->key1_jump_left);
+                        keys->punch = SDL_GetScancodeFromName(k->key1_punch);
+                        keys->kick = SDL_GetScancodeFromName(k->key1_kick);
+                        keyboard_create(challenger_ctrl, keys, 0);
+                        game_player_set_ctrl(challenger, challenger_ctrl);
+                        game_player_set_selectable(challengee, 1);
+
+                        chr_score_set_difficulty(game_player_get_score(game_state_get_player(gs, 0)),
+                                                 AI_DIFFICULTY_CHAMPION);
+                        chr_score_set_difficulty(game_player_get_score(game_state_get_player(gs, 1)),
+                                                 AI_DIFFICULTY_CHAMPION);
+
+                        local->controllers_created = true;
+
                     } break;
                     case PACKET_DISCONNECT: {
                         uint32_t connect_id = serial_read_uint32(&ser);
