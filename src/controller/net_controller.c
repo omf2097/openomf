@@ -282,11 +282,11 @@ void send_events(wtf *data) {
     data->last_sent = max2(data->last_sent, last_sent);
 
     packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_UNSEQUENCED);
-    enet_peer_send(peer, 1, packet);
+    enet_peer_send(peer, 2, packet);
     if(data->lobby && peer != data->lobby) {
         // CC the events to the lobby, unless the lobby is already the peer
         packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_UNSEQUENCED);
-        enet_peer_send(data->lobby, 1, packet);
+        enet_peer_send(data->lobby, 2, packet);
     }
     serial_free(&ser);
     enet_host_flush(host);
@@ -540,6 +540,9 @@ void net_controller_free(controller *ctrl) {
     }
     ENetEvent event;
     if(!data->disconnected) {
+        if(data->peer == data->lobby) {
+            goto done;
+        }
         log_debug("closing connection");
         enet_peer_disconnect(data->peer, 0);
 
@@ -757,7 +760,7 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
 
                                 start_packet = enet_packet_create(start_ser.data, serial_len(&start_ser),
                                                                   ENET_PACKET_FLAG_RELIABLE);
-                                enet_peer_send(peer, 0, start_packet);
+                                enet_peer_send(peer, 1, start_packet);
                                 enet_host_flush(host);
                                 serial_free(&start_ser);
                             }
@@ -784,7 +787,7 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                                 serial_write_uint32(&ser, ticks);
                                 serial_write_uint32(&ser, peerticks + data->tick_offset);
                                 packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_UNSEQUENCED);
-                                enet_peer_send(peer, 0, packet);
+                                enet_peer_send(peer, 1, packet);
                                 enet_host_flush(host);
                             }
                         }
@@ -811,7 +814,7 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
 
                             start_packet =
                                 enet_packet_create(start_ser.data, serial_len(&start_ser), ENET_PACKET_FLAG_RELIABLE);
-                            enet_peer_send(peer, 0, start_packet);
+                            enet_peer_send(peer, 1, start_packet);
                             enet_host_flush(host);
                             serial_free(&start_ser);
                         }
@@ -860,6 +863,10 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
     // AND we've received events then try a rewind/replay
     if(has_received) {
         if(rewind_and_replay(data, ctrl->gs)) {
+            if(data->lobby == data->peer) {
+                game_state_set_next(ctrl->gs, SCENE_LOBBY);
+                return 1;
+            }
             enet_peer_disconnect(data->peer, 0);
             return 0;
         }
@@ -889,7 +896,7 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
 
             packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_UNSEQUENCED);
             serial_free(&ser);
-            enet_peer_send(peer, 0, packet);
+            enet_peer_send(peer, 1, packet);
             enet_host_flush(host);
         } else {
             log_debug("peer is null~");

@@ -25,6 +25,7 @@
 #define JOIN_COLOR 7
 #define WHISPER_COLOR 6
 #define LEAVE_COLOR 5
+#define ANNOUNCEMENT_COLOR 48
 
 #define VERSION_BUF_SIZE 30
 // increment this when the protocol with the lobby server changes
@@ -53,6 +54,8 @@ enum
     PACKET_PRESENCE,
     PACKET_CONNECTED,
     PACKET_REFRESH,
+    PACKET_ANNOUNCEMENT,
+    PACKET_RELAY,
 };
 
 enum
@@ -65,10 +68,12 @@ enum
 
 enum
 {
-    CHALLENGE_FLAG_ACCEPT = 1 << 0,
-    CHALLENGE_FLAG_REJECT = 1 << 1,
-    CHALLENGE_FLAG_CANCEL = 1 << 2,
-    CHALLENGE_FLAG_DONE = 1 << 3,
+    CHALLENGE_OFFER = 0,
+    CHALLENGE_ACCEPT,
+    CHALLENGE_REJECT,
+    CHALLENGE_CANCEL,
+    CHALLENGE_DONE,
+    CHALLENGE_ERROR,
 };
 
 enum
@@ -318,11 +323,18 @@ void lobby_dialog_cancel_challenge(dialog *dlg, dialog_result result) {
     lobby_local *local = scene_get_userdata(s);
     serial ser;
     serial_create(&ser);
-    serial_write_int8(&ser, PACKET_CHALLENGE << 4 | CHALLENGE_FLAG_CANCEL);
+    serial_write_int8(&ser, PACKET_CHALLENGE << 4 | CHALLENGE_CANCEL);
 
     ENetPacket *packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
     serial_free(&ser);
     enet_peer_send(local->peer, 0, packet);
+
+    if(local->opponent_peer) {
+        enet_peer_reset(local->opponent_peer);
+    }
+
+    local->opponent_peer = NULL;
+    local->opponent = NULL;
 }
 
 void lobby_do_challenge(component *c, void *userdata) {
@@ -609,7 +621,7 @@ void lobby_dialog_cancel_connect(dialog *dlg, dialog_result result) {
     lobby_local *local = scene_get_userdata(s);
     serial ser;
     serial_create(&ser);
-    serial_write_int8(&ser, PACKET_CHALLENGE << 4 | CHALLENGE_FLAG_CANCEL);
+    serial_write_int8(&ser, PACKET_CHALLENGE << 4 | CHALLENGE_CANCEL);
 
     ENetPacket *packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
     serial_free(&ser);
@@ -623,11 +635,11 @@ void lobby_dialog_cancel_connect(dialog *dlg, dialog_result result) {
 void lobby_try_connect(void *scenedata, void *userdata) {
     scene *s = scenedata;
     lobby_local *local = scene_get_userdata(s);
-    if(!local->opponent_peer) {
+    if(local->opponent && !local->opponent_peer) {
         log_debug("doing scheduled outbound connection to %d.%d.%d.%d port %d", local->opponent->address.host & 0xFF,
                   (local->opponent->address.host >> 8) & 0xFF, (local->opponent->address.host >> 16) & 0xF,
                   (local->opponent->address.host >> 24) & 0xFF, local->opponent->address.port);
-        local->opponent_peer = enet_host_connect(local->client, &local->opponent->address, 2, 0);
+        local->opponent_peer = enet_host_connect(local->client, &local->opponent->address, 3, 0);
         if(local->opponent_peer) {
             enet_peer_timeout(local->opponent_peer, 4, 1000, 1000);
         }
@@ -641,7 +653,7 @@ void lobby_dialog_accept_challenge(dialog *dlg, dialog_result result) {
     lobby_local *local = scene_get_userdata(s);
     serial ser;
     serial_create(&ser);
-    uint8_t flag = result == DIALOG_RESULT_YES_OK ? CHALLENGE_FLAG_ACCEPT : CHALLENGE_FLAG_REJECT;
+    uint8_t flag = result == DIALOG_RESULT_YES_OK ? CHALLENGE_ACCEPT : CHALLENGE_REJECT;
     serial_write_int8(&ser, (PACKET_CHALLENGE << 4) | flag);
 
     ENetPacket *packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
@@ -738,7 +750,7 @@ void lobby_tick(scene *scene, int paused) {
             end_port = 65535;
         }
         while(local->client == NULL) {
-            local->client = enet_host_create(&address, 2, 2, 0, 0);
+            local->client = enet_host_create(&address, 2, 3, 0, 0);
             log_debug("requested port %d unavailable, trying ports %d to %d", address.port,
                       settings_get()->net.net_listen_port_start, end_port);
             if(settings_get()->net.net_listen_port_start == 0) {
@@ -826,8 +838,8 @@ void lobby_tick(scene *scene, int paused) {
         // enet_address_set_host(&address, "127.0.0.1");
         lobby_address.port = 2098;
         log_debug("server address is %s", settings_get()->net.net_lobby_address);
-        /* Initiate the connection, allocating the two channels 0 and 1. */
-        local->peer = enet_host_connect(local->client, &lobby_address, 2, 0);
+        /* Initiate the connection, allocating the two channels 0, 1 and 2. */
+        local->peer = enet_host_connect(local->client, &lobby_address, 3, 0);
         if(local->peer == NULL) {
             lobby_show_dialog(scene, DIALOG_STYLE_OK, "No available peers for initiating an ENet connection.",
                               lobby_dialog_close_exit);
@@ -869,6 +881,7 @@ void lobby_tick(scene *scene, int paused) {
                 if(local->opponent_peer && event.peer->address.host == local->opponent->address.host) {
                     log_debug("connected to peer outbound!");
 
+                    // TODO probably need a more specific cancel callback here
                     lobby_show_dialog(scene, DIALOG_STYLE_CANCEL, "Connected, synchronizing clocks...", NULL);
                     local->opponent_peer = event.peer;
                     serial_create(&ser);
@@ -1050,6 +1063,7 @@ void lobby_tick(scene *scene, int paused) {
                             log_debug("connected to peer inbound!");
                             local->opponent_peer = event.peer;
 
+                            // TODO probably need a more specific cancel callback here
                             lobby_show_dialog(scene, DIALOG_STYLE_CANCEL, "Connected, synchronizing clocks...", NULL);
 
                             // signal the server we're connected
@@ -1145,6 +1159,100 @@ void lobby_tick(scene *scene, int paused) {
                         strncpy_or_truncate(log.msg, (char *)event.packet->data + 1, sizeof(log.msg));
                         list_append(&local->log, &log, sizeof(log));
                     } break;
+                    case PACKET_ANNOUNCEMENT: {
+                        log_event log;
+                        log.color = ANNOUNCEMENT_COLOR;
+                        strncpy_or_truncate(log.msg, (char *)event.packet->data + 1, sizeof(log.msg));
+                        list_append(&local->log, &log, sizeof(log));
+                    } break;
+                    case PACKET_RELAY: {
+                        lobby_show_dialog(scene, DIALOG_STYLE_CANCEL, "Connected via relay, synchronizing clocks...",
+                                          NULL);
+                        // lobby and opponent peer are now the same
+                        local->opponent_peer = local->peer;
+                        serial_create(&ser);
+                        serial_write_int8(&ser, PACKET_JOIN << 4);
+
+                        ENetPacket *packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
+                        serial_free(&ser);
+
+                        enet_peer_send(local->opponent_peer, 0, packet);
+
+                        // signal the server we're connected
+                        serial_create(&ser);
+                        serial_write_int8(&ser, PACKET_CONNECTED << 4);
+                        packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
+                        enet_peer_send(local->peer, 0, packet);
+                        serial_free(&ser);
+
+                        controller *player1_ctrl, *player2_ctrl;
+                        keyboard_keys *keys;
+                        game_player *p1 = game_state_get_player(gs, 0);
+                        game_player *p2 = game_state_get_player(gs, 1);
+                        gs->net_mode = NET_MODE_LOBBY;
+
+                        // force the speed to 3
+                        game_state_set_speed(gs, 10);
+
+                        p1->pilot->har_id = HAR_JAGUAR;
+                        p1->pilot->pilot_id = 0;
+                        p2->pilot->har_id = HAR_JAGUAR;
+                        p2->pilot->pilot_id = 0;
+
+                        player1_ctrl = omf_calloc(1, sizeof(controller));
+                        controller_init(player1_ctrl, gs);
+                        player1_ctrl->har_obj_id = p1->har_obj_id;
+                        player2_ctrl = omf_calloc(1, sizeof(controller));
+                        controller_init(player2_ctrl, gs);
+                        player2_ctrl->har_obj_id = p2->har_obj_id;
+
+                        game_player *challenger, *challengee;
+                        controller *challenger_ctrl, *challengee_ctrl;
+
+                        if(local->role == ROLE_CHALLENGER) {
+                            // we did the connecting and we're the challenger
+                            // so we are player 1
+                            challenger = p1;
+                            challengee = p2;
+                            challenger_ctrl = player1_ctrl;
+                            challengee_ctrl = player2_ctrl;
+                        } else {
+                            challenger = p2;
+                            challengee = p1;
+                            challenger_ctrl = player2_ctrl;
+                            challengee_ctrl = player1_ctrl;
+                        }
+
+                        // Challenger -- Network
+                        net_controller_create(challengee_ctrl, local->client, event.peer, local->peer,
+                                              local->role == ROLE_CHALLENGER ? ROLE_SERVER : ROLE_CLIENT);
+                        game_player_set_ctrl(challengee, challengee_ctrl);
+
+                        // Challengee controller -- Keyboard
+                        settings_keyboard *k = &settings_get()->keys;
+                        keys = omf_calloc(1, sizeof(keyboard_keys));
+                        keys->jump_up = SDL_GetScancodeFromName(k->key1_jump_up);
+                        keys->jump_right = SDL_GetScancodeFromName(k->key1_jump_right);
+                        keys->walk_right = SDL_GetScancodeFromName(k->key1_walk_right);
+                        keys->duck_forward = SDL_GetScancodeFromName(k->key1_duck_forward);
+                        keys->duck = SDL_GetScancodeFromName(k->key1_duck);
+                        keys->duck_back = SDL_GetScancodeFromName(k->key1_duck_back);
+                        keys->walk_back = SDL_GetScancodeFromName(k->key1_walk_back);
+                        keys->jump_left = SDL_GetScancodeFromName(k->key1_jump_left);
+                        keys->punch = SDL_GetScancodeFromName(k->key1_punch);
+                        keys->kick = SDL_GetScancodeFromName(k->key1_kick);
+                        keyboard_create(challenger_ctrl, keys, 0);
+                        game_player_set_ctrl(challenger, challenger_ctrl);
+                        game_player_set_selectable(challengee, 1);
+
+                        chr_score_set_difficulty(game_player_get_score(game_state_get_player(gs, 0)),
+                                                 AI_DIFFICULTY_CHAMPION);
+                        chr_score_set_difficulty(game_player_get_score(game_state_get_player(gs, 1)),
+                                                 AI_DIFFICULTY_CHAMPION);
+
+                        local->controllers_created = true;
+
+                    } break;
                     case PACKET_DISCONNECT: {
                         uint32_t connect_id = serial_read_uint32(&ser);
                         iterator it;
@@ -1172,7 +1280,7 @@ void lobby_tick(scene *scene, int paused) {
                     } break;
                     case PACKET_CHALLENGE: {
                         switch(control_byte & 0xf) {
-                            case 0: {
+                            case CHALLENGE_OFFER: {
                                 uint32_t connect_id = serial_read_uint32(&ser);
 
                                 log_debug("got challenge from %d, we are %d", connect_id, local->id);
@@ -1197,14 +1305,14 @@ void lobby_tick(scene *scene, int paused) {
                                     log_debug("unable to find user with id %d", connect_id);
                                 }
                             } break;
-                            case CHALLENGE_FLAG_ACCEPT:
+                            case CHALLENGE_ACCEPT:
                                 // peer accepted, try to connect to them
                                 lobby_show_dialog(scene, DIALOG_STYLE_CANCEL, "Establishing connection...",
                                                   lobby_dialog_cancel_connect);
 
                                 // try to connect immediately
                                 local->opponent_peer =
-                                    enet_host_connect(local->client, &local->opponent->address, 2, 0);
+                                    enet_host_connect(local->client, &local->opponent->address, 3, 0);
 
                                 log_debug("doing immediate outbound connection to %d.%d.%d.%d port %d",
                                           local->opponent->address.host & 0xFF,
@@ -1216,11 +1324,11 @@ void lobby_tick(scene *scene, int paused) {
                                 }
                                 local->connection_count = 0;
                                 break;
-                            case CHALLENGE_FLAG_REJECT:
+                            case CHALLENGE_REJECT:
                                 // peer rejected our challenge
                                 lobby_show_dialog(scene, DIALOG_STYLE_OK, "Challenge rejected.", lobby_dialog_close);
                                 break;
-                            case CHALLENGE_FLAG_CANCEL:
+                            case CHALLENGE_CANCEL:
                                 // peer cancelled their challenge
                                 lobby_show_dialog(scene, DIALOG_STYLE_OK, "Challenge cancelled by peer.",
                                                   lobby_dialog_close);
@@ -1228,7 +1336,15 @@ void lobby_tick(scene *scene, int paused) {
                                     enet_peer_reset(local->opponent_peer);
                                 }
                                 local->opponent_peer = NULL;
+                                local->opponent = NULL;
                                 break;
+                            case CHALLENGE_ERROR: {
+                                uint8_t error_len = ser.wpos - ser.rpos;
+                                char buf[200];
+                                serial_read(&ser, buf, min2(sizeof(buf) - 1, error_len));
+                                buf[error_len] = 0;
+                                lobby_show_dialog(scene, DIALOG_STYLE_OK, buf, lobby_dialog_close);
+                            } break;
                         }
                     } break;
                     default:
@@ -1418,7 +1534,7 @@ int lobby_create(scene *scene) {
         serial_create(&ser);
 
         if(winner >= 0) {
-            serial_write_int8(&ser, PACKET_CHALLENGE << 4 | CHALLENGE_FLAG_DONE);
+            serial_write_int8(&ser, PACKET_CHALLENGE << 4 | CHALLENGE_DONE);
             serial_write_int8(&ser, (uint8_t)winner);
             ENetPacket *packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
             enet_peer_send(local->peer, 0, packet);

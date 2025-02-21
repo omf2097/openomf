@@ -141,7 +141,7 @@ component *menu_listen_create(scene *s) {
         end_port = 65535;
     }
     while(local->host == NULL) {
-        local->host = enet_host_create(&address, 1, 2, 0, 0);
+        local->host = enet_host_create(&address, 1, 3, 0, 0);
         if(local->host == NULL) {
             if(settings_get()->net.net_listen_port_start == 0) {
                 address.port = rand_int(65535 - 1024) + 1024;
