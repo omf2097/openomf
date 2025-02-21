@@ -38,6 +38,7 @@ typedef struct {
     vga_palette pal;                        ///< Pilot palette
     uint32_t unknown_b;                     ///< Unkown value. Maybe tells if there is photo data ?
     sd_sprite *photo;                       ///< Pilot photo
+    float winnings_multiplier;              ///< Tournament winnings multiplier
     sd_chr_enemy *enemies[MAX_CHR_ENEMIES]; ///< List of enemy states in current tournament
     unsigned int cutscene;                  ///< cutscene id for end of tournament
     char *cutscene_text[10];                ///< cutscene dialog text
