@@ -17,10 +17,25 @@ typedef struct {
     int controllers_created;
     ENetHost *host;
     component *addr_input;
+    component *port_input;
     component *connect_button;
     component *cancel_button;
     scene *s;
 } connect_menu_data;
+
+enum
+{
+    lowest_port = 1,
+    highest_port = 65535,
+    highest_port_digits = 5, // 65535 is 5 digits long
+};
+
+static void menu_connect_reset_port_input(connect_menu_data *local) {
+    char port_s[highest_port_digits + 1];
+    snprintf(port_s, sizeof(port_s), "%d", settings_get()->net.net_connect_port);
+    port_s[highest_port_digits] = '\0';
+    textinput_set_text(local->port_input, port_s);
+}
 
 void menu_connect_free(component *c) {
     connect_menu_data *local = menu_get_userdata(c);
@@ -44,6 +59,19 @@ void menu_connect_start(component *c, void *userdata) {
     omf_free(settings_get()->net.net_connect_ip);
     settings_get()->net.net_connect_ip = omf_strdup(addr);
 
+    { // parse port
+        int port = 0;
+        const char *port_s = textinput_value(local->port_input);
+        if(sscanf(port_s, "%d", &port) == 1 && lowest_port <= port && port <= highest_port) {
+            settings_get()->net.net_connect_port = port;
+        } else {
+            port = settings_get()->net.net_connect_port;
+            log_debug("Invalid port '%s', falling back to previous value of %d", port_s, port);
+            menu_connect_reset_port_input(local);
+            return;
+        }
+    }
+
     // Set up enet host
     local->host = enet_host_create(NULL, 1, 2, 0, 0);
     if(local->host == NULL) {
@@ -54,6 +82,7 @@ void menu_connect_start(component *c, void *userdata) {
     // Disable connect button and address input field
     component_disable(local->connect_button, 1);
     component_disable(local->addr_input, 1);
+    component_disable(local->port_input, 1);
     menu_select(c->parent, local->cancel_button);
 
     // Set address
@@ -185,12 +214,16 @@ component *menu_connect_create(scene *s) {
     local->connect_start = 0;
     local->addr_input =
         textinput_create(&tconf, 15, "Enter an IP address you wish to connect to.", settings_get()->net.net_connect_ip);
+    local->port_input =
+        textinput_create(&tconf, highest_port_digits, "Enter the remote port you wish to connect to.", "");
+    menu_connect_reset_port_input(local);
     local->connect_button =
         textbutton_create(&tconf, "CONNECT", "Connect to the provided IP address.", COM_ENABLED, menu_connect_start, s);
     local->cancel_button =
         textbutton_create(&tconf, "CANCEL", "Exit from this menu.", COM_ENABLED, menu_connect_cancel, s);
     widget_set_id(local->connect_button, NETWORK_CONNECT_IP_BUTTON_ID);
     menu_attach(menu, local->addr_input);
+    menu_attach(menu, local->port_input);
     menu_attach(menu, local->connect_button);
     menu_attach(menu, local->cancel_button);
 

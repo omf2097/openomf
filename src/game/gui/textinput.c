@@ -227,6 +227,11 @@ void textinput_set_done_cb(component *c, textinput_done_cb done_cb, void *userda
     tb->userdata = userdata;
 }
 
+void textinput_set_text(component *c, char const *value) {
+    textinput *tb = widget_get_obj(c);
+    str_set_c(&tb->text, value);
+}
+
 component *textinput_create(const text_settings *tconf, int max_chars, const char *help, const char *initialvalue) {
     component *c = widget_create();
 

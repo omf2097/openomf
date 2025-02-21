@@ -11,5 +11,6 @@ const char *textinput_value(const component *c);
 void textinput_clear(component *c);
 void textinput_enable_background(component *c, int enabled);
 void textinput_set_done_cb(component *c, textinput_done_cb done_cb, void *userdata);
+void textinput_set_text(component *c, char const *value);
 
 #endif // TEXTINPUT_H
