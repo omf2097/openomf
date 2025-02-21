@@ -571,7 +571,9 @@ void arena_har_defeat_hook(int player_id, scene *scene) {
             player_winner->pilot->wins++;
             player_loser->pilot->losses++;
             if(player_id == 1) {
-                fight_stats->winnings = player_loser->pilot->winnings;
+                float winnings_multiplier = game_state_get_player(scene->gs, 0)->chr->winnings_multiplier;
+                fight_stats->winnings =
+                    (player_loser->pilot->money + player_loser->pilot->winnings) * winnings_multiplier;
                 // TODO The repair costs formula here is completely bogus
                 int trade_value = calculate_trade_value(player_winner->pilot) / 100;
                 float percentage = (float)winner_har->health / (float)winner_har->health_max;
