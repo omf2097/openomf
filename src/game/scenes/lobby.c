@@ -638,7 +638,7 @@ void lobby_try_connect(void *scenedata, void *userdata) {
         log_debug("doing scheduled outbound connection to %d.%d.%d.%d port %d", local->opponent->address.host & 0xFF,
                   (local->opponent->address.host >> 8) & 0xFF, (local->opponent->address.host >> 16) & 0xF,
                   (local->opponent->address.host >> 24) & 0xFF, local->opponent->address.port);
-        local->opponent_peer = enet_host_connect(local->client, &local->opponent->address, 2, 0);
+        local->opponent_peer = enet_host_connect(local->client, &local->opponent->address, 3, 0);
         if(local->opponent_peer) {
             enet_peer_timeout(local->opponent_peer, 4, 1000, 1000);
         }
@@ -749,7 +749,7 @@ void lobby_tick(scene *scene, int paused) {
             end_port = 65535;
         }
         while(local->client == NULL) {
-            local->client = enet_host_create(&address, 2, 2, 0, 0);
+            local->client = enet_host_create(&address, 2, 3, 0, 0);
             log_debug("requested port %d unavailable, trying ports %d to %d", address.port,
                       settings_get()->net.net_listen_port_start, end_port);
             if(settings_get()->net.net_listen_port_start == 0) {
@@ -837,8 +837,8 @@ void lobby_tick(scene *scene, int paused) {
         // enet_address_set_host(&address, "127.0.0.1");
         lobby_address.port = 2098;
         log_debug("server address is %s", settings_get()->net.net_lobby_address);
-        /* Initiate the connection, allocating the two channels 0 and 1. */
-        local->peer = enet_host_connect(local->client, &lobby_address, 2, 0);
+        /* Initiate the connection, allocating the two channels 0, 1 and 2. */
+        local->peer = enet_host_connect(local->client, &lobby_address, 3, 0);
         if(local->peer == NULL) {
             lobby_show_dialog(scene, DIALOG_STYLE_OK, "No available peers for initiating an ENet connection.",
                               lobby_dialog_close_exit);
@@ -1223,7 +1223,7 @@ void lobby_tick(scene *scene, int paused) {
 
                                 // try to connect immediately
                                 local->opponent_peer =
-                                    enet_host_connect(local->client, &local->opponent->address, 2, 0);
+                                    enet_host_connect(local->client, &local->opponent->address, 3, 0);
 
                                 log_debug("doing immediate outbound connection to %d.%d.%d.%d port %d",
                                           local->opponent->address.host & 0xFF,

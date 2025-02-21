@@ -45,7 +45,7 @@ void menu_connect_start(component *c, void *userdata) {
     settings_get()->net.net_connect_ip = omf_strdup(addr);
 
     // Set up enet host
-    local->host = enet_host_create(NULL, 1, 2, 0, 0);
+    local->host = enet_host_create(NULL, 1, 3, 0, 0);
     if(local->host == NULL) {
         log_debug("Failed to initialize ENet client");
         return;
@@ -60,7 +60,7 @@ void menu_connect_start(component *c, void *userdata) {
     enet_address_set_host(&address, addr);
     address.port = settings_get()->net.net_connect_port;
 
-    ENetPeer *peer = enet_host_connect(local->host, &address, 2, 0);
+    ENetPeer *peer = enet_host_connect(local->host, &address, 3, 0);
     if(peer == NULL) {
         log_debug("Unable to connect to %s", addr);
         enet_host_destroy(local->host);
