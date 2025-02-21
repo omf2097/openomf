@@ -25,7 +25,7 @@ typedef struct {
 
 enum
 {
-    lowest_port = 1,
+    lowest_port = 1025,
     highest_port = 65535,
     highest_port_digits = 5, // 65535 is 5 digits long
 };
