@@ -540,6 +540,9 @@ void net_controller_free(controller *ctrl) {
     }
     ENetEvent event;
     if(!data->disconnected) {
+        if(data->peer == data->lobby) {
+            goto done;
+        }
         log_debug("closing connection");
         enet_peer_disconnect(data->peer, 0);
 
@@ -860,6 +863,10 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
     // AND we've received events then try a rewind/replay
     if(has_received) {
         if(rewind_and_replay(data, ctrl->gs)) {
+            if(data->lobby == data->peer) {
+                game_state_set_next(ctrl->gs, SCENE_LOBBY);
+                return 1;
+            }
             enet_peer_disconnect(data->peer, 0);
             return 0;
         }
