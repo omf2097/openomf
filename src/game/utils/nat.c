@@ -14,31 +14,43 @@ bool nat_create_upnp_mapping(nat_ctx *ctx, uint16_t int_port, uint16_t ext_port)
     char ext_portstr[6];
     snprintf(ext_portstr, sizeof(ext_portstr), "%d", ext_port);
 
+    bool use_permanent_lease = false;
+
     // get the external (WAN) IP address
     // char wan_address[64];
     // UPNP_GetExternalIPAddress(ctx->upnp_urls.controlURL, ctx->upnp_data.first.servicetype, wan_address);
 
-    // add a new UDP port mapping from WAN port 12345 to local host port 24680
-    int error =
-        UPNP_AddPortMapping(ctx->upnp_urls.controlURL, ctx->upnp_data.first.servicetype,
-                            ext_portstr,      // external (WAN) port requested
-                            int_portstr,      // internal (LAN) port to which packets will be redirected
-                            ctx->lan_address, // internal (LAN) address to which packets will be redirected
-                            "OpenOMF", // text description to indicate why or who is responsible for the port mapping
-                            "UDP",     // protocol must be either TCP or UDP
-                            NULL,      // remote (peer) host address or nullptr for no restriction
-                            "86400");  // port map lease duration (in seconds) or zero for "as long as possible"
-    if(error == 0) {
-        log_debug("NAT-uPNP Port map successfully created from %d to %d!", int_port, ext_port);
+    for(;;) {
 
-        ctx->int_port = int_port;
-        ctx->ext_port = ext_port;
-        return true;
-    } else {
-        log_debug("NAT-uPNP port %d -> %d mapping failed with %d", int_port, ext_port, error);
-        // TODO there are some errors we can work around here
-        // like overly short lifetimes
-        return false;
+        char const *lease_duration = use_permanent_lease ? "0" : "86400";
+
+        int error = UPNP_AddPortMapping(
+            ctx->upnp_urls.controlURL, ctx->upnp_data.first.servicetype,
+            ext_portstr,      // external (WAN) port requested
+            int_portstr,      // internal (LAN) port to which packets will be redirected
+            ctx->lan_address, // internal (LAN) address to which packets will be redirected
+            "OpenOMF",        // text description to indicate why or who is responsible for the port mapping
+            "UDP",            // protocol must be either TCP or UDP
+            NULL,             // remote (peer) host address or nullptr for no restriction
+            lease_duration);  // port map lease duration (in seconds) or zero for "as long as possible"
+
+        if(error == 0) {
+            log_debug("NAT-uPNP Port map successfully created from %d to %d!", int_port, ext_port);
+
+            ctx->int_port = int_port;
+            ctx->ext_port = ext_port;
+            return true;
+        } else {
+            log_debug("NAT-uPNP port %d -> %d mapping failed with %d", int_port, ext_port, error);
+            if(error == 725 /* OnlyPermanentLeasesSupported */ && !use_permanent_lease) {
+                log_debug("NAT-uPNP error 725 is 'OnlyPermanentLeasesSupported', so retrying for a permanent lease.");
+                use_permanent_lease = true;
+                continue; // try again
+            }
+            // TODO there are more errors we can work around here
+            // like overly short lifetimes
+            return false;
+        }
     }
 #else
     return false;
