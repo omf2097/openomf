@@ -51,8 +51,6 @@ void projectile_move(object *obj) {
 
     float dampen = 0.7f;
 
-    log_debug("projectile move %f %f", obj->pos.x, obj->pos.y);
-
     // If wall bounce flag is on, bounce the projectile on wall hit
     // Otherwise kill it.
     if(local->wall_bounce) {
