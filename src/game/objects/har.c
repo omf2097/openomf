@@ -1261,9 +1261,16 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
         vel.x = 0.0f;
         object_set_vel(o_har, vel);
 
-        // Just take damage normally if there is no footer string in successor
-        log_debug("projectile %d dealt damage of %f", move->id, move->damage);
-        har_take_damage(o_har, &move->footer_string, move->damage, move->stun);
+        // Exception case for chronos' time freeze
+        if(player_frame_isset(o_pjt, "af")) {
+            // statis ticks is the raw damage from the move
+            h->in_stasis_ticks = move->raw_damage;
+        } else {
+            // Just take damage normally if there is no footer string in successor
+            log_debug("projectile dealt damage of %f", move->damage);
+            log_debug("projectile %d dealt damage of %f", move->id, move->damage);
+            har_take_damage(o_har, &move->footer_string, move->damage, move->stun);
+        }
 
         projectile_mark_hit(o_pjt);
 
@@ -1272,11 +1279,6 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
 
         har_spawn_scrap(o_har, hit_coord, move->block_stun);
         h->damage_received = 1;
-
-        // Exception case for chronos' time freeze
-        if(player_frame_isset(o_pjt, "af")) {
-            h->in_stasis_ticks = 75;
-        }
 
         if(player_frame_isset(o_pjt, "uz")) {
             // associate this with the enemy HAR
