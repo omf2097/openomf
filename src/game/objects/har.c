@@ -1656,10 +1656,6 @@ af_move *match_move(object *obj, char *inputs) {
                     continue;
                 }
 
-                if(move->category != CAT_DESTRUCTION && h->state == STATE_SCRAP) {
-                    continue;
-                }
-
                 if(move->category == CAT_FIRE_ICE) {
                     continue;
                 }
