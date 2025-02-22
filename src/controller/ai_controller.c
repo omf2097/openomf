@@ -2261,7 +2261,7 @@ bool handle_queued_tactic(controller *ctrl, ctrl_event **ev) {
             case MOVE_AVOID:
                 if(enemy_range == RANGE_FAR) {
                     tactic->move_timer = 0;
-                    acted = true;
+                    acted = false;
                 } else {
                     if(enemy_range == RANGE_CRAMPED || !roll_pref(a->pilot->pref_jump)) {
                         // take a step away
