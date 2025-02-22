@@ -172,6 +172,8 @@ void fonts_close(void) {
     if(fonts_loaded) {
         font_free(&font_small);
         font_free(&font_large);
+        font_free(&font_net1);
+        font_free(&font_net2);
         fonts_loaded = 0;
     }
 }
