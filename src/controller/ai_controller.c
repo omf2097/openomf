@@ -2264,6 +2264,7 @@ bool handle_queued_tactic(controller *ctrl, ctrl_event **ev) {
                     }
 
                     controller_cmd(ctrl, a->cur_act, ev);
+                    controller_cmd(ctrl, ACT_STOP, ev);
                     tactic->move_timer--;
                 }
 
@@ -2279,6 +2280,7 @@ bool handle_queued_tactic(controller *ctrl, ctrl_event **ev) {
                     // jump closer
                     a->cur_act = UPFORWARD;
                     controller_cmd(ctrl, a->cur_act, ev);
+                    controller_cmd(ctrl, ACT_STOP, ev);
                     if(roll_pref(a->pilot->pref_jump)) {
                         tactic->move_timer--;
                     } else {
@@ -2292,6 +2294,7 @@ bool handle_queued_tactic(controller *ctrl, ctrl_event **ev) {
                     // jump over enemy
                     a->cur_act = UPFORWARD;
                     controller_cmd(ctrl, a->cur_act, ev);
+                    controller_cmd(ctrl, ACT_STOP, ev);
                     tactic->move_timer = 0;
                 } else {
                     tactic->move_timer = 0;
@@ -2649,7 +2652,7 @@ int ai_controller_poll(controller *ctrl, ctrl_event **ev) {
     // log_debug("=== POLL === handle_movement");
 
     // queue a random tactic for next poll
-    if(a->last_move_id > 0 && (roll_chance(RANDOM_ATTACK_CHANCE) && diff_scale(a)) && a->tactic->tactic_type == 0 &&
+    if((a->last_move_id == 0 || a->tactic->tactic_type == 0 || (roll_chance(RANDOM_ATTACK_CHANCE) && diff_scale(a))) &&
        can_move) {
         // log_debug("Attempt to queue random tactic[0m");
         int tacs[] = {TACTIC_SHOOT, TACTIC_CLOSE, TACTIC_FLY, TACTIC_PUSH, TACTIC_TRIP, TACTIC_GRAB, TACTIC_QUICK};
