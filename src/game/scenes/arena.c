@@ -544,17 +544,17 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
     }
 }
 
-void arena_har_defeat_hook(int player_id, scene *scene) {
+void arena_har_defeat_hook(int loser_player_id, scene *scene) {
     game_state *gs = scene->gs;
-    arena_local *local = scene_get_userdata(scene);
-    int other_player_id = abs(player_id - 1);
-    game_player *player_winner = game_state_get_player(scene->gs, other_player_id);
-    game_player *player_loser = game_state_get_player(scene->gs, player_id);
+    int winner_player_id = abs(loser_player_id - 1);
+    game_player *player_winner = game_state_get_player(scene->gs, winner_player_id);
+    game_player *player_loser = game_state_get_player(scene->gs, loser_player_id);
     object *winner = game_state_find_object(scene->gs, game_player_get_har_obj_id(player_winner));
     object *loser = game_state_find_object(scene->gs, game_player_get_har_obj_id(player_loser));
     har *winner_har = object_get_userdata(winner);
     fight_stats *fight_stats = &gs->fight_stats;
-    fight_stats->winner = other_player_id;
+    fight_stats->winner = winner_player_id;
+    chr_score *score = game_player_get_score(game_state_get_player(gs, winner_player_id));
     // XXX need a smarter way to detect if a player is networked or local
     if(player_winner->ctrl->type != CTRL_TYPE_NETWORK && player_loser->ctrl->type == CTRL_TYPE_NETWORK) {
         scene_youwin_anim_start(scene->gs);
@@ -570,14 +570,16 @@ void arena_har_defeat_hook(int player_id, scene *scene) {
         } else {
             player_winner->pilot->wins++;
             player_loser->pilot->losses++;
-            if(player_id == 1) {
-                float winnings_multiplier = game_state_get_player(scene->gs, 0)->chr->winnings_multiplier;
-                fight_stats->winnings =
-                    (player_loser->pilot->money + player_loser->pilot->winnings) * winnings_multiplier;
+            if(loser_player_id == 1) {
                 // TODO The repair costs formula here is completely bogus
                 int trade_value = calculate_trade_value(player_winner->pilot) / 100;
-                float percentage = (float)winner_har->health / (float)winner_har->health_max;
-                fight_stats->repair_cost = (1.0f - percentage) * trade_value;
+                float hp_percentage = (float)winner_har->health / (float)winner_har->health_max;
+                fight_stats->repair_cost = (1.0f - hp_percentage) * trade_value;
+
+                float winnings_multiplier = player_winner->chr->winnings_multiplier;
+                fight_stats->winnings =
+                    (player_loser->pilot->money + player_loser->pilot->winnings) * winnings_multiplier;
+
                 player_winner->pilot->rank--;
                 scene_youwin_anim_start(scene->gs);
             } else {
@@ -588,8 +590,8 @@ void arena_har_defeat_hook(int player_id, scene *scene) {
             }
         }
     }
-    chr_score *score = game_player_get_score(game_state_get_player(gs, other_player_id));
-    object *round_token = game_state_find_object(gs, local->player_rounds[other_player_id][score->rounds]);
+    arena_local *local = scene_get_userdata(scene);
+    object *round_token = game_state_find_object(gs, local->player_rounds[winner_player_id][score->rounds]);
     if(round_token) {
         object_set_sprite_override(round_token, 0);
         object_select_sprite(round_token, 0);
@@ -603,7 +605,7 @@ void arena_har_defeat_hook(int player_id, scene *scene) {
         har_set_ani(winner, ANIM_VICTORY, 0);
         winner_har->state = STATE_VICTORY;
         local->over = 1;
-        local->winner = player_id;
+        local->winner = winner_player_id;
         game_player_get_score(player_winner)->wins++;
 
         if(is_singleplayer(gs)) {
