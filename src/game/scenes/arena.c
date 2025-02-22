@@ -549,6 +549,8 @@ void arena_har_defeat_hook(int loser_player_id, scene *scene) {
     int winner_player_id = abs(loser_player_id - 1);
     game_player *player_winner = game_state_get_player(scene->gs, winner_player_id);
     game_player *player_loser = game_state_get_player(scene->gs, loser_player_id);
+    player_winner->pilot->wins++;
+    player_loser->pilot->losses++;
     object *winner = game_state_find_object(scene->gs, game_player_get_har_obj_id(player_winner));
     object *loser = game_state_find_object(scene->gs, game_player_get_har_obj_id(player_loser));
     har *winner_har = object_get_userdata(winner);
@@ -568,25 +570,26 @@ void arena_har_defeat_hook(int loser_player_id, scene *scene) {
             // XXX in two player mode, "you win" should always be displayed
             scene_youwin_anim_start(scene->gs);
         } else {
-            player_winner->pilot->wins++;
-            player_loser->pilot->losses++;
             if(loser_player_id == 1) {
-                // TODO The repair costs formula here is completely bogus
-                int trade_value = calculate_trade_value(player_winner->pilot) / 100;
-                float hp_percentage = (float)winner_har->health / (float)winner_har->health_max;
-                fight_stats->repair_cost = (1.0f - hp_percentage) * trade_value;
+                if(is_tournament(gs)) {
+                    // TODO The repair costs formula here is completely bogus
+                    int trade_value = calculate_trade_value(player_winner->pilot) / 100;
+                    float hp_percentage = (float)winner_har->health / (float)winner_har->health_max;
+                    fight_stats->repair_cost = (1.0f - hp_percentage) * trade_value;
 
-                float winnings_multiplier = player_winner->chr->winnings_multiplier;
-                fight_stats->winnings =
-                    (player_loser->pilot->money + player_loser->pilot->winnings) * winnings_multiplier;
-                fight_stats->winnings += (int)(100 * hp_percentage * chr_score_get_difficulty_multiplier(score));
-
+                    float winnings_multiplier = player_winner->chr->winnings_multiplier;
+                    fight_stats->winnings =
+                        (player_loser->pilot->money + player_loser->pilot->winnings) * winnings_multiplier;
+                    fight_stats->winnings += (int)(100 * hp_percentage * chr_score_get_difficulty_multiplier(score));
+                }
                 player_winner->pilot->rank--;
                 scene_youwin_anim_start(scene->gs);
             } else {
-                if(player_loser->pilot->rank <= player_loser->pilot->enemies_ex_unranked)
-                    player_loser->pilot->rank++;
-                fight_stats->repair_cost = calculate_trade_value(player_loser->pilot) / 100;
+                if(is_tournament(gs)) {
+                    if(player_loser->pilot->rank <= player_loser->pilot->enemies_ex_unranked)
+                        player_loser->pilot->rank++;
+                    fight_stats->repair_cost = calculate_trade_value(player_loser->pilot) / 100;
+                }
                 scene_youlose_anim_start(scene->gs);
             }
         }
