@@ -25,5 +25,6 @@ extern font font_net2;
 
 bool fonts_init(void);
 void fonts_close(void);
+const surface *font_get_surface(font_size font, char ch);
 
 #endif // FONTS_H
