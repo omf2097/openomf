@@ -371,6 +371,17 @@ int get_enemy_range(const controller *ctrl) {
     }
 }
 
+bool enemy_is_stunned_or_stasis(const controller *ctrl) {
+    object *o = game_state_find_object(ctrl->gs, ctrl->har_obj_id);
+    har *h = object_get_userdata(o);
+    object *o_enemy =
+        game_state_find_object(ctrl->gs, game_state_get_player(ctrl->gs, h->player_id == 1 ? 0 : 1)->har_obj_id);
+
+    har *h_enemy = object_get_userdata(o_enemy);
+
+    return h_enemy->state == STATE_STUNNED || h_enemy->in_stasis_ticks;
+}
+
 /**
  * \brief Convenience method to check whether the provided move is a special move.
  *
@@ -2183,7 +2194,8 @@ bool attempt_projectile_attack(controller *ctrl, ctrl_event **ev) {
             return true;
         } break;
         case HAR_CHRONOS: {
-            if(enemy_range < RANGE_MID) {
+            if(enemy_range < RANGE_MID || enemy_is_stunned_or_stasis(ctrl)) {
+                // stasis does no damage, so don't use it on a stunned or already frozen enemy
                 return false;
             }
             // Stasis : D, B, P
