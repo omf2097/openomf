@@ -1238,10 +1238,21 @@ void arena_render_overlay(scene *scene) {
         if(player[0]->ctrl->type == CTRL_TYPE_NETWORK) {
             snprintf(buf, 40, "ping %d", player[0]->ctrl->rtt / 2);
             text_render(&tconf_debug, TEXT_DEFAULT, 5, 40, 250, 6, buf);
+#ifdef DEBUGMODE
+        } else if(player[0]->ctrl->type == CTRL_TYPE_AI) {
+            ai_controller_print_state(player[0]->ctrl, buf, sizeof(buf));
+            text_render(&tconf_debug, TEXT_DEFAULT, 5, 40, 250, 6, buf);
+#endif
         }
+
         if(player[1]->ctrl->type == CTRL_TYPE_NETWORK) {
             snprintf(buf, 40, "ping %d", player[1]->ctrl->rtt / 2);
             text_render(&tconf_debug, TEXT_DEFAULT, 315 - (strlen(buf) * font_small.w), 40, 250, 6, buf);
+#ifdef DEBUGMODE
+        } else if(player[1]->ctrl->type == CTRL_TYPE_AI) {
+            ai_controller_print_state(player[1]->ctrl, buf, sizeof(buf));
+            text_render(&tconf_debug, TEXT_DEFAULT, 315 - (strlen(buf) * font_small.w), 40, 250, 6, buf);
+#endif
         }
     }
 

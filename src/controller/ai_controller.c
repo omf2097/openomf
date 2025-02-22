@@ -2662,6 +2662,82 @@ int ai_controller_poll(controller *ctrl, ctrl_event **ev) {
     return 0;
 }
 
+const char *ai_tactic(int tactic_type) {
+    switch(tactic_type) {
+        case TACTIC_ESCAPE:
+            return "escape";
+        case TACTIC_TURTLE:
+            return "turtle";
+        case TACTIC_GRAB:
+            return "grab";
+        case TACTIC_SPAM:
+            return "spam";
+        case TACTIC_SHOOT:
+            return "shoot";
+        case TACTIC_TRIP:
+            return "trip";
+        case TACTIC_QUICK:
+            return "quick";
+        case TACTIC_CLOSE:
+            return "close";
+        case TACTIC_FLY:
+            return "fly";
+        case TACTIC_PUSH:
+            return "push";
+        case TACTIC_COUNTER:
+            return "counter";
+    }
+    return "?"; // Handle unexpected input
+}
+
+const char *ai_move(int move_type) {
+    switch(move_type) {
+        case MOVE_CLOSE:
+            return "close";
+        case MOVE_AVOID:
+            return "avoid";
+        case MOVE_JUMP:
+            return "jump";
+        case MOVE_HIGH_JUMP:
+            return "high_jump";
+        case MOVE_BLOCK:
+            return "block";
+    }
+    return "?";
+}
+
+const char *ai_attack(int attack_type) {
+    switch(attack_type) {
+        case ATTACK_ID:
+            return "id";
+        case ATTACK_TRIP:
+            return "trip";
+        case ATTACK_GRAB:
+            return "grab";
+        case ATTACK_LIGHT:
+            return "light";
+        case ATTACK_HEAVY:
+            return "heavy";
+        case ATTACK_JUMP:
+            return "jump";
+        case ATTACK_RANGED:
+            return "ranged";
+        case ATTACK_CHARGE:
+            return "charge";
+        case ATTACK_PUSH:
+            return "push";
+        case ATTACK_RANDOM:
+            return "random";
+    }
+    return "?";
+}
+
+void ai_controller_print_state(controller *ctrl, char *buf, size_t bufsize) {
+    ai *a = ctrl->data;
+    snprintf(buf, bufsize, "%s %s %s %d", ai_tactic(a->tactic->tactic_type), ai_move(a->tactic->move_type),
+             ai_attack(a->tactic->attack_type), a->last_move_id);
+}
+
 void ai_controller_create(controller *ctrl, int difficulty, sd_pilot *pilot, int pilot_id) {
     ai *a = omf_calloc(1, sizeof(ai));
     a->difficulty = difficulty + 1;
