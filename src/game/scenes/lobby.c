@@ -148,7 +148,7 @@ typedef struct lobby_local_t {
 
 typedef struct log_event_t {
     uint8_t color;
-    char msg[51];
+    char msg[150];
 } log_event;
 
 void lobby_free(scene *scene) {
