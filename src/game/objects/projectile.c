@@ -18,23 +18,21 @@ typedef struct projectile_local_t {
     uint32_t linked_obj;
 } projectile_local;
 
-void projectile_tick(object *obj) {
+void projectile_finished(object *obj) {
     projectile_local *local = object_get_userdata(obj);
 
-    if(obj->animation_state.finished) {
-        if(local->linked_obj) {
-            object *linked = game_state_find_object(obj->gs, local->linked_obj);
-            if(linked) {
-                linked->animation_state.disable_d = 1;
-            }
+    if(local->linked_obj) {
+        object *linked = game_state_find_object(obj->gs, local->linked_obj);
+        if(linked) {
+            linked->animation_state.disable_d = 1;
         }
-        af_move *move = af_get_move(local->af_data, obj->cur_animation->id);
-        if(move->successor_id) {
-            object_set_animation(obj, &af_get_move(local->af_data, move->successor_id)->ani);
-            object_set_repeat(obj, 0);
-            object_set_vel(obj, vec2f_create(0, 0));
-            obj->animation_state.finished = 0;
-        }
+    }
+    af_move *move = af_get_move(local->af_data, obj->cur_animation->id);
+    if(move->successor_id) {
+        object_set_animation(obj, &af_get_move(local->af_data, move->successor_id)->ani);
+        object_set_repeat(obj, 0);
+        object_set_vel(obj, vec2f_create(0, 0));
+        obj->animation_state.finished = 0;
     }
 }
 
@@ -81,6 +79,7 @@ void projectile_move(object *obj) {
     } else if(obj->pos.y > ARENA_FLOOR) {
         obj->pos.y = ARENA_FLOOR;
         obj->animation_state.finished = 1;
+        projectile_finished(obj);
     }
     if(obj->pos.y >= (ARENA_FLOOR - 5) && IS_ZERO(obj->vel.x) && obj->vel.y < obj->gravity * 1.1 &&
        obj->vel.y > obj->gravity * -1.1 && local->ground_freeze) {
@@ -114,9 +113,9 @@ int projectile_create(object *obj, har *har) {
 
     // Set up callbacks
     object_set_userdata(obj, local);
-    object_set_dynamic_tick_cb(obj, projectile_tick);
     object_set_free_cb(obj, projectile_free);
     object_set_move_cb(obj, projectile_move);
+    object_set_finish_cb(obj, projectile_finished);
     obj->clone = projectile_clone;
     obj->clone_free = projectile_clone_free;
     return 0;
