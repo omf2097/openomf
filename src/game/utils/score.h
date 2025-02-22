@@ -48,6 +48,7 @@ void chr_score_free(chr_score *score);
 void chr_score_tick(chr_score *score);
 void chr_score_render(chr_score *score, bool render_total_points);
 int chr_score_onscreen(chr_score *score);
+float chr_score_get_difficulty_multiplier(chr_score *score);
 
 void chr_score_hit(chr_score *score, int points);
 void chr_score_victory(chr_score *score, int health);
