@@ -1262,7 +1262,7 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
         object_set_vel(o_har, vel);
 
         // Just take damage normally if there is no footer string in successor
-        log_debug("projectile dealt damage of %f", move->damage);
+        log_debug("projectile %d dealt damage of %f", move->id, move->damage);
         har_take_damage(o_har, &move->footer_string, move->damage, move->stun);
 
         projectile_mark_hit(o_pjt);
@@ -2239,8 +2239,10 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
                 // Single Player
                 // Damage = Base Damage * (20 + Power) / 30 + 1
                 //  Stun = (Base Damage + 6) * 512
-                move->stun = (move->damage + 6) * 512;
-                move->damage = move->damage * (20 + pilot->power) / 30 + 1;
+                if(move->damage) {
+                    move->stun = (move->damage + 6) * 512;
+                    move->damage = move->damage * (20 + pilot->power) / 30 + 1;
+                }
                 // projectiles have hyper mode, but may have extra_string_selector of 0
                 if(move->ani.extra_string_count > 0 && move->extra_string_selector != 1 &&
                    move->extra_string_selector != 2) {
@@ -2259,7 +2261,9 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
                 // Tournament Mode
                 // Damage = (Base Damage * (25 + Power) / 35 + 1) * leg/arm power / armor
                 // Stun = ((Base Damage * (35 + Power) / 45) * 2 + 12) * 256
-                move->stun = ((move->damage * (35 + pilot->power) / 45) * 2 + 12) * 256;
+                if(move->damage) {
+                    move->stun = ((move->damage * (35 + pilot->power) / 45) * 2 + 12) * 256;
+                }
 
                 // check for enhancements
                 if(move->ani.extra_string_count > 0 && move->extra_string_selector != 1 &&
@@ -2292,7 +2296,9 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
                         break;
                     case 1:
                         // arm speed and power
-                        move->damage = (move->damage * (25 + pilot->power) / 35 + 1) * arm_power;
+                        if(move->damage) {
+                            move->damage = (move->damage * (25 + pilot->power) / 35 + 1) * arm_power;
+                        }
                         if(move->ani.extra_string_count > 0) {
                             // sometimes there's not enough extra strings, so take the last available
                             str_set(&move->ani.animation_string,
@@ -2302,7 +2308,9 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
                         break;
                     case 2:
                         // leg speed and power
-                        move->damage = (move->damage * (25 + pilot->power) / 35 + 1) * leg_power;
+                        if(move->damage) {
+                            move->damage = (move->damage * (25 + pilot->power) / 35 + 1) * leg_power;
+                        }
                         if(move->ani.extra_string_count > 0) {
                             // sometimes there's not enough extra strings, so take the last available
                             str_set(&move->ani.animation_string,
@@ -2312,15 +2320,21 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
                         break;
                     case 3:
                         // apply arm power for damage
-                        move->damage = (move->damage * (25 + pilot->power) / 35 + 1) * arm_power;
+                        if(move->damage) {
+                            move->damage = (move->damage * (25 + pilot->power) / 35 + 1) * arm_power;
+                        }
                         break;
                     case 4:
                         // apply leg power for damage
-                        move->damage = (move->damage * (25 + pilot->power) / 35 + 1) * leg_power;
+                        if(move->damage) {
+                            move->damage = (move->damage * (25 + pilot->power) / 35 + 1) * leg_power;
+                        }
                         break;
                     case 5:
                         // apply leg and arm power for damage
-                        move->damage = (move->damage * (25 + pilot->power) / 35 + 1) * leg_power * leg_power;
+                        if(move->damage) {
+                            move->damage = (move->damage * (25 + pilot->power) / 35 + 1) * leg_power * leg_power;
+                        }
                         break;
                 }
             }
