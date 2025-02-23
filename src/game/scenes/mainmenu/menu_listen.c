@@ -203,8 +203,13 @@ component *menu_listen_create(scene *s) {
     component *menu = menu_create(11);
     menu_attach(menu, label_create(&tconf, "START SERVER"));
     menu_attach(menu, filler_create());
-    char buf[80];
-    snprintf(buf, sizeof(buf), "Waiting for connections to port %d.", ext_port ? ext_port : address.port);
+    char buf[200];
+    if(local->nat.type != NAT_TYPE_NONE) {
+        snprintf(buf, sizeof(buf), "Waiting for local connections to port %d and external connections to %s port %d.",
+                 address.port, local->nat.wan_address, local->nat.ext_port);
+    } else {
+        snprintf(buf, sizeof(buf), "Waiting for connections to port %d.", ext_port ? ext_port : address.port);
+    }
     menu_attach(menu, label_create(&tconf, buf));
     menu_attach(menu, filler_create());
     local->cancel_button =

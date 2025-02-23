@@ -5,6 +5,7 @@
 
 #ifdef MINIUPNPC_FOUND
 #include <miniupnpc/miniupnpc.h>
+#include <miniupnpc/portlistingparse.h>
 #include <miniupnpc/upnpcommands.h>
 #endif
 
@@ -19,8 +20,11 @@ typedef struct nat_ctx_t {
     nat_type_t type;
     uint16_t int_port;
     uint16_t ext_port;
+    char wan_address[64];
 #ifdef MINIUPNPC_FOUND
     char lan_address[64];
+    bool use_permanent_lease;
+    bool wildcard_ext_port;
     struct UPNPUrls upnp_urls;
     struct IGDdatas upnp_data;
     struct UPNPDev *upnp_dev;
