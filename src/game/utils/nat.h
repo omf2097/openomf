@@ -9,6 +9,10 @@
 #include <miniupnpc/upnpcommands.h>
 #endif
 
+#ifdef _WIN32
+#include <ws2tcpip.h>
+#endif
+
 typedef enum
 {
     NAT_TYPE_NONE,
