@@ -132,3 +132,39 @@ out on old sounds and a fade in on new sounds to try to minimize popping and
 other audio artifacts.
 
 Refer to the resources on the GGPO website for further details.
+
+Configuration
+--------------
+
+There are several networking options available in the config file that are not
+currently available in the menus.
+
+* `net_lobby_address` The address of the OpenOMF lobby to connect to, defaults
+   to lobby.openomf.org
+* `net_listen_port_start` When trying to bind to a port, start at this number, 0
+  means any port
+* `net_listen_port_end` When trying to bind to a port, don't go past this number,
+  0 means don't stop
+* `net_ext_port_start` When using PMP or UPnP, only use external ports at or
+  above this number, defaults to 0 for any external port
+* `net_ext_port_end` When using PMP or UPnP, don't use an external port above
+  this number, 0 means don't have an upper limit
+* `net_use_pmp` Whether to attempt using NAT-PMP, if you are having trouble with
+  a broken or misconfigured PMP server, disabling it here may help
+* `net_use_upnp` Whether to attempt using UPnP, if you are having trouble with
+  a broken or misconfigured UPnP server, disabling it here may help
+
+Command line switches
+---------------------
+
+It can be convienent to start the game and jump straight into a match, so the
+following command line switches are provided
+
+* `--connect <IP or Host>` Connect directly to the given peer
+* `--port <port>` Use a specific port when connecting to the peer provided by
+  `--connect`
+* `--lobby` Jump straight into the lobby
+* `--lobby-addr <IP or Host>` Instead of using the lobby address from the
+  config file, use address for the lobby
+
+
