@@ -169,28 +169,32 @@ error_4:
     return false;
 }
 
+const font *fonts_get_font(font_size font) {
+    switch(font) {
+        case FONT_BIG:
+            return &font_large;
+        case FONT_SMALL:
+            return &font_small;
+        case FONT_NET1:
+            return &font_net1;
+        case FONT_NET2:
+            return &font_net2;
+        default:
+            return NULL;
+    }
+}
+
 static int text_char_to_glyph_index(char c) {
     int ic = (int)(unsigned char)c;
     return ic - FIRST_PRINTABLE_CHAR;
 }
 
-const surface *font_get_surface(font_size font, char ch) {
+const surface *fonts_get_surface(const font *font, char ch) {
     int code = text_char_to_glyph_index(ch);
     if(code < 0) {
         return NULL;
     }
-    switch(font) {
-        case FONT_BIG:
-            return vector_get(&font_large.surfaces, code);
-        case FONT_SMALL:
-            return vector_get(&font_small.surfaces, code);
-        case FONT_NET1:
-            return vector_get(&font_net1.surfaces, code);
-        case FONT_NET2:
-            return vector_get(&font_net2.surfaces, code);
-        default:
-            return NULL;
-    }
+    return vector_get(&font->surfaces, code);
 }
 
 void fonts_close(void) {
