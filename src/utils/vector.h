@@ -24,8 +24,8 @@ void vector_free(vector *vector);
 
 void *vector_get(const vector *vector, unsigned int key);
 int vector_set(vector *vector, unsigned int key, const void *value);
-int vector_append(vector *vector, const void *value);
-int vector_prepend(vector *vector, const void *value);
+void vector_append(vector *vector, const void *value);
+void *vector_append_ptr(vector *vec);
 
 void vector_sort(vector *vector, vector_compare_func cf);
 
