@@ -42,7 +42,7 @@ static int font_load(font *font, const char *filename, unsigned int size) {
     sd_vga_image img;
     sd_font sdfont;
     int pixsize;
-    surface sur;
+    surface *sur;
 
     // Find vertical size
     switch(size) {
@@ -69,9 +69,9 @@ static int font_load(font *font, const char *filename, unsigned int size) {
     sd_vga_image_create(&img, pixsize, pixsize);
     for(int i = 0; i < 224; i++) {
         sd_font_decode(&sdfont, &img, i, 1);
-        surface_create_from_vga(&sur, &img);
-        surface_set_transparency(&sur, 0);
-        vector_append(&font->surfaces, &sur);
+        sur = vector_append_ptr(&font->surfaces);
+        surface_create_from_vga(sur, &img);
+        surface_set_transparency(sur, 0);
     }
 
     // Set font info vars
@@ -89,7 +89,7 @@ static int pcx_font_load(font *font, const char *filename, int8_t palette_offset
     sd_vga_image img;
     pcx_font pcx_font;
     int pixsize;
-    surface sur;
+    surface *sur;
 
     if(pcx_load_font(&pcx_font, filename)) {
         pcx_font_free(&pcx_font);
@@ -99,13 +99,12 @@ static int pcx_font_load(font *font, const char *filename, int8_t palette_offset
     pixsize = pcx_font.glyph_height;
 
     // Load into textures
-
     for(int i = 0; i < pcx_font.glyph_count; i++) {
         sd_vga_image_create(&img, pcx_font.glyphs[i].width, pixsize);
         pcx_font_decode(&pcx_font, &img, i, 1);
-        surface_create_from_vga(&sur, &img);
-        surface_set_transparency(&sur, 0);
-        vector_append(&font->surfaces, &sur);
+        sur = vector_append_ptr(&font->surfaces);
+        surface_create_from_vga(sur, &img);
+        surface_set_transparency(sur, 0);
         sd_vga_image_free(&img);
     }
 
