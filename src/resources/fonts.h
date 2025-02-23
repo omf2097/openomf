@@ -19,14 +19,12 @@ typedef struct font {
     vector surfaces;
 } font;
 
-extern font font_small;
-extern font font_large;
-extern font font_net1;
-extern font font_net2;
+void font_create(font *f);
+void font_free(font *font);
+const surface *font_get_surface(const font *font, char ch);
 
 bool fonts_init(void);
 void fonts_close(void);
 const font *fonts_get_font(font_size font);
-const surface *fonts_get_surface(const font *font, char ch);
 
 #endif // FONTS_H

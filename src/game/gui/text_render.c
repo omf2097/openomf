@@ -4,15 +4,7 @@
 #include "game/gui/text_render.h"
 #include "utils/log.h"
 #include "utils/miscmath.h"
-#include "utils/vector.h"
 #include "video/video.h"
-
-static unsigned char FIRST_PRINTABLE_CHAR = (unsigned char)' ';
-
-static int text_chartoglyphindex(char c) {
-    int ic = (int)(unsigned char)c;
-    return ic - FIRST_PRINTABLE_CHAR;
-}
 
 void text_defaults(text_settings *settings) {
     memset(settings, 0, sizeof(text_settings));
@@ -27,31 +19,9 @@ void text_defaults(text_settings *settings) {
     settings->strip_trailing_whitespace = true;
 }
 
-static inline surface *get_font_surface(const text_settings *settings, char ch) {
-    // Make sure code is valid
-    surface **ret;
-    int code = text_chartoglyphindex(ch);
-    if(code < 0) {
-        return NULL;
-    }
-    switch(settings->font) {
-        case FONT_BIG:
-            ret = vector_get(&font_large.surfaces, code);
-            break;
-        case FONT_SMALL:
-            ret = vector_get(&font_small.surfaces, code);
-            break;
-        case FONT_NET1:
-            ret = vector_get(&font_net1.surfaces, code);
-            break;
-        case FONT_NET2:
-            ret = vector_get(&font_net2.surfaces, code);
-            break;
-        default:
-            ret = NULL;
-            break;
-    }
-    return (ret == NULL) ? NULL : *ret;
+static inline const surface *get_font_surface(const text_settings *settings, char ch) {
+    const font *fnt = fonts_get_font(settings->font);
+    return font_get_surface(fnt, ch);
 }
 
 static inline void render_char_shadow_surface(const text_settings *settings, const surface *sur, int x, int y) {
@@ -65,7 +35,8 @@ static inline void render_char_shadow_surface(const text_settings *settings, con
         video_draw_offset(sur, x, y - 1, settings->cshadow, 255);
 }
 
-static inline void render_char_surface(const text_settings *settings, text_mode state, surface *sur, int x, int y) {
+static inline void render_char_surface(const text_settings *settings, text_mode state, const surface *sur, int x,
+                                       int y) {
     int color;
     switch(state) {
         case TEXT_SELECTED:
@@ -84,7 +55,8 @@ static inline void render_char_surface(const text_settings *settings, text_mode 
 }
 
 int text_render_char(const text_settings *settings, text_mode state, int x, int y, char ch) {
-    surface *sur = get_font_surface(settings, ch);
+    const font *fnt = fonts_get_font(settings->font);
+    const surface *sur = font_get_surface(fnt, ch);
     render_char_shadow_surface(settings, sur, x, y);
     render_char_surface(settings, state, sur, x, y);
     return sur->w;
@@ -136,12 +108,10 @@ int text_width(const text_settings *settings, const char *text) {
 }
 
 int text_width_limit(const text_settings *settings, const char *text, int limit) {
-
     int len = strlen(text);
     int width = 0;
-    surface *sur = NULL;
     for(int i = 0; i < min2(len, limit); i++) {
-        sur = get_font_surface(settings, text[i]);
+        const surface *sur = get_font_surface(settings, text[i]);
         if(sur != NULL) {
             width += sur->w;
         }
@@ -310,7 +280,7 @@ static void text_render_len(const text_settings *settings, text_mode mode, int x
                 break;
         }
 
-        surface *sur;
+        const surface *sur;
         // Render characters
         for(; k < line_len; k++) {
             // Skip line endings.

@@ -1176,6 +1176,7 @@ void arena_render_overlay(scene *scene) {
     tconf_players.font = FONT_SMALL;
     tconf_players.cforeground = TEXT_COLOR;
     tconf_players.shadow = TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM;
+    const font *fnt = fonts_get_font(tconf_players.font);
 
     text_settings tconf_debug;
     text_defaults(&tconf_debug);
@@ -1219,8 +1220,8 @@ void arena_render_overlay(scene *scene) {
 
         if(player[1]->pilot) {
             // when quitting, this can go null
-            int p2len = (strlen(player2_name) - 1) * font_small.w;
-            int h2len = (strlen(lang_get((player[1]->pilot->har_id) + 31)) - 1) * font_small.w;
+            int p2len = (strlen(player2_name) - 1) * fnt->w;
+            int h2len = (strlen(lang_get((player[1]->pilot->har_id) + 31)) - 1) * fnt->w;
             text_render(&tconf_players, TEXT_DEFAULT, 315 - p2len, 19, 100, 6, player2_name);
             text_render(&tconf_players, TEXT_DEFAULT, 315 - h2len, 26, 100, 6,
                         lang_get((player[1]->pilot->har_id) + 31));
@@ -1247,11 +1248,11 @@ void arena_render_overlay(scene *scene) {
 
         if(player[1]->ctrl->type == CTRL_TYPE_NETWORK) {
             snprintf(buf, 40, "ping %d", player[1]->ctrl->rtt / 2);
-            text_render(&tconf_debug, TEXT_DEFAULT, 315 - (strlen(buf) * font_small.w), 40, 250, 6, buf);
+            text_render(&tconf_debug, TEXT_DEFAULT, 315 - (strlen(buf) * fnt->w), 40, 250, 6, buf);
 #ifdef DEBUGMODE
         } else if(player[1]->ctrl->type == CTRL_TYPE_AI) {
             ai_controller_print_state(player[1]->ctrl, buf, sizeof(buf));
-            text_render(&tconf_debug, TEXT_DEFAULT, 315 - (strlen(buf) * font_small.w), 40, 250, 6, buf);
+            text_render(&tconf_debug, TEXT_DEFAULT, 315 - (strlen(buf) * fnt->w), 40, 250, 6, buf);
 #endif
         }
     }

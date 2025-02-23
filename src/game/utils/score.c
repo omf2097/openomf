@@ -152,6 +152,7 @@ void chr_score_render(chr_score *score, bool render_total_points) {
     tconf_score.font = FONT_SMALL;
     tconf_score.cforeground = TEXT_COLOR;
     tconf_score.shadow = TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM;
+    const font *fnt = fonts_get_font(tconf_score.font);
 
     if(render_total_points) {
         char tmp[50];
@@ -160,7 +161,7 @@ void chr_score_render(chr_score *score, bool render_total_points) {
         if(score->direction == OBJECT_FACE_RIGHT) {
             text_render(&tconf_score, TEXT_DEFAULT, score->x, score->y, 200, 6, tmp);
         } else {
-            int s2len = strlen(tmp) * font_small.w;
+            int s2len = strlen(tmp) * fnt->w;
             text_render(&tconf_score, TEXT_DEFAULT, score->x - s2len, score->y, 200, 6, tmp);
         }
     }
@@ -178,8 +179,7 @@ void chr_score_render(chr_score *score, bool render_total_points) {
         }
         pos = interpolate(vec2i_create(score->x, score->y), t->start, t->position);
         if(score->direction == OBJECT_FACE_LEFT) {
-            pos =
-                interpolate(vec2i_create(score->x - (strlen(t->text) * font_small.w), score->y), t->start, t->position);
+            pos = interpolate(vec2i_create(score->x - (strlen(t->text) * fnt->w), score->y), t->start, t->position);
         }
         text_render(&tconf_score, TEXT_DEFAULT, pos.x, pos.y, 200, 6, t->text);
         lastage = t->age;
@@ -189,12 +189,13 @@ void chr_score_render(chr_score *score, bool render_total_points) {
 void chr_score_add(chr_score *score, char *text, int points, vec2i pos, float position) {
     // Create texture
     // Add texture to list, set position to 1.0f, set points
+    const font *fnt = fonts_get_font(FONT_SMALL);
     score_text s;
     s.text = text;
     s.points = points;
     s.start = pos;
     // center correctly initially, but end up justified
-    s.start.x -= ((strlen(s.text) * font_small.w) / 2);
+    s.start.x -= ((strlen(s.text) * fnt->w) / 2);
     s.position = position;
     s.age = 0;
 

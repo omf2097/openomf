@@ -9,34 +9,40 @@
 #include "utils/vector.h"
 #include "video/surface.h"
 
-font font_small;
-font font_large;
-font font_net1;
-font font_net2;
+static font font_small;
+static font font_large;
+static font font_net1;
+static font font_net2;
 static int fonts_loaded = 0;
 static unsigned char FIRST_PRINTABLE_CHAR = (unsigned char)' ';
 
 void font_create(font *f) {
     memset(f, 0, sizeof(font));
-    vector_create_with_size(&f->surfaces, sizeof(surface *), 233);
+    vector_create_with_size_cb(&f->surfaces, sizeof(surface), 233, (vector_free_cb)surface_free);
 }
 
 void font_free(font *font) {
-    iterator it;
-    vector_iter_begin(&font->surfaces, &it);
-    surface **sur = NULL;
-    foreach(it, sur) {
-        surface_free(*sur);
-        omf_free(*sur);
-    }
     vector_free(&font->surfaces);
 }
 
-int font_load(font *font, const char *filename, unsigned int size) {
+static int text_char_to_glyph_index(char c) {
+    int ic = (int)(unsigned char)c;
+    return ic - FIRST_PRINTABLE_CHAR;
+}
+
+const surface *font_get_surface(const font *font, char ch) {
+    int code = text_char_to_glyph_index(ch);
+    if(code < 0) {
+        return NULL;
+    }
+    return vector_get(&font->surfaces, code);
+}
+
+static int font_load(font *font, const char *filename, unsigned int size) {
     sd_vga_image img;
     sd_font sdfont;
     int pixsize;
-    surface *sur;
+    surface sur;
 
     // Find vertical size
     switch(size) {
@@ -62,10 +68,9 @@ int font_load(font *font, const char *filename, unsigned int size) {
     // Load into textures
     sd_vga_image_create(&img, pixsize, pixsize);
     for(int i = 0; i < 224; i++) {
-        sur = omf_calloc(1, sizeof(surface));
         sd_font_decode(&sdfont, &img, i, 1);
-        surface_create_from_vga(sur, &img);
-        surface_set_transparency(sur, 0);
+        surface_create_from_vga(&sur, &img);
+        surface_set_transparency(&sur, 0);
         vector_append(&font->surfaces, &sur);
     }
 
@@ -80,11 +85,11 @@ int font_load(font *font, const char *filename, unsigned int size) {
     return 0;
 }
 
-int pcx_font_load(font *font, const char *filename, int8_t palette_offset) {
+static int pcx_font_load(font *font, const char *filename, int8_t palette_offset) {
     sd_vga_image img;
     pcx_font pcx_font;
     int pixsize;
-    surface *sur;
+    surface sur;
 
     if(pcx_load_font(&pcx_font, filename)) {
         pcx_font_free(&pcx_font);
@@ -97,10 +102,9 @@ int pcx_font_load(font *font, const char *filename, int8_t palette_offset) {
 
     for(int i = 0; i < pcx_font.glyph_count; i++) {
         sd_vga_image_create(&img, pcx_font.glyphs[i].width, pixsize);
-        sur = omf_calloc(1, sizeof(surface));
         pcx_font_decode(&pcx_font, &img, i, 1);
-        surface_create_from_vga(sur, &img);
-        surface_set_transparency(sur, 0);
+        surface_create_from_vga(&sur, &img);
+        surface_set_transparency(&sur, 0);
         vector_append(&font->surfaces, &sur);
         sd_vga_image_free(&img);
     }
@@ -182,19 +186,6 @@ const font *fonts_get_font(font_size font) {
         default:
             return NULL;
     }
-}
-
-static int text_char_to_glyph_index(char c) {
-    int ic = (int)(unsigned char)c;
-    return ic - FIRST_PRINTABLE_CHAR;
-}
-
-const surface *fonts_get_surface(const font *font, char ch) {
-    int code = text_char_to_glyph_index(ch);
-    if(code < 0) {
-        return NULL;
-    }
-    return vector_get(&font->surfaces, code);
 }
 
 void fonts_close(void) {
