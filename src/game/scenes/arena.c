@@ -1037,9 +1037,9 @@ bool har_unfinished_victory(object *obj) {
 
 bool winner_needs_victory_pose(object *obj) {
     har *h = obj->userdata;
-    return !object_is_airborne(obj) && (h->state == STATE_DONE || h->state == STATE_VICTORY) && obj->cur_animation->id != ANIM_VICTORY;
+    return !object_is_airborne(obj) && (h->state == STATE_DONE || h->state == STATE_VICTORY) &&
+           obj->cur_animation->id != ANIM_VICTORY;
 }
-
 
 void arena_dynamic_tick(scene *scene, int paused) {
     arena_local *local = scene_get_userdata(scene);

@@ -2097,16 +2097,18 @@ void har_finished(object *obj) {
         har_act(obj, ACT_NONE);
     }
 
-    // har_act MUST provide a new state
-    assert(h->state != STATE_NONE);
-
     object *obj_enemy =
         game_state_find_object(obj->gs, game_state_get_player(obj->gs, h->player_id == 1 ? 0 : 1)->har_obj_id);
     har *har_enemy = object_get_userdata(obj_enemy);
 
+    if(har_enemy->state != STATE_DEFEAT) {
+        // har_act MUST provide a new state
+        assert(h->state != STATE_NONE);
+    }
+
     // now is a good time to check we're facing the right way
-    if(h->state != STATE_RECOIL && h->state != STATE_STANDING_UP && h->state != STATE_STUNNED && h->state != STATE_FALLEN &&
-       h->state != STATE_JUMPING && har_enemy->state != STATE_JUMPING) {
+    if(h->state != STATE_RECOIL && h->state != STATE_STANDING_UP && h->state != STATE_STUNNED &&
+       h->state != STATE_FALLEN && h->state != STATE_JUMPING && har_enemy->state != STATE_JUMPING) {
         // make sure HAR's are facing each other
         if(object_get_direction(obj) == object_get_direction(obj_enemy)) {
             log_debug("HARS facing same direction");
