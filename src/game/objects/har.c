@@ -668,6 +668,11 @@ void har_move(object *obj) {
 void har_take_damage(object *obj, const str *string, float damage, float stun) {
     har *h = object_get_userdata(obj);
 
+    if(h->state == STATE_VICTORY || h->state == STATE_DONE) {
+        // can't die if the other guy died first
+        return;
+    }
+
     // Got hit, disable stasis activator on this bot
     h->in_stasis_ticks = 1;
 
