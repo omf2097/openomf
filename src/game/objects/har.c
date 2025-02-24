@@ -655,6 +655,10 @@ void har_move(object *obj) {
                 }
                 object_set_vel(obj, vec2f_create(vel.x, vel.y));
             }
+        } else if(h->state == STATE_VICTORY || h->state == STATE_DONE) {
+            // we won while in the air, and we've now landed, so set the animation to idle
+            // until the game sets us to the victory pose
+            har_set_ani(obj, ANIM_IDLE, 1);
         }
     } else {
         object_set_vel(obj, vec2f_create(vel.x, vel.y + obj->gravity));
@@ -2032,15 +2036,18 @@ void har_finished(object *obj) {
 
     h->executing_move = 0;
 
-    if(h->state == STATE_VICTORY || h->state == STATE_DONE) {
-        har_set_ani(obj, ANIM_VICTORY, 0);
-    } else if(h->state == STATE_SCRAP || h->state == STATE_DESTRUCTION) {
+    if(h->state == STATE_SCRAP || h->state == STATE_DESTRUCTION) {
         // play vistory animation again, but do not allow any more moves to be executed
         h->state = STATE_DONE;
         har_set_ani(obj, ANIM_VICTORY, 0);
     } else if(h->state == STATE_VICTORY || h->state == STATE_DONE) {
         // prevent object from being freed, hold last sprite of animation indefinitely
         obj->animation_state.finished = 0;
+        if(obj->cur_animation->id != ANIM_VICTORY) {
+            // we've won but the game hasn't set us to victory yet, so do idle
+            har_set_ani(obj, ANIM_IDLE, 1);
+            return;
+        }
     } else if(h->state == STATE_RECOIL && h->health <= 0) {
         h->state = STATE_DEFEAT;
         har_set_ani(obj, ANIM_DEFEAT, 0);
@@ -2098,7 +2105,7 @@ void har_finished(object *obj) {
     har *har_enemy = object_get_userdata(obj_enemy);
 
     // now is a good time to check we're facing the right way
-    if(h->state != STATE_RECOIL && h->state != STATE_STANDING_UP && h->state != STATE_RECOIL &&
+    if(h->state != STATE_RECOIL && h->state != STATE_STANDING_UP && h->state != STATE_STUNNED && h->state != STATE_FALLEN &&
        h->state != STATE_JUMPING && har_enemy->state != STATE_JUMPING) {
         // make sure HAR's are facing each other
         if(object_get_direction(obj) == object_get_direction(obj_enemy)) {

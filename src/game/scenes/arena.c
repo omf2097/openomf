@@ -80,6 +80,8 @@ typedef struct arena_local_t {
 
 void write_rec_move(scene *scene, game_player *player, int action);
 
+bool defeated_at_rest(object *obj);
+
 // -------- Local callbacks --------
 
 void game_menu_quit(component *c, void *userdata) {
@@ -620,7 +622,7 @@ void arena_har_defeat_hook(int loser_player_id, scene *scene) {
     }
     if(score->rounds >= ceilf(local->rounds / 2.0f)) {
         winner_har->state = STATE_VICTORY;
-        if(winner_har->executing_move == 0) {
+        if(winner_har->executing_move == 0 && defeated_at_rest(loser)) {
             har_set_ani(winner, ANIM_VICTORY, 0);
         }
         winner_har->enqueued = 0;
@@ -1033,6 +1035,12 @@ bool har_unfinished_victory(object *obj) {
     return obj->cur_animation->id == ANIM_VICTORY && !player_is_last_frame(obj) && !player_is_looping(obj);
 }
 
+bool winner_needs_victory_pose(object *obj) {
+    har *h = obj->userdata;
+    return !object_is_airborne(obj) && (h->state == STATE_DONE || h->state == STATE_VICTORY) && obj->cur_animation->id != ANIM_VICTORY;
+}
+
+
 void arena_dynamic_tick(scene *scene, int paused) {
     arena_local *local = scene_get_userdata(scene);
     game_state *gs = scene->gs;
@@ -1068,6 +1076,13 @@ void arena_dynamic_tick(scene *scene, int paused) {
             }
         }
         if(local->state == ARENA_STATE_ENDING) {
+            // check if its time to put the winner into victory pose
+            if(defeated_at_rest(obj_har[0]) && winner_needs_victory_pose(obj_har[1])) {
+                har_set_ani(obj_har[1], ANIM_VICTORY, 0);
+            } else if(defeated_at_rest(obj_har[1]) && winner_needs_victory_pose(obj_har[0])) {
+                har_set_ani(obj_har[0], ANIM_VICTORY, 0);
+            }
+
             chr_score *s1 = game_player_get_score(game_state_get_player(scene->gs, 0));
             chr_score *s2 = game_player_get_score(game_state_get_player(scene->gs, 1));
             if(local->win_state && local->win_state != DONE &&
