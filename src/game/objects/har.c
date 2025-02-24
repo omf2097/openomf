@@ -2057,51 +2057,15 @@ void har_finished(object *obj) {
             // never get fired.
             h->state = STATE_JUMPING;
             har_set_ani(obj, ANIM_JUMPING, 0);
-        } else if(object_is_airborne(obj)) {
-            // finished an attack animation in the air
-            h->state = STATE_JUMPING;
-            har_set_ani(obj, ANIM_JUMPING, 0);
         } else {
-            // the HAR is on the ground, so clear the air attack tracker
-            h->air_attacked = 0;
-            // we don't know what state the HAR should be in now, so set it to NONE
             h->state = STATE_NONE;
             har_set_ani(obj, ANIM_IDLE, 1);
             har_act(obj, ACT_NONE);
         }
     } else {
-        // we don't know what state the HAR should be in now, so set it to NONE
         h->state = STATE_NONE;
         har_set_ani(obj, ANIM_CROUCHING, 1);
         har_act(obj, ACT_NONE);
-    }
-
-    // har_act MUST provide a new state
-    assert(h->state != STATE_NONE);
-
-    object *obj_enemy =
-        game_state_find_object(obj->gs, game_state_get_player(obj->gs, h->player_id == 1 ? 0 : 1)->har_obj_id);
-    har *har_enemy = object_get_userdata(obj_enemy);
-
-    // now is a good time to check we're facing the right way
-    if(h->state != STATE_RECOIL && h->state != STATE_STANDING_UP && h->state != STATE_RECOIL &&
-       h->state != STATE_JUMPING && har_enemy->state != STATE_JUMPING) {
-        // make sure HAR's are facing each other
-        if(object_get_direction(obj) == object_get_direction(obj_enemy)) {
-            log_debug("HARS facing same direction");
-            vec2i pos = object_get_pos(obj);
-            vec2i pos_enemy = object_get_pos(obj_enemy);
-            if(pos.x > pos_enemy.x) {
-                log_debug("HARS facing player %d LEFT", h->player_id);
-                object_set_direction(obj, OBJECT_FACE_LEFT);
-            } else {
-                log_debug("HARS facing player %d RIGHT", h->player_id);
-                object_set_direction(obj, OBJECT_FACE_RIGHT);
-            }
-
-            log_debug("HARS facing enemy player %d", abs(h->player_id - 1));
-            object_set_direction(obj_enemy, object_get_direction(obj) * -1);
-        }
     }
 }
 
