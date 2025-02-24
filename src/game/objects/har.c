@@ -1776,6 +1776,9 @@ int maybe_har_change_state(int oldstate, int direction, char act_type) {
         case '9':
             state = STATE_JUMPING;
             break;
+        default:
+            // if the input buffer is empty, assume standing
+            state = STATE_STANDING;
     }
     if(oldstate != state) {
         // we changed state
@@ -1877,6 +1880,13 @@ int har_act(object *obj, int act_type) {
             object_dynamic_tick(enemy_obj);
         }
 
+        if(h->state == STATE_NONE) {
+            if(move->category == CAT_HIGH || move->category == CAT_MEDIUM || move->category == CAT_CLOSE) {
+                h->state = STATE_STANDING;
+            } else if(move->category == CAT_LOW) {
+                h->state = STATE_CROUCHING;
+            }
+        }
         // we actually did something interesting
         // return 1 so we can use this as sync point for netplay
         return 1;
