@@ -620,14 +620,14 @@ void har_move(object *obj) {
 
                 h->state = STATE_DEFEAT;
                 har_set_ani(obj, ANIM_DEFEAT, 0);
-                har_event_defeat(h, ctrl);
+                // har_event_defeat(h, ctrl);
             } else if(pos.y >= (ARENA_FLOOR - 5) && IS_ZERO(vel.x) && player_is_last_frame(obj)) {
                 if(h->state == STATE_FALLEN) {
                     if(h->health <= 0) {
                         // fallen, but done bouncing
                         h->state = STATE_DEFEAT;
                         har_set_ani(obj, ANIM_DEFEAT, 0);
-                        har_event_defeat(h, ctrl);
+                        // har_event_defeat(h, ctrl);
                     } else {
                         h->state = STATE_STANDING_UP;
                         har_set_ani(obj, ANIM_STANDUP, 0);
@@ -732,6 +732,9 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
         object_set_animation(obj, &af_get_move(h->af_data, ANIM_DAMAGE)->ani);
         object_set_repeat(obj, 0);
         if(h->health <= 0) {
+            controller *ctrl = game_player_get_ctrl(game_state_get_player(obj->gs, h->player_id));
+            // trigger the defeat hook immediately
+            har_event_defeat(h, ctrl);
             // taken from MASTER.DAT
             size_t last_line = 0;
             if(!str_last_of(string, '-', &last_line)) {
@@ -2029,7 +2032,9 @@ void har_finished(object *obj) {
 
     h->executing_move = 0;
 
-    if(h->state == STATE_SCRAP || h->state == STATE_DESTRUCTION) {
+    if(h->state == STATE_VICTORY || h->state == STATE_DONE) {
+        har_set_ani(obj, ANIM_VICTORY, 0);
+    } else if(h->state == STATE_SCRAP || h->state == STATE_DESTRUCTION) {
         // play vistory animation again, but do not allow any more moves to be executed
         h->state = STATE_DONE;
         har_set_ani(obj, ANIM_VICTORY, 0);
@@ -2039,7 +2044,6 @@ void har_finished(object *obj) {
     } else if(h->state == STATE_RECOIL && h->health <= 0) {
         h->state = STATE_DEFEAT;
         har_set_ani(obj, ANIM_DEFEAT, 0);
-        har_event_defeat(h, ctrl);
     } else if((h->state == STATE_RECOIL || h->state == STATE_STANDING_UP) && h->endurance < 1.0f) {
         if(h->state == STATE_RECOIL) {
             har_event_recover(h, ctrl);

@@ -650,6 +650,7 @@ void player_run(object *obj) {
     if(sd_script_isset(frame, "d") && !obj->animation_state.disable_d) {
         state->previous_tick = state->current_tick;
         state->current_tick = sd_script_get(frame, "d") + 1;
+        state->looping = true;
         return;
     }
 
@@ -716,4 +717,9 @@ char player_get_frame_letter(const object *obj) {
 int player_is_last_frame(const object *obj) {
     const player_animation_state *state = &obj->animation_state;
     return sd_script_is_last_frame_at(&state->parser, state->current_tick);
+}
+
+bool player_is_looping(const object *obj) {
+    const player_animation_state *state = &obj->animation_state;
+    return state->looping;
 }
