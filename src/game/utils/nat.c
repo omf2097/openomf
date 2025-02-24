@@ -50,9 +50,7 @@ bool nat_create_upnp_mapping(nat_ctx *ctx, uint16_t int_port, uint16_t ext_port)
     char ext_portstr[6];
     snprintf(ext_portstr, sizeof(ext_portstr), "%d", ctx->wildcard_ext_port ? 0 : ext_port);
 
-    bool use_permanent_lease = false;
-
-    char const *lease_duration = use_permanent_lease ? "0" : "86400";
+    char const *lease_duration = ctx->use_permanent_lease ? "0" : "86400";
 
     int error =
         UPNP_AddPortMapping(ctx->upnp_urls.controlURL, ctx->upnp_data.first.servicetype,
@@ -193,7 +191,7 @@ void nat_try_upnp(nat_ctx *ctx) {
 
         // look up possible "status" values, the number "1" indicates a valid IGD was found
         if(ctx->upnp_dev && status == 1) {
-            log_debug("discovered uPNP server %d");
+            log_debug("discovered uPNP server");
             // get the external (WAN) IP address
             if(UPNP_GetExternalIPAddress(ctx->upnp_urls.controlURL, ctx->upnp_data.first.servicetype, ctx->wan_address)) {
                 // if this fails, zero the field out
