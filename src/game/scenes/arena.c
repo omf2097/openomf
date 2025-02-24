@@ -1108,8 +1108,9 @@ void arena_dynamic_tick(scene *scene, int paused) {
 
             if(local->ending_ticks == 40) {
                 // one HAR must be in victory pose and one must be in defeat
-                assert((obj_har[0]->cur_animation_id == ANIM_VICTORY && obj_har[1]->cur_animation_id == ANIM_DEFEAT) ||
-                       (obj_har[1]->cur_animation_id == ANIM_VICTORY && obj_har[0]->cur_animation_id == ANIM_DEFEAT));
+                assert(
+                    (obj_har[0]->cur_animation->id == ANIM_VICTORY && obj_har[1]->cur_animation->id == ANIM_DEFEAT) ||
+                    (obj_har[1]->cur_animation->id == ANIM_VICTORY && obj_har[0]->cur_animation->id == ANIM_DEFEAT));
                 if(!local->over) {
                     local->round++;
                     arena_reset(scene);
