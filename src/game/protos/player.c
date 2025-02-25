@@ -338,6 +338,17 @@ void player_run(object *obj) {
             // obj->vel.y);
         } else {
             obj->pos.x += trans_x * (mp & 0x20 ? -1 : 1);
+            if(obj->pos.x < ARENA_LEFT_WALL) {
+                if(sd_script_isset(frame, "e") && enemy) {
+                    enemy->pos.x += ARENA_LEFT_WALL - obj->pos.x;
+                }
+                obj->pos.x = ARENA_LEFT_WALL;
+            } else if(obj->pos.x > ARENA_RIGHT_WALL) {
+                if(sd_script_isset(frame, "e") && enemy) {
+                    enemy->pos.x -= obj->pos.x - ARENA_RIGHT_WALL;
+                }
+                obj->pos.x = ARENA_RIGHT_WALL;
+            }
             obj->pos.y += trans_y;
             // log_debug("pos x+%d, y+%d to x=%f, y=%f", trans_x * (mp & 0x20 ? -1 : 1), trans_y, obj->pos.x,
             // obj->pos.y);
@@ -360,6 +371,8 @@ void player_run(object *obj) {
         obj->pos.y = enemy->pos.y + obj->enemy_slide_state.dest.y;
         obj->enemy_slide_state.timer--;
     }
+
+    obj->pos.x = max2(ARENA_LEFT_WALL, min2(ARENA_RIGHT_WALL, obj->pos.x));
 
     // If frame changed, do something
     if(state->entered_frame) {

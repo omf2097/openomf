@@ -1124,7 +1124,7 @@ void har_collide_with_har(object *obj_a, object *obj_b, int loop) {
     controller *ctrl_a = game_player_get_ctrl(game_state_get_player(obj_a->gs, a->player_id));
     controller *ctrl_b = game_player_get_ctrl(game_state_get_player(obj_b->gs, b->player_id));
 
-    if(b->state == STATE_FALLEN || b->state == STATE_STANDING_UP || b->state == STATE_WALLDAMAGE) {
+    if(b->state == STATE_FALLEN || b->state == STATE_STANDING_UP || b->state == STATE_WALLDAMAGE || b->health <= 0) {
         // can't hit em while they're down
         return;
     }
@@ -1229,7 +1229,7 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
     har *other = object_get_userdata(
         game_state_find_object(o_har->gs, game_state_get_player(o_har->gs, abs(h->player_id - 1))->har_obj_id));
 
-    if(h->state == STATE_FALLEN || h->state == STATE_STANDING_UP || h->state == STATE_WALLDAMAGE) {
+    if(h->state == STATE_FALLEN || h->state == STATE_STANDING_UP || h->state == STATE_WALLDAMAGE || h->health <= 0) {
         // can't hit em while they're down
         return;
     }
@@ -1317,7 +1317,7 @@ void har_collide_with_hazard(object *o_har, object *o_hzd) {
     bk *bk_data = object_get_userdata(o_hzd);
     bk_info *anim = bk_get_info(bk_data, o_hzd->cur_animation->id);
 
-    if(h->state == STATE_FALLEN || h->state == STATE_STANDING_UP) {
+    if(h->state == STATE_FALLEN || h->state == STATE_STANDING_UP || h->health <= 0) {
         // can't hit em while they're down
         return;
     }
