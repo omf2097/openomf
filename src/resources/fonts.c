@@ -16,9 +16,14 @@ static font font_net2;
 static int fonts_loaded = 0;
 static unsigned char FIRST_PRINTABLE_CHAR = (unsigned char)' ';
 
+static void free_glyph(void *d) {
+    surface *s = (surface *)d;
+    surface_free(s);
+}
+
 void font_create(font *f) {
     memset(f, 0, sizeof(font));
-    vector_create_with_size_cb(&f->surfaces, sizeof(surface), 233, (vector_free_cb)surface_free);
+    vector_create_with_size_cb(&f->surfaces, sizeof(surface), 233, free_glyph);
 }
 
 void font_free(font *font) {
