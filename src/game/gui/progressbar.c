@@ -44,6 +44,7 @@ typedef struct {
     surface *block;
     int orientation;
     int percentage;
+    int display_percentage;
     progressbar_theme theme;
     int flashing;
     int rate;
@@ -52,12 +53,16 @@ typedef struct {
     int refresh;
 } progressbar;
 
-void progressbar_set_progress(component *c, int percentage) {
+void progressbar_set_progress(component *c, int percentage, bool animate) {
     progressbar *bar = widget_get_obj(c);
     int tmp = clamp(percentage, 0, 100);
     if(!bar->refresh)
         bar->refresh = (tmp != bar->percentage);
     bar->percentage = tmp;
+    if(!animate || bar->percentage > bar->display_percentage) {
+        // refilling the meter is instant
+        bar->display_percentage = bar->percentage;
+    }
 }
 
 void progressbar_set_flashing(component *c, int flashing, int rate) {
@@ -74,8 +79,12 @@ static void progressbar_render(component *c) {
     progressbar *bar = widget_get_obj(c);
 
     // If necessary, refresh the progress block
-    if(bar->refresh) {
+    if(bar->refresh || bar->display_percentage > bar->percentage) {
         bar->refresh = 0;
+
+        if(bar->display_percentage > bar->percentage) {
+            bar->display_percentage--;
+        }
 
         // Free old block first ...
         if(bar->block) {
@@ -83,7 +92,7 @@ static void progressbar_render(component *c) {
         }
 
         // ... Then draw the new one
-        float prog = bar->percentage / 100.0f;
+        float prog = bar->display_percentage / 100.0f;
         int w = c->w * prog;
         int h = c->h;
         if(w > 1 && h > 1) {
@@ -174,6 +183,7 @@ component *progressbar_create(progressbar_theme theme, int orientation, int perc
     local->theme = theme;
     local->orientation = clamp(orientation, 0, 1);
     local->percentage = clamp(percentage, 0, 100);
+    local->display_percentage = local->percentage;
     local->refresh = 1;
 
     widget_set_obj(c, local);
