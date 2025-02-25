@@ -160,7 +160,7 @@ int console_cmd_win(game_state *gs, int argc, char **argv) {
         if(!har_obj)
             return 1;
         har *har = object_get_userdata(har_obj);
-        har->health = 0;
+        har->health = 1;
         return 0;
     }
     return 1;
@@ -173,7 +173,7 @@ int console_cmd_lose(game_state *gs, int argc, char **argv) {
         if(!har_obj)
             return 1;
         har *har = object_get_userdata(har_obj);
-        har->health = 0;
+        har->health = 1;
         return 0;
     }
     return 1;
