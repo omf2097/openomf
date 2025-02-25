@@ -2106,7 +2106,7 @@ void har_finished(object *obj) {
         game_state_find_object(obj->gs, game_state_get_player(obj->gs, h->player_id == 1 ? 0 : 1)->har_obj_id);
     har *har_enemy = object_get_userdata(obj_enemy);
 
-    if(har_enemy->state != STATE_DEFEAT) {
+    if(har_enemy->state != STATE_DEFEAT && har_enemy->state != STATE_VICTORY && har_enemy->state != STATE_DONE) {
         // har_act MUST provide a new state
         assert(h->state != STATE_NONE);
     }
