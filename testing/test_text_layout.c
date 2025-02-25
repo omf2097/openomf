@@ -30,42 +30,57 @@ void test_find_next_line_end(void) {
 
     // First three letters should fit. there is no natural linebreak, so just cut.
     str_from_c(&s, "ABBABB");
-    CU_ASSERT_EQUAL(find_next_line_end(&s, &f, TEXT_HORIZONTAL, 0, 16), 3);
+    CU_ASSERT_EQUAL(find_next_line_end(&s, &f, TEXT_HORIZONTAL, 0, 0, 16), 3);
     str_free(&s);
 
     // Same as above, but in vertical direction,
     str_from_c(&s, "ABBABB");
-    CU_ASSERT_EQUAL(find_next_line_end(&s, &f, TEXT_VERTICAL, 0, 16), 3);
+    CU_ASSERT_EQUAL(find_next_line_end(&s, &f, TEXT_VERTICAL, 0, 0, 16), 3);
+    str_free(&s);
+
+    // No Letter spacing should make this just barely fit.
+    str_from_c(&s, "AA");
+    CU_ASSERT_EQUAL(find_next_line_end(&s, &f, TEXT_HORIZONTAL, 0, 0, 16), 2);
+    str_free(&s);
+
+    // One pixel letter spacing should make this not fit.
+    str_from_c(&s, "AA");
+    CU_ASSERT_EQUAL(find_next_line_end(&s, &f, TEXT_HORIZONTAL, 0, 1, 16), 1);
     str_free(&s);
 
     // Letter does not fit, so just return 0
     str_from_c(&s, "A");
-    CU_ASSERT_EQUAL(find_next_line_end(&s, &f, TEXT_HORIZONTAL, 0, 7), 0);
+    CU_ASSERT_EQUAL(find_next_line_end(&s, &f, TEXT_HORIZONTAL, 0, 0, 7), 0);
     str_free(&s);
 
     // More would fit, but we have a linebreak.
     str_from_c(&s, "A\nB");
-    CU_ASSERT_EQUAL(find_next_line_end(&s, &f, TEXT_HORIZONTAL, 0, 16), 2);
+    CU_ASSERT_EQUAL(find_next_line_end(&s, &f, TEXT_HORIZONTAL, 0, 0, 16), 2);
     str_free(&s);
 
     // We have a break point, but the whole line fits so it's not used.
     str_from_c(&s, "B B");
-    CU_ASSERT_EQUAL(find_next_line_end(&s, &f, TEXT_HORIZONTAL, 0, 16), 3);
+    CU_ASSERT_EQUAL(find_next_line_end(&s, &f, TEXT_HORIZONTAL, 0, 0, 16), 3);
     str_free(&s);
 
     // We have a break point (space), and the whole line doesn't fit so we must use it.
     str_from_c(&s, "A B");
-    CU_ASSERT_EQUAL(find_next_line_end(&s, &f, TEXT_HORIZONTAL, 0, 16), 2);
+    CU_ASSERT_EQUAL(find_next_line_end(&s, &f, TEXT_HORIZONTAL, 0, 0, 16), 2);
     str_free(&s);
 
     // We have a break point (dash), and the whole line doesn't fit so we must use it.
     str_from_c(&s, "A-B");
-    CU_ASSERT_EQUAL(find_next_line_end(&s, &f, TEXT_HORIZONTAL, 0, 16), 2);
+    CU_ASSERT_EQUAL(find_next_line_end(&s, &f, TEXT_HORIZONTAL, 0, 0, 16), 2);
     str_free(&s);
 
     // We start after space, and last character should fit on the last line.
     str_from_c(&s, "A BBBB");
-    CU_ASSERT_EQUAL(find_next_line_end(&s, &f, TEXT_HORIZONTAL, 2, 16), 6);
+    CU_ASSERT_EQUAL(find_next_line_end(&s, &f, TEXT_HORIZONTAL, 2, 0, 16), 6);
+    str_free(&s);
+
+    // Empty string should just return 0
+    str_from_c(&s, "");
+    CU_ASSERT_EQUAL(find_next_line_end(&s, &f, TEXT_HORIZONTAL, 0, 0, 16), 0);
     str_free(&s);
 
     font_free(&f);
@@ -81,7 +96,7 @@ void test_text_layout_compute(void) {
     str_from_c(&s, "ABABB");
 
     fprintf(stderr, "\n");
-    CU_ASSERT_EQUAL(text_layout_compute(layout, &s, &f, TEXT_TOP, TEXT_LEFT, pad, TEXT_HORIZONTAL, 255),
+    CU_ASSERT_EQUAL(text_layout_compute(layout, &s, &f, TEXT_TOP, TEXT_LEFT, pad, TEXT_HORIZONTAL, 1, 0, 255),
                     LAYOUT_NO_ERROR);
 
     // Cleanup

@@ -29,9 +29,10 @@ typedef enum text_layout_error
 text_layout *text_layout_create(uint16_t w, uint16_t h);
 void text_layout_free(text_layout **layout);
 size_t find_next_line_end(const str *buf, const font *font, text_direction direction, size_t start_index,
-                          uint16_t max_width);
+                          uint8_t letter_spacing, uint16_t max_width);
 text_layout_error text_layout_compute(text_layout *layout, const str *buf, const font *font,
                                       text_vertical_align vertical_align, text_horizontal_align horizontal_align,
-                                      text_padding padding, text_direction direction, uint8_t max_lines);
+                                      text_padding padding, text_direction direction, uint8_t line_spacing,
+                                      uint8_t letter_spacing, uint8_t max_lines);
 
 #endif // TEXT_LAYOUT_H

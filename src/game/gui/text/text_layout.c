@@ -19,11 +19,11 @@ void text_layout_free(text_layout **layout) {
 }
 
 /**
- * Jumps over a line of text, and finds the starting index of the next line. If text could not be fit into
+ * Jumps over a line of text, and finds the starting index of the next line. If no text could not be fit into
  * the given space, start_index is returned.
  */
 size_t find_next_line_end(const str *buf, const font *font, text_direction direction, size_t start_index,
-                          uint16_t max_width) {
+                          uint8_t letter_spacing, uint16_t max_width) {
     assert(buf != NULL);
     assert(font != NULL);
 
@@ -58,23 +58,25 @@ size_t find_next_line_end(const str *buf, const font *font, text_direction direc
             continue;
         }
 
-        uint16_t step = (direction == TEXT_HORIZONTAL) ? s->w : s->h;
-        if(pos + step > max_width) {
-            // If there is no more room in row direction, stop here.
+        pos += letter_spacing + (direction == TEXT_HORIZONTAL ? s->w : s->h);
+        if(pos > max_width) {
+            // No more room on the row! If we found a cut-off point, we use it (space, line).
+            // Otherwise try to print what we can and bail. This may break words outside word boundaries,
+            // but this is a best-effort case.
             if(found_cut_off) {
                 return cut_off;
             } else {
                 return i;
             }
         }
-        pos += step;
     }
     return len;
 }
 
 text_layout_error text_layout_compute(text_layout *layout, const str *buf, const font *font,
                                       text_vertical_align vertical_align, text_horizontal_align horizontal_align,
-                                      text_padding padding, text_direction direction, uint8_t max_lines) {
+                                      text_padding padding, text_direction direction, uint8_t line_spacing,
+                                      uint8_t letter_spacing, uint8_t max_lines) {
     assert(buf != NULL);
     assert(layout->w > padding.left + padding.right);
     assert(layout->h > padding.top + padding.bottom);
@@ -91,7 +93,7 @@ text_layout_error text_layout_compute(text_layout *layout, const str *buf, const
     size_t len = str_size(buf);
     size_t line = 0;
     while(start < len) {
-        size_t end = find_next_line_end(buf, font, direction, start, max_row);
+        size_t end = find_next_line_end(buf, font, direction, start, letter_spacing, max_row);
         if(end == start) {
             // We couldn't fit in any text, stop here.
             return LAYOUT_NO_HORIZONTAL_SPACE;

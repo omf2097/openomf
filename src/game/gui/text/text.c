@@ -10,7 +10,7 @@ enum cache_flags
 {
     INVALIDATE_NONE = 0,
     INVALIDATE_LAYOUT = 0x1,
-    INVALIDATE_SURFACE = 0x2,
+    INVALIDATE_STYLE = 0x2,
     INVALIDATE_ALL = 0xFF,
 };
 
@@ -35,6 +35,8 @@ struct text {
     text_horizontal_align horizontal_align;
     text_padding padding;
     text_direction direction;
+    uint8_t line_spacing;
+    uint8_t letter_spacing;
     uint8_t shadow;
     uint8_t glyph_margin;
     uint8_t max_lines;
@@ -49,6 +51,8 @@ static void defaults(text *t) {
     t->padding.right = 0;
     t->padding.top = 0;
     t->padding.bottom = 0;
+    t->line_spacing = 1;
+    t->letter_spacing = 0;
     t->direction = TEXT_HORIZONTAL;
     t->shadow = TEXT_SHADOW_NONE;
     t->glyph_margin = 0;
@@ -98,33 +102,33 @@ void text_set_from_str(text *t, const str *src) {
 void text_set_font(text *t, font_size font) {
     assert(font);
     t->font = font;
-    t->cache_flags |= INVALIDATE_ALL;
+    t->cache_flags |= INVALIDATE_LAYOUT;
 }
 
 void text_set_bounding_box(text *t, uint16_t w, uint16_t h) {
     t->w = w;
     t->h = h;
-    t->cache_flags |= INVALIDATE_ALL;
+    t->cache_flags |= INVALIDATE_LAYOUT;
 }
 
 void text_set_color(text *t, vga_index color) {
     t->text_color = color;
-    t->cache_flags |= INVALIDATE_SURFACE;
+    t->cache_flags |= INVALIDATE_STYLE;
 }
 
 void text_set_shadow_color(text *t, vga_index color) {
     t->shadow_color = color;
-    t->cache_flags |= INVALIDATE_SURFACE;
+    t->cache_flags |= INVALIDATE_STYLE;
 }
 
 void text_set_vertical_align(text *t, text_vertical_align align) {
     t->vertical_align = align;
-    t->cache_flags |= INVALIDATE_ALL;
+    t->cache_flags |= INVALIDATE_LAYOUT;
 }
 
 void text_set_horizontal_align(text *t, text_horizontal_align align) {
     t->horizontal_align = align;
-    t->cache_flags |= INVALIDATE_ALL;
+    t->cache_flags |= INVALIDATE_LAYOUT;
 }
 
 void text_set_padding(text *t, uint8_t left, uint8_t right, uint8_t top, uint8_t bottom) {
@@ -132,27 +136,37 @@ void text_set_padding(text *t, uint8_t left, uint8_t right, uint8_t top, uint8_t
     t->padding.right = right;
     t->padding.top = top;
     t->padding.bottom = bottom;
-    t->cache_flags |= INVALIDATE_ALL;
+    t->cache_flags |= INVALIDATE_LAYOUT;
 }
 
 void text_set_direction(text *t, text_direction direction) {
     t->direction = direction;
-    t->cache_flags |= INVALIDATE_ALL;
+    t->cache_flags |= INVALIDATE_LAYOUT;
+}
+
+void text_set_line_spacing(text *t, uint8_t line_spacing) {
+    t->line_spacing = line_spacing;
+    t->cache_flags |= INVALIDATE_LAYOUT;
+}
+
+void text_set_letter_spacing(text *t, uint8_t letter_spacing) {
+    t->letter_spacing = letter_spacing;
+    t->cache_flags |= INVALIDATE_LAYOUT;
 }
 
 void text_set_shadow_style(text *t, uint8_t shadow) {
     t->shadow = shadow & TEXT_SHADOW_ALL;
-    t->cache_flags |= INVALIDATE_SURFACE;
+    t->cache_flags |= INVALIDATE_STYLE;
 }
 
 void text_set_glyph_margin(text *t, uint8_t glyph_margin) {
     t->glyph_margin = glyph_margin;
-    t->cache_flags |= INVALIDATE_ALL;
+    t->cache_flags |= INVALIDATE_LAYOUT;
 }
 
 void text_set_max_lines(text *t, uint8_t max) {
     t->max_lines = max;
-    t->cache_flags |= INVALIDATE_ALL;
+    t->cache_flags |= INVALIDATE_LAYOUT;
 }
 
 font_size text_get_font(const text *t) {
@@ -195,6 +209,14 @@ void text_get_padding(const text *t, uint8_t *left, uint8_t *right, uint8_t *top
 
 text_direction text_get_direction(const text *t) {
     return t->direction;
+}
+
+uint8_t text_get_line_spacing(const text *t) {
+    return t->line_spacing;
+}
+
+uint8_t text_get_letter_spacing(const text *t) {
+    return t->letter_spacing;
 }
 
 uint8_t text_get_shadow_style(const text *t) {
