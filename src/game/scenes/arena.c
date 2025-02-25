@@ -1107,10 +1107,12 @@ void arena_dynamic_tick(scene *scene, int paused) {
             }
 
             if(local->ending_ticks == 40) {
-                // one HAR must be in victory pose and one must be in defeat
+                // one HAR must be in victory pose and one must be in defeat or damage from scrap/destruction
                 assert(
-                    (obj_har[0]->cur_animation->id == ANIM_VICTORY && obj_har[1]->cur_animation->id == ANIM_DEFEAT) ||
-                    (obj_har[1]->cur_animation->id == ANIM_VICTORY && obj_har[0]->cur_animation->id == ANIM_DEFEAT));
+                    (obj_har[0]->cur_animation->id == ANIM_VICTORY &&
+                     (obj_har[1]->cur_animation->id == ANIM_DEFEAT || obj_har[1]->cur_animation->id == ANIM_DAMAGE)) ||
+                    (obj_har[1]->cur_animation->id == ANIM_VICTORY &&
+                     (obj_har[0]->cur_animation->id == ANIM_DEFEAT || obj_har[1]->cur_animation->id == ANIM_DAMAGE)));
                 if(!local->over) {
                     local->round++;
                     arena_reset(scene);

@@ -372,7 +372,9 @@ void player_run(object *obj) {
         obj->enemy_slide_state.timer--;
     }
 
-    obj->pos.x = max2(ARENA_LEFT_WALL, min2(ARENA_RIGHT_WALL, obj->pos.x));
+    if(enemy) {
+        obj->pos.x = max2(ARENA_LEFT_WALL, min2(ARENA_RIGHT_WALL, obj->pos.x));
+    }
 
     // If frame changed, do something
     if(state->entered_frame) {
