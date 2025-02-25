@@ -39,26 +39,28 @@ size_t find_next_line_end(const str *buf, const font *font, text_direction direc
     bool found_cut_off = false;
     uint16_t pos = 0;
     for(size_t i = start_index; i < len; i++) {
-        fprintf(stderr, "Char %lld: ", i);
+        // Linebreak encountered, we are done here.
         if(ptr[i] == '\n') {
-            fprintf(stderr, "linebreak found at %lld\n", i);
             return i + 1;
+        }
+
+        // Check if this is a potential cut-off point. Cut-off is used if we run out of space
+        // before we reach an actual linebreak.
+        if(ptr[i] == ' ' || ptr[i] == '-') {
+            cut_off = i + 1;
+            found_cut_off = true;
         }
 
         // Special characters handled, try to get printable surface.
         const surface *s = font_get_surface(font, ptr[i]);
         if(s == NULL) {
-            // Character has no surface, just skip it.
-            fprintf(stderr, "No surface!\n");
+            // Character has no surface, just skip it since we can't do anything with it.
             continue;
         }
 
         uint16_t step = (direction == TEXT_HORIZONTAL) ? s->w : s->h;
-        fprintf(stderr, "sur = (%d, %d), pos %d + %d / %d ...", s->w, s->h, pos, step, max_width);
-
         if(pos + step > max_width) {
             // If there is no more room in row direction, stop here.
-            fprintf(stderr, "Out of room!\n");
             if(found_cut_off) {
                 return cut_off;
             } else {
@@ -66,14 +68,6 @@ size_t find_next_line_end(const str *buf, const font *font, text_direction direc
             }
         }
         pos += step;
-
-        if(ptr[i] == ' ' || ptr[i] == '-') {
-            fprintf(stderr, " (Cut-off found at %lld) ...", i);
-            cut_off = i + 1;
-            found_cut_off = true;
-        }
-
-        fprintf(stderr, "Next!\n");
     }
     return len;
 }

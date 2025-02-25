@@ -19,7 +19,7 @@ void create_fake_font(font *font) {
     }
 
     // 'B' is 4x8
-    surface_create(&s, 4, 8);
+    surface_create(&s, 4, 4);
     vector_append(&font->surfaces, &s);
 }
 
@@ -33,6 +33,11 @@ void test_find_next_line_end(void) {
     CU_ASSERT_EQUAL(find_next_line_end(&s, &f, TEXT_HORIZONTAL, 0, 16), 3);
     str_free(&s);
 
+    // Same as above, but in vertical direction,
+    str_from_c(&s, "ABBABB");
+    CU_ASSERT_EQUAL(find_next_line_end(&s, &f, TEXT_VERTICAL, 0, 16), 3);
+    str_free(&s);
+
     // Letter does not fit, so just return 0
     str_from_c(&s, "A");
     CU_ASSERT_EQUAL(find_next_line_end(&s, &f, TEXT_HORIZONTAL, 0, 7), 0);
@@ -43,9 +48,24 @@ void test_find_next_line_end(void) {
     CU_ASSERT_EQUAL(find_next_line_end(&s, &f, TEXT_HORIZONTAL, 0, 16), 2);
     str_free(&s);
 
-    // We have a linebreak, but the whole line fits so it's not used.
+    // We have a break point, but the whole line fits so it's not used.
     str_from_c(&s, "B B");
     CU_ASSERT_EQUAL(find_next_line_end(&s, &f, TEXT_HORIZONTAL, 0, 16), 3);
+    str_free(&s);
+
+    // We have a break point (space), and the whole line doesn't fit so we must use it.
+    str_from_c(&s, "A B");
+    CU_ASSERT_EQUAL(find_next_line_end(&s, &f, TEXT_HORIZONTAL, 0, 16), 2);
+    str_free(&s);
+
+    // We have a break point (dash), and the whole line doesn't fit so we must use it.
+    str_from_c(&s, "A-B");
+    CU_ASSERT_EQUAL(find_next_line_end(&s, &f, TEXT_HORIZONTAL, 0, 16), 2);
+    str_free(&s);
+
+    // We start after space, and last character should fit on the last line.
+    str_from_c(&s, "A BBBB");
+    CU_ASSERT_EQUAL(find_next_line_end(&s, &f, TEXT_HORIZONTAL, 2, 16), 6);
     str_free(&s);
 
     font_free(&f);
