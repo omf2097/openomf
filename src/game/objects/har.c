@@ -1210,13 +1210,14 @@ void har_collide_with_har(object *obj_a, object *obj_b, int loop) {
         log_debug("HAR %s animation set to %s", har_get_name(b->id), str_c(&move->footer_string));
 
         if(move->next_move) {
-            if(str_size(&move->footer_string) == 0 && b->health == 0) {
+            af_move *next_move = af_get_move(a->af_data, move->next_move);
+            if(str_size(&move->footer_string) == 0 && b->health == 0 && next_move->damage > 0) {
                 // chained move like thorn's spike charge
                 // we want to keep the opponent alive until the next thing hits
                 b->health = 1;
             }
             log_debug("HAR %s going to next move %d", har_get_name(b->id), move->next_move);
-            object_set_animation(obj_a, &af_get_move(a->af_data, move->next_move)->ani);
+            object_set_animation(obj_a, &next_move->ani);
             object_set_repeat(obj_a, 0);
             // bail out early, the next move can still brutalize the oppopent so don't set them immune to further damage
             // this fixes flail's charging punch and katana's wall spin, but thorn's spike charge still works
@@ -1261,6 +1262,13 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
 
         if(projectile_did_hit(o_pjt)) {
             // projectile has already hit
+            return;
+        }
+
+        // check the animation is still going
+        // for some reason this has been observed to happen sometimes, an example is frame 18 of chronos' stasis
+        if(!sd_script_get_frame_at(&o_pjt->animation_state.parser, o_pjt->animation_state.current_tick)) {
+            log_debug("no such frame at tick %d", o_pjt->animation_state.current_tick);
             return;
         }
 
