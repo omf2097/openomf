@@ -623,6 +623,7 @@ void arena_har_defeat_hook(int loser_player_id, scene *scene) {
     if(score->rounds >= ceilf(local->rounds / 2.0f)) {
         winner_har->state = STATE_VICTORY;
         if(winner_har->executing_move == 0 && defeated_at_rest(loser)) {
+            har_face_enemy(winner, loser);
             har_set_ani(winner, ANIM_VICTORY, 0);
         }
         winner_har->enqueued = 0;
@@ -1078,8 +1079,10 @@ void arena_dynamic_tick(scene *scene, int paused) {
         if(local->state == ARENA_STATE_ENDING) {
             // check if its time to put the winner into victory pose
             if(defeated_at_rest(obj_har[0]) && winner_needs_victory_pose(obj_har[1])) {
+                har_face_enemy(obj_har[1], obj_har[0]);
                 har_set_ani(obj_har[1], ANIM_VICTORY, 0);
             } else if(defeated_at_rest(obj_har[1]) && winner_needs_victory_pose(obj_har[0])) {
+                har_face_enemy(obj_har[0], obj_har[1]);
                 har_set_ani(obj_har[0], ANIM_VICTORY, 0);
             }
 

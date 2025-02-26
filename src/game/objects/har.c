@@ -1293,6 +1293,10 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
             // statis ticks is the raw damage from the move
             h->in_stasis_ticks = move->raw_damage;
         } else {
+            if(move->damage > 0) {
+                // assume all projectile that do damage have a footer string
+                assert(str_size(&move->footer_string) > 0);
+            }
             // Just take damage normally if there is no footer string in successor
             log_debug("projectile dealt damage of %f", move->damage);
             log_debug("projectile %d dealt damage of %f", move->id, move->damage);
@@ -2043,6 +2047,24 @@ int har_act(object *obj, int act_type) {
     return 0;
 }
 
+void har_face_enemy(object *obj, object *obj_enemy) {
+    har *h = object_get_userdata(obj);
+    har *har_enemy = object_get_userdata(obj_enemy);
+    if(h->state != STATE_RECOIL && h->state != STATE_STANDING_UP && h->state != STATE_STUNNED &&
+       h->state != STATE_FALLEN && h->state != STATE_JUMPING && har_enemy->state != STATE_JUMPING) {
+        // make sure we are facing the opponent
+        vec2i pos = object_get_pos(obj);
+        vec2i pos_enemy = object_get_pos(obj_enemy);
+        if(pos.x > pos_enemy.x) {
+            log_debug("HARS facing player %d LEFT", h->player_id);
+            object_set_direction(obj, OBJECT_FACE_LEFT);
+        } else {
+            log_debug("HARS facing player %d RIGHT", h->player_id);
+            object_set_direction(obj, OBJECT_FACE_RIGHT);
+        }
+    }
+}
+
 void har_finished(object *obj) {
     har *h = object_get_userdata(obj);
     controller *ctrl = game_player_get_ctrl(game_state_get_player(obj->gs, h->player_id));
@@ -2127,25 +2149,7 @@ void har_finished(object *obj) {
     }
 
     // now is a good time to check we're facing the right way
-    if(h->state != STATE_RECOIL && h->state != STATE_STANDING_UP && h->state != STATE_STUNNED &&
-       h->state != STATE_FALLEN && h->state != STATE_JUMPING && har_enemy->state != STATE_JUMPING) {
-        // make sure HAR's are facing each other
-        if(object_get_direction(obj) == object_get_direction(obj_enemy)) {
-            log_debug("HARS facing same direction");
-            vec2i pos = object_get_pos(obj);
-            vec2i pos_enemy = object_get_pos(obj_enemy);
-            if(pos.x > pos_enemy.x) {
-                log_debug("HARS facing player %d LEFT", h->player_id);
-                object_set_direction(obj, OBJECT_FACE_LEFT);
-            } else {
-                log_debug("HARS facing player %d RIGHT", h->player_id);
-                object_set_direction(obj, OBJECT_FACE_RIGHT);
-            }
-
-            log_debug("HARS facing enemy player %d", abs(h->player_id - 1));
-            object_set_direction(obj_enemy, object_get_direction(obj) * -1);
-        }
-    }
+    har_face_enemy(obj, obj_enemy);
 }
 
 void har_install_hook(har *h, har_hook_cb hook, void *data) {
