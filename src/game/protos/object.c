@@ -692,7 +692,7 @@ void object_set_direction(object *obj, int dir) {
     obj->direction = dir;
 }
 int object_get_direction(const object *obj) {
-    return obj->direction * obj->sprite_state.dir_correction;
+    return obj->direction;
 }
 
 void object_set_shadow(object *obj, int enable) {

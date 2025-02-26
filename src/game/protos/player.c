@@ -23,7 +23,6 @@ static void player_clear_frame(object *obj) {
     player_sprite_state *s = &obj->sprite_state;
     memset(s, 0, sizeof(player_sprite_state));
     s->flipmode = FLIP_NONE;
-    s->dir_correction = 1;
     s->blend_start = 0xFF;
     s->blend_finish = 0xFF;
 }
@@ -242,7 +241,7 @@ void player_run(object *obj) {
         player_clear_frame(obj);
 
         if(sd_script_isset(frame, "ar")) {
-            rstate->dir_correction = -1;
+            object_set_direction(obj, object_get_direction(obj) * -1);
         }
 
         if(sd_script_isset(frame, "ac")) {
