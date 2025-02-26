@@ -634,10 +634,12 @@ void arena_har_defeat_hook(int loser_player_id, scene *scene) {
         if(is_singleplayer(gs)) {
             player_winner->sp_wins |= 2 << player_loser->pilot->pilot_id;
             if(player_loser->pilot->pilot_id == PILOT_KREISSACK) {
+                har *loser_har = object_get_userdata(loser);
+                log_debug("kreissack defeated");
                 // can't scrap/destruct kreissack
                 winner_har->state = STATE_DONE;
                 // major go boom
-                har_set_ani(loser, 47, 1);
+                loser_har->custom_defeat_animation = 47;
             }
         }
     } else {
@@ -1028,8 +1030,13 @@ void arena_spawn_hazard(scene *scene) {
     }
 }
 
+bool har_in_defeat_animation(object *obj) {
+    har *h = obj->userdata;
+    return obj->cur_animation->id == (h->custom_defeat_animation ? h->custom_defeat_animation : ANIM_DEFEAT);
+}
+
 bool defeated_at_rest(object *obj) {
-    return obj->cur_animation->id == ANIM_DEFEAT && !object_is_airborne(obj) && obj->vel.x == 0.0f;
+    return har_in_defeat_animation(obj) && !object_is_airborne(obj) && obj->vel.x == 0.0f;
 }
 
 bool har_unfinished_victory(object *obj) {
@@ -1111,11 +1118,10 @@ void arena_dynamic_tick(scene *scene, int paused) {
 
             if(local->ending_ticks == 40) {
                 // one HAR must be in victory pose and one must be in defeat or damage from scrap/destruction
-                assert(
-                    (obj_har[0]->cur_animation->id == ANIM_VICTORY &&
-                     (obj_har[1]->cur_animation->id == ANIM_DEFEAT || obj_har[1]->cur_animation->id == ANIM_DAMAGE)) ||
-                    (obj_har[1]->cur_animation->id == ANIM_VICTORY &&
-                     (obj_har[0]->cur_animation->id == ANIM_DEFEAT || obj_har[1]->cur_animation->id == ANIM_DAMAGE)));
+                assert((obj_har[0]->cur_animation->id == ANIM_VICTORY &&
+                        (har_in_defeat_animation(obj_har[1]) || obj_har[1]->cur_animation->id == ANIM_DAMAGE)) ||
+                       (obj_har[1]->cur_animation->id == ANIM_VICTORY &&
+                        (har_in_defeat_animation(obj_har[0]) || obj_har[1]->cur_animation->id == ANIM_DAMAGE)));
                 if(!local->over) {
                     local->round++;
                     arena_reset(scene);

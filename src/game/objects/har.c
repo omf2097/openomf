@@ -2051,7 +2051,8 @@ void har_face_enemy(object *obj, object *obj_enemy) {
     har *h = object_get_userdata(obj);
     har *har_enemy = object_get_userdata(obj_enemy);
     if(h->state != STATE_RECOIL && h->state != STATE_STANDING_UP && h->state != STATE_STUNNED &&
-       h->state != STATE_FALLEN && h->state != STATE_JUMPING && har_enemy->state != STATE_JUMPING) {
+       h->state != STATE_FALLEN && h->state != STATE_DEFEAT && h->state != STATE_JUMPING &&
+       har_enemy->state != STATE_JUMPING) {
         // make sure we are facing the opponent
         vec2i pos = object_get_pos(obj);
         vec2i pos_enemy = object_get_pos(obj_enemy);
@@ -2092,7 +2093,7 @@ void har_finished(object *obj) {
         }
     } else if(h->state == STATE_RECOIL && h->health <= 0) {
         h->state = STATE_DEFEAT;
-        har_set_ani(obj, ANIM_DEFEAT, 0);
+        har_set_ani(obj, h->custom_defeat_animation ? h->custom_defeat_animation : ANIM_DEFEAT, 0);
     } else if((h->state == STATE_RECOIL || h->state == STATE_STANDING_UP) && h->endurance < 1.0f) {
         if(h->state == STATE_RECOIL) {
             har_event_recover(h, ctrl);

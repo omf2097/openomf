@@ -170,6 +170,8 @@ typedef struct har_t {
 
     int walk_done_anim;
 
+    uint8_t custom_defeat_animation;
+
     list har_hooks;
 
 #ifdef DEBUGMODE
