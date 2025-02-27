@@ -1711,12 +1711,40 @@ int arena_create(scene *scene) {
             log_debug("player %d using har %d", i, player->pilot->har_id);
             local->rec->pilots[i].info.har_id = (unsigned char)player->pilot->har_id;
             local->rec->pilots[i].info.pilot_id = player->pilot->pilot_id;
-            local->rec->pilots[i].info.color_1 = player->pilot->color_1;
+            local->rec->pilots[i].info.color_3 = player->pilot->color_1;
             local->rec->pilots[i].info.color_2 = player->pilot->color_2;
-            local->rec->pilots[i].info.color_3 = player->pilot->color_3;
-            memcpy(local->rec->pilots[i].info.name, lang_get(player->pilot->pilot_id + 20), 18);
+            local->rec->pilots[i].info.color_1 = player->pilot->color_3;
+            local->rec->pilots[i].info.agility = player->pilot->agility;
+            local->rec->pilots[i].info.power = player->pilot->power;
+            local->rec->pilots[i].info.endurance = player->pilot->endurance;
+            local->rec->pilots[i].info.arm_speed = player->pilot->arm_speed;
+            local->rec->pilots[i].info.leg_speed = player->pilot->leg_speed;
+            local->rec->pilots[i].info.arm_power = player->pilot->arm_power;
+            local->rec->pilots[i].info.leg_power = player->pilot->leg_power;
+            local->rec->pilots[i].info.armor = player->pilot->armor;
+            local->rec->pilots[i].info.stun_resistance = player->pilot->stun_resistance;
+            memset(local->rec->pilots[i].info.name, 0, 18);
+            strncpy(local->rec->pilots[i].info.name, lang_get(player->pilot->pilot_id + 20), 18);
+            char *nl;
+            if((nl = strchr(local->rec->pilots[i].info.name, '\n'))) {
+                *nl = 0;
+            }
         }
         local->rec->arena_id = scene->id - SCENE_ARENA0;
+
+        // TODO hardcode some values here
+        local->rec->unknown_c = 2;
+        local->rec->unknown_i = 1;
+        local->rec->unknown_j = 7;
+        local->rec->unknown_k = 7;
+
+        local->rec->throw_range = 100;
+        local->rec->hit_pause = 10;
+        local->rec->vitality = 100;
+        local->rec->jump_height = 100;
+
+        local->rec->power[0] = 7;
+        local->rec->power[1] = 2;
     } else {
         local->rec = NULL;
     }

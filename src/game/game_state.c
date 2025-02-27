@@ -131,13 +131,22 @@ int game_state_create(game_state *gs, engine_init_flags *init_flags) {
             goto error_0;
         }
 
-        // set the HAR colors, pilot, har type
+        // set the HAR colors, pilot, har type and and pilot and HAR stats
         for(int i = 0; i < 2; i++) {
             sd_pilot_set_player_color(gs->players[i]->pilot, PRIMARY, rec.pilots[i].info.color_3);
             sd_pilot_set_player_color(gs->players[i]->pilot, SECONDARY, rec.pilots[i].info.color_2);
             sd_pilot_set_player_color(gs->players[i]->pilot, TERTIARY, rec.pilots[i].info.color_1);
             gs->players[i]->pilot->har_id = HAR_JAGUAR + rec.pilots[i].info.har_id;
             gs->players[i]->pilot->pilot_id = rec.pilots[i].info.pilot_id;
+            gs->players[i]->pilot->agility = rec.pilots[i].info.agility;
+            gs->players[i]->pilot->power = rec.pilots[i].info.power;
+            gs->players[i]->pilot->endurance = rec.pilots[i].info.endurance;
+            gs->players[i]->pilot->leg_speed = rec.pilots[i].info.leg_speed;
+            gs->players[i]->pilot->arm_speed = rec.pilots[i].info.arm_speed;
+            gs->players[i]->pilot->leg_power = rec.pilots[i].info.leg_power;
+            gs->players[i]->pilot->arm_power = rec.pilots[i].info.arm_power;
+            gs->players[i]->pilot->armor = rec.pilots[i].info.armor;
+            gs->players[i]->pilot->stun_resistance = rec.pilots[i].info.stun_resistance;
         }
 
         // XXX use playback controller once it exista
