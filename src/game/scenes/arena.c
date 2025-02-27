@@ -864,10 +864,15 @@ void arena_free(scene *scene) {
     game_state_set_paused(scene->gs, 0);
 
     if(local->rec) {
-        write_rec_move(scene, game_state_get_player(scene->gs, 0), ACT_STOP);
-        sd_rec_save(local->rec, scene->gs->init_flags->rec_file);
-        sd_rec_free(local->rec);
-        omf_free(local->rec);
+        sd_rec_finish(local->rec, scene->gs->int_tick);
+
+        if(scene->gs->init_flags->record == 1) {
+            // we're supposed to save it
+            sd_rec_save(local->rec, scene->gs->init_flags->rec_file);
+            sd_rec_free(local->rec);
+            omf_free(local->rec);
+            scene->gs->rec = NULL;
+        }
     }
 
     for(int i = 0; i < 2; i++) {
@@ -1701,10 +1706,16 @@ int arena_create(scene *scene) {
     scene_set_render_overlay_cb(scene, arena_render_overlay);
     scene->clone = arena_clone;
 
-    // initialize recording, if enabled
-    if(scene->gs->init_flags->record == 1) {
-        local->rec = omf_calloc(1, sizeof(sd_rec_file));
-        sd_rec_create(local->rec);
+    // initialize recording, if we're not doing playback
+    if(scene->gs->init_flags->playback == 0) {
+        if(!scene->gs->rec) {
+            scene->gs->rec = omf_calloc(1, sizeof(sd_rec_file));
+        } else {
+            // release previous recording
+            sd_rec_free(local->rec);
+        }
+        sd_rec_create(scene->gs->rec);
+        local->rec = scene->gs->rec;
         for(int i = 0; i < 2; i++) {
             // Declare some vars
             game_player *player = game_state_get_player(scene->gs, i);
