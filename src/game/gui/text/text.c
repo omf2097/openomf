@@ -1,10 +1,12 @@
 #include <assert.h>
 
 #include "game/gui/text/text.h"
+#include "game/gui/text/text_layout.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
 #include "utils/vector.h"
 #include "video/surface.h"
+#include "video/video.h"
 
 enum cache_flags
 {
@@ -21,20 +23,20 @@ typedef struct layout_item {
 } layout_item;
 
 struct text {
-    str buf;              // Copy of text
-    font_size font;       // Font size to use
-    uint16_t w;           // Bounding box width
-    uint16_t h;           // Bounding box height
-    vector cached_layout; // Each glyph position in a nice list, easy to render.
-    uint8_t cache_flags;  // Cache invalidation flags
+    str buf;             // Copy of text
+    font_size font;      // Font size to use
+    uint16_t w;          // Bounding box width
+    uint16_t h;          // Bounding box height
+    text_layout *layout; // Each glyph position in a nice list, easy to render.
+    uint8_t cache_flags; // Cache invalidation flags
 
     // Text rendering options
     vga_index text_color;
     vga_index shadow_color;
     text_vertical_align vertical_align;
     text_horizontal_align horizontal_align;
-    text_padding padding;
-    text_direction direction;
+    text_margin margin;
+    text_row_direction direction;
     uint8_t line_spacing;
     uint8_t letter_spacing;
     uint8_t shadow;
@@ -45,16 +47,16 @@ struct text {
 static void defaults(text *t) {
     t->text_color = 0xFD;
     t->shadow_color = 0xC0;
-    t->vertical_align = TEXT_TOP;
-    t->horizontal_align = TEXT_LEFT;
-    t->padding.left = 0;
-    t->padding.right = 0;
-    t->padding.top = 0;
-    t->padding.bottom = 0;
+    t->vertical_align = ALIGN_TEXT_TOP;
+    t->horizontal_align = ALIGN_TEXT_LEFT;
+    t->margin.left = 0;
+    t->margin.right = 0;
+    t->margin.top = 0;
+    t->margin.bottom = 0;
     t->line_spacing = 1;
     t->letter_spacing = 0;
-    t->direction = TEXT_HORIZONTAL;
-    t->shadow = TEXT_SHADOW_NONE;
+    t->direction = TEXT_ROW_HORIZONTAL;
+    t->shadow = GLYPH_SHADOW_NONE;
     t->glyph_margin = 0;
     t->max_lines = UINT8_MAX;
 }
@@ -64,7 +66,8 @@ text *text_create(font_size font, uint16_t w, uint16_t h) {
     t->font = font;
     t->w = w;
     t->h = h;
-    t->cache_flags |= INVALIDATE_ALL;
+    t->cache_flags = INVALIDATE_ALL;
+    t->layout = text_layout_create(w, h);
     str_create(&t->buf);
     defaults(t);
     return t;
@@ -84,6 +87,7 @@ text *text_create_from_str(font_size font, uint16_t w, uint16_t h, const str *sr
 
 void text_free(text **t) {
     str_free(&(*t)->buf);
+    text_layout_free(&(*t)->layout);
     omf_free(*t);
 }
 
@@ -131,15 +135,15 @@ void text_set_horizontal_align(text *t, text_horizontal_align align) {
     t->cache_flags |= INVALIDATE_LAYOUT;
 }
 
-void text_set_padding(text *t, uint8_t left, uint8_t right, uint8_t top, uint8_t bottom) {
-    t->padding.left = left;
-    t->padding.right = right;
-    t->padding.top = top;
-    t->padding.bottom = bottom;
+void text_set_margin(text *t, uint8_t left, uint8_t right, uint8_t top, uint8_t bottom) {
+    t->margin.left = left;
+    t->margin.right = right;
+    t->margin.top = top;
+    t->margin.bottom = bottom;
     t->cache_flags |= INVALIDATE_LAYOUT;
 }
 
-void text_set_direction(text *t, text_direction direction) {
+void text_set_direction(text *t, text_row_direction direction) {
     t->direction = direction;
     t->cache_flags |= INVALIDATE_LAYOUT;
 }
@@ -155,7 +159,7 @@ void text_set_letter_spacing(text *t, uint8_t letter_spacing) {
 }
 
 void text_set_shadow_style(text *t, uint8_t shadow) {
-    t->shadow = shadow & TEXT_SHADOW_ALL;
+    t->shadow = shadow & GLYPH_SHADOW_ALL;
     t->cache_flags |= INVALIDATE_STYLE;
 }
 
@@ -196,18 +200,18 @@ text_horizontal_align text_get_horizontal_align(const text *t) {
     return t->horizontal_align;
 }
 
-void text_get_padding(const text *t, uint8_t *left, uint8_t *right, uint8_t *top, uint8_t *bottom) {
+void text_get_margin(const text *t, uint8_t *left, uint8_t *right, uint8_t *top, uint8_t *bottom) {
     if(left != NULL)
-        *left = t->padding.left;
+        *left = t->margin.left;
     if(right != NULL)
-        *right = t->padding.right;
+        *right = t->margin.right;
     if(top != NULL)
-        *top = t->padding.top;
+        *top = t->margin.top;
     if(bottom != NULL)
-        *bottom = t->padding.bottom;
+        *bottom = t->margin.bottom;
 }
 
-text_direction text_get_direction(const text *t) {
+text_row_direction text_get_direction(const text *t) {
     return t->direction;
 }
 
@@ -232,5 +236,53 @@ uint8_t text_get_max_lines(const text *t) {
 }
 
 void text_generate_layout(text *t) {
-    // TBD
+    if(t->cache_flags & INVALIDATE_LAYOUT) {
+        log_debug("Re-flowing text layout for %d x %d box", t->w, t->h);
+        const font *font = fonts_get_font(t->font);
+        text_layout_compute(t->layout, &t->buf, font, t->vertical_align, t->horizontal_align, t->margin, t->direction,
+                            t->line_spacing, t->letter_spacing, t->max_lines);
+        t->cache_flags &= ~INVALIDATE_LAYOUT;
+    }
+}
+
+static inline void draw_shadow(const text_layout_item *item, uint16_t offset_x, uint16_t offset_y, uint8_t shadow,
+                               vga_index color) {
+    int palette_offset = (int)color - 1;
+    int x = item->x + offset_x;
+    int y = item->y + offset_y;
+    if(shadow & GLYPH_SHADOW_RIGHT)
+        video_draw_offset(item->glyph, x + 1, y, palette_offset, 255);
+    if(shadow & GLYPH_SHADOW_LEFT)
+        video_draw_offset(item->glyph, x - 1, y, palette_offset, 255);
+    if(shadow & GLYPH_SHADOW_BOTTOM)
+        video_draw_offset(item->glyph, x, y + 1, palette_offset, 255);
+    if(shadow & GLYPH_SHADOW_TOP)
+        video_draw_offset(item->glyph, x, y - 1, palette_offset, 255);
+}
+
+static inline void draw_foreground(const text_layout_item *item, uint16_t offset_x, uint16_t offset_y,
+                                   vga_index color) {
+    int palette_offset = (int)color - 1;
+    int x = item->x + offset_x;
+    int y = item->y + offset_y;
+    video_draw_offset(item->glyph, x, y, palette_offset, 255);
+}
+
+void text_draw(text *t, uint16_t offset_x, uint16_t offset_y) {
+    assert(t != NULL);
+    text_layout_item *item;
+    iterator it;
+    text_generate_layout(t); // Ensure we have a layout
+
+    // First the shadows for all letters.
+    vector_iter_begin(&t->layout->items, &it);
+    foreach(it, item) {
+        draw_shadow(item, offset_x, offset_y, t->shadow, t->shadow_color);
+    }
+
+    // Then the actual letter foregrounds.
+    vector_iter_begin(&t->layout->items, &it);
+    foreach(it, item) {
+        draw_foreground(item, offset_x, offset_y, t->text_color);
+    }
 }

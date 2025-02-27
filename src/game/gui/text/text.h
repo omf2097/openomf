@@ -25,8 +25,8 @@ void text_set_color(text *t, vga_index color);
 void text_set_shadow_color(text *t, vga_index color);
 void text_set_vertical_align(text *t, text_vertical_align align);
 void text_set_horizontal_align(text *t, text_horizontal_align align);
-void text_set_padding(text *t, uint8_t left, uint8_t right, uint8_t top, uint8_t bottom);
-void text_set_direction(text *t, text_direction direction);
+void text_set_margin(text *t, uint8_t left, uint8_t right, uint8_t top, uint8_t bottom);
+void text_set_direction(text *t, text_row_direction direction);
 void text_set_line_spacing(text *t, uint8_t line_spacing);
 void text_set_letter_spacing(text *t, uint8_t letter_spacing);
 void text_set_shadow_style(text *t, uint8_t shadow);
@@ -39,8 +39,8 @@ vga_index text_get_color(const text *t);
 vga_index text_get_shadow_color(const text *t);
 text_vertical_align text_get_vertical_align(const text *t);
 text_horizontal_align text_get_horizontal_align(const text *t);
-void text_get_padding(const text *t, uint8_t *left, uint8_t *right, uint8_t *top, uint8_t *bottom);
-text_direction text_get_direction(const text *t);
+void text_get_margin(const text *t, uint8_t *left, uint8_t *right, uint8_t *top, uint8_t *bottom);
+text_row_direction text_get_direction(const text *t);
 uint8_t text_get_line_spacing(const text *t);
 uint8_t text_get_letter_spacing(const text *t);
 uint8_t text_get_shadow_style(const text *t);
@@ -53,5 +53,7 @@ uint8_t text_get_max_lines(const text *t);
  * function exists to allow generating texts at scene creation time.
  */
 void text_generate_layout(text *t);
+
+void text_draw(text *t, uint16_t x, uint16_t y);
 
 #endif // TEXT_ENGINE_H

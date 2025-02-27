@@ -89,15 +89,14 @@ void test_find_next_line_end(void) {
 void test_text_layout_compute(void) {
     font f;
     create_fake_font(&f);
-    text_layout *layout = text_layout_create(16, 16);
-    text_padding pad = {0, 0, 0, 0};
+    text_layout *layout = text_layout_create(16, 24);
+    text_margin margin = {0, 0, 0, 0};
 
     str s;
     str_from_c(&s, "ABABB");
 
     fprintf(stderr, "\n");
-    CU_ASSERT_EQUAL(text_layout_compute(layout, &s, &f, TEXT_TOP, TEXT_LEFT, pad, TEXT_HORIZONTAL, 1, 0, 255),
-                    LAYOUT_NO_ERROR);
+    text_layout_compute(layout, &s, &f, ALIGN_TEXT_TOP, ALIGN_TEXT_LEFT, margin, TEXT_ROW_HORIZONTAL, 1, 0, 255);
 
     // Cleanup
     str_free(&s);
