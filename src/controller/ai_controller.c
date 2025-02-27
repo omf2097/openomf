@@ -1881,26 +1881,26 @@ bool attempt_charge_attack(controller *ctrl, ctrl_event **ev) {
                 chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
             }
             // Jaguar Leap : D,F+P
-            int cmds[] = {ACT_DOWN, DOWNFORWARD, FORWARD, ACT_PUNCH};
+            int cmds[] = {ACT_DOWN, DOWNFORWARD, FORWARD | ACT_PUNCH};
             chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
         } break;
         case HAR_SHADOW: {
             // log_debug("Shadow move: Shadow Grab");
             // Shadow Grab       : D,D+P
-            int cmds[] = {ACT_DOWN, ACT_STOP, ACT_DOWN, ACT_PUNCH};
+            int cmds[] = {ACT_DOWN, ACT_STOP, ACT_DOWN | ACT_PUNCH};
             chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
         } break;
         case HAR_KATANA: {
             if(roll_chance(2) && roll_pref(a->pilot->ap_low)) {
                 // log_debug("Katana move: Trip-slide");
                 // Trip-Slide attack : D+B+K
-                int cmds[] = {DOWNBACK, ACT_KICK};
+                int cmds[] = {DOWNBACK | ACT_KICK};
                 chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
             } else {
                 if(enemy_range >= RANGE_MID && roll_chance(2)) {
                     // log_debug("Katana move: Foward Razor Spin");
                     // Foward Razor Spin : D,F+K
-                    int cmds[] = {ACT_DOWN, DOWNFORWARD, FORWARD, ACT_KICK};
+                    int cmds[] = {ACT_DOWN, DOWNFORWARD, FORWARD | ACT_KICK};
                     chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
                 } else {
                     // log_debug("Katana move: Rising Blade ");
@@ -1910,7 +1910,7 @@ bool attempt_charge_attack(controller *ctrl, ctrl_event **ev) {
                         chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
                     }
                     // Rising Blade : D,F+P
-                    int cmds[] = {ACT_DOWN, DOWNFORWARD, FORWARD, ACT_PUNCH};
+                    int cmds[] = {ACT_DOWN, DOWNFORWARD, FORWARD | ACT_PUNCH};
                     chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
                 }
             }
@@ -1919,18 +1919,18 @@ bool attempt_charge_attack(controller *ctrl, ctrl_event **ev) {
             // log_debug("Flail move: Charging Punch");
             if(enemy_range > RANGE_MID && roll_pref(a->pilot->ap_special) && diff_scale(a)) {
                 // Shadow Punch : D,B,B,P
-                int cmds[] = {ACT_DOWN, DOWNBACK, BACK, ACT_STOP, BACK, ACT_PUNCH};
+                int cmds[] = {ACT_DOWN, DOWNBACK, BACK, ACT_STOP, BACK | ACT_PUNCH};
                 chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
             } else {
                 // Charging Punch : B,B,P
-                int cmds[] = {BACK, ACT_STOP, BACK, ACT_PUNCH};
+                int cmds[] = {BACK, ACT_STOP, BACK | ACT_PUNCH};
                 chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
             }
         } break;
         case HAR_THORN: {
             // log_debug("Thorn move: Spike-charge");
             // Spike-Charge : F,F+P
-            int cmds[] = {FORWARD, ACT_STOP, FORWARD, ACT_PUNCH};
+            int cmds[] = {FORWARD, ACT_STOP, FORWARD | ACT_PUNCH};
             chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
         } break;
         case HAR_PYROS: {
@@ -1941,7 +1941,7 @@ bool attempt_charge_attack(controller *ctrl, ctrl_event **ev) {
                 chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
             }
             // Super Thrust : F,F+P
-            int cmds[] = {FORWARD, ACT_STOP, FORWARD, ACT_PUNCH};
+            int cmds[] = {FORWARD, ACT_STOP, FORWARD | ACT_PUNCH};
             chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
         } break;
         case HAR_ELECTRA: {
@@ -1952,14 +1952,14 @@ bool attempt_charge_attack(controller *ctrl, ctrl_event **ev) {
                 chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
             }
             // Rolling Thunder : F,F+P
-            int cmds[] = {FORWARD, ACT_STOP, FORWARD, ACT_PUNCH};
+            int cmds[] = {FORWARD, ACT_STOP, FORWARD | ACT_PUNCH};
             chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
         } break;
         case HAR_CHRONOS: {
             if(enemy_range >= RANGE_MID && roll_pref(a->pilot->ap_special) && diff_scale(a)) {
                 // log_debug("Chronos move: Teleport");
                 // Teleportation : D,P
-                int cmds[] = {ACT_DOWN, ACT_STOP, ACT_PUNCH};
+                int cmds[] = {ACT_DOWN, ACT_PUNCH};
                 chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
                 // follow up with a close-range tactic
                 int tacs[] = {TACTIC_GRAB, TACTIC_PUSH, TACTIC_SHOOT, TACTIC_SPAM, TACTIC_TRIP};
@@ -1967,7 +1967,7 @@ bool attempt_charge_attack(controller *ctrl, ctrl_event **ev) {
             } else {
                 // log_debug("Chronos move: Trip-slide");
                 // Trip-Slide attack : D,B+K
-                int cmds[] = {DOWNBACK, ACT_KICK};
+                int cmds[] = {DOWNBACK | ACT_KICK};
                 chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
             }
         } break;
@@ -1975,7 +1975,7 @@ bool attempt_charge_attack(controller *ctrl, ctrl_event **ev) {
             if(enemy_range > RANGE_MID && roll_pref(a->pilot->att_jump) && diff_scale(a)) {
                 // log_debug("Shredder move: Flip-kick");
                 // Flip Kick : D,D+K
-                int cmds[] = {ACT_DOWN, ACT_STOP, ACT_DOWN, ACT_KICK};
+                int cmds[] = {ACT_DOWN, ACT_STOP, ACT_DOWN | ACT_KICK};
                 chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
             } else {
                 // log_debug("Shredder move: Head-butt");
@@ -1985,7 +1985,7 @@ bool attempt_charge_attack(controller *ctrl, ctrl_event **ev) {
                     chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
                 }
                 // Head-Butt : D,F+P
-                int cmds[] = {ACT_DOWN, DOWNFORWARD, FORWARD, ACT_PUNCH};
+                int cmds[] = {ACT_DOWN, DOWNFORWARD, FORWARD | ACT_PUNCH};
                 chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
             }
         } break;
@@ -2047,7 +2047,7 @@ bool attempt_push_attack(controller *ctrl, ctrl_event **ev) {
         case HAR_JAGUAR: {
             // log_debug("Jaguar move: High Kick");
             // High Kick : B+K
-            int cmds[] = {BACK, ACT_KICK};
+            int cmds[] = {BACK | ACT_KICK};
             chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
         } break;
         case HAR_KATANA: {
@@ -2058,19 +2058,19 @@ bool attempt_push_attack(controller *ctrl, ctrl_event **ev) {
                 chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
             }
             // Rising Blade : D,F+P
-            int cmds[] = {ACT_DOWN, DOWNFORWARD, FORWARD, ACT_PUNCH};
+            int cmds[] = {ACT_DOWN, DOWNFORWARD, FORWARD | ACT_PUNCH};
             chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
         } break;
         case HAR_FLAIL: {
             if(roll_chance(3)) {
                 // log_debug("Flail move: Slow Swing Chains");
                 // Slow Swing Chain : D,K
-                int cmds[] = {ACT_DOWN, ACT_STOP, ACT_KICK};
+                int cmds[] = {ACT_DOWN, ACT_KICK};
                 chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
             } else {
                 // log_debug("Flail move: Swinging Chains");
                 // Swinging Chains : D,P
-                int cmds[] = {ACT_DOWN, ACT_STOP, ACT_PUNCH};
+                int cmds[] = {ACT_DOWN, ACT_PUNCH};
                 chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
             }
         } break;
@@ -2082,31 +2082,31 @@ bool attempt_push_attack(controller *ctrl, ctrl_event **ev) {
                 chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
             }
             // Speed Kick : D,F+K
-            int cmds[] = {ACT_DOWN, DOWNFORWARD, FORWARD, ACT_KICK};
+            int cmds[] = {ACT_DOWN, DOWNFORWARD, FORWARD | ACT_KICK};
             chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
         } break;
         case HAR_PYROS: {
             // log_debug("Pyros move: Fire Spin");
-            // Fire Spin : D+P
-            int cmds[] = {ACT_DOWN, ACT_STOP, ACT_PUNCH};
+            // Fire Spin : D,P
+            int cmds[] = {ACT_DOWN, ACT_PUNCH};
             chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
         } break;
         case HAR_ELECTRA: {
             // log_debug("Electra move: Electric Shards");
             // Electric Shards : D,F+P
-            int cmds[] = {ACT_DOWN, DOWNFORWARD, FORWARD, ACT_PUNCH};
+            int cmds[] = {ACT_DOWN, DOWNFORWARD, FORWARD | ACT_PUNCH};
             chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
         } break;
         case HAR_NOVA: {
             if(diff_scale(a)) {
                 // log_debug("Nova move: Earthquake Slam");
-                // Earthquake Slam : D,D,P
-                int cmds[] = {ACT_DOWN, ACT_STOP, ACT_DOWN, ACT_PUNCH};
+                // Earthquake Slam : D,D+P
+                int cmds[] = {ACT_DOWN, ACT_STOP, ACT_DOWN | ACT_PUNCH};
                 chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
             } else {
                 // log_debug("Nova move: Heavy Kick");
                 // Heavy Kick : B+K
-                int cmds[] = {BACK, ACT_KICK};
+                int cmds[] = {BACK | ACT_KICK};
                 chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
             }
         } break;
@@ -2144,7 +2144,7 @@ bool attempt_trip_attack(controller *ctrl, ctrl_event **ev) {
 
     // log_debug("Har move: Trip");
     // Standard Trip : D+B+K
-    int cmds[] = {DOWNBACK, ACT_KICK};
+    int cmds[] = {DOWNBACK | ACT_KICK};
     chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
 
     return true;
@@ -2175,7 +2175,7 @@ bool attempt_projectile_attack(controller *ctrl, ctrl_event **ev) {
             if(h->id == HAR_SHREDDER && enemy_range > RANGE_MID) {
                 return false;
             }
-            int cmds[] = {ACT_DOWN, DOWNBACK, BACK, ACT_PUNCH};
+            int cmds[] = {ACT_DOWN, DOWNBACK, BACK | ACT_PUNCH};
             chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
             return true;
         } break;
@@ -2199,7 +2199,7 @@ bool attempt_projectile_attack(controller *ctrl, ctrl_event **ev) {
                 return false;
             }
             // Stasis : D, B, P
-            int cmds[] = {ACT_DOWN, DOWNBACK, BACK, ACT_PUNCH};
+            int cmds[] = {ACT_DOWN, DOWNBACK, BACK | ACT_PUNCH};
             chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
             return true;
         } break;
@@ -2207,14 +2207,13 @@ bool attempt_projectile_attack(controller *ctrl, ctrl_event **ev) {
             controller_cmd(ctrl, ACT_DOWN, ev);
             if(roll_chance(3) && enemy_range >= RANGE_MID) {
                 // Mini-Grenade : D, B, P
-                int cmds[] = {ACT_DOWN, DOWNBACK, BACK};
+                int cmds[] = {ACT_DOWN, DOWNBACK, BACK | ACT_PUNCH};
                 chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
             } else {
                 // Missile : D, F, P
-                int cmds[] = {ACT_DOWN, DOWNFORWARD, FORWARD};
+                int cmds[] = {ACT_DOWN, DOWNFORWARD, FORWARD | ACT_PUNCH};
                 chain_controller_cmd(ctrl, cmds, N_ELEMENTS(cmds), ev);
             }
-            controller_cmd(ctrl, ACT_PUNCH, ev);
             return true;
         } break;
     }
