@@ -596,7 +596,7 @@ void arena_har_defeat_hook(int loser_player_id, scene *scene) {
                     float winnings_multiplier = player_winner->chr->winnings_multiplier;
                     fight_stats->winnings =
                         (player_loser->pilot->money + player_loser->pilot->winnings) * winnings_multiplier;
-                    fight_stats->winnings += (int)(100 * hp_percentage * chr_score_get_difficulty_multiplier(score));
+                    fight_stats->winnings += (int)(200 * hp_percentage * chr_score_get_difficulty_multiplier(score));
                 }
                 player_winner->pilot->rank--;
                 local->win_state = YOUWIN;
