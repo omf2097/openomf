@@ -6,6 +6,7 @@
 
 void vector_init(vector *vec) {
     vec->blocks = 0;
+    vec->free_cb = NULL;
     if(vec->reserved) {
         vec->data = (char *)omf_malloc(vec->reserved * vec->block_size);
     } else {
@@ -19,13 +20,29 @@ void vector_create(vector *vec, unsigned int block_size) {
     vector_init(vec);
 }
 
-void vector_create_with_size(vector *vec, unsigned int block_size, unsigned int reserved) {
-    vec->block_size = block_size;
-    vec->reserved = reserved;
-    vector_init(vec);
+void vector_create_cb(vector *vector, unsigned int block_size, vector_free_cb free_cb) {
+    vector_create(vector, block_size);
+    vector->free_cb = free_cb;
+}
+
+void vector_create_with_size(vector *vector, unsigned int block_size, unsigned int reserved) {
+    vector->block_size = block_size;
+    vector->reserved = reserved;
+    vector_init(vector);
+}
+
+void vector_create_with_size_cb(vector *vector, unsigned int block_size, unsigned int reserved,
+                                vector_free_cb free_cb) {
+    vector_create_with_size(vector, block_size, reserved);
+    vector->free_cb = free_cb;
 }
 
 void vector_free(vector *vec) {
+    if(vec->free_cb != NULL) {
+        for(unsigned int i = 0; i < vec->blocks; i++) {
+            vec->free_cb(vec->data + vec->block_size * i);
+        }
+    }
     vec->blocks = 0;
     vec->reserved = 0;
     vec->block_size = 0;
@@ -61,25 +78,17 @@ static void vector_grow(vector *vec) {
     vec->reserved = new_size;
 }
 
-int vector_append(vector *vec, const void *value) {
+void *vector_append_ptr(vector *vec) {
     if(vec->blocks >= vec->reserved) {
         vector_grow(vec);
     }
     void *dst = (char *)(vec->data + vec->blocks * vec->block_size);
-    memmove(dst, value, vec->block_size);
     vec->blocks++;
-    return 0;
+    return dst;
 }
 
-int vector_prepend(vector *vec, const void *value) {
-    if(vec->blocks >= vec->reserved) {
-        vector_grow(vec);
-    }
-    char *dst = (char *)(vec->data + vec->block_size);
-    memmove(dst, vec->data, vec->block_size * vec->blocks);
-    memcpy(vec->data, value, vec->block_size);
-    vec->blocks++;
-    return 0;
+void vector_append(vector *vec, const void *value) {
+    memmove(vector_append_ptr(vec), value, vec->block_size);
 }
 
 void vector_pop(vector *vec) {

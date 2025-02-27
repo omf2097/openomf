@@ -27,21 +27,6 @@ void test_vector_append(void) {
     vector_free(&test_vector);
 }
 
-void test_vector_prepend(void) {
-    int values[2] = {1, 2};
-    vector test_vector;
-    vector_create(&test_vector, sizeof(int));
-    vector_append(&test_vector, &values[0]);
-    vector_prepend(&test_vector, &values[1]);
-
-    CU_ASSERT(vector_size(&test_vector) == 2);
-    CU_ASSERT(*(int *)vector_get(&test_vector, 0) == values[1]);
-    CU_ASSERT(*(int *)vector_get(&test_vector, 1) == values[0]);
-    CU_ASSERT(vector_get(&test_vector, 2) == NULL);
-
-    vector_free(&test_vector);
-}
-
 void test_vector_get(void) {
     int values[1] = {1};
     vector test_vector;
@@ -165,7 +150,7 @@ void test_vector_zero_size(void) {
     vector_iter_begin(&zero_vector, &it);
 
     for(unsigned i = 0; i < 100; i++) {
-        CU_ASSERT(vector_append(&zero_vector, (void *)&i) == 0);
+        vector_append(&zero_vector, (void *)&i);
         CU_ASSERT(vector_size(&zero_vector) == i + 1);
     }
 
@@ -184,9 +169,6 @@ void vector_test_suite(CU_pSuite suite) {
         return;
     }
     if(CU_add_test(suite, "Test for vector append", test_vector_append) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for vector prepend", test_vector_prepend) == NULL) {
         return;
     }
     if(CU_add_test(suite, "Test for vector get", test_vector_get) == NULL) {
