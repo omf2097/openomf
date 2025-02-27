@@ -45,6 +45,14 @@
 #define GAME_MENU_RETURN_ID 100
 #define GAME_MENU_QUIT_ID 101
 
+typedef enum
+{
+    NONE = 0,
+    YOULOSE,
+    YOUWIN,
+    DONE
+} win_state;
+
 typedef struct arena_local_t {
     guiframe *game_menu;
 
@@ -60,6 +68,7 @@ typedef struct arena_local_t {
     int over;
     int winner;
     bool tournament;
+    win_state win_state;
 
     int player_rounds[2][4];
 
@@ -70,6 +79,8 @@ typedef struct arena_local_t {
 } arena_local;
 
 void write_rec_move(scene *scene, game_player *player, int action);
+
+bool defeated_at_rest(object *obj);
 
 // -------- Local callbacks --------
 
@@ -150,6 +161,8 @@ void scene_youwin_anim_done(object *parent) {
     // Custom object finisher callback requires that we
     // mark object as finished manually, if necessary.
     parent->animation_state.finished = 1;
+    arena_local *local = scene_get_userdata(parent->gs->sc);
+    local->win_state = DONE;
 }
 
 void scene_youwin_anim_start(void *userdata) {
@@ -172,6 +185,8 @@ void scene_youlose_anim_done(object *parent) {
     // Custom object finisher callback requires that we
     // mark object as finished manually, if necessary.
     parent->animation_state.finished = 1;
+    arena_local *local = scene_get_userdata(parent->gs->sc);
+    local->win_state = DONE;
 }
 
 void scene_youlose_anim_start(void *userdata) {
@@ -546,6 +561,7 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
 
 void arena_har_defeat_hook(int loser_player_id, scene *scene) {
     game_state *gs = scene->gs;
+    arena_local *local = scene_get_userdata(scene);
     int winner_player_id = abs(loser_player_id - 1);
     game_player *player_winner = game_state_get_player(scene->gs, winner_player_id);
     game_player *player_loser = game_state_get_player(scene->gs, loser_player_id);
@@ -559,16 +575,16 @@ void arena_har_defeat_hook(int loser_player_id, scene *scene) {
     chr_score *score = game_player_get_score(game_state_get_player(gs, winner_player_id));
     // XXX need a smarter way to detect if a player is networked or local
     if(player_winner->ctrl->type != CTRL_TYPE_NETWORK && player_loser->ctrl->type == CTRL_TYPE_NETWORK) {
-        scene_youwin_anim_start(scene->gs);
+        local->win_state = YOUWIN;
     } else if(player_winner->ctrl->type == CTRL_TYPE_NETWORK && player_loser->ctrl->type != CTRL_TYPE_NETWORK) {
-        scene_youlose_anim_start(scene->gs);
+        local->win_state = YOULOSE;
     } else {
         if(is_demoplay(gs)) {
             // in demo mode, "you lose" should always be displayed
-            scene_youlose_anim_start(scene->gs);
+            local->win_state = YOULOSE;
         } else if(!is_singleplayer(gs)) {
             // XXX in two player mode, "you win" should always be displayed
-            scene_youwin_anim_start(scene->gs);
+            local->win_state = YOUWIN;
         } else {
             if(loser_player_id == 1) {
                 if(is_tournament(gs)) {
@@ -583,18 +599,17 @@ void arena_har_defeat_hook(int loser_player_id, scene *scene) {
                     fight_stats->winnings += (int)(100 * hp_percentage * chr_score_get_difficulty_multiplier(score));
                 }
                 player_winner->pilot->rank--;
-                scene_youwin_anim_start(scene->gs);
+                local->win_state = YOUWIN;
             } else {
                 if(is_tournament(gs)) {
                     if(player_loser->pilot->rank <= player_loser->pilot->enemies_ex_unranked)
                         player_loser->pilot->rank++;
                     fight_stats->repair_cost = calculate_trade_value(player_loser->pilot) / 100;
                 }
-                scene_youlose_anim_start(scene->gs);
+                local->win_state = YOULOSE;
             }
         }
     }
-    arena_local *local = scene_get_userdata(scene);
     object *round_token = game_state_find_object(gs, local->player_rounds[winner_player_id][score->rounds]);
     if(round_token) {
         object_set_sprite_override(round_token, 0);
@@ -606,8 +621,12 @@ void arena_har_defeat_hook(int loser_player_id, scene *scene) {
         chr_score_victory(score, har_health_percent(winner_har));
     }
     if(score->rounds >= ceilf(local->rounds / 2.0f)) {
-        har_set_ani(winner, ANIM_VICTORY, 0);
         winner_har->state = STATE_VICTORY;
+        if(winner_har->executing_move == 0 && defeated_at_rest(loser)) {
+            har_face_enemy(winner, loser);
+            har_set_ani(winner, ANIM_VICTORY, 0);
+        }
+        winner_har->enqueued = 0;
         local->over = 1;
         local->winner = winner_player_id;
         game_player_get_score(player_winner)->wins++;
@@ -615,18 +634,19 @@ void arena_har_defeat_hook(int loser_player_id, scene *scene) {
         if(is_singleplayer(gs)) {
             player_winner->sp_wins |= 2 << player_loser->pilot->pilot_id;
             if(player_loser->pilot->pilot_id == PILOT_KREISSACK) {
+                har *loser_har = object_get_userdata(loser);
+                log_debug("kreissack defeated");
                 // can't scrap/destruct kreissack
                 winner_har->state = STATE_DONE;
                 // major go boom
-                har_set_ani(loser, 47, 1);
+                loser_har->custom_defeat_animation = 47;
             }
         }
     } else {
-        har_set_ani(winner, ANIM_VICTORY, 0);
         // can't do scrap/destruct except on final round
         winner_har->state = STATE_DONE;
     }
-    winner_har->executing_move = 1;
+    winner_har->executing_move = 0;
     object_set_vel(loser, vec2f_create(0, 0));
     object_set_vel(winner, vec2f_create(0, 0));
     // object_set_gravity(loser, 0);
@@ -1010,6 +1030,25 @@ void arena_spawn_hazard(scene *scene) {
     }
 }
 
+bool har_in_defeat_animation(object *obj) {
+    har *h = obj->userdata;
+    return obj->cur_animation->id == (h->custom_defeat_animation ? h->custom_defeat_animation : ANIM_DEFEAT);
+}
+
+bool defeated_at_rest(object *obj) {
+    return har_in_defeat_animation(obj) && !object_is_airborne(obj) && obj->vel.x == 0.0f;
+}
+
+bool har_unfinished_victory(object *obj) {
+    return obj->cur_animation->id == ANIM_VICTORY && !player_is_last_frame(obj) && !player_is_looping(obj);
+}
+
+bool winner_needs_victory_pose(object *obj) {
+    har *h = obj->userdata;
+    return !object_is_airborne(obj) && (h->state == STATE_DONE || h->state == STATE_VICTORY) &&
+           obj->cur_animation->id != ANIM_VICTORY;
+}
+
 void arena_dynamic_tick(scene *scene, int paused) {
     arena_local *local = scene_get_userdata(scene);
     game_state *gs = scene->gs;
@@ -1037,12 +1076,6 @@ void arena_dynamic_tick(scene *scene, int paused) {
             component_tick(local->endurance_bars[i]);
         }
 
-        // RTT stuff
-        // TODO do this elsewhere because it is incorrect here
-        // we need to do it only on the 'live' gamestate, never on the replayed one
-        // hars[0]->delay = ceilf(player2->ctrl->rtt / 2.0f);
-        // hars[1]->delay = ceilf(player1->ctrl->rtt / 2.0f);
-
         // Endings and beginnings
         if(local->state != ARENA_STATE_ENDING && local->state != ARENA_STATE_STARTING) {
             settings *setting = settings_get();
@@ -1051,18 +1084,44 @@ void arena_dynamic_tick(scene *scene, int paused) {
             }
         }
         if(local->state == ARENA_STATE_ENDING) {
+            // check if its time to put the winner into victory pose
+            if(defeated_at_rest(obj_har[0]) && winner_needs_victory_pose(obj_har[1])) {
+                har_face_enemy(obj_har[1], obj_har[0]);
+                har_set_ani(obj_har[1], ANIM_VICTORY, 0);
+            } else if(defeated_at_rest(obj_har[1]) && winner_needs_victory_pose(obj_har[0])) {
+                har_face_enemy(obj_har[0], obj_har[1]);
+                har_set_ani(obj_har[0], ANIM_VICTORY, 0);
+            }
+
             chr_score *s1 = game_player_get_score(game_state_get_player(scene->gs, 0));
             chr_score *s2 = game_player_get_score(game_state_get_player(scene->gs, 1));
-            if(player_frame_isset(obj_har[0], "be") || player_frame_isset(obj_har[1], "be") || chr_score_onscreen(s1) ||
-               chr_score_onscreen(s2) ||
-               (obj_har[0]->cur_animation->id != ANIM_VICTORY && obj_har[1]->cur_animation->id != ANIM_VICTORY)) {
-            } else {
-                local->ending_ticks++;
+            if(local->win_state && local->win_state != DONE &&
+               (defeated_at_rest(obj_har[0]) || defeated_at_rest(obj_har[1]))) {
+                if(local->win_state == YOULOSE) {
+                    scene_youlose_anim_start(scene->gs);
+                } else if(local->win_state == YOUWIN) {
+                    scene_youwin_anim_start(scene->gs);
+                }
+                local->win_state = NONE;
+            } else if(local->win_state == DONE) {
+                // you win/lose animation is done
+                if(player_frame_isset(obj_har[0], "be") || player_frame_isset(obj_har[1], "be") ||
+                   chr_score_onscreen(s1) || chr_score_onscreen(s2) || har_unfinished_victory(obj_har[0]) ||
+                   har_unfinished_victory(obj_har[1])) {
+                } else {
+                    local->ending_ticks++;
+                }
             }
             if(local->ending_ticks == 18) {
                 arena_screengrab_winner(scene);
             }
-            if(local->ending_ticks == 20) {
+
+            if(local->ending_ticks == 40) {
+                // one HAR must be in victory pose and one must be in defeat or damage from scrap/destruction
+                assert((obj_har[0]->cur_animation->id == ANIM_VICTORY &&
+                        (har_in_defeat_animation(obj_har[1]) || obj_har[1]->cur_animation->id == ANIM_DAMAGE)) ||
+                       (obj_har[1]->cur_animation->id == ANIM_VICTORY &&
+                        (har_in_defeat_animation(obj_har[0]) || obj_har[1]->cur_animation->id == ANIM_DAMAGE)));
                 if(!local->over) {
                     local->round++;
                     arena_reset(scene);
@@ -1105,6 +1164,18 @@ void arena_dynamic_tick(scene *scene, int paused) {
                     game_state_add_object(gs, scrap, RENDER_LAYER_TOP, 0, 0);
                 }
             }
+        }
+
+        // check some invariants
+        assert(obj_har[0]->pos.x >= ARENA_LEFT_WALL && obj_har[0]->pos.x <= ARENA_RIGHT_WALL);
+        assert(obj_har[1]->pos.x >= ARENA_LEFT_WALL && obj_har[1]->pos.x <= ARENA_RIGHT_WALL);
+        if(hars[0]->health == 0) {
+            assert(hars[0]->state == STATE_DEFEAT || hars[0]->state == STATE_RECOIL || hars[0]->state == STATE_FALLEN ||
+                   hars[0]->state == STATE_NONE || hars[0]->state == STATE_WALLDAMAGE);
+        }
+        if(hars[1]->health == 0) {
+            assert(hars[1]->state == STATE_DEFEAT || hars[1]->state == STATE_RECOIL || hars[1]->state == STATE_FALLEN ||
+                   hars[1]->state == STATE_NONE || hars[1]->state == STATE_WALLDAMAGE);
         }
     } // if(!paused)
 }

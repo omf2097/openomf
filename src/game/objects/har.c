@@ -620,14 +620,14 @@ void har_move(object *obj) {
 
                 h->state = STATE_DEFEAT;
                 har_set_ani(obj, ANIM_DEFEAT, 0);
-                har_event_defeat(h, ctrl);
+                // har_event_defeat(h, ctrl);
             } else if(pos.y >= (ARENA_FLOOR - 5) && IS_ZERO(vel.x) && player_is_last_frame(obj)) {
                 if(h->state == STATE_FALLEN) {
                     if(h->health <= 0) {
                         // fallen, but done bouncing
                         h->state = STATE_DEFEAT;
                         har_set_ani(obj, ANIM_DEFEAT, 0);
-                        har_event_defeat(h, ctrl);
+                        // har_event_defeat(h, ctrl);
                     } else {
                         h->state = STATE_STANDING_UP;
                         har_set_ani(obj, ANIM_STANDUP, 0);
@@ -655,6 +655,10 @@ void har_move(object *obj) {
                 }
                 object_set_vel(obj, vec2f_create(vel.x, vel.y));
             }
+        } else if(h->state == STATE_VICTORY || h->state == STATE_DONE) {
+            // we won while in the air, and we've now landed, so set the animation to idle
+            // until the game sets us to the victory pose
+            har_set_ani(obj, ANIM_IDLE, 1);
         }
     } else {
         object_set_vel(obj, vec2f_create(vel.x, vel.y + obj->gravity));
@@ -663,6 +667,11 @@ void har_move(object *obj) {
 
 void har_take_damage(object *obj, const str *string, float damage, float stun) {
     har *h = object_get_userdata(obj);
+
+    if(h->state == STATE_VICTORY || h->state == STATE_DONE) {
+        // can't die if the other guy died first
+        return;
+    }
 
     // Got hit, disable stasis activator on this bot
     h->in_stasis_ticks = 1;
@@ -732,6 +741,9 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
         object_set_animation(obj, &af_get_move(h->af_data, ANIM_DAMAGE)->ani);
         object_set_repeat(obj, 0);
         if(h->health <= 0) {
+            controller *ctrl = game_player_get_ctrl(game_state_get_player(obj->gs, h->player_id));
+            // trigger the defeat hook immediately
+            har_event_defeat(h, ctrl);
             // taken from MASTER.DAT
             size_t last_line = 0;
             if(!str_last_of(string, '-', &last_line)) {
@@ -1112,7 +1124,8 @@ void har_collide_with_har(object *obj_a, object *obj_b, int loop) {
     controller *ctrl_a = game_player_get_ctrl(game_state_get_player(obj_a->gs, a->player_id));
     controller *ctrl_b = game_player_get_ctrl(game_state_get_player(obj_b->gs, b->player_id));
 
-    if(b->state == STATE_FALLEN || b->state == STATE_STANDING_UP || b->state == STATE_WALLDAMAGE) {
+    if(b->state == STATE_FALLEN || b->state == STATE_STANDING_UP || b->state == STATE_WALLDAMAGE || b->health <= 0 ||
+       b->state >= STATE_VICTORY) {
         // can't hit em while they're down
         return;
     }
@@ -1198,8 +1211,14 @@ void har_collide_with_har(object *obj_a, object *obj_b, int loop) {
         log_debug("HAR %s animation set to %s", har_get_name(b->id), str_c(&move->footer_string));
 
         if(move->next_move) {
+            af_move *next_move = af_get_move(a->af_data, move->next_move);
+            if(str_size(&move->footer_string) == 0 && b->health == 0 && next_move->damage > 0) {
+                // chained move like thorn's spike charge
+                // we want to keep the opponent alive until the next thing hits
+                b->health = 1;
+            }
             log_debug("HAR %s going to next move %d", har_get_name(b->id), move->next_move);
-            object_set_animation(obj_a, &af_get_move(a->af_data, move->next_move)->ani);
+            object_set_animation(obj_a, &next_move->ani);
             object_set_repeat(obj_a, 0);
             // bail out early, the next move can still brutalize the oppopent so don't set them immune to further damage
             // this fixes flail's charging punch and katana's wall spin, but thorn's spike charge still works
@@ -1217,8 +1236,9 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
     har *other = object_get_userdata(
         game_state_find_object(o_har->gs, game_state_get_player(o_har->gs, abs(h->player_id - 1))->har_obj_id));
 
-    if(h->state == STATE_FALLEN || h->state == STATE_STANDING_UP || h->state == STATE_WALLDAMAGE) {
-        // can't hit em while they're down
+    if(h->state == STATE_FALLEN || h->state == STATE_STANDING_UP || h->state == STATE_WALLDAMAGE || h->health <= 0 ||
+       h->state >= STATE_VICTORY) {
+        // can't hit em while they're down, or done
         return;
     }
 
@@ -1247,6 +1267,13 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
             return;
         }
 
+        // check the animation is still going
+        // for some reason this has been observed to happen sometimes, an example is frame 18 of chronos' stasis
+        if(!sd_script_get_frame_at(&o_pjt->animation_state.parser, o_pjt->animation_state.current_tick)) {
+            log_debug("no such frame at tick %d", o_pjt->animation_state.current_tick);
+            return;
+        }
+
         log_debug("PROJECTILE %d to HAR %s collision at %d,%d!", object_get_animation(o_pjt)->id, har_get_name(h->id),
                   hit_coord.x, hit_coord.y);
 
@@ -1266,6 +1293,10 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
             // statis ticks is the raw damage from the move
             h->in_stasis_ticks = move->raw_damage;
         } else {
+            if(move->damage > 0) {
+                // assume all projectile that do damage have a footer string
+                assert(str_size(&move->footer_string) > 0);
+            }
             // Just take damage normally if there is no footer string in successor
             log_debug("projectile dealt damage of %f", move->damage);
             log_debug("projectile %d dealt damage of %f", move->id, move->damage);
@@ -1305,8 +1336,8 @@ void har_collide_with_hazard(object *o_har, object *o_hzd) {
     bk *bk_data = object_get_userdata(o_hzd);
     bk_info *anim = bk_get_info(bk_data, o_hzd->cur_animation->id);
 
-    if(h->state == STATE_FALLEN || h->state == STATE_STANDING_UP) {
-        // can't hit em while they're down
+    if(h->state == STATE_FALLEN || h->state == STATE_STANDING_UP || h->health <= 0 || h->state >= STATE_VICTORY) {
+        // can't hit em while they're down, or done
         return;
     }
 
@@ -1776,6 +1807,9 @@ int maybe_har_change_state(int oldstate, int direction, char act_type) {
         case '9':
             state = STATE_JUMPING;
             break;
+        default:
+            // if the input buffer is empty, assume standing
+            state = STATE_STANDING;
     }
     if(oldstate != state) {
         // we changed state
@@ -1877,6 +1911,13 @@ int har_act(object *obj, int act_type) {
             object_dynamic_tick(enemy_obj);
         }
 
+        if(h->state == STATE_NONE) {
+            if(move->category == CAT_HIGH || move->category == CAT_MEDIUM || move->category == CAT_CLOSE) {
+                h->state = STATE_STANDING;
+            } else if(move->category == CAT_LOW) {
+                h->state = STATE_CROUCHING;
+            }
+        }
         // we actually did something interesting
         // return 1 so we can use this as sync point for netplay
         return 1;
@@ -2006,6 +2047,25 @@ int har_act(object *obj, int act_type) {
     return 0;
 }
 
+void har_face_enemy(object *obj, object *obj_enemy) {
+    har *h = object_get_userdata(obj);
+    har *har_enemy = object_get_userdata(obj_enemy);
+    if(h->state != STATE_RECOIL && h->state != STATE_STANDING_UP && h->state != STATE_STUNNED &&
+       h->state != STATE_FALLEN && h->state != STATE_DEFEAT && h->state != STATE_JUMPING &&
+       har_enemy->state != STATE_JUMPING) {
+        // make sure we are facing the opponent
+        vec2i pos = object_get_pos(obj);
+        vec2i pos_enemy = object_get_pos(obj_enemy);
+        if(pos.x > pos_enemy.x) {
+            log_debug("HARS facing player %d LEFT", h->player_id);
+            object_set_direction(obj, OBJECT_FACE_LEFT);
+        } else {
+            log_debug("HARS facing player %d RIGHT", h->player_id);
+            object_set_direction(obj, OBJECT_FACE_RIGHT);
+        }
+    }
+}
+
 void har_finished(object *obj) {
     har *h = object_get_userdata(obj);
     controller *ctrl = game_player_get_ctrl(game_state_get_player(obj->gs, h->player_id));
@@ -2026,10 +2086,14 @@ void har_finished(object *obj) {
     } else if(h->state == STATE_VICTORY || h->state == STATE_DONE) {
         // prevent object from being freed, hold last sprite of animation indefinitely
         obj->animation_state.finished = 0;
+        if(obj->cur_animation->id != ANIM_VICTORY) {
+            // we've won but the game hasn't set us to victory yet, so do idle
+            har_set_ani(obj, ANIM_IDLE, 1);
+            return;
+        }
     } else if(h->state == STATE_RECOIL && h->health <= 0) {
         h->state = STATE_DEFEAT;
-        har_set_ani(obj, ANIM_DEFEAT, 0);
-        har_event_defeat(h, ctrl);
+        har_set_ani(obj, h->custom_defeat_animation ? h->custom_defeat_animation : ANIM_DEFEAT, 0);
     } else if((h->state == STATE_RECOIL || h->state == STATE_STANDING_UP) && h->endurance < 1.0f) {
         if(h->state == STATE_RECOIL) {
             har_event_recover(h, ctrl);
@@ -2076,33 +2140,17 @@ void har_finished(object *obj) {
         har_act(obj, ACT_NONE);
     }
 
-    // har_act MUST provide a new state
-    assert(h->state != STATE_NONE);
-
     object *obj_enemy =
         game_state_find_object(obj->gs, game_state_get_player(obj->gs, h->player_id == 1 ? 0 : 1)->har_obj_id);
     har *har_enemy = object_get_userdata(obj_enemy);
 
-    // now is a good time to check we're facing the right way
-    if(h->state != STATE_RECOIL && h->state != STATE_STANDING_UP && h->state != STATE_RECOIL &&
-       h->state != STATE_JUMPING && har_enemy->state != STATE_JUMPING) {
-        // make sure HAR's are facing each other
-        if(object_get_direction(obj) == object_get_direction(obj_enemy)) {
-            log_debug("HARS facing same direction");
-            vec2i pos = object_get_pos(obj);
-            vec2i pos_enemy = object_get_pos(obj_enemy);
-            if(pos.x > pos_enemy.x) {
-                log_debug("HARS facing player %d LEFT", h->player_id);
-                object_set_direction(obj, OBJECT_FACE_LEFT);
-            } else {
-                log_debug("HARS facing player %d RIGHT", h->player_id);
-                object_set_direction(obj, OBJECT_FACE_RIGHT);
-            }
-
-            log_debug("HARS facing enemy player %d", abs(h->player_id - 1));
-            object_set_direction(obj_enemy, object_get_direction(obj) * -1);
-        }
+    if(har_enemy->state != STATE_DEFEAT && har_enemy->state != STATE_VICTORY && har_enemy->state != STATE_DONE) {
+        // har_act MUST provide a new state
+        assert(h->state != STATE_NONE);
     }
+
+    // now is a good time to check we're facing the right way
+    har_face_enemy(obj, obj_enemy);
 }
 
 void har_install_hook(har *h, har_hook_cb hook, void *data) {

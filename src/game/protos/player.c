@@ -23,7 +23,6 @@ static void player_clear_frame(object *obj) {
     player_sprite_state *s = &obj->sprite_state;
     memset(s, 0, sizeof(player_sprite_state));
     s->flipmode = FLIP_NONE;
-    s->dir_correction = 1;
     s->blend_start = 0xFF;
     s->blend_finish = 0xFF;
 }
@@ -242,7 +241,7 @@ void player_run(object *obj) {
         player_clear_frame(obj);
 
         if(sd_script_isset(frame, "ar")) {
-            rstate->dir_correction = -1;
+            object_set_direction(obj, object_get_direction(obj) * -1);
         }
 
         if(sd_script_isset(frame, "ac")) {
@@ -338,6 +337,17 @@ void player_run(object *obj) {
             // obj->vel.y);
         } else {
             obj->pos.x += trans_x * (mp & 0x20 ? -1 : 1);
+            if(obj->pos.x < ARENA_LEFT_WALL) {
+                if(sd_script_isset(frame, "e") && enemy) {
+                    enemy->pos.x += ARENA_LEFT_WALL - obj->pos.x;
+                }
+                obj->pos.x = ARENA_LEFT_WALL;
+            } else if(obj->pos.x > ARENA_RIGHT_WALL) {
+                if(sd_script_isset(frame, "e") && enemy) {
+                    enemy->pos.x -= obj->pos.x - ARENA_RIGHT_WALL;
+                }
+                obj->pos.x = ARENA_RIGHT_WALL;
+            }
             obj->pos.y += trans_y;
             // log_debug("pos x+%d, y+%d to x=%f, y=%f", trans_x * (mp & 0x20 ? -1 : 1), trans_y, obj->pos.x,
             // obj->pos.y);
@@ -359,6 +369,10 @@ void player_run(object *obj) {
         obj->pos.x = enemy->pos.x + obj->enemy_slide_state.dest.x;
         obj->pos.y = enemy->pos.y + obj->enemy_slide_state.dest.y;
         obj->enemy_slide_state.timer--;
+    }
+
+    if(enemy) {
+        obj->pos.x = max2(ARENA_LEFT_WALL, min2(ARENA_RIGHT_WALL, obj->pos.x));
     }
 
     // If frame changed, do something
@@ -650,6 +664,7 @@ void player_run(object *obj) {
     if(sd_script_isset(frame, "d") && !obj->animation_state.disable_d) {
         state->previous_tick = state->current_tick;
         state->current_tick = sd_script_get(frame, "d") + 1;
+        state->looping = true;
         return;
     }
 
@@ -716,4 +731,9 @@ char player_get_frame_letter(const object *obj) {
 int player_is_last_frame(const object *obj) {
     const player_animation_state *state = &obj->animation_state;
     return sd_script_is_last_frame_at(&state->parser, state->current_tick);
+}
+
+bool player_is_looping(const object *obj) {
+    const player_animation_state *state = &obj->animation_state;
+    return state->looping;
 }

@@ -20,7 +20,6 @@ typedef struct player_sprite_state_t {
     int screen_shake_vertical;
 
     vec2i o_correction; // Sprite specific position correction
-    int dir_correction;
     int disable_gravity;
 
     int blend_start;
@@ -59,6 +58,7 @@ typedef struct player_animation_state_t {
     uint8_t finished;
     uint8_t disable_d;
     uint8_t shadow_corner_hack;
+    bool looping;
 
     uint8_t pal_copy_entries; // ba
     uint8_t pal_copy_start;   // bi
@@ -90,6 +90,7 @@ char player_get_frame_letter(const object *obj);
 unsigned int player_get_len_ticks(const object *obj);
 void player_set_delay(object *obj, int delay);
 int player_is_last_frame(const object *obj);
+bool player_is_looping(const object *obj);
 uint32_t player_get_current_tick(const object *obj);
 
 #endif // PLAYER_H
