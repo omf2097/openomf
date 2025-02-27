@@ -31,7 +31,8 @@ int rec_controller_poll(controller *ctrl, ctrl_event **ev) {
     }
 
     if(data->last_tick != ticks) {
-        if(hashmap_get_int(&data->tick_lookup, ticks, (void **)(&move), &len) == 0) {
+        int j = 0;
+        while(hashmap_get_int(&data->tick_lookup, (ticks * 10) + j, (void **)(&move), &len) == 0) {
             if(move->action == SD_ACT_NONE) {
                 controller_cmd(ctrl, ACT_STOP, ev);
             } else {
@@ -62,6 +63,7 @@ int rec_controller_poll(controller *ctrl, ctrl_event **ev) {
                     controller_cmd(ctrl, action, ev);
                 }
             }
+            j++;
         }
     }
     data->last_tick = ticks;
@@ -72,9 +74,17 @@ void rec_controller_create(controller *ctrl, int player, sd_rec_file *rec) {
     wtf *data = omf_calloc(1, sizeof(wtf));
     data->last_tick = 0;
     hashmap_create(&data->tick_lookup);
+    uint32_t last_tick = 0;
+    int j = 0;
     for(unsigned int i = 0; i < rec->move_count; i++) {
         if(rec->moves[i].player_id == player && rec->moves[i].lookup_id == 2) {
-            hashmap_put_int(&data->tick_lookup, rec->moves[i].tick, &rec->moves[i], sizeof(sd_rec_move));
+            if(last_tick == rec->moves[i].tick) {
+                j++;
+            } else {
+                j = 0;
+            }
+            hashmap_put_int(&data->tick_lookup, (rec->moves[i].tick * 10) + j, &rec->moves[i], sizeof(sd_rec_move));
+            last_tick = rec->moves[i].tick;
         }
     }
     data->max_tick = rec->moves[rec->move_count - 1].tick;
