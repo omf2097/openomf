@@ -6,7 +6,7 @@
 #include "video/vga_palette.h"
 #include <SDL.h>
 
-typedef struct {
+typedef struct surface {
     unsigned int guid;
     int w;
     int h;
