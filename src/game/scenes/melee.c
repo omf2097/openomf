@@ -6,6 +6,7 @@
 #include "game/game_state.h"
 #include "game/gui/menu_background.h"
 #include "game/gui/progressbar.h"
+#include "game/gui/text/text.h"
 #include "game/gui/text_render.h"
 #include "game/protos/object.h"
 #include "game/protos/scene.h"
@@ -91,6 +92,8 @@ typedef struct {
     str wins_text_a;
     str wins_text_b;
 
+    text *player_bio[2];
+
     // nova selection cheat
     unsigned char har_selected[2][10];
     unsigned char katana_down_count[2];
@@ -120,6 +123,9 @@ void melee_free(scene *scene) {
         surface_free(&local->pilot_portraits[i].enabled);
         surface_free(&local->pilot_portraits[i].disabled);
     }
+
+    text_free(&local->player_bio[0]);
+    text_free(&local->player_bio[1]);
 
     object_free(&local->player2_placeholder);
     object_free(&local->unselected_pilot_portraits);
@@ -412,8 +418,10 @@ void handle_action(scene *scene, int player, int action) {
     }
 
     if(local->page == PILOT_SELECT) {
+        text_set_from_c(local->player_bio[0], lang_get(135 + CURSOR_INDEX(local, 0)));
         object_select_sprite(&local->big_portrait_1, CURSOR_INDEX(local, 0));
         if(player2->selectable) {
+            text_set_from_c(local->player_bio[1], lang_get(135 + CURSOR_INDEX(local, 1)));
             object_select_sprite(&local->big_portrait_2, CURSOR_INDEX(local, 1));
         }
     }
@@ -531,7 +539,7 @@ static void render_pilot_select(melee_local *local, bool player2_is_selectable) 
     tconf_black.cshadow = TEXT_SHADOW_BLACK;
 
     // player bio
-    text_render(&tconf_green, TEXT_DEFAULT, 4, 66, 156, 34, lang_get(135 + current_a));
+    text_draw(local->player_bio[0], 4, 66);
     // player stats
     text_render(&tconf_green, TEXT_DEFAULT, 74, 4, 85, 6, lang_get(216));
     text_render(&tconf_green, TEXT_DEFAULT, 74, 22, 85, 6, lang_get(217));
@@ -549,8 +557,7 @@ static void render_pilot_select(melee_local *local, bool player2_is_selectable) 
         video_draw(&local->bg_player_stats, 320 - 70 - local->bg_player_stats.w, 0);
         video_draw(&local->bg_player_bio, 320 - local->bg_player_bio.w, 62);
         // player bio
-        text_render(&tconf_green, TEXT_DEFAULT, 320 - local->bg_player_bio.w + 4, 66, 156, 34,
-                    lang_get(135 + current_b));
+        text_draw(local->player_bio[1], 320 - local->bg_player_bio.w + 4, 66);
 
         // player stats
         text_render(&tconf_green, TEXT_DEFAULT, 320 - 66 - local->bg_player_stats.w, 4, 85, 6, lang_get(216));
@@ -752,6 +759,16 @@ int melee_create(scene *scene) {
 
     menu_background_create(&local->bg_player_stats, 90, 61, MenuBackgroundMeleeVs);
     menu_background_create(&local->bg_player_bio, 160, 43, MenuBackgroundMeleeVs);
+
+    for(int i = 0; i < 2; i++) {
+        local->player_bio[i] = text_create(FONT_SMALL, 156, 34);
+        text_set_color(local->player_bio[i], TEXT_GREEN);
+        text_set_shadow_style(local->player_bio[i], TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
+        text_set_shadow_color(local->player_bio[i], TEXT_SHADOW_GREEN);
+        text_set_horizontal_align(local->player_bio[i], ALIGN_TEXT_CENTER);
+        text_set_vertical_align(local->player_bio[i], ALIGN_TEXT_MIDDLE);
+        text_set_margin(local->player_bio[i], 2, 2, 0, 0);
+    }
 
     // Create a black surface for the highlight box. We modify the palette in renderer.
     unsigned char *black = omf_calloc(1, 51 * 36);
