@@ -15,7 +15,6 @@
 #include "game/protos/intersect.h"
 #include "game/scenes/arena.h"
 #include "game/utils/serial.h"
-#include "game/utils/settings.h"
 #include "resources/af_loader.h"
 #include "resources/animation.h"
 #include "resources/pilots.h"
@@ -2214,10 +2213,10 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     sd_pilot *pilot = gp->pilot;
 
     // power 2 applies to player 1's health
-    int power = settings_get()->gameplay.power2;
+    int power = obj->gs->match_settings.power2;
     if(player_id == 1) {
         // power 1 applies to player 2's health
-        power = settings_get()->gameplay.power1;
+        power = obj->gs->match_settings.power1;
     }
 
     // see https://www.omf2097.com/wiki/doku.php?id=omf2097:stats
@@ -2338,7 +2337,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
 
     af_move *move;
     int extra_index;
-    int fight_mode = settings_get()->gameplay.fight_mode;
+    int fight_mode = obj->gs->match_settings.fight_mode;
     // apply pilot stats and HAR upgrades/enhancements/hyper mode to the HAR
     for(int i = 0; i < MAX_AF_MOVES; i++) {
         move = af_get_move(af_data, i);
