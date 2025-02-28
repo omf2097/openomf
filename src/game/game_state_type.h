@@ -36,14 +36,6 @@ typedef struct game_player_t game_player;
 typedef struct ticktimer_t ticktimer;
 typedef struct controller_t controller;
 
-typedef enum
-{
-    KNOCKDOWN_NONE,
-    KNOCKDOWN_KICKS,
-    KNOCKDOWN_PUNCHES,
-    KNOCKDOWN_BOTH
-} knockdown_type;
-
 // roughly modeled after the configuration in REC files
 typedef struct match_settings_t {
     uint8_t throw_range;

@@ -14,6 +14,7 @@ typedef struct object_t object;
 typedef struct ctrl_event_t ctrl_event;
 
 void game_state_match_settings_reset(game_state *gs);
+void game_state_match_settings_defaults(game_state *gs);
 int game_state_create(game_state *gs, engine_init_flags *init_flags);
 void game_state_free(game_state **gs);
 int game_state_handle_event(game_state *gs, SDL_Event *event);
