@@ -1941,6 +1941,13 @@ int har_act(object *obj, int act_type) {
     if(obj->pos.y < ARENA_FLOOR) {
         // airborne
 
+        // HAR can have STATE_NONE here if they started an airborne attack from a crouch, like katana's corkscrew blade
+        // or wall spin
+        if(h->state == STATE_NONE) {
+            // so set them into jumping state
+            h->state = STATE_JUMPING;
+        }
+
         // Send an event if the har tries to turn in the air by pressing either left/right/downleft/downright
         int opp_id = h->player_id ? 0 : 1;
         object *opp =
