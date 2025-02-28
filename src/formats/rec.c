@@ -328,3 +328,15 @@ int sd_rec_insert_action(sd_rec_file *rec, unsigned int number, const sd_rec_mov
     rec->move_count++;
     return SD_SUCCESS;
 }
+
+void sd_rec_finish(sd_rec_file *rec, unsigned int ticks) {
+    sd_rec_move move;
+
+    memset(&move, 0, sizeof(move));
+    move.tick = ticks;
+    move.lookup_id = 2;
+    move.player_id = 0;
+    move.action = 0;
+
+    sd_rec_insert_action(rec, rec->move_count, &move);
+}

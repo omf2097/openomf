@@ -7,6 +7,7 @@
 typedef struct engine_init_flags_t {
     unsigned int net_mode;
     unsigned int record;
+    unsigned int playback;
     char force_renderer[16];
     char force_audio_backend[16];
     char rec_file[255];

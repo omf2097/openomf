@@ -7,7 +7,6 @@
 typedef struct {
     int id;
     uint32_t last_tick;
-    int last_action;
     uint32_t max_tick;
     hashmap tick_lookup;
 } wtf;
@@ -20,7 +19,8 @@ void rec_controller_free(controller *ctrl) {
     }
 }
 
-int rec_controller_tick(controller *ctrl, uint32_t ticks, ctrl_event **ev) {
+int rec_controller_poll(controller *ctrl, ctrl_event **ev) {
+    uint32_t ticks = ctrl->gs->int_tick;
     wtf *data = ctrl->data;
     sd_rec_move *move;
     unsigned int len;
@@ -31,17 +31,11 @@ int rec_controller_tick(controller *ctrl, uint32_t ticks, ctrl_event **ev) {
     }
 
     if(data->last_tick != ticks) {
-        if(hashmap_get_int(&data->tick_lookup, ticks, (void **)(&move), &len) == 0) {
+        int j = 0;
+        while(hashmap_get_int(&data->tick_lookup, (ticks * 10) + j, (void **)(&move), &len) == 0) {
             if(move->action == SD_ACT_NONE) {
                 controller_cmd(ctrl, ACT_STOP, ev);
-                data->last_action = ACT_STOP;
             } else {
-                if(move->action & SD_ACT_PUNCH) {
-                    controller_cmd(ctrl, ACT_PUNCH, ev);
-                } else if(move->action & SD_ACT_KICK) {
-                    controller_cmd(ctrl, ACT_KICK, ev);
-                }
-
                 int action = 0;
                 if(move->action & SD_ACT_UP) {
                     action |= ACT_UP;
@@ -58,15 +52,18 @@ int rec_controller_tick(controller *ctrl, uint32_t ticks, ctrl_event **ev) {
                 if(move->action & SD_ACT_RIGHT) {
                     action |= ACT_RIGHT;
                 }
+                if(move->action & SD_ACT_PUNCH) {
+                    action |= ACT_PUNCH;
+                }
+                if(move->action & SD_ACT_KICK) {
+                    action |= ACT_KICK;
+                }
+
                 if(action != 0) {
                     controller_cmd(ctrl, action, ev);
-                    data->last_action = action;
-                } else {
-                    data->last_action = ACT_STOP;
                 }
             }
-        } else {
-            controller_cmd(ctrl, data->last_action, ev);
+            j++;
         }
     }
     data->last_tick = ticks;
@@ -75,18 +72,25 @@ int rec_controller_tick(controller *ctrl, uint32_t ticks, ctrl_event **ev) {
 
 void rec_controller_create(controller *ctrl, int player, sd_rec_file *rec) {
     wtf *data = omf_calloc(1, sizeof(wtf));
-    data->last_action = ACT_STOP;
     data->last_tick = 0;
     hashmap_create(&data->tick_lookup);
+    uint32_t last_tick = 0;
+    int j = 0;
     for(unsigned int i = 0; i < rec->move_count; i++) {
         if(rec->moves[i].player_id == player && rec->moves[i].lookup_id == 2) {
-            hashmap_put_int(&data->tick_lookup, rec->moves[i].tick, &rec->moves[i], sizeof(sd_rec_move));
+            if(last_tick == rec->moves[i].tick) {
+                j++;
+            } else {
+                j = 0;
+            }
+            hashmap_put_int(&data->tick_lookup, (rec->moves[i].tick * 10) + j, &rec->moves[i], sizeof(sd_rec_move));
+            last_tick = rec->moves[i].tick;
         }
     }
     data->max_tick = rec->moves[rec->move_count - 1].tick;
     log_debug("max tick is %" PRIu32, data->last_tick);
     ctrl->data = data;
     ctrl->type = CTRL_TYPE_REC;
-    ctrl->dyntick_fun = &rec_controller_tick;
+    ctrl->poll_fun = &rec_controller_poll;
     ctrl->free_fun = &rec_controller_free;
 }

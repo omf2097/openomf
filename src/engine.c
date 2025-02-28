@@ -3,6 +3,7 @@
 #include "console/console.h"
 #include "controller/controller.h"
 #include "formats/altpal.h"
+#include "formats/rec.h"
 #include "game/game_player.h"
 #include "game/game_state.h"
 #include "game/gui/text_render.h"
@@ -110,6 +111,17 @@ void save_palette_shot(void) {
     omf_free(time);
 }
 
+void save_rec(game_state *gs) {
+    char *time = format_time();
+    char *filename = omf_malloc(256);
+    snprintf(filename, 256, "%s.rec", time);
+    sd_rec_finish(gs->rec, gs->int_tick);
+    sd_rec_save(gs->rec, filename);
+    log_debug("REC saved: %s", filename);
+    omf_free(filename);
+    omf_free(time);
+}
+
 void engine_run(engine_init_flags *init_flags) {
     SDL_Event e;
     int visual_debugger = 0;
@@ -169,6 +181,11 @@ void engine_run(engine_init_flags *init_flags) {
                     }
                     if(e.key.keysym.sym == SDLK_F2) {
                         save_palette_shot();
+                    }
+                    if(e.key.keysym.sym == SDLK_F3) {
+                        if(init_flags->playback != 1) {
+                            save_rec(gs);
+                        }
                     }
                     if(e.key.keysym.sym == SDLK_F9) {
                         video_draw_atlas(true);

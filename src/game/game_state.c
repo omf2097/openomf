@@ -6,7 +6,6 @@
 #include "controller/rec_controller.h"
 #include "formats/error.h"
 #include "formats/pilot.h"
-#include "formats/rec.h"
 #include "game/common_defines.h"
 #include "game/protos/object.h"
 #include "game/protos/scene.h"
@@ -112,16 +111,16 @@ int game_state_create(game_state *gs, engine_init_flags *init_flags) {
 
     reconfigure_controller(gs);
     int nscene;
-    if(strlen(init_flags->rec_file) > 0 && init_flags->record == 0) {
-        sd_rec_file rec;
-        sd_rec_create(&rec);
-        int ret = sd_rec_load(&rec, init_flags->rec_file);
+    if(strlen(init_flags->rec_file) > 0 && init_flags->playback == 1) {
+        gs->rec = omf_malloc(sizeof(sd_rec_file));
+        sd_rec_create(gs->rec);
+        int ret = sd_rec_load(gs->rec, init_flags->rec_file);
         if(ret != SD_SUCCESS) {
             log_error("Unable to load recording %s.", init_flags->rec_file);
             goto error_0;
         }
 
-        nscene = SCENE_ARENA0 + rec.arena_id;
+        nscene = SCENE_ARENA0 + gs->rec->arena_id;
         log_debug("playing recording file %s", init_flags->rec_file);
         gs->this_id = nscene;
         gs->next_id = nscene;
@@ -131,19 +130,28 @@ int game_state_create(game_state *gs, engine_init_flags *init_flags) {
             goto error_0;
         }
 
-        // set the HAR colors, pilot, har type
+        // set the HAR colors, pilot, har type and and pilot and HAR stats
         for(int i = 0; i < 2; i++) {
-            sd_pilot_set_player_color(gs->players[i]->pilot, PRIMARY, rec.pilots[i].info.color_3);
-            sd_pilot_set_player_color(gs->players[i]->pilot, SECONDARY, rec.pilots[i].info.color_2);
-            sd_pilot_set_player_color(gs->players[i]->pilot, TERTIARY, rec.pilots[i].info.color_1);
-            gs->players[i]->pilot->har_id = HAR_JAGUAR + rec.pilots[i].info.har_id;
-            gs->players[i]->pilot->pilot_id = rec.pilots[i].info.pilot_id;
+            sd_pilot_set_player_color(gs->players[i]->pilot, PRIMARY, gs->rec->pilots[i].info.color_3);
+            sd_pilot_set_player_color(gs->players[i]->pilot, SECONDARY, gs->rec->pilots[i].info.color_2);
+            sd_pilot_set_player_color(gs->players[i]->pilot, TERTIARY, gs->rec->pilots[i].info.color_1);
+            gs->players[i]->pilot->har_id = HAR_JAGUAR + gs->rec->pilots[i].info.har_id;
+            gs->players[i]->pilot->pilot_id = gs->rec->pilots[i].info.pilot_id;
+            gs->players[i]->pilot->agility = gs->rec->pilots[i].info.agility;
+            gs->players[i]->pilot->power = gs->rec->pilots[i].info.power;
+            gs->players[i]->pilot->endurance = gs->rec->pilots[i].info.endurance;
+            gs->players[i]->pilot->leg_speed = gs->rec->pilots[i].info.leg_speed;
+            gs->players[i]->pilot->arm_speed = gs->rec->pilots[i].info.arm_speed;
+            gs->players[i]->pilot->leg_power = gs->rec->pilots[i].info.leg_power;
+            gs->players[i]->pilot->arm_power = gs->rec->pilots[i].info.arm_power;
+            gs->players[i]->pilot->armor = gs->rec->pilots[i].info.armor;
+            gs->players[i]->pilot->stun_resistance = gs->rec->pilots[i].info.stun_resistance;
         }
 
         // XXX use playback controller once it exista
 
-        _setup_rec_controller(gs, 0, &rec);
-        _setup_rec_controller(gs, 1, &rec);
+        _setup_rec_controller(gs, 0, gs->rec);
+        _setup_rec_controller(gs, 1, gs->rec);
         if(arena_create(gs->sc)) {
             log_error("Error while creating arena scene.");
             goto error_1;
@@ -1087,6 +1095,11 @@ void game_state_free(game_state **_gs) {
     // Free scene
     scene_free(gs->sc);
     omf_free(gs->sc);
+
+    if(gs->rec) {
+        sd_rec_free(gs->rec);
+        omf_free(gs->rec);
+    }
 
     // Free players
     for(int i = 0; i < 2; i++) {

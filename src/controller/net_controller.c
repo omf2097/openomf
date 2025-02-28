@@ -385,20 +385,66 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
 
         arena_hash = arena_state_hash(gs);
 
-        if(data->trace_file && (ev->events[0][0] || ev->events[1][0]) && ev->tick <= last_agreed &&
-           ev->tick > data->last_traced_tick) {
+        if((ev->events[0][0] || ev->events[1][0]) && ev->tick <= last_agreed && ev->tick > data->last_traced_tick) {
+            // this event has been agreed on by both sides
+            sd_rec_move move;
             data->last_traced_tick = ev->tick;
-            char buf0[12];
-            char buf1[12];
 
-            event_names(buf0, ev->events[0]);
-            event_names(buf1, ev->events[1]);
+            for(int j = 0; j < 2; j++) {
+                move.tick = ev->tick;
+                move.lookup_id = 2;
+                move.player_id = j;
+                move.action = 0;
 
-            int sz = snprintf(buf, sizeof(buf), "tick %d -- player 1 %s (%d) -- player 2 %s (%d) -- hash %" PRIu32 "\n",
-                              ev->tick, buf0, ev->events[0][0], buf1, ev->events[1][0], arena_hash);
-            SDL_RWwrite(data->trace_file, buf, sz, 1);
-            arena_state_dump(gs, buf, sizeof(buf));
-            SDL_RWwrite(data->trace_file, buf, strlen(buf), 1);
+                int k = 0;
+                while(ev->events[j][k]) {
+                    if(ev->events[j][k] & ACT_PUNCH) {
+                        move.action |= SD_ACT_PUNCH;
+                    }
+
+                    if(ev->events[j][k] & ACT_KICK) {
+                        move.action |= SD_ACT_KICK;
+                    }
+
+                    if(ev->events[j][k] & ACT_UP) {
+                        move.action |= SD_ACT_UP;
+                    }
+
+                    if(ev->events[j][k] & ACT_DOWN) {
+                        move.action |= SD_ACT_DOWN;
+                    }
+
+                    if(ev->events[j][k] & ACT_LEFT) {
+                        move.action |= SD_ACT_LEFT;
+                    }
+
+                    if(ev->events[j][k] & ACT_RIGHT) {
+                        move.action |= SD_ACT_RIGHT;
+                    }
+
+                    if(ev->events[j][k] == ACT_NONE) {
+                        move.action = SD_ACT_NONE;
+                    }
+
+                    sd_rec_insert_action(gs->rec, gs->rec->move_count, &move);
+                    k++;
+                }
+            }
+
+            if(data->trace_file) {
+                char buf0[12];
+                char buf1[12];
+
+                event_names(buf0, ev->events[0]);
+                event_names(buf1, ev->events[1]);
+
+                int sz =
+                    snprintf(buf, sizeof(buf), "tick %d -- player 1 %s (%d) -- player 2 %s (%d) -- hash %" PRIu32 "\n",
+                             ev->tick, buf0, ev->events[0][0], buf1, ev->events[1][0], arena_hash);
+                SDL_RWwrite(data->trace_file, buf, sz, 1);
+                arena_state_dump(gs, buf, sizeof(buf));
+                SDL_RWwrite(data->trace_file, buf, strlen(buf), 1);
+            }
         }
 
         if(gs->int_tick - data->local_proposal == data->peer_last_hash_tick && data->peer_last_hash != arena_hash &&

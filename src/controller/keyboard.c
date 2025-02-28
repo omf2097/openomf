@@ -17,42 +17,45 @@ int keyboard_poll(controller *ctrl, ctrl_event **ev) {
     keyboard *k = ctrl->data;
     ctrl->current = 0;
     const unsigned char *state = SDL_GetKeyboardState(NULL);
+    int action = 0;
     if(state[k->keys->jump_left]) {
-        keyboard_cmd(ctrl, ACT_UP | ACT_LEFT, ev);
+        action = ACT_UP | ACT_LEFT;
     } else if(state[k->keys->duck_back]) {
-        keyboard_cmd(ctrl, ACT_DOWN | ACT_LEFT, ev);
+        action = ACT_DOWN | ACT_LEFT;
     } else if(state[k->keys->jump_right]) {
-        keyboard_cmd(ctrl, ACT_UP | ACT_RIGHT, ev);
+        action = ACT_UP | ACT_RIGHT;
     } else if(state[k->keys->duck_forward]) {
-        keyboard_cmd(ctrl, ACT_DOWN | ACT_RIGHT, ev);
-    }
-
-    if(state[k->keys->walk_back] && state[k->keys->jump_up]) {
-        keyboard_cmd(ctrl, ACT_UP | ACT_LEFT, ev);
+        action = ACT_DOWN | ACT_RIGHT;
+    } else if(state[k->keys->walk_back] && state[k->keys->jump_up]) {
+        action = ACT_UP | ACT_LEFT;
     } else if(state[k->keys->walk_back] && state[k->keys->duck]) {
-        keyboard_cmd(ctrl, ACT_DOWN | ACT_LEFT, ev);
+        action = ACT_DOWN | ACT_LEFT;
     } else if(state[k->keys->walk_right] && state[k->keys->jump_up]) {
-        keyboard_cmd(ctrl, ACT_UP | ACT_RIGHT, ev);
+        action = ACT_UP | ACT_RIGHT;
     } else if(state[k->keys->walk_right] && state[k->keys->duck]) {
-        keyboard_cmd(ctrl, ACT_DOWN | ACT_RIGHT, ev);
+        action = ACT_DOWN | ACT_RIGHT;
     } else if(state[k->keys->walk_right]) {
-        keyboard_cmd(ctrl, ACT_RIGHT, ev);
+        action = ACT_RIGHT;
     } else if(state[k->keys->walk_back]) {
-        keyboard_cmd(ctrl, ACT_LEFT, ev);
+        action = ACT_LEFT;
     } else if(state[k->keys->jump_up]) {
-        keyboard_cmd(ctrl, ACT_UP, ev);
+        action = ACT_UP;
     } else if(state[k->keys->duck]) {
-        keyboard_cmd(ctrl, ACT_DOWN, ev);
+        action = ACT_DOWN;
     }
 
     if(state[k->keys->punch]) {
-        keyboard_cmd(ctrl, ACT_PUNCH, ev);
-    } else if(state[k->keys->kick]) {
-        keyboard_cmd(ctrl, ACT_KICK, ev);
+        action |= ACT_PUNCH;
     }
 
-    if(ctrl->current == 0) {
+    if(state[k->keys->kick]) {
+        action |= ACT_KICK;
+    }
+
+    if(action == 0) {
         keyboard_cmd(ctrl, ACT_STOP, ev);
+    } else {
+        keyboard_cmd(ctrl, action, ev);
     }
 
     ctrl->last = ctrl->current;

@@ -4,6 +4,7 @@
 #include <stdbool.h>
 
 #include "engine.h"
+#include "formats/rec.h"
 #include "game/protos/fight_stats.h"
 #include "utils/random.h"
 #include "utils/vector.h"
@@ -75,6 +76,8 @@ typedef struct game_state_t {
     bool clone;
     int delay;
     struct random_t rand;
+
+    sd_rec_file *rec;
 
     controller *menu_ctrl;
 } game_state;

@@ -143,6 +143,7 @@ int main(int argc, char *argv[]) {
     } else if(lobby->count > 0) {
         init_flags.net_mode = NET_MODE_LOBBY;
     } else if(play->count > 0) {
+        init_flags.playback = 1;
         strncpy(init_flags.rec_file, play->filename[0], 254);
     } else if(rec->count > 0) {
         init_flags.record = 1;
