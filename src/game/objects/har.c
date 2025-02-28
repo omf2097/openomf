@@ -2201,10 +2201,20 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     local->pilot_id = pilot_id;
     sd_pilot *pilot = gp->pilot;
 
+    // power 2 applies to player 1's health
+    int power = settings_get()->gameplay.power2;
+    if(player_id == 1) {
+        // power 1 applies to player 2's health
+        power = settings_get()->gameplay.power1;
+    }
+
+    // see https://www.omf2097.com/wiki/doku.php?id=omf2097:stats
+    float power_multiplier = 2.25 - 0.25 * power;
+
     // Health, endurance
     // HP is
     // (HAR hp * (Pilot Endurance + 25) / 35) * 1.1
-    local->health_max = local->health = (af_data->health * (pilot->endurance + 25) / 35) * 1.1;
+    local->health_max = local->health = ((af_data->health * (pilot->endurance + 25) / 35) * 1.1) * power_multiplier;
     // log_debug("HAR health is %d with pilot endurance %d and base health %d", local->health, pilot->endurance,
     // af_data->health);
     //  The stun cap is calculated as follows
