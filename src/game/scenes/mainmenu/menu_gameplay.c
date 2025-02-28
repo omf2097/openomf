@@ -39,11 +39,11 @@ component *menu_gameplay_create(scene *s) {
     menu_attach(menu, textslider_create_bind(&tconf, "POWER 1",
                                              "Change the power of player 1's hits and throws. This setting will take "
                                              "effect only in two player games. Press left and right to change.",
-                                             8, 0, NULL, NULL, &settings_get()->gameplay.power1));
+                                             7, 0, NULL, NULL, &settings_get()->gameplay.power1));
     menu_attach(menu, textslider_create_bind(&tconf, "POWER 2",
                                              "Change the power of player 1's hits and throws. This setting will take "
                                              "effect only in two player games. Press left and right to change.",
-                                             8, 0, NULL, NULL, &settings_get()->gameplay.power2));
+                                             7, 0, NULL, NULL, &settings_get()->gameplay.power2));
     menu_attach(menu, textselector_create_bind_opts(&tconf, "HAZARDS",
                                                     "Some arenas have dangerous environments: spikes, electrivity, "
                                                     "fighter planes, and the like. This option turns them on and off.",
