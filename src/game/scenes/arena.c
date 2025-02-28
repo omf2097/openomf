@@ -1087,8 +1087,7 @@ void arena_dynamic_tick(scene *scene, int paused) {
 
         // Endings and beginnings
         if(local->state != ARENA_STATE_ENDING && local->state != ARENA_STATE_STARTING) {
-            settings *setting = settings_get();
-            if(setting->gameplay.hazards_on) {
+            if(scene->gs->match_settings.hazards) {
                 arena_spawn_hazard(scene);
             }
         }
@@ -1424,7 +1423,7 @@ int arena_create(scene *scene) {
     local->rein_enabled = 0;
 
     local->round = 0;
-    switch(setting->gameplay.rounds) {
+    switch(scene->gs->match_settings.rounds) {
         case 0:
             local->rounds = 1;
             break;
