@@ -2353,18 +2353,18 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
                 // projectiles have hyper mode, but may have extra_string_selector of 0
                 if(move->ani.extra_string_count > 0 && move->extra_string_selector != 1 &&
                    move->extra_string_selector != 2) {
-                    str *str = vector_get(&move->ani.extra_strings, fight_mode);
+                    str *str = vector_get(&move->ani.extra_strings, fight_mode ? 1 : 0);
                     if(str && str_size(str) != 0 && !str_equal_c(str, "!")) {
                         // its not the empty string and its not the string '!'
                         // so we should use it
-                        str_set(&move->ani.animation_string, vector_get(&move->ani.extra_strings, fight_mode));
+                        str_set(&move->ani.animation_string, vector_get(&move->ani.extra_strings, fight_mode ? 1 : 0));
                         log_debug("using %s mode string '%s' for animation %d on har %d",
-                                  fight_mode == 1 ? "hyper" : "normal", str_c(str), i, har_id);
+                                  fight_mode ? "hyper" : "normal", str_c(str), i, har_id);
                     }
                 }
             } else {
                 // normal or hyper
-                extra_index = fight_mode;
+                extra_index = fight_mode ? 1 : 0;
                 // Tournament Mode
                 // Damage = (Base Damage * (25 + Power) / 35 + 1) * leg/arm power / armor
                 // Stun = ((Base Damage * (35 + Power) / 45) * 2 + 12) * 256
@@ -2394,7 +2394,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
                                       pilot->enhancements[har_id], str_c(str), i, har_id);
                         } else {
                             log_debug("using %s mode string '%s' for animation %d on har %d",
-                                      fight_mode == 1 ? "hyper" : "normal", str_c(str), i, har_id);
+                                      fight_mode ? "hyper" : "normal", str_c(str), i, har_id);
                         }
                     }
                 }

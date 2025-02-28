@@ -190,6 +190,10 @@ void menu_connect_tick(component *c) {
         if(c1->type == CTRL_TYPE_NETWORK && net_controller_ready(c1)) {
             log_debug("network peer is ready, tick offset is %d and rtt is %d", net_controller_tick_offset(c1),
                       c1->rtt);
+
+            // force the match to use reasonable defaults
+            game_state_match_settings_defaults(gs);
+
             game_state_set_next(gs, SCENE_MELEE);
         }
     }

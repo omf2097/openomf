@@ -87,6 +87,22 @@ void game_state_match_settings_reset(game_state *gs) {
     gs->match_settings.fight_mode = settings_get()->gameplay.fight_mode;
 }
 
+void game_state_match_settings_defaults(game_state *gs) {
+    gs->match_settings.throw_range = 100;
+    gs->match_settings.hit_pause = 10;
+    gs->match_settings.block_damage = 0;
+    gs->match_settings.vitality = 100;
+    gs->match_settings.jump_height = 100;
+    gs->match_settings.knock_down = KNOCK_DOWN_NONE;
+    gs->match_settings.rehit = false;
+    gs->match_settings.defensive_throws = false;
+    gs->match_settings.power1 = 5;
+    gs->match_settings.power2 = 5;
+    gs->match_settings.hazards = true;
+    gs->match_settings.rounds = 1;
+    gs->match_settings.fight_mode = false;
+}
+
 int game_state_create(game_state *gs, engine_init_flags *init_flags) {
     gs->run = 1;
     gs->paused = 0;
