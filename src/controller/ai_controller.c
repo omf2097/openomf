@@ -146,58 +146,90 @@ enum
     MOVE_DIR_BACK
 };
 
-int char_to_act(int ch, int direction) {
-    switch(ch) {
+int char_to_act(str *ch, int direction, int *position) {
+    int action = 0;
+    switch((str_c(ch) + *position)[0]) {
         case '8':
-            return ACT_UP;
+            action = ACT_UP;
+            break;
         case '2':
-            return ACT_DOWN;
+            action = ACT_DOWN;
+            break;
         case '6':
             if(direction == OBJECT_FACE_LEFT) {
-                return ACT_LEFT;
+                action = ACT_LEFT;
             } else {
-                return ACT_RIGHT;
+                action = ACT_RIGHT;
             }
+            break;
         case '4':
             if(direction == OBJECT_FACE_LEFT) {
-                return ACT_RIGHT;
+                action = ACT_RIGHT;
             } else {
-                return ACT_LEFT;
+                action = ACT_LEFT;
             }
+            break;
         case '7':
             if(direction == OBJECT_FACE_LEFT) {
-                return ACT_UP | ACT_RIGHT;
+                action = ACT_UP | ACT_RIGHT;
             } else {
-                return ACT_UP | ACT_LEFT;
+                action = ACT_UP | ACT_LEFT;
             }
+            break;
         case '9':
             if(direction == OBJECT_FACE_LEFT) {
-                return ACT_UP | ACT_LEFT;
+                action = ACT_UP | ACT_LEFT;
             } else {
-                return ACT_UP | ACT_RIGHT;
+                action = ACT_UP | ACT_RIGHT;
             }
+            break;
         case '1':
             if(direction == OBJECT_FACE_LEFT) {
-                return ACT_DOWN | ACT_RIGHT;
+                action = ACT_DOWN | ACT_RIGHT;
             } else {
-                return ACT_DOWN | ACT_LEFT;
+                action = ACT_DOWN | ACT_LEFT;
             }
+            break;
         case '3':
             if(direction == OBJECT_FACE_LEFT) {
-                return ACT_DOWN | ACT_LEFT;
+                action = ACT_DOWN | ACT_LEFT;
             } else {
-                return ACT_DOWN | ACT_RIGHT;
+                action = ACT_DOWN | ACT_RIGHT;
             }
+            break;
         case 'K':
-            return ACT_KICK;
+            action = ACT_KICK;
+            break;
         case 'P':
-            return ACT_PUNCH;
+            action = ACT_PUNCH;
+            break;
         case '5':
             return ACT_STOP;
         default:
             break;
     }
-    return ACT_STOP;
+
+    // it's possible there's a kick/punch, or both, chained on here, so check the next 2 characters
+    for(int i = 0; i < 2 && (*position) > 0; i++) {
+        switch((str_c(ch) + (*position) - 1)[0]) {
+            case 'K':
+                log_debug("adding in extra kick to %d at string %s position %d", action, str_c(ch), *position - 1);
+                action |= ACT_KICK;
+                // decrement our string position!
+                (*position)--;
+                break;
+            case 'P':
+                log_debug("adding in extra punch to %d at string %s position %d", action, str_c(ch), *position - 1);
+                action |= ACT_PUNCH;
+                // decrement our string position!
+                (*position)--;
+                break;
+            default:
+                break;
+        }
+    }
+
+    return action;
 }
 
 /**
@@ -1647,8 +1679,7 @@ void process_selected_move(controller *ctrl, ctrl_event **ev) {
         a->input_lag_timer = a->input_lag;
     }
 
-    int ch = str_at(&a->selected_move->move_string, a->move_str_pos);
-    controller_cmd(ctrl, char_to_act(ch, o->direction), ev);
+    controller_cmd(ctrl, char_to_act(&a->selected_move->move_string, o->direction, &a->move_str_pos), ev);
 
     if(a->move_str_pos == 0) {
         a->selected_move = NULL;
