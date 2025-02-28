@@ -485,6 +485,13 @@ int mechlab_create(scene *scene) {
     mechlab_local *local = omf_calloc(1, sizeof(mechlab_local));
     local->selling = false;
 
+    // reset the match settings and override the settings that don't apply in tournament mode
+    game_state_match_settings_reset(scene->gs);
+    scene->gs->match_settings.power1 = 5;
+    scene->gs->match_settings.power2 = 5;
+    scene->gs->match_settings.vitality = 100;
+    // TODO what others are there?
+
     animation *bg_ani[3];
 
     // Init the background

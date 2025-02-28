@@ -71,7 +71,7 @@ typedef struct {
 } playing_sound;
 
 // reset the match settings to use all the settings. This is essentially 1/2 player mode & demo mode
-void match_settings_reset(game_state *gs) {
+void game_state_match_settings_reset(game_state *gs) {
     gs->match_settings.throw_range = settings_get()->advanced.throw_range;
     gs->match_settings.hit_pause = settings_get()->advanced.hit_pause;
     gs->match_settings.block_damage = settings_get()->advanced.block_damage;
@@ -98,7 +98,7 @@ int game_state_create(game_state *gs, engine_init_flags *init_flags) {
     gs->init_flags = init_flags;
     gs->new_state = NULL;
     gs->clone = false;
-    match_settings_reset(gs);
+    game_state_match_settings_reset(gs);
     vector_create(&gs->objects, sizeof(render_obj));
     vector_create(&gs->sounds, sizeof(playing_sound));
 
@@ -166,17 +166,19 @@ int game_state_create(game_state *gs, engine_init_flags *init_flags) {
             gs->players[i]->pilot->stun_resistance = gs->rec->pilots[i].info.stun_resistance;
         }
 
-        gs->match_settings.throw_range = rec.throw_range;
-        gs->match_settings.hit_pause = rec.hit_pause;
-        gs->match_settings.block_damage = rec.block_damage;
-        gs->match_settings.vitality = rec.vitality;
-        gs->match_settings.jump_height = rec.jump_height;
-        gs->match_settings.knock_down = rec.knock_down;
-        gs->match_settings.rehit = rec.rehit_mode;
-        gs->match_settings.defensive_throws = rec.def_throws;
-        gs->match_settings.hazards = rec.hazards;
-        gs->match_settings.rounds = rec.round_type;
-        gs->match_settings.fight_mode = rec.hyper_mode;
+        gs->match_settings.throw_range = gs->rec->throw_range;
+        gs->match_settings.hit_pause = gs->rec->hit_pause;
+        gs->match_settings.block_damage = gs->rec->block_damage;
+        gs->match_settings.vitality = gs->rec->vitality;
+        gs->match_settings.jump_height = gs->rec->jump_height;
+        gs->match_settings.knock_down = gs->rec->knock_down;
+        gs->match_settings.rehit = gs->rec->rehit_mode;
+        gs->match_settings.defensive_throws = gs->rec->def_throws;
+        gs->match_settings.power1 = gs->rec->power[0];
+        gs->match_settings.power2 = gs->rec->power[1];
+        gs->match_settings.hazards = gs->rec->hazards;
+        gs->match_settings.rounds = gs->rec->round_type;
+        gs->match_settings.fight_mode = gs->rec->hyper_mode;
 
         _setup_rec_controller(gs, 0, gs->rec);
         _setup_rec_controller(gs, 1, gs->rec);
