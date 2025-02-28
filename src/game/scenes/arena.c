@@ -1743,6 +1743,9 @@ int arena_create(scene *scene) {
             if((nl = strchr(local->rec->pilots[i].info.name, '\n'))) {
                 *nl = 0;
             }
+
+            // this is the score when the REC started
+            local->rec->scores[i] = game_player_get_score(player)->score;
         }
         local->rec->arena_id = scene->id - SCENE_ARENA0;
 
@@ -1752,13 +1755,21 @@ int arena_create(scene *scene) {
         local->rec->unknown_j = 7;
         local->rec->unknown_k = 7;
 
-        local->rec->throw_range = 100;
-        local->rec->hit_pause = 10;
-        local->rec->vitality = 100;
-        local->rec->jump_height = 100;
+        // capture the match settings
+        local->rec->throw_range = scene->gs->match_settings.throw_range;
+        local->rec->hit_pause = scene->gs->match_settings.hit_pause;
+        local->rec->block_damage = scene->gs->match_settings.block_damage;
+        local->rec->vitality = scene->gs->match_settings.vitality;
+        local->rec->jump_height = scene->gs->match_settings.jump_height;
+        local->rec->knock_down = scene->gs->match_settings.knock_down;
+        local->rec->rehit_mode = scene->gs->match_settings.rehit;
+        local->rec->def_throws = scene->gs->match_settings.defensive_throws;
+        local->rec->power[0] = scene->gs->match_settings.power1;
+        local->rec->power[1] = scene->gs->match_settings.power2;
+        local->rec->hazards = scene->gs->match_settings.hazards;
+        local->rec->round_type = scene->gs->match_settings.rounds;
+        local->rec->hyper_mode = scene->gs->match_settings.fight_mode;
 
-        local->rec->power[0] = 7;
-        local->rec->power[1] = 2;
     } else {
         local->rec = NULL;
     }

@@ -78,6 +78,9 @@ int mainmenu_create(scene *scene) {
     mainmenu_local *local = omf_calloc(1, sizeof(mainmenu_local));
     scene_set_userdata(scene, local);
 
+    // every time we enter the menu, reset the match settings to 1/2 player/demo mode
+    game_state_match_settings_reset(scene->gs);
+
     // fix up any jank from tournament mode
     game_player *player1 = game_state_get_player(scene->gs, 0);
     game_player *player2 = game_state_get_player(scene->gs, 1);
