@@ -57,16 +57,18 @@ typedef struct {
     uint32_t scores[2];     ///< Score data at the start of the match
     int8_t unknown_a;       ///< Is Fire or ice ? 0 = no, 1 = fire, 2 = ice ?
     int8_t unknown_b;       ///< Unknown \todo: Find out
-    int8_t unknown_c;       ///< Unknown \todo: Find out
+    int8_t game_mode;       ///< 1 is tournament, 2 is 1/2 player
 
-    int16_t throw_range;  ///< Throw range (%)
-    int16_t hit_pause;    ///< Hit pause (ticks)
-    int16_t block_damage; ///< Block damage (%)
-    int16_t vitality;     ///< Vitality (%)
-    int16_t jump_height;  ///< Jump height (%)
-    int16_t unknown_i;    ///< Unknown \todo: Find out
-    int16_t unknown_j;    ///< Unknown \todo: Find out
-    int16_t unknown_k;    ///< Unknown \todo: Find out
+    int16_t throw_range;    ///< Throw range (%)
+    int16_t hit_pause;      ///< Hit pause (ticks)
+    int16_t block_damage;   ///< Block damage (%)
+    int16_t vitality;       ///< Vitality (%)
+    int16_t jump_height;    ///< Jump height (%)
+    int16_t p1_controller;  ///< 1-Custom 3-Joystick1 4-Joystick2 6-Network 7-Left Keyboard 8-Right Keyboard
+    int16_t p2_controller;  ///< 2-Custom 3-Joystick1 4-Joystick2 5-AI 6-Network 7-Left Keyboard 8-Right Keyboard 9-REC
+                            ///< Replay (can change at runtime)
+    int16_t p2_controller_; ///< 2-Custom 3-Joystick1 4-Joystick2 5-AI 6-Network 7-Left Keyboard 8-Right Keyboard 9-REC
+                            ///< Replay (static version)
 
     uint8_t knock_down; ///< Knock down (0 = None, 1 = Kicks, 2 = Punches, 3 = both)
     uint8_t rehit_mode; ///< Rehit mode (On/Off)

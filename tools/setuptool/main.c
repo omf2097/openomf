@@ -33,6 +33,9 @@ static const char *match_type[] = {"One match", "2 out of 3", "3 out of 5", "4 o
 
 static const char *knockdown_text[] = {"None", "Kicks", "Punches", "Kicks & Punches"};
 
+static const char *controller_text[] = {"1P Custom", "2P Custom",     "Joystick 1",     "Joystick 2", "AI",
+                                        "Network",   "Left Keyboard", "Right Keyboard", "Replay"};
+
 void print_setup_root_info(sd_setup_file *setup) {
     if(setup == NULL) {
         return;
@@ -42,9 +45,9 @@ void print_setup_root_info(sd_setup_file *setup) {
     printf(" - Unknown A:\n");
     print_bytes(setup->unknown_a, sizeof(setup->unknown_a), 32, 3);
     printf("\n");
-    printf(" - Unknown B:     %d\n", setup->unknown_b);
-    printf(" - Unknown C:     %d\n", setup->unknown_c);
-    printf(" - Unknown D:     %d\n", setup->unknown_d);
+    printf(" - P1 controller:  %s\n", controller_text[setup->p1_controller]);
+    printf(" - P2 controller:  %s\n", controller_text[setup->p2_controller]);
+    printf(" - P2 controller:  %s\n", controller_text[setup->p2_controller]);
     printf(" - Unknown E:\n");
     print_bytes(setup->unknown_e, sizeof(setup->unknown_e), 32, 3);
     printf("\n");

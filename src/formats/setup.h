@@ -54,9 +54,11 @@ static_assert(4 == sizeof(gflags3), "gflags3 should pack into 4 bytes");
 typedef struct {
     uint8_t game_speed;
     char unknown_a[211];
-    uint16_t unknown_b;
-    uint16_t unknown_c;
-    uint16_t unknown_d;
+    uint16_t p1_controller;  // 1-Custom 3-Joystick1 4-Joystick2 7-Left Keyboard 8-Right Keyboard
+    uint16_t p2_controller;  // 2-Custom 3-Joystick1 4-Joystick2 5-AI 7-Left Keyboard 8-Right Keyboard 9-REC Replay (can
+                             // change at runtime)
+    uint16_t p2_controller_; // 2-Custom 3-Joystick1 4-Joystick2 5-AI 7-Left Keyboard 8-Right Keyboard 9-REC Replay
+                             // (static version)
     char unknown_e[18];
     uint8_t difficulty;
     uint8_t unknown_g;

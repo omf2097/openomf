@@ -1746,12 +1746,46 @@ int arena_create(scene *scene) {
             }
         }
         local->rec->arena_id = scene->id - SCENE_ARENA0;
+        local->rec->game_mode = is_tournament(scene->gs) ? 1 : 2;
 
-        // hardcode some values here, we don't know what they do, but we copied them from a REC from the original engine
-        local->rec->unknown_c = 2;
-        local->rec->unknown_i = 1;
-        local->rec->unknown_j = 7;
-        local->rec->unknown_k = 7;
+        // player 1's controller
+        switch(game_state_get_player(scene->gs, 0)->ctrl->type) {
+            case CTRL_TYPE_KEYBOARD:
+                // TODO figure out the actual keyboard type custom vs left vs right
+                local->rec->p1_controller = 8; // right keyboard
+                break;
+            case CTRL_TYPE_GAMEPAD:
+                local->rec->p1_controller = 3; // joystick 1
+                break;
+            case CTRL_TYPE_AI:
+                local->rec->p1_controller = 5; // AI
+                break;
+            case CTRL_TYPE_NETWORK:
+                local->rec->p1_controller = 6; // network
+                break;
+            default:
+                assert(false);
+        }
+
+        // player 2's controller
+        switch(game_state_get_player(scene->gs, 0)->ctrl->type) {
+            case CTRL_TYPE_KEYBOARD:
+                // TODO figure out the actual keyboard type custom vs left vs right
+                local->rec->p1_controller = 7; // left keyboard
+                break;
+            case CTRL_TYPE_GAMEPAD:
+                local->rec->p1_controller = 4; // joystick 1
+                break;
+            case CTRL_TYPE_AI:
+                local->rec->p1_controller = 5; // AI
+                break;
+            case CTRL_TYPE_NETWORK:
+                local->rec->p1_controller = 6; // network
+                break;
+            default:
+                assert(false);
+        }
+        local->rec->p2_controller_ = local->rec->p2_controller;
 
         local->rec->throw_range = 100;
         local->rec->hit_pause = 10;
