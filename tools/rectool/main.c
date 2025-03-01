@@ -45,6 +45,11 @@ static const char *match_type[] = {"One match", "2 out of 3", "3 out of 5", "4 o
 
 static const char *knockdown_text[] = {"None", "Kicks", "Punches", "Both"};
 
+static const char *game_mode_text[] = {"?", "Tournament", "1/2 player"};
+
+static const char *controller_text[] = {"?",  "1P Custom", "2P Custom",     "Joystick 1",     "Joystick 2",
+                                        "AI", "Network",   "Left Keyboard", "Right Keyboard", "Replay"};
+
 void print_rec_root_info(sd_rec_file *rec) {
     if(rec != NULL) {
         // Print enemy data
@@ -60,15 +65,15 @@ void print_rec_root_info(sd_rec_file *rec) {
         printf("  - Score B:      %d\n", rec->scores[1]);
         printf("  - Unknown A:    %d\n", rec->unknown_a);
         printf("  - Unknown B:    %d\n", rec->unknown_b);
-        printf("  - Unknown C:    %d\n", rec->unknown_c);
+        printf("  - Game Mode:    %s\n", game_mode_text[rec->game_mode]);
         printf("  - Throw Range:  %d\n", rec->throw_range);
         printf("  - Hit Pause:    %d\n", rec->hit_pause);
         printf("  - Block Damage: %d\n", rec->block_damage);
         printf("  - Vitality:     %d\n", rec->vitality);
         printf("  - Jump Height:  %d\n", rec->jump_height);
-        printf("  - Unknown I:    %d\n", rec->unknown_i);
-        printf("  - Unknown J:    %d\n", rec->unknown_j);
-        printf("  - Unknown K:    %d\n", rec->unknown_k);
+        printf("  - P1 Control:   %s\n", controller_text[rec->p1_controller]);
+        printf("  - P2 Control:   %s\n", controller_text[rec->p2_controller]);
+        printf("  - P2 Control:   %s\n", controller_text[rec->p2_controller_]);
         printf("  - Knock down:   %s\n", knockdown_text[rec->knock_down]);
         printf("  - Rehit mode:   %s\n", onoff[rec->rehit_mode]);
         printf("  - Def. throws:  %s\n", onoff[rec->def_throws]);

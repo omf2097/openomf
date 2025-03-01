@@ -1588,10 +1588,16 @@ void add_input_to_buffer(char *buf, char c) {
 }
 
 void add_input(char *buf, int act_type, int direction) {
+
+    if(act_type == ACT_NONE) {
+        return;
+    }
     // for the reason behind the numbers, look at a numpad sometime
-    switch(act_type) {
+    switch(act_type & ~(ACT_PUNCH | ACT_KICK)) {
         case ACT_NONE:
-            return;
+            // make sure punches and kicks on their own frame are separated from previous input
+            add_input_to_buffer(buf, '5');
+            break;
         case ACT_UP:
             add_input_to_buffer(buf, '8');
             break;
@@ -1640,18 +1646,24 @@ void add_input(char *buf, int act_type, int direction) {
                 add_input_to_buffer(buf, '1');
             }
             break;
-        case ACT_KICK:
-            add_input_to_buffer(buf, 'K');
-            break;
-        case ACT_PUNCH:
-            add_input_to_buffer(buf, 'P');
-            break;
         case ACT_STOP:
-            add_input_to_buffer(buf, '5');
+            // might just be kick or punch, check below
             break;
         default:
             log_warn("Ignored input: buf %s, act_type 0x%x, direction %d", buf, act_type, direction);
             assert(false);
+    }
+
+    if(act_type & ACT_KICK) {
+        add_input_to_buffer(buf, 'K');
+    }
+
+    if(act_type & ACT_PUNCH) {
+        add_input_to_buffer(buf, 'P');
+    }
+
+    if(act_type == ACT_STOP) {
+        add_input_to_buffer(buf, '5');
     }
 }
 

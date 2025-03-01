@@ -87,15 +87,15 @@ int sd_rec_load(sd_rec_file *rec, const char *file) {
     // Other flags
     rec->unknown_a = sd_read_byte(r);
     rec->unknown_b = sd_read_byte(r);
-    rec->unknown_c = sd_read_byte(r);
+    rec->game_mode = sd_read_byte(r);
     rec->throw_range = sd_read_word(r);
     rec->hit_pause = sd_read_word(r);
     rec->block_damage = sd_read_word(r);
     rec->vitality = sd_read_word(r);
     rec->jump_height = sd_read_word(r);
-    rec->unknown_i = sd_read_word(r);
-    rec->unknown_j = sd_read_word(r);
-    rec->unknown_k = sd_read_word(r);
+    rec->p1_controller = sd_read_word(r);
+    rec->p2_controller = sd_read_word(r);
+    rec->p2_controller_ = sd_read_word(r);
     uint32_t in = sd_read_udword(r);
     rec->knock_down = (in >> 0) & 0x03;  // 00000000 00000000 00000000 00000011 (2)
     rec->rehit_mode = (in >> 2) & 0x01;  // 00000000 00000000 00000000 00000100 (1)
@@ -213,15 +213,15 @@ int sd_rec_save(sd_rec_file *rec, const char *file) {
     // Other header data
     sd_write_byte(w, rec->unknown_a);
     sd_write_byte(w, rec->unknown_b);
-    sd_write_byte(w, rec->unknown_c);
+    sd_write_byte(w, rec->game_mode);
     sd_write_word(w, rec->throw_range);
     sd_write_word(w, rec->hit_pause);
     sd_write_word(w, rec->block_damage);
     sd_write_word(w, rec->vitality);
     sd_write_word(w, rec->jump_height);
-    sd_write_word(w, rec->unknown_i);
-    sd_write_word(w, rec->unknown_j);
-    sd_write_word(w, rec->unknown_k);
+    sd_write_word(w, rec->p1_controller);
+    sd_write_word(w, rec->p2_controller);
+    sd_write_word(w, rec->p2_controller_);
     uint32_t out = 0;
     out |= (rec->knock_down & 0x3) << 0;
     out |= (rec->rehit_mode & 0x1) << 2;
@@ -327,4 +327,16 @@ int sd_rec_insert_action(sd_rec_file *rec, unsigned int number, const sd_rec_mov
 
     rec->move_count++;
     return SD_SUCCESS;
+}
+
+void sd_rec_finish(sd_rec_file *rec, unsigned int ticks) {
+    sd_rec_move move;
+
+    memset(&move, 0, sizeof(move));
+    move.tick = ticks;
+    move.lookup_id = 2;
+    move.player_id = 0;
+    move.action = 0;
+
+    sd_rec_insert_action(rec, rec->move_count, &move);
 }

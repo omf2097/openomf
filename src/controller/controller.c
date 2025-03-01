@@ -74,8 +74,8 @@ static inline void ctrl_action_push(ctrl_event **ev, int action) {
 
 void controller_cmd(controller *ctrl, int action, ctrl_event **ev) {
     ctrl->current |= action;
-    if((ctrl->last & action)) {
-        if(action & (ACT_KICK | ACT_PUNCH | ACT_ESC))
+    if(ctrl->last & action) {
+        if(ctrl->last & action & (ACT_KICK | ACT_PUNCH | ACT_ESC))
             // never keyrepeat these actions
             return;
         else if(ctrl->repeat)

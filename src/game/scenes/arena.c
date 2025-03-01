@@ -864,10 +864,15 @@ void arena_free(scene *scene) {
     game_state_set_paused(scene->gs, 0);
 
     if(local->rec) {
-        write_rec_move(scene, game_state_get_player(scene->gs, 0), ACT_STOP);
-        sd_rec_save(local->rec, scene->gs->init_flags->rec_file);
-        sd_rec_free(local->rec);
-        omf_free(local->rec);
+        sd_rec_finish(local->rec, scene->gs->int_tick);
+
+        if(scene->gs->init_flags->record == 1) {
+            // we're supposed to save it
+            sd_rec_save(local->rec, scene->gs->init_flags->rec_file);
+            sd_rec_free(local->rec);
+            omf_free(local->rec);
+            scene->gs->rec = NULL;
+        }
     }
 
     for(int i = 0; i < 2; i++) {
@@ -958,7 +963,11 @@ int arena_handle_events(scene *scene, game_player *player, ctrl_event *i) {
             if(i->type == EVENT_TYPE_ACTION) {
                 need_sync += object_act(game_state_find_object(scene->gs, game_player_get_har_obj_id(player)),
                                         i->event_data.action);
-                write_rec_move(scene, player, i->event_data.action);
+
+                if(!is_netplay(scene->gs)) {
+                    // netplay will manage its own REC events
+                    write_rec_move(scene, player, i->event_data.action);
+                }
             } else if(i->type == EVENT_TYPE_CLOSE) {
                 if(player->ctrl->type == CTRL_TYPE_REC) {
                     game_state_set_next(scene->gs, SCENE_NONE);
@@ -1701,22 +1710,101 @@ int arena_create(scene *scene) {
     scene_set_render_overlay_cb(scene, arena_render_overlay);
     scene->clone = arena_clone;
 
-    // initialize recording, if enabled
-    if(scene->gs->init_flags->record == 1) {
-        local->rec = omf_calloc(1, sizeof(sd_rec_file));
-        sd_rec_create(local->rec);
+    // initialize recording, if we're not doing playback
+    if(scene->gs->init_flags->playback == 0) {
+        if(!scene->gs->rec) {
+            scene->gs->rec = omf_calloc(1, sizeof(sd_rec_file));
+        } else {
+            // release previous recording
+            sd_rec_free(local->rec);
+        }
+        sd_rec_create(scene->gs->rec);
+        local->rec = scene->gs->rec;
         for(int i = 0; i < 2; i++) {
             // Declare some vars
             game_player *player = game_state_get_player(scene->gs, i);
             log_debug("player %d using har %d", i, player->pilot->har_id);
             local->rec->pilots[i].info.har_id = (unsigned char)player->pilot->har_id;
             local->rec->pilots[i].info.pilot_id = player->pilot->pilot_id;
-            local->rec->pilots[i].info.color_1 = player->pilot->color_1;
+            local->rec->pilots[i].info.color_3 = player->pilot->color_1;
             local->rec->pilots[i].info.color_2 = player->pilot->color_2;
-            local->rec->pilots[i].info.color_3 = player->pilot->color_3;
-            memcpy(local->rec->pilots[i].info.name, lang_get(player->pilot->pilot_id + 20), 18);
+            local->rec->pilots[i].info.color_1 = player->pilot->color_3;
+            local->rec->pilots[i].info.agility = player->pilot->agility;
+            local->rec->pilots[i].info.power = player->pilot->power;
+            local->rec->pilots[i].info.endurance = player->pilot->endurance;
+            local->rec->pilots[i].info.arm_speed = player->pilot->arm_speed;
+            local->rec->pilots[i].info.leg_speed = player->pilot->leg_speed;
+            local->rec->pilots[i].info.arm_power = player->pilot->arm_power;
+            local->rec->pilots[i].info.leg_power = player->pilot->leg_power;
+            local->rec->pilots[i].info.armor = player->pilot->armor;
+            local->rec->pilots[i].info.stun_resistance = player->pilot->stun_resistance;
+            memset(local->rec->pilots[i].info.name, 0, 18);
+            strncpy(local->rec->pilots[i].info.name, lang_get(player->pilot->pilot_id + 20), 18);
+            char *nl;
+            if((nl = strchr(local->rec->pilots[i].info.name, '\n'))) {
+                *nl = 0;
+            }
         }
         local->rec->arena_id = scene->id - SCENE_ARENA0;
+        local->rec->game_mode = is_tournament(scene->gs) ? 1 : 2;
+
+        // player 1's controller
+        switch(game_state_get_player(scene->gs, 0)->ctrl->type) {
+            case CTRL_TYPE_KEYBOARD:
+                // TODO figure out the actual keyboard type custom vs left vs right
+                local->rec->p1_controller = 8; // right keyboard
+                break;
+            case CTRL_TYPE_GAMEPAD:
+                local->rec->p1_controller = 3; // joystick 1
+                break;
+            case CTRL_TYPE_AI:
+                local->rec->p1_controller = 5; // AI
+                break;
+            case CTRL_TYPE_NETWORK:
+                local->rec->p1_controller = 6; // network
+                break;
+            default:
+                assert(false);
+        }
+
+        // player 2's controller
+        switch(game_state_get_player(scene->gs, 0)->ctrl->type) {
+            case CTRL_TYPE_KEYBOARD:
+                // TODO figure out the actual keyboard type custom vs left vs right
+                local->rec->p2_controller = 7; // left keyboard
+                break;
+            case CTRL_TYPE_GAMEPAD:
+                local->rec->p2_controller = 4; // joystick 2
+                break;
+            case CTRL_TYPE_AI:
+                local->rec->p2_controller = 5; // AI
+                break;
+            case CTRL_TYPE_NETWORK:
+                local->rec->p2_controller = 6; // network
+                break;
+            default:
+                assert(false);
+        }
+
+        // this is how p2 is actually configured
+        switch(settings_get()->keys.ctrl_type1) {
+            case CTRL_TYPE_KEYBOARD:
+                local->rec->p2_controller_ = 7;
+                break;
+            case CTRL_TYPE_GAMEPAD:
+                local->rec->p2_controller_ = 4; // joystick 2
+                break;
+            default:
+                assert(false);
+        }
+
+        local->rec->throw_range = 100;
+        local->rec->hit_pause = 10;
+        local->rec->vitality = 100;
+        local->rec->jump_height = 100;
+
+        local->rec->power[0] = 7;
+        local->rec->power[1] = 2;
     } else {
         local->rec = NULL;
     }
