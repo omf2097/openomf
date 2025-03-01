@@ -100,9 +100,9 @@ const field f_advanced[] = {
     F_INT(settings_advanced, defensive_throws, 0),
     F_INT(settings_advanced, throw_range, 100),
     F_INT(settings_advanced, jump_height, 100),
-    F_INT(settings_advanced, hit_pause, 0),
+    F_INT(settings_advanced, hit_pause, 4),
     F_INT(settings_advanced, vitality, 100),
-    F_INT(settings_advanced, knock_down, KNOCK_DOWN_BOTH),
+    F_INT(settings_advanced, knock_down, KNOCK_DOWN_NONE),
     F_INT(settings_advanced, block_damage, 0),
 };
 

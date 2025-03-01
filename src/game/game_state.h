@@ -55,6 +55,7 @@ int game_state_rewind(game_state *gs, int rtt);
 void game_state_replay(game_state *gs, int rtt);
 
 void game_state_slowdown(game_state *gs, int ticks, int rate);
+void game_state_hit_pause(game_state *gs);
 
 void game_state_set_speed(game_state *gs, int speed);
 unsigned int game_state_get_speed(game_state *gs);
