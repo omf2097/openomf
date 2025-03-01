@@ -1430,8 +1430,8 @@ int lobby_create(scene *scene) {
 
     lobby_local *local;
 
-    // Load up settings
-    // setting = settings_get();
+    // force the match to use reasonable defaults
+    game_state_match_settings_defaults(scene->gs);
 
     fight_stats *fight_stats = &scene->gs->fight_stats;
     memset(fight_stats, 0, sizeof(*fight_stats));

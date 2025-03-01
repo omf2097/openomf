@@ -100,6 +100,10 @@ void menu_listen_tick(component *c) {
                       c2->rtt);
             local->host = NULL;
             local->controllers_created = 0;
+
+            // force the match to use reasonable defaults
+            game_state_match_settings_defaults(gs);
+
             game_state_set_next(gs, SCENE_MELEE);
         }
     }
