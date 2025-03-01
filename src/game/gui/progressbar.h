@@ -26,7 +26,8 @@ extern const progressbar_theme _progressbar_theme_melee;
 #define PROGRESSBAR_RIGHT 1
 
 component *progressbar_create(progressbar_theme theme, int orientation, int percentage);
-void progressbar_set_progress(component *bar, int percentage);
+// set progressbar value, progressbar will lower from current value to new value one % per tick if `animate` is true
+void progressbar_set_progress(component *bar, int percentage, bool animate);
 void progressbar_set_flashing(component *bar, int flashing, int rate);
 
 #endif // PROGRESSBAR_H

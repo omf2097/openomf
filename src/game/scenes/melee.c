@@ -216,12 +216,12 @@ void refresh_pilot_stats(melee_local *local) {
     pilot p_a, p_b;
     pilot_get_info(&p_a, CURSOR_INDEX(local, 0));
     pilot_get_info(&p_b, CURSOR_INDEX(local, 1));
-    progressbar_set_progress(local->bar_power[0], (p_a.power * 100) / MAX_STAT);
-    progressbar_set_progress(local->bar_agility[0], (p_a.agility * 100) / MAX_STAT);
-    progressbar_set_progress(local->bar_endurance[0], (p_a.endurance * 100) / MAX_STAT);
-    progressbar_set_progress(local->bar_power[1], (p_b.power * 100) / MAX_STAT);
-    progressbar_set_progress(local->bar_agility[1], (p_b.agility * 100) / MAX_STAT);
-    progressbar_set_progress(local->bar_endurance[1], (p_b.endurance * 100) / MAX_STAT);
+    progressbar_set_progress(local->bar_power[0], (p_a.power * 100) / MAX_STAT, false);
+    progressbar_set_progress(local->bar_agility[0], (p_a.agility * 100) / MAX_STAT, false);
+    progressbar_set_progress(local->bar_endurance[0], (p_a.endurance * 100) / MAX_STAT, false);
+    progressbar_set_progress(local->bar_power[1], (p_b.power * 100) / MAX_STAT, false);
+    progressbar_set_progress(local->bar_agility[1], (p_b.agility * 100) / MAX_STAT, false);
+    progressbar_set_progress(local->bar_endurance[1], (p_b.endurance * 100) / MAX_STAT, false);
 }
 
 void update_har(scene *scene, int player) {
