@@ -768,6 +768,7 @@ int melee_create(scene *scene) {
         text_set_horizontal_align(local->player_bio[i], ALIGN_TEXT_CENTER);
         text_set_vertical_align(local->player_bio[i], ALIGN_TEXT_MIDDLE);
         text_set_margin(local->player_bio[i], 2, 2, 0, 0);
+        text_set_from_c(local->player_bio[i], lang_get(135 + CURSOR_INDEX(local, i)));
     }
 
     // Create a black surface for the highlight box. We modify the palette in renderer.
