@@ -175,7 +175,8 @@ typedef struct har_t {
     list har_hooks;
 
 #ifdef DEBUGMODE
-    surface cd_debug;
+    surface hit_pixel;
+    surface har_origin;
 #endif
 } har;
 
