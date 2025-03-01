@@ -27,7 +27,7 @@ struct text {
     font_size font;      // Font size to use
     uint16_t w;          // Bounding box width
     uint16_t h;          // Bounding box height
-    text_layout *layout; // Each glyph position in a nice list, easy to render.
+    text_layout layout;  // Each glyph position in a nice list, easy to render.
     uint8_t cache_flags; // Cache invalidation flags
 
     // Text rendering options
@@ -61,26 +61,32 @@ static void defaults(text *t) {
     t->max_lines = UINT8_MAX;
 }
 
-text *text_create(font_size font, uint16_t w, uint16_t h) {
+text *text_create(font_size font) {
     text *t = omf_calloc(1, sizeof(text));
     t->font = font;
-    t->w = w;
-    t->h = h;
-    t->cache_flags = INVALIDATE_ALL;
-    t->layout = text_layout_create(w, h);
+    t->w = t->h = 0;
+    t->cache_flags = INVALIDATE_NONE;
+    text_layout_create(&t->layout);
     str_create(&t->buf);
     defaults(t);
     return t;
 }
 
+text *text_create_with_size(font_size font, uint16_t w, uint16_t h) {
+    text *t = text_create(font);
+    t->w = w;
+    t->h = h;
+    return t;
+}
+
 text *text_create_from_c(font_size font, uint16_t w, uint16_t h, const char *src) {
-    text *t = text_create(font, w, h);
+    text *t = text_create_with_size(font, w, h);
     text_set_from_c(t, src);
     return t;
 }
 
 text *text_create_from_str(font_size font, uint16_t w, uint16_t h, const str *src) {
-    text *t = text_create(font, w, h);
+    text *t = text_create_with_size(font, w, h);
     text_set_from_str(t, src);
     return t;
 }
@@ -239,8 +245,8 @@ void text_generate_layout(text *t) {
     if(t->cache_flags & INVALIDATE_LAYOUT) {
         log_debug("Re-flowing text layout for %d x %d box", t->w, t->h);
         const font *font = fonts_get_font(t->font);
-        text_layout_compute(t->layout, &t->buf, font, t->vertical_align, t->horizontal_align, t->margin, t->direction,
-                            t->line_spacing, t->letter_spacing, t->max_lines);
+        text_layout_compute(&t->layout, &t->buf, font, t->w, t->h, t->vertical_align, t->horizontal_align, t->margin,
+                            t->direction, t->line_spacing, t->letter_spacing, t->max_lines);
         t->cache_flags &= ~INVALIDATE_LAYOUT;
     }
 }
@@ -275,13 +281,13 @@ void text_draw(text *t, uint16_t offset_x, uint16_t offset_y) {
     text_generate_layout(t); // Ensure we have a layout
 
     // First the shadows for all letters.
-    vector_iter_begin(&t->layout->items, &it);
+    vector_iter_begin(&t->layout.items, &it);
     foreach(it, item) {
         draw_shadow(item, offset_x, offset_y, t->shadow, t->shadow_color);
     }
 
     // Then the actual letter foregrounds.
-    vector_iter_begin(&t->layout->items, &it);
+    vector_iter_begin(&t->layout.items, &it);
     foreach(it, item) {
         draw_foreground(item, offset_x, offset_y, t->text_color);
     }

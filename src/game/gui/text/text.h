@@ -11,7 +11,8 @@
 
 typedef struct text text;
 
-text *text_create(font_size font, uint16_t w, uint16_t h);
+text *text_create(font_size font);
+text *text_create_with_size(font_size font, uint16_t w, uint16_t h);
 text *text_create_from_c(font_size font, uint16_t w, uint16_t h, const char *src);
 text *text_create_from_str(font_size font, uint16_t w, uint16_t h, const str *src);
 void text_free(text **t);
@@ -54,6 +55,9 @@ uint8_t text_get_max_lines(const text *t);
  */
 void text_generate_layout(text *t);
 
+/**
+ * Render the text block to given coordinates.
+ */
 void text_draw(text *t, uint16_t x, uint16_t y);
 
 #endif // TEXT_ENGINE_H
