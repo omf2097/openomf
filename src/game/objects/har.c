@@ -1171,6 +1171,12 @@ void har_collide_with_har(object *obj_a, object *obj_b, int loop) {
         if(b->damage_done == 0 && loop == 0 && intersect_sprite_hitpoint(obj_b, obj_a, level, &hit_coord2)) {
             log_debug("both hars hit at the same time!");
             har_collide_with_har(obj_b, obj_a, 1);
+            // check if they are still alive
+            if(b->state == STATE_FALLEN || b->state == STATE_STANDING_UP || b->state == STATE_WALLDAMAGE ||
+               b->health <= 0 || b->state >= STATE_VICTORY) {
+                // can't hit em while they're down
+                return;
+            }
         }
 
         if(move->category == CAT_CLOSE) {
