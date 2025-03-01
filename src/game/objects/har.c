@@ -37,7 +37,8 @@ void har_free(object *obj) {
     har *h = object_get_userdata(obj);
     list_free(&h->har_hooks);
 #ifdef DEBUGMODE
-    surface_free(&h->cd_debug);
+    surface_free(&h->hit_pixel);
+    surface_free(&h->har_origin);
 #endif
     omf_free(h);
     object_set_userdata(obj, NULL);
@@ -1056,23 +1057,9 @@ void har_check_closeness(object *obj_a, object *obj_b) {
 #ifdef DEBUGMODE
 void har_debug(object *obj) {
     har *h = object_get_userdata(obj);
-    image img;
-    surface_to_image(&h->cd_debug, &img);
-
-    uint8_t c = 0xCF;
-    uint8_t red = 0xCF;
-    uint8_t blank = 0;
-
-    // video_draw(&h->cd_debug, 0, 0);
-
     if(obj->cur_sprite_id < 0) {
         return;
     }
-    // Make sure there are hitpoints to check.
-    if(vector_size(&obj->cur_animation->collision_coords) == 0) {
-        return;
-    }
-
     // Some useful variables
     vec2i pos_a = object_get_pos(obj); //, obj->cur_sprite->pos);
     // vec2i size_a = object_get_size(obj);
@@ -1082,6 +1069,18 @@ void har_debug(object *obj) {
     if(object_get_direction(obj) == OBJECT_FACE_LEFT) {
         // pos_a.x = object_get_pos(obj).x + ((obj->cur_sprite->pos.x * -1) - size_a.x);
         flip = -1;
+    }
+
+    int flip_mode = obj->sprite_state.flipmode;
+    if(object_get_direction(obj) == OBJECT_FACE_LEFT) {
+        flip_mode ^= FLIP_HORIZONTAL;
+    }
+
+    video_draw_full(&h->har_origin, pos_a.x - 2, pos_a.y - 2, 4, 4, 0, 0, 0, 255, 255, flip_mode, 0);
+
+    // Make sure there are hitpoints to check.
+    if(vector_size(&obj->cur_animation->collision_coords) == 0) {
+        return;
     }
 
     // Iterate through hitpoints
@@ -1096,8 +1095,6 @@ void har_debug(object *obj) {
         found = 1;
     }
 
-    image_clear(&img, blank);
-
     if(!found) {
         return;
     }
@@ -1106,14 +1103,10 @@ void har_debug(object *obj) {
     foreach(it, cc) {
         if(cc->frame_index != obj->cur_sprite_id)
             continue;
-        image_set_pixel(&img, pos_a.x + (cc->pos.x * flip), pos_a.y + cc->pos.y, c);
-        // log_debug("%d drawing hit point at %d %d ->%d %d", obj->cur_sprite->id, pos_a.x, pos_a.y, pos_a.x +
-        // (cc->pos.x *// flip), pos_a.y + cc->pos.y);
+        video_draw(&h->hit_pixel, pos_a.x + (cc->pos.x * flip), pos_a.y + cc->pos.y);
+        /*log_debug("%d drawing hit point at %d %d ->%d %d", obj->cur_sprite_id, pos_a.x, pos_a.y, pos_a.x +
+         (cc->pos.x * flip), pos_a.y + cc->pos.y);*/
     }
-
-    image_set_pixel(&img, pos_a.x, pos_a.y, red);
-
-    video_draw(&h->cd_debug, 0, 0);
 }
 #endif // DEBUGMODE
 
@@ -2307,8 +2300,22 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
 
 #ifdef DEBUGMODE
     object_set_debug_cb(obj, har_debug);
-    surface_create(&local->cd_debug, 320, 200);
-    surface_clear(&local->cd_debug);
+    surface_create(&local->hit_pixel, 1, 1);
+    surface_clear(&local->hit_pixel);
+    image img;
+    surface_to_image(&local->hit_pixel, &img);
+    image_set_pixel(&img, 0, 0, 0xf3);
+    surface_create(&local->har_origin, 4, 4);
+    surface_clear(&local->har_origin);
+    surface_to_image(&local->har_origin, &img);
+    image_set_pixel(&img, 0, 0, 0xf6);
+    image_set_pixel(&img, 0, 1, 0xf6);
+    image_set_pixel(&img, 0, 2, 0xf6);
+    image_set_pixel(&img, 0, 3, 0xf6);
+    image_set_pixel(&img, 1, 3, 0xf6);
+    image_set_pixel(&img, 2, 3, 0xf6);
+    image_set_pixel(&img, 3, 3, 0xf6);
+
 #endif
 
     // fixup a bunch of stuff based on player stats
