@@ -148,7 +148,7 @@ enum
 
 int char_to_act(str *ch, int direction, int *position) {
     int action = 0;
-    switch((str_c(ch) + *position)[0]) {
+    switch(str_at(ch, *position)) {
         case '8':
             action = ACT_UP;
             break;
@@ -211,7 +211,9 @@ int char_to_act(str *ch, int direction, int *position) {
 
     // it's possible there's a kick/punch, or both, chained on here, so check the next 2 characters
     for(int i = 0; i < 2 && (*position) > 0; i++) {
-        switch((str_c(ch) + (*position) - 1)[0]) {
+        // this is a lookahead, so use - 1 to look at the previous character in the string (move strings are in reverse
+        // order)
+        switch(str_at(ch, (*position) - 1)) {
             case 'K':
                 log_debug("adding in extra kick to %d at string %s position %d", action, str_c(ch), *position - 1);
                 action |= ACT_KICK;
@@ -225,7 +227,8 @@ int char_to_act(str *ch, int direction, int *position) {
                 (*position)--;
                 break;
             default:
-                break;
+                // don't keep going
+                return action;
         }
     }
 

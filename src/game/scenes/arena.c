@@ -1747,7 +1747,7 @@ int arena_create(scene *scene) {
         }
         local->rec->arena_id = scene->id - SCENE_ARENA0;
 
-        // TODO hardcode some values here
+        // hardcode some values here, we don't know what they do, but we copied them from a REC from the original engine
         local->rec->unknown_c = 2;
         local->rec->unknown_i = 1;
         local->rec->unknown_j = 7;
