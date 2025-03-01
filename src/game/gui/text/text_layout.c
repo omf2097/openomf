@@ -74,7 +74,7 @@ typedef struct area {
     uint16_t h;
 } area;
 
-area find_row_metrics(const str *buf, const font *font, uint8_t letter_spacing, text_row_direction direction,
+static area find_row_metrics(const str *buf, const font *font, uint8_t letter_spacing, text_row_direction direction,
                       size_t start, size_t end) {
     area ret = {0, 0};
     const char *ptr = str_c(buf);
@@ -97,7 +97,7 @@ typedef struct text_row {
     area size;
 } text_row;
 
-area find_rows(vector *rows, const str *buf, const font *font, text_row_direction direction, uint8_t letter_spacing,
+static area find_rows(vector *rows, const str *buf, const font *font, text_row_direction direction, uint8_t letter_spacing,
                uint8_t line_spacing, uint16_t max_width, uint16_t max_height) {
     size_t start = 0, len = str_size(buf);
     size_t line = 0;
@@ -144,7 +144,7 @@ exit:
     return (area){.w = max_row_width, .h = row_heights + line * line_spacing};
 }
 
-uint16_t valign_offset(text_vertical_align align, uint16_t bbox_h, uint16_t block_h) {
+static uint16_t valign_offset(text_vertical_align align, uint16_t bbox_h, uint16_t block_h) {
     switch(align) {
         case ALIGN_TEXT_TOP:
             return 0;
@@ -157,7 +157,7 @@ uint16_t valign_offset(text_vertical_align align, uint16_t bbox_h, uint16_t bloc
     return 0; // Should never come here.
 }
 
-uint16_t halign_offset(text_horizontal_align align, uint16_t bbox_w, uint16_t block_w) {
+static uint16_t halign_offset(text_horizontal_align align, uint16_t bbox_w, uint16_t block_w) {
     switch(align) {
         case ALIGN_TEXT_LEFT:
             return 0;
