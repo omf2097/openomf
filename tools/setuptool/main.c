@@ -33,8 +33,8 @@ static const char *match_type[] = {"One match", "2 out of 3", "3 out of 5", "4 o
 
 static const char *knockdown_text[] = {"None", "Kicks", "Punches", "Kicks & Punches"};
 
-static const char *controller_text[] = {"1P Custom", "2P Custom",     "Joystick 1",     "Joystick 2", "AI",
-                                        "Network",   "Left Keyboard", "Right Keyboard", "Replay"};
+static const char *controller_text[] = {"?",  "1P Custom", "2P Custom",     "Joystick 1",     "Joystick 2",
+                                        "AI", "Network",   "Left Keyboard", "Right Keyboard", "Replay"};
 
 void print_setup_root_info(sd_setup_file *setup) {
     if(setup == NULL) {

@@ -1771,21 +1771,32 @@ int arena_create(scene *scene) {
         switch(game_state_get_player(scene->gs, 0)->ctrl->type) {
             case CTRL_TYPE_KEYBOARD:
                 // TODO figure out the actual keyboard type custom vs left vs right
-                local->rec->p1_controller = 7; // left keyboard
+                local->rec->p2_controller = 7; // left keyboard
                 break;
             case CTRL_TYPE_GAMEPAD:
-                local->rec->p1_controller = 4; // joystick 1
+                local->rec->p2_controller = 4; // joystick 2
                 break;
             case CTRL_TYPE_AI:
-                local->rec->p1_controller = 5; // AI
+                local->rec->p2_controller = 5; // AI
                 break;
             case CTRL_TYPE_NETWORK:
-                local->rec->p1_controller = 6; // network
+                local->rec->p2_controller = 6; // network
                 break;
             default:
                 assert(false);
         }
-        local->rec->p2_controller_ = local->rec->p2_controller;
+
+        // this is how p2 is actually configured
+        switch(settings_get()->keys.ctrl_type1) {
+            case CTRL_TYPE_KEYBOARD:
+                local->rec->p2_controller_ = 7;
+                break;
+            case CTRL_TYPE_GAMEPAD:
+                local->rec->p2_controller_ = 4; // joystick 2
+                break;
+            default:
+                assert(false);
+        }
 
         local->rec->throw_range = 100;
         local->rec->hit_pause = 10;
