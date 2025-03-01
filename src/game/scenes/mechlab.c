@@ -490,7 +490,7 @@ int mechlab_create(scene *scene) {
     scene->gs->match_settings.power1 = 5;
     scene->gs->match_settings.power2 = 5;
     scene->gs->match_settings.vitality = 100;
-    // TODO what others are there?
+    scene->gs->match_settings.rounds = 0;
 
     animation *bg_ani[3];
 

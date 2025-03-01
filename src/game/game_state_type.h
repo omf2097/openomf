@@ -37,7 +37,7 @@ typedef struct ticktimer_t ticktimer;
 typedef struct controller_t controller;
 
 // roughly modeled after the configuration in REC files
-typedef struct match_settings_t {
+typedef struct {
     uint8_t throw_range;
     uint8_t hit_pause;
     uint8_t block_damage;
