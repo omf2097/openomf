@@ -1098,15 +1098,40 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
     controller *ctrl_a = game_player_get_ctrl(game_state_get_player(obj_a->gs, a->player_id));
     controller *ctrl_b = game_player_get_ctrl(game_state_get_player(obj_b->gs, b->player_id));
 
-    if(b->state == STATE_FALLEN || b->state == STATE_STANDING_UP || b->state == STATE_WALLDAMAGE || b->health <= 0 ||
-       b->state >= STATE_VICTORY) {
+    if(b->state == STATE_STANDING_UP || b->state == STATE_WALLDAMAGE || b->health <= 0 || b->state >= STATE_VICTORY) {
         // can't hit em while they're down
         return 0;
+    }
+
+    // rehit mode is off
+    if(!obj_b->gs->match_settings.rehit && b->state == STATE_FALLEN) {
+        log_debug("REHIT is off");
+        return 0;
+    }
+
+    // rehit mode is on, but the opponent isn't airborne or stunned
+    if(obj_b->gs->match_settings.rehit && b->state == STATE_FALLEN &&
+       (!object_is_airborne(obj_b) || b->endurance <= 0)) {
+        log_debug("REHIT is not possible %d %f %f %f", object_is_airborne(obj_b), obj_b->pos.x, obj_b->pos.y,
+                  b->endurance);
+        return 0;
+    }
+
+    bool rehit = false;
+    if(obj_b->gs->match_settings.rehit && b->state == STATE_FALLEN && object_is_airborne(obj_b) && b->endurance > 0) {
+        rehit = true;
     }
 
     // Check for collisions by sprite collision points
     int level = 1;
     af_move *move = af_get_move(a->af_data, obj_a->cur_animation->id);
+
+    // check this mode hasn't already rehit
+    if(rehit && strchr(b->rehits, move->id)) {
+        log_debug("move %d has already done a rehit");
+        return 0;
+    }
+
     vec2i hit_coord = vec2i_create(0, 0);
     if(obj_a->can_hit) {
         a->damage_done = 0;
@@ -1198,15 +1223,24 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
             }
         }
 
+        // rehits only do 60% damage
+        int damage = rehit ? move->damage * 0.6 : move->damage;
         if(player_frame_isset(obj_a, "ai")) {
             str str;
             str_from_c(&str, "A1-s01l50B2-C2-L5-M400");
-            har_take_damage(obj_b, &str, move->damage, move->stun);
+            har_take_damage(obj_b, &str, damage, move->stun);
             str_free(&str);
             obj_b->vel.x = -5.0 * object_get_direction(obj_b);
             obj_b->vel.y = -9.0;
         } else {
-            har_take_damage(obj_b, &move->footer_string, move->damage, move->stun);
+            har_take_damage(obj_b, &move->footer_string, damage, move->stun);
+        }
+
+        if(rehit) {
+            obj_b->vel.y -= 3;
+            b->rehits[strlen(b->rehits)] = move->id;
+        } else {
+            memset(b->rehits, 0, sizeof(b->rehits));
         }
 
         if(hit_coord.x != 0 || hit_coord.y != 0) {
@@ -1250,10 +1284,28 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
     har *other = object_get_userdata(
         game_state_find_object(o_har->gs, game_state_get_player(o_har->gs, abs(h->player_id - 1))->har_obj_id));
 
-    if(h->state == STATE_FALLEN || h->state == STATE_STANDING_UP || h->state == STATE_WALLDAMAGE || h->health <= 0 ||
-       h->state >= STATE_VICTORY) {
+    if(h->state == STATE_STANDING_UP || h->state == STATE_WALLDAMAGE || h->health <= 0 || h->state >= STATE_VICTORY) {
         // can't hit em while they're down, or done
         return;
+    }
+
+    // rehit mode is off
+    if(!o_har->gs->match_settings.rehit && h->state == STATE_FALLEN) {
+        log_debug("REHIT is off");
+        return;
+    }
+
+    // rehit mode is on, but the opponent isn't airborne or stunned
+    if(o_har->gs->match_settings.rehit && h->state == STATE_FALLEN &&
+       (!object_is_airborne(o_har) || h->endurance <= 0)) {
+        log_debug("REHIT is not possible %d %f %f %f", object_is_airborne(o_har), o_har->pos.x, o_har->pos.y,
+                  h->endurance);
+        return;
+    }
+
+    bool rehit = false;
+    if(o_har->gs->match_settings.rehit && h->state == STATE_FALLEN && object_is_airborne(o_har) && h->endurance > 0) {
+        rehit = true;
     }
 
     // Check for collisions by sprite collision points
@@ -1315,15 +1367,19 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
             log_debug("projectile dealt damage of %f", move->damage);
             log_debug("projectile %d dealt damage of %f", move->id, move->damage);
 
+            int damage = rehit ? move->damage * 0.6 : move->damage;
             if(player_frame_isset(o_pjt, "ai")) {
                 str str;
                 str_from_c(&str, "A1-s01l50B2-C2-L5-M400");
-                har_take_damage(o_har, &str, move->damage, move->stun);
+                har_take_damage(o_har, &str, damage, move->stun);
                 str_free(&str);
                 o_har->vel.x = -5.0 * object_get_direction(o_har);
                 o_har->vel.y = -9.0;
             } else {
-                har_take_damage(o_har, &move->footer_string, move->damage, move->stun);
+                har_take_damage(o_har, &move->footer_string, damage, move->stun);
+                if(rehit) {
+                    o_har->vel.y -= 3;
+                }
             }
         }
 
