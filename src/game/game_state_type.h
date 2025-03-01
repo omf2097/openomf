@@ -6,6 +6,7 @@
 #include "engine.h"
 #include "formats/rec.h"
 #include "game/protos/fight_stats.h"
+#include "game/utils/settings.h"
 #include "utils/random.h"
 #include "utils/vector.h"
 
@@ -35,6 +36,23 @@ typedef struct game_player_t game_player;
 typedef struct ticktimer_t ticktimer;
 typedef struct controller_t controller;
 
+// roughly modeled after the configuration in REC files
+typedef struct {
+    uint8_t throw_range;
+    uint8_t hit_pause;
+    uint8_t block_damage;
+    uint8_t vitality;
+    uint8_t jump_height;
+    knock_down_mode knock_down;
+    bool rehit;
+    bool defensive_throws;
+    uint8_t power1;
+    uint8_t power2;
+    bool hazards;
+    uint8_t rounds;
+    bool fight_mode;
+} match_settings;
+
 typedef struct game_state_t {
     unsigned int run;
     unsigned int paused;
@@ -46,6 +64,8 @@ typedef struct game_state_t {
     unsigned int role;
     unsigned int speed;
     engine_init_flags *init_flags;
+
+    match_settings match_settings;
 
     // For screen shaking
     int screen_shake_horizontal;
