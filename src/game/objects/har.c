@@ -717,20 +717,19 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
         }
     }
 
-    // Take a screencap of enemy har
     if(h->health == 0) {
+        // Take a screencap of enemy har
         game_player *other_player = game_state_get_player(obj->gs, !h->player_id);
         object *other_har = game_state_find_object(obj->gs, other_player->har_obj_id);
         har_screencaps_capture(&other_player->screencaps, other_har, obj, SCREENCAP_BLOW);
-    }
 
-    // If damage is high enough, slow down the game for a bit
-    // Also slow down game more for last shot
-    if(damage > 24.0f || h->health == 0) {
+        // Slow down game more for last shot
         log_debug("Slowdown: Slowing from %d to %d.", game_state_get_speed(obj->gs),
                   h->health == 0 ? game_state_get_speed(obj->gs) - 10 : game_state_get_speed(obj->gs) - 6);
         game_state_slowdown(obj->gs, 12,
                             h->health == 0 ? game_state_get_speed(obj->gs) - 10 : game_state_get_speed(obj->gs) - 6);
+    } else {
+        game_state_hit_pause(obj->gs);
     }
 
     // chronos' stasis does not have a hit animation
@@ -901,6 +900,7 @@ void har_block(object *obj, vec2i hit_coord) {
         // don't make another scrape
         return;
     }
+    game_state_hit_pause(obj->gs);
     object *scrape = omf_calloc(1, sizeof(object));
     object_create(scrape, obj->gs, hit_coord, vec2f_create(0, 0));
     object_set_animation(scrape, &af_get_move(h->af_data, ANIM_BLOCKING_SCRAPE)->ani);

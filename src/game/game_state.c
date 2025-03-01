@@ -114,6 +114,7 @@ int game_state_create(game_state *gs, engine_init_flags *init_flags) {
     gs->init_flags = init_flags;
     gs->new_state = NULL;
     gs->clone = false;
+    gs->hit_pause = 0;
     game_state_match_settings_reset(gs);
     vector_create(&gs->objects, sizeof(render_obj));
     vector_create(&gs->sounds, sizeof(playing_sound));
@@ -286,6 +287,10 @@ void game_state_slowdown(game_state *gs, int ticks, int rate) {
         gs->speed_slowdown_time = ticks;
         gs->speed = max2(rate, 0);
     }
+}
+
+void game_state_hit_pause(game_state *gs) {
+    gs->hit_pause = gs->match_settings.hit_pause;
 }
 
 void game_state_set_speed(game_state *gs, int rate) {
@@ -885,6 +890,11 @@ void game_state_static_tick(game_state *gs, bool replay) {
 
 // This function is called when the game speed requires it
 void game_state_dynamic_tick(game_state *gs, bool replay) {
+
+    if(gs->hit_pause > 0) {
+        gs->hit_pause--;
+        return;
+    }
     // Change the screen shake value downwards
     if(gs->screen_shake_horizontal > 0 && !gs->paused) {
         gs->screen_shake_horizontal--;
