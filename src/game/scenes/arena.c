@@ -1251,17 +1251,6 @@ void arena_render_overlay(scene *scene) {
     tconf_players.shadow = TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM;
     const font *fnt = fonts_get_font(tconf_players.font);
 
-    text_settings tconf_debug;
-    text_defaults(&tconf_debug);
-    tconf_debug.font = FONT_SMALL;
-    tconf_debug.cforeground = TEXT_COLOR;
-#ifdef DEBUGMODE
-    snprintf(buf, 40, "%u", game_state_get_tick(scene->gs));
-    text_render(&tconf_debug, TEXT_DEFAULT, 160, 0, 250, 6, buf);
-    snprintf(buf, 40, "%u", random_get_seed(&scene->gs->rand));
-    text_render(&tconf_debug, TEXT_DEFAULT, 130, 8, 250, 6, buf);
-#endif
-
     for(int i = 0; i < 2; i++) {
         player[i] = game_state_get_player(scene->gs, i);
         obj[i] = game_state_find_object(scene->gs, game_player_get_har_obj_id(player[i]));
@@ -1311,28 +1300,86 @@ void arena_render_overlay(scene *scene) {
         // render ping, if player is networked
         if(player[0]->ctrl->type == CTRL_TYPE_NETWORK) {
             snprintf(buf, 40, "ping %d", player[0]->ctrl->rtt / 2);
-            text_render(&tconf_debug, TEXT_DEFAULT, 5, 40, 250, 6, buf);
-#ifdef DEBUGMODE
-        } else if(player[0]->ctrl->type == CTRL_TYPE_AI) {
-            ai_controller_print_state(player[0]->ctrl, buf, sizeof(buf));
-            text_render(&tconf_debug, TEXT_DEFAULT, 5, 40, 250, 6, buf);
-#endif
+            text_render(&tconf_players, TEXT_DEFAULT, 5, 40, 250, 6, buf);
         }
 
         if(player[1]->ctrl->type == CTRL_TYPE_NETWORK) {
             snprintf(buf, 40, "ping %d", player[1]->ctrl->rtt / 2);
-            text_render(&tconf_debug, TEXT_DEFAULT, 315 - (strlen(buf) * fnt->w), 40, 250, 6, buf);
-#ifdef DEBUGMODE
-        } else if(player[1]->ctrl->type == CTRL_TYPE_AI) {
-            ai_controller_print_state(player[1]->ctrl, buf, sizeof(buf));
-            text_render(&tconf_debug, TEXT_DEFAULT, 315 - (strlen(buf) * fnt->w), 40, 250, 6, buf);
-#endif
+            text_render(&tconf_players, TEXT_DEFAULT, 315 - (strlen(buf) * fnt->w), 40, 250, 6, buf);
         }
     }
 
     // Render menu (if visible)
     if(local->menu_visible) {
         guiframe_render(local->game_menu);
+    }
+}
+
+static const char *har_states[] = {"None",    "Standing", "WalkTo",      "WalkFrom",   "Crouching", "CrouckBlock",
+                                   "Jumping", "Recoil",   "Fallen",      "StandingUp", "Stunned",   "Victory",
+                                   "Defeat",  "Scrap",    "Destruction", "Walldamage", "Done"};
+
+void arena_debug(scene *scene) {
+    if(scene->gs->hide_ui) {
+        return;
+    }
+
+    char buf[100];
+    game_player *player[2];
+    object *obj_har[2];
+    har *hars[2];
+    for(int i = 0; i < 2; i++) {
+        player[i] = game_state_get_player(scene->gs, i);
+        obj_har[i] = game_state_find_object(scene->gs, game_player_get_har_obj_id(player[i]));
+        hars[i] = obj_har[i]->userdata;
+    }
+
+    text_settings tconf_debug;
+    text_defaults(&tconf_debug);
+    tconf_debug.font = FONT_SMALL;
+    tconf_debug.cforeground = TEXT_COLOR;
+
+    const font *fnt = fonts_get_font(tconf_debug.font);
+
+    snprintf(buf, 40, "%u", game_state_get_tick(scene->gs));
+    text_render(&tconf_debug, TEXT_DEFAULT, 160, 0, 250, 6, buf);
+    snprintf(buf, 40, "%u", random_get_seed(&scene->gs->rand));
+    text_render(&tconf_debug, TEXT_DEFAULT, 130, 8, 250, 6, buf);
+
+    if(player[0]->ctrl->type == CTRL_TYPE_AI) {
+        ai_controller_print_state(player[0]->ctrl, buf, sizeof(buf));
+        text_render(&tconf_debug, TEXT_DEFAULT, 5, 40, 250, 6, buf);
+    }
+
+    if(player[1]->ctrl->type == CTRL_TYPE_AI) {
+        ai_controller_print_state(player[1]->ctrl, buf, sizeof(buf));
+        text_render(&tconf_debug, TEXT_DEFAULT, 315 - (strlen(buf) * fnt->w), 40, 250, 6, buf);
+    }
+
+    for(int i = 0; i < 2; i++) {
+        snprintf(buf, sizeof(buf), "%s", har_states[hars[i]->state]);
+        if(i == 0) {
+            text_render(&tconf_debug, TEXT_DEFAULT, 5, 48, 250, 6, buf);
+        } else {
+            text_render(&tconf_debug, TEXT_DEFAULT, 315 - (strlen(buf) * fnt->w), 48, 250, 6, buf);
+        }
+
+        snprintf(buf, sizeof(buf), "vel: %.3f %.3f", obj_har[i]->vel.x, obj_har[i]->vel.y);
+
+        if(i == 0) {
+            text_render(&tconf_debug, TEXT_DEFAULT, 5, 56, 250, 6, buf);
+        } else {
+            text_render(&tconf_debug, TEXT_DEFAULT, 315 - (strlen(buf) * fnt->w), 56, 250, 6, buf);
+        }
+
+        snprintf(buf, sizeof(buf), "aa: %d em: %d ani: %d", hars[i]->air_attacked, hars[i]->executing_move,
+                 obj_har[i]->cur_animation->id);
+
+        if(i == 0) {
+            text_render(&tconf_debug, TEXT_DEFAULT, 5, 62, 250, 6, buf);
+        } else {
+            text_render(&tconf_debug, TEXT_DEFAULT, 315 - (strlen(buf) * fnt->w), 62, 250, 6, buf);
+        }
     }
 }
 
@@ -1701,6 +1748,7 @@ int arena_create(scene *scene) {
     scene_set_startup_cb(scene, arena_startup);
     scene_set_input_poll_cb(scene, arena_input_tick);
     scene_set_render_overlay_cb(scene, arena_render_overlay);
+    scene_set_debug_cb(scene, arena_debug);
     scene->clone = arena_clone;
 
     // initialize recording, if we're not doing playback

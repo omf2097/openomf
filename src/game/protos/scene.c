@@ -46,6 +46,7 @@ int scene_create(scene *scene, game_state *gs, int scene_id) {
     scene->input_poll = NULL;
     scene->startup = NULL;
     scene->prio_override = NULL;
+    scene->debug = NULL;
 
     // Set base palette
     vga_state_set_base_palette_from(bk_get_palette(scene->bk_data, 0));
@@ -172,6 +173,12 @@ void scene_render(scene *scene) {
     }
 }
 
+void scene_debug(scene *scene) {
+    if(scene->debug) {
+        scene->debug(scene);
+    }
+}
+
 int scene_anim_prio_override(scene *scene, int anim_id) {
     if(scene->prio_override != NULL) {
         return scene->prio_override(scene, anim_id);
@@ -247,6 +254,10 @@ void scene_set_render_cb(scene *scene, scene_render_cb cbfunc) {
 
 void scene_set_render_overlay_cb(scene *scene, scene_render_overlay_cb cbfunc) {
     scene->render_overlay = cbfunc;
+}
+
+void scene_set_debug_cb(scene *scene, scene_debug_cb cbfunc) {
+    scene->debug = cbfunc;
 }
 
 void scene_set_startup_cb(scene *scene, scene_startup_cb cbfunc) {
