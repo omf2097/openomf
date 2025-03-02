@@ -93,7 +93,7 @@ void save_screenshot(const SDL_Rect *r, unsigned char *data, bool flip) {
     char *filename = omf_malloc(256);
     snprintf(filename, 256, "screenshot_%s.png", time);
     if(write_rgb_png(filename, r->w, r->h, data, false, flip)) {
-        log_debug("Got a screenshot: %s", filename);
+        log_info("Got a screenshot: %s", filename);
     } else {
         log_error("Screenshot write operation failed (%s)", filename);
     }
@@ -106,7 +106,7 @@ void save_palette_shot(void) {
     char *filename = omf_malloc(256);
     snprintf(filename, 256, "debug_palette_%s_%d.png", time, debug_palette_number++);
     vga_state_debug_screenshot(filename);
-    log_debug("Palette saved: %s", filename);
+    log_info("Palette saved: %s", filename);
     omf_free(filename);
     omf_free(time);
 }
@@ -117,7 +117,7 @@ void save_rec(game_state *gs) {
     snprintf(filename, 256, "%s.rec", time);
     sd_rec_finish(gs->rec, gs->int_tick);
     sd_rec_save(gs->rec, filename);
-    log_debug("REC saved: %s", filename);
+    log_info("REC saved: %s", filename);
     omf_free(filename);
     omf_free(time);
 }
