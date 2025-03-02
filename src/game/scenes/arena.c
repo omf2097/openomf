@@ -1072,8 +1072,8 @@ void arena_dynamic_tick(scene *scene, int paused) {
         for(int i = 0; i < 2; i++) {
             float hp = (float)hars[i]->health / (float)hars[i]->health_max;
             float en = (float)hars[i]->endurance / (float)hars[i]->endurance_max;
-            progressbar_set_progress(local->health_bars[i], hp * 100, true);
-            progressbar_set_progress(local->endurance_bars[i], en * 100, true);
+            progressbar_set_progress(local->health_bars[i], hp * 100, gs->warp_speed ? false : true);
+            progressbar_set_progress(local->endurance_bars[i], en * 100, gs->warp_speed ? false : true);
             progressbar_set_flashing(local->endurance_bars[i], (en * 100 < 50), 8);
             component_tick(local->health_bars[i]);
             component_tick(local->endurance_bars[i]);
