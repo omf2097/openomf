@@ -1109,7 +1109,7 @@ void har_debug(object *obj) {
 }
 #endif // DEBUGMODE
 
-void har_collide_with_har(object *obj_a, object *obj_b, int loop) {
+int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
     har *a = object_get_userdata(obj_a);
     har *b = object_get_userdata(obj_b);
 
@@ -1119,7 +1119,7 @@ void har_collide_with_har(object *obj_a, object *obj_b, int loop) {
     if(b->state == STATE_FALLEN || b->state == STATE_STANDING_UP || b->state == STATE_WALLDAMAGE || b->health <= 0 ||
        b->state >= STATE_VICTORY) {
         // can't hit em while they're down
-        return;
+        return 0;
     }
 
     // Check for collisions by sprite collision points
@@ -1150,24 +1150,28 @@ void har_collide_with_har(object *obj_a, object *obj_b, int loop) {
                 push.x += 2.0f * object_get_direction(obj_a);
                 object_set_vel(obj_b, push);
             }
-            return;
+            return 0;
         }
 
         // is the HAR invulnerable to this kind of attack?
         if(har_is_invincible(obj_b, move)) {
-            return;
+            return 0;
         }
 
         vec2i hit_coord2 = vec2i_create(0, 0);
 
-        if(b->damage_done == 0 && loop == 0 && intersect_sprite_hitpoint(obj_b, obj_a, level, &hit_coord2)) {
+        if(move->category != CAT_CLOSE && b->damage_done == 0 && loop == 0 &&
+           intersect_sprite_hitpoint(obj_b, obj_a, level, &hit_coord2)) {
             log_debug("both hars hit at the same time!");
-            har_collide_with_har(obj_b, obj_a, 1);
+            if(har_collide_with_har(obj_b, obj_a, 1)) {
+                // other player threw us
+                return 0;
+            }
             // check if they are still alive
             if(b->state == STATE_FALLEN || b->state == STATE_STANDING_UP || b->state == STATE_WALLDAMAGE ||
                b->health <= 0 || b->state >= STATE_VICTORY) {
                 // can't hit em while they're down
-                return;
+                return 0;
             }
         }
 
@@ -1220,12 +1224,18 @@ void har_collide_with_har(object *obj_a, object *obj_b, int loop) {
             object_set_repeat(obj_a, 0);
             // bail out early, the next move can still brutalize the oppopent so don't set them immune to further damage
             // this fixes flail's charging punch and katana's wall spin, but thorn's spike charge still works
-            return;
+            //
+            // but still return if we had priority
+            return move->category == CAT_CLOSE ? 1 : 0;
         }
 
         a->damage_done = 1;
         b->damage_received = 1;
+
+        // return if this move had priority
+        return move->category == CAT_CLOSE ? 1 : 0;
     }
+    return 0;
 }
 
 void har_collide_with_projectile(object *o_har, object *o_pjt) {
@@ -1405,8 +1415,10 @@ void har_collide(object *obj_a, object *obj_b) {
     har_check_closeness(obj_b, obj_a);
 
     // Handle har collisions
-    har_collide_with_har(obj_a, obj_b, 0);
-    har_collide_with_har(obj_b, obj_a, 0);
+    if(!har_collide_with_har(obj_a, obj_b, 0)) {
+        // if A didn't hit with a priority move, check B
+        har_collide_with_har(obj_b, obj_a, 0);
+    }
 }
 
 static void process_range(const har *h, damage_tracker *damage, vga_palette *pal, uint8_t step) {
