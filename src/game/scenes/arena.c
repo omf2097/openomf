@@ -541,13 +541,7 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
         object_set_repeat(o_har, 0);
         scene->gs->screen_shake_horizontal = 3 * fabsf(o_har->vel.x);
         // from MASTER.DAT
-        if(wall == 1) {
-            object_set_custom_string(o_har, "hQ10-x-3Q5-x-2L5-x-2M900");
-            o_har->vel.x = -2;
-        } else {
-            object_set_custom_string(o_har, "hQ10-x3Q5-x2L5-x2M900");
-            o_har->vel.x = 2;
-        }
+        object_set_custom_string(o_har, "hQ1-hQ7-x-3Q5-x-2L5-x-2M900");
 
         if(wall == 1) {
             o_har->pos.x = ARENA_RIGHT_WALL - 2;
