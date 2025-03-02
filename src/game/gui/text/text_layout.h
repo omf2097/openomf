@@ -15,8 +15,9 @@ typedef struct text_layout_item {
 
 typedef struct text_layout {
     vector items;
-    uint16_t w; // Set after text_layout_compute is called. Total width of rendered items.
-    uint16_t h; // Set after text_layout_compute is called. Total height of rendered items.
+    size_t rows; // Total rows rendered
+    uint16_t w;  // Total width of rendered items.
+    uint16_t h;  // Total height of rendered items.
 } text_layout;
 
 void text_layout_create(text_layout *layout);

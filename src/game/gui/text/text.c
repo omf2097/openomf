@@ -111,72 +111,98 @@ void text_set_from_str(text *t, const str *src) {
 
 void text_set_font(text *t, font_size font) {
     assert(font);
-    t->font = font;
-    t->cache_flags |= INVALIDATE_LAYOUT;
+    if(t->font != font) {
+        t->font = font;
+        t->cache_flags |= INVALIDATE_LAYOUT;
+    }
 }
 
 void text_set_bounding_box(text *t, uint16_t w, uint16_t h) {
-    t->w = w;
-    t->h = h;
-    t->cache_flags |= INVALIDATE_LAYOUT;
+    if(t->w != w || t->h != h) {
+        t->w = w;
+        t->h = h;
+        t->cache_flags |= INVALIDATE_LAYOUT;
+    }
 }
 
 void text_set_color(text *t, vga_index color) {
-    t->text_color = color;
-    t->cache_flags |= INVALIDATE_STYLE;
+    if(t->text_color != color) {
+        t->text_color = color;
+        t->cache_flags |= INVALIDATE_STYLE;
+    }
 }
 
 void text_set_shadow_color(text *t, vga_index color) {
-    t->shadow_color = color;
-    t->cache_flags |= INVALIDATE_STYLE;
+    if(t->shadow_color != color) {
+        t->shadow_color = color;
+        t->cache_flags |= INVALIDATE_STYLE;
+    }
 }
 
 void text_set_vertical_align(text *t, text_vertical_align align) {
-    t->vertical_align = align;
-    t->cache_flags |= INVALIDATE_LAYOUT;
+    if(t->vertical_align != align) {
+        t->vertical_align = align;
+        t->cache_flags |= INVALIDATE_LAYOUT;
+    }
 }
 
 void text_set_horizontal_align(text *t, text_horizontal_align align) {
-    t->horizontal_align = align;
-    t->cache_flags |= INVALIDATE_LAYOUT;
+    if(t->horizontal_align != align) {
+        t->horizontal_align = align;
+        t->cache_flags |= INVALIDATE_LAYOUT;
+    }
 }
 
 void text_set_margin(text *t, uint8_t left, uint8_t right, uint8_t top, uint8_t bottom) {
-    t->margin.left = left;
-    t->margin.right = right;
-    t->margin.top = top;
-    t->margin.bottom = bottom;
-    t->cache_flags |= INVALIDATE_LAYOUT;
+    if(t->margin.left != left || t->margin.right != right || t->margin.top != top || t->margin.bottom != bottom) {
+        t->margin.left = left;
+        t->margin.right = right;
+        t->margin.top = top;
+        t->margin.bottom = bottom;
+        t->cache_flags |= INVALIDATE_LAYOUT;
+    }
 }
 
 void text_set_direction(text *t, text_row_direction direction) {
-    t->direction = direction;
-    t->cache_flags |= INVALIDATE_LAYOUT;
+    if(t->direction != direction) {
+        t->direction = direction;
+        t->cache_flags |= INVALIDATE_LAYOUT;
+    }
 }
 
 void text_set_line_spacing(text *t, uint8_t line_spacing) {
-    t->line_spacing = line_spacing;
-    t->cache_flags |= INVALIDATE_LAYOUT;
+    if(t->line_spacing != line_spacing) {
+        t->line_spacing = line_spacing;
+        t->cache_flags |= INVALIDATE_LAYOUT;
+    }
 }
 
 void text_set_letter_spacing(text *t, uint8_t letter_spacing) {
-    t->letter_spacing = letter_spacing;
-    t->cache_flags |= INVALIDATE_LAYOUT;
+    if(t->letter_spacing != letter_spacing) {
+        t->letter_spacing = letter_spacing;
+        t->cache_flags |= INVALIDATE_LAYOUT;
+    }
 }
 
 void text_set_shadow_style(text *t, uint8_t shadow) {
-    t->shadow = shadow & GLYPH_SHADOW_ALL;
-    t->cache_flags |= INVALIDATE_STYLE;
+    if(t->shadow != shadow) {
+        t->shadow = shadow & GLYPH_SHADOW_ALL;
+        t->cache_flags |= INVALIDATE_STYLE;
+    }
 }
 
 void text_set_glyph_margin(text *t, uint8_t glyph_margin) {
-    t->glyph_margin = glyph_margin;
-    t->cache_flags |= INVALIDATE_LAYOUT;
+    if(t->glyph_margin != glyph_margin) {
+        t->glyph_margin = glyph_margin;
+        t->cache_flags |= INVALIDATE_LAYOUT;
+    }
 }
 
-void text_set_max_lines(text *t, uint8_t max) {
-    t->max_lines = max;
-    t->cache_flags |= INVALIDATE_LAYOUT;
+void text_set_max_lines(text *t, uint8_t max_lines) {
+    if(t->max_lines != max_lines) {
+        t->max_lines = max_lines;
+        t->cache_flags |= INVALIDATE_LAYOUT;
+    }
 }
 
 font_size text_get_font(const text *t) {
@@ -239,6 +265,21 @@ uint8_t text_get_glyph_margin(const text *t) {
 
 uint8_t text_get_max_lines(const text *t) {
     return t->max_lines;
+}
+
+uint16_t text_get_layout_width(const text *t) {
+    assert(!(t->cache_flags & INVALIDATE_LAYOUT));
+    return t->layout.w;
+}
+
+uint16_t text_get_layout_height(const text *t) {
+    assert(!(t->cache_flags & INVALIDATE_LAYOUT));
+    return t->layout.h;
+}
+
+size_t text_get_layout_rows(const text *t) {
+    assert(!(t->cache_flags & INVALIDATE_LAYOUT));
+    return t->layout.rows;
 }
 
 void text_generate_layout(text *t) {

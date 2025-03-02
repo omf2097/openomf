@@ -36,6 +36,7 @@ void text_set_max_lines(text *t, uint8_t max);
 
 font_size text_get_font(const text *t);
 void text_get_bounding_box(const text *t, uint16_t *w, uint16_t *h);
+
 vga_index text_get_color(const text *t);
 vga_index text_get_shadow_color(const text *t);
 text_vertical_align text_get_vertical_align(const text *t);
@@ -47,6 +48,24 @@ uint8_t text_get_letter_spacing(const text *t);
 uint8_t text_get_shadow_style(const text *t);
 uint8_t text_get_glyph_margin(const text *t);
 uint8_t text_get_max_lines(const text *t);
+
+/**
+ * Get the maximum width of the rendered block of text. This may be smaller than the bounding box.
+ * @warning Note that the text_generate_layout() or text_draw() must have been called first!
+ */
+uint16_t text_get_layout_width(const text *t);
+
+/**
+ * Get the maximum height of the rendered block of text. This may be smaller than the bounding box.
+ * @warning Note that the text_generate_layout() or text_draw() must have been called first!
+ */
+uint16_t text_get_layout_height(const text *t);
+
+/**
+ * Get the amoutn of rows of the rendered block of text.
+ * @warning Note that the text_generate_layout() or text_draw() must have been called first!
+ */
+size_t text_get_layout_rows(const text *t);
 
 /**
  * Immediately generate the text layout with all glyphs set at correct coordinates.

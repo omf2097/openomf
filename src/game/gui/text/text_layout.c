@@ -75,7 +75,7 @@ typedef struct area {
 } area;
 
 static area find_row_metrics(const str *buf, const font *font, uint8_t letter_spacing, text_row_direction direction,
-                      size_t start, size_t end) {
+                             size_t start, size_t end) {
     area ret = {0, 0};
     const char *ptr = str_c(buf);
     for(size_t i = start; i < end; i++) {
@@ -97,8 +97,8 @@ typedef struct text_row {
     area size;
 } text_row;
 
-static area find_rows(vector *rows, const str *buf, const font *font, text_row_direction direction, uint8_t letter_spacing,
-               uint8_t line_spacing, uint16_t max_width, uint16_t max_height) {
+static area find_rows(vector *rows, const str *buf, const font *font, text_row_direction direction,
+                      uint8_t letter_spacing, uint8_t line_spacing, uint16_t max_width, uint16_t max_height) {
     size_t start = 0, len = str_size(buf);
     size_t line = 0;
     size_t row_heights = 0, total_height = 0;
@@ -170,6 +170,22 @@ static uint16_t halign_offset(text_horizontal_align align, uint16_t bbox_w, uint
     return 0; // Should never come here.
 }
 
+/**
+ * Figure out a layout for text block.
+ *
+ * @param layout This will be filled after text_layout_compute is called.
+ * @param buf Text to render
+ * @param font Font to use when rendering
+ * @param bbox_w Bounding box width for the output block. This will affect word wrapping!
+ * @param bbox_h Bounding box width for the output block. This will affect word wrapping!
+ * @param vertical_align Text vertical alignment within the bounding box
+ * @param horizontal_align Text horizontal alignment within the bounding box
+ * @param margin Bounding box margins
+ * @param direction Text rendering direction (left to right or top ot bottom)
+ * @param line_spacing Spacing between lines (in pixels)
+ * @param letter_spacing Spacing between letters (in pixels)
+ * @param max_lines Maximum line count
+ */
 void text_layout_compute(text_layout *layout, const str *buf, const font *font, uint16_t bbox_w, uint16_t bbox_h,
                          text_vertical_align vertical_align, text_horizontal_align horizontal_align, text_margin margin,
                          text_row_direction direction, uint8_t line_spacing, uint8_t letter_spacing,
@@ -212,8 +228,11 @@ void text_layout_compute(text_layout *layout, const str *buf, const font *font, 
         }
         y += row->size.h + line_spacing;
     }
+
+    // Layout statistics
     layout->w = text_block.w;
     layout->h = text_block.h;
+    layout->rows = vector_size(&rows);
 
     // This is the temporary row buffer, it's no longer needed.
     vector_free(&rows);
