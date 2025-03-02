@@ -530,15 +530,11 @@ void har_move(object *obj) {
             if(last_input == '6') {
                 h->state = STATE_WALKTO;
                 har_set_ani(obj, ANIM_WALKING, 1);
-                float vx = h->fwd_speed * object_get_direction(obj);
-                object_set_vel(obj, vec2f_create(vx * (h->hard_close ? 0.5 : 1.0), 0));
                 object_set_stride(obj, h->stride);
                 har_event_walk(h, 1, ctrl);
             } else if(last_input == '4') {
                 h->state = STATE_WALKFROM;
                 har_set_ani(obj, ANIM_WALKING, 1);
-                float vx = h->back_speed * object_get_direction(obj) * -1;
-                object_set_vel(obj, vec2f_create(vx * (h->hard_close ? 0.5 : 1.0), 0));
                 object_set_stride(obj, h->stride);
                 har_event_walk(h, -1, ctrl);
             } else if(last_input == '7' || last_input == '8' || last_input == '9') {
@@ -659,6 +655,10 @@ void har_move(object *obj) {
             // we won while in the air, and we've now landed, so set the animation to idle
             // until the game sets us to the victory pose
             har_set_ani(obj, ANIM_IDLE, 1);
+        } else if(h->state == STATE_WALKTO) {
+            obj->pos.x += h->fwd_speed * object_get_direction(obj) * (h->hard_close ? 0.5 : 1.0);
+        } else if(h->state == STATE_WALKFROM) {
+            obj->pos.x -= h->back_speed * object_get_direction(obj) * (h->hard_close ? 0.5 : 1.0);
         }
     } else {
         object_set_vel(obj, vec2f_create(vel.x, vel.y + obj->gravity));
@@ -1000,7 +1000,6 @@ void har_check_closeness(object *obj_a, object *obj_b) {
         }
     }
 
-    int was_close = a->hard_close;
     // Reset closeness state
     a->close = 0;
     a->hard_close = 0;
@@ -1041,15 +1040,6 @@ void har_check_closeness(object *obj_a, object *obj_b) {
                 a->close = 1;
             }
         }
-    }
-
-    // apply or remove slowdown from closeness if the hard_close value changed
-    if(a->state == STATE_WALKFROM && a->hard_close != was_close) {
-        float vx = a->back_speed * object_get_direction(obj_a) * -1;
-        object_set_vel(obj_a, vec2f_create(vx * (a->hard_close ? 0.5 : 1.0), 0));
-    } else if(a->state == STATE_WALKTO && a->hard_close != was_close) {
-        float vx = a->fwd_speed * object_get_direction(obj_a);
-        object_set_vel(obj_a, vec2f_create(vx * (a->hard_close ? 0.5 : 1.0), 0));
     }
 }
 
@@ -2005,15 +1995,11 @@ int har_act(object *obj, int act_type) {
                 break;
             case STATE_WALKTO:
                 har_set_ani(obj, ANIM_WALKING, 1);
-                vx = h->fwd_speed * direction;
-                object_set_vel(obj, vec2f_create(vx, 0));
                 object_set_stride(obj, h->stride);
                 har_event_walk(h, 1, ctrl);
                 break;
             case STATE_WALKFROM:
                 har_set_ani(obj, ANIM_WALKING, 1);
-                vx = h->back_speed * direction * -1;
-                object_set_vel(obj, vec2f_create(vx, 0));
                 object_set_stride(obj, h->stride);
                 har_event_walk(h, -1, ctrl);
                 break;
