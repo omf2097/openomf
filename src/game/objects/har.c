@@ -1656,27 +1656,26 @@ void add_input(char *buf, int act_type, int direction) {
             assert(false);
     }
 
-    if(act_type & ACT_KICK) {
-        add_input_to_buffer(buf, 'K');
-    }
-
-    if(act_type & ACT_PUNCH) {
-        add_input_to_buffer(buf, 'P');
-    }
-
     if(act_type == ACT_STOP) {
         add_input_to_buffer(buf, '5');
     }
 }
 
-af_move *match_move(object *obj, char *inputs) {
+af_move *match_move(object *obj, char prefix, char *inputs) {
     har *h = object_get_userdata(obj);
     af_move *move = NULL;
     size_t len;
     for(int i = 0; i < 70; i++) {
         if((move = af_get_move(h->af_data, i))) {
             len = str_size(&move->move_string);
-            if(!strncmp(str_c(&move->move_string), inputs, len)) {
+            if(str_at(&move->move_string, 0) == prefix &&
+               (len == 1 || !strncmp(str_c(&move->move_string) + 1, inputs, len - 1))) {
+                // try to avoid jaguar's K1 chaining into K while you're still
+                // holding a crouch button
+                if(len == 1 && inputs[0] != '5' && inputs[0] != 0 && move->category != CAT_JUMPING) {
+                    continue;
+                }
+
                 if(move->category == CAT_CLOSE && h->close != 1) {
                     // not standing close enough
                     continue;
@@ -1761,7 +1760,8 @@ af_move *match_move(object *obj, char *inputs) {
                     log_debug("CHAINING");
                 }
 
-                log_debug("matched move %d with string %s in state %d", i, str_c(&move->move_string), h->state);
+                log_debug("matched move %d with string %s in state %d with input buffer %s", i,
+                          str_c(&move->move_string), h->state, h->inputs);
                 /*DEBUG("input was %s", h->inputs);*/
                 return move;
             }
@@ -1839,6 +1839,13 @@ int har_act(object *obj, int act_type) {
     // always queue input, I guess
     add_input(h->inputs, act_type, direction);
 
+    char prefix = 1; // should never match anything, even the empty string
+    if(act_type & ACT_KICK) {
+        prefix = 'K';
+    } else if(act_type & ACT_PUNCH) {
+        prefix = 'P';
+    }
+
     if(!(h->state == STATE_STANDING || har_is_walking(h) || har_is_crouching(h) || h->state == STATE_JUMPING ||
          h->state == STATE_VICTORY || h->state == STATE_SCRAP || h->state == STATE_NONE) ||
        object_get_halt(obj)) {
@@ -1859,7 +1866,7 @@ int har_act(object *obj, int act_type) {
 
     int oldstate = h->state;
 
-    af_move *move = match_move(obj, h->inputs);
+    af_move *move = match_move(obj, prefix, h->inputs);
 
     if(game_state_get_player(obj->gs, h->player_id)->ez_destruct && move == NULL &&
        (h->state == STATE_VICTORY || h->state == STATE_SCRAP)) {
@@ -1887,7 +1894,9 @@ int har_act(object *obj, int act_type) {
         // Set correct animation etc.
         // executing_move = 1 prevents new moves while old one is running.
         har_set_ani(obj, move->id, 0);
-        h->inputs[0] = '\0';
+        // TODO the original will eventually discard inputs, but we don't understand how yet
+        // so we simply do nothing for now
+        // h->inputs[0] = '\0';
         h->executing_move = 1;
 
         // Prefetch enemy object & har links, they may be needed
