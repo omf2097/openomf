@@ -652,20 +652,8 @@ void arena_maybe_turn_har(int player_id, scene *scene) {
         game_state_find_object(scene->gs, game_player_get_har_obj_id(game_state_get_player(scene->gs, player_id)));
     object *obj_har2 = game_state_find_object(
         scene->gs, game_player_get_har_obj_id(game_state_get_player(scene->gs, other_player_id)));
-    if(obj_har1->pos.x > obj_har2->pos.x) {
-        log_debug("ARENA facing player %d LEFT", player_id);
-        object_set_direction(obj_har1, OBJECT_FACE_LEFT);
-    } else {
-        log_debug("ARENA facing player %d RIGHT", player_id);
-        object_set_direction(obj_har1, OBJECT_FACE_RIGHT);
-    }
 
-    // there isn;t an idle event hook, so do the best we can...
-    har *har2 = obj_har2->userdata;
-    if((har2->state == STATE_STANDING || har_is_crouching(har2) || har_is_walking(har2)) && !har2->executing_move) {
-        log_debug("ARENA facing player %d", other_player_id);
-        object_set_direction(obj_har2, object_get_direction(obj_har1) * -1);
-    }
+    har_face_enemy(obj_har1, obj_har2);
 }
 
 void arena_har_hook(har_event event, void *data) {
@@ -713,7 +701,7 @@ void arena_har_hook(har_event event, void *data) {
                har2->executing_move) {
                 // if the other HAR is jumping or recoiling, don't flip the direction. This specifically is to fix
                 // jaguar ending up facing backwards after an overhead throw.
-                arena_maybe_turn_har(event.player_id, scene);
+                arena_maybe_turn_har(other_player_id, scene);
             }
             log_debug("LAND %u", event.player_id);
             break;

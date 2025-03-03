@@ -582,20 +582,9 @@ void har_move(object *obj) {
             // make sure HAR's are facing each other
             object *obj_enemy =
                 game_state_find_object(obj->gs, game_state_get_player(obj->gs, h->player_id == 1 ? 0 : 1)->har_obj_id);
-            if(object_get_direction(obj) == object_get_direction(obj_enemy)) {
-                log_debug("HARS facing same direction");
-                vec2i pos = object_get_pos(obj);
-                vec2i pos_enemy = object_get_pos(obj_enemy);
-                if(pos.x > pos_enemy.x) {
-                    log_debug("HARS facing player %d LEFT", h->player_id);
-                    object_set_direction(obj, OBJECT_FACE_LEFT);
-                } else {
-                    log_debug("HARS facing player %d RIGHT", h->player_id);
-                    object_set_direction(obj, OBJECT_FACE_RIGHT);
-                }
-
-                log_debug("HARS facing enemy player %d", abs(h->player_id - 1));
-                object_set_direction(obj_enemy, object_get_direction(obj) * -1);
+            har *h_enemy = object_get_userdata(obj_enemy);
+            if(h_enemy->state != STATE_FALLEN) {
+                har_face_enemy(obj, obj_enemy);
             }
         } else if(h->state == STATE_FALLEN || h->state == STATE_RECOIL) {
             float dampen = 0.2f;
@@ -678,6 +667,9 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
 
     // Save damage taken
     h->last_damage_value = damage;
+
+    // interrupted
+    h->executing_move = 0;
 
     if(h->linked_obj) {
         object *linked = game_state_find_object(obj->gs, h->linked_obj);
@@ -1541,6 +1533,9 @@ void har_tick(object *obj) {
         }
         if(h->stun_timer > 100) {
             har_stunned_done(obj);
+            object *enemy_obj = game_state_find_object(
+                obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
+            har_face_enemy(obj, enemy_obj);
         }
     }
 
