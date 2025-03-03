@@ -528,6 +528,7 @@ void game_state_debug(game_state *gs) {
             object_debug(h);
         }
     }
+    scene_debug(gs->sc);
 #endif
 }
 
