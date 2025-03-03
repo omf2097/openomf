@@ -530,11 +530,13 @@ void har_move(object *obj) {
             if(last_input == '6') {
                 h->state = STATE_WALKTO;
                 har_set_ani(obj, ANIM_WALKING, 1);
+                object_set_vel(obj, vec2f_create(0, 0));
                 object_set_stride(obj, h->stride);
                 har_event_walk(h, 1, ctrl);
             } else if(last_input == '4') {
                 h->state = STATE_WALKFROM;
                 har_set_ani(obj, ANIM_WALKING, 1);
+                object_set_vel(obj, vec2f_create(0, 0));
                 object_set_stride(obj, h->stride);
                 har_event_walk(h, -1, ctrl);
             } else if(last_input == '7' || last_input == '8' || last_input == '9') {
@@ -656,9 +658,9 @@ void har_move(object *obj) {
             // until the game sets us to the victory pose
             har_set_ani(obj, ANIM_IDLE, 1);
         } else if(h->state == STATE_WALKTO) {
-            obj->pos.x += h->fwd_speed * object_get_direction(obj) * (h->hard_close ? 0.5 : 1.0);
+            obj->pos.x += (h->fwd_speed * object_get_direction(obj)) * (h->hard_close ? 0.5 : 1.0);
         } else if(h->state == STATE_WALKFROM) {
-            obj->pos.x -= h->back_speed * object_get_direction(obj) * (h->hard_close ? 0.5 : 1.0);
+            obj->pos.x -= (h->back_speed * object_get_direction(obj)) * (h->hard_close ? 0.5 : 1.0);
         }
     } else {
         object_set_vel(obj, vec2f_create(vel.x, vel.y + obj->gravity));
