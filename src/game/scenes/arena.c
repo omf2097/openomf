@@ -73,9 +73,6 @@ typedef struct arena_local_t {
     int player_rounds[2][4];
 
     int rein_enabled;
-
-    sd_rec_file *rec;
-    sd_action rec_last[2];
 } arena_local;
 
 void write_rec_move(scene *scene, game_player *player, int action);
@@ -226,7 +223,11 @@ void arena_end(scene *sc) {
     fight_stats *fight_stats = &gs->fight_stats;
 
     // Switch scene
-    if(is_singleplayer(gs) || is_tournament(gs) || is_demoplay(gs)) {
+    if(scene->gs->init_flags->playback == 1) {
+        // exit after REC playback
+        scene->gs->init_flags->playback = 0;
+        game_state_set_next(scene->gs, SCENE_NONE);
+    } else if(is_singleplayer(gs) || is_tournament(gs) || is_demoplay(gs)) {
         game_player *p1 = game_state_get_player(gs, 0);
         game_player *p2 = game_state_get_player(gs, 1);
         har *p1_har = object_get_userdata(game_state_find_object(gs, game_player_get_har_obj_id(p1)));
@@ -845,14 +846,14 @@ void arena_free(scene *scene) {
 
     game_state_set_paused(scene->gs, 0);
 
-    if(local->rec) {
-        sd_rec_finish(local->rec, scene->gs->int_tick);
+    if(scene->gs->rec && scene->gs->init_flags->playback == 0) {
+        sd_rec_finish(scene->gs->rec, scene->gs->int_tick);
 
         if(scene->gs->init_flags->record == 1) {
             // we're supposed to save it
-            sd_rec_save(local->rec, scene->gs->init_flags->rec_file);
-            sd_rec_free(local->rec);
-            omf_free(local->rec);
+            sd_rec_save(scene->gs->rec, scene->gs->init_flags->rec_file);
+            sd_rec_free(scene->gs->rec);
+            omf_free(scene->gs->rec);
             scene->gs->rec = NULL;
         }
     }
@@ -886,9 +887,8 @@ void arena_clone_free(scene *scene) {
 }
 
 void write_rec_move(scene *scene, game_player *player, int action) {
-    arena_local *local = scene_get_userdata(scene);
     sd_rec_move move;
-    if(!local->rec) {
+    if(!scene->gs->rec) {
         return;
     }
 
@@ -926,14 +926,9 @@ void write_rec_move(scene *scene, game_player *player, int action) {
         move.action |= SD_ACT_RIGHT;
     }
 
-    if(local->rec_last[move.player_id] == move.action) {
-        return;
-    }
-    local->rec_last[move.player_id] = move.action;
-
     int ret;
 
-    if((ret = sd_rec_insert_action(local->rec, local->rec->move_count, &move)) != SD_SUCCESS) {
+    if((ret = sd_rec_insert_action(scene->gs->rec, scene->gs->rec->move_count, &move)) != SD_SUCCESS) {
         log_debug("recoding move failed %d", ret);
     }
 }
@@ -1697,55 +1692,54 @@ int arena_create(scene *scene) {
             scene->gs->rec = omf_calloc(1, sizeof(sd_rec_file));
         } else {
             // release previous recording
-            sd_rec_free(local->rec);
+            sd_rec_free(scene->gs->rec);
         }
         sd_rec_create(scene->gs->rec);
-        local->rec = scene->gs->rec;
         for(int i = 0; i < 2; i++) {
             // Declare some vars
             game_player *player = game_state_get_player(scene->gs, i);
             log_debug("player %d using har %d", i, player->pilot->har_id);
-            local->rec->pilots[i].info.har_id = (unsigned char)player->pilot->har_id;
-            local->rec->pilots[i].info.pilot_id = player->pilot->pilot_id;
-            local->rec->pilots[i].info.color_3 = player->pilot->color_1;
-            local->rec->pilots[i].info.color_2 = player->pilot->color_2;
-            local->rec->pilots[i].info.color_1 = player->pilot->color_3;
-            local->rec->pilots[i].info.agility = player->pilot->agility;
-            local->rec->pilots[i].info.power = player->pilot->power;
-            local->rec->pilots[i].info.endurance = player->pilot->endurance;
-            local->rec->pilots[i].info.arm_speed = player->pilot->arm_speed;
-            local->rec->pilots[i].info.leg_speed = player->pilot->leg_speed;
-            local->rec->pilots[i].info.arm_power = player->pilot->arm_power;
-            local->rec->pilots[i].info.leg_power = player->pilot->leg_power;
-            local->rec->pilots[i].info.armor = player->pilot->armor;
-            local->rec->pilots[i].info.stun_resistance = player->pilot->stun_resistance;
-            memset(local->rec->pilots[i].info.name, 0, 18);
-            strncpy(local->rec->pilots[i].info.name, lang_get(player->pilot->pilot_id + 20), 18);
+            scene->gs->rec->pilots[i].info.har_id = (unsigned char)player->pilot->har_id;
+            scene->gs->rec->pilots[i].info.pilot_id = player->pilot->pilot_id;
+            scene->gs->rec->pilots[i].info.color_3 = player->pilot->color_1;
+            scene->gs->rec->pilots[i].info.color_2 = player->pilot->color_2;
+            scene->gs->rec->pilots[i].info.color_1 = player->pilot->color_3;
+            scene->gs->rec->pilots[i].info.agility = player->pilot->agility;
+            scene->gs->rec->pilots[i].info.power = player->pilot->power;
+            scene->gs->rec->pilots[i].info.endurance = player->pilot->endurance;
+            scene->gs->rec->pilots[i].info.arm_speed = player->pilot->arm_speed;
+            scene->gs->rec->pilots[i].info.leg_speed = player->pilot->leg_speed;
+            scene->gs->rec->pilots[i].info.arm_power = player->pilot->arm_power;
+            scene->gs->rec->pilots[i].info.leg_power = player->pilot->leg_power;
+            scene->gs->rec->pilots[i].info.armor = player->pilot->armor;
+            scene->gs->rec->pilots[i].info.stun_resistance = player->pilot->stun_resistance;
+            memset(scene->gs->rec->pilots[i].info.name, 0, 18);
+            strncpy(scene->gs->rec->pilots[i].info.name, lang_get(player->pilot->pilot_id + 20), 18);
             char *nl;
-            if((nl = strchr(local->rec->pilots[i].info.name, '\n'))) {
+            if((nl = strchr(scene->gs->rec->pilots[i].info.name, '\n'))) {
                 *nl = 0;
             }
 
             // this is the score when the REC started
-            local->rec->scores[i] = game_player_get_score(player)->score;
+            scene->gs->rec->scores[i] = game_player_get_score(player)->score;
         }
-        local->rec->arena_id = scene->id - SCENE_ARENA0;
-        local->rec->game_mode = is_tournament(scene->gs) ? 1 : 2;
+        scene->gs->rec->arena_id = scene->id - SCENE_ARENA0;
+        scene->gs->rec->game_mode = is_tournament(scene->gs) ? 1 : 2;
 
         // player 1's controller
         switch(game_state_get_player(scene->gs, 0)->ctrl->type) {
             case CTRL_TYPE_KEYBOARD:
                 // TODO figure out the actual keyboard type custom vs left vs right
-                local->rec->p1_controller = 8; // right keyboard
+                scene->gs->rec->p1_controller = REC_CONTROLLER_RIGHT_KEYBOARD;
                 break;
             case CTRL_TYPE_GAMEPAD:
-                local->rec->p1_controller = 3; // joystick 1
+                scene->gs->rec->p1_controller = REC_CONTROLLER_JOYSTICK1;
                 break;
             case CTRL_TYPE_AI:
-                local->rec->p1_controller = 5; // AI
+                scene->gs->rec->p1_controller = REC_CONTROLLER_AI;
                 break;
             case CTRL_TYPE_NETWORK:
-                local->rec->p1_controller = 6; // network
+                scene->gs->rec->p1_controller = REC_CONTROLLER_NETWORK;
                 break;
             default:
                 assert(false);
@@ -1755,16 +1749,16 @@ int arena_create(scene *scene) {
         switch(game_state_get_player(scene->gs, 0)->ctrl->type) {
             case CTRL_TYPE_KEYBOARD:
                 // TODO figure out the actual keyboard type custom vs left vs right
-                local->rec->p2_controller = 7; // left keyboard
+                scene->gs->rec->p2_controller = REC_CONTROLLER_LEFT_KEYBOARD;
                 break;
             case CTRL_TYPE_GAMEPAD:
-                local->rec->p2_controller = 4; // joystick 2
+                scene->gs->rec->p2_controller = REC_CONTROLLER_JOYSTICK2;
                 break;
             case CTRL_TYPE_AI:
-                local->rec->p2_controller = 5; // AI
+                scene->gs->rec->p2_controller = REC_CONTROLLER_AI;
                 break;
             case CTRL_TYPE_NETWORK:
-                local->rec->p2_controller = 6; // network
+                scene->gs->rec->p2_controller = REC_CONTROLLER_NETWORK;
                 break;
             default:
                 assert(false);
@@ -1773,32 +1767,29 @@ int arena_create(scene *scene) {
         // this is how p2 is actually configured
         switch(settings_get()->keys.ctrl_type1) {
             case CTRL_TYPE_KEYBOARD:
-                local->rec->p2_controller_ = 7;
+                scene->gs->rec->p2_controller_ = REC_CONTROLLER_LEFT_KEYBOARD;
                 break;
             case CTRL_TYPE_GAMEPAD:
-                local->rec->p2_controller_ = 4; // joystick 2
+                scene->gs->rec->p2_controller_ = REC_CONTROLLER_JOYSTICK2;
                 break;
             default:
                 assert(false);
         }
 
         // capture the match settings
-        local->rec->throw_range = scene->gs->match_settings.throw_range;
-        local->rec->hit_pause = scene->gs->match_settings.hit_pause;
-        local->rec->block_damage = scene->gs->match_settings.block_damage;
-        local->rec->vitality = scene->gs->match_settings.vitality;
-        local->rec->jump_height = scene->gs->match_settings.jump_height;
-        local->rec->knock_down = scene->gs->match_settings.knock_down;
-        local->rec->rehit_mode = scene->gs->match_settings.rehit;
-        local->rec->def_throws = scene->gs->match_settings.defensive_throws;
-        local->rec->power[0] = scene->gs->match_settings.power1;
-        local->rec->power[1] = scene->gs->match_settings.power2;
-        local->rec->hazards = scene->gs->match_settings.hazards;
-        local->rec->round_type = scene->gs->match_settings.rounds;
-        local->rec->hyper_mode = scene->gs->match_settings.fight_mode;
-
-    } else {
-        local->rec = NULL;
+        scene->gs->rec->throw_range = scene->gs->match_settings.throw_range;
+        scene->gs->rec->hit_pause = scene->gs->match_settings.hit_pause;
+        scene->gs->rec->block_damage = scene->gs->match_settings.block_damage;
+        scene->gs->rec->vitality = scene->gs->match_settings.vitality;
+        scene->gs->rec->jump_height = scene->gs->match_settings.jump_height;
+        scene->gs->rec->knock_down = scene->gs->match_settings.knock_down;
+        scene->gs->rec->rehit_mode = scene->gs->match_settings.rehit;
+        scene->gs->rec->def_throws = scene->gs->match_settings.defensive_throws;
+        scene->gs->rec->power[0] = scene->gs->match_settings.power1;
+        scene->gs->rec->power[1] = scene->gs->match_settings.power2;
+        scene->gs->rec->hazards = scene->gs->match_settings.hazards;
+        scene->gs->rec->round_type = scene->gs->match_settings.rounds;
+        scene->gs->rec->hyper_mode = scene->gs->match_settings.fight_mode;
     }
 
     // All done!
