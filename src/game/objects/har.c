@@ -1665,7 +1665,7 @@ af_move *match_move(object *obj, char prefix, char *inputs) {
     for(int i = 0; i < 70; i++) {
         if((move = af_get_move(h->af_data, i))) {
             len = str_size(&move->move_string);
-            if(str_c(&move->move_string)[0] == prefix &&
+            if(str_at(&move->move_string, 0) == prefix &&
                (len == 1 || !strncmp(str_c(&move->move_string) + 1, inputs, len - 1))) {
                 // try to avoid jaguar's K1 chaining into K while you're still
                 // holding a crouch button
