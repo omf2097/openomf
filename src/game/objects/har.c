@@ -1109,6 +1109,8 @@ void har_debug(object *obj) {
 }
 #endif // DEBUGMODE
 
+// function to check if har A is hitting har B. Returns 1 if the har is executing a priority move which
+// would interrupt B. Currently only throws are considered priority.
 int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
     har *a = object_get_userdata(obj_a);
     har *b = object_get_userdata(obj_b);
