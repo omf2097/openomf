@@ -20,7 +20,7 @@ uint16_t upnp_find_wildcard_port(nat_ctx *ctx, uint16_t int_port) {
                                             &portMappings);
 
     if(result != UPNPCOMMAND_SUCCESS) {
-        log_debug("GetListOfPortMappings failed: %d, cannot obtain wildcard port", result);
+        log_info("GetListOfPortMappings failed: %d, cannot obtain wildcard port", result);
         return 0;
     }
 
@@ -63,34 +63,34 @@ bool nat_create_upnp_mapping(nat_ctx *ctx, uint16_t int_port, uint16_t ext_port)
                             lease_duration); // port map lease duration (in seconds) or zero for "as long as possible"
 
     if(error == 0) {
-        log_debug("NAT-uPNP Port map successfully created from %d to %d!", int_port, ext_port);
+        log_info("NAT-UPnP Port map successfully created from %d to %d!", int_port, ext_port);
 
         ctx->int_port = int_port;
         if(ctx->wildcard_ext_port) {
-            // we are not given our wildcard port in the response, so we have to wallow in uPNP some more to get it
+            // we are not given our wildcard port in the response, so we have to wallow in UPnP some more to get it
             ctx->ext_port = upnp_find_wildcard_port(ctx, int_port);
         } else {
             ctx->ext_port = ext_port;
         }
         return true;
     } else {
-        log_debug("NAT-uPNP port %d -> %d mapping failed with %d", int_port, ext_port, error);
+        log_debug("NAT-UPnP port %d -> %d mapping failed with %d", int_port, ext_port, error);
         if(error == 725 /* OnlyPermanentLeasesSupported */ && !ctx->use_permanent_lease) {
-            log_debug("NAT-uPNP error 725 is 'OnlyPermanentLeasesSupported', so retrying for a permanent lease.");
+            log_info("NAT-UPnP error 725 is 'OnlyPermanentLeasesSupported', so retrying for a permanent lease.");
             ctx->use_permanent_lease = true;
             return false; // try again
         } else if(error == 718) {
-            log_debug("NAT-uPNP error 718 is 'ConflictInMappingEntry', so retrying with a different external port.");
+            log_info("NAT-UPnP error 718 is 'ConflictInMappingEntry', so retrying with a different external port.");
             return false; // try again
         } else if(error == 727 && !ctx->wildcard_ext_port) {
-            log_debug(
-                "NAT-uPNP error 718 is 'ExternalPortOnlySupportsWildcard', so retrying with a wildcard external port.");
+            log_info(
+                "NAT-UPnP error 718 is 'ExternalPortOnlySupportsWildcard', so retrying with a wildcard external port.");
             ctx->wildcard_ext_port = true;
             return false; // try again
         } else if(error == 724) {
-            log_debug("NAT-uPNP error 724 is 'SamePortValuesRequired', but handling this is not yet implemented");
+            log_info("NAT-UPnP error 724 is 'SamePortValuesRequired', but handling this is not yet implemented");
         } else {
-            log_debug("NAT-uPNP error %d is unhandled", error);
+            log_warn("NAT-UPnP error %d when mapping %d -> %d is unhandled", error, int_port, ext_port);
         }
         // give up, these errors are not recoverable
         FreeUPNPUrls(&ctx->upnp_urls);
@@ -135,8 +135,8 @@ bool nat_create_pmp_mapping(nat_ctx *ctx, uint16_t int_port, uint16_t ext_port) 
     int r = readpmpresponse(ctx, &response);
 
     if(r == 0) {
-        log_debug("mapped public port %hu to localport %hu lifetime %u", response.pnu.newportmapping.mappedpublicport,
-                  response.pnu.newportmapping.privateport, response.pnu.newportmapping.lifetime);
+        log_info("mapped public port %hu to localport %hu lifetime %u", response.pnu.newportmapping.mappedpublicport,
+                 response.pnu.newportmapping.privateport, response.pnu.newportmapping.lifetime);
         ctx->int_port = response.pnu.newportmapping.privateport;
         ctx->ext_port = response.pnu.newportmapping.mappedpublicport;
         return true;
@@ -145,7 +145,7 @@ bool nat_create_pmp_mapping(nat_ctx *ctx, uint16_t int_port, uint16_t ext_port) 
         ctx->type = NAT_TYPE_NONE;
         return false;
     } else {
-        log_debug("NAT-PMP %d -> %d failed with error %d", int_port, ext_port, r);
+        log_warn("NAT-PMP %d -> %d failed with error %d", int_port, ext_port, r);
         // TODO handle some errors here
         return false;
     }
@@ -191,7 +191,7 @@ void nat_try_upnp(nat_ctx *ctx) {
 
         // look up possible "status" values, the number "1" indicates a valid IGD was found
         if(ctx->upnp_dev && status == 1) {
-            log_debug("discovered uPNP server");
+            log_debug("discovered UPnP server");
             // get the external (WAN) IP address
             if(UPNP_GetExternalIPAddress(ctx->upnp_urls.controlURL, ctx->upnp_data.first.servicetype, ctx->wan_address)) {
                 // if this fails, zero the field out
@@ -206,7 +206,7 @@ void nat_try_upnp(nat_ctx *ctx) {
         }
     }
 #else
-    log_debug("NAT-uPNP support not available");
+    log_info("NAT-UPnP support not available");
 #endif
 }
 // clang-format on
@@ -226,7 +226,7 @@ void nat_try_pmp(nat_ctx *ctx) {
         ctx->type = NAT_TYPE_PMP;
     }
 #else
-    log_debug("NAT-PMP support not available");
+    log_info("NAT-PMP support not available");
 #endif
 }
 
@@ -238,9 +238,9 @@ void nat_release_upnp(nat_ctx *ctx) {
     int error =
         UPNP_DeletePortMapping(ctx->upnp_urls.controlURL, ctx->upnp_data.first.servicetype, ext_portstr, "UDP", NULL);
     if(error == 0) {
-        log_debug("successfully removed NAT-uPNP port mapping for %d -> %d", ctx->int_port, ctx->ext_port);
+        log_info("successfully removed NAT-UPnP port mapping for %d -> %d", ctx->int_port, ctx->ext_port);
     } else {
-        log_debug("failed to remove port mapping with %d", error);
+        log_warn("failed to remove port mapping with %d", error);
     }
     FreeUPNPUrls(&ctx->upnp_urls);
     freeUPNPDevlist(ctx->upnp_dev);
@@ -253,9 +253,10 @@ void nat_release_pmp(nat_ctx *ctx) {
     sendnewportmappingrequest(&ctx->natpmp, NATPMP_PROTOCOL_UDP, ctx->int_port, ctx->ext_port, 0);
     int r = readpmpresponse(ctx, &response);
     if(r == 0) {
-        log_debug("released public port %hu to localport %hu", ctx->int_port, response.pnu.newportmapping.privateport);
+        log_info("successfully removed NAT-PMP port mapping for %d -> %d", response.pnu.newportmapping.privateport,
+                 ctx->ext_port);
     } else {
-        log_debug("NAT-PMP release failed with error %d", r);
+        log_warn("NAT-PMP release failed with error %d", r);
     }
     closenatpmp(&ctx->natpmp);
 #endif

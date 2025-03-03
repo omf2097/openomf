@@ -144,28 +144,30 @@ component *menu_listen_create(scene *s) {
     if(!end_port) {
         end_port = 65535;
     }
+    local->host = enet_host_create(&address, 1, 3, 0, 0);
     while(local->host == NULL) {
-        local->host = enet_host_create(&address, 1, 3, 0, 0);
         if(local->host == NULL) {
             if(settings_get()->net.net_listen_port_start == 0) {
                 address.port = rand_int(65535 - 1024) + 1024;
                 randtries++;
                 if(randtries > 10) {
-                    log_debug("Failed to initialize ENet server with random ports");
+                    log_warn("Failed to initialize ENet server with random ports");
                     omf_free(local);
                     return NULL;
                 }
             } else {
                 address.port++;
                 if(address.port > end_port || randtries > 10) {
-                    log_debug("Failed to initialize ENet server between ports %d and %d after 10 attempts",
-                              settings_get()->net.net_listen_port_start, end_port);
+                    log_warn("Failed to initialize ENet server between ports %d and %d after 10 attempts",
+                             settings_get()->net.net_listen_port_start, end_port);
                     omf_free(local);
                     return NULL;
                 }
             }
         }
+        local->host = enet_host_create(&address, 1, 3, 0, 0);
     }
+    log_info("bound to port %d", address.port);
     nat_create(&local->nat);
 
     int ext_port = 0;

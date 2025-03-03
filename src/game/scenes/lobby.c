@@ -749,8 +749,8 @@ void lobby_tick(scene *scene, int paused) {
         if(!end_port) {
             end_port = 65535;
         }
+        local->client = enet_host_create(&address, 2, 3, 0, 0);
         while(local->client == NULL) {
-            local->client = enet_host_create(&address, 2, 3, 0, 0);
             log_debug("requested port %d unavailable, trying ports %d to %d", address.port,
                       settings_get()->net.net_listen_port_start, end_port);
             if(settings_get()->net.net_listen_port_start == 0) {
@@ -792,9 +792,10 @@ void lobby_tick(scene *scene, int paused) {
                     return;
                 }
             }
+            local->client = enet_host_create(&address, 2, 3, 0, 0);
         }
 
-        log_debug("bound to port %d", address.port);
+        log_info("bound to port %d", address.port);
 
         enet_socket_set_option(local->client->socket, ENET_SOCKOPT_REUSEADDR, 1);
 
