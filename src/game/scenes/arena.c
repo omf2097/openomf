@@ -1319,7 +1319,7 @@ static const char *har_states[] = {"None",    "Standing", "WalkTo",      "WalkFr
                                    "Jumping", "Recoil",   "Fallen",      "StandingUp", "Stunned",   "Victory",
                                    "Defeat",  "Scrap",    "Destruction", "Walldamage", "Done"};
 
-void arena_debug(scene *scene) {
+static void arena_debug(scene *scene) {
     if(scene->gs->hide_ui) {
         return;
     }
