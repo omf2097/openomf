@@ -585,13 +585,10 @@ void har_move(object *obj) {
                 har_face_enemy(obj, obj_enemy);
             }
         } else if(h->state == STATE_FALLEN || h->state == STATE_RECOIL) {
-            float dampen = 0.2f;
             vec2f vel = object_get_vel(obj);
             vec2i pos = object_get_pos(obj);
             if(pos.y > ARENA_FLOOR) {
                 pos.y = ARENA_FLOOR;
-                vel.y = -vel.y * dampen;
-                vel.x = vel.x * dampen;
                 har_floor_landing_effects(obj);
             }
 
@@ -624,21 +621,24 @@ void har_move(object *obj) {
                     har_finished(obj);
                 }
             }
-        } else if(h->state != STATE_SCRAP) {
+        }
+
+        if(h->state != STATE_SCRAP) {
             // add some friction from the floor if we're not walking during scrap
             // This is important to dampen/eliminate the velocity added from pushing away from the other HAR
+            // friction decreases velocity by 1 each tick, and sets it to 0 if its under |2|
             if(vel.x > 0.0f) {
-                if(vel.x - 0.2f > 0.0f) {
+                if(vel.x < 2.0f) {
                     vel.x = 0.0f;
                 } else {
-                    vel.x -= 0.2f;
+                    vel.x -= 1.0f;
                 }
                 object_set_vel(obj, vec2f_create(vel.x, vel.y));
             } else if(vel.x < 0.0f) {
-                if(vel.x + 0.2f > 0.0f) {
+                if(vel.x > -2.0f) {
                     vel.x = 0.0f;
                 } else {
-                    vel.x += 0.2f;
+                    vel.x += 1.0f;
                 }
                 object_set_vel(obj, vec2f_create(vel.x, vel.y));
             }
@@ -1128,10 +1128,16 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
             if(b->is_wallhugging) {
                 vec2f push = object_get_vel(obj_a);
                 push.x += 2.0f * object_get_direction(obj_b);
+                // TODO use 80% of the block pushback as cornerpush for now
+                push.x = -1 * object_get_direction(obj_a) * (((move->block_stun - 2) * 0.74)) * 0.8;
+                log_debug("doing block cornerpush of %f",
+                          -1 * object_get_direction(obj_a) * (((move->block_stun - 2) * 0.5)));
                 object_set_vel(obj_a, push);
             } else {
                 vec2f push = object_get_vel(obj_b);
-                push.x += 2.0f * object_get_direction(obj_a);
+                push.x = -1 * object_get_direction(obj_b) * (((move->block_stun - 2) * 0.74));
+                log_debug("doing block pushback of %f",
+                          -1 * object_get_direction(obj_b) * (((move->block_stun - 2) * 0.74)));
                 object_set_vel(obj_b, push);
             }
             return 0;
@@ -1177,12 +1183,19 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
             if(b->state == STATE_RECOIL || b->is_wallhugging) {
                 // back the attacker off a little
                 vec2f push = object_get_vel(obj_a);
-                push.x += 2.0f * object_get_direction(obj_b);
-                object_set_vel(obj_a, push);
+                if(fabsf(push.x) < 5.5f) {
+                    // TODO need real formula here
+                    log_debug("doing corner push of 5.5");
+                    push.x = -5.5f * object_get_direction(obj_a);
+                    object_set_vel(obj_a, push);
+                }
             } else {
                 vec2f push = object_get_vel(obj_b);
-                push.x += 2.0f * object_get_direction(obj_a);
-                object_set_vel(obj_b, push);
+                if(fabsf(push.x) < 7.0f) {
+                    log_debug("doing knockback of 7");
+                    push.x = -7.0f * object_get_direction(obj_b);
+                    object_set_vel(obj_b, push);
+                }
             }
         }
 
