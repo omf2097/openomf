@@ -222,7 +222,7 @@ void rec_set_key(sd_rec_file *rec, const char **key, int kcount, const char *val
             }
         } break;
         default:
-            printf("Unknown key!\n");
+            printf("Unknown key %s!\n", key[0]);
     }
 }
 
@@ -248,8 +248,10 @@ void rec_get_key(sd_rec_file *rec, const char **key, int kcount) {
                 printf("Extra:      %d\n", rec->moves[r].lookup_id);
                 printf("Player ID:  %d\n", rec->moves[r].player_id);
                 printf("Action:     %s\n", tmp);
-                printf("Extra data: ");
-                print_bytes(rec->moves[r].extra_data, 7, 7, 0);
+                if(rec->moves[r].extra_data) {
+                    printf("Extra data: ");
+                    print_bytes(rec->moves[r].extra_data, 7, 7, 0);
+                }
                 return;
             }
             if(kcount == 3) {
@@ -259,7 +261,7 @@ void rec_get_key(sd_rec_file *rec, const char **key, int kcount) {
             }
         } break;
         default:
-            printf("Unknown key!\n");
+            printf("Unknown key %s!\n", key[0]);
     }
 }
 
