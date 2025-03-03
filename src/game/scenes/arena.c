@@ -73,8 +73,6 @@ typedef struct arena_local_t {
     int player_rounds[2][4];
 
     int rein_enabled;
-
-    sd_action rec_last[2];
 } arena_local;
 
 void write_rec_move(scene *scene, game_player *player, int action);
@@ -907,7 +905,6 @@ void arena_clone_free(scene *scene) {
 }
 
 void write_rec_move(scene *scene, game_player *player, int action) {
-    arena_local *local = scene_get_userdata(scene);
     sd_rec_move move;
     if(!scene->gs->rec) {
         return;
@@ -946,11 +943,6 @@ void write_rec_move(scene *scene, game_player *player, int action) {
     if(action & ACT_RIGHT) {
         move.action |= SD_ACT_RIGHT;
     }
-
-    if(local->rec_last[move.player_id] == move.action) {
-        return;
-    }
-    local->rec_last[move.player_id] = move.action;
 
     int ret;
 
