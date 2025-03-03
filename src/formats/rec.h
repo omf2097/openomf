@@ -45,6 +45,19 @@ typedef struct {
     sd_sprite photo;    ///< Photo sprite
 } sd_rec_pilot;
 
+enum
+{
+    REC_CONTROLLER_CUSTOM_KEYBOARD1 = 1,
+    REC_CONTROLLER_CUSTOM_KEYBOARD2 = 2,
+    REC_CONTROLLER_JOYSTICK1,
+    REC_CONTROLLER_JOYSTICK2,
+    REC_CONTROLLER_AI,
+    REC_CONTROLLER_NETWORK,
+    REC_CONTROLLER_LEFT_KEYBOARD,
+    REC_CONTROLLER_RIGHT_KEYBOARD,
+    REC_CONTROLLER_REPLAY
+};
+
 /*! \brief REC recording
  *
  * Contains a record of a single OMF:2097 match. This may be

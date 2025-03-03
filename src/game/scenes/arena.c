@@ -1748,16 +1748,16 @@ int arena_create(scene *scene) {
         switch(game_state_get_player(scene->gs, 0)->ctrl->type) {
             case CTRL_TYPE_KEYBOARD:
                 // TODO figure out the actual keyboard type custom vs left vs right
-                scene->gs->rec->p1_controller = 8; // right keyboard
+                scene->gs->rec->p1_controller = REC_CONTROLLER_RIGHT_KEYBOARD;
                 break;
             case CTRL_TYPE_GAMEPAD:
-                scene->gs->rec->p1_controller = 3; // joystick 1
+                scene->gs->rec->p1_controller = REC_CONTROLLER_JOYSTICK1;
                 break;
             case CTRL_TYPE_AI:
-                scene->gs->rec->p1_controller = 5; // AI
+                scene->gs->rec->p1_controller = REC_CONTROLLER_AI;
                 break;
             case CTRL_TYPE_NETWORK:
-                scene->gs->rec->p1_controller = 6; // network
+                scene->gs->rec->p1_controller = REC_CONTROLLER_NETWORK;
                 break;
             default:
                 assert(false);
@@ -1767,16 +1767,16 @@ int arena_create(scene *scene) {
         switch(game_state_get_player(scene->gs, 0)->ctrl->type) {
             case CTRL_TYPE_KEYBOARD:
                 // TODO figure out the actual keyboard type custom vs left vs right
-                scene->gs->rec->p2_controller = 7; // left keyboard
+                scene->gs->rec->p2_controller = REC_CONTROLLER_LEFT_KEYBOARD;
                 break;
             case CTRL_TYPE_GAMEPAD:
-                scene->gs->rec->p2_controller = 4; // joystick 2
+                scene->gs->rec->p2_controller = REC_CONTROLLER_JOYSTICK2;
                 break;
             case CTRL_TYPE_AI:
-                scene->gs->rec->p2_controller = 5; // AI
+                scene->gs->rec->p2_controller = REC_CONTROLLER_AI;
                 break;
             case CTRL_TYPE_NETWORK:
-                scene->gs->rec->p2_controller = 6; // network
+                scene->gs->rec->p2_controller = REC_CONTROLLER_NETWORK;
                 break;
             default:
                 assert(false);
@@ -1785,10 +1785,10 @@ int arena_create(scene *scene) {
         // this is how p2 is actually configured
         switch(settings_get()->keys.ctrl_type1) {
             case CTRL_TYPE_KEYBOARD:
-                scene->gs->rec->p2_controller_ = 7;
+                scene->gs->rec->p2_controller_ = REC_CONTROLLER_LEFT_KEYBOARD;
                 break;
             case CTRL_TYPE_GAMEPAD:
-                scene->gs->rec->p2_controller_ = 4; // joystick 2
+                scene->gs->rec->p2_controller_ = REC_CONTROLLER_JOYSTICK2;
                 break;
             default:
                 assert(false);
