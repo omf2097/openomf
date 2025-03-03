@@ -243,7 +243,7 @@ int sd_rec_save(sd_rec_file *rec, const char *file) {
         sd_write_ubyte(w, rec->moves[i].player_id);
 
         int extra_length = sd_rec_extra_len(rec->moves[i].lookup_id);
-        if(extra_length > 0) {
+        if(extra_length == 1) {
             // Write action information
             uint8_t raw_action = 0;
             switch(rec->moves[i].action & SD_MOVE_MASK) {
@@ -277,12 +277,12 @@ int sd_rec_save(sd_rec_file *rec, const char *file) {
             if(rec->moves[i].action & SD_ACT_KICK)
                 raw_action |= 2;
             sd_write_ubyte(w, raw_action);
-
-            // If there is more extra data, write it
-            int unknown_len = extra_length - 1;
-            if(unknown_len > 0) {
-                sd_write_buf(w, rec->moves[i].extra_data, unknown_len);
-            }
+        }
+        // If there is more extra data, write it
+        int unknown_len = extra_length - 1;
+        if(unknown_len > 0) {
+            sd_write_ubyte(w, rec->moves[i].raw_action);
+            sd_write_buf(w, rec->moves[i].extra_data, unknown_len);
         }
     }
 
