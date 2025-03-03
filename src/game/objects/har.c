@@ -635,8 +635,8 @@ void har_move(object *obj) {
                     har_finished(obj);
                 }
             }
-        } else if(h->state != STATE_WALKFROM && h->state != STATE_WALKTO && h->state != STATE_SCRAP) {
-            // add some friction from the floor if we're not walking
+        } else if(h->state != STATE_SCRAP) {
+            // add some friction from the floor if we're not walking during scrap
             // This is important to dampen/eliminate the velocity added from pushing away from the other HAR
             if(vel.x > 0.0f) {
                 if(vel.x - 0.2f > 0.0f) {
@@ -657,7 +657,9 @@ void har_move(object *obj) {
             // we won while in the air, and we've now landed, so set the animation to idle
             // until the game sets us to the victory pose
             har_set_ani(obj, ANIM_IDLE, 1);
-        } else if(h->state == STATE_WALKTO) {
+        }
+
+        if(h->state == STATE_WALKTO) {
             obj->pos.x += (h->fwd_speed * object_get_direction(obj)) * (h->hard_close ? 0.5 : 1.0);
         } else if(h->state == STATE_WALKFROM) {
             obj->pos.x -= (h->back_speed * object_get_direction(obj)) * (h->hard_close ? 0.5 : 1.0);
