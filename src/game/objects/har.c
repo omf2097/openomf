@@ -642,10 +642,6 @@ void har_move(object *obj) {
                 }
                 object_set_vel(obj, vec2f_create(vel.x, vel.y));
             }
-        } else if(h->state == STATE_VICTORY || h->state == STATE_DONE) {
-            // we won while in the air, and we've now landed, so set the animation to idle
-            // until the game sets us to the victory pose
-            har_set_ani(obj, ANIM_IDLE, 1);
         }
 
         if(h->state == STATE_WALKTO) {
@@ -1672,7 +1668,9 @@ af_move *match_move(object *obj, char prefix, char *inputs) {
                (len == 1 || !strncmp(str_c(&move->move_string) + 1, inputs, len - 1))) {
                 // try to avoid jaguar's K1 chaining into K while you're still
                 // holding a crouch button
-                if(len == 1 && inputs[0] != '5' && inputs[0] != 0 && move->category != CAT_JUMPING) {
+                // the 6 is for HARS, like jaguar, that lack a k6 or p6
+                if(len == 1 && inputs[0] != '5' && inputs[0] != 0 && inputs[0] != '6' &&
+                   move->category != CAT_JUMPING) {
                     continue;
                 }
 
