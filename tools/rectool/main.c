@@ -6,6 +6,7 @@
 #include "../shared/pilot.h"
 #include "formats/error.h"
 #include "formats/rec.h"
+#include "formats/rec_assertion.h"
 #include "utils/c_array_util.h"
 #if defined(ARGTABLE2_FOUND)
 #include <argtable2.h>
@@ -98,7 +99,15 @@ void print_rec_root_info(sd_rec_file *rec) {
             printf("%6u %10u %5u %6u %6u %6u %22s", i, rec->moves[i].tick, rec->moves[i].lookup_id,
                    rec->moves[i].player_id, rec->moves[i].raw_action, sd_rec_extra_len(rec->moves[i].lookup_id), tmp);
 
-            if(rec->moves[i].lookup_id > 2) {
+            if(rec->moves[i].lookup_id == 10) {
+                uint8_t buf[8];
+                buf[0] = rec->moves[i].raw_action;
+                memcpy(buf + 1, rec->moves[i].extra_data, 7);
+                rec_assertion ass;
+                if(parse_assertion(buf, &ass)) {
+                    print_assertion(&ass);
+                }
+            } else if(rec->moves[i].lookup_id > 2) {
                 print_bytes(rec->moves[i].extra_data, sd_rec_extra_len(rec->moves[i].lookup_id) - 1, 8, 2);
             }
             printf("\n");
@@ -118,6 +127,64 @@ int rec_entry_key_get_id(const char *key) {
     if(strcmp(key, "extra_data") == 0)
         return 4;
     return -1;
+}
+
+rec_assertion_operator rec_assertion_get_operator(const char *key) {
+    if(strcmp(key, "gt") == 0)
+        return OP_GT;
+    if(strcmp(key, "lt") == 0)
+        return OP_LT;
+    if(strcmp(key, "eq") == 0)
+        return OP_EQ;
+
+    return OP_INVALID;
+}
+
+rec_har_attr rec_assertion_get_har_attr(const char *key) {
+    if(strcmp(key, "xpos") == 0)
+        return ATTR_X_POS;
+    if(strcmp(key, "ypos") == 0)
+        return ATTR_Y_POS;
+    if(strcmp(key, "xvel") == 0)
+        return ATTR_X_VEL;
+    if(strcmp(key, "yvel") == 0)
+        return ATTR_Y_VEL;
+    if(strcmp(key, "state") == 0)
+        return ATTR_STATE_ID;
+    if(strcmp(key, "anim") == 0)
+        return ATTR_ANIMATION_ID;
+    if(strcmp(key, "health") == 0)
+        return ATTR_HEALTH;
+    if(strcmp(key, "stamina") == 0)
+        return ATTR_STAMINA;
+
+    return ATTR_INVALID;
+}
+
+int rec_assertion_get_operand(rec_assertion_operand *op, const char *operand, const char *value) {
+    if(strcmp(operand, "har1") == 0) {
+        op->is_literal = false;
+        op->value.attr.har_id = 0;
+        op->value.attr.attribute = rec_assertion_get_har_attr(value);
+        if(op->value.attr.attribute == ATTR_INVALID) {
+            return 1;
+        }
+        return 0;
+    } else if(strcmp(operand, "har2") == 0) {
+        op->is_literal = false;
+        op->value.attr.har_id = 1;
+        op->value.attr.attribute = rec_assertion_get_har_attr(value);
+        if(op->value.attr.attribute == ATTR_INVALID) {
+            return 1;
+        }
+        return 0;
+    } else if(strcmp(operand, "literal") == 0) {
+        op->is_literal = true;
+        op->value.literal = atoi(value);
+        return 0;
+    }
+
+    return 1;
 }
 
 void rec_entry_set_key(sd_rec_file *rec, int entry_id, const char *key, const char *value) {
@@ -275,9 +342,24 @@ int main(int argc, char *argv[]) {
     struct arg_int *pilot = arg_int0(NULL, "pilot", "<int>", "Only print pilot information");
     struct arg_str *value = arg_str0("s", "set", "<value>", "Set value (requires --key)");
     struct arg_int *insert = arg_int0("i", "insert", "<number>", "Insert a new element");
+    struct arg_int *assert = arg_int0(NULL, "assert", "<number>", "Insert an assertion at <number>");
+    struct arg_int *assert_tick = arg_int0(NULL, "assertion_tick", "<number>", "Tick at which to do assertion");
+    struct arg_str *assert_op = arg_str0(NULL, "operator", "<gt|lt|eq>", "Assertion operator");
+    struct arg_str *assert_op1 =
+        arg_str0(NULL, "operand1", "<har1|har2|literal>", "Assertion operand 1; har 1 or 2 or literal");
+    struct arg_str *assert_val1 =
+        arg_str0(NULL, "operand1_value", "<xpos|ypos|xvel|yvel|state|anim|health|stamina|<literal>>",
+                 "Assertion operand 1; har 1 or 2 or literal");
+    struct arg_str *assert_op2 =
+        arg_str0(NULL, "operand2", "<har1|har2|literal>", "Assertion operand 2; har 1 or 2 or literal");
+    struct arg_str *assert_val2 =
+        arg_str0(NULL, "operand2_value", "<xpos|ypos|xvel|yvel|state|anim|health|stamina|<literal>>",
+                 "Assertion operand 1; har 1 or 2 or literal");
     struct arg_int *delete = arg_intn("d", "delete", "<number>", 0, 10, "Delete an existing element");
     struct arg_end *end = arg_end(20);
-    void *argtable[] = {help, vers, file, output, pilot, key, value, delete, insert, end};
+    void *argtable[] = {help,       vers,        file,       output,      pilot,       key,
+                        value,      delete,      insert,     assert,      assert_tick, assert_op,
+                        assert_op1, assert_val1, assert_op2, assert_val2, end};
     const char *progname = "rectool";
 
     // Make sure everything got allocated
@@ -364,9 +446,58 @@ int main(int argc, char *argv[]) {
         sd_rec_move mv;
         memset(&mv, 0, sizeof(sd_rec_move));
         if(sd_rec_insert_action(&rec, insert->ival[0], &mv) != SD_SUCCESS) {
-            printf("Inserting move to slot %d failed.", insert->ival[0]);
+            printf("Inserting move to slot %d failed.\n", insert->ival[0]);
         } else {
-            printf("Inserted move to slot %d.", insert->ival[0]);
+            printf("Inserted move to slot %d.\n", insert->ival[0]);
+        }
+    } else if(assert->count > 0) {
+        if(assert_op->count == 1 && assert_op1->count == 1 && assert_val1->count == 1 && assert_op2->count == 1 &&
+           assert_val2->count == 1) {
+
+            rec_assertion op;
+
+            op.op = rec_assertion_get_operator(assert_op->sval[0]);
+
+            if(op.op == OP_INVALID) {
+                printf("invalid operator %s\n", assert_op->sval[0]);
+                goto exit_1;
+            }
+
+            if(rec_assertion_get_operand(&op.operand1, assert_op1->sval[0], assert_val1->sval[0])) {
+                printf("invalid operand %s %s\n", assert_op1->sval[0], assert_val1->sval[0]);
+                goto exit_1;
+            }
+
+            if(rec_assertion_get_operand(&op.operand2, assert_op2->sval[0], assert_val2->sval[0])) {
+                printf("invalid operand %s %s\n", assert_op2->sval[0], assert_val2->sval[0]);
+                goto exit_1;
+            }
+
+            print_assertion(&op);
+
+            uint8_t buf[8];
+            if(!encode_assertion(&op, buf)) {
+                printf("failed to encode assertion\n");
+                goto exit_1;
+            }
+
+            sd_rec_move mv;
+            memset(&mv, 0, sizeof(sd_rec_move));
+            mv.lookup_id = 10;
+            mv.raw_action = buf[0];
+            mv.extra_data = malloc(7);
+            if(assert_tick->count > 0) {
+                mv.tick = assert_tick->ival[0];
+            }
+            memcpy(mv.extra_data, buf + 1, 7);
+            if(sd_rec_insert_action(&rec, assert->ival[0], &mv) != SD_SUCCESS) {
+                printf("Inserting move to slot %d failed.\n", assert->ival[0]);
+            } else {
+                printf("Inserted move to slot %d.\n", assert->ival[0]);
+            }
+        } else {
+            printf("incomplete assert.\n");
+            goto exit_1;
         }
     } else if(pilot->count > 0) {
         int i = pilot->ival[0];

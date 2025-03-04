@@ -11,6 +11,8 @@ typedef struct engine_init_flags_t {
     char force_renderer[16];
     char force_audio_backend[16];
     char rec_file[255];
+    int warpspeed;
+    int speed;
 } engine_init_flags;
 
 int engine_init(engine_init_flags *init_flags); // Init window, audiodevice, etc.

@@ -88,9 +88,11 @@ int main(int argc, char *argv[]) {
     struct arg_int *port = arg_int0("p", "port", "<port>", "Port to connect or listen (default: 2097)");
     struct arg_file *play = arg_file0("P", "play", "<file>", "Play an existing recfile");
     struct arg_file *rec = arg_file0("R", "rec", "<file>", "Record a new recfile");
+    struct arg_lit *warp = arg_lit0(NULL, "warp", "run the game at warp speed");
+    struct arg_int *speed = arg_int0(NULL, "speed", "<speed>", "game speed to use: 1-10");
     struct arg_end *end = arg_end(30);
-    void *argtable[] = {help,           vers,  listen, lobby, lobbyarg, connect, force_audio_backend,
-                        force_renderer, trace, port,   play,  rec,      end};
+    void *argtable[] = {help, vers, listen, lobby, lobbyarg, connect, force_audio_backend, force_renderer, trace,
+                        port, play, rec,    warp,  speed,    end};
     const char *progname = "openomf";
 
     // Make sure everything got allocated
@@ -149,6 +151,19 @@ int main(int argc, char *argv[]) {
         init_flags.record = 1;
         strncpy(init_flags.rec_file, rec->filename[0], 254);
     }
+
+    if(warp->count > 0) {
+        init_flags.warpspeed = 1;
+    } else {
+        init_flags.warpspeed = 0;
+    }
+
+    if(speed->count > 0) {
+        init_flags.speed = speed->ival[0];
+    } else {
+        init_flags.speed = -1;
+    }
+
     if(force_renderer->count > 0) {
         strncpy_or_truncate(init_flags.force_renderer, force_renderer->sval[0], sizeof(init_flags.force_renderer));
     }

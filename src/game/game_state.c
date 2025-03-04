@@ -111,6 +111,10 @@ int game_state_create(game_state *gs, engine_init_flags *init_flags) {
     gs->role = ROLE_CLIENT;
     gs->net_mode = init_flags->net_mode;
     gs->speed = settings_get()->gameplay.speed + 5;
+
+    if(init_flags->speed >= 0) {
+        gs->speed = clamp(init_flags->speed, 1, 10) + 5;
+    }
     gs->init_flags = init_flags;
     gs->new_state = NULL;
     gs->clone = false;
@@ -131,7 +135,7 @@ int game_state_create(game_state *gs, engine_init_flags *init_flags) {
     gs->this_wait_ticks = 0;
 
     // Disable warp (debug) speed by default. This can be set in console.
-    gs->warp_speed = 0;
+    gs->warp_speed = init_flags->warpspeed;
 
     gs->hide_ui = false;
     gs->menu_ctrl = omf_calloc(1, sizeof(controller));
