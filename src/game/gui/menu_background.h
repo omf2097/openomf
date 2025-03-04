@@ -3,7 +3,7 @@
 
 #include "video/surface.h"
 
-typedef enum menu_background_style_t
+typedef enum menu_background_style
 {
     // blue borders, coarse grid
     MenuBackground,

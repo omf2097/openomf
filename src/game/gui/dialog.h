@@ -2,33 +2,33 @@
 #define DIALOG_H
 
 #include "game/gui/component.h"
-#include "game/gui/frame.h"
+#include "game/gui/gui_frame.h"
 #include "utils/vector.h"
 #include "video/surface.h"
 
-typedef enum dialog_style_t
+typedef enum dialog_style
 {
     DIALOG_STYLE_YES_NO,
     DIALOG_STYLE_OK,
     DIALOG_STYLE_CANCEL
 } dialog_style;
 
-typedef enum dialog_result_t
+typedef enum dialog_result
 {
     DIALOG_RESULT_CANCEL,
     DIALOG_RESULT_YES_OK,
     DIALOG_RESULT_NO
 } dialog_result;
 
-typedef struct component_t component;
-typedef struct dialog_t dialog;
+typedef struct component component;
+typedef struct dialog dialog;
 
 typedef void (*dialog_clicked_cb)(dialog *, dialog_result result);
 
-typedef struct dialog_t {
+typedef struct dialog {
     int x;
     int y;
-    guiframe *frame;
+    gui_frame *frame;
     int visible;
 
     // events

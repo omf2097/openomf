@@ -3,7 +3,7 @@
 #include "formats/error.h"
 #include "game/gui/gauge.h"
 #include "game/gui/label.h"
-#include "game/gui/pilotpic.h"
+#include "game/gui/portrait.h"
 #include "game/gui/trn_menu.h"
 #include "game/gui/xysizer.h"
 #include "game/scenes/mechlab.h"
@@ -32,17 +32,17 @@ void lab_dash_main_photo_select(component *c, void *userdata) {
 
 void lab_dash_main_photo_left(component *c, void *userdata) {
     dashboard_widgets *dw = userdata;
-    pilotpic_prev(dw->photo);
-    dw->pilot->photo_id = pilotpic_selected(dw->photo);
-    pilotpic_load(dw->pilot->photo, &dw->pilot->palette, PIC_PLAYERS, dw->pilot->photo_id);
+    portrait_prev(dw->photo);
+    dw->pilot->photo_id = portrait_selected(dw->photo);
+    portrait_load(dw->pilot->photo, &dw->pilot->palette, PIC_PLAYERS, dw->pilot->photo_id);
     palette_load_player_colors(&dw->pilot->palette, 0);
 }
 
 void lab_dash_main_photo_right(component *c, void *userdata) {
     dashboard_widgets *dw = userdata;
-    pilotpic_next(dw->photo);
-    dw->pilot->photo_id = pilotpic_selected(dw->photo);
-    pilotpic_load(dw->pilot->photo, &dw->pilot->palette, PIC_PLAYERS, dw->pilot->photo_id);
+    portrait_next(dw->photo);
+    dw->pilot->photo_id = portrait_selected(dw->photo);
+    portrait_load(dw->pilot->photo, &dw->pilot->palette, PIC_PLAYERS, dw->pilot->photo_id);
     palette_load_player_colors(&dw->pilot->palette, 0);
 }
 
@@ -249,16 +249,16 @@ component *lab_dash_main_create(scene *s, dashboard_widgets *dw) {
     tconf_light_centered.cforeground = MECHLAB_BRIGHT_GREEN;
 
     // Pilot image
-    dw->photo = pilotpic_create(PIC_PLAYERS, 0);
+    dw->photo = portrait_create(PIC_PLAYERS, 0);
     if(p1->pilot->photo) {
         log_debug("loading pilot photo from pilot");
-        pilotpic_set_photo(dw->photo, dw->pilot->photo);
+        portrait_set_from_sprite(dw->photo, dw->pilot->photo);
     } else {
         dw->pilot->photo = omf_calloc(1, sizeof(sd_sprite));
         sd_sprite_create(dw->pilot->photo);
         log_debug("seletng default pilot photo");
-        dw->pilot->photo_id = pilotpic_selected(dw->photo);
-        pilotpic_load(dw->pilot->photo, &dw->pilot->palette, PIC_PLAYERS, 0);
+        dw->pilot->photo_id = portrait_selected(dw->photo);
+        portrait_load(dw->pilot->photo, &dw->pilot->palette, PIC_PLAYERS, 0);
     }
     palette_load_player_colors(&dw->pilot->palette, 0);
 
@@ -309,16 +309,16 @@ component *lab_dash_sim_create(scene *s, dashboard_widgets *dw) {
     tconf_light_centered.cforeground = TEXT_MEDIUM_GREEN;
 
     // Pilot image
-    dw->photo = pilotpic_create(PIC_PLAYERS, 0);
+    dw->photo = portrait_create(PIC_PLAYERS, 0);
     if(p1->pilot->photo) {
         log_debug("loading pilot photo from pilot");
-        pilotpic_set_photo(dw->photo, dw->pilot->photo);
+        portrait_set_from_sprite(dw->photo, dw->pilot->photo);
     } else {
         dw->pilot->photo = omf_calloc(1, sizeof(sd_sprite));
         sd_sprite_create(dw->pilot->photo);
         log_debug("seletng default pilot photo");
-        dw->pilot->photo_id = pilotpic_selected(dw->photo);
-        pilotpic_load(dw->pilot->photo, &dw->pilot->palette, PIC_PLAYERS, 0);
+        dw->pilot->photo_id = portrait_selected(dw->photo);
+        portrait_load(dw->pilot->photo, &dw->pilot->palette, PIC_PLAYERS, 0);
     }
     palette_load_player_colors(&dw->pilot->palette, 0);
 
@@ -455,11 +455,11 @@ void lab_dash_main_update_gauges(dashboard_widgets *dw, sd_pilot *pilot) {
 
     if(pilot->photo) {
         log_debug("loading pilot photo from pilot");
-        pilotpic_set_photo(dw->photo, pilot->photo);
+        portrait_set_from_sprite(dw->photo, pilot->photo);
     } else {
         log_debug("seletng default pilot photo");
         // Select pilot picture
-        pilotpic_select(dw->photo, PIC_PLAYERS, 0);
+        portrait_select(dw->photo, PIC_PLAYERS, 0);
     }
 
     // Palette

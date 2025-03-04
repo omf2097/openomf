@@ -5,7 +5,7 @@
 #include "formats/error.h"
 #include "formats/tournament.h"
 #include "game/game_state.h"
-#include "game/gui/frame.h"
+#include "game/gui/gui_frame.h"
 #include "game/gui/label.h"
 #include "game/gui/textinput.h"
 #include "game/gui/trn_menu.h"
@@ -30,8 +30,8 @@
 typedef struct {
     dashboard_type dashtype;
     object bg_obj[3];
-    guiframe *frame;
-    guiframe *dashboard;
+    gui_frame *frame;
+    gui_frame *dashboard;
     object *mech;
     dashboard_widgets dw;
     newplayer_widgets nw;
@@ -148,8 +148,8 @@ void mechlab_free(scene *scene) {
     }
 
     component_free(local->hint);
-    guiframe_free(local->frame);
-    guiframe_free(local->dashboard);
+    gui_frame_free(local->frame);
+    gui_frame_free(local->dashboard);
     object_free(local->mech);
     omf_free(local->mech);
     omf_free(local);
@@ -160,8 +160,8 @@ void mechlab_enter_trnselect_menu(scene *scene) {
     mechlab_local *local = scene_get_userdata(scene);
     component *menu = lab_menu_select_create(scene, lab_dash_trnselect_select, &local->tw, lab_dash_trnselect_left,
                                              &local->tw, lab_dash_trnselect_right, &local->tw, lang_get(486), true);
-    guiframe_set_root(local->frame, menu);
-    guiframe_layout(local->frame);
+    gui_frame_set_root(local->frame, menu);
+    gui_frame_layout(local->frame);
 }
 
 component *mechlab_chrload_menu_create(scene *scene) {
@@ -216,40 +216,40 @@ void mechlab_update(scene *scene) {
 void mechlab_tick(scene *scene, int paused) {
     mechlab_local *local = scene_get_userdata(scene);
 
-    guiframe_tick(local->frame);
-    guiframe_tick(local->dashboard);
+    gui_frame_tick(local->frame);
+    gui_frame_tick(local->dashboard);
     if(local->mech != NULL) {
         object_dynamic_tick(local->mech);
     }
 
     // Check if root is finished
-    component *root = guiframe_get_root(local->frame);
+    component *root = gui_frame_get_root(local->frame);
     if(trnmenu_is_finished(root)) {
         game_player *player1 = game_state_get_player(scene->gs, 0);
         if(local->dashtype == DASHBOARD_NEW_PLAYER) {
             char select_photo[64];
             snprintf(select_photo, sizeof(select_photo), lang_get(224), player1->pilot->name);
             mechlab_select_dashboard(scene, DASHBOARD_SELECT_NEW_PIC);
-            guiframe_free(local->frame);
-            local->frame = guiframe_create(0, 0, 320, 200);
+            gui_frame_free(local->frame);
+            local->frame = gui_frame_create(0, 0, 320, 200);
             component *menu =
                 lab_menu_select_create(scene, lab_dash_main_photo_select, &local->dw, lab_dash_main_photo_left,
                                        &local->dw, lab_dash_main_photo_right, &local->dw, select_photo, true);
-            guiframe_set_root(local->frame, menu);
-            guiframe_layout(local->frame);
+            gui_frame_set_root(local->frame, menu);
+            gui_frame_layout(local->frame);
         } else if(local->dashtype == DASHBOARD_SELECT_NEW_PIC) {
             // player1->pilot->photo_id =  lab_dash_main_pilotselected(&local->dw);
             mechlab_select_dashboard(scene, DASHBOARD_SELECT_DIFFICULTY);
-            guiframe_free(local->frame);
-            local->frame = guiframe_create(0, 0, 320, 200);
+            gui_frame_free(local->frame);
+            local->frame = gui_frame_create(0, 0, 320, 200);
             component *menu = lab_menu_difficultyselect_create(scene);
             // trnmenu_attach(menu, local->hint);
-            guiframe_set_root(local->frame, menu);
-            guiframe_layout(local->frame);
+            gui_frame_set_root(local->frame, menu);
+            gui_frame_layout(local->frame);
         } else if(local->dashtype == DASHBOARD_SELECT_DIFFICULTY) {
             mechlab_select_dashboard(scene, DASHBOARD_SELECT_TOURNAMENT);
-            guiframe_free(local->frame);
-            local->frame = guiframe_create(0, 0, 320, 200);
+            gui_frame_free(local->frame);
+            local->frame = gui_frame_create(0, 0, 320, 200);
             mechlab_enter_trnselect_menu(scene);
         } else if(local->dashtype == DASHBOARD_SELECT_TOURNAMENT) {
             sd_tournament_file *trn = lab_dash_trnselect_selected(&local->tw);
@@ -285,12 +285,12 @@ void mechlab_tick(scene *scene, int paused) {
 
             bool found = mechlab_find_last_player(scene);
             mechlab_select_dashboard(scene, DASHBOARD_STATS);
-            guiframe_free(local->frame);
-            local->frame = guiframe_create(0, 0, 320, 200);
+            gui_frame_free(local->frame);
+            local->frame = gui_frame_create(0, 0, 320, 200);
             component *menu = lab_menu_main_create(scene, found);
             // trnmenu_attach(menu, local->hint);
-            guiframe_set_root(local->frame, menu);
-            guiframe_layout(local->frame);
+            gui_frame_set_root(local->frame, menu);
+            gui_frame_layout(local->frame);
         } else {
             if(player1->chr) {
                 if(sg_save(player1->chr) != SD_SUCCESS) {
@@ -316,7 +316,7 @@ void mechlab_select_dashboard(scene *scene, dashboard_type type) {
 
     // Free old dashboard if set
     if(local->dashboard != NULL) {
-        guiframe_free(local->dashboard);
+        gui_frame_free(local->dashboard);
     }
 
     // Switch to new dashboard
@@ -327,16 +327,16 @@ void mechlab_select_dashboard(scene *scene, dashboard_type type) {
         case DASHBOARD_SELECT_DIFFICULTY:
         case DASHBOARD_SELECT_NEW_PIC:
             // Dashboard widgets struct is filled with pointer to the necessary components for easy access
-            local->dashboard = guiframe_create(0, 0, 320, 200);
-            guiframe_set_root(local->dashboard, lab_dash_main_create(scene, &local->dw));
+            local->dashboard = gui_frame_create(0, 0, 320, 200);
+            gui_frame_set_root(local->dashboard, lab_dash_main_create(scene, &local->dw));
             lab_dash_main_update(scene, &local->dw);
-            guiframe_layout(local->dashboard);
+            gui_frame_layout(local->dashboard);
             break;
         case DASHBOARD_SIM:
-            local->dashboard = guiframe_create(0, 0, 320, 200);
-            guiframe_set_root(local->dashboard, lab_dash_sim_create(scene, &local->dw));
+            local->dashboard = gui_frame_create(0, 0, 320, 200);
+            gui_frame_set_root(local->dashboard, lab_dash_sim_create(scene, &local->dw));
             lab_dash_sim_update(scene, &local->dw, player1->pilot);
-            guiframe_layout(local->dashboard);
+            gui_frame_layout(local->dashboard);
             break;
         // Dashboard for new player
         case DASHBOARD_NEW_PLAYER:
@@ -347,7 +347,7 @@ void mechlab_select_dashboard(scene *scene, dashboard_type type) {
                 sd_chr_free(player1->chr);
                 omf_free(player1->chr);
             }
-            local->dashboard = guiframe_create(0, 0, 320, 200);
+            local->dashboard = gui_frame_create(0, 0, 320, 200);
             // new pilots have 2000 credits
             memset(player1->pilot, 0, sizeof(sd_pilot));
             player1->pilot->money = 2000;
@@ -362,13 +362,13 @@ void mechlab_select_dashboard(scene *scene, dashboard_type type) {
             object_set_repeat(local->mech, 1);
             object_dynamic_tick(local->mech);
 
-            guiframe_set_root(local->dashboard, lab_dash_newplayer_create(scene, &local->nw));
-            guiframe_layout(local->dashboard);
+            gui_frame_set_root(local->dashboard, lab_dash_newplayer_create(scene, &local->nw));
+            gui_frame_layout(local->dashboard);
             break;
         case DASHBOARD_SELECT_TOURNAMENT:
-            local->dashboard = guiframe_create(0, 0, 320, 200);
-            guiframe_set_root(local->dashboard, lab_dash_trnselect_create(scene, &local->tw));
-            guiframe_layout(local->dashboard);
+            local->dashboard = gui_frame_create(0, 0, 320, 200);
+            gui_frame_set_root(local->dashboard, lab_dash_trnselect_create(scene, &local->tw));
+            gui_frame_layout(local->dashboard);
             break;
         // No dashboard selection. This shouldn't EVER happen.
         case DASHBOARD_NONE:
@@ -389,9 +389,9 @@ int mechlab_event(scene *scene, SDL_Event *event) {
     }
 
     if(local->dashtype == DASHBOARD_NEW_PLAYER) {
-        return guiframe_event(local->dashboard, event);
+        return gui_frame_event(local->dashboard, event);
     } else {
-        return guiframe_event(local->frame, event);
+        return gui_frame_event(local->frame, event);
     }
 }
 
@@ -406,7 +406,7 @@ void mechlab_render(scene *scene) {
     }
 
     // Render dashboard
-    guiframe_render(local->frame);
+    gui_frame_render(local->frame);
 
     if(local->dashtype != DASHBOARD_NEW_PLAYER && local->mech != NULL) {
         if(local->dashtype != DASHBOARD_SELECT_TOURNAMENT) {
@@ -415,9 +415,9 @@ void mechlab_render(scene *scene) {
     }
 
     if(local->dashtype == DASHBOARD_STATS && local->mech != NULL) {
-        guiframe_render(local->dashboard);
+        gui_frame_render(local->dashboard);
     } else if(local->dashtype != DASHBOARD_STATS) {
-        guiframe_render(local->dashboard);
+        gui_frame_render(local->dashboard);
     }
     component_render(local->hint);
 }
@@ -443,36 +443,36 @@ void mechlab_input_tick(scene *scene) {
                 if(i->event_data.action == ACT_ESC) {
                     bool found = mechlab_find_last_player(scene);
                     mechlab_select_dashboard(scene, DASHBOARD_STATS);
-                    guiframe_set_root(local->frame, lab_menu_main_create(scene, found));
-                    guiframe_layout(local->frame);
+                    gui_frame_set_root(local->frame, lab_menu_main_create(scene, found));
+                    gui_frame_layout(local->frame);
                 } else if(i->event_data.action == ACT_KICK || i->event_data.action == ACT_PUNCH) {
                     if(strlen(textinput_value(local->nw.input)) > 0) {
                         strncpy(player1->pilot->name, textinput_value(local->nw.input), 17);
                         trnmenu_finish(
-                            guiframe_get_root(local->frame)); // This will trigger exception case in mechlab_tick
+                            gui_frame_get_root(local->frame)); // This will trigger exception case in mechlab_tick
                     }
                 } else {
                     log_debug("sending input %d to new player dash", i->event_data.action);
-                    guiframe_action(local->dashboard, i->event_data.action);
+                    gui_frame_action(local->dashboard, i->event_data.action);
                 }
 
             } else if(local->dashtype == DASHBOARD_SELECT_NEW_PIC && i->event_data.action == ACT_ESC) {
                 bool found = mechlab_find_last_player(scene);
                 mechlab_select_dashboard(scene, DASHBOARD_STATS);
-                guiframe_set_root(local->frame, lab_menu_main_create(scene, found));
-                guiframe_layout(local->frame);
+                gui_frame_set_root(local->frame, lab_menu_main_create(scene, found));
+                gui_frame_layout(local->frame);
             } else if(local->dashtype == DASHBOARD_SELECT_DIFFICULTY && i->event_data.action == ACT_ESC) {
                 bool found = mechlab_find_last_player(scene);
                 mechlab_select_dashboard(scene, DASHBOARD_STATS);
-                guiframe_set_root(local->frame, lab_menu_main_create(scene, found));
-                guiframe_layout(local->frame);
+                gui_frame_set_root(local->frame, lab_menu_main_create(scene, found));
+                gui_frame_layout(local->frame);
             } else if(local->dashtype == DASHBOARD_SELECT_TOURNAMENT && i->event_data.action == ACT_ESC) {
                 bool found = mechlab_find_last_player(scene);
                 mechlab_select_dashboard(scene, DASHBOARD_STATS);
-                guiframe_set_root(local->frame, lab_menu_main_create(scene, found));
-                guiframe_layout(local->frame);
+                gui_frame_set_root(local->frame, lab_menu_main_create(scene, found));
+                gui_frame_layout(local->frame);
             } else {
-                guiframe_action(local->frame, i->event_data.action);
+                gui_frame_action(local->frame, i->event_data.action);
             }
         }
     } while((i = i->next));
@@ -522,11 +522,11 @@ int mechlab_create(scene *scene) {
     mechlab_select_dashboard(scene, DASHBOARD_STATS);
 
     // Create main menu
-    local->frame = guiframe_create(0, 0, 320, 200);
+    local->frame = gui_frame_create(0, 0, 320, 200);
     component *menu = lab_menu_main_create(scene, found);
     // trnmenu_attach(menu, local->hint);
-    guiframe_set_root(local->frame, menu);
-    guiframe_layout(local->frame);
+    gui_frame_set_root(local->frame, menu);
+    gui_frame_layout(local->frame);
 
     // Set callbacks
     scene_set_input_poll_cb(scene, mechlab_input_tick);

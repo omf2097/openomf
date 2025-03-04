@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 #include "game/common_defines.h"
-#include "game/gui/frame.h"
+#include "game/gui/gui_frame.h"
 #include "game/gui/text_render.h"
 #include "game/gui/textinput.h"
 #include "game/scenes/scoreboard.h"
@@ -26,7 +26,7 @@ typedef struct scoreboard_local_t {
     int has_pending_data;
     int page;
     component *ti;
-    guiframe *frame;
+    gui_frame *frame;
 } scoreboard_local;
 
 void scoreboard_free(scene *scene) {
@@ -68,7 +68,7 @@ int scoreboard_event(scene *scene, SDL_Event *event) {
 
     // If we are in writing mode, try handling text input
     if(local->has_pending_data) {
-        return guiframe_event(local->frame, event);
+        return gui_frame_event(local->frame, event);
     }
     return 1;
 }
@@ -76,7 +76,7 @@ int scoreboard_event(scene *scene, SDL_Event *event) {
 void scoreboard_tick(scene *scene, int paused) {
     scoreboard_local *local = scene_get_userdata(scene);
     if(local->has_pending_data) {
-        guiframe_tick(local->frame);
+        gui_frame_tick(local->frame);
     }
 }
 
@@ -109,7 +109,7 @@ void scoreboard_input_tick(scene *scene) {
                 } else if(!local->has_pending_data && i->event_data.action == ACT_RIGHT) {
                     local->page = (local->page < MAX_PAGES) ? local->page + 1 : MAX_PAGES;
                 } else if(local->has_pending_data) {
-                    guiframe_action(local->frame, i->event_data.action);
+                    gui_frame_action(local->frame, i->event_data.action);
                 }
             }
         } while((i = i->next));
@@ -157,7 +157,7 @@ void scoreboard_render_overlay(scene *scene) {
             score_format(local->pending_data.score, score_text, sizeof(score_text));
             snprintf(row, sizeof(row), score_row_format, "", har_get_name(local->pending_data.har_id),
                      pilot_get_name(local->pending_data.pilot_id), score_text);
-            guiframe_render(local->frame);
+            gui_frame_render(local->frame);
         } else {
             har_id = local->data.entries[local->page][entry].har_id;
             pilot_id = local->data.entries[local->page][entry].pilot_id;
@@ -236,11 +236,11 @@ int scoreboard_create(scene *scene) {
             score = local->data.entries[local->page][entry].score;
             if(local->has_pending_data && score < local->pending_data.score && !found_slot) {
                 found_slot = 1;
-                local->frame = guiframe_create(20, 30 + r * 8, 20, 10);
+                local->frame = gui_frame_create(20, 30 + r * 8, 20, 10);
                 local->ti = textinput_create(&small_text, 16, "", "");
                 textinput_enable_background(local->ti, 0);
-                guiframe_set_root(local->frame, local->ti);
-                guiframe_layout(local->frame);
+                gui_frame_set_root(local->frame, local->ti);
+                gui_frame_layout(local->frame);
                 component_select(local->ti, 1);
             } else {
                 entry++;

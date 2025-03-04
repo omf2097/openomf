@@ -4,6 +4,6 @@
 #include "game/gui/component.h"
 #include "video/surface.h"
 
-component *spriteimage_create(surface *img);
+component *spriteimage_create(const surface *img);
 
 #endif // SPRITEIMAGE_H

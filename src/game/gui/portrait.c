@@ -1,4 +1,4 @@
-#include "game/gui/pilotpic.h"
+#include "game/gui/portrait.h"
 #include "formats/error.h"
 #include "formats/pic.h"
 #include "game/gui/widget.h"
@@ -9,28 +9,28 @@
 #include "video/video.h"
 
 // Local small gauge type
-typedef struct {
+typedef struct portrait {
     sprite *img;
     int max;
     int selected;
     int pic_id;
-} pilotpic;
+} portrait;
 
-static void pilotpic_render(component *c) {
-    pilotpic *g = widget_get_obj(c);
+static void portrait_render(component *c) {
+    portrait *g = widget_get_obj(c);
     if(g->img != NULL) {
         video_draw(g->img->data, c->x, c->y);
     }
 }
 
-static void pilotpic_free(component *c) {
-    pilotpic *g = widget_get_obj(c);
+static void portrait_free(component *c) {
+    portrait *g = widget_get_obj(c);
     sprite_free(g->img);
     omf_free(g->img);
     omf_free(g);
 }
 
-int pilotpic_load(sd_sprite *sprite, vga_palette *pal, int pic_id, int pilot_id) {
+int portrait_load(sd_sprite *s, vga_palette *pal, int pic_id, int pilot_id) {
     const char *filename = pm_get_resource_path(pic_id);
     if(filename == NULL) {
         log_error("Could not find requested PIC file handle.");
@@ -48,10 +48,10 @@ int pilotpic_load(sd_sprite *sprite, vga_palette *pal, int pic_id, int pilot_id)
         log_debug("PIC file %s loaded, selecting picture %d.", get_resource_name(pic_id), pilot_id);
     }
 
-    sd_sprite_free(sprite);
+    sd_sprite_free(s);
     // Create new
     const sd_pic_photo *photo = sd_pic_get(&pics, pilot_id);
-    sd_sprite_copy(sprite, photo->sprite);
+    sd_sprite_copy(s, photo->sprite);
     palette_copy(pal, &photo->pal, 0, 48);
     // Free pics
     sd_pic_free(&pics);
@@ -59,8 +59,8 @@ int pilotpic_load(sd_sprite *sprite, vga_palette *pal, int pic_id, int pilot_id)
     return SD_SUCCESS;
 }
 
-void pilotpic_select(component *c, int pic_id, int pilot_id) {
-    pilotpic *local = widget_get_obj(c);
+void portrait_select(component *c, int pic_id, int pilot_id) {
+    portrait *local = widget_get_obj(c);
 
     // Free old image
     if(local->img != NULL) {
@@ -72,7 +72,7 @@ void pilotpic_select(component *c, int pic_id, int pilot_id) {
     sd_sprite spr;
     sd_sprite_create(&spr);
     vga_palette pal;
-    pilotpic_load(&spr, &pal, pic_id, pilot_id);
+    portrait_load(&spr, &pal, pic_id, pilot_id);
 
     sprite_create(local->img, &spr, -1);
     sd_sprite_free(&spr);
@@ -87,31 +87,31 @@ void pilotpic_select(component *c, int pic_id, int pilot_id) {
     local->pic_id = pic_id;
 }
 
-void pilotpic_next(component *c) {
-    pilotpic *local = widget_get_obj(c);
+void portrait_next(component *c) {
+    portrait *local = widget_get_obj(c);
     int select = local->selected + 1;
     if(select >= local->max) {
         select = 0;
     }
-    pilotpic_select(c, local->pic_id, select);
+    portrait_select(c, local->pic_id, select);
 }
 
-void pilotpic_prev(component *c) {
-    pilotpic *local = widget_get_obj(c);
+void portrait_prev(component *c) {
+    portrait *local = widget_get_obj(c);
     int select = local->selected - 1;
     if(select < 0) {
         select = local->max - 1;
     }
-    pilotpic_select(c, local->pic_id, select);
+    portrait_select(c, local->pic_id, select);
 }
 
-int pilotpic_selected(component *c) {
-    pilotpic *local = widget_get_obj(c);
+int portrait_selected(component *c) {
+    portrait *local = widget_get_obj(c);
     return local->selected;
 }
 
-void pilotpic_set_photo(component *c, sd_sprite *spr) {
-    pilotpic *local = widget_get_obj(c);
+void portrait_set_from_sprite(component *c, sd_sprite *spr) {
+    portrait *local = widget_get_obj(c);
     // Free old image
     if(local->img != NULL) {
         sprite_free(local->img);
@@ -124,24 +124,24 @@ void pilotpic_set_photo(component *c, sd_sprite *spr) {
     component_set_size_hints(c, local->img->data->w, local->img->data->h);
 }
 
-component *pilotpic_create(int pic_id, int pilot_id) {
+component *portrait_create(int pic_id, int pilot_id) {
     component *c = widget_create();
     c->supports_disable = 0;
     c->supports_select = 0;
     c->supports_focus = 0;
 
     // Local information
-    pilotpic *local = omf_calloc(1, sizeof(pilotpic));
+    portrait *local = omf_calloc(1, sizeof(portrait));
     local->max = 0;
     local->selected = 0;
     local->pic_id = -1;
 
     // Set callbacks
     widget_set_obj(c, local);
-    widget_set_render_cb(c, pilotpic_render);
-    widget_set_free_cb(c, pilotpic_free);
+    widget_set_render_cb(c, portrait_render);
+    widget_set_free_cb(c, portrait_free);
 
     // Update graphics
-    pilotpic_select(c, pic_id, pilot_id);
+    portrait_select(c, pic_id, pilot_id);
     return c;
 }

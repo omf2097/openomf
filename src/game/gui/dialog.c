@@ -1,8 +1,8 @@
 #include "game/gui/dialog.h"
+#include "game/gui/button.h"
 #include "game/gui/label.h"
 #include "game/gui/menu.h"
 #include "game/gui/menu_background.h"
-#include "game/gui/textbutton.h"
 #include "video/video.h"
 #include <string.h>
 
@@ -51,25 +51,25 @@ void dialog_create_with_tconf(dialog *dlg, dialog_style style, text_settings *tc
     menu_attach(menu, menu2);
 
     if(style == DIALOG_STYLE_CANCEL) {
-        component *cancel = textbutton_create(tconf, "CANCEL", NULL, COM_ENABLED, dialog_cancel, dlg);
-        textbutton_set_border(cancel, TEXT_MEDIUM_GREEN);
+        component *cancel = button_create(tconf, "CANCEL", NULL, COM_ENABLED, dialog_cancel, dlg);
+        button_set_border(cancel, TEXT_MEDIUM_GREEN);
         menu_attach(menu2, cancel);
     } else if(style == DIALOG_STYLE_YES_NO) {
-        component *yes = textbutton_create(tconf, "YES", NULL, COM_ENABLED, dialog_yes_ok, dlg);
-        component *no = textbutton_create(tconf, "NO", NULL, COM_ENABLED, dialog_no, dlg);
-        textbutton_set_border(yes, TEXT_MEDIUM_GREEN);
-        textbutton_set_border(no, TEXT_MEDIUM_GREEN);
+        component *yes = button_create(tconf, "YES", NULL, COM_ENABLED, dialog_yes_ok, dlg);
+        component *no = button_create(tconf, "NO", NULL, COM_ENABLED, dialog_no, dlg);
+        button_set_border(yes, TEXT_MEDIUM_GREEN);
+        button_set_border(no, TEXT_MEDIUM_GREEN);
         menu_attach(menu2, yes);
         menu_attach(menu2, no);
     } else if(style == DIALOG_STYLE_OK) {
-        component *ok = textbutton_create(tconf, "OK", NULL, COM_ENABLED, dialog_yes_ok, dlg);
-        textbutton_set_border(ok, TEXT_MEDIUM_GREEN);
+        component *ok = button_create(tconf, "OK", NULL, COM_ENABLED, dialog_yes_ok, dlg);
+        button_set_border(ok, TEXT_MEDIUM_GREEN);
         menu_attach(menu2, ok);
     }
 
-    dlg->frame = guiframe_create(x, y, w, 80);
-    guiframe_set_root(dlg->frame, menu);
-    guiframe_layout(dlg->frame);
+    dlg->frame = gui_frame_create(x, y, w, 80);
+    gui_frame_set_root(dlg->frame, menu);
+    gui_frame_layout(dlg->frame);
 }
 
 void dialog_create(dialog *dlg, dialog_style style, const char *text, int x, int y) {
@@ -89,7 +89,7 @@ void dialog_create(dialog *dlg, dialog_style style, const char *text, int x, int
 }
 
 void dialog_free(dialog *dlg) {
-    guiframe_free(dlg->frame);
+    gui_frame_free(dlg->frame);
 }
 
 void dialog_show(dialog *dlg, int visible) {
@@ -104,14 +104,14 @@ void dialog_render(dialog *dlg) {
     if(!dlg->visible) {
         return;
     }
-    guiframe_render(dlg->frame);
+    gui_frame_render(dlg->frame);
 }
 
 void dialog_tick(dialog *dlg) {
     if(!dlg->visible) {
         return;
     }
-    guiframe_tick(dlg->frame);
+    gui_frame_tick(dlg->frame);
 }
 
 void dialog_event(dialog *dlg, int action) {
@@ -119,7 +119,7 @@ void dialog_event(dialog *dlg, int action) {
         return;
     }
 
-    guiframe_action(dlg->frame, action);
+    gui_frame_action(dlg->frame, action);
 
     if(action == ACT_ESC && dlg->clicked) {
         dlg->clicked(dlg, DIALOG_RESULT_CANCEL);

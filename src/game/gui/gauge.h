@@ -3,7 +3,7 @@
 
 #include "game/gui/component.h"
 
-typedef enum
+typedef enum gauge_type
 {
     GAUGE_SMALL,
     GAUGE_BIG

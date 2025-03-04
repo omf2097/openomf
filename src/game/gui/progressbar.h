@@ -4,7 +4,7 @@
 #include "game/gui/component.h"
 #include "video/color.h"
 
-typedef struct {
+typedef struct progressbar_theme {
     uint8_t border_topleft_color;
     uint8_t border_bottomright_color;
     uint8_t bg_color;

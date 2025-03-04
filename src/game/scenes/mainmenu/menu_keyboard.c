@@ -19,7 +19,7 @@ static const char *keynames[] = {"JUMP UP",   "JUMP RIGHT", "WALK RIGHT", "DUCK 
 // menu_link_menu instead of standart menu_set_submenu.
 
 typedef struct {
-    guiframe *frame;
+    gui_frame *frame;
     component *keys[10];
     int selected_player;
 } keyboard_menu_local;
@@ -92,7 +92,7 @@ void menu_update_keys(component *c) {
     for(int i = 0; i < 10; i++) {
         log_debug("%d", local->selected_player);
         snprintf(tmp_buf, 32, "%-19s%12s", keynames[i], *menu_get_key(local->selected_player, i));
-        textbutton_set_text(local->keys[i], tmp_buf);
+        button_set_text(local->keys[i], tmp_buf);
     }
 }
 
@@ -121,7 +121,7 @@ void menu_keyboard_keypress_done(component *c, component *submenu) {
     menu_update_keys(c);
 }
 
-guiframe *menu_keyboard_create(scene *s, int selected_player) {
+gui_frame *menu_keyboard_create(scene *s, int selected_player) {
     keyboard_menu_local *local = omf_calloc(1, sizeof(keyboard_menu_local));
     local->selected_player = selected_player;
 
@@ -132,19 +132,19 @@ guiframe *menu_keyboard_create(scene *s, int selected_player) {
     tconf.halign = TEXT_CENTER;
     tconf.cforeground = TEXT_BRIGHT_GREEN;
 
-    local->frame = guiframe_create(25, 5, 270, 140);
+    local->frame = gui_frame_create(25, 5, 270, 140);
     component *menu = menu_create(11);
-    guiframe_set_root(local->frame, menu);
-    guiframe_layout(local->frame);
+    gui_frame_set_root(local->frame, menu);
+    gui_frame_layout(local->frame);
     menu_attach(menu, label_create(&tconf, "CUSTOM KEYBOARD SETUP"));
     // menu_attach(menu, filler_create());
     for(int i = 0; i < 10; i++) {
-        local->keys[i] = textbutton_create(&tconf, "", NULL, COM_ENABLED, menu_keyboard_set_key,
-                                           (void *)menu_get_key(local->selected_player, i));
+        local->keys[i] = button_create(&tconf, "", NULL, COM_ENABLED, menu_keyboard_set_key,
+                                       (void *)menu_get_key(local->selected_player, i));
         menu_attach(menu, local->keys[i]);
     }
     menu_attach(menu,
-                textbutton_create(&tconf, "DONE", "Leave custom keyboard setup.", COM_ENABLED, menu_keyboard_done, s));
+                button_create(&tconf, "DONE", "Leave custom keyboard setup.", COM_ENABLED, menu_keyboard_done, s));
 
     menu_set_userdata(menu, local);
     menu_set_free_cb(menu, menu_keyboard_free);

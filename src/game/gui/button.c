@@ -1,28 +1,28 @@
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
 
 #include "audio/audio.h"
+#include "game/gui/button.h"
 #include "game/gui/menu_background.h"
-#include "game/gui/textbutton.h"
 #include "game/gui/widget.h"
 #include "utils/allocator.h"
 #include "utils/c_string_util.h"
 #include "video/video.h"
 
-typedef struct {
+typedef struct button {
     char *text;
     text_settings tconf;
 
     bool border_created;
     surface border;
 
-    textbutton_click_cb click_cb;
+    button_click_cb click_cb;
     void *userdata;
-} textbutton;
+} button;
 
-void textbutton_set_border(component *c, vga_index border_color) {
-    textbutton *tb = widget_get_obj(c);
+void button_set_border(component *c, vga_index border_color) {
+    button *tb = widget_get_obj(c);
     if(tb->border_created) {
         // destroy the old border first
         surface_free(&tb->border);
@@ -35,8 +35,8 @@ void textbutton_set_border(component *c, vga_index border_color) {
     tb->border_created = 1;
 }
 
-void textbutton_set_text(component *c, const char *text) {
-    textbutton *tb = widget_get_obj(c);
+void button_set_text(component *c, const char *text) {
+    button *tb = widget_get_obj(c);
     if(tb->text) {
         omf_free(tb->text);
     }
@@ -44,8 +44,8 @@ void textbutton_set_text(component *c, const char *text) {
     component_set_size_hints(c, text_width(&tb->tconf, text), 10);
 }
 
-static void textbutton_render(component *c) {
-    textbutton *tb = widget_get_obj(c);
+static void button_render(component *c) {
+    button *tb = widget_get_obj(c);
 
     // Select color and render
     int text_mode = TEXT_UNSELECTED;
@@ -62,8 +62,8 @@ static void textbutton_render(component *c) {
     text_render(&tb->tconf, text_mode, c->x, c->y, c->w, c->h, tb->text);
 }
 
-static int textbutton_action(component *c, int action) {
-    textbutton *tb = widget_get_obj(c);
+static int button_action(component *c, int action) {
+    button *tb = widget_get_obj(c);
 
     // Handle selection
     if(action == ACT_KICK || action == ACT_PUNCH) {
@@ -76,13 +76,13 @@ static int textbutton_action(component *c, int action) {
     return 1;
 }
 
-void textbutton_set_userdata(component *c, void *userdata) {
-    textbutton *tb = widget_get_obj(c);
+void button_set_userdata(component *c, void *userdata) {
+    button *tb = widget_get_obj(c);
     tb->userdata = userdata;
 }
 
-static void textbutton_free(component *c) {
-    textbutton *tb = widget_get_obj(c);
+static void button_free(component *c) {
+    button *tb = widget_get_obj(c);
     if(tb->border_created) {
         surface_free(&tb->border);
     }
@@ -90,12 +90,12 @@ static void textbutton_free(component *c) {
     omf_free(tb);
 }
 
-component *textbutton_create(const text_settings *tconf, const char *text, const char *help, int disabled,
-                             textbutton_click_cb cb, void *userdata) {
+component *button_create(const text_settings *tconf, const char *text, const char *help, int disabled,
+                         button_click_cb cb, void *userdata) {
     component *c = widget_create();
     component_disable(c, disabled);
 
-    textbutton *tb = omf_calloc(1, sizeof(textbutton));
+    button *tb = omf_calloc(1, sizeof(button));
     tb->text = omf_strdup(text);
     component_set_size_hints(c, text_width(tconf, text), 8);
     component_set_help_text(c, help);
@@ -104,9 +104,9 @@ component *textbutton_create(const text_settings *tconf, const char *text, const
     tb->userdata = userdata;
     widget_set_obj(c, tb);
 
-    widget_set_render_cb(c, textbutton_render);
-    widget_set_action_cb(c, textbutton_action);
-    widget_set_free_cb(c, textbutton_free);
+    widget_set_render_cb(c, button_render);
+    widget_set_action_cb(c, button_action);
+    widget_set_free_cb(c, button_free);
 
     return c;
 }

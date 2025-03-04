@@ -219,7 +219,7 @@ component *menu_listen_create(scene *s) {
     menu_attach(menu, label_create(&tconf, buf));
     menu_attach(menu, filler_create());
     local->cancel_button =
-        textbutton_create(&tconf, "CANCEL", "Cancel listing for a connection.", COM_ENABLED, menu_listen_cancel, s);
+        button_create(&tconf, "CANCEL", "Cancel listing for a connection.", COM_ENABLED, menu_listen_cancel, s);
     menu_attach(menu, local->cancel_button);
 
     menu_set_userdata(menu, local);

@@ -219,7 +219,7 @@ void menu_set_submenu(component *mc, component *submenu) {
     component_layout(m->submenu, mc->x, mc->y, mc->w_hint, mc->h_hint);
 }
 
-void menu_link_menu(component *mc, guiframe *linked_menu) {
+void menu_link_menu(component *mc, gui_frame *linked_menu) {
     menu *m = sizer_get_obj(mc);
     if(m->submenu) {
         component_free(m->submenu);

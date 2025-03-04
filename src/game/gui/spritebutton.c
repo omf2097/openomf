@@ -9,7 +9,7 @@
 #include "utils/log.h"
 #include "video/video.h"
 
-typedef struct {
+typedef struct spritebutton {
     char *text;
     text_settings tconf;
     surface *img;

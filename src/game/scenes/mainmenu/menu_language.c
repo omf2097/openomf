@@ -140,8 +140,7 @@ component *menu_language_create(scene *s) {
     menu_attach(menu, filler_create());
 
     // Done button
-    menu_attach(menu,
-                textbutton_create(&tconf, "DONE", "Return to the main menu.", COM_ENABLED, menu_language_done, s));
+    menu_attach(menu, button_create(&tconf, "DONE", "Return to the main menu.", COM_ENABLED, menu_language_done, s));
 
     // Userdata & free function for it
     menu_set_userdata(menu, local);

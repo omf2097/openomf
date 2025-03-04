@@ -12,12 +12,12 @@
 #include "formats/pic.h"
 #include "formats/tournament.h"
 #include "game/common_defines.h"
-#include "game/gui/pilotpic.h"
 #include "resources/pathmanager.h"
 #include "resources/trnmanager.h"
 #include "utils/allocator.h"
 #include "utils/c_string_util.h"
 #include "utils/log.h"
+#include "utils/random.h"
 
 int sd_chr_create(sd_chr_file *chr) {
     if(chr == NULL) {

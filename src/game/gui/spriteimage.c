@@ -6,8 +6,8 @@
 #include "utils/allocator.h"
 #include "video/video.h"
 
-typedef struct {
-    surface *img;
+typedef struct spriteimage {
+    const surface *img;
 } spriteimage;
 
 static void spriteimage_render(component *c) {
@@ -20,7 +20,7 @@ static void spriteimage_free(component *c) {
     omf_free(sb);
 }
 
-component *spriteimage_create(surface *img) {
+component *spriteimage_create(const surface *img) {
     component *c = widget_create();
     component_disable(c, 1);
     c->supports_focus = 0;
