@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include "audio/audio.h"
 #include "game/gui/menu_background.h"
@@ -13,17 +14,15 @@ typedef struct {
     char *text;
     text_settings tconf;
 
-    int border_created;
-    uint8_t border_color;
+    bool border_created;
     surface border;
 
     textbutton_click_cb click_cb;
     void *userdata;
 } textbutton;
 
-void textbutton_set_border(component *c, uint8_t color) {
+void textbutton_set_border(component *c, vga_index border_color) {
     textbutton *tb = widget_get_obj(c);
-    tb->border_color = color;
     if(tb->border_created) {
         // destroy the old border first
         surface_free(&tb->border);
@@ -32,7 +31,7 @@ void textbutton_set_border(component *c, uint8_t color) {
     // create new border
     int fsize = text_char_width(&tb->tconf);
     int width = text_width(&tb->tconf, tb->text);
-    menu_background_border_create(&tb->border, width + 6, fsize + 3);
+    menu_background_border_create(&tb->border, width + 6, fsize + 3, border_color);
     tb->border_created = 1;
 }
 
