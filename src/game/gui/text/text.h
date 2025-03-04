@@ -11,6 +11,8 @@
 
 typedef struct text text;
 
+#define TEXT_BBOX_MAX UINT16_MAX
+
 text *text_create(font_size font);
 text *text_create_with_size(font_size font, uint16_t w, uint16_t h);
 text *text_create_from_c(font_size font, uint16_t w, uint16_t h, const char *src);
