@@ -122,8 +122,7 @@ component *menu_audio_create(scene *s) {
     local->resampler_selector = textselector_create(&tconf, "RESAMPLE:", NULL, menu_audio_resampler_toggled, local);
     menu_audio_reset_resamplers(local, 1);
     menu_attach(menu, local->resampler_selector);
-
-    menu_attach(menu, textbutton_create(&tconf, "DONE", "Exit from this menu.", COM_ENABLED, menu_audio_done, local));
+    menu_attach(menu, textbutton_create(FONT_BIG, "DONE", "Exit from this menu.", COM_ENABLED, menu_audio_done, local));
 
     // Userdata & free function for it
     menu_set_userdata(menu, local);

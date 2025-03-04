@@ -27,7 +27,7 @@ void dialog_yes_ok(component *c, void *userdata) {
     }
 }
 
-void dialog_create_with_tconf(dialog *dlg, dialog_style style, text_settings *tconf, text_settings *tconf_desc,
+void dialog_create_with_tconf(dialog *dlg, dialog_style style, text_settings *tconf_desc,
                               const char *text, int x, int y) {
     dlg->x = x;
     dlg->y = y;
@@ -51,19 +51,23 @@ void dialog_create_with_tconf(dialog *dlg, dialog_style style, text_settings *tc
     menu_attach(menu, menu2);
 
     if(style == DIALOG_STYLE_CANCEL) {
-        component *cancel = textbutton_create(tconf, "CANCEL", NULL, COM_ENABLED, dialog_cancel, dlg);
+        component *cancel = textbutton_create(FONT_BIG, "CANCEL", NULL, COM_ENABLED, dialog_cancel, dlg);
         textbutton_set_border(cancel, TEXT_MEDIUM_GREEN);
+        textbutton_set_default_color(cancel, TEXT_MEDIUM_GREEN);
         menu_attach(menu2, cancel);
     } else if(style == DIALOG_STYLE_YES_NO) {
-        component *yes = textbutton_create(tconf, "YES", NULL, COM_ENABLED, dialog_yes_ok, dlg);
-        component *no = textbutton_create(tconf, "NO", NULL, COM_ENABLED, dialog_no, dlg);
+        component *yes = textbutton_create(FONT_BIG, "YES", NULL, COM_ENABLED, dialog_yes_ok, dlg);
+        component *no = textbutton_create(FONT_BIG, "NO", NULL, COM_ENABLED, dialog_no, dlg);
         textbutton_set_border(yes, TEXT_MEDIUM_GREEN);
         textbutton_set_border(no, TEXT_MEDIUM_GREEN);
+        textbutton_set_default_color(yes, TEXT_MEDIUM_GREEN);
+        textbutton_set_default_color(no, TEXT_MEDIUM_GREEN);
         menu_attach(menu2, yes);
         menu_attach(menu2, no);
     } else if(style == DIALOG_STYLE_OK) {
-        component *ok = textbutton_create(tconf, "OK", NULL, COM_ENABLED, dialog_yes_ok, dlg);
+        component *ok = textbutton_create(FONT_BIG, "OK", NULL, COM_ENABLED, dialog_yes_ok, dlg);
         textbutton_set_border(ok, TEXT_MEDIUM_GREEN);
+        textbutton_set_default_color(ok, TEXT_MEDIUM_GREEN);
         menu_attach(menu2, ok);
     }
 
@@ -73,19 +77,13 @@ void dialog_create_with_tconf(dialog *dlg, dialog_style style, text_settings *tc
 }
 
 void dialog_create(dialog *dlg, dialog_style style, const char *text, int x, int y) {
-
-    text_settings tconf;
-    text_defaults(&tconf);
-    tconf.font = FONT_BIG;
-    tconf.cforeground = TEXT_MEDIUM_GREEN;
-
     text_settings tconf_desc;
     text_defaults(&tconf_desc);
     tconf_desc.font = FONT_BIG;
     tconf_desc.cforeground = TEXT_BRIGHT_GREEN;
     tconf_desc.halign = TEXT_CENTER;
 
-    dialog_create_with_tconf(dlg, style, &tconf, &tconf_desc, text, x, y);
+    dialog_create_with_tconf(dlg, style, &tconf_desc, text, x, y);
 }
 
 void dialog_free(dialog *dlg) {
