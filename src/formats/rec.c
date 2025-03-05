@@ -41,6 +41,12 @@ void sd_rec_free(sd_rec_file *rec) {
         }
         omf_free(rec->moves);
     }
+
+    for(int i = 0; i < 2; i++) {
+        if(rec->pilots[i].has_photo) {
+            sd_sprite_free(&rec->pilots[i].photo);
+        }
+    }
 }
 
 int sd_rec_load(sd_rec_file *rec, const char *file) {
