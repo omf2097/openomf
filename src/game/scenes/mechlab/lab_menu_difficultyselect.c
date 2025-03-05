@@ -1,7 +1,7 @@
 #include "game/scenes/mechlab/lab_menu_difficultyselect.h"
 #include "game/common_defines.h"
 #include "game/gui/label.h"
-#include "game/gui/pilotpic.h"
+#include "game/gui/portrait.h"
 #include "game/gui/sizer.h"
 #include "game/gui/spritebutton.h"
 #include "game/gui/text_render.h"

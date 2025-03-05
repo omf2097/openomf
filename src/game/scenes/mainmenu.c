@@ -1,6 +1,6 @@
 #include "game/scenes/mainmenu.h"
 #include "audio/audio.h"
-#include "game/gui/frame.h"
+#include "game/gui/gui_frame.h"
 #include "game/scenes/mainmenu/menu_main.h"
 #include "game/scenes/mainmenu/menu_widget_ids.h"
 #include "game/utils/settings.h"
@@ -12,12 +12,12 @@
 #include <SDL.h>
 
 typedef struct mainmenu_local_t {
-    guiframe *frame;
+    gui_frame *frame;
 } mainmenu_local;
 
 void mainmenu_free(scene *scene) {
     mainmenu_local *local = scene_get_userdata(scene);
-    guiframe_free(local->frame);
+    gui_frame_free(local->frame);
     omf_free(local);
     scene_set_userdata(scene, local);
     settings_save();
@@ -26,7 +26,7 @@ void mainmenu_free(scene *scene) {
 void mainmenu_tick(scene *scene, int paused) {
     mainmenu_local *local = scene_get_userdata(scene);
     palette_pulse_menu_colors(scene->gs->tick / 8);
-    guiframe_tick(local->frame);
+    gui_frame_tick(local->frame);
 }
 
 void mainmenu_input_tick(scene *scene) {
@@ -38,7 +38,7 @@ void mainmenu_input_tick(scene *scene) {
     for(p = ev; p; p = p->next) {
         if(p->type == EVENT_TYPE_ACTION) {
             // Pass on the event
-            guiframe_action(local->frame, p->event_data.action);
+            gui_frame_action(local->frame, p->event_data.action);
         }
     }
     controller_free_chain(ev);
@@ -54,12 +54,12 @@ int mainmenu_event(scene *scene, SDL_Event *event) {
         return 1;
     }
 
-    return guiframe_event(local->frame, event);
+    return gui_frame_event(local->frame, event);
 }
 
 void mainmenu_render(scene *scene) {
     mainmenu_local *local = scene_get_userdata(scene);
-    guiframe_render(local->frame);
+    gui_frame_render(local->frame);
 }
 
 void mainmenu_startup(scene *scene, int id, int *m_load, int *m_repeat) {
@@ -100,9 +100,9 @@ int mainmenu_create(scene *scene) {
     game_state_set_speed(scene->gs, settings_get()->gameplay.speed + 5);
 
     // Create main menu
-    local->frame = guiframe_create(165, 5, 151, 119);
-    guiframe_set_root(local->frame, menu_main_create(scene));
-    guiframe_layout(local->frame);
+    local->frame = gui_frame_create(165, 5, 151, 119);
+    gui_frame_set_root(local->frame, menu_main_create(scene));
+    gui_frame_layout(local->frame);
 
     // Cleanups and resets
     for(int i = 0; i < 2; i++) {
@@ -127,15 +127,15 @@ int mainmenu_create(scene *scene) {
     scene_set_startup_cb(scene, mainmenu_startup);
 
     if(scene->gs->net_mode == NET_MODE_CLIENT) {
-        component_action(guiframe_find(local->frame, NETWORK_BUTTON_ID), ACT_PUNCH);
-        component_action(guiframe_find(local->frame, NETWORK_CONNECT_BUTTON_ID), ACT_PUNCH);
-        component_action(guiframe_find(local->frame, NETWORK_CONNECT_IP_BUTTON_ID), ACT_PUNCH);
+        component_action(gui_frame_find(local->frame, NETWORK_BUTTON_ID), ACT_PUNCH);
+        component_action(gui_frame_find(local->frame, NETWORK_CONNECT_BUTTON_ID), ACT_PUNCH);
+        component_action(gui_frame_find(local->frame, NETWORK_CONNECT_IP_BUTTON_ID), ACT_PUNCH);
     } else if(scene->gs->net_mode == NET_MODE_SERVER) {
-        component_action(guiframe_find(local->frame, NETWORK_BUTTON_ID), ACT_PUNCH);
-        component_action(guiframe_find(local->frame, NETWORK_LISTEN_BUTTON_ID), ACT_PUNCH);
+        component_action(gui_frame_find(local->frame, NETWORK_BUTTON_ID), ACT_PUNCH);
+        component_action(gui_frame_find(local->frame, NETWORK_LISTEN_BUTTON_ID), ACT_PUNCH);
     } else if(scene->gs->net_mode == NET_MODE_LOBBY) {
-        component_action(guiframe_find(local->frame, NETWORK_BUTTON_ID), ACT_PUNCH);
-        component_action(guiframe_find(local->frame, NETWORK_LOBBY_BUTTON_ID), ACT_PUNCH);
+        component_action(gui_frame_find(local->frame, NETWORK_BUTTON_ID), ACT_PUNCH);
+        component_action(gui_frame_find(local->frame, NETWORK_LOBBY_BUTTON_ID), ACT_PUNCH);
     }
 
     // clear it, so this only happens the first time

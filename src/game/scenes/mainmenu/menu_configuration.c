@@ -48,18 +48,15 @@ component *menu_configuration_create(scene *s) {
     menu_attach(menu, label_create(&tconf, "CONFIGURATION"));
     menu_attach(menu, filler_create());
     menu_attach(menu,
-                textbutton_create(&tconf, "LANGUAGE", "Forstar du ikke engelsk?", COM_ENABLED, menu_enter_language, s));
-    menu_attach(menu,
-                textbutton_create(&tconf, "PLAYER 1 INPUT", "Choose the control for player 1: keyboard or joystick.",
-                                  COM_ENABLED, menu_enter_input_1, s));
-    menu_attach(menu,
-                textbutton_create(&tconf, "PLAYER 2 INPUT", "Choose the control for player 2: keyboard or joystick",
-                                  COM_ENABLED, menu_enter_input_2, s));
-    menu_attach(menu,
-                textbutton_create(&tconf, "VIDEO OPTIONS", "Various options for visual effects and detail levels.",
-                                  COM_ENABLED, menu_enter_video, s));
-    menu_attach(menu, textbutton_create(&tconf, "AUDIO OPTIONS", "Various options for audio effects and volume.",
-                                        COM_ENABLED, menu_enter_audio, s));
-    menu_attach(menu, textbutton_create(&tconf, "DONE", "Leave configuration.", COM_ENABLED, menu_config_done, NULL));
+                button_create(&tconf, "LANGUAGE", "Forstar du ikke engelsk?", COM_ENABLED, menu_enter_language, s));
+    menu_attach(menu, button_create(&tconf, "PLAYER 1 INPUT", "Choose the control for player 1: keyboard or joystick.",
+                                    COM_ENABLED, menu_enter_input_1, s));
+    menu_attach(menu, button_create(&tconf, "PLAYER 2 INPUT", "Choose the control for player 2: keyboard or joystick",
+                                    COM_ENABLED, menu_enter_input_2, s));
+    menu_attach(menu, button_create(&tconf, "VIDEO OPTIONS", "Various options for visual effects and detail levels.",
+                                    COM_ENABLED, menu_enter_video, s));
+    menu_attach(menu, button_create(&tconf, "AUDIO OPTIONS", "Various options for audio effects and volume.",
+                                    COM_ENABLED, menu_enter_audio, s));
+    menu_attach(menu, button_create(&tconf, "DONE", "Leave configuration.", COM_ENABLED, menu_config_done, NULL));
     return menu;
 }

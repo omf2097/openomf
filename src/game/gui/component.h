@@ -24,7 +24,7 @@ enum
     COM_SELECTED = 1,   ///< Component selected. Used in eg. menu sizers.
 };
 
-typedef struct component_t component;
+typedef struct component component;
 
 typedef void (*component_render_cb)(component *c);
 typedef int (*component_event_cb)(component *c, SDL_Event *event);
@@ -43,7 +43,7 @@ typedef component *(*component_find_cb)(component *c, int id);
  * Note that the component doesn't have position or size before component_layout has been called.
  * Component_layout call for a sizer will cause all its children widgets and  sizers to be set also.
  */
-struct component_t {
+struct component {
     int x;     ///< Horizontal position of the object in pixels. This is in screen coordinates.
     int y;     ///< Vertical position of the object in pixels. This is in screen coordinates.
     int w;     ///< Width of the object in pixels.

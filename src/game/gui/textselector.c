@@ -8,7 +8,7 @@
 #include "utils/allocator.h"
 #include "utils/c_string_util.h"
 
-typedef struct {
+typedef struct textselector {
     char *text;
     text_settings tconf;
     int ticks;

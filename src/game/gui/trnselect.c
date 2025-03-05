@@ -14,7 +14,7 @@
 #include "video/video.h"
 
 // Local small gauge type
-typedef struct {
+typedef struct trnselect {
     sprite *img;
     list *tournaments;
     component *label;

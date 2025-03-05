@@ -11,13 +11,13 @@
 #include "formats/rec.h"
 #include "game/game_player.h"
 #include "game/game_state.h"
+#include "game/gui/button.h"
 #include "game/gui/filler.h"
-#include "game/gui/frame.h"
+#include "game/gui/gui_frame.h"
 #include "game/gui/label.h"
 #include "game/gui/menu.h"
 #include "game/gui/progressbar.h"
 #include "game/gui/text_render.h"
-#include "game/gui/textbutton.h"
 #include "game/gui/textslider.h"
 #include "game/gui/widget.h"
 #include "game/objects/arena_constraints.h"
@@ -54,7 +54,7 @@ typedef enum
 } win_state;
 
 typedef struct arena_local_t {
-    guiframe *game_menu;
+    gui_frame *game_menu;
 
     int menu_visible;
     unsigned int state;
@@ -865,7 +865,7 @@ void arena_free(scene *scene) {
         controller_set_repeat(game_player_get_ctrl(player), 0);
     }
 
-    guiframe_free(local->game_menu);
+    gui_frame_free(local->game_menu);
 
     audio_stop_music();
 
@@ -1167,7 +1167,7 @@ void arena_dynamic_tick(scene *scene, int paused) {
 
 void arena_static_tick(scene *scene, int paused) {
     arena_local *local = scene_get_userdata(scene);
-    guiframe_tick(local->game_menu);
+    gui_frame_tick(local->game_menu);
 }
 
 void arena_input_tick(scene *scene) {
@@ -1204,7 +1204,7 @@ void arena_input_tick(scene *scene) {
             game_state_set_paused(scene->gs, local->menu_visible);
         } else if(i->type == EVENT_TYPE_ACTION && local->menu_visible && i->event_data.action != ACT_ESC) {
             // menu events
-            guiframe_action(local->game_menu, i->event_data.action);
+            gui_frame_action(local->game_menu, i->event_data.action);
         }
     }
     controller_free_chain(menu_ev);
@@ -1294,7 +1294,7 @@ void arena_render_overlay(scene *scene) {
 
     // Render menu (if visible)
     if(local->menu_visible) {
-        guiframe_render(local->game_menu);
+        gui_frame_render(local->game_menu);
     }
 }
 
@@ -1387,10 +1387,10 @@ void arena_clone(scene *src, scene *dst) {
     memcpy(dst->userdata, src->userdata, sizeof(arena_local));
     maybe_install_har_hooks(dst);
 
-    component *c = guiframe_find(local->game_menu, GAME_MENU_QUIT_ID);
-    textbutton_set_userdata(c, dst);
-    c = guiframe_find(local->game_menu, GAME_MENU_RETURN_ID);
-    textbutton_set_userdata(c, dst);
+    component *c = gui_frame_find(local->game_menu, GAME_MENU_QUIT_ID);
+    button_set_userdata(c, dst);
+    c = gui_frame_find(local->game_menu, GAME_MENU_RETURN_ID);
+    button_set_userdata(c, dst);
 }
 
 void arena_startup(scene *scene, int id, int *m_load, int *m_repeat) {
@@ -1605,13 +1605,13 @@ int arena_create(scene *scene) {
 
     // Arena menu
     local->menu_visible = 0;
-    local->game_menu = guiframe_create(60, 5, 181, 117);
+    local->game_menu = gui_frame_create(60, 5, 181, 117);
     component *menu = menu_create(11);
     menu_attach(menu, label_create(&tconf, "OPENOMF"));
     menu_attach(menu, filler_create());
     menu_attach(menu, filler_create());
     component *return_button =
-        textbutton_create(&tconf, "RETURN TO GAME", "Continue fighting.", COM_ENABLED, game_menu_return, scene);
+        button_create(&tconf, "RETURN TO GAME", "Continue fighting.", COM_ENABLED, game_menu_return, scene);
     widget_set_id(return_button, GAME_MENU_RETURN_ID);
     menu_attach(menu, return_button);
 
@@ -1631,20 +1631,20 @@ int arena_create(scene *scene) {
     }
     menu_attach(menu, speed_slider);
 
-    menu_attach(menu, textbutton_create(&tconf, "VIDEO OPTIONS",
-                                        "These are miscellaneous options for visual effects and detail levels.",
-                                        COM_DISABLED, NULL, NULL));
-    menu_attach(menu, textbutton_create(&tconf, "HELP",
-                                        "Obtain detailed and thorough explanation of the various options for which you "
-                                        "may need a detailed and thorough explanation.",
-                                        COM_DISABLED, NULL, NULL));
+    menu_attach(menu, button_create(&tconf, "VIDEO OPTIONS",
+                                    "These are miscellaneous options for visual effects and detail levels.",
+                                    COM_DISABLED, NULL, NULL));
+    menu_attach(menu, button_create(&tconf, "HELP",
+                                    "Obtain detailed and thorough explanation of the various options for which you "
+                                    "may need a detailed and thorough explanation.",
+                                    COM_DISABLED, NULL, NULL));
     component *quit_button =
-        textbutton_create(&tconf, "QUIT", "Quit game and return to main menu.", COM_ENABLED, game_menu_quit, scene);
+        button_create(&tconf, "QUIT", "Quit game and return to main menu.", COM_ENABLED, game_menu_quit, scene);
     widget_set_id(quit_button, GAME_MENU_QUIT_ID);
     menu_attach(menu, quit_button);
 
-    guiframe_set_root(local->game_menu, menu);
-    guiframe_layout(local->game_menu);
+    gui_frame_set_root(local->game_menu, menu);
+    gui_frame_layout(local->game_menu);
     menu_select(menu, return_button);
 
     // Health and endurance bars

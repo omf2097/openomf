@@ -86,8 +86,8 @@ component *menu_video_confirm_create(scene *s, settings_video *old_settings) {
     local->timeout_label = label_create(&tconf, "");
     menu_attach(menu, local->timeout_label);
     menu_attach(menu, filler_create());
-    menu_attach(menu, textbutton_create(&tconf, "OK", NULL, COM_ENABLED, video_confirm_ok_clicked, local));
-    menu_attach(menu, textbutton_create(&tconf, "CANCEL", NULL, COM_ENABLED, video_confirm_cancel_clicked, local));
+    menu_attach(menu, button_create(&tconf, "OK", NULL, COM_ENABLED, video_confirm_ok_clicked, local));
+    menu_attach(menu, button_create(&tconf, "CANCEL", NULL, COM_ENABLED, video_confirm_cancel_clicked, local));
 
     menu_set_userdata(menu, local);
     menu_set_free_cb(menu, menu_video_confirm_free);

@@ -9,7 +9,7 @@
 #include "utils/c_string_util.h"
 #include "utils/str.h"
 
-typedef struct {
+typedef struct textslider {
     char *text;
     text_settings tconf;
     int ticks;

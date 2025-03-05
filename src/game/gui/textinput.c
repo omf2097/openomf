@@ -15,7 +15,7 @@
 #define COLOR_MENU_BORDER 251
 #define COLOR_MENU_BG 0
 
-typedef struct {
+typedef struct textinput {
     text_settings tconf;
     int ticks;
     int dir;

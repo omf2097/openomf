@@ -3,7 +3,7 @@
 #include "utils/allocator.h"
 #include "utils/c_string_util.h"
 
-typedef struct {
+typedef struct label {
     char *text;
     text_settings tconf;
 } label;
@@ -49,8 +49,6 @@ component *label_create_with_width(const text_settings *tconf, const char *text,
 
     // fonts are all 8 high?
     component_set_size_hints(c, longest * tsize, h * 8);
-
-    // local->tconf.cforeground = color_create(0, 255, 0, 255);
 
     widget_set_obj(c, local);
     widget_set_render_cb(c, label_render);

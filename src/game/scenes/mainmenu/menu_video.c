@@ -192,7 +192,7 @@ component *menu_video_create(scene *s) {
                                                     NULL, &setting->video.fullscreen, offon_opts, 2));
 
     // Done button
-    menu_attach(menu, textbutton_create(&tconf, "DONE", "Return to the main menu.", COM_ENABLED, menu_video_done, s));
+    menu_attach(menu, button_create(&tconf, "DONE", "Return to the main menu.", COM_ENABLED, menu_video_done, s));
 
     // Userdata & free function for it
     menu_set_userdata(menu, local);

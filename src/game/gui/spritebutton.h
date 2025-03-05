@@ -5,20 +5,6 @@
 #include "game/gui/text_render.h"
 #include "video/surface.h"
 
-enum
-{
-    VALIGN_TOP = 0,
-    VALIGN_MIDDLE,
-    VALIGN_BOTTOM,
-};
-
-enum
-{
-    HALIGN_LEFT = 0,
-    HALIGN_CENTER,
-    HALIGN_RIGHT
-};
-
 typedef void (*spritebutton_click_cb)(component *c, void *userdata);
 typedef void (*spritebutton_tick_cb)(component *c, void *userdata);
 typedef void (*spritebutton_focus_cb)(component *c, bool focused, void *userdata);

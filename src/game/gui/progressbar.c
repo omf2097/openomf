@@ -38,7 +38,7 @@ const progressbar_theme _progressbar_theme_melee = {
     .int_bg_color = 0xA5,
 };
 
-typedef struct {
+typedef struct progressbar {
     surface *background;
     surface *background_alt;
     surface *block;

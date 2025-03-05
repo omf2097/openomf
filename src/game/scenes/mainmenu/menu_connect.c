@@ -222,9 +222,8 @@ component *menu_connect_create(scene *s) {
         textinput_create(&tconf, highest_port_digits, "Enter the remote port you wish to connect to.", "");
     menu_connect_reset_port_input(local);
     local->connect_button =
-        textbutton_create(&tconf, "CONNECT", "Connect to the provided IP address.", COM_ENABLED, menu_connect_start, s);
-    local->cancel_button =
-        textbutton_create(&tconf, "CANCEL", "Exit from this menu.", COM_ENABLED, menu_connect_cancel, s);
+        button_create(&tconf, "CONNECT", "Connect to the provided IP address.", COM_ENABLED, menu_connect_start, s);
+    local->cancel_button = button_create(&tconf, "CANCEL", "Exit from this menu.", COM_ENABLED, menu_connect_cancel, s);
     widget_set_id(local->connect_button, NETWORK_CONNECT_IP_BUTTON_ID);
     menu_attach(menu, local->addr_input);
     menu_attach(menu, local->port_input);

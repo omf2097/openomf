@@ -60,6 +60,6 @@ component *menu_gameplay_create(scene *s) {
                                                     NULL, NULL, &settings_get()->gameplay.rounds, round_type_names,
                                                     NUMBER_OF_ROUND_TYPES));
     menu_attach(menu,
-                textbutton_create(&tconf, "DONE", "Go back to the main menu.", COM_ENABLED, menu_gameplay_done, NULL));
+                button_create(&tconf, "DONE", "Go back to the main menu.", COM_ENABLED, menu_gameplay_done, NULL));
     return menu;
 }

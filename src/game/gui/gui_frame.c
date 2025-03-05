@@ -1,8 +1,8 @@
-#include "game/gui/frame.h"
+#include "game/gui/gui_frame.h"
 #include "utils/allocator.h"
 
-guiframe *guiframe_create(int x, int y, int w, int h) {
-    guiframe *frame = omf_calloc(1, sizeof(guiframe));
+gui_frame *gui_frame_create(int x, int y, int w, int h) {
+    gui_frame *frame = omf_calloc(1, sizeof(gui_frame));
     frame->x = x;
     frame->y = y;
     frame->w = w;
@@ -10,7 +10,7 @@ guiframe *guiframe_create(int x, int y, int w, int h) {
     return frame;
 }
 
-void guiframe_set_root(guiframe *frame, component *root_node) {
+void gui_frame_set_root(gui_frame *frame, component *root_node) {
     if(root_node == frame->root_node) {
         return;
     }
@@ -20,7 +20,7 @@ void guiframe_set_root(guiframe *frame, component *root_node) {
     frame->root_node = root_node;
 }
 
-void guiframe_free(guiframe *frame) {
+void gui_frame_free(gui_frame *frame) {
     if(frame == NULL) {
         return;
     }
@@ -30,44 +30,44 @@ void guiframe_free(guiframe *frame) {
     omf_free(frame);
 }
 
-component *guiframe_find(guiframe *frame, int id) {
+component *gui_frame_find(gui_frame *frame, int id) {
     if(frame->root_node) {
         return component_find(frame->root_node, id);
     }
     return NULL;
 }
 
-component *guiframe_get_root(const guiframe *frame) {
+component *gui_frame_get_root(const gui_frame *frame) {
     return frame->root_node;
 }
 
-void guiframe_tick(guiframe *frame) {
+void gui_frame_tick(gui_frame *frame) {
     if(frame->root_node) {
         component_tick(frame->root_node);
     }
 }
 
-void guiframe_render(guiframe *frame) {
+void gui_frame_render(gui_frame *frame) {
     if(frame->root_node) {
         component_render(frame->root_node);
     }
 }
 
-int guiframe_event(guiframe *frame, SDL_Event *event) {
+int gui_frame_event(gui_frame *frame, SDL_Event *event) {
     if(frame->root_node) {
         return component_event(frame->root_node, event);
     }
     return 1;
 }
 
-int guiframe_action(guiframe *frame, int action) {
+int gui_frame_action(gui_frame *frame, int action) {
     if(frame->root_node) {
         return component_action(frame->root_node, action);
     }
     return 1;
 }
 
-void guiframe_layout(guiframe *frame) {
+void gui_frame_layout(gui_frame *frame) {
     if(frame->root_node) {
         component_layout(frame->root_node, frame->x, frame->y, frame->w, frame->h);
     }

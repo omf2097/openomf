@@ -1,5 +1,5 @@
 #include "game/gui/dialog.h"
-#include "game/gui/frame.h"
+#include "game/gui/gui_frame.h"
 #include "game/protos/scene.h"
 #include "game/utils/serial.h"
 #include "game/utils/version.h"
@@ -133,7 +133,7 @@ typedef struct lobby_local_t {
 
     menu *joinmenu;
 
-    guiframe *frame;
+    gui_frame *frame;
     uint8_t role;
     // how many attempts we've made to get a working NAT address
     uint8_t nat_tries;
@@ -153,7 +153,7 @@ typedef struct log_event_t {
 
 void lobby_free(scene *scene) {
     lobby_local *local = scene_get_userdata(scene);
-    guiframe_free(local->frame);
+    gui_frame_free(local->frame);
     list_free(&local->users);
     list_free(&local->log);
     if(local->client) {
@@ -170,7 +170,7 @@ void lobby_free(scene *scene) {
 
 static int lobby_event(scene *scene, SDL_Event *e) {
     lobby_local *local = scene_get_userdata(scene);
-    return guiframe_event(local->frame, e);
+    return gui_frame_event(local->frame, e);
 }
 
 void lobby_show_dialog(scene *scene, int dialog_style, char *dialog_text, dialog_clicked_cb callback) {
@@ -208,7 +208,7 @@ void lobby_input_tick(scene *scene) {
                     local->active_user = list_size(&local->users) - 1;
                 }
             } else {
-                guiframe_action(local->frame, p1->event_data.action);
+                gui_frame_action(local->frame, p1->event_data.action);
             }
         } while((i = i->next));
     }
@@ -310,7 +310,7 @@ void lobby_render_overlay(scene *scene) {
         }
     }
 
-    guiframe_render(local->frame);
+    gui_frame_render(local->frame);
 
     if(local->dialog && dialog_is_visible(local->dialog)) {
         dialog_render(local->dialog);
@@ -390,8 +390,8 @@ component *lobby_challenge_create(scene *s) {
     lobby_user *user = list_get(&local->users, local->active_user);
     snprintf(local->helptext, sizeof(local->helptext), "Challenge %s?", user->name);
     menu_attach(menu, label_create(&tconf, local->helptext));
-    menu_attach(menu, textbutton_create(&tconf, "Yes", NULL, COM_ENABLED, lobby_do_challenge, s));
-    menu_attach(menu, textbutton_create(&tconf, "No", NULL, COM_ENABLED, lobby_cancel_challenge, s));
+    menu_attach(menu, button_create(&tconf, "Yes", NULL, COM_ENABLED, lobby_do_challenge, s));
+    menu_attach(menu, button_create(&tconf, "No", NULL, COM_ENABLED, lobby_cancel_challenge, s));
 
     return menu;
 }
@@ -685,8 +685,8 @@ component *lobby_exit_create(scene *s) {
     menu_set_padding(menu, 0);
 
     menu_attach(menu, label_create(&tconf, "Exit the Challenge Arena?"));
-    menu_attach(menu, textbutton_create(&tconf, "Yes", NULL, COM_ENABLED, lobby_do_exit, s));
-    menu_attach(menu, textbutton_create(&tconf, "No", NULL, COM_ENABLED, lobby_refuse_exit, s));
+    menu_attach(menu, button_create(&tconf, "Yes", NULL, COM_ENABLED, lobby_do_exit, s));
+    menu_attach(menu, button_create(&tconf, "No", NULL, COM_ENABLED, lobby_refuse_exit, s));
 
     return menu;
 }
@@ -1403,9 +1403,9 @@ void lobby_tick(scene *scene, int paused) {
         }
     }
     local->active_user = min2(local->active_user, list_size(&local->users) - 1);
-    guiframe_tick(local->frame);
+    gui_frame_tick(local->frame);
 
-    component *c = guiframe_get_root(local->frame);
+    component *c = gui_frame_get_root(local->frame);
     if((c = menu_get_submenu(c)) && menu_is_finished(c)) {
         local->mode = LOBBY_MAIN;
     }
@@ -1470,16 +1470,15 @@ int lobby_create(scene *scene) {
     help_text.cforeground = 56;
 
     menu_set_help_text_settings(menu, &help_text);
-    menu_attach(menu, textbutton_create(&tconf, "Challenge",
-                                        "Challenge this player to a fight. Challenge yourself for 1-player game.",
-                                        COM_ENABLED, lobby_challenge, scene));
-    menu_attach(menu, textbutton_create(&tconf, "Whisper", "Whisper a message to this player.", COM_ENABLED,
-                                        lobby_whisper, scene));
+    menu_attach(menu, button_create(&tconf, "Challenge",
+                                    "Challenge this player to a fight. Challenge yourself for 1-player game.",
+                                    COM_ENABLED, lobby_challenge, scene));
+    menu_attach(
+        menu, button_create(&tconf, "Whisper", "Whisper a message to this player.", COM_ENABLED, lobby_whisper, scene));
     menu_attach(menu,
-                textbutton_create(&tconf, "Yell", "Chat with everybody in the arena.", COM_ENABLED, lobby_yell, scene));
-    menu_attach(menu,
-                textbutton_create(&tconf, "Refresh", "Refresh the player list.", COM_ENABLED, lobby_refresh, scene));
-    menu_attach(menu, textbutton_create(&tconf, "Exit", "Exit and disconnect.", COM_ENABLED, lobby_exit, scene));
+                button_create(&tconf, "Yell", "Chat with everybody in the arena.", COM_ENABLED, lobby_yell, scene));
+    menu_attach(menu, button_create(&tconf, "Refresh", "Refresh the player list.", COM_ENABLED, lobby_refresh, scene));
+    menu_attach(menu, button_create(&tconf, "Exit", "Exit and disconnect.", COM_ENABLED, lobby_exit, scene));
 
     int winner = -1;
     // check if there's already a net controller provisioned
@@ -1508,9 +1507,9 @@ int lobby_create(scene *scene) {
     }
     reconfigure_controller(scene->gs);
 
-    local->frame = guiframe_create(9, 128, 300, 12);
-    guiframe_set_root(local->frame, menu);
-    guiframe_layout(local->frame);
+    local->frame = gui_frame_create(9, 128, 300, 12);
+    gui_frame_set_root(local->frame, menu);
+    gui_frame_layout(local->frame);
 
     if(local->mode == LOBBY_STARTING) {
 
