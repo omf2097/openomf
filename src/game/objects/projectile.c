@@ -86,6 +86,39 @@ void projectile_move(object *obj) {
 
         object_disable_rewind_tag(obj, 1);
     }
+
+    if(player_frame_isset(obj, "cx")) {
+        game_state *gs = obj->gs;
+        game_player *player = game_state_get_player(gs, projectile_get_owner(obj));
+        object *obj_har = game_state_find_object(gs, game_player_get_har_obj_id(player));
+
+        har *h = object_get_userdata(obj_har);
+
+        float cx = player_frame_get(obj, "cx") / 10.0 * obj_har->horizontal_velocity_modifier;
+        log_debug("CX! %f, %c", cx, h->inputs[0]);
+        if(h->inputs[0] == '4') {
+            obj->vel.x -= cx * object_get_direction(obj);
+        } else if(h->inputs[0] == '6') {
+            obj->vel.x += cx * object_get_direction(obj);
+        } else if(h->inputs[0] == '3' || h->inputs[0] == '9') {
+            obj->vel.x += cx * 0.7 * object_get_direction(obj);
+        } else if(h->inputs[0] == '1' || h->inputs[0] == '7') {
+            obj->vel.x -= cx * 0.7 * object_get_direction(obj);
+        }
+        // CY needs CX to be set
+        if(player_frame_isset(obj, "cy")) {
+            float cy = player_frame_get(obj, "cx") / 10.0 * obj->vertical_velocity_modifier;
+            if(h->inputs[0] == '8') {
+                obj->vel.y -= cy * object_get_direction(obj);
+            } else if(h->inputs[0] == '2') {
+                obj->vel.y += cy * object_get_direction(obj);
+            } else if(h->inputs[0] == '3' || h->inputs[0] == '1') {
+                obj->vel.y += cy * 0.7 * object_get_direction(obj);
+            } else if(h->inputs[0] == '7' || h->inputs[0] == '9') {
+                obj->vel.y -= cy * 0.7 * object_get_direction(obj);
+            }
+        }
+    }
 }
 
 int projectile_clone(object *src, object *dst) {
