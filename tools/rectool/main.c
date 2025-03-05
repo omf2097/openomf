@@ -96,6 +96,24 @@ void print_rec_root_info(sd_rec_file *rec) {
             if(rec->moves[i].lookup_id < 3) {
                 print_key(tmp, rec->moves[i].action);
             }
+            if(rec->moves[i].lookup_id == 18) {
+                switch(rec->moves[i].extra_data[3]) {
+                    case 1:
+                        snprintf(tmp, sizeof(tmp), "player 1 check");
+                        break;
+                    case 2:
+                        snprintf(tmp, sizeof(tmp), "player 2 check");
+                        break;
+                    case 3:
+                        snprintf(tmp, sizeof(tmp), "arena check");
+                        break;
+                    case 4: {
+                        snprintf(tmp, sizeof(tmp), "ptr check 0x%02x%02x%02x%02x", (uint8_t)rec->moves[i].raw_action,
+                                 (uint8_t)rec->moves[i].extra_data[0], (uint8_t)rec->moves[i].extra_data[1],
+                                 (uint8_t)rec->moves[i].extra_data[2]);
+                    } break;
+                }
+            }
             printf("%6u %10u %5u %6u %6u %6u %22s", i, rec->moves[i].tick, rec->moves[i].lookup_id,
                    rec->moves[i].player_id, rec->moves[i].raw_action, sd_rec_extra_len(rec->moves[i].lookup_id), tmp);
 
@@ -108,7 +126,9 @@ void print_rec_root_info(sd_rec_file *rec) {
                     print_assertion(&ass);
                 }
             } else if(rec->moves[i].lookup_id > 2) {
-                print_bytes(rec->moves[i].extra_data, sd_rec_extra_len(rec->moves[i].lookup_id) - 1, 8, 2);
+                tmp[0] = rec->moves[i].raw_action;
+                memcpy(tmp + 1, rec->moves[i].extra_data, sd_rec_extra_len(rec->moves[i].lookup_id) - 1);
+                print_bytes(tmp, sd_rec_extra_len(rec->moves[i].lookup_id), 8, 2);
             }
             printf("\n");
         }
@@ -510,15 +530,15 @@ int main(int argc, char *argv[]) {
         printf("  - Unknown: %d\n", rec.pilots[i].unknown_a);
         printf("  - Unknown: %d\n", rec.pilots[i].unknown_b);
         printf("  - Palette:\n");
-        print_bytes((char *)rec.pilots[i].pal.colors, 144, 16, 4);
+        print_bytes((char *)rec.pilots[i].info.palette.colors, 144, 16, 4);
         printf("\n");
 
-        if(rec.pilots[i].has_photo) {
-            printf("  - Photo len  = %d\n", rec.pilots[i].photo.len);
-            printf("  - Photo size = (%d,%d)\n", rec.pilots[i].photo.width, rec.pilots[i].photo.height);
-            printf("  - Photo pos  = (%d,%d)\n", rec.pilots[i].photo.pos_x, rec.pilots[i].photo.pos_y);
-            printf("  - Missing    = %d\n", rec.pilots[i].photo.missing);
-            printf("  - Index      = %d\n", rec.pilots[i].photo.index);
+        if(rec.pilots[i].info.photo) {
+            printf("  - Photo len  = %d\n", rec.pilots[i].info.photo->len);
+            printf("  - Photo size = (%d,%d)\n", rec.pilots[i].info.photo->width, rec.pilots[i].info.photo->height);
+            printf("  - Photo pos  = (%d,%d)\n", rec.pilots[i].info.photo->pos_x, rec.pilots[i].info.photo->pos_y);
+            printf("  - Missing    = %d\n", rec.pilots[i].info.photo->missing);
+            printf("  - Index      = %d\n", rec.pilots[i].info.photo->index);
         } else {
             printf("  - No photo.\n");
         }
