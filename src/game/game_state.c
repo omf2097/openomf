@@ -140,8 +140,9 @@ int game_state_create(game_state *gs, engine_init_flags *init_flags) {
     gs->hide_ui = false;
     gs->menu_ctrl = omf_calloc(1, sizeof(controller));
 
-    // Set up players
     gs->sc = omf_calloc(1, sizeof(scene));
+
+    // Set up players
     for(int i = 0; i < 2; i++) {
         gs->players[i] = omf_calloc(1, sizeof(game_player));
         game_player_create(gs->players[i]);
@@ -170,20 +171,13 @@ int game_state_create(game_state *gs, engine_init_flags *init_flags) {
 
         // set the HAR colors, pilot, har type and and pilot and HAR stats
         for(int i = 0; i < 2; i++) {
+            sd_pilot_free(gs->players[i]->pilot);
+            omf_free(gs->players[i]->pilot);
+            gs->players[i]->pilot = &gs->rec->pilots[i].info;
+            // this function alters the palette
             sd_pilot_set_player_color(gs->players[i]->pilot, PRIMARY, gs->rec->pilots[i].info.color_3);
             sd_pilot_set_player_color(gs->players[i]->pilot, SECONDARY, gs->rec->pilots[i].info.color_2);
             sd_pilot_set_player_color(gs->players[i]->pilot, TERTIARY, gs->rec->pilots[i].info.color_1);
-            gs->players[i]->pilot->har_id = HAR_JAGUAR + gs->rec->pilots[i].info.har_id;
-            gs->players[i]->pilot->pilot_id = gs->rec->pilots[i].info.pilot_id;
-            gs->players[i]->pilot->agility = gs->rec->pilots[i].info.agility;
-            gs->players[i]->pilot->power = gs->rec->pilots[i].info.power;
-            gs->players[i]->pilot->endurance = gs->rec->pilots[i].info.endurance;
-            gs->players[i]->pilot->leg_speed = gs->rec->pilots[i].info.leg_speed;
-            gs->players[i]->pilot->arm_speed = gs->rec->pilots[i].info.arm_speed;
-            gs->players[i]->pilot->leg_power = gs->rec->pilots[i].info.leg_power;
-            gs->players[i]->pilot->arm_power = gs->rec->pilots[i].info.arm_power;
-            gs->players[i]->pilot->armor = gs->rec->pilots[i].info.armor;
-            gs->players[i]->pilot->stun_resistance = gs->rec->pilots[i].info.stun_resistance;
         }
 
         gs->match_settings.throw_range = gs->rec->throw_range;
@@ -1150,6 +1144,11 @@ void game_state_free(game_state **_gs) {
     if(gs->rec) {
         sd_rec_free(gs->rec);
         omf_free(gs->rec);
+    }
+
+    if(gs->init_flags->playback == 1) {
+        gs->players[0]->pilot = NULL;
+        gs->players[1]->pilot = NULL;
     }
 
     // Free players
