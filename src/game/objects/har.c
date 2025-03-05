@@ -467,9 +467,8 @@ char get_last_input(har *har) {
 }
 
 void har_move(object *obj) {
-    vec2f vel = object_get_vel(obj);
-    obj->pos.x += vel.x;
-    obj->pos.y += vel.y;
+    obj->pos.x += obj->vel.x;
+    obj->pos.y += obj->vel.y;
     har *h = object_get_userdata(obj);
 
     if(h->walk_destination > 0 && h->walk_done_anim &&
@@ -520,7 +519,7 @@ void har_move(object *obj) {
             // We collided with ground, so set vertical velocity to 0 and
             // make sure object is level with ground
             obj->pos.y = ARENA_FLOOR;
-            object_set_vel(obj, vec2f_create(vel.x, 0));
+            obj->vel.x = 0;
         }
 
         char last_input = get_last_input(h);
@@ -585,19 +584,14 @@ void har_move(object *obj) {
                 har_face_enemy(obj, obj_enemy);
             }
         } else if(h->state == STATE_FALLEN || h->state == STATE_RECOIL) {
-            vec2f vel = object_get_vel(obj);
-            vec2i pos = object_get_pos(obj);
-            if(pos.y > ARENA_FLOOR) {
-                pos.y = ARENA_FLOOR;
+            if(obj->pos.y > ARENA_FLOOR) {
+                obj->pos.y = ARENA_FLOOR;
                 har_floor_landing_effects(obj);
             }
 
-            if(pos.x <= ARENA_LEFT_WALL || pos.x >= ARENA_RIGHT_WALL) {
-                vel.x = 0.0;
+            if(obj->pos.x <= ARENA_LEFT_WALL || obj->pos.x >= ARENA_RIGHT_WALL) {
+                obj->vel.x = 0.0;
             }
-
-            object_set_pos(obj, pos);
-            object_set_vel(obj, vel);
 
             // prevent har from sliding after defeat, unless they're 'fallen'
             if(h->state != STATE_DEFEAT && h->state != STATE_FALLEN && h->health <= 0 && player_is_last_frame(obj)) {
@@ -605,7 +599,7 @@ void har_move(object *obj) {
                 h->state = STATE_DEFEAT;
                 har_set_ani(obj, ANIM_DEFEAT, 0);
                 // har_event_defeat(h, ctrl);
-            } else if(pos.y >= (ARENA_FLOOR - 5) && IS_ZERO(vel.x) && player_is_last_frame(obj)) {
+            } else if(obj->pos.y >= (ARENA_FLOOR - 5) && IS_ZERO(obj->vel.x) && player_is_last_frame(obj)) {
                 if(h->state == STATE_FALLEN) {
                     if(h->health <= 0) {
                         // fallen, but done bouncing
@@ -627,20 +621,18 @@ void har_move(object *obj) {
             // add some friction from the floor if we're not walking during scrap
             // This is important to dampen/eliminate the velocity added from pushing away from the other HAR
             // friction decreases velocity by 1 each tick, and sets it to 0 if its under |2|
-            if(vel.x > 0.0f) {
-                if(vel.x < 2.0f) {
-                    vel.x = 0.0f;
+            if(obj->vel.x > 0.0f) {
+                if(obj->vel.x < 2.0f) {
+                    obj->vel.x = 0.0f;
                 } else {
-                    vel.x -= 1.0f;
+                    obj->vel.x -= 1.0f;
                 }
-                object_set_vel(obj, vec2f_create(vel.x, vel.y));
-            } else if(vel.x < 0.0f) {
-                if(vel.x > -2.0f) {
-                    vel.x = 0.0f;
+            } else if(obj->vel.x < 0.0f) {
+                if(obj->vel.x > -2.0f) {
+                    obj->vel.x = 0.0f;
                 } else {
-                    vel.x += 1.0f;
+                    obj->vel.x += 1.0f;
                 }
-                object_set_vel(obj, vec2f_create(vel.x, vel.y));
             }
         }
 
@@ -650,7 +642,7 @@ void har_move(object *obj) {
             obj->pos.x -= (h->back_speed * object_get_direction(obj)) * (h->hard_close ? 0.5 : 1.0);
         }
     } else {
-        object_set_vel(obj, vec2f_create(vel.x, vel.y + obj->gravity));
+        obj->vel.y += obj->gravity;
     }
 }
 
