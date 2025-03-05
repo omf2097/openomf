@@ -530,15 +530,15 @@ int main(int argc, char *argv[]) {
         printf("  - Unknown: %d\n", rec.pilots[i].unknown_a);
         printf("  - Unknown: %d\n", rec.pilots[i].unknown_b);
         printf("  - Palette:\n");
-        print_bytes((char *)rec.pilots[i].pal.colors, 144, 16, 4);
+        print_bytes((char *)rec.pilots[i].info.palette.colors, 144, 16, 4);
         printf("\n");
 
-        if(rec.pilots[i].has_photo) {
-            printf("  - Photo len  = %d\n", rec.pilots[i].photo.len);
-            printf("  - Photo size = (%d,%d)\n", rec.pilots[i].photo.width, rec.pilots[i].photo.height);
-            printf("  - Photo pos  = (%d,%d)\n", rec.pilots[i].photo.pos_x, rec.pilots[i].photo.pos_y);
-            printf("  - Missing    = %d\n", rec.pilots[i].photo.missing);
-            printf("  - Index      = %d\n", rec.pilots[i].photo.index);
+        if(rec.pilots[i].info.photo) {
+            printf("  - Photo len  = %d\n", rec.pilots[i].info.photo->len);
+            printf("  - Photo size = (%d,%d)\n", rec.pilots[i].info.photo->width, rec.pilots[i].info.photo->height);
+            printf("  - Photo pos  = (%d,%d)\n", rec.pilots[i].info.photo->pos_x, rec.pilots[i].info.photo->pos_y);
+            printf("  - Missing    = %d\n", rec.pilots[i].info.photo->missing);
+            printf("  - Index      = %d\n", rec.pilots[i].info.photo->index);
         } else {
             printf("  - No photo.\n");
         }

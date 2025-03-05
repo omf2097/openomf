@@ -43,9 +43,7 @@ void sd_rec_free(sd_rec_file *rec) {
     }
 
     for(int i = 0; i < 2; i++) {
-        if(rec->pilots[i].has_photo) {
-            sd_sprite_free(&rec->pilots[i].photo);
-        }
+        sd_pilot_free(&rec->pilots[i].info);
     }
 }
 
@@ -74,12 +72,12 @@ int sd_rec_load(sd_rec_file *rec, const char *file) {
         }
         rec->pilots[i].unknown_a = sd_read_ubyte(r);
         rec->pilots[i].unknown_b = sd_read_uword(r);
-        vga_palette_init(&rec->pilots[i].pal);
-        palette_load_range(r, &rec->pilots[i].pal, 0, 48);
-        rec->pilots[i].has_photo = sd_read_ubyte(r);
-        sd_sprite_create(&rec->pilots[i].photo);
-        if(rec->pilots[i].has_photo) {
-            ret = sd_sprite_load(r, &rec->pilots[i].photo);
+        vga_palette_init(&rec->pilots[i].info.palette);
+        palette_load_range(r, &rec->pilots[i].info.palette, 0, 48);
+        if(sd_read_ubyte(r)) {
+            rec->pilots[i].info.photo = omf_calloc(1, sizeof(sd_sprite));
+            sd_sprite_create(rec->pilots[i].info.photo);
+            ret = sd_sprite_load(r, rec->pilots[i].info.photo);
             if(ret != SD_SUCCESS) {
                 goto error_0;
             }
@@ -205,10 +203,10 @@ int sd_rec_save(sd_rec_file *rec, const char *file) {
         sd_pilot_save(w, &rec->pilots[i].info);
         sd_write_ubyte(w, rec->pilots[i].unknown_a);
         sd_write_uword(w, rec->pilots[i].unknown_b);
-        palette_save_range(w, &rec->pilots[i].pal, 0, 48);
-        sd_write_ubyte(w, rec->pilots[i].has_photo);
-        if(rec->pilots[i].has_photo) {
-            sd_sprite_save(w, &rec->pilots[i].photo);
+        palette_save_range(w, &rec->pilots[i].info.palette, 0, 48);
+        sd_write_ubyte(w, rec->pilots[i].info.photo ? 1 : 0);
+        if(rec->pilots[i].info.photo) {
+            sd_sprite_save(w, rec->pilots[i].info.photo);
         }
     }
 
