@@ -12,39 +12,6 @@ typedef void (*trnmenu_free_cb)(component *c);
 typedef void (*trnmenu_submenu_init_cb)(component *menu, component *submenu);
 typedef void (*trnmenu_submenu_done_cb)(component *menu, component *submenu);
 
-typedef struct {
-    object *obj;
-    vec2i pstart;
-    vec2i pend;
-    float moved;
-    int play;
-    int move;
-} trnmenu_hand;
-
-typedef struct {
-    int selected;
-
-    surface *button_sheet;
-    int sheet_x;
-    int sheet_y;
-    bool return_hand;
-
-    int fade;
-    float opacity_step;
-
-    trnmenu_hand hand;
-
-    char prev_submenu_state;
-    component *submenu;
-    trnmenu_submenu_init_cb submenu_init;
-    trnmenu_submenu_done_cb submenu_done;
-    int finished;
-
-    void *userdata;
-    trnmenu_free_cb free;
-    trnmenu_tick_cb tick;
-} trnmenu;
-
 component *trnmenu_create(surface *button_sheet, int sheet_x, int sheet_y, bool return_hand);
 void trnmenu_attach(component *menu, component *c);
 

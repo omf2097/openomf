@@ -4,6 +4,10 @@
 #include "utils/log.h"
 #include "utils/vector.h"
 
+typedef struct xysizer {
+    void *userdata;
+} xysizer;
+
 void xysizer_attach(component *c, component *nc, int x, int y, int w, int h) {
     component_set_size_hints(nc, w, h);
     component_set_pos_hints(nc, x, y);
@@ -21,24 +25,20 @@ void *xysizer_get_userdata(component *c) {
 }
 
 static void xysizer_render(component *c) {
-    sizer *s = component_get_obj(c);
-
     // Just render all children
     iterator it;
     component **tmp;
-    vector_iter_begin(&s->objs, &it);
+    sizer_begin_iterator(c, &it);
     foreach(it, tmp) {
         component_render(*tmp);
     }
 }
 
 static void xysizer_layout(component *c, int x, int y, int w, int h) {
-    sizer *s = component_get_obj(c);
-
     // Set layout for all components in the sizer
     iterator it;
     component **tmp;
-    vector_iter_begin(&s->objs, &it);
+    sizer_begin_iterator(c, &it);
     foreach(it, tmp) {
         // Set component position and size from the component hint
         int m_x = ((*tmp)->x_hint < x) ? x : (*tmp)->x_hint;
@@ -53,12 +53,10 @@ static void xysizer_layout(component *c, int x, int y, int w, int h) {
 }
 
 static int xysizer_event(component *c, SDL_Event *event) {
-    sizer *s = component_get_obj(c);
-
     // Just pass events to all children, stop if it gets handled.
     iterator it;
     component **tmp;
-    vector_iter_begin(&s->objs, &it);
+    sizer_begin_iterator(c, &it);
     foreach(it, tmp) {
         if(component_event(*tmp, event) == 0) {
             return 0;
@@ -69,14 +67,12 @@ static int xysizer_event(component *c, SDL_Event *event) {
 }
 
 static int xysizer_action(component *c, int action) {
-    sizer *s = component_get_obj(c);
-
     log_debug("sizer action %d", action);
 
     // Just pass events to all children
     iterator it;
     component **tmp;
-    vector_iter_begin(&s->objs, &it);
+    sizer_begin_iterator(c, &it);
     foreach(it, tmp) {
         if(component_action(*tmp, action) == 0) {
             return 0;

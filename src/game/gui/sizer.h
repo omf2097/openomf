@@ -12,21 +12,7 @@ typedef void (*sizer_tick_cb)(component *c);
 typedef void (*sizer_free_cb)(component *c);
 typedef component *(*sizer_find_cb)(component *c, int id);
 
-typedef struct {
-    void *obj;   ///< Sizer specialization object, eg. menu, trnmenu
-    vector objs; ///< Contains all the child objects in the sizer
-
-    float opacity; ///< Some sizers may want to fade their contents (eg. tournament menu). In these cases, if should be
-                   ///< handled via this variable.
-
-    sizer_render_cb render;
-    sizer_event_cb event;
-    sizer_action_cb action;
-    sizer_layout_cb layout;
-    sizer_tick_cb tick;
-    sizer_free_cb free;
-    sizer_find_cb find;
-} sizer;
+typedef struct sizer sizer;
 
 component *sizer_create(void);
 
@@ -35,6 +21,11 @@ void *sizer_get_obj(const component *c);
 
 component *sizer_get(const component *c, int item);
 int sizer_size(const component *c);
+
+float sizer_get_opacity(const component *c);
+void sizer_set_opacity(const component *c, float opacity);
+
+void sizer_begin_iterator(const component *c, iterator *it);
 
 void sizer_set_render_cb(component *c, sizer_render_cb cb);
 void sizer_set_event_cb(component *c, sizer_event_cb cb);

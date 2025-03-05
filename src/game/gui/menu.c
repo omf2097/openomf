@@ -10,12 +10,11 @@
 #include "video/video.h"
 
 void menu_select(component *c, component *sc) {
-    sizer *s = component_get_obj(c);
     menu *m = sizer_get_obj(c);
     component **tmp;
     iterator it;
     int i = 0;
-    vector_iter_begin(&s->objs, &it);
+    sizer_begin_iterator(c, &it);
     foreach(it, tmp) {
         if(*tmp == sc) {
             break;
@@ -27,10 +26,10 @@ void menu_select(component *c, component *sc) {
     }
 
     // unselect the old component
-    tmp = vector_get(&s->objs, m->selected);
-    if(tmp != NULL) {
-        component_select(*tmp, 0);
-        component_focus(*tmp, 0);
+    component *old = sizer_get(c, m->selected);
+    if(old != NULL) {
+        component_select(old, 0);
+        component_focus(old, 0);
     }
 
     // Select the new component
@@ -81,7 +80,6 @@ static void menu_tick(component *c) {
 }
 
 static void menu_render(component *c) {
-    sizer *s = component_get_obj(c);
     menu *m = sizer_get_obj(c);
 
     // If submenu is set, we need to use it
@@ -99,7 +97,7 @@ static void menu_render(component *c) {
     if(m->bg2) {
         video_draw(m->bg2, c->x, c->y);
     }
-    vector_iter_begin(&s->objs, &it);
+    sizer_begin_iterator(c, &it);
     int i = 0;
     foreach(it, tmp) {
         component_render(*tmp);
@@ -241,13 +239,12 @@ int menu_is_finished(const component *c) {
 }
 
 static void menu_layout(component *c, int x, int y, int w, int h) {
-    sizer *s = component_get_obj(c);
     menu *m = sizer_get_obj(c);
 
     // Set layout for all components in the sizer
     iterator it;
     component **tmp;
-    vector_iter_begin(&s->objs, &it);
+    sizer_begin_iterator(c, &it);
     int i = 0;
     int first_selected = 0;
     int x_offset = 0;
@@ -286,7 +283,7 @@ static void menu_layout(component *c, int x, int y, int w, int h) {
         centerwidth += m->padding * (i - 1);
         int x_offset = (w - centerwidth) / 2;
         height = 0;
-        vector_iter_begin(&s->objs, &it);
+        sizer_begin_iterator(c, &it);
         foreach(it, tmp) {
             component_layout(*tmp, x + x_offset, m->margin_top + y, w, -1);
             x_offset += (*tmp)->w_hint + m->padding;

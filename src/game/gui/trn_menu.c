@@ -10,6 +10,39 @@
 
 #define OPACITY_STEP 0.03f
 
+typedef struct {
+    object *obj;
+    vec2i pstart;
+    vec2i pend;
+    float moved;
+    int play;
+    int move;
+} trnmenu_hand;
+
+typedef struct {
+    int selected;
+
+    surface *button_sheet;
+    int sheet_x;
+    int sheet_y;
+    bool return_hand;
+
+    int fade;
+    float opacity_step;
+
+    trnmenu_hand hand;
+
+    char prev_submenu_state;
+    component *submenu;
+    trnmenu_submenu_init_cb submenu_init;
+    trnmenu_submenu_done_cb submenu_done;
+    int finished;
+
+    void *userdata;
+    trnmenu_free_cb free;
+    trnmenu_tick_cb tick;
+} trnmenu;
+
 void trnmenu_attach(component *c, component *nc) {
     sizer_attach(c, nc);
 }
@@ -99,13 +132,12 @@ static void trnmenu_free(component *c) {
 }
 
 static void trnmenu_layout(component *c, int x, int y, int w, int h) {
-    sizer *s = component_get_obj(c);
     trnmenu *m = sizer_get_obj(c);
 
     // Set layout for all components in the sizer
     iterator it;
     component **tmp;
-    vector_iter_begin(&s->objs, &it);
+    sizer_begin_iterator(c, &it);
     int i = 0;
     int first_selected = 0;
     foreach(it, tmp) {
@@ -147,12 +179,11 @@ static vec2f lcenter(component *c) {
 }
 
 static int find_next_button(component *c, int act) {
-    sizer *s = component_get_obj(c);
     trnmenu *m = sizer_get_obj(c);
 
     iterator it;
     component **tmp;
-    vector_iter_begin(&s->objs, &it);
+    sizer_begin_iterator(c, &it);
 
     component *cur = sizer_get(c, m->selected);
     float best_dist = 9999.0f;
@@ -250,7 +281,6 @@ static int trnmenu_action(component *c, int action) {
 }
 
 static void trnmenu_render(component *c) {
-    sizer *s = component_get_obj(c);
     trnmenu *m = sizer_get_obj(c);
 
     // If submenu is set, we need to use it
@@ -267,7 +297,7 @@ static void trnmenu_render(component *c) {
     // Handle components
     iterator it;
     component **tmp;
-    vector_iter_begin(&s->objs, &it);
+    sizer_begin_iterator(c, &it);
     foreach(it, tmp) {
         component_render(*tmp);
     }
@@ -280,7 +310,6 @@ static void trnmenu_render(component *c) {
 
 static void trnmenu_tick(component *c) {
     trnmenu *m = sizer_get_obj(c);
-    sizer *s = component_get_obj(c);
 
     // If fade is not ongoing, try to handle submenu. If fade IS ongoing, handle it.
     if(!m->fade) {
@@ -291,18 +320,20 @@ static void trnmenu_tick(component *c) {
         }
     } else {
         // Tick opacity
-        s->opacity += m->opacity_step;
+        float opacity = sizer_get_opacity(c) + m->opacity_step;
 
         // Check if fade is done, and set tick to 0 if so.
-        if(m->opacity_step > 0 && s->opacity >= 1.0f) {
-            s->opacity = 1.0f;
+        if(m->opacity_step > 0 && opacity >= 1.0f) {
+            sizer_set_opacity(c, 1.0f);
             m->fade = 0;
-        } else if(m->opacity_step < 0 && s->opacity <= 0.0f) {
-            s->opacity = 0.0f;
+        } else if(m->opacity_step < 0 && opacity <= 0.0f) {
+            sizer_set_opacity(c, 0.0f);
             m->fade = 0;
             if(m->submenu == NULL || trnmenu_is_finished(m->submenu)) {
                 m->finished = 1;
             }
+        } else {
+            sizer_set_opacity(c, opacity);
         }
     }
 
@@ -311,8 +342,8 @@ static void trnmenu_tick(component *c) {
     if(m->submenu != NULL && trnmenu_is_finished(m->submenu) && !trnmenu_is_fading(m->submenu)) {
         if(!m->prev_submenu_state) {
             m->fade = 1;
-            s->opacity = 0;
             m->opacity_step = OPACITY_STEP;
+            sizer_set_opacity(c, 0.0f);
             component *sel = sizer_get(c, m->selected);
             if(sel != NULL)
                 component_focus(sel, 1);

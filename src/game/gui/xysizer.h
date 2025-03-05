@@ -4,11 +4,6 @@
 #include "game/gui/component.h"
 #include "video/surface.h"
 
-typedef struct {
-    int req_refresh;
-    void *userdata;
-} xysizer;
-
 component *xysizer_create(void);
 void xysizer_attach(component *sizer, component *c, int x, int y, int w, int h);
 void xysizer_set_userdata(component *sizer, void *userdata);
