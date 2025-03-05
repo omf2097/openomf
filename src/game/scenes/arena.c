@@ -807,6 +807,8 @@ char *state_name(int state) {
             return "standing_up";
         case STATE_STUNNED:
             return "stunned";
+        case STATE_BLOCKSTUN:
+            return "blockstun";
         case STATE_VICTORY:
             return "victory";
         case STATE_DEFEAT:
@@ -1306,10 +1308,6 @@ void arena_render_overlay(scene *scene) {
     }
 }
 
-static const char *har_states[] = {"None",    "Standing", "WalkTo",      "WalkFrom",   "Crouching", "CrouckBlock",
-                                   "Jumping", "Recoil",   "Fallen",      "StandingUp", "Stunned",   "Victory",
-                                   "Defeat",  "Scrap",    "Destruction", "Walldamage", "Done"};
-
 static void arena_debug(scene *scene) {
     if(scene->gs->hide_ui) {
         return;
@@ -1348,7 +1346,7 @@ static void arena_debug(scene *scene) {
     }
 
     for(int i = 0; i < 2; i++) {
-        snprintf(buf, sizeof(buf), "%s", har_states[hars[i]->state]);
+        snprintf(buf, sizeof(buf), "%s", state_name(hars[i]->state));
         if(i == 0) {
             text_render(&tconf_debug, TEXT_DEFAULT, 5, 48, 250, 6, buf);
         } else {

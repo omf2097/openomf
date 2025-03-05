@@ -467,9 +467,8 @@ char get_last_input(har *har) {
 }
 
 void har_move(object *obj) {
-    vec2f vel = object_get_vel(obj);
-    obj->pos.x += vel.x;
-    obj->pos.y += vel.y;
+    obj->pos.x += obj->vel.x;
+    obj->pos.y += obj->vel.y;
     har *h = object_get_userdata(obj);
 
     if(h->walk_destination > 0 && h->walk_done_anim &&
@@ -520,7 +519,7 @@ void har_move(object *obj) {
             // We collided with ground, so set vertical velocity to 0 and
             // make sure object is level with ground
             obj->pos.y = ARENA_FLOOR;
-            object_set_vel(obj, vec2f_create(vel.x, 0));
+            obj->vel.y = 0;
         }
 
         char last_input = get_last_input(h);
@@ -585,22 +584,14 @@ void har_move(object *obj) {
                 har_face_enemy(obj, obj_enemy);
             }
         } else if(h->state == STATE_FALLEN || h->state == STATE_RECOIL) {
-            float dampen = 0.2f;
-            vec2f vel = object_get_vel(obj);
-            vec2i pos = object_get_pos(obj);
-            if(pos.y > ARENA_FLOOR) {
-                pos.y = ARENA_FLOOR;
-                vel.y = -vel.y * dampen;
-                vel.x = vel.x * dampen;
+            if(obj->pos.y > ARENA_FLOOR) {
+                obj->pos.y = ARENA_FLOOR;
                 har_floor_landing_effects(obj);
             }
 
-            if(pos.x <= ARENA_LEFT_WALL || pos.x >= ARENA_RIGHT_WALL) {
-                vel.x = 0.0;
+            if(obj->pos.x <= ARENA_LEFT_WALL || obj->pos.x >= ARENA_RIGHT_WALL) {
+                obj->vel.x = 0.0;
             }
-
-            object_set_pos(obj, pos);
-            object_set_vel(obj, vel);
 
             // prevent har from sliding after defeat, unless they're 'fallen'
             if(h->state != STATE_DEFEAT && h->state != STATE_FALLEN && h->health <= 0 && player_is_last_frame(obj)) {
@@ -608,7 +599,7 @@ void har_move(object *obj) {
                 h->state = STATE_DEFEAT;
                 har_set_ani(obj, ANIM_DEFEAT, 0);
                 // har_event_defeat(h, ctrl);
-            } else if(pos.y >= (ARENA_FLOOR - 5) && IS_ZERO(vel.x) && player_is_last_frame(obj)) {
+            } else if(obj->pos.y >= (ARENA_FLOOR - 5) && IS_ZERO(obj->vel.x) && player_is_last_frame(obj)) {
                 if(h->state == STATE_FALLEN) {
                     if(h->health <= 0) {
                         // fallen, but done bouncing
@@ -624,23 +615,24 @@ void har_move(object *obj) {
                     har_finished(obj);
                 }
             }
-        } else if(h->state != STATE_SCRAP) {
+        }
+
+        if(h->state != STATE_SCRAP) {
             // add some friction from the floor if we're not walking during scrap
             // This is important to dampen/eliminate the velocity added from pushing away from the other HAR
-            if(vel.x > 0.0f) {
-                if(vel.x - 0.2f > 0.0f) {
-                    vel.x = 0.0f;
+            // friction decreases velocity by 1 each tick, and sets it to 0 if its under |2|
+            if(obj->vel.x > 0.0f) {
+                if(obj->vel.x < 2.0f) {
+                    obj->vel.x = 0.0f;
                 } else {
-                    vel.x -= 0.2f;
+                    obj->vel.x -= 1.0f;
                 }
-                object_set_vel(obj, vec2f_create(vel.x, vel.y));
-            } else if(vel.x < 0.0f) {
-                if(vel.x + 0.2f > 0.0f) {
-                    vel.x = 0.0f;
+            } else if(obj->vel.x < 0.0f) {
+                if(obj->vel.x > -2.0f) {
+                    obj->vel.x = 0.0f;
                 } else {
-                    vel.x += 0.2f;
+                    obj->vel.x += 1.0f;
                 }
-                object_set_vel(obj, vec2f_create(vel.x, vel.y));
             }
         }
 
@@ -650,7 +642,7 @@ void har_move(object *obj) {
             obj->pos.x -= (h->back_speed * object_get_direction(obj)) * (h->hard_close ? 0.5 : 1.0);
         }
     } else {
-        object_set_vel(obj, vec2f_create(vel.x, vel.y + obj->gravity));
+        obj->vel.y += obj->gravity;
     }
 }
 
@@ -878,7 +870,7 @@ void har_spawn_scrap(object *obj, vec2i pos, int amount) {
     }
 }
 
-void har_block(object *obj, vec2i hit_coord) {
+void har_block(object *obj, vec2i hit_coord, uint8_t block_stun) {
     har *h = obj->userdata;
     if(h->state == STATE_WALKFROM) {
         object_set_animation(obj, &af_get_move(h->af_data, ANIM_STANDING_BLOCK)->ani);
@@ -886,7 +878,10 @@ void har_block(object *obj, vec2i hit_coord) {
         object_set_animation(obj, &af_get_move(h->af_data, ANIM_CROUCHING_BLOCK)->ani);
     }
     // the HARs have a lame blank frame in their animation string, so use a custom one
-    object_set_custom_string(obj, "A5");
+
+    char stun_str[5];
+    snprintf(stun_str, sizeof(stun_str), "A%d", block_stun);
+    object_set_custom_string(obj, stun_str);
     object_set_repeat(obj, 0);
     object_dynamic_tick(obj);
     // blocking spark
@@ -894,6 +889,7 @@ void har_block(object *obj, vec2i hit_coord) {
         // don't make another scrape
         return;
     }
+    h->state = STATE_BLOCKSTUN;
     object *scrape = omf_calloc(1, sizeof(object));
     object_create(scrape, obj->gs, hit_coord, vec2f_create(0, 0));
     object_set_animation(scrape, &af_get_move(h->af_data, ANIM_BLOCKING_SCRAPE)->ani);
@@ -1122,16 +1118,22 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
         if(har_is_blocking(b, move) &&
            // earthquake smash is unblockable
            !player_frame_isset(obj_a, "ue")) {
+            a->damage_done = 1;
             har_event_enemy_block(a, move, false, ctrl_a);
             har_event_block(b, move, false, ctrl_b);
-            har_block(obj_b, hit_coord);
+            har_block(obj_b, hit_coord, move->block_stun);
             if(b->is_wallhugging) {
                 vec2f push = object_get_vel(obj_a);
-                push.x += 2.0f * object_get_direction(obj_b);
+                // TODO use 90% of the block pushback as cornerpush for now
+                push.x = -1 * object_get_direction(obj_a) * (((move->block_stun - 2) * 0.74) + 1) * 0.9;
+                log_debug("doing block cornerpush of %f",
+                          -1 * object_get_direction(obj_a) * (((move->block_stun - 2) * 0.74) + 1) * 0.9);
                 object_set_vel(obj_a, push);
             } else {
                 vec2f push = object_get_vel(obj_b);
-                push.x += 2.0f * object_get_direction(obj_a);
+                push.x = -1 * object_get_direction(obj_b) * (((move->block_stun - 2) * 0.74) + 1);
+                log_debug("doing block pushback of %f",
+                          -1 * object_get_direction(obj_b) * (((move->block_stun - 2) * 0.74) + 1));
                 object_set_vel(obj_b, push);
             }
             return 0;
@@ -1174,15 +1176,22 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
         har_event_land_hit(a, move, false, ctrl_a);
 
         if(move->category != CAT_CLOSE) {
-            if(b->state == STATE_RECOIL || b->is_wallhugging) {
+            if(b->is_wallhugging) {
                 // back the attacker off a little
                 vec2f push = object_get_vel(obj_a);
-                push.x += 2.0f * object_get_direction(obj_b);
-                object_set_vel(obj_a, push);
+                if(fabsf(push.x) < 5.5f) {
+                    // TODO need real formula here
+                    log_debug("doing corner push of 6.3");
+                    push.x = -6.3f * object_get_direction(obj_a);
+                    object_set_vel(obj_a, push);
+                }
             } else {
                 vec2f push = object_get_vel(obj_b);
-                push.x += 2.0f * object_get_direction(obj_a);
-                object_set_vel(obj_b, push);
+                if(fabsf(push.x) < 7.0f) {
+                    log_debug("doing knockback of 7");
+                    push.x = -7.0f * object_get_direction(obj_b);
+                    object_set_vel(obj_b, push);
+                }
             }
         }
 
@@ -1219,6 +1228,7 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
         // return if this move had priority
         return move->category == CAT_CLOSE ? 1 : 0;
     }
+
     return 0;
 }
 
@@ -1245,7 +1255,7 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
         if(har_is_blocking(h, move)) {
             har_event_enemy_block(other, move, true, ctrl_other);
             har_event_block(h, move, true, ctrl);
-            har_block(o_har, hit_coord);
+            har_block(o_har, hit_coord, move->block_stun);
             return;
         }
 
