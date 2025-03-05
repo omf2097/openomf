@@ -83,7 +83,7 @@ struct object_t {
     int8_t group;
 
     // Set by q tag
-    int8_t hit_frames;
+    int8_t q_counter;
     int8_t can_hit;
 
     int8_t orbit;

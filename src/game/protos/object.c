@@ -74,8 +74,8 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
 
     random_seed(&obj->rand_state, rand_intmax());
 
-    // For enabling hit on the current and the next n-1 frames
-    obj->hit_frames = 0;
+    // For enabling multiple hits per move
+    obj->q_counter = 0;
     obj->can_hit = 0;
 
     // Callbacks & userdata
