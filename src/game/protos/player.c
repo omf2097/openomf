@@ -288,6 +288,12 @@ void player_run(object *obj) {
                 return;
             }
         }
+
+        if(sd_script_isset(frame, "h")) {
+            // Hover, reset all velocities to 0 on every frame
+            obj->vel.x = 0;
+            obj->vel.y = 0;
+        }
     }
 
     if(sd_script_isset(frame, "e") && enemy) {
@@ -308,12 +314,6 @@ void player_run(object *obj) {
     if(sd_script_isset(frame, "g")) {
         obj->vel.y = 0;
         obj->pos.y = ARENA_FLOOR;
-    }
-
-    if(sd_script_isset(frame, "h")) {
-        // Hover, reset all velocities to 0 on every frame
-        obj->vel.x = 0;
-        obj->vel.y = 0;
     }
 
     if(sd_script_isset(frame, "at") && enemy) {

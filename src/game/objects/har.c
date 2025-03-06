@@ -641,6 +641,8 @@ void har_move(object *obj) {
         } else if(h->state == STATE_WALKFROM) {
             obj->pos.x -= (h->back_speed * object_get_direction(obj)) * (h->hard_close ? 0.5 : 1.0);
         }
+
+        object_apply_controllable_velocity(obj, obj, last_input);
     } else {
         obj->vel.y += obj->gravity;
     }
