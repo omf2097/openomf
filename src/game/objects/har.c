@@ -1200,7 +1200,6 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
 
         if(player_frame_isset(obj_a, "ai")) {
             str str;
-            str_create(&str);
             str_from_c(&str, "A1-s01l50B2-C2-L5-M400");
             har_take_damage(obj_b, &str, move->damage, move->stun);
             str_free(&str);
@@ -1318,7 +1317,6 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
 
             if(player_frame_isset(o_pjt, "ai")) {
                 str str;
-                str_create(&str);
                 str_from_c(&str, "A1-s01l50B2-C2-L5-M400");
                 har_take_damage(o_har, &str, move->damage, move->stun);
                 str_free(&str);
