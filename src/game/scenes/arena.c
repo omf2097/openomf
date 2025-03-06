@@ -630,12 +630,9 @@ void arena_har_defeat_hook(int loser_player_id, scene *scene) {
         if(is_singleplayer(gs)) {
             player_winner->sp_wins |= 2 << player_loser->pilot->pilot_id;
             if(player_loser->pilot->pilot_id == PILOT_KREISSACK) {
-                har *loser_har = object_get_userdata(loser);
                 log_debug("kreissack defeated");
                 // can't scrap/destruct kreissack
                 winner_har->state = STATE_DONE;
-                // major go boom
-                loser_har->custom_defeat_animation = 47;
             }
         }
     } else {
@@ -1589,6 +1586,12 @@ int arena_create(scene *scene) {
                     local->player_rounds[i][j] = 0;
                 }
             }
+        }
+
+        if(player->pilot->pilot_id == PILOT_KREISSACK) {
+            har *har = object_get_userdata(obj);
+            // major go boom
+            har->custom_defeat_animation = 47;
         }
     }
 

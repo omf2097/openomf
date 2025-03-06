@@ -613,14 +613,14 @@ void har_move(object *obj) {
             if(h->state != STATE_DEFEAT && h->state != STATE_FALLEN && h->health <= 0 && player_is_last_frame(obj)) {
 
                 h->state = STATE_DEFEAT;
-                har_set_ani(obj, ANIM_DEFEAT, 0);
+                har_set_ani(obj, h->custom_defeat_animation ? h->custom_defeat_animation : ANIM_DEFEAT, 0);
                 // har_event_defeat(h, ctrl);
             } else if(obj->pos.y >= (ARENA_FLOOR - 5) && IS_ZERO(obj->vel.x) && player_is_last_frame(obj)) {
                 if(h->state == STATE_FALLEN) {
                     if(h->health <= 0) {
                         // fallen, but done bouncing
                         h->state = STATE_DEFEAT;
-                        har_set_ani(obj, ANIM_DEFEAT, 0);
+                        har_set_ani(obj, h->custom_defeat_animation ? h->custom_defeat_animation : ANIM_DEFEAT, 0);
                         // har_event_defeat(h, ctrl);
                     } else {
                         h->state = STATE_STANDING_UP;
