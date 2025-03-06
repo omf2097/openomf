@@ -57,7 +57,7 @@ void lab_dash_main_chr_load(component *c, void *userdata) {
         // bad save, revert to the loaded character
         omf_free(p1->chr);
         p1->chr = oldchr;
-        trnmenu_finish(c);
+        trnmenu_finish(c->parent); // We refer to the components sizer
         return;
     }
     if(oldchr) {
@@ -85,7 +85,7 @@ void lab_dash_main_chr_load(component *c, void *userdata) {
     omf_free(settings_get()->tournament.last_name);
     settings_get()->tournament.last_name = omf_strdup(p1->pilot->name);
     settings_save();
-    trnmenu_finish(c);
+    trnmenu_finish(c->parent); // We refer to the components sizer
 }
 
 void lab_dash_main_chr_delete(component *c, void *userdata) {
@@ -93,7 +93,7 @@ void lab_dash_main_chr_delete(component *c, void *userdata) {
     game_player *p1 = game_state_get_player(dw->scene->gs, 0);
     const char *pilot_name = p1->pilot->name;
     sg_delete(pilot_name);
-    trnmenu_finish(c);
+    trnmenu_finish(c->parent);
 }
 
 void lab_dash_main_chr_left(component *c, void *userdata) {

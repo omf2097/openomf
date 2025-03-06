@@ -13,7 +13,6 @@ typedef struct spritebutton {
     char *text;
     text_settings tconf;
     surface *img;
-    surface *disabled_img;
     int active;
 
     spritebutton_click_cb click_cb;

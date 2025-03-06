@@ -41,7 +41,7 @@ void confirm_trade(component *c, void *userdata) {
     omf_free(p1->pilot);
     p1->pilot = &p1->chr->pilot;
     mechlab_update(s);
-    trnmenu_finish(c);
+    trnmenu_finish(c->parent);
 }
 
 void cancel_trade(component *c, void *userdata) {
@@ -50,7 +50,7 @@ void cancel_trade(component *c, void *userdata) {
     omf_free(p1->pilot);
     p1->pilot = &p1->chr->pilot;
     mechlab_update(s);
-    trnmenu_finish(c);
+    trnmenu_finish(c->parent);
 }
 
 void lab_menu_trade(component *c, void *userdata) {

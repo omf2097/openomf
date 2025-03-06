@@ -2,6 +2,8 @@
 #include "utils/allocator.h"
 #include "utils/log.h"
 
+#define WIDGET_MAGIC 0x8BADF00D
+
 typedef struct widget {
     void *obj; ///< Pointer to internal object, eg. textbutton, etc.
     int id;    ///< Default is -1, which means "not set". User should always set positive values!
@@ -16,61 +18,73 @@ typedef struct widget {
 } widget;
 
 void widget_set_obj(component *c, void *obj) {
+    assert(c->header == WIDGET_MAGIC);
     widget *local = component_get_obj(c);
     local->obj = obj;
 }
 
 void *widget_get_obj(const component *c) {
+    assert(c->header == WIDGET_MAGIC);
     widget *local = component_get_obj(c);
     return local->obj;
 }
 
 void widget_set_id(component *c, int id) {
+    assert(c->header == WIDGET_MAGIC);
     widget *local = component_get_obj(c);
     local->id = id;
 }
 
 int widget_get_id(const component *c) {
+    assert(c->header == WIDGET_MAGIC);
     widget *local = component_get_obj(c);
     return local->id;
 }
 
 void widget_set_render_cb(component *c, widget_render_cb cb) {
+    assert(c->header == WIDGET_MAGIC);
     widget *local = component_get_obj(c);
     local->render = cb;
 }
 
 void widget_set_event_cb(component *c, widget_event_cb cb) {
+    assert(c->header == WIDGET_MAGIC);
     widget *local = component_get_obj(c);
     local->event = cb;
 }
 
 void widget_set_action_cb(component *c, widget_action_cb cb) {
+    assert(c->header == WIDGET_MAGIC);
     widget *local = component_get_obj(c);
     local->action = cb;
 }
 
 void widget_set_focus_cb(component *c, widget_focus_cb cb) {
+    assert(c->header == WIDGET_MAGIC);
     widget *local = component_get_obj(c);
     local->focus = cb;
 }
 
 void widget_set_layout_cb(component *c, widget_layout_cb cb) {
+    assert(c->header == WIDGET_MAGIC);
     widget *local = component_get_obj(c);
     local->layout = cb;
 }
 
 void widget_set_tick_cb(component *c, widget_tick_cb cb) {
+    assert(c->header == WIDGET_MAGIC);
     widget *local = component_get_obj(c);
     local->tick = cb;
 }
 
 void widget_set_free_cb(component *c, widget_free_cb cb) {
+    assert(c->header == WIDGET_MAGIC);
     widget *local = component_get_obj(c);
     local->free = cb;
 }
 
 static void widget_tick(component *c) {
+    assert(c->header == WIDGET_MAGIC);
     widget *local = component_get_obj(c);
     if(local->tick) {
         local->tick(c);
@@ -78,6 +92,7 @@ static void widget_tick(component *c) {
 }
 
 static void widget_render(component *c) {
+    assert(c->header == WIDGET_MAGIC);
     widget *local = component_get_obj(c);
     if(local->render) {
         local->render(c);
@@ -85,6 +100,7 @@ static void widget_render(component *c) {
 }
 
 static int widget_event(component *c, SDL_Event *event) {
+    assert(c->header == WIDGET_MAGIC);
     widget *local = component_get_obj(c);
     if(local->event) {
         return local->event(c, event);
@@ -93,6 +109,7 @@ static int widget_event(component *c, SDL_Event *event) {
 }
 
 static int widget_action(component *c, int action) {
+    assert(c->header == WIDGET_MAGIC);
     widget *local = component_get_obj(c);
     if(local->action) {
         return local->action(c, action);
@@ -101,6 +118,7 @@ static int widget_action(component *c, int action) {
 }
 
 void widget_focus(component *c, bool focused) {
+    assert(c->header == WIDGET_MAGIC);
     widget *local = component_get_obj(c);
     if(local->focus) {
         local->focus(c, focused);
@@ -108,6 +126,7 @@ void widget_focus(component *c, bool focused) {
 }
 
 static void widget_layout(component *c, int x, int y, int w, int h) {
+    assert(c->header == WIDGET_MAGIC);
     widget *local = component_get_obj(c);
     if(local->layout) {
         local->layout(c, x, y, w, h);
@@ -115,6 +134,7 @@ static void widget_layout(component *c, int x, int y, int w, int h) {
 }
 
 static void widget_free(component *c) {
+    assert(c->header == WIDGET_MAGIC);
     widget *local = component_get_obj(c);
     if(local->free) {
         local->free(c);
@@ -123,6 +143,7 @@ static void widget_free(component *c) {
 }
 
 static component *widget_find(component *c, int id) {
+    assert(c->header == WIDGET_MAGIC);
     if(widget_get_id(c) == id) {
         return c;
     }
@@ -131,6 +152,7 @@ static component *widget_find(component *c, int id) {
 
 component *widget_create(void) {
     component *c = component_create();
+    c->header = WIDGET_MAGIC;
     c->supports_disable = 1;
     c->supports_select = 1;
     c->supports_focus = 1;

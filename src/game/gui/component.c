@@ -146,6 +146,7 @@ void component_set_help_text(component *c, const char *help) {
 
 component *component_create(void) {
     component *c = omf_calloc(1, sizeof(component));
+    c->header = 0; // By default, this is unset.
     c->x_hint = -1;
     c->y_hint = -1;
     c->w_hint = -1;
