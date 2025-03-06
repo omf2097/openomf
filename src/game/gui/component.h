@@ -44,6 +44,8 @@ typedef component *(*component_find_cb)(component *c, int id);
  * Component_layout call for a sizer will cause all its children widgets and  sizers to be set also.
  */
 struct component {
+    uint32_t header; ///< Safety header. 0xDEADBEEF for sizers, 0x8BADF00D for components.
+
     int x;     ///< Horizontal position of the object in pixels. This is in screen coordinates.
     int y;     ///< Vertical position of the object in pixels. This is in screen coordinates.
     int w;     ///< Width of the object in pixels.

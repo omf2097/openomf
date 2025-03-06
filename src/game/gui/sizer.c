@@ -1,6 +1,8 @@
 #include "game/gui/sizer.h"
 #include "utils/allocator.h"
 
+#define SIZER_MAGIC 0xDEADBEEF
+
 typedef struct sizer {
     void *obj;   ///< Sizer specialization object, eg. menu, trnmenu
     vector objs; ///< Contains all the child objects in the sizer
@@ -18,6 +20,7 @@ typedef struct sizer {
 } sizer;
 
 component *sizer_get(const component *nc, int item) {
+    assert(nc->header == SIZER_MAGIC);
     sizer *local = component_get_obj(nc);
     component **c;
     c = vector_get(&local->objs, item);
@@ -28,77 +31,92 @@ component *sizer_get(const component *nc, int item) {
 }
 
 float sizer_get_opacity(const component *c) {
+    assert(c->header == SIZER_MAGIC);
     sizer *local = component_get_obj(c);
     return local->opacity;
 }
 
 void sizer_set_opacity(const component *c, float opacity) {
+    assert(c->header == SIZER_MAGIC);
     sizer *local = component_get_obj(c);
     local->opacity = opacity;
 }
 
 void sizer_begin_iterator(const component *c, iterator *it) {
+    assert(c->header == SIZER_MAGIC);
     sizer *local = component_get_obj(c);
     vector_iter_begin(&local->objs, it);
 }
 
 int sizer_size(const component *c) {
+    assert(c->header == SIZER_MAGIC);
     sizer *local = component_get_obj(c);
     return vector_size(&local->objs);
 }
 
 void sizer_set_obj(component *c, void *obj) {
+    assert(c->header == SIZER_MAGIC);
     sizer *local = component_get_obj(c);
     local->obj = obj;
 }
 
 void *sizer_get_obj(const component *c) {
+    assert(c->header == SIZER_MAGIC);
     sizer *local = component_get_obj(c);
     return local->obj;
 }
 
 void sizer_set_render_cb(component *c, sizer_render_cb cb) {
+    assert(c->header == SIZER_MAGIC);
     sizer *local = component_get_obj(c);
     local->render = cb;
 }
 
 void sizer_set_event_cb(component *c, sizer_event_cb cb) {
+    assert(c->header == SIZER_MAGIC);
     sizer *local = component_get_obj(c);
     local->event = cb;
 }
 
 void sizer_set_action_cb(component *c, sizer_action_cb cb) {
+    assert(c->header == SIZER_MAGIC);
     sizer *local = component_get_obj(c);
     local->action = cb;
 }
 
 void sizer_set_layout_cb(component *c, sizer_layout_cb cb) {
+    assert(c->header == SIZER_MAGIC);
     sizer *local = component_get_obj(c);
     local->layout = cb;
 }
 
 void sizer_set_tick_cb(component *c, sizer_tick_cb cb) {
+    assert(c->header == SIZER_MAGIC);
     sizer *local = component_get_obj(c);
     local->tick = cb;
 }
 
 void sizer_set_free_cb(component *c, sizer_free_cb cb) {
+    assert(c->header == SIZER_MAGIC);
     sizer *local = component_get_obj(c);
     local->free = cb;
 }
 
 void sizer_set_find_cb(component *c, sizer_find_cb cb) {
+    assert(c->header == SIZER_MAGIC);
     sizer *local = component_get_obj(c);
     local->find = cb;
 }
 
 void sizer_attach(component *c, component *nc) {
+    assert(c->header == SIZER_MAGIC);
     sizer *local = component_get_obj(c);
     nc->parent = c;
     vector_append(&local->objs, &nc);
 }
 
 static void sizer_tick(component *c) {
+    assert(c->header == SIZER_MAGIC);
     sizer *local = component_get_obj(c);
 
     // Tell the specialized sizer object to do tick if needed
@@ -116,6 +134,7 @@ static void sizer_tick(component *c) {
 }
 
 static void sizer_render(component *c) {
+    assert(c->header == SIZER_MAGIC);
     sizer *local = component_get_obj(c);
     // Since rendering can be a bit special, the actual sizer should do it
     if(local->render) {
@@ -124,6 +143,7 @@ static void sizer_render(component *c) {
 }
 
 static int sizer_event(component *c, SDL_Event *event) {
+    assert(c->header == SIZER_MAGIC);
     sizer *local = component_get_obj(c);
     // Events are something that the actual sizer needs to handle
     if(local->event) {
@@ -133,6 +153,7 @@ static int sizer_event(component *c, SDL_Event *event) {
 }
 
 static int sizer_action(component *c, int action) {
+    assert(c->header == SIZER_MAGIC);
     sizer *local = component_get_obj(c);
     // Actions are something that the actual sizer needs to handle
     if(local->action) {
@@ -142,6 +163,7 @@ static int sizer_action(component *c, int action) {
 }
 
 static void sizer_layout(component *c, int x, int y, int w, int h) {
+    assert(c->header == SIZER_MAGIC);
     // Because we don't know how to order this stuff in base sizer, we just pass this on.
     sizer *local = component_get_obj(c);
     if(local->layout) {
@@ -150,6 +172,7 @@ static void sizer_layout(component *c, int x, int y, int w, int h) {
 }
 
 static void sizer_free(component *c) {
+    assert(c->header == SIZER_MAGIC);
     sizer *local = component_get_obj(c);
 
     // Free all objects inside the sizer
@@ -171,6 +194,7 @@ static void sizer_free(component *c) {
 }
 
 static component *sizer_find(component *c, int id) {
+    assert(c->header == SIZER_MAGIC);
     sizer *local = component_get_obj(c);
 
     iterator it;
@@ -196,6 +220,7 @@ static component *sizer_find(component *c, int id) {
 
 component *sizer_create(void) {
     component *c = component_create();
+    c->header = SIZER_MAGIC;
 
     sizer *local = omf_calloc(1, sizeof(sizer));
     vector_create(&local->objs, sizeof(component *));
