@@ -62,6 +62,7 @@ void player_reload_with_str(object *obj, const char *custom_str) {
     obj->enemy_slide_state.dest = vec2i_create(0, 0);
     obj->enemy_slide_state.duration = 0;
     obj->q_counter = 0;
+    obj->q_val = 0;
     obj->can_hit = 0;
 }
 
