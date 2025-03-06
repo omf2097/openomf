@@ -93,7 +93,7 @@ void lab_dash_main_chr_delete(component *c, void *userdata) {
     game_player *p1 = game_state_get_player(dw->scene->gs, 0);
     const char *pilot_name = p1->pilot->name;
     sg_delete(pilot_name);
-    trnmenu_finish(c);
+    trnmenu_finish(c->parent);
 }
 
 void lab_dash_main_chr_left(component *c, void *userdata) {
