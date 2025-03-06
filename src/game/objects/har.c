@@ -1118,7 +1118,7 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
        (intersect_sprite_hitpoint(obj_a, obj_b, level, &hit_coord) || move->category == CAT_CLOSE ||
         (player_frame_isset(obj_a, "ue") && b->state != STATE_JUMPING))) {
 
-        obj_a->q_counter = player_frame_isset(obj_a, "q") ? player_frame_get(obj_ta, "q") : obj_a->q_counter;
+        obj_a->q_counter = player_frame_isset(obj_a, "q") ? player_frame_get(obj_a, "q") : obj_a->q_counter;
 
         if(har_is_blocking(b, move) &&
            // earthquake smash is unblockable
