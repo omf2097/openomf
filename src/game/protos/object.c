@@ -76,6 +76,7 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
 
     // For enabling multiple hits per move
     obj->q_counter = 0;
+    obj->q_val = 0;
     obj->can_hit = 0;
 
     // Callbacks & userdata

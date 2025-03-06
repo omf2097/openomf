@@ -84,6 +84,7 @@ struct object_t {
 
     // Set by q tag
     int8_t q_counter;
+    int8_t q_val;
     int8_t can_hit;
 
     int8_t orbit;

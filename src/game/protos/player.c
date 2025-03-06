@@ -627,8 +627,9 @@ void player_run(object *obj) {
             obj->orbit = 0;
         }
         if(sd_script_isset(frame, "q")) {
+            obj->q_val = sd_script_get(frame, "q");
             // Enable hit if the q value is higher than the hit count for this animation
-            if(sd_script_get(frame, "q") > obj->q_counter) {
+            if(obj->q_val > obj->q_counter) {
                 obj->can_hit = 1;
             }
         }
