@@ -18,6 +18,7 @@ tests=(
     "Overhead throw should throw opponent to the right:OHT.REC"
     "Electra should be able to kick while doing inputs for rolling thunder:65K6P.REC"
     "Jaguar uses same animation for K and 6P but Shadow does not:6P.REC"
+    "Novas 1P can hit more than once with the Q tag and use AI for air launch:NOVA-1P.REC"
 )
 
 fail_count=0
