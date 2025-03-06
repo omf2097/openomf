@@ -650,34 +650,7 @@ void har_move(object *obj) {
             obj->pos.x -= (h->back_speed * object_get_direction(obj)) * (h->hard_close ? 0.5 : 1.0);
         }
 
-        // TODO unify this code with the (very similar) code in har_move
-        // but we currently don't have a way in player.c to know if an object is a HAR or a projectile
-        if(player_frame_isset(obj, "cx")) {
-            float cx = player_frame_get(obj, "cx") / 10.0 * obj->horizontal_velocity_modifier;
-            log_debug("CX! %f, %c", cx, h->inputs[0]);
-            if(h->inputs[0] == '4') {
-                obj->vel.x -= cx * object_get_direction(obj);
-            } else if(h->inputs[0] == '6') {
-                obj->vel.x += cx * object_get_direction(obj);
-            } else if(h->inputs[0] == '3' || h->inputs[0] == '9') {
-                obj->vel.x += cx * 0.7 * object_get_direction(obj);
-            } else if(h->inputs[0] == '1' || h->inputs[0] == '7') {
-                obj->vel.x -= cx * 0.7 * object_get_direction(obj);
-            }
-            // CY needs CX to be set
-            if(player_frame_isset(obj, "cy")) {
-                float cy = player_frame_get(obj, "cx") / 10.0 * obj->vertical_velocity_modifier;
-                if(h->inputs[0] == '8') {
-                    obj->vel.y -= cy * object_get_direction(obj);
-                } else if(h->inputs[0] == '2') {
-                    obj->vel.y += cy * object_get_direction(obj);
-                } else if(h->inputs[0] == '3' || h->inputs[0] == '1') {
-                    obj->vel.y += cy * 0.7 * object_get_direction(obj);
-                } else if(h->inputs[0] == '7' || h->inputs[0] == '9') {
-                    obj->vel.y -= cy * 0.7 * object_get_direction(obj);
-                }
-            }
-        }
+        object_apply_controllable_velocity(obj, obj, last_input);
     } else {
         object_set_vel(obj, vec2f_create(vel.x, vel.y + obj->gravity));
     }
