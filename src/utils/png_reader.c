@@ -8,81 +8,83 @@
 
 #include "utils/allocator.h"
 
-bool read_paletted_png(const char *filename, unsigned char *dst) {
-    assert(filename != NULL);
-    assert(dst != NULL);
-    bool ret = false;
-    FILE *handle = NULL;
-    png_structp png_ptr = NULL;
-    png_infop info_ptr = NULL;
-    png_bytep *row_pointers = NULL;
-    uint8_t sig[8];
+#define SIGNATURE_SIZE 8
 
-    if((handle = fopen(filename, "rb")) == NULL) {
-        goto error_0;
+static void abort_png(png_structp png, const char *err) {
+    log_error("libpng error: %s", err);
+    abort();
+}
+
+static FILE *open_and_check(const char *filename) {
+    FILE *handle = fopen(filename, "rb");
+    if(handle == NULL) {
+        return NULL;
     }
-    if(fread(sig, 1, 8, handle) != 8) {
-        goto error_1;
+    uint8_t sig[SIGNATURE_SIZE];
+    if(fread(sig, 1, SIGNATURE_SIZE, handle) != SIGNATURE_SIZE) {
+        goto error;
     }
     if(!png_check_sig(sig, 8)) {
-        goto error_1;
+        goto error;
     }
-    if(!(png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL))) {
-        goto error_1;
-    }
-    if(!(info_ptr = png_create_info_struct(png_ptr))) {
-        goto error_1;
-    }
-    if(setjmp(png_jmpbuf(png_ptr))) {
-        goto error_2;
-    }
+    return handle;
 
-    png_init_io(png_ptr, handle);
-    png_set_sig_bytes(png_ptr, 8);
-    png_read_info(png_ptr, info_ptr);
-    int w = png_get_image_width(png_ptr, info_ptr);
-    int h = png_get_image_height(png_ptr, info_ptr);
-    png_byte color_type = png_get_color_type(png_ptr, info_ptr);
-    png_byte bit_depth = png_get_bit_depth(png_ptr, info_ptr);
+error:
+    fclose(handle);
+    return NULL;
+}
 
-    // We need 320x200 palette image.
-    if(w > 320 || w < 1 || h > 200 || h < 1 || color_type != PNG_COLOR_TYPE_PALETTE || bit_depth != 8) {
-        goto error_2;
-    }
-
-    // Allocate memory for the data
-    row_pointers = omf_malloc(h * sizeof(png_bytep));
-    for(int y = 0; y < h; y++) {
-        row_pointers[y] = omf_malloc(png_get_rowbytes(png_ptr, info_ptr));
-    }
-
-    if(setjmp(png_jmpbuf(png_ptr))) {
-        goto error_3;
-    }
-
+static void read_png_data(unsigned char *dst, png_structp png_ptr, png_infop info_ptr, int w, int h) {
+    png_bytep *row_pointers = png_malloc(png_ptr, h * png_get_rowbytes(png_ptr, info_ptr));
     png_read_image(png_ptr, row_pointers);
-
-    // Convert from PNG source to destination buffer
     for(int y = 0; y < h; y++) {
         png_byte *row = row_pointers[y];
         for(int x = 0; x < w; x++) {
             dst[w * y + x] = row[x];
         }
     }
-    ret = true;
+    png_free(png_ptr, row_pointers);
+}
 
-    // Free up everything
-error_3:
-    for(int y = 0; y < h; y++) {
-        omf_free(row_pointers[y]);
+bool read_paletted_png(const char *filename, unsigned char *dst) {
+    assert(filename != NULL);
+    assert(dst != NULL);
+
+    FILE *handle = NULL;
+    png_structp png_ptr = NULL;
+    png_infop info_ptr = NULL;
+
+    if((handle = open_and_check(filename)) == NULL) {
+        log_error("Unable to read PNG file: Could not open file for reading");
+        return false;
     }
-    omf_free(row_pointers);
-error_2:
+    if(!(png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, &abort_png, NULL))) {
+        log_error("Unable to allocate libpng read struct: Out of memory!");
+        abort();
+    }
+    if(!(info_ptr = png_create_info_struct(png_ptr))) {
+        log_error("Unable to allocate libpng info struct: Out of memory!");
+        abort();
+    }
+
+    png_init_io(png_ptr, handle);
+    png_set_sig_bytes(png_ptr, SIGNATURE_SIZE);
+    png_read_info(png_ptr, info_ptr);
+    int w = png_get_image_width(png_ptr, info_ptr);
+    int h = png_get_image_height(png_ptr, info_ptr);
+    png_byte color_type = png_get_color_type(png_ptr, info_ptr);
+    png_byte bit_depth = png_get_bit_depth(png_ptr, info_ptr);
+
+    bool valid = (w == 320 && h == 200 && color_type == PNG_COLOR_TYPE_PALETTE && bit_depth == 8);
+    if(valid) {
+        read_png_data(dst, png_ptr, info_ptr, w, h);
+    } else {
+        log_error("PNG must be paletted 320x200 image");
+    }
+
     png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-error_1:
     fclose(handle);
-error_0:
-    return ret;
+    return valid;
 }
 
 #else // PNG_FOUND

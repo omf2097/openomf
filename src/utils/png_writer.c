@@ -5,18 +5,33 @@
 #include <assert.h>
 #include <png.h>
 
+static void abort_png(png_structp png, const char *err) {
+    log_error("libpng error: %s", err);
+    abort();
+}
+
 bool write_rgb_png(const char *filename, int w, int h, const unsigned char *data, bool has_alpha, bool flip) {
-    FILE *fp = fopen(filename, "wb");
-    if(fp == NULL) {
+    assert(filename != NULL);
+    assert(data != NULL);
+
+    FILE *handle;
+    png_structp png_ptr;
+    png_infop info_ptr;
+
+    if((handle = fopen(filename, "wb")) == NULL) {
         log_error("Unable to write PNG file: Could not open file for writing");
         return false;
     }
+    if(!(png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, &abort_png, NULL))) {
+        log_error("Unable to allocate libpng write struct: Out of memory!");
+        abort();
+    }
+    if(!(info_ptr = png_create_info_struct(png_ptr))) {
+        log_error("Unable to allocate libpng info struct: Out of memory!");
+        abort();
+    }
 
-    // PNG header things
-    png_structp png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-    png_infop info_ptr = png_create_info_struct(png_ptr);
-    setjmp(png_jmpbuf(png_ptr));
-    png_init_io(png_ptr, fp);
+    png_init_io(png_ptr, handle);
     png_set_IHDR(png_ptr, info_ptr, w, h, 8, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE,
                  PNG_FILTER_TYPE_BASE);
     png_write_info(png_ptr, info_ptr);
@@ -31,7 +46,7 @@ bool write_rgb_png(const char *filename, int w, int h, const unsigned char *data
 
     png_write_end(png_ptr, info_ptr);
     png_destroy_write_struct(&png_ptr, &info_ptr);
-    fclose(fp);
+    fclose(handle);
     return true;
 }
 
