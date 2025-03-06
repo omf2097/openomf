@@ -61,7 +61,8 @@ void player_reload_with_str(object *obj, const char *custom_str) {
     obj->enemy_slide_state.timer = 0;
     obj->enemy_slide_state.dest = vec2i_create(0, 0);
     obj->enemy_slide_state.duration = 0;
-    obj->hit_frames = 0;
+    obj->q_counter = 0;
+    obj->q_val = 0;
     obj->can_hit = 0;
 }
 
@@ -627,12 +628,11 @@ void player_run(object *obj) {
             obj->orbit = 0;
         }
         if(sd_script_isset(frame, "q")) {
-            // Enable hit on the current and the next n-1 frames.
-            obj->hit_frames = sd_script_get(frame, "q");
-        }
-        if(obj->hit_frames > 0) {
-            obj->can_hit = 1;
-            obj->hit_frames--;
+            obj->q_val = sd_script_get(frame, "q");
+            // Enable hit if the q value is higher than the hit count for this animation
+            if(obj->q_val > obj->q_counter) {
+                obj->can_hit = 1;
+            }
         }
 
         // Set video effects now.
