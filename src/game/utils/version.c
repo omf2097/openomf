@@ -23,7 +23,7 @@ int get_version_minor(void) {
 }
 
 int get_version_patch(void) {
-    return V_MINOR;
+    return V_PATCH;
 }
 
 char *get_version_label(void) {
