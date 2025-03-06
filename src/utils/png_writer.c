@@ -2,12 +2,12 @@
 #include "utils/log.h"
 
 #ifdef PNG_FOUND
+#include "utils/crash.h"
 #include <assert.h>
 #include <png.h>
 
 static void abort_png(png_structp png, const char *err) {
-    log_error("libpng error: %s", err);
-    abort();
+    crash(err);
 }
 
 bool write_rgb_png(const char *filename, int w, int h, const unsigned char *data, bool has_alpha, bool flip) {
@@ -23,12 +23,10 @@ bool write_rgb_png(const char *filename, int w, int h, const unsigned char *data
         return false;
     }
     if(!(png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, &abort_png, NULL))) {
-        log_error("Unable to allocate libpng write struct: Out of memory!");
-        abort();
+        crash("Unable to allocate libpng write struct: Out of memory!");
     }
     if(!(info_ptr = png_create_info_struct(png_ptr))) {
-        log_error("Unable to allocate libpng info struct: Out of memory!");
-        abort();
+        crash("Unable to allocate libpng info struct: Out of memory!");
     }
 
     png_init_io(png_ptr, handle);

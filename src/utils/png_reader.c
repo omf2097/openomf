@@ -7,12 +7,12 @@
 #include <stdint.h>
 
 #include "utils/allocator.h"
+#include "utils/crash.h"
 
 #define SIGNATURE_SIZE 8
 
 static void abort_png(png_structp png, const char *err) {
-    log_error("libpng error: %s", err);
-    abort();
+    crash(err);
 }
 
 static FILE *open_and_check(const char *filename) {
@@ -59,12 +59,10 @@ bool read_paletted_png(const char *filename, unsigned char *dst) {
         return false;
     }
     if(!(png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, &abort_png, NULL))) {
-        log_error("Unable to allocate libpng read struct: Out of memory!");
-        abort();
+        crash("Unable to allocate libpng read struct: Out of memory!");
     }
     if(!(info_ptr = png_create_info_struct(png_ptr))) {
-        log_error("Unable to allocate libpng info struct: Out of memory!");
-        abort();
+        crash("Unable to allocate libpng info struct: Out of memory!");
     }
 
     png_init_io(png_ptr, handle);
