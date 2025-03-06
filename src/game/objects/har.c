@@ -1198,7 +1198,17 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
             }
         }
 
-        har_take_damage(obj_b, &move->footer_string, move->damage, move->stun);
+        if(player_frame_isset(obj_a, "ai")) {
+            str str;
+            str_create(&str);
+            str_from_c(&str, "A1-s01l50B2-C2-L5-M400");
+            har_take_damage(obj_b, &str, move->damage, move->stun);
+            str_free(&str);
+            obj_b->vel.x = -5.0 * object_get_direction(obj_b);
+            obj_b->vel.y = -9.0;
+        } else {
+            har_take_damage(obj_b, &move->footer_string, move->damage, move->stun);
+        }
 
         if(hit_coord.x != 0 || hit_coord.y != 0) {
             har_spawn_scrap(obj_b, hit_coord, move->block_stun);
@@ -1305,7 +1315,18 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
             // Just take damage normally if there is no footer string in successor
             log_debug("projectile dealt damage of %f", move->damage);
             log_debug("projectile %d dealt damage of %f", move->id, move->damage);
-            har_take_damage(o_har, &move->footer_string, move->damage, move->stun);
+
+            if(player_frame_isset(o_pjt, "ai")) {
+                str str;
+                str_create(&str);
+                str_from_c(&str, "A1-s01l50B2-C2-L5-M400");
+                har_take_damage(o_har, &str, move->damage, move->stun);
+                str_free(&str);
+                o_har->vel.x = -5.0 * object_get_direction(o_har);
+                o_har->vel.y = -9.0;
+            } else {
+                har_take_damage(o_har, &move->footer_string, move->damage, move->stun);
+            }
         }
 
         projectile_mark_hit(o_pjt);
