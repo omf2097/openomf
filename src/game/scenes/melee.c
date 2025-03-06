@@ -16,6 +16,7 @@
 #include "resources/pilots.h"
 #include "resources/sprite.h"
 #include "utils/allocator.h"
+#include "utils/c_string_util.h"
 #include "utils/log.h"
 #include "utils/random.h"
 #include "video/vga_state.h"
@@ -400,8 +401,18 @@ void handle_action(scene *scene, int player, int action) {
                         sd_pilot_set_player_color(player2->pilot, PRIMARY, p_a.colors[2]);
                     }
                     // TODO in netplay, use the lobby names
-                    strcpy(player1->pilot->name, lang_get(player1->pilot->pilot_id + 20));
-                    strcpy(player2->pilot->name, lang_get(player2->pilot->pilot_id + 20));
+                    strncpy_or_truncate(player1->pilot->name, lang_get(player1->pilot->pilot_id + 20),
+                                        sizeof(player1->pilot->name));
+                    // 1player name strings end in a newline...
+                    if(player1->pilot->name[strlen(player1->pilot->name) - 1] == '\n') {
+                        player1->pilot->name[strlen(player1->pilot->name) - 1] = 0;
+                    }
+                    strncpy_or_truncate(player2->pilot->name, lang_get(player2->pilot->pilot_id + 20),
+                                        sizeof(player1->pilot->name));
+                    // 1player name strings end in a newline...
+                    if(player1->pilot->name[strlen(player1->pilot->name) - 1] == '\n') {
+                        player1->pilot->name[strlen(player1->pilot->name) - 1] = 0;
+                    }
                     game_state_set_next(scene->gs, SCENE_VS);
                 }
             }
