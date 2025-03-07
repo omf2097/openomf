@@ -29,7 +29,7 @@ void scrap_move(object *obj) {
     if(pos.y > ARENA_FLOOR) {
         pos.y = ARENA_FLOOR;
         vel.y = -vel.y * dampen;
-        vel.x = vel.x * dampen;
+        vel.x = vel.x * dampen + (rand_float() - 0.5f) * 3.0;
     }
     if(IS_ZERO(vel.x))
         vel.x = 0;
