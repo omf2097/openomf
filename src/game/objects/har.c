@@ -1177,6 +1177,9 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
             har_event_enemy_block(a, move, false, ctrl_a);
             har_event_block(b, move, false, ctrl_b);
             har_block(obj_b, hit_coord, move->block_stun);
+            if(player_frame_isset(obj_a, "i") && move->next_move) {
+                har_set_ani(obj_a, move->next_move, 0);
+            }
             if(b->is_wallhugging) {
                 vec2f push = object_get_vel(obj_a);
                 // TODO use 90% of the block pushback as cornerpush for now
@@ -1277,8 +1280,8 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
                 b->health = 1;
             }
             log_debug("HAR %s going to next move %d", har_get_name(b->id), move->next_move);
-            object_set_animation(obj_a, &next_move->ani);
-            object_set_repeat(obj_a, 0);
+
+            har_set_ani(obj_a, move->next_move, 0);
             // bail out early, the next move can still brutalize the oppopent so don't set them immune to further damage
             // this fixes flail's charging punch and katana's wall spin, but thorn's spike charge still works
             //
@@ -2030,7 +2033,8 @@ int har_act(object *obj, int act_type) {
     if(h->executing_move) {
         if(obj->pos.y < ARENA_FLOOR) {
             // XXX I think 'i' is for 'not interruptable'
-            if(h->state < STATE_JUMPING && !player_frame_isset(obj, "i")) {
+            // XXX I think this is wrong, so comment it out for now
+            if(h->state < STATE_JUMPING /*&& !player_frame_isset(obj, "i")*/) {
                 log_debug("standing move led to airborne one");
                 h->state = STATE_JUMPING;
             } else if(h->state != STATE_JUMPING) {

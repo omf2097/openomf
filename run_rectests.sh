@@ -21,6 +21,7 @@ tests=(
     "Novas 1P can hit more than once with the Q tag and use AI for air launch:NOVA-1P.REC"
     "Jaguar standing throw should not result in overlap with opponent in corner:JAG-CORNER-THROW.REC"
     "Jaguar doing a standing throw as the winning move should not cause a slide:JAG-NO-SLIDE-WIN-THROW.REC"
+    "Flail charging punch should cancel when blocked:FLAIL_454P.REC"
 )
 
 fail_count=0
