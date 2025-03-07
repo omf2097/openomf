@@ -1800,17 +1800,17 @@ af_move *match_move(object *obj, char prefix, char *inputs) {
     return NULL;
 }
 
-af_move *scrap_destruction_cheat(object *obj, char *inputs) {
+af_move *scrap_destruction_cheat(object *obj, char input) {
     har *h = object_get_userdata(obj);
     for(int i = 0; i < 70; i++) {
         af_move *move;
         if((move = af_get_move(h->af_data, i))) {
-            if(move->category == CAT_SCRAP && h->state == STATE_VICTORY && inputs[0] == 'K' &&
+            if(move->category == CAT_SCRAP && h->state == STATE_VICTORY && input == 'K' &&
                (player_frame_isset(obj, "jf") || (player_frame_isset(obj, "jn") && i == player_frame_get(obj, "jn")))) {
                 return move;
             }
 
-            if(move->category == CAT_DESTRUCTION && h->state == STATE_SCRAP && inputs[0] == 'P' &&
+            if(move->category == CAT_DESTRUCTION && h->state == STATE_SCRAP && input == 'P' &&
                (player_frame_isset(obj, "jf2") ||
                 (player_frame_isset(obj, "jn") && i == player_frame_get(obj, "jn")))) {
                 return move;
@@ -1900,7 +1900,7 @@ int har_act(object *obj, int act_type) {
 
     if(game_state_get_player(obj->gs, h->player_id)->ez_destruct && move == NULL &&
        (h->state == STATE_VICTORY || h->state == STATE_SCRAP)) {
-        move = scrap_destruction_cheat(obj, h->inputs);
+        move = scrap_destruction_cheat(obj, prefix);
     }
 
     if(move) {
