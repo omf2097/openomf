@@ -46,6 +46,11 @@ int get_operand(rec_assertion_operand *op, controller *ctrl) {
                 return har->health;
             case ATTR_STAMINA:
                 return har->endurance;
+            case ATTR_OPPONENT_DISTANCE: {
+                object *obj_opp = game_state_find_object(ctrl->gs, game_player_get_har_obj_id(game_state_get_player(
+                                                                       ctrl->gs, abs(op->value.attr.har_id - 1))));
+                return fabsf(obj->pos.x - obj_opp->pos.x);
+            }
             default:
                 abort();
         }

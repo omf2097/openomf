@@ -19,6 +19,8 @@ tests=(
     "Electra should be able to kick while doing inputs for rolling thunder:65K6P.REC"
     "Jaguar uses same animation for K and 6P but Shadow does not:6P.REC"
     "Novas 1P can hit more than once with the Q tag and use AI for air launch:NOVA-1P.REC"
+    "Jaguar standing throw should not result in overlap with opponent in corner:JAG-CORNER-THROW.REC"
+    "Jaguar doing a standing throw as the winning move should not cause a slide:JAG-NO-SLIDE-WIN-THROW.REC"
 )
 
 fail_count=0

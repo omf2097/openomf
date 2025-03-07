@@ -22,6 +22,7 @@ typedef enum
     ATTR_ANIMATION_ID,
     ATTR_HEALTH,
     ATTR_STAMINA,
+    ATTR_OPPONENT_DISTANCE,
     ATTR_INVALID
 } rec_har_attr;
 
@@ -33,7 +34,7 @@ typedef struct {
             uint8_t har_id;
             rec_har_attr attribute;
         } attr;
-        uint16_t literal;
+        int16_t literal;
     } value;
 } rec_assertion_operand;
 

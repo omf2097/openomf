@@ -73,7 +73,7 @@ bool parse_assertion(const uint8_t *data, rec_assertion *out) {
     if(op1_type) { // Literal
         out->operand1.value.literal = read_bits(&reader, 16);
     } else { // Object attribute
-        out->operand1.value.attr.har_id = read_bits(&reader, 1);
+        out->operand1.value.attr.har_id = (int16_t)read_bits(&reader, 1);
         uint8_t attr = read_bits(&reader, 8);
         if(attr >= ATTR_INVALID)
             return false;
@@ -83,7 +83,7 @@ bool parse_assertion(const uint8_t *data, rec_assertion *out) {
     // Parse operand 2
     out->operand2.is_literal = op2_type;
     if(op2_type) { // Literal
-        out->operand2.value.literal = read_bits(&reader, 16);
+        out->operand2.value.literal = (int16_t)read_bits(&reader, 16);
     } else { // Object attribute
         out->operand2.value.attr.har_id = read_bits(&reader, 1);
         uint8_t attr = read_bits(&reader, 8);
@@ -123,7 +123,7 @@ bool encode_assertion(const rec_assertion *assertion, uint8_t *buffer) {
     // Write operands
     for(int i = 0; i < 2; i++) {
         if(ops[i]->is_literal) {
-            write_bits(&writer, ops[i]->value.literal, 16);
+            write_bits(&writer, (uint16_t)ops[i]->value.literal, 16);
         } else {
             write_bits(&writer, ops[i]->value.attr.har_id, 1);
             write_bits(&writer, ops[i]->value.attr.attribute, 8);
@@ -133,8 +133,8 @@ bool encode_assertion(const rec_assertion *assertion, uint8_t *buffer) {
     return true;
 }
 
-static const char *attr_name[] = {"X Position", "Y Position",   "X Velocity", "Y Velocity",
-                                  "State ID",   "Animation ID", "Health",     "Stamina"};
+static const char *attr_name[] = {"X Position",   "Y Position", "X Velocity", "Y Velocity",       "State ID",
+                                  "Animation ID", "Health",     "Stamina",    "Opponent Distance"};
 
 // Helper function to print assertions
 void print_assertion(const rec_assertion *assertion) {

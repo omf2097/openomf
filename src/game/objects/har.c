@@ -637,7 +637,7 @@ void har_move(object *obj) {
         }
 
         if(h->state == STATE_WALKTO) {
-            obj->pos.x += (h->fwd_speed * object_get_direction(obj)) * (h->hard_close ? 0.5 : 1.0);
+            obj->pos.x += (h->fwd_speed * object_get_direction(obj)) * (h->hard_close ? 0.0 : 1.0);
         } else if(h->state == STATE_WALKFROM) {
             obj->pos.x -= (h->back_speed * object_get_direction(obj)) * (h->hard_close ? 0.5 : 1.0);
         }
@@ -907,26 +907,11 @@ void har_block(object *obj, vec2i hit_coord, uint8_t block_stun) {
     h->damage_received = 1;
 }
 
-void har_check_closeness(object *obj_a, object *obj_b) {
+void har_land_on_har(object *obj_a, object *obj_b, int hard_limit, int soft_limit) {
     vec2i pos_a = object_get_pos(obj_a);
     vec2i pos_b = object_get_pos(obj_b);
-    har *a = object_get_userdata(obj_a);
-    har *b = object_get_userdata(obj_b);
     sprite *sprite_a = animation_get_sprite(obj_a->cur_animation, obj_a->cur_sprite_id);
     sprite *sprite_b = animation_get_sprite(obj_b->cur_animation, obj_b->cur_sprite_id);
-    int hard_limit = 32; // Push opponent if HARs too close. Harrison-Stetson method value.
-    int soft_limit = 45; // Sets HAR A as being close to HAR B if closer than this.
-
-    if(!sprite_a || !sprite_b) {
-        // no sprite, eg chronos' teleport
-        return;
-    }
-
-    if(b->state == STATE_RECOIL || a->state == STATE_RECOIL || b->state == STATE_FALLEN || b->state == STATE_JUMPING ||
-       a->state == STATE_DEFEAT || b->state == STATE_DEFEAT || a->state == STATE_FALLEN ||
-       a->state == STATE_WALLDAMAGE || b->state == STATE_WALLDAMAGE) {
-        return;
-    }
 
     vec2i size_b = sprite_get_size(sprite_b);
 
@@ -934,9 +919,8 @@ void har_check_closeness(object *obj_a, object *obj_b) {
     int y1 = pos_a.y + sprite_a->pos.y + 50;
     int y2 = pos_b.y - size_b.y;
 
-    // handle one HAR landing on top of another
-    // XXX make this code less redundant
-    if(a->state == STATE_JUMPING && object_get_direction(obj_a) == OBJECT_FACE_LEFT) {
+    // XXX make this code less redundanta
+    if(object_get_direction(obj_a) == OBJECT_FACE_LEFT) {
         if(pos_a.x <= pos_b.x + hard_limit && pos_a.x >= pos_b.x && y1 >= y2) {
             if(pos_b.x == ARENA_LEFT_WALL) {
                 pos_a.x = pos_b.x + hard_limit;
@@ -962,7 +946,7 @@ void har_check_closeness(object *obj_a, object *obj_b) {
                 object_set_pos(obj_a, pos_a);
             }
         }
-    } else if(a->state == STATE_JUMPING && object_get_direction(obj_a) == OBJECT_FACE_RIGHT) {
+    } else if(object_get_direction(obj_a) == OBJECT_FACE_RIGHT) {
         if(pos_a.x + hard_limit >= pos_b.x && pos_a.x <= pos_b.x && y1 >= y2) {
             if(pos_b.x == ARENA_RIGHT_WALL) {
                 pos_a.x = pos_b.x - hard_limit;
@@ -989,46 +973,114 @@ void har_check_closeness(object *obj_a, object *obj_b) {
             }
         }
     }
+}
+
+void har_check_closeness(object *obj_a, object *obj_b) {
+    vec2i pos_a = object_get_pos(obj_a);
+    vec2i pos_b = object_get_pos(obj_b);
+    har *a = object_get_userdata(obj_a);
+    har *b = object_get_userdata(obj_b);
+    sprite *sprite_a = animation_get_sprite(obj_a->cur_animation, obj_a->cur_sprite_id);
+    sprite *sprite_b = animation_get_sprite(obj_b->cur_animation, obj_b->cur_sprite_id);
+    int hard_limit = 32; // Push opponent if HARs too close. Harrison-Stetson method value.
+    // TODO verify throw distance soft limit
+    int soft_limit = 45; // Sets HAR A as being close to HAR B if closer than this. This should be affected by throw
+                         // distance setting.
 
     // Reset closeness state
     a->close = 0;
+    b->close = 0;
     a->hard_close = 0;
+    b->hard_close = 0;
 
+    if(!sprite_a || !sprite_b) {
+        // no sprite, eg chronos' teleport
+        return;
+    }
+
+    if(object_is_airborne(obj_a) && object_is_airborne(obj_b)) {
+        // HARs clip through each other in the air
+        return;
+    }
+
+    if(a->executing_move || b->executing_move) {
+        // don't mess with coreography
+        return;
+    }
+
+    // handle one HAR landing on top of another
+    if((a->state == STATE_JUMPING || a->state == STATE_FALLEN) && b->state != STATE_JUMPING &&
+       b->state != STATE_FALLEN) {
+        har_land_on_har(obj_a, obj_b, hard_limit, soft_limit);
+        return;
+    } else if((b->state == STATE_JUMPING || b->state == STATE_FALLEN) && a->state != STATE_JUMPING &&
+              a->state != STATE_FALLEN) {
+        har_land_on_har(obj_b, obj_a, hard_limit, soft_limit);
+        return;
+    }
+
+    if(abs(pos_a.x - pos_b.x) <= hard_limit) {
+        a->hard_close = 1;
+        b->hard_close = 1;
+    }
+
+    float a_speed = (a->fwd_speed * object_get_direction(obj_a)) * (a->hard_close ? 0.5 : 1.0);
+    float b_speed = (b->fwd_speed * object_get_direction(obj_b)) * (b->hard_close ? 0.5 : 1.0);
+
+    bool pushed = true;
     // If HARs get too close together, handle it
-    if(har_is_walking(a) && object_get_direction(obj_a) == OBJECT_FACE_LEFT) {
-        if(pos_a.x < pos_b.x + hard_limit && pos_a.x > pos_b.x) {
-            // don't allow hars to overlap in the corners
-            if(pos_b.x > ARENA_LEFT_WALL) {
-                pos_b.x = pos_a.x - hard_limit;
-                object_set_pos(obj_b, pos_b);
+    if(a->state == STATE_WALKTO && b->state == STATE_WALKTO && a->hard_close) {
+        // both hars are walking into each other, figure out the resulting vector and apply it
+        obj_b->pos.x += b_speed + a_speed;
+        obj_a->pos.x += a_speed + b_speed;
+    } else if(a->state == STATE_WALKTO && a->hard_close) {
+        // A pushes B
+        obj_b->pos.x += a_speed;
+    } else if(b->state == STATE_WALKTO && b->hard_close) {
+        // B pushes A
+        obj_a->pos.x += b_speed;
+    } else {
+        pushed = false;
+    }
+
+    if(fabsf(obj_a->pos.x - obj_b->pos.x) < hard_limit && a->state != STATE_JUMPING && b->state != STATE_JUMPING) {
+        if(obj_a->pos.x <= ARENA_LEFT_WALL) {
+            obj_a->pos.x = ARENA_LEFT_WALL;
+            obj_b->pos.x = ARENA_LEFT_WALL + hard_limit;
+        } else if(obj_b->pos.x <= ARENA_LEFT_WALL) {
+            obj_b->pos.x = ARENA_LEFT_WALL;
+            obj_a->pos.x = ARENA_LEFT_WALL + hard_limit;
+        } else if(obj_a->pos.x >= ARENA_RIGHT_WALL) {
+            obj_a->pos.x = ARENA_RIGHT_WALL;
+            obj_b->pos.x = ARENA_RIGHT_WALL - hard_limit;
+        } else if(obj_b->pos.x >= ARENA_RIGHT_WALL) {
+            obj_b->pos.x = ARENA_RIGHT_WALL;
+            obj_a->pos.x = ARENA_RIGHT_WALL - hard_limit;
+        } else if(!pushed) {
+            // they're simply too close
+            float distance = hard_limit - fabsf(obj_a->pos.x - obj_b->pos.x);
+            if(obj_a->pos.x < obj_b->pos.x) {
+                obj_a->pos.x -= distance / 2.0;
+                obj_a->pos.x = clampf(obj_a->pos.x, ARENA_LEFT_WALL, ARENA_RIGHT_WALL);
+                obj_b->pos.x = obj_a->pos.x + hard_limit;
             } else {
-                pos_a.x = pos_b.x + hard_limit;
-                object_set_pos(obj_a, pos_a);
-            }
-            a->hard_close = 1;
-        }
-        if(pos_a.x < pos_b.x + soft_limit && pos_a.x > pos_b.x) {
-            if(b->state == STATE_STANDING || b->state == STATE_STUNNED || har_is_walking(b) || har_is_crouching(b)) {
-                a->close = 1;
+                obj_a->pos.x += distance / 2.0;
+                obj_a->pos.x = clampf(obj_a->pos.x, ARENA_LEFT_WALL, ARENA_RIGHT_WALL);
+                obj_b->pos.x = obj_a->pos.x - hard_limit;
             }
         }
     }
-    if(har_is_walking(a) && object_get_direction(obj_a) == OBJECT_FACE_RIGHT) {
-        if(pos_a.x + hard_limit > pos_b.x && pos_a.x < pos_b.x) {
-            // don't allow hars to overlap in the corners
-            if(pos_b.x < ARENA_RIGHT_WALL) {
-                pos_b.x = pos_a.x + hard_limit;
-                object_set_pos(obj_b, pos_b);
-            } else {
-                pos_a.x = pos_b.x - hard_limit;
-                object_set_pos(obj_a, pos_a);
-            }
-            a->hard_close = 1;
+
+    // track if the hars are "close"
+    // TODO defensive throws setting may impact this
+    if(a->state == STATE_WALKTO && abs(pos_a.x - pos_b.x) < soft_limit) {
+        if(b->state == STATE_STANDING || b->state == STATE_STUNNED || har_is_walking(b) || har_is_crouching(b)) {
+            a->close = 1;
         }
-        if(pos_a.x + soft_limit > pos_b.x && pos_a.x < pos_b.x) {
-            if(b->state == STATE_STANDING || b->state == STATE_STUNNED || har_is_walking(b) || har_is_crouching(b)) {
-                a->close = 1;
-            }
+    }
+    if(b->state == STATE_WALKTO && abs(pos_a.x - pos_b.x) < soft_limit) {
+        if(a->state == STATE_STANDING || a->state == STATE_STUNNED || har_is_walking(a) || har_is_crouching(a)) {
+            b->close = 1;
         }
     }
 }
@@ -1428,7 +1480,6 @@ void har_collide(object *obj_a, object *obj_b) {
 
     // Check for closeness between HARs and handle it
     har_check_closeness(obj_a, obj_b);
-    har_check_closeness(obj_b, obj_a);
 
     // Handle har collisions
     if(!har_collide_with_har(obj_a, obj_b, 0)) {

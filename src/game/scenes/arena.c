@@ -643,7 +643,6 @@ void arena_har_defeat_hook(int loser_player_id, scene *scene) {
         // can't do scrap/destruct except on final round
         winner_har->state = STATE_DONE;
     }
-    winner_har->executing_move = 0;
     object_set_vel(loser, vec2f_create(0, 0));
     object_set_vel(winner, vec2f_create(0, 0));
     // object_set_gravity(loser, 0);
@@ -1353,7 +1352,7 @@ static void arena_debug(scene *scene) {
             text_render(&tconf_debug, TEXT_DEFAULT, 315 - (strlen(buf) * fnt->w), 48, 250, 6, buf);
         }
 
-        snprintf(buf, sizeof(buf), "vel: %.3f %.3f", obj_har[i]->vel.x, obj_har[i]->vel.y);
+        snprintf(buf, sizeof(buf), "pos: %.3f %.3f", obj_har[i]->pos.x, obj_har[i]->pos.y);
 
         if(i == 0) {
             text_render(&tconf_debug, TEXT_DEFAULT, 5, 56, 250, 6, buf);
@@ -1361,13 +1360,21 @@ static void arena_debug(scene *scene) {
             text_render(&tconf_debug, TEXT_DEFAULT, 315 - (strlen(buf) * fnt->w), 56, 250, 6, buf);
         }
 
-        snprintf(buf, sizeof(buf), "aa: %d em: %d ani: %d", hars[i]->air_attacked, hars[i]->executing_move,
-                 obj_har[i]->cur_animation->id);
+        snprintf(buf, sizeof(buf), "vel: %.3f %.3f", obj_har[i]->vel.x, obj_har[i]->vel.y);
 
         if(i == 0) {
             text_render(&tconf_debug, TEXT_DEFAULT, 5, 62, 250, 6, buf);
         } else {
             text_render(&tconf_debug, TEXT_DEFAULT, 315 - (strlen(buf) * fnt->w), 62, 250, 6, buf);
+        }
+
+        snprintf(buf, sizeof(buf), "aa: %d em: %d ani: %d", hars[i]->air_attacked, hars[i]->executing_move,
+                 obj_har[i]->cur_animation->id);
+
+        if(i == 0) {
+            text_render(&tconf_debug, TEXT_DEFAULT, 5, 70, 250, 6, buf);
+        } else {
+            text_render(&tconf_debug, TEXT_DEFAULT, 315 - (strlen(buf) * fnt->w), 70, 250, 6, buf);
         }
     }
 }
