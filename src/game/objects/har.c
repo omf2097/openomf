@@ -983,7 +983,9 @@ void har_check_closeness(object *obj_a, object *obj_b) {
     sprite *sprite_a = animation_get_sprite(obj_a->cur_animation, obj_a->cur_sprite_id);
     sprite *sprite_b = animation_get_sprite(obj_b->cur_animation, obj_b->cur_sprite_id);
     int hard_limit = 32; // Push opponent if HARs too close. Harrison-Stetson method value.
-    int soft_limit = 45; // Sets HAR A as being close to HAR B if closer than this.
+    // TODO verify throw distance soft limit
+    int soft_limit = 45; // Sets HAR A as being close to HAR B if closer than this. This should be affected by throw
+                         // distance setting.
 
     // Reset closeness state
     a->close = 0;
@@ -998,10 +1000,6 @@ void har_check_closeness(object *obj_a, object *obj_b) {
 
     if(object_is_airborne(obj_a) && object_is_airborne(obj_b)) {
         // HARs clip through each other in the air
-        return;
-    }
-
-    if(a->state == STATE_DEFEAT || b->state == STATE_DEFEAT || a->health == 0 || b->health == 0) {
         return;
     }
 
@@ -1029,24 +1027,20 @@ void har_check_closeness(object *obj_a, object *obj_b) {
     float a_speed = (a->fwd_speed * object_get_direction(obj_a)) * (a->hard_close ? 0.5 : 1.0);
     float b_speed = (b->fwd_speed * object_get_direction(obj_b)) * (b->hard_close ? 0.5 : 1.0);
 
-    bool pushed = false;
+    bool pushed = true;
     // If HARs get too close together, handle it
     if(a->state == STATE_WALKTO && b->state == STATE_WALKTO && a->hard_close) {
         // both hars are walking into each other, figure out the resulting vector and apply it
         obj_b->pos.x += b_speed + a_speed;
         obj_a->pos.x += a_speed + b_speed;
-        log_debug("both push %f %f", a_speed, b_speed);
-        pushed = true;
     } else if(a->state == STATE_WALKTO && a->hard_close) {
         // A pushes B
         obj_b->pos.x += a_speed;
-        log_debug("A push %f", a_speed);
-        pushed = true;
     } else if(b->state == STATE_WALKTO && b->hard_close) {
         // B pushes A
         obj_a->pos.x += b_speed;
-        log_debug("B push %f", b_speed);
-        pushed = true;
+    } else {
+        pushed = false;
     }
 
     if(fabsf(obj_a->pos.x - obj_b->pos.x) < hard_limit && a->state != STATE_JUMPING && b->state != STATE_JUMPING) {
@@ -1065,14 +1059,11 @@ void har_check_closeness(object *obj_a, object *obj_b) {
         } else if(!pushed) {
             // they're simply too close
             float distance = hard_limit - fabsf(obj_a->pos.x - obj_b->pos.x);
-            log_debug("HARS are too close together %f %f %f", distance, obj_a->pos.x, obj_a->pos.x);
             if(obj_a->pos.x < obj_b->pos.x) {
-                log_debug("moving player 1 left %f", distance / 2.0);
                 obj_a->pos.x -= distance / 2.0;
                 obj_a->pos.x = clampf(obj_a->pos.x, ARENA_LEFT_WALL, ARENA_RIGHT_WALL);
                 obj_b->pos.x = obj_a->pos.x + hard_limit;
             } else {
-                log_debug("moving player 1 right %f", distance / 2.0);
                 obj_a->pos.x += distance / 2.0;
                 obj_a->pos.x = clampf(obj_a->pos.x, ARENA_LEFT_WALL, ARENA_RIGHT_WALL);
                 obj_b->pos.x = obj_a->pos.x - hard_limit;
@@ -1080,13 +1071,13 @@ void har_check_closeness(object *obj_a, object *obj_b) {
         }
     }
 
+    // track if the hars are "close"
     // TODO defensive throws setting may impact this
     if(a->state == STATE_WALKTO && abs(pos_a.x - pos_b.x) < soft_limit) {
         if(b->state == STATE_STANDING || b->state == STATE_STUNNED || har_is_walking(b) || har_is_crouching(b)) {
             a->close = 1;
         }
     }
-
     if(b->state == STATE_WALKTO && abs(pos_a.x - pos_b.x) < soft_limit) {
         if(a->state == STATE_STANDING || a->state == STATE_STUNNED || har_is_walking(a) || har_is_crouching(a)) {
             b->close = 1;
