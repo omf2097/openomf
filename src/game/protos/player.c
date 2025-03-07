@@ -260,8 +260,8 @@ void player_run(object *obj) {
             int destination = 160;
             if(sd_script_isset(frame, "am") && sd_script_isset(frame, "e")) {
                 // destination is the enemy's position
-                log_debug("adjusting walkto %d by %d", destination, trans_x);
-                destination = enemy->pos.x - trans_x;
+                log_debug("adjusting walkto %d by %d", destination, trans_x / obj->horizontal_velocity_modifier);
+                destination = enemy->pos.x - (trans_x / obj->horizontal_velocity_modifier);
                 if(obj->pos.x > enemy->pos.x) {
                     object_set_direction(obj, OBJECT_FACE_LEFT);
                 } else {
@@ -275,7 +275,8 @@ void player_run(object *obj) {
                 } else {
                     destination = ARENA_LEFT_WALL;
                 }
-                destination += trans_x;
+                log_debug("adjusting destination %d by %d", destination, trans_x / obj->horizontal_velocity_modifier);
+                destination += trans_x / obj->horizontal_velocity_modifier;
                 object_set_direction(obj, object_get_direction(enemy));
                 // flip the HAR's position for this animation
                 obj->animation_state.shadow_corner_hack = 1;

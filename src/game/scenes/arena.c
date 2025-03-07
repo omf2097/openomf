@@ -1036,6 +1036,10 @@ bool defeated_at_rest(object *obj) {
 }
 
 bool har_unfinished_victory(object *obj) {
+    har *h = obj->userdata;
+    if(h->walk_destination > 0 && h->walk_done_anim) {
+        return true;
+    }
     return obj->cur_animation->id == ANIM_VICTORY && !player_is_last_frame(obj) && !player_is_looping(obj);
 }
 
@@ -1113,9 +1117,13 @@ void arena_dynamic_tick(scene *scene, int paused) {
 
             if(local->ending_ticks == 40) {
                 // one HAR must be in victory pose and one must be in defeat or damage from scrap/destruction
-                assert((obj_har[0]->cur_animation->id == ANIM_VICTORY &&
+                assert(((obj_har[0]->cur_animation->id == ANIM_VICTORY ||
+                         af_get_move(hars[0]->af_data, obj_har[0]->cur_animation->id)->category == CAT_SCRAP ||
+                         af_get_move(hars[0]->af_data, obj_har[0]->cur_animation->id)->category == CAT_DESTRUCTION) &&
                         (har_in_defeat_animation(obj_har[1]) || obj_har[1]->cur_animation->id == ANIM_DAMAGE)) ||
-                       (obj_har[1]->cur_animation->id == ANIM_VICTORY &&
+                       ((obj_har[1]->cur_animation->id == ANIM_VICTORY ||
+                         af_get_move(hars[0]->af_data, obj_har[0]->cur_animation->id)->category == CAT_SCRAP ||
+                         af_get_move(hars[0]->af_data, obj_har[0]->cur_animation->id)->category == CAT_DESTRUCTION) &&
                         (har_in_defeat_animation(obj_har[0]) || obj_har[1]->cur_animation->id == ANIM_DAMAGE)));
                 if(!local->over) {
                     local->round++;
