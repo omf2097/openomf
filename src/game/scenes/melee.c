@@ -403,15 +403,17 @@ void handle_action(scene *scene, int player, int action) {
                     // TODO in netplay, use the lobby names
                     strncpy_or_truncate(player1->pilot->name, lang_get(player1->pilot->pilot_id + 20),
                                         sizeof(player1->pilot->name));
+                    // TODO: lang: remove (the need for) newline stripping
                     // 1player name strings end in a newline...
                     if(player1->pilot->name[strlen(player1->pilot->name) - 1] == '\n') {
                         player1->pilot->name[strlen(player1->pilot->name) - 1] = 0;
                     }
                     strncpy_or_truncate(player2->pilot->name, lang_get(player2->pilot->pilot_id + 20),
                                         sizeof(player1->pilot->name));
+                    // TODO: lang: remove (the need for) newline stripping
                     // 1player name strings end in a newline...
-                    if(player1->pilot->name[strlen(player1->pilot->name) - 1] == '\n') {
-                        player1->pilot->name[strlen(player1->pilot->name) - 1] = 0;
+                    if(player2->pilot->name[strlen(player2->pilot->name) - 1] == '\n') {
+                        player2->pilot->name[strlen(player2->pilot->name) - 1] = 0;
                     }
                     game_state_set_next(scene->gs, SCENE_VS);
                 }
