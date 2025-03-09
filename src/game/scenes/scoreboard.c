@@ -16,9 +16,14 @@
 #include "video/vga_state.h"
 
 #define MAX_PAGES (NUMBER_OF_ROUND_TYPES - 1)
-#define TEXT_COLOR_HEADER TEXT_BLINKY_GREEN
-#define TEXT_COLOR_SCORES 0x7F
 #define CURSOR_STR "\x7f"
+
+#define TEXT_PRIMARY_COLOR 0xFE
+#define TEXT_SECONDARY_COLOR 0xFD
+#define TEXT_DISABLED_COLOR 0xC0
+#define TEXT_ACTIVE_COLOR 0xFF
+#define TEXT_INACTIVE_COLOR 0xFE
+#define TEXT_SHADOW_COLOR 0xC0
 
 typedef struct scoreboard_local_t {
     scoreboard data;
@@ -224,6 +229,17 @@ int scoreboard_create(scene *scene) {
     // Darken the colors for the background a bit.
     vga_state_mul_base_palette(0, 0xEF, 0.6f);
 
+    // Arena menu theme
+    gui_theme theme;
+    gui_theme_defaults(&theme);
+    theme.dialog.border_color = TEXT_MEDIUM_GREEN;
+    theme.text.primary_color = TEXT_PRIMARY_COLOR;
+    theme.text.secondary_color = TEXT_SECONDARY_COLOR;
+    theme.text.disabled_color = TEXT_DISABLED_COLOR;
+    theme.text.active_color = TEXT_ACTIVE_COLOR;
+    theme.text.inactive_color = TEXT_INACTIVE_COLOR;
+    theme.text.shadow_color = TEXT_SHADOW_COLOR;
+
     if(local->has_pending_data) {
         text_settings small_text;
         text_defaults(&small_text);
@@ -236,7 +252,7 @@ int scoreboard_create(scene *scene) {
             score = local->data.entries[local->page][entry].score;
             if(local->has_pending_data && score < local->pending_data.score && !found_slot) {
                 found_slot = 1;
-                local->frame = gui_frame_create(20, 30 + r * 8, 20, 10);
+                local->frame = gui_frame_create(&theme, 20, 30 + r * 8, 20, 10);
                 local->ti = textinput_create(&small_text, 16, "", "");
                 textinput_enable_background(local->ti, 0);
                 gui_frame_set_root(local->frame, local->ti);

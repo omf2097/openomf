@@ -14,5 +14,6 @@
 #include "game/gui/textselector.h"
 #include "game/gui/textslider.h"
 #include "game/gui/widget.h"
+#include "game/gui/theme.h"
 
 #endif // GUI_H

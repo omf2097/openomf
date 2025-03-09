@@ -11,6 +11,14 @@
 #include "video/video.h"
 #include <SDL.h>
 
+// Colors specific to palette used by main menu
+#define TEXT_PRIMARY_COLOR 0xFE
+#define TEXT_SECONDARY_COLOR 0xFD
+#define TEXT_DISABLED_COLOR 0xC0
+#define TEXT_ACTIVE_COLOR 0xFF
+#define TEXT_INACTIVE_COLOR 0xFE
+#define TEXT_SHADOW_COLOR 0xC0
+
 typedef struct mainmenu_local_t {
     gui_frame *frame;
 } mainmenu_local;
@@ -100,7 +108,17 @@ int mainmenu_create(scene *scene) {
     game_state_set_speed(scene->gs, settings_get()->gameplay.speed + 5);
 
     // Create main menu
-    local->frame = gui_frame_create(165, 5, 151, 119);
+    gui_theme theme;
+    gui_theme_defaults(&theme);
+    theme.dialog.border_color = TEXT_MEDIUM_GREEN;
+    theme.text.primary_color = TEXT_PRIMARY_COLOR;
+    theme.text.secondary_color = TEXT_SECONDARY_COLOR;
+    theme.text.disabled_color = TEXT_DISABLED_COLOR;
+    theme.text.active_color = TEXT_ACTIVE_COLOR;
+    theme.text.inactive_color = TEXT_INACTIVE_COLOR;
+    theme.text.shadow_color = TEXT_SHADOW_COLOR;
+
+    local->frame = gui_frame_create(&theme, 165, 5, 151, 119);
     gui_frame_set_root(local->frame, menu_main_create(scene));
     gui_frame_layout(local->frame);
 
