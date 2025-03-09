@@ -105,16 +105,16 @@ void lab_menu_customize_arm_power(component *c, void *userdata) {
     game_player *p1 = game_state_get_player(s->gs, 0);
     sd_pilot *pilot = game_player_get_pilot(p1);
     if(mechlab_get_selling(s)) {
-        int32_t price =
-         har_upgrade_price[pilot->har_id] * upgrade_level_mutiplier[pilot->arm_power] * arm_leg_multiplier;
+        int32_t price = har_upgrade_price[pilot->har_id] * upgrade_level_mutiplier[pilot->arm_power]
+         * arm_leg_multiplier;
         if(price > 0) {
             pilot->money += price * 0.85;
             pilot->arm_power--;
             mechlab_update(s);
         }
     } else {
-        int32_t price =
-         har_upgrade_price[pilot->har_id] * upgrade_level_mutiplier[pilot->arm_power + 1] * arm_leg_multiplier;
+        int32_t price = har_upgrade_price[pilot->har_id] * upgrade_level_mutiplier[pilot->arm_power + 1]
+         * arm_leg_multiplier;
         pilot->money -= price;
         pilot->arm_power++;
         mechlab_update(s);
@@ -633,8 +633,8 @@ static void lab_menu_focus_stun_resistance(component *c, bool focused, void *use
         sd_pilot *pilot = game_player_get_pilot(p1);
         if(mechlab_get_selling(s)) {
             label_set_text(header_label, "STUN RES.:\n\nSALES PRICE:");
-            int32_t price =
-             har_upgrade_price[pilot->har_id] * upgrade_level_mutiplier[pilot->stun_resistance] * stun_res_multiplier;
+            int32_t price = har_upgrade_price[pilot->har_id] * upgrade_level_mutiplier[pilot->stun_resistance]
+             * stun_res_multiplier;
             if(price < 1) {
                 label_set_text(details_label, "Unavailable\n\nUnavailable");
             } else {
