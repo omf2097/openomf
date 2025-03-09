@@ -35,7 +35,8 @@ static inline void render_char_shadow_surface(const text_settings *settings, con
         video_draw_offset(sur, x, y - 1, settings->cshadow, 255);
 }
 
-static inline void render_char_surface(const text_settings *settings, vga_index color, const surface *sur, int x, int y) {
+static inline void render_char_surface(const text_settings *settings, vga_index color, const surface *sur, int x,
+                                       int y) {
     video_draw_offset(sur, x, y, color - 1, 255);
 }
 
@@ -139,8 +140,8 @@ int text_find_line_count(const text_settings *settings, int cols, int rows, int 
     return lines;
 }
 
-static void text_render_len(const text_settings *settings, vga_index color, int x, int y, int w, int h, const char *text,
-                            int len) {
+static void text_render_len(const text_settings *settings, vga_index color, int x, int y, int w, int h,
+                            const char *text, int len) {
     int size = text_char_width(settings);
     int x_space = w - settings->padding.left - settings->padding.right;
     int y_space = h - settings->padding.top - settings->padding.bottom;

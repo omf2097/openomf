@@ -10,7 +10,6 @@ typedef struct gui_frame {
     gui_theme theme;
 } gui_frame;
 
-
 gui_frame *gui_frame_create(const gui_theme *theme, int x, int y, int w, int h) {
     gui_frame *frame = omf_calloc(1, sizeof(gui_frame));
     memcpy(&frame->theme, theme, sizeof(gui_theme));

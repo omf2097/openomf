@@ -150,7 +150,7 @@ void component_set_theme(component *c, const gui_theme *theme) {
 }
 
 const gui_theme *component_get_theme(component *c) {
-    if (c->theme != NULL) {
+    if(c->theme != NULL) {
         return c->theme;
     }
     const component *seek = NULL;

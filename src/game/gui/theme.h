@@ -1,21 +1,21 @@
 #ifndef THEME_H
 #define THEME_H
 
-#include "video/vga_palette.h"
 #include "resources/fonts.h"
+#include "video/vga_palette.h"
 
 typedef struct gui_text_theme {
-    font_size font; ///< Font type/size
-    vga_index primary_color; ///< Primary text color
+    font_size font;            ///< Font type/size
+    vga_index primary_color;   ///< Primary text color
     vga_index secondary_color; ///< Secondary text color
-    vga_index active_color; ///< Text color when selected (e.g. buttons)
-    vga_index inactive_color; ///< Text color when NOT selected (e.g. buttons)
-    vga_index disabled_color; ///< Text color when disabled (e.g. buttons)
-    vga_index shadow_color; ///< Text shadow color (if enabled)
+    vga_index active_color;    ///< Text color when selected (e.g. buttons)
+    vga_index inactive_color;  ///< Text color when NOT selected (e.g. buttons)
+    vga_index disabled_color;  ///< Text color when disabled (e.g. buttons)
+    vga_index shadow_color;    ///< Text shadow color (if enabled)
 } gui_text_theme;
 
 typedef struct gui_dialog_theme {
-    vga_index border_color;  ///< Primary border color (e.g. dialog borders)
+    vga_index border_color; ///< Primary border color (e.g. dialog borders)
 } gui_dialog_theme;
 
 typedef struct gui_theme {
