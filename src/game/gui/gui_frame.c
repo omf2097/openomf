@@ -1,6 +1,14 @@
 #include "game/gui/gui_frame.h"
 #include "utils/allocator.h"
 
+typedef struct gui_frame {
+    int x;
+    int y;
+    int w;
+    int h;
+    component *root_node;
+} gui_frame;
+
 gui_frame *gui_frame_create(int x, int y, int w, int h) {
     gui_frame *frame = omf_calloc(1, sizeof(gui_frame));
     frame->x = x;
@@ -39,6 +47,17 @@ component *gui_frame_find(gui_frame *frame, int id) {
 
 component *gui_frame_get_root(const gui_frame *frame) {
     return frame->root_node;
+}
+
+void gui_frame_get_measurements(const gui_frame *frame, int *x, int *y, int *w, int *h) {
+    if(x != NULL)
+        *x = frame->x;
+    if(y != NULL)
+        *y = frame->y;
+    if(w != NULL)
+        *w = frame->w;
+    if(h != NULL)
+        *h = frame->h;
 }
 
 void gui_frame_tick(gui_frame *frame) {

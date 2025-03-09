@@ -222,10 +222,13 @@ void menu_link_menu(component *mc, gui_frame *linked_menu) {
     if(m->submenu) {
         component_free(m->submenu);
     }
-    m->submenu = linked_menu->root_node;
+    int x, y, w, h;
+    gui_frame_get_measurements(linked_menu, &x, &y, &w, &h);
+    component *root = gui_frame_get_root(linked_menu);
+    m->submenu = root;
     m->prev_submenu_state = 0;
-    linked_menu->root_node->parent = mc; // Set correct parent
-    component_layout(m->submenu, linked_menu->x, linked_menu->y, linked_menu->w, linked_menu->h);
+    root->parent = mc; // Set correct parent
+    component_layout(m->submenu, x, y, w, h);
 }
 
 component *menu_get_submenu(const component *c) {
