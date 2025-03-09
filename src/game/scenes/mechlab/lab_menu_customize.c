@@ -21,6 +21,8 @@ static uint8_t max_arm_speed[11] = {6, 8, 4, 6, 9, 7, 8, 6, 9, 6, 7};
 static uint8_t max_leg_speed[11] = {8, 9, 5, 6, 8, 8, 7, 6, 7, 5, 6};
 static uint8_t max_arm_power[11] = {5, 5, 9, 8, 4, 6, 6, 5, 5, 6, 7};
 static uint8_t max_leg_power[11] = {6, 6, 8, 4, 5, 7, 5, 7, 6, 7, 7};
+static uint8_t max_stun_res[11]  = {8, 6, 8, 6, 7, 6, 6, 7, 7, 7, 6};
+static uint8_t max_armor[11]     = {5, 7, 7, 8, 6, 8, 6, 9, 6, 6, 7};
 
 static component *header_label;
 static component *details_label;
@@ -277,7 +279,7 @@ void lab_menu_customize_check_armor_price(component *c, void *userdata) {
         }
     } else {
         int32_t price = har_upgrade_price[pilot->har_id] * upgrade_level_mutiplier[pilot->armor + 1] * armor_multiplier;
-        if(price < 0 || price > pilot->money) {
+        if(price < 0 || price > pilot->money || pilot->armor + 1 > max_armor[pilot->har_id]) {
             component_disable(c, 1);
         }
     }
@@ -314,7 +316,7 @@ void lab_menu_customize_check_stun_resistance_price(component *c, void *userdata
         }
     } else {
         int32_t price = har_upgrade_price[pilot->har_id] * upgrade_level_mutiplier[pilot->stun_resistance + 1] * stun_res_multiplier;
-        if(price < 0 || price > pilot->money) {
+        if(price < 0 || price > pilot->money || pilot->stun_resistance + 1 > max_stun_res[pilot->har_id]) {
             component_disable(c, 1);
         }
     }
@@ -580,7 +582,8 @@ static void lab_menu_focus_armor(component *c, bool focused, void *userdata) {
         } else {
             label_set_text(header_label, "ARMOR PLATE:\n\nUPGRADE COST:");
             int32_t price = har_upgrade_price[pilot->har_id] * upgrade_level_mutiplier[pilot->armor + 1] * armor_multiplier;
-            if(price < 1) {
+            bool max_level = pilot->armor >= max_armor[pilot->har_id];
+            if(price < 1 || max_level) {
                 label_set_text(details_label, "Unavailable\n\nUnavailable");
             } else {
                 score_format(price, price_str, sizeof(price_str));
@@ -613,7 +616,8 @@ static void lab_menu_focus_stun_resistance(component *c, bool focused, void *use
         } else {
             label_set_text(header_label, "STUN RES.:\n\nUPGRADE COST:");
             int32_t price = har_upgrade_price[pilot->har_id] * upgrade_level_mutiplier[pilot->stun_resistance + 1] * stun_res_multiplier;
-            if(price < 1) {
+            bool max_level = pilot->stun_resistance >= max_stun_res[pilot->har_id];
+            if(price < 1 || max_level) {
                 label_set_text(details_label, "Unavailable\n\nUnavailable");
             } else {
                 score_format(price, price_str, sizeof(price_str));
