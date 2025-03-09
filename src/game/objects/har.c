@@ -758,11 +758,17 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
 
             str n;
             str_from_slice(&n, string, 0, last_line);
-            str_append_c(&n, "-L2-M5-L2");
+            if(h->endurance <= 0) {
+                // this hit stunned them, so make them hit the floor stunned
+                str_append_c(&n, "L2-M5000");
+            } else {
+                str_append_c(&n, "-L2-M5-L2");
+            }
             object_set_custom_string(obj, str_c(&n));
             str_free(&n);
 
-            obj->vel.y = -7 * object_get_direction(obj);
+            obj->vel.y = obj->vertical_velocity_modifier * ((((30.0f - damage)*0.133333f) + 6.5f) * -1.0);
+            obj->vel.x =  (((damage * 0.16666666f) + 2.0f) * object_get_direction(obj) * -1) * obj->horizontal_velocity_modifier;
             h->state = STATE_FALLEN;
             object_set_stride(obj, 1);
         } else {
