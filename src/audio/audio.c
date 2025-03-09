@@ -219,5 +219,5 @@ unsigned audio_get_resamplers(const audio_resampler **resamplers) {
 
 int pitched_samplerate(float pitch) {
     // all our audio is 8khz for now
-    return (int)(8000 * clampf(pitch, PITCH_MIN, PITCH_MAX));
+    return (int)(SOURCE_FREQ * clampf(pitch, PITCH_MIN, PITCH_MAX));
 }
