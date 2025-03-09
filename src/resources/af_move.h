@@ -15,7 +15,7 @@ typedef struct af_move_t {
     uint16_t points;
     uint8_t block_damage;
     uint8_t block_stun;
-    uint8_t collision_opts;
+    uint8_t throw_duration;
     uint8_t extra_string_selector;
     float damage;
     float raw_damage; // used to store the raw damage, unmodified by pilot stats

@@ -143,6 +143,7 @@ typedef struct har_t {
     float back_speed;      // Agility generated speed modifier for falling
 
     int in_stasis_ticks; // Handle stasis activator
+    int throw_duration;
 
     uint8_t stride;
     int16_t health_max, health;

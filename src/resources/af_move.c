@@ -16,7 +16,7 @@ void af_move_create(af_move *move, array *sprites, void *src, int id) {
     move->block_damage = sdmv->block_damage;
     move->block_stun = sdmv->block_stun;
     move->pos_constraints = sdmv->pos_constraint;
-    move->collision_opts = sdmv->collision_opts;
+    move->throw_duration = sdmv->throw_duration;
     move->extra_string_selector = sdmv->extra_string_selector;
     animation_create(&move->ani, sprites, sdmv->animation, id);
     if(id == ANIM_JUMPING) {
