@@ -1003,8 +1003,12 @@ void har_check_closeness(object *obj_a, object *obj_b) {
         return;
     }
 
-    if(a->executing_move || b->executing_move) {
+    if(a->throw_duration || b->throw_duration) {
         // don't mess with coreography
+        return;
+    }
+
+    if(a->health <= 0 || b->health <= 0) {
         return;
     }
 
@@ -1261,6 +1265,8 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
             har_take_damage(obj_b, &move->footer_string, move->damage, move->stun);
         }
 
+        b->throw_duration = move->throw_duration;
+
         if(hit_coord.x != 0 || hit_coord.y != 0) {
             har_spawn_scrap(obj_b, hit_coord, move->block_stun);
         }
@@ -1377,6 +1383,8 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
             } else {
                 har_take_damage(o_har, &move->footer_string, move->damage, move->stun);
             }
+            // shadow grab is a projectile
+            h->throw_duration = move->throw_duration;
         }
 
         projectile_mark_hit(o_pjt);
@@ -1541,6 +1549,10 @@ void har_tick(object *obj) {
             object_set_halt(obj, 0);
             object_del_animation_effects(obj, EFFECT_STASIS);
         }
+    }
+
+    if(h->throw_duration > 0) {
+        h->throw_duration--;
     }
 
     // See if we are being grabbed. We detect this by checking the
@@ -1955,11 +1967,6 @@ int har_act(object *obj, int act_type) {
     }
 
     if(move) {
-        // Move flag is on -- make the HAR move backwards to avoid overlap.
-        if(move->collision_opts & 0x20) {
-            obj->pos.x -= object_get_size(obj).x / 2 * object_get_direction(obj);
-        }
-
         // Stop horizontal movement, when move is done
         // TODO: Make this work better
         vec2f spd = object_get_vel(obj);
@@ -2360,6 +2367,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     local->is_grabbed = 0;
 
     local->in_stasis_ticks = 0;
+    local->throw_duration = 0;
 
     local->delay = 0;
 
@@ -2583,6 +2591,7 @@ void har_reset(object *obj) {
     h->endurance = h->endurance_max;
 
     h->in_stasis_ticks = 0;
+    h->throw_duration = 0;
 
     h->enqueued = 0;
     h->walk_destination = -1;
