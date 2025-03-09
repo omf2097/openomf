@@ -121,7 +121,7 @@ void menu_keyboard_keypress_done(component *c, component *submenu) {
     menu_update_keys(c);
 }
 
-gui_frame *menu_keyboard_create(scene *s, int selected_player) {
+gui_frame *menu_keyboard_create(scene *s, const gui_theme *theme, int selected_player) {
     keyboard_menu_local *local = omf_calloc(1, sizeof(keyboard_menu_local));
     local->selected_player = selected_player;
 
@@ -132,7 +132,7 @@ gui_frame *menu_keyboard_create(scene *s, int selected_player) {
     tconf.halign = TEXT_CENTER;
     tconf.cforeground = TEXT_BRIGHT_GREEN;
 
-    local->frame = gui_frame_create(25, 5, 270, 140);
+    local->frame = gui_frame_create(theme, 25, 5, 270, 140);
     component *menu = menu_create(11);
     gui_frame_set_root(local->frame, menu);
     gui_frame_layout(local->frame);

@@ -48,18 +48,19 @@ static void button_render(component *c) {
     button *tb = widget_get_obj(c);
 
     // Select color and render
-    int text_mode = TEXT_UNSELECTED;
+    const gui_theme *theme = component_get_theme(c);
+    vga_index color = theme->text.primary_color;
     if(component_is_selected(c)) {
-        text_mode = TEXT_SELECTED;
+        color = theme->text.active_color;
     } else if(component_is_disabled(c)) {
-        text_mode = TEXT_DISABLED;
+        color = theme->text.disabled_color;
     }
     // Border
     if(tb->border_created) {
         video_draw(&tb->border, c->x - 2, c->y - 2);
     }
 
-    text_render(&tb->tconf, text_mode, c->x, c->y, c->w, c->h, tb->text);
+    text_render(&tb->tconf, color, c->x, c->y, c->w, c->h, tb->text);
 }
 
 static int button_action(component *c, int action) {
