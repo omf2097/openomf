@@ -170,13 +170,58 @@ void lab_dash_sim_right(component *c, void *userdata) {
 void lab_dash_sim_init(component *menu, component *submenu) {
     dashboard_widgets *dw = trnmenu_get_userdata(submenu);
     game_player *p1 = game_state_get_player(dw->scene->gs, 0);
-    dw->sim_rank = p1->pilot->rank;
+    dw->sim_rank = p1->pilot->rank - 1;
+    if(dw->sim_rank == 0) {
+        dw->sim_rank = 1;
+    }
+    for(int i = 0; i < p1->chr->pilot.enemies_ex_unranked; i++) {
+        if(p1->chr->enemies[i]->pilot.rank == dw->sim_rank) {
+            dw->pilot = &p1->chr->enemies[i]->pilot;
+            break;
+        }
+    }
+    lab_dash_sim_update(dw->scene, dw, dw->pilot);
 }
 
 void lab_dash_sim_done(component *menu, component *submenu) {
     dashboard_widgets *dw = trnmenu_get_userdata(submenu);
-    mechlab_select_dashboard(dw->scene, DASHBOARD_STATS);
-    mechlab_update(dw->scene);
+    dw->scene->gs->match_settings.sim = true;
+    game_player *p1 = game_state_get_player(dw->scene->gs, 0);
+    game_player *p2 = game_state_get_player(dw->scene->gs, 1);
+
+    for(int i = 0; i < p1->chr->pilot.enemies_ex_unranked; i++) {
+        if(p1->chr->enemies[i]->pilot.rank == dw->sim_rank) {
+            p2->pilot = &p1->chr->enemies[i]->pilot;
+        }
+    }
+    controller *ctrl = omf_calloc(1, sizeof(controller));
+    controller_init(ctrl, dw->scene->gs);
+
+    // there's not an exact difficulty mapping
+    // for aluminum to 1p mode, but round up to
+    // veteran
+    int difficulty = AI_DIFFICULTY_VETERAN;
+    if(p1->pilot->difficulty == 1) {
+        // Iron == Champion
+        difficulty = AI_DIFFICULTY_CHAMPION;
+    } else if(p1->pilot->difficulty == 2) {
+        // Steel == Deadly
+        difficulty = AI_DIFFICULTY_DEADLY;
+    } else if(p1->pilot->difficulty == 3) {
+        // Heavy Metal == F.A.A.K. 2
+        difficulty = AI_DIFFICULTY_ULTIMATE;
+    }
+
+    ai_controller_create(ctrl, difficulty, p2->pilot, p2->pilot->pilot_id);
+    game_player_set_ctrl(p2, ctrl);
+    // reset the score between matches in tournament mode
+    // assume we used the score by now if we need it for
+    // winnings calculations, etc
+    chr_score_reset_wins(game_player_get_score(p1));
+    chr_score_reset(game_player_get_score(p1), 1);
+    // set the score difficulty
+    chr_score_set_difficulty(game_player_get_score(game_state_get_player(dw->scene->gs, 0)), difficulty);
+    game_state_set_next(dw->scene->gs, SCENE_VS);
 }
 
 void lab_dash_main_chr_done(component *menu, component *submenu) {
@@ -283,7 +328,6 @@ component *lab_dash_sim_create(scene *s, dashboard_widgets *dw) {
 
     dw->scene = s;
     game_player *p1 = game_state_get_player(s->gs, 0);
-    dw->pilot = p1->pilot;
 
     text_settings tconf_dark;
     text_defaults(&tconf_dark);
@@ -302,18 +346,20 @@ component *lab_dash_sim_create(scene *s, dashboard_widgets *dw) {
     tconf_light_centered.cforeground = TEXT_MEDIUM_GREEN;
 
     // Pilot image
-    dw->photo = portrait_create(PIC_PLAYERS, 0);
-    if(p1->pilot->photo) {
-        log_debug("loading pilot photo from pilot");
-        portrait_set_from_sprite(dw->photo, dw->pilot->photo);
-    } else {
-        dw->pilot->photo = omf_calloc(1, sizeof(sd_sprite));
-        sd_sprite_create(dw->pilot->photo);
-        log_debug("seletng default pilot photo");
-        dw->pilot->photo_id = portrait_selected(dw->photo);
-        portrait_load(dw->pilot->photo, &dw->pilot->palette, PIC_PLAYERS, 0);
+    dw->sim_rank = p1->pilot->rank - 1;
+    if(dw->sim_rank < 1) {
+        dw->sim_rank = 2;
     }
-    palette_load_player_colors(&dw->pilot->palette, 0);
+    for(int i = 0; i < p1->chr->pilot.enemies_ex_unranked; i++) {
+        if(p1->chr->enemies[i]->pilot.rank == dw->sim_rank) {
+            dw->pilot = &p1->chr->enemies[i]->pilot;
+            break;
+        }
+    }
+
+    dw->photo = portrait_create(PIC_PLAYERS, 0);
+    log_debug("loading pilot photo from pilot");
+    portrait_set_from_sprite(dw->photo, dw->pilot->photo);
 
     xysizer_attach(xy, dw->photo, 12, -1, -1, -1);
 
@@ -329,7 +375,7 @@ component *lab_dash_sim_create(scene *s, dashboard_widgets *dw) {
     xysizer_attach(xy, dw->wins, 168, 70, 200, 6);
     xysizer_attach(xy, dw->losses, 162, 76, 200, 6);
 
-    return lab_dash_main_create_gauges(xy, dw, p1->pilot);
+    return lab_dash_main_create_gauges(xy, dw, dw->pilot);
 }
 
 component *lab_dash_main_create_gauges(component *xy, dashboard_widgets *dw, sd_pilot *pilot) {

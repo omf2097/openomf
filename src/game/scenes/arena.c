@@ -93,7 +93,11 @@ void game_menu_quit(component *c, void *userdata) {
         // quit back to VS for plug to call you a chicken
         game_player *player2 = game_state_get_player(((scene *)userdata)->gs, 1);
         player2->pilot = NULL;
-        game_state_set_next(s->gs, SCENE_VS);
+        if(s->gs->match_settings.sim) {
+            game_state_set_next(s->gs, SCENE_MECHLAB);
+        } else {
+            game_state_set_next(s->gs, SCENE_VS);
+        }
     } else {
         game_state_set_next(s->gs, SCENE_MENU);
     }
@@ -240,11 +244,14 @@ void arena_end(scene *sc) {
         har_screencaps_compress(caps, pal, SCREENCAP_BLOW);
         har_screencaps_compress(caps, pal, SCREENCAP_POSE);
 
-        // Set the fight statistics and Plug McEllis's complaints
-        fight_stats->bonuses = game_player_get_score(p1)->score / 1000;
-        fight_stats->profit = fight_stats->bonuses + fight_stats->winnings - fight_stats->repair_cost;
-        bool warning_given = p1->pilot->money < 0;
-        p1->pilot->money += fight_stats->profit;
+        bool warning_given = false;
+        if(!gs->match_settings.sim) {
+            // Set the fight statistics and Plug McEllis's complaints
+            fight_stats->bonuses = game_player_get_score(p1)->score / 1000;
+            fight_stats->profit = fight_stats->bonuses + fight_stats->winnings - fight_stats->repair_cost;
+            warning_given = p1->pilot->money < 0;
+            p1->pilot->money += fight_stats->profit;
+        }
         if(fight_stats->hits_landed[0] != 0) {
             fight_stats->average_damage[0] =
                 (float)(p2_har->health_max - p2_har->health) / (float)fight_stats->hits_landed[0];
@@ -285,6 +292,8 @@ void arena_end(scene *sc) {
         }
         if(is_demoplay(gs)) {
             game_state_set_next(gs, SCENE_VS);
+        } else if(gs->match_settings.sim) {
+            game_state_set_next(gs, SCENE_MECHLAB);
         } else {
             game_state_set_next(gs, SCENE_NEWSROOM);
         }
@@ -594,12 +603,16 @@ void arena_har_defeat_hook(int loser_player_id, scene *scene) {
                         (player_loser->pilot->money + player_loser->pilot->winnings) * winnings_multiplier;
                     fight_stats->winnings += (int)(400 * hp_percentage);
                 }
-                player_winner->pilot->rank--;
+                if(!gs->match_settings.sim) {
+                    player_winner->pilot->rank--;
+                }
                 local->win_state = YOUWIN;
             } else {
                 if(is_tournament(gs)) {
-                    if(player_loser->pilot->rank <= player_loser->pilot->enemies_ex_unranked)
+                    if(player_loser->pilot->rank <= player_loser->pilot->enemies_ex_unranked &&
+                       !gs->match_settings.sim) {
                         player_loser->pilot->rank++;
+                    }
                     fight_stats->repair_cost = calculate_trade_value(player_loser->pilot) / 100;
                 }
                 local->win_state = YOULOSE;

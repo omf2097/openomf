@@ -85,6 +85,7 @@ void game_state_match_settings_reset(game_state *gs) {
     gs->match_settings.hazards = settings_get()->gameplay.hazards_on;
     gs->match_settings.rounds = settings_get()->gameplay.rounds;
     gs->match_settings.fight_mode = settings_get()->gameplay.fight_mode;
+    gs->match_settings.sim = false;
 }
 
 void game_state_match_settings_defaults(game_state *gs) {
@@ -101,6 +102,7 @@ void game_state_match_settings_defaults(game_state *gs) {
     gs->match_settings.hazards = true;
     gs->match_settings.rounds = 1;
     gs->match_settings.fight_mode = false;
+    gs->match_settings.sim = false;
 }
 
 int game_state_create(game_state *gs, engine_init_flags *init_flags) {
@@ -194,6 +196,7 @@ int game_state_create(game_state *gs, engine_init_flags *init_flags) {
         gs->match_settings.hazards = gs->rec->hazards;
         gs->match_settings.rounds = gs->rec->round_type;
         gs->match_settings.fight_mode = gs->rec->hyper_mode;
+        gs->match_settings.sim = false;
 
         _setup_rec_controller(gs, 0, gs->rec);
         _setup_rec_controller(gs, 1, gs->rec);
