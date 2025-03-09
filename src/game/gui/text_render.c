@@ -35,30 +35,15 @@ static inline void render_char_shadow_surface(const text_settings *settings, con
         video_draw_offset(sur, x, y - 1, settings->cshadow, 255);
 }
 
-static inline void render_char_surface(const text_settings *settings, text_mode state, const surface *sur, int x,
-                                       int y) {
-    int color;
-    switch(state) {
-        case TEXT_SELECTED:
-            color = settings->cselected;
-            break;
-        case TEXT_UNSELECTED:
-            color = settings->cinactive;
-            break;
-        case TEXT_DISABLED:
-            color = settings->cdisabled;
-            break;
-        default:
-            color = settings->cforeground;
-    }
+static inline void render_char_surface(const text_settings *settings, vga_index color, const surface *sur, int x, int y) {
     video_draw_offset(sur, x, y, color - 1, 255);
 }
 
-int text_render_char(const text_settings *settings, text_mode state, int x, int y, char ch) {
+int text_render_char(const text_settings *settings, vga_index color, int x, int y, char ch) {
     const font *fnt = fonts_get_font(settings->font);
     const surface *sur = font_get_surface(fnt, ch);
     render_char_shadow_surface(settings, sur, x, y);
-    render_char_surface(settings, state, sur, x, y);
+    render_char_surface(settings, color, sur, x, y);
     return sur->w;
 }
 
@@ -154,7 +139,7 @@ int text_find_line_count(const text_settings *settings, int cols, int rows, int 
     return lines;
 }
 
-static void text_render_len(const text_settings *settings, text_mode mode, int x, int y, int w, int h, const char *text,
+static void text_render_len(const text_settings *settings, vga_index color, int x, int y, int w, int h, const char *text,
                             int len) {
     int size = text_char_width(settings);
     int x_space = w - settings->padding.left - settings->padding.right;
@@ -294,7 +279,7 @@ static void text_render_len(const text_settings *settings, text_mode mode, int x
             }
 
             render_char_shadow_surface(settings, sur, mx + start_x, my + start_y);
-            render_char_surface(settings, mode, sur, mx + start_x, my + start_y);
+            render_char_surface(settings, color, sur, mx + start_x, my + start_y);
 
             // Render to the right direction
             if(settings->direction == TEXT_HORIZONTAL) {
@@ -309,10 +294,10 @@ static void text_render_len(const text_settings *settings, text_mode mode, int x
     }
 }
 
-void text_render(const text_settings *settings, text_mode mode, int x, int y, int w, int h, const char *text) {
-    text_render_len(settings, mode, x, y, w, h, text, strlen(text));
+void text_render(const text_settings *settings, vga_index color, int x, int y, int w, int h, const char *text) {
+    text_render_len(settings, color, x, y, w, h, text, strlen(text));
 }
 
-void text_render_str(const text_settings *settings, text_mode mode, int x, int y, int w, int h, const str *text) {
-    text_render_len(settings, mode, x, y, w, h, str_c(text), str_size(text));
+void text_render_str(const text_settings *settings, vga_index color, int x, int y, int w, int h, const str *text) {
+    text_render_len(settings, color, x, y, w, h, str_c(text), str_size(text));
 }

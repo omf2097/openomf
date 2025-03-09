@@ -144,6 +144,26 @@ void component_set_help_text(component *c, const char *help) {
     c->help = help;
 }
 
+void component_set_theme(component *c, const gui_theme *theme) {
+    assert(c->parent == NULL);
+    c->theme = theme;
+}
+
+const gui_theme *component_get_theme(component *c) {
+    if (c->theme != NULL) {
+        return c->theme;
+    }
+    const component *seek = NULL;
+    while((seek = c->parent) != NULL) {
+        if(seek->theme != NULL) {
+            c->theme = seek->theme;
+            break;
+        }
+    }
+    assert(c->theme != NULL);
+    return c->theme;
+}
+
 component *component_create(void) {
     component *c = omf_calloc(1, sizeof(component));
     c->header = 0; // By default, this is unset.

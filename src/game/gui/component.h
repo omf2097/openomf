@@ -10,6 +10,7 @@
 #define COMPONENT_H
 
 #include "controller/controller.h"
+#include "game/gui/theme.h"
 #include <SDL.h>
 
 enum
@@ -20,7 +21,7 @@ enum
 
 enum
 {
-    COM_UNSELECTED = 0, ///< Componen unselected. Used in eg. menu sizers.
+    COM_UNSELECTED = 0, ///< Component unselected. Used in eg. menu sizers.
     COM_SELECTED = 1,   ///< Component selected. Used in eg. menu sizers.
 };
 
@@ -68,6 +69,8 @@ struct component {
     const char *help;    ///< Help text, if available
     bool filler;         ///< Whether the component should fill unused space during layout
 
+    const gui_theme *theme; ///< Theme object. This may or may not be set. If not set, then look down the parent chain.
+
     component_render_cb render; ///< Render function callback. This tells the component to draw itself.
     component_event_cb event;   ///< Event function callback. Direct SDL2 event handler.
     component_action_cb action; ///< Action function callback. Handles OpenOMF abstract key events.
@@ -106,6 +109,9 @@ void component_set_size_hints(component *c, int w, int h);
 void component_set_pos_hints(component *c, int x, int y);
 
 void component_set_help_text(component *c, const char *help);
+
+void component_set_theme(component *c, const gui_theme *theme);
+const gui_theme *component_get_theme(component *c);
 
 // ID lookup stuff
 component *component_find(component *c, int id);

@@ -45,6 +45,14 @@
 #define GAME_MENU_RETURN_ID 100
 #define GAME_MENU_QUIT_ID 101
 
+// Colors specific to palette used by arena
+#define TEXT_PRIMARY_COLOR 0xFE
+#define TEXT_SECONDARY_COLOR 0xFD
+#define TEXT_DISABLED_COLOR 0xC0
+#define TEXT_ACTIVE_COLOR 0xFF
+#define TEXT_INACTIVE_COLOR 0xFE
+#define TEXT_SHADOW_COLOR 0xC0
+
 typedef enum
 {
     NONE = 0,
@@ -1616,9 +1624,20 @@ int arena_create(scene *scene) {
     tconf.cforeground = TEXT_DARK_GREEN;
     tconf.halign = TEXT_CENTER;
 
+    // Arena menu theme
+    gui_theme theme;
+    gui_theme_defaults(&theme);
+    theme.dialog.border_color = TEXT_MEDIUM_GREEN;
+    theme.text.primary_color = TEXT_PRIMARY_COLOR;
+    theme.text.secondary_color = TEXT_SECONDARY_COLOR;
+    theme.text.disabled_color = TEXT_DISABLED_COLOR;
+    theme.text.active_color = TEXT_ACTIVE_COLOR;
+    theme.text.inactive_color = TEXT_INACTIVE_COLOR;
+    theme.text.shadow_color = TEXT_SHADOW_COLOR;
+
     // Arena menu
     local->menu_visible = 0;
-    local->game_menu = gui_frame_create(60, 5, 181, 117);
+    local->game_menu = gui_frame_create(&theme, 60, 5, 181, 117);
     component *menu = menu_create(11);
     menu_attach(menu, label_create(&tconf, "OPENOMF"));
     menu_attach(menu, filler_create());

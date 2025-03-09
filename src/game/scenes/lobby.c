@@ -1457,6 +1457,18 @@ int lobby_create(scene *scene) {
     tconf.cdisabled = 4;
     tconf.cinactive = 3;
 
+    // Create lobby theme
+    gui_theme theme;
+    gui_theme_defaults(&theme);
+    theme.dialog.border_color = TEXT_MEDIUM_GREEN;
+    theme.text.font = FONT_NET1;
+    theme.text.primary_color = 6;
+    theme.text.secondary_color = 6;
+    theme.text.disabled_color = 4;
+    theme.text.active_color = 5;
+    theme.text.inactive_color = 3;
+    theme.text.shadow_color = 6;
+
     component *menu = menu_create(11);
     menu_set_horizontal(menu, true);
     menu_set_background(menu, false);
@@ -1507,7 +1519,7 @@ int lobby_create(scene *scene) {
     }
     reconfigure_controller(scene->gs);
 
-    local->frame = gui_frame_create(9, 128, 300, 12);
+    local->frame = gui_frame_create(&theme, 9, 128, 300, 12);
     gui_frame_set_root(local->frame, menu);
     gui_frame_layout(local->frame);
 
