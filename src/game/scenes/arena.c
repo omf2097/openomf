@@ -227,7 +227,6 @@ void arena_end(scene *sc) {
     // Switch scene
     if(scene->gs->init_flags->playback == 1) {
         // exit after REC playback
-        scene->gs->init_flags->playback = 0;
         game_state_set_next(scene->gs, SCENE_NONE);
     } else if(is_singleplayer(gs) || is_tournament(gs) || is_demoplay(gs)) {
         game_player *p1 = game_state_get_player(gs, 0);
@@ -1265,16 +1264,10 @@ void arena_render_overlay(scene *scene) {
         // Render HAR and pilot names
         const char *player1_name = NULL;
         const char *player2_name = NULL;
-        if(player[0]->chr) {
-            player1_name = player[0]->pilot->name;
-            if(player[1]->pilot) {
-                // when quitting this can go null
-                player2_name = player[1]->pilot->name;
-            }
-        } else {
-            // TODO put these in the pilot struct
-            player1_name = lang_get(player[0]->pilot->pilot_id + 20);
-            player2_name = lang_get(player[1]->pilot->pilot_id + 20);
+        player1_name = player[0]->pilot->name;
+        if(player[1]->pilot) {
+            // when quitting this can go null
+            player2_name = player[1]->pilot->name;
         }
 
         text_render(&tconf_players, TEXT_DEFAULT, 5, 19, 250, 6, player1_name);
@@ -1549,6 +1542,8 @@ int arena_create(scene *scene) {
         game_player_set_har(player, obj);
         game_player_get_ctrl(player)->har_obj_id = obj->id;
 
+        // TODO change this to simply check if the pilot has a photo but currently this causes REC playback from
+        // tournament mode to crash decoding the sprite for some reason
         if(local->tournament) {
             // render pilot portraits
             object *portrait = omf_calloc(1, sizeof(object));
