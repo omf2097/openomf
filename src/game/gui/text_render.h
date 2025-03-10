@@ -83,10 +83,10 @@ int text_find_max_strlen(const text_settings *settings, int max_chars, const cha
 
 int text_find_line_count(const text_settings *settings, int cols, int rows, int len, const char *text,
                          int *longest_line_len);
-int text_render_char(const text_settings *settings, text_mode mode, int x, int y, char ch);
-void text_render(const text_settings *settings, text_mode mode, int x, int y, int w, int h, const char *text);
-void text_render_str(const text_settings *settings, text_mode mode, int x, int y, int w, int h, const str *text);
-int text_char_width(const text_settings *settings);
+int text_render_char(const text_settings *settings, vga_index color, int x, int y, char ch);
+void text_render(const text_settings *settings, vga_index color, int x, int y, int w, int h, const char *text);
+void text_render_str(const text_settings *settings, vga_index color, int x, int y, int w, int h, const str *text);
+int text_char_width(font_size font);
 int text_width(const text_settings *settings, const char *text);
 int text_width_limit(const text_settings *settings, const char *text, int limit);
 

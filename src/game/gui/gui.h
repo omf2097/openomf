@@ -13,6 +13,7 @@
 #include "game/gui/textinput.h"
 #include "game/gui/textselector.h"
 #include "game/gui/textslider.h"
+#include "game/gui/theme.h"
 #include "game/gui/widget.h"
 
 #endif // GUI_H

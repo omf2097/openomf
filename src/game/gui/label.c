@@ -10,7 +10,8 @@ typedef struct label {
 
 static void label_render(component *c) {
     label *local = widget_get_obj(c);
-    text_render(&local->tconf, TEXT_DEFAULT, c->x, c->y, c->w, c->h, local->text);
+    const gui_theme *theme = component_get_theme(c);
+    text_render(&local->tconf, theme->text.primary_color, c->x, c->y, c->w, c->h, local->text);
 }
 
 static void label_free(component *c) {
