@@ -27,6 +27,10 @@ tests=(
     "Kreissack has a custom defeat animation:KREISSACK.REC"
 )
 
+# Setup temp directory for outputs
+temp_dir=$(mktemp -d)
+trap 'rm -rf "$temp_dir"' EXIT
+
 fail_count=0
 
 echo "Running tests..."
@@ -36,20 +40,23 @@ RUNDIR=$(pwd)
 cd $BUILD_DIR
 
 export ASAN_OPTIONS=detect_leaks=0
-
+i=0
 for test in "${tests[@]}"; do
     IFS=':' read -r desc filename <<< "$test"
     # Trim whitespace from description and filename
     desc=$(echo "$desc" | xargs)
     filename=$(echo "$filename" | xargs)
+    output_file="$temp_dir/output_$i.log"
 
     echo -n "${desc} :"
-    if $OPENOMF_BIN --force-audio-backend=NULL --force-renderer=NULL --speed=10 -P "$RUNDIR/rectests/${filename}" >/dev/null 2>&1; then
+    if $OPENOMF_BIN --force-audio-backend=NULL --force-renderer=NULL --speed=10 -P "$RUNDIR/rectests/${filename}" >"$output_file"  2>&1; then
         echo " PASS"
     else
         echo " FAILED"
+        cat $output_file
         ((fail_count++))
     fi
+    ((i++))
 done
 
 # Exit with non-zero status if any test failed
