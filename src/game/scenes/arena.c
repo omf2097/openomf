@@ -1643,7 +1643,7 @@ int arena_create(scene *scene) {
     menu_attach(menu, filler_create());
     menu_attach(menu, filler_create());
     component *return_button =
-        button_create(&tconf, "RETURN TO GAME", "Continue fighting.", COM_ENABLED, game_menu_return, scene);
+        button_create("RETURN TO GAME", "Continue fighting.", false, false, game_menu_return, scene);
     widget_set_id(return_button, GAME_MENU_RETURN_ID);
     menu_attach(menu, return_button);
 
@@ -1663,15 +1663,15 @@ int arena_create(scene *scene) {
     }
     menu_attach(menu, speed_slider);
 
-    menu_attach(menu, button_create(&tconf, "VIDEO OPTIONS",
-                                    "These are miscellaneous options for visual effects and detail levels.",
-                                    COM_DISABLED, NULL, NULL));
-    menu_attach(menu, button_create(&tconf, "HELP",
+    menu_attach(menu,
+                button_create("VIDEO OPTIONS", "These are miscellaneous options for visual effects and detail levels.",
+                              false, false, NULL, NULL));
+    menu_attach(menu, button_create("HELP",
                                     "Obtain detailed and thorough explanation of the various options for which you "
                                     "may need a detailed and thorough explanation.",
-                                    COM_DISABLED, NULL, NULL));
+                                    false, false, NULL, NULL));
     component *quit_button =
-        button_create(&tconf, "QUIT", "Quit game and return to main menu.", COM_ENABLED, game_menu_quit, scene);
+        button_create("QUIT", "Quit game and return to main menu.", false, false, game_menu_quit, scene);
     widget_set_id(quit_button, GAME_MENU_QUIT_ID);
     menu_attach(menu, quit_button);
 

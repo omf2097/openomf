@@ -139,12 +139,11 @@ gui_frame *menu_keyboard_create(scene *s, const gui_theme *theme, int selected_p
     menu_attach(menu, label_create(&tconf, "CUSTOM KEYBOARD SETUP"));
     // menu_attach(menu, filler_create());
     for(int i = 0; i < 10; i++) {
-        local->keys[i] = button_create(&tconf, "", NULL, COM_ENABLED, menu_keyboard_set_key,
+        local->keys[i] = button_create("", NULL, false, false, menu_keyboard_set_key,
                                        (void *)menu_get_key(local->selected_player, i));
         menu_attach(menu, local->keys[i]);
     }
-    menu_attach(menu,
-                button_create(&tconf, "DONE", "Leave custom keyboard setup.", COM_ENABLED, menu_keyboard_done, s));
+    menu_attach(menu, button_create("DONE", "Leave custom keyboard setup.", false, false, menu_keyboard_done, s));
 
     menu_set_userdata(menu, local);
     menu_set_free_cb(menu, menu_keyboard_free);

@@ -111,6 +111,7 @@ int mainmenu_create(scene *scene) {
     gui_theme theme;
     gui_theme_defaults(&theme);
     theme.dialog.border_color = TEXT_MEDIUM_GREEN;
+    theme.text.font = FONT_BIG;
     theme.text.primary_color = TEXT_PRIMARY_COLOR;
     theme.text.secondary_color = TEXT_SECONDARY_COLOR;
     theme.text.disabled_color = TEXT_DISABLED_COLOR;

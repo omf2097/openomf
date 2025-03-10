@@ -16,12 +16,6 @@ enum cache_flags
     INVALIDATE_ALL = 0xFF,
 };
 
-typedef struct layout_item {
-    uint16_t x;
-    uint16_t y;
-    surface *glyph;
-} layout_item;
-
 struct text {
     str buf;             // Copy of text
     font_size font;      // Font size to use
@@ -45,6 +39,7 @@ struct text {
 };
 
 static void defaults(text *t) {
+    t->font = FONT_BIG;
     t->text_color = 0xFD;
     t->shadow_color = 0xC0;
     t->vertical_align = ALIGN_TEXT_TOP;
@@ -110,7 +105,6 @@ void text_set_from_str(text *t, const str *src) {
 }
 
 void text_set_font(text *t, font_size font) {
-    assert(font);
     if(t->font != font) {
         t->font = font;
         t->cache_flags |= INVALIDATE_LAYOUT;

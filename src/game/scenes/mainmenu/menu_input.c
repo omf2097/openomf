@@ -200,18 +200,18 @@ component *menu_input_create(scene *s, int player_id) {
     }
     menu_attach(menu, filler_create());
     menu_attach(
-        menu, button_create(&tconf, "RIGHT KEYBOARD",
+        menu, button_create("RIGHT KEYBOARD",
                             "This will use the numeric keypad for movement, enter for punch and right shift for kick.",
-                            COM_ENABLED, menu_set_right_keyboard, s));
+                            false, false, menu_set_right_keyboard, s));
     menu_attach(menu,
-                button_create(&tconf, "LEFT KEYBOARD",
+                button_create("LEFT KEYBOARD",
                               "This will set 'q', 'w', and 'e' for jumping directions, 'a' and 'd' for left and "
                               "right and 'z', 'x' and 'c' for ducking. Tab and ctrl control punching and kicking.",
-                              COM_ENABLED, menu_set_left_keyboard, s));
-    menu_attach(menu, button_create(&tconf, "CUSTOM KEYBOARD", "Invent your own keyboard settings.", COM_ENABLED,
+                              false, false, menu_set_left_keyboard, s));
+    menu_attach(menu, button_create("CUSTOM KEYBOARD", "Invent your own keyboard settings.", false, false,
                                     menu_set_custom_keyboard, s));
-    component *joy1 = button_create(&tconf, "JOYSTICK 1", "Use joystick 1.", COM_ENABLED, menu_set_joystick1, s);
-    component *joy2 = button_create(&tconf, "JOYSTICK 2", "Use joystick 2.", COM_ENABLED, menu_set_joystick2, s);
+    component *joy1 = button_create("JOYSTICK 1", "Use joystick 1.", false, false, menu_set_joystick1, s);
+    component *joy2 = button_create("JOYSTICK 2", "Use joystick 2.", false, false, menu_set_joystick2, s);
     int jcount = joystick_count();
     if(jcount < 1) {
         component_disable(joy1, 1);
@@ -221,8 +221,7 @@ component *menu_input_create(scene *s, int player_id) {
     }
     menu_attach(menu, joy1);
     menu_attach(menu, joy2);
-    menu_attach(menu,
-                button_create(&tconf, "DONE", "Leave without changing anything.", COM_ENABLED, menu_input_done, NULL));
+    menu_attach(menu, button_create("DONE", "Leave without changing anything.", false, false, menu_input_done, NULL));
 
     menu_set_userdata(menu, local);
     menu_set_free_cb(menu, menu_input_free);

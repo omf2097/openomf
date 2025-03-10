@@ -67,20 +67,12 @@ void dialog_create(dialog *dlg, dialog_style style, const char *text, int x, int
     menu_attach(menu, menu2);
 
     if(style == DIALOG_STYLE_CANCEL) {
-        component *cancel = button_create(&tconf, "CANCEL", NULL, COM_ENABLED, dialog_cancel, dlg);
-        button_set_border(cancel, TEXT_MEDIUM_GREEN);
-        menu_attach(menu2, cancel);
+        menu_attach(menu2, button_create("CANCEL", NULL, false, true, dialog_cancel, dlg));
     } else if(style == DIALOG_STYLE_YES_NO) {
-        component *yes = button_create(&tconf, "YES", NULL, COM_ENABLED, dialog_yes_ok, dlg);
-        component *no = button_create(&tconf, "NO", NULL, COM_ENABLED, dialog_no, dlg);
-        button_set_border(yes, TEXT_MEDIUM_GREEN);
-        button_set_border(no, TEXT_MEDIUM_GREEN);
-        menu_attach(menu2, yes);
-        menu_attach(menu2, no);
+        menu_attach(menu2, button_create("YES", NULL, false, true, dialog_yes_ok, dlg));
+        menu_attach(menu2, button_create("NO", NULL, false, true, dialog_no, dlg));
     } else if(style == DIALOG_STYLE_OK) {
-        component *ok = button_create(&tconf, "OK", NULL, COM_ENABLED, dialog_yes_ok, dlg);
-        button_set_border(ok, TEXT_MEDIUM_GREEN);
-        menu_attach(menu2, ok);
+        menu_attach(menu2, button_create("OK", NULL, false, true, dialog_yes_ok, dlg));
     }
 
     dlg->frame = gui_frame_create(&theme, x, y, w, 80);

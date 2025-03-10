@@ -390,8 +390,8 @@ component *lobby_challenge_create(scene *s) {
     lobby_user *user = list_get(&local->users, local->active_user);
     snprintf(local->helptext, sizeof(local->helptext), "Challenge %s?", user->name);
     menu_attach(menu, label_create(&tconf, local->helptext));
-    menu_attach(menu, button_create(&tconf, "Yes", NULL, COM_ENABLED, lobby_do_challenge, s));
-    menu_attach(menu, button_create(&tconf, "No", NULL, COM_ENABLED, lobby_cancel_challenge, s));
+    menu_attach(menu, button_create("Yes", NULL, false, false, lobby_do_challenge, s));
+    menu_attach(menu, button_create("No", NULL, false, false, lobby_cancel_challenge, s));
 
     return menu;
 }
@@ -685,8 +685,8 @@ component *lobby_exit_create(scene *s) {
     menu_set_padding(menu, 0);
 
     menu_attach(menu, label_create(&tconf, "Exit the Challenge Arena?"));
-    menu_attach(menu, button_create(&tconf, "Yes", NULL, COM_ENABLED, lobby_do_exit, s));
-    menu_attach(menu, button_create(&tconf, "No", NULL, COM_ENABLED, lobby_refuse_exit, s));
+    menu_attach(menu, button_create("Yes", NULL, false, false, lobby_do_exit, s));
+    menu_attach(menu, button_create("No", NULL, false, false, lobby_refuse_exit, s));
 
     return menu;
 }
@@ -1482,15 +1482,14 @@ int lobby_create(scene *scene) {
     help_text.cforeground = 56;
 
     menu_set_help_text_settings(menu, &help_text);
-    menu_attach(menu, button_create(&tconf, "Challenge",
-                                    "Challenge this player to a fight. Challenge yourself for 1-player game.",
-                                    COM_ENABLED, lobby_challenge, scene));
-    menu_attach(
-        menu, button_create(&tconf, "Whisper", "Whisper a message to this player.", COM_ENABLED, lobby_whisper, scene));
     menu_attach(menu,
-                button_create(&tconf, "Yell", "Chat with everybody in the arena.", COM_ENABLED, lobby_yell, scene));
-    menu_attach(menu, button_create(&tconf, "Refresh", "Refresh the player list.", COM_ENABLED, lobby_refresh, scene));
-    menu_attach(menu, button_create(&tconf, "Exit", "Exit and disconnect.", COM_ENABLED, lobby_exit, scene));
+                button_create("Challenge", "Challenge this player to a fight. Challenge yourself for 1-player game.",
+                              false, false, lobby_challenge, scene));
+    menu_attach(menu,
+                button_create("Whisper", "Whisper a message to this player.", false, false, lobby_whisper, scene));
+    menu_attach(menu, button_create("Yell", "Chat with everybody in the arena.", false, false, lobby_yell, scene));
+    menu_attach(menu, button_create("Refresh", "Refresh the player list.", false, false, lobby_refresh, scene));
+    menu_attach(menu, button_create("Exit", "Exit and disconnect.", false, false, lobby_exit, scene));
 
     int winner = -1;
     // check if there's already a net controller provisioned

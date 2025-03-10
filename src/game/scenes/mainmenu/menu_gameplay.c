@@ -59,7 +59,6 @@ component *menu_gameplay_create(scene *s) {
                                                     "three rounds, or best three out of five rounds.",
                                                     NULL, NULL, &settings_get()->gameplay.rounds, round_type_names,
                                                     NUMBER_OF_ROUND_TYPES));
-    menu_attach(menu,
-                button_create(&tconf, "DONE", "Go back to the main menu.", COM_ENABLED, menu_gameplay_done, NULL));
+    menu_attach(menu, button_create("DONE", "Go back to the main menu.", false, false, menu_gameplay_done, NULL));
     return menu;
 }

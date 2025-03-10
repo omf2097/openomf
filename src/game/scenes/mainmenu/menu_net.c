@@ -39,22 +39,21 @@ component *menu_net_create(scene *s) {
     menu_attach(menu, label_create(&tconf, "NETWORK PLAY"));
     menu_attach(menu, filler_create());
 
-    component *lobby = button_create(&tconf, "LOBBY", "Join the OpenOMF network lobby to challenge other players.",
-                                     COM_ENABLED, menu_net_lobby, s);
+    component *lobby = button_create("LOBBY", "Join the OpenOMF network lobby to challenge other players.", false,
+                                     false, menu_net_lobby, s);
     widget_set_id(lobby, NETWORK_LOBBY_BUTTON_ID);
     menu_attach(menu, lobby);
 
-    component *connect =
-        button_create(&tconf, "CONNECT TO SERVER", "Connect to a specified IP address to play an opponent.",
-                      COM_ENABLED, menu_net_connect, s);
+    component *connect = button_create("CONNECT TO SERVER", "Connect to a specified IP address to play an opponent.",
+                                       false, false, menu_net_connect, s);
     widget_set_id(connect, NETWORK_CONNECT_BUTTON_ID);
     menu_attach(menu, connect);
 
-    component *listen = button_create(&tconf, "START SERVER", "Start a server for other players to connect to.",
-                                      COM_ENABLED, menu_net_listen, s);
+    component *listen = button_create("START SERVER", "Start a server for other players to connect to.", false, false,
+                                      menu_net_listen, s);
     widget_set_id(listen, NETWORK_LISTEN_BUTTON_ID);
     menu_attach(menu, listen);
 
-    menu_attach(menu, button_create(&tconf, "DONE", "Return to main menu.", COM_ENABLED, menu_net_done, NULL));
+    menu_attach(menu, button_create("DONE", "Return to main menu.", false, false, menu_net_done, NULL));
     return menu;
 }
