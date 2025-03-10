@@ -7,6 +7,7 @@
 #include "game/gui/trn_menu.h"
 #include "game/gui/xysizer.h"
 #include "game/scenes/mechlab.h"
+#include "game/scenes/mechlab/lab_har_constants.h"
 #include "game/scenes/mechlab/lab_dash_main.h"
 #include "game/utils/formatting.h"
 #include "game/utils/settings.h"
@@ -17,14 +18,6 @@
 #include "utils/c_string_util.h"
 #include "utils/log.h"
 #include "video/video.h"
-
-// TODO put these somewhere central
-static uint8_t max_arm_speed[11] = {7, 9, 5, 7, 10, 8, 9, 7, 10, 7, 8};
-static uint8_t max_leg_speed[11] = {9, 10, 6, 7, 9, 9, 8, 7, 8, 6, 7};
-static uint8_t max_arm_power[11] = {6, 6, 10, 9, 5, 7, 7, 6, 6, 7, 8};
-static uint8_t max_leg_power[11] = {7, 7, 9, 5, 6, 8, 6, 8, 7, 8, 8};
-static uint8_t max_stun_resistance[11] = {9, 7, 9, 7, 8, 7, 7, 8, 8, 8, 7};
-static uint8_t max_armor[11] = {6, 8, 8, 9, 7, 9, 7, 10, 7, 7, 8};
 
 void lab_dash_main_photo_select(component *c, void *userdata) {
     trnmenu_finish(c->parent);
@@ -358,24 +351,24 @@ component *lab_dash_main_create_gauges(component *xy, dashboard_widgets *dw, sd_
 
     // Bars and texts (bottom middle)
     xysizer_attach(xy, label_create(&tconf_dark, "ARM POWER"), 125, 95, 200, 6);
-    dw->arm_power = gauge_create(GAUGE_BIG, max_arm_power[pilot->har_id], 3);
+    dw->arm_power = gauge_create(GAUGE_BIG, max_arm_power[pilot->har_id]+1, 3);
     xysizer_attach(xy, dw->arm_power, 125, 102, -1, -1);
     xysizer_attach(xy, label_create(&tconf_dark, "LEG POWER"), 125, 106, 200, 6);
-    dw->leg_power = gauge_create(GAUGE_BIG, max_leg_power[pilot->har_id], 3);
+    dw->leg_power = gauge_create(GAUGE_BIG, max_leg_power[pilot->har_id]+1, 3);
     xysizer_attach(xy, dw->leg_power, 125, 113, -1, -1);
     xysizer_attach(xy, label_create(&tconf_dark, "ARMOR"), 125, 117, 200, 6);
-    dw->armor = gauge_create(GAUGE_BIG, max_armor[pilot->har_id], 3);
+    dw->armor = gauge_create(GAUGE_BIG, max_armor[pilot->har_id]+1, 3);
     xysizer_attach(xy, dw->armor, 125, 124, -1, -1);
 
     // Bars and texts (bottom right side)
     xysizer_attach(xy, label_create(&tconf_dark, "ARM SPEED"), 228, 95, 200, 6);
-    dw->arm_speed = gauge_create(GAUGE_BIG, max_arm_speed[pilot->har_id], 3);
+    dw->arm_speed = gauge_create(GAUGE_BIG, max_arm_speed[pilot->har_id]+1, 3);
     xysizer_attach(xy, dw->arm_speed, 228, 102, -1, -1);
     xysizer_attach(xy, label_create(&tconf_dark, "LEG SPEED"), 228, 106, 200, 6);
-    dw->leg_speed = gauge_create(GAUGE_BIG, max_leg_speed[pilot->har_id], 3);
+    dw->leg_speed = gauge_create(GAUGE_BIG, max_leg_speed[pilot->har_id]+1, 3);
     xysizer_attach(xy, dw->leg_speed, 228, 113, -1, -1);
     xysizer_attach(xy, label_create(&tconf_dark, "STUN RES"), 228, 117, 200, 6);
-    dw->stun_resistance = gauge_create(GAUGE_BIG, max_stun_resistance[pilot->har_id], 3);
+    dw->stun_resistance = gauge_create(GAUGE_BIG, max_stun_res[pilot->har_id]+1, 3);
     xysizer_attach(xy, dw->stun_resistance, 228, 124, -1, -1);
 
     return xy;
@@ -438,12 +431,12 @@ void lab_dash_main_update_gauges(dashboard_widgets *dw, sd_pilot *pilot) {
     SET_GAUGE_X(agility);
     SET_GAUGE_X(endurance);
 
-    gauge_set_size(dw->arm_power, max_arm_power[pilot->har_id]);
-    gauge_set_size(dw->leg_power, max_leg_power[pilot->har_id]);
-    gauge_set_size(dw->armor, max_armor[pilot->har_id]);
-    gauge_set_size(dw->arm_speed, max_arm_speed[pilot->har_id]);
-    gauge_set_size(dw->leg_speed, max_leg_speed[pilot->har_id]);
-    gauge_set_size(dw->stun_resistance, max_stun_resistance[pilot->har_id]);
+    gauge_set_size(dw->arm_power, max_arm_power[pilot->har_id]+1);
+    gauge_set_size(dw->leg_power, max_leg_power[pilot->har_id]+1);
+    gauge_set_size(dw->armor, max_armor[pilot->har_id]+1);
+    gauge_set_size(dw->arm_speed, max_arm_speed[pilot->har_id]+1);
+    gauge_set_size(dw->leg_speed, max_leg_speed[pilot->har_id]+1);
+    gauge_set_size(dw->stun_resistance, max_stun_res[pilot->har_id]+1);
 
     // Har stats
     SET_GAUGE_X(arm_power);
