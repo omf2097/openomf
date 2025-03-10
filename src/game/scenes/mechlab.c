@@ -191,6 +191,7 @@ component *mechlab_sim_menu_create(scene *scene) {
     trnmenu_set_submenu_init_cb(menu, lab_dash_sim_init);
     trnmenu_set_submenu_done_cb(menu, lab_dash_sim_done);
     trnmenu_set_userdata(menu, &local->dw);
+    local->dashtype = DASHBOARD_SIM;
     return menu;
 }
 
@@ -399,7 +400,7 @@ void mechlab_render(scene *scene) {
     mechlab_local *local = scene_get_userdata(scene);
 
     for(unsigned i = 0; i < N_ELEMENTS(local->bg_obj); i++) {
-        if(local->dashtype == DASHBOARD_SELECT_TOURNAMENT && i > 0) {
+        if((local->dashtype == DASHBOARD_SELECT_TOURNAMENT || local->dashtype == DASHBOARD_SIM) && i > 0) {
             continue;
         }
         object_render(&local->bg_obj[i]);
@@ -409,7 +410,7 @@ void mechlab_render(scene *scene) {
     gui_frame_render(local->frame);
 
     if(local->dashtype != DASHBOARD_NEW_PLAYER && local->mech != NULL) {
-        if(local->dashtype != DASHBOARD_SELECT_TOURNAMENT) {
+        if(local->dashtype != DASHBOARD_SELECT_TOURNAMENT && local->dashtype != DASHBOARD_SIM) {
             object_render(local->mech);
         }
     }
@@ -471,6 +472,12 @@ void mechlab_input_tick(scene *scene) {
                 mechlab_select_dashboard(scene, DASHBOARD_STATS);
                 gui_frame_set_root(local->frame, lab_menu_main_create(scene, found));
                 gui_frame_layout(local->frame);
+            } else if(local->dashtype == DASHBOARD_SIM && i->event_data.action == ACT_ESC) {
+                bool found = mechlab_find_last_player(scene);
+                mechlab_select_dashboard(scene, DASHBOARD_STATS);
+                gui_frame_set_root(local->frame, lab_menu_main_create(scene, found));
+                gui_frame_layout(local->frame);
+
             } else {
                 gui_frame_action(local->frame, i->event_data.action);
             }
