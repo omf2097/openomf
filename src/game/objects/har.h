@@ -174,6 +174,8 @@ typedef struct har_t {
 
     uint8_t custom_defeat_animation;
 
+    char rehits[20]; // list of the move IDs that cannot rehit again
+
     list har_hooks;
 
 #ifdef DEBUGMODE
