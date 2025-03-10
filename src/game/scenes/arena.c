@@ -293,6 +293,7 @@ void arena_end(scene *sc) {
         if(is_demoplay(gs)) {
             game_state_set_next(gs, SCENE_VS);
         } else if(gs->match_settings.sim) {
+            p2->pilot = NULL;
             game_state_set_next(gs, SCENE_MECHLAB);
         } else {
             game_state_set_next(gs, SCENE_NEWSROOM);
@@ -603,6 +604,15 @@ void arena_har_defeat_hook(int loser_player_id, scene *scene) {
                 }
                 if(!gs->match_settings.sim) {
                     player_winner->pilot->rank--;
+                    if(player_winner->pilot->rank < 1) {
+                        player_winner->pilot->rank = 1;
+                    }
+                    for(int i = 0; i < player_winner->chr->pilot.enemies_inc_unranked; i++) {
+                        if(player_winner->chr->enemies[i]->pilot.rank == player_winner->pilot->rank) {
+                            player_winner->chr->enemies[i]->pilot.rank += 1;
+                            break;
+                        }
+                    }
                 }
                 local->win_state = YOUWIN;
             } else {
@@ -610,6 +620,15 @@ void arena_har_defeat_hook(int loser_player_id, scene *scene) {
                     if(player_loser->pilot->rank <= player_loser->pilot->enemies_ex_unranked &&
                        !gs->match_settings.sim) {
                         player_loser->pilot->rank++;
+                        if(player_winner->pilot->rank > player_winner->chr->pilot.enemies_ex_unranked + 1) {
+                            player_winner->pilot->rank = player_winner->chr->pilot.enemies_ex_unranked + 1;
+                        }
+                        for(int i = 0; i < player_winner->chr->pilot.enemies_inc_unranked; i++) {
+                            if(player_winner->chr->enemies[i]->pilot.rank == player_winner->pilot->rank) {
+                                player_winner->chr->enemies[i]->pilot.rank -= 1;
+                                break;
+                            }
+                        }
                     }
                     fight_stats->repair_cost = calculate_trade_value(player_loser->pilot) / 100;
                 }
