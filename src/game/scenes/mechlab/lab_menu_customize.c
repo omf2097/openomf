@@ -128,13 +128,13 @@ void lab_menu_customize_check_arm_power_price(component *c, void *userdata) {
     sd_pilot *pilot = game_player_get_pilot(p1);
     if(mechlab_get_selling(s)) {
         int32_t price =
-         har_upgrade_price[pilot->har_id] * upgrade_level_mutiplier[pilot->arm_power] * arm_leg_multiplier;
+            har_upgrade_price[pilot->har_id] * upgrade_level_mutiplier[pilot->arm_power] * arm_leg_multiplier;
         if(price < 1) {
             component_disable(c, 1);
         }
     } else {
         int32_t price =
-         har_upgrade_price[pilot->har_id] * upgrade_level_mutiplier[pilot->arm_power + 1] * arm_leg_multiplier;
+            har_upgrade_price[pilot->har_id] * upgrade_level_mutiplier[pilot->arm_power + 1] * arm_leg_multiplier;
         if(price < 0 || price > pilot->money || pilot->arm_power + 1 > max_arm_power[pilot->har_id]) {
             component_disable(c, 1);
         }
@@ -147,7 +147,7 @@ void lab_menu_customize_leg_power(component *c, void *userdata) {
     sd_pilot *pilot = game_player_get_pilot(p1);
     if(mechlab_get_selling(s)) {
         int32_t price =
-         har_upgrade_price[pilot->har_id] * upgrade_level_mutiplier[pilot->leg_power] * arm_leg_multiplier;
+            har_upgrade_price[pilot->har_id] * upgrade_level_mutiplier[pilot->leg_power] * arm_leg_multiplier;
         if(price > 0) {
             pilot->money += price * 0.85;
             pilot->leg_power--;
@@ -155,7 +155,7 @@ void lab_menu_customize_leg_power(component *c, void *userdata) {
         }
     } else {
         int32_t price =
-         har_upgrade_price[pilot->har_id] * upgrade_level_mutiplier[pilot->leg_power + 1] * arm_leg_multiplier;
+            har_upgrade_price[pilot->har_id] * upgrade_level_mutiplier[pilot->leg_power + 1] * arm_leg_multiplier;
         pilot->money -= price;
         pilot->leg_power++;
         mechlab_update(s);
@@ -169,13 +169,13 @@ void lab_menu_customize_check_leg_power_price(component *c, void *userdata) {
     sd_pilot *pilot = game_player_get_pilot(p1);
     if(mechlab_get_selling(s)) {
         int32_t price =
-         har_upgrade_price[pilot->har_id] * upgrade_level_mutiplier[pilot->leg_power] * arm_leg_multiplier;
+            har_upgrade_price[pilot->har_id] * upgrade_level_mutiplier[pilot->leg_power] * arm_leg_multiplier;
         if(price < 1) {
             component_disable(c, 1);
         }
     } else {
         int32_t price =
-         har_upgrade_price[pilot->har_id] * upgrade_level_mutiplier[pilot->leg_power + 1] * arm_leg_multiplier;
+            har_upgrade_price[pilot->har_id] * upgrade_level_mutiplier[pilot->leg_power + 1] * arm_leg_multiplier;
         if(price < 0 || price > pilot->money || pilot->leg_power + 1 > max_leg_power[pilot->har_id]) {
             component_disable(c, 1);
         }
@@ -188,7 +188,7 @@ void lab_menu_customize_arm_speed(component *c, void *userdata) {
     sd_pilot *pilot = game_player_get_pilot(p1);
     if(mechlab_get_selling(s)) {
         int32_t price =
-         har_upgrade_price[pilot->har_id] * upgrade_level_mutiplier[pilot->arm_speed] * arm_leg_multiplier;
+            har_upgrade_price[pilot->har_id] * upgrade_level_mutiplier[pilot->arm_speed] * arm_leg_multiplier;
         if(price > 0) {
             pilot->money += price * 0.85;
             pilot->arm_speed--;
@@ -196,7 +196,7 @@ void lab_menu_customize_arm_speed(component *c, void *userdata) {
         }
     } else {
         int32_t price =
-         har_upgrade_price[pilot->har_id] * upgrade_level_mutiplier[pilot->arm_speed + 1] * arm_leg_multiplier;
+            har_upgrade_price[pilot->har_id] * upgrade_level_mutiplier[pilot->arm_speed + 1] * arm_leg_multiplier;
         pilot->money -= price;
         pilot->arm_speed++;
         mechlab_update(s);
@@ -210,13 +210,13 @@ void lab_menu_customize_check_arm_speed_price(component *c, void *userdata) {
     sd_pilot *pilot = game_player_get_pilot(p1);
     if(mechlab_get_selling(s)) {
         int32_t price =
-         har_upgrade_price[pilot->har_id] * upgrade_level_mutiplier[pilot->arm_speed] * arm_leg_multiplier;
+            har_upgrade_price[pilot->har_id] * upgrade_level_mutiplier[pilot->arm_speed] * arm_leg_multiplier;
         if(price < 1) {
             component_disable(c, 1);
         }
     } else {
         int32_t price =
-         har_upgrade_price[pilot->har_id] * upgrade_level_mutiplier[pilot->arm_speed + 1] * arm_leg_multiplier;
+            har_upgrade_price[pilot->har_id] * upgrade_level_mutiplier[pilot->arm_speed + 1] * arm_leg_multiplier;
         if(price < 0 || price > pilot->money || pilot->arm_speed + 1 > max_arm_speed[pilot->har_id]) {
             component_disable(c, 1);
         }
@@ -229,7 +229,7 @@ void lab_menu_customize_leg_speed(component *c, void *userdata) {
     sd_pilot *pilot = game_player_get_pilot(p1);
     if(mechlab_get_selling(s)) {
         int32_t price =
-         har_upgrade_price[pilot->har_id] * upgrade_level_mutiplier[pilot->leg_speed] * arm_leg_multiplier;
+            har_upgrade_price[pilot->har_id] * upgrade_level_mutiplier[pilot->leg_speed] * arm_leg_multiplier;
         if(price > 0) {
             pilot->money += price * 0.85;
             pilot->leg_speed--;
@@ -237,7 +237,7 @@ void lab_menu_customize_leg_speed(component *c, void *userdata) {
         }
     } else {
         int32_t price =
-         har_upgrade_price[pilot->har_id] * upgrade_level_mutiplier[pilot->leg_speed + 1] * arm_leg_multiplier;
+            har_upgrade_price[pilot->har_id] * upgrade_level_mutiplier[pilot->leg_speed + 1] * arm_leg_multiplier;
         pilot->money -= price;
         pilot->leg_speed++;
         mechlab_update(s);
@@ -251,13 +251,13 @@ void lab_menu_customize_check_leg_speed_price(component *c, void *userdata) {
     sd_pilot *pilot = game_player_get_pilot(p1);
     if(mechlab_get_selling(s)) {
         int32_t price =
-         har_upgrade_price[pilot->har_id] * upgrade_level_mutiplier[pilot->leg_speed] * arm_leg_multiplier;
+            har_upgrade_price[pilot->har_id] * upgrade_level_mutiplier[pilot->leg_speed] * arm_leg_multiplier;
         if(price < 1) {
             component_disable(c, 1);
         }
     } else {
         int32_t price =
-         har_upgrade_price[pilot->har_id] * upgrade_level_mutiplier[pilot->leg_speed + 1] * arm_leg_multiplier;
+            har_upgrade_price[pilot->har_id] * upgrade_level_mutiplier[pilot->leg_speed + 1] * arm_leg_multiplier;
         if(price < 0 || price > pilot->money || pilot->leg_speed + 1 > max_leg_speed[pilot->har_id]) {
             component_disable(c, 1);
         }
@@ -307,7 +307,7 @@ void lab_menu_customize_stun_resistance(component *c, void *userdata) {
     sd_pilot *pilot = game_player_get_pilot(p1);
     if(mechlab_get_selling(s)) {
         int32_t price =
-         har_upgrade_price[pilot->har_id] * upgrade_level_mutiplier[pilot->stun_resistance] * stun_res_multiplier;
+            har_upgrade_price[pilot->har_id] * upgrade_level_mutiplier[pilot->stun_resistance] * stun_res_multiplier;
         if(price > 0) {
             pilot->money += price * 0.85;
             pilot->stun_resistance--;
@@ -315,7 +315,7 @@ void lab_menu_customize_stun_resistance(component *c, void *userdata) {
         }
     } else {
         int32_t price =
-         har_upgrade_price[pilot->har_id] * upgrade_level_mutiplier[pilot->stun_resistance + 1] * stun_res_multiplier;
+            har_upgrade_price[pilot->har_id] * upgrade_level_mutiplier[pilot->stun_resistance + 1] * stun_res_multiplier;
         pilot->money -= price;
         pilot->stun_resistance++;
         mechlab_update(s);
@@ -329,13 +329,13 @@ void lab_menu_customize_check_stun_resistance_price(component *c, void *userdata
     sd_pilot *pilot = game_player_get_pilot(p1);
     if(mechlab_get_selling(s)) {
         int32_t price =
-         har_upgrade_price[pilot->har_id] * upgrade_level_mutiplier[pilot->stun_resistance] * stun_res_multiplier;
+            har_upgrade_price[pilot->har_id] * upgrade_level_mutiplier[pilot->stun_resistance] * stun_res_multiplier;
         if(price < 1) {
             component_disable(c, 1);
         }
     } else {
         int32_t price =
-         har_upgrade_price[pilot->har_id] * upgrade_level_mutiplier[pilot->stun_resistance + 1] * stun_res_multiplier;
+            har_upgrade_price[pilot->har_id] * upgrade_level_mutiplier[pilot->stun_resistance + 1] * stun_res_multiplier;
         if(price < 0 || price > pilot->money || pilot->stun_resistance + 1 > max_stun_res[pilot->har_id]) {
             component_disable(c, 1);
         }
@@ -633,8 +633,8 @@ static void lab_menu_focus_stun_resistance(component *c, bool focused, void *use
         sd_pilot *pilot = game_player_get_pilot(p1);
         if(mechlab_get_selling(s)) {
             label_set_text(header_label, "STUN RES.:\n\nSALES PRICE:");
-            int32_t price = har_upgrade_price[pilot->har_id] * upgrade_level_mutiplier[pilot->stun_resistance]
-             * stun_res_multiplier;
+            int32_t price = har_upgrade_price[pilot->har_id] * upgrade_level_mutiplier[pilot->stun_resistance] *
+                            stun_res_multiplier;
             if(price < 1) {
                 label_set_text(details_label, "Unavailable\n\nUnavailable");
             } else {
