@@ -324,7 +324,7 @@ void move_set_key(sd_move *move, sd_animation *ani, const char **key, int kcount
             move->damage_amount = conv_ubyte(value);
             break;
         case 47:
-            move->collision_opts = conv_ubyte(value);
+            move->throw_duration = conv_ubyte(value);
             break;
         case 48:
             move->extra_string_selector = conv_ubyte(value);
@@ -404,7 +404,7 @@ void move_get_key(sd_move *move, sd_animation *ani, const char **key, int kcount
             printf("%d\n", move->damage_amount);
             break;
         case 47:
-            printf("%d\n", move->collision_opts);
+            printf("%d\n", move->throw_duration);
             break;
         case 48:
             printf("%d\n", move->extra_string_selector);
@@ -476,7 +476,7 @@ void move_info(sd_move *move, sd_animation *ani, int move_id) {
     printf(" * block_stun:      %d\n", move->block_stun);
     printf(" * successor_id:    %d\n", move->successor_id);
     printf(" * damage_amount:   %d\n", move->damage_amount);
-    printf(" * collision_opts:      %d\n", move->collision_opts);
+    printf(" * throw_duration:      %d\n", move->throw_duration);
     printf(" * extra_string_selector:      %d\n", move->extra_string_selector);
     printf(" * points:          %d\n", move->points);
 

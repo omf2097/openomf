@@ -42,7 +42,7 @@ typedef struct {
     uint8_t block_stun;   ///< How many frames to force the opponents block animation on hit, also used for scrap amount
     uint8_t successor_id; ///< Successor animation ID
     uint8_t damage_amount;         ///< Damage amount when this move connects
-    uint8_t collision_opts;        ///< Unknown value
+    uint8_t throw_duration;        ///< How many frames the HAR is locked into a throw
     uint8_t extra_string_selector; ///< what upgrades change the animation string
     uint8_t points;                ///< Score gained for this hit
 

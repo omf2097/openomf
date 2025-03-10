@@ -56,7 +56,7 @@ int sd_move_copy(sd_move *dst, const sd_move *src) {
     dst->block_stun = src->block_stun;
     dst->successor_id = src->successor_id;
     dst->damage_amount = src->damage_amount;
-    dst->collision_opts = src->collision_opts;
+    dst->throw_duration = src->throw_duration;
     dst->extra_string_selector = src->extra_string_selector;
     dst->points = src->points;
 
@@ -106,7 +106,7 @@ int sd_move_load(sd_reader *r, sd_move *move) {
     move->block_stun = sd_read_ubyte(r);
     move->successor_id = sd_read_ubyte(r);
     move->damage_amount = sd_read_ubyte(r);
-    move->collision_opts = sd_read_ubyte(r);
+    move->throw_duration = sd_read_ubyte(r);
     move->extra_string_selector = sd_read_ubyte(r);
     move->points = sd_read_ubyte(r);
 
@@ -163,7 +163,7 @@ int sd_move_save(sd_writer *w, const sd_move *move) {
     sd_write_ubyte(w, move->block_stun);
     sd_write_ubyte(w, move->successor_id);
     sd_write_ubyte(w, move->damage_amount);
-    sd_write_ubyte(w, move->collision_opts);
+    sd_write_ubyte(w, move->throw_duration);
     sd_write_ubyte(w, move->extra_string_selector);
     sd_write_ubyte(w, move->points);
 
