@@ -416,7 +416,7 @@ component *lab_dash_sim_create(scene *s, dashboard_widgets *dw) {
     surface_create_from_data(sur, 60, 70, buf);
 
     dw->photo_highlight = spriteimage_create(sur);
-    spriteimage_owns_sprite(dw->photo_highlight, true);
+    spriteimage_set_owns_sprite(dw->photo_highlight, true);
 
     xysizer_attach(xy, dw->photo_highlight, 6 + (2 * 60), -1, -1, -1);
 
