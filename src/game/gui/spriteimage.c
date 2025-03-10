@@ -20,13 +20,13 @@ static void spriteimage_free(component *c) {
     spriteimage *sb = widget_get_obj(c);
     if(sb->owns_sprite) {
         // bypass const here
-        surface_free((surface*)sb->img);
-        free((surface*)sb->img);
+        surface_free((surface *)sb->img);
+        free((surface *)sb->img);
     }
     omf_free(sb);
 }
 
-void spriteimage_owns_sprite(component *c, bool owns_sprite) {
+void spriteimage_set_owns_sprite(component *c, bool owns_sprite) {
     spriteimage *sb = widget_get_obj(c);
     sb->owns_sprite = owns_sprite;
 }
