@@ -1117,10 +1117,8 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
         return 0;
     }
 
-    bool rehit = false;
-    if(obj_b->gs->match_settings.rehit && b->state == STATE_FALLEN && object_is_airborne(obj_b) && b->endurance > 0) {
-        rehit = true;
-    }
+    bool rehit =
+        obj_b->gs->match_settings.rehit && b->state == STATE_FALLEN && object_is_airborne(obj_b) && b->endurance > 0;
 
     // Check for collisions by sprite collision points
     int level = 1;
@@ -1303,10 +1301,8 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
         return;
     }
 
-    bool rehit = false;
-    if(o_har->gs->match_settings.rehit && h->state == STATE_FALLEN && object_is_airborne(o_har) && h->endurance > 0) {
-        rehit = true;
-    }
+    bool rehit =
+        o_har->gs->match_settings.rehit && h->state == STATE_FALLEN && object_is_airborne(o_har) && h->endurance > 0;
 
     // Check for collisions by sprite collision points
     int level = 2;
