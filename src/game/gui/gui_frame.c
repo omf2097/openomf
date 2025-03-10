@@ -91,6 +91,7 @@ int gui_frame_action(gui_frame *frame, int action) {
 
 void gui_frame_layout(gui_frame *frame) {
     if(frame->root_node) {
+        component_init(frame->root_node, &frame->theme);
         component_layout(frame->root_node, frame->x, frame->y, frame->w, frame->h);
     }
 }

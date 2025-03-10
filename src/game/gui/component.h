@@ -34,6 +34,7 @@ typedef void (*component_focus_cb)(component *c, bool focused);
 typedef void (*component_layout_cb)(component *c, int x, int y, int w, int h);
 typedef void (*component_tick_cb)(component *c);
 typedef void (*component_free_cb)(component *c);
+typedef void (*component_init_cb)(component *c, const gui_theme *theme);
 typedef component *(*component_find_cb)(component *c, int id);
 
 /*! \brief Basic GUI object
@@ -80,13 +81,14 @@ struct component {
     component_tick_cb tick;     ///< Tick function callback. This is called periodically.
     component_free_cb free;     ///< Free function callback. Any component callbacks should be done here.
     component_find_cb find;     ///< Should only be set by widget and sizer. Used to look up widgets by ID.
+    component_init_cb init;     ///< Initialization function callback. This is called right before layout function. This
+                                ///< should be used to prerender elements, decide size hints, etc.
 
-    component
-        *parent; ///< Parent component. For widgets, this should be always a sizer. For root sizer it will be NULL.
+    component *parent; ///< Parent component. For widgets, usually a sizer. NULL for root component.
 };
 
 // Create & free
-component *component_create(void);
+component *component_create(uint32_t header);
 void component_free(component *c);
 
 // Internal callbacks
@@ -94,6 +96,7 @@ void component_tick(component *c);
 void component_render(component *c);
 int component_event(component *c, SDL_Event *event);
 int component_action(component *c, int action);
+void component_init(component *c, const gui_theme *theme);
 void component_layout(component *c, int x, int y, int w, int h);
 
 void component_disable(component *c, int disabled);
@@ -124,6 +127,7 @@ void component_set_event_cb(component *c, component_event_cb cb);
 void component_set_action_cb(component *c, component_action_cb cb);
 void component_set_focus_cb(component *c, component_focus_cb cb);
 void component_set_layout_cb(component *c, component_layout_cb cb);
+void component_set_init_cb(component *c, component_init_cb cb);
 void component_set_tick_cb(component *c, component_tick_cb cb);
 void component_set_free_cb(component *c, component_free_cb cb);
 void component_set_find_cb(component *c, component_find_cb cb);

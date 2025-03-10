@@ -30,6 +30,12 @@ int component_action(component *c, int action) {
     return 1;
 }
 
+void component_init(component *c, const gui_theme *theme) {
+    if(c->init) {
+        c->init(c, theme);
+    }
+}
+
 void component_layout(component *c, int x, int y, int w, int h) {
     c->x = x;
     c->y = y;
@@ -140,6 +146,10 @@ void component_set_find_cb(component *c, component_find_cb cb) {
     c->find = cb;
 }
 
+void component_set_init_cb(component *c, component_init_cb cb) {
+    c->init = cb;
+}
+
 void component_set_help_text(component *c, const char *help) {
     c->help = help;
 }
@@ -164,9 +174,9 @@ const gui_theme *component_get_theme(component *c) {
     return c->theme;
 }
 
-component *component_create(void) {
+component *component_create(uint32_t header) {
     component *c = omf_calloc(1, sizeof(component));
-    c->header = 0; // By default, this is unset.
+    c->header = header;
     c->x_hint = -1;
     c->y_hint = -1;
     c->w_hint = -1;
