@@ -465,13 +465,8 @@ int vs_create(scene *scene) {
 
         player1->pilot->har_trades = new_trades;
 
-    } else if(player1->chr) {
-        snprintf(local->vs_str, 128, "%s VS. %s", player1->chr->pilot.name, player2->pilot->name);
     } else {
-        const char *pilot1 = lang_get(20 + player1->pilot->pilot_id);
-        const char *pilot2 = lang_get(20 + player2->pilot->pilot_id);
-        snprintf(local->vs_str, 128, "%*.*s VS. %*.*s", (int)strlen(pilot1) - 1, (int)strlen(pilot1) - 1, pilot1,
-                 (int)strlen(pilot2) - 1, (int)strlen(pilot2) - 1, pilot2);
+        snprintf(local->vs_str, 128, "%s VS. %s", player1->pilot->name, player2->pilot->name);
     }
 
     // Set player palettes
