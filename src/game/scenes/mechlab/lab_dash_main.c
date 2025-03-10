@@ -4,6 +4,7 @@
 #include "game/gui/gauge.h"
 #include "game/gui/label.h"
 #include "game/gui/portrait.h"
+#include "game/gui/spriteimage.h"
 #include "game/gui/trn_menu.h"
 #include "game/gui/xysizer.h"
 #include "game/scenes/mechlab.h"
@@ -25,16 +26,16 @@ void lab_dash_main_photo_select(component *c, void *userdata) {
 
 void lab_dash_main_photo_left(component *c, void *userdata) {
     dashboard_widgets *dw = userdata;
-    portrait_prev(dw->photo);
-    dw->pilot->photo_id = portrait_selected(dw->photo);
+    portrait_prev(dw->photo[0]);
+    dw->pilot->photo_id = portrait_selected(dw->photo[0]);
     portrait_load(dw->pilot->photo, &dw->pilot->palette, PIC_PLAYERS, dw->pilot->photo_id);
     palette_load_player_colors(&dw->pilot->palette, 0);
 }
 
 void lab_dash_main_photo_right(component *c, void *userdata) {
     dashboard_widgets *dw = userdata;
-    portrait_next(dw->photo);
-    dw->pilot->photo_id = portrait_selected(dw->photo);
+    portrait_next(dw->photo[0]);
+    dw->pilot->photo_id = portrait_selected(dw->photo[0]);
     portrait_load(dw->pilot->photo, &dw->pilot->palette, PIC_PLAYERS, dw->pilot->photo_id);
     palette_load_player_colors(&dw->pilot->palette, 0);
 }
@@ -141,15 +142,57 @@ void lab_dash_main_chr_init(component *menu, component *submenu) {
     mechlab_update(dw->scene);
 }
 
+void lab_dash_sim_update_portraits(dashboard_widgets *dw) {
+    game_player *p1 = game_state_get_player(dw->scene->gs, 0);
+
+    int start = dw->sim_rank - 2;
+    while(start + 3 > p1->chr->pilot.enemies_ex_unranked) {
+        start--;
+    }
+    if(start < 1) {
+        start = 1;
+    }
+    char buf[50];
+    for(int i = start, j = 0; j < 5 && i <= p1->chr->pilot.enemies_ex_unranked + 1; i++) {
+        if(i < 1) {
+            continue;
+        }
+        if(i == dw->sim_rank) {
+            component_set_pos_hints(dw->photo_highlight, 6 + (j * 60), -1);
+        }
+        snprintf(buf, sizeof(buf), "Rank\n%d", i);
+        label_set_text(dw->ranks[j], buf);
+        if(i == p1->pilot->rank) {
+            portrait_set_from_sprite(dw->photo[j], p1->pilot->photo);
+            j++;
+            continue;
+        }
+        for(int k = 0; k < p1->chr->pilot.enemies_inc_unranked; k++) {
+            if(p1->chr->enemies[k]->pilot.rank == i) {
+                portrait_set_from_sprite(dw->photo[j], p1->chr->enemies[k]->pilot.photo);
+                j++;
+                break;
+            }
+        }
+    }
+
+    component_layout(dw->photo_highlight->parent, dw->photo_highlight->parent->x, dw->photo_highlight->parent->y,
+                     dw->photo_highlight->parent->w, dw->photo_highlight->parent->h);
+}
+
 void lab_dash_sim_left(component *c, void *userdata) {
     dashboard_widgets *dw = userdata;
     game_player *p1 = game_state_get_player(dw->scene->gs, 0);
     if(dw->sim_rank > 1) {
         dw->sim_rank--;
     }
-    for(int i = 0; i < p1->chr->pilot.enemies_ex_unranked; i++) {
-        if(p1->chr->enemies[i]->pilot.rank == dw->sim_rank) {
-            lab_dash_sim_update(dw->scene, dw, &p1->chr->enemies[i]->pilot);
+    if(dw->sim_rank == p1->pilot->rank) {
+        lab_dash_sim_update(dw->scene, dw, p1->pilot);
+    } else {
+        for(int i = 0; i < p1->chr->pilot.enemies_ex_unranked; i++) {
+            if(p1->chr->enemies[i]->pilot.rank == dw->sim_rank) {
+                lab_dash_sim_update(dw->scene, dw, &p1->chr->enemies[i]->pilot);
+            }
         }
     }
 }
@@ -157,12 +200,16 @@ void lab_dash_sim_left(component *c, void *userdata) {
 void lab_dash_sim_right(component *c, void *userdata) {
     dashboard_widgets *dw = userdata;
     game_player *p1 = game_state_get_player(dw->scene->gs, 0);
-    if(dw->sim_rank < p1->chr->pilot.enemies_ex_unranked) {
+    if(dw->sim_rank < p1->chr->pilot.enemies_ex_unranked + 1) {
         dw->sim_rank++;
     }
-    for(int i = 0; i < p1->chr->pilot.enemies_ex_unranked; i++) {
-        if(p1->chr->enemies[i]->pilot.rank == dw->sim_rank) {
-            lab_dash_sim_update(dw->scene, dw, &p1->chr->enemies[i]->pilot);
+    if(dw->sim_rank == p1->pilot->rank) {
+        lab_dash_sim_update(dw->scene, dw, p1->pilot);
+    } else {
+        for(int i = 0; i < p1->chr->pilot.enemies_ex_unranked; i++) {
+            if(p1->chr->enemies[i]->pilot.rank == dw->sim_rank) {
+                lab_dash_sim_update(dw->scene, dw, &p1->chr->enemies[i]->pilot);
+            }
         }
     }
 }
@@ -287,20 +334,20 @@ component *lab_dash_main_create(scene *s, dashboard_widgets *dw) {
     tconf_light_centered.cforeground = MECHLAB_BRIGHT_GREEN;
 
     // Pilot image
-    dw->photo = portrait_create(PIC_PLAYERS, 0);
+    dw->photo[0] = portrait_create(PIC_PLAYERS, 0);
     if(p1->pilot->photo) {
         log_debug("loading pilot photo from pilot");
-        portrait_set_from_sprite(dw->photo, dw->pilot->photo);
+        portrait_set_from_sprite(dw->photo[0], dw->pilot->photo);
     } else {
         dw->pilot->photo = omf_calloc(1, sizeof(sd_sprite));
         sd_sprite_create(dw->pilot->photo);
         log_debug("seletng default pilot photo");
-        dw->pilot->photo_id = portrait_selected(dw->photo);
+        dw->pilot->photo_id = portrait_selected(dw->photo[0]);
         portrait_load(dw->pilot->photo, &dw->pilot->palette, PIC_PLAYERS, 0);
     }
     palette_load_player_colors(&dw->pilot->palette, 0);
 
-    xysizer_attach(xy, dw->photo, 12, -1, -1, -1);
+    xysizer_attach(xy, dw->photo[0], 12, -1, -1, -1);
 
     // Texts
     dw->name = label_create(&tconf_light, "NO NAME");
@@ -332,36 +379,54 @@ component *lab_dash_sim_create(scene *s, dashboard_widgets *dw) {
     text_settings tconf_dark;
     text_defaults(&tconf_dark);
     tconf_dark.font = FONT_SMALL;
-    tconf_dark.cforeground = TEXT_DARK_GREEN;
+    tconf_dark.cforeground = TEXT_MEDIUM_GREEN;
 
     text_settings tconf_light;
     text_defaults(&tconf_light);
     tconf_light.font = FONT_SMALL;
-    tconf_light.cforeground = TEXT_MEDIUM_GREEN;
+    tconf_light.cforeground = TEXT_BRIGHT_GREEN;
 
     text_settings tconf_light_centered;
     text_defaults(&tconf_light_centered);
     tconf_light_centered.font = FONT_SMALL;
     tconf_light_centered.halign = TEXT_CENTER;
-    tconf_light_centered.cforeground = TEXT_MEDIUM_GREEN;
+    tconf_light_centered.cforeground = TEXT_BRIGHT_GREEN;
+
+    text_settings tconf_dark_centered;
+    text_defaults(&tconf_dark_centered);
+    tconf_dark_centered.font = FONT_SMALL;
+    tconf_dark_centered.halign = TEXT_CENTER;
+    tconf_dark_centered.cforeground = TEXT_MEDIUM_GREEN;
 
     // Pilot image
     dw->sim_rank = p1->pilot->rank - 1;
     if(dw->sim_rank < 1) {
         dw->sim_rank = 2;
     }
-    for(int i = 0; i < p1->chr->pilot.enemies_ex_unranked; i++) {
+    for(int i = 0; i < p1->chr->pilot.enemies_inc_unranked; i++) {
         if(p1->chr->enemies[i]->pilot.rank == dw->sim_rank) {
             dw->pilot = &p1->chr->enemies[i]->pilot;
             break;
         }
     }
 
-    dw->photo = portrait_create(PIC_PLAYERS, 0);
-    log_debug("loading pilot photo from pilot");
-    portrait_set_from_sprite(dw->photo, dw->pilot->photo);
+    surface *sur = omf_calloc(sizeof(surface), 1);
+    unsigned char buf[60 * 70];
+    memset(buf, 0xf8, sizeof(buf));
+    surface_create_from_data(sur, 60, 70, buf);
 
-    xysizer_attach(xy, dw->photo, 12, -1, -1, -1);
+    dw->photo_highlight = spriteimage_create(sur);
+
+    xysizer_attach(xy, dw->photo_highlight, 6 + (2 * 60), -1, -1, -1);
+
+    for(int i = 0; i < 5; i++) {
+        dw->photo[i] = portrait_create(PIC_PLAYERS, 0);
+        xysizer_attach(xy, dw->photo[i], 6 + (i * 60), 0, -1, 58);
+        dw->ranks[i] = label_create(&tconf_dark_centered, "NO RANK");
+        xysizer_attach(xy, dw->ranks[i], 6 + (i * 60), 58, 50, -1);
+    }
+
+    lab_dash_sim_update_portraits(dw);
 
     // Texts
     dw->name = label_create(&tconf_dark, "NAME: NO NAME");
@@ -451,6 +516,18 @@ void lab_dash_main_update(scene *s, dashboard_widgets *dw) {
     label_set_text(dw->name, p1->pilot->name);
     label_set_text(dw->tournament, p1->pilot->trn_desc);
 
+    if(p1->pilot->photo) {
+        log_debug("loading pilot photo from pilot");
+        portrait_set_from_sprite(dw->photo[0], p1->pilot->photo);
+    } else {
+        log_debug("seletng default pilot photo");
+        // Select pilot picture
+        portrait_select(dw->photo[0], PIC_PLAYERS, 0);
+    }
+
+    // Palette
+    palette_load_player_colors(&p1->pilot->palette, 0);
+
     lab_dash_main_update_gauges(dw, p1->pilot);
 }
 
@@ -465,6 +542,8 @@ void lab_dash_sim_update(scene *s, dashboard_widgets *dw, sd_pilot *pilot) {
     label_set_text(dw->har_name, tmp);
     snprintf(tmp, sizeof(tmp), "NAME: %s", pilot->name);
     label_set_text(dw->name, tmp);
+
+    lab_dash_sim_update_portraits(dw);
 
     lab_dash_main_update_gauges(dw, pilot);
 }
@@ -491,16 +570,4 @@ void lab_dash_main_update_gauges(dashboard_widgets *dw, sd_pilot *pilot) {
     SET_GAUGE_X(arm_speed);
     SET_GAUGE_X(leg_speed);
     SET_GAUGE_X(stun_resistance);
-
-    if(pilot->photo) {
-        log_debug("loading pilot photo from pilot");
-        portrait_set_from_sprite(dw->photo, pilot->photo);
-    } else {
-        log_debug("seletng default pilot photo");
-        // Select pilot picture
-        portrait_select(dw->photo, PIC_PLAYERS, 0);
-    }
-
-    // Palette
-    palette_load_player_colors(&pilot->palette, 0);
 }

@@ -12,7 +12,9 @@ typedef struct {
     list *savegames;
     int16_t index;
     uint8_t sim_rank;
-    component *photo;
+    component *photo[5];
+    component *photo_highlight;
+    component *ranks[5];
     component *power;
     component *agility;
     component *endurance;
