@@ -602,7 +602,8 @@ void arena_har_defeat_hook(int loser_player_id, scene *scene) {
                         (player_loser->pilot->money + player_loser->pilot->winnings) * winnings_multiplier;
                     fight_stats->winnings += (int)(400 * hp_percentage);
                 }
-                if(!gs->match_settings.sim) {
+                // secret players have no rank, and don't increase your own ranking
+                if(!gs->match_settings.sim && player_loser->pilot->rank > 0) {
                     player_winner->pilot->rank--;
                     if(player_winner->pilot->rank < 1) {
                         player_winner->pilot->rank = 1;
@@ -617,15 +618,16 @@ void arena_har_defeat_hook(int loser_player_id, scene *scene) {
                 local->win_state = YOUWIN;
             } else {
                 if(is_tournament(gs)) {
+                    // secret players have no rank, and don't decrease your own ranking
                     if(player_loser->pilot->rank <= player_loser->pilot->enemies_ex_unranked &&
-                       !gs->match_settings.sim) {
+                       !gs->match_settings.sim && player_winner->pilot->rank > 0) {
                         player_loser->pilot->rank++;
-                        if(player_winner->pilot->rank > player_winner->chr->pilot.enemies_ex_unranked + 1) {
-                            player_winner->pilot->rank = player_winner->chr->pilot.enemies_ex_unranked + 1;
+                        if(player_loser->pilot->rank > player_loser->chr->pilot.enemies_ex_unranked + 1) {
+                            player_loser->pilot->rank = player_loser->chr->pilot.enemies_ex_unranked + 1;
                         }
-                        for(int i = 0; i < player_winner->chr->pilot.enemies_inc_unranked; i++) {
-                            if(player_winner->chr->enemies[i]->pilot.rank == player_winner->pilot->rank) {
-                                player_winner->chr->enemies[i]->pilot.rank -= 1;
+                        for(int i = 0; i < player_loser->chr->pilot.enemies_inc_unranked; i++) {
+                            if(player_loser->chr->enemies[i]->pilot.rank == player_loser->pilot->rank) {
+                                player_loser->chr->enemies[i]->pilot.rank -= 1;
                                 break;
                             }
                         }
