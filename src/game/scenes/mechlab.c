@@ -477,7 +477,6 @@ void mechlab_input_tick(scene *scene) {
                 mechlab_select_dashboard(scene, DASHBOARD_STATS);
                 gui_frame_set_root(local->frame, lab_menu_main_create(scene, found));
                 gui_frame_layout(local->frame);
-
             } else {
                 gui_frame_action(local->frame, i->event_data.action);
             }
