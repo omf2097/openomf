@@ -8,6 +8,7 @@
 
 typedef struct spriteimage {
     const surface *img;
+    bool owns_sprite;
 } spriteimage;
 
 static void spriteimage_render(component *c) {
@@ -17,7 +18,17 @@ static void spriteimage_render(component *c) {
 
 static void spriteimage_free(component *c) {
     spriteimage *sb = widget_get_obj(c);
+    if(sb->owns_sprite) {
+        // bypass const here
+        surface_free((surface*)sb->img);
+        free((surface*)sb->img);
+    }
     omf_free(sb);
+}
+
+void spriteimage_owns_sprite(component *c, bool owns_sprite) {
+    spriteimage *sb = widget_get_obj(c);
+    sb->owns_sprite = owns_sprite;
 }
 
 component *spriteimage_create(const surface *img) {
@@ -29,6 +40,7 @@ component *spriteimage_create(const surface *img) {
 
     spriteimage *sb = omf_calloc(1, sizeof(spriteimage));
     sb->img = img;
+    sb->owns_sprite = false;
     widget_set_obj(c, sb);
 
     widget_set_render_cb(c, spriteimage_render);
