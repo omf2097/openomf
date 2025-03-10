@@ -645,9 +645,8 @@ static void lab_menu_focus_stun_resistance(component *c, bool focused, void *use
             mechlab_set_hint(s, lang_get(563));
         } else {
             label_set_text(header_label, "STUN RES.:\n\nUPGRADE COST:");
-            int32_t price =
-             har_upgrade_price[pilot->har_id] * upgrade_level_mutiplier[pilot->stun_resistance + 1]
-              * stun_res_multiplier;
+            int32_t price = har_upgrade_price[pilot->har_id] * upgrade_level_mutiplier[pilot->stun_resistance + 1] *
+                            stun_res_multiplier;
             bool max_level = pilot->stun_resistance >= max_stun_res[pilot->har_id];
             if(price < 1 || max_level) {
                 label_set_text(details_label, "Unavailable\n\nUnavailable");
