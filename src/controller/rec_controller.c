@@ -11,6 +11,7 @@ typedef struct {
     int id;
     uint32_t last_tick;
     uint32_t max_tick;
+    uint8_t last_action;
     hashmap tick_lookup;
 } wtf;
 
@@ -100,6 +101,8 @@ int rec_controller_poll(controller *ctrl, ctrl_event **ev) {
 
     uint8_t buf[8];
 
+    bool found_action = false;
+
     if(data->last_tick != ticks) {
         int j = 0;
         while(hashmap_get_int(&data->tick_lookup, (ticks * 10) + j, (void **)(&move), &len) == 0) {
@@ -112,7 +115,9 @@ int rec_controller_poll(controller *ctrl, ctrl_event **ev) {
                     check_assertion(&ass, ctrl);
                 }
             } else if(move->lookup_id == 2) {
+                found_action = true;
                 if(move->action == SD_ACT_NONE) {
+                    data->last_action = ACT_STOP;
                     controller_cmd(ctrl, ACT_STOP, ev);
                 } else {
                     int action = 0;
@@ -139,11 +144,15 @@ int rec_controller_poll(controller *ctrl, ctrl_event **ev) {
                     }
 
                     if(action != 0) {
+                        data->last_action = action;
                         controller_cmd(ctrl, action, ev);
                     }
                 }
             }
             j++;
+        }
+        if(!found_action && !(data->last_action & (ACT_PUNCH | ACT_KICK | ACT_ESC))) {
+            controller_cmd(ctrl, data->last_action, ev);
         }
     }
     data->last_tick = ticks;
@@ -153,6 +162,7 @@ int rec_controller_poll(controller *ctrl, ctrl_event **ev) {
 void rec_controller_create(controller *ctrl, int player, sd_rec_file *rec) {
     wtf *data = omf_calloc(1, sizeof(wtf));
     data->last_tick = 0;
+    data->last_action = ACT_STOP;
     hashmap_create(&data->tick_lookup);
     uint32_t last_tick = 0;
     int j = 0;
