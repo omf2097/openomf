@@ -74,22 +74,23 @@ static inline void ctrl_action_push(ctrl_event **ev, int action) {
 
 void controller_cmd(controller *ctrl, int action, ctrl_event **ev) {
     ctrl->current |= action;
-    if(ctrl->last & action) {
-        if(ctrl->last & action & (ACT_KICK | ACT_PUNCH | ACT_ESC))
-            // never keyrepeat these actions
-            return;
-        else if(ctrl->repeat)
-            // keyrepeat is on for all other actions
-            ;
-        else if(ctrl->repeat_tick == 0 && (action & ACT_Mask_Dirs))
-            // we are keyrepeating a direction with a keyrepeat delay.
-            ;
-        else
-            // keyrepeat is off
-            return;
+
+    // always debounce these actions
+    action &= ~(ctrl->last & (ACT_KICK | ACT_PUNCH | ACT_ESC));
+
+    if(!ctrl->repeat && (action & ACT_Mask_Dirs)) {
+        // we're on a menu or something else that wants delayed keyrepeat for directions
+        if(ctrl->repeat_tick == 0 || !(ctrl->last & ACT_Mask_Dirs)) {
+            ctrl->repeat_tick = 30;
+        } else {
+            action &= ~ACT_Mask_Dirs;
+        }
     }
-    if(action & ACT_Mask_Dirs)
-        ctrl->repeat_tick = 30;
+
+    if(action == ACT_NONE) {
+        // above debouncing probably ate our action
+        return;
+    }
 
     // fire any installed hooks
     iterator it;
