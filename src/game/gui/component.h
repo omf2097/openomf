@@ -111,6 +111,7 @@ bool component_is_selectable(component *c);
 void component_set_size_hints(component *c, int w, int h);
 void component_set_pos_hints(component *c, int x, int y);
 void component_set_supports(component *c, bool allow_disable, bool allow_select, bool allow_focus);
+void component_set_filler(component *c, bool is_filler);
 
 void component_set_help_text(component *c, const char *help);
 

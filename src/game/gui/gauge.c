@@ -65,7 +65,7 @@ static const pixel_image gauge_big_off_img = {
 // clang-format on
 
 // Local small gauge type
-typedef struct {
+typedef struct gauge {
     int size;
     int lit;
     gauge_type type;
