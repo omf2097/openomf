@@ -70,10 +70,12 @@ void projectile_move(object *obj) {
         if(obj->pos.x < ARENA_LEFT_WALL) {
             obj->pos.x = ARENA_LEFT_WALL;
             obj->animation_state.finished = 1;
+            projectile_finished(obj);
         }
         if(obj->pos.x > ARENA_RIGHT_WALL) {
             obj->pos.x = ARENA_RIGHT_WALL;
             obj->animation_state.finished = 1;
+            projectile_finished(obj);
         }
     }
     if(obj->pos.y > ARENA_FLOOR && local->wall_bounce) {
