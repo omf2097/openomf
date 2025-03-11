@@ -167,7 +167,7 @@ void lab_dash_sim_update_portraits(dashboard_widgets *dw) {
             j++;
             continue;
         }
-        for(int k = 0; k < p1->chr->pilot.enemies_inc_unranked; k++) {
+        for(int k = 0; k < p1->chr->pilot.enemies_ex_unranked; k++) {
             if(p1->chr->enemies[k]->pilot.rank == i) {
                 portrait_set_from_sprite(dw->photo[j], p1->chr->enemies[k]->pilot.photo);
                 j++;
@@ -236,38 +236,57 @@ void lab_dash_sim_done(component *menu, component *submenu) {
     game_player *p1 = game_state_get_player(dw->scene->gs, 0);
     game_player *p2 = game_state_get_player(dw->scene->gs, 1);
 
-    for(int i = 0; i < p1->chr->pilot.enemies_ex_unranked; i++) {
-        if(p1->chr->enemies[i]->pilot.rank == dw->sim_rank) {
-            p2->pilot = &p1->chr->enemies[i]->pilot;
+    if(dw->sim_rank == p1->pilot->rank) {
+        // fight our own character as a 2 player battle
+        p2->pilot = p1->pilot;
+        settings_keyboard *k = &settings_get()->keys;
+        if(k->ctrl_type2 == CTRL_TYPE_KEYBOARD) {
+            _setup_keyboard(dw->scene->gs, 1);
+        } else if(k->ctrl_type2 == CTRL_TYPE_GAMEPAD) {
+            _setup_joystick(dw->scene->gs, 1, k->joy_name2, k->joy_offset2);
         }
-    }
-    controller *ctrl = omf_calloc(1, sizeof(controller));
-    controller_init(ctrl, dw->scene->gs);
+        chr_score_set_difficulty(game_player_get_score(game_state_get_player(dw->scene->gs, 0)),
+                                 AI_DIFFICULTY_CHAMPION);
+        chr_score_set_difficulty(game_player_get_score(game_state_get_player(dw->scene->gs, 1)),
+                                 AI_DIFFICULTY_CHAMPION);
+    } else if(dw->sim_rank > p1->chr->pilot.enemies_ex_unranked + 1) {
+        // TODO this would be other player characters for a 2 player match
+    } else {
+        controller *ctrl = omf_calloc(1, sizeof(controller));
+        controller_init(ctrl, dw->scene->gs);
+        for(int i = 0; i < p1->chr->pilot.enemies_ex_unranked; i++) {
+            if(p1->chr->enemies[i]->pilot.rank == dw->sim_rank) {
+                p2->pilot = &p1->chr->enemies[i]->pilot;
+            }
+        }
+        // there's not an exact difficulty mapping
+        // for aluminum to 1p mode, but round up to
+        // veteran
+        int difficulty = AI_DIFFICULTY_VETERAN;
+        if(p1->pilot->difficulty == 1) {
+            // Iron == Champion
+            difficulty = AI_DIFFICULTY_CHAMPION;
+        } else if(p1->pilot->difficulty == 2) {
+            // Steel == Deadly
+            difficulty = AI_DIFFICULTY_DEADLY;
+        } else if(p1->pilot->difficulty == 3) {
+            // Heavy Metal == F.A.A.K. 2
+            difficulty = AI_DIFFICULTY_ULTIMATE;
+        }
 
-    // there's not an exact difficulty mapping
-    // for aluminum to 1p mode, but round up to
-    // veteran
-    int difficulty = AI_DIFFICULTY_VETERAN;
-    if(p1->pilot->difficulty == 1) {
-        // Iron == Champion
-        difficulty = AI_DIFFICULTY_CHAMPION;
-    } else if(p1->pilot->difficulty == 2) {
-        // Steel == Deadly
-        difficulty = AI_DIFFICULTY_DEADLY;
-    } else if(p1->pilot->difficulty == 3) {
-        // Heavy Metal == F.A.A.K. 2
-        difficulty = AI_DIFFICULTY_ULTIMATE;
+        ai_controller_create(ctrl, difficulty, p2->pilot, p2->pilot->pilot_id);
+        chr_score_set_difficulty(game_player_get_score(game_state_get_player(dw->scene->gs, 0)), difficulty);
+        game_player_set_ctrl(p2, ctrl);
     }
 
-    ai_controller_create(ctrl, difficulty, p2->pilot, p2->pilot->pilot_id);
-    game_player_set_ctrl(p2, ctrl);
     // reset the score between matches in tournament mode
     // assume we used the score by now if we need it for
     // winnings calculations, etc
     chr_score_reset_wins(game_player_get_score(p1));
     chr_score_reset(game_player_get_score(p1), 1);
+    // doesn't need to be selectable
+    game_player_set_selectable(p2, 1);
     // set the score difficulty
-    chr_score_set_difficulty(game_player_get_score(game_state_get_player(dw->scene->gs, 0)), difficulty);
     game_state_set_next(dw->scene->gs, SCENE_VS);
 }
 
@@ -403,7 +422,7 @@ component *lab_dash_sim_create(scene *s, dashboard_widgets *dw) {
     if(dw->sim_rank < 1) {
         dw->sim_rank = 2;
     }
-    for(int i = 0; i < p1->chr->pilot.enemies_inc_unranked; i++) {
+    for(int i = 0; i < p1->chr->pilot.enemies_ex_unranked; i++) {
         if(p1->chr->enemies[i]->pilot.rank == dw->sim_rank) {
             dw->pilot = &p1->chr->enemies[i]->pilot;
             break;
