@@ -270,7 +270,7 @@ static void menu_layout(component *c, int x, int y, int w, int h) {
 
         // Set component position and size
         if(m->horizontal) {
-            component_layout(*tmp, x + x_offset, m->margin_top + y, w, -1);
+            component_layout(*tmp, x + x_offset, m->margin_top + y, w, (*tmp)->h_hint);
             if(m->centered) {
                 centerwidth += (*tmp)->w_hint;
             }
@@ -289,7 +289,7 @@ static void menu_layout(component *c, int x, int y, int w, int h) {
         height = 0;
         sizer_begin_iterator(c, &it);
         foreach(it, tmp) {
-            component_layout(*tmp, x + x_offset, m->margin_top + y, w, -1);
+            component_layout(*tmp, x + x_offset, m->margin_top + y, w, (*tmp)->h_hint);
             x_offset += (*tmp)->w_hint + m->padding;
             height = max2(height, (*tmp)->h_hint);
         }
