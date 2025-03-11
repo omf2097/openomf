@@ -89,7 +89,7 @@ void controller_cmd(controller *ctrl, int action, ctrl_event **ev) {
 
     if(action == ACT_NONE) {
         // above debouncing probably ate our action
-        return;
+        action = ACT_STOP;
     }
 
     // fire any installed hooks
