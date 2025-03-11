@@ -116,6 +116,8 @@ int text_char_width(const text_settings *settings) {
             return 8;
         case FONT_NET2:
             return 6;
+        case FONT_NONE:
+            assert(false && "FONT_NONE used -- this should NOT happen!");
     }
     return 6;
 }

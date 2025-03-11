@@ -781,18 +781,16 @@ component *lab_menu_customize_create(scene *s) {
     spritebutton_set_always_display(button);
     trnmenu_attach(menu, button);
 
-    tconf.direction = TEXT_HORIZONTAL;
-    tconf.halign = TEXT_LEFT;
-    tconf.valign = TEXT_TOP;
-    tconf.lspacing = 2;
-    tconf.cforeground = 0xA5;
-    header_label = label_create(&tconf, "");
+    header_label = label_create("");
+    label_set_text_letter_spacing(header_label, 2);
+    label_set_text_color(header_label, 0xA5);
     component_set_size_hints(header_label, 90, 80);
     component_set_pos_hints(header_label, 210, 150);
     trnmenu_attach(menu, header_label);
 
-    tconf.cforeground = 0xA7;
-    details_label = label_create(&tconf, "");
+    details_label = label_create("");
+    label_set_text_letter_spacing(details_label, 2);
+    label_set_text_color(details_label, 0xA7);
     component_set_size_hints(details_label, 90, 80);
     component_set_pos_hints(details_label, 210, 158);
     trnmenu_attach(menu, details_label);

@@ -121,7 +121,7 @@ static area find_rows(vector *rows, const str *buf, const font *font, text_row_d
         }
 
         row_size = find_row_metrics(buf, font, letter_spacing, direction, start, end);
-        total_height = row_heights + row_size.h + line * line_spacing;
+        total_height = row_heights + line * line_spacing;
         if(total_height > max_height) {
             // If we run out of vertical space, stop here.
             assert(false && "Ran out of vertical space when flowing text!");
@@ -141,7 +141,7 @@ static area find_rows(vector *rows, const str *buf, const font *font, text_row_d
     }
 
 exit:
-    return (area){.w = max_row_width, .h = row_heights + line * line_spacing};
+    return (area){.w = max_row_width, .h = row_heights + (line - 1) * line_spacing};
 }
 
 static uint16_t valign_offset(text_vertical_align align, uint16_t bbox_h, uint16_t block_h) {
@@ -152,6 +152,8 @@ static uint16_t valign_offset(text_vertical_align align, uint16_t bbox_h, uint16
             return (bbox_h - block_h) / 2;
         case ALIGN_TEXT_BOTTOM:
             return bbox_h - block_h;
+        case V_ALIGN_UNKNOWN:
+            break;
     }
     assert(false && "Unknown text_vertical_align");
     return 0; // Should never come here.
@@ -165,6 +167,8 @@ static uint16_t halign_offset(text_horizontal_align align, uint16_t bbox_w, uint
             return (bbox_w - block_w) / 2;
         case ALIGN_TEXT_RIGHT:
             return bbox_w - block_w;
+        case H_ALIGN_UNKNOWN:
+            break;
     }
     assert(false && "Unknown text_horizontal_align");
     return 0; // Should never come here.

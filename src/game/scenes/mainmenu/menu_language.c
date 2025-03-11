@@ -131,7 +131,7 @@ component *menu_language_create(scene *s) {
 
     // Create menu and its header
     component *menu = menu_create(11);
-    menu_attach(menu, label_create(&tconf, "LANGUAGE"));
+    menu_attach(menu, label_create("LANGUAGE"));
 
     menu_attach(menu,
                 textselector_create_bind_opts(&tconf, "", "Choose a Language.", NULL, NULL, &local->selected_language,

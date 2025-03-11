@@ -389,7 +389,7 @@ component *lobby_challenge_create(scene *s) {
 
     lobby_user *user = list_get(&local->users, local->active_user);
     snprintf(local->helptext, sizeof(local->helptext), "Challenge %s?", user->name);
-    menu_attach(menu, label_create(&tconf, local->helptext));
+    menu_attach(menu, label_create(local->helptext));
     menu_attach(menu, button_create("Yes", NULL, false, false, lobby_do_challenge, s));
     menu_attach(menu, button_create("No", NULL, false, false, lobby_cancel_challenge, s));
 
@@ -450,7 +450,7 @@ component *lobby_yell_create(scene *s) {
     menu_set_background(menu, false);
     menu_set_padding(menu, -8);
 
-    menu_attach(menu, label_create(&tconf, "Yell:"));
+    menu_attach(menu, label_create("Yell:"));
     component *yell_input =
         textinput_create(&tconf, 36,
                          "Yell a message to everybody in the challenge arena.\n\n\n\n\nTo whisper to one player, type "
@@ -524,7 +524,7 @@ component *lobby_whisper_create(scene *s) {
     menu_set_background(menu, false);
     menu_set_padding(menu, -6);
 
-    menu_attach(menu, label_create(&tconf, "Whisper:"));
+    menu_attach(menu, label_create("Whisper:"));
     lobby_user *user = list_get(&local->users, local->active_user);
     snprintf(local->helptext, sizeof(local->helptext), "Whisper a message to %s. Press enter when done, esc to abort.",
              user->name);
@@ -684,7 +684,7 @@ component *lobby_exit_create(scene *s) {
     menu_set_background(menu, false);
     menu_set_padding(menu, 0);
 
-    menu_attach(menu, label_create(&tconf, "Exit the Challenge Arena?"));
+    menu_attach(menu, label_create("Exit the Challenge Arena?"));
     menu_attach(menu, button_create("Yes", NULL, false, false, lobby_do_exit, s));
     menu_attach(menu, button_create("No", NULL, false, false, lobby_refuse_exit, s));
 
@@ -1529,7 +1529,7 @@ int lobby_create(scene *scene) {
         menu_set_background(name_menu, false);
         menu_set_padding(menu, 0);
 
-        menu_attach(name_menu, label_create(&tconf, "Enter your name:"));
+        menu_attach(name_menu, label_create("Enter your name:"));
         // pull the last used name from settings
         component *name_input = textinput_create(&tconf, 14, "", settings_get()->net.net_username);
         textinput_enable_background(name_input, 0);

@@ -1639,7 +1639,7 @@ int arena_create(scene *scene) {
     local->menu_visible = 0;
     local->game_menu = gui_frame_create(&theme, 60, 5, 181, 117);
     component *menu = menu_create(11);
-    menu_attach(menu, label_create(&tconf, "OPENOMF"));
+    menu_attach(menu, label_create("OPENOMF"));
     menu_attach(menu, filler_create());
     menu_attach(menu, filler_create());
     component *return_button =

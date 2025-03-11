@@ -29,14 +29,8 @@ void menu_net_listen(component *c, void *userdata) {
 }
 
 component *menu_net_create(scene *s) {
-    text_settings tconf;
-    text_defaults(&tconf);
-    tconf.font = FONT_BIG;
-    tconf.halign = TEXT_CENTER;
-    tconf.cforeground = TEXT_BRIGHT_GREEN;
-
     component *menu = menu_create(11);
-    menu_attach(menu, label_create(&tconf, "NETWORK PLAY"));
+    menu_attach(menu, label_create("NETWORK PLAY"));
     menu_attach(menu, filler_create());
 
     component *lobby = button_create("LOBBY", "Join the OpenOMF network lobby to challenge other players.", false,

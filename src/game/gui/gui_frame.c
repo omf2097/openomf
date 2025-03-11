@@ -28,7 +28,6 @@ void gui_frame_set_root(gui_frame *frame, component *root_node) {
         component_free(frame->root_node);
     }
     frame->root_node = root_node;
-    component_set_theme(root_node, &frame->theme);
 }
 
 void gui_frame_free(gui_frame *frame) {

@@ -8,7 +8,6 @@
 #include "game/gui/text/text.h"
 #include "game/gui/widget.h"
 #include "utils/allocator.h"
-#include "utils/log.h"
 #include "utils/c_string_util.h"
 #include "video/video.h"
 
@@ -77,6 +76,7 @@ static void button_init(component *c, const gui_theme *theme) {
     button *b = widget_get_obj(c);
     text_set_font(b->text, theme->text.font);
     text_set_color(b->text, theme->text.primary_color);
+    text_set_line_spacing(b->text, 0);
     text_generate_layout(b->text);
 
     int text_width = text_get_layout_width(b->text);

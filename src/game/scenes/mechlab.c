@@ -155,7 +155,6 @@ void mechlab_free(scene *scene) {
         object_free(&local->bg_obj[i]);
     }
 
-    component_free(local->hint);
     gui_frame_free(local->frame);
     gui_frame_free(local->dashboard);
     object_free(local->mech);
@@ -224,6 +223,7 @@ void mechlab_update(scene *scene) {
 static void mechlab_theme(gui_theme *theme) {
     gui_theme_defaults(theme);
     theme->dialog.border_color = TEXT_MEDIUM_GREEN;
+    theme->text.font = FONT_BIG;
     theme->text.primary_color = TEXT_PRIMARY_COLOR;
     theme->text.secondary_color = TEXT_SECONDARY_COLOR;
     theme->text.disabled_color = TEXT_DISABLED_COLOR;
@@ -259,14 +259,12 @@ void mechlab_tick(scene *scene, int paused) {
             gui_frame_set_root(local->frame, menu);
             gui_frame_layout(local->frame);
         } else if(local->dashtype == DASHBOARD_SELECT_NEW_PIC) {
-            // player1->pilot->photo_id =  lab_dash_main_pilotselected(&local->dw);
             mechlab_select_dashboard(scene, DASHBOARD_SELECT_DIFFICULTY);
             gui_frame_free(local->frame);
             gui_theme theme;
             mechlab_theme(&theme);
             local->frame = gui_frame_create(&theme, 0, 0, 320, 200);
             component *menu = lab_menu_difficultyselect_create(scene);
-            // trnmenu_attach(menu, local->hint);
             gui_frame_set_root(local->frame, menu);
             gui_frame_layout(local->frame);
         } else if(local->dashtype == DASHBOARD_SELECT_DIFFICULTY) {
@@ -315,7 +313,6 @@ void mechlab_tick(scene *scene, int paused) {
             mechlab_theme(&theme);
             local->frame = gui_frame_create(&theme, 0, 0, 320, 200);
             component *menu = lab_menu_main_create(scene, found);
-            // trnmenu_attach(menu, local->hint);
             gui_frame_set_root(local->frame, menu);
             gui_frame_layout(local->frame);
         } else {
@@ -534,14 +531,11 @@ int mechlab_create(scene *scene) {
         object_set_animation_owner(&local->bg_obj[i], OWNER_OBJECT);
     }
 
-    text_settings tconf;
-    text_defaults(&tconf);
-    tconf.font = FONT_SMALL;
-    tconf.halign = TEXT_CENTER;
-    tconf.valign = TEXT_MIDDLE;
-    tconf.cforeground = MECHLAB_YELLOW;
-
-    local->hint = label_create(&tconf, "HINTY");
+    local->hint = label_create("HINTY");
+    label_set_font(local->hint, FONT_SMALL);
+    label_set_text_horizontal_align(local->hint, ALIGN_TEXT_CENTER);
+    label_set_text_vertical_align(local->hint, ALIGN_TEXT_MIDDLE);
+    label_set_text_color(local->hint, MECHLAB_YELLOW);
     component_set_pos_hints(local->hint, 32, 131);
     component_set_size_hints(local->hint, 248, 13);
     component_layout(local->hint, 32, 131, 248, 13);
@@ -555,7 +549,7 @@ int mechlab_create(scene *scene) {
     mechlab_theme(&theme);
     local->frame = gui_frame_create(&theme, 0, 0, 320, 200);
     component *menu = lab_menu_main_create(scene, found);
-    // trnmenu_attach(menu, local->hint);
+    trnmenu_attach(menu, local->hint);
     gui_frame_set_root(local->frame, menu);
     gui_frame_layout(local->frame);
 

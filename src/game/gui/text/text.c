@@ -39,7 +39,6 @@ struct text {
 };
 
 static void defaults(text *t) {
-    t->font = FONT_BIG;
     t->text_color = 0xFD;
     t->shadow_color = 0xC0;
     t->vertical_align = ALIGN_TEXT_TOP;

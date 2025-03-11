@@ -180,22 +180,15 @@ component *menu_input_create(scene *s, int player_id) {
     menu_input_local *local = omf_calloc(1, sizeof(menu_input_local));
     local->selected_player = player_id;
 
-    // Text config
-    text_settings tconf;
-    text_defaults(&tconf);
-    tconf.font = FONT_BIG;
-    tconf.halign = TEXT_CENTER;
-    tconf.cforeground = TEXT_BRIGHT_GREEN;
-
     component *menu = menu_create(11);
-    menu_attach(menu, label_create(&tconf, "CHOOSE INPUT"));
-    menu_attach(menu, label_create(&tconf, "DEVICE FOR"));
+    menu_attach(menu, label_create("CHOOSE INPUT"));
+    menu_attach(menu, label_create("DEVICE FOR"));
     switch(local->selected_player) {
         case 1:
-            menu_attach(menu, label_create(&tconf, "PLAYER 1"));
+            menu_attach(menu, label_create("PLAYER 1"));
             break;
         case 2:
-            menu_attach(menu, label_create(&tconf, "PLAYER 2"));
+            menu_attach(menu, label_create("PLAYER 2"));
             break;
     }
     menu_attach(menu, filler_create());

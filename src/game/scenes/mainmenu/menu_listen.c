@@ -198,16 +198,9 @@ component *menu_listen_create(scene *s) {
     }
     enet_socket_set_option(local->host->socket, ENET_SOCKOPT_REUSEADDR, 1);
 
-    // Text config
-    text_settings tconf;
-    text_defaults(&tconf);
-    tconf.font = FONT_BIG;
-    tconf.halign = TEXT_CENTER;
-    tconf.cforeground = TEXT_BRIGHT_GREEN;
-
     // Create the menu
     component *menu = menu_create(11);
-    menu_attach(menu, label_create(&tconf, "START SERVER"));
+    menu_attach(menu, label_create("START SERVER"));
     menu_attach(menu, filler_create());
     char buf[200];
     if(local->nat.type != NAT_TYPE_NONE) {
@@ -216,7 +209,7 @@ component *menu_listen_create(scene *s) {
     } else {
         snprintf(buf, sizeof(buf), "Waiting for connections to port %d.", ext_port ? ext_port : address.port);
     }
-    menu_attach(menu, label_create(&tconf, buf));
+    menu_attach(menu, label_create(buf));
     menu_attach(menu, filler_create());
     local->cancel_button =
         button_create("CANCEL", "Cancel listing for a connection.", false, false, menu_listen_cancel, s);

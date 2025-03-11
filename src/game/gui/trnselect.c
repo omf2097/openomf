@@ -3,6 +3,7 @@
 
 #include "formats/tournament.h"
 #include "game/gui/label.h"
+#include "game/gui/text_render.h"
 #include "game/gui/trnselect.h"
 #include "game/gui/widget.h"
 #include "resources/sprite.h"
@@ -48,7 +49,7 @@ static void load_description(component **c, const sd_tournament_locale *locale) 
     }
 
     component_free(*c);
-    *c = label_create(&tconf, locale->stripped_description);
+    *c = label_create(locale->stripped_description);
 
     int x = 0;
     if(locale->desc_center != 0) {

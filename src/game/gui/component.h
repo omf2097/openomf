@@ -59,14 +59,14 @@ struct component {
     int w_hint; ///< W size hint. Sizers may or may not obey this. -1 = not set. >=0 means set.
     int h_hint; ///< H size hint. Sizers may or may not obey this. -1 = not set. >=0 means set.
 
-    char supports_select; ///< Whether the component can be selected by component_select() call.
-    char is_selected;     ///< Whether the component is selected
+    bool supports_select; ///< Whether the component can be selected by component_select() call.
+    bool is_selected;     ///< Whether the component is selected
 
-    char supports_disable; ///< Whether the component can be disabled by component_disable() call.
-    char is_disabled;      ///< Whether the component is disabled
+    bool supports_disable; ///< Whether the component can be disabled by component_disable() call.
+    bool is_disabled;      ///< Whether the component is disabled
 
-    char supports_focus; ///< Whether the component can be focused by component_focus() call.
-    char is_focused;     ///< Whether the component is focused
+    bool supports_focus; ///< Whether the component can be focused by component_focus() call.
+    bool is_focused;     ///< Whether the component is focused
     const char *help;    ///< Help text, if available
     bool filler;         ///< Whether the component should fill unused space during layout
 
@@ -99,17 +99,18 @@ int component_action(component *c, int action);
 void component_init(component *c, const gui_theme *theme);
 void component_layout(component *c, int x, int y, int w, int h);
 
-void component_disable(component *c, int disabled);
-void component_select(component *c, int selected);
-void component_focus(component *c, int focused);
-int component_is_disabled(const component *c);
-int component_is_selected(const component *c);
-int component_is_focused(const component *c);
+void component_disable(component *c, bool disabled);
+void component_select(component *c, bool selected);
+void component_focus(component *c, bool focused);
+bool component_is_disabled(const component *c);
+bool component_is_selected(const component *c);
+bool component_is_focused(const component *c);
 
 bool component_is_selectable(component *c);
 
 void component_set_size_hints(component *c, int w, int h);
 void component_set_pos_hints(component *c, int x, int y);
+void component_set_supports(component *c, bool allow_disable, bool allow_select, bool allow_focus);
 
 void component_set_help_text(component *c, const char *help);
 

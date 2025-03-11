@@ -211,7 +211,7 @@ component *menu_connect_create(scene *s) {
     tconf.cforeground = TEXT_BRIGHT_GREEN;
 
     component *menu = menu_create(11);
-    menu_attach(menu, label_create(&tconf, "CONNECT TO SERVER"));
+    menu_attach(menu, label_create("CONNECT TO SERVER"));
     menu_attach(menu, filler_create());
 
     local->controllers_created = 0;

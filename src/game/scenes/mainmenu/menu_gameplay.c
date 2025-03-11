@@ -26,7 +26,7 @@ component *menu_gameplay_create(scene *s) {
     tconf.cforeground = TEXT_BRIGHT_GREEN;
 
     component *menu = menu_create(11);
-    menu_attach(menu, label_create(&tconf, "GAMEPLAY"));
+    menu_attach(menu, label_create("GAMEPLAY"));
     menu_attach(menu, filler_create());
     menu_attach(menu, textslider_create_bind(&tconf, "SPEED",
                                              "Change the overall speed of the game. Press left and right to change.",

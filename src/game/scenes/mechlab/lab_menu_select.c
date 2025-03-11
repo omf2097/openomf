@@ -105,8 +105,8 @@ component *lab_menu_select_create(scene *s, lab_menu_select_cb select, void *sel
     trnmenu_attach(menu, button);
 
     // Add text label
-    tconf.cforeground = TEXT_MEDIUM_GREEN;
-    component *label = label_create(&tconf, title);
+    component *label = label_create(title);
+    label_set_text_color(label, TEXT_MEDIUM_GREEN);
     component_set_pos_hints(label, 87, 155);
     component_set_size_hints(label, 150, 10);
     trnmenu_attach(menu, label);

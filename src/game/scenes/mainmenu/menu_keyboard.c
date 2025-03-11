@@ -12,11 +12,11 @@
 static const char *keynames[] = {"JUMP UP",   "JUMP RIGHT", "WALK RIGHT", "DUCK FORWARD", "DUCK",
                                  "DUCK BACK", "WALK BACK",  "JUMP LEFT",  "PUNCH",        "KICK"};
 
-// TODO: This menu is using guiframe instead of component. I consider it as hack.
+// TODO: This menu is using gui_frame instead of component. I consider it as hack.
 // The reasons are that the menu is positioned outside its parent component.
 // Because of this it also needs its own background. Both of these things are
-// handled by special guiframe. The menu is also added by special function
-// menu_link_menu instead of standart menu_set_submenu.
+// handled by special gui_frame. The menu is also added by special function
+// menu_link_menu instead of standard menu_set_submenu.
 
 typedef struct {
     gui_frame *frame;
@@ -125,19 +125,11 @@ gui_frame *menu_keyboard_create(scene *s, const gui_theme *theme, int selected_p
     keyboard_menu_local *local = omf_calloc(1, sizeof(keyboard_menu_local));
     local->selected_player = selected_player;
 
-    // Text config
-    text_settings tconf;
-    text_defaults(&tconf);
-    tconf.font = FONT_BIG;
-    tconf.halign = TEXT_CENTER;
-    tconf.cforeground = TEXT_BRIGHT_GREEN;
-
     local->frame = gui_frame_create(theme, 25, 5, 270, 140);
     component *menu = menu_create(11);
     gui_frame_set_root(local->frame, menu);
     gui_frame_layout(local->frame);
-    menu_attach(menu, label_create(&tconf, "CUSTOM KEYBOARD SETUP"));
-    // menu_attach(menu, filler_create());
+    menu_attach(menu, label_create("CUSTOM KEYBOARD SETUP"));
     for(int i = 0; i < 10; i++) {
         local->keys[i] = button_create("", NULL, false, false, menu_keyboard_set_key,
                                        (void *)menu_get_key(local->selected_player, i));
