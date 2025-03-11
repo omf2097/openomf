@@ -119,6 +119,7 @@ int rec_controller_poll(controller *ctrl, ctrl_event **ev) {
                 if(move->action == SD_ACT_NONE) {
                     data->last_action = ACT_STOP;
                     controller_cmd(ctrl, ACT_STOP, ev);
+                    ctrl->last = ACT_STOP;
                 } else {
                     int action = 0;
                     if(move->action & SD_ACT_UP) {
@@ -146,12 +147,13 @@ int rec_controller_poll(controller *ctrl, ctrl_event **ev) {
                     if(action != 0) {
                         data->last_action = action;
                         controller_cmd(ctrl, action, ev);
+                        ctrl->last = action;
                     }
                 }
             }
             j++;
         }
-        if(!found_action && !(data->last_action & (ACT_PUNCH | ACT_KICK | ACT_ESC))) {
+        if(!found_action) {
             controller_cmd(ctrl, data->last_action, ev);
         }
     }
