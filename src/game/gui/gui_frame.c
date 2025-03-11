@@ -7,10 +7,12 @@ typedef struct gui_frame {
     int w;
     int h;
     component *root_node;
+    gui_theme theme;
 } gui_frame;
 
-gui_frame *gui_frame_create(int x, int y, int w, int h) {
+gui_frame *gui_frame_create(const gui_theme *theme, int x, int y, int w, int h) {
     gui_frame *frame = omf_calloc(1, sizeof(gui_frame));
+    memcpy(&frame->theme, theme, sizeof(gui_theme));
     frame->x = x;
     frame->y = y;
     frame->w = w;
@@ -26,6 +28,7 @@ void gui_frame_set_root(gui_frame *frame, component *root_node) {
         component_free(frame->root_node);
     }
     frame->root_node = root_node;
+    component_set_theme(root_node, &frame->theme);
 }
 
 void gui_frame_free(gui_frame *frame) {
@@ -88,6 +91,7 @@ int gui_frame_action(gui_frame *frame, int action) {
 
 void gui_frame_layout(gui_frame *frame) {
     if(frame->root_node) {
+        component_init(frame->root_node, &frame->theme);
         component_layout(frame->root_node, frame->x, frame->y, frame->w, frame->h);
     }
 }

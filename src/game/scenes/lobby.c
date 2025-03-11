@@ -390,8 +390,8 @@ component *lobby_challenge_create(scene *s) {
     lobby_user *user = list_get(&local->users, local->active_user);
     snprintf(local->helptext, sizeof(local->helptext), "Challenge %s?", user->name);
     menu_attach(menu, label_create(&tconf, local->helptext));
-    menu_attach(menu, button_create(&tconf, "Yes", NULL, COM_ENABLED, lobby_do_challenge, s));
-    menu_attach(menu, button_create(&tconf, "No", NULL, COM_ENABLED, lobby_cancel_challenge, s));
+    menu_attach(menu, button_create("Yes", NULL, false, false, lobby_do_challenge, s));
+    menu_attach(menu, button_create("No", NULL, false, false, lobby_cancel_challenge, s));
 
     return menu;
 }
@@ -685,8 +685,8 @@ component *lobby_exit_create(scene *s) {
     menu_set_padding(menu, 0);
 
     menu_attach(menu, label_create(&tconf, "Exit the Challenge Arena?"));
-    menu_attach(menu, button_create(&tconf, "Yes", NULL, COM_ENABLED, lobby_do_exit, s));
-    menu_attach(menu, button_create(&tconf, "No", NULL, COM_ENABLED, lobby_refuse_exit, s));
+    menu_attach(menu, button_create("Yes", NULL, false, false, lobby_do_exit, s));
+    menu_attach(menu, button_create("No", NULL, false, false, lobby_refuse_exit, s));
 
     return menu;
 }
@@ -1457,6 +1457,18 @@ int lobby_create(scene *scene) {
     tconf.cdisabled = 4;
     tconf.cinactive = 3;
 
+    // Create lobby theme
+    gui_theme theme;
+    gui_theme_defaults(&theme);
+    theme.dialog.border_color = TEXT_MEDIUM_GREEN;
+    theme.text.font = FONT_NET1;
+    theme.text.primary_color = 6;
+    theme.text.secondary_color = 6;
+    theme.text.disabled_color = 4;
+    theme.text.active_color = 5;
+    theme.text.inactive_color = 3;
+    theme.text.shadow_color = 6;
+
     component *menu = menu_create(11);
     menu_set_horizontal(menu, true);
     menu_set_background(menu, false);
@@ -1470,15 +1482,14 @@ int lobby_create(scene *scene) {
     help_text.cforeground = 56;
 
     menu_set_help_text_settings(menu, &help_text);
-    menu_attach(menu, button_create(&tconf, "Challenge",
-                                    "Challenge this player to a fight. Challenge yourself for 1-player game.",
-                                    COM_ENABLED, lobby_challenge, scene));
-    menu_attach(
-        menu, button_create(&tconf, "Whisper", "Whisper a message to this player.", COM_ENABLED, lobby_whisper, scene));
     menu_attach(menu,
-                button_create(&tconf, "Yell", "Chat with everybody in the arena.", COM_ENABLED, lobby_yell, scene));
-    menu_attach(menu, button_create(&tconf, "Refresh", "Refresh the player list.", COM_ENABLED, lobby_refresh, scene));
-    menu_attach(menu, button_create(&tconf, "Exit", "Exit and disconnect.", COM_ENABLED, lobby_exit, scene));
+                button_create("Challenge", "Challenge this player to a fight. Challenge yourself for 1-player game.",
+                              false, false, lobby_challenge, scene));
+    menu_attach(menu,
+                button_create("Whisper", "Whisper a message to this player.", false, false, lobby_whisper, scene));
+    menu_attach(menu, button_create("Yell", "Chat with everybody in the arena.", false, false, lobby_yell, scene));
+    menu_attach(menu, button_create("Refresh", "Refresh the player list.", false, false, lobby_refresh, scene));
+    menu_attach(menu, button_create("Exit", "Exit and disconnect.", false, false, lobby_exit, scene));
 
     int winner = -1;
     // check if there's already a net controller provisioned
@@ -1507,7 +1518,7 @@ int lobby_create(scene *scene) {
     }
     reconfigure_controller(scene->gs);
 
-    local->frame = gui_frame_create(9, 128, 300, 12);
+    local->frame = gui_frame_create(&theme, 9, 128, 300, 12);
     gui_frame_set_root(local->frame, menu);
     gui_frame_layout(local->frame);
 

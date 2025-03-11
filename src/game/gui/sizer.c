@@ -17,6 +17,7 @@ typedef struct sizer {
     sizer_tick_cb tick;
     sizer_free_cb free;
     sizer_find_cb find;
+    sizer_init_cb init;
 } sizer;
 
 component *sizer_get(const component *nc, int item) {
@@ -108,6 +109,12 @@ void sizer_set_find_cb(component *c, sizer_find_cb cb) {
     local->find = cb;
 }
 
+void sizer_set_init_cb(component *c, sizer_init_cb cb) {
+    assert(c->header == SIZER_MAGIC);
+    sizer *local = component_get_obj(c);
+    local->init = cb;
+}
+
 void sizer_attach(component *c, component *nc) {
     assert(c->header == SIZER_MAGIC);
     sizer *local = component_get_obj(c);
@@ -130,6 +137,24 @@ static void sizer_tick(component *c) {
     vector_iter_begin(&local->objs, &it);
     foreach(it, tmp) {
         component_tick(*tmp);
+    }
+}
+
+static void sizer_init(component *c, const gui_theme *theme) {
+    assert(c->header == SIZER_MAGIC);
+    sizer *local = component_get_obj(c);
+
+    // Tell the specialized sizer object to do init if needed
+    if(local->init) {
+        local->init(c, theme);
+    }
+
+    // Init all components in sizer.
+    iterator it;
+    component **tmp;
+    vector_iter_begin(&local->objs, &it);
+    foreach(it, tmp) {
+        component_init(*tmp, theme);
     }
 }
 
@@ -219,8 +244,7 @@ static component *sizer_find(component *c, int id) {
 }
 
 component *sizer_create(void) {
-    component *c = component_create();
-    c->header = SIZER_MAGIC;
+    component *c = component_create(SIZER_MAGIC);
 
     sizer *local = omf_calloc(1, sizeof(sizer));
     vector_create(&local->objs, sizeof(component *));
@@ -233,6 +257,7 @@ component *sizer_create(void) {
     component_set_layout_cb(c, sizer_layout);
     component_set_free_cb(c, sizer_free);
     component_set_find_cb(c, sizer_find);
+    component_set_init_cb(c, sizer_init);
 
     return c;
 }
