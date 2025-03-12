@@ -642,9 +642,6 @@ void arena_har_defeat_hook(int loser_player_id, scene *scene) {
         // can't do scrap/destruct except on final round
         winner_har->state = STATE_DONE;
     }
-    object_set_vel(loser, vec2f_create(0, 0));
-    object_set_vel(winner, vec2f_create(0, 0));
-    // object_set_gravity(loser, 0);
 }
 
 void arena_maybe_turn_har(int player_id, scene *scene) {
