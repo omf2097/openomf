@@ -583,6 +583,7 @@ void har_move(object *obj) {
             }
         } else if(h->state == STATE_FALLEN || h->state == STATE_RECOIL) {
             if(obj->vel.y > 0) {
+                // bounce and screenshake if falling fast enough
                 if(obj->vel.y > 6) {
                     har_floor_landing_effects(obj, false);
                     obj->vel.y = -3;
