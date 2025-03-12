@@ -582,21 +582,23 @@ void har_move(object *obj) {
                 har_face_enemy(obj, obj_enemy);
             }
         } else if(h->state == STATE_FALLEN || h->state == STATE_RECOIL) {
-            if(obj->vel.y > 6) {
-                har_floor_landing_effects(obj, false);
-                obj->vel.y = -3;
-                obj->vel.x = obj->vel.x / 2;
-                if(h->id != 10) {
-                    object_set_custom_string(obj, "l20s4sp13zzN3-zzM100");
-                    obj->gs->screen_shake_vertical = 5; //Multiplied by 5 to make it visible
+            if(obj->vel.y > 0) {
+                if(obj->vel.y > 6) {
+                    har_floor_landing_effects(obj, false);
+                    obj->vel.y = -3;
+                    obj->vel.x = obj->vel.x / 2;
+                    if(h->id != 10) {
+                        object_set_custom_string(obj, "l20s4sp13zzN3-zzM100");
+                        obj->gs->screen_shake_vertical = 5; //Multiplied by 5 to make it visible
+                    } else {
+                        //Nova falls harder
+                        object_set_custom_string(obj, "l40s4sp13zzN3-zzM100");
+                        obj->gs->screen_shake_vertical = 15; //Multiplied by 5 to make it visible
+                    }
                 } else {
-                    //Nova falls harder
-                    object_set_custom_string(obj, "l40s4sp13zzN3-zzM100");
-                    obj->gs->screen_shake_vertical = 15; //Multiplied by 5 to make it visible
+                    obj->vel.y = 0;
+                    obj->vel.x = 0;
                 }
-            } else {
-                obj->vel.y = 0;
-                obj->vel.x = 0;
             }
 
             if(obj->pos.x < ARENA_LEFT_WALL) {
