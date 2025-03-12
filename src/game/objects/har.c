@@ -444,7 +444,7 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t m
     }
 }
 
-void har_floor_landing_effects(object *obj) {
+void har_floor_landing_effects(object *obj, bool play_sound) {
     int amount = rand_int(2) + 1;
     for(int i = 0; i < amount; i++) {
         int variance = rand_int(20) - 10;
@@ -457,9 +457,11 @@ void har_floor_landing_effects(object *obj) {
     }
 
     // Landing sound
-    float d = ((float)obj->pos.x) / 640.0f;
-    float pos_pan = d - 0.25f;
-    game_state_play_sound(obj->gs, 56, 0.3f, pos_pan, 2.2f);
+    if(play_sound) {
+        float d = ((float)obj->pos.x) / 640.0f;
+        float pos_pan = d - 0.25f;
+        game_state_play_sound(obj->gs, 56, 0.3f, pos_pan, 2.2f);
+    }
 }
 
 char get_last_input(har *har) {
@@ -515,12 +517,8 @@ void har_move(object *obj) {
     // Handle floor collisions
     if(obj->pos.y >= ARENA_FLOOR) {
         controller *ctrl = game_player_get_ctrl(game_state_get_player(obj->gs, h->player_id));
-        if(h->state != STATE_FALLEN) {
-            // We collided with ground, so set vertical velocity to 0 and
-            // make sure object is level with ground
-            obj->pos.y = ARENA_FLOOR;
-            obj->vel.y = 0;
-        }
+
+        obj->pos.y = ARENA_FLOOR;
 
         char last_input = get_last_input(h);
         // Change animation from jump to walk or idle,
@@ -574,7 +572,7 @@ void har_move(object *obj) {
                 object_set_stride(obj, h->stride);
             }
             har_event_land(h, ctrl);
-            har_floor_landing_effects(obj);
+            har_floor_landing_effects(obj, true);
 
             // make sure HAR's are facing each other
             object *obj_enemy =
@@ -584,13 +582,31 @@ void har_move(object *obj) {
                 har_face_enemy(obj, obj_enemy);
             }
         } else if(h->state == STATE_FALLEN || h->state == STATE_RECOIL) {
-            if(obj->pos.y > ARENA_FLOOR) {
-                obj->pos.y = ARENA_FLOOR;
-                har_floor_landing_effects(obj);
+            if(obj->vel.y > 0) {
+                // bounce and screenshake if falling fast enough
+                if(obj->vel.y > 6) {
+                    har_floor_landing_effects(obj, false);
+                    obj->vel.y = -3;
+                    obj->vel.x = obj->vel.x / 2;
+                    if(h->id != 10) {
+                        object_set_custom_string(obj, "l20s4sp13zzN3-zzM100");
+                        obj->gs->screen_shake_vertical = 5; // Multiplied by 5 to make it visible
+                    } else {
+                        // Nova falls harder
+                        object_set_custom_string(obj, "l40s4sp13zzN3-zzM100");
+                        obj->gs->screen_shake_vertical = 15; // Multiplied by 5 to make it visible
+                    }
+                } else {
+                    obj->vel.y = 0;
+                    obj->vel.x = 0;
+                }
             }
 
-            if(obj->pos.x <= ARENA_LEFT_WALL || obj->pos.x >= ARENA_RIGHT_WALL) {
-                obj->vel.x = 0.0;
+            if(obj->pos.x < ARENA_LEFT_WALL) {
+                obj->pos.x = ARENA_LEFT_WALL;
+            }
+            if(obj->pos.x > ARENA_RIGHT_WALL) {
+                obj->pos.x = ARENA_RIGHT_WALL;
             }
 
             // prevent har from sliding after defeat, unless they're 'fallen'
@@ -645,6 +661,10 @@ void har_move(object *obj) {
         object_apply_controllable_velocity(obj, obj, last_input);
     } else {
         obj->vel.y += obj->gravity;
+        // Terminal Velocity
+        if(obj->vel.y > 13) {
+            obj->vel.y = 13;
+        }
     }
 }
 
@@ -725,6 +745,7 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
         // Set hit animation
         object_set_animation(obj, &af_get_move(h->af_data, ANIM_DAMAGE)->ani);
         object_set_repeat(obj, 0);
+        object_set_custom_string(obj, str_c(string));
         if(h->health <= 0) {
             controller *ctrl = game_player_get_ctrl(game_state_get_player(obj->gs, h->player_id));
             // trigger the defeat hook immediately
@@ -775,8 +796,6 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
                 (((damage * 0.16666666f) + 2.0f) * object_get_direction(obj) * -1) * obj->horizontal_velocity_modifier;
             h->state = STATE_FALLEN;
             object_set_stride(obj, 1);
-        } else {
-            object_set_custom_string(obj, str_c(string));
         }
         object_dynamic_tick(obj);
 
@@ -1424,10 +1443,6 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
             return;
         }
 
-        vec2f vel = object_get_vel(o_har);
-        vel.x = 0.0f;
-        object_set_vel(o_har, vel);
-
         // Exception case for chronos' time freeze
         if(player_frame_isset(o_pjt, "af")) {
             // statis ticks is the raw damage from the move
@@ -2039,13 +2054,7 @@ int har_act(object *obj, int act_type) {
     }
 
     if(move) {
-        // Stop horizontal movement, when move is done
-        // TODO: Make this work better
-        vec2f spd = object_get_vel(obj);
-        if(h->state != STATE_JUMPING) {
-            spd.x = 0.0f;
-        }
-        object_set_vel(obj, spd);
+
         if(h->state == STATE_WALKTO || h->state == STATE_WALKFROM) {
             // switch to standing to cancel any walk velocity changes
             h->state = STATE_STANDING;
@@ -2630,7 +2639,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
                     case 5:
                         // apply leg and arm power for damage
                         if(move->damage) {
-                            move->damage = (move->damage * (25 + pilot->power) / 35 + 1) * leg_power * leg_power;
+                            move->damage = (move->damage * (25 + pilot->power) / 35 + 1) * arm_power * leg_power;
                         }
                         break;
                 }
