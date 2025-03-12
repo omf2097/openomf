@@ -2036,9 +2036,7 @@ int har_act(object *obj, int act_type) {
     }
 
     if(move) {
-        vec2f spd = object_get_vel(obj);
 
-        object_set_vel(obj, spd);
         if(h->state == STATE_WALKTO || h->state == STATE_WALKFROM) {
             // switch to standing to cancel any walk velocity changes
             h->state = STATE_STANDING;
