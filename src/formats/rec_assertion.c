@@ -64,6 +64,9 @@ bool parse_assertion(const uint8_t *data, rec_assertion *out) {
         case OP_EQ:
             out->op = OP_EQ;
             break;
+        case OP_SET:
+            out->op = OP_SET;
+            break;
         default:
             return false;
     }
@@ -97,7 +100,7 @@ bool parse_assertion(const uint8_t *data, rec_assertion *out) {
 
 bool encode_assertion(const rec_assertion *assertion, uint8_t *buffer) {
     // Validate operator
-    if(assertion->op < OP_LT || assertion->op > OP_EQ)
+    if(assertion->op < 0 || assertion->op >= OP_INVALID)
         return false;
 
     // Validate operands
@@ -148,6 +151,9 @@ void print_assertion(const rec_assertion *assertion) {
             break;
         case OP_EQ:
             op_str = "==";
+            break;
+        case OP_SET:
+            op_str = ":=";
             break;
         default:
             op_str = "??";

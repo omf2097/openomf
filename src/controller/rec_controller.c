@@ -59,8 +59,8 @@ int get_operand(rec_assertion_operand *op, controller *ctrl) {
 }
 
 void check_assertion(rec_assertion *ass, controller *ctrl) {
-    uint16_t operand1 = get_operand(&ass->operand1, ctrl);
-    uint16_t operand2 = get_operand(&ass->operand2, ctrl);
+    int16_t operand1 = get_operand(&ass->operand1, ctrl);
+    int16_t operand2 = get_operand(&ass->operand2, ctrl);
 
     log_debug("operand 1 %d operand 2 %d", operand1, operand2);
 
@@ -83,6 +83,35 @@ void check_assertion(rec_assertion *ass, controller *ctrl) {
                 abort();
             }
             break;
+        case OP_SET: {
+            object *obj = game_state_find_object(
+                ctrl->gs, game_player_get_har_obj_id(game_state_get_player(ctrl->gs, ass->operand1.value.attr.har_id)));
+            har *har = object_get_userdata(obj);
+
+            switch(ass->operand1.value.attr.attribute) {
+                case ATTR_X_POS:
+                    obj->pos.x = operand2;
+                    return;
+                case ATTR_Y_POS:
+                    obj->pos.y = operand2;
+                    return;
+                case ATTR_X_VEL:
+                    obj->vel.x = operand2;
+                    return;
+                case ATTR_Y_VEL:
+                    obj->vel.y = operand2;
+                    return;
+                case ATTR_HEALTH:
+                    har->health = operand2;
+                    return;
+                case ATTR_STAMINA:
+                    har->endurance = operand2;
+                    return;
+                default:
+                    log_error("unsupported set");
+                    abort();
+            }
+        }
         default:
             abort();
     }

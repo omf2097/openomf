@@ -23,6 +23,7 @@ tests=(
     "Jaguar doing a standing throw as the winning move should not cause a slide:JAG-NO-SLIDE-WIN-THROW.REC"
     "Flail charging punch should cancel when blocked:FLAIL_454P.REC"
     "Jaguar should keep walking right after doing a standing throw if the input is held:KEEP-WALKING-AFTER-JAG-STANDING-THROW.REC"
+    "Test Jaguar destruction:JAG-DESTRUCT.REC"
 )
 
 fail_count=0
