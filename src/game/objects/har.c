@@ -472,6 +472,10 @@ void har_move(object *obj) {
     obj->pos.y += obj->vel.y;
     har *h = object_get_userdata(obj);
 
+    object *enemy_obj =
+        game_state_find_object(obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
+    har *enemy_har = object_get_userdata(enemy_obj);
+
     if(h->walk_destination > 0 && h->walk_done_anim &&
        ((obj->pos.x >= h->walk_destination && object_get_direction(obj) == OBJECT_FACE_RIGHT) ||
         (obj->pos.x <= h->walk_destination && object_get_direction(obj) == OBJECT_FACE_LEFT))) {
@@ -483,10 +487,6 @@ void har_move(object *obj) {
 
         object_set_vel(obj, vec2f_create(0, 0));
         har_set_ani(obj, h->walk_done_anim, 0);
-        object *enemy_obj =
-            game_state_find_object(obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
-
-        har *enemy_har = object_get_userdata(enemy_obj);
 
         af_move *move = af_get_move(h->af_data, h->walk_done_anim);
         object_set_animation(enemy_obj, &af_get_move(enemy_har->af_data, ANIM_DAMAGE)->ani);
@@ -574,11 +574,8 @@ void har_move(object *obj) {
             har_floor_landing_effects(obj, true);
 
             // make sure HAR's are facing each other
-            object *obj_enemy =
-                game_state_find_object(obj->gs, game_state_get_player(obj->gs, h->player_id == 1 ? 0 : 1)->har_obj_id);
-            har *h_enemy = object_get_userdata(obj_enemy);
-            if(h_enemy->state != STATE_FALLEN) {
-                har_face_enemy(obj, obj_enemy);
+            if(enemy_har->state != STATE_FALLEN) {
+                har_face_enemy(obj, enemy_obj);
             }
         } else if(h->state == STATE_FALLEN || h->state == STATE_RECOIL) {
             if(obj->vel.y > 0) {
@@ -624,6 +621,7 @@ void har_move(object *obj) {
                     } else {
                         h->state = STATE_STANDING_UP;
                         har_set_ani(obj, ANIM_STANDUP, 0);
+                        har_face_enemy(obj, enemy_obj);
                         har_event_land(h, ctrl);
                     }
                 } else {
@@ -2244,9 +2242,8 @@ int har_act(object *obj, int act_type) {
 void har_face_enemy(object *obj, object *obj_enemy) {
     har *h = object_get_userdata(obj);
     har *har_enemy = object_get_userdata(obj_enemy);
-    if(h->state != STATE_RECOIL && h->state != STATE_STANDING_UP && h->state != STATE_STUNNED &&
-       h->state != STATE_FALLEN && h->state != STATE_DEFEAT && h->state != STATE_JUMPING &&
-       har_enemy->state != STATE_JUMPING) {
+    if(h->state != STATE_RECOIL && h->state != STATE_STUNNED && h->state != STATE_FALLEN && h->state != STATE_DEFEAT &&
+       h->state != STATE_JUMPING && (har_enemy->state != STATE_JUMPING || h->state == STATE_STANDING_UP)) {
         // make sure we are facing the opponent
         vec2i pos = object_get_pos(obj);
         vec2i pos_enemy = object_get_pos(obj_enemy);
