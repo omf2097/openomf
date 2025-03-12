@@ -420,6 +420,8 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t m
         obj->animation_state.enemy_obj_id = parent->animation_state.enemy_obj_id;
         projectile_create(obj, h);
 
+        obj->animation_state.enemy_obj_id = parent->animation_state.enemy_obj_id;
+
         // allow projectiles to spawn projectiles, eg. shadow's scrap animation
         object_set_spawn_cb(obj, cb_har_spawn_object, h);
 

@@ -341,20 +341,16 @@ void player_run(object *obj) {
             // obj->vel.y);
         } else {
             obj->pos.x += trans_x * (mp & 0x20 ? -1 : 1);
-            if(obj->pos.x < ARENA_LEFT_WALL) {
+            if(obj->pos.x < ARENA_LEFT_WALL && obj->group == GROUP_HAR) {
                 if(sd_script_isset(frame, "e") && enemy) {
                     enemy->pos.x += ARENA_LEFT_WALL - obj->pos.x;
                 }
-                if(obj->group == GROUP_HAR) {
-                    obj->pos.x = ARENA_LEFT_WALL;
-                }
-            } else if(obj->pos.x > ARENA_RIGHT_WALL) {
+                obj->pos.x = ARENA_LEFT_WALL;
+            } else if(obj->pos.x > ARENA_RIGHT_WALL && obj->group == GROUP_HAR) {
                 if(sd_script_isset(frame, "e") && enemy) {
                     enemy->pos.x -= obj->pos.x - ARENA_RIGHT_WALL;
                 }
-                if(obj->group == GROUP_HAR) {
-                    obj->pos.x = ARENA_RIGHT_WALL;
-                }
+                obj->pos.x = ARENA_RIGHT_WALL;
             }
             obj->pos.y += trans_y;
             // log_debug("pos x+%d, y+%d to x=%f, y=%f", trans_x * (mp & 0x20 ? -1 : 1), trans_y, obj->pos.x,
