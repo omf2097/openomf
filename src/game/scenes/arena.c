@@ -1807,7 +1807,7 @@ int arena_create(scene *scene) {
         }
 
         // player 2's controller
-        switch(game_state_get_player(scene->gs, 0)->ctrl->type) {
+        switch(game_state_get_player(scene->gs, 1)->ctrl->type) {
             case CTRL_TYPE_KEYBOARD:
                 // TODO figure out the actual keyboard type custom vs left vs right
                 scene->gs->rec->p2_controller = REC_CONTROLLER_LEFT_KEYBOARD;
