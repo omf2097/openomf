@@ -10,11 +10,13 @@
 
 #define VOLUME_MAX 1.0f
 #define PANNING_MAX 1.0f
-#define PITCH_MAX 2.0f
+#define PITCH_MAX 5.0f
 
 #define VOLUME_MIN 0.0f
 #define PANNING_MIN -1.0f
 #define PITCH_MIN 0.5f
+
+#define SOURCE_FREQ 8000
 
 typedef struct audio_resampler {
     int internal_id;

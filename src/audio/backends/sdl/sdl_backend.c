@@ -108,7 +108,7 @@ static bool audio_get_chunk(sdl_audio_context *ctx, Mix_Chunk *chunk, const char
     SDL_AudioCVT cvt;
 
     // Converter for sound samples.
-    int src_freq = 8000 * pitch;
+    int src_freq = SOURCE_FREQ * pitch;
     if(SDL_BuildAudioCVT(&cvt, AUDIO_U8, 1, src_freq, ctx->format, ctx->channels, ctx->sample_rate) < 0) {
         log_error("Unable to build audio converter: %s", SDL_GetError());
         goto exit_0;

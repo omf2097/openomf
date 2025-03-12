@@ -458,8 +458,7 @@ void har_floor_landing_effects(object *obj, bool play_sound) {
 
     // Landing sound
     if(play_sound) {
-        float d = ((float)obj->pos.x) / 640.0f;
-        float pos_pan = d - 0.25f;
+        float pos_pan = ((float)obj->pos.x - 160.0f) / 160.0f;
         game_state_play_sound(obj->gs, 56, 0.3f, pos_pan, 2.2f);
     }
 }
