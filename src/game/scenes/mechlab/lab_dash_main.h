@@ -34,14 +34,14 @@ typedef struct {
     component *har_moves;
 } dashboard_widgets;
 
-void lab_dash_main_photo_select(component *c, void *userdata);
-void lab_dash_main_photo_left(component *c, void *userdata);
-void lab_dash_main_photo_right(component *c, void *userdata);
+bool lab_dash_main_photo_select(component *c, void *userdata);
+bool lab_dash_main_photo_left(component *c, void *userdata);
+bool lab_dash_main_photo_right(component *c, void *userdata);
 
-void lab_dash_main_chr_load(component *c, void *userdata);
-void lab_dash_main_chr_delete(component *c, void *userdata);
-void lab_dash_main_chr_left(component *c, void *userdata);
-void lab_dash_main_chr_right(component *c, void *userdata);
+bool lab_dash_main_chr_load(component *c, void *userdata);
+bool lab_dash_main_chr_delete(component *c, void *userdata);
+bool lab_dash_main_chr_left(component *c, void *userdata);
+bool lab_dash_main_chr_right(component *c, void *userdata);
 void lab_dash_main_chr_init(component *menu, component *submenu);
 void lab_dash_main_chr_done(component *menu, component *submenu);
 
@@ -52,8 +52,8 @@ void lab_dash_main_update_gauges(dashboard_widgets *dw, sd_pilot *pilot);
 
 void lab_dash_sim_init(component *menu, component *submenu);
 void lab_dash_sim_done(component *menu, component *submenu);
-void lab_dash_sim_left(component *c, void *userdata);
-void lab_dash_sim_right(component *c, void *userdata);
+bool lab_dash_sim_left(component *c, void *userdata);
+bool lab_dash_sim_right(component *c, void *userdata);
 component *lab_dash_sim_create(scene *s, dashboard_widgets *dw);
 void lab_dash_sim_update(scene *s, dashboard_widgets *dw, sd_pilot *pilot);
 
