@@ -630,9 +630,12 @@ void arena_har_defeat_hook(int loser_player_id, scene *scene) {
         if(is_singleplayer(gs)) {
             player_winner->sp_wins |= 2 << player_loser->pilot->pilot_id;
             if(player_loser->pilot->pilot_id == PILOT_KREISSACK) {
+                har *loser_har = object_get_userdata(loser);
                 log_debug("kreissack defeated");
                 // can't scrap/destruct kreissack
                 winner_har->state = STATE_DONE;
+                // major go boom
+                loser_har->custom_defeat_animation = 47;
             }
         }
     } else {
@@ -1587,12 +1590,6 @@ int arena_create(scene *scene) {
                 }
             }
         }
-
-        if(player->pilot->pilot_id == PILOT_KREISSACK) {
-            har *har = object_get_userdata(obj);
-            // major go boom
-            har->custom_defeat_animation = 47;
-        }
     }
 
     // remove the keyboard hooks
@@ -1810,7 +1807,7 @@ int arena_create(scene *scene) {
         }
 
         // player 2's controller
-        switch(game_state_get_player(scene->gs, 0)->ctrl->type) {
+        switch(game_state_get_player(scene->gs, 1)->ctrl->type) {
             case CTRL_TYPE_KEYBOARD:
                 // TODO figure out the actual keyboard type custom vs left vs right
                 scene->gs->rec->p2_controller = REC_CONTROLLER_LEFT_KEYBOARD;
