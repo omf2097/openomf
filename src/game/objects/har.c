@@ -589,11 +589,11 @@ void har_move(object *obj) {
                     obj->vel.x = obj->vel.x / 2;
                     if(h->id != 10) {
                         object_set_custom_string(obj, "l20s4sp13zzN3-zzM100");
-                        obj->gs->screen_shake_vertical = 5; //Multiplied by 5 to make it visible
+                        obj->gs->screen_shake_vertical = 5; // Multiplied by 5 to make it visible
                     } else {
-                        //Nova falls harder
+                        // Nova falls harder
                         object_set_custom_string(obj, "l40s4sp13zzN3-zzM100");
-                        obj->gs->screen_shake_vertical = 15; //Multiplied by 5 to make it visible
+                        obj->gs->screen_shake_vertical = 15; // Multiplied by 5 to make it visible
                     }
                 } else {
                     obj->vel.y = 0;
@@ -660,7 +660,7 @@ void har_move(object *obj) {
         object_apply_controllable_velocity(obj, obj, last_input);
     } else {
         obj->vel.y += obj->gravity;
-        //Terminal Velocity
+        // Terminal Velocity
         if(obj->vel.y > 13) {
             obj->vel.y = 13;
         }
@@ -1425,10 +1425,6 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
             return;
         }
 
-        vec2f vel = object_get_vel(o_har);
-        //vel.x = 0.0f;
-        object_set_vel(o_har, vel);
-
         // Exception case for chronos' time freeze
         if(player_frame_isset(o_pjt, "af")) {
             // statis ticks is the raw damage from the move
@@ -2040,12 +2036,8 @@ int har_act(object *obj, int act_type) {
     }
 
     if(move) {
-        // Stop horizontal movement, when move is done
-        // TODO: Make this work better
         vec2f spd = object_get_vel(obj);
-        //if(h->state != STATE_JUMPING) {
-        //    spd.x = 0.0f;
-        //}
+
         object_set_vel(obj, spd);
         if(h->state == STATE_WALKTO || h->state == STATE_WALKFROM) {
             // switch to standing to cancel any walk velocity changes
