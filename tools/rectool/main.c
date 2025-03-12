@@ -156,6 +156,8 @@ rec_assertion_operator rec_assertion_get_operator(const char *key) {
         return OP_LT;
     if(strcmp(key, "eq") == 0)
         return OP_EQ;
+    if(strcmp(key, "set") == 0)
+        return OP_SET;
 
     return OP_INVALID;
 }

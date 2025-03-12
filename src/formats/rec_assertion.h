@@ -8,6 +8,7 @@ typedef enum
     OP_LT = 0,
     OP_GT,
     OP_EQ,
+    OP_SET,
     OP_INVALID
 } rec_assertion_operator;
 
