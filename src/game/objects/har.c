@@ -760,7 +760,7 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
             str_from_slice(&n, string, 0, last_line);
             if(h->endurance <= 0) {
                 // this hit stunned them, so make them hit the floor stunned
-                str_append_c(&n, "L2-M5000");
+                str_append_c(&n, "L3-M5000");
             } else {
                 str_append_c(&n, "-L2-M5-L2");
             }
