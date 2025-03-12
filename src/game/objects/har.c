@@ -758,11 +758,21 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
 
             str n;
             str_from_slice(&n, string, 0, last_line);
-            str_append_c(&n, "-L2-M5-L2");
+            if(h->endurance <= 0) {
+                // this hit stunned them, so make them hit the floor stunned
+                str_append_c(&n, "L3-M5000");
+            } else {
+                str_append_c(&n, "-L2-M5-L2");
+            }
             object_set_custom_string(obj, str_c(&n));
             str_free(&n);
 
-            obj->vel.y = -7 * object_get_direction(obj);
+            obj->vel.y = obj->vertical_velocity_modifier * ((((30.0f - damage) * 0.133333f) + 6.5f) * -1.0);
+            // TODO there's an alternative formula used in some conditions:
+            // (((damage * 0.09523809523809523) + 3.5)  * -1) * obj->vertical_velocity_modifier
+            // but we don't know what those conditions are
+            obj->vel.x =
+                (((damage * 0.16666666f) + 2.0f) * object_get_direction(obj) * -1) * obj->horizontal_velocity_modifier;
             h->state = STATE_FALLEN;
             object_set_stride(obj, 1);
         } else {
@@ -1282,6 +1292,13 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
 
         // rehits only do 60% damage
         int damage = rehit ? move->damage * 0.6 : move->damage;
+
+        if(object_is_airborne(obj_a) && object_is_airborne(obj_b)) {
+            // modify the horizontal velocity of the attacker when doing air knockback
+            obj_a->vel.x *= 0.7f;
+            // the opponent's velocity is modified in har_take_damage
+        }
+
         if(player_frame_isset(obj_a, "ai")) {
             str str;
             str_from_c(&str, "A1-s01l50B2-C2-L5-M400");
