@@ -31,7 +31,7 @@ int component_action(component *c, int action) {
 }
 
 void component_init(component *c, const gui_theme *theme) {
-    c->theme = theme;
+    component_set_theme(c, theme);
     if(c->init) {
         c->init(c, c->theme);
     }
@@ -166,7 +166,6 @@ void component_set_help_text(component *c, const char *help) {
 }
 
 void component_set_theme(component *c, const gui_theme *theme) {
-    assert(c->parent == NULL);
     c->theme = theme;
 }
 
@@ -174,8 +173,8 @@ const gui_theme *component_get_theme(component *c) {
     if(c->theme != NULL) {
         return c->theme;
     }
-    assert(c->theme != NULL);
-    return c->theme;
+    assert(false && "Component has no theme");
+    return NULL;
 }
 
 component *component_create(uint32_t header) {

@@ -3,7 +3,6 @@
 #include "game/gui/label.h"
 #include "game/gui/sizer.h"
 #include "game/gui/spritebutton.h"
-#include "game/gui/text_render.h"
 #include "game/gui/trn_menu.h"
 #include "game/scenes/mechlab.h"
 #include "game/scenes/mechlab/button_details.h"
@@ -103,10 +102,14 @@ void lab_menu_training_done(component *c, void *userdata) {
 }
 
 static const button_details details_list[] = {
-    {lab_menu_training_power,     "POWER",   TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP,    2, 0, 0, 0, COM_ENABLED},
-    {lab_menu_training_agility,   "AGILITY", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP,    2, 0, 0, 0, COM_ENABLED},
-    {lab_menu_training_endurance, "ENDUR.",  TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP,    2, 0, 0, 0, COM_ENABLED},
-    {lab_menu_training_done,      "DONE",    TEXT_VERTICAL,   TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED},
+    {lab_menu_training_power,     "POWER",   TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_TOP,    {2, 0, 0, 0}, false},
+    {lab_menu_training_agility,   "AGILITY", TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_TOP,    {2, 0, 0, 0}, false},
+    {lab_menu_training_endurance,
+     "ENDUR.",                               TEXT_ROW_HORIZONTAL,
+     ALIGN_TEXT_CENTER,                                                              ALIGN_TEXT_TOP,
+     {2, 0, 0, 0},
+     false                                                                                                                 },
+    {lab_menu_training_done,      "DONE",    TEXT_ROW_VERTICAL,   ALIGN_TEXT_CENTER, ALIGN_TEXT_MIDDLE, {0, 0, 0, 0}, false},
 };
 
 static void lab_menu_focus_power(component *c, bool focused, void *userdata) {
@@ -187,30 +190,12 @@ component *lab_menu_training_create(scene *s) {
     sprite *msprite = animation_get_sprite(main_sheets, 1);
     component *menu = trnmenu_create(msprite->data, msprite->pos.x, msprite->pos.y, false);
 
-    // Default text configuration
-    text_settings tconf;
-    text_defaults(&tconf);
-    tconf.font = FONT_SMALL;
-    tconf.cforeground = TEXT_TRN_BLUE;
-    tconf.cselected = TEXT_TRN_BLUE;
-    tconf.cinactive = TEXT_TRN_BLUE;
-    tconf.cdisabled = TEXT_TRN_BLUE;
-
     // Init GUI buttons with locations from the "select" button sprites
     for(int i = 0; i < animation_get_sprite_count(main_buttons); i++) {
-        tconf.valign = details_list[i].valign;
-        tconf.halign = details_list[i].halign;
-        tconf.padding.top = details_list[i].top;
-        tconf.padding.bottom = details_list[i].bottom;
-        tconf.padding.left = details_list[i].left;
-        tconf.padding.right = details_list[i].right;
-        tconf.direction = details_list[i].dir;
-
-        sprite *bsprite = animation_get_sprite(main_buttons, i);
-        component *button =
-            spritebutton_create(&tconf, details_list[i].text, bsprite->data, COM_ENABLED, details_list[i].cb, s);
-        component_set_size_hints(button, bsprite->data->w, bsprite->data->h);
-        component_set_pos_hints(button, bsprite->pos.x, bsprite->pos.y);
+        sprite *button_sprite = animation_get_sprite(main_buttons, i);
+        component *button = sprite_button_from_details(&details_list[i], NULL, button_sprite->data, s);
+        spritebutton_set_font(button, FONT_SMALL);
+        component_set_pos_hints(button, button_sprite->pos.x, button_sprite->pos.y);
 
         if(i == 0) {
             spritebutton_set_tick_cb(button, lab_menu_training_check_power_price);
@@ -220,7 +205,6 @@ component *lab_menu_training_create(scene *s) {
             spritebutton_set_tick_cb(button, lab_menu_training_check_endurance_price);
         }
         component_tick(button);
-
         spritebutton_set_focus_cb(button, focus_cbs[i]);
 
         trnmenu_attach(menu, button);

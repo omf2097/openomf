@@ -146,12 +146,10 @@ void text_set_horizontal_align(text *t, text_horizontal_align align) {
     }
 }
 
-void text_set_margin(text *t, uint8_t left, uint8_t right, uint8_t top, uint8_t bottom) {
-    if(t->margin.left != left || t->margin.right != right || t->margin.top != top || t->margin.bottom != bottom) {
-        t->margin.left = left;
-        t->margin.right = right;
-        t->margin.top = top;
-        t->margin.bottom = bottom;
+void text_set_margin(text *t, const text_margin m) {
+    if(t->margin.left != m.left || t->margin.right != m.right || t->margin.top != m.top ||
+       t->margin.bottom != m.bottom) {
+        t->margin = m;
         t->cache_flags |= INVALIDATE_LAYOUT;
     }
 }

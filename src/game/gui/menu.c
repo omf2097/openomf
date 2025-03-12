@@ -214,7 +214,7 @@ void menu_set_submenu(component *mc, component *submenu) {
     m->submenu = submenu;
     m->prev_submenu_state = 0;
     submenu->parent = mc; // Set correct parent
-    component_init(m->submenu, component_get_theme(m->submenu));
+    component_init(m->submenu, component_get_theme(mc));
     component_layout(m->submenu, mc->x, mc->y, mc->w_hint, mc->h_hint);
 }
 

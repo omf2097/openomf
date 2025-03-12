@@ -149,11 +149,9 @@ static uint16_t valign_offset(text_vertical_align align, uint16_t bbox_h, uint16
         case ALIGN_TEXT_TOP:
             return 0;
         case ALIGN_TEXT_MIDDLE:
-            return (bbox_h - block_h) / 2;
+            return (bbox_h - block_h) >> 1;
         case ALIGN_TEXT_BOTTOM:
             return bbox_h - block_h;
-        case V_ALIGN_UNKNOWN:
-            break;
     }
     assert(false && "Unknown text_vertical_align");
     return 0; // Should never come here.
@@ -164,11 +162,9 @@ static uint16_t halign_offset(text_horizontal_align align, uint16_t bbox_w, uint
         case ALIGN_TEXT_LEFT:
             return 0;
         case ALIGN_TEXT_CENTER:
-            return (bbox_w - block_w) / 2;
+            return (bbox_w - block_w) >> 1;
         case ALIGN_TEXT_RIGHT:
             return bbox_w - block_w;
-        case H_ALIGN_UNKNOWN:
-            break;
     }
     assert(false && "Unknown text_horizontal_align");
     return 0; // Should never come here.
@@ -195,15 +191,16 @@ void text_layout_compute(text_layout *layout, const str *buf, const font *font, 
                          text_row_direction direction, uint8_t line_spacing, uint8_t letter_spacing,
                          uint8_t max_lines) {
     assert(buf != NULL);
-    assert(bbox_w > margin.left + margin.right);
-    assert(bbox_h > margin.top + margin.bottom);
+    // assert(bbox_w > margin.left + margin.right);
+    // assert(bbox_h > margin.top + margin.bottom);
     const char *src = str_c(buf);
 
     // Find the actual drawable area of the bounding box
+    bool is_horizontal = (direction == TEXT_ROW_HORIZONTAL);
     uint16_t w = bbox_w - margin.left - margin.right;
     uint16_t h = bbox_h - margin.top - margin.bottom;
-    uint16_t max_width = (direction == TEXT_ROW_HORIZONTAL) ? w : h;
-    uint16_t max_height = (direction == TEXT_ROW_HORIZONTAL) ? h : w;
+    uint16_t max_width = is_horizontal ? w : h;
+    uint16_t max_height = is_horizontal ? h : w;
 
     // Figure out how many rows we render, and what their sizes are.
     vector rows;
@@ -225,12 +222,12 @@ void text_layout_compute(text_layout *layout, const str *buf, const font *font, 
             if(glyph != NULL) {
                 text_layout_item *item = vector_append_ptr(&layout->items);
                 item->glyph = glyph;
-                item->x = x;
-                item->y = y;
-                x += item->glyph->w + letter_spacing;
+                item->x = margin.left + (is_horizontal ? x : y);
+                item->y = margin.top + (is_horizontal ? y : x);
+                x += letter_spacing + (is_horizontal ? item->glyph->w : item->glyph->h);
             }
         }
-        y += row->size.h + line_spacing;
+        y += line_spacing + (is_horizontal ? row->size.h : row->size.w);
     }
 
     // Layout statistics

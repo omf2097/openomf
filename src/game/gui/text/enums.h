@@ -5,7 +5,6 @@
 
 typedef enum text_vertical_align
 {
-    V_ALIGN_UNKNOWN = 0, // Invalid, for debugging.
     ALIGN_TEXT_TOP,
     ALIGN_TEXT_MIDDLE,
     ALIGN_TEXT_BOTTOM
@@ -13,7 +12,6 @@ typedef enum text_vertical_align
 
 typedef enum text_horizontal_align
 {
-    H_ALIGN_UNKNOWN = 0, // Invalid, for debugging.
     ALIGN_TEXT_LEFT,
     ALIGN_TEXT_CENTER,
     ALIGN_TEXT_RIGHT
@@ -28,7 +26,6 @@ typedef struct text_margin {
 
 typedef enum text_row_direction
 {
-    TEXT_ROW_UNKNOWN = 0, // Invalid, for debugging.
     TEXT_ROW_HORIZONTAL,
     TEXT_ROW_VERTICAL,
 } text_row_direction;

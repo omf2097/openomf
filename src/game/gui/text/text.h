@@ -28,7 +28,7 @@ void text_set_color(text *t, vga_index color);
 void text_set_shadow_color(text *t, vga_index color);
 void text_set_vertical_align(text *t, text_vertical_align align);
 void text_set_horizontal_align(text *t, text_horizontal_align align);
-void text_set_margin(text *t, uint8_t left, uint8_t right, uint8_t top, uint8_t bottom);
+void text_set_margin(text *t, const text_margin m);
 void text_set_direction(text *t, text_row_direction direction);
 void text_set_line_spacing(text *t, uint8_t line_spacing);
 void text_set_letter_spacing(text *t, uint8_t letter_spacing);
