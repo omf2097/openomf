@@ -10,7 +10,7 @@
 
 #define VOLUME_MAX 1.0f
 #define PANNING_MAX 1.0f
-#define PITCH_MAX 2.0f
+#define PITCH_MAX 5.0f
 
 #define VOLUME_MIN 0.0f
 #define PANNING_MIN -1.0f

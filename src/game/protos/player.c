@@ -459,7 +459,8 @@ void player_run(object *obj) {
             if(sd_script_isset(frame, "sf")) {
                 int sf = sd_script_get(frame, "sf");
                 assert(sf >= -128 && sf <= 128);
-                pitch = 1.0f + clamp(sf, -128, 128) / 128.0f;
+                // 10 gallon harrison stetson right here
+                pitch = 3.0f + (clamp(sf, -128, 128) / 20.0f);
             }
             if(sd_script_isset(frame, "l")) {
                 int v = clamp(sd_script_get(frame, "l"), 0, 100);
@@ -467,6 +468,8 @@ void player_run(object *obj) {
             }
             if(sd_script_isset(frame, "sb")) {
                 panning = clamp(sd_script_get(frame, "sb"), -100, 100) / 100.0f;
+            } else {
+                panning = (obj->pos.x - 160) / 160.0f;
             }
             if(obj->sound_translation_table) {
                 int sound_id = obj->sound_translation_table[sd_script_get(frame, "s")] - 1;
