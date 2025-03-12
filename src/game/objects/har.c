@@ -2469,6 +2469,8 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
 
     local->stun_timer = 0;
 
+    object_set_group(obj, GROUP_HAR);
+
     // Set palette offset 0 for player1, 48 for player2
     object_set_pal_offset(obj, player_id * 48);
     object_set_pal_limit(obj, (player_id + 1) * 48);

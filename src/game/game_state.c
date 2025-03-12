@@ -666,7 +666,8 @@ void game_state_call_collide(game_state *gs) {
         a = ((render_obj *)vector_get(&gs->objects, i))->obj;
         for(unsigned k = i + 1; k < size; k++) {
             b = ((render_obj *)vector_get(&gs->objects, k))->obj;
-            if(a->group != b->group || a->group == GROUP_UNKNOWN || b->group == GROUP_UNKNOWN) {
+            if(a->group != b->group || a->group == GROUP_UNKNOWN || b->group == GROUP_UNKNOWN ||
+               (a->group == GROUP_HAR && b->group == GROUP_HAR)) {
                 if(a->layers & b->layers) {
                     object_collide(a, b);
                 }
