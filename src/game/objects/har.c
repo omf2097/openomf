@@ -615,14 +615,12 @@ void har_move(object *obj) {
 
                 h->state = STATE_DEFEAT;
                 har_set_ani(obj, h->custom_defeat_animation ? h->custom_defeat_animation : ANIM_DEFEAT, 0);
-                // har_event_defeat(h, ctrl);
             } else if(obj->pos.y >= (ARENA_FLOOR - 5) && IS_ZERO(obj->vel.x) && player_is_last_frame(obj)) {
                 if(h->state == STATE_FALLEN) {
                     if(h->health <= 0) {
                         // fallen, but done bouncing
                         h->state = STATE_DEFEAT;
                         har_set_ani(obj, h->custom_defeat_animation ? h->custom_defeat_animation : ANIM_DEFEAT, 0);
-                        // har_event_defeat(h, ctrl);
                     } else {
                         h->state = STATE_STANDING_UP;
                         har_set_ani(obj, ANIM_STANDUP, 0);
@@ -1654,9 +1652,24 @@ void har_tick(object *obj) {
         h->throw_duration--;
 
         if(h->throw_duration == 0) {
-            str str;
-            str_from_c(&str, "");
-            har_take_damage(obj, &str, h->last_damage_value, h->last_stun_value);
+            // we've already called har_take_damage, so just apply the damage and check for defeat
+            h->health -= h->last_damage_value;
+            h->endurance -= h->last_stun_value;
+            if(h->health <= 0) {
+                // Take a screencap of enemy har
+                game_player *other_player = game_state_get_player(obj->gs, !h->player_id);
+                object *other_har = game_state_find_object(obj->gs, other_player->har_obj_id);
+                har_screencaps_capture(&other_player->screencaps, other_har, obj, SCREENCAP_BLOW);
+
+                // Slow down game more for last shot
+                log_debug("Slowdown: Slowing from %d to %d.", game_state_get_speed(obj->gs),
+                          h->health == 0 ? game_state_get_speed(obj->gs) - 10 : game_state_get_speed(obj->gs) - 6);
+                game_state_slowdown(obj->gs, 12,
+                                    h->health == 0 ? game_state_get_speed(obj->gs) - 10
+                                                   : game_state_get_speed(obj->gs) - 6);
+
+                har_event_defeat(h, ctrl);
+            }
         }
     }
 
