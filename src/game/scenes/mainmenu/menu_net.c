@@ -30,7 +30,7 @@ void menu_net_listen(component *c, void *userdata) {
 
 component *menu_net_create(scene *s) {
     component *menu = menu_create(11);
-    menu_attach(menu, label_create("NETWORK PLAY"));
+    menu_attach(menu, label_create_title("NETWORK PLAY"));
     menu_attach(menu, filler_create());
 
     component *lobby = button_create("LOBBY", "Join the OpenOMF network lobby to challenge other players.", false,

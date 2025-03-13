@@ -5,6 +5,7 @@
 #include "game/gui/text/text.h"
 
 component *label_create_with_width(const char *text, uint16_t max_width);
+component *label_create_title(const char *text);
 component *label_create(const char *text);
 void label_set_text(component *label, const char *text);
 void label_set_text_color(component *label, vga_index color);

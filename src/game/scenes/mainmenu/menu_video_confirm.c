@@ -74,7 +74,7 @@ component *menu_video_confirm_create(scene *s, settings_video *old_settings) {
     time(&local->video_accept_timer);
 
     component *menu = menu_create(11);
-    menu_attach(menu, label_create("ACCEPT RESOLUTION?"));
+    menu_attach(menu, label_create_title("ACCEPT RESOLUTION?"));
     menu_attach(menu, filler_create());
     local->timeout_label = label_create("");
     menu_attach(menu, local->timeout_label);

@@ -94,8 +94,11 @@ void text_free(text **t) {
 }
 
 void text_set_from_c(text *t, const char *src) {
-    assert(src);
-    str_set_c(&t->buf, src);
+    if (src == NULL) {
+        str_truncate(&t->buf, 0);
+    } else {
+        str_set_c(&t->buf, src);
+    }
     t->cache_flags |= INVALIDATE_ALL;
 }
 
@@ -196,6 +199,10 @@ void text_set_max_lines(text *t, uint8_t max_lines) {
         t->max_lines = max_lines;
         t->cache_flags |= INVALIDATE_LAYOUT;
     }
+}
+
+str *text_get_str(text *t) {
+    return &t->buf;
 }
 
 font_size text_get_font(const text *t) {

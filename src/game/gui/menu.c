@@ -277,7 +277,7 @@ static void menu_layout(component *c, int x, int y, int w, int h) {
             x_offset += (*tmp)->w_hint + m->padding;
             height = max2(height, (*tmp)->h_hint);
         } else {
-            component_layout(*tmp, x, y + height, w, -1);
+            component_layout(*tmp, x, y + height, w, (*tmp)->h_hint);
             height += max2(0, (*tmp)->h_hint) + m->padding;
         }
         i++;

@@ -370,17 +370,7 @@ void lobby_cancel_challenge(component *c, void *userdata) {
 }
 
 component *lobby_challenge_create(scene *s) {
-
     lobby_local *local = scene_get_userdata(s);
-    // Text config
-    text_settings tconf;
-    text_defaults(&tconf);
-    tconf.font = FONT_NET1;
-    tconf.halign = TEXT_LEFT;
-    tconf.cforeground = 6;
-    tconf.cselected = 5;
-    tconf.cdisabled = 4;
-    tconf.cinactive = 3;
 
     component *menu = menu_create(11);
     menu_set_horizontal(menu, true);
@@ -426,16 +416,6 @@ void lobby_do_yell(component *c, void *userdata) {
 }
 
 component *lobby_yell_create(scene *s) {
-    // Text config
-    text_settings tconf;
-    text_defaults(&tconf);
-    tconf.font = FONT_NET1;
-    tconf.halign = TEXT_LEFT;
-    tconf.cforeground = 6;
-    tconf.cselected = 5;
-    tconf.cdisabled = 4;
-    tconf.cinactive = 3;
-
     text_settings help_text;
     text_defaults(&help_text);
     help_text.font = FONT_NET2;
@@ -452,10 +432,11 @@ component *lobby_yell_create(scene *s) {
 
     menu_attach(menu, label_create("Yell:"));
     component *yell_input =
-        textinput_create(&tconf, 36,
+        textinput_create(36,
                          "Yell a message to everybody in the challenge arena.\n\n\n\n\nTo whisper to one player, type "
                          "their name, a ':', and your message.\nPress 'esc' to return to the challenge arena menu.",
                          "");
+    textinput_set_font(yell_input, FONT_NET1);
     menu_attach(menu, yell_input);
     textinput_enable_background(yell_input, 0);
     textinput_set_done_cb(yell_input, lobby_do_yell, s);
@@ -500,15 +481,6 @@ void lobby_do_whisper(component *c, void *userdata) {
 
 component *lobby_whisper_create(scene *s) {
     lobby_local *local = scene_get_userdata(s);
-    // Text config
-    text_settings tconf;
-    text_defaults(&tconf);
-    tconf.font = FONT_NET1;
-    tconf.halign = TEXT_LEFT;
-    tconf.cforeground = 6;
-    tconf.cselected = 5;
-    tconf.cdisabled = 4;
-    tconf.cinactive = 3;
 
     text_settings help_text;
     text_defaults(&help_text);
@@ -528,7 +500,8 @@ component *lobby_whisper_create(scene *s) {
     lobby_user *user = list_get(&local->users, local->active_user);
     snprintf(local->helptext, sizeof(local->helptext), "Whisper a message to %s. Press enter when done, esc to abort.",
              user->name);
-    component *whisper_input = textinput_create(&tconf, 36, local->helptext, "");
+    component *whisper_input = textinput_create(36, local->helptext, "");
+    textinput_set_font(whisper_input, FONT_NET1);
     menu_attach(menu, whisper_input);
     textinput_enable_background(whisper_input, 0);
     textinput_set_done_cb(whisper_input, lobby_do_whisper, s);
@@ -669,16 +642,6 @@ void lobby_dialog_accept_challenge(dialog *dlg, dialog_result result) {
 }
 
 component *lobby_exit_create(scene *s) {
-    // Text config
-    text_settings tconf;
-    text_defaults(&tconf);
-    tconf.font = FONT_NET1;
-    tconf.halign = TEXT_LEFT;
-    tconf.cforeground = 6;
-    tconf.cselected = 5;
-    tconf.cdisabled = 4;
-    tconf.cinactive = 3;
-
     component *menu = menu_create(11);
     menu_set_horizontal(menu, true);
     menu_set_background(menu, false);
@@ -1448,15 +1411,6 @@ int lobby_create(scene *scene) {
     local->nat_tries = 0;
     local->disconnected = false;
 
-    text_settings tconf;
-    text_defaults(&tconf);
-    tconf.font = FONT_NET1;
-    tconf.halign = TEXT_LEFT;
-    tconf.cforeground = 6;
-    tconf.cselected = 5;
-    tconf.cdisabled = 4;
-    tconf.cinactive = 3;
-
     // Create lobby theme
     gui_theme theme;
     gui_theme_defaults(&theme);
@@ -1531,8 +1485,9 @@ int lobby_create(scene *scene) {
 
         menu_attach(name_menu, label_create("Enter your name:"));
         // pull the last used name from settings
-        component *name_input = textinput_create(&tconf, 14, "", settings_get()->net.net_username);
-        textinput_enable_background(name_input, 0);
+        component *name_input = textinput_create(14, "", settings_get()->net.net_username);
+        textinput_set_font(name_input, FONT_NET1);
+        textinput_enable_background(name_input, false);
         textinput_set_done_cb(name_input, lobby_entered_name, scene);
         menu_attach(name_menu, name_input);
 

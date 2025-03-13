@@ -231,8 +231,8 @@ void text_layout_compute(text_layout *layout, const str *buf, const font *font, 
     }
 
     // Layout statistics
-    layout->w = text_block.w;
-    layout->h = text_block.h;
+    layout->w = text_block.w + margin.left + margin.right;
+    layout->h = text_block.h + margin.top + margin.bottom;
     layout->rows = vector_size(&rows);
 
     // This is the temporary row buffer, it's no longer needed.

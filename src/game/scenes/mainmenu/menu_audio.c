@@ -103,7 +103,7 @@ component *menu_audio_create(scene *s) {
     // Create menu and its header
     component *menu = menu_create(11);
     component *volume_textslider;
-    menu_attach(menu, label_create("AUDIO"));
+    menu_attach(menu, label_create_title("AUDIO"));
     menu_attach(menu, filler_create());
     menu_attach(menu,
                 volume_textslider = textslider_create_bind(

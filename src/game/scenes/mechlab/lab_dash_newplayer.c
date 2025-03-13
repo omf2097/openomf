@@ -9,16 +9,6 @@
 component *lab_dash_newplayer_create(scene *s, newplayer_widgets *nw) {
     component *xy = xysizer_create();
 
-    // Text config
-    text_settings tconf;
-    text_defaults(&tconf);
-    tconf.font = FONT_SMALL;
-    tconf.halign = TEXT_CENTER;
-    tconf.cforeground = TEXT_TRN_BLUE;
-    tconf.cselected = TEXT_TRN_BLUE;
-    tconf.cinactive = TEXT_TRN_BLUE;
-    tconf.cdisabled = TEXT_TRN_BLUE;
-
     // Background name box
     animation *main_sheets = &bk_get_info(s->bk_data, 1)->ani;
     sprite *msprite = animation_get_sprite(main_sheets, 5);
@@ -28,9 +18,8 @@ component *lab_dash_newplayer_create(scene *s, newplayer_widgets *nw) {
     xysizer_attach(xy, label_create(lang_get(192)), 110, 43, 100, 50);
 
     // Input field
-    tconf.cselected = TEXT_BRIGHT_GREEN;
-    tconf.halign = TEXT_LEFT;
-    nw->input = textinput_create(&tconf, 16, "Name", "");
+    nw->input = textinput_create(16, "Name", "");
+    textinput_set_font(nw->input, FONT_SMALL);
     component_select(nw->input, 1);
     textinput_enable_background(nw->input, 0);
     xysizer_attach(xy, nw->input, 114, 62, 120, 8);

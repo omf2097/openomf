@@ -141,7 +141,7 @@ component *menu_video_create(scene *s) {
 
     // Create menu and its header
     component *menu = menu_create(11);
-    menu_attach(menu, label_create("VIDEO"));
+    menu_attach(menu, label_create_title("VIDEO"));
     menu_attach(menu, filler_create());
 
     // Renderer selector

@@ -181,14 +181,14 @@ component *menu_input_create(scene *s, int player_id) {
     local->selected_player = player_id;
 
     component *menu = menu_create(11);
-    menu_attach(menu, label_create("CHOOSE INPUT"));
-    menu_attach(menu, label_create("DEVICE FOR"));
+    menu_attach(menu, label_create_title("CHOOSE INPUT"));
+    menu_attach(menu, label_create_title("DEVICE FOR"));
     switch(local->selected_player) {
         case 1:
-            menu_attach(menu, label_create("PLAYER 1"));
+            menu_attach(menu, label_create_title("PLAYER 1"));
             break;
         case 2:
-            menu_attach(menu, label_create("PLAYER 2"));
+            menu_attach(menu, label_create_title("PLAYER 2"));
             break;
     }
     menu_attach(menu, filler_create());

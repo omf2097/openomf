@@ -106,8 +106,8 @@ component *menu_presskey_create(char **key) {
     local->key = key;
 
     component *menu = menu_create(11);
-    local->text[0] = label_create("PRESS A KEY FOR");
-    local->text[1] = label_create("THIS ACTION ...");
+    local->text[0] = label_create_title("PRESS A KEY FOR");
+    local->text[1] = label_create_title("THIS ACTION ...");
     for(int i = 0; i < 2; i++) {
         label_set_text_color(local->text[i], TEXT_BRIGHT_GREEN);
         label_set_text_horizontal_align(local->text[i], ALIGN_TEXT_CENTER);

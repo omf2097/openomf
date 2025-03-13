@@ -1639,9 +1639,8 @@ int arena_create(scene *scene) {
     local->menu_visible = 0;
     local->game_menu = gui_frame_create(&theme, 60, 5, 181, 117);
     component *menu = menu_create(11);
-    component *openomf = label_create("OPENOMF");
+    component *openomf = label_create_title("OPENOMF");
     label_set_text_color(openomf, TEXT_DARK_GREEN);
-    label_set_text_horizontal_align(openomf, ALIGN_TEXT_CENTER);
     menu_attach(menu, openomf);
     menu_attach(menu, filler_create());
     menu_attach(menu, filler_create());

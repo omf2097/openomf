@@ -129,7 +129,7 @@ gui_frame *menu_keyboard_create(scene *s, const gui_theme *theme, int selected_p
     component *menu = menu_create(11);
     gui_frame_set_root(local->frame, menu);
     gui_frame_layout(local->frame);
-    menu_attach(menu, label_create("CUSTOM KEYBOARD SETUP"));
+    menu_attach(menu, label_create_title("CUSTOM KEYBOARD SETUP"));
     for(int i = 0; i < 10; i++) {
         local->keys[i] = button_create("", NULL, false, false, menu_keyboard_set_key,
                                        (void *)menu_get_key(local->selected_player, i));

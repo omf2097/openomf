@@ -105,3 +105,9 @@ component *label_create_with_width(const char *text, uint16_t max_width) {
 component *label_create(const char *text) {
     return label_create_with_width(text, TEXT_BBOX_MAX);
 }
+
+component *label_create_title(const char *text) {
+    component *c = label_create(text);
+    label_set_text_horizontal_align(c, ALIGN_TEXT_CENTER);
+    return c;
+}

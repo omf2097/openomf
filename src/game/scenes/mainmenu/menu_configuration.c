@@ -39,7 +39,7 @@ void menu_enter_audio(component *c, void *userdata) {
 
 component *menu_configuration_create(scene *s) {
     component *menu = menu_create(11);
-    menu_attach(menu, label_create("CONFIGURATION"));
+    menu_attach(menu, label_create_title("CONFIGURATION"));
     menu_attach(menu, filler_create());
     menu_attach(menu, button_create("LANGUAGE", "Forstar du ikke engelsk?", false, false, menu_enter_language, s));
     menu_attach(menu, button_create("PLAYER 1 INPUT", "Choose the control for player 1: keyboard or joystick.", false,

@@ -200,7 +200,7 @@ component *menu_listen_create(scene *s) {
 
     // Create the menu
     component *menu = menu_create(11);
-    menu_attach(menu, label_create("START SERVER"));
+    menu_attach(menu, label_create_title("START SERVER"));
     menu_attach(menu, filler_create());
     char buf[200];
     if(local->nat.type != NAT_TYPE_NONE) {

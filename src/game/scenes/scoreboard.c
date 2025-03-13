@@ -241,20 +241,17 @@ int scoreboard_create(scene *scene) {
     theme.text.shadow_color = TEXT_SHADOW_COLOR;
 
     if(local->has_pending_data) {
-        text_settings small_text;
-        text_defaults(&small_text);
-        small_text.font = FONT_SMALL;
-
-        int found_slot = 0;
+        bool found_slot = false;
         unsigned int score;
         int entry = 0;
         for(int r = 0; r < 20 && !found_slot; r++) {
             score = local->data.entries[local->page][entry].score;
-            if(local->has_pending_data && score < local->pending_data.score && !found_slot) {
-                found_slot = 1;
+            if(local->has_pending_data && score < local->pending_data.score) {
+                found_slot = true;
                 local->frame = gui_frame_create(&theme, 20, 30 + r * 8, 20, 10);
-                local->ti = textinput_create(&small_text, 16, "", "");
-                textinput_enable_background(local->ti, 0);
+                local->ti = textinput_create(16, "", "");
+                textinput_set_font(local->ti, FONT_SMALL);
+                textinput_enable_background(local->ti, false);
                 gui_frame_set_root(local->frame, local->ti);
                 gui_frame_layout(local->frame);
                 component_select(local->ti, 1);
