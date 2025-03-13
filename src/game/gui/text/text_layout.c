@@ -76,7 +76,7 @@ typedef struct area {
 
 static area find_row_metrics(const str *buf, const font *font, uint8_t letter_spacing, text_row_direction direction,
                              size_t start, size_t end) {
-    area ret = {0, 0};
+    area ret = {0, font->h};  // Note that we use generic font height if row has no characters.
     const char *ptr = str_c(buf);
     for(size_t i = start; i < end; i++) {
         const surface *s = font_get_surface(font, ptr[i]);

@@ -101,16 +101,14 @@ void lab_menu_training_done(component *c, void *userdata) {
     trnmenu_finish(c->parent);
 }
 
+// clang-format off
 static const button_details details_list[] = {
-    {lab_menu_training_power,     "POWER",   TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_TOP,    {2, 0, 0, 0}, false},
-    {lab_menu_training_agility,   "AGILITY", TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_TOP,    {2, 0, 0, 0}, false},
-    {lab_menu_training_endurance,
-     "ENDUR.",                               TEXT_ROW_HORIZONTAL,
-     ALIGN_TEXT_CENTER,                                                              ALIGN_TEXT_TOP,
-     {2, 0, 0, 0},
-     false                                                                                                                 },
-    {lab_menu_training_done,      "DONE",    TEXT_ROW_VERTICAL,   ALIGN_TEXT_CENTER, ALIGN_TEXT_MIDDLE, {0, 0, 0, 0}, false},
+    {lab_menu_training_power,     "POWER",   TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_TOP,    {0, 0, 2, 0}, false},
+    {lab_menu_training_agility,   "AGILITY", TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_TOP,    {0, 0, 2, 0}, false},
+    {lab_menu_training_endurance, "ENDUR.",  TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_TOP,    {0, 0, 2, 0}, false},
+    {lab_menu_training_done,      "DONE",    TEXT_ROW_VERTICAL,   ALIGN_TEXT_CENTER, ALIGN_TEXT_MIDDLE, {1, 0, 0, 0}, false},
 };
+// clang-format on
 
 static void lab_menu_focus_power(component *c, bool focused, void *userdata) {
     if(focused) {
@@ -195,6 +193,7 @@ component *lab_menu_training_create(scene *s) {
         sprite *button_sprite = animation_get_sprite(main_buttons, i);
         component *button = sprite_button_from_details(&details_list[i], NULL, button_sprite->data, s);
         spritebutton_set_font(button, FONT_SMALL);
+        spritebutton_set_text_color(button, TEXT_TRN_BLUE);
         component_set_pos_hints(button, button_sprite->pos.x, button_sprite->pos.y);
 
         if(i == 0) {
@@ -212,12 +211,14 @@ component *lab_menu_training_create(scene *s) {
 
     label1 = label_create("");
     label_set_text_color(label1, 0xA5);
+    label_set_font(label1, FONT_SMALL);
     component_set_size_hints(label1, 90, 110);
     component_set_pos_hints(label1, 200, 148);
     trnmenu_attach(menu, label1);
 
     label2 = label_create("");
-    label_set_text_color(label1, 0xA7);
+    label_set_text_color(label2, 0xA7);
+    label_set_font(label2, FONT_SMALL);
     component_set_size_hints(label2, 90, 110);
     component_set_pos_hints(label2, 200, 186);
     trnmenu_attach(menu, label2);

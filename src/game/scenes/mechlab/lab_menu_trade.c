@@ -242,6 +242,7 @@ component *lab_menu_trade_create(scene *s) {
         sprite *button_sprite = animation_get_sprite(main_buttons, i);
         component *button = sprite_button_from_details(&details_list[i], NULL, button_sprite->data, s);
         spritebutton_set_font(button, FONT_SMALL);
+        spritebutton_set_text_color(button, TEXT_TRN_BLUE);
         component_set_pos_hints(button, x + button_sprite->pos.x, y + button_sprite->pos.y);
 
         x += button_sprite->data->w;

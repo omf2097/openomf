@@ -384,55 +384,21 @@ void lab_menu_customize_check_trade_robot(component *c, void *userdata) {
     }
 }
 
+// clang-format off
 static const button_details details_list[] = {
-    {lab_menu_customize_color_main,
-     NULL,                                        TEXT_ROW_HORIZONTAL,
-     ALIGN_TEXT_CENTER,                                                                   ALIGN_TEXT_MIDDLE,
-     {0, 0, 0, 0},
-     false                                                                                                                      }, // Blue
-    {lab_menu_customize_color_third,
-     NULL,                                        TEXT_ROW_HORIZONTAL,
-     ALIGN_TEXT_CENTER,                                                                   ALIGN_TEXT_MIDDLE,
-     {0, 0, 0, 0},
-     false                                                                                                                      }, // Yellow
-    {lab_menu_customize_color_secondary,
-     NULL,                                        TEXT_ROW_HORIZONTAL,
-     ALIGN_TEXT_CENTER,                                                                   ALIGN_TEXT_MIDDLE,
-     {0, 0, 0, 0},
-     false                                                                                                                      }, // Red
-    {lab_menu_customize_arm_power,
-     "ARM POWER",                                 TEXT_ROW_HORIZONTAL,
-     ALIGN_TEXT_CENTER,                                                                   ALIGN_TEXT_MIDDLE,
-     {0, 0, 0, 0},
-     false                                                                                                                      },
-    {lab_menu_customize_leg_power,
-     "LEG POWER",                                 TEXT_ROW_HORIZONTAL,
-     ALIGN_TEXT_CENTER,                                                                   ALIGN_TEXT_MIDDLE,
-     {0, 0, 0, 0},
-     false                                                                                                                      },
-    {lab_menu_customize_arm_speed,
-     "ARM SPEED",                                 TEXT_ROW_HORIZONTAL,
-     ALIGN_TEXT_CENTER,                                                                   ALIGN_TEXT_MIDDLE,
-     {0, 0, 0, 0},
-     false                                                                                                                      },
-    {lab_menu_customize_leg_speed,
-     "LEG SPEED",                                 TEXT_ROW_HORIZONTAL,
-     ALIGN_TEXT_CENTER,                                                                   ALIGN_TEXT_MIDDLE,
-     {0, 0, 0, 0},
-     false                                                                                                                      },
-    {lab_menu_customize_armor,           "ARMOR", TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_MIDDLE, {0, 0, 0, 0}, false},
-    {lab_menu_customize_stun_resistance,
-     "STUN RES.",                                 TEXT_ROW_HORIZONTAL,
-     ALIGN_TEXT_CENTER,                                                                   ALIGN_TEXT_MIDDLE,
-     {0, 0, 0, 0},
-     false                                                                                                                      },
-    {lab_menu_customize_trade,
-     "TRADE ROBOT",                               TEXT_ROW_HORIZONTAL,
-     ALIGN_TEXT_CENTER,                                                                   ALIGN_TEXT_MIDDLE,
-     {0, 0, 0, 0},
-     false                                                                                                                      },
-    {lab_menu_customize_done,            "DONE",  TEXT_ROW_VERTICAL,   ALIGN_TEXT_CENTER, ALIGN_TEXT_MIDDLE, {0, 0, 0, 0}, false},
+    {lab_menu_customize_color_main,      NULL,          TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_MIDDLE, {0, 0, 0, 0}, false}, // Blue
+    {lab_menu_customize_color_third,     NULL,          TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_MIDDLE, {0, 0, 0, 0}, false}, // Yellow
+    {lab_menu_customize_color_secondary, NULL,          TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_MIDDLE, {0, 0, 0, 0}, false}, // Red
+    {lab_menu_customize_arm_power,       "ARM POWER",   TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_MIDDLE, {1, 0, 0, 0}, false},
+    {lab_menu_customize_leg_power,       "LEG POWER",   TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_MIDDLE, {1, 0, 0, 0}, false},
+    {lab_menu_customize_arm_speed,       "ARM SPEED",   TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_MIDDLE, {1, 0, 0, 0}, false},
+    {lab_menu_customize_leg_speed,       "LEG SPEED",   TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_MIDDLE, {1, 0, 0, 0}, false},
+    {lab_menu_customize_armor,           "ARMOR",       TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_MIDDLE, {1, 0, 0, 0}, false},
+    {lab_menu_customize_stun_resistance, "STUN RES.",   TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_MIDDLE, {0, 0, 0, 0}, false},
+    {lab_menu_customize_trade,           "TRADE ROBOT", TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_MIDDLE, {0, 0, 0, 0}, false},
+    {lab_menu_customize_done,           "DONE",        TEXT_ROW_VERTICAL,   ALIGN_TEXT_CENTER, ALIGN_TEXT_MIDDLE, {1, 0, 0, 0}, false},
 };
+// clang-format on
 
 static const spritebutton_tick_cb tickers[] = {NULL,
                                                NULL,
@@ -778,6 +744,7 @@ component *lab_menu_customize_create(scene *s) {
         sprite *button_sprite = animation_get_sprite(main_buttons, i);
         component *button = sprite_button_from_details(&details_list[i], NULL, button_sprite->data, s);
         spritebutton_set_font(button, FONT_SMALL);
+        spritebutton_set_text_color(button, TEXT_TRN_BLUE);
         component_set_pos_hints(button, button_sprite->pos.x, button_sprite->pos.y);
         spritebutton_set_tick_cb(button, tickers[i]);
         spritebutton_set_focus_cb(button, focus_cbs[i]);
@@ -796,6 +763,7 @@ component *lab_menu_customize_create(scene *s) {
     header_label = label_create("");
     label_set_text_letter_spacing(header_label, 2);
     label_set_text_color(header_label, 0xA5);
+    label_set_font(header_label, FONT_SMALL);
     component_set_size_hints(header_label, 90, 80);
     component_set_pos_hints(header_label, 210, 150);
     trnmenu_attach(menu, header_label);
@@ -803,6 +771,7 @@ component *lab_menu_customize_create(scene *s) {
     details_label = label_create("");
     label_set_text_letter_spacing(details_label, 2);
     label_set_text_color(details_label, 0xA7);
+    label_set_font(details_label, FONT_SMALL);
     component_set_size_hints(details_label, 90, 80);
     component_set_pos_hints(details_label, 210, 158);
     trnmenu_attach(menu, details_label);

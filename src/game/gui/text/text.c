@@ -86,9 +86,11 @@ text *text_create_from_str(font_size font, uint16_t w, uint16_t h, const str *sr
 }
 
 void text_free(text **t) {
-    str_free(&(*t)->buf);
-    text_layout_free(&(*t)->layout);
-    omf_free(*t);
+    if(*t != NULL) {
+        str_free(&(*t)->buf);
+        text_layout_free(&(*t)->layout);
+        omf_free(*t);
+    }
 }
 
 void text_set_from_c(text *t, const char *src) {
