@@ -230,8 +230,6 @@ void player_run(object *obj) {
     } else if(sd_script_isset(frame, "x+")) {
         trans_x = sd_script_get(frame, "x+") * object_get_direction(obj);
     }
-    trans_x *= obj->horizontal_velocity_modifier;
-    trans_y *= obj->vertical_velocity_modifier;
 
     // Check if frame changed from the previous tick
     state->entered_frame = sd_script_frame_changed(&state->parser, state->previous_tick, state->current_tick);
@@ -260,8 +258,7 @@ void player_run(object *obj) {
             int destination = 160;
             if(sd_script_isset(frame, "am") && sd_script_isset(frame, "e")) {
                 // destination is the enemy's position
-                log_debug("adjusting walkto %d by %d", destination, trans_x / obj->horizontal_velocity_modifier);
-                destination = enemy->pos.x - (trans_x / obj->horizontal_velocity_modifier);
+                destination = enemy->pos.x - trans_x;
                 if(obj->pos.x > enemy->pos.x) {
                     object_set_direction(obj, OBJECT_FACE_LEFT);
                 } else {
@@ -275,8 +272,7 @@ void player_run(object *obj) {
                 } else {
                     destination = ARENA_LEFT_WALL;
                 }
-                log_debug("adjusting destination %d by %d", destination, trans_x / obj->horizontal_velocity_modifier);
-                destination += trans_x / obj->horizontal_velocity_modifier;
+                destination += trans_x;
                 object_set_direction(obj, object_get_direction(enemy));
                 // flip the HAR's position for this animation
                 obj->animation_state.shadow_corner_hack = 1;
@@ -335,8 +331,8 @@ void player_run(object *obj) {
     // Handle vx+/-, vy+/-, x+/-. y+/-
     if(trans_x || trans_y) {
         if(sd_script_isset(frame, "v")) {
-            obj->vel.x = (trans_x * (mp & 0x20 ? -1 : 1));
-            obj->vel.y = trans_y;
+            obj->vel.x = (trans_x * (mp & 0x20 ? -1 : 1)) * obj->horizontal_velocity_modifier;
+            obj->vel.y = trans_y * obj->horizontal_velocity_modifier;
             // log_debug("vel x+%d, y+%d to x=%f, y=%f", trans_x * (mp & 0x20 ? -1 : 1), trans_y, obj->vel.x,
             // obj->vel.y);
         } else {
