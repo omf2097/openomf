@@ -66,7 +66,9 @@ void projectile_move(object *obj) {
             obj->pos.x = ARENA_RIGHT_WALL;
             obj->vel.x = -obj->vel.x * dampen;
         }
-    } else if(!local->invincible) {
+        // if not invincible, not ignoring bounds checking and actually has an X velocity (the latter two help with
+        // shadow grab)
+    } else if(!local->invincible && !player_frame_isset(obj, "bh") && !IS_ZERO(obj->vel.x)) {
         if(obj->pos.x < ARENA_LEFT_WALL) {
             obj->pos.x = ARENA_LEFT_WALL;
             obj->animation_state.finished = 1;
