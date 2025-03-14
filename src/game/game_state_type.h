@@ -51,6 +51,7 @@ typedef struct {
     bool hazards;
     uint8_t rounds;
     bool fight_mode;
+    bool sim;
 } match_settings;
 
 typedef struct game_state_t {

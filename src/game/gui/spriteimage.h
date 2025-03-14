@@ -5,5 +5,6 @@
 #include "video/surface.h"
 
 component *spriteimage_create(const surface *img);
+void spriteimage_set_owns_sprite(component *c, bool owns_sprite);
 
 #endif // SPRITEIMAGE_H

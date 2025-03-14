@@ -7,17 +7,20 @@
 #include "resources/bk.h"
 #include "resources/languages.h"
 
-void lab_dash_trnselect_select(component *c, void *userdata) {
+bool lab_dash_trnselect_select(component *c, void *userdata) {
+    return true;
 }
 
-void lab_dash_trnselect_left(component *c, void *userdata) {
+bool lab_dash_trnselect_left(component *c, void *userdata) {
     trnselect_widgets *tw = userdata;
     trnselect_prev(tw->trnselect);
+    return true;
 }
 
-void lab_dash_trnselect_right(component *c, void *userdata) {
+bool lab_dash_trnselect_right(component *c, void *userdata) {
     trnselect_widgets *tw = userdata;
     trnselect_next(tw->trnselect);
+    return true;
 }
 
 sd_tournament_file *lab_dash_trnselect_selected(trnselect_widgets *tw) {
