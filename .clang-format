@@ -1,5 +1,26 @@
 ---
-Language:  Cpp
+Language: Cpp
+BasedOnStyle: LLVM
+ColumnLimit: 120
+IndentWidth: 4
+LineEnding: LF
+SpaceBeforeParens: Never
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterControlStatement: 'false'
+  AfterFunction:   false
+  AfterStruct:     false
+  AfterUnion:      false
+  BeforeElse:      false
+  IndentBraces:    false
+  AfterEnum:       true
+AllowShortFunctionsOnASingleLine: 'None'
+AllowShortBlocksOnASingleLine: 'Never'
+AlignArrayOfStructures: Left
+IndentCaseLabels: true
+AllowShortEnumsOnASingleLine: false
+---
+Language: C
 BasedOnStyle: LLVM
 ColumnLimit: 120
 IndentWidth: 4
