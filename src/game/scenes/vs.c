@@ -561,7 +561,7 @@ int vs_create(scene *scene) {
         local->arena = 0;
     } else {
         // pick a random arena for 1 player mode
-        local->arena = rand_int(5); // srand was done in melee
+        local->arena = 0; // rand_int(5); // srand was done in melee
     }
 
     // Arena

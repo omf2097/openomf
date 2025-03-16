@@ -56,8 +56,8 @@ void menu_listen_tick(component *c) {
 
             p1->pilot->har_id = HAR_JAGUAR;
             p1->pilot->pilot_id = 0;
-            p2->pilot->har_id = HAR_JAGUAR;
-            p2->pilot->pilot_id = 0;
+            p2->pilot->har_id = HAR_PYROS;
+            p2->pilot->pilot_id = 9;
 
             player1_ctrl = omf_calloc(1, sizeof(controller));
             controller_init(player1_ctrl, gs);
@@ -85,7 +85,7 @@ void menu_listen_tick(component *c) {
             // Player 2 controller -- Network
             net_controller_create(player2_ctrl, local->host, event.peer, NULL, ROLE_SERVER);
             game_player_set_ctrl(p2, player2_ctrl);
-            game_player_set_selectable(p2, 1);
+            game_player_set_selectable(p2, 0);
 
             chr_score_set_difficulty(game_player_get_score(game_state_get_player(gs, 0)), AI_DIFFICULTY_CHAMPION);
             chr_score_set_difficulty(game_player_get_score(game_state_get_player(gs, 1)), AI_DIFFICULTY_CHAMPION);
