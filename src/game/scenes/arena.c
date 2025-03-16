@@ -93,7 +93,11 @@ void game_menu_quit(component *c, void *userdata) {
         // quit back to VS for plug to call you a chicken
         game_player *player2 = game_state_get_player(((scene *)userdata)->gs, 1);
         player2->pilot = NULL;
-        game_state_set_next(s->gs, SCENE_VS);
+        if(s->gs->match_settings.sim) {
+            game_state_set_next(s->gs, SCENE_MECHLAB);
+        } else {
+            game_state_set_next(s->gs, SCENE_VS);
+        }
     } else {
         game_state_set_next(s->gs, SCENE_MENU);
     }
@@ -244,7 +248,10 @@ void arena_end(scene *sc) {
         fight_stats->bonuses = game_player_get_score(p1)->score / 1000;
         fight_stats->profit = fight_stats->bonuses + fight_stats->winnings - fight_stats->repair_cost;
         bool warning_given = p1->pilot->money < 0;
-        p1->pilot->money += fight_stats->profit;
+
+        if(!gs->match_settings.sim) {
+            p1->pilot->money += fight_stats->profit;
+        }
         if(fight_stats->hits_landed[0] != 0) {
             fight_stats->average_damage[0] =
                 (float)(p2_har->health_max - p2_har->health) / (float)fight_stats->hits_landed[0];
@@ -285,6 +292,9 @@ void arena_end(scene *sc) {
         }
         if(is_demoplay(gs)) {
             game_state_set_next(gs, SCENE_VS);
+        } else if(gs->match_settings.sim) {
+            p2->pilot = NULL;
+            game_state_set_next(gs, SCENE_MECHLAB);
         } else {
             game_state_set_next(gs, SCENE_NEWSROOM);
         }
@@ -561,8 +571,6 @@ void arena_har_defeat_hook(int loser_player_id, scene *scene) {
     int winner_player_id = abs(loser_player_id - 1);
     game_player *player_winner = game_state_get_player(scene->gs, winner_player_id);
     game_player *player_loser = game_state_get_player(scene->gs, loser_player_id);
-    player_winner->pilot->wins++;
-    player_loser->pilot->losses++;
     object *winner = game_state_find_object(scene->gs, game_player_get_har_obj_id(player_winner));
     object *loser = game_state_find_object(scene->gs, game_player_get_har_obj_id(player_loser));
     har *winner_har = object_get_userdata(winner);
@@ -594,12 +602,36 @@ void arena_har_defeat_hook(int loser_player_id, scene *scene) {
                         (player_loser->pilot->money + player_loser->pilot->winnings) * winnings_multiplier;
                     fight_stats->winnings += (int)(400 * hp_percentage);
                 }
-                player_winner->pilot->rank--;
+                // secret players have no rank, and don't increase your own ranking
+                if(!gs->match_settings.sim && player_loser->pilot->rank > 0) {
+                    player_winner->pilot->rank--;
+                    if(player_winner->pilot->rank < 1) {
+                        player_winner->pilot->rank = 1;
+                    }
+                    for(int i = 0; i < player_winner->chr->pilot.enemies_inc_unranked; i++) {
+                        if(player_winner->chr->enemies[i]->pilot.rank == player_winner->pilot->rank) {
+                            player_winner->chr->enemies[i]->pilot.rank += 1;
+                            break;
+                        }
+                    }
+                }
                 local->win_state = YOUWIN;
             } else {
                 if(is_tournament(gs)) {
-                    if(player_loser->pilot->rank <= player_loser->pilot->enemies_ex_unranked)
+                    // secret players have no rank, and don't decrease your own ranking
+                    if(player_loser->pilot->rank <= player_loser->pilot->enemies_ex_unranked &&
+                       !gs->match_settings.sim && player_winner->pilot->rank > 0) {
                         player_loser->pilot->rank++;
+                        if(player_loser->pilot->rank > player_loser->chr->pilot.enemies_ex_unranked + 1) {
+                            player_loser->pilot->rank = player_loser->chr->pilot.enemies_ex_unranked + 1;
+                        }
+                        for(int i = 0; i < player_loser->chr->pilot.enemies_inc_unranked; i++) {
+                            if(player_loser->chr->enemies[i]->pilot.rank == player_loser->pilot->rank) {
+                                player_loser->chr->enemies[i]->pilot.rank -= 1;
+                                break;
+                            }
+                        }
+                    }
                     fight_stats->repair_cost = calculate_trade_value(player_loser->pilot) / 100;
                 }
                 local->win_state = YOULOSE;
@@ -625,8 +657,11 @@ void arena_har_defeat_hook(int loser_player_id, scene *scene) {
         winner_har->enqueued = 0;
         local->over = 1;
         local->winner = winner_player_id;
-        game_player_get_score(player_winner)->wins++;
-
+        if(!gs->match_settings.sim) {
+            game_player_get_score(player_winner)->wins++;
+            player_winner->pilot->wins++;
+            player_loser->pilot->losses++;
+        }
         if(is_singleplayer(gs)) {
             player_winner->sp_wins |= 2 << player_loser->pilot->pilot_id;
             if(player_loser->pilot->pilot_id == PILOT_KREISSACK) {
@@ -1476,10 +1511,6 @@ int arena_create(scene *scene) {
             break;
     }
 
-    if(is_netplay(scene->gs)) {
-        // XXX hardcode netplay rounds to 3 for now
-        local->rounds = 3;
-    }
     local->tournament = false;
     local->over = 0;
     local->winner = 0;

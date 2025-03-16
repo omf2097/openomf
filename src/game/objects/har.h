@@ -135,6 +135,7 @@ typedef struct har_t {
     uint8_t is_wallhugging;  // HAR is standing right next to a wall
     uint8_t is_grabbed;      // Is being moved by another object. Set by ex, ey tags
     float last_damage_value; // Last damage value taken
+    float last_stun_value;   // Last stun value taken
 
     float jump_speed;      // Agility generated speed modifier for jumping
     float superjump_speed; // Agility generated speed modifier for jumping

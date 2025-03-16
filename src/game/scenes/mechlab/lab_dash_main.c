@@ -4,6 +4,7 @@
 #include "game/gui/gauge.h"
 #include "game/gui/label.h"
 #include "game/gui/portrait.h"
+#include "game/gui/spriteimage.h"
 #include "game/gui/trn_menu.h"
 #include "game/gui/xysizer.h"
 #include "game/scenes/mechlab.h"
@@ -19,27 +20,30 @@
 #include "utils/log.h"
 #include "video/video.h"
 
-void lab_dash_main_photo_select(component *c, void *userdata) {
+bool lab_dash_main_photo_select(component *c, void *userdata) {
     trnmenu_finish(c->parent);
+    return true;
 }
 
-void lab_dash_main_photo_left(component *c, void *userdata) {
+bool lab_dash_main_photo_left(component *c, void *userdata) {
     dashboard_widgets *dw = userdata;
-    portrait_prev(dw->photo);
-    dw->pilot->photo_id = portrait_selected(dw->photo);
+    portrait_prev(dw->photo[0]);
+    dw->pilot->photo_id = portrait_selected(dw->photo[0]);
     portrait_load(dw->pilot->photo, &dw->pilot->palette, PIC_PLAYERS, dw->pilot->photo_id);
     palette_load_player_colors(&dw->pilot->palette, 0);
+    return true;
 }
 
-void lab_dash_main_photo_right(component *c, void *userdata) {
+bool lab_dash_main_photo_right(component *c, void *userdata) {
     dashboard_widgets *dw = userdata;
-    portrait_next(dw->photo);
-    dw->pilot->photo_id = portrait_selected(dw->photo);
+    portrait_next(dw->photo[0]);
+    dw->pilot->photo_id = portrait_selected(dw->photo[0]);
     portrait_load(dw->pilot->photo, &dw->pilot->palette, PIC_PLAYERS, dw->pilot->photo_id);
     palette_load_player_colors(&dw->pilot->palette, 0);
+    return true;
 }
 
-void lab_dash_main_chr_load(component *c, void *userdata) {
+bool lab_dash_main_chr_load(component *c, void *userdata) {
     dashboard_widgets *dw = userdata;
     game_player *p1 = game_state_get_player(dw->scene->gs, 0);
 
@@ -51,7 +55,7 @@ void lab_dash_main_chr_load(component *c, void *userdata) {
         omf_free(p1->chr);
         p1->chr = oldchr;
         trnmenu_finish(c->parent); // We refer to the components sizer
-        return;
+        return true;
     }
     if(oldchr) {
         log_debug("freeing loaded CHR %s", oldchr->pilot.name);
@@ -79,17 +83,19 @@ void lab_dash_main_chr_load(component *c, void *userdata) {
     settings_get()->tournament.last_name = omf_strdup(p1->pilot->name);
     settings_save();
     trnmenu_finish(c->parent); // We refer to the components sizer
+    return true;
 }
 
-void lab_dash_main_chr_delete(component *c, void *userdata) {
+bool lab_dash_main_chr_delete(component *c, void *userdata) {
     dashboard_widgets *dw = userdata;
     game_player *p1 = game_state_get_player(dw->scene->gs, 0);
     const char *pilot_name = p1->pilot->name;
     sg_delete(pilot_name);
     trnmenu_finish(c->parent);
+    return true;
 }
 
-void lab_dash_main_chr_left(component *c, void *userdata) {
+bool lab_dash_main_chr_left(component *c, void *userdata) {
     log_debug("CHAR LEFT");
     dashboard_widgets *dw = userdata;
     dw->index--;
@@ -99,9 +105,10 @@ void lab_dash_main_chr_left(component *c, void *userdata) {
     game_player *p1 = game_state_get_player(dw->scene->gs, 0);
     p1->pilot = &((sd_chr_file *)list_get(dw->savegames, dw->index))->pilot;
     mechlab_update(dw->scene);
+    return true;
 }
 
-void lab_dash_main_chr_right(component *c, void *userdata) {
+bool lab_dash_main_chr_right(component *c, void *userdata) {
     log_debug("CHAR RIGHT");
     dashboard_widgets *dw = userdata;
     dw->index++;
@@ -111,6 +118,7 @@ void lab_dash_main_chr_right(component *c, void *userdata) {
     game_player *p1 = game_state_get_player(dw->scene->gs, 0);
     p1->pilot = &((sd_chr_file *)list_get(dw->savegames, dw->index))->pilot;
     mechlab_update(dw->scene);
+    return true;
 }
 
 void lab_dash_main_chr_init(component *menu, component *submenu) {
@@ -141,42 +149,167 @@ void lab_dash_main_chr_init(component *menu, component *submenu) {
     mechlab_update(dw->scene);
 }
 
-void lab_dash_sim_left(component *c, void *userdata) {
+void lab_dash_sim_update_portraits(dashboard_widgets *dw) {
+    game_player *p1 = game_state_get_player(dw->scene->gs, 0);
+
+    // try to center the opponent in the 5 element carousel
+    int start = dw->sim_rank - 2;
+    // TODO count other CHR pilots here
+    int total_characters = p1->chr->pilot.enemies_ex_unranked + 1;
+    // make sure we don't go off the end of the list
+    while(start + 5 > total_characters) {
+        start--;
+    }
+    if(start < 1) {
+        start = 1;
+    }
+    char buf[50];
+    for(int i = start, j = 0; j < 5 && i <= total_characters; i++) {
+        if(i < 1) {
+            continue;
+        }
+        if(i == dw->sim_rank) {
+            component_set_pos_hints(dw->photo_highlight, 6 + (j * 60), -1);
+        }
+        snprintf(buf, sizeof(buf), "Rank\n%d", i);
+        label_set_text(dw->ranks[j], buf);
+        if(i == p1->pilot->rank) {
+            portrait_set_from_sprite(dw->photo[j], p1->pilot->photo);
+            j++;
+            continue;
+        }
+        for(int k = 0; k < p1->chr->pilot.enemies_ex_unranked; k++) {
+            if(p1->chr->enemies[k]->pilot.rank == i) {
+                portrait_set_from_sprite(dw->photo[j], p1->chr->enemies[k]->pilot.photo);
+                j++;
+                break;
+            }
+        }
+    }
+
+    component_layout(dw->photo_highlight->parent, dw->photo_highlight->parent->x, dw->photo_highlight->parent->y,
+                     dw->photo_highlight->parent->w, dw->photo_highlight->parent->h);
+}
+
+bool lab_dash_sim_left(component *c, void *userdata) {
     dashboard_widgets *dw = userdata;
     game_player *p1 = game_state_get_player(dw->scene->gs, 0);
     if(dw->sim_rank > 1) {
         dw->sim_rank--;
     }
-    for(int i = 0; i < p1->chr->pilot.enemies_ex_unranked; i++) {
-        if(p1->chr->enemies[i]->pilot.rank == dw->sim_rank) {
-            lab_dash_sim_update(dw->scene, dw, &p1->chr->enemies[i]->pilot);
+    if(dw->sim_rank == p1->pilot->rank) {
+        lab_dash_sim_update(dw->scene, dw, p1->pilot);
+        // cannot select yourself
+        return false;
+    } else {
+        for(int i = 0; i < p1->chr->pilot.enemies_ex_unranked; i++) {
+            if(p1->chr->enemies[i]->pilot.rank == dw->sim_rank) {
+                lab_dash_sim_update(dw->scene, dw, &p1->chr->enemies[i]->pilot);
+            }
         }
     }
+    return true;
 }
 
-void lab_dash_sim_right(component *c, void *userdata) {
+bool lab_dash_sim_right(component *c, void *userdata) {
     dashboard_widgets *dw = userdata;
     game_player *p1 = game_state_get_player(dw->scene->gs, 0);
     if(dw->sim_rank < p1->chr->pilot.enemies_ex_unranked) {
         dw->sim_rank++;
     }
-    for(int i = 0; i < p1->chr->pilot.enemies_ex_unranked; i++) {
-        if(p1->chr->enemies[i]->pilot.rank == dw->sim_rank) {
-            lab_dash_sim_update(dw->scene, dw, &p1->chr->enemies[i]->pilot);
+    if(dw->sim_rank == p1->pilot->rank) {
+        lab_dash_sim_update(dw->scene, dw, p1->pilot);
+        // cannot select yourself
+        return false;
+    } else {
+        for(int i = 0; i < p1->chr->pilot.enemies_ex_unranked; i++) {
+            if(p1->chr->enemies[i]->pilot.rank == dw->sim_rank) {
+                lab_dash_sim_update(dw->scene, dw, &p1->chr->enemies[i]->pilot);
+            }
         }
     }
+    return true;
 }
 
 void lab_dash_sim_init(component *menu, component *submenu) {
     dashboard_widgets *dw = trnmenu_get_userdata(submenu);
     game_player *p1 = game_state_get_player(dw->scene->gs, 0);
-    dw->sim_rank = p1->pilot->rank;
+    dw->sim_rank = p1->pilot->rank - 1;
+    if(dw->sim_rank == 0) {
+        dw->sim_rank = 2;
+    }
+    for(int i = 0; i < p1->chr->pilot.enemies_ex_unranked; i++) {
+        if(p1->chr->enemies[i]->pilot.rank == dw->sim_rank) {
+            dw->pilot = &p1->chr->enemies[i]->pilot;
+            break;
+        }
+    }
+    // TODO load the other CHR files and add them as unranked opponents
+    lab_dash_sim_update(dw->scene, dw, dw->pilot);
 }
 
 void lab_dash_sim_done(component *menu, component *submenu) {
     dashboard_widgets *dw = trnmenu_get_userdata(submenu);
-    mechlab_select_dashboard(dw->scene, DASHBOARD_STATS);
-    mechlab_update(dw->scene);
+    dw->scene->gs->match_settings.sim = true;
+    game_player *p1 = game_state_get_player(dw->scene->gs, 0);
+    game_player *p2 = game_state_get_player(dw->scene->gs, 1);
+
+    if(dw->sim_rank == p1->pilot->rank) {
+        return;
+    } else if(dw->sim_rank > p1->chr->pilot.enemies_ex_unranked + 1) {
+        // TODO this would be other player characters for a 2 player match
+        // fight our own character as a 2 player battle
+        /*p2->pilot = <get the pilot from the savegame>;
+        settings_keyboard *k = &settings_get()->keys;
+        if(k->ctrl_type2 == CTRL_TYPE_KEYBOARD) {
+            _setup_keyboard(dw->scene->gs, 1);
+        } else if(k->ctrl_type2 == CTRL_TYPE_GAMEPAD) {
+            _setup_joystick(dw->scene->gs, 1, k->joy_name2, k->joy_offset2);
+        }
+        chr_score_set_difficulty(game_player_get_score(game_state_get_player(dw->scene->gs, 0)),
+                                 AI_DIFFICULTY_CHAMPION);
+        chr_score_set_difficulty(game_player_get_score(game_state_get_player(dw->scene->gs, 1)),
+                                 AI_DIFFICULTY_CHAMPION);*/
+        return;
+
+    } else {
+        controller *ctrl = omf_calloc(1, sizeof(controller));
+        controller_init(ctrl, dw->scene->gs);
+        for(int i = 0; i < p1->chr->pilot.enemies_ex_unranked; i++) {
+            if(p1->chr->enemies[i]->pilot.rank == dw->sim_rank) {
+                p2->pilot = &p1->chr->enemies[i]->pilot;
+            }
+        }
+        // there's not an exact difficulty mapping
+        // for aluminum to 1p mode, but round up to
+        // veteran
+        int difficulty = AI_DIFFICULTY_VETERAN;
+        if(p1->pilot->difficulty == 1) {
+            // Iron == Champion
+            difficulty = AI_DIFFICULTY_CHAMPION;
+        } else if(p1->pilot->difficulty == 2) {
+            // Steel == Deadly
+            difficulty = AI_DIFFICULTY_DEADLY;
+        } else if(p1->pilot->difficulty == 3) {
+            // Heavy Metal == F.A.A.K. 2
+            difficulty = AI_DIFFICULTY_ULTIMATE;
+        }
+
+        ai_controller_create(ctrl, difficulty, p2->pilot, p2->pilot->pilot_id);
+        chr_score_set_difficulty(game_player_get_score(game_state_get_player(dw->scene->gs, 0)), difficulty);
+        game_player_set_ctrl(p2, ctrl);
+    }
+
+    // reset the score between matches in tournament mode
+    // assume we used the score by now if we need it for
+    // winnings calculations, etc
+    chr_score_reset_wins(game_player_get_score(p1));
+    chr_score_reset(game_player_get_score(p1), 1);
+    // doesn't need to be selectable
+    game_player_set_selectable(p2, 1);
+    // set the score difficulty
+    game_state_set_next(dw->scene->gs, SCENE_VS);
+    return;
 }
 
 void lab_dash_main_chr_done(component *menu, component *submenu) {
@@ -242,20 +375,20 @@ component *lab_dash_main_create(scene *s, dashboard_widgets *dw) {
     tconf_light_centered.cforeground = MECHLAB_BRIGHT_GREEN;
 
     // Pilot image
-    dw->photo = portrait_create(PIC_PLAYERS, 0);
+    dw->photo[0] = portrait_create(PIC_PLAYERS, 0);
     if(p1->pilot->photo) {
         log_debug("loading pilot photo from pilot");
-        portrait_set_from_sprite(dw->photo, dw->pilot->photo);
+        portrait_set_from_sprite(dw->photo[0], dw->pilot->photo);
     } else {
         dw->pilot->photo = omf_calloc(1, sizeof(sd_sprite));
         sd_sprite_create(dw->pilot->photo);
         log_debug("seletng default pilot photo");
-        dw->pilot->photo_id = portrait_selected(dw->photo);
+        dw->pilot->photo_id = portrait_selected(dw->photo[0]);
         portrait_load(dw->pilot->photo, &dw->pilot->palette, PIC_PLAYERS, 0);
     }
     palette_load_player_colors(&dw->pilot->palette, 0);
 
-    xysizer_attach(xy, dw->photo, 12, -1, -1, -1);
+    xysizer_attach(xy, dw->photo[0], 12, -1, -1, -1);
 
     // Texts
     dw->name = label_create(&tconf_light, "NO NAME");
@@ -283,39 +416,59 @@ component *lab_dash_sim_create(scene *s, dashboard_widgets *dw) {
 
     dw->scene = s;
     game_player *p1 = game_state_get_player(s->gs, 0);
-    dw->pilot = p1->pilot;
 
     text_settings tconf_dark;
     text_defaults(&tconf_dark);
     tconf_dark.font = FONT_SMALL;
-    tconf_dark.cforeground = TEXT_DARK_GREEN;
+    tconf_dark.cforeground = TEXT_MEDIUM_GREEN;
 
     text_settings tconf_light;
     text_defaults(&tconf_light);
     tconf_light.font = FONT_SMALL;
-    tconf_light.cforeground = TEXT_MEDIUM_GREEN;
+    tconf_light.cforeground = TEXT_BRIGHT_GREEN;
 
     text_settings tconf_light_centered;
     text_defaults(&tconf_light_centered);
     tconf_light_centered.font = FONT_SMALL;
     tconf_light_centered.halign = TEXT_CENTER;
-    tconf_light_centered.cforeground = TEXT_MEDIUM_GREEN;
+    tconf_light_centered.cforeground = TEXT_BRIGHT_GREEN;
+
+    text_settings tconf_dark_centered;
+    text_defaults(&tconf_dark_centered);
+    tconf_dark_centered.font = FONT_SMALL;
+    tconf_dark_centered.halign = TEXT_CENTER;
+    tconf_dark_centered.cforeground = TEXT_MEDIUM_GREEN;
 
     // Pilot image
-    dw->photo = portrait_create(PIC_PLAYERS, 0);
-    if(p1->pilot->photo) {
-        log_debug("loading pilot photo from pilot");
-        portrait_set_from_sprite(dw->photo, dw->pilot->photo);
-    } else {
-        dw->pilot->photo = omf_calloc(1, sizeof(sd_sprite));
-        sd_sprite_create(dw->pilot->photo);
-        log_debug("seletng default pilot photo");
-        dw->pilot->photo_id = portrait_selected(dw->photo);
-        portrait_load(dw->pilot->photo, &dw->pilot->palette, PIC_PLAYERS, 0);
+    dw->sim_rank = p1->pilot->rank - 1;
+    if(dw->sim_rank < 1) {
+        dw->sim_rank = 2;
     }
-    palette_load_player_colors(&dw->pilot->palette, 0);
+    for(int i = 0; i < p1->chr->pilot.enemies_ex_unranked; i++) {
+        if(p1->chr->enemies[i]->pilot.rank == dw->sim_rank) {
+            dw->pilot = &p1->chr->enemies[i]->pilot;
+            break;
+        }
+    }
 
-    xysizer_attach(xy, dw->photo, 12, -1, -1, -1);
+    surface *sur = omf_calloc(sizeof(surface), 1);
+    unsigned char buf[60 * 70];
+    memset(buf, 0xf8, sizeof(buf));
+    surface_create_from_data(sur, 60, 70, buf);
+
+    dw->photo_highlight = spriteimage_create(sur);
+    spriteimage_set_owns_sprite(dw->photo_highlight, true);
+
+    xysizer_attach(xy, dw->photo_highlight, 6 + (2 * 60), -1, -1, -1);
+
+    for(int i = 0; i < 5; i++) {
+        dw->photo[i] = portrait_create(PIC_PLAYERS, 0);
+        xysizer_attach(xy, dw->photo[i], 6 + (i * 60), -1, -1, -1);
+        dw->ranks[i] = label_create(&tconf_dark_centered, "NO RANK");
+        xysizer_attach(xy, dw->ranks[i], 6 + (i * 60), 58, 50, -1);
+    }
+
+    lab_dash_sim_update_portraits(dw);
 
     // Texts
     dw->name = label_create(&tconf_dark, "NAME: NO NAME");
@@ -329,7 +482,7 @@ component *lab_dash_sim_create(scene *s, dashboard_widgets *dw) {
     xysizer_attach(xy, dw->wins, 168, 70, 200, 6);
     xysizer_attach(xy, dw->losses, 162, 76, 200, 6);
 
-    return lab_dash_main_create_gauges(xy, dw, p1->pilot);
+    return lab_dash_main_create_gauges(xy, dw, dw->pilot);
 }
 
 component *lab_dash_main_create_gauges(component *xy, dashboard_widgets *dw, sd_pilot *pilot) {
@@ -405,6 +558,18 @@ void lab_dash_main_update(scene *s, dashboard_widgets *dw) {
     label_set_text(dw->name, p1->pilot->name);
     label_set_text(dw->tournament, p1->pilot->trn_desc);
 
+    if(p1->pilot->photo) {
+        log_debug("loading pilot photo from pilot");
+        portrait_set_from_sprite(dw->photo[0], p1->pilot->photo);
+    } else {
+        log_debug("seletng default pilot photo");
+        // Select pilot picture
+        portrait_select(dw->photo[0], PIC_PLAYERS, 0);
+    }
+
+    // Palette
+    palette_load_player_colors(&p1->pilot->palette, 0);
+
     lab_dash_main_update_gauges(dw, p1->pilot);
 }
 
@@ -419,6 +584,8 @@ void lab_dash_sim_update(scene *s, dashboard_widgets *dw, sd_pilot *pilot) {
     label_set_text(dw->har_name, tmp);
     snprintf(tmp, sizeof(tmp), "NAME: %s", pilot->name);
     label_set_text(dw->name, tmp);
+
+    lab_dash_sim_update_portraits(dw);
 
     lab_dash_main_update_gauges(dw, pilot);
 }
@@ -445,16 +612,4 @@ void lab_dash_main_update_gauges(dashboard_widgets *dw, sd_pilot *pilot) {
     SET_GAUGE_X(arm_speed);
     SET_GAUGE_X(leg_speed);
     SET_GAUGE_X(stun_resistance);
-
-    if(pilot->photo) {
-        log_debug("loading pilot photo from pilot");
-        portrait_set_from_sprite(dw->photo, pilot->photo);
-    } else {
-        log_debug("seletng default pilot photo");
-        // Select pilot picture
-        portrait_select(dw->photo, PIC_PLAYERS, 0);
-    }
-
-    // Palette
-    palette_load_player_colors(&pilot->palette, 0);
 }

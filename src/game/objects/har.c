@@ -470,9 +470,14 @@ char get_last_input(har *har) {
 }
 
 void har_move(object *obj) {
+    har *h = object_get_userdata(obj);
+
+    if(h->is_grabbed > 0) {
+        return;
+    }
+
     obj->pos.x += obj->vel.x;
     obj->pos.y += obj->vel.y;
-    har *h = object_get_userdata(obj);
 
     object *enemy_obj =
         game_state_find_object(obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
@@ -612,14 +617,12 @@ void har_move(object *obj) {
 
                 h->state = STATE_DEFEAT;
                 har_set_ani(obj, h->custom_defeat_animation ? h->custom_defeat_animation : ANIM_DEFEAT, 0);
-                // har_event_defeat(h, ctrl);
             } else if(obj->pos.y >= (ARENA_FLOOR - 5) && IS_ZERO(obj->vel.x) && player_is_last_frame(obj)) {
                 if(h->state == STATE_FALLEN) {
                     if(h->health <= 0) {
                         // fallen, but done bouncing
                         h->state = STATE_DEFEAT;
                         har_set_ani(obj, h->custom_defeat_animation ? h->custom_defeat_animation : ANIM_DEFEAT, 0);
-                        // har_event_defeat(h, ctrl);
                     } else {
                         h->state = STATE_STANDING_UP;
                         har_set_ani(obj, ANIM_STANDUP, 0);
@@ -681,6 +684,8 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
     // Save damage taken
     h->last_damage_value = damage;
 
+    h->last_stun_value = stun;
+
     // interrupted
     h->executing_move = 0;
 
@@ -694,7 +699,8 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
 
     game_player *player = game_state_get_player(obj->gs, h->player_id);
     // If god mode is not on, take damage
-    if(!player->god) {
+    // Throw damage is delayed until after the throw ends
+    if(!player->god && !h->throw_duration) {
         if(player->pilot->photo) {
             // in tournament mode, damage is mitigated by armor
             // (Armor + 2.5) * .25
@@ -712,8 +718,10 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
         h->endurance = 0.0f;
     }
 
-    log_debug("applying %f stun damage to %f", stun, h->endurance);
-    h->endurance -= stun;
+    if(!h->throw_duration) {
+        log_debug("applying %f stun damage to %f", stun, h->endurance);
+        h->endurance -= stun;
+    }
     if(h->endurance < 1.0f) {
         if(h->state == STATE_STUNNED) {
             // refill endurance
@@ -1182,7 +1190,7 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
     controller *ctrl_a = game_player_get_ctrl(game_state_get_player(obj_a->gs, a->player_id));
     controller *ctrl_b = game_player_get_ctrl(game_state_get_player(obj_b->gs, b->player_id));
 
-    if(b->state == STATE_STANDING_UP || b->state == STATE_WALLDAMAGE || b->health <= 0 || b->state >= STATE_VICTORY) {
+    if(b->state == STATE_STANDING_UP || b->state == STATE_WALLDAMAGE || b->state >= STATE_VICTORY) {
         // can't hit em while they're down
         return 0;
     }
@@ -1317,6 +1325,8 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
             // the opponent's velocity is modified in har_take_damage
         }
 
+        b->throw_duration = move->throw_duration;
+
         if(player_frame_isset(obj_a, "ai")) {
             str str;
             str_from_c(&str, "A1-s01l50B2-C2-L5-M400");
@@ -1334,8 +1344,6 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
         } else {
             memset(b->rehits, 0, sizeof(b->rehits));
         }
-
-        b->throw_duration = move->throw_duration;
 
         if(hit_coord.x != 0 || hit_coord.y != 0) {
             har_spawn_scrap(obj_b, hit_coord, move->block_stun);
@@ -1467,6 +1475,14 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
                 har_take_damage(o_har, &move->footer_string, damage, move->stun);
                 if(rehit) {
                     o_har->vel.y -= 3;
+                }
+                if(!h->is_wallhugging && !object_is_airborne(o_har)) {
+                    vec2f push = object_get_vel(o_har);
+                    if(fabsf(push.x) < 7.0f) {
+                        log_debug("doing knockback of 7");
+                        push.x = -7.0f * object_get_direction(o_har);
+                        object_set_vel(o_har, push);
+                    }
                 }
             }
             // shadow grab is a projectile
@@ -1637,13 +1653,35 @@ void har_tick(object *obj) {
         }
     }
 
-    if(h->throw_duration > 0) {
-        h->throw_duration--;
-    }
-
     // See if we are being grabbed. We detect this by checking the
     // "e" tag -- force to enemy position.
-    h->is_grabbed = player_frame_isset(obj, "e");
+    // player_frame_isset(obj, "e");
+    h->is_grabbed = h->throw_duration > 0;
+
+    if(h->throw_duration > 0) {
+        h->throw_duration--;
+
+        if(h->throw_duration == 0) {
+            // we've already called har_take_damage, so just apply the damage and check for defeat
+            h->health -= h->last_damage_value;
+            h->endurance -= h->last_stun_value;
+            if(h->health <= 0) {
+                // Take a screencap of enemy har
+                game_player *other_player = game_state_get_player(obj->gs, !h->player_id);
+                object *other_har = game_state_find_object(obj->gs, other_player->har_obj_id);
+                har_screencaps_capture(&other_player->screencaps, other_har, obj, SCREENCAP_BLOW);
+
+                // Slow down game more for last shot
+                log_debug("Slowdown: Slowing from %d to %d.", game_state_get_speed(obj->gs),
+                          h->health == 0 ? game_state_get_speed(obj->gs) - 10 : game_state_get_speed(obj->gs) - 6);
+                game_state_slowdown(obj->gs, 12,
+                                    h->health == 0 ? game_state_get_speed(obj->gs) - 10
+                                                   : game_state_get_speed(obj->gs) - 6);
+
+                har_event_defeat(h, ctrl);
+            }
+        }
+    }
 
     // Make sure HAR doesn't walk through walls
     // TODO: Roof!

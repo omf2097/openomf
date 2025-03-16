@@ -25,7 +25,7 @@ void lab_menu_trade_done(component *menu, component *submenu) {
     }
 }
 
-void confirm_trade(component *c, void *userdata) {
+bool confirm_trade(component *c, void *userdata) {
     scene *s = userdata;
     game_player *p1 = game_state_get_player(s->gs, 0);
     int trade_value = calculate_trade_value(&p1->chr->pilot);
@@ -42,15 +42,17 @@ void confirm_trade(component *c, void *userdata) {
     p1->pilot = &p1->chr->pilot;
     mechlab_update(s);
     trnmenu_finish(c->parent);
+    return true;
 }
 
-void cancel_trade(component *c, void *userdata) {
+bool cancel_trade(component *c, void *userdata) {
     scene *s = userdata;
     game_player *p1 = game_state_get_player(s->gs, 0);
     omf_free(p1->pilot);
     p1->pilot = &p1->chr->pilot;
     mechlab_update(s);
     trnmenu_finish(c->parent);
+    return true;
 }
 
 void lab_menu_trade(component *c, void *userdata) {
