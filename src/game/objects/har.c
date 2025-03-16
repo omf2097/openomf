@@ -1474,6 +1474,14 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
                 if(rehit) {
                     o_har->vel.y -= 3;
                 }
+                if(!h->is_wallhugging && !object_is_airborne(o_har)) {
+                    vec2f push = object_get_vel(o_har);
+                    if(fabsf(push.x) < 7.0f) {
+                        log_debug("doing knockback of 7");
+                        push.x = -7.0f * object_get_direction(o_har);
+                        object_set_vel(o_har, push);
+                    }
+                }
             }
             // shadow grab is a projectile
             h->throw_duration = move->throw_duration;
