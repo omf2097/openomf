@@ -1424,7 +1424,9 @@ void arena_clone(scene *src, scene *dst) {
 int arena_get_wall_slam_tolerance(game_state *gs) {
     if(gs->match_settings.hazards) {
         int arena_id = gs->this_id - SCENE_ARENA0;
-        return wall_slam_tolerance[arena_id];
+        if(arena_id == 2) {
+            return wall_slam_tolerance_powerplant;
+        }
     }
 
     return wall_slam_tolerance_default;

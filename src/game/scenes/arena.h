@@ -11,7 +11,7 @@ enum
 };
 
 static const uint8_t wall_slam_tolerance_default = 7;
-static const uint8_t wall_slam_tolerance[5] = {7, 7, 5, 7, 7};
+static const uint8_t wall_slam_tolerance_powerplant = 5;
 
 int arena_create(scene *scene);
 int arena_get_state(scene *scene);
