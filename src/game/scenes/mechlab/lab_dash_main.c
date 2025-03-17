@@ -157,7 +157,7 @@ void lab_dash_sim_update_portraits(dashboard_widgets *dw) {
     // TODO count other CHR pilots here
     int total_characters = p1->chr->pilot.enemies_ex_unranked + 1;
     // make sure we don't go off the end of the list
-    while(start + 5 > total_characters) {
+    while(start + 4 > total_characters) {
         start--;
     }
     if(start < 1) {
@@ -214,7 +214,7 @@ bool lab_dash_sim_left(component *c, void *userdata) {
 bool lab_dash_sim_right(component *c, void *userdata) {
     dashboard_widgets *dw = userdata;
     game_player *p1 = game_state_get_player(dw->scene->gs, 0);
-    if(dw->sim_rank < p1->chr->pilot.enemies_ex_unranked) {
+    if(dw->sim_rank <= p1->chr->pilot.enemies_ex_unranked) {
         dw->sim_rank++;
     }
     if(dw->sim_rank == p1->pilot->rank) {
