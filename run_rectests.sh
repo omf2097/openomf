@@ -27,6 +27,8 @@ tests=(
     "Kreissack has a custom defeat animation:KREISSACK.REC"
     "Shadow grab should work in the middle and the corners of arena:SHADOW-GRAB.REC"
     "Projectiles should do knockback:PROJECTILE-KNOCKBACK.REC"
+    "Only some moves should wallslam:STADIUM-WALL-SPLAT.REC"
+    "Power Plant with hazards enabled has a lower wallslam tolerance:POWERPLANT-WALL-SPLAT.REC"
 )
 
 # Setup temp directory for outputs
