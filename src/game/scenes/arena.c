@@ -459,7 +459,7 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
         return;
     }
 
-    float abs_velocity_h = abs(o_har->vel.x) / o_har->horizontal_velocity_modifier;
+    float abs_velocity_h = fabsf(o_har->vel.x) / o_har->horizontal_velocity_modifier;
 
     if(abs_velocity_h > 2) {
         int tolerance = arena_get_wall_slam_tolerance(scene->gs);
