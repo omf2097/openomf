@@ -320,7 +320,7 @@ void arena_reset(scene *sc) {
     log_debug("resetting arena");
 
     // Kill all hazards and projectiles
-    game_state_clear_objects(sc->gs, GROUP_PROJECTILE | GROUP_SCRAP | GROUP_ANNOUNCEMENT);
+    game_state_clear_objects(sc->gs, GROUP_PROJECTILE | GROUP_HAZARD | GROUP_SCRAP | GROUP_ANNOUNCEMENT);
 
     // Initial har data
     vec2i pos[2];
@@ -1032,7 +1032,7 @@ void arena_spawn_hazard(scene *scene) {
                 hazard_create(obj, scene);
                 if(game_state_add_object(scene->gs, obj, RENDER_LAYER_BOTTOM, 1, 0) == 0) {
                     object_set_layers(obj, LAYER_HAZARD | LAYER_HAR);
-                    object_set_group(obj, GROUP_PROJECTILE);
+                    object_set_group(obj, GROUP_HAZARD);
                     object_set_userdata(obj, scene->bk_data);
                     if(info->ani.extra_string_count > 0) {
                         // For the desert, there's a bunch of extra animation strgins for
