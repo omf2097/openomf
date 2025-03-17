@@ -22,19 +22,15 @@ function(prefix_clangformat_setup prefix)
 
   foreach(clangformat_source ${ARGN})
     get_filename_component(clangformat_source ${clangformat_source} ABSOLUTE)
-    list(APPEND clangformat_sources ${clangformat_source})
+    list(APPEND COMMANDS COMMAND ${CLANGFORMAT_EXECUTABLE} -style=file -i ${clangformat_source})
   endforeach()
 
   add_custom_target(${prefix}_clangformat
-    COMMAND
-      ${CLANGFORMAT_EXECUTABLE}
-      -style=file
-      -i
-      ${clangformat_sources}
     WORKING_DIRECTORY
       ${CMAKE_SOURCE_DIR}
     COMMENT
       "Formatting ${prefix} with ${CLANGFORMAT_EXECUTABLE} ..."
+    ${COMMANDS}
   )
 
   if(TARGET clangformat)
