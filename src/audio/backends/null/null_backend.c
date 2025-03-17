@@ -66,7 +66,7 @@ static void play_music(void *userdata, const char *file_name) {
 }
 
 static bool setup_backend_context(void *userdata, unsigned sample_rate, bool mono,
-                                  float music_volume, float sound_volume) {
+                                  int resampler, float music_volume, float sound_volume) {
     log_info("NULL Player initialized!");
     return true;
 }

@@ -52,13 +52,13 @@ typedef void (*set_backend_sound_volume_fn)(void *ctx, float volume);
 typedef void (*set_backend_music_volume_fn)(void *ctx, float volume);
 
 // Renderer initialization and de-initialization, these must be implemented.
-typedef bool (*setup_backend_context_fn)(void *ctx, unsigned sample_rate, bool mono, float music_volume, float sound_volume);
+typedef bool (*setup_backend_context_fn)(void *ctx, unsigned sample_rate, bool mono, int resampler, float music_volume, float sound_volume);
 typedef void (*close_backend_context_fn)(void *ctx);
 
 // Playback handling.
 typedef int (*play_sound_fn)(void *ctx, const char *buf, size_t len, float volume, float panning, float pitch,
                              int fade);
-typedef void (*play_music_fn)(void *ctx, const music_source *src);
+typedef void (*play_music_fn)(void *ctx, const char *src);
 typedef void (*stop_music_fn)(void *ctx);
 
 typedef void (*fade_out_fn)(int playback_id, int ms);

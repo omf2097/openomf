@@ -1,6 +1,7 @@
 #include "audio/backends/sdl/sdl_backend.h"
 #include "audio/backends/audio_backend.h"
 #include "audio/sources/music_source.h"
+#include "audio/sources/xmp_source.h"
 #include "utils/allocator.h"
 #include "utils/c_array_util.h"
 #include "utils/log.h"
@@ -34,6 +35,7 @@ typedef struct sdl_audio_context {
     int sample_rate;
     Uint16 format;
     int channels;
+    int resampler;
     music_source music;
     Mix_Chunk channel_chunks[CHANNEL_MAX];
 } sdl_audio_context;
@@ -194,12 +196,12 @@ static void sdl_hook(void *userdata, Uint8 *stream, int len) {
     music_source_render(&ctx->music, (char*)stream, len);
 }
 
-static void play_music(void *userdata, music_source *music) {
+static void play_music(void *userdata, const char *src) {
     assert(userdata);
     sdl_audio_context *ctx = userdata;
     stop_music(ctx);
     music_source_close(&ctx->music);
-    ctx->music = *music;
+    xmp_load(&ctx->music, ctx->channels, ctx->sample_rate, ctx->resampler, src);
     Mix_HookMusic(sdl_hook, ctx);
 }
 
@@ -207,7 +209,7 @@ static void fade_out(int channel, int ms) {
     Mix_FadeOutChannel(channel, ms);
 }
 
-static bool setup_backend_context(void *userdata, unsigned sample_rate, bool mono, float music_volume, float sound_volume) {
+static bool setup_backend_context(void *userdata, unsigned sample_rate, bool mono, int resampler, float music_volume, float sound_volume) {
     assert(userdata);
     sdl_audio_context *ctx = userdata;
     memset(ctx, 0, sizeof(sdl_audio_context));
@@ -238,6 +240,7 @@ static bool setup_backend_context(void *userdata, unsigned sample_rate, bool mon
     // Initialize playback parameters.
     set_backend_sound_volume(ctx, sound_volume);
     set_backend_music_volume(ctx, music_volume);
+    ctx->resampler = resampler;
 
     // Get the actual device configuration we got.
     Mix_QuerySpec(&ctx->sample_rate, &ctx->format, &ctx->channels);

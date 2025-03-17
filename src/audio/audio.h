@@ -21,7 +21,7 @@ int audio_get_backend_count(void);
  * @param sound_volume Initial audio volume
  * @return True if initialized, false if not.
  */
-bool audio_init(const char *try_name, int sample_rate, bool mono, float music_volume,
+bool audio_init(const char *try_name, int sample_rate, bool mono, int resampler, float music_volume,
                 float sound_volume);
 
 /**
