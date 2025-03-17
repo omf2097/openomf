@@ -115,6 +115,7 @@ void menu_video_done(component *c, void *u) {
 
 void menu_video_free(component *c) {
     video_menu_data *local = menu_get_userdata(c);
+    omf_free(local->old_video_settings.renderer);
     omf_free(local);
     menu_set_userdata(c, local);
 }
