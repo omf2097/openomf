@@ -97,12 +97,12 @@ void menu_video_done(component *c, void *u) {
     bool render_plugin_changed = strcmp(v->renderer, local->old_video_settings.renderer) != 0;
     if(render_plugin_changed) {
         video_close();
-        video_init(v->renderer, v->screen_w, v->screen_h, v->fullscreen, v->vsync);
-
+        video_init(v->renderer, v->screen_w, v->screen_h, v->fullscreen, v->vsync, v->aspect);
         menu_set_submenu(c->parent, menu_video_confirm_create(s, &local->old_video_settings));
     } else if(local->old_video_settings.screen_w != v->screen_w || local->old_video_settings.screen_h != v->screen_h ||
-              local->old_video_settings.fullscreen != v->fullscreen || local->old_video_settings.vsync != v->vsync) {
-        video_reinit(v->screen_w, v->screen_h, v->fullscreen, v->vsync);
+              local->old_video_settings.fullscreen != v->fullscreen || local->old_video_settings.vsync != v->vsync ||
+              local->old_video_settings.aspect != v->aspect) {
+        video_reinit(v->screen_w, v->screen_h, v->fullscreen, v->vsync, v->aspect);
 
         menu_set_submenu(c->parent, menu_video_confirm_create(s, &local->old_video_settings));
     } else {
@@ -130,6 +130,7 @@ component *menu_video_create(scene *s) {
 
     // Load settings etc.
     const char *offon_opts[] = {"OFF", "ON"};
+    const char *aspect_opts[] = {"4:3", "NATIVE"};
     settings *setting = settings_get();
 
     // Text config
@@ -188,6 +189,8 @@ component *menu_video_create(scene *s) {
     // vsync and fullscreen
     menu_attach(menu, textselector_create_bind_opts(&tconf, "VSYNC", "Toggle vertical sync on or off.", NULL, NULL,
                                                     &setting->video.vsync, offon_opts, 2));
+    menu_attach(menu, textselector_create_bind_opts(&tconf, "ASPECT", "Video aspect ratio. Original game is 4:3.", NULL,
+                                                    NULL, &setting->video.aspect, aspect_opts, 2));
     menu_attach(menu, textselector_create_bind_opts(&tconf, "FULLSCREEN", "Run the game in a fullscreen window.", NULL,
                                                     NULL, &setting->video.fullscreen, offon_opts, 2));
 
