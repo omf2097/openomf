@@ -1,5 +1,7 @@
 #include "audio/backends/sdl/sdl_backend.h"
 #include "audio/backends/audio_backend.h"
+#include "audio/sources/music_source.h"
+#include "audio/sources/xmp_source.h"
 #include "utils/allocator.h"
 #include "utils/c_array_util.h"
 #include "utils/log.h"
@@ -34,8 +36,7 @@ typedef struct sdl_audio_context {
     Uint16 format;
     int channels;
     int resampler;
-    float music_volume;
-    xmp_context xmp_context;
+    music_source music;
     Mix_Chunk channel_chunks[CHANNEL_MAX];
 } sdl_audio_context;
 
@@ -141,70 +142,6 @@ exit_0:
     return false;
 }
 
-static bool audio_load_module(sdl_audio_context *ctx, const char *file) {
-    assert(ctx);
-
-    if(!ctx->xmp_context) {
-        if((ctx->xmp_context = xmp_create_context()) == NULL) {
-            log_error("Unable to initialize XMP context.");
-            goto exit_0;
-        }
-    }
-
-    // Load the module file
-    if(xmp_load_module(ctx->xmp_context, (char *)file) < 0) {
-        log_error("Unable to open module file");
-        goto exit_0;
-    }
-
-    // Show some information
-    struct xmp_module_info mi;
-    xmp_get_module_info(ctx->xmp_context, &mi);
-    log_debug("Loaded music track %s (%s)", mi.mod->name, mi.mod->type);
-
-    // Start the player
-    int flags = 0;
-    if(ctx->channels == 1)
-        flags |= XMP_FORMAT_MONO;
-    if(xmp_start_player(ctx->xmp_context, ctx->sample_rate, flags) != 0) {
-        log_error("Unable to start module playback");
-        goto exit_1;
-    }
-    if(xmp_set_player(ctx->xmp_context, XMP_PLAYER_INTERP, ctx->resampler) != 0) {
-        log_error("Unable to set music resampler");
-        goto exit_2;
-    }
-    if(xmp_set_player(ctx->xmp_context, XMP_PLAYER_VOLUME, ctx->music_volume * 100) != 0) {
-        log_error("Unable to set music volume");
-        goto exit_2;
-    }
-    return true;
-
-exit_2:
-    xmp_end_player(ctx->xmp_context);
-exit_1:
-    xmp_release_module(ctx->xmp_context);
-exit_0:
-    return false;
-}
-
-// Callback function for SDL_Mixer
-void audio_xmp_render(void *userdata, Uint8 *stream, int len) {
-    sdl_audio_context *ctx = userdata;
-    assert(ctx);
-    assert(ctx->xmp_context);
-    xmp_play_buffer(ctx->xmp_context, stream, len, 0);
-}
-
-static void audio_close_module(sdl_audio_context *ctx) {
-    if(ctx->xmp_context != NULL) {
-        xmp_end_player(ctx->xmp_context);
-        xmp_release_module(ctx->xmp_context);
-        xmp_free_context(ctx->xmp_context);
-        ctx->xmp_context = NULL;
-    }
-}
-
 static void set_backend_sound_volume(void *userdata, float volume) {
     assert(userdata);
     volume = clampf(volume, VOLUME_MIN, VOLUME_MAX);
@@ -213,9 +150,8 @@ static void set_backend_sound_volume(void *userdata, float volume) {
 
 static void set_backend_music_volume(void *userdata, float volume) {
     assert(userdata);
-    sdl_audio_context *ctx = userdata;
-    ctx->music_volume = clampf(volume, VOLUME_MIN, VOLUME_MAX);
-    xmp_set_player(ctx->xmp_context, XMP_PLAYER_VOLUME, ctx->music_volume * 100);
+    volume = clampf(volume, VOLUME_MIN, VOLUME_MAX);
+    Mix_VolumeMusic(volume * MIX_MAX_VOLUME);
 }
 
 static int play_sound(void *userdata, const char *src_buf, size_t src_len, float volume, float panning, float pitch,
@@ -255,24 +191,25 @@ static void stop_music(void *ctx) {
     Mix_HookMusic(NULL, NULL);
 }
 
-static void play_music(void *userdata, const char *file_name) {
+static void sdl_hook(void *userdata, Uint8 *stream, int len) {
+    sdl_audio_context *ctx = userdata;
+    music_source_render(&ctx->music, (char*)stream, len);
+}
+
+static void play_music(void *userdata, const char *src) {
     assert(userdata);
     sdl_audio_context *ctx = userdata;
     stop_music(ctx);
-    audio_close_module(ctx);
-    if(!audio_load_module(ctx, file_name)) {
-        log_error("Unable to load music track: %s", file_name);
-        return;
-    }
-    Mix_HookMusic(audio_xmp_render, ctx);
+    music_source_close(&ctx->music);
+    xmp_load(&ctx->music, ctx->channels, ctx->sample_rate, ctx->resampler, src);
+    Mix_HookMusic(sdl_hook, ctx);
 }
 
 static void fade_out(int channel, int ms) {
     Mix_FadeOutChannel(channel, ms);
 }
 
-static bool setup_backend_context(void *userdata, unsigned sample_rate, bool mono, unsigned resampler,
-                                  float music_volume, float sound_volume) {
+static bool setup_backend_context(void *userdata, unsigned sample_rate, bool mono, int resampler, float music_volume, float sound_volume) {
     assert(userdata);
     sdl_audio_context *ctx = userdata;
     memset(ctx, 0, sizeof(sdl_audio_context));
@@ -285,10 +222,6 @@ static bool setup_backend_context(void *userdata, unsigned sample_rate, bool mon
         log_error("Unable to initialize mixer subsystem: %s", Mix_GetError());
         goto error_1;
     }
-    if((ctx->xmp_context = xmp_create_context()) == NULL) {
-        log_error("Unable to initialize XMP context.");
-        goto error_2;
-    }
 
     log_info("Requested audio device with options:");
     log_info(" * Sample rate: %dHz", sample_rate);
@@ -298,7 +231,7 @@ static bool setup_backend_context(void *userdata, unsigned sample_rate, bool mon
     // Setup audio. We request for configuration, but we're not sure what we get.
     if(Mix_OpenAudioDevice(sample_rate, AUDIO_S16SYS, mono ? 1 : 2, 2048, NULL, 0) != 0) {
         log_error("Unable to initialize audio device: %s", SDL_GetError());
-        goto error_3;
+        goto error_2;
     }
 
     // Make sure we have the correct amount of channels.
@@ -317,8 +250,6 @@ static bool setup_backend_context(void *userdata, unsigned sample_rate, bool mon
     log_info(" * Format: %s", get_sdl_audio_format_string(ctx->format));
     return true;
 
-error_3:
-    xmp_free_context(ctx->xmp_context);
 error_2:
     Mix_Quit();
 error_1:
@@ -332,15 +263,11 @@ static void close_backend_context(void *userdata) {
     sdl_audio_context *ctx = userdata;
     log_debug("closing audio");
     stop_music(ctx);
-    audio_close_module(ctx);
+    music_source_close(&ctx->music);
     Mix_ChannelFinished(NULL);
     Mix_CloseAudio();
     for(int i = 0; i < CHANNEL_MAX; i++) {
         free_chunk(ctx, i);
-    }
-    if(ctx->xmp_context) {
-        xmp_free_context(ctx->xmp_context);
-        ctx->xmp_context = NULL;
     }
     Mix_Quit();
     SDL_QuitSubSystem(SDL_INIT_AUDIO);
