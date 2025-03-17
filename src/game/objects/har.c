@@ -764,7 +764,7 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
                 }
                 str n;
                 str_from_slice(&n, string, 0, last_line);
-                str_append_c(&n, "-x-20ox-20L1-ox-20L2-x-20s4l25sp13M1-M2");
+                str_append_c(&n, "-x-20ox-20L1-ox-20L2-x-20zzs4l25sp13M1-zzM2");
                 object_set_custom_string(obj, str_c(&n));
                 str_free(&n);
             }
