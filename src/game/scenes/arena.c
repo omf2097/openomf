@@ -447,120 +447,102 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
 
     // log_debug("Player %d hit wall %d", player_id, wall);
 
-    // HAR must be in the air to be get faceplanted to a wall.
-    if(o_har->pos.y >= ARENA_FLOOR - 10) {
-        return;
-    }
-
     // Don't allow object to collide if it is being grabbed.
     if(h->is_grabbed) {
         return;
     }
 
-    // The limit here is entirely guesswork, and might not be it at all
-    // However, it is a close enough guess.
-    // TODO: Find out how this really works.
-    if(h->last_damage_value <= 15) {
+    // HAR must be in the air to be get faceplanted to a wall.
+    if(o_har->pos.y >= ARENA_FLOOR - 10) {
+        // TODO: Grounded desert wall logic
+
         return;
     }
 
-    /*
-     * When hitting the lightning arena wall, the HAr needs to get hit by lightning thingy.
-     */
-    if(scene->id == SCENE_ARENA2 && (h->state == STATE_FALLEN || h->state == STATE_RECOIL)) {
-        log_debug("hit lightning wall %d", wall);
-        h->state = STATE_WALLDAMAGE;
+    float abs_velocity_h = abs(o_har->vel.x) / o_har->horizontal_velocity_modifier;
 
-        // Spawn wall animation
-        bk_info *info = bk_get_info(scene->bk_data, 20 + wall);
-        object *obj = omf_calloc(1, sizeof(object));
-        object_create(obj, scene->gs, info->ani.start_pos, vec2f_create(0, 0));
-        object_set_stl(obj, scene->bk_data->sound_translation_table);
-        object_set_animation(obj, &info->ani);
-        if(game_state_add_object(scene->gs, obj, RENDER_LAYER_BOTTOM, 1, 0) == 0) {
+    if(abs_velocity_h > 2) {
+        int tolerance = arena_get_wall_slam_tolerance(scene->gs);
+
+        // log_debug("Checking if %f velocity will wallslam", abs_velocity_h);
+        if((abs_velocity_h + 0.5f) > tolerance && (h->state == STATE_FALLEN || h->state == STATE_RECOIL)) {
+            h->state = STATE_WALLDAMAGE;
+
+            bk_info *info = bk_get_info(scene->bk_data, 20 + wall);
+            if(info) { // Only Power Plant and Desert have wall animations
+                object *obj = omf_calloc(1, sizeof(object));
+                object_create(obj, scene->gs, info->ani.start_pos, vec2f_create(0, 0));
+                object_set_stl(obj, scene->bk_data->sound_translation_table);
+                object_set_animation(obj, &info->ani);
+                if(game_state_add_object(scene->gs, obj, RENDER_LAYER_BOTTOM, 1, 0) != 0) {
+                    object_free(obj);
+                    omf_free(obj);
+                }
+            }
 
             // spawn the electricity on top of the HAR
             // TODO this doesn't track the har's position well...
             info = bk_get_info(scene->bk_data, 22);
-            object *obj2 = omf_calloc(1, sizeof(object));
-            object_create(obj2, scene->gs, vec2i_create(o_har->pos.x, o_har->pos.y), vec2f_create(0, 0));
-            object_set_stl(obj2, scene->bk_data->sound_translation_table);
-            object_set_animation(obj2, &info->ani);
-            object_attach_to(obj2, o_har);
-            // object_dynamic_tick(obj2);
-            game_state_add_object(scene->gs, obj2, RENDER_LAYER_TOP, 0, 0);
+            if(info) { // Only Power Plant has the electric overlay effect
+                object *obj2 = omf_calloc(1, sizeof(object));
+                object_create(obj2, scene->gs, vec2i_create(o_har->pos.x, o_har->pos.y), vec2f_create(0, 0));
+                object_set_stl(obj2, scene->bk_data->sound_translation_table);
+                object_set_animation(obj2, &info->ani);
+                object_attach_to(obj2, o_har);
+                // object_dynamic_tick(obj2);
+                if(game_state_add_object(scene->gs, obj2, RENDER_LAYER_TOP, 0, 0)) {
+                    object_free(obj2);
+                    omf_free(obj2);
+                }
+            }
+
+            int amount = rand_int(2) + 3;
+            for(int i = 0; i < amount; i++) {
+                int variance = rand_int(20) - 10;
+                int anim_no = rand_int(2) + 24;
+                // log_debug("XXX anim = %d, variance = %d", anim_no, variance);
+                int pos_y = o_har->pos.y - object_get_size(o_har).y + variance + i * 25;
+                vec2i coord = vec2i_create(o_har->pos.x, pos_y);
+                object *dust = omf_calloc(1, sizeof(object));
+                object_create(dust, scene->gs, coord, vec2f_create(0, 0));
+                object_set_stl(dust, scene->bk_data->sound_translation_table);
+                object_set_animation(dust, &bk_get_info(scene->bk_data, anim_no)->ani);
+                game_state_add_object(scene->gs, dust, RENDER_LAYER_MIDDLE, 0, 0);
+            }
+
+            // Wallhit sound
+            float d = ((float)o_har->pos.x) / 640.0f;
+            float pos_pan = d - 0.25f;
+            game_state_play_sound(o_har->gs, 68, 1.0f, pos_pan, 2.0f);
+
+            // Set hit animation
+            object_set_animation(o_har, &af_get_move(h->af_data, ANIM_DAMAGE)->ani);
+            object_set_repeat(o_har, 0);
+            scene->gs->screen_shake_horizontal = 3 * fabsf(o_har->vel.x);
+            // from MASTER.DAT
+            object_set_custom_string(o_har, "hQ1-hQ7-x-3Q5-x-2L5-x-2M900");
+
+            if(wall == 1) {
+                o_har->pos.x = ARENA_RIGHT_WALL - 2;
+                object_set_direction(o_har, OBJECT_FACE_RIGHT);
+            } else {
+                o_har->pos.x = ARENA_LEFT_WALL + 2;
+                object_set_direction(o_har, OBJECT_FACE_LEFT);
+            }
         } else {
-            object_free(obj);
-            omf_free(obj);
-        }
-        return;
-    }
-
-    /**
-     * On arena wall, the wall needs to pulse. Handle it here
-     */
-    if(scene->id == SCENE_ARENA4 && (h->state == STATE_FALLEN || h->state == STATE_RECOIL)) {
-        // log_debug("hit desert wall %d", wall);
-        h->state = STATE_WALLDAMAGE;
-
-        // desert always shows the 'hit' animation when you touch the wall
-        bk_info *info = bk_get_info(scene->bk_data, 20 + wall);
-        object *obj = omf_calloc(1, sizeof(object));
-        object_create(obj, scene->gs, info->ani.start_pos, vec2f_create(0, 0));
-        object_set_stl(obj, scene->bk_data->sound_translation_table);
-        object_set_animation(obj, &info->ani);
-        object_set_custom_string(obj, "brwA1-brwB1-brwD1-brwE0-brwD4-brwC2-brwB2-brwA2");
-        if(game_state_add_object(scene->gs, obj, RENDER_LAYER_BOTTOM, 1, 0) != 0) {
-            object_free(obj);
-            omf_free(obj);
-        }
-    }
-
-    /**
-     * On all other arenas, the HAR needs to hit the wall with dust flying around
-     */
-    if(scene->id != SCENE_ARENA4 && scene->id != SCENE_ARENA2 &&
-       (h->state == STATE_FALLEN || h->state == STATE_RECOIL)) {
-        // log_debug("hit dusty wall %d", wall);
-        h->state = STATE_WALLDAMAGE;
-
-        int amount = rand_int(2) + 3;
-        for(int i = 0; i < amount; i++) {
-            int variance = rand_int(20) - 10;
-            int anim_no = rand_int(2) + 24;
-            // log_debug("XXX anim = %d, variance = %d", anim_no, variance);
-            int pos_y = o_har->pos.y - object_get_size(o_har).y + variance + i * 25;
-            vec2i coord = vec2i_create(o_har->pos.x, pos_y);
-            object *dust = omf_calloc(1, sizeof(object));
-            object_create(dust, scene->gs, coord, vec2f_create(0, 0));
-            object_set_stl(dust, scene->bk_data->sound_translation_table);
-            object_set_animation(dust, &bk_get_info(scene->bk_data, anim_no)->ani);
-            game_state_add_object(scene->gs, dust, RENDER_LAYER_MIDDLE, 0, 0);
-        }
-
-        // Wallhit sound
-        float d = ((float)o_har->pos.x) / 640.0f;
-        float pos_pan = d - 0.25f;
-        game_state_play_sound(o_har->gs, 68, 1.0f, pos_pan, 2.0f);
-    }
-
-    /**
-     * Handle generic collision stuff
-     */
-    if(h->state == STATE_FALLEN || h->state == STATE_RECOIL || h->state == STATE_WALLDAMAGE) {
-        // Set hit animation
-        object_set_animation(o_har, &af_get_move(h->af_data, ANIM_DAMAGE)->ani);
-        object_set_repeat(o_har, 0);
-        scene->gs->screen_shake_horizontal = 3 * fabsf(o_har->vel.x);
-        // from MASTER.DAT
-        object_set_custom_string(o_har, "hQ1-hQ7-x-3Q5-x-2L5-x-2M900");
-
-        if(wall == 1) {
-            o_har->pos.x = ARENA_RIGHT_WALL - 2;
-            object_set_direction(o_har, OBJECT_FACE_RIGHT);
-        } else {
-            o_har->pos.x = ARENA_LEFT_WALL + 2;
-            object_set_direction(o_har, OBJECT_FACE_LEFT);
+            bk_info *info = bk_get_info(scene->bk_data, 20 + wall);
+            if(info && (info->hazard_damage == 0)) {
+                object *obj = omf_calloc(1, sizeof(object));
+                object_create(obj, scene->gs, info->ani.start_pos, vec2f_create(0, 0));
+                object_set_stl(obj, scene->bk_data->sound_translation_table);
+                object_set_animation(obj, &info->ani);
+                // TODO: Adjust this animation based on velocity
+                object_set_custom_string(obj, "brwA1-brwB1-brwD1-brwE0-brwD4-brwC2-brwB2-brwA2");
+                if(game_state_add_object(scene->gs, obj, RENDER_LAYER_BOTTOM, 1, 0) != 0) {
+                    object_free(obj);
+                    omf_free(obj);
+                }
+            }
         }
     }
 }
@@ -1437,6 +1419,15 @@ void arena_clone(scene *src, scene *dst) {
     button_set_userdata(c, dst);
     c = gui_frame_find(local->game_menu, GAME_MENU_RETURN_ID);
     button_set_userdata(c, dst);
+}
+
+int arena_get_wall_slam_tolerance(game_state *gs) {
+    if(gs->match_settings.hazards) {
+        int arena_id = gs->this_id - SCENE_ARENA0;
+        return wall_slam_tolerance[arena_id];
+    }
+
+    return wall_slam_tolerance_default;
 }
 
 void arena_startup(scene *scene, int id, int *m_load, int *m_repeat) {
