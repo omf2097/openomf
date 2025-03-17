@@ -26,6 +26,7 @@ tests=(
     "Test Jaguar destruction:JAG-DESTRUCT.REC"
     "Kreissack has a custom defeat animation:KREISSACK.REC"
     "Projectiles should do knockback:PROJECTILE-KNOCKBACK.REC"
+    "Enemy should recover from air hits unless it's a KO:AIR-HIT.REC"
 )
 
 # Setup temp directory for outputs
