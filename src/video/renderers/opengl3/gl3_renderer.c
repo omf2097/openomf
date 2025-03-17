@@ -34,6 +34,7 @@ typedef struct gl3_context {
     int screen_h;
     bool fullscreen;
     bool vsync;
+    int aspect;
     int target_move_x;
     int target_move_y;
     bool draw_atlas;
@@ -58,12 +59,13 @@ static const char *get_name(void) {
     return "OpenGL3";
 }
 
-static bool setup_context(void *userdata, int window_w, int window_h, bool fullscreen, bool vsync) {
+static bool setup_context(void *userdata, int window_w, int window_h, bool fullscreen, bool vsync, int aspect) {
     gl3_context *ctx = userdata;
     ctx->screen_w = window_w;
     ctx->screen_h = window_h;
     ctx->fullscreen = fullscreen;
     ctx->vsync = vsync;
+    ctx->aspect = aspect;
     ctx->target_move_x = 0;
     ctx->target_move_y = 0;
     ctx->current_blend_mode = MODE_SET;
@@ -137,7 +139,8 @@ error_0:
     return false;
 }
 
-static void get_context_state(void *userdata, int *window_w, int *window_h, bool *fullscreen, bool *vsync) {
+static void get_context_state(void *userdata, int *window_w, int *window_h, bool *fullscreen, bool *vsync,
+                              int *aspect) {
     gl3_context *ctx = userdata;
     if(window_w != NULL)
         *window_w = ctx->screen_w;
@@ -147,14 +150,18 @@ static void get_context_state(void *userdata, int *window_w, int *window_h, bool
         *fullscreen = ctx->fullscreen;
     if(vsync != NULL)
         *vsync = ctx->vsync;
+    if(aspect != NULL)
+        *aspect = ctx->aspect;
 }
 
-static bool reset_context_with(void *userdata, int window_w, int window_h, bool fullscreen, bool vsync) {
+static bool reset_context_with(void *userdata, int window_w, int window_h, bool fullscreen, bool vsync, int aspect) {
     gl3_context *ctx = userdata;
     ctx->screen_w = window_w;
     ctx->screen_h = window_h;
     ctx->fullscreen = fullscreen;
     ctx->vsync = vsync;
+    ctx->aspect = aspect;
+    log_info("New aspect is %d", ctx->aspect);
     bool success = resize_window(ctx->window, window_w, window_h, fullscreen);
     success = set_vsync(ctx->vsync) && success;
 
@@ -235,10 +242,27 @@ static void capture_screenshot(void *userdata) {
  * Set the viewport, and do screen-shakes here.
  */
 static inline void set_screen_viewport(const gl3_context *ctx) {
-    float ratio = ctx->screen_w / NATIVE_W;
-    int vp_x = ctx->target_move_x * ratio;
-    int vp_y = ctx->target_move_y * ratio;
-    glViewport(vp_x, vp_y, ctx->viewport_w, ctx->viewport_h); // This is used for screen shakes.
+    float move_ratio = ctx->screen_w / NATIVE_W;
+    float native_aspect = ctx->screen_w / ctx->screen_h;
+    int vp_x = 0;
+    int vp_y = 0;
+    int vp_w = ctx->viewport_w;
+    int vp_h = ctx->viewport_h;
+
+    if(ctx->aspect == 0) {
+        // Set 4:3 aspect ratio, as requested
+        if(native_aspect >= 1.0f) {
+            vp_w = ctx->viewport_h * 4 / 3;
+            vp_x = (ctx->viewport_w - vp_w) / 2;
+        } else {
+            vp_h = ctx->viewport_w * 3 / 4;
+            vp_y = (vp_h - ctx->viewport_h) / 2;
+        }
+    }
+
+    vp_x += ctx->target_move_x * move_ratio; // This is used for screen shakes on x-axis
+    vp_y += ctx->target_move_y * move_ratio; // This is used for screen shakes on y-axis
+    glViewport(vp_x, vp_y, vp_w, vp_h);
 }
 
 /**

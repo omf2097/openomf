@@ -44,6 +44,7 @@ typedef struct {
     int screen_w;
     int screen_h;
     int vsync;
+    int aspect;
     int fullscreen;
     int scaling;
     int instant_console;

@@ -16,12 +16,13 @@ static const char *get_name(void) {
     return "NULL";
 }
 
-static bool setup_context(void *userdata, int window_w, int window_h, bool fullscreen, bool vsync) {
+static bool setup_context(void *userdata, int window_w, int window_h, bool fullscreen, bool vsync, int aspect) {
     log_info("NULL Renderer initialized!");
     return true;
 }
 
-static void get_context_state(void *userdata, int *window_w, int *window_h, bool *fullscreen, bool *vsync) {
+static void get_context_state(void *userdata, int *window_w, int *window_h, bool *fullscreen, bool *vsync,
+                              int *aspect) {
     if(window_w != NULL)
         *window_w = 0;
     if(window_h != NULL)
@@ -30,9 +31,11 @@ static void get_context_state(void *userdata, int *window_w, int *window_h, bool
         *fullscreen = false;
     if(vsync != NULL)
         *vsync = false;
+    if(aspect != NULL)
+        *aspect = 0;
 }
 
-static bool reset_context_with(void *userdata, int window_w, int window_h, bool fullscreen, bool vsync) {
+static bool reset_context_with(void *userdata, int window_w, int window_h, bool fullscreen, bool vsync, int aspect) {
     log_info("NULL renderer reset.");
     return true;
 }
