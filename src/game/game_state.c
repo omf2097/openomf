@@ -24,10 +24,12 @@
 #include "game/utils/serial.h"
 #include "game/utils/settings.h"
 #include "game/utils/ticktimer.h"
+#include "resources/languages.h"
 #include "resources/pilots.h"
 #include "resources/sounds_loader.h"
 #include "utils/allocator.h"
 #include "utils/c_array_util.h"
+#include "utils/c_string_util.h"
 #include "utils/log.h"
 #include "utils/miscmath.h"
 #include "video/vga_state.h"
@@ -1097,6 +1099,13 @@ void game_state_init_demo(game_state *gs) {
         sd_pilot_set_player_color(player->pilot, PRIMARY, pilot_info.colors[2]);
         sd_pilot_set_player_color(player->pilot, SECONDARY, pilot_info.colors[1]);
         sd_pilot_set_player_color(player->pilot, TERTIARY, pilot_info.colors[0]);
+
+        strncpy_or_truncate(player->pilot->name, lang_get(player->pilot->pilot_id + 20), sizeof(player->pilot->name));
+        // TODO: lang: remove (the need for) newline stripping
+        // 1player name strings end in a newline...
+        if(player->pilot->name[strlen(player->pilot->name) - 1] == '\n') {
+            player->pilot->name[strlen(player->pilot->name) - 1] = 0;
+        }
     }
 }
 
