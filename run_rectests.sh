@@ -25,6 +25,7 @@ tests=(
     "Jaguar should keep walking right after doing a standing throw if the input is held:KEEP-WALKING-AFTER-JAG-STANDING-THROW.REC"
     "Test Jaguar destruction:JAG-DESTRUCT.REC"
     "Kreissack has a custom defeat animation:KREISSACK.REC"
+    "Shadow grab should work in the middle and the corners of arena:SHADOW-GRAB.REC"
     "Projectiles should do knockback:PROJECTILE-KNOCKBACK.REC"
 )
 
