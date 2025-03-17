@@ -755,26 +755,22 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
             controller *ctrl = game_player_get_ctrl(game_state_get_player(obj->gs, h->player_id));
             // trigger the defeat hook immediately
             har_event_defeat(h, ctrl);
-            // taken from MASTER.DAT
-            size_t last_line = 0;
-            if(!str_last_of(string, '-', &last_line)) {
-                last_line = 0;
-            }
 
-            str n;
-            str_from_slice(&n, string, 0, last_line);
-            // XXX changed the last frame to 200 ticks to ensure the HAR falls down
-            str_append_c(&n, "-x-20ox-20L1-ox-20L2-x-20zzs4l25sp13M1-zzM200");
-            object_set_custom_string(obj, str_c(&n));
-            str_free(&n);
-
-            if(object_is_airborne(obj)) {
-                // airborne defeat
-                obj->vel.y = -7;
-                object_set_stride(obj, 1);
-                h->state = STATE_FALLEN;
+            if(!object_is_airborne(obj)) {
+                // taken from MASTER.DAT
+                size_t last_line = 0;
+                if(!str_last_of(string, '-', &last_line)) {
+                    last_line = 0;
+                }
+                str n;
+                str_from_slice(&n, string, 0, last_line);
+                str_append_c(&n, "-x-20ox-20L1-ox-20L2-x-20s4l25sp13M1-M2");
+                object_set_custom_string(obj, str_c(&n));
+                str_free(&n);
             }
-        } else if(object_is_airborne(obj)) {
+        }
+
+        if(object_is_airborne(obj)) {
             log_debug("airborne knockback");
             // append the 'airborne knockback' string to the hit string, replacing the final frame
             size_t last_line = 0;
@@ -784,9 +780,9 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
 
             str n;
             str_from_slice(&n, string, 0, last_line);
-            if(h->endurance <= 0) {
+            if(h->endurance <= 0 || h->health <= 0) {
                 // this hit stunned them, so make them hit the floor stunned
-                str_append_c(&n, "L3-M5000");
+                str_append_c(&n, "-L3-M5000");
             } else {
                 str_append_c(&n, "-L2-M5-L2");
             }
