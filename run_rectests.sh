@@ -26,7 +26,7 @@ tests=(
     "Test Jaguar destruction:JAG-DESTRUCT.REC"
     "Kreissack has a custom defeat animation:KREISSACK.REC"
     "Projectiles should do knockback:PROJECTILE-KNOCKBACK.REC"
-    "Only some moves should wallslam:STADIUM_WALL_SPLAT.REC"
+    "Only some moves should wallslam:STADIUM-WALL-SPLAT.REC"
     "Power Plant with hazards enabled has a lower wallslam tolerance:POWERPLANT-WALL-SPLAT.REC"
 )
 
