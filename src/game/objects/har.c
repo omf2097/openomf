@@ -1416,6 +1416,13 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
         controller *ctrl_other = game_player_get_ctrl(game_state_get_player(o_pjt->gs, other->player_id));
         if(har_is_blocking(h, move)) {
             projectile_mark_hit(o_pjt); // prevent this projectile from hitting again
+            o_pjt->animation_state.finished = 1;
+            if(move->successor_id && move->category != CAT_CLOSE) {
+                af_move *next_move = af_get_move(prog_owner_af_data, move->successor_id);
+                object_set_animation(o_pjt, &next_move->ani);
+                object_set_repeat(o_pjt, 0);
+                o_pjt->animation_state.finished = 0;
+            }
             har_event_enemy_block(other, move, true, ctrl_other);
             har_event_block(h, move, true, ctrl);
             har_block(o_har, hit_coord, move->block_stun);
