@@ -1,8 +1,6 @@
-#include <assert.h>
-#include <string.h>
-
 #include "audio/audio.h"
 #include "audio/backends/audio_backend.h"
+#include "audio/sources/psm_source.h"
 #include "resources/pathmanager.h"
 #include "resources/sounds_loader.h"
 #include "utils/c_array_util.h"
@@ -186,10 +184,31 @@ void audio_fade_out(int playback_id, int ms) {
     current_backend.fade_out(playback_id, ms);
 }
 
+static void load_xmp_music(const char *src) {
+    music_source music;
+    unsigned channels;
+    unsigned sample_rate;
+    unsigned resampler;
+    current_backend.get_info(current_backend.ctx, &sample_rate, &channels, &resampler);
+    psm_load(&music, channels, sample_rate, resampler, src);
+    current_backend.play_music(current_backend.ctx, &music);
+}
+
 void audio_play_music(resource_id id) {
-    assert(is_music(id));
     if(current_music != id) {
-        current_backend.play_music(current_backend.ctx, pm_get_resource_path(id));
+        char path[1024];
+        music_file_type file_type;
+        pm_get_music_path(path, 1024, &file_type, id);
+
+        switch(file_type) {
+            case MUSIC_FILE_TYPE_PSM:
+                load_xmp_music(path);
+                break;
+            default:
+                log_error("Unable to load music file %s due to unsupported audio format", path);
+                break;
+        }
+
         current_music = id;
     }
 }
@@ -211,10 +230,6 @@ void audio_set_sound_volume(float volume) {
 
 unsigned audio_get_sample_rates(const audio_sample_rate **sample_rates) {
     return current_backend.get_sample_rates(sample_rates);
-}
-
-unsigned audio_get_resamplers(const audio_resampler **resamplers) {
-    return current_backend.get_resamplers(resamplers);
 }
 
 int pitched_samplerate(float pitch) {
