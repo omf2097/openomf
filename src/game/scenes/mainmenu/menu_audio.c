@@ -35,7 +35,7 @@ void menu_audio_done(component *c, void *userdata) {
        s->music_resampler != local->old_audio_settings.music_resampler ||
        s->music_mono != local->old_audio_settings.music_mono) {
         audio_close();
-        if(audio_init(s->player, s->sample_rate, s->music_mono, s->music_resampler, s->music_vol / 10.0f,
+        if(audio_init(s->player, s->sample_rate, s->music_mono, s->music_vol / 10.0f,
                       s->sound_vol / 10.0f)) {
             audio_play_music(PSM_MENU);
         }

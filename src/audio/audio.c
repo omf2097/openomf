@@ -135,12 +135,12 @@ static bool audio_find_backend(const char *try_name) {
     return false;
 }
 
-bool audio_init(const char *try_name, int sample_rate, bool mono, int resampler, float music_volume,
+bool audio_init(const char *try_name, int sample_rate, bool mono, float music_volume,
                 float sound_volume) {
     if(!audio_find_backend(try_name))
         goto exit_0;
     current_backend.create(&current_backend);
-    if(!current_backend.setup_context(current_backend.ctx, sample_rate, mono, resampler, music_volume, sound_volume)) {
+    if(!current_backend.setup_context(current_backend.ctx, sample_rate, mono, music_volume, sound_volume)) {
         goto exit_1;
     }
     return true;
