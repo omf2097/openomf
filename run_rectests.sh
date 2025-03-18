@@ -27,7 +27,7 @@ tests=(
     "Kreissack has a custom defeat animation:KREISSACK.REC"
     "Shadow grab should work in the middle and the corners of arena:SHADOW-GRAB.REC"
     "Projectiles should do knockback:PROJECTILE-KNOCKBACK.REC"
-    "Enemy should recover from air hits unless it's a KO:AIR-HIT.REC"
+    "Enemy should recover from air hits unless it is a KO:AIR-HIT.REC"
     "Only some moves should wallslam:STADIUM-WALL-SPLAT.REC"
     "Power Plant with hazards enabled has a lower wallslam tolerance:POWERPLANT-WALL-SPLAT.REC"
 )
