@@ -367,6 +367,11 @@ int newsroom_create(scene *scene) {
     game_player *p1 = game_state_get_player(scene->gs, 0);
     game_player *p2 = game_state_get_player(scene->gs, 1);
 
+    if(p1->chr && p2->pilot->only_fight_once) {
+        // we beat an only fight once pilot, we never want to see them again
+        // TODO figure out how the original disables them from fighting again
+    }
+
     int health = 0;
     if(p2->sp_wins > 0) {
         // AI won, player lost

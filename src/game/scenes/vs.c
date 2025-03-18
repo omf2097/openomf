@@ -537,6 +537,7 @@ int vs_create(scene *scene) {
         object_create(plug, scene->gs, vec2i_create(-10, 150), vec2f_create(0, 0));
         ani = &bk_get_info(scene->bk_data, 2)->ani;
         object_set_animation(plug, ani);
+        // TODO plug should be happy, sometimes? he is happy on frame 1
         object_select_sprite(plug, 0);
         object_set_halt(plug, 1);
         game_state_add_object(scene->gs, plug, RENDER_LAYER_TOP, 0, 0);
