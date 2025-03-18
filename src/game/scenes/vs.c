@@ -534,11 +534,16 @@ int vs_create(scene *scene) {
     } else {
         // plug time!!!!!!!111eleven!
         object *plug = omf_calloc(1, sizeof(object));
+        fight_stats *fight_stats = &scene->gs->fight_stats;
         object_create(plug, scene->gs, vec2i_create(-10, 150), vec2f_create(0, 0));
         ani = &bk_get_info(scene->bk_data, 2)->ani;
         object_set_animation(plug, ani);
-        // TODO plug should be happy, sometimes? he is happy on frame 1
-        object_select_sprite(plug, 0);
+        // plug should be happy, sometimes? he is happy on frame 1
+        if(fight_stats->plug_text == PLUG_ENHANCEMENT || fight_stats->plug_text == PLUG_WIN_BIG) {
+            object_select_sprite(plug, 1);
+        } else {
+            object_select_sprite(plug, 0);
+        }
         object_set_halt(plug, 1);
         game_state_add_object(scene->gs, plug, RENDER_LAYER_TOP, 0, 0);
     }
