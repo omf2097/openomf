@@ -1238,8 +1238,10 @@ void arena_dynamic_tick(scene *scene, int paused) {
         }
 
         // check some invariants
-        assert(obj_har[0]->pos.x >= ARENA_LEFT_WALL && obj_har[0]->pos.x <= ARENA_RIGHT_WALL);
-        assert(obj_har[1]->pos.x >= ARENA_LEFT_WALL && obj_har[1]->pos.x <= ARENA_RIGHT_WALL);
+        assert(player_frame_isset(obj_har[0], "ab") ||
+               (obj_har[0]->pos.x >= ARENA_LEFT_WALL && obj_har[0]->pos.x <= ARENA_RIGHT_WALL));
+        assert(player_frame_isset(obj_har[1], "ab") ||
+               (obj_har[1]->pos.x >= ARENA_LEFT_WALL && obj_har[1]->pos.x <= ARENA_RIGHT_WALL));
         if(hars[0]->health == 0) {
             assert(hars[0]->state == STATE_DEFEAT || hars[0]->state == STATE_RECOIL || hars[0]->state == STATE_FALLEN ||
                    hars[0]->state == STATE_NONE || hars[0]->state == STATE_WALLDAMAGE);
