@@ -91,50 +91,55 @@ static int internal_joystick_poll(joystick *k, controller *ctrl, ctrl_event **ev
     int dpadleft = SDL_GameControllerGetButton(k->joy, k->keys->dpad[2]);
     int dpadright = SDL_GameControllerGetButton(k->joy, k->keys->dpad[3]);
 
+    int action = ACT_NONE;
+
     // joystick input
     // TODO the devide by 2 should be a 'dead zone' variable that can be set in the option menu but this devide works
     // well 99% of the time. Analog Stick (Axis 1) Movement
     if(x_axis <= LEFT / 2 && y_axis <= UP / 2) {
-        joystick_cmd(ctrl, ACT_UP | ACT_LEFT, ev);
+        action = ACT_UP | ACT_LEFT;
     } else if(x_axis <= LEFT / 2 && y_axis >= DOWN / 2) {
-        joystick_cmd(ctrl, ACT_DOWN | ACT_LEFT, ev);
+        action = ACT_DOWN | ACT_LEFT;
     } else if(x_axis >= RIGHT / 2 && y_axis <= UP / 2) {
-        joystick_cmd(ctrl, ACT_UP | ACT_RIGHT, ev);
+        action = ACT_UP | ACT_RIGHT;
     } else if(x_axis >= RIGHT / 2 && y_axis >= DOWN / 2) {
-        joystick_cmd(ctrl, ACT_DOWN | ACT_RIGHT, ev);
+        action = ACT_DOWN | ACT_RIGHT;
     } else if(x_axis >= RIGHT / 2) {
-        joystick_cmd(ctrl, ACT_RIGHT, ev);
+        action = ACT_RIGHT;
     } else if(x_axis <= LEFT / 2) {
-        joystick_cmd(ctrl, ACT_LEFT, ev);
+        action = ACT_LEFT;
     } else if(y_axis <= UP / 2) {
-        joystick_cmd(ctrl, ACT_UP, ev);
+        action = ACT_UP;
     } else if(y_axis >= DOWN / 2) {
-        joystick_cmd(ctrl, ACT_DOWN, ev);
-    }
-
-    if(dpadup && dpadleft) {
-        joystick_cmd(ctrl, ACT_UP | ACT_LEFT, ev);
+        action = ACT_DOWN;
+        // check the d-pad instead
+    } else if(dpadup && dpadleft) {
+        action = ACT_UP | ACT_LEFT;
     } else if(dpaddown && dpadleft) {
-        joystick_cmd(ctrl, ACT_DOWN | ACT_LEFT, ev);
+        action = ACT_DOWN | ACT_LEFT;
     } else if(dpadup && dpadright) {
-        joystick_cmd(ctrl, ACT_UP | ACT_RIGHT, ev);
+        action = ACT_UP | ACT_RIGHT;
     } else if(dpaddown && dpadright) {
-        joystick_cmd(ctrl, ACT_DOWN | ACT_RIGHT, ev);
+        action = ACT_DOWN | ACT_RIGHT;
     } else if(dpadright) {
-        joystick_cmd(ctrl, ACT_RIGHT, ev);
+        action = ACT_RIGHT;
     } else if(dpadleft) {
-        joystick_cmd(ctrl, ACT_LEFT, ev);
+        action = ACT_LEFT;
     } else if(dpadup) {
-        joystick_cmd(ctrl, ACT_UP, ev);
+        action = ACT_UP;
     } else if(dpaddown) {
-        joystick_cmd(ctrl, ACT_DOWN, ev);
+        action = ACT_DOWN;
     }
 
     // button input
     if(SDL_GameControllerGetButton(k->joy, k->keys->punch)) {
-        joystick_cmd(ctrl, ACT_PUNCH, ev);
+        action |= ACT_PUNCH;
     } else if(SDL_GameControllerGetButton(k->joy, k->keys->kick)) {
-        joystick_cmd(ctrl, ACT_KICK, ev);
+        action |= ACT_KICK;
+    }
+
+    if(action) {
+        joystick_cmd(ctrl, action, ev);
     }
 
     if(SDL_GameControllerGetButton(k->joy, k->keys->escape)) {
