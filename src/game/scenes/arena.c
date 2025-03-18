@@ -268,7 +268,12 @@ void arena_end(scene *sc) {
         }
         if(fight_stats->winner == 0) {
             int16_t hp_left_percent = har_health_percent(p1_har);
-            if(hp_left_percent >= 75) {
+            // check if this is an unranked challenger with an enhancement we don't have
+            if(p2->pilot->rank == 0 && fight_stats->finish == FINISH_DESTRUCTION &&
+               p2->pilot->enhancements[p1->pilot->har_id] == p1->pilot->enhancements[p1->pilot->har_id] + 1) {
+                p1->pilot->enhancements[p1->pilot->har_id] = p2->pilot->enhancements[p1->pilot->har_id];
+                fight_stats->plug_text = PLUG_ENHANCEMENT;
+            } else if(hp_left_percent >= 75) {
                 fight_stats->plug_text = PLUG_WIN_BIG + rand_int(3);
             } else if(hp_left_percent >= 50) {
                 fight_stats->plug_text = PLUG_WIN_OK + rand_int(3);
@@ -739,9 +744,11 @@ void arena_har_hook(har_event event, void *data) {
             }
             break;
         case HAR_EVENT_SCRAP:
+            scene->gs->fight_stats.finish = FINISH_SCRAP;
             chr_score_scrap(score);
             break;
         case HAR_EVENT_DESTRUCTION:
+            scene->gs->fight_stats.finish = FINISH_DESTRUCTION;
             chr_score_destruction(score);
             log_debug("DESTRUCTION!");
             break;
