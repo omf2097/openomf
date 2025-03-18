@@ -1197,7 +1197,6 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
 
     // rehit mode is off
     if(!obj_b->gs->match_settings.rehit && b->state == STATE_FALLEN) {
-        log_debug("REHIT is off");
         return 0;
     }
 
