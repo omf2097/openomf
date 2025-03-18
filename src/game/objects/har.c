@@ -746,37 +746,32 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
         game_state_hit_pause(obj->gs);
     }
 
+    str custom;
+    str_create(&custom);
+
     // chronos' stasis does not have a hit animation
     if(str_size(string) > 0) {
         h->state = STATE_RECOIL;
         // Set hit animation
         object_set_animation(obj, &af_get_move(h->af_data, ANIM_DAMAGE)->ani);
         object_set_repeat(obj, 0);
-        object_set_custom_string(obj, str_c(string));
         if(h->health <= 0) {
             controller *ctrl = game_player_get_ctrl(game_state_get_player(obj->gs, h->player_id));
             // trigger the defeat hook immediately
             har_event_defeat(h, ctrl);
-            // taken from MASTER.DAT
-            size_t last_line = 0;
-            if(!str_last_of(string, '-', &last_line)) {
-                last_line = 0;
-            }
 
-            str n;
-            str_from_slice(&n, string, 0, last_line);
-            // XXX changed the last frame to 200 ticks to ensure the HAR falls down
-            str_append_c(&n, "-x-20ox-20L1-ox-20L2-x-20zzs4l25sp13M1-zzM200");
-            object_set_custom_string(obj, str_c(&n));
-            str_free(&n);
-
-            if(object_is_airborne(obj)) {
-                // airborne defeat
-                obj->vel.y = -7;
-                object_set_stride(obj, 1);
-                h->state = STATE_FALLEN;
+            if(!object_is_airborne(obj)) {
+                // taken from MASTER.DAT
+                size_t last_line = 0;
+                if(!str_last_of(string, '-', &last_line)) {
+                    last_line = 0;
+                }
+                str_from_slice(&custom, string, 0, last_line);
+                str_append_c(&custom, "-x-20ox-20L1-ox-20L2-x-20zzs4l25sp13M1-zzM2");
             }
-        } else if(object_is_airborne(obj)) {
+        }
+
+        if(object_is_airborne(obj)) {
             log_debug("airborne knockback");
             // append the 'airborne knockback' string to the hit string, replacing the final frame
             size_t last_line = 0;
@@ -784,16 +779,13 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
                 last_line = 0;
             }
 
-            str n;
-            str_from_slice(&n, string, 0, last_line);
-            if(h->endurance <= 0) {
+            str_from_slice(&custom, string, 0, last_line);
+            if(h->endurance <= 0 || h->health <= 0) {
                 // this hit stunned them, so make them hit the floor stunned
-                str_append_c(&n, "L3-M5000");
+                str_append_c(&custom, "-L3-M5000");
             } else {
-                str_append_c(&n, "-L2-M5-L2");
+                str_append_c(&custom, "-L2-M5-L2");
             }
-            object_set_custom_string(obj, str_c(&n));
-            str_free(&n);
 
             obj->vel.y = obj->vertical_velocity_modifier * ((((30.0f - damage) * 0.133333f) + 6.5f) * -1.0);
             // TODO there's an alternative formula used in some conditions:
@@ -804,13 +796,24 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
             h->state = STATE_FALLEN;
             object_set_stride(obj, 1);
         }
+
+        if(str_size(&custom) > 0) {
+            object_set_custom_string(obj, str_c(&custom));
+            log_debug("HAR %s animation set to %s", har_get_name(h->id), str_c(&custom));
+            str_free(&custom);
+        } else {
+            object_set_custom_string(obj, str_c(string));
+            log_debug("HAR %s animation set to %s", har_get_name(h->id), str_c(string));
+        }
         object_dynamic_tick(obj);
 
         // XXX hack - if the first frame has the 'k' tag, treat it as some vertical knockback
         // we can't do this in player.c because it breaks the jaguar leap, which also uses the 'k' tag.
+        // Insanius 3/17/2025 - This is actually mostly correct, the OG checks if the string starts with the 'k' char
         const sd_script_frame *frame = sd_script_get_frame(&obj->animation_state.parser, 0);
         if(frame != NULL && sd_script_isset(frame, "k")) {
-            obj->vel.y -= 7;
+            obj->vel.x = -5;
+            obj->vel.y = -8;
         }
     }
 }
@@ -1326,6 +1329,9 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
 
         b->throw_duration = move->throw_duration;
 
+        log_debug("HAR %s to HAR %s collision at %d,%d!", har_get_name(a->id), har_get_name(b->id), hit_coord.x,
+                  hit_coord.y);
+
         if(player_frame_isset(obj_a, "ai")) {
             str str;
             str_from_c(&str, "A1-s01l50B2-C2-L5-M400");
@@ -1347,10 +1353,6 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
         if(hit_coord.x != 0 || hit_coord.y != 0) {
             har_spawn_scrap(obj_b, hit_coord, move->block_stun);
         }
-
-        log_debug("HAR %s to HAR %s collision at %d,%d!", har_get_name(a->id), har_get_name(b->id), hit_coord.x,
-                  hit_coord.y);
-        log_debug("HAR %s animation set to %s", har_get_name(b->id), str_c(&move->footer_string));
 
         if(move->next_move) {
             af_move *next_move = af_get_move(a->af_data, move->next_move);
@@ -2355,10 +2357,15 @@ void har_finished(object *obj) {
     } else if(h->state != STATE_CROUCHING && h->state != STATE_CROUCHBLOCK) {
         // Don't transition to standing state while in midair
         if(object_is_airborne(obj) && h->state == STATE_FALLEN) {
-            // XXX if we don't switch to STATE_JUMPING after getting damaged in the air, then the HAR_LAND_EVENT will
-            // never get fired.
-            h->state = STATE_JUMPING;
-            har_set_ani(obj, ANIM_JUMPING, 0);
+            if(h->health <= 0 || h->endurance <= 0) {
+                // leave them in the last frame until they hit the ground
+                obj->animation_state.finished = 0;
+            } else {
+                // XXX if we don't switch to STATE_JUMPING after getting damaged in the air, then the HAR_LAND_EVENT
+                // will never get fired.
+                h->state = STATE_JUMPING;
+                har_set_ani(obj, ANIM_JUMPING, 0);
+            }
         } else if(object_is_airborne(obj)) {
             // finished an attack animation in the air
             h->state = STATE_JUMPING;
