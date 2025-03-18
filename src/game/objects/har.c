@@ -1986,6 +1986,12 @@ af_move *match_move(object *obj, char prefix, char *inputs) {
                     log_debug("CHAINING");
                 }
 
+                if(str_size(&move->move_string) > 1) {
+                    // matched a move that was not just a 5P or 5K
+                    // so truncate the buffer
+                    h->inputs[0] = 0;
+                }
+
                 log_debug("matched move %d with string %s in state %d with input buffer %s", i,
                           str_c(&move->move_string), h->state, h->inputs);
                 /*DEBUG("input was %s", h->inputs);*/
