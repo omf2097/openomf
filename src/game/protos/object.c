@@ -764,10 +764,10 @@ void object_set_fpy(object *obj, int val) {
     obj->pos.y = val;
 }
 void object_set_px(object *obj, int val) {
-    obj->pos.x = val*256;
+    obj->pos.x = val * 256;
 }
 void object_set_py(object *obj, int val) {
-    obj->pos.y = val*256;
+    obj->pos.y = val * 256;
 }
 void object_set_vx(object *obj, float val) {
     obj->vel.x = val;
