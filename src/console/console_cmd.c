@@ -269,8 +269,21 @@ int console_cmd_rank(game_state *gs, int argc, char **argv) {
         int i;
         if(strtoint(argv[1], &i)) {
             game_player *player = game_state_get_player(gs, 0);
-            if(i > 0 && i <= player->pilot->enemies_ex_unranked + 1) {
+            int oldrank = player->pilot->rank;
+            if(player->chr && oldrank != i && i > 0 && i <= player->pilot->enemies_ex_unranked + 1) {
                 player->pilot->rank = i;
+                // fix everyone else's rank
+                for(int k = 0; k < player->chr->pilot.enemies_ex_unranked; k++) {
+                    sd_pilot *p = &player->chr->enemies[k]->pilot;
+                    // if newrank < oldrank everyone who was below the old rank and above the new rank goes up a rank
+                    if(i < oldrank && p->rank < oldrank && p->rank >= i) {
+                        p->rank++;
+                    }
+                    // if newrank > oldrank everyone who was above the oldrank and below the newrank goes down a rank
+                    if(i > oldrank && p->rank > oldrank && p->rank <= i) {
+                        p->rank--;
+                    }
+                }
                 if(gs->this_id == SCENE_MECHLAB) {
                     mechlab_update(gs->sc);
                 }

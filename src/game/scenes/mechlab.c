@@ -207,7 +207,18 @@ void mechlab_update(scene *scene) {
             object_set_repeat(local->mech, 1);
             object_dynamic_tick(local->mech);
         }
-        lab_dash_main_update(scene, &local->dw);
+        switch(local->dashtype) {
+            // Dashboard with the gauges etc.
+            case DASHBOARD_STATS:
+                // Dashboard widgets struct is filled with pointer to the necessary components for easy access
+                lab_dash_main_update(scene, &local->dw);
+                break;
+            case DASHBOARD_SIM:
+                lab_dash_sim_update(scene, &local->dw, p1->pilot);
+                break;
+            default:
+                break;
+        }
     } else {
         object_free(local->mech);
         omf_free(local->mech);
