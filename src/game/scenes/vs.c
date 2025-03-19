@@ -151,7 +151,12 @@ void vs_handle_action(scene *scene, int action) {
                     game_state_set_next(scene->gs, SCENE_ARENA0 + local->arena);
                 } else {
                     game_state_get_player(scene->gs, 1)->pilot = NULL;
-                    game_state_set_next(scene->gs, SCENE_MECHLAB);
+                    if(scene->gs->fight_stats.challenger) {
+                        // unranked challenger time
+                        game_state_set_next(scene->gs, SCENE_NEWSROOM);
+                    } else {
+                        game_state_set_next(scene->gs, SCENE_MECHLAB);
+                    }
                 }
                 break;
             case ACT_UP:
@@ -534,10 +539,16 @@ int vs_create(scene *scene) {
     } else {
         // plug time!!!!!!!111eleven!
         object *plug = omf_calloc(1, sizeof(object));
+        fight_stats *fight_stats = &scene->gs->fight_stats;
         object_create(plug, scene->gs, vec2i_create(-10, 150), vec2f_create(0, 0));
         ani = &bk_get_info(scene->bk_data, 2)->ani;
         object_set_animation(plug, ani);
-        object_select_sprite(plug, 0);
+        // plug should be happy, sometimes? he is happy on frame 1
+        if(fight_stats->plug_text == PLUG_ENHANCEMENT || fight_stats->plug_text == PLUG_WIN_BIG) {
+            object_select_sprite(plug, 1);
+        } else {
+            object_select_sprite(plug, 0);
+        }
         object_set_halt(plug, 1);
         game_state_add_object(scene->gs, plug, RENDER_LAYER_TOP, 0, 0);
     }
