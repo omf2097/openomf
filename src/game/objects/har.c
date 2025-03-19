@@ -1025,8 +1025,8 @@ void har_check_closeness(object *obj_a, object *obj_b) {
     sprite *sprite_b = animation_get_sprite(obj_b->cur_animation, obj_b->cur_sprite_id);
     int hard_limit = 8192; // Push opponent if HARs too close. Harrison-Stetson method value.
     // TODO verify throw distance soft limit
-    int soft_limit = 11520; // Sets HAR A as being close to HAR B if closer than this. This should be affected by throw
-                         // distance setting.
+    int soft_limit = 11520; // Sets HAR A as being close to HAR B if closer than this. This should be affected by
+                         // throw distance setting.
 
     // Reset closeness state
     a->close = 0;
