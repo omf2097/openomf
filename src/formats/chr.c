@@ -191,13 +191,12 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
             chr->enemies[i]->pilot.winnings = trn.enemies[i]->winnings;
             chr->enemies[i]->pilot.total_value = trn.enemies[i]->total_value;
             chr->enemies[i]->pilot.photo_id = trn.enemies[i]->photo_id;
+            chr->enemies[i]->pilot.sex = pic.photos[trn.enemies[i]->photo_id]->sex;
         }
         memread_buf(mr, chr->enemies[i]->unknown_a, 9);
         chr->enemies[i]->photo_id = memread_ubyte(mr);
         memread_buf(mr, chr->enemies[i]->unknown_b, 15);
-        if(trn_loaded) {
-            chr->enemies[i]->pilot.sex = pic.photos[chr->enemies[i]->photo_id]->sex;
-        }
+
         for(int m = 0; m < 10; m++) {
             if(trn_loaded && trn.enemies[i]->quotes[m]) {
                 chr->enemies[i]->pilot.quotes[m] = omf_strdup(trn.enemies[i]->quotes[m]);

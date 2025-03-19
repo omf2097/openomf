@@ -309,6 +309,10 @@ void newsroom_input_tick(scene *scene) {
                                     }
                                     pilot p;
                                     pilot_get_info(&p, p2->pilot->pilot_id);
+                                    p2->pilot->endurance = p.endurance;
+                                    p2->pilot->power = p.power;
+                                    p2->pilot->agility = p.agility;
+                                    p2->pilot->sex = p.sex;
                                     sd_pilot_set_player_color(p2->pilot, TERTIARY, p.colors[0]);
                                     sd_pilot_set_player_color(p2->pilot, SECONDARY, p.colors[1]);
                                     sd_pilot_set_player_color(p2->pilot, PRIMARY, p.colors[2]);
