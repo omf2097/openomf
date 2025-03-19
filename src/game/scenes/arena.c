@@ -39,8 +39,8 @@
 
 #define TEXT_COLOR 0xC7
 
-#define HAR1_START_POS 110
-#define HAR2_START_POS 211
+#define HAR1_START_POS 28160
+#define HAR2_START_POS 53760
 
 #define GAME_MENU_RETURN_ID 100
 #define GAME_MENU_QUIT_ID 101
@@ -485,7 +485,7 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
             info = bk_get_info(scene->bk_data, 22);
             if(info) { // Only Power Plant has the electric overlay effect
                 object *obj2 = omf_calloc(1, sizeof(object));
-                object_create(obj2, scene->gs, vec2i_create(o_har->pos.x, o_har->pos.y), vec2f_create(0, 0));
+                object_create(obj2, scene->gs, object_get_pos(o_har), vec2f_create(0, 0));
                 object_set_stl(obj2, scene->bk_data->sound_translation_table);
                 object_set_animation(obj2, &info->ani);
                 object_attach_to(obj2, o_har);
@@ -501,8 +501,8 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
                 int variance = rand_int(20) - 10;
                 int anim_no = rand_int(2) + 24;
                 // log_debug("XXX anim = %d, variance = %d", anim_no, variance);
-                int pos_y = o_har->pos.y - object_get_size(o_har).y + variance + i * 25;
-                vec2i coord = vec2i_create(o_har->pos.x, pos_y);
+                int pos_y = (o_har->pos.y / 256) - (object_get_size(o_har).y + variance + i * 25);
+                vec2i coord = vec2i_create(o_har->pos.x / 256, pos_y);
                 object *dust = omf_calloc(1, sizeof(object));
                 object_create(dust, scene->gs, coord, vec2f_create(0, 0));
                 object_set_stl(dust, scene->bk_data->sound_translation_table);
@@ -511,7 +511,7 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
             }
 
             // Wallhit sound
-            float d = ((float)o_har->pos.x) / 640.0f;
+            float d = ((float)o_har->pos.x / 256) / 640.0f;
             float pos_pan = d - 0.25f;
             game_state_play_sound(o_har->gs, 68, 1.0f, pos_pan, 2.0f);
 
@@ -1520,8 +1520,8 @@ int arena_create(scene *scene) {
     // Initial har data
     vec2i pos[2];
     int dir[2] = {OBJECT_FACE_RIGHT, OBJECT_FACE_LEFT};
-    pos[0] = vec2i_create(HAR1_START_POS, ARENA_FLOOR);
-    pos[1] = vec2i_create(HAR2_START_POS, ARENA_FLOOR);
+    pos[0] = vec2i_create(HAR1_START_POS / 256, ARENA_FLOOR / 256);
+    pos[1] = vec2i_create(HAR2_START_POS / 256, ARENA_FLOOR / 256);
 
     // init HARs
     for(int i = 0; i < 2; i++) {

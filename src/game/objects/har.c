@@ -403,6 +403,7 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t m
     // ... otherwise expect it is a projectile
     af_move *move = af_get_move(h->af_data, id);
     if(move != NULL) {
+        log_debug("Create projectile at %d, %d", pos.x, pos.y);
         object *obj = omf_calloc(1, sizeof(object));
         object_create(obj, parent->gs, pos, vel);
         object_set_stl(obj, object_get_stl(parent));
@@ -450,7 +451,7 @@ void har_floor_landing_effects(object *obj, bool play_sound) {
     int amount = rand_int(2) + 1;
     for(int i = 0; i < amount; i++) {
         int variance = rand_int(20) - 10;
-        vec2i coord = vec2i_create(obj->pos.x + variance + i * 10, obj->pos.y);
+        vec2i coord = vec2i_create(obj->pos.x / 256 + variance + i * 10, obj->pos.y / 256);
         object *dust = omf_calloc(1, sizeof(object));
         object_create(dust, obj->gs, coord, vec2f_create(0, 0));
         object_set_stl(dust, object_get_stl(obj));
@@ -460,7 +461,7 @@ void har_floor_landing_effects(object *obj, bool play_sound) {
 
     // Landing sound
     if(play_sound) {
-        float pos_pan = ((float)obj->pos.x - 160.0f) / 160.0f;
+        float pos_pan = ((float)obj->pos.x / 256 - 160.0f) / 160.0f;
         game_state_play_sound(obj->gs, 56, 0.3f, pos_pan, 2.2f);
     }
 }
@@ -476,8 +477,8 @@ void har_move(object *obj) {
         return;
     }
 
-    obj->pos.x += obj->vel.x;
-    obj->pos.y += obj->vel.y;
+    obj->pos.x += obj->vel.x * 256;
+    obj->pos.y += obj->vel.y * 256;
 
     object *enemy_obj =
         game_state_find_object(obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
@@ -655,9 +656,9 @@ void har_move(object *obj) {
         }
 
         if(h->state == STATE_WALKTO) {
-            obj->pos.x += (h->fwd_speed * object_get_direction(obj)) * (h->hard_close ? 0.0 : 1.0);
+            obj->pos.x += (h->fwd_speed * object_get_direction(obj)) * (h->hard_close ? 0.0 : 1.0) * 256;
         } else if(h->state == STATE_WALKFROM) {
-            obj->pos.x -= (h->back_speed * object_get_direction(obj)) * (h->hard_close ? 0.5 : 1.0);
+            obj->pos.x -= (h->back_speed * object_get_direction(obj)) * (h->hard_close ? 0.5 : 1.0) * 256;
         }
 
         object_apply_controllable_velocity(obj, obj, last_input);
@@ -860,6 +861,7 @@ void har_spawn_scrap(object *obj, vec2i pos, int amount) {
     // wild ass guess
     int oil_amount = amount / 3;
     har *h = object_get_userdata(obj);
+    log_debug("Spawning scrap at %d,%d", pos.x, pos.y);
     har_spawn_oil(obj, pos, oil_amount, 1, RENDER_LAYER_TOP);
 
     // scrap metal
@@ -947,83 +949,83 @@ void har_block(object *obj, vec2i hit_coord, uint8_t block_stun) {
 }
 
 void har_land_on_har(object *obj_a, object *obj_b, int hard_limit, int soft_limit) {
-    vec2i pos_a = object_get_pos(obj_a);
-    vec2i pos_b = object_get_pos(obj_b);
+    vec2i pos_a = object_get_fpos(obj_a);
+    vec2i pos_b = object_get_fpos(obj_b);
     sprite *sprite_a = animation_get_sprite(obj_a->cur_animation, obj_a->cur_sprite_id);
     sprite *sprite_b = animation_get_sprite(obj_b->cur_animation, obj_b->cur_sprite_id);
 
     vec2i size_b = sprite_get_size(sprite_b);
 
     // the 50 here is to reverse the damage done in har_fix_sprite_coords
-    int y1 = pos_a.y + sprite_a->pos.y + 50;
-    int y2 = pos_b.y - size_b.y;
+    int y1 = pos_a.y + (sprite_a->pos.y + 50) * 256;
+    int y2 = pos_b.y - (size_b.y * 256);
 
     // XXX make this code less redundanta
     if(object_get_direction(obj_a) == OBJECT_FACE_LEFT) {
         if(pos_a.x <= pos_b.x + hard_limit && pos_a.x >= pos_b.x && y1 >= y2) {
             if(pos_b.x == ARENA_LEFT_WALL) {
                 pos_a.x = pos_b.x + hard_limit;
-                object_set_pos(obj_a, pos_a);
+                object_set_fpos(obj_a, pos_a);
             } else {
                 // landed in front of the HAR, push opponent back
                 int t = hard_limit - (pos_a.x - pos_b.x);
                 pos_b.x = pos_b.x - t / 2;
-                object_set_pos(obj_b, pos_b);
+                object_set_fpos(obj_b, pos_b);
                 pos_a.x = pos_a.x + t / 2;
-                object_set_pos(obj_a, pos_a);
+                object_set_fpos(obj_a, pos_a);
             }
         } else if(pos_a.x + hard_limit >= pos_b.x && pos_a.x <= pos_b.x && y1 >= y2) {
             if(pos_b.x == ARENA_LEFT_WALL) {
                 pos_a.x = pos_b.x + hard_limit;
-                object_set_pos(obj_a, pos_a);
+                object_set_fpos(obj_a, pos_a);
             } else {
                 // landed behind of the HAR, push opponent forwards
                 int t = hard_limit - (pos_b.x - pos_a.x);
                 pos_b.x = pos_b.x + t / 2;
-                object_set_pos(obj_b, pos_b);
+                object_set_fpos(obj_b, pos_b);
                 pos_a.x = pos_a.x - t / 2;
-                object_set_pos(obj_a, pos_a);
+                object_set_fpos(obj_a, pos_a);
             }
         }
     } else if(object_get_direction(obj_a) == OBJECT_FACE_RIGHT) {
         if(pos_a.x + hard_limit >= pos_b.x && pos_a.x <= pos_b.x && y1 >= y2) {
             if(pos_b.x == ARENA_RIGHT_WALL) {
                 pos_a.x = pos_b.x - hard_limit;
-                object_set_pos(obj_a, pos_a);
+                object_set_fpos(obj_a, pos_a);
             } else {
                 // landed in front of the HAR, push opponent back
                 int t = hard_limit - (pos_b.x - pos_a.x);
                 pos_b.x = pos_b.x + t / 2;
-                object_set_pos(obj_b, pos_b);
+                object_set_fpos(obj_b, pos_b);
                 pos_a.x = pos_a.x - t / 2;
-                object_set_pos(obj_a, pos_a);
+                object_set_fpos(obj_a, pos_a);
             }
         } else if(pos_a.x <= pos_b.x + hard_limit && pos_a.x >= pos_b.x && y1 >= y2) {
             if(pos_b.x == ARENA_RIGHT_WALL) {
                 pos_a.x = pos_b.x - hard_limit;
-                object_set_pos(obj_a, pos_a);
+                object_set_fpos(obj_a, pos_a);
             } else {
                 // landed behind of the HAR, push opponent forwards
                 int t = hard_limit - (pos_b.x - pos_a.x);
                 pos_b.x = pos_b.x - t / 2;
-                object_set_pos(obj_b, pos_b);
+                object_set_fpos(obj_b, pos_b);
                 pos_a.x = pos_a.x + t / 2;
-                object_set_pos(obj_a, pos_a);
+                object_set_fpos(obj_a, pos_a);
             }
         }
     }
 }
 
 void har_check_closeness(object *obj_a, object *obj_b) {
-    vec2i pos_a = object_get_pos(obj_a);
-    vec2i pos_b = object_get_pos(obj_b);
+    vec2i pos_a = object_get_fpos(obj_a);
+    vec2i pos_b = object_get_fpos(obj_b);
     har *a = object_get_userdata(obj_a);
     har *b = object_get_userdata(obj_b);
     sprite *sprite_a = animation_get_sprite(obj_a->cur_animation, obj_a->cur_sprite_id);
     sprite *sprite_b = animation_get_sprite(obj_b->cur_animation, obj_b->cur_sprite_id);
-    int hard_limit = 32; // Push opponent if HARs too close. Harrison-Stetson method value.
+    int hard_limit = 8192; // Push opponent if HARs too close. Harrison-Stetson method value.
     // TODO verify throw distance soft limit
-    int soft_limit = 45; // Sets HAR A as being close to HAR B if closer than this. This should be affected by throw
+    int soft_limit = 11520; // Sets HAR A as being close to HAR B if closer than this. This should be affected by throw
                          // distance setting.
 
     // Reset closeness state
@@ -1074,14 +1076,14 @@ void har_check_closeness(object *obj_a, object *obj_b) {
     // If HARs get too close together, handle it
     if(a->state == STATE_WALKTO && b->state == STATE_WALKTO && a->hard_close) {
         // both hars are walking into each other, figure out the resulting vector and apply it
-        obj_b->pos.x += b_speed + a_speed;
-        obj_a->pos.x += a_speed + b_speed;
+        obj_b->pos.x += (b_speed + a_speed) * 256;
+        obj_a->pos.x += (a_speed + b_speed) * 256;
     } else if(a->state == STATE_WALKTO && a->hard_close) {
         // A pushes B
-        obj_b->pos.x += a_speed;
+        obj_b->pos.x += a_speed * 256;
     } else if(b->state == STATE_WALKTO && b->hard_close) {
         // B pushes A
-        obj_a->pos.x += b_speed;
+        obj_a->pos.x += b_speed * 256;
     } else {
         pushed = false;
     }
@@ -1135,7 +1137,7 @@ void har_debug(object *obj) {
         return;
     }
     // Some useful variables
-    vec2i pos_a = object_get_pos(obj); //, obj->cur_sprite->pos);
+    vec2i pos_a = object_get_fpos(obj); //, obj->cur_sprite->pos);
     // vec2i size_a = object_get_size(obj);
 
     int flip = 1;
@@ -1694,7 +1696,7 @@ void har_tick(object *obj) {
 
     // Make sure HAR doesn't walk through walls
     // TODO: Roof!
-    vec2i pos = object_get_pos(obj);
+    vec2i pos = object_get_fpos(obj);
     if(h->state != STATE_DEFEAT) {
         int wall_flag = player_frame_isset(obj, "aw");
         int wall = 0;
@@ -1707,7 +1709,7 @@ void har_tick(object *obj) {
             wall = 1;
             hit = 1;
         }
-        object_set_pos(obj, pos);
+        object_set_fpos(obj, pos);
 
         if(hit && wall_flag) {
             af_move *move = af_get_move(h->af_data, obj->cur_animation->id);
@@ -2197,7 +2199,7 @@ int har_act(object *obj, int act_type) {
         object *opp =
             game_state_find_object(obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, opp_id)));
         if(last_input == '4' || last_input == '6' || last_input == '1' || last_input == '3') {
-            if(object_get_pos(obj).x > object_get_pos(opp).x) {
+            if(object_px(obj) > object_px(opp)) {
                 if(direction != OBJECT_FACE_LEFT) {
                     har_event_air_turn(h, ctrl);
                     return 1;

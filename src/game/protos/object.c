@@ -28,7 +28,8 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
     obj->id = object_id++;
 
     // Position related
-    obj->pos = vec2i_to_f(pos);
+    obj->pos.x = pos.x * 256;
+    obj->pos.y = pos.y * 256;
     // remember the place we were spawned, the x= and y= tags are relative to that
     obj->start = vec2i_to_f(pos);
     obj->vel = vel;
@@ -354,20 +355,20 @@ void object_render(object *obj) {
 
     // Set Y coord, take into account sprite flipping
     if(rstate->flipmode & FLIP_VERTICAL) {
-        y = obj->pos.y - cur_sprite->pos.y + rstate->o_correction.y - object_get_size(obj).y;
+        y = (obj->pos.y / 256) - cur_sprite->pos.y + rstate->o_correction.y - object_get_size(obj).y;
 
         if(obj->cur_animation->id == ANIM_JUMPING) {
             y -= 100;
         }
     } else {
-        y = obj->pos.y + cur_sprite->pos.y + rstate->o_correction.y;
+        y = (obj->pos.y / 256) + cur_sprite->pos.y + rstate->o_correction.y;
     }
 
     // Set X coord, take into account the HAR facing.
     if(object_get_direction(obj) == OBJECT_FACE_LEFT) {
-        x = obj->pos.x - cur_sprite->pos.x + rstate->o_correction.x - object_get_size(obj).x;
+        x = (obj->pos.x / 256) - cur_sprite->pos.x + rstate->o_correction.x - object_get_size(obj).x;
     } else {
-        x = obj->pos.x + cur_sprite->pos.x + rstate->o_correction.x;
+        x = (obj->pos.x / 256) + cur_sprite->pos.x + rstate->o_correction.x;
     }
 
     // Centrify if scaled
@@ -441,9 +442,9 @@ void object_render_shadow(object *obj) {
 
     // Determine X
     int flip_mode = obj->sprite_state.flipmode;
-    int x = obj->pos.x + cur_sprite->pos.x + obj->sprite_state.o_correction.x;
+    int x = (obj->pos.x / 256) + cur_sprite->pos.x + obj->sprite_state.o_correction.x;
     if(object_get_direction(obj) == OBJECT_FACE_LEFT) {
-        x = (obj->pos.x + obj->sprite_state.o_correction.x) - cur_sprite->pos.x - object_get_size(obj).x;
+        x = ((obj->pos.x / 256) + obj->sprite_state.o_correction.x) - cur_sprite->pos.x - object_get_size(obj).x;
         flip_mode ^= FLIP_HORIZONTAL;
     }
 
@@ -738,9 +739,15 @@ int object_h(const object *obj) {
     return object_get_size(obj).y;
 }
 int object_px(const object *obj) {
-    return vec2f_to_i(obj->pos).x;
+    return vec2f_to_i(obj->pos).x / 256;
 }
 int object_py(const object *obj) {
+    return vec2f_to_i(obj->pos).y / 256;
+}
+int object_fpx(const object *obj) {
+    return vec2f_to_i(obj->pos).x;
+}
+int object_fpy(const object *obj) {
     return vec2f_to_i(obj->pos).y;
 }
 float object_vx(const object *obj) {
@@ -750,11 +757,17 @@ float object_vy(const object *obj) {
     return obj->vel.y;
 }
 
-void object_set_px(object *obj, int val) {
+void object_set_fpx(object *obj, int val) {
     obj->pos.x = val;
 }
-void object_set_py(object *obj, int val) {
+void object_set_fpy(object *obj, int val) {
     obj->pos.y = val;
+}
+void object_set_px(object *obj, int val) {
+    obj->pos.x = val*256;
+}
+void object_set_py(object *obj, int val) {
+    obj->pos.y = val*256;
 }
 void object_set_vx(object *obj, float val) {
     obj->vel.x = val;
@@ -764,13 +777,27 @@ void object_set_vy(object *obj, float val) {
 }
 
 vec2i object_get_pos(const object *obj) {
+    vec2i i; // Should this be another vec function
+    i.x = obj->pos.x / 256;
+    i.y = obj->pos.y / 256;
+    return i;
+}
+
+vec2i object_get_fpos(const object *obj) {
     return vec2f_to_i(obj->pos);
 }
+
 vec2f object_get_vel(const object *obj) {
     return obj->vel;
 }
+void object_set_fpos(object *obj, vec2i pos) {
+    obj->pos.x = pos.x;
+    obj->pos.y = pos.y;
+}
 void object_set_pos(object *obj, vec2i pos) {
-    obj->pos = vec2i_to_f(pos);
+    // Should this be another vec function
+    obj->pos.x = pos.x * 256;
+    obj->pos.y = pos.y * 256;
 }
 void object_set_vel(object *obj, vec2f vel) {
     obj->vel = vel;

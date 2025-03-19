@@ -29,7 +29,7 @@ void hazard_tick(object *obj) {
         }
         if(orb_almost_there(obj->orbit_dest, obj->orbit_pos)) {
             // XXX come up with a better equation to randomize the destination
-            obj->orbit_pos = obj->pos;
+            obj->orbit_pos = vec2i_to_f(object_get_pos(obj));
             obj->orbit_pos_vary = vec2f_create(0, 0);
             float mag;
             int limit = 10;
@@ -88,8 +88,8 @@ vec2f generate_destination(object *obj) {
 }
 
 void accelerate_orbit(object *obj) {
-    float x_dist = obj->pos.x - obj->orbit_dest.x;
-    float y_dist = obj->pos.y - obj->orbit_dest.y;
+    float x_dist = object_px(obj) - obj->orbit_dest.x;
+    float y_dist = object_py(obj) - obj->orbit_dest.y;
     float bigger = max2(x_dist, y_dist);
     if(fabsf(bigger) > 20) {
         bigger *= -1.0f;
@@ -121,42 +121,42 @@ void hazard_move(object *obj) {
             obj->vel.y = 0.0f;
         }*/
 
-        if((dist(obj->pos.x, obj->orbit_pos.x) >= dist(obj->orbit_dest.x, obj->orbit_pos.x)) &&
-           (dist(obj->pos.y, obj->orbit_pos.y) >= dist(obj->orbit_dest.y, obj->orbit_pos.y))) {
-            obj->orbit_pos.x = obj->pos.x;
-            obj->orbit_pos.y = obj->pos.y;
+        if((dist(object_px(obj), obj->orbit_pos.x) >= dist(obj->orbit_dest.x, obj->orbit_pos.x)) &&
+           (dist(object_py(obj), obj->orbit_pos.y) >= dist(obj->orbit_dest.y, obj->orbit_pos.y))) {
+            obj->orbit_pos.x = object_px(obj);
+            obj->orbit_pos.y = object_py(obj);
             obj->orbit_dest = generate_destination(obj);
             log_debug("new position is %f, %f", obj->orbit_dest.x, obj->orbit_dest.y);
         }
 
         // accelerate_orbit(obj);
 
-        float x_dist = obj->pos.x - obj->orbit_dest.x;
-        float y_dist = obj->pos.y - obj->orbit_dest.y;
+        float x_dist = object_px(obj) - obj->orbit_dest.x;
+        float y_dist = object_py(obj) - obj->orbit_dest.y;
         float bigger = fabsf(y_dist);
         if(fabsf(x_dist) > fabsf(y_dist)) {
             bigger = x_dist;
         }
 
-        if(obj->orbit_dest.x > obj->pos.x) {
+        if(obj->orbit_dest.x > object_px(obj)) {
             if(obj->vel.x < 1.0f) {
                 log_debug("accel +%f", x_dist / (bigger * 10));
                 obj->vel.x += x_dist / (bigger * 10);
             }
         }
-        if(obj->orbit_dest.x < obj->pos.x) {
+        if(obj->orbit_dest.x < object_px(obj)) {
             if(obj->vel.x < 1.0f) {
                 log_debug("accel -%f", x_dist / (bigger * 10));
                 obj->vel.x -= x_dist / (bigger * 10);
             }
         }
-        if(obj->orbit_dest.y > obj->pos.y) {
+        if(obj->orbit_dest.y > object_py(obj)) {
             if(obj->vel.y < 1.0f) {
                 log_debug("accel +%f", y_dist / (bigger * 10));
                 obj->vel.y += y_dist / (bigger * 10);
             }
         }
-        if(obj->orbit_dest.y < obj->pos.y) {
+        if(obj->orbit_dest.y < object_py(obj)) {
             if(obj->vel.y < 1.0f) {
                 log_debug("accel -%f", y_dist / (bigger * 10));
                 obj->vel.y -= y_dist / (bigger * 10);
@@ -166,8 +166,8 @@ void hazard_move(object *obj) {
         // Make this object orbit around the center of the arena
         /*obj->vel.x += 0.01f;*/
         /*obj->vel.y += 0.01f;*/
-        obj->pos.x += obj->vel.x;
-        obj->pos.y += obj->vel.y;
+        obj->pos.x += obj->vel.x * 256;
+        obj->pos.y += obj->vel.y * 256;
         // obj->pos.x = obj->orbit_pos.x+obj->orbit_pos_vary.x;
         // obj->pos.y = obj->orbit_pos.y+obj->orbit_pos_vary.y;
         // obj->orbit_pos.x += 2*obj->orbit_dest_dir.x;
@@ -184,8 +184,8 @@ int hazard_create(object *obj, scene *scene) {
     object_set_move_cb(obj, hazard_move);
     object_set_dynamic_tick_cb(obj, hazard_tick);
 
-    obj->orbit_pos.x = obj->pos.x;
-    obj->orbit_pos.y = obj->pos.y;
+    obj->orbit_pos.x = object_px(obj);
+    obj->orbit_pos.y = object_py(obj);
     obj->orbit_dest =
         vec2f_create((random_float(&obj->gs->rand) * 280.0f) + 20.0f, (random_float(&obj->gs->rand) * 160.0f) + 20.0f);
     log_debug("new position is %f, %f", obj->orbit_dest.x, obj->orbit_dest.y);

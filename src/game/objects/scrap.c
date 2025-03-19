@@ -7,14 +7,14 @@
 // TODO: This is kind of quick and dirty, think of something better.
 void scrap_move(object *obj) {
     vec2f vel = object_get_vel(obj);
-    vec2i pos = object_get_pos(obj);
+    vec2i pos = object_get_fpos(obj);
     if(object_is_rewind_tag_disabled(obj) > 0) {
         return;
     }
 
-    pos.x += vel.x;
+    pos.x += vel.x * 256;
     vel.y += obj->gravity;
-    pos.y += vel.y;
+    pos.y += vel.y * 256;
 
     float dampen = 0.4f;
 
@@ -33,7 +33,7 @@ void scrap_move(object *obj) {
     }
     if(IS_ZERO(vel.x))
         vel.x = 0;
-    object_set_pos(obj, pos);
+    object_set_fpos(obj, pos);
     object_set_vel(obj, vel);
 
     // If object is at rest, just halt animation
