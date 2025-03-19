@@ -13,8 +13,9 @@
 #include "video/vga_state.h"
 
 #define TEX_UNIT_ATLAS 0
-#define TEX_UNIT_FBO 1
-#define TEX_UNIT_REMAPS 2
+#define TEX_UNIT_REMAP_FBO 1
+#define TEX_UNIT_FINAL_FBO 2
+#define TEX_UNIT_REMAPS 3
 #define PAL_BLOCK_BINDING 0
 #define NATIVE_W 320
 #define NATIVE_H 200
@@ -25,7 +26,8 @@ typedef struct gl3_context {
     texture_atlas *atlas;
     object_array *objects;
     shared *shared;
-    render_target *target;
+    render_target *remap_target;
+    render_target *final_target;
     remaps *remaps;
 
     int viewport_w;
@@ -42,6 +44,7 @@ typedef struct gl3_context {
 
     object_array_blend_mode current_blend_mode;
     GLuint palette_prog_id;
+    GLuint remap_prog_id;
     GLuint rgba_prog_id;
 
     video_screenshot_signal screenshot_cb;
@@ -82,8 +85,11 @@ static bool setup_context(void *userdata, int window_w, int window_h, bool fulls
     if(!create_program(&ctx->palette_prog_id, "palette.vert", "palette.frag")) {
         goto error_2;
     }
-    if(!create_program(&ctx->rgba_prog_id, "rgba.vert", "rgba.frag")) {
+    if(!create_program(&ctx->remap_prog_id, "remap.vert", "remap.frag")) {
         goto error_3;
+    }
+    if(!create_program(&ctx->rgba_prog_id, "rgba.vert", "rgba.frag")) {
+        goto error_4;
     }
 
     // Fetch viewport size which may be different from window size.
@@ -100,7 +106,8 @@ static bool setup_context(void *userdata, int window_w, int window_h, bool fulls
     ctx->atlas = atlas_create(TEX_UNIT_ATLAS, 2048, 2048);
     ctx->objects = object_array_create(2048.0f, 2048.0f);
     ctx->shared = shared_create();
-    ctx->target = render_target_create(TEX_UNIT_FBO, NATIVE_W, NATIVE_H, GL_RGBA8, GL_RGBA);
+    ctx->remap_target = render_target_create(TEX_UNIT_REMAP_FBO, NATIVE_W, NATIVE_H, GL_RGBA8, GL_RGBA);
+    ctx->final_target = render_target_create(TEX_UNIT_FINAL_FBO, NATIVE_W, NATIVE_H, GL_R8, GL_RED);
     ctx->remaps = remaps_create(TEX_UNIT_REMAPS);
 
     vga_state_mark_dirty();
@@ -115,26 +122,30 @@ static bool setup_context(void *userdata, int window_w, int window_h, bool fulls
     bind_uniform_1i(ctx->palette_prog_id, "atlas", TEX_UNIT_ATLAS);
     bind_uniform_1i(ctx->palette_prog_id, "remaps", TEX_UNIT_REMAPS);
 
-    // Activate RGBA conversion program, and bind palette etc.
+    // Activate remapping program, and bind remaps etc.
+    activate_program(ctx->remap_prog_id);
+    bind_uniform_4fv(ctx->remap_prog_id, "projection", projection_matrix);
+    bind_uniform_1i(ctx->remap_prog_id, "framebuffer", TEX_UNIT_REMAP_FBO);
+    bind_uniform_1i(ctx->remap_prog_id, "remaps", TEX_UNIT_REMAPS);
+
+    // Activate RGBA conversion program and bind palette
     activate_program(ctx->rgba_prog_id);
-    bind_uniform_4fv(ctx->rgba_prog_id, "projection", projection_matrix);
     GLuint pal_ubo_id = shared_get_block(ctx->shared);
     bind_uniform_block(ctx->rgba_prog_id, "palette", PAL_BLOCK_BINDING, pal_ubo_id);
-    bind_uniform_1i(ctx->rgba_prog_id, "framebuffer", TEX_UNIT_FBO);
-    bind_uniform_1i(ctx->rgba_prog_id, "remaps", TEX_UNIT_REMAPS);
+    bind_uniform_4fv(ctx->rgba_prog_id, "projection", projection_matrix);
+    bind_uniform_1i(ctx->rgba_prog_id, "framebuffer", TEX_UNIT_FINAL_FBO);
 
     log_info("OpenGL3 Renderer initialized!");
     return true;
 
+error_4:
+    delete_program(ctx->remap_prog_id);
 error_3:
     delete_program(ctx->palette_prog_id);
-
 error_2:
     SDL_GL_DeleteContext(ctx->gl_context);
-
 error_1:
     SDL_DestroyWindow(ctx->window);
-
 error_0:
     return false;
 }
@@ -179,11 +190,13 @@ static void reset_context(void *userdata) {
 static void close_context(void *userdata) {
     gl3_context *ctx = userdata;
     remaps_free(&ctx->remaps);
-    render_target_free(&ctx->target);
+    render_target_free(&ctx->remap_target);
+    render_target_free(&ctx->final_target);
     shared_free(&ctx->shared);
     object_array_free(&ctx->objects);
     atlas_free(&ctx->atlas);
     delete_program(ctx->palette_prog_id);
+    delete_program(ctx->remap_prog_id);
     delete_program(ctx->rgba_prog_id);
     SDL_GL_DeleteContext(ctx->gl_context);
     SDL_DestroyWindow(ctx->window);
@@ -296,13 +309,19 @@ static inline void finish_offscreen(gl3_context *ctx) {
     object_array_batch batch;
     object_array_begin(ctx->objects, &batch);
     activate_program(ctx->palette_prog_id);
-    render_target_activate(ctx->target);
+    render_target_activate(ctx->remap_target);
 
     object_array_blend_mode mode;
     while(object_array_get_batch(ctx->objects, &batch, &mode)) {
         video_set_blend_mode(ctx, mode);
         object_array_draw(ctx->objects, &batch);
     }
+
+    // Set remapping target and run the second pass.
+    video_set_blend_mode(ctx, MODE_SET);
+    activate_program(ctx->remap_prog_id);
+    render_target_activate(ctx->final_target);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
 /**
@@ -316,7 +335,7 @@ static inline void finish_onscreen(gl3_context *ctx) {
     if(ctx->draw_atlas) {
         bind_uniform_1i(ctx->rgba_prog_id, "framebuffer", TEX_UNIT_ATLAS);
     } else {
-        bind_uniform_1i(ctx->rgba_prog_id, "framebuffer", TEX_UNIT_FBO);
+        bind_uniform_1i(ctx->rgba_prog_id, "framebuffer", TEX_UNIT_FINAL_FBO);
     }
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
