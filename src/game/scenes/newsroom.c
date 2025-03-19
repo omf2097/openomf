@@ -456,6 +456,9 @@ int newsroom_create(scene *scene) {
         local->news_id = 42 + rand_int(3) * 2;
     }
 
+    // p2 pilot must be set by now
+    assert(p2->pilot != NULL);
+
     newsroom_set_names(local, p1->pilot->name, p2->pilot->name, p1->pilot->har_id, p2->pilot->har_id, p1->pilot->sex,
                        p2->pilot->sex);
     newsroom_fixup_str(local);
