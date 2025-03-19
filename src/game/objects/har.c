@@ -1026,7 +1026,7 @@ void har_check_closeness(object *obj_a, object *obj_b) {
     int hard_limit = 8192; // Push opponent if HARs too close. Harrison-Stetson method value.
     // TODO verify throw distance soft limit
     int soft_limit = 11520; // Sets HAR A as being close to HAR B if closer than this. This should be affected
-                         // by throw distance setting.
+                            // by throw distance setting.
 
     // Reset closeness state
     a->close = 0;
