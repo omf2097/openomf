@@ -151,7 +151,12 @@ void vs_handle_action(scene *scene, int action) {
                     game_state_set_next(scene->gs, SCENE_ARENA0 + local->arena);
                 } else {
                     game_state_get_player(scene->gs, 1)->pilot = NULL;
-                    game_state_set_next(scene->gs, SCENE_MECHLAB);
+                    if(scene->gs->fight_stats.challenger) {
+                        // unranked challenger time
+                        game_state_set_next(scene->gs, SCENE_NEWSROOM);
+                    } else {
+                        game_state_set_next(scene->gs, SCENE_MECHLAB);
+                    }
                 }
                 break;
             case ACT_UP:

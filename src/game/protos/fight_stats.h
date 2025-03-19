@@ -1,6 +1,8 @@
 #ifndef FIGHT_STATS_H
 #define FIGHT_STATS_H
 
+#include "formats/pilot.h"
+
 #define SOLD_BUF_SIZE 24
 
 typedef enum
@@ -21,6 +23,8 @@ typedef struct fight_stats_t {
     int profit;
 
     fight_finisher finish;
+
+    sd_pilot *challenger;
 
     unsigned hits_landed[2];
     float average_damage[2];
