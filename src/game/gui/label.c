@@ -3,6 +3,8 @@
 #include "game/gui/widget.h"
 #include "utils/allocator.h"
 #include "utils/c_string_util.h"
+#include "video/video.h"
+#include "utils/log.h"
 
 typedef struct label {
     text *text;
@@ -11,6 +13,10 @@ typedef struct label {
     text_horizontal_align text_horizontal_align;
     text_vertical_align text_vertical_align;
     uint8_t letter_spacing;
+    uint8_t text_shadow;
+    text_margin text_margin;
+    vga_index text_shadow_color;
+    surface surface;
 } label;
 
 static void label_render(component *c) {
@@ -39,6 +45,11 @@ void label_set_text_color(component *c, vga_index color) {
     local->override_color = color;
 }
 
+void label_set_margin(component *c, text_margin margin) {
+    label *local = widget_get_obj(c);
+    local->text_margin = margin;
+}
+
 void label_set_font(component *c, font_size font) {
     label *local = widget_get_obj(c);
     local->override_font = font;
@@ -59,16 +70,30 @@ void label_set_text_letter_spacing(component *c, uint8_t spacing) {
     local->letter_spacing = spacing;
 }
 
+void label_set_text_shadow(component *c, uint8_t shadow, vga_index color) {
+    label *local = widget_get_obj(c);
+    local->text_shadow = shadow;
+    local->text_shadow_color = color;
+}
+
 static void label_init(component *c, const gui_theme *theme) {
     label *local = widget_get_obj(c);
     text_set_font(local->text, local->override_font != FONT_NONE ? local->override_font : theme->text.font);
     text_set_line_spacing(local->text, local->letter_spacing);
+    text_set_horizontal_align(local->text, ALIGN_TEXT_LEFT);
+    text_set_shadow_style(local->text, local->text_shadow);
+    text_set_shadow_color(local->text, local->text_shadow_color);
+    text_set_margin(local->text, local->text_margin);
 
-    if(c->w_hint < 0 && c->h_hint < 0) {
+    if(c->w_hint < 0) {
         text_generate_layout(local->text);
         int text_width = text_get_layout_width(local->text);
+        component_set_size_hints(c, text_width + 6, c->h_hint);
+    }
+    if(c->h_hint < 0) {
+        text_generate_layout(local->text);
         int text_height = text_get_layout_height(local->text);
-        component_set_size_hints(c, text_width + 6, text_height + 3);
+        component_set_size_hints(c, c->w_hint, text_height + 3);
     }
 }
 
@@ -92,6 +117,9 @@ component *label_create_with_width(const char *text, uint16_t max_width) {
     local->text_horizontal_align = ALIGN_TEXT_LEFT;
     local->text_vertical_align = ALIGN_TEXT_TOP;
     local->letter_spacing = 0;
+    local->text_shadow = GLYPH_SHADOW_NONE;
+    local->text_shadow_color = 0;
+    local->text_margin = (text_margin){0, 0, 0, 0};
     text_set_from_c(local->text, text);
     widget_set_obj(c, local);
 

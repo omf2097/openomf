@@ -15,5 +15,6 @@ void textinput_set_text(component *c, char const *value);
 
 void textinput_set_font(component *c, font_size font);
 void textinput_set_horizontal_align(component *c, text_horizontal_align align);
+void textinput_set_text_shadow(component *c, uint8_t shadow, vga_index color);
 
 #endif // TEXTINPUT_H

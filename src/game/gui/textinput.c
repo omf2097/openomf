@@ -27,6 +27,8 @@ typedef struct textinput {
     int text_max_lines;
     text_horizontal_align text_horizontal_align;
     font_size font_size;
+    uint8_t text_shadow;
+    vga_index text_shadow_color;
     text *text;
     bool was_focused;
     str buf;
@@ -259,21 +261,30 @@ void textinput_set_horizontal_align(component *c, text_horizontal_align align) {
     ti->text_horizontal_align = align;
 }
 
+void textinput_set_text_shadow(component *c, uint8_t shadow, vga_index color) {
+    textinput *ti = widget_get_obj(c);
+    ti->text_shadow = shadow;
+    ti->text_shadow_color = color;
+}
+
 static void textinput_init(component *c, const gui_theme *theme) {
     textinput *ti = widget_get_obj(c);
     text_set_font(ti->text, ti->font_size != FONT_NONE ? ti->font_size : theme->text.font);
     text_set_color(ti->text, theme->text.primary_color);
     text_set_line_spacing(ti->text, 0);
+    text_set_horizontal_align(ti->text, ALIGN_TEXT_LEFT);
     text_set_max_lines(ti->text, ti->text_max_lines);
+    text_set_shadow_style(ti->text, ti->text_shadow);
+    text_set_shadow_color(ti->text, ti->text_shadow_color);
     text_set_margin(ti->text, (text_margin){0, 0, 0, 0});
     if(ti->bg_enabled) {
         text_set_margin(ti->text, (text_margin){1, 1, 1, 1});
     }
     refresh(c);
-    if(c->w_hint < 0 && c->h_hint < 0) {
+    if(c->h_hint < 0) {
         text_generate_layout(ti->text);
         int text_height = text_get_layout_height(ti->text) + (ti->bg_enabled ? 2 : 0);
-        component_set_size_hints(c, -1, text_height);
+        component_set_size_hints(c, c->w_hint, text_height);
     }
 }
 
@@ -305,6 +316,8 @@ component *textinput_create(int max_chars, const char *help, const char *initial
     ti->pos = 0;
     ti->font_size = FONT_SMALL;
     ti->text_horizontal_align = ALIGN_TEXT_CENTER;
+    ti->text_shadow_color = 0;
+    ti->text_shadow = GLYPH_SHADOW_NONE;
     ti->text = text_create_with_size(FONT_SMALL, TEXT_BBOX_MAX, TEXT_BBOX_MAX);
     ti->pos = min2(str_size(&ti->buf), ti->max_chars);
 

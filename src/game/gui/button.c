@@ -16,6 +16,8 @@ typedef struct button {
     bool use_border;
     surface border;
     button_click_cb click_cb;
+    vga_index text_shadow_color;
+    uint8_t text_shadow;
     void *userdata;
 } button;
 
@@ -24,6 +26,12 @@ void button_set_text(component *c, const char *text) {
     text_set_from_c(b->text, text);
     text_generate_layout(b->text);
     component_set_size_hints(c, text_get_layout_width(b->text), text_get_layout_height(b->text));
+}
+
+void button_set_text_shadow(component *c, uint8_t shadow, vga_index color) {
+    button *b = widget_get_obj(c);
+    b->text_shadow = shadow;
+    b->text_shadow_color = color;
 }
 
 static void button_render(component *c) {
@@ -39,9 +47,11 @@ static void button_render(component *c) {
     }
 
     if(b->use_border) {
-        video_draw(&b->border, c->x - 2, c->y - 2);
+        video_draw(&b->border, c->x, c->y);
+        text_draw(b->text, c->x + 2, c->y + 2);
+    } else {
+        text_draw(b->text, c->x, c->y);
     }
-    text_draw(b->text, c->x, c->y);
 }
 
 static int button_action(component *c, int action) {
@@ -77,17 +87,19 @@ static void button_init(component *c, const gui_theme *theme) {
     button *b = widget_get_obj(c);
     text_set_font(b->text, theme->text.font);
     text_set_color(b->text, theme->text.primary_color);
+    text_set_shadow_style(b->text, b->text_shadow);
+    text_set_shadow_color(b->text, b->text_shadow_color);
     text_set_line_spacing(b->text, 0);
 
-    if(c->w_hint < 0 && c->h_hint < 0) {
+    if(c->w_hint < 0) {
         text_generate_layout(b->text);
         int text_width = text_get_layout_width(b->text);
+        component_set_size_hints(c, text_width + (b->use_border ? 4 : 0), c->h_hint);
+    }
+    if(c->h_hint < 0) {
+        text_generate_layout(b->text);
         int text_height = text_get_layout_height(b->text);
-        if(b->use_border) {
-            component_set_size_hints(c, text_width + 6, text_height + 3);
-        } else {
-            component_set_size_hints(c, text_width, text_height);
-        }
+        component_set_size_hints(c, c->w_hint, text_height + (b->use_border ? 4 : 0));
     }
 }
 
@@ -97,12 +109,14 @@ static void button_init(component *c, const gui_theme *theme) {
 static void button_layout(component *c, int x, int y, int w, int h) {
     const gui_theme *theme = component_get_theme(c);
     button *b = widget_get_obj(c);
-    text_set_bounding_box(b->text, w, h);
     text_set_horizontal_align(b->text, ALIGN_TEXT_CENTER);
-    text_generate_layout(b->text);
     if(b->use_border) {
+        text_set_bounding_box(b->text, w - 4, h - 4);
         menu_background_border_create(&b->border, w, h, theme->dialog.border_color);
+    } else {
+        text_set_bounding_box(b->text, w, h);
     }
+    text_generate_layout(b->text);
 }
 
 component *button_create(const char *text, const char *help, bool disabled, bool border, button_click_cb cb,
@@ -117,6 +131,8 @@ component *button_create(const char *text, const char *help, bool disabled, bool
     b->use_border = border;
     b->click_cb = cb;
     b->userdata = userdata;
+    b->text_shadow = GLYPH_SHADOW_NONE;
+    b->text_shadow_color = 0;
     widget_set_obj(c, b);
 
     widget_set_render_cb(c, button_render);

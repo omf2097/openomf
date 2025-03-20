@@ -379,9 +379,17 @@ component *lobby_challenge_create(scene *s) {
 
     lobby_user *user = list_get(&local->users, local->active_user);
     snprintf(local->helptext, sizeof(local->helptext), "Challenge %s?", user->name);
-    menu_attach(menu, label_create(local->helptext));
-    menu_attach(menu, button_create("Yes", NULL, false, false, lobby_do_challenge, s));
-    menu_attach(menu, button_create("No", NULL, false, false, lobby_cancel_challenge, s));
+    component *challenge_label = label_create(local->helptext);
+    component *yes_button = button_create("Yes", NULL, false, false, lobby_do_challenge, s);
+    component *no_button = button_create("No", NULL, false, false, lobby_cancel_challenge, s);
+
+    label_set_text_shadow(challenge_label, GLYPH_SHADOW_BOTTOM, 9);
+    button_set_text_shadow(yes_button, GLYPH_SHADOW_BOTTOM, 9);
+    button_set_text_shadow(no_button, GLYPH_SHADOW_BOTTOM, 9);
+
+    menu_attach(menu, challenge_label);
+    menu_attach(menu, yes_button);
+    menu_attach(menu, no_button);
 
     return menu;
 }
@@ -430,13 +438,18 @@ component *lobby_yell_create(scene *s) {
     menu_set_background(menu, false);
     menu_set_padding(menu, -8);
 
-    menu_attach(menu, label_create("Yell:"));
+    component *yell_label = label_create("Yell:");
+    label_set_text_shadow(yell_label, GLYPH_SHADOW_BOTTOM, 9);
+    menu_attach(menu, yell_label);
     component *yell_input =
         textinput_create(36,
                          "Yell a message to everybody in the challenge arena.\n\n\n\n\nTo whisper to one player, type "
                          "their name, a ':', and your message.\nPress 'esc' to return to the challenge arena menu.",
                          "");
+    textinput_set_text_shadow(yell_input, GLYPH_SHADOW_BOTTOM, 9);
     textinput_set_font(yell_input, FONT_NET1);
+    textinput_set_horizontal_align(yell_input, ALIGN_TEXT_LEFT);
+    component_set_size_hints(yell_input, 320, -1);    // Flex aggressively
     menu_attach(menu, yell_input);
     textinput_enable_background(yell_input, 0);
     textinput_set_done_cb(yell_input, lobby_do_yell, s);
@@ -496,11 +509,16 @@ component *lobby_whisper_create(scene *s) {
     menu_set_background(menu, false);
     menu_set_padding(menu, -6);
 
-    menu_attach(menu, label_create("Whisper:"));
+    component *whisper_label = label_create("Whisper:");
+    label_set_text_shadow(whisper_label, GLYPH_SHADOW_BOTTOM, 9);
+    menu_attach(menu, whisper_label);
     lobby_user *user = list_get(&local->users, local->active_user);
     snprintf(local->helptext, sizeof(local->helptext), "Whisper a message to %s. Press enter when done, esc to abort.",
              user->name);
     component *whisper_input = textinput_create(36, local->helptext, "");
+    textinput_set_text_shadow(whisper_input, GLYPH_SHADOW_BOTTOM, 9);
+    textinput_set_horizontal_align(whisper_input, ALIGN_TEXT_LEFT);
+    component_set_size_hints(whisper_input, 320, -1);  // Flex aggressively
     textinput_set_font(whisper_input, FONT_NET1);
     menu_attach(menu, whisper_input);
     textinput_enable_background(whisper_input, 0);
@@ -645,11 +663,19 @@ component *lobby_exit_create(scene *s) {
     component *menu = menu_create();
     menu_set_horizontal(menu, true);
     menu_set_background(menu, false);
-    menu_set_padding(menu, 0);
+    menu_set_padding(menu, 8);
 
-    menu_attach(menu, label_create("Exit the Challenge Arena?"));
-    menu_attach(menu, button_create("Yes", NULL, false, false, lobby_do_exit, s));
-    menu_attach(menu, button_create("No", NULL, false, false, lobby_refuse_exit, s));
+    component *exit_label = label_create("Exit the Challenge Arena?");
+    component *yes_button = button_create("Yes", NULL, false, false, lobby_do_exit, s);
+    component *no_button = button_create("No", NULL, false, false, lobby_refuse_exit, s);
+
+    label_set_text_shadow(exit_label, GLYPH_SHADOW_BOTTOM, 9);
+    button_set_text_shadow(yes_button, GLYPH_SHADOW_BOTTOM, 9);
+    button_set_text_shadow(no_button, GLYPH_SHADOW_BOTTOM, 9);
+
+    menu_attach(menu, exit_label);
+    menu_attach(menu, yes_button);
+    menu_attach(menu, no_button);
 
     return menu;
 }
@@ -1436,14 +1462,24 @@ int lobby_create(scene *scene) {
     help_text.cforeground = 56;
 
     menu_set_help_text_settings(menu, &help_text);
-    menu_attach(menu,
-                button_create("Challenge", "Challenge this player to a fight. Challenge yourself for 1-player game.",
-                              false, false, lobby_challenge, scene));
-    menu_attach(menu,
-                button_create("Whisper", "Whisper a message to this player.", false, false, lobby_whisper, scene));
-    menu_attach(menu, button_create("Yell", "Chat with everybody in the arena.", false, false, lobby_yell, scene));
-    menu_attach(menu, button_create("Refresh", "Refresh the player list.", false, false, lobby_refresh, scene));
-    menu_attach(menu, button_create("Exit", "Exit and disconnect.", false, false, lobby_exit, scene));
+    component *challenge_button = button_create("Challenge", "Challenge this player to a fight. Challenge yourself for 1-player game.",
+                                                false, false, lobby_challenge, scene);
+    component *whisper_button = button_create("Whisper", "Whisper a message to this player.", false, false, lobby_whisper, scene);
+    component *yell_button = button_create("Yell", "Chat with everybody in the arena.", false, false, lobby_yell, scene);
+    component *refresh_button = button_create("Refresh", "Refresh the player list.", false, false, lobby_refresh, scene);
+    component *exit_button = button_create("Exit", "Exit and disconnect.", false, false, lobby_exit, scene);
+
+    button_set_text_shadow(challenge_button, GLYPH_SHADOW_BOTTOM, 9);
+    button_set_text_shadow(whisper_button, GLYPH_SHADOW_BOTTOM, 9);
+    button_set_text_shadow(yell_button, GLYPH_SHADOW_BOTTOM, 9);
+    button_set_text_shadow(refresh_button, GLYPH_SHADOW_BOTTOM, 9);
+    button_set_text_shadow(exit_button, GLYPH_SHADOW_BOTTOM, 9);
+
+    menu_attach(menu, challenge_button);
+    menu_attach(menu, whisper_button);
+    menu_attach(menu, yell_button);
+    menu_attach(menu, refresh_button);
+    menu_attach(menu, exit_button);
 
     int winner = -1;
     // check if there's already a net controller provisioned
@@ -1472,7 +1508,7 @@ int lobby_create(scene *scene) {
     }
     reconfigure_controller(scene->gs);
 
-    local->frame = gui_frame_create(&theme, 9, 128, 300, 12);
+    local->frame = gui_frame_create(&theme, 9, 132, 300, 8);
     gui_frame_set_root(local->frame, menu);
     gui_frame_layout(local->frame);
 
@@ -1481,13 +1517,17 @@ int lobby_create(scene *scene) {
         component *name_menu = menu_create();
         menu_set_horizontal(name_menu, true);
         menu_set_background(name_menu, false);
-        menu_set_padding(menu, 0);
+        menu_set_padding(name_menu, 0);
 
-        menu_attach(name_menu, label_create("Enter your name:"));
+        component *enter_name_label = label_create("Enter your name:");
+        label_set_text_shadow(enter_name_label, GLYPH_SHADOW_BOTTOM, 9);
+        menu_attach(name_menu, enter_name_label);
         // pull the last used name from settings
         component *name_input = textinput_create(14, "", settings_get()->net.net_username);
+        textinput_set_text_shadow(name_input, GLYPH_SHADOW_BOTTOM, 9);
         textinput_set_font(name_input, FONT_NET1);
         textinput_enable_background(name_input, false);
+        textinput_set_horizontal_align(name_input, ALIGN_TEXT_LEFT);
         textinput_set_done_cb(name_input, lobby_entered_name, scene);
         menu_attach(name_menu, name_input);
 
