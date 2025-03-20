@@ -349,11 +349,8 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
             omf_free(gs_old);
         }
 
-        // these are 'dynamic ticks'
-        int ticks = (ev->tick + data->local_proposal) - gs->int_tick;
-
         // tick the number of required times
-        for(int dynamic_wait = ticks; dynamic_wait > 0; dynamic_wait--) {
+        while(gs->int_tick - data->local_proposal < ev->tick) {
             // Tick scene
             game_state_dynamic_tick(gs, true);
             arena_hash = arena_state_hash(gs);

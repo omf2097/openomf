@@ -897,7 +897,6 @@ void game_state_static_tick(game_state *gs, bool replay) {
 void game_state_dynamic_tick(game_state *gs, bool replay) {
 
     if(gs->hit_pause > 0) {
-        gs->int_tick++;
         gs->hit_pause--;
         return;
     }
