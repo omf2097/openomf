@@ -742,7 +742,6 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                                             has_received = 1;
                                         }
                                     } else {
-                                        log_debug("Remote event %d at %" PRIu32, action, remote_tick);
                                         controller_cmd(ctrl, action, ev);
                                     }
                                 }
@@ -986,7 +985,6 @@ void controller_hook(controller *ctrl, int action) {
             serial_write_uint32(&ser, udist(data->last_tick, data->local_proposal));
             serial_write_int8(&ser, action);
             serial_write_int8(&ser, 0);
-            log_debug("controller hook fired with %d", action);
             // non gameplay events are not repeated, so they need to be reliable
             packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
             serial_free(&ser);
