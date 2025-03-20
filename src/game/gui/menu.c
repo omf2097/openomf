@@ -145,7 +145,7 @@ static int menu_action(component *mc, int action) {
         c = sizer_get(mc, sizer_size(mc) - 1);
         menu_select(mc, c);
 
-        if((m->is_submenu || was_last_selected) && action == ACT_ESC) {
+        if(m->is_submenu || was_last_selected) {
             // If the last item is already selected, and ESC if punched, change the action to punch
             // This is then passed to the quit (last) component and its callback is called
             // Hacky, but works well in menu sizer.
