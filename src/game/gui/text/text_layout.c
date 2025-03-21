@@ -98,8 +98,6 @@ static area find_row_metrics(const str *buf, const font *font, uint8_t letter_sp
 typedef struct text_row {
     size_t start_index; // First letter of this row
     size_t end_index;   // First letter of next row
-    font *font;
-    uint8_t letter_spacing;
 
     area size;
 } text_row;
