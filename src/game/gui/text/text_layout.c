@@ -38,6 +38,10 @@ size_t find_next_line_end(const str *buf, const font *font, text_row_direction d
         if(ptr[i] == '\n') {
             return i + 1;
         }
+        if(ptr[i] == '{') {
+            // don't process markup
+            return i + 1;
+        }
 
         // Check if this is a potential cut-off point. Cut-off is used if we run out of space
         // before we reach an actual linebreak.
@@ -94,6 +98,9 @@ static area find_row_metrics(const str *buf, const font *font, uint8_t letter_sp
 typedef struct text_row {
     size_t start_index; // First letter of this row
     size_t end_index;   // First letter of next row
+    font *font;
+    uint8_t letter_spacing;
+
     area size;
 } text_row;
 
@@ -106,6 +113,10 @@ static area find_rows(vector *rows, const str *buf, const font *font, text_row_d
     area row_size;
 
     while(start < len) {
+        if(str_at(buf, start) == '{') {
+            // don't handle markup
+            goto exit;
+        }
         size_t next_start = find_next_line_end(buf, font, direction, start, letter_spacing, max_width);
         if(next_start == start) {
             // If we run out of horizontal space, stop here.
@@ -118,6 +129,9 @@ static area find_rows(vector *rows, const str *buf, const font *font, text_row_d
         char last_char = str_at(buf, next_start - 1);
         if(last_char == '\n' || last_char == ' ') {
             end--;
+        } else if(last_char == '{') {
+            end--;
+            next_start--;
         }
 
         row_size = find_row_metrics(buf, font, letter_spacing, direction, start, end);
@@ -186,10 +200,10 @@ static uint16_t halign_offset(text_horizontal_align align, uint16_t bbox_w, uint
  * @param letter_spacing Spacing between letters (in pixels)
  * @param max_lines Maximum line count
  */
-void text_layout_compute(text_layout *layout, const str *buf, const font *font, uint16_t bbox_w, uint16_t bbox_h,
-                         text_vertical_align vertical_align, text_horizontal_align horizontal_align, text_margin margin,
-                         text_row_direction direction, uint8_t line_spacing, uint8_t letter_spacing,
-                         uint8_t max_lines) {
+uint16_t text_layout_compute(text_layout *layout, const str *buf, const font *font, uint16_t bbox_w, uint16_t bbox_h,
+                             text_vertical_align vertical_align, text_horizontal_align horizontal_align,
+                             text_margin margin, text_row_direction direction, uint8_t line_spacing,
+                             uint8_t letter_spacing, uint8_t max_lines) {
     assert(buf != NULL);
     // assert(bbox_w > margin.left + margin.right);
     // assert(bbox_h > margin.top + margin.bottom);
@@ -201,6 +215,8 @@ void text_layout_compute(text_layout *layout, const str *buf, const font *font, 
     uint16_t h = bbox_h - margin.top - margin.bottom;
     uint16_t max_width = is_horizontal ? w : h;
     uint16_t max_height = is_horizontal ? h : w;
+
+    uint16_t chars = 0;
 
     // Figure out how many rows we render, and what their sizes are.
     vector rows;
@@ -225,6 +241,7 @@ void text_layout_compute(text_layout *layout, const str *buf, const font *font, 
                 item->x = margin.left + (is_horizontal ? x : y);
                 item->y = margin.top + (is_horizontal ? y : x);
                 x += letter_spacing + (is_horizontal ? item->glyph->w : item->glyph->h);
+                chars++;
             }
         }
         y += line_spacing + (is_horizontal ? row->size.h : row->size.w);
@@ -237,4 +254,6 @@ void text_layout_compute(text_layout *layout, const str *buf, const font *font, 
 
     // This is the temporary row buffer, it's no longer needed.
     vector_free(&rows);
+
+    return chars;
 }

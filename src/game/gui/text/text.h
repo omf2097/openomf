@@ -10,6 +10,7 @@
 #include "video/vga_palette.h"
 
 typedef struct text text;
+typedef struct text_document text_document;
 
 #define TEXT_BBOX_MAX UINT16_MAX
 
