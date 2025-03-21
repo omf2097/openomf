@@ -36,6 +36,7 @@ int sd_chr_from_trn(sd_chr_file *chr, sd_tournament_file *trn, sd_pilot *pilot) 
         if(!trn->enemies[i]->secret) {
             ranked++;
             chr->enemies[i]->pilot.rank = ranked;
+            chr->enemies[i]->trn_index = i;
         }
     }
     vga_palette_init(&chr->pal);
@@ -191,13 +192,12 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
             chr->enemies[i]->pilot.winnings = trn.enemies[i]->winnings;
             chr->enemies[i]->pilot.total_value = trn.enemies[i]->total_value;
             chr->enemies[i]->pilot.photo_id = trn.enemies[i]->photo_id;
+            chr->enemies[i]->pilot.sex = pic.photos[trn.enemies[i]->photo_id]->sex;
         }
         memread_buf(mr, chr->enemies[i]->unknown_a, 9);
-        chr->enemies[i]->photo_id = memread_ubyte(mr);
+        chr->enemies[i]->trn_index = memread_ubyte(mr);
         memread_buf(mr, chr->enemies[i]->unknown_b, 15);
-        if(trn_loaded) {
-            chr->enemies[i]->pilot.sex = pic.photos[chr->enemies[i]->photo_id]->sex;
-        }
+
         for(int m = 0; m < 10; m++) {
             if(trn_loaded && trn.enemies[i]->quotes[m]) {
                 chr->enemies[i]->pilot.quotes[m] = omf_strdup(trn.enemies[i]->quotes[m]);
@@ -275,7 +275,7 @@ int sd_chr_save(sd_chr_file *chr, const char *filename) {
     for(int i = 0; i < chr->pilot.enemies_inc_unranked; i++) {
         sd_pilot_save_player_to_mem(mw, &chr->enemies[i]->pilot);
         memwrite_buf(mw, chr->enemies[i]->unknown_a, 9);
-        memwrite_ubyte(mw, chr->enemies[i]->photo_id);
+        memwrite_ubyte(mw, chr->enemies[i]->trn_index);
         memwrite_buf(mw, chr->enemies[i]->unknown_b, 15);
     }
     memwriter_xor(mw, (chr->pilot.enemies_inc_unranked * 68) & 0xFF);
