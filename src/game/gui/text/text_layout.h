@@ -23,9 +23,9 @@ typedef struct text_layout {
 void text_layout_create(text_layout *layout);
 void text_layout_free(text_layout *layout);
 size_t find_next_line_end(const str *buf, const font *font, text_row_direction direction, size_t start_index,
-                          uint8_t letter_spacing, uint16_t max_width);
+                          uint8_t letter_spacing, uint16_t max_width, bool word_wrap);
 void text_layout_compute(text_layout *layout, const str *buf, const font *font, uint16_t bbox_w, uint16_t bbox_h,
                          text_vertical_align vertical_align, text_horizontal_align horizontal_align, text_margin margin,
-                         text_row_direction direction, uint8_t line_spacing, uint8_t letter_spacing, uint8_t max_lines);
+                         text_row_direction direction, uint8_t line_spacing, uint8_t letter_spacing, bool word_wrap);
 
 #endif // TEXT_LAYOUT_H

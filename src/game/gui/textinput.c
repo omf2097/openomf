@@ -272,7 +272,7 @@ static void textinput_init(component *c, const gui_theme *theme) {
     text_set_color(ti->text, theme->text.primary_color);
     text_set_line_spacing(ti->text, 0);
     text_set_horizontal_align(ti->text, ALIGN_TEXT_LEFT);
-    text_set_max_lines(ti->text, ti->text_max_lines);
+    text_set_word_wrap(ti->text, false);
     text_set_shadow_style(ti->text, ti->text_shadow);
     text_set_shadow_color(ti->text, ti->text_shadow_color);
     text_set_margin(ti->text, (text_margin){0, 0, 0, 0});

@@ -35,7 +35,7 @@ struct text {
     uint8_t letter_spacing;
     uint8_t shadow;
     uint8_t glyph_margin;
-    uint8_t max_lines;
+    uint8_t word_wrap;
 };
 
 static void defaults(text *t) {
@@ -52,7 +52,7 @@ static void defaults(text *t) {
     t->direction = TEXT_ROW_HORIZONTAL;
     t->shadow = GLYPH_SHADOW_NONE;
     t->glyph_margin = 0;
-    t->max_lines = UINT8_MAX;
+    t->word_wrap = true;
 }
 
 text *text_create(font_size font) {
@@ -194,9 +194,9 @@ void text_set_glyph_margin(text *t, uint8_t glyph_margin) {
     }
 }
 
-void text_set_max_lines(text *t, uint8_t max_lines) {
-    if(t->max_lines != max_lines) {
-        t->max_lines = max_lines;
+void text_set_word_wrap(text *t, bool word_wrap) {
+    if(t->word_wrap != word_wrap) {
+        t->word_wrap = word_wrap;
         t->cache_flags |= INVALIDATE_LAYOUT;
     }
 }
@@ -263,8 +263,8 @@ uint8_t text_get_glyph_margin(const text *t) {
     return t->glyph_margin;
 }
 
-uint8_t text_get_max_lines(const text *t) {
-    return t->max_lines;
+bool text_get_word_wrap(const text *t) {
+    return t->word_wrap;
 }
 
 uint16_t text_get_layout_width(const text *t) {
@@ -287,7 +287,7 @@ void text_generate_layout(text *t) {
         log_debug("Re-flowing text layout for %d x %d box", t->w, t->h);
         const font *font = fonts_get_font(t->font);
         text_layout_compute(&t->layout, &t->buf, font, t->w, t->h, t->vertical_align, t->horizontal_align, t->margin,
-                            t->direction, t->line_spacing, t->letter_spacing, t->max_lines);
+                            t->direction, t->line_spacing, t->letter_spacing, t->word_wrap);
         t->cache_flags &= ~INVALIDATE_LAYOUT;
     }
 }

@@ -34,7 +34,7 @@ void text_set_line_spacing(text *t, uint8_t line_spacing);
 void text_set_letter_spacing(text *t, uint8_t letter_spacing);
 void text_set_shadow_style(text *t, uint8_t shadow);
 void text_set_glyph_margin(text *t, uint8_t glyph_margin);
-void text_set_max_lines(text *t, uint8_t max);
+void text_set_word_wrap(text *t, bool enable);
 
 void text_get_str(const text *t, str *dst);
 font_size text_get_font(const text *t);
@@ -49,7 +49,7 @@ uint8_t text_get_line_spacing(const text *t);
 uint8_t text_get_letter_spacing(const text *t);
 uint8_t text_get_shadow_style(const text *t);
 uint8_t text_get_glyph_margin(const text *t);
-uint8_t text_get_max_lines(const text *t);
+bool text_get_word_wrap(const text *t);
 
 /**
  * Get the maximum width of the rendered block of text. This may be smaller than the bounding box.

@@ -18,7 +18,7 @@ void text_layout_free(text_layout *layout) {
  * the given space, start_index is returned.
  */
 size_t find_next_line_end(const str *buf, const font *font, text_row_direction direction, size_t start_index,
-                          uint8_t letter_spacing, uint16_t max_width) {
+                          uint8_t letter_spacing, uint16_t max_width, bool word_wrap) {
     assert(buf != NULL);
     assert(font != NULL);
 
@@ -59,7 +59,7 @@ size_t find_next_line_end(const str *buf, const font *font, text_row_direction d
             // No more room on the row! If we found a cut-off point, we use it (space, line).
             // Otherwise try to print what we can and bail. This may break words outside word boundaries,
             // but this is a best-effort case.
-            if(found_cut_off) {
+            if(found_cut_off && word_wrap) {
                 return cut_off;
             } else {
                 return i;
@@ -98,7 +98,7 @@ typedef struct text_row {
 } text_row;
 
 static area find_rows(vector *rows, const str *buf, const font *font, text_row_direction direction,
-                      uint8_t letter_spacing, uint8_t line_spacing, uint16_t max_width, uint16_t max_height) {
+                      uint8_t letter_spacing, uint8_t line_spacing, uint16_t max_width, uint16_t max_height, bool word_wrap) {
     size_t start = 0, len = str_size(buf);
     size_t line = 0;
     size_t row_heights = 0, total_height = 0;
@@ -106,7 +106,7 @@ static area find_rows(vector *rows, const str *buf, const font *font, text_row_d
     area row_size;
 
     while(start < len) {
-        size_t next_start = find_next_line_end(buf, font, direction, start, letter_spacing, max_width);
+        size_t next_start = find_next_line_end(buf, font, direction, start, letter_spacing, max_width, word_wrap);
         if(next_start == start) {
             // If we run out of horizontal space, stop here.
             assert(false && "Ran out of horizontal space when flowing text!");
@@ -184,12 +184,12 @@ static uint16_t halign_offset(text_horizontal_align align, uint16_t bbox_w, uint
  * @param direction Text rendering direction (left to right or top ot bottom)
  * @param line_spacing Spacing between lines (in pixels)
  * @param letter_spacing Spacing between letters (in pixels)
- * @param max_lines Maximum line count
+ * @param word_wrap Enable word wrapping
  */
 void text_layout_compute(text_layout *layout, const str *buf, const font *font, uint16_t bbox_w, uint16_t bbox_h,
                          text_vertical_align vertical_align, text_horizontal_align horizontal_align, text_margin margin,
                          text_row_direction direction, uint8_t line_spacing, uint8_t letter_spacing,
-                         uint8_t max_lines) {
+                         bool word_wrap) {
     assert(buf != NULL);
     // assert(bbox_w > margin.left + margin.right);
     // assert(bbox_h > margin.top + margin.bottom);
@@ -205,7 +205,7 @@ void text_layout_compute(text_layout *layout, const str *buf, const font *font, 
     // Figure out how many rows we render, and what their sizes are.
     vector rows;
     vector_create(&rows, sizeof(text_row));
-    area text_block = find_rows(&rows, buf, font, direction, letter_spacing, line_spacing, max_width, max_height);
+    area text_block = find_rows(&rows, buf, font, direction, letter_spacing, line_spacing, max_width, max_height, word_wrap);
 
     // Clear any lingering data now, as we are ready to write!
     vector_clear(&layout->items);
