@@ -29,4 +29,6 @@ bool fonts_init(void);
 void fonts_close(void);
 const font *fonts_get_font(font_size font);
 
+void fonts_set_font(font *font, font_size font_sz);
+
 #endif // FONTS_H

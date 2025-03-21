@@ -1,6 +1,7 @@
 #include "game/scenes/mainmenu/menu_main.h"
 #include "game/scenes/mainmenu/menu_configuration.h"
 #include "game/scenes/mainmenu/menu_gameplay.h"
+#include "game/scenes/mainmenu/menu_help.h"
 #include "game/scenes/mainmenu/menu_net.h"
 #include "game/scenes/mainmenu/menu_widget_ids.h"
 
@@ -94,6 +95,11 @@ void mainmenu_enter_network(component *c, void *userdata) {
     menu_set_submenu(c->parent, menu_net_create(s));
 }
 
+void mainmenu_enter_help(component *c, void *userdata) {
+    scene *s = userdata;
+    menu_set_submenu(c->parent, menu_help_create(s));
+}
+
 component *menu_main_create(scene *s) {
     component *menu = menu_create();
     menu_attach(menu, button_create("ONE PLAYER GAME", NULL, false, false, mainmenu_1v1, s));
@@ -104,7 +110,7 @@ component *menu_main_create(scene *s) {
     menu_attach(menu, net);
     menu_attach(menu, button_create("CONFIGURATION", NULL, false, false, mainmenu_enter_configuration, s));
     menu_attach(menu, button_create("GAMEPLAY", NULL, false, false, mainmenu_enter_gameplay, s));
-    menu_attach(menu, button_create("HELP", NULL, true, false, NULL, NULL));
+    menu_attach(menu, button_create("HELP", NULL, false, false, mainmenu_enter_help, s));
     menu_attach(menu, button_create("DEMO", NULL, false, false, mainmenu_demo, s));
     menu_attach(menu, button_create("SCOREBOARD", NULL, false, false, mainmenu_soreboard, s));
     menu_attach(menu, button_create("QUIT", NULL, false, false, mainmenu_quit, s));
