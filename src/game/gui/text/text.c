@@ -110,16 +110,13 @@ void text_document_free(text_document **d) {
     if(*d != NULL) {
         iterator it;
         text *item;
-        // First the shadows for all letters.
         vector_iter_begin(&(*d)->text_objects, &it);
         foreach(it, item) {
             text_layout_free(&item->layout);
+            str_free(&item->buf);
         }
         vector_free(&(*d)->text_objects);
         omf_free(*d);
-        // str_free(&(*t)->buf);
-        // text_layout_free(&(*t)->layout);
-        // omf_free(*t);
     }
 }
 
@@ -387,7 +384,7 @@ void text_generate_document(text_document *td, str *buf0, font_size font_sz, uin
                 if(end) {
                     char tmp[20];
                     memcpy(tmp, buf + start, sizeof(tmp));
-                    log_warn("unhandled markup detected %s", tmp);
+                    // log_warn("unhandled markup detected %s", tmp);
                     start += end - (buf + start);
                 } else {
                     log_warn("unterminated markup detected");
@@ -419,13 +416,15 @@ void text_generate_document(text_document *td, str *buf0, font_size font_sz, uin
         if(endptr) {
             size_t end = endptr - buf;
             str_from_slice(&t->buf, buf0, start, end);
+            start = end;
         } else {
             str_from_slice(&t->buf, buf0, start, len);
+            start = len;
         }
 
         const font *font = fonts_get_font(t->font);
-        start += text_layout_compute(&t->layout, &t->buf, font, t->w, t->h, t->vertical_align, t->horizontal_align,
-                                     t->margin, t->direction, t->line_spacing, t->letter_spacing, t->max_lines);
+        text_layout_compute(&t->layout, &t->buf, font, t->w, t->h, t->vertical_align, t->horizontal_align, t->margin,
+                            t->direction, t->line_spacing, t->letter_spacing, 255);
         t->cache_flags &= ~INVALIDATE_LAYOUT;
     }
 }

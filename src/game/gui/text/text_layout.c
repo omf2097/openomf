@@ -187,10 +187,10 @@ static uint16_t halign_offset(text_horizontal_align align, uint16_t bbox_w, uint
  * @param letter_spacing Spacing between letters (in pixels)
  * @param max_lines Maximum line count
  */
-uint16_t text_layout_compute(text_layout *layout, const str *buf, const font *font, uint16_t bbox_w, uint16_t bbox_h,
-                             text_vertical_align vertical_align, text_horizontal_align horizontal_align,
-                             text_margin margin, text_row_direction direction, uint8_t line_spacing,
-                             uint8_t letter_spacing, uint8_t max_lines) {
+void text_layout_compute(text_layout *layout, const str *buf, const font *font, uint16_t bbox_w, uint16_t bbox_h,
+                         text_vertical_align vertical_align, text_horizontal_align horizontal_align, text_margin margin,
+                         text_row_direction direction, uint8_t line_spacing, uint8_t letter_spacing,
+                         uint8_t max_lines) {
     assert(buf != NULL);
     // assert(bbox_w > margin.left + margin.right);
     // assert(bbox_h > margin.top + margin.bottom);
@@ -203,8 +203,6 @@ uint16_t text_layout_compute(text_layout *layout, const str *buf, const font *fo
     uint16_t max_width = is_horizontal ? w : h;
     uint16_t max_height = is_horizontal ? h : w;
 
-    uint16_t chars = 0;
-
     // Figure out how many rows we render, and what their sizes are.
     vector rows;
     vector_create(&rows, sizeof(text_row));
@@ -212,6 +210,8 @@ uint16_t text_layout_compute(text_layout *layout, const str *buf, const font *fo
 
     // Clear any lingering data now, as we are ready to write!
     vector_clear(&layout->items);
+
+    printf("found %d rows in text %s\n", vector_size(&rows), str_c(buf));
 
     // Walk through the generated rows, so that we can find row alignments and positions of the individual letters.
     iterator it;
@@ -228,7 +228,6 @@ uint16_t text_layout_compute(text_layout *layout, const str *buf, const font *fo
                 item->x = margin.left + (is_horizontal ? x : y);
                 item->y = margin.top + (is_horizontal ? y : x);
                 x += letter_spacing + (is_horizontal ? item->glyph->w : item->glyph->h);
-                chars++;
             }
         }
         y += line_spacing + (is_horizontal ? row->size.h : row->size.w);
@@ -241,6 +240,4 @@ uint16_t text_layout_compute(text_layout *layout, const str *buf, const font *fo
 
     // This is the temporary row buffer, it's no longer needed.
     vector_free(&rows);
-
-    return chars;
 }
