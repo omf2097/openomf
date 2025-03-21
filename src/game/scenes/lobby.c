@@ -449,7 +449,7 @@ component *lobby_yell_create(scene *s) {
     textinput_set_text_shadow(yell_input, GLYPH_SHADOW_BOTTOM, 9);
     textinput_set_font(yell_input, FONT_NET1);
     textinput_set_horizontal_align(yell_input, ALIGN_TEXT_LEFT);
-    component_set_size_hints(yell_input, 320, -1);    // Flex aggressively
+    component_set_size_hints(yell_input, 320, -1); // Flex aggressively
     menu_attach(menu, yell_input);
     textinput_enable_background(yell_input, 0);
     textinput_set_done_cb(yell_input, lobby_do_yell, s);
@@ -518,7 +518,7 @@ component *lobby_whisper_create(scene *s) {
     component *whisper_input = textinput_create(36, local->helptext, "");
     textinput_set_text_shadow(whisper_input, GLYPH_SHADOW_BOTTOM, 9);
     textinput_set_horizontal_align(whisper_input, ALIGN_TEXT_LEFT);
-    component_set_size_hints(whisper_input, 320, -1);  // Flex aggressively
+    component_set_size_hints(whisper_input, 320, -1); // Flex aggressively
     textinput_set_font(whisper_input, FONT_NET1);
     menu_attach(menu, whisper_input);
     textinput_enable_background(whisper_input, 0);
@@ -1462,11 +1462,15 @@ int lobby_create(scene *scene) {
     help_text.cforeground = 56;
 
     menu_set_help_text_settings(menu, &help_text);
-    component *challenge_button = button_create("Challenge", "Challenge this player to a fight. Challenge yourself for 1-player game.",
-                                                false, false, lobby_challenge, scene);
-    component *whisper_button = button_create("Whisper", "Whisper a message to this player.", false, false, lobby_whisper, scene);
-    component *yell_button = button_create("Yell", "Chat with everybody in the arena.", false, false, lobby_yell, scene);
-    component *refresh_button = button_create("Refresh", "Refresh the player list.", false, false, lobby_refresh, scene);
+    component *challenge_button =
+        button_create("Challenge", "Challenge this player to a fight. Challenge yourself for 1-player game.", false,
+                      false, lobby_challenge, scene);
+    component *whisper_button =
+        button_create("Whisper", "Whisper a message to this player.", false, false, lobby_whisper, scene);
+    component *yell_button =
+        button_create("Yell", "Chat with everybody in the arena.", false, false, lobby_yell, scene);
+    component *refresh_button =
+        button_create("Refresh", "Refresh the player list.", false, false, lobby_refresh, scene);
     component *exit_button = button_create("Exit", "Exit and disconnect.", false, false, lobby_exit, scene);
 
     button_set_text_shadow(challenge_button, GLYPH_SHADOW_BOTTOM, 9);

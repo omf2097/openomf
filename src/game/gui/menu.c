@@ -109,7 +109,8 @@ static void menu_render(component *c) {
             if(m->help_bg2) {
                 video_draw(m->help_bg2, m->help_x - 8, m->help_y - 8);
             }
-            text_render_mode(&m->help_text_conf, TEXT_DEFAULT, m->help_x, m->help_y, m->help_w, m->help_h, (*tmp)->help);
+            text_render_mode(&m->help_text_conf, TEXT_DEFAULT, m->help_x, m->help_y, m->help_w, m->help_h,
+                             (*tmp)->help);
         }
         i++;
     }
@@ -255,7 +256,7 @@ static void menu_layout(component *c, int x, int y, int w, int h) {
     int reserved_items = 0;
     foreach(it, tmp) {
         int hint = m->horizontal ? (*tmp)->w_hint : (*tmp)->h_hint;
-        if (hint > -1) {
+        if(hint > -1) {
             reserved_space += hint;
             reserved_items += 1;
         }
@@ -281,8 +282,8 @@ static void menu_layout(component *c, int x, int y, int w, int h) {
 
     // Align components
     int offset = 0;
-    if (m->centered) {
-        if (m->horizontal) {
+    if(m->centered) {
+        if(m->horizontal) {
             offset += (w - reserved_space) / 2;
         } else {
             offset += (h - reserved_space) / 2;
@@ -307,7 +308,7 @@ static void menu_layout(component *c, int x, int y, int w, int h) {
             offset += obj_h + m->padding;
         }
     }
-    if (offset > 0) {
+    if(offset > 0) {
         offset -= m->padding;
     }
 

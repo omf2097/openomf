@@ -185,10 +185,10 @@ component *menu_video_create(scene *s) {
     // vsync and fullscreen
     menu_attach(menu, textselector_create_bind_opts("VSYNC", "Toggle vertical sync on or off.", NULL, NULL,
                                                     &setting->video.vsync, offon_opts, 2));
-    menu_attach(menu, textselector_create_bind_opts("ASPECT", "Video aspect ratio. Original game is 4:3.", NULL,
-                                                    NULL, &setting->video.aspect, aspect_opts, 2));
-    menu_attach(menu, textselector_create_bind_opts("FULLSCREEN", "Run the game in a fullscreen window.", NULL,
-                                                    NULL, &setting->video.fullscreen, offon_opts, 2));
+    menu_attach(menu, textselector_create_bind_opts("ASPECT", "Video aspect ratio. Original game is 4:3.", NULL, NULL,
+                                                    &setting->video.aspect, aspect_opts, 2));
+    menu_attach(menu, textselector_create_bind_opts("FULLSCREEN", "Run the game in a fullscreen window.", NULL, NULL,
+                                                    &setting->video.fullscreen, offon_opts, 2));
 
     // Done button
     menu_attach(menu, button_create("DONE", "Return to the main menu.", false, false, menu_video_done, s));

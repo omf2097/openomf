@@ -6,11 +6,10 @@
 
 typedef void (*textslider_slide_cb)(component *c, void *userdata, int pos);
 
-component *textslider_create(const char *text, const char *help, unsigned int positions,
-                             int has_off, textslider_slide_cb cb, void *userdata);
-component *textslider_create_bind(const char *text, const char *help,
-                                  unsigned int positions, int has_off, textslider_slide_cb cb, void *userdata,
-                                  int *bind);
+component *textslider_create(const char *text, const char *help, unsigned int positions, int has_off,
+                             textslider_slide_cb cb, void *userdata);
+component *textslider_create_bind(const char *text, const char *help, unsigned int positions, int has_off,
+                                  textslider_slide_cb cb, void *userdata, int *bind);
 // by default, the "next" and "previous" item selection noises are panned; call this to disable that effect.
 void textslider_disable_panning(component *c);
 

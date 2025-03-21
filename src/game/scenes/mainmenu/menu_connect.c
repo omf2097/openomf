@@ -212,8 +212,7 @@ component *menu_connect_create(scene *s) {
 
     local->addr_input =
         textinput_create(15, "Enter an IP address you wish to connect to.", settings_get()->net.net_connect_ip);
-    local->port_input =
-        textinput_create(highest_port_digits, "Enter the remote port you wish to connect to.", "");
+    local->port_input = textinput_create(highest_port_digits, "Enter the remote port you wish to connect to.", "");
     textinput_set_font(local->addr_input, FONT_BIG);
     textinput_set_font(local->port_input, FONT_BIG);
     menu_connect_reset_port_input(local);

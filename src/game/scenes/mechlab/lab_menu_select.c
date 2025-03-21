@@ -56,8 +56,7 @@ component *lab_menu_select_create(scene *s, lab_menu_select_cb select, void *sel
     selector->data = selectdata;
 
     sprite *bsprite = animation_get_sprite(main_buttons, 0);
-    component *sel_button =
-        spritebutton_create(lang_get(223), bsprite->data, false, lab_menu_select_choose, selector);
+    component *sel_button = spritebutton_create(lang_get(223), bsprite->data, false, lab_menu_select_choose, selector);
     spritebutton_set_font(sel_button, FONT_SMALL);
     spritebutton_set_text_color(sel_button, TEXT_TRN_BLUE);
 

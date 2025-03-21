@@ -126,9 +126,8 @@ component *menu_language_create(scene *s) {
     component *menu = menu_create();
     menu_attach(menu, label_create_title("LANGUAGE"));
 
-    menu_attach(menu,
-                textselector_create_bind_opts("", "Choose a Language.", NULL, NULL, &local->selected_language,
-                                              (char const **)local->language_names, local->language_count));
+    menu_attach(menu, textselector_create_bind_opts("", "Choose a Language.", NULL, NULL, &local->selected_language,
+                                                    (char const **)local->language_names, local->language_count));
 
     menu_attach(menu, filler_create());
 

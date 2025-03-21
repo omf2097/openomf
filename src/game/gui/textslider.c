@@ -3,9 +3,9 @@
 #include <string.h>
 
 #include "audio/audio.h"
+#include "game/gui/text/text.h"
 #include "game/gui/textslider.h"
 #include "game/gui/widget.h"
-#include "game/gui/text/text.h"
 #include "utils/allocator.h"
 #include "utils/c_string_util.h"
 #include "utils/str.h"
@@ -123,8 +123,8 @@ static void textslider_layout(component *c, int x, int y, int w, int h) {
     text_generate_layout(t->text);
 }
 
-component *textslider_create(const char *text, const char *help, unsigned int positions,
-                             int has_off, textslider_slide_cb cb, void *userdata) {
+component *textslider_create(const char *text, const char *help, unsigned int positions, int has_off,
+                             textslider_slide_cb cb, void *userdata) {
     component *c = widget_create();
 
     text_slider *t = omf_calloc(1, sizeof(text_slider));
@@ -153,9 +153,8 @@ component *textslider_create(const char *text, const char *help, unsigned int po
     return c;
 }
 
-component *textslider_create_bind(const char *text, const char *help,
-                                  unsigned int positions, int has_off, textslider_slide_cb cb, void *userdata,
-                                  int *bind) {
+component *textslider_create_bind(const char *text, const char *help, unsigned int positions, int has_off,
+                                  textslider_slide_cb cb, void *userdata, int *bind) {
     component *c = textslider_create(text, help, positions, has_off, cb, userdata);
     text_slider *ts = widget_get_obj(c);
     ts->pos = (bind) ? bind : &ts->pos_;

@@ -1308,7 +1308,7 @@ void arena_render_overlay(scene *scene) {
             int h2len = (strlen(lang_get((player[1]->pilot->har_id) + 31)) - 1) * fnt->w;
             text_render_mode(&tconf_players, TEXT_DEFAULT, 315 - p2len, 19, 100, 6, player2_name);
             text_render_mode(&tconf_players, TEXT_DEFAULT, 315 - h2len, 26, 100, 6,
-                        lang_get((player[1]->pilot->har_id) + 31));
+                             lang_get((player[1]->pilot->har_id) + 31));
         }
 
         // dont render total score in demo play
@@ -1673,17 +1673,16 @@ int arena_create(scene *scene) {
     widget_set_id(return_button, GAME_MENU_RETURN_ID);
     menu_attach(menu, return_button);
 
+    menu_attach(menu, textslider_create_bind(
+                          "SOUND", "Raise or lower the volume of all sound effects. Press left or right to change.", 10,
+                          1, arena_sound_slide, NULL, &setting->sound.sound_vol));
     menu_attach(menu,
-                textslider_create_bind("SOUND",
-                                       "Raise or lower the volume of all sound effects. Press left or right to change.",
-                                       10, 1, arena_sound_slide, NULL, &setting->sound.sound_vol));
-    menu_attach(menu, textslider_create_bind("MUSIC",
-                                             "Raise or lower the volume of music. Press right or left to change.", 10,
-                                             1, arena_music_slide, NULL, &setting->sound.music_vol));
+                textslider_create_bind("MUSIC", "Raise or lower the volume of music. Press right or left to change.",
+                                       10, 1, arena_music_slide, NULL, &setting->sound.music_vol));
 
-    component *speed_slider = textslider_create_bind(
-        "SPEED", "Change the speed of the game when in the arena. Press left or right to change", 10, 0,
-        arena_speed_slide, scene, &setting->gameplay.speed);
+    component *speed_slider =
+        textslider_create_bind("SPEED", "Change the speed of the game when in the arena. Press left or right to change",
+                               10, 0, arena_speed_slide, scene, &setting->gameplay.speed);
     if(is_netplay(scene->gs)) {
         component_disable(speed_slider, 1);
     }

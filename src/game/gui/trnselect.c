@@ -68,7 +68,7 @@ static void trnselect_free(component *c) {
         list_free(g->tournaments);
         omf_free(g->tournaments);
     }
-    if (g->label) {
+    if(g->label) {
         component_free(g->label);
     }
     omf_free(g);

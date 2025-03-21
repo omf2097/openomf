@@ -3,9 +3,9 @@
 #include <string.h>
 
 #include "audio/audio.h"
+#include "game/gui/text/text.h"
 #include "game/gui/textselector.h"
 #include "game/gui/widget.h"
-#include "game/gui/text/text.h"
 #include "utils/allocator.h"
 #include "utils/c_string_util.h"
 
@@ -25,7 +25,6 @@ typedef struct text_selector {
     void *userdata;
     textselector_toggle_cb toggle;
 } text_selector;
-
 
 void textselector_clear_options(component *c) {
     text_selector *t = widget_get_obj(c);
@@ -136,7 +135,7 @@ static void textselector_free(component *c) {
 }
 
 static void item_free(void *item) {
-    omf_free(*(void**)item);
+    omf_free(*(void **)item);
 }
 
 static void textselector_init(component *c, const gui_theme *theme) {
@@ -160,8 +159,7 @@ static void textselector_layout(component *c, int x, int y, int w, int h) {
     text_generate_layout(t->text);
 }
 
-component *textselector_create(const char *text, const char *help,
-                               textselector_toggle_cb cb, void *userdata) {
+component *textselector_create(const char *text, const char *help, textselector_toggle_cb cb, void *userdata) {
     component *c = widget_create();
 
     text_selector *t = omf_calloc(1, sizeof(text_selector));
@@ -188,17 +186,16 @@ component *textselector_create(const char *text, const char *help,
     return c;
 }
 
-component *textselector_create_bind(const char *text, const char *help,
-                                    textselector_toggle_cb toggle_cb, void *userdata, int *bind) {
+component *textselector_create_bind(const char *text, const char *help, textselector_toggle_cb toggle_cb,
+                                    void *userdata, int *bind) {
     component *c = textselector_create(text, help, toggle_cb, userdata);
     text_selector *ts = widget_get_obj(c);
     ts->pos = (bind) ? bind : &ts->pos_;
     return c;
 }
 
-component *textselector_create_bind_opts(const char *text, const char *help,
-                                         textselector_toggle_cb toggle_cb, void *userdata, int *bind, const char **opts,
-                                         int opt_size) {
+component *textselector_create_bind_opts(const char *text, const char *help, textselector_toggle_cb toggle_cb,
+                                         void *userdata, int *bind, const char **opts, int opt_size) {
     component *c = textselector_create_bind(text, help, toggle_cb, userdata, bind);
     for(int i = 0; i < opt_size; i++) {
         textselector_add_option(c, opts[i]);

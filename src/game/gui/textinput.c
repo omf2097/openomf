@@ -3,9 +3,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "game/gui/text/text.h"
 #include "game/gui/textinput.h"
 #include "game/gui/widget.h"
-#include "game/gui/text/text.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
 #include "utils/miscmath.h"
@@ -37,10 +37,9 @@ typedef struct textinput {
     void *userdata;
 } textinput;
 
-
 static void set_cursor(component *c, bool focused) {
     textinput *ti = widget_get_obj(c);
-    if (focused == ti->was_focused)
+    if(focused == ti->was_focused)
         return;
     if(focused) {
         str tmp;

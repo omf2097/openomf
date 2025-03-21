@@ -99,15 +99,15 @@ component *menu_audio_create(scene *s) {
     menu_attach(menu, label_create_title("AUDIO"));
     menu_attach(menu, filler_create());
     component *volume_textslider = textslider_create_bind(
-        "SOUND", "Raise or lower the volume of all sound effects. Press right or left to change.",
-        10, 1, menu_audio_sound_slide, NULL, &settings_get()->sound.sound_vol);
+        "SOUND", "Raise or lower the volume of all sound effects. Press right or left to change.", 10, 1,
+        menu_audio_sound_slide, NULL, &settings_get()->sound.sound_vol);
     textslider_disable_panning(volume_textslider);
     menu_attach(menu, volume_textslider);
-    menu_attach(menu, textslider_create_bind("MUSIC",
-                                             "Raise or lower the volume of music. Press right or left to change.", 10,
-                                             1, menu_audio_music_slide, NULL, &settings_get()->sound.music_vol));
-    menu_attach(menu, textselector_create_bind_opts("MONO", NULL, NULL, NULL, &settings_get()->sound.music_mono,
-                                                    mono_opts, 2));
+    menu_attach(menu,
+                textslider_create_bind("MUSIC", "Raise or lower the volume of music. Press right or left to change.",
+                                       10, 1, menu_audio_music_slide, NULL, &settings_get()->sound.music_vol));
+    menu_attach(
+        menu, textselector_create_bind_opts("MONO", NULL, NULL, NULL, &settings_get()->sound.music_mono, mono_opts, 2));
     local->freq_selector = textselector_create("FREQUENCY:", NULL, menu_audio_freq_toggled, local);
     menu_audio_reset_freqs(local, 1);
     menu_attach(menu, local->freq_selector);

@@ -1,8 +1,8 @@
 #include "game/gui/dialog.h"
 #include "game/gui/button.h"
+#include "game/gui/filler.h"
 #include "game/gui/label.h"
 #include "game/gui/menu.h"
-#include "game/gui/filler.h"
 #include "game/gui/menu_background.h"
 #include "video/video.h"
 #include <string.h>
@@ -48,7 +48,7 @@ void dialog_create(dialog *dlg, dialog_style style, const char *text, int x, int
     component *menu = menu_create();
 
     component *title = label_create_title(text);
-    label_set_margin(title, (text_margin ){2, 2, 2, 2});
+    label_set_margin(title, (text_margin){2, 2, 2, 2});
     menu_attach(menu, title);
     menu_attach(menu, filler_create());
 

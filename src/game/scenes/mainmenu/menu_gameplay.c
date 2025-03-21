@@ -21,9 +21,9 @@ component *menu_gameplay_create(scene *s) {
     component *menu = menu_create();
     menu_attach(menu, label_create_title("GAMEPLAY"));
     menu_attach(menu, filler_create());
-    menu_attach(menu, textslider_create_bind("SPEED",
-                                             "Change the overall speed of the game. Press left and right to change.",
-                                             10, 1, menu_gameplay_speed_slide, s, &settings_get()->gameplay.speed));
+    menu_attach(menu,
+                textslider_create_bind("SPEED", "Change the overall speed of the game. Press left and right to change.",
+                                       10, 1, menu_gameplay_speed_slide, s, &settings_get()->gameplay.speed));
     menu_attach(menu, textselector_create_bind_opts(
                           "FIGHT MODE",
                           "Fight mode can be either normal or hyper. Hyper mode will enhance your special moves. Check "

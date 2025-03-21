@@ -94,7 +94,7 @@ void text_free(text **t) {
 }
 
 void text_set_from_c(text *t, const char *src) {
-    if (src == NULL) {
+    if(src == NULL) {
         str_truncate(&t->buf, 0);
     } else {
         str_set_c(&t->buf, src);
