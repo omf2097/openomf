@@ -24,7 +24,7 @@
 typedef struct {
     sd_pilot pilot;    ///< Enemy pilot data
     char unknown_a[9]; ///< Unknown data TODO: Find out what this does
-    uint8_t photo_id;
+    uint8_t trn_index; ///< Seemingly the index into the TRN enemies list
     char unknown_b[15];
 } sd_chr_enemy;
 
