@@ -81,6 +81,7 @@ struct object_t {
     float horizontal_velocity_modifier;
     int8_t direction;
     int8_t group;
+    bool wall_collision;
 
     // Set by q tag
     int8_t q_counter;

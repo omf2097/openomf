@@ -218,6 +218,8 @@ void player_run(object *obj) {
     // Get MP flag content, set to 0 if not set.
     uint8_t mp = sd_script_isset(frame, "mp") ? sd_script_get(frame, "mp") & 0xFF : 0;
 
+    // Reset the wall collision condition
+    obj->wall_collision = false;
     // See if x+/- or y+/- are set and save values
     int trans_x = 0, trans_y = 0;
     if(sd_script_isset(frame, "y-")) {
@@ -309,6 +311,8 @@ void player_run(object *obj) {
         // log_debug("E: pos.x = %f, pos.y = %f", obj->pos.x, obj->pos.y);
     }
 
+    int ab_flag = sd_script_isset(frame, "ab"); // Pass through walls
+
     // Set to ground
     if(sd_script_isset(frame, "g")) {
         obj->vel.y = 0;
@@ -337,16 +341,20 @@ void player_run(object *obj) {
             // obj->vel.y);
         } else {
             obj->pos.x += trans_x * (mp & 0x20 ? -1 : 1);
-            if(obj->pos.x < ARENA_LEFT_WALL && obj->group == GROUP_HAR) {
-                if(sd_script_isset(frame, "e") && enemy) {
-                    enemy->pos.x += ARENA_LEFT_WALL - obj->pos.x;
+            if(!ab_flag) {
+                if(obj->pos.x < ARENA_LEFT_WALL && obj->group == GROUP_HAR) {
+                    if(sd_script_isset(frame, "e") && enemy) {
+                        enemy->pos.x += ARENA_LEFT_WALL - obj->pos.x;
+                    }
+                    obj->pos.x = ARENA_LEFT_WALL;
+                    obj->wall_collision = true;
+                } else if(obj->pos.x > ARENA_RIGHT_WALL && obj->group == GROUP_HAR) {
+                    if(sd_script_isset(frame, "e") && enemy) {
+                        enemy->pos.x -= obj->pos.x - ARENA_RIGHT_WALL;
+                    }
+                    obj->pos.x = ARENA_RIGHT_WALL;
+                    obj->wall_collision = true;
                 }
-                obj->pos.x = ARENA_LEFT_WALL;
-            } else if(obj->pos.x > ARENA_RIGHT_WALL && obj->group == GROUP_HAR) {
-                if(sd_script_isset(frame, "e") && enemy) {
-                    enemy->pos.x -= obj->pos.x - ARENA_RIGHT_WALL;
-                }
-                obj->pos.x = ARENA_RIGHT_WALL;
             }
             obj->pos.y += trans_y;
             // log_debug("pos x+%d, y+%d to x=%f, y=%f", trans_x * (mp & 0x20 ? -1 : 1), trans_y, obj->pos.x,
@@ -371,7 +379,7 @@ void player_run(object *obj) {
         obj->enemy_slide_state.timer--;
     }
 
-    if(obj->group == GROUP_HAR && enemy) {
+    if(obj->group == GROUP_HAR && enemy && !ab_flag) {
         obj->pos.x = max2(ARENA_LEFT_WALL, min2(ARENA_RIGHT_WALL, obj->pos.x));
     }
 
