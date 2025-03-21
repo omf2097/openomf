@@ -15,5 +15,6 @@ void label_set_text_letter_spacing(component *c, uint8_t spacing);
 void label_set_text_shadow(component *c, uint8_t shadow, vga_index color);
 void label_set_font(component *label, font_size font);
 void label_set_margin(component *c, text_margin margin);
+void label_set_color_theme(component *c, int theme); // 0 = primary, 1 = secondary
 
 #endif // LABEL_H

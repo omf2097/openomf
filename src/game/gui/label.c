@@ -16,14 +16,18 @@ typedef struct label {
     uint8_t text_shadow;
     text_margin text_margin;
     vga_index text_shadow_color;
+    int color_theme;
     surface surface;
 } label;
 
 static void label_render(component *c) {
     label *local = widget_get_obj(c);
-    vga_index color = component_get_theme(c)->text.primary_color;
+    const gui_theme *theme = component_get_theme(c);
+    vga_index color = theme->text.primary_color;
     if(local->override_color > -1) {
         color = local->override_color;
+    } else if (local->color_theme == 1) {
+        color = theme->text.secondary_color;
     }
     text_set_color(local->text, color);
     text_draw(local->text, c->x, c->y);
@@ -76,6 +80,11 @@ void label_set_text_shadow(component *c, uint8_t shadow, vga_index color) {
     local->text_shadow_color = color;
 }
 
+void label_set_color_theme(component *c, int theme) {
+    label *local = widget_get_obj(c);
+    local->color_theme = theme;
+}
+
 static void label_init(component *c, const gui_theme *theme) {
     label *local = widget_get_obj(c);
     text_set_font(local->text, local->override_font != FONT_NONE ? local->override_font : theme->text.font);
@@ -102,6 +111,7 @@ static void label_layout(component *c, int x, int y, int w, int h) {
     text_set_bounding_box(local->text, w, h);
     text_set_horizontal_align(local->text, local->text_horizontal_align);
     text_set_vertical_align(local->text, local->text_vertical_align);
+    text_set_line_spacing(local->text, 0);
     text_generate_layout(local->text);
 }
 
@@ -113,6 +123,7 @@ component *label_create_with_width(const char *text, uint16_t max_width) {
     label *local = omf_calloc(1, sizeof(label));
     local->text = text_create_with_size(FONT_BIG, max_width, TEXT_BBOX_MAX);
     local->override_color = -1;
+    local->color_theme = 0; // 0 = primary color, 1 = secondary color.
     local->override_font = FONT_NONE;
     local->text_horizontal_align = ALIGN_TEXT_LEFT;
     local->text_vertical_align = ALIGN_TEXT_TOP;
@@ -135,7 +146,8 @@ component *label_create(const char *text) {
 }
 
 component *label_create_title(const char *text) {
-    component *c = label_create(text);
+    component *c = label_create_with_width(text, TEXT_BBOX_MAX);
     label_set_text_horizontal_align(c, ALIGN_TEXT_CENTER);
+    label_set_color_theme(c, 1); // Secondary color
     return c;
 }
