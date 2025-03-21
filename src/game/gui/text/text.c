@@ -358,10 +358,10 @@ void text_generate_document(text_document *td, str *buf0, font_size font_sz, uin
                 }
             } else if(strncmp(buf + start, "{SHADOWS ON}", 12) == 0) {
                 start += 12;
-                current_shadow = 1;
+                current_shadow = GLYPH_SHADOW_RIGHT | GLYPH_SHADOW_BOTTOM;
             } else if(strncmp(buf + start, "{SHADOWS OFF}", 13) == 0) {
                 start += 13;
-                current_shadow = 0;
+                current_shadow = GLYPH_SHADOW_NONE;
             } else if(strncmp(buf + start, "{COLOR:YELLOW}", 14) == 0) {
                 start += 14;
                 current_text_color = COLOR_YELLOW;
