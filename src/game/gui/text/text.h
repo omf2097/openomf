@@ -20,6 +20,12 @@ text *text_create_from_c(font_size font, uint16_t w, uint16_t h, const char *src
 text *text_create_from_str(font_size font, uint16_t w, uint16_t h, const str *src);
 void text_free(text **t);
 
+text_document *text_document_create(void);
+void text_document_free(text_document **d);
+
+uint16_t text_document_get_text_count(text_document *d);
+text *text_document_get_text(text_document *d, uint16_t index);
+
 void text_set_from_c(text *t, const char *src);
 void text_set_from_str(text *t, const str *src);
 
@@ -69,6 +75,11 @@ uint16_t text_get_layout_height(const text *t);
  * @warning Note that the text_generate_layout() or text_draw() must have been called first!
  */
 size_t text_get_layout_rows(const text *t);
+
+void text_generate_document(text_document *td, str *buf0, font_size font_sz, uint16_t w, uint16_t h,
+                            vga_index text_color, vga_index shadow_color, text_vertical_align vertical_align,
+                            text_horizontal_align horizontal_align, text_margin margin, uint8_t line_spacing,
+                            uint8_t letter_spacing, uint8_t shadow, uint8_t glyph_margin);
 
 /**
  * Immediately generate the text layout with all glyphs set at correct coordinates.

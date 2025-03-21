@@ -99,6 +99,30 @@ void text_free(text **t) {
     }
 }
 
+text_document *text_document_create(void) {
+    text_document *d = omf_calloc(1, sizeof(text_document));
+    vector_create(&d->text_objects, sizeof(text));
+    return d;
+}
+
+void text_document_free(text_document **d) {
+
+    if(*d != NULL) {
+        iterator it;
+        text *item;
+        // First the shadows for all letters.
+        vector_iter_begin(&(*d)->text_objects, &it);
+        foreach(it, item) {
+            text_layout_free(&item->layout);
+        }
+        vector_free(&(*d)->text_objects);
+        omf_free(*d);
+        // str_free(&(*t)->buf);
+        // text_layout_free(&(*t)->layout);
+        // omf_free(*t);
+    }
+}
+
 void text_set_from_c(text *t, const char *src) {
     if(src == NULL) {
         str_truncate(&t->buf, 0);
@@ -311,7 +335,6 @@ void text_generate_document(text_document *td, str *buf0, font_size font_sz, uin
     vga_index current_shadow_color = shadow_color;
     int bytes_used;
 
-    vector_create(&td->text_objects, sizeof(text));
     while(start < len) {
         while(buf[start] == '{') {
             if(strncmp(buf + start, "{CENTER OFF}", 12) == 0) {
@@ -373,6 +396,8 @@ void text_generate_document(text_document *td, str *buf0, font_size font_sz, uin
         }
 
         text *t = vector_append_ptr(&td->text_objects);
+        defaults(t);
+        text_layout_create(&t->layout);
         t->font = current_font_size;
         t->w = current_width;
         t->h = current_height;
@@ -390,13 +415,27 @@ void text_generate_document(text_document *td, str *buf0, font_size font_sz, uin
         t->glyph_margin = glyph_margin;
         // t->max_lines = max_lines;
 
-        str_from_c(&t->buf, buf + start);
+        char *endptr = strchr(buf + start, '{');
+        if(endptr) {
+            size_t end = endptr - buf;
+            str_from_slice(&t->buf, buf0, start, end);
+        } else {
+            str_from_slice(&t->buf, buf0, start, len);
+        }
 
         const font *font = fonts_get_font(t->font);
         start += text_layout_compute(&t->layout, &t->buf, font, t->w, t->h, t->vertical_align, t->horizontal_align,
                                      t->margin, t->direction, t->line_spacing, t->letter_spacing, t->max_lines);
         t->cache_flags &= ~INVALIDATE_LAYOUT;
     }
+}
+
+uint16_t text_document_get_text_count(text_document *d) {
+    return vector_size(&d->text_objects);
+}
+
+text *text_document_get_text(text_document *d, uint16_t index) {
+    return vector_get(&d->text_objects, index);
 }
 
 void text_generate_layout(text *t) {

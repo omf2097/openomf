@@ -38,10 +38,6 @@ size_t find_next_line_end(const str *buf, const font *font, text_row_direction d
         if(ptr[i] == '\n') {
             return i + 1;
         }
-        if(ptr[i] == '{') {
-            // don't process markup
-            return i + 1;
-        }
 
         // Check if this is a potential cut-off point. Cut-off is used if we run out of space
         // before we reach an actual linebreak.
@@ -111,10 +107,6 @@ static area find_rows(vector *rows, const str *buf, const font *font, text_row_d
     area row_size;
 
     while(start < len) {
-        if(str_at(buf, start) == '{') {
-            // don't handle markup
-            goto exit;
-        }
         size_t next_start = find_next_line_end(buf, font, direction, start, letter_spacing, max_width);
         if(next_start == start) {
             // If we run out of horizontal space, stop here.
@@ -127,9 +119,6 @@ static area find_rows(vector *rows, const str *buf, const font *font, text_row_d
         char last_char = str_at(buf, next_start - 1);
         if(last_char == '\n' || last_char == ' ') {
             end--;
-        } else if(last_char == '{') {
-            end--;
-            next_start--;
         }
 
         row_size = find_row_metrics(buf, font, letter_spacing, direction, start, end);
