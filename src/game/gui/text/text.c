@@ -21,6 +21,8 @@ struct text {
     font_size font;      // Font size to use
     uint16_t w;          // Bounding box width
     uint16_t h;          // Bounding box height
+    int16_t x_off;       // X offset relative to render coordinate
+    int16_t y_off;       // Y offset relative to render coordinate
     text_layout layout;  // Each glyph position in a nice list, easy to render.
     uint8_t cache_flags; // Cache invalidation flags
 
@@ -36,6 +38,10 @@ struct text {
     uint8_t shadow;
     uint8_t glyph_margin;
     uint8_t word_wrap;
+};
+
+struct text_document {
+    vector text_objects;
 };
 
 static void defaults(text *t) {
@@ -90,6 +96,27 @@ void text_free(text **t) {
         str_free(&(*t)->buf);
         text_layout_free(&(*t)->layout);
         omf_free(*t);
+    }
+}
+
+text_document *text_document_create(void) {
+    text_document *d = omf_calloc(1, sizeof(text_document));
+    vector_create(&d->text_objects, sizeof(text));
+    return d;
+}
+
+void text_document_free(text_document **d) {
+
+    if(*d != NULL) {
+        iterator it;
+        text *item;
+        vector_iter_begin(&(*d)->text_objects, &it);
+        foreach(it, item) {
+            text_layout_free(&item->layout);
+            str_free(&item->buf);
+        }
+        vector_free(&(*d)->text_objects);
+        omf_free(*d);
     }
 }
 
@@ -280,6 +307,134 @@ uint16_t text_get_layout_height(const text *t) {
 size_t text_get_layout_rows(const text *t) {
     assert(!(t->cache_flags & INVALIDATE_LAYOUT));
     return t->layout.rows;
+}
+
+void text_generate_document(text_document *td, str *buf0, font_size font_sz, uint16_t w, uint16_t h,
+                            vga_index text_color, vga_index shadow_color, text_vertical_align vertical_align,
+                            text_horizontal_align horizontal_align, text_margin margin, uint8_t line_spacing,
+                            uint8_t letter_spacing, uint8_t shadow, uint8_t glyph_margin) {
+    size_t start = 0;
+    size_t len = str_size(buf0);
+
+    const char *buf = str_c(buf0);
+
+    uint16_t current_width = w;
+    uint16_t current_height = w;
+    text_vertical_align current_vertical_align = vertical_align;
+    text_horizontal_align current_horizontal_align = horizontal_align;
+    font_size current_font_size = font_sz;
+    uint8_t current_shadow = shadow;
+    uint16_t current_x_off = 0;
+    uint16_t current_y_off = 0;
+    uint16_t center = 160;
+    uint16_t current_line_spacing = line_spacing;
+    vga_index current_text_color = text_color;
+    vga_index current_shadow_color = shadow_color;
+    int bytes_used;
+
+    while(start < len) {
+        while(buf[start] == '{') {
+            if(strncmp(buf + start, "{CENTER OFF}", 12) == 0) {
+                start += 12;
+                current_horizontal_align = ALIGN_TEXT_LEFT;
+            } else if(strncmp(buf + start, "{CENTER ON}", 11) == 0) {
+                start += 11;
+                current_horizontal_align = ALIGN_TEXT_CENTER;
+            } else if(strncmp(buf + start, "{SIZE 8}", 8) == 0) {
+                start += 8;
+                // swap based on initial font family
+                if(font_sz == FONT_NET1 || font_sz == FONT_NET2) {
+                    current_font_size = FONT_NET1;
+                } else {
+                    current_font_size = FONT_BIG;
+                }
+            } else if(strncmp(buf + start, "{SIZE 6}", 8) == 0) {
+                start += 8;
+                // swap based on initial font family
+                if(font_sz == FONT_NET1 || font_sz == FONT_NET2) {
+                    current_font_size = FONT_NET2;
+                } else {
+                    current_font_size = FONT_SMALL;
+                }
+            } else if(strncmp(buf + start, "{SHADOWS ON}", 12) == 0) {
+                start += 12;
+                current_shadow = GLYPH_SHADOW_RIGHT | GLYPH_SHADOW_BOTTOM;
+            } else if(strncmp(buf + start, "{SHADOWS OFF}", 13) == 0) {
+                start += 13;
+                current_shadow = GLYPH_SHADOW_NONE;
+            } else if(strncmp(buf + start, "{COLOR:YELLOW}", 14) == 0) {
+                start += 14;
+                current_text_color = COLOR_YELLOW;
+            } else if(strncmp(buf + start, "{COLOR:DEFAULT}", 15) == 0) {
+                start += 15;
+                current_text_color = text_color;
+            } else if(sscanf(buf + start, "{WIDTH %hu}%n", &current_width, &bytes_used) == 1) {
+                start += bytes_used;
+            } else if(sscanf(buf + start, "{VMOVE %hu}%n", &current_y_off, &bytes_used) == 1) {
+                start += bytes_used;
+            } else if(sscanf(buf + start, "{CENTER %hu}%n", &center, &bytes_used) == 1) {
+                start += bytes_used;
+                // TODO we need to handle this properly, it will likely update the x offset
+            } else if(sscanf(buf + start, "{COLOR %hhu}%n", &current_text_color, &bytes_used) == 1) {
+                start += bytes_used;
+            } else if(sscanf(buf + start, "{SPACING %hu}%n", &current_line_spacing, &bytes_used) == 1) {
+                start += bytes_used;
+            } else {
+                char *end = strchr(buf + start, '}');
+                if(end) {
+                    char tmp[20];
+                    memcpy(tmp, buf + start, sizeof(tmp));
+                    // log_warn("unhandled markup detected %s", tmp);
+                    start += end - (buf + start);
+                } else {
+                    log_warn("unterminated markup detected");
+                }
+            }
+        }
+
+        text *t = vector_append_ptr(&td->text_objects);
+        defaults(t);
+        text_layout_create(&t->layout);
+        t->font = current_font_size;
+        t->w = current_width;
+        t->h = current_height;
+        t->x_off = current_x_off;
+        t->y_off = current_y_off;
+        t->text_color = current_text_color;
+        t->shadow_color = current_shadow_color;
+        t->vertical_align = current_vertical_align;
+        t->horizontal_align = current_horizontal_align;
+        t->margin = margin;
+        // t->direction = direction;
+        t->line_spacing = current_line_spacing;
+        t->letter_spacing = letter_spacing;
+        t->shadow = current_shadow;
+        t->glyph_margin = glyph_margin;
+        // t->max_lines = max_lines;
+
+        char *endptr = strchr(buf + start, '{');
+        if(endptr) {
+            size_t end = endptr - buf;
+            str_from_slice(&t->buf, buf0, start, end);
+            start = end;
+        } else {
+            str_from_slice(&t->buf, buf0, start, len);
+            start = len;
+        }
+
+        const font *font = fonts_get_font(t->font);
+        text_layout_compute(&t->layout, &t->buf, font, t->w, t->h, t->vertical_align, t->horizontal_align, t->margin,
+                            t->direction, t->line_spacing, t->letter_spacing, 255);
+        t->cache_flags &= ~INVALIDATE_LAYOUT;
+    }
+}
+
+uint16_t text_document_get_text_count(text_document *d) {
+    return vector_size(&d->text_objects);
+}
+
+text *text_document_get_text(text_document *d, uint16_t index) {
+    return vector_get(&d->text_objects, index);
 }
 
 void text_generate_layout(text *t) {

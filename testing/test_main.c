@@ -14,6 +14,7 @@ void list_test_suite(CU_pSuite suite);
 void array_test_suite(CU_pSuite suite);
 void text_render_test_suite(CU_pSuite suite);
 void text_layout_test_suite(CU_pSuite suite);
+void text_markup_test_suite(CU_pSuite suite);
 void cp437_test_suite(CU_pSuite suite);
 
 int main(int argc, char **argv) {
@@ -59,6 +60,11 @@ int main(int argc, char **argv) {
     if(text_layout_suite == NULL)
         goto end;
     text_layout_test_suite(text_layout_suite);
+
+    CU_pSuite text_markup_suite = CU_add_suite("Text Markup", NULL, NULL);
+    if(text_markup_suite == NULL)
+        goto end;
+    text_markup_test_suite(text_markup_suite);
 
     CU_pSuite cp437_suite = CU_add_suite("Code Page 437", NULL, NULL);
     if(cp437_suite == NULL)
