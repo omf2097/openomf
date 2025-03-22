@@ -363,17 +363,6 @@ component *lab_dash_main_create(scene *s, dashboard_widgets *dw) {
     tconf_dark.font = FONT_SMALL;
     tconf_dark.cforeground = MECHLAB_DARK_GREEN;
 
-    text_settings tconf_light;
-    text_defaults(&tconf_light);
-    tconf_light.font = FONT_SMALL;
-    tconf_light.cforeground = MECHLAB_BRIGHT_GREEN;
-
-    text_settings tconf_light_centered;
-    text_defaults(&tconf_light_centered);
-    tconf_light_centered.font = FONT_SMALL;
-    tconf_light_centered.halign = TEXT_CENTER;
-    tconf_light_centered.cforeground = MECHLAB_BRIGHT_GREEN;
-
     // Pilot image
     dw->photo[0] = portrait_create(PIC_PLAYERS, 0);
     if(p1->pilot->photo) {
@@ -391,14 +380,34 @@ component *lab_dash_main_create(scene *s, dashboard_widgets *dw) {
     xysizer_attach(xy, dw->photo[0], 12, -1, -1, -1);
 
     // Texts
-    dw->name = label_create(&tconf_light, "NO NAME");
-    dw->rank = label_create(&tconf_dark, "RANK: 0");
-    dw->wins = label_create(&tconf_dark, "WINS: 0");
-    dw->losses = label_create(&tconf_dark, "LOSES: 0");
-    dw->money = label_create(&tconf_dark, "MONEY: $ 0K");
-    dw->tournament = label_create(&tconf_light, "NO TOURNAMENT");
-    dw->har_name = label_create(&tconf_light_centered, "HAR NAME");
-    dw->har_moves = label_create(&tconf_light_centered, "HAR MOVES");
+    dw->name = label_create("NO NAME");
+    dw->rank = label_create("RANK: 0");
+    dw->wins = label_create("WINS: 0");
+    dw->losses = label_create("LOSES: 0");
+    dw->money = label_create("MONEY: $ 0K");
+    dw->tournament = label_create("NO TOURNAMENT");
+    dw->har_name = label_create("HAR NAME");
+    dw->har_moves = label_create("HAR MOVES");
+
+    label_set_text_color(dw->name, MECHLAB_BRIGHT_GREEN);
+    label_set_font(dw->name, FONT_SMALL);
+    label_set_text_color(dw->rank, MECHLAB_DARK_GREEN);
+    label_set_font(dw->rank, FONT_SMALL);
+    label_set_text_color(dw->wins, MECHLAB_DARK_GREEN);
+    label_set_font(dw->wins, FONT_SMALL);
+    label_set_text_color(dw->losses, MECHLAB_DARK_GREEN);
+    label_set_font(dw->losses, FONT_SMALL);
+    label_set_text_color(dw->money, MECHLAB_DARK_GREEN);
+    label_set_font(dw->money, FONT_SMALL);
+    label_set_text_color(dw->tournament, MECHLAB_BRIGHT_GREEN);
+    label_set_font(dw->tournament, FONT_SMALL);
+    label_set_text_color(dw->har_name, MECHLAB_BRIGHT_GREEN);
+    label_set_font(dw->har_name, FONT_SMALL);
+    label_set_text_horizontal_align(dw->har_name, ALIGN_TEXT_CENTER);
+    label_set_text_color(dw->har_moves, MECHLAB_BRIGHT_GREEN);
+    label_set_font(dw->har_moves, FONT_SMALL);
+    label_set_text_horizontal_align(dw->har_moves, ALIGN_TEXT_CENTER);
+
     xysizer_attach(xy, dw->name, 12, 58, 200, 6);
     xysizer_attach(xy, dw->rank, 18, 64, 200, 6);
     xysizer_attach(xy, dw->wins, 18, 70, 200, 6);
@@ -421,23 +430,6 @@ component *lab_dash_sim_create(scene *s, dashboard_widgets *dw) {
     text_defaults(&tconf_dark);
     tconf_dark.font = FONT_SMALL;
     tconf_dark.cforeground = TEXT_MEDIUM_GREEN;
-
-    text_settings tconf_light;
-    text_defaults(&tconf_light);
-    tconf_light.font = FONT_SMALL;
-    tconf_light.cforeground = TEXT_BRIGHT_GREEN;
-
-    text_settings tconf_light_centered;
-    text_defaults(&tconf_light_centered);
-    tconf_light_centered.font = FONT_SMALL;
-    tconf_light_centered.halign = TEXT_CENTER;
-    tconf_light_centered.cforeground = TEXT_BRIGHT_GREEN;
-
-    text_settings tconf_dark_centered;
-    text_defaults(&tconf_dark_centered);
-    tconf_dark_centered.font = FONT_SMALL;
-    tconf_dark_centered.halign = TEXT_CENTER;
-    tconf_dark_centered.cforeground = TEXT_MEDIUM_GREEN;
 
     // Pilot image
     dw->sim_rank = p1->pilot->rank - 1;
@@ -464,21 +456,32 @@ component *lab_dash_sim_create(scene *s, dashboard_widgets *dw) {
     for(int i = 0; i < 5; i++) {
         dw->photo[i] = portrait_create(PIC_PLAYERS, 0);
         xysizer_attach(xy, dw->photo[i], 6 + (i * 60), -1, -1, -1);
-        dw->ranks[i] = label_create(&tconf_dark_centered, "NO RANK");
+        dw->ranks[i] = label_create("NO RANK");
+        label_set_font(dw->ranks[i], FONT_SMALL);
+        label_set_text_horizontal_align(dw->ranks[i], ALIGN_TEXT_CENTER);
+        label_set_text_color(dw->ranks[i], TEXT_MEDIUM_GREEN);
         xysizer_attach(xy, dw->ranks[i], 6 + (i * 60), 58, 50, -1);
     }
 
     lab_dash_sim_update_portraits(dw);
 
     // Texts
-    dw->name = label_create(&tconf_dark, "NAME: NO NAME");
-    dw->har_name = label_create(&tconf_dark, "MODEL: NO MODEL");
-    dw->wins = label_create(&tconf_dark, "WINS: 0");
-    dw->losses = label_create(&tconf_dark, "LOSES: 0");
+    dw->name = label_create("NAME: NO NAME");
+    dw->har_name = label_create("MODEL: NO MODEL");
+    dw->wins = label_create("WINS: 0");
+    dw->losses = label_create("LOSES: 0");
+
+    label_set_text_color(dw->name, TEXT_DARK_GREEN);
+    label_set_font(dw->name, FONT_SMALL);
+    label_set_text_color(dw->har_name, TEXT_DARK_GREEN);
+    label_set_font(dw->har_name, FONT_SMALL);
+    label_set_text_color(dw->wins, TEXT_DARK_GREEN);
+    label_set_font(dw->wins, FONT_SMALL);
+    label_set_text_color(dw->losses, TEXT_DARK_GREEN);
+    label_set_font(dw->losses, FONT_SMALL);
 
     xysizer_attach(xy, dw->name, 18, 70, 200, 6);
     xysizer_attach(xy, dw->har_name, 12, 76, 200, 6);
-
     xysizer_attach(xy, dw->wins, 168, 70, 200, 6);
     xysizer_attach(xy, dw->losses, 162, 76, 200, 6);
 
@@ -486,41 +489,52 @@ component *lab_dash_sim_create(scene *s, dashboard_widgets *dw) {
 }
 
 component *lab_dash_main_create_gauges(component *xy, dashboard_widgets *dw, sd_pilot *pilot) {
-    text_settings tconf_dark;
-    text_defaults(&tconf_dark);
-    tconf_dark.font = FONT_SMALL;
-    tconf_dark.cforeground = MECHLAB_DARK_GREEN;
+    component *power = label_create("POWER");
+    component *agility = label_create("AGILITY");
+    component *endurance = label_create("ENDURANCE");
+    component *arm_power = label_create("ARM POWER");
+    component *leg_power = label_create("LEG POWER");
+    component *armor = label_create("ARMOR");
+    component *arm_speed = label_create("ARM SPEED");
+    component *leg_speed = label_create("LEG SPEED");
+    component *stun_res = label_create("STUN RES");
+
+    component *m[] = {power, agility, endurance, arm_power, leg_power, armor, arm_speed, leg_speed, stun_res};
+    for(int i = 0; i < 9; i++) {
+        label_set_font(m[i], FONT_SMALL);
+        label_set_text_color(m[i], MECHLAB_DARK_GREEN);
+    }
 
     // Bars and texts (bottom left side)
-    xysizer_attach(xy, label_create(&tconf_dark, "POWER"), 12, 95, 200, 6);
+    xysizer_attach(xy, power, 12, 95, 200, 6);
     dw->power = gauge_create(GAUGE_SMALL, 25, 3);
     xysizer_attach(xy, dw->power, 12, 102, -1, -1);
-    xysizer_attach(xy, label_create(&tconf_dark, "AGILITY"), 12, 106, 200, 6);
+    xysizer_attach(xy, agility, 12, 106, 200, 6);
     dw->agility = gauge_create(GAUGE_SMALL, 25, 3);
     xysizer_attach(xy, dw->agility, 12, 113, -1, -1);
-    xysizer_attach(xy, label_create(&tconf_dark, "ENDURANCE"), 12, 117, 200, 6);
+    xysizer_attach(xy, endurance, 12, 117, 200, 6);
     dw->endurance = gauge_create(GAUGE_SMALL, 25, 3);
     xysizer_attach(xy, dw->endurance, 12, 124, -1, -1);
 
     // Bars and texts (bottom middle)
-    xysizer_attach(xy, label_create(&tconf_dark, "ARM POWER"), 125, 95, 200, 6);
+    xysizer_attach(xy, arm_power, 125, 95, 200, 6);
     dw->arm_power = gauge_create(GAUGE_BIG, max_arm_power[pilot->har_id] + 1, 3);
     xysizer_attach(xy, dw->arm_power, 125, 102, -1, -1);
-    xysizer_attach(xy, label_create(&tconf_dark, "LEG POWER"), 125, 106, 200, 6);
+    xysizer_attach(xy, leg_power, 125, 106, 200, 6);
     dw->leg_power = gauge_create(GAUGE_BIG, max_leg_power[pilot->har_id] + 1, 3);
     xysizer_attach(xy, dw->leg_power, 125, 113, -1, -1);
-    xysizer_attach(xy, label_create(&tconf_dark, "ARMOR"), 125, 117, 200, 6);
+    xysizer_attach(xy, armor, 125, 117, 200, 6);
     dw->armor = gauge_create(GAUGE_BIG, max_armor[pilot->har_id] + 1, 3);
     xysizer_attach(xy, dw->armor, 125, 124, -1, -1);
 
     // Bars and texts (bottom right side)
-    xysizer_attach(xy, label_create(&tconf_dark, "ARM SPEED"), 228, 95, 200, 6);
+    xysizer_attach(xy, arm_speed, 228, 95, 200, 6);
     dw->arm_speed = gauge_create(GAUGE_BIG, max_arm_speed[pilot->har_id] + 1, 3);
     xysizer_attach(xy, dw->arm_speed, 228, 102, -1, -1);
-    xysizer_attach(xy, label_create(&tconf_dark, "LEG SPEED"), 228, 106, 200, 6);
+    xysizer_attach(xy, leg_speed, 228, 106, 200, 6);
     dw->leg_speed = gauge_create(GAUGE_BIG, max_leg_speed[pilot->har_id] + 1, 3);
     xysizer_attach(xy, dw->leg_speed, 228, 113, -1, -1);
-    xysizer_attach(xy, label_create(&tconf_dark, "STUN RES"), 228, 117, 200, 6);
+    xysizer_attach(xy, stun_res, 228, 117, 200, 6);
     dw->stun_resistance = gauge_create(GAUGE_BIG, max_stun_res[pilot->har_id] + 1, 3);
     xysizer_attach(xy, dw->stun_resistance, 228, 124, -1, -1);
 

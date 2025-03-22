@@ -61,8 +61,7 @@ void menu_presskey_tick(component *c) {
         local->warn_timeout--;
         if(local->warn_timeout == 0) {
             for(int i = 0; i < 2; i++) {
-                text_settings *tconf = label_get_text_settings(local->text[i]);
-                tconf->cforeground = TEXT_MEDIUM_GREEN;
+                label_set_text_color(local->text[i], TEXT_MEDIUM_GREEN);
             }
         }
     }
@@ -86,8 +85,7 @@ void menu_presskey_tick(component *c) {
             if(is_key_bound(i) && strcmp(SDL_GetScancodeName(i), *(local->key)) != 0) {
                 // Set texts to red as a warning
                 for(int m = 0; m < 2; m++) {
-                    text_settings *tconf = label_get_text_settings(local->text[m]);
-                    tconf->cforeground = 0xF6;
+                    label_set_text_color(local->text[m], 0xF6);
                 }
                 local->warn_timeout = 50;
                 return;
@@ -107,17 +105,14 @@ component *menu_presskey_create(char **key) {
     local->warn_timeout = 50;
     local->key = key;
 
-    text_settings tconf;
-    text_defaults(&tconf);
-    tconf.font = FONT_BIG;
-    tconf.halign = TEXT_CENTER;
-    tconf.cforeground = TEXT_BRIGHT_GREEN;
-
-    component *menu = menu_create(11);
-    local->text[0] = label_create(&tconf, "PRESS A KEY FOR");
-    local->text[1] = label_create(&tconf, "THIS ACTION ...");
-    menu_attach(menu, local->text[0]);
-    menu_attach(menu, local->text[1]);
+    component *menu = menu_create();
+    local->text[0] = label_create_title("PRESS A KEY FOR");
+    local->text[1] = label_create_title("THIS ACTION ...");
+    for(int i = 0; i < 2; i++) {
+        label_set_text_color(local->text[i], TEXT_BRIGHT_GREEN);
+        label_set_text_horizontal_align(local->text[i], ALIGN_TEXT_CENTER);
+        menu_attach(menu, local->text[i]);
+    }
     menu_attach(menu, filler_create());
 
     menu_set_userdata(menu, local);

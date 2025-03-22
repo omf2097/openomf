@@ -203,27 +203,23 @@ component *menu_connect_create(scene *s) {
     connect_menu_data *local = omf_calloc(1, sizeof(connect_menu_data));
     local->s = s;
 
-    // Text config
-    text_settings tconf;
-    text_defaults(&tconf);
-    tconf.font = FONT_BIG;
-    tconf.halign = TEXT_CENTER;
-    tconf.cforeground = TEXT_BRIGHT_GREEN;
-
-    component *menu = menu_create(11);
-    menu_attach(menu, label_create(&tconf, "CONNECT TO SERVER"));
+    component *menu = menu_create();
+    menu_attach(menu, label_create_title("CONNECT TO SERVER"));
     menu_attach(menu, filler_create());
 
     local->controllers_created = 0;
     local->connect_start = 0;
+
     local->addr_input =
-        textinput_create(&tconf, 15, "Enter an IP address you wish to connect to.", settings_get()->net.net_connect_ip);
-    local->port_input =
-        textinput_create(&tconf, highest_port_digits, "Enter the remote port you wish to connect to.", "");
+        textinput_create(15, "Enter an IP address you wish to connect to.", settings_get()->net.net_connect_ip);
+    local->port_input = textinput_create(highest_port_digits, "Enter the remote port you wish to connect to.", "");
+    textinput_set_font(local->addr_input, FONT_BIG);
+    textinput_set_font(local->port_input, FONT_BIG);
     menu_connect_reset_port_input(local);
+
     local->connect_button =
-        button_create(&tconf, "CONNECT", "Connect to the provided IP address.", COM_ENABLED, menu_connect_start, s);
-    local->cancel_button = button_create(&tconf, "CANCEL", "Exit from this menu.", COM_ENABLED, menu_connect_cancel, s);
+        button_create("CONNECT", "Connect to the provided IP address.", false, false, menu_connect_start, s);
+    local->cancel_button = button_create("CANCEL", "Exit from this menu.", false, false, menu_connect_cancel, s);
     widget_set_id(local->connect_button, NETWORK_CONNECT_IP_BUTTON_ID);
     menu_attach(menu, local->addr_input);
     menu_attach(menu, local->port_input);

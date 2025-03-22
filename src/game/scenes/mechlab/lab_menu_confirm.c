@@ -35,49 +35,28 @@ component *lab_menu_confirm_create(scene *s, lab_menu_select_cb yes, void *yesda
     sprite *msprite = animation_get_sprite(main_sheets, 3);
     component *menu = trnmenu_create(msprite->data, msprite->pos.x, msprite->pos.y, false);
 
-    // Default text configuration
-    text_settings tconf;
-    text_defaults(&tconf);
-    tconf.font = FONT_SMALL;
-    tconf.cforeground = TEXT_TRN_BLUE;
-    tconf.cselected = TEXT_TRN_BLUE;
-    tconf.cinactive = TEXT_TRN_BLUE;
-    tconf.cdisabled = TEXT_TRN_BLUE;
-
-    tconf.valign = TEXT_MIDDLE;
-    tconf.halign = TEXT_CENTER;
-    tconf.padding.top = 0;
-    tconf.padding.bottom = 0;
-    tconf.padding.left = 0;
-    tconf.padding.right = 0;
-    tconf.direction = TEXT_HORIZONTAL;
-
     lab_menu_select_t *yesgo = omf_calloc(1, sizeof(lab_menu_select_t));
     yesgo->cb = yes;
     yesgo->data = yesdata;
 
     sprite *bsprite = animation_get_sprite(main_buttons, 0);
-    component *button =
-        spritebutton_create(&tconf, lang_get(229), bsprite->data, COM_ENABLED, lab_menu_confirm_yes, yesgo);
-
-    component_set_size_hints(button, bsprite->data->w, bsprite->data->h);
-    component_set_pos_hints(button, bsprite->pos.x, bsprite->pos.y);
-    trnmenu_attach(menu, button);
+    component *button_yes = spritebutton_create(lang_get(229), bsprite->data, false, lab_menu_confirm_yes, yesgo);
+    spritebutton_set_font(button_yes, FONT_SMALL);
+    component_set_pos_hints(button_yes, bsprite->pos.x, bsprite->pos.y);
+    trnmenu_attach(menu, button_yes);
 
     lab_menu_select_t *nogo = omf_calloc(1, sizeof(lab_menu_select_t));
     nogo->cb = no;
     nogo->data = nodata;
 
     bsprite = animation_get_sprite(main_buttons, 1);
-    button = spritebutton_create(&tconf, lang_get(228), bsprite->data, COM_ENABLED, lab_menu_confirm_no, nogo);
-
-    component_set_size_hints(button, bsprite->data->w, bsprite->data->h);
-    component_set_pos_hints(button, bsprite->pos.x, bsprite->pos.y);
-    trnmenu_attach(menu, button);
+    component *button_no = spritebutton_create(lang_get(228), bsprite->data, false, lab_menu_confirm_no, nogo);
+    spritebutton_set_font(button_no, FONT_SMALL);
+    component_set_pos_hints(button_no, bsprite->pos.x, bsprite->pos.y);
+    trnmenu_attach(menu, button_no);
 
     // Add text label
-    tconf.cforeground = TEXT_MEDIUM_GREEN;
-    component *label = label_create(&tconf, title);
+    component *label = label_create(title);
     component_set_pos_hints(label, 10, 155);
     component_set_size_hints(label, 300, 10);
     trnmenu_attach(menu, label);

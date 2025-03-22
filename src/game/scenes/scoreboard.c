@@ -16,9 +16,14 @@
 #include "video/vga_state.h"
 
 #define MAX_PAGES (NUMBER_OF_ROUND_TYPES - 1)
-#define TEXT_COLOR_HEADER TEXT_BLINKY_GREEN
-#define TEXT_COLOR_SCORES 0x7F
 #define CURSOR_STR "\x7f"
+
+#define TEXT_PRIMARY_COLOR 0xFE
+#define TEXT_SECONDARY_COLOR 0xFD
+#define TEXT_DISABLED_COLOR 0xC0
+#define TEXT_ACTIVE_COLOR 0xFF
+#define TEXT_INACTIVE_COLOR 0xFE
+#define TEXT_SHADOW_COLOR 0xC0
 
 typedef struct scoreboard_local_t {
     scoreboard data;
@@ -32,7 +37,7 @@ typedef struct scoreboard_local_t {
 void scoreboard_free(scene *scene) {
     scoreboard_local *local = scene_get_userdata(scene);
     omf_free(local);
-    scene_set_userdata(scene, local);
+    scene_set_userdata(scene, NULL);
 }
 
 void handle_scoreboard_save(scoreboard_local *local) {
@@ -112,7 +117,7 @@ void scoreboard_input_tick(scene *scene) {
                     gui_frame_action(local->frame, i->event_data.action);
                 }
             }
-        } while((i = i->next));
+        } while((i = i->next) != NULL);
     }
     controller_free_chain(p1);
 }
@@ -130,7 +135,7 @@ void scoreboard_render_overlay(scene *scene) {
     // Header text
     snprintf(row, sizeof(row), "SCOREBOARD - %s", round_get_name(local->page));
     int title_x = 62 + (local->page == 0 ? 8 : 0);
-    text_render(&big_text, TEXT_DEFAULT, title_x, 5, 200, 6, row);
+    text_render(&big_text, TEXT_PRIMARY_COLOR, title_x, 5, 200, 6, row);
 
     text_settings small_text;
     text_defaults(&small_text);
@@ -138,7 +143,7 @@ void scoreboard_render_overlay(scene *scene) {
 
     // Column names
     snprintf(row, sizeof(row), score_row_format, "PLAYER NAME", "ROBOT", "PILOT", "SCORE");
-    text_render(&small_text, TEXT_DEFAULT, 20, 20, 290, 6, row);
+    text_render(&small_text, TEXT_PRIMARY_COLOR, 20, 20, 290, 6, row);
 
     // Scores information
     unsigned int score, har_id, pilot_id;
@@ -169,7 +174,7 @@ void scoreboard_render_overlay(scene *scene) {
             }
             entry++;
         }
-        text_render(&small_text, TEXT_DEFAULT, 20, 30 + r * 8, 290, 6, row);
+        text_render(&small_text, TEXT_PRIMARY_COLOR, 20, 30 + r * 8, 290, 6, row);
     }
 }
 
@@ -224,21 +229,29 @@ int scoreboard_create(scene *scene) {
     // Darken the colors for the background a bit.
     vga_state_mul_base_palette(0, 0xEF, 0.6f);
 
-    if(local->has_pending_data) {
-        text_settings small_text;
-        text_defaults(&small_text);
-        small_text.font = FONT_SMALL;
+    // Arena menu theme
+    gui_theme theme;
+    gui_theme_defaults(&theme);
+    theme.dialog.border_color = TEXT_MEDIUM_GREEN;
+    theme.text.primary_color = TEXT_PRIMARY_COLOR;
+    theme.text.secondary_color = TEXT_SECONDARY_COLOR;
+    theme.text.disabled_color = TEXT_DISABLED_COLOR;
+    theme.text.active_color = TEXT_ACTIVE_COLOR;
+    theme.text.inactive_color = TEXT_INACTIVE_COLOR;
+    theme.text.shadow_color = TEXT_SHADOW_COLOR;
 
-        int found_slot = 0;
+    if(local->has_pending_data) {
+        bool found_slot = false;
         unsigned int score;
         int entry = 0;
         for(int r = 0; r < 20 && !found_slot; r++) {
             score = local->data.entries[local->page][entry].score;
-            if(local->has_pending_data && score < local->pending_data.score && !found_slot) {
-                found_slot = 1;
-                local->frame = gui_frame_create(20, 30 + r * 8, 20, 10);
-                local->ti = textinput_create(&small_text, 16, "", "");
-                textinput_enable_background(local->ti, 0);
+            if(local->has_pending_data && score < local->pending_data.score) {
+                found_slot = true;
+                local->frame = gui_frame_create(&theme, 20, 30 + r * 8, 20, 10);
+                local->ti = textinput_create(16, "", "");
+                textinput_set_font(local->ti, FONT_SMALL);
+                textinput_enable_background(local->ti, false);
                 gui_frame_set_root(local->frame, local->ti);
                 gui_frame_layout(local->frame);
                 component_select(local->ti, 1);

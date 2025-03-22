@@ -14,6 +14,7 @@ typedef struct widget {
     widget_focus_cb focus;
     widget_layout_cb layout;
     widget_tick_cb tick;
+    widget_init_cb init;
     widget_free_cb free;
 } widget;
 
@@ -77,6 +78,12 @@ void widget_set_tick_cb(component *c, widget_tick_cb cb) {
     local->tick = cb;
 }
 
+void widget_set_init_cb(component *c, widget_init_cb cb) {
+    assert(c->header == WIDGET_MAGIC);
+    widget *local = component_get_obj(c);
+    local->init = cb;
+}
+
 void widget_set_free_cb(component *c, widget_free_cb cb) {
     assert(c->header == WIDGET_MAGIC);
     widget *local = component_get_obj(c);
@@ -133,6 +140,14 @@ static void widget_layout(component *c, int x, int y, int w, int h) {
     }
 }
 
+static void widget_init(component *c, const gui_theme *theme) {
+    assert(c->header == WIDGET_MAGIC);
+    widget *local = component_get_obj(c);
+    if(local->init) {
+        local->init(c, theme);
+    }
+}
+
 static void widget_free(component *c) {
     assert(c->header == WIDGET_MAGIC);
     widget *local = component_get_obj(c);
@@ -151,8 +166,7 @@ static component *widget_find(component *c, int id) {
 }
 
 component *widget_create(void) {
-    component *c = component_create();
-    c->header = WIDGET_MAGIC;
+    component *c = component_create(WIDGET_MAGIC);
     c->supports_disable = 1;
     c->supports_select = 1;
     c->supports_focus = 1;
@@ -168,6 +182,7 @@ component *widget_create(void) {
     component_set_focus_cb(c, widget_focus);
     component_set_layout_cb(c, widget_layout);
     component_set_free_cb(c, widget_free);
+    component_set_init_cb(c, widget_init);
     component_set_find_cb(c, widget_find);
 
     return c;

@@ -93,37 +93,30 @@ component *menu_audio_create(scene *s) {
     audio_menu_data *local = omf_calloc(1, sizeof(audio_menu_data));
     local->old_audio_settings = settings_get()->sound;
 
-    // Text config
-    text_settings tconf;
-    text_defaults(&tconf);
-    tconf.font = FONT_BIG;
-    tconf.halign = TEXT_CENTER;
-    tconf.cforeground = TEXT_BRIGHT_GREEN;
-
     // Create menu and its header
-    component *menu = menu_create(11);
-    component *volume_textslider;
-    menu_attach(menu, label_create(&tconf, "AUDIO"));
+    component *menu = menu_create();
+
+    menu_attach(menu, label_create_title("AUDIO"));
     menu_attach(menu, filler_create());
-    menu_attach(menu,
-                volume_textslider = textslider_create_bind(
-                    &tconf, "SOUND", "Raise or lower the volume of all sound effects. Press right or left to change.",
-                    10, 1, menu_audio_sound_slide, NULL, &settings_get()->sound.sound_vol));
+    component *volume_textslider = textslider_create_bind(
+        "SOUND", "Raise or lower the volume of all sound effects. Press right or left to change.", 10, 1,
+        menu_audio_sound_slide, NULL, &settings_get()->sound.sound_vol);
     textslider_disable_panning(volume_textslider);
-    menu_attach(menu, textslider_create_bind(&tconf, "MUSIC",
-                                             "Raise or lower the volume of music. Press right or left to change.", 10,
-                                             1, menu_audio_music_slide, NULL, &settings_get()->sound.music_vol));
-    menu_attach(menu, textselector_create_bind_opts(&tconf, "MONO", NULL, NULL, NULL, &settings_get()->sound.music_mono,
-                                                    mono_opts, 2));
-    local->freq_selector = textselector_create(&tconf, "FREQUENCY:", NULL, menu_audio_freq_toggled, local);
+    menu_attach(menu, volume_textslider);
+    menu_attach(menu,
+                textslider_create_bind("MUSIC", "Raise or lower the volume of music. Press right or left to change.",
+                                       10, 1, menu_audio_music_slide, NULL, &settings_get()->sound.music_vol));
+    menu_attach(
+        menu, textselector_create_bind_opts("MONO", NULL, NULL, NULL, &settings_get()->sound.music_mono, mono_opts, 2));
+    local->freq_selector = textselector_create("FREQUENCY:", NULL, menu_audio_freq_toggled, local);
     menu_audio_reset_freqs(local, 1);
     menu_attach(menu, local->freq_selector);
 
-    local->resampler_selector = textselector_create(&tconf, "RESAMPLE:", NULL, menu_audio_resampler_toggled, local);
+    local->resampler_selector = textselector_create("RESAMPLE:", NULL, menu_audio_resampler_toggled, local);
     menu_audio_reset_resamplers(local, 1);
     menu_attach(menu, local->resampler_selector);
 
-    menu_attach(menu, button_create(&tconf, "DONE", "Exit from this menu.", COM_ENABLED, menu_audio_done, local));
+    menu_attach(menu, button_create("DONE", "Exit from this menu.", false, false, menu_audio_done, local));
 
     // Userdata & free function for it
     menu_set_userdata(menu, local);

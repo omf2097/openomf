@@ -193,17 +193,17 @@ void lab_menu_trade_for_nova_focus(component *c, bool focused, void *userdata) {
 }
 
 static const button_details details_list[] = {
-    {lab_menu_trade, "", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP, 2, 0, 0, 0, COM_ENABLED},
-    {lab_menu_trade, "", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP, 2, 0, 0, 0, COM_ENABLED},
-    {lab_menu_trade, "", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP, 2, 0, 0, 0, COM_ENABLED},
-    {lab_menu_trade, "", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP, 2, 0, 0, 0, COM_ENABLED},
-    {lab_menu_trade, "", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP, 2, 0, 0, 0, COM_ENABLED},
-    {lab_menu_trade, "", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP, 2, 0, 0, 0, COM_ENABLED},
-    {lab_menu_trade, "", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP, 2, 0, 0, 0, COM_ENABLED},
-    {lab_menu_trade, "", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP, 2, 0, 0, 0, COM_ENABLED},
-    {lab_menu_trade, "", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP, 2, 0, 0, 0, COM_ENABLED},
-    {lab_menu_trade, "", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP, 2, 0, 0, 0, COM_ENABLED},
-    {lab_menu_trade, "", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP, 2, 0, 0, 0, COM_ENABLED},
+    {lab_menu_trade, NULL, TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_TOP, {2, 0, 0, 0}, false},
+    {lab_menu_trade, NULL, TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_TOP, {2, 0, 0, 0}, false},
+    {lab_menu_trade, NULL, TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_TOP, {2, 0, 0, 0}, false},
+    {lab_menu_trade, NULL, TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_TOP, {2, 0, 0, 0}, false},
+    {lab_menu_trade, NULL, TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_TOP, {2, 0, 0, 0}, false},
+    {lab_menu_trade, NULL, TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_TOP, {2, 0, 0, 0}, false},
+    {lab_menu_trade, NULL, TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_TOP, {2, 0, 0, 0}, false},
+    {lab_menu_trade, NULL, TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_TOP, {2, 0, 0, 0}, false},
+    {lab_menu_trade, NULL, TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_TOP, {2, 0, 0, 0}, false},
+    {lab_menu_trade, NULL, TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_TOP, {2, 0, 0, 0}, false},
+    {lab_menu_trade, NULL, TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_TOP, {2, 0, 0, 0}, false},
 };
 
 static const spritebutton_focus_cb focus_cbs[] = {
@@ -232,17 +232,6 @@ component *lab_menu_trade_create(scene *s) {
     int y = 148;
     // Initialize menu, and set button sheet
     component *menu = trnmenu_create(NULL, x, y, false);
-    // sprite *msprite = animation_get_sprite(main_sheets, 1);
-    // component *menu = trnmenu_create(msprite->data, msprite->pos.x, msprite->pos.y);
-
-    // Default text configuration
-    text_settings tconf;
-    text_defaults(&tconf);
-    tconf.font = FONT_SMALL;
-    tconf.cforeground = TEXT_TRN_BLUE;
-    tconf.cselected = TEXT_TRN_BLUE;
-    tconf.cinactive = TEXT_TRN_BLUE;
-    tconf.cdisabled = TEXT_TRN_BLUE;
 
     // Init GUI buttons with locations from the "select" button sprites
     for(int i = 0; i < animation_get_sprite_count(main_buttons); i++) {
@@ -251,21 +240,14 @@ component *lab_menu_trade_create(scene *s) {
             continue;
         }
         log_debug("adding button");
-        tconf.valign = details_list[i].valign;
-        tconf.halign = details_list[i].halign;
-        tconf.padding.top = details_list[i].top;
-        tconf.padding.bottom = details_list[i].bottom;
-        tconf.padding.left = details_list[i].left;
-        tconf.padding.right = details_list[i].right;
-        tconf.direction = details_list[i].dir;
 
-        sprite *bsprite = animation_get_sprite(main_buttons, i);
-        component *button =
-            spritebutton_create(&tconf, details_list[i].text, bsprite->data, COM_ENABLED, details_list[i].cb, s);
-        component_set_size_hints(button, bsprite->data->w, bsprite->data->h);
-        component_set_pos_hints(button, x + bsprite->pos.x, y + bsprite->pos.y);
+        sprite *button_sprite = animation_get_sprite(main_buttons, i);
+        component *button = sprite_button_from_details(&details_list[i], NULL, button_sprite->data, s);
+        spritebutton_set_font(button, FONT_SMALL);
+        spritebutton_set_text_color(button, TEXT_TRN_BLUE);
+        component_set_pos_hints(button, x + button_sprite->pos.x, y + button_sprite->pos.y);
 
-        x += bsprite->data->w;
+        x += button_sprite->data->w;
 
         spritebutton_set_focus_cb(button, focus_cbs[i]);
         spritebutton_set_always_display(button);

@@ -122,25 +122,17 @@ component *menu_language_create(scene *s) {
     }
     list_free(&dirlist);
 
-    // Text config
-    text_settings tconf;
-    text_defaults(&tconf);
-    tconf.font = FONT_BIG;
-    tconf.halign = TEXT_CENTER;
-    tconf.cforeground = TEXT_MEDIUM_GREEN;
-
     // Create menu and its header
-    component *menu = menu_create(11);
-    menu_attach(menu, label_create(&tconf, "LANGUAGE"));
+    component *menu = menu_create();
+    menu_attach(menu, label_create_title("LANGUAGE"));
 
-    menu_attach(menu,
-                textselector_create_bind_opts(&tconf, "", "Choose a Language.", NULL, NULL, &local->selected_language,
-                                              (char const **)local->language_names, local->language_count));
+    menu_attach(menu, textselector_create_bind_opts("", "Choose a Language.", NULL, NULL, &local->selected_language,
+                                                    (char const **)local->language_names, local->language_count));
 
     menu_attach(menu, filler_create());
 
     // Done button
-    menu_attach(menu, button_create(&tconf, "DONE", "Return to the main menu.", COM_ENABLED, menu_language_done, s));
+    menu_attach(menu, button_create("DONE", "Return to the main menu.", false, false, menu_language_done, s));
 
     // Userdata & free function for it
     menu_set_userdata(menu, local);

@@ -95,24 +95,18 @@ void mainmenu_enter_network(component *c, void *userdata) {
 }
 
 component *menu_main_create(scene *s) {
-    text_settings tconf;
-    text_defaults(&tconf);
-    tconf.font = FONT_BIG;
-    tconf.halign = TEXT_CENTER;
-    tconf.cforeground = TEXT_BRIGHT_GREEN;
-
-    component *menu = menu_create(11);
-    menu_attach(menu, button_create(&tconf, "ONE PLAYER GAME", NULL, COM_ENABLED, mainmenu_1v1, s));
-    menu_attach(menu, button_create(&tconf, "TWO PLAYER GAME", NULL, COM_ENABLED, mainmenu_1v2, s));
-    menu_attach(menu, button_create(&tconf, "TOURNAMENT PLAY", NULL, COM_ENABLED, mainmenu_mechlab, s));
-    component *net = button_create(&tconf, "NETWORK PLAY", NULL, COM_ENABLED, mainmenu_enter_network, s);
+    component *menu = menu_create();
+    menu_attach(menu, button_create("ONE PLAYER GAME", NULL, false, false, mainmenu_1v1, s));
+    menu_attach(menu, button_create("TWO PLAYER GAME", NULL, false, false, mainmenu_1v2, s));
+    menu_attach(menu, button_create("TOURNAMENT PLAY", NULL, false, false, mainmenu_mechlab, s));
+    component *net = button_create("NETWORK PLAY", NULL, false, false, mainmenu_enter_network, s);
     widget_set_id(net, NETWORK_BUTTON_ID);
     menu_attach(menu, net);
-    menu_attach(menu, button_create(&tconf, "CONFIGURATION", NULL, COM_ENABLED, mainmenu_enter_configuration, s));
-    menu_attach(menu, button_create(&tconf, "GAMEPLAY", NULL, COM_ENABLED, mainmenu_enter_gameplay, s));
-    menu_attach(menu, button_create(&tconf, "HELP", NULL, COM_DISABLED, NULL, NULL));
-    menu_attach(menu, button_create(&tconf, "DEMO", NULL, COM_ENABLED, mainmenu_demo, s));
-    menu_attach(menu, button_create(&tconf, "SCOREBOARD", NULL, COM_ENABLED, mainmenu_soreboard, s));
-    menu_attach(menu, button_create(&tconf, "QUIT", NULL, COM_ENABLED, mainmenu_quit, s));
+    menu_attach(menu, button_create("CONFIGURATION", NULL, false, false, mainmenu_enter_configuration, s));
+    menu_attach(menu, button_create("GAMEPLAY", NULL, false, false, mainmenu_enter_gameplay, s));
+    menu_attach(menu, button_create("HELP", NULL, true, false, NULL, NULL));
+    menu_attach(menu, button_create("DEMO", NULL, false, false, mainmenu_demo, s));
+    menu_attach(menu, button_create("SCOREBOARD", NULL, false, false, mainmenu_soreboard, s));
+    menu_attach(menu, button_create("QUIT", NULL, false, false, mainmenu_quit, s));
     return menu;
 }

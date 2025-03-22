@@ -7,6 +7,7 @@
 
 typedef enum font_size
 {
+    FONT_NONE = 0, // For debugging.
     FONT_BIG,
     FONT_SMALL,
     FONT_NET1,
