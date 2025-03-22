@@ -12,8 +12,7 @@ char *strncpy_or_truncate(char *dest, const char *src, size_t n) {
 }
 
 char *strncpy_or_abort(char *dest, const char *src, size_t n) {
-    size_t len = strnlen(src, n);
-    assert(len < n);
+    size_t len = omf_strnlen_s(src, n);
     if(len >= n)
         abort();
     memcpy(dest, src, len + 1);
