@@ -9,6 +9,7 @@
 #include "game/utils/serial.h"
 #include "game/utils/ticktimer.h"
 #include "resources/bk.h"
+#include "resources/bk_loader.h"
 #include "video/surface.h"
 #include <SDL.h>
 
@@ -31,6 +32,7 @@ typedef void (*scene_clone_free_cb)(scene *scene);
 struct scene_t {
     game_state *gs;
     int id;
+    bk_inc *next_bk_data;
     bk *bk_data;
     af *af_data[2];
     void *userdata;
@@ -52,6 +54,7 @@ struct scene_t {
 };
 
 int scene_create(scene *scene, game_state *gs, int scene_id);
+int scene_create_incremental(scene *scene, game_state *gs, int scene_id);
 int scene_load_har(scene *scene, int player_id);
 void scene_init(scene *scene);
 void scene_free(scene *scene);
