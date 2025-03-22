@@ -87,8 +87,7 @@ void renderer_toggled(component *c, void *userdata, int pos) {
     settings_video *v = &settings_get()->video;
     const char *renderer;
     video_get_renderer_info(pos, &renderer, NULL);
-    omf_free(v->renderer);
-    v->renderer = omf_strdup(renderer);
+    strncpy_or_abort(v->renderer, renderer, sizeof(v->renderer));
 }
 
 void menu_video_done(component *c, void *u) {
@@ -128,7 +127,6 @@ component *menu_video_create(scene *s) {
     // Menu userdata
     video_menu_data *local = omf_calloc(1, sizeof(video_menu_data));
     local->old_video_settings = settings_get()->video;
-    local->old_video_settings.renderer = omf_strdup(local->old_video_settings.renderer);
 
     // Load settings etc.
     const char *offon_opts[] = {"OFF", "ON"};

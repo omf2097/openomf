@@ -11,6 +11,14 @@ char *strncpy_or_truncate(char *dest, const char *src, size_t n) {
     return ret;
 }
 
+char *strncpy_or_abort(char *dest, const char *src, size_t n) {
+    size_t len = omf_strnlen_s(src, n);
+    if(len >= n)
+        abort();
+    memcpy(dest, src, len + 1);
+    return dest;
+}
+
 char *omf_strdup_real(char const *s, char const *file, int line) {
     assert(s != NULL);
     size_t valid_range = strlen(s) + 1;
