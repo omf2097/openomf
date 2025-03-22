@@ -19,3 +19,4 @@ AllowShortBlocksOnASingleLine: 'Never'
 AlignArrayOfStructures: Left
 IndentCaseLabels: true
 AllowShortEnumsOnASingleLine: false
+
