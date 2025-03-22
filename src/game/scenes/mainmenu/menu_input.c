@@ -161,7 +161,8 @@ void menu_set_joystick2(component *c, void *userdata) {
 void menu_set_custom_keyboard(component *c, void *u) {
     scene *s = u;
     menu_input_local *local = menu_get_userdata(c->parent);
-    menu_link_menu(c->parent, menu_keyboard_create(s, local->selected_player));
+    const gui_theme *theme = component_get_theme(c);
+    menu_link_menu(c->parent, menu_keyboard_create(s, theme, local->selected_player));
 }
 
 void menu_input_done(component *c, void *u) {
@@ -179,38 +180,27 @@ component *menu_input_create(scene *s, int player_id) {
     menu_input_local *local = omf_calloc(1, sizeof(menu_input_local));
     local->selected_player = player_id;
 
-    // Text config
-    text_settings tconf;
-    text_defaults(&tconf);
-    tconf.font = FONT_BIG;
-    tconf.halign = TEXT_CENTER;
-    tconf.cforeground = TEXT_BRIGHT_GREEN;
+    component *menu = menu_create();
 
-    component *menu = menu_create(11);
-    menu_attach(menu, label_create(&tconf, "CHOOSE INPUT"));
-    menu_attach(menu, label_create(&tconf, "DEVICE FOR"));
-    switch(local->selected_player) {
-        case 1:
-            menu_attach(menu, label_create(&tconf, "PLAYER 1"));
-            break;
-        case 2:
-            menu_attach(menu, label_create(&tconf, "PLAYER 2"));
-            break;
-    }
+    str tmp;
+    str_from_format(&tmp, "CHOOSE INPUT\nDEVICE FOR\nPLAYER %d", local->selected_player);
+    menu_attach(menu, label_create_title(str_c(&tmp)));
+    str_free(&tmp);
+
     menu_attach(menu, filler_create());
     menu_attach(
-        menu, button_create(&tconf, "RIGHT KEYBOARD",
+        menu, button_create("RIGHT KEYBOARD",
                             "This will use the numeric keypad for movement, enter for punch and right shift for kick.",
-                            COM_ENABLED, menu_set_right_keyboard, s));
+                            false, false, menu_set_right_keyboard, s));
     menu_attach(menu,
-                button_create(&tconf, "LEFT KEYBOARD",
+                button_create("LEFT KEYBOARD",
                               "This will set 'q', 'w', and 'e' for jumping directions, 'a' and 'd' for left and "
                               "right and 'z', 'x' and 'c' for ducking. Tab and ctrl control punching and kicking.",
-                              COM_ENABLED, menu_set_left_keyboard, s));
-    menu_attach(menu, button_create(&tconf, "CUSTOM KEYBOARD", "Invent your own keyboard settings.", COM_ENABLED,
+                              false, false, menu_set_left_keyboard, s));
+    menu_attach(menu, button_create("CUSTOM KEYBOARD", "Invent your own keyboard settings.", false, false,
                                     menu_set_custom_keyboard, s));
-    component *joy1 = button_create(&tconf, "JOYSTICK 1", "Use joystick 1.", COM_ENABLED, menu_set_joystick1, s);
-    component *joy2 = button_create(&tconf, "JOYSTICK 2", "Use joystick 2.", COM_ENABLED, menu_set_joystick2, s);
+    component *joy1 = button_create("JOYSTICK 1", "Use joystick 1.", false, false, menu_set_joystick1, s);
+    component *joy2 = button_create("JOYSTICK 2", "Use joystick 2.", false, false, menu_set_joystick2, s);
     int jcount = joystick_count();
     if(jcount < 1) {
         component_disable(joy1, 1);
@@ -220,8 +210,7 @@ component *menu_input_create(scene *s, int player_id) {
     }
     menu_attach(menu, joy1);
     menu_attach(menu, joy2);
-    menu_attach(menu,
-                button_create(&tconf, "DONE", "Leave without changing anything.", COM_ENABLED, menu_input_done, NULL));
+    menu_attach(menu, button_create("DONE", "Leave without changing anything.", false, false, menu_input_done, NULL));
 
     menu_set_userdata(menu, local);
     menu_set_free_cb(menu, menu_input_free);

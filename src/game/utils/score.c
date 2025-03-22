@@ -159,10 +159,10 @@ void chr_score_render(chr_score *score, bool render_total_points) {
         score_format(score->score, tmp, 50);
 
         if(score->direction == OBJECT_FACE_RIGHT) {
-            text_render(&tconf_score, TEXT_DEFAULT, score->x, score->y, 200, 6, tmp);
+            text_render_mode(&tconf_score, TEXT_DEFAULT, score->x, score->y, 200, 6, tmp);
         } else {
             int s2len = strlen(tmp) * fnt->w;
-            text_render(&tconf_score, TEXT_DEFAULT, score->x - s2len, score->y, 200, 6, tmp);
+            text_render_mode(&tconf_score, TEXT_DEFAULT, score->x - s2len, score->y, 200, 6, tmp);
         }
     }
 
@@ -181,7 +181,7 @@ void chr_score_render(chr_score *score, bool render_total_points) {
         if(score->direction == OBJECT_FACE_LEFT) {
             pos = interpolate(vec2i_create(score->x - (strlen(t->text) * fnt->w), score->y), t->start, t->position);
         }
-        text_render(&tconf_score, TEXT_DEFAULT, pos.x, pos.y, 200, 6, t->text);
+        text_render_mode(&tconf_score, TEXT_DEFAULT, pos.x, pos.y, 200, 6, t->text);
         lastage = t->age;
     }
 }

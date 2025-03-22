@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "game/gui/text/text.h"
 #include "game/gui/textinput.h"
 #include "game/gui/widget.h"
 #include "utils/allocator.h"
@@ -16,53 +17,78 @@
 #define COLOR_MENU_BG 0
 
 typedef struct textinput {
-    text_settings tconf;
     int ticks;
-    int dir;
-    surface sur;
-    str text;
     int max_chars;
-    int pos;
-    int bg_enabled;
+    size_t pos;
+
+    bool bg_enabled;
+    surface bg_surface;
+
+    int text_max_lines;
+    text_horizontal_align text_horizontal_align;
+    font_size font_size;
+    uint8_t text_shadow;
+    vga_index text_shadow_color;
+    text *text;
+    bool was_focused;
+    str buf;
 
     textinput_done_cb done_cb;
     void *userdata;
 } textinput;
 
-static void textinput_render(component *c) {
-    textinput *tb = widget_get_obj(c);
-
-    if(tb->bg_enabled) {
-        video_draw(&tb->sur, c->x + (c->w - tb->sur.w) / 2, c->y - 2);
-    }
-
-    text_mode mode = TEXT_UNSELECTED;
-    if(component_is_selected(c)) {
-        mode = TEXT_SELECTED;
-        int i = (tb->ticks / 10) % 16;
-        if(i > 8) {
-            i = 16 - i;
-        }
-        tb->tconf.cforeground = 216 + i;
-
-        int offset = text_width_limit(&tb->tconf, str_c(&tb->text), tb->pos);
-
-        int start_x = c->x + tb->tconf.padding.left;
-        if(tb->tconf.halign == TEXT_CENTER) {
-            int tmp_s = text_width(&tb->tconf, str_c(&tb->text)); // Total W minus last spacing
-            int xspace = c->w - tb->tconf.padding.left - tb->tconf.padding.right;
-            start_x += ceilf((xspace - tmp_s) / 2.0f);
-            tb->tconf.halign = TEXT_LEFT;
-            text_render(&tb->tconf, TEXT_DEFAULT, start_x + offset, c->y, c->w, c->h, "\x7F");
-            tb->tconf.halign = TEXT_CENTER;
+static void set_cursor(component *c, bool focused) {
+    textinput *ti = widget_get_obj(c);
+    if(focused == ti->was_focused)
+        return;
+    if(focused) {
+        str tmp;
+        str_from(&tmp, &ti->buf);
+        if(ti->pos == str_size(&tmp)) {
+            str_append_c(&tmp, "\x7F");
         } else {
-            text_render(&tb->tconf, TEXT_DEFAULT, start_x + offset, c->y, c->w, c->h, "\x7F");
+            str_set_at(&tmp, ti->pos, '\x7F');
         }
-    } else if(component_is_disabled(c)) {
-        mode = TEXT_DISABLED;
+        text_set_from_str(ti->text, &tmp);
+        str_free(&tmp);
+    } else {
+        text_set_from_str(ti->text, &ti->buf);
+    }
+    ti->was_focused = focused;
+}
+
+static void refresh(component *c) {
+    textinput *ti = widget_get_obj(c);
+    str_truncate(&ti->buf, ti->max_chars);
+    ti->was_focused = false;
+    text_set_from_str(ti->text, &ti->buf);
+}
+
+static void textinput_render(component *c) {
+    textinput *ti = widget_get_obj(c);
+    const gui_theme *theme = component_get_theme(c);
+
+    if(ti->bg_enabled) {
+        video_draw(&ti->bg_surface, c->x + 2, c->y);
     }
 
-    text_render_str(&tb->tconf, mode, c->x, c->y, c->w, c->h, &tb->text);
+    if(component_is_selected(c)) {
+        set_cursor(c, true);
+        text_set_color(ti->text, theme->text.active_color);
+    } else if(component_is_disabled(c)) {
+        set_cursor(c, false);
+        text_set_color(ti->text, theme->text.disabled_color);
+    } else {
+        set_cursor(c, false);
+        text_set_color(ti->text, theme->text.inactive_color);
+    }
+
+    uint8_t left = 0, top = 0;
+    if(ti->bg_enabled) {
+        left += 2;
+        top += 2;
+    }
+    text_draw(ti->text, c->x + left, c->y + top);
 }
 
 // Start from ' '. Support 0-9, ' ', and A-Z.
@@ -102,45 +128,42 @@ static char textinput_scroll_character(char cur, bool down) {
 }
 
 static int textinput_action(component *c, int action) {
-    textinput *tb = widget_get_obj(c);
-    char cursor_char = str_at(&tb->text, tb->pos);
+    textinput *ti = widget_get_obj(c);
+    char cursor_char = str_at(&ti->buf, ti->pos);
     char new_char;
     switch(action) {
         case ACT_RIGHT:
-            if(cursor_char == '\0' && tb->pos >= (int)str_size(&tb->text)) {
-                str_append_c(&tb->text, " ");
+            if(cursor_char == '\0' && ti->pos >= str_size(&ti->buf)) {
+                str_append_c(&ti->buf, " ");
             }
-            tb->pos = min2(tb->max_chars - 1, tb->pos + 1);
-            str_truncate(&tb->text, tb->max_chars);
+            ti->pos = min2(ti->max_chars - 1, ti->pos + 1);
+            refresh(c);
             return 0;
-            break;
         case ACT_LEFT:
-            tb->pos = max2(0, tb->pos - 1);
+            ti->pos = max2(0, ti->pos - 1);
+            refresh(c);
             return 0;
-            break;
         case ACT_UP:
             new_char = textinput_scroll_character(cursor_char, false);
-            if(tb->pos >= (int)str_size(&tb->text)) {
-                str_append_buf(&tb->text, &new_char, 1);
+            if(ti->pos >= str_size(&ti->buf)) {
+                str_append_buf(&ti->buf, &new_char, 1);
             } else {
-                str_set_at(&tb->text, tb->pos, new_char);
+                str_set_at(&ti->buf, ti->pos, new_char);
             }
-            str_truncate(&tb->text, tb->max_chars);
+            refresh(c);
             return 0;
-            break;
         case ACT_DOWN:
             new_char = textinput_scroll_character(cursor_char, true);
-            if(tb->pos >= (int)str_size(&tb->text)) {
-                str_append_buf(&tb->text, &new_char, 1);
+            if(ti->pos >= str_size(&ti->buf)) {
+                str_append_buf(&ti->buf, &new_char, 1);
             } else {
-                str_set_at(&tb->text, tb->pos, new_char);
+                str_set_at(&ti->buf, ti->pos, new_char);
             }
-            str_truncate(&tb->text, tb->max_chars);
+            refresh(c);
             return 0;
-            break;
         case ACT_PUNCH:
-            if(tb->done_cb) {
-                tb->done_cb(c, tb->userdata);
+            if(ti->done_cb) {
+                ti->done_cb(c, ti->userdata);
                 return 0;
             }
             break;
@@ -148,31 +171,38 @@ static int textinput_action(component *c, int action) {
     return 1;
 }
 
+static bool is_valid_input(char c) {
+    return (c >= 32 && c <= 126);
+}
+
 static int textinput_event(component *c, SDL_Event *e) {
     // Handle selection
-    if(e->type == SDL_TEXTINPUT) {
-        textinput *tb = widget_get_obj(c);
-        str_insert_at(&tb->text, tb->pos, e->text.text[0]);
-        str_truncate(&tb->text, tb->max_chars);
-        tb->pos = min2(tb->max_chars - 1, tb->pos + 1);
+    textinput *ti = widget_get_obj(c);
+    if(e->type == SDL_TEXTINPUT && is_valid_input(e->text.text[0])) {
+        str_insert_at(&ti->buf, ti->pos, e->text.text[0]);
+        str_truncate(&ti->buf, ti->max_chars);
+        ti->pos = min2(ti->max_chars - 1, ti->pos + 1);
+        refresh(c);
         return 0;
     } else if(e->type == SDL_KEYDOWN) {
-        textinput *tb = widget_get_obj(c);
         const unsigned char *state = SDL_GetKeyboardState(NULL);
         if(state[SDL_SCANCODE_BACKSPACE]) {
-            tb->pos = max2(0, tb->pos - 1);
-            str_delete_at(&tb->text, tb->pos);
+            ti->pos = max2(0, ti->pos - 1);
+            str_delete_at(&ti->buf, ti->pos);
+            refresh(c);
         } else if(state[SDL_SCANCODE_DELETE]) {
-            if(str_delete_at(&tb->text, tb->pos)) {
-                tb->pos = max2(0, tb->pos);
+            if(str_delete_at(&ti->buf, ti->pos)) {
+                ti->pos = max2(0, ti->pos);
             }
+            refresh(c);
         } else if(state[SDL_SCANCODE_V] && state[SDL_SCANCODE_LCTRL]) {
             if(SDL_HasClipboardText()) {
                 char *clip = SDL_GetClipboardText();
-                str_insert_c_at(&tb->text, tb->pos, clip);
-                str_truncate(&tb->text, tb->max_chars);
-                tb->pos = min2(tb->max_chars - 1, tb->pos + strlen(clip));
+                str_insert_c_at(&ti->buf, ti->pos, clip);
+                str_truncate(&ti->buf, ti->max_chars);
+                ti->pos = min2(ti->max_chars - 1, ti->pos + strlen(clip));
                 SDL_free(clip);
+                refresh(c);
             }
         }
         return 0;
@@ -181,92 +211,129 @@ static int textinput_event(component *c, SDL_Event *e) {
 }
 
 static void textinput_tick(component *c) {
-    textinput *tb = widget_get_obj(c);
-    if(!tb->dir) {
-        tb->ticks++;
-    } else {
-        tb->ticks--;
-    }
-    if(tb->ticks > 120) {
-        tb->dir = 1;
-    }
-    if(tb->ticks == 0) {
-        tb->dir = 0;
-    }
+    textinput *ti = widget_get_obj(c);
+    ti->ticks++;
 }
 
 const char *textinput_value(const component *c) {
-    textinput *tb = widget_get_obj(c);
-    // Trim whitespace
-    str_strip(&tb->text);
-    tb->pos = 0;
-    return str_c(&tb->text);
+    textinput *ti = widget_get_obj(c);
+    str_strip(&ti->buf);
+    ti->pos = 0;
+    return str_c(&ti->buf);
 }
 
 void textinput_clear(component *c) {
-    textinput *tb = widget_get_obj(c);
-    str_truncate(&tb->text, 0);
-    tb->pos = 0;
+    textinput *ti = widget_get_obj(c);
+    str_truncate(&ti->buf, 0);
+    text_set_from_str(ti->text, &ti->buf);
+    ti->pos = 0;
 }
 
 static void textinput_free(component *c) {
-    textinput *tb = widget_get_obj(c);
-    surface_free(&tb->sur);
-    str_free(&tb->text);
-    omf_free(tb);
+    textinput *ti = widget_get_obj(c);
+    surface_free(&ti->bg_surface);
+    text_free(&ti->text);
+    omf_free(ti);
 }
 
 void textinput_enable_background(component *c, int enabled) {
-    textinput *tb = widget_get_obj(c);
-    tb->bg_enabled = enabled;
+    textinput *ti = widget_get_obj(c);
+    ti->bg_enabled = enabled;
 }
 
 void textinput_set_done_cb(component *c, textinput_done_cb done_cb, void *userdata) {
-    textinput *tb = widget_get_obj(c);
-    tb->done_cb = done_cb;
-    tb->userdata = userdata;
+    textinput *ti = widget_get_obj(c);
+    ti->done_cb = done_cb;
+    ti->userdata = userdata;
 }
 
 void textinput_set_text(component *c, char const *value) {
-    textinput *tb = widget_get_obj(c);
-    str_set_c(&tb->text, value);
+    textinput *ti = widget_get_obj(c);
+    str_set_c(&ti->buf, value);
+    ti->pos = str_size(&ti->buf);
+    refresh(c);
 }
 
-component *textinput_create(const text_settings *tconf, int max_chars, const char *help, const char *initialvalue) {
+void textinput_set_font(component *c, font_size font) {
+    textinput *ti = widget_get_obj(c);
+    ti->font_size = font;
+}
+
+void textinput_set_horizontal_align(component *c, text_horizontal_align align) {
+    textinput *ti = widget_get_obj(c);
+    ti->text_horizontal_align = align;
+}
+
+void textinput_set_text_shadow(component *c, uint8_t shadow, vga_index color) {
+    textinput *ti = widget_get_obj(c);
+    ti->text_shadow = shadow;
+    ti->text_shadow_color = color;
+}
+
+static void textinput_init(component *c, const gui_theme *theme) {
+    textinput *ti = widget_get_obj(c);
+    text_set_font(ti->text, ti->font_size != FONT_NONE ? ti->font_size : theme->text.font);
+    text_set_color(ti->text, theme->text.primary_color);
+    text_set_line_spacing(ti->text, 0);
+    text_set_horizontal_align(ti->text, ALIGN_TEXT_LEFT);
+    text_set_word_wrap(ti->text, false);
+    text_set_shadow_style(ti->text, ti->text_shadow);
+    text_set_shadow_color(ti->text, ti->text_shadow_color);
+    text_set_margin(ti->text, (text_margin){0, 0, 0, 0});
+    if(ti->bg_enabled) {
+        text_set_margin(ti->text, (text_margin){1, 1, 1, 1});
+    }
+    refresh(c);
+    if(c->h_hint < 0) {
+        text_generate_layout(ti->text);
+        int text_height = text_get_layout_height(ti->text) + (ti->bg_enabled ? 2 : 0);
+        component_set_size_hints(c, c->w_hint, text_height);
+    }
+}
+
+static void textinput_layout(component *c, int x, int y, int w, int h) {
+    textinput *ti = widget_get_obj(c);
+    text_set_horizontal_align(ti->text, ti->text_horizontal_align);
+    if(ti->bg_enabled) {
+        text_set_bounding_box(ti->text, w - 2, h - 2);
+        image img;
+        image_create(&img, w - 4, h);
+        image_clear(&img, 0);
+        image_rect(&img, 0, 0, w - 4, h, COLOR_MENU_BORDER);
+        surface_create_from_image(&ti->bg_surface, &img);
+        image_free(&img);
+    } else {
+        text_set_bounding_box(ti->text, w, h);
+    }
+    text_generate_layout(ti->text);
+}
+
+component *textinput_create(int max_chars, const char *help, const char *initial_value) {
     component *c = widget_create();
 
-    textinput *tb = omf_calloc(1, sizeof(textinput));
-    memcpy(&tb->tconf, tconf, sizeof(text_settings));
-    tb->tconf.max_lines = 1;
-    tb->bg_enabled = 1;
-    tb->max_chars = max_chars;
-    tb->pos = 0;
+    textinput *ti = omf_calloc(1, sizeof(textinput));
+    str_from_c(&ti->buf, initial_value);
+    ti->text_max_lines = 1;
+    ti->bg_enabled = true;
+    ti->max_chars = max_chars;
+    ti->pos = 0;
+    ti->font_size = FONT_SMALL;
+    ti->text_horizontal_align = ALIGN_TEXT_CENTER;
+    ti->text_shadow_color = 0;
+    ti->text_shadow = GLYPH_SHADOW_NONE;
+    ti->text = text_create_with_size(FONT_SMALL, TEXT_BBOX_MAX, TEXT_BBOX_MAX);
+    ti->pos = min2(str_size(&ti->buf), ti->max_chars);
 
     component_set_help_text(c, help);
 
-    // Background for field
-    int tsize = text_char_width(&tb->tconf);
-    image img;
-    image_create(&img, tb->max_chars * tsize + 2, tsize + 3);
-    image_clear(&img, COLOR_MENU_BG);
-    image_rect(&img, 0, 0, tb->max_chars * tsize + 1, tsize + 2, COLOR_MENU_BORDER);
-    surface_create_from_image(&tb->sur, &img);
-    image_free(&img);
-
-    // Copy over the initial value
-    str_from_c(&tb->text, initialvalue);
-    str_truncate(&tb->text, tb->max_chars);
-    tb->pos = min2(str_size(&tb->text), tb->max_chars);
-
-    component_set_size_hints(c, text_char_width(&tb->tconf) * tb->max_chars, 10);
-    component_set_size_hints(c, tb->max_chars * tsize + 2, tsize + 3);
-
     // Widget stuff
-    widget_set_obj(c, tb);
+    widget_set_obj(c, ti);
     widget_set_render_cb(c, textinput_render);
     widget_set_event_cb(c, textinput_event);
     widget_set_action_cb(c, textinput_action);
     widget_set_tick_cb(c, textinput_tick);
     widget_set_free_cb(c, textinput_free);
+    widget_set_init_cb(c, textinput_init);
+    widget_set_layout_cb(c, textinput_layout);
     return c;
 }

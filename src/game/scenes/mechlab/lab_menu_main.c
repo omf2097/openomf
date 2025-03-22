@@ -125,16 +125,16 @@ void lab_menu_main_sim(component *c, void *userdata) {
 // clang-format off
 static const button_details details_list[] = {
     // CB, Text, Text align, Halign, Valigh, Pad top, Pad bottom, Pad left, Pad right, Disable by default
-    {lab_menu_main_arena,          "ARENA",            TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP,    2, 0, 0,  0, COM_DISABLED},
-    {lab_menu_main_training_enter, "TRAINING COURSES", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 28, 0, COM_DISABLED},
-    {lab_menu_main_buy_enter,      "BUY",              TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP,    2, 0, 0,  0, COM_DISABLED},
-    {lab_menu_main_sell_enter,     "SELL",             TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP,    2, 0, 0,  0, COM_DISABLED},
-    {lab_menu_main_load,           "LOAD",             TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 14, 0, COM_DISABLED},
-    {lab_menu_main_new,            "NEW",              TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 14, 0, COM_ENABLED },
-    {lab_menu_main_delete,         "DELETE",           TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 14, 0, COM_DISABLED},
-    {lab_menu_main_sim,            "SIM",              TEXT_HORIZONTAL, TEXT_CENTER, TEXT_TOP,    2, 0, 0,  0, COM_DISABLED},
-    {lab_menu_main_quit,           "QUIT",             TEXT_VERTICAL,   TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0,  0, COM_ENABLED },
-    {lab_menu_main_tournament,     "NEW TOURNAMENT",   TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0,  0, COM_DISABLED},
+    {lab_menu_main_arena,          "ARENA",            TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_TOP,    {0, 0, 2,  0}, true},
+    {lab_menu_main_training_enter, "TRAINING COURSES", TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_MIDDLE, {22, 0, 0, 0}, true},
+    {lab_menu_main_buy_enter,      "BUY",              TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_TOP,    {0, 0, 2,  0}, true},
+    {lab_menu_main_sell_enter,     "SELL",             TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_TOP,    {0, 0, 2,  0}, true},
+    {lab_menu_main_load,           "LOAD",             TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_MIDDLE, {12, 0, 0, 0}, true},
+    {lab_menu_main_new,            "NEW",              TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_MIDDLE, {12, 0, 0, 0}, false},
+    {lab_menu_main_delete,         "DELETE",           TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_MIDDLE, {12, 0, 0, 0}, true},
+    {lab_menu_main_sim,            "SIM",              TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_TOP,    {0, 0, 2,  0}, true},
+    {lab_menu_main_quit,           "QUIT",             TEXT_ROW_VERTICAL,   ALIGN_TEXT_CENTER, ALIGN_TEXT_MIDDLE, {1, 0, 0,  0}, false},
+    {lab_menu_main_tournament,     "NEW TOURNAMENT",   TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_MIDDLE, {0, 0, 0,  0}, true},
 };
 // clang-format on
 
@@ -264,39 +264,24 @@ component *lab_menu_main_create(scene *s, bool character_loaded) {
     sprite *msprite = animation_get_sprite(main_sheets, 2);
     component *menu = trnmenu_create(msprite->data, msprite->pos.x, msprite->pos.y, false);
 
-    // Default text configuration
-    text_settings tconf;
-    text_defaults(&tconf);
-    tconf.font = FONT_SMALL;
-    tconf.cforeground = TEXT_TRN_BLUE;
-    tconf.cselected = TEXT_TRN_BLUE;
-    tconf.cdisabled = TEXT_TRN_BLUE;
-    tconf.cinactive = TEXT_TRN_BLUE;
-
     // Init GUI buttons with locations from the "select" button sprites
     for(int i = 0; i < animation_get_sprite_count(main_buttons); i++) {
-        tconf.valign = details_list[i].valign;
-        tconf.halign = details_list[i].halign;
-        tconf.padding.top = details_list[i].top;
-        tconf.padding.bottom = details_list[i].bottom;
-        tconf.padding.left = details_list[i].left;
-        tconf.padding.right = details_list[i].right;
-        tconf.direction = details_list[i].dir;
+        sprite *button_sprite = animation_get_sprite(main_buttons, i);
+        component *button = sprite_button_from_details(&details_list[i], NULL, button_sprite->data, s);
+        spritebutton_set_font(button, FONT_SMALL);
+        spritebutton_set_text_color(button, TEXT_TRN_BLUE);
+        component_set_pos_hints(button, button_sprite->pos.x, button_sprite->pos.y);
 
-        sprite *bsprite = animation_get_sprite(main_buttons, i);
-        bool enabled = details_list[i].enabled;
+        bool disabled = details_list[i].disabled;
         if(i == 4) {
             if(sg_count() > 0) {
                 // there are save games to load
-                enabled = COM_ENABLED;
+                disabled = false;
             }
-        } else if(details_list[i].enabled == COM_DISABLED && character_loaded == true) {
-            enabled = COM_ENABLED;
+        } else if(details_list[i].disabled == true && character_loaded == true) {
+            disabled = false;
         }
-        component *button =
-            spritebutton_create(&tconf, details_list[i].text, bsprite->data, enabled, details_list[i].cb, s);
-        component_set_size_hints(button, bsprite->data->w, bsprite->data->h);
-        component_set_pos_hints(button, bsprite->pos.x, bsprite->pos.y);
+        component_disable(button, disabled);
 
         spritebutton_set_focus_cb(button, focus_cbs[i]);
         spritebutton_set_tick_cb(button, tick_cbs[i]);

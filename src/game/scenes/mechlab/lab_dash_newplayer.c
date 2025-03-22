@@ -9,30 +9,22 @@
 component *lab_dash_newplayer_create(scene *s, newplayer_widgets *nw) {
     component *xy = xysizer_create();
 
-    // Text config
-    text_settings tconf;
-    text_defaults(&tconf);
-    tconf.font = FONT_SMALL;
-    tconf.halign = TEXT_CENTER;
-    tconf.cforeground = TEXT_TRN_BLUE;
-    tconf.cselected = TEXT_TRN_BLUE;
-    tconf.cinactive = TEXT_TRN_BLUE;
-    tconf.cdisabled = TEXT_TRN_BLUE;
-
     // Background name box
     animation *main_sheets = &bk_get_info(s->bk_data, 1)->ani;
     sprite *msprite = animation_get_sprite(main_sheets, 5);
     xysizer_attach(xy, spriteimage_create(msprite->data), msprite->pos.x, msprite->pos.y, -1, -1);
 
     // Dialog text
-    xysizer_attach(xy, label_create(&tconf, lang_get(192)), 110, 43, 100, 50);
+    component *label = label_create(lang_get(192));
+    label_set_font(label, FONT_SMALL);
+    xysizer_attach(xy, label, 110, 43, 100, 50);
 
     // Input field
-    tconf.cselected = TEXT_BRIGHT_GREEN;
-    tconf.halign = TEXT_LEFT;
-    nw->input = textinput_create(&tconf, 16, "Name", "");
-    component_select(nw->input, 1);
-    textinput_enable_background(nw->input, 0);
+    nw->input = textinput_create(16, "Name", "");
+    textinput_set_font(nw->input, FONT_SMALL);
+    textinput_set_horizontal_align(nw->input, ALIGN_TEXT_LEFT);
+    component_select(nw->input, true);
+    textinput_enable_background(nw->input, false);
     xysizer_attach(xy, nw->input, 114, 62, 120, 8);
 
     return xy;

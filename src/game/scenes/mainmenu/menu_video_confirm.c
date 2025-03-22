@@ -73,21 +73,14 @@ component *menu_video_confirm_create(scene *s, settings_video *old_settings) {
     local->old_video_settings = old_settings;
     time(&local->video_accept_timer);
 
-    // Text config
-    text_settings tconf;
-    text_defaults(&tconf);
-    tconf.font = FONT_BIG;
-    tconf.halign = TEXT_CENTER;
-    tconf.cforeground = TEXT_MEDIUM_GREEN;
-
-    component *menu = menu_create(11);
-    menu_attach(menu, label_create(&tconf, "ACCEPT RESOLUTION?"));
+    component *menu = menu_create();
+    menu_attach(menu, label_create_title("ACCEPT RESOLUTION?"));
     menu_attach(menu, filler_create());
-    local->timeout_label = label_create(&tconf, "");
+    local->timeout_label = label_create("");
     menu_attach(menu, local->timeout_label);
     menu_attach(menu, filler_create());
-    menu_attach(menu, button_create(&tconf, "OK", NULL, COM_ENABLED, video_confirm_ok_clicked, local));
-    menu_attach(menu, button_create(&tconf, "CANCEL", NULL, COM_ENABLED, video_confirm_cancel_clicked, local));
+    menu_attach(menu, button_create("OK", NULL, false, false, video_confirm_ok_clicked, local));
+    menu_attach(menu, button_create("CANCEL", NULL, false, false, video_confirm_cancel_clicked, local));
 
     menu_set_userdata(menu, local);
     menu_set_free_cb(menu, menu_video_confirm_free);

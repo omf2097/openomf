@@ -45,6 +45,14 @@
 #define GAME_MENU_RETURN_ID 100
 #define GAME_MENU_QUIT_ID 101
 
+// Colors specific to palette used by arena
+#define TEXT_PRIMARY_COLOR 0xFE
+#define TEXT_SECONDARY_COLOR 0xFD
+#define TEXT_DISABLED_COLOR 0xC0
+#define TEXT_ACTIVE_COLOR 0xFF
+#define TEXT_INACTIVE_COLOR 0xFE
+#define TEXT_SHADOW_COLOR 0xC0
+
 typedef enum
 {
     NONE = 0,
@@ -1291,16 +1299,16 @@ void arena_render_overlay(scene *scene) {
             player2_name = player[1]->pilot->name;
         }
 
-        text_render(&tconf_players, TEXT_DEFAULT, 5, 19, 250, 6, player1_name);
-        text_render(&tconf_players, TEXT_DEFAULT, 5, 26, 250, 6, lang_get((player[0]->pilot->har_id) + 31));
+        text_render_mode(&tconf_players, TEXT_DEFAULT, 5, 19, 250, 6, player1_name);
+        text_render_mode(&tconf_players, TEXT_DEFAULT, 5, 26, 250, 6, lang_get((player[0]->pilot->har_id) + 31));
 
         if(player[1]->pilot) {
             // when quitting, this can go null
             int p2len = (strlen(player2_name) - 1) * fnt->w;
             int h2len = (strlen(lang_get((player[1]->pilot->har_id) + 31)) - 1) * fnt->w;
-            text_render(&tconf_players, TEXT_DEFAULT, 315 - p2len, 19, 100, 6, player2_name);
-            text_render(&tconf_players, TEXT_DEFAULT, 315 - h2len, 26, 100, 6,
-                        lang_get((player[1]->pilot->har_id) + 31));
+            text_render_mode(&tconf_players, TEXT_DEFAULT, 315 - p2len, 19, 100, 6, player2_name);
+            text_render_mode(&tconf_players, TEXT_DEFAULT, 315 - h2len, 26, 100, 6,
+                             lang_get((player[1]->pilot->har_id) + 31));
         }
 
         // dont render total score in demo play
@@ -1314,12 +1322,12 @@ void arena_render_overlay(scene *scene) {
         // render ping, if player is networked
         if(player[0]->ctrl->type == CTRL_TYPE_NETWORK) {
             snprintf(buf, 40, "ping %d", player[0]->ctrl->rtt / 2);
-            text_render(&tconf_players, TEXT_DEFAULT, 5, 40, 250, 6, buf);
+            text_render_mode(&tconf_players, TEXT_DEFAULT, 5, 40, 250, 6, buf);
         }
 
         if(player[1]->ctrl->type == CTRL_TYPE_NETWORK) {
             snprintf(buf, 40, "ping %d", player[1]->ctrl->rtt / 2);
-            text_render(&tconf_players, TEXT_DEFAULT, 315 - (strlen(buf) * fnt->w), 40, 250, 6, buf);
+            text_render_mode(&tconf_players, TEXT_DEFAULT, 315 - (strlen(buf) * fnt->w), 40, 250, 6, buf);
         }
     }
 
@@ -1352,51 +1360,51 @@ static void arena_debug(scene *scene) {
     const font *fnt = fonts_get_font(tconf_debug.font);
 
     snprintf(buf, 40, "%u", game_state_get_tick(scene->gs));
-    text_render(&tconf_debug, TEXT_DEFAULT, 160, 0, 250, 6, buf);
+    text_render_mode(&tconf_debug, TEXT_DEFAULT, 160, 0, 250, 6, buf);
     snprintf(buf, 40, "%u", random_get_seed(&scene->gs->rand));
-    text_render(&tconf_debug, TEXT_DEFAULT, 130, 8, 250, 6, buf);
+    text_render_mode(&tconf_debug, TEXT_DEFAULT, 130, 8, 250, 6, buf);
 
     if(player[0]->ctrl->type == CTRL_TYPE_AI) {
         ai_controller_print_state(player[0]->ctrl, buf, sizeof(buf));
-        text_render(&tconf_debug, TEXT_DEFAULT, 5, 40, 250, 6, buf);
+        text_render_mode(&tconf_debug, TEXT_DEFAULT, 5, 40, 250, 6, buf);
     }
 
     if(player[1]->ctrl->type == CTRL_TYPE_AI) {
         ai_controller_print_state(player[1]->ctrl, buf, sizeof(buf));
-        text_render(&tconf_debug, TEXT_DEFAULT, 315 - (strlen(buf) * fnt->w), 40, 250, 6, buf);
+        text_render_mode(&tconf_debug, TEXT_DEFAULT, 315 - (strlen(buf) * fnt->w), 40, 250, 6, buf);
     }
 
     for(int i = 0; i < 2; i++) {
         snprintf(buf, sizeof(buf), "%s", state_name(hars[i]->state));
         if(i == 0) {
-            text_render(&tconf_debug, TEXT_DEFAULT, 5, 48, 250, 6, buf);
+            text_render_mode(&tconf_debug, TEXT_DEFAULT, 5, 48, 250, 6, buf);
         } else {
-            text_render(&tconf_debug, TEXT_DEFAULT, 315 - (strlen(buf) * fnt->w), 48, 250, 6, buf);
+            text_render_mode(&tconf_debug, TEXT_DEFAULT, 315 - (strlen(buf) * fnt->w), 48, 250, 6, buf);
         }
 
         snprintf(buf, sizeof(buf), "pos: %.3f %.3f", obj_har[i]->pos.x, obj_har[i]->pos.y);
 
         if(i == 0) {
-            text_render(&tconf_debug, TEXT_DEFAULT, 5, 56, 250, 6, buf);
+            text_render_mode(&tconf_debug, TEXT_DEFAULT, 5, 56, 250, 6, buf);
         } else {
-            text_render(&tconf_debug, TEXT_DEFAULT, 315 - (strlen(buf) * fnt->w), 56, 250, 6, buf);
+            text_render_mode(&tconf_debug, TEXT_DEFAULT, 315 - (strlen(buf) * fnt->w), 56, 250, 6, buf);
         }
 
         snprintf(buf, sizeof(buf), "vel: %.3f %.3f", obj_har[i]->vel.x, obj_har[i]->vel.y);
 
         if(i == 0) {
-            text_render(&tconf_debug, TEXT_DEFAULT, 5, 62, 250, 6, buf);
+            text_render_mode(&tconf_debug, TEXT_DEFAULT, 5, 62, 250, 6, buf);
         } else {
-            text_render(&tconf_debug, TEXT_DEFAULT, 315 - (strlen(buf) * fnt->w), 62, 250, 6, buf);
+            text_render_mode(&tconf_debug, TEXT_DEFAULT, 315 - (strlen(buf) * fnt->w), 62, 250, 6, buf);
         }
 
         snprintf(buf, sizeof(buf), "aa: %d em: %d ani: %d", hars[i]->air_attacked, hars[i]->executing_move,
                  obj_har[i]->cur_animation->id);
 
         if(i == 0) {
-            text_render(&tconf_debug, TEXT_DEFAULT, 5, 70, 250, 6, buf);
+            text_render_mode(&tconf_debug, TEXT_DEFAULT, 5, 70, 250, 6, buf);
         } else {
-            text_render(&tconf_debug, TEXT_DEFAULT, 315 - (strlen(buf) * fnt->w), 70, 250, 6, buf);
+            text_render_mode(&tconf_debug, TEXT_DEFAULT, 315 - (strlen(buf) * fnt->w), 70, 250, 6, buf);
         }
     }
 }
@@ -1640,50 +1648,55 @@ int arena_create(scene *scene) {
 
     maybe_install_har_hooks(scene);
 
-    // Arena menu text settings
-    text_settings tconf;
-    text_defaults(&tconf);
-    tconf.font = FONT_BIG;
-    tconf.cforeground = TEXT_DARK_GREEN;
-    tconf.halign = TEXT_CENTER;
+    // Arena menu theme
+    gui_theme theme;
+    gui_theme_defaults(&theme);
+    theme.dialog.border_color = TEXT_MEDIUM_GREEN;
+    theme.text.primary_color = TEXT_PRIMARY_COLOR;
+    theme.text.secondary_color = TEXT_SECONDARY_COLOR;
+    theme.text.disabled_color = TEXT_DISABLED_COLOR;
+    theme.text.active_color = TEXT_ACTIVE_COLOR;
+    theme.text.inactive_color = TEXT_INACTIVE_COLOR;
+    theme.text.shadow_color = TEXT_SHADOW_COLOR;
 
     // Arena menu
     local->menu_visible = 0;
-    local->game_menu = gui_frame_create(60, 5, 181, 117);
-    component *menu = menu_create(11);
-    menu_attach(menu, label_create(&tconf, "OPENOMF"));
+    local->game_menu = gui_frame_create(&theme, 60, 5, 181, 117);
+    component *menu = menu_create();
+    component *openomf = label_create_title("OPENOMF");
+    label_set_text_color(openomf, TEXT_DARK_GREEN);
+    menu_attach(menu, openomf);
     menu_attach(menu, filler_create());
     menu_attach(menu, filler_create());
     component *return_button =
-        button_create(&tconf, "RETURN TO GAME", "Continue fighting.", COM_ENABLED, game_menu_return, scene);
+        button_create("RETURN TO GAME", "Continue fighting.", false, false, game_menu_return, scene);
     widget_set_id(return_button, GAME_MENU_RETURN_ID);
     menu_attach(menu, return_button);
 
+    menu_attach(menu, textslider_create_bind(
+                          "SOUND", "Raise or lower the volume of all sound effects. Press left or right to change.", 10,
+                          1, arena_sound_slide, NULL, &setting->sound.sound_vol));
     menu_attach(menu,
-                textslider_create_bind(&tconf, "SOUND",
-                                       "Raise or lower the volume of all sound effects. Press left or right to change.",
-                                       10, 1, arena_sound_slide, NULL, &setting->sound.sound_vol));
-    menu_attach(menu, textslider_create_bind(&tconf, "MUSIC",
-                                             "Raise or lower the volume of music. Press right or left to change.", 10,
-                                             1, arena_music_slide, NULL, &setting->sound.music_vol));
+                textslider_create_bind("MUSIC", "Raise or lower the volume of music. Press right or left to change.",
+                                       10, 1, arena_music_slide, NULL, &setting->sound.music_vol));
 
-    component *speed_slider = textslider_create_bind(
-        &tconf, "SPEED", "Change the speed of the game when in the arena. Press left or right to change", 10, 0,
-        arena_speed_slide, scene, &setting->gameplay.speed);
+    component *speed_slider =
+        textslider_create_bind("SPEED", "Change the speed of the game when in the arena. Press left or right to change",
+                               10, 0, arena_speed_slide, scene, &setting->gameplay.speed);
     if(is_netplay(scene->gs)) {
         component_disable(speed_slider, 1);
     }
     menu_attach(menu, speed_slider);
 
-    menu_attach(menu, button_create(&tconf, "VIDEO OPTIONS",
-                                    "These are miscellaneous options for visual effects and detail levels.",
-                                    COM_DISABLED, NULL, NULL));
-    menu_attach(menu, button_create(&tconf, "HELP",
+    menu_attach(menu,
+                button_create("VIDEO OPTIONS", "These are miscellaneous options for visual effects and detail levels.",
+                              false, false, NULL, NULL));
+    menu_attach(menu, button_create("HELP",
                                     "Obtain detailed and thorough explanation of the various options for which you "
                                     "may need a detailed and thorough explanation.",
-                                    COM_DISABLED, NULL, NULL));
+                                    false, false, NULL, NULL));
     component *quit_button =
-        button_create(&tconf, "QUIT", "Quit game and return to main menu.", COM_ENABLED, game_menu_quit, scene);
+        button_create("QUIT", "Quit game and return to main menu.", false, false, game_menu_quit, scene);
     widget_set_id(quit_button, GAME_MENU_QUIT_ID);
     menu_attach(menu, quit_button);
 

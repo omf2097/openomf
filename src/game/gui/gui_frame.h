@@ -2,10 +2,11 @@
 #define FRAME_H
 
 #include "game/gui/component.h"
+#include "game/gui/theme.h"
 
 typedef struct gui_frame gui_frame;
 
-gui_frame *gui_frame_create(int x, int y, int w, int h);
+gui_frame *gui_frame_create(const gui_theme *theme, int x, int y, int w, int h);
 void gui_frame_set_root(gui_frame *frame, component *root_node);
 component *gui_frame_get_root(const gui_frame *frame);
 void gui_frame_free(gui_frame *frame);
