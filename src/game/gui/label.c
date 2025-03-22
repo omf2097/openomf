@@ -111,7 +111,6 @@ static void label_layout(component *c, int x, int y, int w, int h) {
     text_set_bounding_box(local->text, w, h);
     text_set_horizontal_align(local->text, local->text_horizontal_align);
     text_set_vertical_align(local->text, local->text_vertical_align);
-    text_set_line_spacing(local->text, 0);
     text_generate_layout(local->text);
 }
 
