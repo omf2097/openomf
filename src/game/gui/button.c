@@ -9,6 +9,7 @@
 #include "game/gui/widget.h"
 #include "utils/allocator.h"
 #include "utils/c_string_util.h"
+#include "utils/log.h"
 #include "video/video.h"
 
 typedef struct button {

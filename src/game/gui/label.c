@@ -26,7 +26,7 @@ static void label_render(component *c) {
     vga_index color = theme->text.primary_color;
     if(local->override_color > -1) {
         color = local->override_color;
-    } else if (local->color_theme == 1) {
+    } else if(local->color_theme == 1) {
         color = theme->text.secondary_color;
     }
     text_set_color(local->text, color);

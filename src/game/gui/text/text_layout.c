@@ -98,7 +98,8 @@ typedef struct text_row {
 } text_row;
 
 static area find_rows(vector *rows, const str *buf, const font *font, text_row_direction direction,
-                      uint8_t letter_spacing, uint8_t line_spacing, uint16_t max_width, uint16_t max_height, bool word_wrap) {
+                      uint8_t letter_spacing, uint8_t line_spacing, uint16_t max_width, uint16_t max_height,
+                      bool word_wrap) {
     size_t start = 0, len = str_size(buf);
     size_t line = 0;
     size_t row_heights = 0, total_height = 0;
@@ -188,8 +189,7 @@ static uint16_t halign_offset(text_horizontal_align align, uint16_t bbox_w, uint
  */
 void text_layout_compute(text_layout *layout, const str *buf, const font *font, uint16_t bbox_w, uint16_t bbox_h,
                          text_vertical_align vertical_align, text_horizontal_align horizontal_align, text_margin margin,
-                         text_row_direction direction, uint8_t line_spacing, uint8_t letter_spacing,
-                         bool word_wrap) {
+                         text_row_direction direction, uint8_t line_spacing, uint8_t letter_spacing, bool word_wrap) {
     assert(buf != NULL);
     // assert(bbox_w > margin.left + margin.right);
     // assert(bbox_h > margin.top + margin.bottom);
@@ -205,7 +205,8 @@ void text_layout_compute(text_layout *layout, const str *buf, const font *font, 
     // Figure out how many rows we render, and what their sizes are.
     vector rows;
     vector_create(&rows, sizeof(text_row));
-    area text_block = find_rows(&rows, buf, font, direction, letter_spacing, line_spacing, max_width, max_height, word_wrap);
+    area text_block =
+        find_rows(&rows, buf, font, direction, letter_spacing, line_spacing, max_width, max_height, word_wrap);
 
     // Clear any lingering data now, as we are ready to write!
     vector_clear(&layout->items);
