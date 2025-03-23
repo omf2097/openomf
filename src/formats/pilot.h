@@ -41,9 +41,9 @@ typedef struct {
     uint16_t offense;        ///< Offense preference value (100 high, should be under 200).
     uint16_t defense;        ///< Defense preference value (100 high, should be under 200).
     int32_t money;           ///< Amount of money the pilot currently has
-    uint8_t color_1;         ///< Color 1 field for the HAR (0-15). 255 means random.
-    uint8_t color_2;         ///< Color 2 field for the HAR (0-15). 255 means random.
-    uint8_t color_3;         ///< Color 3 field for the HAR (0-15). 255 means random.
+    uint8_t color_1;         ///< HAR Color 1. 0-15 are altpals, 16 means use 'palette' field, 255 means random.
+    uint8_t color_2;         ///< HAR Color 2. 0-15 are altpals, 16 means use 'palette' field, 255 means random.
+    uint8_t color_3;         ///< HAR Color 3. 0-15 are altpals, 16 means use 'palette' field, 255 means random.
     char trn_name[13];       ///< Tournament file
     char trn_desc[31];       ///< Tournament description
     char trn_image[13];      ///< Tournament image file
@@ -102,7 +102,7 @@ typedef struct {
     uint32_t total_value; ///< Total value for the pilot
     float unk_f_a;        ///< Unknown
     float unk_f_b;        ///< Unknown
-    vga_palette palette;  ///< Palette for photo ?
+    vga_palette palette;  ///< Photo palette, used as HAR colors when not using altpals.
     uint16_t unk_block_i; ///< Unknown
     uint16_t photo_id;    ///< Which face photo this pilot uses
 
