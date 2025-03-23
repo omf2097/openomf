@@ -103,10 +103,10 @@ void lab_menu_training_done(component *c, void *userdata) {
 
 // clang-format off
 static const button_details details_list[] = {
-    {lab_menu_training_power,     "POWER",   TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_TOP,    {0, 0, 2, 0}, false},
-    {lab_menu_training_agility,   "AGILITY", TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_TOP,    {0, 0, 2, 0}, false},
-    {lab_menu_training_endurance, "ENDUR.",  TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_TOP,    {0, 0, 2, 0}, false},
-    {lab_menu_training_done,      "DONE",    TEXT_ROW_VERTICAL,   ALIGN_TEXT_CENTER, ALIGN_TEXT_MIDDLE, {1, 0, 0, 0}, false},
+    {lab_menu_training_power,     "POWER",   TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP,    {0, 0, 2, 0}, false},
+    {lab_menu_training_agility,   "AGILITY", TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP,    {0, 0, 2, 0}, false},
+    {lab_menu_training_endurance, "ENDUR.",  TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP,    {0, 0, 2, 0}, false},
+    {lab_menu_training_done,      "DONE",    TEXT_ROW_VERTICAL,   TEXT_ALIGN_CENTER, TEXT_ALIGN_MIDDLE, {1, 0, 0, 0}, false},
 };
 // clang-format on
 

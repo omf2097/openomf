@@ -88,7 +88,7 @@ static void label_init(component *c, const gui_theme *theme) {
     label *local = widget_get_obj(c);
     text_set_font(local->text, local->override_font != FONT_NONE ? local->override_font : theme->text.font);
     text_set_line_spacing(local->text, local->letter_spacing);
-    text_set_horizontal_align(local->text, ALIGN_TEXT_LEFT);
+    text_set_horizontal_align(local->text, TEXT_ALIGN_LEFT);
     text_set_shadow_style(local->text, local->text_shadow);
     text_set_shadow_color(local->text, local->text_shadow_color);
     text_set_margin(local->text, local->text_margin);
@@ -123,8 +123,8 @@ component *label_create_with_width(const char *text, uint16_t max_width) {
     local->override_color = -1;
     local->color_theme = 0; // 0 = primary color, 1 = secondary color.
     local->override_font = FONT_NONE;
-    local->text_horizontal_align = ALIGN_TEXT_LEFT;
-    local->text_vertical_align = ALIGN_TEXT_TOP;
+    local->text_horizontal_align = TEXT_ALIGN_LEFT;
+    local->text_vertical_align = TEXT_ALIGN_TOP;
     local->letter_spacing = 0;
     local->text_shadow = GLYPH_SHADOW_NONE;
     local->text_shadow_color = 0;
@@ -145,7 +145,7 @@ component *label_create(const char *text) {
 
 component *label_create_title(const char *text) {
     component *c = label_create_with_width(text, TEXT_BBOX_MAX);
-    label_set_text_horizontal_align(c, ALIGN_TEXT_CENTER);
+    label_set_text_horizontal_align(c, TEXT_ALIGN_CENTER);
     label_set_color_theme(c, 1); // Secondary color
     return c;
 }

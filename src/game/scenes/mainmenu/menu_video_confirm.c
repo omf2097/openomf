@@ -77,7 +77,7 @@ component *menu_video_confirm_create(scene *s, settings_video *old_settings) {
     menu_attach(menu, label_create_title("ACCEPT RESOLUTION?"));
     menu_attach(menu, filler_create());
     local->timeout_label = label_create("");
-    label_set_text_horizontal_align(local->timeout_label, ALIGN_TEXT_CENTER);
+    label_set_text_horizontal_align(local->timeout_label, TEXT_ALIGN_CENTER);
     menu_attach(menu, local->timeout_label);
     menu_attach(menu, filler_create());
     menu_attach(menu, button_create("OK", NULL, false, false, video_confirm_ok_clicked, local));

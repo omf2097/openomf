@@ -193,17 +193,17 @@ void lab_menu_trade_for_nova_focus(component *c, bool focused, void *userdata) {
 }
 
 static const button_details details_list[] = {
-    {lab_menu_trade, NULL, TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_TOP, {2, 0, 0, 0}, false},
-    {lab_menu_trade, NULL, TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_TOP, {2, 0, 0, 0}, false},
-    {lab_menu_trade, NULL, TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_TOP, {2, 0, 0, 0}, false},
-    {lab_menu_trade, NULL, TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_TOP, {2, 0, 0, 0}, false},
-    {lab_menu_trade, NULL, TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_TOP, {2, 0, 0, 0}, false},
-    {lab_menu_trade, NULL, TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_TOP, {2, 0, 0, 0}, false},
-    {lab_menu_trade, NULL, TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_TOP, {2, 0, 0, 0}, false},
-    {lab_menu_trade, NULL, TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_TOP, {2, 0, 0, 0}, false},
-    {lab_menu_trade, NULL, TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_TOP, {2, 0, 0, 0}, false},
-    {lab_menu_trade, NULL, TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_TOP, {2, 0, 0, 0}, false},
-    {lab_menu_trade, NULL, TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_TOP, {2, 0, 0, 0}, false},
+    {lab_menu_trade, NULL, TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, {2, 0, 0, 0}, false},
+    {lab_menu_trade, NULL, TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, {2, 0, 0, 0}, false},
+    {lab_menu_trade, NULL, TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, {2, 0, 0, 0}, false},
+    {lab_menu_trade, NULL, TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, {2, 0, 0, 0}, false},
+    {lab_menu_trade, NULL, TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, {2, 0, 0, 0}, false},
+    {lab_menu_trade, NULL, TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, {2, 0, 0, 0}, false},
+    {lab_menu_trade, NULL, TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, {2, 0, 0, 0}, false},
+    {lab_menu_trade, NULL, TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, {2, 0, 0, 0}, false},
+    {lab_menu_trade, NULL, TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, {2, 0, 0, 0}, false},
+    {lab_menu_trade, NULL, TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, {2, 0, 0, 0}, false},
+    {lab_menu_trade, NULL, TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, {2, 0, 0, 0}, false},
 };
 
 static const spritebutton_focus_cb focus_cbs[] = {

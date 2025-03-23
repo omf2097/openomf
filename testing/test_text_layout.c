@@ -96,7 +96,7 @@ void test_text_layout_compute(void) {
     str s;
     str_from_c(&s, "ABABB");
 
-    text_layout_compute(&layout, &s, &f, 16, 24, ALIGN_TEXT_TOP, ALIGN_TEXT_LEFT, margin, TEXT_ROW_HORIZONTAL, 1, 0,
+    text_layout_compute(&layout, &s, &f, 16, 24, TEXT_ALIGN_TOP, TEXT_ALIGN_LEFT, margin, TEXT_ROW_HORIZONTAL, 1, 0,
                         255);
 
     // Cleanup

@@ -169,8 +169,8 @@ component *textselector_create(const char *text, const char *help, textselector_
     t->userdata = userdata;
     t->toggle = cb;
     t->override_font = FONT_NONE;
-    t->text_vertical_align = ALIGN_TEXT_MIDDLE;
-    t->text_horizontal_align = ALIGN_TEXT_CENTER;
+    t->text_vertical_align = TEXT_ALIGN_MIDDLE;
+    t->text_horizontal_align = TEXT_ALIGN_CENTER;
     vector_create_with_size_cb(&t->options, sizeof(char *), 0, item_free);
     widget_set_obj(c, t);
 

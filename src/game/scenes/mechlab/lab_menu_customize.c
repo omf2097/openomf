@@ -364,17 +364,17 @@ void lab_menu_customize_check_trade_robot(component *c, void *userdata) {
 
 // clang-format off
 static const button_details details_list[] = {
-    {lab_menu_customize_color_main,      NULL,          TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_MIDDLE, {0, 0, 0, 0}, false}, // Blue
-    {lab_menu_customize_color_third,     NULL,          TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_MIDDLE, {0, 0, 0, 0}, false}, // Yellow
-    {lab_menu_customize_color_secondary, NULL,          TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_MIDDLE, {0, 0, 0, 0}, false}, // Red
-    {lab_menu_customize_arm_power,       "ARM POWER",   TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_MIDDLE, {1, 0, 0, 0}, false},
-    {lab_menu_customize_leg_power,       "LEG POWER",   TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_MIDDLE, {1, 0, 0, 0}, false},
-    {lab_menu_customize_arm_speed,       "ARM SPEED",   TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_MIDDLE, {1, 0, 0, 0}, false},
-    {lab_menu_customize_leg_speed,       "LEG SPEED",   TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_MIDDLE, {1, 0, 0, 0}, false},
-    {lab_menu_customize_armor,           "ARMOR",       TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_MIDDLE, {1, 0, 0, 0}, false},
-    {lab_menu_customize_stun_resistance, "STUN RES.",   TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_MIDDLE, {0, 0, 0, 0}, false},
-    {lab_menu_customize_trade,           "TRADE ROBOT", TEXT_ROW_HORIZONTAL, ALIGN_TEXT_CENTER, ALIGN_TEXT_MIDDLE, {0, 0, 0, 0}, false},
-    {lab_menu_customize_done,           "DONE",        TEXT_ROW_VERTICAL,   ALIGN_TEXT_CENTER, ALIGN_TEXT_MIDDLE, {1, 0, 0, 0}, false},
+    {lab_menu_customize_color_main,      NULL,          TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_MIDDLE, {0, 0, 0, 0}, false}, // Blue
+    {lab_menu_customize_color_third,     NULL,          TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_MIDDLE, {0, 0, 0, 0}, false}, // Yellow
+    {lab_menu_customize_color_secondary, NULL,          TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_MIDDLE, {0, 0, 0, 0}, false}, // Red
+    {lab_menu_customize_arm_power,       "ARM POWER",   TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_MIDDLE, {1, 0, 0, 0}, false},
+    {lab_menu_customize_leg_power,       "LEG POWER",   TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_MIDDLE, {1, 0, 0, 0}, false},
+    {lab_menu_customize_arm_speed,       "ARM SPEED",   TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_MIDDLE, {1, 0, 0, 0}, false},
+    {lab_menu_customize_leg_speed,       "LEG SPEED",   TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_MIDDLE, {1, 0, 0, 0}, false},
+    {lab_menu_customize_armor,           "ARMOR",       TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_MIDDLE, {1, 0, 0, 0}, false},
+    {lab_menu_customize_stun_resistance, "STUN RES.",   TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_MIDDLE, {0, 0, 0, 0}, false},
+    {lab_menu_customize_trade,           "TRADE ROBOT", TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_MIDDLE, {0, 0, 0, 0}, false},
+    {lab_menu_customize_done,           "DONE",        TEXT_ROW_VERTICAL,   TEXT_ALIGN_CENTER, TEXT_ALIGN_MIDDLE, {1, 0, 0, 0}, false},
 };
 // clang-format on
 

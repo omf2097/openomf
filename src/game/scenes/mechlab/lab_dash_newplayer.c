@@ -22,7 +22,7 @@ component *lab_dash_newplayer_create(scene *s, newplayer_widgets *nw) {
     // Input field
     nw->input = textinput_create(16, "Name", "");
     textinput_set_font(nw->input, FONT_SMALL);
-    textinput_set_horizontal_align(nw->input, ALIGN_TEXT_LEFT);
+    textinput_set_horizontal_align(nw->input, TEXT_ALIGN_LEFT);
     component_select(nw->input, true);
     textinput_enable_background(nw->input, false);
     xysizer_attach(xy, nw->input, 114, 62, 120, 8);

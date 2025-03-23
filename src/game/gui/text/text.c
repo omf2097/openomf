@@ -41,8 +41,8 @@ struct text {
 static void defaults(text *t) {
     t->text_color = 0xFD;
     t->shadow_color = 0xC0;
-    t->vertical_align = ALIGN_TEXT_TOP;
-    t->horizontal_align = ALIGN_TEXT_LEFT;
+    t->vertical_align = TEXT_ALIGN_TOP;
+    t->horizontal_align = TEXT_ALIGN_LEFT;
     t->margin.left = 0;
     t->margin.right = 0;
     t->margin.top = 0;

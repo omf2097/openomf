@@ -5,16 +5,16 @@
 
 typedef enum text_vertical_align
 {
-    ALIGN_TEXT_TOP,
-    ALIGN_TEXT_MIDDLE,
-    ALIGN_TEXT_BOTTOM
+    TEXT_ALIGN_TOP,
+    TEXT_ALIGN_MIDDLE,
+    TEXT_ALIGN_BOTTOM
 } text_vertical_align;
 
 typedef enum text_horizontal_align
 {
-    ALIGN_TEXT_LEFT,
-    ALIGN_TEXT_CENTER,
-    ALIGN_TEXT_RIGHT
+    TEXT_ALIGN_LEFT,
+    TEXT_ALIGN_CENTER,
+    TEXT_ALIGN_RIGHT
 } text_horizontal_align;
 
 typedef struct text_margin {

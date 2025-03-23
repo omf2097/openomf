@@ -110,7 +110,7 @@ static void button_init(component *c, const gui_theme *theme) {
 static void button_layout(component *c, int x, int y, int w, int h) {
     const gui_theme *theme = component_get_theme(c);
     button *b = widget_get_obj(c);
-    text_set_horizontal_align(b->text, ALIGN_TEXT_CENTER);
+    text_set_horizontal_align(b->text, TEXT_ALIGN_CENTER);
     if(b->use_border) {
         text_set_bounding_box(b->text, w - 4, h - 4);
         menu_background_border_create(&b->border, w, h, theme->dialog.border_color);

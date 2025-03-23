@@ -147,11 +147,11 @@ exit:
 
 static uint16_t valign_offset(text_vertical_align align, uint16_t bbox_h, uint16_t block_h) {
     switch(align) {
-        case ALIGN_TEXT_TOP:
+        case TEXT_ALIGN_TOP:
             return 0;
-        case ALIGN_TEXT_MIDDLE:
+        case TEXT_ALIGN_MIDDLE:
             return (bbox_h - block_h) >> 1;
-        case ALIGN_TEXT_BOTTOM:
+        case TEXT_ALIGN_BOTTOM:
             return bbox_h - block_h;
     }
     assert(false && "Unknown text_vertical_align");
@@ -160,11 +160,11 @@ static uint16_t valign_offset(text_vertical_align align, uint16_t bbox_h, uint16
 
 static uint16_t halign_offset(text_horizontal_align align, uint16_t bbox_w, uint16_t block_w) {
     switch(align) {
-        case ALIGN_TEXT_LEFT:
+        case TEXT_ALIGN_LEFT:
             return 0;
-        case ALIGN_TEXT_CENTER:
+        case TEXT_ALIGN_CENTER:
             return (bbox_w - block_w) >> 1;
-        case ALIGN_TEXT_RIGHT:
+        case TEXT_ALIGN_RIGHT:
             return bbox_w - block_w;
     }
     assert(false && "Unknown text_horizontal_align");

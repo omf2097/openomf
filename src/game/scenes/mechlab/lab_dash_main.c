@@ -403,10 +403,10 @@ component *lab_dash_main_create(scene *s, dashboard_widgets *dw) {
     label_set_font(dw->tournament, FONT_SMALL);
     label_set_text_color(dw->har_name, MECHLAB_BRIGHT_GREEN);
     label_set_font(dw->har_name, FONT_SMALL);
-    label_set_text_horizontal_align(dw->har_name, ALIGN_TEXT_CENTER);
+    label_set_text_horizontal_align(dw->har_name, TEXT_ALIGN_CENTER);
     label_set_text_color(dw->har_moves, MECHLAB_BRIGHT_GREEN);
     label_set_font(dw->har_moves, FONT_SMALL);
-    label_set_text_horizontal_align(dw->har_moves, ALIGN_TEXT_CENTER);
+    label_set_text_horizontal_align(dw->har_moves, TEXT_ALIGN_CENTER);
 
     xysizer_attach(xy, dw->name, 12, 58, 200, 6);
     xysizer_attach(xy, dw->rank, 18, 64, 200, 6);
@@ -458,7 +458,7 @@ component *lab_dash_sim_create(scene *s, dashboard_widgets *dw) {
         xysizer_attach(xy, dw->photo[i], 6 + (i * 60), -1, -1, -1);
         dw->ranks[i] = label_create("NO RANK");
         label_set_font(dw->ranks[i], FONT_SMALL);
-        label_set_text_horizontal_align(dw->ranks[i], ALIGN_TEXT_CENTER);
+        label_set_text_horizontal_align(dw->ranks[i], TEXT_ALIGN_CENTER);
         label_set_text_color(dw->ranks[i], TEXT_MEDIUM_GREEN);
         xysizer_attach(xy, dw->ranks[i], 6 + (i * 60), 58, 50, -1);
     }

@@ -275,7 +275,7 @@ static void textinput_init(component *c, const gui_theme *theme) {
     text_set_font(ti->text, ti->font_size != FONT_NONE ? ti->font_size : theme->text.font);
     text_set_color(ti->text, theme->text.primary_color);
     text_set_line_spacing(ti->text, 0);
-    text_set_horizontal_align(ti->text, ALIGN_TEXT_LEFT);
+    text_set_horizontal_align(ti->text, TEXT_ALIGN_LEFT);
     text_set_word_wrap(ti->text, false);
     text_set_shadow_style(ti->text, ti->text_shadow);
     text_set_shadow_color(ti->text, ti->text_shadow_color);
@@ -318,7 +318,7 @@ component *textinput_create(int max_chars, const char *help, const char *initial
     ti->max_chars = max_chars;
     ti->pos = 0;
     ti->font_size = FONT_SMALL;
-    ti->text_horizontal_align = ALIGN_TEXT_CENTER;
+    ti->text_horizontal_align = TEXT_ALIGN_CENTER;
     ti->text_shadow_color = 0;
     ti->text_shadow = GLYPH_SHADOW_NONE;
     ti->text = text_create_with_size(FONT_SMALL, TEXT_BBOX_MAX, TEXT_BBOX_MAX);

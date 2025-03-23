@@ -126,8 +126,8 @@ component *spritebutton_create(const char *text, const surface *img, bool disabl
         b->text = NULL;
     }
     b->click_cb = cb;
-    b->vertical_align = ALIGN_TEXT_MIDDLE;
-    b->horizontal_align = ALIGN_TEXT_CENTER;
+    b->vertical_align = TEXT_ALIGN_MIDDLE;
+    b->horizontal_align = TEXT_ALIGN_CENTER;
     b->row_direction = TEXT_ROW_HORIZONTAL;
     b->margins = (text_margin){0, 0, 0, 0};
     b->font = FONT_NONE;

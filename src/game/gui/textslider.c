@@ -137,8 +137,8 @@ component *textslider_create(const char *text, const char *help, unsigned int po
     t->userdata = userdata;
     t->slide = cb;
     t->override_font = FONT_NONE;
-    t->text_vertical_align = ALIGN_TEXT_MIDDLE;
-    t->text_horizontal_align = ALIGN_TEXT_CENTER;
+    t->text_vertical_align = TEXT_ALIGN_MIDDLE;
+    t->text_horizontal_align = TEXT_ALIGN_CENTER;
     str_from_c(&t->title, text);
     widget_set_obj(c, t);
 

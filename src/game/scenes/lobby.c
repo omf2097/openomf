@@ -447,7 +447,7 @@ component *lobby_yell_create(scene *s) {
                          "");
     textinput_set_text_shadow(yell_input, GLYPH_SHADOW_BOTTOM, 9);
     textinput_set_font(yell_input, FONT_NET1);
-    textinput_set_horizontal_align(yell_input, ALIGN_TEXT_LEFT);
+    textinput_set_horizontal_align(yell_input, TEXT_ALIGN_LEFT);
     menu_attach(menu, yell_input);
     textinput_enable_background(yell_input, false);
     textinput_set_done_cb(yell_input, lobby_do_yell, s);
@@ -514,7 +514,7 @@ component *lobby_whisper_create(scene *s) {
              user->name);
     component *whisper_input = textinput_create(32, local->helptext, "");
     textinput_set_text_shadow(whisper_input, GLYPH_SHADOW_BOTTOM, 9);
-    textinput_set_horizontal_align(whisper_input, ALIGN_TEXT_LEFT);
+    textinput_set_horizontal_align(whisper_input, TEXT_ALIGN_LEFT);
     textinput_set_font(whisper_input, FONT_NET1);
     menu_attach(menu, whisper_input);
     textinput_enable_background(whisper_input, 0);
@@ -1527,7 +1527,7 @@ int lobby_create(scene *scene) {
         textinput_set_text_shadow(name_input, GLYPH_SHADOW_BOTTOM, 9);
         textinput_set_font(name_input, FONT_NET1);
         textinput_enable_background(name_input, false);
-        textinput_set_horizontal_align(name_input, ALIGN_TEXT_LEFT);
+        textinput_set_horizontal_align(name_input, TEXT_ALIGN_LEFT);
         textinput_set_done_cb(name_input, lobby_entered_name, scene);
         menu_attach(name_menu, name_input);
 

@@ -110,7 +110,7 @@ component *menu_presskey_create(char **key) {
     local->text[1] = label_create_title("THIS ACTION ...");
     for(int i = 0; i < 2; i++) {
         label_set_text_color(local->text[i], TEXT_BRIGHT_GREEN);
-        label_set_text_horizontal_align(local->text[i], ALIGN_TEXT_CENTER);
+        label_set_text_horizontal_align(local->text[i], TEXT_ALIGN_CENTER);
         menu_attach(menu, local->text[i]);
     }
     menu_attach(menu, filler_create());

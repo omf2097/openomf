@@ -554,8 +554,8 @@ int mechlab_create(scene *scene) {
 
     local->hint = label_create("HINTY");
     label_set_font(local->hint, FONT_SMALL);
-    label_set_text_horizontal_align(local->hint, ALIGN_TEXT_CENTER);
-    label_set_text_vertical_align(local->hint, ALIGN_TEXT_MIDDLE);
+    label_set_text_horizontal_align(local->hint, TEXT_ALIGN_CENTER);
+    label_set_text_vertical_align(local->hint, TEXT_ALIGN_MIDDLE);
     label_set_text_color(local->hint, MECHLAB_YELLOW);
     component_set_pos_hints(local->hint, 32, 131);
     component_set_size_hints(local->hint, 248, 13);

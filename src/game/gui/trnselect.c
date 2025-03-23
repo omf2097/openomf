@@ -38,8 +38,8 @@ static void load_description(component **c, const gui_theme *theme, const sd_tou
 
     component_free(*c);
     *c = label_create(locale->stripped_description);
-    label_set_text_horizontal_align(*c, ALIGN_TEXT_CENTER);
-    label_set_text_vertical_align(*c, ALIGN_TEXT_MIDDLE);
+    label_set_text_horizontal_align(*c, TEXT_ALIGN_CENTER);
+    label_set_text_vertical_align(*c, TEXT_ALIGN_MIDDLE);
     label_set_font(*c, FONT_SMALL);
     label_set_text_color(*c, 0xA5); // WAR invitational seems to use this color, none is specified
     if(locale->desc_color >= 0) {
