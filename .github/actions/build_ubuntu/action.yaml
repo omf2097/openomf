@@ -11,7 +11,7 @@ runs:
       with:
         packages: cmake libargtable2-dev libcunit1-dev libsdl2-mixer-dev
           libconfuse-dev libenet-dev libsdl2-dev libxmp-dev libpng-dev libepoxy-dev
-          libminiupnpc-dev libnatpmp-dev
+          libopusfile-dev libminiupnpc-dev libnatpmp-dev
 
     - name: Generate Release
       shell: bash
@@ -47,7 +47,7 @@ runs:
         maintainer: ${{ github.repository_owner }}
         version: ${{ env.OPENOMF_VERSION }}
         arch: 'amd64'
-        depends: 'libargtable2-0, libsdl2-mixer-2.0-0, libconfuse2, libenet7, libsdl2-2.0-0, libxmp4, libpng16-16, libepoxy0, libminiupnpc17, libnatpmp1'
+        depends: 'libargtable2-0, libsdl2-mixer-2.0-0, libconfuse2, libenet7, libsdl2-2.0-0, libxmp4, libpng16-16, libopusfile0, libepoxy0, libminiupnpc17, libnatpmp1'
         desc: 'One Must Fall 2097 Remake'
 
     - name: Install the DEB package
