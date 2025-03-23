@@ -25,7 +25,7 @@ static inline void music_source_render(music_source *src, char *data, int len) {
 }
 
 static inline void music_source_set_volume(music_source *src, float volume) {
-    if(src->set_volume != NULL) {
+    if(src->context != NULL) {
         src->set_volume(src->context, volume);
     }
 }

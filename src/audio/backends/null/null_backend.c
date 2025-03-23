@@ -53,6 +53,9 @@ static void stop_music(void *ctx) {
 }
 
 static void play_music(void *userdata, const music_source *src) {
+    music_source dst;
+    memcpy(&dst, src, sizeof(music_source));
+    music_source_close(&dst);
 }
 
 static void get_info(void *ctx, unsigned *sample_rate, unsigned *channels, unsigned *resampler) {

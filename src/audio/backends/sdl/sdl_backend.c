@@ -181,9 +181,11 @@ static int play_sound(void *userdata, const char *src_buf, size_t src_len, float
     return channel;
 }
 
-static void stop_music(void *ctx) {
-    assert(ctx);
+static void stop_music(void *userdata) {
+    assert(userdata);
+    sdl_audio_context *ctx = userdata;
     Mix_HaltMusic();
+    music_source_close(&ctx->music);
     Mix_HookMusic(NULL, NULL);
 }
 
@@ -196,7 +198,6 @@ static void play_music(void *userdata, const music_source *src) {
     assert(userdata);
     sdl_audio_context *ctx = userdata;
     stop_music(ctx);
-    music_source_close(&ctx->music);
     memcpy(&ctx->music, src, sizeof(music_source));
     music_source_set_volume(&ctx->music, ctx->volume);
     Mix_HookMusic(sdl_hook, ctx);
@@ -261,7 +262,6 @@ static void close_backend_context(void *userdata) {
     sdl_audio_context *ctx = userdata;
     log_debug("closing audio");
     stop_music(ctx);
-    music_source_close(&ctx->music);
     Mix_ChannelFinished(NULL);
     Mix_CloseAudio();
     for(int i = 0; i < CHANNEL_MAX; i++) {
