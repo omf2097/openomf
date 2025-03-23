@@ -12,11 +12,6 @@ static const audio_sample_rate supported_sample_rates[] = {
 };
 static const int supported_sample_rate_count = N_ELEMENTS(supported_sample_rates);
 
-static const audio_resampler supported_resamplers[] = {
-    {0, 1, "Linear"},
-};
-static const int supported_resamplers_count = N_ELEMENTS(supported_resamplers);
-
 static bool is_available(void) {
     return true; // This is always available if compiled in.
 }
@@ -32,11 +27,6 @@ static const char *get_name(void) {
 static unsigned int get_sample_rates(const audio_sample_rate **sample_rates) {
     *sample_rates = supported_sample_rates;
     return supported_sample_rate_count;
-}
-
-static unsigned int get_resamplers(const audio_resampler **resamplers) {
-    *resamplers = supported_resamplers;
-    return supported_resamplers_count;
 }
 
 static void create_backend(audio_backend *player) {
@@ -86,7 +76,6 @@ void null_audio_backend_set_callbacks(audio_backend *null_backend) {
     null_backend->get_description = get_description;
     null_backend->get_name = get_name;
     null_backend->get_sample_rates = get_sample_rates;
-    null_backend->get_resamplers = get_resamplers;
     null_backend->get_info = get_info;
     null_backend->create = create_backend;
     null_backend->destroy = destroy_backend;

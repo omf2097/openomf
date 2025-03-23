@@ -11,7 +11,6 @@
 
 #include <SDL.h>
 #include <SDL_mixer.h>
-#include <xmp.h>
 
 #define CHANNEL_MAX 8
 
@@ -22,13 +21,6 @@ static const audio_sample_rate supported_sample_rates[] = {
     {48000, 1, "48000Hz"},
 };
 static const int supported_sample_rate_count = N_ELEMENTS(supported_sample_rates);
-
-static const audio_resampler supported_resamplers[] = {
-    {XMP_INTERP_NEAREST, 0, "Nearest"},
-    {XMP_INTERP_LINEAR,  1, "Linear" },
-    {XMP_INTERP_SPLINE,  0, "Cubic"  },
-};
-static const int supported_resamplers_count = N_ELEMENTS(supported_resamplers);
 
 typedef struct sdl_audio_context {
     int sample_rate;
@@ -54,11 +46,6 @@ static const char *get_name(void) {
 static unsigned int get_sample_rates(const audio_sample_rate **sample_rates) {
     *sample_rates = supported_sample_rates;
     return supported_sample_rate_count;
-}
-
-static unsigned int get_resamplers(const audio_resampler **resamplers) {
-    *resamplers = supported_resamplers;
-    return supported_resamplers_count;
 }
 
 static void create_backend(audio_backend *player) {
@@ -286,7 +273,6 @@ void sdl_audio_backend_set_callbacks(audio_backend *sdl_backend) {
     sdl_backend->get_description = get_description;
     sdl_backend->get_name = get_name;
     sdl_backend->get_sample_rates = get_sample_rates;
-    sdl_backend->get_resamplers = get_resamplers;
     sdl_backend->get_info = get_info;
     sdl_backend->create = create_backend;
     sdl_backend->destroy = destroy_backend;

@@ -4,6 +4,12 @@
 typedef void (*music_render)(void *ctx, char *data, int len);
 typedef void (*music_close)(void *ctx);
 
+typedef struct music_resampler {
+    int internal_id;
+    bool is_default;
+    const char *name;
+} music_resampler;
+
 typedef struct music_source {
     void *context;
     music_render render;

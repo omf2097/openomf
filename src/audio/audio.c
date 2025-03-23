@@ -1,6 +1,6 @@
 #include "audio/audio.h"
 #include "audio/backends/audio_backend.h"
-#include "audio/sources/xmp_source.h"
+#include "audio/sources/psm_source.h"
 #include "resources/pathmanager.h"
 #include "resources/sounds_loader.h"
 #include "utils/c_array_util.h"
@@ -190,7 +190,7 @@ static void load_xmp_music(const char *src) {
     unsigned sample_rate;
     unsigned resampler;
     current_backend.get_info(current_backend.ctx, &sample_rate, &channels, &resampler);
-    xmp_load(&music, channels, sample_rate, resampler, src);
+    psm_load(&music, channels, sample_rate, resampler, src);
     current_backend.play_music(current_backend.ctx, &music);
 }
 
@@ -230,10 +230,6 @@ void audio_set_sound_volume(float volume) {
 
 unsigned audio_get_sample_rates(const audio_sample_rate **sample_rates) {
     return current_backend.get_sample_rates(sample_rates);
-}
-
-unsigned audio_get_resamplers(const audio_resampler **resamplers) {
-    return current_backend.get_resamplers(resamplers);
 }
 
 int pitched_samplerate(float pitch) {

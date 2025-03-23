@@ -1,5 +1,6 @@
 #include "game/scenes/mainmenu/menu_audio.h"
 #include "audio/audio.h"
+#include "audio/sources/psm_source.h"
 #include "game/gui/gui.h"
 #include "game/utils/settings.h"
 #include "utils/allocator.h"
@@ -57,8 +58,8 @@ void menu_audio_reset_freqs(audio_menu_data *local, int use_settings) {
 }
 
 void menu_audio_reset_resamplers(audio_menu_data *local, int use_settings) {
-    const audio_resampler *resamplers;
-    unsigned resampler_count = audio_get_resamplers(&resamplers);
+    const music_resampler *resamplers;
+    unsigned resampler_count = psm_get_resamplers(&resamplers);
     textselector_clear_options(local->resampler_selector);
     for(unsigned i = 0; i < resampler_count; i++) {
         textselector_add_option(local->resampler_selector, resamplers[i].name);
@@ -77,8 +78,8 @@ void menu_audio_freq_toggled(component *c, void *userdata, int pos) {
 }
 
 void menu_audio_resampler_toggled(component *c, void *userdata, int pos) {
-    const audio_resampler *resamplers;
-    audio_get_resamplers(&resamplers);
+    const music_resampler *resamplers;
+    psm_get_resamplers(&resamplers);
     settings_get()->sound.music_resampler = resamplers[pos].internal_id;
 }
 

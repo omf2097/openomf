@@ -21,12 +21,6 @@
 
 #define SOURCE_FREQ 8000
 
-typedef struct audio_resampler {
-    int internal_id;
-    bool is_default;
-    const char *name;
-} audio_resampler;
-
 typedef struct audio_sample_rate {
     unsigned int sample_rate;
     bool is_default;
@@ -42,7 +36,6 @@ typedef const char *(*get_backend_name_fn)(void);
 
 // Player available settings getters
 typedef unsigned int (*get_backend_sample_rates_fn)(const audio_sample_rate **sample_rates);
-typedef unsigned int (*get_backend_resamplers_fn)(const audio_resampler **resamplers);
 
 // Backend current status information
 typedef void (*get_backend_info)(void *ctx, unsigned *sample_rate, unsigned *channels, unsigned *resampler);
@@ -74,8 +67,6 @@ struct audio_backend {
     get_backend_name_fn get_name;
 
     get_backend_sample_rates_fn get_sample_rates;
-    get_backend_resamplers_fn get_resamplers;
-
     get_backend_info get_info;
 
     set_backend_sound_volume_fn set_sound_volume;

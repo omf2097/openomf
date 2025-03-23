@@ -1,16 +1,29 @@
-#include "audio/sources/xmp_source.h"
+#include "audio/sources/psm_source.h"
 #include "utils/allocator.h"
+#include "utils/c_array_util.h"
 #include "utils/log.h"
 
 #include <xmp.h>
 
-static void xmp_render(void *userdata, char *stream, int len) {
+static const music_resampler supported_resamplers[] = {
+    {XMP_INTERP_NEAREST, 0, "Nearest"},
+    {XMP_INTERP_LINEAR,  1, "Linear" },
+    {XMP_INTERP_SPLINE,  0, "Cubic"  },
+};
+static const int supported_resamplers_count = N_ELEMENTS(supported_resamplers);
+
+unsigned psm_get_resamplers(const music_resampler **resamplers) {
+    *resamplers = supported_resamplers;
+    return supported_resamplers_count;
+}
+
+static void psm_render(void *userdata, char *stream, int len) {
     xmp_context ctx = userdata;
     assert(ctx);
     xmp_play_buffer(ctx, stream, len, 0);
 }
 
-static void xmp_close(void *userdata) {
+static void psm_close(void *userdata) {
     xmp_context context = userdata;
     if(context != NULL) {
         xmp_end_player(context);
@@ -19,7 +32,7 @@ static void xmp_close(void *userdata) {
     }
 }
 
-bool xmp_load(music_source *src, int channels, int sample_rate, int resampler, const char *file) {
+bool psm_load(music_source *src, int channels, int sample_rate, int resampler, const char *file) {
     xmp_context context;
     if((context = xmp_create_context()) == NULL) {
         log_error("Unable to initialize XMP context.");
@@ -55,8 +68,8 @@ bool xmp_load(music_source *src, int channels, int sample_rate, int resampler, c
     }
 
     src->context = context;
-    src->render = xmp_render;
-    src->close = xmp_close;
+    src->render = psm_render;
+    src->close = psm_close;
     return true;
 
 exit_2:
