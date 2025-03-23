@@ -310,6 +310,17 @@ int sd_rec_delete_action(sd_rec_file *rec, unsigned int number) {
     return SD_SUCCESS;
 }
 
+int sd_rec_insert_action_at_tick(sd_rec_file *rec, const sd_rec_move *move) {
+
+    unsigned int i = 0;
+    for(i = 0; i < rec->move_count; i++) {
+        if(move->tick < rec->moves[i].tick) {
+            break;
+        }
+    }
+    return sd_rec_insert_action(rec, i, move);
+}
+
 int sd_rec_insert_action(sd_rec_file *rec, unsigned int number, const sd_rec_move *move) {
     if(rec == NULL) {
         return SD_INVALID_INPUT;
