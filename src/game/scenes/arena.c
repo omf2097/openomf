@@ -1803,27 +1803,7 @@ int arena_create(scene *scene) {
         for(int i = 0; i < 2; i++) {
             // Declare some vars
             game_player *player = game_state_get_player(scene->gs, i);
-            log_debug("player %d using har %d", i, player->pilot->har_id);
-            scene->gs->rec->pilots[i].info.har_id = (unsigned char)player->pilot->har_id;
-            scene->gs->rec->pilots[i].info.pilot_id = player->pilot->pilot_id;
-            scene->gs->rec->pilots[i].info.color_3 = player->pilot->color_1;
-            scene->gs->rec->pilots[i].info.color_2 = player->pilot->color_2;
-            scene->gs->rec->pilots[i].info.color_1 = player->pilot->color_3;
-            scene->gs->rec->pilots[i].info.agility = player->pilot->agility;
-            scene->gs->rec->pilots[i].info.power = player->pilot->power;
-            scene->gs->rec->pilots[i].info.endurance = player->pilot->endurance;
-            scene->gs->rec->pilots[i].info.arm_speed = player->pilot->arm_speed;
-            scene->gs->rec->pilots[i].info.leg_speed = player->pilot->leg_speed;
-            scene->gs->rec->pilots[i].info.arm_power = player->pilot->arm_power;
-            scene->gs->rec->pilots[i].info.leg_power = player->pilot->leg_power;
-            scene->gs->rec->pilots[i].info.armor = player->pilot->armor;
-            scene->gs->rec->pilots[i].info.stun_resistance = player->pilot->stun_resistance;
-            memset(scene->gs->rec->pilots[i].info.name, 0, 18);
-            strncpy(scene->gs->rec->pilots[i].info.name, lang_get(player->pilot->pilot_id + 20), 18);
-            char *nl;
-            if((nl = strchr(scene->gs->rec->pilots[i].info.name, '\n'))) {
-                *nl = 0;
-            }
+            sd_pilot_copy_shallow(&scene->gs->rec->pilots[i].info, player->pilot);
 
             // this is the score when the REC started
             scene->gs->rec->scores[i] = game_player_get_score(player)->score;

@@ -132,6 +132,9 @@ typedef enum
 int sd_pilot_create(sd_pilot *pilot);
 
 void sd_pilot_clone(sd_pilot *dest, const sd_pilot *src);
+/*! \brief Copies an sd_pilot, but not any child allocations (quotes, photo surface, etc..)
+ */
+void sd_pilot_copy_shallow(sd_pilot *dest, const sd_pilot *src);
 
 /*! \brief Free pilot structure
  *
