@@ -14,6 +14,12 @@ enum
     NUMBER_OF_LOCAL_PATHS
 };
 
+typedef enum music_file_type
+{
+    MUSIC_FILE_TYPE_PSM,
+    MUSIC_FILE_TYPE_OGG,
+} music_file_type;
+
 extern char const pm_path_sep;
 
 int pm_init(void);
@@ -29,5 +35,6 @@ const char *pm_get_local_path_type_name(unsigned int path_id);
 const char *pm_get_local_path(unsigned int resource_id);
 const char *pm_get_resource_path(unsigned int local_id);
 int pm_create_dir(const char *dirname);
+void pm_get_music_path(char *dst, size_t size, music_file_type *type, unsigned int resource_id);
 
 #endif // PATHMANAGER_H

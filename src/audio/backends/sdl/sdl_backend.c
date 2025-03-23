@@ -1,7 +1,6 @@
 #include "audio/backends/sdl/sdl_backend.h"
 #include "audio/backends/audio_backend.h"
 #include "audio/sources/music_source.h"
-#include "audio/sources/xmp_source.h"
 #include "utils/allocator.h"
 #include "utils/c_array_util.h"
 #include "utils/log.h"
@@ -154,6 +153,14 @@ static void set_backend_music_volume(void *userdata, float volume) {
     Mix_VolumeMusic(volume * MIX_MAX_VOLUME);
 }
 
+static void get_info(void *userdata, unsigned *sample_rate, unsigned *channels, unsigned *resampler) {
+    assert(userdata);
+    sdl_audio_context *ctx = userdata;
+    *sample_rate = ctx->sample_rate;
+    *channels = ctx->channels;
+    *resampler = ctx->resampler;
+}
+
 static int play_sound(void *userdata, const char *src_buf, size_t src_len, float volume, float panning, float pitch,
                       int fade) {
     assert(userdata);
@@ -193,15 +200,15 @@ static void stop_music(void *ctx) {
 
 static void sdl_hook(void *userdata, Uint8 *stream, int len) {
     sdl_audio_context *ctx = userdata;
-    music_source_render(&ctx->music, (char*)stream, len);
+    music_source_render(&ctx->music, (char *)stream, len);
 }
 
-static void play_music(void *userdata, const char *src) {
+static void play_music(void *userdata, const music_source *src) {
     assert(userdata);
     sdl_audio_context *ctx = userdata;
     stop_music(ctx);
     music_source_close(&ctx->music);
-    xmp_load(&ctx->music, ctx->channels, ctx->sample_rate, ctx->resampler, src);
+    memcpy(&ctx->music, src, sizeof(music_source));
     Mix_HookMusic(sdl_hook, ctx);
 }
 
@@ -209,7 +216,8 @@ static void fade_out(int channel, int ms) {
     Mix_FadeOutChannel(channel, ms);
 }
 
-static bool setup_backend_context(void *userdata, unsigned sample_rate, bool mono, int resampler, float music_volume, float sound_volume) {
+static bool setup_backend_context(void *userdata, unsigned sample_rate, bool mono, int resampler, float music_volume,
+                                  float sound_volume) {
     assert(userdata);
     sdl_audio_context *ctx = userdata;
     memset(ctx, 0, sizeof(sdl_audio_context));
@@ -279,6 +287,7 @@ void sdl_audio_backend_set_callbacks(audio_backend *sdl_backend) {
     sdl_backend->get_name = get_name;
     sdl_backend->get_sample_rates = get_sample_rates;
     sdl_backend->get_resamplers = get_resamplers;
+    sdl_backend->get_info = get_info;
     sdl_backend->create = create_backend;
     sdl_backend->destroy = destroy_backend;
     sdl_backend->set_music_volume = set_backend_music_volume;

@@ -2,6 +2,7 @@
 #define AUDIO_BACKEND_H
 
 #include "audio/sources/music_source.h"
+#include "resources/pathmanager.h"
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -43,6 +44,9 @@ typedef const char *(*get_backend_name_fn)(void);
 typedef unsigned int (*get_backend_sample_rates_fn)(const audio_sample_rate **sample_rates);
 typedef unsigned int (*get_backend_resamplers_fn)(const audio_resampler **resamplers);
 
+// Backend current status information
+typedef void (*get_backend_info)(void *ctx, unsigned *sample_rate, unsigned *channels, unsigned *resampler);
+
 // These initialize the player itself; they should be used to reserve and free internal context objects.
 typedef void (*create_backend_fn)(audio_backend *renderer);
 typedef void (*destroy_backend_fn)(audio_backend *renderer);
@@ -52,13 +56,14 @@ typedef void (*set_backend_sound_volume_fn)(void *ctx, float volume);
 typedef void (*set_backend_music_volume_fn)(void *ctx, float volume);
 
 // Renderer initialization and de-initialization, these must be implemented.
-typedef bool (*setup_backend_context_fn)(void *ctx, unsigned sample_rate, bool mono, int resampler, float music_volume, float sound_volume);
+typedef bool (*setup_backend_context_fn)(void *ctx, unsigned sample_rate, bool mono, int resampler, float music_volume,
+                                         float sound_volume);
 typedef void (*close_backend_context_fn)(void *ctx);
 
 // Playback handling.
 typedef int (*play_sound_fn)(void *ctx, const char *buf, size_t len, float volume, float panning, float pitch,
                              int fade);
-typedef void (*play_music_fn)(void *ctx, const char *src);
+typedef void (*play_music_fn)(void *ctx, const music_source *src);
 typedef void (*stop_music_fn)(void *ctx);
 
 typedef void (*fade_out_fn)(int playback_id, int ms);
@@ -70,6 +75,8 @@ struct audio_backend {
 
     get_backend_sample_rates_fn get_sample_rates;
     get_backend_resamplers_fn get_resamplers;
+
+    get_backend_info get_info;
 
     set_backend_sound_volume_fn set_sound_volume;
     set_backend_music_volume_fn set_music_volume;
