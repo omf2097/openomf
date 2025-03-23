@@ -289,6 +289,9 @@ int sd_sprite_vga_decode(sd_vga_image *dst, const sd_sprite *src) {
         return SD_SUCCESS;
     }
 
+    // the number of bytes that can be written to `dst`.
+    unsigned int dst_size = dst->w * dst->h;
+
     // Walk through raw sprite data
     while(i < src->len) {
         // read a word
@@ -308,7 +311,13 @@ int sd_sprite_vga_decode(sd_vga_image *dst, const sd_sprite *src) {
             case 1:
                 while(data > 0) {
                     uint8_t b = src->data[i];
-                    int pos = ((y * src->width) + x);
+                    unsigned int pos = ((y * src->width) + x);
+                    // if we're about to overflow the `dst` buffer, don't.
+                    if(pos >= dst_size) {
+                        // it's not pretty, but this bounds check is necessary & used.
+                        // without it, tournament rec files can't load their pilot pics
+                        return SD_SUCCESS;
+                    }
                     dst->data[pos] = b;
                     i++; // we read 1 byte
                     x++;

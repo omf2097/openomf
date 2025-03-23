@@ -23,7 +23,10 @@ void sd_pilot_clone(sd_pilot *dest, const sd_pilot *src) {
             dest->quotes[m] = omf_strdup(src->quotes[m]);
         }
     }
-    sd_sprite_copy(dest->photo, src->photo);
+    if(src->photo) {
+        dest->photo = omf_calloc(1, sizeof(sd_sprite));
+        sd_sprite_copy(dest->photo, src->photo);
+    }
 }
 
 void sd_pilot_copy_shallow(sd_pilot *dest, const sd_pilot *src) {

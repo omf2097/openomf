@@ -1579,9 +1579,7 @@ int arena_create(scene *scene) {
         game_player_set_har(player, obj);
         game_player_get_ctrl(player)->har_obj_id = obj->id;
 
-        // TODO change this to simply check if the pilot has a photo but currently this causes REC playback from
-        // tournament mode to crash decoding the sprite for some reason
-        if(local->tournament) {
+        if(player->pilot->photo) {
             // render pilot portraits
             object *portrait = omf_calloc(1, sizeof(object));
             if(i == 0) {
@@ -1804,7 +1802,7 @@ int arena_create(scene *scene) {
         for(int i = 0; i < 2; i++) {
             // Declare some vars
             game_player *player = game_state_get_player(scene->gs, i);
-            sd_pilot_copy_shallow(&scene->gs->rec->pilots[i].info, player->pilot);
+            sd_pilot_clone(&scene->gs->rec->pilots[i].info, player->pilot);
 
             // this is the score when the REC started
             scene->gs->rec->scores[i] = game_player_get_score(player)->score;
