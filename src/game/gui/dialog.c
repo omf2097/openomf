@@ -36,6 +36,7 @@ void dialog_create(dialog *dlg, dialog_style style, const char *text, int x, int
     theme.text.primary_color = TEXT_MEDIUM_GREEN;
     theme.text.secondary_color = TEXT_BRIGHT_GREEN;
     theme.text.active_color = TEXT_BRIGHT_GREEN;
+    theme.text.inactive_color = TEXT_MEDIUM_GREEN;
 
     dlg->x = x;
     dlg->y = y;
