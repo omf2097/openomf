@@ -1,5 +1,6 @@
 #include "audio/audio.h"
 #include "audio/backends/audio_backend.h"
+#include "audio/sources/opus_source.h"
 #include "audio/sources/psm_source.h"
 #include "resources/pathmanager.h"
 #include "resources/sounds_loader.h"
@@ -190,8 +191,19 @@ static void load_xmp_music(const char *src) {
     unsigned sample_rate;
     unsigned resampler;
     current_backend.get_info(current_backend.ctx, &sample_rate, &channels, &resampler);
-    psm_load(&music, channels, sample_rate, resampler, src);
-    current_backend.play_music(current_backend.ctx, &music);
+    if(psm_load(&music, channels, sample_rate, resampler, src)) {
+        current_backend.play_music(current_backend.ctx, &music);
+    }
+}
+
+static void load_opus_music(const char *src) {
+    music_source music;
+    unsigned channels;
+    unsigned sample_rate;
+    current_backend.get_info(current_backend.ctx, &sample_rate, &channels, NULL);
+    if(opus_load(&music, channels, sample_rate, src)) {
+        current_backend.play_music(current_backend.ctx, &music);
+    }
 }
 
 void audio_play_music(resource_id id) {
@@ -203,6 +215,9 @@ void audio_play_music(resource_id id) {
         switch(file_type) {
             case MUSIC_FILE_TYPE_PSM:
                 load_xmp_music(path);
+                break;
+            case MUSIC_FILE_TYPE_OGG:
+                load_opus_music(path);
                 break;
             default:
                 log_error("Unable to load music file %s due to unsupported audio format", path);

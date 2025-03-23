@@ -145,9 +145,12 @@ static void set_backend_music_volume(void *userdata, float volume) {
 static void get_info(void *userdata, unsigned *sample_rate, unsigned *channels, unsigned *resampler) {
     assert(userdata);
     sdl_audio_context *ctx = userdata;
-    *sample_rate = ctx->sample_rate;
-    *channels = ctx->channels;
-    *resampler = ctx->resampler;
+    if(sample_rate != NULL)
+        *sample_rate = ctx->sample_rate;
+    if(channels != NULL)
+        *channels = ctx->channels;
+    if(resampler != NULL)
+        *resampler = ctx->resampler;
 }
 
 static int play_sound(void *userdata, const char *src_buf, size_t src_len, float volume, float panning, float pitch,

@@ -59,9 +59,12 @@ static void play_music(void *userdata, const music_source *src) {
 }
 
 static void get_info(void *ctx, unsigned *sample_rate, unsigned *channels, unsigned *resampler) {
-    *sample_rate = 48000;
-    *channels = 2;
-    *resampler = 1;
+    if(sample_rate != NULL)
+        *sample_rate = 48000;
+    if(channels != NULL)
+        *channels = 2;
+    if(resampler != NULL)
+        *resampler = 1;
 }
 
 static bool setup_backend_context(void *userdata, unsigned sample_rate, bool mono, int resampler, float music_volume,

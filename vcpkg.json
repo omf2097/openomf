@@ -23,7 +23,8 @@
     "enet",
     "libconfuse",
     "argtable3",
-    "libpng"
+    "libpng",
+    "opusfile"
   ],
   "features": {
     "use-tests": {
