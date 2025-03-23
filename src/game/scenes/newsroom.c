@@ -193,7 +193,7 @@ void newsroom_overlay_render(scene *scene) {
         tconf_yellow.strip_leading_whitespace = false;
         tconf_yellow.strip_trailing_whitespace = true;
         tconf_yellow.max_lines = 9;
-        text_render(&tconf_yellow, TEXT_DEFAULT, 34, 155, 250, 6, str_c(&local->news_str));
+        text_render_mode(&tconf_yellow, TEXT_DEFAULT, 34, 155, 250, 6, str_c(&local->news_str));
     }
 
     // If the player has just become a new champion, show the sprite on top of the photo.

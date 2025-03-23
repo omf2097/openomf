@@ -4,6 +4,7 @@
 #include "game/gui/sizer.h"
 #include "game/gui/text_render.h"
 #include "utils/allocator.h"
+#include "utils/log.h"
 #include "utils/miscmath.h"
 #include "utils/vector.h"
 #include "video/surface.h"
@@ -108,7 +109,8 @@ static void menu_render(component *c) {
             if(m->help_bg2) {
                 video_draw(m->help_bg2, m->help_x - 8, m->help_y - 8);
             }
-            text_render(&m->help_text_conf, TEXT_DEFAULT, m->help_x, m->help_y, m->help_w, m->help_h, (*tmp)->help);
+            text_render_mode(&m->help_text_conf, TEXT_DEFAULT, m->help_x, m->help_y, m->help_w, m->help_h,
+                             (*tmp)->help);
         }
         i++;
     }
@@ -145,7 +147,7 @@ static int menu_action(component *mc, int action) {
         c = sizer_get(mc, sizer_size(mc) - 1);
         menu_select(mc, c);
 
-        if((m->is_submenu || was_last_selected) && action == ACT_ESC) {
+        if(m->is_submenu || was_last_selected) {
             // If the last item is already selected, and ESC if punched, change the action to punch
             // This is then passed to the quit (last) component and its callback is called
             // Hacky, but works well in menu sizer.
@@ -214,7 +216,8 @@ void menu_set_submenu(component *mc, component *submenu) {
     m->submenu = submenu;
     m->prev_submenu_state = 0;
     submenu->parent = mc; // Set correct parent
-    component_layout(m->submenu, mc->x, mc->y, mc->w_hint, mc->h_hint);
+    component_init(m->submenu, component_get_theme(mc));
+    component_layout(m->submenu, mc->x, mc->y, mc->w, mc->h);
 }
 
 void menu_link_menu(component *mc, gui_frame *linked_menu) {
@@ -228,6 +231,7 @@ void menu_link_menu(component *mc, gui_frame *linked_menu) {
     m->submenu = root;
     m->prev_submenu_state = 0;
     root->parent = mc; // Set correct parent
+    component_init(m->submenu, component_get_theme(mc));
     component_layout(m->submenu, x, y, w, h);
 }
 
@@ -248,71 +252,80 @@ static void menu_layout(component *c, int x, int y, int w, int h) {
     iterator it;
     component **tmp;
     sizer_begin_iterator(c, &it);
-    int i = 0;
-    int first_selected = 0;
-    int x_offset = 0;
-    int height = 0;
-    int centerwidth = 0;
-    component *filler = NULL;
-    y += m->margin_top;
+    int available_space = m->horizontal ? w : h - m->margin_top;
+    int non_reserved_space = available_space;
+    int non_reserved_items = sizer_size(c);
     foreach(it, tmp) {
-        // Select first non-disabled component
-        if(!component_is_disabled(*tmp) && !first_selected) {
+        int hint = m->horizontal ? (*tmp)->w_hint : (*tmp)->h_hint;
+        if(hint > -1) {
+            non_reserved_space -= hint;
+            non_reserved_items -= 1;
+        }
+    }
+    // Take padding into account
+    non_reserved_space -= m->padding * (sizer_size(c) - 1);
+
+    // This is how much space we have for items that do not declare hint.
+    int non_hinted_item_space = non_reserved_items > 0 ? non_reserved_space / non_reserved_items : 0;
+
+    // Select first non-disabled component
+    int i = 0;
+    sizer_begin_iterator(c, &it);
+    foreach(it, tmp) {
+        if(!component_is_disabled(*tmp)) {
             component_select(*tmp, 1);
-            first_selected = 1;
             m->selected = i;
-        }
-
-        if((*tmp)->filler) {
-            filler = (*tmp);
-        }
-
-        // Set component position and size
-        if(m->horizontal) {
-            component_layout(*tmp, x + x_offset, m->margin_top + y, w, -1);
-            if(m->centered) {
-                centerwidth += (*tmp)->w_hint;
-            }
-            x_offset += (*tmp)->w_hint + m->padding;
-            height = max2(height, (*tmp)->h_hint);
-        } else {
-            component_layout(*tmp, x, y + height, w, -1);
-            height += max2(0, (*tmp)->h_hint) + m->padding;
+            break;
         }
         i++;
     }
 
-    if(m->horizontal && m->centered) {
-        centerwidth += m->padding * (i - 1);
-        int x_offset = (w - centerwidth) / 2;
-        height = 0;
-        sizer_begin_iterator(c, &it);
-        foreach(it, tmp) {
-            component_layout(*tmp, x + x_offset, m->margin_top + y, w, -1);
-            x_offset += (*tmp)->w_hint + m->padding;
-            height = max2(height, (*tmp)->h_hint);
+    // Align components. Note that if there are any flexible (non-hinted) items, centering cannot
+    // do anything. Therefore only enable when all components declare size hints.
+    int offset = 0;
+    if(m->centered && non_reserved_items == 0) {
+        int reserved_space = available_space - non_reserved_space;
+        if(m->horizontal) {
+            offset += (w - reserved_space) / 2;
+        } else {
+            offset += (h - reserved_space) / 2;
         }
     }
+    y += m->margin_top;
 
-    if(!m->horizontal) {
-        // get rid of the trailing padding
-        height -= m->padding;
+    // Set layouts!
+    sizer_begin_iterator(c, &it);
+    foreach(it, tmp) {
+        // Set component position and size
+        int left = available_space - (offset > 0 ? offset - m->padding : offset);
+        if(m->horizontal) {
+            int obj_w = (*tmp)->w_hint > -1 ? (*tmp)->w_hint : non_hinted_item_space;
+            obj_w = min2(left, obj_w);
+            component_layout(*tmp, x + offset, y, obj_w, h);
+            offset += obj_w + m->padding;
+        } else {
+            int obj_h = (*tmp)->h_hint > -1 ? (*tmp)->h_hint : non_hinted_item_space;
+            obj_h = min2(left, obj_h);
+            component_layout(*tmp, x, y + offset, w, obj_h);
+            offset += obj_h + m->padding;
+        }
+    }
+    if(offset > 0) {
+        offset -= m->padding;
     }
 
-    if(filler && filler->h_hint == -1 && h > height) {
-        filler->h_hint = h - height;
-        menu_layout(c, x, y - m->margin_top, w, h);
-        return;
-    }
+    int b_axis_max = m->horizontal ? h : w;
+    int actual_w = m->horizontal ? offset : b_axis_max;
+    int actual_h = m->horizontal ? b_axis_max : offset;
 
     // Set the background now that we know the width and height
     if(m->bg1 == NULL && m->background) {
         m->bg1 = omf_malloc(sizeof(surface));
-        menu_transparent_bg_create(m->bg1, w, height + m->margin_top * 2);
+        menu_transparent_bg_create(m->bg1, w, actual_h + m->margin_top * 2);
     }
     if(m->bg2 == NULL && m->background) {
         m->bg2 = omf_malloc(sizeof(surface));
-        menu_background_create(m->bg2, w, height + m->margin_top * 2, MenuBackground);
+        menu_background_create(m->bg2, w, actual_h + m->margin_top * 2, MenuBackground);
     }
     if(m->help_bg1 == NULL && m->background) {
         m->help_bg1 = omf_calloc(1, sizeof(surface));
@@ -323,7 +336,7 @@ static void menu_layout(component *c, int x, int y, int w, int h) {
         menu_background_create(m->help_bg2, m->help_w + 16, m->help_w / 8, MenuBackground);
     }
 
-    component_set_size_hints(c, w, height);
+    component_set_size_hints(c, actual_w, actual_h);
 }
 
 void menu_set_userdata(component *c, void *userdata) {
@@ -351,14 +364,14 @@ void menu_set_horizontal(component *c, bool horizontal) {
     m->horizontal = horizontal;
 }
 
-void menu_set_centered(component *c, bool centered) {
-    menu *m = sizer_get_obj(c);
-    m->centered = centered;
-}
-
 void menu_set_background(component *c, bool background) {
     menu *m = sizer_get_obj(c);
     m->background = background;
+}
+
+void menu_set_centered(component *c, bool centered) {
+    menu *m = sizer_get_obj(c);
+    m->centered = centered;
 }
 
 void menu_set_help_pos(component *c, int x, int y, int w, int h) {
@@ -419,13 +432,12 @@ void menu_set_padding(component *c, int padding) {
     m->padding = padding;
 }
 
-component *menu_create(int obj_h) {
+component *menu_create(void) {
     component *c = sizer_create();
 
     menu *m = omf_calloc(1, sizeof(menu));
     m->margin_top = 8;
     m->padding = 3;
-    // m->obj_h = obj_h;
     m->horizontal = false;
     m->background = true;
     m->centered = false;

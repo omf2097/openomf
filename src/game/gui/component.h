@@ -10,19 +10,8 @@
 #define COMPONENT_H
 
 #include "controller/controller.h"
+#include "game/gui/theme.h"
 #include <SDL.h>
-
-enum
-{
-    COM_ENABLED = 0,  ///< Component enabled. Component is colored and can be interacted with.
-    COM_DISABLED = 1, ///< Component disabled. Component is grayed out, and cannot be interacted with.
-};
-
-enum
-{
-    COM_UNSELECTED = 0, ///< Componen unselected. Used in eg. menu sizers.
-    COM_SELECTED = 1,   ///< Component selected. Used in eg. menu sizers.
-};
 
 typedef struct component component;
 
@@ -33,6 +22,7 @@ typedef void (*component_focus_cb)(component *c, bool focused);
 typedef void (*component_layout_cb)(component *c, int x, int y, int w, int h);
 typedef void (*component_tick_cb)(component *c);
 typedef void (*component_free_cb)(component *c);
+typedef void (*component_init_cb)(component *c, const gui_theme *theme);
 typedef component *(*component_find_cb)(component *c, int id);
 
 /*! \brief Basic GUI object
@@ -57,16 +47,18 @@ struct component {
     int w_hint; ///< W size hint. Sizers may or may not obey this. -1 = not set. >=0 means set.
     int h_hint; ///< H size hint. Sizers may or may not obey this. -1 = not set. >=0 means set.
 
-    char supports_select; ///< Whether the component can be selected by component_select() call.
-    char is_selected;     ///< Whether the component is selected
+    bool supports_select; ///< Whether the component can be selected by component_select() call.
+    bool is_selected;     ///< Whether the component is selected
 
-    char supports_disable; ///< Whether the component can be disabled by component_disable() call.
-    char is_disabled;      ///< Whether the component is disabled
+    bool supports_disable; ///< Whether the component can be disabled by component_disable() call.
+    bool is_disabled;      ///< Whether the component is disabled
 
-    char supports_focus; ///< Whether the component can be focused by component_focus() call.
-    char is_focused;     ///< Whether the component is focused
+    bool supports_focus; ///< Whether the component can be focused by component_focus() call.
+    bool is_focused;     ///< Whether the component is focused
     const char *help;    ///< Help text, if available
     bool filler;         ///< Whether the component should fill unused space during layout
+
+    const gui_theme *theme; ///< Theme object. This may or may not be set. If not set, then look down the parent chain.
 
     component_render_cb render; ///< Render function callback. This tells the component to draw itself.
     component_event_cb event;   ///< Event function callback. Direct SDL2 event handler.
@@ -77,13 +69,14 @@ struct component {
     component_tick_cb tick;     ///< Tick function callback. This is called periodically.
     component_free_cb free;     ///< Free function callback. Any component callbacks should be done here.
     component_find_cb find;     ///< Should only be set by widget and sizer. Used to look up widgets by ID.
+    component_init_cb init;     ///< Initialization function callback. This is called right before layout function. This
+                                ///< should be used to prerender elements, decide size hints, etc.
 
-    component
-        *parent; ///< Parent component. For widgets, this should be always a sizer. For root sizer it will be NULL.
+    component *parent; ///< Parent component. For widgets, usually a sizer. NULL for root component.
 };
 
 // Create & free
-component *component_create(void);
+component *component_create(uint32_t header);
 void component_free(component *c);
 
 // Internal callbacks
@@ -91,21 +84,27 @@ void component_tick(component *c);
 void component_render(component *c);
 int component_event(component *c, SDL_Event *event);
 int component_action(component *c, int action);
+void component_init(component *c, const gui_theme *theme);
 void component_layout(component *c, int x, int y, int w, int h);
 
-void component_disable(component *c, int disabled);
-void component_select(component *c, int selected);
-void component_focus(component *c, int focused);
-int component_is_disabled(const component *c);
-int component_is_selected(const component *c);
-int component_is_focused(const component *c);
+void component_disable(component *c, bool disabled);
+void component_select(component *c, bool selected);
+void component_focus(component *c, bool focused);
+bool component_is_disabled(const component *c);
+bool component_is_selected(const component *c);
+bool component_is_focused(const component *c);
 
 bool component_is_selectable(component *c);
 
 void component_set_size_hints(component *c, int w, int h);
 void component_set_pos_hints(component *c, int x, int y);
+void component_set_supports(component *c, bool allow_disable, bool allow_select, bool allow_focus);
+void component_set_filler(component *c, bool is_filler);
 
 void component_set_help_text(component *c, const char *help);
+
+void component_set_theme(component *c, const gui_theme *theme);
+const gui_theme *component_get_theme(component *c);
 
 // ID lookup stuff
 component *component_find(component *c, int id);
@@ -118,6 +117,7 @@ void component_set_event_cb(component *c, component_event_cb cb);
 void component_set_action_cb(component *c, component_action_cb cb);
 void component_set_focus_cb(component *c, component_focus_cb cb);
 void component_set_layout_cb(component *c, component_layout_cb cb);
+void component_set_init_cb(component *c, component_init_cb cb);
 void component_set_tick_cb(component *c, component_tick_cb cb);
 void component_set_free_cb(component *c, component_free_cb cb);
 void component_set_find_cb(component *c, component_find_cb cb);

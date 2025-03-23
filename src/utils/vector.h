@@ -44,8 +44,6 @@ static inline unsigned int vector_size(const vector *vec) {
     return vec->blocks;
 }
 
-static inline void vector_clear(vector *vec) {
-    vec->blocks = 0;
-}
+void vector_clear(vector *vec);
 
 #endif // VECTOR_H

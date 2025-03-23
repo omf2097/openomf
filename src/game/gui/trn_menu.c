@@ -1,16 +1,14 @@
 #include "game/gui/trn_menu.h"
 #include "game/gui/sizer.h"
-#include "game/gui/text_render.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
-#include "utils/miscmath.h"
 #include "utils/vector.h"
 #include "video/surface.h"
 #include "video/video.h"
 
 #define OPACITY_STEP 0.03f
 
-typedef struct {
+typedef struct trnmenu_hand {
     object *obj;
     vec2i pstart;
     vec2i pend;
@@ -427,6 +425,7 @@ void trnmenu_set_submenu(component *c, component *submenu) {
     m->submenu = submenu;
     m->prev_submenu_state = 0;
     submenu->parent = c; // Set correct parent
+    component_init(m->submenu, component_get_theme(c));
     component_layout(m->submenu, c->x, c->y, c->w, c->h);
 
     trnmenu *n = sizer_get_obj(submenu);

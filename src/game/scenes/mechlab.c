@@ -27,6 +27,14 @@
 #include "utils/log.h"
 #include "video/video.h"
 
+// Colors specific to palette used by mechlab
+#define TEXT_PRIMARY_COLOR 0xFE
+#define TEXT_SECONDARY_COLOR 0xFD
+#define TEXT_DISABLED_COLOR 0xC0
+#define TEXT_ACTIVE_COLOR 0xFF
+#define TEXT_INACTIVE_COLOR 0xFE
+#define TEXT_SHADOW_COLOR 0xC0
+
 typedef struct {
     dashboard_type dashtype;
     object bg_obj[3];
@@ -38,6 +46,7 @@ typedef struct {
     trnselect_widgets tw;
     bool selling;
     component *hint;
+    gui_theme theme; // Required by the hint component
 } mechlab_local;
 
 bool mechlab_find_last_player(scene *scene) {
@@ -121,7 +130,6 @@ void mechlab_set_hint(scene *scene, const char *hint) {
 }
 
 sd_chr_enemy *mechlab_next_opponent(scene *scene) {
-
     game_player *p1 = game_state_get_player(scene->gs, 0);
     if(p1->chr->pilot.rank == 1) {
         return NULL;
@@ -147,10 +155,10 @@ void mechlab_free(scene *scene) {
         object_free(&local->bg_obj[i]);
     }
 
-    component_free(local->hint);
     gui_frame_free(local->frame);
     gui_frame_free(local->dashboard);
     object_free(local->mech);
+    component_free(local->hint);
     omf_free(local->mech);
     omf_free(local);
     scene_set_userdata(scene, local);
@@ -225,6 +233,18 @@ void mechlab_update(scene *scene) {
     }
 }
 
+static void mechlab_theme(gui_theme *theme) {
+    gui_theme_defaults(theme);
+    theme->dialog.border_color = TEXT_MEDIUM_GREEN;
+    theme->text.font = FONT_BIG;
+    theme->text.primary_color = TEXT_PRIMARY_COLOR;
+    theme->text.secondary_color = TEXT_SECONDARY_COLOR;
+    theme->text.disabled_color = TEXT_DISABLED_COLOR;
+    theme->text.active_color = TEXT_ACTIVE_COLOR;
+    theme->text.inactive_color = TEXT_INACTIVE_COLOR;
+    theme->text.shadow_color = TEXT_SHADOW_COLOR;
+}
+
 void mechlab_tick(scene *scene, int paused) {
     mechlab_local *local = scene_get_userdata(scene);
 
@@ -243,25 +263,29 @@ void mechlab_tick(scene *scene, int paused) {
             snprintf(select_photo, sizeof(select_photo), lang_get(224), player1->pilot->name);
             mechlab_select_dashboard(scene, DASHBOARD_SELECT_NEW_PIC);
             gui_frame_free(local->frame);
-            local->frame = gui_frame_create(0, 0, 320, 200);
+            gui_theme theme;
+            mechlab_theme(&theme);
+            local->frame = gui_frame_create(&theme, 0, 0, 320, 200);
             component *menu =
                 lab_menu_select_create(scene, lab_dash_main_photo_select, &local->dw, lab_dash_main_photo_left,
                                        &local->dw, lab_dash_main_photo_right, &local->dw, select_photo, true);
             gui_frame_set_root(local->frame, menu);
             gui_frame_layout(local->frame);
         } else if(local->dashtype == DASHBOARD_SELECT_NEW_PIC) {
-            // player1->pilot->photo_id =  lab_dash_main_pilotselected(&local->dw);
             mechlab_select_dashboard(scene, DASHBOARD_SELECT_DIFFICULTY);
             gui_frame_free(local->frame);
-            local->frame = gui_frame_create(0, 0, 320, 200);
+            gui_theme theme;
+            mechlab_theme(&theme);
+            local->frame = gui_frame_create(&theme, 0, 0, 320, 200);
             component *menu = lab_menu_difficultyselect_create(scene);
-            // trnmenu_attach(menu, local->hint);
             gui_frame_set_root(local->frame, menu);
             gui_frame_layout(local->frame);
         } else if(local->dashtype == DASHBOARD_SELECT_DIFFICULTY) {
             mechlab_select_dashboard(scene, DASHBOARD_SELECT_TOURNAMENT);
             gui_frame_free(local->frame);
-            local->frame = gui_frame_create(0, 0, 320, 200);
+            gui_theme theme;
+            mechlab_theme(&theme);
+            local->frame = gui_frame_create(&theme, 0, 0, 320, 200);
             mechlab_enter_trnselect_menu(scene);
         } else if(local->dashtype == DASHBOARD_SELECT_TOURNAMENT) {
             sd_tournament_file *trn = lab_dash_trnselect_selected(&local->tw);
@@ -298,9 +322,10 @@ void mechlab_tick(scene *scene, int paused) {
             bool found = mechlab_find_last_player(scene);
             mechlab_select_dashboard(scene, DASHBOARD_STATS);
             gui_frame_free(local->frame);
-            local->frame = gui_frame_create(0, 0, 320, 200);
+            gui_theme theme;
+            mechlab_theme(&theme);
+            local->frame = gui_frame_create(&theme, 0, 0, 320, 200);
             component *menu = lab_menu_main_create(scene, found);
-            // trnmenu_attach(menu, local->hint);
             gui_frame_set_root(local->frame, menu);
             gui_frame_layout(local->frame);
         } else {
@@ -333,19 +358,21 @@ void mechlab_select_dashboard(scene *scene, dashboard_type type) {
 
     // Switch to new dashboard
     local->dashtype = type;
+    gui_theme theme;
+    mechlab_theme(&theme);
     switch(type) {
         // Dashboard with the gauges etc.
         case DASHBOARD_STATS:
         case DASHBOARD_SELECT_DIFFICULTY:
         case DASHBOARD_SELECT_NEW_PIC:
             // Dashboard widgets struct is filled with pointer to the necessary components for easy access
-            local->dashboard = gui_frame_create(0, 0, 320, 200);
+            local->dashboard = gui_frame_create(&theme, 0, 0, 320, 200);
             gui_frame_set_root(local->dashboard, lab_dash_main_create(scene, &local->dw));
             lab_dash_main_update(scene, &local->dw);
             gui_frame_layout(local->dashboard);
             break;
         case DASHBOARD_SIM:
-            local->dashboard = gui_frame_create(0, 0, 320, 200);
+            local->dashboard = gui_frame_create(&theme, 0, 0, 320, 200);
             gui_frame_set_root(local->dashboard, lab_dash_sim_create(scene, &local->dw));
             lab_dash_sim_update(scene, &local->dw, player1->pilot);
             gui_frame_layout(local->dashboard);
@@ -359,7 +386,7 @@ void mechlab_select_dashboard(scene *scene, dashboard_type type) {
                 sd_chr_free(player1->chr);
                 omf_free(player1->chr);
             }
-            local->dashboard = gui_frame_create(0, 0, 320, 200);
+            local->dashboard = gui_frame_create(&theme, 0, 0, 320, 200);
             // new pilots have 2000 credits
             memset(player1->pilot, 0, sizeof(sd_pilot));
             player1->pilot->money = 2000;
@@ -378,7 +405,7 @@ void mechlab_select_dashboard(scene *scene, dashboard_type type) {
             gui_frame_layout(local->dashboard);
             break;
         case DASHBOARD_SELECT_TOURNAMENT:
-            local->dashboard = gui_frame_create(0, 0, 320, 200);
+            local->dashboard = gui_frame_create(&theme, 0, 0, 320, 200);
             gui_frame_set_root(local->dashboard, lab_dash_trnselect_create(scene, &local->tw));
             gui_frame_layout(local->dashboard);
             break;
@@ -492,7 +519,7 @@ void mechlab_input_tick(scene *scene) {
                 gui_frame_action(local->frame, i->event_data.action);
             }
         }
-    } while((i = i->next));
+    } while((i = i->next) != NULL);
     controller_free_chain(p1);
 }
 
@@ -501,6 +528,9 @@ int mechlab_create(scene *scene) {
     // Alloc
     mechlab_local *local = omf_calloc(1, sizeof(mechlab_local));
     local->selling = false;
+
+    // Default theme for mechlab
+    mechlab_theme(&local->theme);
 
     // reset the match settings and override the settings that don't apply in tournament mode
     game_state_match_settings_reset(scene->gs);
@@ -522,16 +552,14 @@ int mechlab_create(scene *scene) {
         object_set_animation_owner(&local->bg_obj[i], OWNER_OBJECT);
     }
 
-    text_settings tconf;
-    text_defaults(&tconf);
-    tconf.font = FONT_SMALL;
-    tconf.halign = TEXT_CENTER;
-    tconf.valign = TEXT_MIDDLE;
-    tconf.cforeground = MECHLAB_YELLOW;
-
-    local->hint = label_create(&tconf, "HINTY");
+    local->hint = label_create("HINTY");
+    label_set_font(local->hint, FONT_SMALL);
+    label_set_text_horizontal_align(local->hint, TEXT_ALIGN_CENTER);
+    label_set_text_vertical_align(local->hint, TEXT_ALIGN_MIDDLE);
+    label_set_text_color(local->hint, MECHLAB_YELLOW);
     component_set_pos_hints(local->hint, 32, 131);
     component_set_size_hints(local->hint, 248, 13);
+    component_init(local->hint, &local->theme);
     component_layout(local->hint, 32, 131, 248, 13);
 
     scene_set_userdata(scene, local);
@@ -539,9 +567,8 @@ int mechlab_create(scene *scene) {
     mechlab_select_dashboard(scene, DASHBOARD_STATS);
 
     // Create main menu
-    local->frame = gui_frame_create(0, 0, 320, 200);
+    local->frame = gui_frame_create(&local->theme, 0, 0, 320, 200);
     component *menu = lab_menu_main_create(scene, found);
-    // trnmenu_attach(menu, local->hint);
     gui_frame_set_root(local->frame, menu);
     gui_frame_layout(local->frame);
 

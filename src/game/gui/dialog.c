@@ -1,5 +1,6 @@
 #include "game/gui/dialog.h"
 #include "game/gui/button.h"
+#include "game/gui/filler.h"
 #include "game/gui/label.h"
 #include "game/gui/menu.h"
 #include "game/gui/menu_background.h"
@@ -27,8 +28,16 @@ void dialog_yes_ok(component *c, void *userdata) {
     }
 }
 
-void dialog_create_with_tconf(dialog *dlg, dialog_style style, text_settings *tconf, text_settings *tconf_desc,
-                              const char *text, int x, int y) {
+void dialog_create(dialog *dlg, dialog_style style, const char *text, int x, int y) {
+    gui_theme theme;
+    gui_theme_defaults(&theme);
+    theme.dialog.border_color = TEXT_MEDIUM_GREEN;
+    theme.text.font = FONT_BIG;
+    theme.text.primary_color = TEXT_MEDIUM_GREEN;
+    theme.text.secondary_color = TEXT_BRIGHT_GREEN;
+    theme.text.active_color = TEXT_BRIGHT_GREEN;
+    theme.text.inactive_color = TEXT_MEDIUM_GREEN;
+
     dlg->x = x;
     dlg->y = y;
     dlg->visible = 0;
@@ -37,55 +46,35 @@ void dialog_create_with_tconf(dialog *dlg, dialog_style style, text_settings *tc
 
     int w = NATIVE_W - 2 * x;
 
-    component *menu = menu_create(11);
+    component *menu = menu_create();
 
-    menu_attach(menu, label_create_with_width(tconf_desc, text, w));
+    component *title = label_create_title(text);
+    label_set_margin(title, (text_margin){2, 2, 2, 2});
+    menu_attach(menu, title);
+    menu_attach(menu, filler_create());
 
-    component *menu2 = menu_create(11);
+    component *menu2 = menu_create();
 
     menu_set_horizontal(menu2, true);
     menu_set_background(menu2, false);
+    menu_set_centered(menu2, true);
     menu_set_margin_top(menu2, 0);
     menu_set_padding(menu2, 20);
-    menu_set_centered(menu2, true);
     menu_attach(menu, menu2);
+    component_set_size_hints(menu2, -1, 12);
 
     if(style == DIALOG_STYLE_CANCEL) {
-        component *cancel = button_create(tconf, "CANCEL", NULL, COM_ENABLED, dialog_cancel, dlg);
-        button_set_border(cancel, TEXT_MEDIUM_GREEN);
-        menu_attach(menu2, cancel);
+        menu_attach(menu2, button_create("CANCEL", NULL, false, true, dialog_cancel, dlg));
     } else if(style == DIALOG_STYLE_YES_NO) {
-        component *yes = button_create(tconf, "YES", NULL, COM_ENABLED, dialog_yes_ok, dlg);
-        component *no = button_create(tconf, "NO", NULL, COM_ENABLED, dialog_no, dlg);
-        button_set_border(yes, TEXT_MEDIUM_GREEN);
-        button_set_border(no, TEXT_MEDIUM_GREEN);
-        menu_attach(menu2, yes);
-        menu_attach(menu2, no);
+        menu_attach(menu2, button_create("YES", NULL, false, true, dialog_yes_ok, dlg));
+        menu_attach(menu2, button_create("NO", NULL, false, true, dialog_no, dlg));
     } else if(style == DIALOG_STYLE_OK) {
-        component *ok = button_create(tconf, "OK", NULL, COM_ENABLED, dialog_yes_ok, dlg);
-        button_set_border(ok, TEXT_MEDIUM_GREEN);
-        menu_attach(menu2, ok);
+        menu_attach(menu2, button_create("OK", NULL, false, true, dialog_yes_ok, dlg));
     }
 
-    dlg->frame = gui_frame_create(x, y, w, 80);
+    dlg->frame = gui_frame_create(&theme, x, y, w, 60);
     gui_frame_set_root(dlg->frame, menu);
     gui_frame_layout(dlg->frame);
-}
-
-void dialog_create(dialog *dlg, dialog_style style, const char *text, int x, int y) {
-
-    text_settings tconf;
-    text_defaults(&tconf);
-    tconf.font = FONT_BIG;
-    tconf.cforeground = TEXT_MEDIUM_GREEN;
-
-    text_settings tconf_desc;
-    text_defaults(&tconf_desc);
-    tconf_desc.font = FONT_BIG;
-    tconf_desc.cforeground = TEXT_BRIGHT_GREEN;
-    tconf_desc.halign = TEXT_CENTER;
-
-    dialog_create_with_tconf(dlg, style, &tconf, &tconf_desc, text, x, y);
 }
 
 void dialog_free(dialog *dlg) {

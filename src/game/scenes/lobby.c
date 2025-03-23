@@ -233,19 +233,19 @@ void lobby_render_overlay(scene *scene) {
 
     if(local->mode > LOBBY_YELL) {
         snprintf(buf, sizeof(buf), "Player");
-        text_render(&font_big, TEXT_DEFAULT, 16, 7, 50, 8, buf);
+        text_render_mode(&font_big, TEXT_DEFAULT, 16, 7, 50, 8, buf);
 
         snprintf(buf, sizeof(buf), "Action");
-        text_render(&font_big, TEXT_DEFAULT, 117, 7, 50, 8, buf);
+        text_render_mode(&font_big, TEXT_DEFAULT, 117, 7, 50, 8, buf);
 
         snprintf(buf, sizeof(buf), "Wn/Loss");
-        text_render(&font_small, TEXT_DEFAULT, 200, 8, 50, 6, buf);
+        text_render_mode(&font_small, TEXT_DEFAULT, 200, 8, 50, 6, buf);
 
         snprintf(buf, sizeof(buf), "Version");
-        text_render(&font_small, TEXT_DEFAULT, 240, 8, 50, 6, buf);
+        text_render_mode(&font_small, TEXT_DEFAULT, 240, 8, 50, 6, buf);
 
         snprintf(buf, sizeof(buf), "%d of %d", local->active_user + 1, list_size(&local->users));
-        text_render(&font_small, TEXT_DEFAULT, 284, 8, 40, 6, buf);
+        text_render_mode(&font_small, TEXT_DEFAULT, 284, 8, 40, 6, buf);
 
         iterator it;
         lobby_user *user;
@@ -257,36 +257,36 @@ void lobby_render_overlay(scene *scene) {
             } else {
                 font_big.cforeground = 36;
             }
-            text_render(&font_big, TEXT_DEFAULT, 16, 18 + (10 * i), 90, 8, user->name);
+            text_render_mode(&font_big, TEXT_DEFAULT, 16, 18 + (10 * i), 90, 8, user->name);
             // render player status
             font_small.cforeground = 40;
             switch(user->status) {
                 case PRESENCE_STARTING:
-                    text_render(&font_small, TEXT_DEFAULT, 117, 18 + (10 * i), 70, 6, "starting");
+                    text_render_mode(&font_small, TEXT_DEFAULT, 117, 18 + (10 * i), 70, 6, "starting");
                     break;
                 case PRESENCE_AVAILABLE:
-                    text_render(&font_small, TEXT_DEFAULT, 117, 18 + (10 * i), 70, 6, "available");
+                    text_render_mode(&font_small, TEXT_DEFAULT, 117, 18 + (10 * i), 70, 6, "available");
                     break;
                 case PRESENCE_FIGHTING:
-                    text_render(&font_small, TEXT_DEFAULT, 117, 18 + (10 * i), 70, 6, "fighting");
+                    text_render_mode(&font_small, TEXT_DEFAULT, 117, 18 + (10 * i), 70, 6, "fighting");
                     break;
                 case PRESENCE_CHALLENGING:
-                    text_render(&font_small, TEXT_DEFAULT, 117, 18 + (10 * i), 70, 6, "challenging");
+                    text_render_mode(&font_small, TEXT_DEFAULT, 117, 18 + (10 * i), 70, 6, "challenging");
                     break;
                 case PRESENCE_PONDERING:
-                    text_render(&font_small, TEXT_DEFAULT, 117, 18 + (10 * i), 70, 6, "pondering");
+                    text_render_mode(&font_small, TEXT_DEFAULT, 117, 18 + (10 * i), 70, 6, "pondering");
                     break;
                 case PRESENCE_WATCHING:
-                    text_render(&font_small, TEXT_DEFAULT, 117, 18 + (10 * i), 70, 6, "watching");
+                    text_render_mode(&font_small, TEXT_DEFAULT, 117, 18 + (10 * i), 70, 6, "watching");
                     break;
                 default:
-                    text_render(&font_small, TEXT_DEFAULT, 117, 18 + (10 * i), 70, 6, "unknown");
+                    text_render_mode(&font_small, TEXT_DEFAULT, 117, 18 + (10 * i), 70, 6, "unknown");
             }
             char wins[8];
             snprintf(wins, sizeof(wins), "%d/%d", user->wins, user->losses);
             font_small.cforeground = 56;
-            text_render(&font_small, TEXT_DEFAULT, 200, 18 + (10 * i), 50, 6, wins);
-            text_render(&font_small, TEXT_DEFAULT, 240, 18 + (10 * i), 140, 6, user->version);
+            text_render_mode(&font_small, TEXT_DEFAULT, 200, 18 + (10 * i), 50, 6, wins);
+            text_render_mode(&font_small, TEXT_DEFAULT, 240, 18 + (10 * i), 140, 6, user->version);
             i++;
         }
 
@@ -296,7 +296,7 @@ void lobby_render_overlay(scene *scene) {
         while((logmsg = iter_prev(&it)) && i < 4) {
             font_big.cforeground = logmsg->color;
             i += text_find_line_count(&font_big, 300 / 8, 3, strlen(logmsg->msg), logmsg->msg, &longest);
-            text_render(&font_big, TEXT_DEFAULT, 10, 198 - (8 * i), 300, 8, logmsg->msg);
+            text_render_mode(&font_big, TEXT_DEFAULT, 10, 198 - (8 * i), 300, 8, logmsg->msg);
         }
     } else if(local->mode == LOBBY_YELL) {
         iterator it;
@@ -306,7 +306,7 @@ void lobby_render_overlay(scene *scene) {
         while((logmsg = iter_prev(&it)) && i < 17) {
             font_big.cforeground = logmsg->color;
             i += text_find_line_count(&font_big, 300 / 8, 3, strlen(logmsg->msg), logmsg->msg, &longest);
-            text_render(&font_big, TEXT_DEFAULT, 10, 140 - (8 * i), 300, 8, logmsg->msg);
+            text_render_mode(&font_big, TEXT_DEFAULT, 10, 140 - (8 * i), 300, 8, logmsg->msg);
         }
     }
 
@@ -370,28 +370,26 @@ void lobby_cancel_challenge(component *c, void *userdata) {
 }
 
 component *lobby_challenge_create(scene *s) {
-
     lobby_local *local = scene_get_userdata(s);
-    // Text config
-    text_settings tconf;
-    text_defaults(&tconf);
-    tconf.font = FONT_NET1;
-    tconf.halign = TEXT_LEFT;
-    tconf.cforeground = 6;
-    tconf.cselected = 5;
-    tconf.cdisabled = 4;
-    tconf.cinactive = 3;
 
-    component *menu = menu_create(11);
+    component *menu = menu_create();
     menu_set_horizontal(menu, true);
     menu_set_background(menu, false);
     menu_set_padding(menu, 0);
 
     lobby_user *user = list_get(&local->users, local->active_user);
     snprintf(local->helptext, sizeof(local->helptext), "Challenge %s?", user->name);
-    menu_attach(menu, label_create(&tconf, local->helptext));
-    menu_attach(menu, button_create(&tconf, "Yes", NULL, COM_ENABLED, lobby_do_challenge, s));
-    menu_attach(menu, button_create(&tconf, "No", NULL, COM_ENABLED, lobby_cancel_challenge, s));
+    component *challenge_label = label_create(local->helptext);
+    component *yes_button = button_create("Yes", NULL, false, false, lobby_do_challenge, s);
+    component *no_button = button_create("No", NULL, false, false, lobby_cancel_challenge, s);
+
+    label_set_text_shadow(challenge_label, GLYPH_SHADOW_BOTTOM, 9);
+    button_set_text_shadow(yes_button, GLYPH_SHADOW_BOTTOM, 9);
+    button_set_text_shadow(no_button, GLYPH_SHADOW_BOTTOM, 9);
+
+    menu_attach(menu, challenge_label);
+    menu_attach(menu, yes_button);
+    menu_attach(menu, no_button);
 
     return menu;
 }
@@ -426,38 +424,32 @@ void lobby_do_yell(component *c, void *userdata) {
 }
 
 component *lobby_yell_create(scene *s) {
-    // Text config
-    text_settings tconf;
-    text_defaults(&tconf);
-    tconf.font = FONT_NET1;
-    tconf.halign = TEXT_LEFT;
-    tconf.cforeground = 6;
-    tconf.cselected = 5;
-    tconf.cdisabled = 4;
-    tconf.cinactive = 3;
-
     text_settings help_text;
     text_defaults(&help_text);
     help_text.font = FONT_NET2;
     help_text.halign = TEXT_LEFT;
     help_text.cforeground = 56;
 
-    component *menu = menu_create(11);
+    component *menu = menu_create();
 
     menu_set_help_pos(menu, 10, 155, 500, 10);
     menu_set_help_text_settings(menu, &help_text);
     menu_set_horizontal(menu, true);
     menu_set_background(menu, false);
-    menu_set_padding(menu, -8);
 
-    menu_attach(menu, label_create(&tconf, "Yell:"));
+    component *yell_label = label_create("Yell:");
+    label_set_text_shadow(yell_label, GLYPH_SHADOW_BOTTOM, 9);
+    menu_attach(menu, yell_label);
     component *yell_input =
-        textinput_create(&tconf, 36,
+        textinput_create(32,
                          "Yell a message to everybody in the challenge arena.\n\n\n\n\nTo whisper to one player, type "
                          "their name, a ':', and your message.\nPress 'esc' to return to the challenge arena menu.",
                          "");
+    textinput_set_text_shadow(yell_input, GLYPH_SHADOW_BOTTOM, 9);
+    textinput_set_font(yell_input, FONT_NET1);
+    textinput_set_horizontal_align(yell_input, TEXT_ALIGN_LEFT);
     menu_attach(menu, yell_input);
-    textinput_enable_background(yell_input, 0);
+    textinput_enable_background(yell_input, false);
     textinput_set_done_cb(yell_input, lobby_do_yell, s);
 
     return menu;
@@ -500,15 +492,6 @@ void lobby_do_whisper(component *c, void *userdata) {
 
 component *lobby_whisper_create(scene *s) {
     lobby_local *local = scene_get_userdata(s);
-    // Text config
-    text_settings tconf;
-    text_defaults(&tconf);
-    tconf.font = FONT_NET1;
-    tconf.halign = TEXT_LEFT;
-    tconf.cforeground = 6;
-    tconf.cselected = 5;
-    tconf.cdisabled = 4;
-    tconf.cinactive = 3;
 
     text_settings help_text;
     text_defaults(&help_text);
@@ -516,19 +499,23 @@ component *lobby_whisper_create(scene *s) {
     help_text.halign = TEXT_LEFT;
     help_text.cforeground = 56;
 
-    component *menu = menu_create(11);
+    component *menu = menu_create();
 
     menu_set_help_pos(menu, 10, 155, 500, 10);
     menu_set_help_text_settings(menu, &help_text);
     menu_set_horizontal(menu, true);
     menu_set_background(menu, false);
-    menu_set_padding(menu, -6);
 
-    menu_attach(menu, label_create(&tconf, "Whisper:"));
+    component *whisper_label = label_create("Whisper:");
+    label_set_text_shadow(whisper_label, GLYPH_SHADOW_BOTTOM, 9);
+    menu_attach(menu, whisper_label);
     lobby_user *user = list_get(&local->users, local->active_user);
     snprintf(local->helptext, sizeof(local->helptext), "Whisper a message to %s. Press enter when done, esc to abort.",
              user->name);
-    component *whisper_input = textinput_create(&tconf, 36, local->helptext, "");
+    component *whisper_input = textinput_create(32, local->helptext, "");
+    textinput_set_text_shadow(whisper_input, GLYPH_SHADOW_BOTTOM, 9);
+    textinput_set_horizontal_align(whisper_input, TEXT_ALIGN_LEFT);
+    textinput_set_font(whisper_input, FONT_NET1);
     menu_attach(menu, whisper_input);
     textinput_enable_background(whisper_input, 0);
     textinput_set_done_cb(whisper_input, lobby_do_whisper, s);
@@ -669,24 +656,22 @@ void lobby_dialog_accept_challenge(dialog *dlg, dialog_result result) {
 }
 
 component *lobby_exit_create(scene *s) {
-    // Text config
-    text_settings tconf;
-    text_defaults(&tconf);
-    tconf.font = FONT_NET1;
-    tconf.halign = TEXT_LEFT;
-    tconf.cforeground = 6;
-    tconf.cselected = 5;
-    tconf.cdisabled = 4;
-    tconf.cinactive = 3;
-
-    component *menu = menu_create(11);
+    component *menu = menu_create();
     menu_set_horizontal(menu, true);
     menu_set_background(menu, false);
-    menu_set_padding(menu, 0);
+    menu_set_padding(menu, 8);
 
-    menu_attach(menu, label_create(&tconf, "Exit the Challenge Arena?"));
-    menu_attach(menu, button_create(&tconf, "Yes", NULL, COM_ENABLED, lobby_do_exit, s));
-    menu_attach(menu, button_create(&tconf, "No", NULL, COM_ENABLED, lobby_refuse_exit, s));
+    component *exit_label = label_create("Exit the Challenge Arena?");
+    component *yes_button = button_create("Yes", NULL, false, false, lobby_do_exit, s);
+    component *no_button = button_create("No", NULL, false, false, lobby_refuse_exit, s);
+
+    label_set_text_shadow(exit_label, GLYPH_SHADOW_BOTTOM, 9);
+    button_set_text_shadow(yes_button, GLYPH_SHADOW_BOTTOM, 9);
+    button_set_text_shadow(no_button, GLYPH_SHADOW_BOTTOM, 9);
+
+    menu_attach(menu, exit_label);
+    menu_attach(menu, yes_button);
+    menu_attach(menu, no_button);
 
     return menu;
 }
@@ -1448,16 +1433,19 @@ int lobby_create(scene *scene) {
     local->nat_tries = 0;
     local->disconnected = false;
 
-    text_settings tconf;
-    text_defaults(&tconf);
-    tconf.font = FONT_NET1;
-    tconf.halign = TEXT_LEFT;
-    tconf.cforeground = 6;
-    tconf.cselected = 5;
-    tconf.cdisabled = 4;
-    tconf.cinactive = 3;
+    // Create lobby theme
+    gui_theme theme;
+    gui_theme_defaults(&theme);
+    theme.dialog.border_color = TEXT_MEDIUM_GREEN;
+    theme.text.font = FONT_NET1;
+    theme.text.primary_color = 6;
+    theme.text.secondary_color = 6;
+    theme.text.disabled_color = 4;
+    theme.text.active_color = 5;
+    theme.text.inactive_color = 3;
+    theme.text.shadow_color = 6;
 
-    component *menu = menu_create(11);
+    component *menu = menu_create();
     menu_set_horizontal(menu, true);
     menu_set_background(menu, false);
     menu_set_padding(menu, 6);
@@ -1470,15 +1458,28 @@ int lobby_create(scene *scene) {
     help_text.cforeground = 56;
 
     menu_set_help_text_settings(menu, &help_text);
-    menu_attach(menu, button_create(&tconf, "Challenge",
-                                    "Challenge this player to a fight. Challenge yourself for 1-player game.",
-                                    COM_ENABLED, lobby_challenge, scene));
-    menu_attach(
-        menu, button_create(&tconf, "Whisper", "Whisper a message to this player.", COM_ENABLED, lobby_whisper, scene));
-    menu_attach(menu,
-                button_create(&tconf, "Yell", "Chat with everybody in the arena.", COM_ENABLED, lobby_yell, scene));
-    menu_attach(menu, button_create(&tconf, "Refresh", "Refresh the player list.", COM_ENABLED, lobby_refresh, scene));
-    menu_attach(menu, button_create(&tconf, "Exit", "Exit and disconnect.", COM_ENABLED, lobby_exit, scene));
+    component *challenge_button =
+        button_create("Challenge", "Challenge this player to a fight. Challenge yourself for 1-player game.", false,
+                      false, lobby_challenge, scene);
+    component *whisper_button =
+        button_create("Whisper", "Whisper a message to this player.", false, false, lobby_whisper, scene);
+    component *yell_button =
+        button_create("Yell", "Chat with everybody in the arena.", false, false, lobby_yell, scene);
+    component *refresh_button =
+        button_create("Refresh", "Refresh the player list.", false, false, lobby_refresh, scene);
+    component *exit_button = button_create("Exit", "Exit and disconnect.", false, false, lobby_exit, scene);
+
+    button_set_text_shadow(challenge_button, GLYPH_SHADOW_BOTTOM, 9);
+    button_set_text_shadow(whisper_button, GLYPH_SHADOW_BOTTOM, 9);
+    button_set_text_shadow(yell_button, GLYPH_SHADOW_BOTTOM, 9);
+    button_set_text_shadow(refresh_button, GLYPH_SHADOW_BOTTOM, 9);
+    button_set_text_shadow(exit_button, GLYPH_SHADOW_BOTTOM, 9);
+
+    menu_attach(menu, challenge_button);
+    menu_attach(menu, whisper_button);
+    menu_attach(menu, yell_button);
+    menu_attach(menu, refresh_button);
+    menu_attach(menu, exit_button);
 
     int winner = -1;
     // check if there's already a net controller provisioned
@@ -1507,21 +1508,26 @@ int lobby_create(scene *scene) {
     }
     reconfigure_controller(scene->gs);
 
-    local->frame = gui_frame_create(9, 128, 300, 12);
+    local->frame = gui_frame_create(&theme, 9, 132, 300, 8);
     gui_frame_set_root(local->frame, menu);
     gui_frame_layout(local->frame);
 
     if(local->mode == LOBBY_STARTING) {
 
-        component *name_menu = menu_create(11);
+        component *name_menu = menu_create();
         menu_set_horizontal(name_menu, true);
         menu_set_background(name_menu, false);
-        menu_set_padding(menu, 0);
+        menu_set_padding(name_menu, 0);
 
-        menu_attach(name_menu, label_create(&tconf, "Enter your name:"));
+        component *enter_name_label = label_create("Enter your name:");
+        label_set_text_shadow(enter_name_label, GLYPH_SHADOW_BOTTOM, 9);
+        menu_attach(name_menu, enter_name_label);
         // pull the last used name from settings
-        component *name_input = textinput_create(&tconf, 14, "", settings_get()->net.net_username);
-        textinput_enable_background(name_input, 0);
+        component *name_input = textinput_create(14, "", settings_get()->net.net_username);
+        textinput_set_text_shadow(name_input, GLYPH_SHADOW_BOTTOM, 9);
+        textinput_set_font(name_input, FONT_NET1);
+        textinput_enable_background(name_input, false);
+        textinput_set_horizontal_align(name_input, TEXT_ALIGN_LEFT);
         textinput_set_done_cb(name_input, lobby_entered_name, scene);
         menu_attach(name_menu, name_input);
 

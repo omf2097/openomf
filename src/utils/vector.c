@@ -37,13 +37,17 @@ void vector_create_with_size_cb(vector *vector, unsigned int block_size, unsigne
     vector->free_cb = free_cb;
 }
 
-void vector_free(vector *vec) {
+void vector_clear(vector *vec) {
     if(vec->free_cb != NULL) {
         for(unsigned int i = 0; i < vec->blocks; i++) {
             vec->free_cb(vec->data + vec->block_size * i);
         }
     }
     vec->blocks = 0;
+}
+
+void vector_free(vector *vec) {
+    vector_clear(vec);
     vec->reserved = 0;
     vec->block_size = 0;
     omf_free(vec->data);
