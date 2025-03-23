@@ -27,6 +27,7 @@ typedef struct sdl_audio_context {
     Uint16 format;
     int channels;
     int resampler;
+    float volume;
     music_source music;
     Mix_Chunk channel_chunks[CHANNEL_MAX];
 } sdl_audio_context;
@@ -136,8 +137,9 @@ static void set_backend_sound_volume(void *userdata, float volume) {
 
 static void set_backend_music_volume(void *userdata, float volume) {
     assert(userdata);
-    volume = clampf(volume, VOLUME_MIN, VOLUME_MAX);
-    Mix_VolumeMusic(volume * MIX_MAX_VOLUME);
+    sdl_audio_context *ctx = userdata;
+    ctx->volume = clampf(volume, VOLUME_MIN, VOLUME_MAX);
+    music_source_set_volume(&ctx->music, ctx->volume);
 }
 
 static void get_info(void *userdata, unsigned *sample_rate, unsigned *channels, unsigned *resampler) {
@@ -196,6 +198,7 @@ static void play_music(void *userdata, const music_source *src) {
     stop_music(ctx);
     music_source_close(&ctx->music);
     memcpy(&ctx->music, src, sizeof(music_source));
+    music_source_set_volume(&ctx->music, ctx->volume);
     Mix_HookMusic(sdl_hook, ctx);
 }
 

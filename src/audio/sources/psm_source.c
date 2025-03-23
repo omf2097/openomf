@@ -2,6 +2,7 @@
 #include "utils/allocator.h"
 #include "utils/c_array_util.h"
 #include "utils/log.h"
+#include "utils/miscmath.h"
 
 #include <xmp.h>
 
@@ -29,6 +30,14 @@ static void psm_close(void *userdata) {
         xmp_end_player(context);
         xmp_release_module(context);
         xmp_free_context(context);
+    }
+}
+
+static void psm_set_volume(void *userdata, float volume) {
+    xmp_context context = userdata;
+    int clamped = clamp(volume * 100, 0, 100);
+    if(xmp_set_player(context, XMP_PLAYER_VOLUME, clamped) != 0) {
+        log_error("Unable to set music volume");
     }
 }
 
@@ -62,12 +71,9 @@ bool psm_load(music_source *src, int channels, int sample_rate, int resampler, c
         log_error("Unable to set music resampler");
         goto exit_2;
     }
-    if(xmp_set_player(context, XMP_PLAYER_VOLUME, 100) != 0) {
-        log_error("Unable to set music volume");
-        goto exit_2;
-    }
 
     src->context = context;
+    src->set_volume = psm_set_volume;
     src->render = psm_render;
     src->close = psm_close;
     return true;
