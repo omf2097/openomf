@@ -55,6 +55,14 @@ enum
     REC_CONTROLLER_REPLAY
 };
 
+enum
+{
+    // TOURNAMENT
+    REC_GAMEMODE_TOURNAMENT = 1,
+    // 1 PLAYER, 2 PLAYER, DEMO, and NETPLAY.
+    REC_GAMEMODE_ARCADE = 2,
+};
+
 /*! \brief REC recording
  *
  * Contains a record of a single OMF:2097 match. This may be
