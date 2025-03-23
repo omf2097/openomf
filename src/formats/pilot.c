@@ -331,7 +331,7 @@ void sd_pilot_set_player_color(sd_pilot *pilot, player_color index, uint8_t colo
             pilot->color_1 = color;
             break;
     }
-    if(color != 255) {
+    if(color != 255 && color != 16) {
         palette_load_altpal_player_color(&pilot->palette, 0, color, index);
     }
 }
