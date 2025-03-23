@@ -26,6 +26,13 @@ void sd_pilot_clone(sd_pilot *dest, const sd_pilot *src) {
     }
 }
 
+void sd_pilot_copy_shallow(sd_pilot *dest, const sd_pilot *src) {
+    sd_pilot_free(dest);
+    *dest = *src;
+    dest->photo = NULL;
+    memset(dest->quotes, 0, sizeof dest->quotes);
+}
+
 void sd_pilot_free(sd_pilot *pilot) {
     if(pilot == NULL)
         return;
