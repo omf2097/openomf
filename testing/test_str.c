@@ -19,7 +19,7 @@ void test_str_create(void) {
     str_create(&m);
     CU_ASSERT(str_size(&m) == 0);
     CU_ASSERT(is_small(&m));
-    CU_ASSERT(m.small[0] == 0);
+    CU_ASSERT(m.ssmall[0] == 0);
     str_free(&m);
 }
 
@@ -88,7 +88,7 @@ void test_str_set_c(void) {
     str a;
     str_from_c(&a, "test");
     str_set_c(&a, "2222222");
-    CU_ASSERT_STRING_EQUAL(a.small, "2222222");
+    CU_ASSERT_STRING_EQUAL(a.ssmall, "2222222");
     str_free(&a);
 }
 
@@ -98,7 +98,7 @@ void test_str_set(void) {
     str_from_c(&b, "2222222");
 
     str_set(&a, &b);
-    CU_ASSERT_STRING_EQUAL(a.small, "2222222");
+    CU_ASSERT_STRING_EQUAL(a.ssmall, "2222222");
 
     str_free(&a);
     str_free(&b);
