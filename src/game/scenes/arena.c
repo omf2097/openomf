@@ -1809,7 +1809,7 @@ int arena_create(scene *scene) {
             scene->gs->rec->scores[i] = game_player_get_score(player)->score;
         }
         scene->gs->rec->arena_id = scene->id - SCENE_ARENA0;
-        scene->gs->rec->game_mode = is_tournament(scene->gs) ? 1 : 2;
+        scene->gs->rec->game_mode = is_tournament(scene->gs) ? REC_GAMEMODE_TOURNAMENT : REC_GAMEMODE_ARCADE;
 
         // player 1's controller
         switch(game_state_get_player(scene->gs, 0)->ctrl->type) {
