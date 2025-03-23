@@ -16,7 +16,8 @@ typedef enum font_size
 
 typedef struct font {
     font_size size;
-    int w, h;  // Note that these are for compatibility with the old text renderer.
+    int w; // Note that this is only for compatibility with the old text renderer.
+    int h; // This is the default row height, if there is no text on it.
     vector surfaces;
 } font;
 

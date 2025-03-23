@@ -7,18 +7,18 @@
 
 void create_fake_font(font *font) {
     font_create(font);
-    font->w = 8;
-    font->h = 8;
+    font->h = 8; // This is the default row height, if there is no text in it.
     font->size = FONT_BIG;
 
-    // Characters up to and including ' ' and 'A' are 8x8
+    // Create characters up to and including ' ' and 'A' as 8x8 pixels in size
     surface s;
-    for(int i = 0; i <= 33; i++) {
+    char end = 'A' - 32; // Fonts begin from index 32 in OMF font formats.
+    for(int i = 0; i <= end; i++) {
         surface_create(&s, 8, 8);
         vector_append(&font->surfaces, &s);
     }
 
-    // 'B' is 4x8
+    // Create 'B' character 4x4 pixels in size, so that we can test different size combinations.
     surface_create(&s, 4, 4);
     vector_append(&font->surfaces, &s);
 }
