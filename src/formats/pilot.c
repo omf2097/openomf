@@ -17,13 +17,13 @@ int sd_pilot_create(sd_pilot *pilot) {
 }
 
 void sd_pilot_clone(sd_pilot *dest, const sd_pilot *src) {
-    sd_pilot_free(dest);
-    memcpy(dest, src, sizeof(sd_pilot));
+    sd_pilot_copy_shallow(dest, src);
     for(int m = 0; m < 10; m++) {
         if(src->quotes[m] != NULL) {
             dest->quotes[m] = omf_strdup(src->quotes[m]);
         }
     }
+    sd_sprite_copy(dest->photo, src->photo);
 }
 
 void sd_pilot_copy_shallow(sd_pilot *dest, const sd_pilot *src) {
