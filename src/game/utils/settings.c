@@ -11,13 +11,16 @@
 
 // clang-format off
 #define F_INT(struct_, var, def)                                                                                       \
-    { #var, {.i = def }, TYPE_INT, offsetof(struct_, var) }
+    { #var, {.i = def }, TYPE_INT, offsetof(struct_, var), sizeof(((struct_*)0)->var) }
 #define F_BOOL(struct_, var, def)                                                                                      \
-    { #var, {.b = def }, TYPE_BOOL, offsetof(struct_, var) }
+    { #var, {.b = def }, TYPE_BOOL, offsetof(struct_, var), sizeof(((struct_*)0)->var) }
 #define F_FLOAT(struct_, var, def)                                                                                     \
-    { #var, {.f = def }, TYPE_FLOAT, offsetof(struct_, var) }
+    { #var, {.f = def }, TYPE_FLOAT, offsetof(struct_, var), sizeof(((struct_*)0)->var) }
 #define F_STRING(struct_, var, def)                                                                                    \
-    { #var, {.s = def }, TYPE_STRING, offsetof(struct_, var) }
+    { #var, {.s = def }, TYPE_STRING, offsetof(struct_, var), sizeof(((struct_*)0)->var) }
+#define F_FIXEDSTRING(struct_, var, def)                                                                               \
+    { #var, {.s = def }, TYPE_FIXEDSTRING, offsetof(struct_, var), sizeof(((struct_*)0)->var) }
+
 
 #define NFIELDS(struct_) sizeof(struct_) / sizeof(field)
 
@@ -33,7 +36,8 @@ typedef enum
     TYPE_INT,
     TYPE_FLOAT,
     TYPE_BOOL,
-    TYPE_STRING
+    TYPE_STRING,
+    TYPE_FIXEDSTRING,
 } field_type;
 
 typedef union {
@@ -48,6 +52,7 @@ typedef struct {
     field_default def;
     field_type type;
     int offset;
+    unsigned size;
 } field;
 
 typedef struct {
@@ -62,7 +67,7 @@ static const field f_language[] = {
 };
 
 const field f_video[] = {
-    F_STRING(settings_video, renderer, ""),
+    F_FIXEDSTRING(settings_video, renderer, ""),
     F_INT(settings_video, screen_w, 640),
     F_INT(settings_video, screen_h, 400),
     F_BOOL(settings_video, vsync, 0),
@@ -175,6 +180,9 @@ double *fieldfloat(void *st, int offset) {
 char **fieldstr(void *st, int offset) {
     return (char **)((char *)st + offset);
 }
+char *fieldfixedstr(void *st, int offset) {
+    return (char *)((char *)st + offset);
+}
 int *fieldbool(void *st, int offset) {
     return fieldint(st, offset);
 }
@@ -183,19 +191,30 @@ void settings_add_fields(const field *fields, int nfields) {
     for(int i = 0; i < nfields; ++i) {
         const field *f = &fields[i];
         switch(f->type) {
+            // Each case asserts that f->size matches what the
+            // appropriate getter (fieldiunt, fieldfloat, etc..) uses.
             case TYPE_INT:
+                assert(f->size == sizeof(int));
                 conf_addint(f->name, f->def.i);
                 break;
 
             case TYPE_FLOAT:
+                assert(f->size == sizeof(double));
                 conf_addfloat(f->name, f->def.f);
                 break;
 
             case TYPE_BOOL:
+                assert(f->size == sizeof(int));
                 conf_addbool(f->name, f->def.b);
                 break;
 
             case TYPE_STRING:
+                assert(f->size == sizeof(char *));
+                conf_addstring(f->name, f->def.s);
+                break;
+
+            case TYPE_FIXEDSTRING:
+                assert(f->size >= sizeof(char)); // leave room for a NUL terminator.
                 conf_addstring(f->name, f->def.s);
                 break;
         }
@@ -226,6 +245,14 @@ void settings_load_fields(void *st, const field *fields, int nfields) {
                     *s = omf_strdup(conf_string(f->name));
                 }
             } break;
+
+            case TYPE_FIXEDSTRING: {
+                char *s = fieldfixedstr(st, f->offset);
+                char const *conf_s = conf_string(f->name);
+                if(conf_s) {
+                    strncpy_or_truncate(s, conf_s, f->size);
+                }
+            } break;
         }
     }
 }
@@ -248,6 +275,10 @@ void settings_save_fields(void *st, const field *fields, int nfields) {
 
             case TYPE_STRING:
                 conf_setstring(f->name, *fieldstr(st, f->offset));
+                break;
+
+            case TYPE_FIXEDSTRING:
+                conf_setstring(f->name, fieldfixedstr(st, f->offset));
                 break;
         }
     }
