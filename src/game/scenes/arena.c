@@ -105,7 +105,10 @@ void game_menu_quit(component *c, void *userdata) {
     chr_score_reset(game_player_get_score(game_state_get_player((s)->gs, 1)), 1);
 
     game_player *player1 = game_state_get_player(((scene *)userdata)->gs, 0);
-    if(player1->chr) {
+    if(s->gs->init_flags->playback == 1) {
+        // 'quit' button exits during REC playback
+        game_state_set_next(s->gs, SCENE_NONE);
+    } else if(player1->chr) {
         // quit back to VS for plug to call you a chicken
         if(s->gs->match_settings.sim) {
             game_state_set_next(s->gs, SCENE_MECHLAB);
