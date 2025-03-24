@@ -366,7 +366,7 @@ int main(int argc, char *argv[]) {
     struct arg_int *pilot = arg_int0(NULL, "pilot", "<int>", "Only print pilot information");
     struct arg_str *value = arg_str0("s", "set", "<value>", "Set value (requires --key)");
     struct arg_int *insert = arg_int0("i", "insert", "<number>", "Insert a new element");
-    struct arg_int *assert = arg_int0(NULL, "assert", "<number>", "Insert an assertion at <number>");
+    struct arg_lit *assert = arg_lit0(NULL, "assert", "Insert an assertion");
     struct arg_int *assert_tick = arg_int0(NULL, "assertion_tick", "<number>", "Tick at which to do assertion");
     struct arg_str *assert_op = arg_str0(NULL, "operator", "<gt|lt|eq>", "Assertion operator");
     struct arg_str *assert_op1 =
@@ -514,10 +514,10 @@ int main(int argc, char *argv[]) {
                 mv.tick = assert_tick->ival[0];
             }
             memcpy(mv.extra_data, buf + 1, 7);
-            if(sd_rec_insert_action(&rec, assert->ival[0], &mv) != SD_SUCCESS) {
-                printf("Inserting move to slot %d failed.\n", assert->ival[0]);
+            if(sd_rec_insert_action_at_tick(&rec, &mv) != SD_SUCCESS) {
+                printf("Inserting move failed.\n");
             } else {
-                printf("Inserted move to slot %d.\n", assert->ival[0]);
+                printf("Inserted move\n");
             }
         } else {
             printf("incomplete assert.\n");

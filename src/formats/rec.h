@@ -176,6 +176,10 @@ int sd_rec_extra_len(int key);
  */
 int sd_rec_insert_action(sd_rec_file *rec, unsigned int number, const sd_rec_move *move);
 
+/*! \brief like sd_rec_insert_action but uses the tick in the move to find the right insertion point
+ */
+int sd_rec_insert_action_at_tick(sd_rec_file *rec, const sd_rec_move *move);
+
 /*! \brief Insert a closing ACT_NONE on a rec at `ticks`
  */
 void sd_rec_finish(sd_rec_file *rec, unsigned int ticks);
