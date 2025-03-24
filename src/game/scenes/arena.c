@@ -1303,13 +1303,13 @@ void arena_render_overlay(scene *scene) {
         text_render_mode(&tconf_players, TEXT_DEFAULT, 5, 19, 250, 6, player1_name);
         text_render_mode(&tconf_players, TEXT_DEFAULT, 5, 26, 250, 6, lang_get((player[0]->pilot->har_id) + 31));
 
+        // when quitting, pilot can go null
         if(player[1]->pilot) {
-            // when quitting, this can go null
-            int p2len = (strlen(player2_name) - 1) * fnt->w;
-            int h2len = (strlen(lang_get((player[1]->pilot->har_id) + 31)) - 1) * fnt->w;
+            char const *player2_har = lang_get((player[1]->pilot->har_id) + 31);
+            int p2len = strlen(player2_name) * fnt->w;
+            int h2len = (strlen(player2_har) - 1) * fnt->w; // TODO: FIXME(lang): -1 because of errant newline
             text_render_mode(&tconf_players, TEXT_DEFAULT, 315 - p2len, 19, 100, 6, player2_name);
-            text_render_mode(&tconf_players, TEXT_DEFAULT, 315 - h2len, 26, 100, 6,
-                             lang_get((player[1]->pilot->har_id) + 31));
+            text_render_mode(&tconf_players, TEXT_DEFAULT, 315 - h2len, 26, 100, 6, player2_har);
         }
 
         // dont render total score in demo play
