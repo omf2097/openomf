@@ -20,7 +20,7 @@ enum
 typedef struct chr_score_t {
     int score;
     int rounds;
-    int wins;
+    int wins; // for 2 player
     int health;
     int x, y;
     int direction;
