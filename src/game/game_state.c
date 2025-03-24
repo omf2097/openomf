@@ -112,6 +112,7 @@ int game_state_create(game_state *gs, engine_init_flags *init_flags) {
     gs->paused = 0;
     gs->tick = 0;
     gs->int_tick = 0;
+    gs->arena = 0;
     gs->role = ROLE_CLIENT;
     gs->net_mode = init_flags->net_mode;
     gs->speed = settings_get()->gameplay.speed + 5;
