@@ -1705,8 +1705,11 @@ int arena_create(scene *scene) {
                                     "Obtain detailed and thorough explanation of the various options for which you "
                                     "may need a detailed and thorough explanation.",
                                     false, false, NULL, NULL));
-    component *quit_button =
-        button_create("QUIT", "Quit game and return to main menu.", false, false, game_menu_quit, scene);
+    component *quit_button;
+    if(is_tournament(scene->gs) && !scene->gs->match_settings.sim)
+        quit_button = button_create("FORFEIT", lang_get(323), false, false, game_menu_quit, scene);
+    else
+        quit_button = button_create("QUIT", lang_get(322), false, false, game_menu_quit, scene);
     widget_set_id(quit_button, GAME_MENU_QUIT_ID);
     menu_attach(menu, quit_button);
 
