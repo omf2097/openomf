@@ -7,7 +7,9 @@
 #include <math.h>
 #include <stdio.h>
 
-#define TEXT_COLOR 0xC7
+#define TEXT_HUD_COLOR 0xE7
+#define TEXT_HUD_SHADOW 0xF7
+
 #define SLIDER_DISTANCE 50
 #define SLIDER_HANG_TIME 25
 
@@ -150,7 +152,8 @@ void chr_score_render(chr_score *score, bool render_total_points) {
     text_settings tconf_score;
     text_defaults(&tconf_score);
     tconf_score.font = FONT_SMALL;
-    tconf_score.cforeground = TEXT_COLOR;
+    tconf_score.cforeground = TEXT_HUD_COLOR;
+    tconf_score.cshadow = TEXT_HUD_SHADOW;
     tconf_score.shadow = TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM;
     const font *fnt = fonts_get_font(tconf_score.font);
 
