@@ -91,18 +91,22 @@ void write_rec_move(scene *scene, game_player *player, int action);
 
 bool defeated_at_rest(object *obj);
 
+static void arena_end(scene *sc);
+
 // -------- Local callbacks --------
 
 void game_menu_quit(component *c, void *userdata) {
     scene *s = userdata;
+    arena_local *local = scene_get_userdata((scene *)userdata);
+    local->winner = 1;
+
     s->gs->fight_stats.plug_text = PLUG_FORFEIT;
     chr_score_reset(game_player_get_score(game_state_get_player((s)->gs, 0)), 1);
     chr_score_reset(game_player_get_score(game_state_get_player((s)->gs, 1)), 1);
+
     game_player *player1 = game_state_get_player(((scene *)userdata)->gs, 0);
     if(player1->chr) {
         // quit back to VS for plug to call you a chicken
-        game_player *player2 = game_state_get_player(((scene *)userdata)->gs, 1);
-        player2->pilot = NULL;
         if(s->gs->match_settings.sim) {
             game_state_set_next(s->gs, SCENE_MECHLAB);
         } else {
@@ -110,6 +114,13 @@ void game_menu_quit(component *c, void *userdata) {
         }
     } else {
         game_state_set_next(s->gs, SCENE_MENU);
+    }
+
+    arena_end(s);
+
+    if(player1->chr) {
+        game_player *player2 = game_state_get_player(((scene *)userdata)->gs, 1);
+        player2->pilot = NULL;
     }
 }
 
@@ -232,11 +243,68 @@ void arena_screengrab_winner(scene *sc) {
     }
 }
 
-void arena_end(scene *sc) {
+static void arena_end(scene *sc) {
     game_state *gs = sc->gs;
     arena_local *local = scene_get_userdata(sc);
     const scene *scene = game_state_get_scene(gs);
     fight_stats *fight_stats = &gs->fight_stats;
+
+    int winner_player_id = local->winner;
+    int loser_player_id = !winner_player_id;
+    game_player *player_winner = game_state_get_player(scene->gs, winner_player_id);
+    game_player *player_loser = game_state_get_player(scene->gs, loser_player_id);
+    object *winner = game_state_find_object(scene->gs, game_player_get_har_obj_id(player_winner));
+    har *winner_har = object_get_userdata(winner);
+
+    // if tournament player won
+    if(is_tournament(gs) && local->winner == 0) {
+        // TODO The repair costs formula here is completely bogus
+        int trade_value = calculate_trade_value(player_winner->pilot) / 100;
+        float hp_percentage = (float)winner_har->health / (float)winner_har->health_max;
+        fight_stats->repair_cost = (1.0f - hp_percentage) * trade_value;
+
+        float winnings_multiplier = player_winner->chr->winnings_multiplier;
+        fight_stats->winnings = (player_loser->pilot->money + player_loser->pilot->winnings) * winnings_multiplier;
+        fight_stats->winnings += (int)(400 * hp_percentage);
+
+        // secret players have no rank, and don't increase your own ranking
+        if(!gs->match_settings.sim && player_loser->pilot->rank > 0) {
+            player_winner->pilot->rank--;
+            if(player_winner->pilot->rank < 1) {
+                player_winner->pilot->rank = 1;
+            }
+            for(int i = 0; i < player_winner->chr->pilot.enemies_inc_unranked; i++) {
+                if(player_winner->chr->enemies[i]->pilot.rank == player_winner->pilot->rank) {
+                    player_winner->chr->enemies[i]->pilot.rank += 1;
+                    break;
+                }
+            }
+        }
+    }
+    // if tournament player lost
+    else if(is_tournament(gs) && local->winner == 1) {
+        // secret players have no rank, and don't decrease your own ranking
+        if(player_loser->pilot->rank <= player_loser->pilot->enemies_ex_unranked && !gs->match_settings.sim &&
+           player_winner->pilot->rank > 0) {
+            player_loser->pilot->rank++;
+            if(player_loser->pilot->rank > player_loser->chr->pilot.enemies_ex_unranked + 1) {
+                player_loser->pilot->rank = player_loser->chr->pilot.enemies_ex_unranked + 1;
+            }
+            for(int i = 0; i < player_loser->chr->pilot.enemies_inc_unranked; i++) {
+                if(player_loser->chr->enemies[i]->pilot.rank == player_loser->pilot->rank) {
+                    player_loser->chr->enemies[i]->pilot.rank -= 1;
+                    break;
+                }
+            }
+        }
+        fight_stats->repair_cost = calculate_trade_value(player_loser->pilot) / 100;
+    }
+
+    if(!gs->match_settings.sim) {
+        game_player_get_score(player_winner)->wins++;
+        player_winner->pilot->wins++;
+        player_loser->pilot->losses++;
+    }
 
     // Switch scene
     if(scene->gs->init_flags->playback == 1) {
@@ -594,50 +662,8 @@ void arena_har_defeat_hook(int loser_player_id, scene *scene) {
             local->win_state = YOUWIN;
         } else {
             if(loser_player_id == 1) {
-                if(is_tournament(gs)) {
-                    // TODO The repair costs formula here is completely bogus
-                    int trade_value = calculate_trade_value(player_winner->pilot) / 100;
-                    float hp_percentage = (float)winner_har->health / (float)winner_har->health_max;
-                    fight_stats->repair_cost = (1.0f - hp_percentage) * trade_value;
-
-                    float winnings_multiplier = player_winner->chr->winnings_multiplier;
-                    fight_stats->winnings =
-                        (player_loser->pilot->money + player_loser->pilot->winnings) * winnings_multiplier;
-                    fight_stats->winnings += (int)(400 * hp_percentage);
-
-                    // secret players have no rank, and don't increase your own ranking
-                    if(!gs->match_settings.sim && player_loser->pilot->rank > 0) {
-                        player_winner->pilot->rank--;
-                        if(player_winner->pilot->rank < 1) {
-                            player_winner->pilot->rank = 1;
-                        }
-                        for(int i = 0; i < player_winner->chr->pilot.enemies_inc_unranked; i++) {
-                            if(player_winner->chr->enemies[i]->pilot.rank == player_winner->pilot->rank) {
-                                player_winner->chr->enemies[i]->pilot.rank += 1;
-                                break;
-                            }
-                        }
-                    }
-                }
                 local->win_state = YOUWIN;
             } else {
-                if(is_tournament(gs)) {
-                    // secret players have no rank, and don't decrease your own ranking
-                    if(player_loser->pilot->rank <= player_loser->pilot->enemies_ex_unranked &&
-                       !gs->match_settings.sim && player_winner->pilot->rank > 0) {
-                        player_loser->pilot->rank++;
-                        if(player_loser->pilot->rank > player_loser->chr->pilot.enemies_ex_unranked + 1) {
-                            player_loser->pilot->rank = player_loser->chr->pilot.enemies_ex_unranked + 1;
-                        }
-                        for(int i = 0; i < player_loser->chr->pilot.enemies_inc_unranked; i++) {
-                            if(player_loser->chr->enemies[i]->pilot.rank == player_loser->pilot->rank) {
-                                player_loser->chr->enemies[i]->pilot.rank -= 1;
-                                break;
-                            }
-                        }
-                    }
-                    fight_stats->repair_cost = calculate_trade_value(player_loser->pilot) / 100;
-                }
                 local->win_state = YOULOSE;
             }
         }
@@ -661,11 +687,6 @@ void arena_har_defeat_hook(int loser_player_id, scene *scene) {
         winner_har->enqueued = 0;
         local->over = 1;
         local->winner = winner_player_id;
-        if(!gs->match_settings.sim) {
-            game_player_get_score(player_winner)->wins++;
-            player_winner->pilot->wins++;
-            player_loser->pilot->losses++;
-        }
         if(is_singleplayer(gs)) {
             player_winner->sp_wins |= 2 << player_loser->pilot->pilot_id;
             if(player_loser->pilot->pilot_id == PILOT_KREISSACK) {
