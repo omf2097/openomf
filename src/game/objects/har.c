@@ -1198,6 +1198,11 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
         return 0;
     }
 
+    if(a->in_stasis_ticks) {
+        // frozen HARs can't hit
+        return 0;
+    }
+
     // rehit mode is off
     if(!obj_b->gs->match_settings.rehit && b->state == STATE_FALLEN) {
         return 0;

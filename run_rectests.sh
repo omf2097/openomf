@@ -30,6 +30,7 @@ tests=(
     "Enemy should recover from air hits unless it is a KO:AIR-HIT.REC"
     "Only some moves should wallslam:STADIUM-WALL-SPLAT.REC"
     "Power Plant with hazards enabled has a lower wallslam tolerance:POWERPLANT-WALL-SPLAT.REC"
+    "HARs in stasis cannot hit opponent:STASISED-HARS-CANNOT-HIT.REC"
 )
 
 # Setup temp directory for outputs
