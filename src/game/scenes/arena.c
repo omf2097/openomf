@@ -37,7 +37,9 @@
 #include "utils/random.h"
 #include "video/video.h"
 
-#define TEXT_COLOR 0xC7
+// the pilot name, HAR, and score
+#define TEXT_HUD_COLOR 0xE7
+#define TEXT_HUD_SHADOW 0xF7
 
 #define HAR1_START_POS 110
 #define HAR2_START_POS 210
@@ -1276,7 +1278,8 @@ void arena_render_overlay(scene *scene) {
     text_settings tconf_players;
     text_defaults(&tconf_players);
     tconf_players.font = FONT_SMALL;
-    tconf_players.cforeground = TEXT_COLOR;
+    tconf_players.cforeground = TEXT_HUD_COLOR;
+    tconf_players.cshadow = TEXT_HUD_SHADOW;
     tconf_players.shadow = TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM;
     const font *fnt = fonts_get_font(tconf_players.font);
 
@@ -1356,7 +1359,8 @@ static void arena_debug(scene *scene) {
     text_settings tconf_debug;
     text_defaults(&tconf_debug);
     tconf_debug.font = FONT_SMALL;
-    tconf_debug.cforeground = TEXT_COLOR;
+    tconf_debug.cforeground = TEXT_HUD_COLOR;
+    tconf_debug.cshadow = TEXT_HUD_SHADOW;
 
     const font *fnt = fonts_get_font(tconf_debug.font);
 
