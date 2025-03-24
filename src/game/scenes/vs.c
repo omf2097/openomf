@@ -27,7 +27,6 @@ void cb_vs_destroy_object(object *parent, int id, void *userdata);
 typedef struct vs_local_t {
     int arena_select_obj_id;
     surface arena_select_bg;
-    int arena;
     char vs_str[128];
     dialog quit_dialog;
     dialog too_pathetic_dialog;
@@ -148,7 +147,7 @@ void vs_handle_action(scene *scene, int action) {
             case ACT_KICK:
             case ACT_PUNCH:
                 if(game_state_get_player(scene->gs, 1)->pilot) {
-                    game_state_set_next(scene->gs, SCENE_ARENA0 + local->arena);
+                    game_state_set_next(scene->gs, SCENE_ARENA0 + scene->gs->arena);
                 } else {
                     game_state_get_player(scene->gs, 1)->pilot = NULL;
                     if(scene->gs->fight_stats.challenger) {
@@ -162,23 +161,23 @@ void vs_handle_action(scene *scene, int action) {
             case ACT_UP:
             case ACT_LEFT:
                 if(game_state_get_player(scene->gs, 1)->selectable) {
-                    local->arena--;
-                    if(local->arena < 0) {
-                        local->arena = 4;
+                    scene->gs->arena--;
+                    if(scene->gs->arena < 0) {
+                        scene->gs->arena = 4;
                     }
                     object *arena_select = game_state_find_object(scene->gs, local->arena_select_obj_id);
-                    object_select_sprite(arena_select, local->arena);
+                    object_select_sprite(arena_select, scene->gs->arena);
                 }
                 break;
             case ACT_DOWN:
             case ACT_RIGHT:
                 if(game_state_get_player(scene->gs, 1)->selectable) {
-                    local->arena++;
-                    if(local->arena > 4) {
-                        local->arena = 0;
+                    scene->gs->arena++;
+                    if(scene->gs->arena > 4) {
+                        scene->gs->arena = 0;
                     }
                     object *arena_select = game_state_find_object(scene->gs, local->arena_select_obj_id);
-                    object_select_sprite(arena_select, local->arena);
+                    object_select_sprite(arena_select, scene->gs->arena);
                 }
                 break;
         }
@@ -366,11 +365,11 @@ void vs_render(scene *scene) {
         video_draw(&local->arena_select_bg, 55, 150);
 
         // arena name
-        text_render_mode(&tconf_green, TEXT_DEFAULT, 56 + 72, 152, (211 - 72), 8, lang_get(56 + local->arena));
+        text_render_mode(&tconf_green, TEXT_DEFAULT, 56 + 72, 152, (211 - 72), 8, lang_get(56 + scene->gs->arena));
 
         tconf_green.valign = TEXT_MIDDLE;
         // arena description
-        text_render_mode(&tconf_green, TEXT_DEFAULT, 56 + 72, 153, (211 - 72), 50, lang_get(66 + local->arena));
+        text_render_mode(&tconf_green, TEXT_DEFAULT, 56 + 72, 153, (211 - 72), 50, lang_get(66 + scene->gs->arena));
     } else if(player2->pilot && player2->pilot->pilot_id == PILOT_KREISSACK &&
               settings_get()->gameplay.difficulty < 2) {
         // kreissack, but not on Veteran or higher
@@ -566,13 +565,12 @@ int vs_create(scene *scene) {
 
     if(player2->selectable) {
         // player1 gets to choose, start at arena 0
-        local->arena = 0;
+        scene->gs->arena = 0;
     } else if(player2->pilot && player2->pilot->pilot_id == PILOT_KREISSACK) {
         // force arena 0 when fighting Kreissack in 1 player mode
-        local->arena = 0;
+        scene->gs->arena = 0;
     } else {
-        // pick a random arena for 1 player mode
-        local->arena = rand_int(5); // srand was done in melee
+        // 1 player mode cycles through the arenas
     }
 
     // Arena
@@ -582,7 +580,7 @@ int vs_create(scene *scene) {
         object_create(arena_select, scene->gs, vec2i_create(59, 155), vec2f_create(0, 0));
         local->arena_select_obj_id = arena_select->id;
         object_set_animation(arena_select, ani);
-        object_select_sprite(arena_select, local->arena);
+        object_select_sprite(arena_select, scene->gs->arena);
         object_set_halt(arena_select, 1);
         game_state_add_object(scene->gs, arena_select, RENDER_LAYER_TOP, 0, 0);
     }

@@ -72,6 +72,8 @@ typedef struct game_state_t {
     int screen_shake_horizontal;
     int screen_shake_vertical;
 
+    int arena;
+
     // For momentary game speed switches
     int speed_slowdown_previous;
     int speed_slowdown_time;

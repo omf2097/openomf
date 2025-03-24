@@ -397,6 +397,14 @@ static void arena_end(scene *sc) {
     } else {
         game_state_set_next(gs, SCENE_MELEE);
     }
+
+    if(is_singleplayer(scene->gs) && winner_player_id == 0) {
+        // cycle the maps in singleplayer
+        scene->gs->arena++;
+        if(scene->gs->arena > 4) {
+            scene->gs->arena = 0;
+        }
+    }
 }
 
 void arena_reset(scene *sc) {

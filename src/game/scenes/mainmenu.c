@@ -135,6 +135,7 @@ int mainmenu_create(scene *scene) {
         chr_score_reset(score, 1);
         chr_score_reset_wins(score);
     }
+    scene->gs->arena = rand_int(5);
     reconfigure_controller(scene->gs);
 
     // Set callbacks
