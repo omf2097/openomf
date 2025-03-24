@@ -396,6 +396,12 @@ void arena_reset(scene *sc) {
         object_set_group(number, GROUP_ANNOUNCEMENT);
         game_state_add_object(sc->gs, number, RENDER_LAYER_TOP, 0, 0);
     }
+
+    // When playing the Desert arena in Arcade mode, change
+    // the palette each round to simulate time passing.
+    if(sc->bk_data->file_id == 128 && (unsigned int)local->round < vector_size(&sc->bk_data->palettes)) {
+        vga_state_set_base_palette_from_range(bk_get_palette(sc->bk_data, local->round), 0x60, 0x60, 0x40);
+    }
 }
 
 int arena_is_over(scene *sc) {
@@ -1528,12 +1534,13 @@ int arena_create(scene *scene) {
     local->over = 0;
     local->winner = 0;
 
-    // If this is the desert arena, randomly pick a palette. This changes the time of day.
-    if(scene->bk_data->file_id == 128) {
+    // When playing the desert arena in Tournament mode,
+    // pick a random palette to change the time of day.
+    if(scene->bk_data->file_id == 128 && is_tournament(scene->gs)) {
         int pal_index = rand_int(vector_size(&scene->bk_data->palettes));
+        // 0 is selected by default, so nothing to do if we hit that.
         if(pal_index > 0) {
-            // 0 is selected by default, so nothing to do if we hit that.
-            vga_state_set_base_palette_from(bk_get_palette(scene->bk_data, pal_index));
+            vga_state_set_base_palette_from_range(bk_get_palette(scene->bk_data, pal_index), 0x60, 0x60, 0x40);
         }
     }
 
