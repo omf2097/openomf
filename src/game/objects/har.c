@@ -815,7 +815,7 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
         // Insanius 3/17/2025 - This is actually mostly correct, the OG checks if the string starts with the 'k' char
         const sd_script_frame *frame = sd_script_get_frame(&obj->animation_state.parser, 0);
         if(frame != NULL && sd_script_isset(frame, "k")) {
-            obj->vel.x = -5;
+            obj->vel.x = -5 * object_get_direction(obj);
             obj->vel.y = -8;
         }
     }
