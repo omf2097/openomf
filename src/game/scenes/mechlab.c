@@ -392,6 +392,10 @@ void mechlab_select_dashboard(scene *scene, dashboard_type type) {
             player1->pilot->money = 2000;
             // and a jaguar
             player1->pilot->har_id = 0;
+            // with no altpals yet
+            player1->pilot->color_1 = 16;
+            player1->pilot->color_2 = 16;
+            player1->pilot->color_3 = 16;
             object_free(local->mech);
             omf_free(local->mech);
             local->mech = omf_calloc(1, sizeof(object));
