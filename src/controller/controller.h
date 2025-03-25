@@ -63,6 +63,7 @@ struct controller_t {
     int (*poll_fun)(controller *ctrl, ctrl_event **ev);
     int (*rumble_fun)(controller *ctrl, float magnitude, int duration);
     int (*har_hook)(controller *ctrl, har_event event);
+    void (*rewind_fun)(controller *ctrl);
     void (*controller_hook)(controller *ctrl, int action);
     void (*free_fun)(controller *ctrl);
     void *data;
@@ -87,5 +88,6 @@ void controller_free_chain(ctrl_event *ev);
 void controller_free(controller *ctrl);
 void controller_set_repeat(controller *ctrl, int repeat);
 int controller_rumble(controller *ctrl, float magnitude, int duration);
+void controller_rewind(controller *ctrl);
 
 #endif // CONTROLLER_H
