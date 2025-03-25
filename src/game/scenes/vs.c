@@ -569,8 +569,8 @@ int vs_create(scene *scene) {
     } else if(player2->pilot && player2->pilot->pilot_id == PILOT_KREISSACK) {
         // force arena 0 when fighting Kreissack in 1 player mode
         scene->gs->arena = 0;
-    } else if(is_tournament(scene->gs)) {
-        // in tournament mode, pick random arenas
+    } else if(is_tournament(scene->gs) || is_demoplay(scene->gs)) {
+        // pick random arenas
         scene->gs->arena = rand_int(5);
     } else {
         // 1 player mode cycles through the arenas
