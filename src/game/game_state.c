@@ -1096,9 +1096,9 @@ void game_state_init_demo(game_state *gs) {
         // set proper color
         pilot pilot_info;
         pilot_get_info(&pilot_info, player->pilot->pilot_id);
-        sd_pilot_set_player_color(player->pilot, PRIMARY, pilot_info.colors[2]);
+        sd_pilot_set_player_color(player->pilot, PRIMARY, pilot_info.colors[0]);
         sd_pilot_set_player_color(player->pilot, SECONDARY, pilot_info.colors[1]);
-        sd_pilot_set_player_color(player->pilot, TERTIARY, pilot_info.colors[0]);
+        sd_pilot_set_player_color(player->pilot, TERTIARY, pilot_info.colors[2]);
 
         strncpy_or_truncate(player->pilot->name, lang_get(player->pilot->pilot_id + 20), sizeof(player->pilot->name));
         // TODO: lang: remove (the need for) newline stripping
