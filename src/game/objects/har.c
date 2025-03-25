@@ -2193,7 +2193,7 @@ int har_act(object *obj, int act_type) {
     }
 
     char last_input = get_last_input(h);
-    if(obj->pos.y < ARENA_FLOOR) {
+    if(object_is_airborne(obj)) {
         // airborne
 
         // HAR can have STATE_NONE here if they started an airborne attack from a crouch, like katana's corkscrew blade

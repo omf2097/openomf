@@ -807,7 +807,7 @@ void object_set_destroy_cb(object *obj, object_state_del_cb cbf, void *userdata)
 }
 
 int object_is_airborne(const object *obj) {
-    return obj->pos.y < ARENA_FLOOR;
+    return obj->pos.y < ARENA_FLOOR || obj->vel.y < 0;
 }
 
 /* Attaches one object to another. Positions are synced to this from the attached. */
