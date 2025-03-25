@@ -155,6 +155,8 @@ int controller_rumble(controller *ctrl, float magnitude, int duration) {
 }
 
 void controller_rewind(controller *ctrl) {
+    ctrl->current = 0;
+    ctrl->last = 0;
     if(ctrl->rewind_fun != NULL) {
         ctrl->rewind_fun(ctrl);
     }

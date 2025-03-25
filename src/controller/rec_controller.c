@@ -217,7 +217,9 @@ int rec_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
 
 void rec_controller_step_back(controller *ctrl) {
     wtf *data = ctrl->data;
-    if(data->id != 0 ) {
+    ctrl->last = ACT_STOP;
+    data->last_action = ACT_STOP;
+    if(data->id != 0) {
         return;
     }
     game_state *gs_bak = vector_back(&data->game_states);

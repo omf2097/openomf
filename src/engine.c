@@ -203,6 +203,7 @@ void engine_run(engine_init_flags *init_flags) {
                     if(e.key.keysym.sym == SDLK_BACKSPACE) {
                         if(game_state_get_player(gs, 0)->ctrl->type == CTRL_TYPE_REC) {
                             controller_rewind(game_state_get_player(gs, 0)->ctrl);
+                            controller_rewind(game_state_get_player(gs, 1)->ctrl);
                             if(gs->new_state) {
                                 // one of the controllers wants to replace the game state
                                 game_state *old_gs = gs;
@@ -212,7 +213,7 @@ void engine_run(engine_init_flags *init_flags) {
                                 omf_free(old_gs);
                             }
                             visual_debugger = 1;
-                            }
+                        }
                     }
                     if(e.key.keysym.sym == SDLK_F6) {
                         debugger_render = !debugger_render;
