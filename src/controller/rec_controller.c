@@ -34,102 +34,6 @@ void rec_controller_free(controller *ctrl) {
     }
 }
 
-int get_operand(rec_assertion_operand *op, controller *ctrl) {
-    if(op->is_literal) {
-        return op->value.literal;
-    } else {
-        object *obj = game_state_find_object(
-            ctrl->gs, game_player_get_har_obj_id(game_state_get_player(ctrl->gs, op->value.attr.har_id)));
-        har *har = object_get_userdata(obj);
-        switch(op->value.attr.attribute) {
-            case ATTR_X_POS:
-                return obj->pos.x;
-            case ATTR_Y_POS:
-                return obj->pos.y;
-            case ATTR_X_VEL:
-                return obj->vel.x;
-            case ATTR_Y_VEL:
-                return obj->vel.y;
-            case ATTR_STATE_ID:
-                return har->state;
-            case ATTR_ANIMATION_ID:
-                return obj->cur_animation->id;
-            case ATTR_HEALTH:
-                return har->health;
-            case ATTR_STAMINA:
-                return har->endurance;
-            case ATTR_OPPONENT_DISTANCE: {
-                object *obj_opp = game_state_find_object(ctrl->gs, game_player_get_har_obj_id(game_state_get_player(
-                                                                       ctrl->gs, abs(op->value.attr.har_id - 1))));
-                return fabsf(obj->pos.x - obj_opp->pos.x);
-            }
-            case ATTR_DIRECTION:
-                return obj->direction;
-            default:
-                abort();
-        }
-    }
-}
-
-void check_assertion(rec_assertion *ass, controller *ctrl) {
-    int16_t operand1 = get_operand(&ass->operand1, ctrl);
-    int16_t operand2 = get_operand(&ass->operand2, ctrl);
-
-    log_debug("operand 1 %d operand 2 %d", operand1, operand2);
-
-    switch(ass->op) {
-        case OP_EQ:
-            if(operand1 != operand2) {
-                log_error("%d != %d", operand1, operand2);
-                abort();
-            }
-            break;
-        case OP_LT:
-            if(operand1 >= operand2) {
-                log_error("%d !< %d", operand1, operand2);
-                abort();
-            }
-            break;
-        case OP_GT:
-            if(operand1 <= operand2) {
-                log_error("%d !> %d", operand1, operand2);
-                abort();
-            }
-            break;
-        case OP_SET: {
-            object *obj = game_state_find_object(
-                ctrl->gs, game_player_get_har_obj_id(game_state_get_player(ctrl->gs, ass->operand1.value.attr.har_id)));
-            har *har = object_get_userdata(obj);
-
-            switch(ass->operand1.value.attr.attribute) {
-                case ATTR_X_POS:
-                    obj->pos.x = operand2;
-                    return;
-                case ATTR_Y_POS:
-                    obj->pos.y = operand2;
-                    return;
-                case ATTR_X_VEL:
-                    obj->vel.x = operand2;
-                    return;
-                case ATTR_Y_VEL:
-                    obj->vel.y = operand2;
-                    return;
-                case ATTR_HEALTH:
-                    har->health = operand2;
-                    return;
-                case ATTR_STAMINA:
-                    har->endurance = operand2;
-                    return;
-                default:
-                    log_error("unsupported set");
-                    abort();
-            }
-        }
-        default:
-            abort();
-    }
-}
-
 int rec_controller_poll(controller *ctrl, ctrl_event **ev) {
     uint32_t ticks = ctrl->gs->int_tick;
     rec_controller_data *data = ctrl->data;
@@ -154,7 +58,9 @@ int rec_controller_poll(controller *ctrl, ctrl_event **ev) {
                 rec_assertion ass;
                 if(parse_assertion(buf, &ass)) {
                     print_assertion(&ass);
-                    check_assertion(&ass, ctrl);
+                    if(game_state_check_assertion(&ass, ctrl->gs)) {
+                        abort();
+                    }
                 }
             } else if(move->lookup_id == 2) {
                 found_action = true;

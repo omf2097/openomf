@@ -184,7 +184,7 @@ void engine_run(engine_init_flags *init_flags) {
                         save_palette_shot();
                     }
                     if(e.key.keysym.sym == SDLK_F3) {
-                        if(init_flags->playback != 1 && gs->rec) {
+                        if(gs->rec) {
                             save_rec(gs);
                         }
                     }
@@ -197,10 +197,10 @@ void engine_run(engine_init_flags *init_flags) {
                     if(e.key.keysym.sym == SDLK_F5) {
                         visual_debugger = !visual_debugger;
                     }
-                    if(e.key.keysym.sym == SDLK_SPACE) {
+                    if(!console_window_is_open() && e.key.keysym.sym == SDLK_SPACE) {
                         debugger_proceed = 1;
                     }
-                    if(e.key.keysym.sym == SDLK_BACKSPACE) {
+                    if(!console_window_is_open() && e.key.keysym.sym == SDLK_BACKSPACE) {
                         if(game_state_get_player(gs, 0)->ctrl->type == CTRL_TYPE_REC) {
                             controller_rewind(game_state_get_player(gs, 0)->ctrl);
                             controller_rewind(game_state_get_player(gs, 1)->ctrl);
@@ -300,6 +300,8 @@ void engine_run(engine_init_flags *init_flags) {
             dynamic_wait += 20;
             static_wait += 20;
             debugger_proceed = 0;
+        } else {
+            console_tick(gs);
         }
 
         // drop ticks if it's been too long since they were due

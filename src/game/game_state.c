@@ -72,6 +72,103 @@ typedef struct {
     int playback_id;
 } playing_sound;
 
+int game_state_get_assertion_operand(rec_assertion_operand *op, game_state *gs) {
+    if(op->is_literal) {
+        return op->value.literal;
+    } else {
+        object *obj =
+            game_state_find_object(gs, game_player_get_har_obj_id(game_state_get_player(gs, op->value.attr.har_id)));
+        har *har = object_get_userdata(obj);
+        switch(op->value.attr.attribute) {
+            case ATTR_X_POS:
+                return obj->pos.x;
+            case ATTR_Y_POS:
+                return obj->pos.y;
+            case ATTR_X_VEL:
+                return obj->vel.x;
+            case ATTR_Y_VEL:
+                return obj->vel.y;
+            case ATTR_STATE_ID:
+                return har->state;
+            case ATTR_ANIMATION_ID:
+                return obj->cur_animation->id;
+            case ATTR_HEALTH:
+                return har->health;
+            case ATTR_STAMINA:
+                return har->endurance;
+            case ATTR_OPPONENT_DISTANCE: {
+                object *obj_opp = game_state_find_object(
+                    gs, game_player_get_har_obj_id(game_state_get_player(gs, abs(op->value.attr.har_id - 1))));
+                return fabsf(obj->pos.x - obj_opp->pos.x);
+                case ATTR_DIRECTION:
+                    return object_get_direction(obj);
+            }
+            default:
+                abort();
+        }
+    }
+}
+
+int game_state_check_assertion(rec_assertion *ass, game_state *gs) {
+    int16_t operand1 = game_state_get_assertion_operand(&ass->operand1, gs);
+    int16_t operand2 = game_state_get_assertion_operand(&ass->operand2, gs);
+
+    log_debug("operand 1 %d operand 2 %d", operand1, operand2);
+
+    switch(ass->op) {
+        case OP_EQ:
+            if(operand1 != operand2) {
+                log_error("%d != %d", operand1, operand2);
+                return 1;
+            }
+            break;
+        case OP_LT:
+            if(operand1 >= operand2) {
+                log_error("%d !< %d", operand1, operand2);
+                return 1;
+            }
+            break;
+        case OP_GT:
+            if(operand1 <= operand2) {
+                log_error("%d !> %d", operand1, operand2);
+                return 1;
+            }
+            break;
+        case OP_SET: {
+            object *obj = game_state_find_object(
+                gs, game_player_get_har_obj_id(game_state_get_player(gs, ass->operand1.value.attr.har_id)));
+            har *har = object_get_userdata(obj);
+
+            switch(ass->operand1.value.attr.attribute) {
+                case ATTR_X_POS:
+                    obj->pos.x = operand2;
+                    return 0;
+                case ATTR_Y_POS:
+                    obj->pos.y = operand2;
+                    return 0;
+                case ATTR_X_VEL:
+                    obj->vel.x = operand2;
+                    return 0;
+                case ATTR_Y_VEL:
+                    obj->vel.y = operand2;
+                    return 0;
+                case ATTR_HEALTH:
+                    har->health = operand2;
+                    return 0;
+                case ATTR_STAMINA:
+                    har->endurance = operand2;
+                    return 0;
+                default:
+                    log_error("unsupported set");
+                    return 1;
+            }
+        }
+        default:
+            return 1;
+    }
+    return 0;
+}
+
 // reset the match settings to use all the settings. This is essentially 1/2 player mode & demo mode
 void game_state_match_settings_reset(game_state *gs) {
     gs->match_settings.throw_range = settings_get()->advanced.throw_range;

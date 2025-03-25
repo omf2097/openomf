@@ -162,57 +162,6 @@ rec_assertion_operator rec_assertion_get_operator(const char *key) {
     return OP_INVALID;
 }
 
-rec_har_attr rec_assertion_get_har_attr(const char *key) {
-    if(strcmp(key, "xpos") == 0)
-        return ATTR_X_POS;
-    if(strcmp(key, "ypos") == 0)
-        return ATTR_Y_POS;
-    if(strcmp(key, "xvel") == 0)
-        return ATTR_X_VEL;
-    if(strcmp(key, "yvel") == 0)
-        return ATTR_Y_VEL;
-    if(strcmp(key, "state") == 0)
-        return ATTR_STATE_ID;
-    if(strcmp(key, "anim") == 0)
-        return ATTR_ANIMATION_ID;
-    if(strcmp(key, "health") == 0)
-        return ATTR_HEALTH;
-    if(strcmp(key, "stamina") == 0)
-        return ATTR_STAMINA;
-    if(strcmp(key, "opp_dist") == 0)
-        return ATTR_OPPONENT_DISTANCE;
-    if(strcmp(key, "dir") == 0)
-        return ATTR_DIRECTION;
-
-    return ATTR_INVALID;
-}
-
-int rec_assertion_get_operand(rec_assertion_operand *op, const char *operand, const char *value) {
-    if(strcmp(operand, "har1") == 0) {
-        op->is_literal = false;
-        op->value.attr.har_id = 0;
-        op->value.attr.attribute = rec_assertion_get_har_attr(value);
-        if(op->value.attr.attribute == ATTR_INVALID) {
-            return 1;
-        }
-        return 0;
-    } else if(strcmp(operand, "har2") == 0) {
-        op->is_literal = false;
-        op->value.attr.har_id = 1;
-        op->value.attr.attribute = rec_assertion_get_har_attr(value);
-        if(op->value.attr.attribute == ATTR_INVALID) {
-            return 1;
-        }
-        return 0;
-    } else if(strcmp(operand, "literal") == 0) {
-        op->is_literal = true;
-        op->value.literal = atoi(value);
-        return 0;
-    }
-
-    return 1;
-}
-
 void rec_entry_set_key(sd_rec_file *rec, int entry_id, const char *key, const char *value) {
     unsigned int action = atoi(value);
     switch(rec_entry_key_get_id(key)) {
