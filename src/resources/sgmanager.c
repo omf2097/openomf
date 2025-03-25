@@ -134,6 +134,11 @@ int sg_load(sd_chr_file *chr, const char *pilotname) {
         return ret;
     }
 
+    // Load colors from other files
+    sd_pilot_set_player_color(&chr->pilot, PRIMARY, chr->pilot.color_1);
+    sd_pilot_set_player_color(&chr->pilot, SECONDARY, chr->pilot.color_2);
+    sd_pilot_set_player_color(&chr->pilot, TERTIARY, chr->pilot.color_3);
+
     return SD_SUCCESS;
 }
 
