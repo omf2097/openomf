@@ -1783,7 +1783,7 @@ void har_tick(object *obj) {
     }
 
     // Endurance restore
-    if(h->endurance < h->endurance_max &&
+    if(h->health > 0 && h->endurance < h->endurance_max &&
        !(h->executing_move || h->state == STATE_RECOIL || h->state == STATE_STUNNED || h->state == STATE_FALLEN ||
          h->state == STATE_STANDING_UP || h->state == STATE_DEFEAT)) {
         h->endurance += 0.0025f * h->endurance_max; // made up but plausible number
