@@ -38,8 +38,10 @@ static void opus_render(void *userdata, char *stream, int len) {
             }
         }
         rb_read(&context->buffer, stream, len);
-        for(int i = 0; i < len; i++) {
-            stream[i] *= context->volume;
+        opus_int16 *samples = (opus_int16 *)stream;
+        for(int i = 0; i < len / 2; i++) {
+            // Correct volume per signed 16bit sample.
+            samples[i] *= context->volume;
         }
     }
 }
