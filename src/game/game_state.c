@@ -180,9 +180,9 @@ int game_state_create(game_state *gs, engine_init_flags *init_flags) {
             omf_free(gs->players[i]->pilot);
             gs->players[i]->pilot = &gs->rec->pilots[i].info;
             // this function alters the palette
-            sd_pilot_set_player_color(gs->players[i]->pilot, PRIMARY, gs->rec->pilots[i].info.color_3);
+            sd_pilot_set_player_color(gs->players[i]->pilot, PRIMARY, gs->rec->pilots[i].info.color_1);
             sd_pilot_set_player_color(gs->players[i]->pilot, SECONDARY, gs->rec->pilots[i].info.color_2);
-            sd_pilot_set_player_color(gs->players[i]->pilot, TERTIARY, gs->rec->pilots[i].info.color_1);
+            sd_pilot_set_player_color(gs->players[i]->pilot, TERTIARY, gs->rec->pilots[i].info.color_3);
         }
 
         gs->match_settings.throw_range = gs->rec->throw_range;
