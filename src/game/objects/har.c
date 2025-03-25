@@ -272,6 +272,9 @@ void har_set_ani(object *obj, int animation_id, int repeat) {
         object_set_delay(obj, h->delay);
     }
 
+    // we shouldn't be idling while defeated
+    assert(!((animation_id == ANIM_IDLE || animation_id == ANIM_CROUCHING) && h->health <= 0));
+
     if(move->category == CAT_JUMPING) {
         h->state = STATE_JUMPING;
     }
