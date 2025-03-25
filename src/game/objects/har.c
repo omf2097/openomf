@@ -1688,6 +1688,9 @@ void har_tick(object *obj) {
                 object *other_har = game_state_find_object(obj->gs, other_player->har_obj_id);
                 har_screencaps_capture(&other_player->screencaps, other_har, obj, SCREENCAP_BLOW);
 
+                // empty endurance meter
+                h->endurance = 0;
+
                 // Slow down game more for last shot
                 log_debug("Slowdown: Slowing from %d to %d.", game_state_get_speed(obj->gs),
                           h->health == 0 ? game_state_get_speed(obj->gs) - 10 : game_state_get_speed(obj->gs) - 6);
