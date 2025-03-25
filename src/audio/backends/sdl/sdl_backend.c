@@ -12,6 +12,8 @@
 #include <SDL.h>
 #include <SDL_mixer.h>
 
+static_assert(SDL_MIXER_VERSION_ATLEAST(2, 0, 4), "SDL_mixer version should be 2.0.4 or later");
+
 #define CHANNEL_MAX 8
 
 static const audio_sample_rate supported_sample_rates[] = {
