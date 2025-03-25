@@ -201,6 +201,9 @@ int game_state_create(game_state *gs, engine_init_flags *init_flags) {
         gs->match_settings.fight_mode = gs->rec->hyper_mode;
         gs->match_settings.sim = false;
 
+        game_player_set_selectable(game_state_get_player(gs, 0), gs->rec->p1_controller != REC_CONTROLLER_AI);
+        game_player_set_selectable(game_state_get_player(gs, 1), gs->rec->p2_controller != REC_CONTROLLER_AI);
+
         _setup_rec_controller(gs, 0, gs->rec);
         _setup_rec_controller(gs, 1, gs->rec);
         if(arena_create(gs->sc)) {
