@@ -2,6 +2,7 @@
 #define MISCMATH_H
 
 #include <limits.h>
+#include <math.h>
 
 #define MATH_PI 3.14159265f
 
