@@ -1566,14 +1566,20 @@ int arena_create(scene *scene) {
     local->over = 0;
     local->winner = 0;
 
-    // When playing the desert arena in Tournament mode,
-    // pick a random palette to change the time of day.
-    if(scene->bk_data->file_id == 128 && is_tournament(scene->gs)) {
-        int pal_index = rand_int(vector_size(&scene->bk_data->palettes));
-        // 0 is selected by default, so nothing to do if we hit that.
-        if(pal_index > 0) {
-            vga_state_set_base_palette_from_range(bk_get_palette(scene->bk_data, pal_index), 0x60, 0x60, 0x40);
-        }
+    // TODO: Fire & Ice will need to set the arena palette
+    unsigned pal_index = 0;
+    if(scene->gs->init_flags->playback == 1) {
+        // use palette index from rec
+        pal_index = scene->gs->rec->arena_palette;
+    } else if(scene->bk_data->file_id == 128 && is_tournament(scene->gs)) {
+        // When playing the desert arena in Tournament mode,
+        // pick a random palette to change the time of day.
+        pal_index = rand_int(vector_size(&scene->bk_data->palettes));
+    }
+
+    // 0 is selected by default, so nothing to do if we hit that.
+    if(pal_index > 0 && pal_index < vector_size(&scene->bk_data->palettes)) {
+        vga_state_set_base_palette_from_range(bk_get_palette(scene->bk_data, pal_index), 0x60, 0x60, 0x40);
     }
 
     // Initial har data
@@ -1854,6 +1860,7 @@ int arena_create(scene *scene) {
             scene->gs->rec->scores[i] = game_player_get_score(player)->score;
         }
         scene->gs->rec->arena_id = scene->id - SCENE_ARENA0;
+        scene->gs->rec->arena_palette = pal_index;
         scene->gs->rec->game_mode = is_tournament(scene->gs) ? REC_GAMEMODE_TOURNAMENT : REC_GAMEMODE_ARCADE;
 
         // player 1's controller

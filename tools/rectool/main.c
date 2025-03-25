@@ -65,7 +65,7 @@ void print_rec_root_info(sd_rec_file *rec) {
         printf("  - Score A:      %d\n", rec->scores[0]);
         printf("  - Score B:      %d\n", rec->scores[1]);
         printf("  - Unknown A:    %d\n", rec->unknown_a);
-        printf("  - Unknown B:    %d\n", rec->unknown_b);
+        printf("  - Arena Pal.:   %d\n", rec->arena_palette);
         printf("  - Game Mode:    %s\n", game_mode_text[rec->game_mode]);
         printf("  - Throw Range:  %d\n", rec->throw_range);
         printf("  - Hit Pause:    %d\n", rec->hit_pause);
