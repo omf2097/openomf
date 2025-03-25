@@ -6,6 +6,8 @@
 
 #include <xmp.h>
 
+static_assert(XMP_VERCODE >= 0x040500, "libxmp version should be 4.5.0 or later");
+
 static const music_resampler supported_resamplers[] = {
     {XMP_INTERP_NEAREST, 0, "Nearest"},
     {XMP_INTERP_LINEAR,  1, "Linear" },
