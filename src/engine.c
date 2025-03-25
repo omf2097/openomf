@@ -212,14 +212,7 @@ void engine_run(engine_init_flags *init_flags) {
                                 omf_free(old_gs);
                             }
                             visual_debugger = 1;
-                            video_render_prepare();
-                            game_state_render(gs);
-                            if(debugger_render) {
-                                game_state_debug(gs);
                             }
-                            console_render();
-                            video_render_finish();
-                        }
                     }
                     if(e.key.keysym.sym == SDLK_F6) {
                         debugger_render = !debugger_render;

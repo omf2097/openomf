@@ -203,7 +203,7 @@ int rec_controller_poll(controller *ctrl, ctrl_event **ev) {
 
 int rec_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
     wtf *data = ctrl->data;
-    if(ticks0 % 10 == 0) {
+    if(data->id == 0 && ticks0 % 10 == 0) {
         if(scene_is_arena(game_state_get_scene(ctrl->gs)) &&
            game_state_find_object(ctrl->gs, game_player_get_har_obj_id(game_state_get_player(ctrl->gs, 1)))) {
             game_state *gs_bak = vector_append_ptr(&data->game_states);
@@ -215,6 +215,9 @@ int rec_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
 
 void rec_controller_step_back(controller *ctrl) {
     wtf *data = ctrl->data;
+    if(data->id != 0 ) {
+        return;
+    }
     game_state *gs_bak = vector_back(&data->game_states);
     while(vector_size(&data->game_states) > 1 && gs_bak->int_tick >= ctrl->gs->int_tick) {
         game_state_clone_free(gs_bak);
@@ -243,6 +246,7 @@ void rec_controller_create(controller *ctrl, int player, sd_rec_file *rec) {
     wtf *data = omf_calloc(1, sizeof(wtf));
     data->last_tick = 0;
     data->last_action = ACT_STOP;
+    data->id = player;
     hashmap_create(&data->tick_lookup);
     vector_create(&data->game_states, sizeof(game_state));
     uint32_t last_tick = 0;
