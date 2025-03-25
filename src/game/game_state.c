@@ -1162,8 +1162,10 @@ void game_state_free(game_state **_gs) {
     vector_free(&gs->sounds);
 
     // Free scene
-    scene_free(gs->sc);
-    omf_free(gs->sc);
+    if(gs->sc) {
+        scene_free(gs->sc);
+        omf_free(gs->sc);
+    }
 
     if(gs->rec) {
         sd_rec_free(gs->rec);
