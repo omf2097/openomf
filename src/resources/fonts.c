@@ -177,6 +177,25 @@ error_4:
     return false;
 }
 
+void fonts_set_font(font *new_font, font_size font_sz) {
+    switch(font_sz) {
+        case FONT_BIG:
+            font_large = *new_font;
+            break;
+        case FONT_SMALL:
+            font_small = *new_font;
+            break;
+        case FONT_NET1:
+            font_net1 = *new_font;
+            break;
+        case FONT_NET2:
+            font_net2 = *new_font;
+            break;
+        default:
+            return;
+    }
+}
+
 const font *fonts_get_font(font_size font) {
     switch(font) {
         case FONT_BIG:
