@@ -74,9 +74,9 @@ void sd_pilot_load_player_from_mem(memreader *mr, sd_pilot *pilot) {
     pilot->offense = memread_uword(mr);
     pilot->defense = memread_uword(mr);
     pilot->money = memread_dword(mr);
-    sd_pilot_set_player_color(pilot, PRIMARY, memread_ubyte(mr));
-    sd_pilot_set_player_color(pilot, SECONDARY, memread_ubyte(mr));
     sd_pilot_set_player_color(pilot, TERTIARY, memread_ubyte(mr));
+    sd_pilot_set_player_color(pilot, SECONDARY, memread_ubyte(mr));
+    sd_pilot_set_player_color(pilot, PRIMARY, memread_ubyte(mr));
 }
 
 void sd_pilot_load_from_mem(memreader *mr, sd_pilot *pilot) {
@@ -207,9 +207,9 @@ void sd_pilot_save_player_to_mem(memwriter *w, const sd_pilot *pilot) {
     memwrite_uword(w, pilot->offense);
     memwrite_uword(w, pilot->defense);
     memwrite_dword(w, pilot->money);
-    memwrite_ubyte(w, pilot->color_1);
-    memwrite_ubyte(w, pilot->color_2);
     memwrite_ubyte(w, pilot->color_3);
+    memwrite_ubyte(w, pilot->color_2);
+    memwrite_ubyte(w, pilot->color_1);
 }
 
 void sd_pilot_save_to_mem(memwriter *w, const sd_pilot *pilot) {
@@ -321,14 +321,14 @@ int sd_pilot_save(sd_writer *fw, const sd_pilot *pilot) {
 
 void sd_pilot_set_player_color(sd_pilot *pilot, player_color index, uint8_t color) {
     switch(index) {
-        case PRIMARY:
-            pilot->color_1 = color;
+        case TERTIARY:
+            pilot->color_3 = color;
             break;
         case SECONDARY:
             pilot->color_2 = color;
             break;
-        case TERTIARY:
-            pilot->color_3 = color;
+        case PRIMARY:
+            pilot->color_1 = color;
             break;
     }
     if(color != 255 && color != 16) {
