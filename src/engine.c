@@ -200,6 +200,27 @@ void engine_run(engine_init_flags *init_flags) {
                     if(e.key.keysym.sym == SDLK_SPACE) {
                         debugger_proceed = 1;
                     }
+                    if(e.key.keysym.sym == SDLK_BACKSPACE) {
+                        if(game_state_get_player(gs, 0)->ctrl->type == CTRL_TYPE_REC) {
+                            controller_rewind(game_state_get_player(gs, 0)->ctrl);
+                            if(gs->new_state) {
+                                // one of the controllers wants to replace the game state
+                                game_state *old_gs = gs;
+                                game_state *new_gs = gs->new_state;
+                                gs = new_gs;
+                                game_state_clone_free(old_gs);
+                                omf_free(old_gs);
+                            }
+                            visual_debugger = 1;
+                            video_render_prepare();
+                            game_state_render(gs);
+                            if(debugger_render) {
+                                game_state_debug(gs);
+                            }
+                            console_render();
+                            video_render_finish();
+                        }
+                    }
                     if(e.key.keysym.sym == SDLK_F6) {
                         debugger_render = !debugger_render;
                     }
