@@ -184,7 +184,7 @@ void engine_run(engine_init_flags *init_flags) {
                         save_palette_shot();
                     }
                     if(e.key.keysym.sym == SDLK_F3) {
-                        if(init_flags->playback != 1) {
+                        if(init_flags->playback != 1 && gs->rec) {
                             save_rec(gs);
                         }
                     }
