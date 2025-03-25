@@ -1,6 +1,7 @@
 #ifndef GAME_STATE_H
 #define GAME_STATE_H
 
+#include "formats/rec_assertion.h"
 #include "game/game_state_type.h"
 #include "game/utils/serial.h"
 #include "utils/random.h"
