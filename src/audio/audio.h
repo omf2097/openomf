@@ -91,11 +91,6 @@ void audio_set_sound_volume(float volume);
 unsigned audio_get_sample_rates(const audio_sample_rate **sample_rates);
 
 /**
- * Get supported music resamplers list
- */
-unsigned audio_get_resamplers(const audio_resampler **resamplers);
-
-/**
  * Calculate sample rate after applying a pitch
  */
 int pitched_samplerate(float pitch);

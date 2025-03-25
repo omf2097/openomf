@@ -14,7 +14,9 @@
 #include "resources/pathmanager.h"
 #include "utils/allocator.h"
 #include "utils/c_string_util.h"
+#include "utils/crash.h"
 #include "utils/log.h"
+#include "utils/str.h"
 
 // Files
 static const char *logfile_name = "openomf.log";
@@ -69,21 +71,22 @@ static void resource_path_build(int path_id, const char *path, const char *ext) 
     }
 }
 
+static bool file_exists(const char *test) {
+#if defined(_WIN32) || defined(WIN32)
+    return PathFileExistsA(test) == TRUE;
+#else
+    return access(test, F_OK) == 0;
+#endif
+}
+
 // Makes sure resource file exists
 int pm_validate_resources(void) {
     for(int i = 0; i < NUMBER_OF_RESOURCES; i++) {
         const char *testfile = pm_get_resource_path(i);
-#if defined(_WIN32) || defined(WIN32)
-        if(PathFileExistsA(testfile) == FALSE) {
+        if(!file_exists(testfile)) {
             snprintf(errormessage, 128, "Missing file %s.", testfile);
             return 1;
         }
-#else
-        if(access(testfile, F_OK) == -1) {
-            snprintf(errormessage, 128, "Missing file %s.", testfile);
-            return 1;
-        }
-#endif
     }
     return 0;
 }
@@ -299,6 +302,30 @@ const char *pm_get_resource_path(unsigned int resource_id) {
         return NULL;
     }
     return resource_paths[resource_id];
+}
+
+void pm_get_music_path(char *dst, size_t size, music_file_type *type, unsigned int resource_id) {
+    assert(is_music(resource_id));
+    size_t ext_pos;
+    str path;
+    str_from_c(&path, pm_get_resource_path(resource_id));
+    if(!str_last_of(&path, '.', &ext_pos)) {
+        crash("Unable to find filename extension for music file!");
+    }
+    str alt;
+    str_from_slice(&alt, &path, 0, ext_pos);
+    str_append_c(&alt, ".ogg");
+    if(file_exists(str_c(&alt))) {
+        log_debug("Found alternate music file %s", str_c(&alt));
+        snprintf(dst, size, "%s", str_c(&alt));
+        *type = MUSIC_FILE_TYPE_OGG;
+    } else {
+        log_debug("Found original music file %s", str_c(&path));
+        snprintf(dst, size, "%s", str_c(&path));
+        *type = MUSIC_FILE_TYPE_PSM;
+    }
+    str_free(&alt);
+    str_free(&path);
 }
 
 const char *pm_get_local_path_type_name(unsigned int path_id) {

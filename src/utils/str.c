@@ -49,7 +49,7 @@
 // Use instead: str_issmall() or str_size().
 static inline uint8_t str_smallspare(str const *s) {
     uint8_t spare;
-    memcpy(&spare, &s->small[STR_STACK_SIZE - 1], 1);
+    memcpy(&spare, &s->ssmall[STR_STACK_SIZE - 1], 1);
     return spare;
 }
 
@@ -92,7 +92,7 @@ static inline void str_smallsetsize(str *s, uint8_t size) {
 #else
     // no-op, flag bits are MSB on little-endian; and are already zeroed.
 #endif
-    memcpy(&s->small[STR_STACK_SIZE - 1], &spare, 1);
+    memcpy(&s->ssmall[STR_STACK_SIZE - 1], &spare, 1);
 }
 
 static bool str_issmall(str const *s) {
@@ -119,11 +119,11 @@ size_t str_size(str const *s) {
 }
 
 static inline char *str_ptr(str *s) {
-    return str_issmall(s) ? s->small : s->normal.data;
+    return str_issmall(s) ? s->ssmall : s->normal.data;
 }
 
 char const *str_c(str const *s) {
-    return str_issmall(s) ? s->small : s->normal.data;
+    return str_issmall(s) ? s->ssmall : s->normal.data;
 }
 
 static inline void str_zero(str *s) {
@@ -147,11 +147,11 @@ static char *str_resize_buffer(str *s, size_t size) {
     bool is_small = str_issmall(s);
     if(become_small && is_small) {
         str_smallsetsize(s, size);
-        return s->small;
+        return s->ssmall;
     } else if(become_small && !is_small) {
         omf_free(s->normal.data);
         str_smallsetsize(s, size);
-        return s->small;
+        return s->ssmall;
     } else if(!become_small && is_small) {
         size_t capacity = str_roundupcapacity(size_with_zero);
         str_normalsetcapacity(s, capacity);
@@ -178,14 +178,14 @@ static void str_resize_and_copy_buffer(str *s, size_t size) {
         str_smallsetsize(s, size);
     } else if(become_small && !is_small) {
         char *old_data = s->normal.data;
-        memcpy(s->small, old_data, size);
+        memcpy(s->ssmall, old_data, size);
         str_smallsetsize(s, size);
         omf_free(old_data);
     } else if(!become_small && is_small) {
         // can't write to s until we've copied s->small to the heap
         size_t capacity = str_roundupcapacity(size_with_zero);
         char *data = omf_malloc(capacity);
-        memcpy(data, s->small, STR_STACK_SIZE);
+        memcpy(data, s->ssmall, STR_STACK_SIZE);
         s->normal.data = data;
         str_normalsetcapacity(s, capacity);
         s->normal.size = size;

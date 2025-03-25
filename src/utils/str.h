@@ -13,7 +13,7 @@ struct internal_str_normal {
 
 typedef union str {
     // do not access the internals of this union, use the methods.
-    char small[sizeof(struct internal_str_normal)];
+    char ssmall[sizeof(struct internal_str_normal)];
     struct internal_str_normal normal;
 } str;
 

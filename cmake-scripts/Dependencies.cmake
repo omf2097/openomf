@@ -116,6 +116,18 @@ if(USE_LIBPNG)
     target_compile_definitions(openomf::png INTERFACE PNG_FOUND)
 endif()
 
+if(USE_OPUSFILE)
+    find_package(OpusFile REQUIRED)
+    add_library(openomf::opusfile INTERFACE IMPORTED)
+    target_compile_definitions(openomf::opusfile INTERFACE OPUSFILE_FOUND)
+    if(VCPKG_TOOLCHAIN)
+        target_link_libraries(openomf::opusfile INTERFACE OpusFile::opusfile)
+    else()
+        target_link_libraries(openomf::opusfile INTERFACE ${OPUSFILE_LIBRARY})
+        target_include_directories(openomf::opusfile INTERFACE ${OPUSFILE_INCLUDE_DIR})
+    endif()
+endif()
+
 find_package(Epoxy REQUIRED)
 add_library(openomf::epoxy UNKNOWN IMPORTED)
 set_target_properties(openomf::epoxy PROPERTIES
