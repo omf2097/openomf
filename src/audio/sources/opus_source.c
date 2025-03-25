@@ -26,7 +26,7 @@ static void opus_render(void *userdata, char *stream, int len) {
         // Opus will return us small buffers of data. Read enough to make sure we can cover the requested
         // length in all cases.
         while(rb_length(&context->buffer) < MAX_FETCH) {
-            ret = op_read_stereo(context->handle, (opus_int16*)context->temp, BUF_READ);
+            ret = op_read_stereo(context->handle, (opus_int16 *)context->temp, BUF_READ);
             if(ret == 0) {
                 // Stream ended, seek back to 0 offset and begin again.
                 op_raw_seek(context->handle, 0);
