@@ -2384,6 +2384,10 @@ void har_finished(object *obj) {
             // finished an attack animation in the air
             h->state = STATE_JUMPING;
             har_set_ani(obj, ANIM_JUMPING, 0);
+        } else if(h->health <= 0) {
+            // player has no health and is grounded.. so they must be defeated.
+            h->state = STATE_DEFEAT;
+            har_set_ani(obj, h->custom_defeat_animation ? h->custom_defeat_animation : ANIM_DEFEAT, 0);
         } else {
             // the HAR is on the ground, so clear the air attack tracker
             h->air_attacked = 0;
