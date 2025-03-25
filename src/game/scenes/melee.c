@@ -334,9 +334,9 @@ void handle_action(scene *scene, int player, int action) {
                     player1->pilot->power = p_a.power;
                     player1->pilot->agility = p_a.agility;
                     player1->pilot->sex = p_a.sex;
-                    sd_pilot_set_player_color(player1->pilot, TERTIARY, p_a.colors[0]);
+                    sd_pilot_set_player_color(player1->pilot, PRIMARY, p_a.colors[0]);
                     sd_pilot_set_player_color(player1->pilot, SECONDARY, p_a.colors[1]);
-                    sd_pilot_set_player_color(player1->pilot, PRIMARY, p_a.colors[2]);
+                    sd_pilot_set_player_color(player1->pilot, TERTIARY, p_a.colors[2]);
                     palette_load_player_colors(&player1->pilot->palette, 0);
 
                     if(player2->selectable) {
@@ -347,9 +347,9 @@ void handle_action(scene *scene, int player, int action) {
                         player2->pilot->power = p_a.power;
                         player2->pilot->agility = p_a.agility;
                         player2->pilot->sex = p_a.sex;
-                        sd_pilot_set_player_color(player2->pilot, TERTIARY, p_a.colors[0]);
+                        sd_pilot_set_player_color(player2->pilot, PRIMARY, p_a.colors[0]);
                         sd_pilot_set_player_color(player2->pilot, SECONDARY, p_a.colors[1]);
-                        sd_pilot_set_player_color(player2->pilot, PRIMARY, p_a.colors[2]);
+                        sd_pilot_set_player_color(player2->pilot, TERTIARY, p_a.colors[2]);
                         palette_load_player_colors(&player2->pilot->palette, 1);
                     }
                 } else {
@@ -402,9 +402,9 @@ void handle_action(scene *scene, int player, int action) {
                         player2->pilot->power = p_a.power;
                         player2->pilot->agility = p_a.agility;
                         player2->pilot->sex = p_a.sex;
-                        sd_pilot_set_player_color(player2->pilot, TERTIARY, p_a.colors[0]);
+                        sd_pilot_set_player_color(player2->pilot, PRIMARY, p_a.colors[0]);
                         sd_pilot_set_player_color(player2->pilot, SECONDARY, p_a.colors[1]);
-                        sd_pilot_set_player_color(player2->pilot, PRIMARY, p_a.colors[2]);
+                        sd_pilot_set_player_color(player2->pilot, TERTIARY, p_a.colors[2]);
                     }
                     // TODO in netplay, use the lobby names
                     strncpy_or_truncate(player1->pilot->name, lang_get(player1->pilot->pilot_id + 20),
