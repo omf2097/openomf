@@ -136,6 +136,55 @@ bool encode_assertion(const rec_assertion *assertion, uint8_t *buffer) {
     return true;
 }
 
+rec_har_attr rec_assertion_get_har_attr(const char *key) {
+    if(strcmp(key, "xpos") == 0)
+        return ATTR_X_POS;
+    if(strcmp(key, "ypos") == 0)
+        return ATTR_Y_POS;
+    if(strcmp(key, "xvel") == 0)
+        return ATTR_X_VEL;
+    if(strcmp(key, "yvel") == 0)
+        return ATTR_Y_VEL;
+    if(strcmp(key, "state") == 0)
+        return ATTR_STATE_ID;
+    if(strcmp(key, "anim") == 0)
+        return ATTR_ANIMATION_ID;
+    if(strcmp(key, "health") == 0)
+        return ATTR_HEALTH;
+    if(strcmp(key, "stamina") == 0)
+        return ATTR_STAMINA;
+    if(strcmp(key, "opp_dist") == 0)
+        return ATTR_OPPONENT_DISTANCE;
+
+    return ATTR_INVALID;
+}
+
+int rec_assertion_get_operand(rec_assertion_operand *op, const char *operand, const char *value) {
+    if(strcmp(operand, "har1") == 0) {
+        op->is_literal = false;
+        op->value.attr.har_id = 0;
+        op->value.attr.attribute = rec_assertion_get_har_attr(value);
+        if(op->value.attr.attribute == ATTR_INVALID) {
+            return 2;
+        }
+        return 0;
+    } else if(strcmp(operand, "har2") == 0) {
+        op->is_literal = false;
+        op->value.attr.har_id = 1;
+        op->value.attr.attribute = rec_assertion_get_har_attr(value);
+        if(op->value.attr.attribute == ATTR_INVALID) {
+            return 2;
+        }
+        return 0;
+    } else if(strcmp(operand, "literal") == 0) {
+        op->is_literal = true;
+        op->value.literal = atoi(value);
+        return 0;
+    }
+
+    return 1;
+}
+
 static const char *attr_name[] = {"X Position",   "Y Position", "X Velocity", "Y Velocity",       "State ID",
                                   "Animation ID", "Health",     "Stamina",    "Opponent Distance"};
 

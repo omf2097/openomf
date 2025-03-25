@@ -1,6 +1,8 @@
 #include "audio/audio.h"
 #include "console/console.h"
 #include "console/console_type.h"
+#include "formats/error.h"
+#include "formats/rec_assertion.h"
 #include "game/scenes/arena.h"
 #include "game/scenes/mechlab.h"
 #include "resources/ids.h"
@@ -35,6 +37,29 @@ int console_cmd_history(game_state *gs, int argc, char **argv) {
         snprintf(buf, sizeof buf, "%d. %s", i, input);
         console_output_addline(buf);
         i++;
+    }
+    return 0;
+}
+
+int insert_assertion(rec_assertion *op, game_state *gs) {
+    uint8_t buf[8];
+    if(!encode_assertion(op, buf)) {
+        console_output_addline("failed to encode assertion\n");
+        return 1;
+    }
+
+    sd_rec_move mv;
+    memset(&mv, 0, sizeof(sd_rec_move));
+    mv.lookup_id = 10;
+    mv.raw_action = buf[0];
+    mv.extra_data = malloc(7);
+    mv.tick = gs->int_tick;
+    memcpy(mv.extra_data, buf + 1, 7);
+    if(sd_rec_insert_action_at_tick(gs->rec, &mv) != SD_SUCCESS) {
+        console_output_addline("Inserting assertion failed.");
+        return 1;
+    } else {
+        console_output_addline("Inserted assertion");
     }
     return 0;
 }
@@ -159,9 +184,24 @@ int console_cmd_win(game_state *gs, int argc, char **argv) {
         object *har_obj = game_state_find_object(gs, game_player_get_har_obj_id(player));
         if(!har_obj)
             return 1;
-        har *har = object_get_userdata(har_obj);
-        har->health = 1;
-        return 0;
+
+        rec_assertion op;
+        op.operand1.is_literal = false;
+        op.operand1.value.attr.har_id = 1;
+        op.operand1.value.attr.attribute = ATTR_HEALTH;
+
+        op.op = OP_SET;
+
+        op.operand2.is_literal = true;
+        op.operand2.value.literal = 1;
+
+        // run the assertion so it applies
+        if(game_state_check_assertion(&op, gs)) {
+            console_output_addline("Setting opponent health to 1 failed!");
+            return 1;
+        } else {
+            return insert_assertion(&op, gs);
+        }
     }
     return 1;
 }
@@ -172,9 +212,24 @@ int console_cmd_lose(game_state *gs, int argc, char **argv) {
         object *har_obj = game_state_find_object(gs, game_player_get_har_obj_id(player));
         if(!har_obj)
             return 1;
-        har *har = object_get_userdata(har_obj);
-        har->health = 1;
-        return 0;
+
+        rec_assertion op;
+        op.operand1.is_literal = false;
+        op.operand1.value.attr.har_id = 0;
+        op.operand1.value.attr.attribute = ATTR_HEALTH;
+
+        op.op = OP_SET;
+
+        op.operand2.is_literal = true;
+        op.operand2.value.literal = 1;
+
+        // run the assertion so it applies
+        if(game_state_check_assertion(&op, gs)) {
+            console_output_addline("Setting player health to 1 failed!");
+            return 1;
+        } else {
+            return insert_assertion(&op, gs);
+        }
     }
     return 1;
 }
@@ -294,6 +349,92 @@ int console_cmd_rank(game_state *gs, int argc, char **argv) {
     return 1;
 }
 
+int console_cmd_assert(game_state *gs, int argc, char **argv) {
+    if(argc != 4) {
+        console_output_addline("Usage: assert harX.attr OP value");
+        return -1;
+    }
+
+    // check we have HARs
+    game_player *player = game_state_get_player(gs, 0);
+    object *har_obj = game_state_find_object(gs, game_player_get_har_obj_id(player));
+    if(!har_obj) {
+        return 1;
+    }
+
+    // Parse LHS: harX.attr
+    char *saveptr;
+    char *lh_har_part = strtok_r(argv[1], ".", &saveptr);
+    char *lh_attr_part = strtok_r(NULL, ".", &saveptr);
+    if(lh_har_part == NULL || lh_attr_part == NULL || strtok_r(NULL, ".", &saveptr) != NULL) {
+        console_output_addline("Invalid LHS format. Expected harX.attr");
+        return 1;
+    }
+
+    rec_assertion op;
+
+    int res = rec_assertion_get_operand(&op.operand1, lh_har_part, lh_attr_part);
+    if(res == 1) {
+        console_output_addline("Invalid LHS har identifier. Use har1 or har2.\n");
+        return 1;
+    } else if(res == 2) {
+        console_output_addline("Invalid LHS har attribute");
+    }
+
+    // Parse operator
+    const char *oper = argv[2];
+
+    if(strcmp(oper, ":=") == 0) {
+        op.op = OP_SET;
+    } else if(strcmp(oper, "==") == 0) {
+        op.op = OP_EQ;
+    } else if(strcmp(oper, ">") == 0) {
+        op.op = OP_GT;
+    } else if(strcmp(oper, "<") == 0) {
+        op.op = OP_LT;
+    } else {
+        console_output_addline("Invalid operator. Use ==, >, <, or :=.");
+        return 1;
+    }
+
+    if(strchr(argv[3], '.') != NULL) { // RHS is har.attr
+        char *saveptr2;
+        char *rh_har_part = strtok_r(argv[3], ".", &saveptr2);
+        char *rh_attr_part = strtok_r(NULL, ".", &saveptr2);
+        if(rh_har_part == NULL || rh_attr_part == NULL || strtok_r(NULL, ".", &saveptr2) != NULL) {
+            console_output_addline("Invalid RHS format. Expected harX.attr");
+            return 1;
+        }
+
+        int res = rec_assertion_get_operand(&op.operand2, rh_har_part, rh_attr_part);
+        if(res == 1) {
+            console_output_addline("Invalid RHS har identifier. Use har1 or har2.\n");
+            return 1;
+        } else if(res == 2) {
+            console_output_addline("Invalid RHS har attribute");
+        }
+
+    } else { // RHS is integer
+        char *endptr;
+        long rhs_long = strtol(argv[3], &endptr, 10);
+        if(endptr == argv[3] || *endptr != '\0') {
+            console_output_addline("Invalid RHS integer literal.");
+            return 1;
+        }
+        op.operand2.is_literal = true;
+        op.operand2.value.literal = rhs_long;
+    }
+
+    print_assertion(&op);
+
+    if(game_state_check_assertion(&op, gs)) {
+        console_output_addline("Assertion failed!");
+        return 1;
+    } else {
+        return insert_assertion(&op, gs);
+    }
+}
+
 void console_init_cmd(void) {
     // Add console commands
     console_add_cmd("h", &console_cmd_history, "show command history");
@@ -315,4 +456,5 @@ void console_init_cmd(void) {
     console_add_cmd("warp", &console_toggle_warp, "Toggle warp speed");
     console_add_cmd("money", &console_cmd_money, "Set tournament mode money");
     console_add_cmd("rank", &console_cmd_rank, "Set tournament mode rank");
+    console_add_cmd("assert", &console_cmd_assert, "Insert an assertion into the current REC file");
 }

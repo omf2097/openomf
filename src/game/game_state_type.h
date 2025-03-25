@@ -5,6 +5,7 @@
 
 #include "engine.h"
 #include "formats/rec.h"
+#include "formats/rec_assertion.h"
 #include "game/protos/fight_stats.h"
 #include "game/utils/settings.h"
 #include "utils/random.h"
