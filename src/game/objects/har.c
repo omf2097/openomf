@@ -2090,7 +2090,7 @@ int har_act(object *obj, int act_type) {
     }
 
     if(!(h->state == STATE_STANDING || har_is_walking(h) || har_is_crouching(h) || h->state == STATE_JUMPING ||
-         h->state == STATE_VICTORY || h->state == STATE_SCRAP || h->state == STATE_NONE) ||
+         h->state == STATE_VICTORY || h->state == STATE_DONE || h->state == STATE_SCRAP || h->state == STATE_NONE) ||
        object_get_halt(obj)) {
         // doing something else, ignore input
         return 0;
@@ -2225,6 +2225,11 @@ int har_act(object *obj, int act_type) {
     }
 
     if(arena_state == ARENA_STATE_ENDING) {
+        if((h->state == STATE_VICTORY || h->state == STATE_DONE) && obj->cur_animation->id != ANIM_VICTORY &&
+           obj->cur_animation->id != ANIM_IDLE) {
+            // play idle while we wait for the defeated opponent to settle
+            har_set_ani(obj, ANIM_IDLE, 1);
+        }
         return 0;
     }
 
