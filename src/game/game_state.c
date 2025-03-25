@@ -939,7 +939,7 @@ void game_state_dynamic_tick(game_state *gs, bool replay) {
     scene_dynamic_tick(gs->sc, game_state_is_paused(gs));
 
     // Poll input. If console is opened, do not poll the controllers.
-    if(!console_window_is_open() && !replay) {
+    if((!console_window_is_open() || gs->init_flags->playback) && !replay) {
         scene_input_poll(gs->sc);
     }
 
