@@ -74,7 +74,7 @@ typedef struct {
     sd_rec_pilot pilots[2]; ///< Information about the pilots
     uint32_t scores[2];     ///< Score data at the start of the match
     int8_t unknown_a;       ///< Is Fire or ice ? 0 = no, 1 = fire, 2 = ice ?
-    int8_t unknown_b;       ///< Unknown \todo: Find out
+    int8_t arena_palette;   ///< Arena palette variant
     int8_t game_mode;       ///< 1 is tournament, 2 is 1/2 player
 
     int16_t throw_range;    ///< Throw range (%)
