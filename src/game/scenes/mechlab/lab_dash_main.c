@@ -375,6 +375,7 @@ component *lab_dash_main_create(scene *s, dashboard_widgets *dw) {
         dw->pilot->photo_id = portrait_selected(dw->photo[0]);
         portrait_load(dw->pilot->photo, &dw->pilot->palette, PIC_PLAYERS, 0);
     }
+
     palette_load_player_colors(&dw->pilot->palette, 0);
 
     xysizer_attach(xy, dw->photo[0], 12, -1, -1, -1);

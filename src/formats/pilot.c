@@ -322,13 +322,13 @@ int sd_pilot_save(sd_writer *fw, const sd_pilot *pilot) {
 void sd_pilot_set_player_color(sd_pilot *pilot, player_color index, uint8_t color) {
     switch(index) {
         case PRIMARY:
-            pilot->color_3 = color;
+            pilot->color_1 = color;
             break;
         case SECONDARY:
             pilot->color_2 = color;
             break;
         case TERTIARY:
-            pilot->color_1 = color;
+            pilot->color_3 = color;
             break;
     }
     if(color != 255 && color != 16) {
