@@ -20,7 +20,7 @@ typedef struct af_move_t {
     uint8_t throw_duration;
     uint8_t extra_string_selector;
     int16_t damage;
-    float stun;
+    int32_t stun;
     str move_string;
     str footer_string;
 #ifdef DEBUGMODE
