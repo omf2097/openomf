@@ -33,6 +33,7 @@ tests=(
     "HARs in stasis cannot hit opponent:STASISED-HARS-CANNOT-HIT.REC"
     "HARs play ANIM_DEFEAT instead of idle:NO-IDLE-DEFEAT.REC"
     "Electra P656 cannot be interrupted during anim 36:ELECTRA-MOVE36-EMFLAG.REC"
+    "Being kicked in the back of the head by chronos matter phasing knocks you forwards, flipping you:KNOCKBACK-DIR.REC"
 )
 
 # Setup temp directory for outputs
