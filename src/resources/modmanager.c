@@ -801,7 +801,7 @@ bool modmanager_parse_af_move_mod(const char *buf, af_move *current_move) {
         CFG_INT("block_stun", current_move->block_stun, CFGF_NONE),
         CFG_INT("throw_duration", current_move->throw_duration, CFGF_NONE),
         CFG_INT("extra_string_selector", current_move->extra_string_selector, CFGF_NONE),
-        CFG_FLOAT("damage", current_move->damage, CFGF_NONE), CFG_FLOAT("stun", current_move->stun, CFGF_NONE),
+        CFG_FLOAT("damage", current_move->damage, CFGF_NONE), CFG_INT("stun", current_move->stun, CFGF_NONE),
         CFG_STR("move_string", str_c(&current_move->move_string), CFGF_NONE),
         CFG_STR("footer_string", str_c(&current_move->footer_string), CFGF_NONE),
 
@@ -882,9 +882,9 @@ bool modmanager_parse_af_move_mod(const char *buf, af_move *current_move) {
         current_move->damage = cfg_getfloat(cfg, "damage");
     }
 
-    if(current_move->stun != cfg_getfloat(cfg, "stun")) {
-        log_info("setting stun from %f to %f", current_move->stun, cfg_getfloat(cfg, "stun"));
-        current_move->stun = cfg_getfloat(cfg, "stun");
+    if(current_move->stun != cfg_getint(cfg, "stun")) {
+        log_info("setting stun from %d to %ld", current_move->stun, cfg_getint(cfg, "stun"));
+        current_move->stun = cfg_getint(cfg, "stun");
     }
 
     // Update string fields if they were modified
@@ -1100,7 +1100,7 @@ bool modmanager_get_bk_animation(str *name, int anim_id, bk_info *bk_data) {
 
 bool modmanager_parse_fighter_header_mod(const char *buf, af *fighter) {
 
-    cfg_opt_t header_opts[] = {CFG_FLOAT("endurance", fighter->endurance, CFGF_NONE),
+    cfg_opt_t header_opts[] = {CFG_INT("endurance", fighter->endurance, CFGF_NONE),
                                CFG_INT("health", fighter->health, CFGF_NONE),
                                CFG_FLOAT("forward_speed", fighter->forward_speed, CFGF_NONE),
                                CFG_FLOAT("reverse_speed", fighter->reverse_speed, CFGF_NONE),
@@ -1116,9 +1116,9 @@ bool modmanager_parse_fighter_header_mod(const char *buf, af *fighter) {
     }
 
     // Update each field only if it changed, with logging
-    if(fighter->endurance != cfg_getfloat(cfg, "endurance")) {
-        log_info("setting endurance from %f to %f", fighter->endurance, cfg_getfloat(cfg, "endurance"));
-        fighter->endurance = cfg_getfloat(cfg, "endurance");
+    if(fighter->endurance != cfg_getint(cfg, "endurance")) {
+        log_info("setting endurance from %d to %ld", fighter->endurance, cfg_getint(cfg, "endurance"));
+        fighter->endurance = cfg_getint(cfg, "endurance");
     }
 
     if(fighter->health != (unsigned int)cfg_getint(cfg, "health")) {
