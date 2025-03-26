@@ -658,8 +658,10 @@ void har_move(object *obj) {
         }
 
         if(h->state == STATE_WALKTO) {
+            har_face_enemy(obj, enemy_obj);
             obj->pos.x += (h->fwd_speed * object_get_direction(obj)) * (h->hard_close ? 0.0 : 1.0);
         } else if(h->state == STATE_WALKFROM) {
+            har_face_enemy(obj, enemy_obj);
             obj->pos.x -= (h->back_speed * object_get_direction(obj)) * (h->hard_close ? 0.5 : 1.0);
         }
 
@@ -2323,8 +2325,10 @@ int har_act(object *obj, int act_type) {
 void har_face_enemy(object *obj, object *obj_enemy) {
     har *h = object_get_userdata(obj);
     har *har_enemy = object_get_userdata(obj_enemy);
-    if(h->state != STATE_RECOIL && h->state != STATE_STUNNED && h->state != STATE_FALLEN && h->state != STATE_DEFEAT &&
-       h->state != STATE_JUMPING && (har_enemy->state != STATE_JUMPING || h->state == STATE_STANDING_UP)) {
+    if((h->state != STATE_RECOIL && h->state != STATE_STUNNED && h->state != STATE_FALLEN && h->state != STATE_DEFEAT &&
+        h->state != STATE_JUMPING && (har_enemy->state != STATE_JUMPING || h->state == STATE_STANDING_UP)) ||
+       // always face opponent when walking
+       (h->state == STATE_WALKFROM || h->state == STATE_WALKTO)) {
         // make sure we are facing the opponent
         vec2i pos = object_get_pos(obj);
         vec2i pos_enemy = object_get_pos(obj_enemy);
