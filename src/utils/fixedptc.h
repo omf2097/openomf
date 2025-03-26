@@ -118,13 +118,13 @@ typedef __uint128_t fixedptud;
 #define FIXEDPT_FMASK (((fixedpt)1 << FIXEDPT_FBITS) - 1)
 
 #define fixedpt_rconst(R) ((fixedpt)((R) * FIXEDPT_ONE + ((R) >= 0 ? 0.5 : -0.5)))
-#define fixedpt_fromint(I) ((fixedptd)(I) << FIXEDPT_FBITS)
-#define fixedpt_toint(F) ((F) >> FIXEDPT_FBITS)
+#define fixedpt_fromint(I) ((fixedptd)(I) * FIXEDPT_ONE)
+#define fixedpt_toint(F) ((F) / FIXEDPT_ONE)
 #define fixedpt_add(A, B) ((A) + (B))
 #define fixedpt_sub(A, B) ((A) - (B))
-#define fixedpt_xmul(A, B) ((fixedpt)(((fixedptd)(A) * (fixedptd)(B)) >> FIXEDPT_FBITS))
+#define fixedpt_xmul(A, B) ((fixedpt)(((fixedptd)(A) * (fixedptd)(B)) / FIXEDPT_ONE))
 #define fixedpt_xmul3(A, B, C) fixedpt_xmul(fixedpt_xmul((A), (B)), (C))
-#define fixedpt_xdiv(A, B) ((fixedpt)(((fixedptd)(A) << FIXEDPT_FBITS) / (fixedptd)(B)))
+#define fixedpt_xdiv(A, B) ((fixedpt)(((fixedptd)(A) * FIXEDPT_ONE) / (fixedptd)(B)))
 #define fixedpt_fracpart(A) ((fixedpt)(A) & FIXEDPT_FMASK)
 
 #define FIXEDPT_ONE ((fixedpt)((fixedpt)1 << FIXEDPT_FBITS))
