@@ -11,7 +11,7 @@ void af_move_create(af_move *move, array *sprites, void *src, int id) {
     move->category = sdmv->category;
     move->damage = sdmv->damage_amount;
     move->raw_damage = sdmv->damage_amount;
-    move->stun = 0.0f;
+    move->stun = 0;
     move->points = sdmv->points * 400;
     move->block_damage = sdmv->block_damage;
     move->block_stun = sdmv->block_stun;

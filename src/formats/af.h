@@ -22,7 +22,7 @@
 typedef struct {
     uint16_t file_id;     ///< File ID
     uint16_t exec_window; ///< Move execution window (?)
-    float endurance;      ///< HAR Endurance
+    uint32_t endurance;   ///< HAR Endurance
     uint8_t unknown_b;    ///< Unknown value
     uint16_t health;      ///< HAR Health
     float forward_speed;  ///< HAR fwd speed

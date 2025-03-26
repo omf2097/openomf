@@ -5,6 +5,8 @@
 #include "utils/array.h"
 #include "utils/str.h"
 
+typedef uint32_t har_endurance_t; // from har.h
+
 typedef struct af_move_t {
     int id;
     animation ani;
@@ -19,7 +21,7 @@ typedef struct af_move_t {
     uint8_t extra_string_selector;
     float damage;
     float raw_damage; // used to store the raw damage, unmodified by pilot stats
-    float stun;
+    har_endurance_t stun;
     str move_string;
     str footer_string;
 #ifdef DEBUGMODE

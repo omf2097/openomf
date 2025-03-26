@@ -675,7 +675,7 @@ void har_move(object *obj) {
     }
 }
 
-void har_take_damage(object *obj, const str *string, float damage, float stun) {
+void har_take_damage(object *obj, const str *string, float damage, har_endurance_t stun) {
     har *h = object_get_userdata(obj);
 
     if(h->state == STATE_VICTORY || h->state == STATE_DONE) {
@@ -720,19 +720,19 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
     // Handle health changes
     if(h->health <= 0) {
         h->health = 0;
-        h->endurance = 0.0f;
+        h->endurance = 0;
     }
 
     if(!h->throw_duration) {
-        log_debug("applying %f stun damage to %f", stun, h->endurance);
-        h->endurance -= stun;
+        log_debug("applying %f stun damage to %f", HAR_ENDURANCE_TOFLOAT(stun), HAR_ENDURANCE_TOFLOAT(h->endurance));
+        h->endurance = har_endurance_saturating_sub(h->endurance, stun);
     }
-    if(h->endurance < 1.0f) {
+    if(h->endurance < HAR_ENDURANCE_FIXP_ONE) {
         if(h->state == STATE_STUNNED) {
             // refill endurance
             h->endurance = h->endurance_max;
         } else {
-            h->endurance = 0.0f;
+            h->endurance = 0;
         }
     }
 
@@ -1693,7 +1693,7 @@ void har_tick(object *obj) {
         if(h->throw_duration == 0) {
             // we've already called har_take_damage, so just apply the damage and check for defeat
             h->health -= h->last_damage_value;
-            h->endurance -= h->last_stun_value;
+            h->endurance = har_endurance_saturating_sub(h->endurance, h->last_stun_value);
             if(h->health <= 0) {
                 // Take a screencap of enemy har
                 game_player *other_player = game_state_get_player(obj->gs, !h->player_id);
@@ -1798,7 +1798,7 @@ void har_tick(object *obj) {
     if(h->health > 0 && h->endurance < h->endurance_max &&
        !(h->executing_move || h->state == STATE_RECOIL || h->state == STATE_STUNNED || h->state == STATE_FALLEN ||
          h->state == STATE_STANDING_UP || h->state == STATE_DEFEAT)) {
-        h->endurance += 0.0025f * h->endurance_max; // made up but plausible number
+        h->endurance += h->endurance_max / 400; // made up but plausible number
     }
 
     // Leave shadow trail
@@ -2370,7 +2370,7 @@ void har_finished(object *obj) {
     } else if(h->state == STATE_RECOIL && h->health <= 0) {
         h->state = STATE_DEFEAT;
         har_set_ani(obj, h->custom_defeat_animation ? h->custom_defeat_animation : ANIM_DEFEAT, 0);
-    } else if((h->state == STATE_RECOIL || h->state == STATE_STANDING_UP) && h->endurance < 1.0f) {
+    } else if((h->state == STATE_RECOIL || h->state == STATE_STANDING_UP) && h->endurance < HAR_ENDURANCE_FIXP_ONE) {
         if(h->state == STATE_RECOIL) {
             har_event_recover(h, ctrl);
         }
@@ -2504,9 +2504,11 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     // af_data->health);
     //  The stun cap is calculated as follows
     //  HAR Endurance * 3.6 * (Pilot Endurance + 16) / 23
-    local->endurance_max = local->endurance = af_data->endurance * 3.6 * (pilot->endurance + 16) / 23;
-    log_debug("HAR endurance is %f with pilot endurance %d and base endurance %f", local->endurance, pilot->endurance,
-              af_data->endurance);
+    local->endurance_max = local->endurance =
+        af_data->endurance * 36 * (pilot->endurance + 16) * HAR_ENDURANCE_FIXP_ONE / 23 / 10;
+    // local->endurance_max = local->endurance = af_data->endurance * 3.6 * (pilot->endurance + 16) / 23;
+    log_debug("HAR endurance is %f with pilot endurance %d and base endurance %d",
+              HAR_ENDURANCE_TOFLOAT(local->endurance), pilot->endurance, af_data->endurance);
     // fwd speed = (Agility + 20) / 30 * fwd speed
     // back speed = (Agility + 20) / 30 * back speed
     // up speed = (Agility + 35) / 45 * up speed (edited)
@@ -2638,7 +2640,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
                 // Damage = Base Damage * (20 + Power) / 30 + 1
                 //  Stun = (Base Damage + 6) * 512
                 if(move->damage) {
-                    move->stun = (move->damage + 6) * 512;
+                    move->stun = (move->damage + 6) * 512 * HAR_ENDURANCE_FIXP_ONE;
                     move->damage = move->damage * (20 + pilot->power) / 30 + 1;
                 }
                 // projectiles have hyper mode, but may have extra_string_selector of 0
@@ -2660,7 +2662,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
                 // Damage = (Base Damage * (25 + Power) / 35 + 1) * leg/arm power / armor
                 // Stun = ((Base Damage * (35 + Power) / 45) * 2 + 12) * 256
                 if(move->damage) {
-                    move->stun = ((move->damage * (35 + pilot->power) / 45) * 2 + 12) * 256;
+                    move->stun = ((move->damage * (35 + pilot->power) / 45) * 2 + 12) * 256 * HAR_ENDURANCE_FIXP_ONE;
                 }
 
                 // check for enhancements
