@@ -380,7 +380,7 @@ void player_run(object *obj) {
     }
 
     if(obj->group == GROUP_HAR && enemy && !ab_flag) {
-        obj->pos.x = max2(ARENA_LEFT_WALL, min2(ARENA_RIGHT_WALL, obj->pos.x));
+        obj->pos.x = clampf(obj->pos.x, ARENA_LEFT_WALL, ARENA_RIGHT_WALL);
     }
 
     // If frame changed, do something
