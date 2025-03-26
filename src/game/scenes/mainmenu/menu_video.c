@@ -87,8 +87,7 @@ void renderer_toggled(component *c, void *userdata, int pos) {
     settings_video *v = &settings_get()->video;
     const char *renderer;
     video_get_renderer_info(pos, &renderer, NULL);
-    omf_free(v->renderer);
-    v->renderer = omf_strdup(renderer);
+    strncpy_or_abort(v->renderer, renderer, sizeof(v->renderer));
 }
 
 void menu_video_done(component *c, void *u) {
@@ -115,7 +114,6 @@ void menu_video_done(component *c, void *u) {
 
 void menu_video_free(component *c) {
     video_menu_data *local = menu_get_userdata(c);
-    omf_free(local->old_video_settings.renderer);
     omf_free(local);
     menu_set_userdata(c, local);
 }
@@ -129,28 +127,20 @@ component *menu_video_create(scene *s) {
     // Menu userdata
     video_menu_data *local = omf_calloc(1, sizeof(video_menu_data));
     local->old_video_settings = settings_get()->video;
-    local->old_video_settings.renderer = omf_strdup(local->old_video_settings.renderer);
 
     // Load settings etc.
     const char *offon_opts[] = {"OFF", "ON"};
     const char *aspect_opts[] = {"4:3", "NATIVE"};
     settings *setting = settings_get();
 
-    // Text config
-    text_settings tconf;
-    text_defaults(&tconf);
-    tconf.font = FONT_BIG;
-    tconf.halign = TEXT_CENTER;
-    tconf.cforeground = TEXT_MEDIUM_GREEN;
-
     // Create menu and its header
-    component *menu = menu_create(11);
-    menu_attach(menu, label_create(&tconf, "VIDEO"));
+    component *menu = menu_create();
+    menu_attach(menu, label_create_title("VIDEO"));
     menu_attach(menu, filler_create());
 
     // Renderer selector
     component *renderer_selector =
-        textselector_create(&tconf, "API:", "Choose the video renderer API to use", renderer_toggled, local);
+        textselector_create("API:", "Choose the video renderer API to use", renderer_toggled, local);
     menu_attach(menu, renderer_selector);
 
     // Add available renderers and make sure correct one is selected by default.
@@ -167,7 +157,7 @@ component *menu_video_create(scene *s) {
 
     // Resolution selector
     component *res_selector =
-        textselector_create(&tconf, "RES:", "Choose the game resolution to use.", resolution_toggled, local);
+        textselector_create("RES:", "Choose the game resolution to use.", resolution_toggled, local);
     menu_attach(menu, res_selector);
 
     // If custom resolution is set, add it as first selection
@@ -190,15 +180,15 @@ component *menu_video_create(scene *s) {
     }
 
     // vsync and fullscreen
-    menu_attach(menu, textselector_create_bind_opts(&tconf, "VSYNC", "Toggle vertical sync on or off.", NULL, NULL,
+    menu_attach(menu, textselector_create_bind_opts("VSYNC", "Toggle vertical sync on or off.", NULL, NULL,
                                                     &setting->video.vsync, offon_opts, 2));
-    menu_attach(menu, textselector_create_bind_opts(&tconf, "ASPECT", "Video aspect ratio. Original game is 4:3.", NULL,
-                                                    NULL, &setting->video.aspect, aspect_opts, 2));
-    menu_attach(menu, textselector_create_bind_opts(&tconf, "FULLSCREEN", "Run the game in a fullscreen window.", NULL,
-                                                    NULL, &setting->video.fullscreen, offon_opts, 2));
+    menu_attach(menu, textselector_create_bind_opts("ASPECT", "Video aspect ratio. Original game is 4:3.", NULL, NULL,
+                                                    &setting->video.aspect, aspect_opts, 2));
+    menu_attach(menu, textselector_create_bind_opts("FULLSCREEN", "Run the game in a fullscreen window.", NULL, NULL,
+                                                    &setting->video.fullscreen, offon_opts, 2));
 
     // Done button
-    menu_attach(menu, button_create(&tconf, "DONE", "Return to the main menu.", COM_ENABLED, menu_video_done, s));
+    menu_attach(menu, button_create("DONE", "Return to the main menu.", false, false, menu_video_done, s));
 
     // Userdata & free function for it
     menu_set_userdata(menu, local);

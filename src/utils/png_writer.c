@@ -6,6 +6,8 @@
 #include <assert.h>
 #include <png.h>
 
+static_assert(PNG_LIBPNG_VER >= 10600, "libpng version should be 1.6.0 or later");
+
 static void abort_png(png_structp png, const char *err) {
     crash(err);
 }

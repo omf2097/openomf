@@ -7,7 +7,9 @@
 #include <math.h>
 #include <stdio.h>
 
-#define TEXT_COLOR 0xC7
+#define TEXT_HUD_COLOR 0xE7
+#define TEXT_HUD_SHADOW 0xF7
+
 #define SLIDER_DISTANCE 50
 #define SLIDER_HANG_TIME 25
 
@@ -150,7 +152,8 @@ void chr_score_render(chr_score *score, bool render_total_points) {
     text_settings tconf_score;
     text_defaults(&tconf_score);
     tconf_score.font = FONT_SMALL;
-    tconf_score.cforeground = TEXT_COLOR;
+    tconf_score.cforeground = TEXT_HUD_COLOR;
+    tconf_score.cshadow = TEXT_HUD_SHADOW;
     tconf_score.shadow = TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM;
     const font *fnt = fonts_get_font(tconf_score.font);
 
@@ -159,10 +162,10 @@ void chr_score_render(chr_score *score, bool render_total_points) {
         score_format(score->score, tmp, 50);
 
         if(score->direction == OBJECT_FACE_RIGHT) {
-            text_render(&tconf_score, TEXT_DEFAULT, score->x, score->y, 200, 6, tmp);
+            text_render_mode(&tconf_score, TEXT_DEFAULT, score->x, score->y, 200, 6, tmp);
         } else {
             int s2len = strlen(tmp) * fnt->w;
-            text_render(&tconf_score, TEXT_DEFAULT, score->x - s2len, score->y, 200, 6, tmp);
+            text_render_mode(&tconf_score, TEXT_DEFAULT, score->x - s2len, score->y, 200, 6, tmp);
         }
     }
 
@@ -181,7 +184,7 @@ void chr_score_render(chr_score *score, bool render_total_points) {
         if(score->direction == OBJECT_FACE_LEFT) {
             pos = interpolate(vec2i_create(score->x - (strlen(t->text) * fnt->w), score->y), t->start, t->position);
         }
-        text_render(&tconf_score, TEXT_DEFAULT, pos.x, pos.y, 200, 6, t->text);
+        text_render_mode(&tconf_score, TEXT_DEFAULT, pos.x, pos.y, 200, 6, t->text);
         lastage = t->age;
     }
 }

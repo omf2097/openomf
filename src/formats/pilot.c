@@ -2,9 +2,12 @@
 #include <string.h>
 
 #include "formats/error.h"
+#include "formats/pic.h"
 #include "formats/pilot.h"
+#include "resources/pathmanager.h"
 #include "utils/allocator.h"
 #include "utils/c_string_util.h"
+#include "utils/log.h"
 
 #define PILOT_BLOCK_LENGTH 428
 
@@ -17,13 +20,23 @@ int sd_pilot_create(sd_pilot *pilot) {
 }
 
 void sd_pilot_clone(sd_pilot *dest, const sd_pilot *src) {
-    sd_pilot_free(dest);
-    memcpy(dest, src, sizeof(sd_pilot));
+    sd_pilot_copy_shallow(dest, src);
     for(int m = 0; m < 10; m++) {
         if(src->quotes[m] != NULL) {
             dest->quotes[m] = omf_strdup(src->quotes[m]);
         }
     }
+    if(src->photo) {
+        dest->photo = omf_calloc(1, sizeof(sd_sprite));
+        sd_sprite_copy(dest->photo, src->photo);
+    }
+}
+
+void sd_pilot_copy_shallow(sd_pilot *dest, const sd_pilot *src) {
+    sd_pilot_free(dest);
+    *dest = *src;
+    dest->photo = NULL;
+    memset(dest->quotes, 0, sizeof dest->quotes);
 }
 
 void sd_pilot_free(sd_pilot *pilot) {
@@ -64,9 +77,9 @@ void sd_pilot_load_player_from_mem(memreader *mr, sd_pilot *pilot) {
     pilot->offense = memread_uword(mr);
     pilot->defense = memread_uword(mr);
     pilot->money = memread_dword(mr);
-    sd_pilot_set_player_color(pilot, PRIMARY, memread_ubyte(mr));
-    sd_pilot_set_player_color(pilot, SECONDARY, memread_ubyte(mr));
     sd_pilot_set_player_color(pilot, TERTIARY, memread_ubyte(mr));
+    sd_pilot_set_player_color(pilot, SECONDARY, memread_ubyte(mr));
+    sd_pilot_set_player_color(pilot, PRIMARY, memread_ubyte(mr));
 }
 
 void sd_pilot_load_from_mem(memreader *mr, sd_pilot *pilot) {
@@ -197,9 +210,9 @@ void sd_pilot_save_player_to_mem(memwriter *w, const sd_pilot *pilot) {
     memwrite_uword(w, pilot->offense);
     memwrite_uword(w, pilot->defense);
     memwrite_dword(w, pilot->money);
-    memwrite_ubyte(w, pilot->color_1);
-    memwrite_ubyte(w, pilot->color_2);
     memwrite_ubyte(w, pilot->color_3);
+    memwrite_ubyte(w, pilot->color_2);
+    memwrite_ubyte(w, pilot->color_1);
 }
 
 void sd_pilot_save_to_mem(memwriter *w, const sd_pilot *pilot) {
@@ -311,18 +324,41 @@ int sd_pilot_save(sd_writer *fw, const sd_pilot *pilot) {
 
 void sd_pilot_set_player_color(sd_pilot *pilot, player_color index, uint8_t color) {
     switch(index) {
-        case PRIMARY:
+        case TERTIARY:
             pilot->color_3 = color;
             break;
         case SECONDARY:
             pilot->color_2 = color;
             break;
-        case TERTIARY:
+        case PRIMARY:
             pilot->color_1 = color;
             break;
+        default:
+            assert(!"bad index");
+            return;
     }
-    if(color != 255) {
+    if(color < 16) {
         palette_load_altpal_player_color(&pilot->palette, 0, color, index);
+    } else if(color == 16) {
+        const char *players_filename = pm_get_resource_path(PIC_PLAYERS);
+        if(!players_filename)
+            return;
+        log_debug("trying to load players.pic from %s", players_filename);
+        // Load PIC file and make a surface
+        sd_pic_file players;
+        sd_pic_create(&players);
+        int ret = sd_pic_load(&players, players_filename);
+        if(ret == SD_SUCCESS) {
+            // Load player palette from PLAYERS.PIC
+            log_debug("loading %d from players.pic", pilot->photo_id);
+            const sd_pic_photo *photo = sd_pic_get(&players, pilot->photo_id);
+            if(photo) {
+                memcpy(&pilot->palette.colors[index * 0x10], &photo->pal.colors[index * 0x10],
+                       0x10 * sizeof(vga_color));
+            }
+
+            sd_pic_free(&players);
+        }
     }
 }
 

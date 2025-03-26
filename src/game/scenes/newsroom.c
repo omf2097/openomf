@@ -27,7 +27,9 @@ typedef struct newsroom_local_t {
     int sex1, sex2;
     int won;
     bool champion;
+    sd_pilot *challenger;
     dialog continue_dialog;
+    dialog accept_challenge_dialog;
 } newsroom_local;
 
 // their
@@ -96,6 +98,10 @@ void newsroom_fixup_str(newsroom_local *local) {
 
     if(local->champion && local->screen >= 2) {
         translation_id = LANG_STR_NEWSROOM_NEWCHAMPION;
+    } else if(local->challenger && local->screen == 0) {
+        translation_id = LANG_STR_NEWSROOM_CHALLENGER1;
+    } else if(local->challenger && local->screen >= 1) {
+        translation_id = LANG_STR_NEWSROOM_CHALLENGER2;
     } else {
         translation_id = LANG_STR_NEWSROOM_TEXT + local->news_id + min2(local->screen, 1);
     }
@@ -145,6 +151,7 @@ void newsroom_free(scene *scene) {
     str_free(&local->pilot1);
     str_free(&local->pilot2);
     dialog_free(&local->continue_dialog);
+    dialog_free(&local->accept_challenge_dialog);
     omf_free(local);
     scene_set_userdata(scene, local);
 }
@@ -152,19 +159,22 @@ void newsroom_free(scene *scene) {
 void newsroom_static_tick(scene *scene, int paused) {
     newsroom_local *local = scene_get_userdata(scene);
     dialog_tick(&local->continue_dialog);
+    dialog_tick(&local->accept_challenge_dialog);
 }
 
 void newsroom_overlay_render(scene *scene) {
     newsroom_local *local = scene_get_userdata(scene);
 
-    // Render screen capture
-    har_screencaps *caps = &(game_state_get_player(scene->gs, (local->won ? 0 : 1))->screencaps);
-    if(local->screen == 0) {
-        if(caps->ok[SCREENCAP_POSE])
-            video_draw_size(&caps->cap[SCREENCAP_POSE], 165, 15, SCREENCAP_W, SCREENCAP_H);
-    } else {
-        if(caps->ok[SCREENCAP_BLOW])
-            video_draw_size(&caps->cap[SCREENCAP_BLOW], 165, 15, SCREENCAP_W, SCREENCAP_H);
+    if(!local->challenger) {
+        // Render screen capture
+        har_screencaps *caps = &(game_state_get_player(scene->gs, (local->won ? 0 : 1))->screencaps);
+        if(local->screen == 0) {
+            if(caps->ok[SCREENCAP_POSE])
+                video_draw_size(&caps->cap[SCREENCAP_POSE], 165, 15, SCREENCAP_W, SCREENCAP_H);
+        } else {
+            if(caps->ok[SCREENCAP_BLOW])
+                video_draw_size(&caps->cap[SCREENCAP_BLOW], 165, 15, SCREENCAP_W, SCREENCAP_H);
+        }
     }
 
     // Render text
@@ -183,7 +193,7 @@ void newsroom_overlay_render(scene *scene) {
         tconf_yellow.strip_leading_whitespace = false;
         tconf_yellow.strip_trailing_whitespace = true;
         tconf_yellow.max_lines = 9;
-        text_render(&tconf_yellow, TEXT_DEFAULT, 34, 155, 250, 6, str_c(&local->news_str));
+        text_render_mode(&tconf_yellow, TEXT_DEFAULT, 34, 155, 250, 6, str_c(&local->news_str));
     }
 
     // If the player has just become a new champion, show the sprite on top of the photo.
@@ -193,9 +203,19 @@ void newsroom_overlay_render(scene *scene) {
         video_draw(new_champion->data, new_champion->pos.x, new_champion->pos.y);
     }
 
+    if(local->challenger) {
+        animation *photo_overlays = &bk_get_info(scene->bk_data, 4)->ani;
+        sprite *new_champion = animation_get_sprite(photo_overlays, 0);
+        video_draw(new_champion->data, new_champion->pos.x, new_champion->pos.y);
+    }
+
     // Dialog
     if(dialog_is_visible(&local->continue_dialog)) {
         dialog_render(&local->continue_dialog);
+    }
+
+    if(dialog_is_visible(&local->accept_challenge_dialog)) {
+        dialog_render(&local->accept_challenge_dialog);
     }
 }
 
@@ -216,6 +236,20 @@ void newsroom_continue_dialog_clicked(dialog *dlg, dialog_result result) {
     }
 }
 
+void newsroom_accept_challenge_dialog_clicked(dialog *dlg, dialog_result result) {
+    scene *sc = dlg->userdata;
+    newsroom_local *local = scene_get_userdata(sc);
+    game_player *p2 = game_state_get_player(sc->gs, 1);
+    if(result == DIALOG_RESULT_NO) {
+        p2->pilot = NULL;
+        // go back to the mechlab in disgrace
+        game_state_set_next(sc->gs, SCENE_MECHLAB);
+    } else if(result == DIALOG_RESULT_YES_OK) {
+        p2->pilot = local->challenger;
+        game_state_set_next(sc->gs, SCENE_VS);
+    }
+}
+
 void newsroom_input_tick(scene *scene) {
     newsroom_local *local = scene_get_userdata(scene);
 
@@ -230,12 +264,19 @@ void newsroom_input_tick(scene *scene) {
             if(i->type == EVENT_TYPE_ACTION) {
                 if(dialog_is_visible(&local->continue_dialog)) {
                     dialog_event(&local->continue_dialog, i->event_data.action);
+                } else if(dialog_is_visible(&local->accept_challenge_dialog)) {
+                    dialog_event(&local->accept_challenge_dialog, i->event_data.action);
                 } else if(i->event_data.action == ACT_ESC || i->event_data.action == ACT_KICK ||
                           i->event_data.action == ACT_PUNCH) {
                     local->screen++;
                     newsroom_fixup_str(local);
 
-                    if((local->screen >= 2 && !local->champion) || local->screen >= 3) {
+                    if(local->challenger) {
+                        if(local->screen >= 2) {
+                            // show dialog asking if they want to accept the challenge
+                            dialog_show(&local->accept_challenge_dialog, 1);
+                        }
+                    } else if((local->screen >= 2 && !local->champion) || local->screen >= 3) {
                         if(local->won || p1->chr) {
                             // pick a new player
                             if(p1->chr) {
@@ -268,6 +309,10 @@ void newsroom_input_tick(scene *scene) {
                                     }
                                     pilot p;
                                     pilot_get_info(&p, p2->pilot->pilot_id);
+                                    p2->pilot->endurance = p.endurance;
+                                    p2->pilot->power = p.power;
+                                    p2->pilot->agility = p.agility;
+                                    p2->pilot->sex = p.sex;
                                     sd_pilot_set_player_color(p2->pilot, TERTIARY, p.colors[0]);
                                     sd_pilot_set_player_color(p2->pilot, SECONDARY, p.colors[1]);
                                     sd_pilot_set_player_color(p2->pilot, PRIMARY, p.colors[2]);
@@ -320,11 +365,19 @@ int newsroom_create(scene *scene) {
     local->news_id = rand_int(24) * 2;
     local->screen = 0;
     local->champion = false;
+    local->challenger = NULL;
     menu_transparent_bg_create(&local->news_bg1, 280, 55);
     menu_background_create(&local->news_bg2, 280, 55, MenuBackgroundNewsroom);
 
     game_player *p1 = game_state_get_player(scene->gs, 0);
     game_player *p2 = game_state_get_player(scene->gs, 1);
+
+    if(p1->chr && p2->pilot && p2->pilot->only_fight_once) {
+        // we beat an only fight once pilot, we never want to see them again
+        // TODO figure out how the original disables them from fighting again
+        // XXX just give them a very high rank for now?
+        p2->pilot->rank = p1->chr->pilot.enemies_inc_unranked + 1;
+    }
 
     int health = 0;
     if(p2->sp_wins > 0) {
@@ -333,7 +386,42 @@ int newsroom_create(scene *scene) {
         health = game_player_get_score(p2)->health;
     } else {
         local->won = 1;
-        if(p1->chr && p1->chr->pilot.rank == 1) {
+        fight_stats *fight_stats = &scene->gs->fight_stats;
+        if(p1->chr && fight_stats->challenger) {
+            // we came here from plug
+            local->challenger = fight_stats->challenger;
+            p2->pilot = local->challenger;
+            fight_stats->challenger = NULL;
+        } else if(p1->chr) {
+            int health = game_player_get_score(p1)->health;
+            // see if we have meet any unranked challenger criteria
+            for(int k = p1->chr->pilot.enemies_ex_unranked - 1; k < p1->chr->pilot.enemies_inc_unranked; k++) {
+                sd_pilot *p = &p1->chr->enemies[k]->pilot;
+                // TODO this is wrong, unranked challengers have a rank in the OG, just a rank higher than
+                // pilot.enemies_ex_unranked
+                if(p->rank == 0) {
+                    // check all the conditions, if they're non zero
+                    if((!p->req_rank || p->req_rank == p1->pilot->rank) &&
+                       (!p->req_max_rank || p->req_max_rank >= p1->pilot->rank) &&
+                       (!p->req_vitality || p->req_vitality <= health) &&
+                       (!p->req_accuracy || p->req_accuracy <= fight_stats->hit_miss_ratio[0]) &&
+                       (!p->req_avg_dmg || p->req_avg_dmg <= fight_stats->average_damage[0]) &&
+                       // in tournament mode, this should be a pointer we can compare
+                       (!p->req_enemy || &p1->chr->enemies[p->req_enemy - 1]->pilot == p2->pilot) &&
+                       (!p->req_difficulty || p->req_difficulty <= p1->pilot->difficulty) &&
+                       // XXX apparently you cannot require a jaguar, see tournament compiler readme
+                       (!p->req_fighter || p->req_fighter == p1->pilot->har_id) &&
+                       (!p->req_scrap || (p->req_scrap && fight_stats->finish >= FINISH_SCRAP)) &&
+                       (!p->req_destroy || (p->req_destroy && fight_stats->finish == FINISH_DESTRUCTION))) {
+                        fight_stats->challenger = p;
+                        log_debug("found challenger!");
+                        // XXX we are going to assume the first match, from the lowest in the file, is the one to choose
+                        break;
+                    }
+                }
+            }
+        }
+        if(!local->challenger && p1->chr && p1->chr->pilot.rank == 1) {
             local->champion = true;
         }
         health = game_player_get_score(p1)->health;
@@ -372,21 +460,21 @@ int newsroom_create(scene *scene) {
         local->news_id = 42 + rand_int(3) * 2;
     }
 
-    // XXX TODO strip spaces from the end of the pilots name
-    // XXX TODO set winner/loser names properly
-    if(p1->chr) {
-        newsroom_set_names(local, p1->pilot->name, p2->pilot->name, p1->pilot->har_id, p2->pilot->har_id,
-                           p1->pilot->sex, p2->pilot->sex);
-    } else {
-        newsroom_set_names(local, lang_get(20 + p1->pilot->pilot_id), lang_get(20 + p2->pilot->pilot_id),
-                           p1->pilot->har_id, p2->pilot->har_id, p1->pilot->sex, p2->pilot->sex);
-    }
+    // p2 pilot must be set by now
+    assert(p2->pilot != NULL);
+
+    newsroom_set_names(local, p1->pilot->name, p2->pilot->name, p1->pilot->har_id, p2->pilot->har_id, p1->pilot->sex,
+                       p2->pilot->sex);
     newsroom_fixup_str(local);
 
     // Continue Dialog
-    dialog_create(&local->continue_dialog, DIALOG_STYLE_YES_NO, "DO YOU WISH TO CONTINUE?", 72, 60);
+    dialog_create(&local->continue_dialog, DIALOG_STYLE_YES_NO, lang_get(213), 72, 60);
+    dialog_create(&local->accept_challenge_dialog, DIALOG_STYLE_YES_NO, lang_get(76), 72, 60);
     local->continue_dialog.userdata = scene;
     local->continue_dialog.clicked = newsroom_continue_dialog_clicked;
+
+    local->accept_challenge_dialog.userdata = scene;
+    local->accept_challenge_dialog.clicked = newsroom_accept_challenge_dialog_clicked;
 
     for(int i = 0; i < 2; i++) {
         game_player *player = game_state_get_player(scene->gs, i);

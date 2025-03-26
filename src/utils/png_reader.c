@@ -6,6 +6,8 @@
 #include <png.h>
 #include <stdint.h>
 
+static_assert(PNG_LIBPNG_VER >= 10600, "libpng version should be 1.6.0 or later");
+
 #include "utils/allocator.h"
 #include "utils/crash.h"
 

@@ -90,7 +90,7 @@ int sd_rec_load(sd_rec_file *rec, const char *file) {
 
     // Other flags
     rec->unknown_a = sd_read_byte(r);
-    rec->unknown_b = sd_read_byte(r);
+    rec->arena_palette = sd_read_byte(r);
     rec->game_mode = sd_read_byte(r);
     rec->throw_range = sd_read_word(r);
     rec->hit_pause = sd_read_word(r);
@@ -216,7 +216,7 @@ int sd_rec_save(sd_rec_file *rec, const char *file) {
 
     // Other header data
     sd_write_byte(w, rec->unknown_a);
-    sd_write_byte(w, rec->unknown_b);
+    sd_write_byte(w, rec->arena_palette);
     sd_write_byte(w, rec->game_mode);
     sd_write_word(w, rec->throw_range);
     sd_write_word(w, rec->hit_pause);
@@ -308,6 +308,17 @@ int sd_rec_delete_action(sd_rec_file *rec, unsigned int number) {
     rec->move_count--;
     rec->moves = omf_realloc(rec->moves, rec->move_count * sizeof(sd_rec_move));
     return SD_SUCCESS;
+}
+
+int sd_rec_insert_action_at_tick(sd_rec_file *rec, const sd_rec_move *move) {
+
+    unsigned int i = 0;
+    for(i = 0; i < rec->move_count; i++) {
+        if(move->tick < rec->moves[i].tick) {
+            break;
+        }
+    }
+    return sd_rec_insert_action(rec, i, move);
 }
 
 int sd_rec_insert_action(sd_rec_file *rec, unsigned int number, const sd_rec_move *move) {

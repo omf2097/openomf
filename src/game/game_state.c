@@ -24,10 +24,12 @@
 #include "game/utils/serial.h"
 #include "game/utils/settings.h"
 #include "game/utils/ticktimer.h"
+#include "resources/languages.h"
 #include "resources/pilots.h"
 #include "resources/sounds_loader.h"
 #include "utils/allocator.h"
 #include "utils/c_array_util.h"
+#include "utils/c_string_util.h"
 #include "utils/log.h"
 #include "utils/miscmath.h"
 #include "video/vga_state.h"
@@ -110,6 +112,7 @@ int game_state_create(game_state *gs, engine_init_flags *init_flags) {
     gs->paused = 0;
     gs->tick = 0;
     gs->int_tick = 0;
+    gs->arena = 0;
     gs->role = ROLE_CLIENT;
     gs->net_mode = init_flags->net_mode;
     gs->speed = settings_get()->gameplay.speed + 5;
@@ -178,9 +181,9 @@ int game_state_create(game_state *gs, engine_init_flags *init_flags) {
             omf_free(gs->players[i]->pilot);
             gs->players[i]->pilot = &gs->rec->pilots[i].info;
             // this function alters the palette
-            sd_pilot_set_player_color(gs->players[i]->pilot, PRIMARY, gs->rec->pilots[i].info.color_3);
+            sd_pilot_set_player_color(gs->players[i]->pilot, PRIMARY, gs->rec->pilots[i].info.color_1);
             sd_pilot_set_player_color(gs->players[i]->pilot, SECONDARY, gs->rec->pilots[i].info.color_2);
-            sd_pilot_set_player_color(gs->players[i]->pilot, TERTIARY, gs->rec->pilots[i].info.color_1);
+            sd_pilot_set_player_color(gs->players[i]->pilot, TERTIARY, gs->rec->pilots[i].info.color_3);
         }
 
         gs->match_settings.throw_range = gs->rec->throw_range;
@@ -197,6 +200,9 @@ int game_state_create(game_state *gs, engine_init_flags *init_flags) {
         gs->match_settings.rounds = gs->rec->round_type;
         gs->match_settings.fight_mode = gs->rec->hyper_mode;
         gs->match_settings.sim = false;
+
+        game_player_set_selectable(game_state_get_player(gs, 0), gs->rec->p1_controller != REC_CONTROLLER_AI);
+        game_player_set_selectable(game_state_get_player(gs, 1), gs->rec->p2_controller != REC_CONTROLLER_AI);
 
         _setup_rec_controller(gs, 0, gs->rec);
         _setup_rec_controller(gs, 1, gs->rec);
@@ -936,7 +942,7 @@ void game_state_dynamic_tick(game_state *gs, bool replay) {
     scene_dynamic_tick(gs->sc, game_state_is_paused(gs));
 
     // Poll input. If console is opened, do not poll the controllers.
-    if(!console_window_is_open() && !replay) {
+    if((!console_window_is_open() || gs->init_flags->playback) && !replay) {
         scene_input_poll(gs->sc);
     }
 
@@ -1094,9 +1100,16 @@ void game_state_init_demo(game_state *gs) {
         // set proper color
         pilot pilot_info;
         pilot_get_info(&pilot_info, player->pilot->pilot_id);
-        sd_pilot_set_player_color(player->pilot, PRIMARY, pilot_info.colors[2]);
+        sd_pilot_set_player_color(player->pilot, PRIMARY, pilot_info.colors[0]);
         sd_pilot_set_player_color(player->pilot, SECONDARY, pilot_info.colors[1]);
-        sd_pilot_set_player_color(player->pilot, TERTIARY, pilot_info.colors[0]);
+        sd_pilot_set_player_color(player->pilot, TERTIARY, pilot_info.colors[2]);
+
+        strncpy_or_truncate(player->pilot->name, lang_get(player->pilot->pilot_id + 20), sizeof(player->pilot->name));
+        // TODO: lang: remove (the need for) newline stripping
+        // 1player name strings end in a newline...
+        if(player->pilot->name[strlen(player->pilot->name) - 1] == '\n') {
+            player->pilot->name[strlen(player->pilot->name) - 1] = 0;
+        }
     }
 }
 
@@ -1152,8 +1165,10 @@ void game_state_free(game_state **_gs) {
     vector_free(&gs->sounds);
 
     // Free scene
-    scene_free(gs->sc);
-    omf_free(gs->sc);
+    if(gs->sc) {
+        scene_free(gs->sc);
+        omf_free(gs->sc);
+    }
 
     if(gs->rec) {
         sd_rec_free(gs->rec);

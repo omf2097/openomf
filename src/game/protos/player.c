@@ -380,7 +380,7 @@ void player_run(object *obj) {
     }
 
     if(obj->group == GROUP_HAR && enemy && !ab_flag) {
-        obj->pos.x = max2(ARENA_LEFT_WALL, min2(ARENA_RIGHT_WALL, obj->pos.x));
+        obj->pos.x = clampf(obj->pos.x, ARENA_LEFT_WALL, ARENA_RIGHT_WALL);
     }
 
     // If frame changed, do something
@@ -464,13 +464,12 @@ void player_run(object *obj) {
                 int sf = sd_script_get(frame, "sf");
                 assert(sf >= -128 && sf <= 128);
                 // 10 gallon harrison stetson right here
-                // TODO the sd tag seems to affect the frequency adjustment??? and is only used in intro.bk
-                if(sd_script_isset(frame, "sd")) {
+                if(obj->group != GROUP_HAR && obj->group != GROUP_PROJECTILE) {
                     pitch = 1.0f + (clamp(sf, -128, 128) / 200.0f);
                 } else {
                     pitch = 3.0f + (clamp(sf, -128, 128) / 20.0f);
                 }
-                log_debug("sound freq is %d, pitch now %f", sf, pitch);
+                log_debug("object in group %d sound freq is %d, pitch now %f", obj->group, sf, pitch);
             }
             if(sd_script_isset(frame, "l")) {
                 int v = clamp(sd_script_get(frame, "l"), 0, 100);

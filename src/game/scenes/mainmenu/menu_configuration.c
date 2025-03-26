@@ -38,25 +38,18 @@ void menu_enter_audio(component *c, void *userdata) {
 }
 
 component *menu_configuration_create(scene *s) {
-    text_settings tconf;
-    text_defaults(&tconf);
-    tconf.font = FONT_BIG;
-    tconf.halign = TEXT_CENTER;
-    tconf.cforeground = TEXT_BRIGHT_GREEN;
-
-    component *menu = menu_create(11);
-    menu_attach(menu, label_create(&tconf, "CONFIGURATION"));
+    component *menu = menu_create();
+    menu_attach(menu, label_create_title("CONFIGURATION"));
     menu_attach(menu, filler_create());
-    menu_attach(menu,
-                button_create(&tconf, "LANGUAGE", "Forstar du ikke engelsk?", COM_ENABLED, menu_enter_language, s));
-    menu_attach(menu, button_create(&tconf, "PLAYER 1 INPUT", "Choose the control for player 1: keyboard or joystick.",
-                                    COM_ENABLED, menu_enter_input_1, s));
-    menu_attach(menu, button_create(&tconf, "PLAYER 2 INPUT", "Choose the control for player 2: keyboard or joystick",
-                                    COM_ENABLED, menu_enter_input_2, s));
-    menu_attach(menu, button_create(&tconf, "VIDEO OPTIONS", "Various options for visual effects and detail levels.",
-                                    COM_ENABLED, menu_enter_video, s));
-    menu_attach(menu, button_create(&tconf, "AUDIO OPTIONS", "Various options for audio effects and volume.",
-                                    COM_ENABLED, menu_enter_audio, s));
-    menu_attach(menu, button_create(&tconf, "DONE", "Leave configuration.", COM_ENABLED, menu_config_done, NULL));
+    menu_attach(menu, button_create("LANGUAGE", "Forstar du ikke engelsk?", false, false, menu_enter_language, s));
+    menu_attach(menu, button_create("PLAYER 1 INPUT", "Choose the control for player 1: keyboard or joystick.", false,
+                                    false, menu_enter_input_1, s));
+    menu_attach(menu, button_create("PLAYER 2 INPUT", "Choose the control for player 2: keyboard or joystick", false,
+                                    false, menu_enter_input_2, s));
+    menu_attach(menu, button_create("VIDEO OPTIONS", "Various options for visual effects and detail levels.", false,
+                                    false, menu_enter_video, s));
+    menu_attach(menu, button_create("AUDIO OPTIONS", "Various options for audio effects and volume.", false, false,
+                                    menu_enter_audio, s));
+    menu_attach(menu, button_create("DONE", "Leave configuration.", false, false, menu_config_done, NULL));
     return menu;
 }

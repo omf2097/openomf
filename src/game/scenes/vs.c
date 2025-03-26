@@ -27,7 +27,6 @@ void cb_vs_destroy_object(object *parent, int id, void *userdata);
 typedef struct vs_local_t {
     int arena_select_obj_id;
     surface arena_select_bg;
-    int arena;
     char vs_str[128];
     dialog quit_dialog;
     dialog too_pathetic_dialog;
@@ -148,32 +147,37 @@ void vs_handle_action(scene *scene, int action) {
             case ACT_KICK:
             case ACT_PUNCH:
                 if(game_state_get_player(scene->gs, 1)->pilot) {
-                    game_state_set_next(scene->gs, SCENE_ARENA0 + local->arena);
+                    game_state_set_next(scene->gs, SCENE_ARENA0 + scene->gs->arena);
                 } else {
                     game_state_get_player(scene->gs, 1)->pilot = NULL;
-                    game_state_set_next(scene->gs, SCENE_MECHLAB);
+                    if(scene->gs->fight_stats.challenger) {
+                        // unranked challenger time
+                        game_state_set_next(scene->gs, SCENE_NEWSROOM);
+                    } else {
+                        game_state_set_next(scene->gs, SCENE_MECHLAB);
+                    }
                 }
                 break;
             case ACT_UP:
             case ACT_LEFT:
                 if(game_state_get_player(scene->gs, 1)->selectable) {
-                    local->arena--;
-                    if(local->arena < 0) {
-                        local->arena = 4;
+                    scene->gs->arena--;
+                    if(scene->gs->arena < 0) {
+                        scene->gs->arena = 4;
                     }
                     object *arena_select = game_state_find_object(scene->gs, local->arena_select_obj_id);
-                    object_select_sprite(arena_select, local->arena);
+                    object_select_sprite(arena_select, scene->gs->arena);
                 }
                 break;
             case ACT_DOWN:
             case ACT_RIGHT:
                 if(game_state_get_player(scene->gs, 1)->selectable) {
-                    local->arena++;
-                    if(local->arena > 4) {
-                        local->arena = 0;
+                    scene->gs->arena++;
+                    if(scene->gs->arena > 4) {
+                        scene->gs->arena = 0;
                     }
                     object *arena_select = game_state_find_object(scene->gs, local->arena_select_obj_id);
-                    object_select_sprite(arena_select, local->arena);
+                    object_select_sprite(arena_select, scene->gs->arena);
                 }
                 break;
         }
@@ -267,65 +271,65 @@ void vs_render_fight_stats(scene *scene, text_settings *tconf_yellow) {
     char money[16];
     fight_stats *fight_stats = &scene->gs->fight_stats;
     snprintf(text, sizeof(text), lang_get(fight_stats->plug_text + PLUG_TEXT_START), fight_stats->sold);
-    text_render(tconf_yellow, TEXT_DEFAULT, 90, 156, 198, 6, text);
+    text_render_mode(tconf_yellow, TEXT_DEFAULT, 90, 156, 198, 6, text);
 
-    text_render(&light_green, TEXT_DEFAULT, 190, 6, 140, 6, "FINANCIAL REPORT");
+    text_render_mode(&light_green, TEXT_DEFAULT, 190, 6, 140, 6, "FINANCIAL REPORT");
 
-    text_render(&dark_green, TEXT_DEFAULT, 190, 16, 90, 6, "WINNINGS:");
+    text_render_mode(&dark_green, TEXT_DEFAULT, 190, 16, 90, 6, "WINNINGS:");
     score_format(fight_stats->winnings, money, sizeof(money));
     snprintf(text, sizeof(text), "$ %sK", money);
-    text_render(&light_green, TEXT_DEFAULT, 250, 16, 140, 6, text);
+    text_render_mode(&light_green, TEXT_DEFAULT, 250, 16, 140, 6, text);
 
-    text_render(&dark_green, TEXT_DEFAULT, 196, 24, 90, 6, "BONUSES:");
+    text_render_mode(&dark_green, TEXT_DEFAULT, 196, 24, 90, 6, "BONUSES:");
     score_format(fight_stats->bonuses, money, sizeof(money));
     snprintf(text, sizeof(text), "$ %sK", money);
-    text_render(&light_green, TEXT_DEFAULT, 250, 24, 140, 6, text);
+    text_render_mode(&light_green, TEXT_DEFAULT, 250, 24, 140, 6, text);
 
-    text_render(&dark_green, TEXT_DEFAULT, 172, 32, 90, 6, "REPAIR COST:");
+    text_render_mode(&dark_green, TEXT_DEFAULT, 172, 32, 90, 6, "REPAIR COST:");
     score_format(fight_stats->repair_cost, money, sizeof(money));
     snprintf(text, sizeof(text), "$ %sK", money);
-    text_render(&light_green, TEXT_DEFAULT, 250, 32, 140, 6, text);
+    text_render_mode(&light_green, TEXT_DEFAULT, 250, 32, 140, 6, text);
 
-    text_render(&dark_green, TEXT_DEFAULT, 202, 40, 120, 6, "PROFIT:");
+    text_render_mode(&dark_green, TEXT_DEFAULT, 202, 40, 120, 6, "PROFIT:");
     score_format(fight_stats->profit, money, sizeof(money));
     snprintf(text, sizeof(text), "$ %sK", money);
-    text_render(&light_green, TEXT_DEFAULT, 250, 40, 140, 6, text);
+    text_render_mode(&light_green, TEXT_DEFAULT, 250, 40, 140, 6, text);
 
-    text_render(&light_green, TEXT_DEFAULT, 210, 60, 60, 6, "FIGHT STATISTICS");
+    text_render_mode(&light_green, TEXT_DEFAULT, 210, 60, 60, 6, "FIGHT STATISTICS");
 
-    text_render(&dark_green, TEXT_DEFAULT, 202, 79, 90, 6, "HITS LANDED:");
+    text_render_mode(&dark_green, TEXT_DEFAULT, 202, 79, 90, 6, "HITS LANDED:");
     snprintf(text, sizeof(text), "%u", fight_stats->hits_landed[0]);
-    text_render(&light_green, TEXT_DEFAULT, 276, 79, 80, 6, text);
+    text_render_mode(&light_green, TEXT_DEFAULT, 276, 79, 80, 6, text);
 
-    text_render(&dark_green, TEXT_DEFAULT, 184, 86, 90, 6, "AVERAGE DAMAGE:");
+    text_render_mode(&dark_green, TEXT_DEFAULT, 184, 86, 90, 6, "AVERAGE DAMAGE:");
     snprintf(text, sizeof(text), "%.1f", fight_stats->average_damage[0]);
-    text_render(&light_green, TEXT_DEFAULT, 276, 86, 80, 6, text);
+    text_render_mode(&light_green, TEXT_DEFAULT, 276, 86, 80, 6, text);
 
-    text_render(&dark_green, TEXT_DEFAULT, 184, 93, 90, 6, "FAILED ATTACKS:");
+    text_render_mode(&dark_green, TEXT_DEFAULT, 184, 93, 90, 6, "FAILED ATTACKS:");
     snprintf(text, sizeof(text), "%u", fight_stats->total_attacks[0] - fight_stats->hits_landed[0]);
-    text_render(&light_green, TEXT_DEFAULT, 276, 93, 80, 6, text);
+    text_render_mode(&light_green, TEXT_DEFAULT, 276, 93, 80, 6, text);
 
-    text_render(&dark_green, TEXT_DEFAULT, 184, 100, 90, 6, "HIT/MISS RATIO:");
+    text_render_mode(&dark_green, TEXT_DEFAULT, 184, 100, 90, 6, "HIT/MISS RATIO:");
     snprintf(text, sizeof(text), "%u%%", fight_stats->hit_miss_ratio[0]);
-    text_render(&light_green, TEXT_DEFAULT, 276, 100, 80, 6, text);
+    text_render_mode(&light_green, TEXT_DEFAULT, 276, 100, 80, 6, text);
 
-    text_render(&light_green, TEXT_DEFAULT, 210, 108, 80, 6, "OPPONENT");
+    text_render_mode(&light_green, TEXT_DEFAULT, 210, 108, 80, 6, "OPPONENT");
 
-    text_render(&dark_green, TEXT_DEFAULT, 202, 115, 90, 6, "HITS LANDED:");
+    text_render_mode(&dark_green, TEXT_DEFAULT, 202, 115, 90, 6, "HITS LANDED:");
     snprintf(text, sizeof(text), "%u", fight_stats->hits_landed[1]);
-    text_render(&light_green, TEXT_DEFAULT, 276, 115, 80, 6, text);
+    text_render_mode(&light_green, TEXT_DEFAULT, 276, 115, 80, 6, text);
 
-    text_render(&dark_green, TEXT_DEFAULT, 184, 123, 90, 6, "AVERAGE DAMAGE:");
+    text_render_mode(&dark_green, TEXT_DEFAULT, 184, 123, 90, 6, "AVERAGE DAMAGE:");
     snprintf(text, sizeof(text), "%.1f", fight_stats->average_damage[1]);
-    text_render(&light_green, TEXT_DEFAULT, 276, 123, 80, 6, text);
+    text_render_mode(&light_green, TEXT_DEFAULT, 276, 123, 80, 6, text);
 
-    text_render(&dark_green, TEXT_DEFAULT, 184, 130, 90, 6, "FAILED ATTACKS:");
+    text_render_mode(&dark_green, TEXT_DEFAULT, 184, 130, 90, 6, "FAILED ATTACKS:");
     snprintf(text, sizeof(text), "%u", fight_stats->total_attacks[1] - fight_stats->hits_landed[1]);
-    text_render(&light_green, TEXT_DEFAULT, 276, 130, 30, 6, text);
+    text_render_mode(&light_green, TEXT_DEFAULT, 276, 130, 30, 6, text);
 
-    text_render(&dark_green, TEXT_DEFAULT, 184, 137, 90, 6, "HIT/MISS RATIO:");
+    text_render_mode(&dark_green, TEXT_DEFAULT, 184, 137, 90, 6, "HIT/MISS RATIO:");
     snprintf(text, sizeof(text), "%u%%", fight_stats->hit_miss_ratio[1]);
-    text_render(&light_green, TEXT_DEFAULT, 276, 137, 40, 6, text);
+    text_render_mode(&light_green, TEXT_DEFAULT, 276, 137, 40, 6, text);
 }
 
 void vs_render(scene *scene) {
@@ -343,7 +347,7 @@ void vs_render(scene *scene) {
     tconf_yellow.cshadow = 202;
     tconf_yellow.halign = TEXT_CENTER;
 
-    text_render(&tconf_yellow, TEXT_DEFAULT, 0, 3, 320, 8, local->vs_str);
+    text_render_mode(&tconf_yellow, TEXT_DEFAULT, 0, 3, 320, 8, local->vs_str);
 
     // no other text is shadowed
     tconf_yellow.shadow = 0;
@@ -361,21 +365,21 @@ void vs_render(scene *scene) {
         video_draw(&local->arena_select_bg, 55, 150);
 
         // arena name
-        text_render(&tconf_green, TEXT_DEFAULT, 56 + 72, 152, (211 - 72), 8, lang_get(56 + local->arena));
+        text_render_mode(&tconf_green, TEXT_DEFAULT, 56 + 72, 152, (211 - 72), 8, lang_get(56 + scene->gs->arena));
 
         tconf_green.valign = TEXT_MIDDLE;
         // arena description
-        text_render(&tconf_green, TEXT_DEFAULT, 56 + 72, 153, (211 - 72), 50, lang_get(66 + local->arena));
+        text_render_mode(&tconf_green, TEXT_DEFAULT, 56 + 72, 153, (211 - 72), 50, lang_get(66 + scene->gs->arena));
     } else if(player2->pilot && player2->pilot->pilot_id == PILOT_KREISSACK &&
               settings_get()->gameplay.difficulty < 2) {
         // kreissack, but not on Veteran or higher
         tconf_yellow.halign = TEXT_CENTER;
-        text_render(&tconf_yellow, TEXT_DEFAULT, 80, 165, 170, 60, lang_get(747));
+        text_render_mode(&tconf_yellow, TEXT_DEFAULT, 80, 165, 170, 60, lang_get(747));
 
     } else if(player1->chr && player2->pilot) {
         // tournament mode insult
         tconf_yellow.halign = TEXT_RIGHT;
-        text_render(&tconf_yellow, TEXT_DEFAULT, 100, 165, 150, 60, player2->pilot->quotes[0]);
+        text_render_mode(&tconf_yellow, TEXT_DEFAULT, 100, 165, 150, 60, player2->pilot->quotes[0]);
     } else if(player2->pilot == NULL) {
         if(scene->gs->fight_stats.winner >= 0) {
             vs_render_fight_stats(scene, &tconf_yellow);
@@ -384,10 +388,10 @@ void vs_render(scene *scene) {
         // 1 player insult
         tconf_yellow.valign = TEXT_MIDDLE;
         tconf_yellow.halign = TEXT_CENTER;
-        text_render(&tconf_yellow, TEXT_DEFAULT, 77, 150, 150, 30,
-                    lang_get(749 + (11 * player1->pilot->pilot_id) + player2->pilot->pilot_id));
-        text_render(&tconf_yellow, TEXT_DEFAULT, 110, 170, 150, 30,
-                    lang_get(870 + (11 * player2->pilot->pilot_id) + player1->pilot->pilot_id));
+        text_render_mode(&tconf_yellow, TEXT_DEFAULT, 77, 150, 150, 30,
+                         lang_get(749 + (11 * player1->pilot->pilot_id) + player2->pilot->pilot_id));
+        text_render_mode(&tconf_yellow, TEXT_DEFAULT, 110, 170, 150, 30,
+                         lang_get(870 + (11 * player2->pilot->pilot_id) + player1->pilot->pilot_id));
     }
 }
 
@@ -534,10 +538,16 @@ int vs_create(scene *scene) {
     } else {
         // plug time!!!!!!!111eleven!
         object *plug = omf_calloc(1, sizeof(object));
+        fight_stats *fight_stats = &scene->gs->fight_stats;
         object_create(plug, scene->gs, vec2i_create(-10, 150), vec2f_create(0, 0));
         ani = &bk_get_info(scene->bk_data, 2)->ani;
         object_set_animation(plug, ani);
-        object_select_sprite(plug, 0);
+        // plug should be happy, sometimes? he is happy on frame 1
+        if(fight_stats->plug_text == PLUG_ENHANCEMENT || fight_stats->plug_text == PLUG_WIN_BIG) {
+            object_select_sprite(plug, 1);
+        } else {
+            object_select_sprite(plug, 0);
+        }
         object_set_halt(plug, 1);
         game_state_add_object(scene->gs, plug, RENDER_LAYER_TOP, 0, 0);
     }
@@ -555,13 +565,15 @@ int vs_create(scene *scene) {
 
     if(player2->selectable) {
         // player1 gets to choose, start at arena 0
-        local->arena = 0;
+        scene->gs->arena = 0;
     } else if(player2->pilot && player2->pilot->pilot_id == PILOT_KREISSACK) {
         // force arena 0 when fighting Kreissack in 1 player mode
-        local->arena = 0;
+        scene->gs->arena = 0;
+    } else if(is_tournament(scene->gs) || is_demoplay(scene->gs)) {
+        // pick random arenas
+        scene->gs->arena = rand_int(5);
     } else {
-        // pick a random arena for 1 player mode
-        local->arena = rand_int(5); // srand was done in melee
+        // 1 player mode cycles through the arenas
     }
 
     // Arena
@@ -571,7 +583,7 @@ int vs_create(scene *scene) {
         object_create(arena_select, scene->gs, vec2i_create(59, 155), vec2f_create(0, 0));
         local->arena_select_obj_id = arena_select->id;
         object_set_animation(arena_select, ani);
-        object_select_sprite(arena_select, local->arena);
+        object_select_sprite(arena_select, scene->gs->arena);
         object_set_halt(arena_select, 1);
         game_state_add_object(scene->gs, arena_select, RENDER_LAYER_TOP, 0, 0);
     }

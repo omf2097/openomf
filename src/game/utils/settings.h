@@ -40,7 +40,7 @@ typedef struct {
 } settings_language;
 
 typedef struct {
-    char *renderer;
+    char renderer[16];
     int screen_w;
     int screen_h;
     int vsync;

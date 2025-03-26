@@ -55,6 +55,14 @@ enum
     REC_CONTROLLER_REPLAY
 };
 
+enum
+{
+    // TOURNAMENT
+    REC_GAMEMODE_TOURNAMENT = 1,
+    // 1 PLAYER, 2 PLAYER, DEMO, and NETPLAY.
+    REC_GAMEMODE_ARCADE = 2,
+};
+
 /*! \brief REC recording
  *
  * Contains a record of a single OMF:2097 match. This may be
@@ -66,7 +74,7 @@ typedef struct {
     sd_rec_pilot pilots[2]; ///< Information about the pilots
     uint32_t scores[2];     ///< Score data at the start of the match
     int8_t unknown_a;       ///< Is Fire or ice ? 0 = no, 1 = fire, 2 = ice ?
-    int8_t unknown_b;       ///< Unknown \todo: Find out
+    int8_t arena_palette;   ///< Arena palette variant
     int8_t game_mode;       ///< 1 is tournament, 2 is 1/2 player
 
     int16_t throw_range;    ///< Throw range (%)
@@ -175,6 +183,10 @@ int sd_rec_extra_len(int key);
  * \param move Move to insert
  */
 int sd_rec_insert_action(sd_rec_file *rec, unsigned int number, const sd_rec_move *move);
+
+/*! \brief like sd_rec_insert_action but uses the tick in the move to find the right insertion point
+ */
+int sd_rec_insert_action_at_tick(sd_rec_file *rec, const sd_rec_move *move);
 
 /*! \brief Insert a closing ACT_NONE on a rec at `ticks`
  */

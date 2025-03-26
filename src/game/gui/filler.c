@@ -3,10 +3,8 @@
 
 component *filler_create(void) {
     component *c = widget_create();
-    component_disable(c, 1);
-    c->supports_disable = 1;
-    c->supports_select = 0;
-    c->supports_focus = 0;
-    c->filler = true;
+    component_disable(c, true);
+    component_set_supports(c, true, false, false);
+    component_set_filler(c, true);
     return c;
 }

@@ -20,6 +20,8 @@ enum
 {
     // there are 10 HARs
     LANG_STR_HAR = 31,
+    LANG_STR_NEWSROOM_CHALLENGER1 = 77,
+    LANG_STR_NEWSROOM_CHALLENGER2 = 78,
     LANG_STR_NEWSROOM_NEWCHAMPION = 79,
     // there are 3*2 pronouns
     LANG_STR_PRONOUN = 81,

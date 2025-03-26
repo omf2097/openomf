@@ -37,13 +37,23 @@
 #include "utils/random.h"
 #include "video/video.h"
 
-#define TEXT_COLOR 0xC7
+// the pilot name, HAR, and score
+#define TEXT_HUD_COLOR 0xE7
+#define TEXT_HUD_SHADOW 0xF7
 
 #define HAR1_START_POS 110
-#define HAR2_START_POS 211
+#define HAR2_START_POS 210
 
 #define GAME_MENU_RETURN_ID 100
 #define GAME_MENU_QUIT_ID 101
+
+// Colors specific to palette used by arena
+#define TEXT_PRIMARY_COLOR 0xFE
+#define TEXT_SECONDARY_COLOR 0xFD
+#define TEXT_DISABLED_COLOR 0xC0
+#define TEXT_ACTIVE_COLOR 0xFF
+#define TEXT_INACTIVE_COLOR 0xFE
+#define TEXT_SHADOW_COLOR 0xC0
 
 typedef enum
 {
@@ -81,18 +91,25 @@ void write_rec_move(scene *scene, game_player *player, int action);
 
 bool defeated_at_rest(object *obj);
 
+static void arena_end(scene *sc);
+
 // -------- Local callbacks --------
 
 void game_menu_quit(component *c, void *userdata) {
     scene *s = userdata;
+    arena_local *local = scene_get_userdata((scene *)userdata);
+    local->winner = 1;
+
     s->gs->fight_stats.plug_text = PLUG_FORFEIT;
     chr_score_reset(game_player_get_score(game_state_get_player((s)->gs, 0)), 1);
     chr_score_reset(game_player_get_score(game_state_get_player((s)->gs, 1)), 1);
+
     game_player *player1 = game_state_get_player(((scene *)userdata)->gs, 0);
-    if(player1->chr) {
+    if(s->gs->init_flags->playback == 1) {
+        // 'quit' button exits during REC playback
+        game_state_set_next(s->gs, SCENE_NONE);
+    } else if(player1->chr) {
         // quit back to VS for plug to call you a chicken
-        game_player *player2 = game_state_get_player(((scene *)userdata)->gs, 1);
-        player2->pilot = NULL;
         if(s->gs->match_settings.sim) {
             game_state_set_next(s->gs, SCENE_MECHLAB);
         } else {
@@ -100,6 +117,13 @@ void game_menu_quit(component *c, void *userdata) {
         }
     } else {
         game_state_set_next(s->gs, SCENE_MENU);
+    }
+
+    arena_end(s);
+
+    if(player1->chr) {
+        game_player *player2 = game_state_get_player(((scene *)userdata)->gs, 1);
+        player2->pilot = NULL;
     }
 }
 
@@ -222,11 +246,68 @@ void arena_screengrab_winner(scene *sc) {
     }
 }
 
-void arena_end(scene *sc) {
+static void arena_end(scene *sc) {
     game_state *gs = sc->gs;
     arena_local *local = scene_get_userdata(sc);
     const scene *scene = game_state_get_scene(gs);
     fight_stats *fight_stats = &gs->fight_stats;
+
+    int winner_player_id = local->winner;
+    int loser_player_id = !winner_player_id;
+    game_player *player_winner = game_state_get_player(scene->gs, winner_player_id);
+    game_player *player_loser = game_state_get_player(scene->gs, loser_player_id);
+    object *winner = game_state_find_object(scene->gs, game_player_get_har_obj_id(player_winner));
+    har *winner_har = object_get_userdata(winner);
+
+    // if tournament player won
+    if(is_tournament(gs) && local->winner == 0) {
+        // TODO The repair costs formula here is completely bogus
+        int trade_value = calculate_trade_value(player_winner->pilot) / 100;
+        float hp_percentage = (float)winner_har->health / (float)winner_har->health_max;
+        fight_stats->repair_cost = (1.0f - hp_percentage) * trade_value;
+
+        float winnings_multiplier = player_winner->chr->winnings_multiplier;
+        fight_stats->winnings = (player_loser->pilot->money + player_loser->pilot->winnings) * winnings_multiplier;
+        fight_stats->winnings += (int)(400 * hp_percentage);
+
+        // secret players have no rank, and don't increase your own ranking
+        if(!gs->match_settings.sim && player_loser->pilot->rank > 0) {
+            player_winner->pilot->rank--;
+            if(player_winner->pilot->rank < 1) {
+                player_winner->pilot->rank = 1;
+            }
+            for(int i = 0; i < player_winner->chr->pilot.enemies_inc_unranked; i++) {
+                if(player_winner->chr->enemies[i]->pilot.rank == player_winner->pilot->rank) {
+                    player_winner->chr->enemies[i]->pilot.rank += 1;
+                    break;
+                }
+            }
+        }
+    }
+    // if tournament player lost
+    else if(is_tournament(gs) && local->winner == 1) {
+        // secret players have no rank, and don't decrease your own ranking
+        if(player_loser->pilot->rank <= player_loser->pilot->enemies_ex_unranked && !gs->match_settings.sim &&
+           player_winner->pilot->rank > 0) {
+            player_loser->pilot->rank++;
+            if(player_loser->pilot->rank > player_loser->chr->pilot.enemies_ex_unranked + 1) {
+                player_loser->pilot->rank = player_loser->chr->pilot.enemies_ex_unranked + 1;
+            }
+            for(int i = 0; i < player_loser->chr->pilot.enemies_inc_unranked; i++) {
+                if(player_loser->chr->enemies[i]->pilot.rank == player_loser->pilot->rank) {
+                    player_loser->chr->enemies[i]->pilot.rank -= 1;
+                    break;
+                }
+            }
+        }
+        fight_stats->repair_cost = calculate_trade_value(player_loser->pilot) / 100;
+    }
+
+    if(!gs->match_settings.sim) {
+        game_player_get_score(player_winner)->wins++;
+        player_winner->pilot->wins++;
+        player_loser->pilot->losses++;
+    }
 
     // Switch scene
     if(scene->gs->init_flags->playback == 1) {
@@ -268,7 +349,12 @@ void arena_end(scene *sc) {
         }
         if(fight_stats->winner == 0) {
             int16_t hp_left_percent = har_health_percent(p1_har);
-            if(hp_left_percent >= 75) {
+            // check if this is an unranked challenger with an enhancement we don't have
+            if(p2->pilot->rank == 0 && fight_stats->finish == FINISH_DESTRUCTION &&
+               p2->pilot->enhancements[p1->pilot->har_id] == p1->pilot->enhancements[p1->pilot->har_id] + 1) {
+                p1->pilot->enhancements[p1->pilot->har_id] = p2->pilot->enhancements[p1->pilot->har_id];
+                fight_stats->plug_text = PLUG_ENHANCEMENT;
+            } else if(hp_left_percent >= 75) {
                 fight_stats->plug_text = PLUG_WIN_BIG + rand_int(3);
             } else if(hp_left_percent >= 50) {
                 fight_stats->plug_text = PLUG_WIN_OK + rand_int(3);
@@ -311,6 +397,14 @@ void arena_end(scene *sc) {
     } else {
         game_state_set_next(gs, SCENE_MELEE);
     }
+
+    if(is_singleplayer(scene->gs) && winner_player_id == 0) {
+        // cycle the maps in singleplayer
+        scene->gs->arena++;
+        if(scene->gs->arena > 4) {
+            scene->gs->arena = 0;
+        }
+    }
 }
 
 void arena_reset(scene *sc) {
@@ -320,7 +414,7 @@ void arena_reset(scene *sc) {
     log_debug("resetting arena");
 
     // Kill all hazards and projectiles
-    game_state_clear_objects(sc->gs, GROUP_PROJECTILE | GROUP_SCRAP | GROUP_ANNOUNCEMENT);
+    game_state_clear_objects(sc->gs, GROUP_PROJECTILE | GROUP_HAZARD | GROUP_SCRAP | GROUP_ANNOUNCEMENT);
 
     // Initial har data
     vec2i pos[2];
@@ -380,6 +474,12 @@ void arena_reset(scene *sc) {
         object_set_sprite_override(number, 1);
         object_set_group(number, GROUP_ANNOUNCEMENT);
         game_state_add_object(sc->gs, number, RENDER_LAYER_TOP, 0, 0);
+    }
+
+    // When playing the Desert arena in Arcade mode, change
+    // the palette each round to simulate time passing.
+    if(sc->bk_data->file_id == 128 && (unsigned int)local->round < vector_size(&sc->bk_data->palettes)) {
+        vga_state_set_base_palette_from_range(bk_get_palette(sc->bk_data, local->round), 0x60, 0x60, 0x40);
     }
 }
 
@@ -573,49 +673,8 @@ void arena_har_defeat_hook(int loser_player_id, scene *scene) {
             local->win_state = YOUWIN;
         } else {
             if(loser_player_id == 1) {
-                if(is_tournament(gs)) {
-                    // TODO The repair costs formula here is completely bogus
-                    int trade_value = calculate_trade_value(player_winner->pilot) / 100;
-                    float hp_percentage = (float)winner_har->health / (float)winner_har->health_max;
-                    fight_stats->repair_cost = (1.0f - hp_percentage) * trade_value;
-
-                    float winnings_multiplier = player_winner->chr->winnings_multiplier;
-                    fight_stats->winnings =
-                        (player_loser->pilot->money + player_loser->pilot->winnings) * winnings_multiplier;
-                    fight_stats->winnings += (int)(400 * hp_percentage);
-                }
-                // secret players have no rank, and don't increase your own ranking
-                if(!gs->match_settings.sim && player_loser->pilot->rank > 0) {
-                    player_winner->pilot->rank--;
-                    if(player_winner->pilot->rank < 1) {
-                        player_winner->pilot->rank = 1;
-                    }
-                    for(int i = 0; i < player_winner->chr->pilot.enemies_inc_unranked; i++) {
-                        if(player_winner->chr->enemies[i]->pilot.rank == player_winner->pilot->rank) {
-                            player_winner->chr->enemies[i]->pilot.rank += 1;
-                            break;
-                        }
-                    }
-                }
                 local->win_state = YOUWIN;
             } else {
-                if(is_tournament(gs)) {
-                    // secret players have no rank, and don't decrease your own ranking
-                    if(player_loser->pilot->rank <= player_loser->pilot->enemies_ex_unranked &&
-                       !gs->match_settings.sim && player_winner->pilot->rank > 0) {
-                        player_loser->pilot->rank++;
-                        if(player_loser->pilot->rank > player_loser->chr->pilot.enemies_ex_unranked + 1) {
-                            player_loser->pilot->rank = player_loser->chr->pilot.enemies_ex_unranked + 1;
-                        }
-                        for(int i = 0; i < player_loser->chr->pilot.enemies_inc_unranked; i++) {
-                            if(player_loser->chr->enemies[i]->pilot.rank == player_loser->pilot->rank) {
-                                player_loser->chr->enemies[i]->pilot.rank -= 1;
-                                break;
-                            }
-                        }
-                    }
-                    fight_stats->repair_cost = calculate_trade_value(player_loser->pilot) / 100;
-                }
                 local->win_state = YOULOSE;
             }
         }
@@ -639,11 +698,6 @@ void arena_har_defeat_hook(int loser_player_id, scene *scene) {
         winner_har->enqueued = 0;
         local->over = 1;
         local->winner = winner_player_id;
-        if(!gs->match_settings.sim) {
-            game_player_get_score(player_winner)->wins++;
-            player_winner->pilot->wins++;
-            player_loser->pilot->losses++;
-        }
         if(is_singleplayer(gs)) {
             player_winner->sp_wins |= 2 << player_loser->pilot->pilot_id;
             if(player_loser->pilot->pilot_id == PILOT_KREISSACK) {
@@ -739,9 +793,11 @@ void arena_har_hook(har_event event, void *data) {
             }
             break;
         case HAR_EVENT_SCRAP:
+            scene->gs->fight_stats.finish = FINISH_SCRAP;
             chr_score_scrap(score);
             break;
         case HAR_EVENT_DESTRUCTION:
+            scene->gs->fight_stats.finish = FINISH_DESTRUCTION;
             chr_score_destruction(score);
             log_debug("DESTRUCTION!");
             break;
@@ -1014,7 +1070,7 @@ void arena_spawn_hazard(scene *scene) {
                 hazard_create(obj, scene);
                 if(game_state_add_object(scene->gs, obj, RENDER_LAYER_BOTTOM, 1, 0) == 0) {
                     object_set_layers(obj, LAYER_HAZARD | LAYER_HAR);
-                    object_set_group(obj, GROUP_PROJECTILE);
+                    object_set_group(obj, GROUP_HAZARD);
                     object_set_userdata(obj, scene->bk_data);
                     if(info->ani.extra_string_count > 0) {
                         // For the desert, there's a bunch of extra animation strgins for
@@ -1081,8 +1137,8 @@ void arena_dynamic_tick(scene *scene, int paused) {
         for(int i = 0; i < 2; i++) {
             float hp = (float)hars[i]->health / (float)hars[i]->health_max;
             float en = (float)hars[i]->endurance / (float)hars[i]->endurance_max;
-            progressbar_set_progress(local->health_bars[i], hp * 100, gs->warp_speed ? false : true);
-            progressbar_set_progress(local->endurance_bars[i], en * 100, gs->warp_speed ? false : true);
+            progressbar_set_progress(local->health_bars[i], hp * 100, !(gs->warp_speed || gs->clone));
+            progressbar_set_progress(local->endurance_bars[i], en * 100, !(gs->warp_speed || gs->clone));
             progressbar_set_flashing(local->endurance_bars[i], (en * 100 < 50), 8);
             component_tick(local->health_bars[i]);
             component_tick(local->endurance_bars[i]);
@@ -1182,12 +1238,10 @@ void arena_dynamic_tick(scene *scene, int paused) {
         }
 
         // check some invariants
-        if(!player_frame_isset(obj_har[0], "ab")) {
-            assert(obj_har[0]->pos.x >= ARENA_LEFT_WALL && obj_har[0]->pos.x <= ARENA_RIGHT_WALL);
-        }
-        if(!player_frame_isset(obj_har[1], "ab")) {
-            assert(obj_har[1]->pos.x >= ARENA_LEFT_WALL && obj_har[1]->pos.x <= ARENA_RIGHT_WALL);
-        }
+        assert(player_frame_isset(obj_har[0], "ab") ||
+               (obj_har[0]->pos.x >= ARENA_LEFT_WALL && obj_har[0]->pos.x <= ARENA_RIGHT_WALL));
+        assert(player_frame_isset(obj_har[1], "ab") ||
+               (obj_har[1]->pos.x >= ARENA_LEFT_WALL && obj_har[1]->pos.x <= ARENA_RIGHT_WALL));
         if(hars[0]->health == 0) {
             assert(hars[0]->state == STATE_DEFEAT || hars[0]->state == STATE_RECOIL || hars[0]->state == STATE_FALLEN ||
                    hars[0]->state == STATE_NONE || hars[0]->state == STATE_WALLDAMAGE);
@@ -1264,7 +1318,8 @@ void arena_render_overlay(scene *scene) {
     text_settings tconf_players;
     text_defaults(&tconf_players);
     tconf_players.font = FONT_SMALL;
-    tconf_players.cforeground = TEXT_COLOR;
+    tconf_players.cforeground = TEXT_HUD_COLOR;
+    tconf_players.cshadow = TEXT_HUD_SHADOW;
     tconf_players.shadow = TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM;
     const font *fnt = fonts_get_font(tconf_players.font);
 
@@ -1288,35 +1343,31 @@ void arena_render_overlay(scene *scene) {
             player2_name = player[1]->pilot->name;
         }
 
-        text_render(&tconf_players, TEXT_DEFAULT, 5, 19, 250, 6, player1_name);
-        text_render(&tconf_players, TEXT_DEFAULT, 5, 26, 250, 6, lang_get((player[0]->pilot->har_id) + 31));
+        text_render_mode(&tconf_players, TEXT_DEFAULT, 5, 19, 250, 6, player1_name);
+        text_render_mode(&tconf_players, TEXT_DEFAULT, 5, 26, 250, 6, lang_get((player[0]->pilot->har_id) + 31));
 
+        // when quitting, pilot can go null
         if(player[1]->pilot) {
-            // when quitting, this can go null
-            int p2len = (strlen(player2_name) - 1) * fnt->w;
-            int h2len = (strlen(lang_get((player[1]->pilot->har_id) + 31)) - 1) * fnt->w;
-            text_render(&tconf_players, TEXT_DEFAULT, 315 - p2len, 19, 100, 6, player2_name);
-            text_render(&tconf_players, TEXT_DEFAULT, 315 - h2len, 26, 100, 6,
-                        lang_get((player[1]->pilot->har_id) + 31));
+            char const *player2_har = lang_get((player[1]->pilot->har_id) + 31);
+            int p2len = strlen(player2_name) * fnt->w;
+            int h2len = (strlen(player2_har) - 1) * fnt->w; // TODO: FIXME(lang): -1 because of errant newline
+            text_render_mode(&tconf_players, TEXT_DEFAULT, 315 - p2len, 19, 100, 6, player2_name);
+            text_render_mode(&tconf_players, TEXT_DEFAULT, 315 - h2len, 26, 100, 6, player2_har);
         }
 
-        // dont render total score in demo play
-        bool render_totalscore = !is_demoplay(scene->gs);
         // Render score stuff
-        chr_score_render(game_player_get_score(player[0]), render_totalscore);
-
-        // Do not render player 2 total score in 1 player mode
-        chr_score_render(game_player_get_score(player[1]), render_totalscore && game_player_get_selectable(player[1]));
+        chr_score_render(game_player_get_score(player[0]), game_player_get_selectable(player[0]));
+        chr_score_render(game_player_get_score(player[1]), game_player_get_selectable(player[1]));
 
         // render ping, if player is networked
         if(player[0]->ctrl->type == CTRL_TYPE_NETWORK) {
             snprintf(buf, 40, "ping %d", player[0]->ctrl->rtt / 2);
-            text_render(&tconf_players, TEXT_DEFAULT, 5, 40, 250, 6, buf);
+            text_render_mode(&tconf_players, TEXT_DEFAULT, 5, 40, 250, 6, buf);
         }
 
         if(player[1]->ctrl->type == CTRL_TYPE_NETWORK) {
             snprintf(buf, 40, "ping %d", player[1]->ctrl->rtt / 2);
-            text_render(&tconf_players, TEXT_DEFAULT, 315 - (strlen(buf) * fnt->w), 40, 250, 6, buf);
+            text_render_mode(&tconf_players, TEXT_DEFAULT, 315 - (strlen(buf) * fnt->w), 40, 250, 6, buf);
         }
     }
 
@@ -1344,56 +1395,57 @@ static void arena_debug(scene *scene) {
     text_settings tconf_debug;
     text_defaults(&tconf_debug);
     tconf_debug.font = FONT_SMALL;
-    tconf_debug.cforeground = TEXT_COLOR;
+    tconf_debug.cforeground = TEXT_HUD_COLOR;
+    tconf_debug.cshadow = TEXT_HUD_SHADOW;
 
     const font *fnt = fonts_get_font(tconf_debug.font);
 
     snprintf(buf, 40, "%u", game_state_get_tick(scene->gs));
-    text_render(&tconf_debug, TEXT_DEFAULT, 160, 0, 250, 6, buf);
+    text_render_mode(&tconf_debug, TEXT_DEFAULT, 160, 0, 250, 6, buf);
     snprintf(buf, 40, "%u", random_get_seed(&scene->gs->rand));
-    text_render(&tconf_debug, TEXT_DEFAULT, 130, 8, 250, 6, buf);
+    text_render_mode(&tconf_debug, TEXT_DEFAULT, 130, 8, 250, 6, buf);
 
     if(player[0]->ctrl->type == CTRL_TYPE_AI) {
         ai_controller_print_state(player[0]->ctrl, buf, sizeof(buf));
-        text_render(&tconf_debug, TEXT_DEFAULT, 5, 40, 250, 6, buf);
+        text_render_mode(&tconf_debug, TEXT_DEFAULT, 5, 40, 250, 6, buf);
     }
 
     if(player[1]->ctrl->type == CTRL_TYPE_AI) {
         ai_controller_print_state(player[1]->ctrl, buf, sizeof(buf));
-        text_render(&tconf_debug, TEXT_DEFAULT, 315 - (strlen(buf) * fnt->w), 40, 250, 6, buf);
+        text_render_mode(&tconf_debug, TEXT_DEFAULT, 315 - (strlen(buf) * fnt->w), 40, 250, 6, buf);
     }
 
     for(int i = 0; i < 2; i++) {
         snprintf(buf, sizeof(buf), "%s", state_name(hars[i]->state));
         if(i == 0) {
-            text_render(&tconf_debug, TEXT_DEFAULT, 5, 48, 250, 6, buf);
+            text_render_mode(&tconf_debug, TEXT_DEFAULT, 5, 48, 250, 6, buf);
         } else {
-            text_render(&tconf_debug, TEXT_DEFAULT, 315 - (strlen(buf) * fnt->w), 48, 250, 6, buf);
+            text_render_mode(&tconf_debug, TEXT_DEFAULT, 315 - (strlen(buf) * fnt->w), 48, 250, 6, buf);
         }
 
         snprintf(buf, sizeof(buf), "pos: %.3f %.3f", obj_har[i]->pos.x, obj_har[i]->pos.y);
 
         if(i == 0) {
-            text_render(&tconf_debug, TEXT_DEFAULT, 5, 56, 250, 6, buf);
+            text_render_mode(&tconf_debug, TEXT_DEFAULT, 5, 56, 250, 6, buf);
         } else {
-            text_render(&tconf_debug, TEXT_DEFAULT, 315 - (strlen(buf) * fnt->w), 56, 250, 6, buf);
+            text_render_mode(&tconf_debug, TEXT_DEFAULT, 315 - (strlen(buf) * fnt->w), 56, 250, 6, buf);
         }
 
         snprintf(buf, sizeof(buf), "vel: %.3f %.3f", obj_har[i]->vel.x, obj_har[i]->vel.y);
 
         if(i == 0) {
-            text_render(&tconf_debug, TEXT_DEFAULT, 5, 62, 250, 6, buf);
+            text_render_mode(&tconf_debug, TEXT_DEFAULT, 5, 62, 250, 6, buf);
         } else {
-            text_render(&tconf_debug, TEXT_DEFAULT, 315 - (strlen(buf) * fnt->w), 62, 250, 6, buf);
+            text_render_mode(&tconf_debug, TEXT_DEFAULT, 315 - (strlen(buf) * fnt->w), 62, 250, 6, buf);
         }
 
         snprintf(buf, sizeof(buf), "aa: %d em: %d ani: %d", hars[i]->air_attacked, hars[i]->executing_move,
                  obj_har[i]->cur_animation->id);
 
         if(i == 0) {
-            text_render(&tconf_debug, TEXT_DEFAULT, 5, 70, 250, 6, buf);
+            text_render_mode(&tconf_debug, TEXT_DEFAULT, 5, 70, 250, 6, buf);
         } else {
-            text_render(&tconf_debug, TEXT_DEFAULT, 315 - (strlen(buf) * fnt->w), 70, 250, 6, buf);
+            text_render_mode(&tconf_debug, TEXT_DEFAULT, 315 - (strlen(buf) * fnt->w), 70, 250, 6, buf);
         }
     }
 }
@@ -1512,13 +1564,20 @@ int arena_create(scene *scene) {
     local->over = 0;
     local->winner = 0;
 
-    // If this is the desert arena, randomly pick a palette. This changes the time of day.
-    if(scene->bk_data->file_id == 128) {
-        int pal_index = rand_int(vector_size(&scene->bk_data->palettes));
-        if(pal_index > 0) {
-            // 0 is selected by default, so nothing to do if we hit that.
-            vga_state_set_base_palette_from(bk_get_palette(scene->bk_data, pal_index));
-        }
+    // TODO: Fire & Ice will need to set the arena palette
+    unsigned pal_index = 0;
+    if(scene->gs->init_flags->playback == 1) {
+        // use palette index from rec
+        pal_index = scene->gs->rec->arena_palette;
+    } else if(scene->bk_data->file_id == 128 && is_tournament(scene->gs)) {
+        // When playing the desert arena in Tournament mode,
+        // pick a random palette to change the time of day.
+        pal_index = rand_int(vector_size(&scene->bk_data->palettes));
+    }
+
+    // 0 is selected by default, so nothing to do if we hit that.
+    if(pal_index > 0 && pal_index < vector_size(&scene->bk_data->palettes)) {
+        vga_state_set_base_palette_from_range(bk_get_palette(scene->bk_data, pal_index), 0x60, 0x60, 0x40);
     }
 
     // Initial har data
@@ -1567,9 +1626,7 @@ int arena_create(scene *scene) {
         game_player_set_har(player, obj);
         game_player_get_ctrl(player)->har_obj_id = obj->id;
 
-        // TODO change this to simply check if the pilot has a photo but currently this causes REC playback from
-        // tournament mode to crash decoding the sprite for some reason
-        if(local->tournament) {
+        if(player->pilot->photo) {
             // render pilot portraits
             object *portrait = omf_calloc(1, sizeof(object));
             if(i == 0) {
@@ -1637,50 +1694,58 @@ int arena_create(scene *scene) {
 
     maybe_install_har_hooks(scene);
 
-    // Arena menu text settings
-    text_settings tconf;
-    text_defaults(&tconf);
-    tconf.font = FONT_BIG;
-    tconf.cforeground = TEXT_DARK_GREEN;
-    tconf.halign = TEXT_CENTER;
+    // Arena menu theme
+    gui_theme theme;
+    gui_theme_defaults(&theme);
+    theme.dialog.border_color = TEXT_MEDIUM_GREEN;
+    theme.text.primary_color = TEXT_PRIMARY_COLOR;
+    theme.text.secondary_color = TEXT_SECONDARY_COLOR;
+    theme.text.disabled_color = TEXT_DISABLED_COLOR;
+    theme.text.active_color = TEXT_ACTIVE_COLOR;
+    theme.text.inactive_color = TEXT_INACTIVE_COLOR;
+    theme.text.shadow_color = TEXT_SHADOW_COLOR;
 
     // Arena menu
     local->menu_visible = 0;
-    local->game_menu = gui_frame_create(60, 5, 181, 117);
-    component *menu = menu_create(11);
-    menu_attach(menu, label_create(&tconf, "OPENOMF"));
+    local->game_menu = gui_frame_create(&theme, 60, 5, 181, 117);
+    component *menu = menu_create();
+    component *openomf = label_create_title("OPENOMF");
+    label_set_text_color(openomf, TEXT_DARK_GREEN);
+    menu_attach(menu, openomf);
     menu_attach(menu, filler_create());
     menu_attach(menu, filler_create());
     component *return_button =
-        button_create(&tconf, "RETURN TO GAME", "Continue fighting.", COM_ENABLED, game_menu_return, scene);
+        button_create("RETURN TO GAME", "Continue fighting.", false, false, game_menu_return, scene);
     widget_set_id(return_button, GAME_MENU_RETURN_ID);
     menu_attach(menu, return_button);
 
+    menu_attach(menu, textslider_create_bind(
+                          "SOUND", "Raise or lower the volume of all sound effects. Press left or right to change.", 10,
+                          1, arena_sound_slide, NULL, &setting->sound.sound_vol));
     menu_attach(menu,
-                textslider_create_bind(&tconf, "SOUND",
-                                       "Raise or lower the volume of all sound effects. Press left or right to change.",
-                                       10, 1, arena_sound_slide, NULL, &setting->sound.sound_vol));
-    menu_attach(menu, textslider_create_bind(&tconf, "MUSIC",
-                                             "Raise or lower the volume of music. Press right or left to change.", 10,
-                                             1, arena_music_slide, NULL, &setting->sound.music_vol));
+                textslider_create_bind("MUSIC", "Raise or lower the volume of music. Press right or left to change.",
+                                       10, 1, arena_music_slide, NULL, &setting->sound.music_vol));
 
-    component *speed_slider = textslider_create_bind(
-        &tconf, "SPEED", "Change the speed of the game when in the arena. Press left or right to change", 10, 0,
-        arena_speed_slide, scene, &setting->gameplay.speed);
+    component *speed_slider =
+        textslider_create_bind("SPEED", "Change the speed of the game when in the arena. Press left or right to change",
+                               10, 0, arena_speed_slide, scene, &setting->gameplay.speed);
     if(is_netplay(scene->gs)) {
         component_disable(speed_slider, 1);
     }
     menu_attach(menu, speed_slider);
 
-    menu_attach(menu, button_create(&tconf, "VIDEO OPTIONS",
-                                    "These are miscellaneous options for visual effects and detail levels.",
-                                    COM_DISABLED, NULL, NULL));
-    menu_attach(menu, button_create(&tconf, "HELP",
+    menu_attach(menu,
+                button_create("VIDEO OPTIONS", "These are miscellaneous options for visual effects and detail levels.",
+                              false, false, NULL, NULL));
+    menu_attach(menu, button_create("HELP",
                                     "Obtain detailed and thorough explanation of the various options for which you "
                                     "may need a detailed and thorough explanation.",
-                                    COM_DISABLED, NULL, NULL));
-    component *quit_button =
-        button_create(&tconf, "QUIT", "Quit game and return to main menu.", COM_ENABLED, game_menu_quit, scene);
+                                    false, false, NULL, NULL));
+    component *quit_button;
+    if(is_tournament(scene->gs) && !scene->gs->match_settings.sim)
+        quit_button = button_create("FORFEIT", lang_get(323), false, false, game_menu_quit, scene);
+    else
+        quit_button = button_create("QUIT", lang_get(322), false, false, game_menu_quit, scene);
     widget_set_id(quit_button, GAME_MENU_QUIT_ID);
     menu_attach(menu, quit_button);
 
@@ -1787,33 +1852,14 @@ int arena_create(scene *scene) {
         for(int i = 0; i < 2; i++) {
             // Declare some vars
             game_player *player = game_state_get_player(scene->gs, i);
-            log_debug("player %d using har %d", i, player->pilot->har_id);
-            scene->gs->rec->pilots[i].info.har_id = (unsigned char)player->pilot->har_id;
-            scene->gs->rec->pilots[i].info.pilot_id = player->pilot->pilot_id;
-            scene->gs->rec->pilots[i].info.color_3 = player->pilot->color_1;
-            scene->gs->rec->pilots[i].info.color_2 = player->pilot->color_2;
-            scene->gs->rec->pilots[i].info.color_1 = player->pilot->color_3;
-            scene->gs->rec->pilots[i].info.agility = player->pilot->agility;
-            scene->gs->rec->pilots[i].info.power = player->pilot->power;
-            scene->gs->rec->pilots[i].info.endurance = player->pilot->endurance;
-            scene->gs->rec->pilots[i].info.arm_speed = player->pilot->arm_speed;
-            scene->gs->rec->pilots[i].info.leg_speed = player->pilot->leg_speed;
-            scene->gs->rec->pilots[i].info.arm_power = player->pilot->arm_power;
-            scene->gs->rec->pilots[i].info.leg_power = player->pilot->leg_power;
-            scene->gs->rec->pilots[i].info.armor = player->pilot->armor;
-            scene->gs->rec->pilots[i].info.stun_resistance = player->pilot->stun_resistance;
-            memset(scene->gs->rec->pilots[i].info.name, 0, 18);
-            strncpy(scene->gs->rec->pilots[i].info.name, lang_get(player->pilot->pilot_id + 20), 18);
-            char *nl;
-            if((nl = strchr(scene->gs->rec->pilots[i].info.name, '\n'))) {
-                *nl = 0;
-            }
+            sd_pilot_clone(&scene->gs->rec->pilots[i].info, player->pilot);
 
             // this is the score when the REC started
             scene->gs->rec->scores[i] = game_player_get_score(player)->score;
         }
         scene->gs->rec->arena_id = scene->id - SCENE_ARENA0;
-        scene->gs->rec->game_mode = is_tournament(scene->gs) ? 1 : 2;
+        scene->gs->rec->arena_palette = pal_index;
+        scene->gs->rec->game_mode = is_tournament(scene->gs) ? REC_GAMEMODE_TOURNAMENT : REC_GAMEMODE_ARCADE;
 
         // player 1's controller
         switch(game_state_get_player(scene->gs, 0)->ctrl->type) {

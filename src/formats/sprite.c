@@ -5,6 +5,7 @@
 #include "formats/palette.h"
 #include "formats/sprite.h"
 #include "utils/allocator.h"
+#include "utils/log.h"
 
 int sd_sprite_create(sd_sprite *sprite) {
     if(sprite == NULL) {
@@ -289,6 +290,9 @@ int sd_sprite_vga_decode(sd_vga_image *dst, const sd_sprite *src) {
         return SD_SUCCESS;
     }
 
+    // the number of bytes that can be written to `dst`.
+    unsigned int dst_size = dst->w * dst->h;
+
     // Walk through raw sprite data
     while(i < src->len) {
         // read a word
@@ -308,7 +312,15 @@ int sd_sprite_vga_decode(sd_vga_image *dst, const sd_sprite *src) {
             case 1:
                 while(data > 0) {
                     uint8_t b = src->data[i];
-                    int pos = ((y * src->width) + x);
+                    unsigned int pos = ((y * src->width) + x);
+                    // if we're about to overflow the `dst` buffer, don't.
+                    if(pos >= dst_size) {
+                        log_warn("Truncating sd_sprite vga data");
+                        // This code path is taken when loading tournament REC files (incl. ones from DOS)
+                        // TODO: Figure out what's going on with sprite width/height, and
+                        // clean up (centralize?) those width/height++/-- adjustments.
+                        return SD_SUCCESS;
+                    }
                     dst->data[pos] = b;
                     i++; // we read 1 byte
                     x++;

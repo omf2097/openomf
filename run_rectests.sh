@@ -30,6 +30,12 @@ tests=(
     "Enemy should recover from air hits unless it is a KO:AIR-HIT.REC"
     "Only some moves should wallslam:STADIUM-WALL-SPLAT.REC"
     "Power Plant with hazards enabled has a lower wallslam tolerance:POWERPLANT-WALL-SPLAT.REC"
+    "HARs in stasis cannot hit opponent:STASISED-HARS-CANNOT-HIT.REC"
+    "HARs play ANIM_DEFEAT instead of idle:NO-IDLE-DEFEAT.REC"
+    "Electra P656 cannot be interrupted during anim 36:ELECTRA-MOVE36-EMFLAG.REC"
+    "Chronos matter phasing (14K) noclips through both walls:CHRONOS-WALLNOCLIP.REC"
+    "Electra Extended Rolling Thunder plays anim 40 upon hitting the wall:ELECTRA-EXROLLTHNDR-WALLBOUNCE.REC"
+    "Katana Wall Spin (14K) cannot be interrupted:KATANA-WALLSPIN-NOINTERRUPT.REC"
 )
 
 # Setup temp directory for outputs

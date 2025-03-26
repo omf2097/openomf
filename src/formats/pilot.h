@@ -41,9 +41,9 @@ typedef struct {
     uint16_t offense;        ///< Offense preference value (100 high, should be under 200).
     uint16_t defense;        ///< Defense preference value (100 high, should be under 200).
     int32_t money;           ///< Amount of money the pilot currently has
-    uint8_t color_1;         ///< Color 1 field for the HAR (0-15). 255 means random.
-    uint8_t color_2;         ///< Color 2 field for the HAR (0-15). 255 means random.
-    uint8_t color_3;         ///< Color 3 field for the HAR (0-15). 255 means random.
+    uint8_t color_3;         ///< HAR Tertiary Color.  0-15 are altpals, 16 means use 'palette' field, 255 means random.
+    uint8_t color_2;         ///< HAR Secondary Color. 0-15 are altpals, 16 means use 'palette' field, 255 means random.
+    uint8_t color_1;         ///< HAR Primary Color.   0-15 are altpals, 16 means use 'palette' field, 255 means random.
     char trn_name[13];       ///< Tournament file
     char trn_desc[31];       ///< Tournament description
     char trn_image[13];      ///< Tournament image file
@@ -102,7 +102,7 @@ typedef struct {
     uint32_t total_value; ///< Total value for the pilot
     float unk_f_a;        ///< Unknown
     float unk_f_b;        ///< Unknown
-    vga_palette palette;  ///< Palette for photo ?
+    vga_palette palette;  ///< Photo palette, used as HAR colors when not using altpals.
     uint16_t unk_block_i; ///< Unknown
     uint16_t photo_id;    ///< Which face photo this pilot uses
 
@@ -115,9 +115,9 @@ typedef struct {
 
 typedef enum
 {
-    PRIMARY,
+    TERTIARY,
     SECONDARY,
-    TERTIARY
+    PRIMARY,
 } player_color;
 
 /*! \brief Initialize pilot struct
@@ -132,6 +132,9 @@ typedef enum
 int sd_pilot_create(sd_pilot *pilot);
 
 void sd_pilot_clone(sd_pilot *dest, const sd_pilot *src);
+/*! \brief Copies an sd_pilot, but not any child allocations (quotes, photo surface, etc..)
+ */
+void sd_pilot_copy_shallow(sd_pilot *dest, const sd_pilot *src);
 
 /*! \brief Free pilot structure
  *

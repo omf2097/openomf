@@ -272,6 +272,9 @@ void har_set_ani(object *obj, int animation_id, int repeat) {
         object_set_delay(obj, h->delay);
     }
 
+    // we shouldn't be idling while defeated
+    assert(!((animation_id == ANIM_IDLE || animation_id == ANIM_CROUCHING) && h->health <= 0));
+
     if(move->category == CAT_JUMPING) {
         h->state = STATE_JUMPING;
     }
@@ -812,7 +815,7 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
         // Insanius 3/17/2025 - This is actually mostly correct, the OG checks if the string starts with the 'k' char
         const sd_script_frame *frame = sd_script_get_frame(&obj->animation_state.parser, 0);
         if(frame != NULL && sd_script_isset(frame, "k")) {
-            obj->vel.x = -5;
+            obj->vel.x = -5 * object_get_direction(obj);
             obj->vel.y = -8;
         }
     }
@@ -1198,6 +1201,11 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
         return 0;
     }
 
+    if(a->in_stasis_ticks) {
+        // frozen HARs can't hit
+        return 0;
+    }
+
     // rehit mode is off
     if(!obj_b->gs->match_settings.rehit && b->state == STATE_FALLEN) {
         return 0;
@@ -1364,6 +1372,10 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
             log_debug("HAR %s going to next move %d", har_get_name(b->id), move->next_move);
 
             har_set_ani(obj_a, move->next_move, 0);
+
+            // prevent next move from being interrupted
+            a->executing_move = 1;
+
             // bail out early, the next move can still brutalize the oppopent so don't set them immune to further damage
             // this fixes flail's charging punch and katana's wall spin, but thorn's spike charge still works
             //
@@ -1680,6 +1692,9 @@ void har_tick(object *obj) {
                 object *other_har = game_state_find_object(obj->gs, other_player->har_obj_id);
                 har_screencaps_capture(&other_player->screencaps, other_har, obj, SCREENCAP_BLOW);
 
+                // empty endurance meter
+                h->endurance = 0;
+
                 // Slow down game more for last shot
                 log_debug("Slowdown: Slowing from %d to %d.", game_state_get_speed(obj->gs),
                           h->health == 0 ? game_state_get_speed(obj->gs) - 10 : game_state_get_speed(obj->gs) - 6);
@@ -1772,7 +1787,7 @@ void har_tick(object *obj) {
     }
 
     // Endurance restore
-    if(h->endurance < h->endurance_max &&
+    if(h->health > 0 && h->endurance < h->endurance_max &&
        !(h->executing_move || h->state == STATE_RECOIL || h->state == STATE_STUNNED || h->state == STATE_FALLEN ||
          h->state == STATE_STANDING_UP || h->state == STATE_DEFEAT)) {
         h->endurance += 0.0025f * h->endurance_max; // made up but plausible number
@@ -1986,6 +2001,12 @@ af_move *match_move(object *obj, char prefix, char *inputs) {
                     log_debug("CHAINING");
                 }
 
+                if(str_size(&move->move_string) > 1) {
+                    // matched a move that was not just a 5P or 5K
+                    // so truncate the buffer
+                    h->inputs[0] = 0;
+                }
+
                 log_debug("matched move %d with string %s in state %d with input buffer %s", i,
                           str_c(&move->move_string), h->state, h->inputs);
                 /*DEBUG("input was %s", h->inputs);*/
@@ -2073,7 +2094,7 @@ int har_act(object *obj, int act_type) {
     }
 
     if(!(h->state == STATE_STANDING || har_is_walking(h) || har_is_crouching(h) || h->state == STATE_JUMPING ||
-         h->state == STATE_VICTORY || h->state == STATE_SCRAP || h->state == STATE_NONE) ||
+         h->state == STATE_VICTORY || h->state == STATE_DONE || h->state == STATE_SCRAP || h->state == STATE_NONE) ||
        object_get_halt(obj)) {
         // doing something else, ignore input
         return 0;
@@ -2176,7 +2197,7 @@ int har_act(object *obj, int act_type) {
     }
 
     char last_input = get_last_input(h);
-    if(obj->pos.y < ARENA_FLOOR) {
+    if(object_is_airborne(obj)) {
         // airborne
 
         // HAR can have STATE_NONE here if they started an airborne attack from a crouch, like katana's corkscrew blade
@@ -2208,6 +2229,11 @@ int har_act(object *obj, int act_type) {
     }
 
     if(arena_state == ARENA_STATE_ENDING) {
+        if((h->state == STATE_VICTORY || h->state == STATE_DONE) && obj->cur_animation->id != ANIM_VICTORY &&
+           obj->cur_animation->id != ANIM_IDLE) {
+            // play idle while we wait for the defeated opponent to settle
+            har_set_ani(obj, ANIM_IDLE, 1);
+        }
         return 0;
     }
 
@@ -2370,6 +2396,10 @@ void har_finished(object *obj) {
             // finished an attack animation in the air
             h->state = STATE_JUMPING;
             har_set_ani(obj, ANIM_JUMPING, 0);
+        } else if(h->health <= 0) {
+            // player has no health and is grounded.. so they must be defeated.
+            h->state = STATE_DEFEAT;
+            har_set_ani(obj, h->custom_defeat_animation ? h->custom_defeat_animation : ANIM_DEFEAT, 0);
         } else {
             // the HAR is on the ground, so clear the air attack tracker
             h->air_attacked = 0;

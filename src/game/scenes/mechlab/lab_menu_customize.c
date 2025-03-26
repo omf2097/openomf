@@ -75,21 +75,21 @@ void lab_menu_customize_done(component *c, void *userdata) {
 void lab_menu_customize_color_main(component *c, void *userdata) {
     scene *s = userdata;
     game_player *p1 = game_state_get_player(s->gs, 0);
-    sd_pilot_set_player_color(&p1->chr->pilot, SECONDARY, (p1->chr->pilot.color_2 + 1) % 16);
+    sd_pilot_set_player_color(&p1->chr->pilot, PRIMARY, (p1->chr->pilot.color_1 + 1) % 17);
     mechlab_update(s);
 }
 
 void lab_menu_customize_color_secondary(component *c, void *userdata) {
     scene *s = userdata;
     game_player *p1 = game_state_get_player(s->gs, 0);
-    sd_pilot_set_player_color(&p1->chr->pilot, TERTIARY, (p1->chr->pilot.color_1 + 1) % 16);
+    sd_pilot_set_player_color(&p1->chr->pilot, SECONDARY, (p1->chr->pilot.color_2 + 1) % 17);
     mechlab_update(s);
 }
 
 void lab_menu_customize_color_third(component *c, void *userdata) {
     scene *s = userdata;
     game_player *p1 = game_state_get_player(s->gs, 0);
-    sd_pilot_set_player_color(&p1->chr->pilot, PRIMARY, (p1->chr->pilot.color_3 + 1) % 16);
+    sd_pilot_set_player_color(&p1->chr->pilot, TERTIARY, (p1->chr->pilot.color_3 + 1) % 17);
     mechlab_update(s);
 }
 
@@ -362,22 +362,21 @@ void lab_menu_customize_check_trade_robot(component *c, void *userdata) {
     }
 }
 
+// clang-format off
 static const button_details details_list[] = {
-    {lab_menu_customize_color_main,      NULL,          TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED}, // Blue
-    {lab_menu_customize_color_third,     NULL,          TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0,
-     COM_ENABLED                                                                                                          }, // Yellow
-    {lab_menu_customize_color_secondary, NULL,          TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0,
-     COM_ENABLED                                                                                                          }, // Red
-    {lab_menu_customize_arm_power,       "ARM POWER",   TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED},
-    {lab_menu_customize_leg_power,       "LEG POWER",   TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED},
-    {lab_menu_customize_arm_speed,       "ARM SPEED",   TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED},
-    {lab_menu_customize_leg_speed,       "LEG SPEED",   TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED},
-    {lab_menu_customize_armor,           "ARMOR",       TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED},
-    {lab_menu_customize_stun_resistance, "STUN RES.",   TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0,
-     COM_ENABLED                                                                                                          },
-    {lab_menu_customize_trade,           "TRADE ROBOT", TEXT_HORIZONTAL, TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED},
-    {lab_menu_customize_done,            "DONE",        TEXT_VERTICAL,   TEXT_CENTER, TEXT_MIDDLE, 0, 0, 0, 0, COM_ENABLED},
+    {lab_menu_customize_color_main,      NULL,          TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_MIDDLE, {0, 0, 0, 0}, false}, // Blue
+    {lab_menu_customize_color_third,     NULL,          TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_MIDDLE, {0, 0, 0, 0}, false}, // Yellow
+    {lab_menu_customize_color_secondary, NULL,          TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_MIDDLE, {0, 0, 0, 0}, false}, // Red
+    {lab_menu_customize_arm_power,       "ARM POWER",   TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_MIDDLE, {1, 0, 0, 0}, false},
+    {lab_menu_customize_leg_power,       "LEG POWER",   TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_MIDDLE, {1, 0, 0, 0}, false},
+    {lab_menu_customize_arm_speed,       "ARM SPEED",   TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_MIDDLE, {1, 0, 0, 0}, false},
+    {lab_menu_customize_leg_speed,       "LEG SPEED",   TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_MIDDLE, {1, 0, 0, 0}, false},
+    {lab_menu_customize_armor,           "ARMOR",       TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_MIDDLE, {1, 0, 0, 0}, false},
+    {lab_menu_customize_stun_resistance, "STUN RES.",   TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_MIDDLE, {0, 0, 0, 0}, false},
+    {lab_menu_customize_trade,           "TRADE ROBOT", TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_MIDDLE, {0, 0, 0, 0}, false},
+    {lab_menu_customize_done,           "DONE",        TEXT_ROW_VERTICAL,   TEXT_ALIGN_CENTER, TEXT_ALIGN_MIDDLE, {1, 0, 0, 0}, false},
 };
+// clang-format on
 
 static const spritebutton_tick_cb tickers[] = {NULL,
                                                NULL,
@@ -731,59 +730,39 @@ component *lab_menu_customize_create(scene *s) {
     sprite *msprite = animation_get_sprite(main_sheets, 0);
     component *menu = trnmenu_create(msprite->data, msprite->pos.x, msprite->pos.y, false);
 
-    // Default text configuration
-    text_settings tconf;
-    text_defaults(&tconf);
-    tconf.font = FONT_SMALL;
-    tconf.cforeground = TEXT_TRN_BLUE;
-    tconf.cselected = TEXT_TRN_BLUE;
-    tconf.cinactive = TEXT_TRN_BLUE;
-    tconf.cdisabled = TEXT_TRN_BLUE;
-
     // Init GUI buttons with locations from the "select" button sprites
     for(int i = 0; i < animation_get_sprite_count(main_buttons); i++) {
-        tconf.valign = details_list[i].valign;
-        tconf.halign = details_list[i].halign;
-        tconf.padding.top = details_list[i].top;
-        tconf.padding.bottom = details_list[i].bottom;
-        tconf.padding.left = details_list[i].left;
-        tconf.padding.right = details_list[i].right;
-        tconf.direction = details_list[i].dir;
-
-        sprite *bsprite = animation_get_sprite(main_buttons, i);
-        component *button =
-            spritebutton_create(&tconf, details_list[i].text, bsprite->data, COM_ENABLED, details_list[i].cb, s);
-        component_set_size_hints(button, bsprite->data->w, bsprite->data->h);
-        component_set_pos_hints(button, bsprite->pos.x, bsprite->pos.y);
+        sprite *button_sprite = animation_get_sprite(main_buttons, i);
+        component *button = sprite_button_from_details(&details_list[i], NULL, button_sprite->data, s);
+        spritebutton_set_font(button, FONT_SMALL);
+        spritebutton_set_text_color(button, TEXT_TRN_BLUE);
+        component_set_pos_hints(button, button_sprite->pos.x, button_sprite->pos.y);
         spritebutton_set_tick_cb(button, tickers[i]);
-
         spritebutton_set_focus_cb(button, focus_cbs[i]);
-
         component_tick(button);
         trnmenu_attach(menu, button);
     }
 
     game_player *p1 = game_state_get_player(s->gs, 0);
     sprite *bsprite = animation_get_sprite(har_picture, p1->pilot->har_id);
-    component *button = spritebutton_create(&tconf, "", bsprite->data, COM_ENABLED, NULL, NULL);
-    component_set_size_hints(button, bsprite->data->w, bsprite->data->h);
+    component *button = spritebutton_create(NULL, bsprite->data, false, NULL, NULL);
     component_set_pos_hints(button, bsprite->pos.x, bsprite->pos.y);
     button->supports_select = false;
     spritebutton_set_always_display(button);
     trnmenu_attach(menu, button);
 
-    tconf.direction = TEXT_HORIZONTAL;
-    tconf.halign = TEXT_LEFT;
-    tconf.valign = TEXT_TOP;
-    tconf.lspacing = 2;
-    tconf.cforeground = 0xA5;
-    header_label = label_create(&tconf, "");
+    header_label = label_create("");
+    label_set_text_letter_spacing(header_label, 2);
+    label_set_text_color(header_label, 0xA5);
+    label_set_font(header_label, FONT_SMALL);
     component_set_size_hints(header_label, 90, 80);
     component_set_pos_hints(header_label, 210, 150);
     trnmenu_attach(menu, header_label);
 
-    tconf.cforeground = 0xA7;
-    details_label = label_create(&tconf, "");
+    details_label = label_create("");
+    label_set_text_letter_spacing(details_label, 2);
+    label_set_text_color(details_label, 0xA7);
+    label_set_font(details_label, FONT_SMALL);
     component_set_size_hints(details_label, 90, 80);
     component_set_pos_hints(details_label, 210, 158);
     trnmenu_attach(menu, details_label);
