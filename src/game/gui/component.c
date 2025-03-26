@@ -121,10 +121,6 @@ void component_set_supports(component *c, bool allow_disable, bool allow_select,
     c->supports_focus = allow_focus;
 }
 
-void component_set_filler(component *c, bool is_filler) {
-    c->filler = is_filler;
-}
-
 void component_set_render_cb(component *c, component_render_cb cb) {
     c->render = cb;
 }
@@ -161,8 +157,15 @@ void component_set_init_cb(component *c, component_init_cb cb) {
     c->init = cb;
 }
 
-void component_set_help_text(component *c, const char *help) {
-    c->help = help;
+void component_set_help_text(component *c, const char *text) {
+    if(text == NULL || strlen(text) == 0) {
+        return;
+    }
+    if(c->help != NULL) {
+        text_set_from_c(c->help, text);
+    } else {
+        c->help = text_create_from_c(FONT_SMALL, TEXT_BBOX_MAX, TEXT_BBOX_MAX, text);
+    }
 }
 
 void component_set_theme(component *c, const gui_theme *theme) {
@@ -185,7 +188,6 @@ component *component_create(uint32_t header) {
     c->w_hint = -1;
     c->h_hint = -1;
     c->help = NULL;
-    c->filler = false;
     return c;
 }
 
@@ -195,6 +197,9 @@ void component_free(component *c) {
     }
     if(c->free != NULL) {
         c->free(c);
+    }
+    if(c->help != NULL) {
+        text_free(&c->help);
     }
     omf_free(c);
 }

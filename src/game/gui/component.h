@@ -10,6 +10,7 @@
 #define COMPONENT_H
 
 #include "controller/controller.h"
+#include "game/gui/text/text.h"
 #include "game/gui/theme.h"
 #include <SDL.h>
 
@@ -55,10 +56,10 @@ struct component {
 
     bool supports_focus; ///< Whether the component can be focused by component_focus() call.
     bool is_focused;     ///< Whether the component is focused
-    const char *help;    ///< Help text, if available
-    bool filler;         ///< Whether the component should fill unused space during layout
 
-    const gui_theme *theme; ///< Theme object. This may or may not be set. If not set, then look down the parent chain.
+    text *help; ///< Help text, if available
+
+    const gui_theme *theme; ///< Theme object. After init, this should be set for all objects.
 
     component_render_cb render; ///< Render function callback. This tells the component to draw itself.
     component_event_cb event;   ///< Event function callback. Direct SDL2 event handler.
@@ -99,9 +100,8 @@ bool component_is_selectable(component *c);
 void component_set_size_hints(component *c, int w, int h);
 void component_set_pos_hints(component *c, int x, int y);
 void component_set_supports(component *c, bool allow_disable, bool allow_select, bool allow_focus);
-void component_set_filler(component *c, bool is_filler);
 
-void component_set_help_text(component *c, const char *help);
+void component_set_help_text(component *c, const char *text);
 
 void component_set_theme(component *c, const gui_theme *theme);
 const gui_theme *component_get_theme(component *c);

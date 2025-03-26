@@ -209,7 +209,10 @@ component *menu_listen_create(scene *s) {
     } else {
         snprintf(buf, sizeof(buf), "Waiting for connections to port %d.", ext_port ? ext_port : address.port);
     }
-    menu_attach(menu, label_create(buf));
+    component *waiting_label = label_create(buf);
+    component_set_size_hints(waiting_label, 151, -1);
+    label_set_text_horizontal_align(waiting_label, TEXT_ALIGN_CENTER);
+    menu_attach(menu, waiting_label);
     menu_attach(menu, filler_create());
     local->cancel_button =
         button_create("CANCEL", "Cancel listing for a connection.", false, false, menu_listen_cancel, s);
