@@ -135,7 +135,7 @@ int intersect_sprite_hitpoint(object *obj, object *target, int level, vec2i *poi
         if(hitpoint < sfc->w * sfc->h && sfc->data[hitpoint] != sfc->transparent) {
             hcoords[found++] = vec2i_create(xcoord, ycoord);
             if(found >= level) {
-                vec2f sum = vec2f_create(0, 0);
+                vec2i sum = vec2i_create(0, 0);
                 for(int k = 0; k < level; k++) {
                     sum.x += hcoords[k].x;
                     sum.y += hcoords[k].y;

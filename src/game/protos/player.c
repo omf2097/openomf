@@ -57,7 +57,7 @@ void player_reload_with_str(object *obj, const char *custom_str) {
     player_reset(obj);
     obj->animation_state.reverse = 0;
     obj->slide_state.timer = 0;
-    obj->slide_state.vel = vec2f_create(0, 0);
+    obj->slide_state.vel = vec2f_createf(0, 0);
     obj->enemy_slide_state.timer = 0;
     obj->enemy_slide_state.dest = vec2i_create(0, 0);
     obj->enemy_slide_state.duration = 0;
@@ -146,16 +146,16 @@ void player_describe_frame(const sd_script_frame *frame) {
 
 void player_describe_object(object *obj) {
     log_debug("Object:");
-    log_debug("  - Start: %d, %d", obj->start.x, obj->start.y);
-    log_debug("  - Position: %d, %d", obj->pos.x, obj->pos.y);
-    log_debug("  - Velocity: %d, %d", obj->vel.x, obj->vel.y);
+    log_debug("  - Start:    %f, %f", fixedpt_tofloat(obj->start.fx), fixedpt_tofloat(obj->start.fy));
+    log_debug("  - Position: %f, %f", fixedpt_tofloat(obj->pos.fx), fixedpt_tofloat(obj->pos.fy));
+    log_debug("  - Velocity: %f, %f", fixedpt_tofloat(obj->vel.fx), fixedpt_tofloat(obj->vel.fy));
     if(obj->cur_sprite_id) {
         sprite *cur_sprite = animation_get_sprite(obj->cur_animation, obj->cur_sprite_id);
         log_debug("  - Pos: %d, %d", cur_sprite->pos.x, cur_sprite->pos.y);
         log_debug("  - Size: %d, %d", cur_sprite->data->w, cur_sprite->data->h);
         player_sprite_state *rstate = &obj->sprite_state;
-        log_debug("CURRENT = %d - %d + %d - %d", obj->pos.y, cur_sprite->pos.y, rstate->o_correction.y,
-                  cur_sprite->data->h);
+        log_debug("CURRENT = %f - %d + %d - %d", fixedpt_tofloat(obj->pos.fy), cur_sprite->pos.y,
+                  rstate->o_correction.y, cur_sprite->data->h);
     }
 }
 
@@ -247,7 +247,7 @@ void player_run(object *obj) {
 
         if(sd_script_isset(frame, "ac")) {
             // force the har to face the center of the arena
-            if(obj->pos.x > 160) {
+            if(obj->pos.fx > fixedpt_fromint(160)) {
                 object_set_direction(obj, OBJECT_FACE_LEFT);
             } else {
                 object_set_direction(obj, OBJECT_FACE_RIGHT);
@@ -258,8 +258,8 @@ void player_run(object *obj) {
             int destination = 160;
             if(sd_script_isset(frame, "am") && sd_script_isset(frame, "e")) {
                 // destination is the enemy's position
-                destination = enemy->pos.x - trans_x;
-                if(obj->pos.x > enemy->pos.x) {
+                destination = fixedpt_toint(enemy->pos.fx) - trans_x;
+                if(obj->pos.fx > enemy->pos.fx) {
                     object_set_direction(obj, OBJECT_FACE_LEFT);
                 } else {
                     object_set_direction(obj, OBJECT_FACE_RIGHT);
@@ -281,8 +281,9 @@ void player_run(object *obj) {
             }
             // clear this
             trans_x = 0;
-            if(sd_script_get(frame, "bm") == 10 && destination > 0 && fabsf(obj->pos.x - destination) > 5.0) {
-                log_debug("HAR walk to %d from %d", destination, obj->pos.x);
+            if(sd_script_get(frame, "bm") == 10 && destination > 0 &&
+               fixedpt_abs(obj->pos.fx - fixedpt_fromint(destination)) > fixedpt_fromint(5)) {
+                log_debug("HAR walk to %d from %f", destination, fixedpt_tofloat(obj->pos.fx));
                 har_walk_to(obj, destination);
                 return;
             }
@@ -290,40 +291,42 @@ void player_run(object *obj) {
 
         if(sd_script_isset(frame, "h")) {
             // Hover, reset all velocities to 0 on every frame
-            obj->vel.x = 0;
-            obj->vel.y = 0;
+            obj->vel.fx = 0;
+            obj->vel.fy = 0;
         }
     }
 
     if(sd_script_isset(frame, "e") && enemy) {
 
-        log_debug("my position %f, %f, their position %f %f", obj->pos.x, obj->pos.y, enemy->pos.x, enemy->pos.y);
+        log_debug("my position %f, %f, their position %f %f", fixedpt_tofloat(obj->pos.fx),
+                  fixedpt_tofloat(obj->pos.fy), fixedpt_tofloat(enemy->pos.fx), fixedpt_tofloat(enemy->pos.fy));
         // Set speed to 0, since we're being controlled by animation tag system
-        obj->vel.x = 0;
-        obj->vel.y = 0;
+        obj->vel.fx = 0;
+        obj->vel.fy = 0;
 
         // Reset position to enemy coordinates and make sure facing is set correctly
-        obj->pos.x = enemy->pos.x;
-        obj->pos.y = enemy->pos.y;
+        obj->pos.fx = enemy->pos.fx;
+        obj->pos.fy = enemy->pos.fy;
         object_set_direction(obj, object_get_direction(enemy) * -1);
         // log_debug("E: pos.x = %f, pos.y = %f", obj->pos.x, obj->pos.y);
     }
 
     // Set to ground
     if(sd_script_isset(frame, "g")) {
-        obj->vel.y = 0;
-        obj->pos.y = ARENA_FLOOR;
+        obj->vel.fy = 0;
+        obj->pos.fy = ARENA_FLOORF;
     }
 
     if(sd_script_isset(frame, "at") && enemy) {
 
-        log_debug("my position %f, %f, their position %f %f", obj->pos.x, obj->pos.y, enemy->pos.x, enemy->pos.y);
+        log_debug("my position %f, %f, their position %f %f", fixedpt_tofloat(obj->pos.fx),
+                  fixedpt_tofloat(obj->pos.fy), fixedpt_tofloat(enemy->pos.fx), fixedpt_tofloat(enemy->pos.fy));
         // set the object's X position to be behind the opponent
 
-        if(obj->pos.x > enemy->pos.x) { // From right to left
-            obj->pos.x = enemy->pos.x - object_get_size(obj).x / 2;
+        if(obj->pos.fx > enemy->pos.fx) { // From right to left
+            obj->pos.fx = enemy->pos.fx - fixedpt_fromint(object_get_size(obj).x / 2);
         } else { // From left to right
-            obj->pos.x = enemy->pos.x + object_get_size(enemy).x / 2;
+            obj->pos.fx = enemy->pos.fx + fixedpt_fromint(object_get_size(enemy).x / 2);
         }
         object_set_direction(obj, object_get_direction(obj) * -1);
     }
@@ -331,24 +334,24 @@ void player_run(object *obj) {
     // Handle vx+/-, vy+/-, x+/-. y+/-
     if(trans_x || trans_y) {
         if(sd_script_isset(frame, "v")) {
-            obj->vel.x = (trans_x * (mp & 0x20 ? -1 : 1)) * obj->horizontal_velocity_modifier;
-            obj->vel.y = trans_y * obj->horizontal_velocity_modifier;
+            obj->vel.fx = (trans_x * (mp & 0x20 ? -1 : 1)) * obj->horizontal_velocity_modifierf;
+            obj->vel.fy = trans_y * obj->horizontal_velocity_modifierf;
             // log_debug("vel x+%d, y+%d to x=%f, y=%f", trans_x * (mp & 0x20 ? -1 : 1), trans_y, obj->vel.x,
             // obj->vel.y);
         } else {
-            obj->pos.x += trans_x * (mp & 0x20 ? -1 : 1);
-            if(obj->pos.x < ARENA_LEFT_WALL && obj->group == GROUP_HAR) {
+            obj->pos.fx += fixedpt_fromint(trans_x * (mp & 0x20 ? -1 : 1));
+            if(obj->pos.fx < ARENA_LEFT_WALLF && obj->group == GROUP_HAR) {
                 if(sd_script_isset(frame, "e") && enemy) {
-                    enemy->pos.x += ARENA_LEFT_WALL - obj->pos.x;
+                    enemy->pos.fx += ARENA_LEFT_WALLF - obj->pos.fx;
                 }
-                obj->pos.x = ARENA_LEFT_WALL;
-            } else if(obj->pos.x > ARENA_RIGHT_WALL && obj->group == GROUP_HAR) {
+                obj->pos.fx = ARENA_LEFT_WALLF;
+            } else if(obj->pos.fx > ARENA_RIGHT_WALLF && obj->group == GROUP_HAR) {
                 if(sd_script_isset(frame, "e") && enemy) {
-                    enemy->pos.x -= obj->pos.x - ARENA_RIGHT_WALL;
+                    enemy->pos.fx -= obj->pos.fx - ARENA_RIGHT_WALLF;
                 }
-                obj->pos.x = ARENA_RIGHT_WALL;
+                obj->pos.fx = ARENA_RIGHT_WALLF;
             }
-            obj->pos.y += trans_y;
+            obj->pos.fy += fixedpt_fromint(trans_y);
             // log_debug("pos x+%d, y+%d to x=%f, y=%f", trans_x * (mp & 0x20 ? -1 : 1), trans_y, obj->pos.x,
             // obj->pos.y);
         }
@@ -356,23 +359,24 @@ void player_run(object *obj) {
 
     // Handle slide operations on self
     if(obj->slide_state.timer > 0) {
-        obj->pos.x += obj->slide_state.vel.x;
-        obj->pos.y += obj->slide_state.vel.y;
+        obj->pos.fx += obj->slide_state.vel.fx;
+        obj->pos.fy += obj->slide_state.vel.fy;
         obj->slide_state.timer--;
     }
 
     // Handle slide in relation to enemy
     if(obj->enemy_slide_state.timer > 0 && enemy) {
 
-        log_debug("my position %f, %f, their position %f %f", obj->pos.x, obj->pos.y, enemy->pos.x, enemy->pos.y);
+        log_debug("my position %f, %f, their position %f %f", fixedpt_tofloat(obj->pos.fx),
+                  fixedpt_tofloat(obj->pos.fy), fixedpt_tofloat(enemy->pos.fx), fixedpt_tofloat(enemy->pos.fy));
         obj->enemy_slide_state.duration++;
-        obj->pos.x = enemy->pos.x + obj->enemy_slide_state.dest.x;
-        obj->pos.y = enemy->pos.y + obj->enemy_slide_state.dest.y;
+        obj->pos.fx = enemy->pos.fx + fixedpt_fromint(obj->enemy_slide_state.dest.x);
+        obj->pos.fy = enemy->pos.fy + fixedpt_fromint(obj->enemy_slide_state.dest.y);
         obj->enemy_slide_state.timer--;
     }
 
     if(obj->group == GROUP_HAR && enemy) {
-        obj->pos.x = max2(ARENA_LEFT_WALL, min2(ARENA_RIGHT_WALL, obj->pos.x));
+        obj->pos.fx = fixedpt_clamp(obj->pos.fx, ARENA_LEFT_WALLF, ARENA_RIGHT_WALLF);
     }
 
     // If frame changed, do something
@@ -381,15 +385,15 @@ void player_run(object *obj) {
         if(sd_script_isset(frame, "m") && state->spawn != NULL) {
             int mx = 0;
             int my = 0;
-            float vx = 0;
-            float vy = 0;
+            fixedpt vx = 0;
+            fixedpt vy = 0;
 
             if(obj->animation_state.shadow_corner_hack && sd_script_get(frame, "m") == 65 && enemy) {
 
-                log_debug("my position %f, %f, their position %f %f", obj->pos.x, obj->pos.y, enemy->pos.x,
-                          enemy->pos.y);
-                mx = enemy->pos.x;
-                my = enemy->pos.y;
+                log_debug("my position %f, %f, their position %f %f", fixedpt_tofloat(obj->pos.fx),
+                          fixedpt_tofloat(obj->pos.fy), fixedpt_tofloat(enemy->pos.fx), fixedpt_tofloat(enemy->pos.fy));
+                mx = fixedpt_toint(enemy->pos.fx);
+                my = fixedpt_toint(enemy->pos.fy);
             }
 
             // Staring X coordinate for new animation
@@ -399,7 +403,7 @@ void player_run(object *obj) {
                 mx = random_int(&obj->gs->rand, 320 - 2 * mm) + mrx;
                 log_debug("randomized mx as %d", mx);
             } else if(sd_script_isset(frame, "mx")) {
-                mx = obj->start.x + (sd_script_get(frame, "mx") * object_get_direction(obj));
+                mx = fixedpt_toint(obj->start.fx) + (sd_script_get(frame, "mx") * object_get_direction(obj));
             }
 
             // Staring Y coordinate for new animation
@@ -409,15 +413,15 @@ void player_run(object *obj) {
                 my = random_int(&obj->gs->rand, 320 - 2 * mm) + mry;
                 log_debug("randomized my as %d", my);
             } else if(sd_script_isset(frame, "my")) {
-                my = obj->start.y + sd_script_get(frame, "my");
+                my = fixedpt_toint(obj->start.fy) + sd_script_get(frame, "my");
             }
 
             // Angle/speed for new animation
             if(sd_script_isset(frame, "ma")) {
                 int ma = sd_script_get(frame, "ma");
-                vx = cosf(ma);
-                vy = sinf(ma);
-                log_debug("MA is set! angle = %d, vx = %f, vy = %f", ma, vx, vy);
+                vx = fixedpt_cos(ma * FIXEDPT_PI / 180);
+                vy = fixedpt_sin(ma * FIXEDPT_PI / 180);
+                log_debug("MA is set! angle = %d, vx = %f, vy = %f", ma, fixedpt_tofloat(vx), fixedpt_tofloat(vy));
             }
 
             // Special positioning for certain desert arena sprites
@@ -426,7 +430,7 @@ void player_run(object *obj) {
             // Gravity for new object
             int mg = sd_script_isset(frame, "mg") ? sd_script_get(frame, "mg") : 0;
 
-            state->spawn(obj, sd_script_get(frame, "m"), vec2i_create(mx, my), vec2f_create(vx, vy), mp, ms, mg,
+            state->spawn(obj, sd_script_get(frame, "m"), vec2i_create(mx, my), vec2f_createf(vx, vy), mp, ms, mg,
                          state->spawn_userdata);
         }
 
@@ -470,7 +474,7 @@ void player_run(object *obj) {
             if(sd_script_isset(frame, "sb")) {
                 panning = clamp(sd_script_get(frame, "sb"), -100, 100) / 100.0f;
             } else {
-                panning = (obj->pos.x - 160) / 160.0f;
+                panning = (fixedpt_toint(obj->pos.fx) - 160) / 160.0f;
             }
             if(obj->sound_translation_table) {
                 int sound_id = obj->sound_translation_table[sd_script_get(frame, "s")] - 1;
@@ -552,7 +556,8 @@ void player_run(object *obj) {
         // If UA is set, force other HAR to damage animation
         if(sd_script_isset(frame, "ua") && enemy && enemy->cur_animation->id != 9) {
 
-            log_debug("my position %f, %f, their position %f %f", obj->pos.x, obj->pos.y, enemy->pos.x, enemy->pos.y);
+            log_debug("my position %f, %f, their position %f %f", fixedpt_tofloat(obj->pos.fx),
+                      fixedpt_tofloat(obj->pos.fy), fixedpt_tofloat(enemy->pos.fx), fixedpt_tofloat(enemy->pos.fy));
             har_set_ani(enemy, 9, 0);
         }
 
@@ -565,11 +570,11 @@ void player_run(object *obj) {
             return;
         }
 
-        if(sd_script_isset(frame, "bu") && obj->vel.y < 0.0f) {
-            float x_dist = dist(obj->pos.x, 160);
+        if(sd_script_isset(frame, "bu") && obj->vel.fy < 0) {
+            fixedpt x_dist = fixedpt_fromint(160) - obj->pos.fx;
             // assume that bu is used in conjunction with 'vy-X' and that we want to land in the center of the arena
-            obj->slide_state.vel.x = x_dist / (obj->vel.y * -2);
-            obj->slide_state.timer = obj->vel.y * -2;
+            obj->slide_state.vel.fx = fixedpt_xdiv(x_dist, (obj->vel.fy * -2));
+            obj->slide_state.timer = fixedpt_toint(obj->vel.fy * -2);
         }
 
         // handle scaling on the Y axis
@@ -579,10 +584,10 @@ void player_run(object *obj) {
 
         // Handle slides
         if(sd_script_isset(frame, "x=") || sd_script_isset(frame, "y=")) {
-            obj->slide_state.vel = vec2f_create(0, 0);
+            obj->slide_state.vel = vec2f_createf(0, 0);
         }
         if(sd_script_isset(frame, "x=")) {
-            obj->pos.x = obj->start.x + (sd_script_get(frame, "x=") * object_get_direction(obj));
+            obj->pos.fx = obj->start.fx + fixedpt_fromint(sd_script_get(frame, "x=") * object_get_direction(obj));
 
             // Find frame ID by tick
             int frame_id = sd_script_next_frame_with_tag(&state->parser, "x=", state->current_tick);
@@ -592,9 +597,9 @@ void player_run(object *obj) {
                 int mr = sd_script_get_tick_pos_at_frame(&state->parser, frame_id);
                 int r = mr - state->current_tick - frame->tick_len;
                 int next_x = sd_script_get(sd_script_get_frame(&state->parser, frame_id), "x=");
-                int slide = obj->start.x + (next_x * object_get_direction(obj));
-                if(slide != obj->pos.x) {
-                    obj->slide_state.vel.x = dist(obj->pos.x, slide) / (float)(frame->tick_len + r);
+                fixedpt slide = obj->start.fx + fixedpt_fromint(next_x * object_get_direction(obj));
+                if(slide != obj->pos.fx) {
+                    obj->slide_state.vel.fx = (slide - obj->pos.fx) / (frame->tick_len + r);
                     obj->slide_state.timer = frame->tick_len + r;
                     /* log_debug("Slide object %d for X = %f for a total of %d + %d = %d ticks.",
                             obj->cur_animation->id,
@@ -606,7 +611,7 @@ void player_run(object *obj) {
             }
         }
         if(sd_script_isset(frame, "y=")) {
-            obj->pos.y = obj->start.y + sd_script_get(frame, "y=");
+            obj->pos.fy = obj->start.fy + fixedpt_fromint(sd_script_get(frame, "y="));
 
             // Find frame ID by tick
             int frame_id = sd_script_next_frame_with_tag(&state->parser, "y=", state->current_tick);
@@ -616,9 +621,9 @@ void player_run(object *obj) {
                 int mr = sd_script_get_tick_pos_at_frame(&state->parser, frame_id);
                 int r = mr - state->current_tick - frame->tick_len;
                 int next_y = sd_script_get(sd_script_get_frame(&state->parser, frame_id), "y=");
-                int slide = next_y + obj->start.y;
-                if(slide != obj->pos.y) {
-                    obj->slide_state.vel.y = dist(obj->pos.y, slide) / (float)(frame->tick_len + r);
+                fixedpt slide = fixedpt_fromint(next_y) + obj->start.fy;
+                if(slide != obj->pos.fy) {
+                    obj->slide_state.vel.fy = (slide - obj->pos.fy) / (frame->tick_len + r);
                     obj->slide_state.timer = frame->tick_len + r;
                     /* log_debug("Slide object %d for Y = %f for a total of %d + %d = %d ticks.",
                             obj->cur_animation->id,

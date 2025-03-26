@@ -77,8 +77,8 @@ struct object_t {
     vec2f start;
     vec2f pos;
     vec2f vel;
-    float vertical_velocity_modifier;
-    float horizontal_velocity_modifier;
+    fixedpt vertical_velocity_modifierf;
+    fixedpt horizontal_velocity_modifierf;
     int8_t direction;
     int8_t group;
 
@@ -98,7 +98,7 @@ struct object_t {
 
     float x_percent;
     float y_percent;
-    float gravity;
+    fixedpt gravityf;
 
     // Bitmask for several video effects (shadow, etc.)
     uint32_t frame_video_effects;     //< Effects that only last for current frame
@@ -198,7 +198,7 @@ void object_apply_controllable_velocity(object *obj, object *obj_har, char input
 
 void object_set_layers(object *obj, int layers);
 void object_set_group(object *obj, int group);
-void object_set_gravity(object *obj, float gravity);
+void object_set_gravityf(object *obj, fixedpt gravity);
 
 void object_set_userdata(object *obj, void *ptr);
 void *object_get_userdata(const object *obj);
@@ -217,7 +217,7 @@ int object_get_repeat(const object *obj);
 void object_set_direction(object *obj, int dir);
 int object_get_direction(const object *obj);
 
-float object_get_gravity(const object *obj);
+fixedpt object_get_gravityf(const object *obj);
 int object_get_group(const object *obj);
 int object_get_layers(const object *obj);
 
@@ -240,6 +240,7 @@ int object_get_pal_limit(const object *obj);
 
 vec2i object_get_size(const object *obj);
 vec2i object_get_pos(const object *obj);
+vec2f object_get_fpos(const object *obj);
 vec2f object_get_vel(const object *obj);
 
 void object_set_pos(object *obj, vec2i pos);
@@ -249,8 +250,8 @@ int object_w(const object *obj);
 int object_h(const object *obj);
 int object_px(const object *obj);
 int object_py(const object *obj);
-float object_vx(const object *obj);
-float object_vy(const object *obj);
+fixedpt object_vxf(const object *obj);
+fixedpt object_vyf(const object *obj);
 
 void object_set_px(object *obj, int val);
 void object_set_py(object *obj, int val);

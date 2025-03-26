@@ -59,10 +59,6 @@ static inline unsigned udist(unsigned a, unsigned b) {
     return (a > b) ? a - b : b - a;
 }
 
-static inline float dist(float a, float b) {
-    return fabsf((a < b ? a : b) - (a > b ? a : b)) * (a < b ? 1.0f : -1.0f);
-}
-
 static inline size_t smin2(size_t a, size_t b) {
     return (a > b) ? b : a;
 }

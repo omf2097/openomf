@@ -6,7 +6,7 @@
 #include "utils/log.h"
 #include <stdlib.h>
 
-#define IS_ZERO(n) (n < 0.1 && n > -0.1)
+#define IS_ZEROF(n) (n < fixedpt_rconst(0.1) && n > fixedpt_rconst(-0.1))
 
 typedef struct projectile_local_t {
     uint8_t player_id;
@@ -31,7 +31,7 @@ void projectile_finished(object *obj) {
     if(move->successor_id) {
         object_set_animation(obj, &af_get_move(local->af_data, move->successor_id)->ani);
         object_set_repeat(obj, 0);
-        object_set_vel(obj, vec2f_create(0, 0));
+        object_set_vel(obj, vec2f_createf(0, 0));
         obj->animation_state.finished = 0;
     }
 }
@@ -49,48 +49,48 @@ void projectile_move(object *obj) {
     game_player *player = game_state_get_player(gs, projectile_get_owner(obj));
     object *obj_har = game_state_find_object(gs, game_player_get_har_obj_id(player));
 
-    obj->pos.x += obj->vel.x * obj_har->horizontal_velocity_modifier;
-    obj->vel.y += obj->gravity;
-    obj->pos.y += obj->vel.y * obj_har->vertical_velocity_modifier;
+    obj->pos.fx += fixedpt_xmul(obj->vel.fx, obj_har->horizontal_velocity_modifierf);
+    obj->vel.fy += obj->gravityf;
+    obj->pos.fy += fixedpt_xmul(obj->vel.fy, obj_har->vertical_velocity_modifierf);
 
-    float dampen = 0.7f;
+#define dampen 7 / 10
 
     // If wall bounce flag is on, bounce the projectile on wall hit
     // Otherwise kill it.
     if(local->wall_bounce) {
-        if(obj->pos.x < ARENA_LEFT_WALL) {
-            obj->pos.x = ARENA_LEFT_WALL;
-            obj->vel.x = -obj->vel.x * dampen;
+        if(obj->pos.fx < ARENA_LEFT_WALLF) {
+            obj->pos.fx = ARENA_LEFT_WALLF;
+            obj->vel.fx = -obj->vel.fx * dampen;
         }
-        if(obj->pos.x > ARENA_RIGHT_WALL) {
-            obj->pos.x = ARENA_RIGHT_WALL;
-            obj->vel.x = -obj->vel.x * dampen;
+        if(obj->pos.fx > ARENA_RIGHT_WALLF) {
+            obj->pos.fx = ARENA_RIGHT_WALLF;
+            obj->vel.fx = -obj->vel.fx * dampen;
         }
         // if not invincible, not ignoring bounds checking and actually has an X velocity (the latter two help with
         // shadow grab)
-    } else if(!local->invincible && !player_frame_isset(obj, "bh") && !IS_ZERO(obj->vel.x)) {
-        if(obj->pos.x < ARENA_LEFT_WALL) {
-            obj->pos.x = ARENA_LEFT_WALL;
+    } else if(!local->invincible && !player_frame_isset(obj, "bh") && !IS_ZEROF(obj->vel.fx)) {
+        if(obj->pos.fx < ARENA_LEFT_WALLF) {
+            obj->pos.fx = ARENA_LEFT_WALLF;
             obj->animation_state.finished = 1;
             projectile_finished(obj);
         }
-        if(obj->pos.x > ARENA_RIGHT_WALL) {
-            obj->pos.x = ARENA_RIGHT_WALL;
+        if(obj->pos.fx > ARENA_RIGHT_WALLF) {
+            obj->pos.fx = ARENA_RIGHT_WALLF;
             obj->animation_state.finished = 1;
             projectile_finished(obj);
         }
     }
-    if(obj->pos.y > ARENA_FLOOR && local->wall_bounce) {
-        obj->pos.y = ARENA_FLOOR;
-        obj->vel.y = -obj->vel.y * dampen;
-        obj->vel.x = obj->vel.x * dampen;
-    } else if(obj->pos.y > ARENA_FLOOR) {
-        obj->pos.y = ARENA_FLOOR;
+    if(obj->pos.fy > ARENA_FLOORF && local->wall_bounce) {
+        obj->pos.fy = ARENA_FLOORF;
+        obj->vel.fy = -obj->vel.fy * dampen;
+        obj->vel.fx = obj->vel.fx * dampen;
+    } else if(obj->pos.fy > ARENA_FLOORF) {
+        obj->pos.fy = ARENA_FLOORF;
         obj->animation_state.finished = 1;
         projectile_finished(obj);
     }
-    if(obj->pos.y >= (ARENA_FLOOR - 5) && IS_ZERO(obj->vel.x) && obj->vel.y < obj->gravity * 1.1 &&
-       obj->vel.y > obj->gravity * -1.1 && local->ground_freeze) {
+    if(obj->pos.fy >= (ARENA_FLOORF - fixedpt_fromint(5)) && IS_ZEROF(obj->vel.fx) &&
+       obj->vel.fy < obj->gravityf * 11 / 10 && obj->vel.fy > obj->gravityf * -11 / 10 && local->ground_freeze) {
 
         object_disable_rewind_tag(obj, 1);
     }

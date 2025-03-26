@@ -146,11 +146,11 @@ typedef struct har_t {
     int16_t last_damage_value;       // Last damage value taken
     har_endurance_t last_stun_value; // Last stun value taken. HAR_ENDURANCE fixed point.
 
-    float jump_speed;      // Agility generated speed modifier for jumping
-    float superjump_speed; // Agility generated speed modifier for jumping
-    float fall_speed;      // Agility generated speed modifier for falling
-    float fwd_speed;       // Agility generated speed modifier for falling
-    float back_speed;      // Agility generated speed modifier for falling
+    fixedpt jump_speedf;      // Agility generated speed modifier for jumping
+    fixedpt superjump_speedf; // Agility generated speed modifier for jumping
+    fixedpt fall_speedf;      // Agility generated speed modifier for falling
+    fixedpt fwd_speedf;       // Agility generated speed modifier for falling
+    fixedpt back_speedf;      // Agility generated speed modifier for falling
 
     int in_stasis_ticks; // Handle stasis activator
     int throw_duration;

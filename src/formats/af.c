@@ -119,10 +119,10 @@ int sd_af_load(sd_af_file *af, const char *filename) {
     af->endurance = sd_read_udword(r);
     af->unknown_b = sd_read_ubyte(r); // Always 1 or 2
     af->health = sd_read_uword(r);
-    af->forward_speed = sd_read_dword(r) / 256.0f;
-    af->reverse_speed = sd_read_dword(r) / 256.0f;
-    af->jump_speed = sd_read_dword(r) / 256.0f;
-    af->fall_speed = sd_read_dword(r) / 256.0f;
+    af->forward_speed = sd_read_dword(r);
+    af->reverse_speed = sd_read_dword(r);
+    af->jump_speed = sd_read_dword(r);
+    af->fall_speed = sd_read_dword(r);
     af->unknown_c = sd_read_ubyte(r); // Always 0x32 ?
     af->unknown_d = sd_read_ubyte(r); // Always 0x14 ?
 
