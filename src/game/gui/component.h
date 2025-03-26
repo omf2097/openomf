@@ -58,7 +58,7 @@ struct component {
     const char *help;    ///< Help text, if available
 
 
-    const gui_theme *theme; ///< Theme object. This may or may not be set. If not set, then look down the parent chain.
+    const gui_theme *theme; ///< Theme object. After init, this should be set for all objects.
 
     component_render_cb render; ///< Render function callback. This tells the component to draw itself.
     component_event_cb event;   ///< Event function callback. Direct SDL2 event handler.
