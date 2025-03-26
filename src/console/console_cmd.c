@@ -196,7 +196,7 @@ int console_cmd_win(game_state *gs, int argc, char **argv) {
         op.operand2.value.literal = 1;
 
         // run the assertion so it applies
-        if(game_state_check_assertion(&op, gs)) {
+        if(!game_state_check_assertion_is_met(&op, gs)) {
             console_output_addline("Setting opponent health to 1 failed!");
             return 1;
         } else {
@@ -224,7 +224,7 @@ int console_cmd_lose(game_state *gs, int argc, char **argv) {
         op.operand2.value.literal = 1;
 
         // run the assertion so it applies
-        if(game_state_check_assertion(&op, gs)) {
+        if(!game_state_check_assertion_is_met(&op, gs)) {
             console_output_addline("Setting player health to 1 failed!");
             return 1;
         } else {
@@ -382,21 +382,25 @@ int console_cmd_assert(game_state *gs, int argc, char **argv) {
         return 1;
     } else if(res == 2) {
         console_output_addline("Invalid LHS har attribute");
+        return 1;
+    } else if(op.operand1.is_literal) {
+        console_output_addline("Unexpected LHS literal.<something> use a bare integer literal.");
+        return 1;
     }
 
     // Parse operator
     const char *oper = argv[2];
 
-    if(strcmp(oper, ":=") == 0) {
+    if(strcmp(oper, ":=") == 0 || strcmp(oper, "set") == 0) {
         op.op = OP_SET;
-    } else if(strcmp(oper, "==") == 0) {
+    } else if(strcmp(oper, "==") == 0 || strcmp(oper, "eq") == 0) {
         op.op = OP_EQ;
-    } else if(strcmp(oper, ">") == 0) {
+    } else if(strcmp(oper, ">") == 0 || strcmp(oper, "gt") == 0) {
         op.op = OP_GT;
-    } else if(strcmp(oper, "<") == 0) {
+    } else if(strcmp(oper, "<") == 0 || strcmp(oper, "lt") == 0) {
         op.op = OP_LT;
     } else {
-        console_output_addline("Invalid operator. Use ==, >, <, or :=.");
+        console_output_addline("Invalid operator. Use ==, >, <, or := (or eq, gt, lt, or set).");
         return 1;
     }
 
@@ -412,6 +416,10 @@ int console_cmd_assert(game_state *gs, int argc, char **argv) {
             return 1;
         } else if(res == 2) {
             console_output_addline("Invalid RHS har attribute");
+            return 1;
+        } else if(op.operand2.is_literal) {
+            console_output_addline("Unexpected RHS literal.<something> use a bare integer literal.");
+            return 1;
         }
 
     } else { // RHS is integer
@@ -427,7 +435,7 @@ int console_cmd_assert(game_state *gs, int argc, char **argv) {
 
     print_assertion(&op);
 
-    if(game_state_check_assertion(&op, gs)) {
+    if(!game_state_check_assertion_is_met(&op, gs)) {
         console_output_addline("Assertion failed!");
         return 1;
     } else {
