@@ -134,7 +134,7 @@ typedef struct har_t {
     uint8_t is_grabbed;        // Is being moved by another object. Set by ex, ey tags
     uint8_t jump_delay;        // Prevent HARs from jumping again too soon
     int16_t last_damage_value; // Last damage value taken
-    float last_stun_value;     // Last stun value taken
+    int32_t last_stun_value;   // Last stun value taken. HAR_ENDURANCE fixed point.
     uint8_t punch_valid;       // Buffer for punch input, counts down every tick
     uint8_t kick_valid;        // Buffer for kick input, counts down every tick
 
@@ -155,7 +155,7 @@ typedef struct har_t {
     uint8_t stride;
     int stun_factor;
     int16_t health_max, health;
-    int endurance_max, endurance;
+    int32_t endurance_max, endurance;
     char inputs[11];
     uint32_t input_change_tick; // last tick the input direction changed
     char last_input;            // last held direction, corrected for facing
