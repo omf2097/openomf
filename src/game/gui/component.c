@@ -181,7 +181,6 @@ component *component_create(uint32_t header) {
     c->w_hint = -1;
     c->h_hint = -1;
     c->help = NULL;
-    c->filler = false;
     return c;
 }
 
