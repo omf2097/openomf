@@ -158,9 +158,9 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
 
     char *justfile = strrchr(filename, pm_path_sep);
     if(justfile == NULL) {
-        strncpy_or_truncate(trn->filename, filename, sizeof(trn->filename));
+        strncpy_or_abort(trn->filename, filename, sizeof(trn->filename));
     } else {
-        strncpy_or_truncate(trn->filename, justfile + 1, sizeof(trn->filename));
+        strncpy_or_abort(trn->filename, justfile + 1, sizeof(trn->filename));
     }
     trn->enemy_count = enemy_count;
 
