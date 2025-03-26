@@ -15,6 +15,7 @@ void array_test_suite(CU_pSuite suite);
 void text_render_test_suite(CU_pSuite suite);
 void text_layout_test_suite(CU_pSuite suite);
 void text_markup_test_suite(CU_pSuite suite);
+void video_common_test_suite(CU_pSuite suite);
 int text_markup_suite_init(void);
 int text_markup_suite_free(void);
 void cp437_test_suite(CU_pSuite suite);
@@ -52,6 +53,11 @@ int main(int argc, char **argv) {
     if(array_suite == NULL)
         goto end;
     array_test_suite(array_suite);
+
+    suite = CU_add_suite("Common renderer utils", NULL, NULL);
+    if(suite == NULL)
+        goto end;
+    video_common_test_suite(suite);
 
     CU_pSuite text_render_suite = CU_add_suite("Text Renderer", NULL, NULL);
     if(text_render_suite == NULL)
