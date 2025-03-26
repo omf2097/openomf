@@ -12,6 +12,7 @@
 #include "controller/controller.h"
 #include "game/gui/theme.h"
 #include <SDL.h>
+#include <game/gui/text/text.h>
 
 typedef struct component component;
 
@@ -55,8 +56,8 @@ struct component {
 
     bool supports_focus; ///< Whether the component can be focused by component_focus() call.
     bool is_focused;     ///< Whether the component is focused
-    const char *help;    ///< Help text, if available
 
+    text *help; ///< Help text, if available
 
     const gui_theme *theme; ///< Theme object. After init, this should be set for all objects.
 
@@ -99,9 +100,8 @@ bool component_is_selectable(component *c);
 void component_set_size_hints(component *c, int w, int h);
 void component_set_pos_hints(component *c, int x, int y);
 void component_set_supports(component *c, bool allow_disable, bool allow_select, bool allow_focus);
-void component_set_filler(component *c, bool is_filler);
 
-void component_set_help_text(component *c, const char *help);
+void component_set_help_text(component *c, const char *text);
 
 void component_set_theme(component *c, const gui_theme *theme);
 const gui_theme *component_get_theme(component *c);
