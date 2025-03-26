@@ -58,7 +58,7 @@ int rec_controller_poll(controller *ctrl, ctrl_event **ev) {
                 rec_assertion ass;
                 if(parse_assertion(buf, &ass)) {
                     print_assertion(&ass);
-                    if(game_state_check_assertion(&ass, ctrl->gs)) {
+                    if(!game_state_check_assertion_is_met(&ass, ctrl->gs)) {
                         abort();
                     }
                 }

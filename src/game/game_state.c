@@ -107,7 +107,7 @@ int game_state_get_assertion_operand(rec_assertion_operand *op, game_state *gs) 
     }
 }
 
-int game_state_check_assertion(rec_assertion *ass, game_state *gs) {
+bool game_state_check_assertion_is_met(rec_assertion *ass, game_state *gs) {
     int16_t operand1 = game_state_get_assertion_operand(&ass->operand1, gs);
     int16_t operand2 = game_state_get_assertion_operand(&ass->operand2, gs);
 
@@ -117,19 +117,19 @@ int game_state_check_assertion(rec_assertion *ass, game_state *gs) {
         case OP_EQ:
             if(operand1 != operand2) {
                 log_error("%d != %d", operand1, operand2);
-                return 1;
+                return false;
             }
             break;
         case OP_LT:
             if(operand1 >= operand2) {
                 log_error("%d !< %d", operand1, operand2);
-                return 1;
+                return false;
             }
             break;
         case OP_GT:
             if(operand1 <= operand2) {
                 log_error("%d !> %d", operand1, operand2);
-                return 1;
+                return false;
             }
             break;
         case OP_SET: {
@@ -140,31 +140,31 @@ int game_state_check_assertion(rec_assertion *ass, game_state *gs) {
             switch(ass->operand1.value.attr.attribute) {
                 case ATTR_X_POS:
                     obj->pos.x = operand2;
-                    return 0;
+                    return true;
                 case ATTR_Y_POS:
                     obj->pos.y = operand2;
-                    return 0;
+                    return true;
                 case ATTR_X_VEL:
                     obj->vel.x = operand2;
-                    return 0;
+                    return true;
                 case ATTR_Y_VEL:
                     obj->vel.y = operand2;
-                    return 0;
+                    return true;
                 case ATTR_HEALTH:
                     har->health = operand2;
-                    return 0;
+                    return true;
                 case ATTR_STAMINA:
                     har->endurance = operand2;
-                    return 0;
+                    return true;
                 default:
                     log_error("unsupported set");
-                    return 1;
+                    return false;
             }
         }
         default:
-            return 1;
+            return false;
     }
-    return 0;
+    return true;
 }
 
 // reset the match settings to use all the settings. This is essentially 1/2 player mode & demo mode

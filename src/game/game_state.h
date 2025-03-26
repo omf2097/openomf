@@ -14,7 +14,7 @@ typedef struct game_player_t game_player;
 typedef struct object_t object;
 typedef struct ctrl_event_t ctrl_event;
 
-int game_state_check_assertion(rec_assertion *ass, game_state *gs);
+bool game_state_check_assertion_is_met(rec_assertion *ass, game_state *gs);
 
 void game_state_match_settings_reset(game_state *gs);
 void game_state_match_settings_defaults(game_state *gs);
