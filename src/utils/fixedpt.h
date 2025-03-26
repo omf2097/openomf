@@ -37,6 +37,14 @@
 #error "FIXEDPT_BITS must be equal to 32 or 64"
 #endif
 
+#undef fixedpt_fromint
+#define fixedpt_fromint(I) ((fixedptd)(I) * FIXEDPT_ONE)
+#undef fixedpt_toint
+#define fixedpt_toint(F) ((F) / FIXEDPT_ONE)
+#undef fixedpt_xmul
+#define fixedpt_xmul(A, B) ((fixedpt)(((fixedptd)(A) * (fixedptd)(B)) / FIXEDPT_ONE))
+#undef fixedpt_xdiv
+#define fixedpt_xdiv(A, B) ((fixedpt)(((fixedptd)(A) * FIXEDPT_ONE) / (fixedptd)(B)))
 #define fixedpt_xmul3(A, B, C) fixedpt_xmul(fixedpt_xmul((A), (B)), (C))
 
 #undef fixedpt_abs
