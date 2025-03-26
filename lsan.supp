@@ -3,3 +3,6 @@ leak:libconfuse
 
 # SDL leak
 leak:has_gl_available
+
+# dbus
+leak:dbus_pending_call_block

@@ -49,7 +49,7 @@ RUNDIR=$(pwd)
 
 cd $BUILD_DIR
 
-export ASAN_OPTIONS=detect_leaks=0
+export LSAN_OPTIONS="suppressions=../lsan.supp"
 i=0
 for test in "${tests[@]}"; do
     IFS=':' read -r desc filename <<< "$test"
