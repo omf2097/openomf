@@ -136,8 +136,9 @@ bool encode_assertion(const rec_assertion *assertion, uint8_t *buffer) {
     return true;
 }
 
-static const char *attr_name[] = {"X Position",   "Y Position", "X Velocity", "Y Velocity",       "State ID",
-                                  "Animation ID", "Health",     "Stamina",    "Opponent Distance"};
+static const char *attr_name[] = {"X Position",        "Y Position",   "X Velocity",  "Y Velocity",
+                                  "State ID",          "Animation ID", "Health",      "Stamina",
+                                  "Opponent Distance", "Direction",    "ATTR_INVALID"};
 
 // Helper function to print assertions
 void print_assertion(const rec_assertion *assertion) {

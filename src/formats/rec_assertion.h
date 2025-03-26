@@ -24,6 +24,7 @@ typedef enum
     ATTR_HEALTH,
     ATTR_STAMINA,
     ATTR_OPPONENT_DISTANCE,
+    ATTR_DIRECTION,
     ATTR_INVALID
 } rec_har_attr;
 
