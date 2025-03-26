@@ -363,13 +363,16 @@ int console_cmd_assert(game_state *gs, int argc, char **argv) {
     }
 
     // Parse LHS: harX.attr
-    char *saveptr;
-    char *lh_har_part = strtok_r(argv[1], ".", &saveptr);
-    char *lh_attr_part = strtok_r(NULL, ".", &saveptr);
-    if(lh_har_part == NULL || lh_attr_part == NULL || strtok_r(NULL, ".", &saveptr) != NULL) {
+    char *lh_har_part = argv[1];
+    char *dot_pos = strchr(lh_har_part, '.');
+    if(dot_pos == NULL) {
         console_output_addline("Invalid LHS format. Expected harX.attr");
         return 1;
     }
+
+    // Split into har and attribute parts
+    *dot_pos = '\0'; // Terminate har part
+    char *lh_attr_part = dot_pos + 1;
 
     rec_assertion op;
 
@@ -397,14 +400,11 @@ int console_cmd_assert(game_state *gs, int argc, char **argv) {
         return 1;
     }
 
-    if(strchr(argv[3], '.') != NULL) { // RHS is har.attr
-        char *saveptr2;
-        char *rh_har_part = strtok_r(argv[3], ".", &saveptr2);
-        char *rh_attr_part = strtok_r(NULL, ".", &saveptr2);
-        if(rh_har_part == NULL || rh_attr_part == NULL || strtok_r(NULL, ".", &saveptr2) != NULL) {
-            console_output_addline("Invalid RHS format. Expected harX.attr");
-            return 1;
-        }
+    char *rh_har_part = argv[3];
+    dot_pos = strchr(argv[3], '.');
+    if(dot_pos != NULL) { // RHS is har.attr
+        *dot_pos = '\0';  // Terminate har part
+        char *rh_attr_part = dot_pos + 1;
 
         int res = rec_assertion_get_operand(&op.operand2, rh_har_part, rh_attr_part);
         if(res == 1) {
