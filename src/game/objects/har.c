@@ -1340,6 +1340,9 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
         log_debug("HAR %s to HAR %s collision at %d,%d!", har_get_name(a->id), har_get_name(b->id), hit_coord.x,
                   hit_coord.y);
 
+        // face B to the direction they're being attacked from
+        object_set_direction(obj_b, -object_get_direction(obj_a));
+
         if(player_frame_isset(obj_a, "ai")) {
             str str;
             str_from_c(&str, "A1-s01l50B2-C2-L5-M400");
@@ -1483,6 +1486,9 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
             // Just take damage normally if there is no footer string in successor
             log_debug("projectile dealt damage of %f", move->damage);
             log_debug("projectile %d dealt damage of %f", move->id, move->damage);
+
+            // face B to the direction they're being attacked from
+            object_set_direction(o_har, -object_get_direction(o_pjt));
 
             int damage = rehit ? move->damage * 0.6 : move->damage;
             if(player_frame_isset(o_pjt, "ai")) {
