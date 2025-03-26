@@ -25,10 +25,10 @@ typedef struct {
     int32_t endurance;     ///< HAR Endurance
     uint8_t unknown_b;     ///< Unknown value
     uint16_t health;       ///< HAR Health
-    float forward_speed;   ///< HAR fwd speed
-    float reverse_speed;   ///< HAR bwd speed
-    float jump_speed;      ///< HAR jump speed
-    float fall_speed;      ///< HAR fall speed
+    int32_t forward_speed; ///< HAR fwd speed
+    int32_t reverse_speed; ///< HAR bwd speed
+    int32_t jump_speed;    ///< HAR jump speed
+    int32_t fall_speed;    ///< HAR fall speed
     uint8_t unknown_c;     ///< Unknown value
     uint8_t unknown_d;     ///< Unknown value
 

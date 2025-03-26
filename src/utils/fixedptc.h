@@ -123,6 +123,7 @@ typedef __uint128_t fixedptud;
 #define fixedpt_add(A, B) ((A) + (B))
 #define fixedpt_sub(A, B) ((A) - (B))
 #define fixedpt_xmul(A, B) ((fixedpt)(((fixedptd)(A) * (fixedptd)(B)) >> FIXEDPT_FBITS))
+#define fixedpt_xmul3(A, B, C) fixedpt_xmul(fixedpt_xmul((A), (B)), (C))
 #define fixedpt_xdiv(A, B) ((fixedpt)(((fixedptd)(A) << FIXEDPT_FBITS) / (fixedptd)(B)))
 #define fixedpt_fracpart(A) ((fixedpt)(A) & FIXEDPT_FMASK)
 
@@ -134,12 +135,34 @@ typedef __uint128_t fixedptud;
 #define FIXEDPT_HALF_PI fixedpt_rconst(3.14159265358979323846 / 2)
 #define FIXEDPT_E fixedpt_rconst(2.7182818284590452354)
 
-#define fixedpt_abs(A) ((A) < 0 ? -(A) : (A))
-
 /* fixedpt is meant to be usable in environments without floating point support
  * (e.g. microcontrollers, kernels), so we can't use floating point types directly.
  * Putting them only in macros will effectively make them optional. */
 #define fixedpt_tofloat(T) ((float)((T) * ((float)(1) / (float)(1L << FIXEDPT_FBITS))))
+
+#if FIXEDPT_MAX <= INT_MAX
+#define fixedpt_abs(A) abs((A))
+#elif FIXEDPT_MAX <= INT64_MAX
+#define fixedpt_abs(A) llabs((A))
+#else
+#define fixedpt_abs(A) ((A) < 0 ? -(A) : (A))
+#endif
+
+static inline fixedpt fixedpt_clamp(fixedpt val, fixedpt min, fixedpt max) {
+    if(val > max)
+        return max;
+    if(val < min)
+        return min;
+    return val;
+}
+
+static inline fixedpt fixedpt_max2(fixedpt a, fixedpt b) {
+    return a > b ? a : b;
+}
+
+static inline fixedpt fixedpt_min2(fixedpt a, fixedpt b) {
+    return a < b ? a : b;
+}
 
 /* Multiplies two fixedpt numbers, returns the result. */
 static inline fixedpt fixedpt_mul(fixedpt A, fixedpt B) {
@@ -157,7 +180,8 @@ static inline fixedpt fixedpt_div(fixedpt A, fixedpt B) {
  *
  * Second note: multiplying and dividing a fixedpt number by an integer
  * can be done with the regular integer operators * and /, if you're a
- * bad enough programmer (https://youtu.be/EmZvrEPWx6w?t=18).
+ * bad enough programmer (https://youtu.be/EmZvrEPWx6w?t=18)-- dividing
+ * an integer by a fixed point divisor *does* require using fixedpt_xdiv.
  */
 
 // TODO: calculate FIXEDPT_STR_BUFSIZE? or just keep it large enough for fixedpt_str to not blow up.

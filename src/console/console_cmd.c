@@ -148,7 +148,7 @@ int console_cmd_har(game_state *gs, int argc, char **argv) {
                 int hd = object_get_direction(har_obj);
 
                 object *obj = omf_calloc(1, sizeof(object));
-                object_create(obj, gs, pos, vec2f_create(0, 0));
+                object_create(obj, gs, pos, vec2f_createf(0, 0));
                 // set the object to the same as the old one, so all the references remain intact
                 obj->id = har_obj->id;
 

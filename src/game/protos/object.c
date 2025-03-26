@@ -32,7 +32,7 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
     // remember the place we were spawned, the x= and y= tags are relative to that
     obj->start = vec2i_to_f(pos);
     obj->vel = vel;
-    obj->horizontal_velocity_modifier = obj->vertical_velocity_modifier = 1.0f;
+    obj->horizontal_velocity_modifierf = obj->vertical_velocity_modifierf = FIXEDPT_ONE;
     obj->direction = OBJECT_FACE_RIGHT;
     obj->y_percent = 1.0;
     obj->x_percent = 1.0;
@@ -40,7 +40,7 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
     // Physics
     obj->layers = OBJECT_DEFAULT_LAYER;
     obj->group = GROUP_UNKNOWN;
-    obj->gravity = 0.0f;
+    obj->gravityf = 0;
 
     // Video effect stuff
     obj->animation_video_effects = 0;
@@ -54,7 +54,7 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
     obj->orbit_tick = MATH_PI / 2.0f;
     obj->orbit_dest = obj->start;
     obj->orbit_pos = obj->start;
-    obj->orbit_pos_vary = vec2f_create(0, 0);
+    obj->orbit_pos_vary = vec2f_createf(0, 0);
 
     // Animation playback related
     obj->cur_animation_own = OWNER_EXTERNAL;
@@ -114,7 +114,7 @@ int object_clone(object *src, object *dst, game_state *gs) {
 // FIXME: This was removed in HEAD, not sure why or what is the replacement
 // TODO: GET RID
 void object_create_static(object *obj, game_state *gs) {
-    object_create(obj, gs, vec2i_create(0, 0), vec2f_create(0, 0));
+    object_create(obj, gs, vec2i_create(0, 0), vec2f_createf(0, 0));
 }
 
 void object_set_stride(object *obj, int stride) {
@@ -305,33 +305,33 @@ void object_del_frame_effects(object *obj, uint32_t effects) {
 
 void object_apply_controllable_velocity(object *obj, bool is_projectile, char input) {
     if(player_frame_isset(obj, "cx")) {
-        float cx = player_frame_get(obj, "cx") / 10.0;
+        fixedpt cx = fixedpt_fromint(player_frame_get(obj, "cx")) / 10;
         if(!is_projectile) {
-            cx *= obj->horizontal_velocity_modifier;
+            cx = fixedpt_xmul(cx, obj->horizontal_velocity_modifierf);
         }
         if(input == '4') {
-            obj->vel.x -= cx * object_get_direction(obj);
+            obj->vel.fx -= cx * object_get_direction(obj);
         } else if(input == '6') {
-            obj->vel.x += cx * object_get_direction(obj);
+            obj->vel.fx += cx * object_get_direction(obj);
         } else if(input == '3' || input == '9') {
-            obj->vel.x += cx * 0.7 * object_get_direction(obj);
+            obj->vel.fx += fixedpt_xmul(cx, fixedpt_rconst(0.7)) * object_get_direction(obj);
         } else if(input == '1' || input == '7') {
-            obj->vel.x -= cx * 0.7 * object_get_direction(obj);
+            obj->vel.fx -= fixedpt_xmul(cx, fixedpt_rconst(0.7)) * object_get_direction(obj);
         }
         // CY needs CX to be set
         if(player_frame_isset(obj, "cy")) {
-            float cy = player_frame_get(obj, "cy") / 10.0;
+            fixedpt cy = fixedpt_fromint(player_frame_get(obj, "cy")) / 10;
             if(!is_projectile) {
-                cy *= obj->vertical_velocity_modifier;
+                cy = fixedpt_xmul(cy, obj->vertical_velocity_modifierf);
             }
             if(input == '8') {
-                obj->vel.y -= cy * object_get_direction(obj);
+                obj->vel.fy -= cy * object_get_direction(obj);
             } else if(input == '2') {
-                obj->vel.y += cy * object_get_direction(obj);
+                obj->vel.fy += cy * object_get_direction(obj);
             } else if(input == '3' || input == '1') {
-                obj->vel.y += cy * 0.7 * object_get_direction(obj);
+                obj->vel.fy += fixedpt_xmul(cy, fixedpt_rconst(0.7)) * object_get_direction(obj);
             } else if(input == '7' || input == '9') {
-                obj->vel.y -= cy * 0.7 * object_get_direction(obj);
+                obj->vel.fy -= fixedpt_xmul(cy, fixedpt_rconst(0.7)) * object_get_direction(obj);
             }
         }
     }
@@ -360,20 +360,20 @@ void object_render(object *obj) {
 
     // Set Y coord, take into account sprite flipping
     if(rstate->flipmode & FLIP_VERTICAL) {
-        y = obj->pos.y - cur_sprite->pos.y + rstate->o_correction.y - object_get_size(obj).y;
+        y = object_get_pos(obj).y - cur_sprite->pos.y + rstate->o_correction.y - object_get_size(obj).y;
 
         if(obj->cur_animation->id == ANIM_JUMPING) {
             y -= 100;
         }
     } else {
-        y = obj->pos.y + cur_sprite->pos.y + rstate->o_correction.y;
+        y = object_get_pos(obj).y + cur_sprite->pos.y + rstate->o_correction.y;
     }
 
     // Set X coord, take into account the HAR facing.
     if(object_get_direction(obj) == OBJECT_FACE_LEFT) {
-        x = obj->pos.x - cur_sprite->pos.x + rstate->o_correction.x - object_get_size(obj).x;
+        x = object_get_pos(obj).x - cur_sprite->pos.x + rstate->o_correction.x - object_get_size(obj).x;
     } else {
-        x = obj->pos.x + cur_sprite->pos.x + rstate->o_correction.x;
+        x = object_get_pos(obj).x + cur_sprite->pos.x + rstate->o_correction.x;
     }
 
     // Centrify if scaled
@@ -451,9 +451,9 @@ void object_render_shadow(object *obj) {
 
     // Determine X
     int flip_mode = obj->sprite_state.flipmode;
-    int x = obj->pos.x + cur_sprite->pos.x + obj->sprite_state.o_correction.x;
+    int x = object_get_pos(obj).x + cur_sprite->pos.x + obj->sprite_state.o_correction.x;
     if(object_get_direction(obj) == OBJECT_FACE_LEFT) {
-        x = (obj->pos.x + obj->sprite_state.o_correction.x) - cur_sprite->pos.x - object_get_size(obj).x;
+        x = (object_get_pos(obj).x + obj->sprite_state.o_correction.x) - cur_sprite->pos.x - object_get_size(obj).x;
         flip_mode ^= FLIP_HORIZONTAL;
     }
 
@@ -498,7 +498,7 @@ int object_act(object *obj, int action) {
 
 void object_move(object *obj) {
     if(obj->sprite_state.disable_gravity) {
-        object_set_vel(obj, vec2f_create(0, 0));
+        object_set_vel(obj, vec2f_createf(0, 0));
     }
     if(obj->move != NULL) {
         obj->move(obj);
@@ -578,7 +578,10 @@ void object_set_animation(object *obj, animation *ani) {
 
     // Debug texts
     if(obj->cur_animation->id == -1) {
-        log_debug("Custom object set to (x,y) = (%f,%f).", obj->pos.x, obj->pos.y);
+        char bufx[FIXEDPT_STR_BUFSIZE], bufy[FIXEDPT_STR_BUFSIZE];
+        fixedpt_str(obj->pos.fx, bufx, -1);
+        fixedpt_str(obj->pos.fy, bufy, -1);
+        log_debug("Custom object set to (x,y) = (%s,%s).", bufx, bufy);
     } else {
         /*log_debug("Animation object %d set to (x,y) = (%f,%f) with \"%s\".", */
         /*obj->cur_animation->id,*/
@@ -673,12 +676,12 @@ void object_set_layers(object *obj, int layers) {
 void object_set_group(object *obj, int group) {
     obj->group = group;
 }
-void object_set_gravity(object *obj, float gravity) {
-    obj->gravity = gravity;
+void object_set_gravityf(object *obj, fixedpt gravity) {
+    obj->gravityf = gravity;
 }
 
-float object_get_gravity(const object *obj) {
-    return obj->gravity;
+fixedpt object_get_gravityf(const object *obj) {
+    return obj->gravityf;
 }
 int object_get_group(const object *obj) {
     return obj->group;
@@ -753,28 +756,31 @@ int object_px(const object *obj) {
 int object_py(const object *obj) {
     return vec2f_to_i(obj->pos).y;
 }
-float object_vx(const object *obj) {
-    return obj->vel.x;
+fixedpt object_vxf(const object *obj) {
+    return obj->vel.fx;
 }
-float object_vy(const object *obj) {
-    return obj->vel.y;
+fixedpt object_vyf(const object *obj) {
+    return obj->vel.fy;
 }
 
 void object_set_px(object *obj, int val) {
-    obj->pos.x = val;
+    obj->pos.fx = fixedpt_fromint(val);
 }
 void object_set_py(object *obj, int val) {
-    obj->pos.y = val;
+    obj->pos.fy = fixedpt_fromint(val);
 }
-void object_set_vx(object *obj, float val) {
-    obj->vel.x = val;
+void object_set_vxf(object *obj, fixedpt val) {
+    obj->vel.fx = val;
 }
-void object_set_vy(object *obj, float val) {
-    obj->vel.y = val;
+void object_set_vyf(object *obj, fixedpt val) {
+    obj->vel.fy = val;
 }
 
 vec2i object_get_pos(const object *obj) {
     return vec2f_to_i(obj->pos);
+}
+vec2f object_get_fpos(const object *obj) {
+    return obj->pos;
 }
 vec2f object_get_vel(const object *obj) {
     return obj->vel;
@@ -817,7 +823,7 @@ void object_set_destroy_cb(object *obj, object_state_del_cb cbf, void *userdata)
 }
 
 int object_is_airborne(const object *obj) {
-    return obj->pos.y < ARENA_FLOOR || obj->vel.y < 0;
+    return obj->pos.fy < fixedpt_fromint(ARENA_FLOOR) || obj->vel.fy < 0;
 }
 
 /* Attaches one object to another. Positions are synced to this from the attached. */

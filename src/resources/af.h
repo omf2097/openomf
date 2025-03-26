@@ -9,10 +9,10 @@ typedef struct af_t {
     unsigned int id;
     float endurance;
     unsigned int health;
-    float forward_speed;
-    float reverse_speed;
-    float jump_speed;
-    float fall_speed;
+    fixedpt forward_speedf;
+    fixedpt reverse_speedf;
+    fixedpt jump_speedf;
+    fixedpt fall_speedf;
     array sprites;
     array moves;
     char sound_translation_table[30];

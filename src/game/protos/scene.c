@@ -99,7 +99,7 @@ void scene_init(scene *scene) {
         // Start up animations
         if(m_load) {
             object *obj = omf_calloc(1, sizeof(object));
-            object_create(obj, scene->gs, info->ani.start_pos, vec2f_create(0, 0));
+            object_create(obj, scene->gs, info->ani.start_pos, vec2f_createf(0, 0));
             object_set_stl(obj, scene->bk_data->sound_translation_table);
             object_set_animation(obj, &info->ani);
             object_set_repeat(obj, m_repeat);
