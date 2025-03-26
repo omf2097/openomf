@@ -4,6 +4,8 @@
 /*
  * fixedptc.h is a 32-bit or 64-bit fixed point numeric library.
  *
+ * 16-bit support has also been added.
+ *
  * The symbol FIXEDPT_BITS, if defined before this library header file
  * is included, determines the number of bits in the data type (its "width").
  * The default width is 32-bit (FIXEDPT_BITS=32) and it can be used
@@ -74,18 +76,32 @@
 
 #include <stdint.h>
 
-#if FIXEDPT_BITS == 32
+#if FIXEDPT_BITS == 16
+typedef int16_t fixedpt;
+typedef int32_t fixedptd;
+typedef uint16_t fixedptu;
+typedef uint32_t fixedptud;
+#define FIXEDPT_MIN INT16_MIN
+#define FIXEDPT_MAX INT16_MAX
+#define FIXEDPTU_MAX UINT16_MAX
+#elif FIXEDPT_BITS == 32
 typedef int32_t fixedpt;
 typedef int64_t fixedptd;
 typedef uint32_t fixedptu;
 typedef uint64_t fixedptud;
+#define FIXEDPT_MIN INT32_MIN
+#define FIXEDPT_MAX INT32_MAX
+#define FIXEDPTU_MAX UINT32_MAX
 #elif FIXEDPT_BITS == 64
 typedef int64_t fixedpt;
 typedef __int128_t fixedptd;
 typedef uint64_t fixedptu;
 typedef __uint128_t fixedptud;
+#define FIXEDPT_MIN INT64_MIN
+#define FIXEDPT_MAX INT64_MAX
+#define FIXEDPTU_MAX UINT64_MAX
 #else
-#error "FIXEDPT_BITS must be equal to 32 or 64"
+#error "FIXEDPT_BITS must be equal to 16, 32, or 64"
 #endif
 
 #ifndef FIXEDPT_WBITS
@@ -138,7 +154,14 @@ static inline fixedpt fixedpt_div(fixedpt A, fixedpt B) {
 /*
  * Note: adding and substracting fixedpt numbers can be done by using
  * the regular integer operators + and -.
+ *
+ * Second note: multiplying and dividing a fixedpt number by an integer
+ * can be done with the regular integer operators * and /, if you're a
+ * bad enough programmer (https://youtu.be/EmZvrEPWx6w?t=18).
  */
+
+// TODO: calculate FIXEDPT_STR_BUFSIZE? or just keep it large enough for fixedpt_str to not blow up.
+#define FIXEDPT_STR_BUFSIZE 32
 
 /**
  * Convert the given fixedpt number to a decimal string.
@@ -150,6 +173,7 @@ static inline fixedpt fixedpt_div(fixedpt A, fixedpt B) {
  * specified precisions.
  */
 static inline void fixedpt_str(fixedpt A, char *str, int max_dec) {
+    // boy this function sure is safe with pointers :(
     int ndec = 0, slen = 0;
     char tmp[12] = {0};
     fixedptud fr, ip;
@@ -157,8 +181,8 @@ static inline void fixedpt_str(fixedpt A, char *str, int max_dec) {
     const fixedptud mask = one - 1;
 
     if(max_dec == -1)
-#if FIXEDPT_BITS == 32
-#if FIXEDPT_WBITS > 16
+#if FIXEDPT_BITS == 16 || FIXEDPT_BITS == 32
+#if FIXEDPT_FBITS < 16
         max_dec = 2;
 #else
         max_dec = 4;
@@ -328,8 +352,9 @@ static inline fixedpt fixedpt_ln(fixedpt x) {
 
     if(x < 0)
         return (0);
-    if(x == 0)
-        return 0xffffffff;
+    if(x == 0) {
+        return FIXEDPT_MAX;
+    }
 
     log2 = 0;
     xi = x;
