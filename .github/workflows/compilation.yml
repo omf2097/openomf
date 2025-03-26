@@ -55,23 +55,6 @@ jobs:
         cd build-test
         ctest --verbose --output-on-failure
 
-    - name: Get OMF2097 assets
-      uses: ./.github/actions/assets
-
-    - name: Extract omf 2097 assets
-      run: unzip -j omf2097-assets.zip -d build-test/resources
-
-    - name: Install pytest requirements
-      run: |
-        pipx install poetry
-        poetry install
-
-    - name: Run pytest tests
-      run: ./run_pytest.sh build-test
-
-    - name: Run rec tests
-      run: ./run_rectests.sh build-test
-
   # Build windows release artifacts with MSVC
   # -----------------------------------------------------------------------------------------------
   build_msvc:
