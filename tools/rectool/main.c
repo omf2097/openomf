@@ -89,7 +89,7 @@ void print_rec_root_info(sd_rec_file *rec) {
         printf("\n");
 
         printf("## Parsed data:\n");
-        printf("Number Tick       Extra Player Action Length            Action enum Extra data\n");
+        printf("Number       Tick Extra Player Action Length            Action enum Extra data\n");
         for(unsigned i = 0; i < rec->move_count; i++) {
             char tmp[100];
             tmp[0] = 0;
@@ -313,6 +313,7 @@ int main(int argc, char *argv[]) {
     struct arg_lit *vers = arg_lit0("v", "version", "print version information and exit");
     struct arg_file *file = arg_file1("f", "file", "<file>", "Input .REC file");
     struct arg_file *output = arg_file0("o", "output", "<file>", "Output .REC file");
+    struct arg_lit *inplace = arg_lit0("i", "inplace", "Edit .REC file inplace");
     struct arg_str *key = arg_strn("k", "key", "<key>", 0, 3, "Select key");
     struct arg_int *pilot = arg_int0(NULL, "pilot", "<int>", "Only print pilot information");
     struct arg_str *value = arg_str0("s", "set", "<value>", "Set value (requires --key)");
@@ -331,9 +332,10 @@ int main(int argc, char *argv[]) {
         arg_str0(NULL, "operand2_value", "<xpos|ypos|xvel|yvel|state|anim|health|stamina|<literal>>",
                  "Assertion operand 1; har 1 or 2 or literal");
     struct arg_int *delete = arg_intn("d", "delete", "<number>", 0, 10, "Delete an existing element");
+    struct arg_int *truncate = arg_int0(NULL, "truncate", "<tick>", "Delete moves after specified tick");
     struct arg_end *end = arg_end(20);
-    void *argtable[] = {help,       vers,        file,       output,      pilot,       key,
-                        value,      delete,      insert,     assert,      assert_tick, assert_op,
+    void *argtable[] = {help,       vers,        file,       output,      inplace, pilot,       key,
+                        value,      delete,      truncate,   insert,      assert,  assert_tick, assert_op,
                         assert_op1, assert_val1, assert_op2, assert_val2, end};
     const char *progname = "rectool";
 
@@ -365,8 +367,9 @@ int main(int argc, char *argv[]) {
     }
 
     // Note about needing --output when changing values
-    if(value->count > 0 && output->count <= 0) {
-        printf("For setting values, remember to set --output or -o.\n");
+    if((value->count > 0 || assert->count > 0 || insert->count > 0 || delete->count > 0 || truncate->count > 0) &&
+       output->count == 0 && inplace->count == 0) {
+        printf("When changing values, remember to set an --output.\n");
         goto exit_0;
     }
 
@@ -377,9 +380,9 @@ int main(int argc, char *argv[]) {
         goto exit_0;
     }
 
-    // Make sure delete and insert aren't both selected
-    if(delete->count > 0 && insert->count > 0) {
-        printf("Select either --delete or --insert, not both!");
+    // Make sure no more than one of delete, truncate, and insert are selected
+    if((delete->count > 0) + (truncate->count > 0) + (insert->count > 0) > 1) {
+        printf("Select any one of --delete, --truncate, or --insert, but not more than one!");
         goto exit_0;
     }
 
@@ -417,6 +420,17 @@ int main(int argc, char *argv[]) {
             offset++;
         }
         printf("Deleted %d moves, final move count %d\n", offset, rec.move_count);
+    } else if(truncate->count > 0) {
+        unsigned truncate_tick = truncate->ival[0];
+        int deleted = 0;
+        while(rec.move_count > 0 && rec.moves[rec.move_count - 1].tick > truncate_tick) {
+            if(sd_rec_delete_action(&rec, rec.move_count - 1) != SD_SUCCESS) {
+                printf("deleting move %d failed\n", rec.move_count - 1);
+                abort();
+            }
+            deleted++;
+        }
+        printf("Deleted %d moves, final move count %d\n", deleted, rec.move_count);
     } else if(insert->count > 0) {
         sd_rec_move mv;
         memset(&mv, 0, sizeof(sd_rec_move));
@@ -503,8 +517,9 @@ int main(int argc, char *argv[]) {
     }
 
     // Write output file
-    if(output->count > 0) {
-        if(sd_rec_save(&rec, output->filename[0]) != SD_SUCCESS) {
+    if(output->count > 0 || inplace->count > 0) {
+        char const *filename = inplace->count ? file->filename[0] : output->filename[0];
+        if(sd_rec_save(&rec, filename) != SD_SUCCESS) {
             printf("Save didn't succeed!");
         }
     }
