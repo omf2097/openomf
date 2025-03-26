@@ -5,6 +5,5 @@ component *filler_create(void) {
     component *c = widget_create();
     component_disable(c, true);
     component_set_supports(c, true, false, false);
-    component_set_filler(c, true);
     return c;
 }

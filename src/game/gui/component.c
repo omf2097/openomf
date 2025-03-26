@@ -121,10 +121,6 @@ void component_set_supports(component *c, bool allow_disable, bool allow_select,
     c->supports_focus = allow_focus;
 }
 
-void component_set_filler(component *c, bool is_filler) {
-    c->filler = is_filler;
-}
-
 void component_set_render_cb(component *c, component_render_cb cb) {
     c->render = cb;
 }

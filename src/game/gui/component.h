@@ -56,7 +56,7 @@ struct component {
     bool supports_focus; ///< Whether the component can be focused by component_focus() call.
     bool is_focused;     ///< Whether the component is focused
     const char *help;    ///< Help text, if available
-    bool filler;         ///< Whether the component should fill unused space during layout
+
 
     const gui_theme *theme; ///< Theme object. This may or may not be set. If not set, then look down the parent chain.
 
