@@ -675,7 +675,7 @@ void har_move(object *obj) {
     }
 }
 
-void har_take_damage(object *obj, const str *string, int damage, float stun) {
+static void har_take_damage(object *obj, const str *string, int damage, int32_t stun) {
     har *h = object_get_userdata(obj);
 
     if(h->state == STATE_VICTORY || h->state == STATE_DONE) {
@@ -721,19 +721,19 @@ void har_take_damage(object *obj, const str *string, int damage, float stun) {
     // Handle health changes
     if(h->health <= 0) {
         h->health = 0;
-        h->endurance = 0.0f;
+        h->endurance = 0;
     }
 
     if(!h->throw_duration) {
-        log_debug("applying %f stun damage to %f", stun, h->endurance);
+        log_debug("applying %d stun damage to %d", stun, h->endurance);
         h->endurance -= stun;
     }
-    if(h->endurance < 1.0f) {
+    if(h->endurance < 1) {
         if(h->state == STATE_STUNNED) {
             // refill endurance
             h->endurance = h->endurance_max;
         } else {
-            h->endurance = 0.0f;
+            h->endurance = 0;
         }
     }
 
@@ -1217,8 +1217,15 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
     // rehit mode is on, but the opponent isn't airborne or stunned
     if(obj_b->gs->match_settings.rehit && b->state == STATE_FALLEN &&
        (!object_is_airborne(obj_b) || b->endurance <= 0)) {
+<<<<<<< HEAD
         log_debug("REHIT is not possible %d %f %f %f", object_is_airborne(obj_b), obj_b->pos.x, obj_b->pos.y,
                   b->endurance);
+=======
+        char xbuf[FIXEDPT_STR_BUFSIZE], ybuf[FIXEDPT_STR_BUFSIZE];
+        fixedpt_str(obj_b->pos.fx, xbuf, -1);
+        fixedpt_str(obj_b->pos.fy, ybuf, -1);
+        log_debug("REHIT is not possible %d %s %s %d", object_is_airborne(obj_b), xbuf, ybuf, b->endurance);
+>>>>>>> 0e0b7d70 (Strip out har_endurance fixedpoint, use whole numbers)
         return 0;
     }
 
@@ -1426,8 +1433,15 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
     // rehit mode is on, but the opponent isn't airborne or stunned
     if(o_har->gs->match_settings.rehit && h->state == STATE_FALLEN &&
        (!object_is_airborne(o_har) || h->endurance <= 0)) {
+<<<<<<< HEAD
         log_debug("REHIT is not possible %d %f %f %f", object_is_airborne(o_har), o_har->pos.x, o_har->pos.y,
                   h->endurance);
+=======
+        char xbuf[FIXEDPT_STR_BUFSIZE], ybuf[FIXEDPT_STR_BUFSIZE];
+        fixedpt_str(o_har->pos.fx, xbuf, -1);
+        fixedpt_str(o_har->pos.fy, ybuf, -1);
+        log_debug("REHIT is not possible %d %s %s %d", object_is_airborne(o_har), xbuf, ybuf, h->endurance);
+>>>>>>> 0e0b7d70 (Strip out har_endurance fixedpoint, use whole numbers)
         return;
     }
 
@@ -1806,7 +1820,7 @@ void har_tick(object *obj) {
     if(h->health > 0 && h->endurance < h->endurance_max &&
        !(h->executing_move || h->state == STATE_RECOIL || h->state == STATE_STUNNED || h->state == STATE_FALLEN ||
          h->state == STATE_STANDING_UP || h->state == STATE_DEFEAT)) {
-        h->endurance += 0.0025f * h->endurance_max; // made up but plausible number
+        h->endurance += h->endurance_max / 400; // made up but plausible number
     }
 
     // Leave shadow trail
@@ -2362,7 +2376,7 @@ void har_finished(object *obj) {
     } else if(h->state == STATE_RECOIL && h->health <= 0) {
         h->state = STATE_DEFEAT;
         har_set_ani(obj, h->custom_defeat_animation ? h->custom_defeat_animation : ANIM_DEFEAT, 0);
-    } else if((h->state == STATE_RECOIL || h->state == STATE_STANDING_UP) && h->endurance < 1.0f) {
+    } else if((h->state == STATE_RECOIL || h->state == STATE_STANDING_UP) && h->endurance < 1) {
         if(h->state == STATE_RECOIL) {
             har_event_recover(h, ctrl);
         }
@@ -2496,8 +2510,8 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     // af_data->health);
     //  The stun cap is calculated as follows
     //  HAR Endurance * 3.6 * (Pilot Endurance + 16) / 23
-    local->endurance_max = local->endurance = af_data->endurance * 3.6 * (pilot->endurance + 16) / 23;
-    log_debug("HAR endurance is %f with pilot endurance %d and base endurance %f", local->endurance, pilot->endurance,
+    local->endurance_max = local->endurance = af_data->endurance * 36 * (pilot->endurance + 16) / 23 / 10;
+    log_debug("HAR endurance is %d with pilot endurance %d and base endurance %d", local->endurance, pilot->endurance,
               af_data->endurance);
     // fwd speed = (Agility + 20) / 30 * fwd speed
     // back speed = (Agility + 20) / 30 * back speed

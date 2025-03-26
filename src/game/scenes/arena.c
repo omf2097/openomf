@@ -1426,7 +1426,7 @@ static void arena_debug(scene *scene) {
             text_render_mode(&tconf_debug, TEXT_DEFAULT, 230 - (strlen(buf) * fnt->w), 5, 250, 6, buf);
         }
 
-        snprintf(buf, sizeof(buf), "%.2f", hars[i]->endurance);
+        snprintf(buf, sizeof(buf), "%d", hars[i]->endurance);
         if(i == 0) {
             text_render_mode(&tconf_debug, TEXT_DEFAULT, 70, 12, 250, 6, buf);
         } else {

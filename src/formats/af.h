@@ -20,17 +20,17 @@
  * Contains information about a single HAR (combat robot).
  */
 typedef struct {
-    uint16_t file_id;     ///< File ID
-    uint16_t exec_window; ///< Move execution window (?)
-    float endurance;      ///< HAR Endurance
-    uint8_t unknown_b;    ///< Unknown value
-    uint16_t health;      ///< HAR Health
-    float forward_speed;  ///< HAR fwd speed
-    float reverse_speed;  ///< HAR bwd speed
-    float jump_speed;     ///< HAR jump speed
-    float fall_speed;     ///< HAR fall speed
-    uint8_t unknown_c;    ///< Unknown value
-    uint8_t unknown_d;    ///< Unknown value
+    uint16_t file_id;      ///< File ID
+    uint16_t exec_window;  ///< Move execution window (?)
+    int32_t endurance;     ///< HAR Endurance
+    uint8_t unknown_b;     ///< Unknown value
+    uint16_t health;       ///< HAR Health
+    float forward_speed;   ///< HAR fwd speed
+    float reverse_speed;   ///< HAR bwd speed
+    float jump_speed;      ///< HAR jump speed
+    float fall_speed;      ///< HAR fall speed
+    uint8_t unknown_c;     ///< Unknown value
+    uint8_t unknown_d;     ///< Unknown value
 
     sd_move *moves[MAX_AF_MOVES]; ///< All HAR moves.
     char soundtable[30];          ///< All sounds used by the animations in this HAR file.
