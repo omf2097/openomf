@@ -848,9 +848,13 @@ void calc_damage_and_stun(object *obj, af_move *move, int *damage, int *stun) {
         *stun = *damage * (35 + pilot->power) / 45;
         *damage = *damage * (25 + pilot->power) / 35 + 1;
 
+        // ad-hoc fixed point
+        int const APPENDAGE_POWER_FIXP = 52;  // chosen so that APPENDAGE_POWER_P_192 can be a round number
+        int const APPENDAGE_POWER_P_192 = 10; // 0.192 in appendage power fixp
+
         // (Limb Power + 3) * .192
-        float leg_power = (pilot->leg_power + 3) * 0.192f;
-        float arm_power = (pilot->arm_power + 3) * 0.192f;
+        int leg_power = (pilot->leg_power + 3) * APPENDAGE_POWER_P_192;
+        int arm_power = (pilot->arm_power + 3) * APPENDAGE_POWER_P_192;
 
         switch(move->extra_string_selector) {
             case ESS_NONE:
@@ -858,16 +862,16 @@ void calc_damage_and_stun(object *obj, af_move *move, int *damage, int *stun) {
             case ESS_ARM_SPEED:
             case ESS_SPECIAL_ARM:
                 // apply arm power for damage
-                *damage = *damage * arm_power;
+                *damage = *damage * arm_power / APPENDAGE_POWER_FIXP;
                 break;
             case ESS_LEG_SPEED:
             case ESS_SPECIAL_LEG:
                 // apply leg power for damage
-                *damage = *damage * leg_power;
+                *damage = *damage * leg_power / APPENDAGE_POWER_FIXP;
                 break;
             case ESS_SPECIAL:
                 // apply leg and arm power for damage
-                *damage = *damage * arm_power * leg_power;
+                *damage = *damage * arm_power / APPENDAGE_POWER_FIXP * leg_power / APPENDAGE_POWER_FIXP;
         }
     }
     // log_debug("Calculated damage %d", *damage);
@@ -891,7 +895,7 @@ void har_take_damage(object *obj, af_move *move) {
     calc_damage_and_stun(other_har, move, &damage, &stun);
 
     // rehits do 60% more damage
-    damage = h->rehit_combo ? damage / 0.6 : damage;
+    damage = h->rehit_combo ? (6 * damage) / 10 : damage;
 
     // Save damage taken
     h->last_damage_value = damage;
@@ -931,9 +935,10 @@ void har_take_damage(object *obj, af_move *move) {
         if(player->pilot->photo) {
             // in tournament mode, damage is mitigated by armor
             // (Armor + 2.5) * .25
-            log_debug("applying %d to %d modulated by armor %f", damage, h->health,
-                      0.25f * (2.5f + player->pilot->armor));
-            h->health -= damage / (0.25f * (2.5f + player->pilot->armor));
+            int armor_numer = (5 + 2 * player->pilot->armor);
+            int armor_denom = 8;
+            log_debug("applying %f to %d modulated by armor %f", damage, h->health, armor_numer / (float)armor_denom);
+            h->health -= damage * armor_denom / armor_numer;
         } else {
             h->health -= damage;
         }
