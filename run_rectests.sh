@@ -52,8 +52,8 @@ i=0
 for test in "${tests[@]}"; do
     IFS=':' read -r desc filename <<< "$test"
     # Trim whitespace from description and filename
-    desc=$(echo "$desc" | xargs)
-    filename=$(echo "$filename" | xargs)
+    desc=$(echo "$desc" | sed -re 's/^[[:blank:]]+|[[:blank:]]+$//g')
+    filename=$(echo "$filename" | sed -re 's/^[[:blank:]]+|[[:blank:]]+$//g')
     output_file="$temp_dir/output_$i.log"
 
     echo -n "${desc} :"
