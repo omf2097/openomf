@@ -181,6 +181,8 @@ rec_har_attr rec_assertion_get_har_attr(const char *key) {
         return ATTR_STAMINA;
     if(strcmp(key, "opp_dist") == 0)
         return ATTR_OPPONENT_DISTANCE;
+    if(strcmp(key, "dir") == 0)
+        return ATTR_DIRECTION;
 
     return ATTR_INVALID;
 }

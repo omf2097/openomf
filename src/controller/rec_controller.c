@@ -52,6 +52,8 @@ int get_operand(rec_assertion_operand *op, controller *ctrl) {
                                                                        ctrl->gs, abs(op->value.attr.har_id - 1))));
                 return fabsf(obj->pos.x - obj_opp->pos.x);
             }
+            case ATTR_DIRECTION:
+                return obj->direction;
             default:
                 abort();
         }
