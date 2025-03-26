@@ -93,6 +93,10 @@ static void label_init(component *c, const gui_theme *theme) {
     text_set_shadow_color(local->text, local->text_shadow_color);
     text_set_margin(local->text, local->text_margin);
 
+    int bb_w = c->w_hint < 0 ? TEXT_BBOX_MAX : c->w_hint;
+    int bb_h = c->h_hint < 0 ? TEXT_BBOX_MAX : c->h_hint;
+    text_set_bounding_box(local->text, bb_w, bb_h);
+
     if(c->w_hint < 0) {
         text_generate_layout(local->text);
         int text_width = text_get_layout_width(local->text);
