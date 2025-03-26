@@ -675,7 +675,7 @@ void har_move(object *obj) {
     }
 }
 
-void har_take_damage(object *obj, const str *string, float damage, float stun) {
+void har_take_damage(object *obj, const str *string, int damage, float stun) {
     har *h = object_get_userdata(obj);
 
     if(h->state == STATE_VICTORY || h->state == STATE_DONE) {
@@ -709,9 +709,10 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
         if(player->pilot->photo) {
             // in tournament mode, damage is mitigated by armor
             // (Armor + 2.5) * .25
-            log_debug("applying %f to %d modulated by armor %f", damage, h->health,
-                      0.25f * (2.5f + player->pilot->armor));
-            h->health -= damage / (0.25f * (2.5f + player->pilot->armor));
+            int armor_numer = (5 + 2 * player->pilot->armor);
+            int armor_denom = 8;
+            log_debug("applying %f to %d modulated by armor %f", damage, h->health, armor_numer / (float)armor_denom);
+            h->health -= damage * armor_denom / armor_numer;
         } else {
             h->health -= damage;
         }
@@ -1329,7 +1330,7 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
         }
 
         // rehits only do 60% damage
-        int damage = rehit ? move->damage * 0.6 : move->damage;
+        int damage = rehit ? (6 * (int)move->damage) / 10 : move->damage;
 
         if(object_is_airborne(obj_a) && object_is_airborne(obj_b)) {
             // modify the horizontal velocity of the attacker when doing air knockback
@@ -1499,7 +1500,7 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
             // face B to the direction they're being attacked from
             object_set_direction(o_har, -object_get_direction(o_pjt));
 
-            int damage = rehit ? move->damage * 0.6 : move->damage;
+            int damage = rehit ? move->damage * 6 / 10 : move->damage;
             if(player_frame_isset(o_pjt, "ai")) {
                 str str;
                 str_from_c(&str, "A1-s01l50B2-C2-L5-M400");
@@ -2609,15 +2610,20 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
 
     // fixup a bunch of stuff based on player stats
 
+    // ad-hoc fixed point
+    int const APPENDAGE_POWER_FIXP = 52;  // chosen so that APPENDAGE_POWER_P_192 can be a round number
+    int const APPENDAGE_POWER_P_192 = 10; // 0.192 in appendage power fixp
+    int leg_power = 0;
+    int arm_power = 0;
+
     bool is_tournament = false;
-    float leg_power = 0.0f;
-    float arm_power = 0.0f;
     // cheap way to check if we're in tournament mode
     if(pilot->photo != NULL) {
         is_tournament = true;
         // (Limb Power + 3) * .192
-        leg_power = (pilot->leg_power + 3) * 0.192f;
-        arm_power = (pilot->arm_power + 3) * 0.192f;
+        // 0.192 = 1/52nd
+        leg_power = (pilot->leg_power + 3) * APPENDAGE_POWER_P_192;
+        arm_power = (pilot->arm_power + 3) * APPENDAGE_POWER_P_192;
     }
 
     af_move *move;
@@ -2689,7 +2695,8 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
                     case 1:
                         // arm speed and power
                         if(move->damage) {
-                            move->damage = (move->damage * (25 + pilot->power) / 35 + 1) * arm_power;
+                            move->damage =
+                                (move->damage * (25 + pilot->power) / 35 + 1) * arm_power / APPENDAGE_POWER_FIXP;
                         }
                         if(move->ani.extra_string_count > 0) {
                             // sometimes there's not enough extra strings, so take the last available
@@ -2701,7 +2708,8 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
                     case 2:
                         // leg speed and power
                         if(move->damage) {
-                            move->damage = (move->damage * (25 + pilot->power) / 35 + 1) * leg_power;
+                            move->damage =
+                                (move->damage * (25 + pilot->power) / 35 + 1) * leg_power / APPENDAGE_POWER_FIXP;
                         }
                         if(move->ani.extra_string_count > 0) {
                             // sometimes there's not enough extra strings, so take the last available
@@ -2713,19 +2721,22 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
                     case 3:
                         // apply arm power for damage
                         if(move->damage) {
-                            move->damage = (move->damage * (25 + pilot->power) / 35 + 1) * arm_power;
+                            move->damage =
+                                (move->damage * (25 + pilot->power) / 35 + 1) * arm_power / APPENDAGE_POWER_FIXP;
                         }
                         break;
                     case 4:
                         // apply leg power for damage
                         if(move->damage) {
-                            move->damage = (move->damage * (25 + pilot->power) / 35 + 1) * leg_power;
+                            move->damage =
+                                (move->damage * (25 + pilot->power) / 35 + 1) * leg_power / APPENDAGE_POWER_FIXP;
                         }
                         break;
                     case 5:
                         // apply leg and arm power for damage
                         if(move->damage) {
-                            move->damage = (move->damage * (25 + pilot->power) / 35 + 1) * arm_power * leg_power;
+                            move->damage = (move->damage * (25 + pilot->power) / 35 + 1) * arm_power /
+                                           APPENDAGE_POWER_FIXP * leg_power / APPENDAGE_POWER_FIXP;
                         }
                         break;
                 }
