@@ -1372,6 +1372,10 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
             log_debug("HAR %s going to next move %d", har_get_name(b->id), move->next_move);
 
             har_set_ani(obj_a, move->next_move, 0);
+
+            // prevent next move from being interrupted
+            a->executing_move = 1;
+
             // bail out early, the next move can still brutalize the oppopent so don't set them immune to further damage
             // this fixes flail's charging punch and katana's wall spin, but thorn's spike charge still works
             //
