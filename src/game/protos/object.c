@@ -303,9 +303,12 @@ void object_del_frame_effects(object *obj, uint32_t effects) {
     obj->frame_video_effects &= ~effects;
 }
 
-void object_apply_controllable_velocity(object *obj, object *obj_har, char input) {
+void object_apply_controllable_velocity(object *obj, bool is_projectile, char input) {
     if(player_frame_isset(obj, "cx")) {
-        float cx = player_frame_get(obj, "cx") / 10.0 * obj_har->horizontal_velocity_modifier;
+        float cx = player_frame_get(obj, "cx") / 10.0;
+        if(!is_projectile) {
+            cx *= obj->horizontal_velocity_modifier;
+        }
         if(input == '4') {
             obj->vel.x -= cx * object_get_direction(obj);
         } else if(input == '6') {
@@ -317,7 +320,10 @@ void object_apply_controllable_velocity(object *obj, object *obj_har, char input
         }
         // CY needs CX to be set
         if(player_frame_isset(obj, "cy")) {
-            float cy = player_frame_get(obj, "cx") / 10.0 * obj->vertical_velocity_modifier;
+            float cy = player_frame_get(obj, "cy") / 10.0;
+            if(!is_projectile) {
+                cy *= obj->vertical_velocity_modifier;
+            }
             if(input == '8') {
                 obj->vel.y -= cy * object_get_direction(obj);
             } else if(input == '2') {

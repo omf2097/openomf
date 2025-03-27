@@ -49,9 +49,9 @@ void projectile_move(object *obj) {
     game_player *player = game_state_get_player(gs, projectile_get_owner(obj));
     object *obj_har = game_state_find_object(gs, game_player_get_har_obj_id(player));
 
-    obj->pos.x += obj->vel.x * obj_har->horizontal_velocity_modifier;
+    obj->pos.x += obj->vel.x;
     obj->vel.y += obj->gravity;
-    obj->pos.y += obj->vel.y * obj_har->vertical_velocity_modifier;
+    obj->pos.y += obj->vel.y;
 
     float dampen = 0.7f;
 
@@ -95,7 +95,7 @@ void projectile_move(object *obj) {
         object_disable_rewind_tag(obj, 1);
     }
     har *h = object_get_userdata(obj_har);
-    object_apply_controllable_velocity(obj, obj_har, h->inputs[0]);
+    object_apply_controllable_velocity(obj, true, h->inputs[0]);
 }
 
 int projectile_clone(object *src, object *dst) {

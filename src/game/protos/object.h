@@ -196,7 +196,7 @@ void object_add_frame_effects(object *obj, uint32_t effects);
 void object_del_frame_effects(object *obj, uint32_t effects);
 bool object_has_effect(const object *obj, uint32_t effect);
 
-void object_apply_controllable_velocity(object *obj, object *obj_har, char input);
+void object_apply_controllable_velocity(object *obj, bool is_projectile, char input);
 
 void object_set_layers(object *obj, int layers);
 void object_set_group(object *obj, int group);
