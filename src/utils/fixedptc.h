@@ -194,58 +194,95 @@ static inline fixedpt fixedpt_div(fixedpt A, fixedpt B) {
  * of decimal digits will be used (2 for 32-bit fixedpt width, 10 for
  * 64-bit fixedpt width); If set to -2, "all" of the digits will
  * be returned, meaning there will be invalid, bogus digits outside the
- * specified precisions.
+ * specified precisions. If set to -3, all the zero digits will be trimmed
+ * from the end of the decimal digits.
+ *
+ * Returns the number of bytes written to `str`.
  */
-static inline void fixedpt_str(fixedpt A, char *str, int max_dec) {
+static inline size_t fixedpt_str(fixedpt A, char *str, size_t bufsize, int max_dec) {
     // boy this function sure is safe with pointers :(
-    int ndec = 0, slen = 0;
-    char tmp[12] = {0};
+    size_t nint = 0;    // number of integer digits
+    size_t nfrac = 0;   // number of fractional digits
+    size_t slen = 0;    // string length used
+    char tmp[20] = {0}; // can hold a 64 bit integer's 20 digits
     fixedptud fr, ip;
+    fixedptud magnitude;
     const fixedptud one = (fixedptud)1 << FIXEDPT_BITS;
     const fixedptud mask = one - 1;
+    size_t num_places = 0;
 
-    if(max_dec == -1)
+    if(str == NULL || bufsize == 0) {
+        return 0;
+    }
+
+    if(max_dec == -1) {
 #if FIXEDPT_BITS == 16 || FIXEDPT_BITS == 32
 #if FIXEDPT_FBITS < 16
-        max_dec = 2;
+        num_places = 2;
 #else
-        max_dec = 4;
+        num_places = 4;
 #endif
 #elif FIXEDPT_BITS == 64
-        max_dec = 10;
+        num_places = 10;
 #else
 #error Invalid width
 #endif
-    else if(max_dec == -2)
-        max_dec = 15;
+    } else if(max_dec == -2) {
+        num_places = 15;
+    } else if(max_dec == -3) {
+        num_places = 15;
+    } else if(max_dec < 0) {
+        // other negative values of max_dec not allowed
+        return 0;
+    } else {
+        num_places = max_dec;
+    }
 
     if(A < 0) {
         str[slen++] = '-';
-        A *= -1;
+        // A *= -1;
+        magnitude = (fixedptud)(-(A + 1)) + 1;
+    } else {
+        magnitude = (fixedptud)A;
     }
 
-    ip = fixedpt_toint(A);
+    ip = fixedpt_toint(magnitude);
     do {
-        tmp[ndec++] = '0' + ip % 10;
+        tmp[nint++] = '0' + ip % 10;
         ip /= 10;
-    } while(ip != 0);
+    } while(ip != 0 && nint < sizeof(tmp) - 1);
 
-    while(ndec > 0)
-        str[slen++] = tmp[--ndec];
-    str[slen++] = '.';
+    while(nint > 0 && slen < bufsize - 1) {
+        str[slen++] = tmp[--nint];
+    }
 
-    fr = (fixedpt_fracpart(A) << FIXEDPT_WBITS) & mask;
-    do {
-        fr = (fr & mask) * 10;
+    // check if we want, and have space for, decimal digits
+    if(num_places > 0 && slen < bufsize - 1) {
+        str[slen++] = '.';
 
-        str[slen++] = '0' + (fr >> FIXEDPT_BITS) % 10;
-        ndec++;
-    } while(fr != 0 && ndec < max_dec);
+        fr = (fixedpt_fracpart(magnitude) << FIXEDPT_WBITS) & mask;
+        while(nfrac < num_places && slen < bufsize - 1) {
+            fr = (fr & mask) * 10;
 
-    if(ndec > 1 && str[slen - 1] == '0')
-        str[slen - 1] = '\0'; /* cut off trailing 0 */
-    else
-        str[slen] = '\0';
+            str[slen++] = '0' + (fr >> FIXEDPT_BITS) % 10;
+            nfrac++;
+        }
+
+        while(max_dec == -3 && nfrac > 0 && str[slen - 1] == '0') {
+            slen--;
+            nfrac--;
+        }
+
+        // if we didn't add any decimal values, omit the decimal place
+        if(nfrac == 0) {
+            slen--;
+        }
+    }
+
+    int bytes_used = slen < bufsize ? slen : bufsize - 1;
+    // always null terminate
+    str[bytes_used] = '\0';
+    return bytes_used;
 }
 
 /* Converts the given fixedpt number into a string, using a static
@@ -253,7 +290,7 @@ static inline void fixedpt_str(fixedpt A, char *str, int max_dec) {
 static inline char *fixedpt_cstr(const fixedpt A, const int max_dec) {
     static char str[25];
 
-    fixedpt_str(A, str, max_dec);
+    fixedpt_str(A, str, sizeof(str), max_dec);
     return (str);
 }
 
