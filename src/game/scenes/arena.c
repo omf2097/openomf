@@ -520,8 +520,10 @@ void arena_har_take_hit_hook(int hittee, af_move *move, scene *scene) {
     if(h->state == STATE_RECOIL) {
         log_debug("COMBO!");
     }
-    bool no_points = is_demoplay(scene->gs) || !game_state_get_player(scene->gs, hitter)->selectable;
-    chr_score_hit(score, no_points ? 0 : move->points);
+    if(move->points != 0) {
+        bool hide_points = !game_state_get_player(scene->gs, hitter)->selectable;
+        chr_score_hit(score, hide_points ? 0 : move->points);
+    }
     chr_score_interrupt(otherscore, object_get_pos(hit_har));
 }
 
