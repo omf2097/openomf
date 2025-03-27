@@ -10,6 +10,8 @@ typedef enum
     SPRITE_MASK = 0x02,
     // This implements the "bg" tag feature. Add indexes together in the postprocess.
     SPRITE_INDEX_ADD = 0x04,
+    // palette quirks for electra electricity and pyros fire
+    USE_HAR_QUIRKS = 0x08,
 } renderer_options;
 
 typedef enum
