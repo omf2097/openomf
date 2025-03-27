@@ -55,6 +55,8 @@ enum
     EFFECT_GLOW = 0x20,
     EFFECT_TRAIL = 0x40,
     EFFECT_ADD = 0x80,
+    // palette quirks for electra electricity and pyros fire
+    EFFECT_HAR_QUIRKS = 0x100,
 };
 
 typedef struct object_t object;

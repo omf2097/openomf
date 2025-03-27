@@ -424,6 +424,10 @@ void object_render(object *obj) {
         options |= SPRITE_INDEX_ADD;
     }
 
+    if((options & REMAP_SPRITE) != 0 && object_has_effect(obj, EFFECT_HAR_QUIRKS)) {
+        options |= USE_HAR_QUIRKS;
+    }
+
     video_draw_full(obj->cur_surface, x, y, w, h, remap_offset, remap_rounds, obj->pal_offset, obj->pal_limit, opacity,
                     flip_mode, options);
 }

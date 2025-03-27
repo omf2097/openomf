@@ -2613,6 +2613,9 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
 
 #endif
 
+    // Enable Electra Electricity & Pyros Fire palette tricks
+    object_add_animation_effects(obj, EFFECT_HAR_QUIRKS);
+
     // fixup a bunch of stuff based on player stats
 
     bool is_tournament = false;

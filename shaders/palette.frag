@@ -19,6 +19,7 @@ in vec4 gl_FragCoord;
 bool REMAP_SPRITE = (options & 1u) != 0u;
 bool SPRITE_MASK = (options & 2u) != 0u;
 bool SPRITE_INDEX_ADD = (options & 4u) != 0u;
+bool USE_HAR_QUIRKS = (options & 8u) != 0u;
 
 
 float PHI = 1.61803398874989484820459;
@@ -65,8 +66,10 @@ void main() {
 
     vec4 remap = texture(remaps, vec2(texel.r, remap_offset / 18.0));
 
+    bool NO_REMAP = USE_HAR_QUIRKS && index > 0x30;
+
     // If remapping is on, do it now.
-    if (REMAP_SPRITE) {
+    if (REMAP_SPRITE && !NO_REMAP) {
         texel = remap;
     }
 
