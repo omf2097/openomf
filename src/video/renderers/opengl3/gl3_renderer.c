@@ -1,4 +1,5 @@
 #include "video/renderers/opengl3/gl3_renderer.h"
+#include "video/renderers/common.h"
 #include "video/renderers/opengl3/sdl_window.h"
 
 #include "video/renderers/opengl3/helpers/object_array.h"
@@ -10,6 +11,7 @@
 
 #include "utils/allocator.h"
 #include "utils/log.h"
+#include "utils/miscmath.h"
 #include "video/vga_state.h"
 
 #define TEX_UNIT_ATLAS 0
@@ -238,31 +240,26 @@ static void capture_screenshot(void *userdata) {
     omf_free(buffer);
 }
 
+#define ASPECT_X (4.0f / 3.0f)
+#define ASPECT_Y (3.0f / 4.0f)
+
 /**
  * Set the viewport, and do screen-shakes here.
  */
 static inline void set_screen_viewport(const gl3_context *ctx) {
-    float move_ratio = ctx->screen_w / NATIVE_W;
-    float native_aspect = ctx->screen_w / ctx->screen_h;
-    int vp_x = 0;
-    int vp_y = 0;
-    int vp_w = ctx->viewport_w;
-    int vp_h = ctx->viewport_h;
+    SDL_Rect viewport = {0, 0, ctx->viewport_w, ctx->viewport_h};
 
+    // aspect == 0 means 4:3
+    // aspect == 1 means stretch to window
     if(ctx->aspect == 0) {
-        // Set 4:3 aspect ratio, as requested
-        if(native_aspect >= 1.0f) {
-            vp_w = ctx->viewport_h * 4 / 3;
-            vp_x = (ctx->viewport_w - vp_w) / 2;
-        } else {
-            vp_h = ctx->viewport_w * 3 / 4;
-            vp_y = (vp_h - ctx->viewport_h) / 2;
-        }
+        const SDL_Rect window = viewport;
+        find_resolution_for_aspect_ratio(&viewport, &window, 4, 3);
     }
 
-    vp_x += ctx->target_move_x * move_ratio; // This is used for screen shakes on x-axis
-    vp_y += ctx->target_move_y * move_ratio; // This is used for screen shakes on y-axis
-    glViewport(vp_x, vp_y, vp_w, vp_h);
+    float move_ratio = viewport.w / NATIVE_W;
+    viewport.x += ctx->target_move_x * move_ratio; // This is used for screen shakes on x-axis
+    viewport.y += ctx->target_move_y * move_ratio; // This is used for screen shakes on y-axis
+    glViewport(viewport.x, viewport.y, viewport.w, viewport.h);
 }
 
 /**
