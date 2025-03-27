@@ -1381,11 +1381,18 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
             // prevent next move from being interrupted
             a->executing_move = 1;
 
+            int retval = move->category == CAT_CLOSE ? 1 : 0;
+
+            if(loop == 0) {
+                // recurse so jaguar's overhead throw grabs enemy on first tick of anim 22
+                retval = har_collide_with_har(obj_a, obj_b, 1) || retval;
+            }
+
             // bail out early, the next move can still brutalize the oppopent so don't set them immune to further damage
             // this fixes flail's charging punch and katana's wall spin, but thorn's spike charge still works
             //
             // but still return if we had priority
-            return move->category == CAT_CLOSE ? 1 : 0;
+            return retval;
         }
 
         a->damage_done = 1;
