@@ -1718,30 +1718,30 @@ void har_tick(object *obj) {
     // Make sure HAR doesn't walk through walls
     // TODO: Roof!
     vec2i pos = object_get_pos(obj);
-    if(h->state != STATE_DEFEAT) {
+    int ab_flag = player_frame_isset(obj, "ab");
+    if(h->state != STATE_DEFEAT && !ab_flag) {
         int wall_flag = player_frame_isset(obj, "aw");
         int wall = 0;
-        int hit = 0;
         if(pos.x < ARENA_LEFT_WALL) {
             pos.x = ARENA_LEFT_WALL;
-            hit = 1;
+            obj->wall_collision = true;
         } else if(pos.x > ARENA_RIGHT_WALL) {
             pos.x = ARENA_RIGHT_WALL;
             wall = 1;
-            hit = 1;
+            obj->wall_collision = true;
         }
-        object_set_pos(obj, pos);
 
-        if(hit && wall_flag) {
-            af_move *move = af_get_move(h->af_data, obj->cur_animation->id);
-            if(move->next_move) {
-                log_debug("wall hit chaining to next animation %d", move->next_move);
+        af_move *move = af_get_move(h->af_data, obj->cur_animation->id);
+        if(obj->wall_collision) {
+            obj->wall_collision = false;
+            if(wall_flag && move->next_move) {
+                // log_debug("wall hit chaining to next animation %d", move->next_move);
                 har_set_ani(obj, move->next_move, 0);
+                h->executing_move = 1;
+            } else {
+                object_set_pos(obj, pos);
+                har_event_hit_wall(h, wall, ctrl);
             }
-        }
-
-        if(hit) {
-            har_event_hit_wall(h, wall, ctrl);
         }
     }
 
