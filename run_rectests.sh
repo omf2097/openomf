@@ -15,7 +15,7 @@ export OPENOMF_BIN="./${OPENOMF_BIN#$BUILD_DIR}"
 
 # Define your tests here (description:filename)
 tests=(
-    "Overhead throw should throw opponent to the right:OHT.REC"
+    "Overhead throw should grab opponent on the first tick of anim 22, throw opponent to the right, and not be interrupted by the ground:JAG-THROW-LAND.REC"
     "Electra should be able to kick while doing inputs for rolling thunder:65K6P.REC"
     "Jaguar uses same animation for K and 6P but Shadow does not:6P.REC"
     "Novas 1P can hit more than once with the Q tag and use AI for air launch:NOVA-1P.REC"
