@@ -522,7 +522,7 @@ void af_get_key(sd_af_file *af, const char **key, int kcount) {
             printf("%d\n", af->exec_window);
             break;
         case 2:
-            printf("%f\n", af->endurance);
+            printf("%d\n", af->endurance);
             break;
         case 3:
             printf("%d\n", af->unknown_b);
@@ -531,16 +531,16 @@ void af_get_key(sd_af_file *af, const char **key, int kcount) {
             printf("%d\n", af->health);
             break;
         case 5:
-            printf("%f\n", af->forward_speed);
+            printf("%d\n", af->forward_speed);
             break;
         case 6:
-            printf("%f\n", af->reverse_speed);
+            printf("%d\n", af->reverse_speed);
             break;
         case 7:
-            printf("%f\n", af->jump_speed);
+            printf("%d\n", af->jump_speed);
             break;
         case 8:
-            printf("%f\n", af->fall_speed);
+            printf("%d\n", af->fall_speed);
             break;
         case 9:
             printf("%d\n", af->unknown_c);
@@ -638,13 +638,13 @@ void af_info(sd_af_file *af) {
     printf("AF File information:\n");
     printf(" * File ID:     %d\n", af->file_id);
     printf(" * Exec window: %d\n", af->exec_window);
-    printf(" * Endurance:   %f\n", af->endurance);
+    printf(" * Endurance:   %d\n", af->endurance);
     printf(" * Unknown B:   %d\n", af->unknown_b);
     printf(" * Health:      %d\n", af->health);
-    printf(" * Fwd speed:   %f\n", af->forward_speed);
-    printf(" * Rev speed:   %f\n", af->reverse_speed);
-    printf(" * Jump speed:  %f\n", af->jump_speed);
-    printf(" * Fall speed:  %f\n", af->fall_speed);
+    printf(" * Fwd speed:   %d\n", af->forward_speed);
+    printf(" * Rev speed:   %d\n", af->reverse_speed);
+    printf(" * Jump speed:  %d\n", af->jump_speed);
+    printf(" * Fall speed:  %d\n", af->fall_speed);
     printf(" * Unknown C:   %d\n", af->unknown_c);
 
     printf(" * Animations:  ");
