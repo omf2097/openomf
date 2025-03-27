@@ -28,8 +28,10 @@ typedef struct menu {
     int help_y;
     int help_w;
     int help_h;
-
-    text_settings help_text_conf;
+    vga_index help_text_color;
+    text_horizontal_align help_text_halign;
+    text_vertical_align help_text_valign;
+    font_size help_text_font;
 
     char prev_submenu_state;
     component *submenu;
@@ -58,7 +60,7 @@ void menu_set_tick_cb(component *menu, menu_tick_cb cb);
 void menu_set_horizontal(component *c, bool horizontal);
 void menu_set_background(component *c, bool background);
 void menu_set_help_pos(component *c, int x, int y, int h, int w);
-void menu_set_help_text_settings(component *c, text_settings *settings);
+void menu_set_help_text_settings(component *c, font_size font, text_horizontal_align halign, vga_index help_text_color);
 void menu_set_margin_top(component *c, int margin);
 void menu_set_padding(component *c, int padding);
 void menu_set_centered(component *c, bool centered);

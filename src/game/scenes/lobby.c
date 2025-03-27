@@ -424,16 +424,10 @@ void lobby_do_yell(component *c, void *userdata) {
 }
 
 component *lobby_yell_create(scene *s) {
-    text_settings help_text;
-    text_defaults(&help_text);
-    help_text.font = FONT_NET2;
-    help_text.halign = TEXT_LEFT;
-    help_text.cforeground = 56;
-
     component *menu = menu_create();
 
     menu_set_help_pos(menu, 10, 155, 500, 10);
-    menu_set_help_text_settings(menu, &help_text);
+    menu_set_help_text_settings(menu, FONT_NET2, TEXT_ALIGN_LEFT, 56);
     menu_set_horizontal(menu, true);
     menu_set_background(menu, false);
 
@@ -493,16 +487,10 @@ void lobby_do_whisper(component *c, void *userdata) {
 component *lobby_whisper_create(scene *s) {
     lobby_local *local = scene_get_userdata(s);
 
-    text_settings help_text;
-    text_defaults(&help_text);
-    help_text.font = FONT_NET2;
-    help_text.halign = TEXT_LEFT;
-    help_text.cforeground = 56;
-
     component *menu = menu_create();
 
     menu_set_help_pos(menu, 10, 155, 500, 10);
-    menu_set_help_text_settings(menu, &help_text);
+    menu_set_help_text_settings(menu, FONT_NET2, TEXT_ALIGN_LEFT, 56);
     menu_set_horizontal(menu, true);
     menu_set_background(menu, false);
 
@@ -1451,13 +1439,8 @@ int lobby_create(scene *scene) {
     menu_set_padding(menu, 6);
 
     menu_set_help_pos(menu, 10, 155, 500, 10);
-    text_settings help_text;
-    text_defaults(&help_text);
-    help_text.font = FONT_NET2;
-    help_text.halign = TEXT_LEFT;
-    help_text.cforeground = 56;
 
-    menu_set_help_text_settings(menu, &help_text);
+    menu_set_help_text_settings(menu, FONT_NET2, TEXT_ALIGN_LEFT, 56);
     component *challenge_button =
         button_create("Challenge", "Challenge this player to a fight. Challenge yourself for 1-player game.", false,
                       false, lobby_challenge, scene);

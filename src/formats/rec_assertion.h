@@ -1,3 +1,6 @@
+#ifndef REC_ASSERTION_H
+#define REC_ASSERTION_H
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -24,6 +27,7 @@ typedef enum
     ATTR_HEALTH,
     ATTR_STAMINA,
     ATTR_OPPONENT_DISTANCE,
+    ATTR_DIRECTION,
     ATTR_INVALID
 } rec_har_attr;
 
@@ -50,4 +54,9 @@ bool parse_assertion(const uint8_t *data, rec_assertion *out);
 
 bool encode_assertion(const rec_assertion *assertion, uint8_t *buffer);
 
+rec_har_attr rec_assertion_get_har_attr(const char *key);
+int rec_assertion_get_operand(rec_assertion_operand *op, const char *operand, const char *value);
+
 void print_assertion(const rec_assertion *assertion);
+
+#endif // REC_ASSERTION_H

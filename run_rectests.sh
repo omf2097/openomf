@@ -36,6 +36,8 @@ tests=(
     "Chronos matter phasing (14K) noclips through both walls:CHRONOS-WALLNOCLIP.REC"
     "Electra Extended Rolling Thunder plays anim 40 upon hitting the wall:ELECTRA-EXROLLTHNDR-WALLBOUNCE.REC"
     "Katana Wall Spin (14K) cannot be interrupted:KATANA-WALLSPIN-NOINTERRUPT.REC"
+    "Being kicked in the back of the head by chronos matter phasing knocks you forwards, flipping you:KNOCKBACK-DIR.REC"
+    "While walking, face your jumping enemy:FACE-JUMPING-ENEMY.REC"
 )
 
 # Setup temp directory for outputs
@@ -50,13 +52,13 @@ RUNDIR=$(pwd)
 
 cd $BUILD_DIR
 
-export ASAN_OPTIONS=detect_leaks=0
+export LSAN_OPTIONS="suppressions=../lsan.supp"
 i=0
 for test in "${tests[@]}"; do
     IFS=':' read -r desc filename <<< "$test"
     # Trim whitespace from description and filename
-    desc=$(echo "$desc" | xargs)
-    filename=$(echo "$filename" | xargs)
+    desc=$(echo "$desc" | sed -re 's/^[[:blank:]]+|[[:blank:]]+$//g')
+    filename=$(echo "$filename" | sed -re 's/^[[:blank:]]+|[[:blank:]]+$//g')
     output_file="$temp_dir/output_$i.log"
 
     echo -n "${desc} :"

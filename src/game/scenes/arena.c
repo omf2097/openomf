@@ -1416,7 +1416,22 @@ static void arena_debug(scene *scene) {
     }
 
     for(int i = 0; i < 2; i++) {
-        snprintf(buf, sizeof(buf), "%s", state_name(hars[i]->state));
+
+        snprintf(buf, sizeof(buf), "%d", hars[i]->health);
+        if(i == 0) {
+            text_render_mode(&tconf_debug, TEXT_DEFAULT, 90, 5, 250, 6, buf);
+        } else {
+            text_render_mode(&tconf_debug, TEXT_DEFAULT, 230 - (strlen(buf) * fnt->w), 5, 250, 6, buf);
+        }
+
+        snprintf(buf, sizeof(buf), "%.2f", hars[i]->endurance);
+        if(i == 0) {
+            text_render_mode(&tconf_debug, TEXT_DEFAULT, 70, 12, 250, 6, buf);
+        } else {
+            text_render_mode(&tconf_debug, TEXT_DEFAULT, 250 - (strlen(buf) * fnt->w), 12, 250, 6, buf);
+        }
+
+        snprintf(buf, sizeof(buf), "%s(%d)", state_name(hars[i]->state), hars[i]->state);
         if(i == 0) {
             text_render_mode(&tconf_debug, TEXT_DEFAULT, 5, 48, 250, 6, buf);
         } else {

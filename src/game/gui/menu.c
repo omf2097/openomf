@@ -102,15 +102,19 @@ static void menu_render(component *c) {
     int i = 0;
     foreach(it, tmp) {
         component_render(*tmp);
-        if(m->selected == i && (*tmp)->help) {
+        if(m->selected == i && (*tmp)->help != NULL) {
             if(m->help_bg1) {
                 video_draw_remap(m->help_bg1, m->help_x - 8, m->help_y - 8, 4, 1, 0);
             }
             if(m->help_bg2) {
                 video_draw(m->help_bg2, m->help_x - 8, m->help_y - 8);
             }
-            text_render_mode(&m->help_text_conf, TEXT_DEFAULT, m->help_x, m->help_y, m->help_w, m->help_h,
-                             (*tmp)->help);
+            text_set_bounding_box((*tmp)->help, m->help_w, m->help_h);
+            text_set_color((*tmp)->help, m->help_text_color);
+            text_set_horizontal_align((*tmp)->help, m->help_text_halign);
+            text_set_vertical_align((*tmp)->help, m->help_text_valign);
+            text_set_font((*tmp)->help, m->help_text_font);
+            text_draw((*tmp)->help, m->help_x, m->help_y);
         }
         i++;
     }
@@ -382,9 +386,12 @@ void menu_set_help_pos(component *c, int x, int y, int w, int h) {
     m->help_h = h;
 }
 
-void menu_set_help_text_settings(component *c, text_settings *settings) {
+void menu_set_help_text_settings(component *c, font_size font, text_horizontal_align halign,
+                                 vga_index help_text_color) {
     menu *m = sizer_get_obj(c);
-    memcpy(&m->help_text_conf, settings, sizeof(text_settings));
+    m->help_text_color = help_text_color;
+    m->help_text_halign = halign;
+    m->help_text_font = font;
 }
 
 static void menu_free(component *c) {
@@ -447,12 +454,10 @@ component *menu_create(void) {
     m->help_h = 20;
     m->help_x = 16;
     m->help_y = 156;
-
-    text_defaults(&m->help_text_conf);
-    m->help_text_conf.font = FONT_SMALL;
-    m->help_text_conf.halign = TEXT_CENTER;
-    m->help_text_conf.valign = TEXT_MIDDLE;
-    m->help_text_conf.cforeground = COLOR_LIGHT_BLUE;
+    m->help_text_color = COLOR_LIGHT_BLUE;
+    m->help_text_font = FONT_SMALL;
+    m->help_text_halign = TEXT_ALIGN_CENTER;
+    m->help_text_valign = TEXT_ALIGN_MIDDLE;
 
     sizer_set_render_cb(c, menu_render);
     sizer_set_event_cb(c, menu_event);

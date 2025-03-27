@@ -43,9 +43,9 @@ int sd_chr_from_trn(sd_chr_file *chr, sd_tournament_file *trn, sd_pilot *pilot) 
     chr->pilot.enemies_inc_unranked = trn->enemy_count;
     chr->pilot.enemies_ex_unranked = ranked;
     chr->pilot.rank = ranked + 1;
-    strncpy_or_truncate(chr->pilot.trn_name, trn->filename, sizeof(chr->pilot.trn_name));
-    strncpy_or_truncate(chr->pilot.trn_desc, trn->locales[0]->title, sizeof(chr->pilot.trn_desc));
-    strncpy_or_truncate(chr->pilot.trn_image, trn->pic_file, sizeof(chr->pilot.trn_image));
+    strncpy_or_abort(chr->pilot.trn_name, trn->filename, sizeof(chr->pilot.trn_name));
+    strncpy_or_abort(chr->pilot.trn_desc, trn->locales[0]->title, sizeof(chr->pilot.trn_desc));
+    strncpy_or_abort(chr->pilot.trn_image, trn->pic_file, sizeof(chr->pilot.trn_image));
     chr->photo = omf_calloc(1, sizeof(sd_sprite));
     sd_sprite_copy(chr->photo, pilot->photo);
     return SD_SUCCESS;

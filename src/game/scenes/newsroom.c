@@ -317,8 +317,8 @@ void newsroom_input_tick(scene *scene) {
                                     sd_pilot_set_player_color(p2->pilot, SECONDARY, p.colors[1]);
                                     sd_pilot_set_player_color(p2->pilot, PRIMARY, p.colors[2]);
 
-                                    strncpy_or_truncate(p2->pilot->name, lang_get(p2->pilot->pilot_id + 20),
-                                                        sizeof(p2->pilot->name));
+                                    strncpy_or_abort(p2->pilot->name, lang_get(p2->pilot->pilot_id + 20),
+                                                     sizeof(p2->pilot->name));
                                     // TODO: lang: remove (the need for) newline stripping
                                     // 1player name strings end in a newline...
                                     if(p2->pilot->name[strlen(p2->pilot->name) - 1] == '\n') {

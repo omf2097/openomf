@@ -358,11 +358,6 @@ component *lab_dash_main_create(scene *s, dashboard_widgets *dw) {
     dw->savegames = NULL;
     dw->index = 0;
 
-    text_settings tconf_dark;
-    text_defaults(&tconf_dark);
-    tconf_dark.font = FONT_SMALL;
-    tconf_dark.cforeground = MECHLAB_DARK_GREEN;
-
     // Pilot image
     dw->photo[0] = portrait_create(PIC_PLAYERS, 0);
     if(p1->pilot->photo) {
@@ -371,7 +366,7 @@ component *lab_dash_main_create(scene *s, dashboard_widgets *dw) {
     } else {
         dw->pilot->photo = omf_calloc(1, sizeof(sd_sprite));
         sd_sprite_create(dw->pilot->photo);
-        log_debug("seletng default pilot photo");
+        log_debug("selecting default pilot photo");
         dw->pilot->photo_id = portrait_selected(dw->photo[0]);
         portrait_load(dw->pilot->photo, &dw->pilot->palette, PIC_PLAYERS, 0);
     }
@@ -426,11 +421,6 @@ component *lab_dash_sim_create(scene *s, dashboard_widgets *dw) {
 
     dw->scene = s;
     game_player *p1 = game_state_get_player(s->gs, 0);
-
-    text_settings tconf_dark;
-    text_defaults(&tconf_dark);
-    tconf_dark.font = FONT_SMALL;
-    tconf_dark.cforeground = TEXT_MEDIUM_GREEN;
 
     // Pilot image
     dw->sim_rank = p1->pilot->rank - 1;

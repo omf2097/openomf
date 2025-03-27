@@ -209,7 +209,7 @@ int sd_move_set_footer_string(sd_move *move, const char *str) {
     if(strlen(str) >= SD_MOVE_FOOTER_STRING_MAX - 1) {
         return SD_INVALID_INPUT;
     }
-    strncpy_or_truncate(move->footer_string, str, sizeof(move->footer_string));
+    strncpy_or_abort(move->footer_string, str, sizeof(move->footer_string));
     return SD_SUCCESS;
 }
 
@@ -217,6 +217,6 @@ int sd_move_set_move_string(sd_move *move, const char *str) {
     if(strlen(str) >= SD_MOVE_STRING_MAX - 1) {
         return SD_INVALID_INPUT;
     }
-    strncpy_or_truncate(move->move_string, str, sizeof(move->move_string));
+    strncpy_or_abort(move->move_string, str, sizeof(move->move_string));
     return SD_SUCCESS;
 }

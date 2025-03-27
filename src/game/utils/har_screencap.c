@@ -24,7 +24,7 @@ void har_screencaps_reset(har_screencaps *caps) {
 
 int har_screencaps_clone(har_screencaps *src, har_screencaps *dst) {
     for(int i = 0; i < 2; i++) {
-        if(src->ok[i]) {
+        if(src->ok[i] && src->cap[i].data) {
             surface_create_from(&dst->cap[i], &src->cap[i]);
         }
     }
