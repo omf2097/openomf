@@ -81,6 +81,7 @@ struct object_t {
     float horizontal_velocity_modifier;
     int8_t direction;
     int8_t group;
+    // Set when moving against the wall either by continuous velocity or by instantaneous position changes.
     bool wall_collision;
 
     // Set by q tag
