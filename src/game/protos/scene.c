@@ -205,9 +205,9 @@ void scene_dynamic_tick(scene *scene, int paused) {
 }
 
 void scene_input_poll(scene *scene) {
-    if(scene->static_ticks_since_start < 25) {
+    if(scene->static_ticks_since_start < 25 && !scene_is_arena(scene)) {
         // Wait a bit at scene startup so that inputs from previous scene
-        // don't bleed to this one.
+        // don't bleed to this one, unless we're in an arena.
         return;
     }
     if(scene->gs->this_id != scene->gs->next_id) {
