@@ -50,6 +50,12 @@ static inline vec2f vec2f_mult(vec2f a, vec2f b) {
     return a;
 }
 
+static inline vec2f vec2f_div(vec2f a, fixedpt div) {
+    a.fx = fixedpt_xdiv(a.fx, div);
+    a.fy = fixedpt_xdiv(a.fy, div);
+    return a;
+}
+
 static inline vec2i vec2f_to_i(vec2f f) {
     vec2i i;
     i.x = fixedpt_toint(f.fx);
@@ -84,6 +90,9 @@ static inline fixedpt vec2f_distsqr(vec2f a, vec2f b) {
 }
 static inline fixedpt vec2f_dist(vec2f a, vec2f b) {
     return vec2f_mag(vec2f_sub(a, b));
+}
+static inline fixedpt vec2f_manhattan_dist(vec2f a, vec2f b) {
+    return fixedpt_abs(a.fx - b.fx) + fixedpt_abs(a.fy - b.fy);
 }
 
 static inline vec2i vec2i_create(int x, int y) {

@@ -6,10 +6,12 @@
 #include <math.h>
 #include <stdlib.h>
 
+static fixedpt const dest_threshold = fixedpt_fromint(5);
+static fixedpt const speed_cap = fixedpt_fromint(3);
+static int const recip_accel_scale = 16; // higher values = less acceleration
+
 int orb_almost_there(vec2f a, vec2f b) {
-    vec2f dir = vec2f_sub(a, b);
-    fixedpt t = fixedpt_fromint(2); // threshold
-    return (dir.fx >= -t && dir.fx <= t && dir.fy >= -t && dir.fy <= t);
+    return vec2f_distsqr(a, b) < fixedpt_xmul(dest_threshold, dest_threshold);
 }
 
 void hazard_tick(object *obj) {
@@ -32,19 +34,12 @@ void hazard_tick(object *obj) {
             // XXX come up with a better equation to randomize the destination
             obj->orbit_pos = obj->pos;
             obj->orbit_pos_vary = vec2f_createf(0, 0);
-            fixedpt mag;
             int limit = 10;
             do {
                 obj->orbit_dest = vec2f_createf(random_fixedpt(&obj->gs->rand, fixedpt_fromint(320)),
                                                 random_fixedpt(&obj->gs->rand, fixedpt_fromint(200)));
-                obj->orbit_dest_dir = vec2f_sub(obj->orbit_dest, obj->orbit_pos);
-                mag = vec2f_magsqr(obj->orbit_dest_dir);
                 limit--;
-            } while(mag < fixedpt_fromint(80 * 80) && limit > 0);
-
-            mag = fixedpt_sqrt(mag);
-            obj->orbit_dest_dir.fx = fixedpt_div(obj->orbit_dest_dir.fx, mag);
-            obj->orbit_dest_dir.fy = fixedpt_div(obj->orbit_dest_dir.fy, mag);
+            } while(limit > 0 && vec2f_distsqr(obj->orbit_dest, obj->orbit_pos) < fixedpt_fromint(80 * 80));
         }
     }
 }
@@ -87,21 +82,6 @@ vec2f generate_destination(object *obj) {
     return new;
 }
 
-void accelerate_orbit(object *obj) {
-    fixedpt x_dist = obj->pos.fx - obj->orbit_dest.fx;
-    fixedpt y_dist = obj->pos.fy - obj->orbit_dest.fy;
-    fixedpt bigger = x_dist > y_dist ? x_dist : y_dist;
-    if(fixedpt_abs(bigger) > fixedpt_fromint(20)) {
-        bigger *= -1;
-    }
-    if(obj->vel.fx < fixedpt_fromint(1)) {
-        obj->vel.fx += fixedpt_xdiv(x_dist, bigger * 10);
-    }
-    if(obj->vel.fy < fixedpt_fromint(1)) {
-        obj->vel.fy += fixedpt_xdiv(y_dist, bigger * 10);
-    }
-}
-
 void hazard_move(object *obj) {
     if(obj->orbit) {
         /*
@@ -132,36 +112,21 @@ void hazard_move(object *obj) {
 
         // accelerate_orbit(obj);
 
-        fixedpt x_dist = obj->pos.fx - obj->orbit_dest.fx;
-        fixedpt y_dist = obj->pos.fy - obj->orbit_dest.fy;
-        fixedpt bigger = fabsf(y_dist);
-        if(fabsf(x_dist) > fabsf(y_dist)) {
-            bigger = x_dist;
-        }
+        fixedpt x_dist = obj->orbit_dest.fx - obj->pos.fx;
+        fixedpt y_dist = obj->orbit_dest.fy - obj->pos.fy;
+        fixedpt bigger = fixedpt_max2(fixedpt_abs(x_dist), fixedpt_abs(y_dist));
 
-        if(obj->orbit_dest.fx > obj->pos.fx) {
-            if(obj->vel.fx < fixedpt_fromint(1)) {
-                log_debug("accel +%f", fixedpt_tofloat(fixedpt_xdiv(x_dist, bigger * 10)));
-                obj->vel.fx += fixedpt_xdiv(x_dist, bigger * 10);
-            }
-        }
-        if(obj->orbit_dest.fx < obj->pos.fx) {
-            if(obj->vel.fx < fixedpt_fromint(1)) {
-                log_debug("accel -%f", fixedpt_tofloat(fixedpt_xdiv(x_dist, bigger * 10)));
-                obj->vel.fx -= x_dist / (bigger * 10);
-            }
-        }
-        if(obj->orbit_dest.fy > obj->pos.fy) {
-            if(obj->vel.fy < fixedpt_fromint(1)) {
-                log_debug("accel +%f", fixedpt_tofloat(fixedpt_xdiv(y_dist, bigger * 10)));
-                obj->vel.fy += fixedpt_xdiv(y_dist, bigger * 10);
-            }
-        }
-        if(obj->orbit_dest.fy < obj->pos.fy) {
-            if(obj->vel.fy < fixedpt_fromint(1)) {
-                log_debug("accel -%f", fixedpt_tofloat(fixedpt_xdiv(y_dist, bigger * 10)));
-                obj->vel.fy -= fixedpt_xdiv(y_dist, bigger * 10);
-            }
+        vec2f accel = vec2f_createf(fixedpt_xdiv(x_dist, bigger) / recip_accel_scale,
+                                    fixedpt_xdiv(y_dist, bigger) / recip_accel_scale);
+
+        // log_debug("dist %f %f", fixedpt_tofloat(x_dist), fixedpt_tofloat(y_dist));
+        // log_debug("accel %f %f", fixedpt_tofloat(accel.fx), fixedpt_tofloat(accel.fy));
+
+        obj->vel = vec2f_add(obj->vel, accel);
+
+        fixedpt speed = vec2f_mag(obj->vel);
+        if(speed > speed_cap) {
+            obj->vel = vec2f_div(obj->vel, fixedpt_xdiv(speed, speed_cap));
         }
 
         // Make this object orbit around the center of the arena
