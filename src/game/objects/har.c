@@ -1363,7 +1363,7 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
             memset(b->rehits, 0, sizeof(b->rehits));
         }
 
-        if(hit_coord.x != 0 || hit_coord.y != 0) {
+        if((hit_coord.x != 0 || hit_coord.y != 0) && damage != 0) {
             har_spawn_scrap(obj_b, hit_coord, move->block_stun);
         }
 
