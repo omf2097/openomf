@@ -16,9 +16,9 @@ uniform sampler2D remaps;
 
 in vec4 gl_FragCoord;
 
-uint use_sprite_remap = options & 1u;
-uint use_sprite_mask = options & 2u;
-uint use_index_add = options & 4u;
+bool REMAP_SPRITE = (options & 1u) != 0u;
+bool SPRITE_MASK = (options & 2u) != 0u;
+bool SPRITE_INDEX_ADD = (options & 4u) != 0u;
 
 
 float PHI = 1.61803398874989484820459;
@@ -33,7 +33,7 @@ vec4 handle(float index, float remap) {
         float r_rounds = remap_rounds / 255.0;
         return vec4(0.0, r_index, r_rounds, 0.0);
     }
-    if (use_index_add > 0u) {
+    if (SPRITE_INDEX_ADD) {
         float add = (index * 255.0 * 60) / 255.0;
         return vec4(0.0, 0.0, 0.0, add);
     }
@@ -66,12 +66,12 @@ void main() {
     vec4 remap = texture(remaps, vec2(texel.r, remap_offset / 18.0));
 
     // If remapping is on, do it now.
-    if (use_sprite_remap > 0u) {
+    if (REMAP_SPRITE) {
         texel = remap;
     }
 
     // If masking is on, set our color to always be index 1.
-    if (use_sprite_mask > 0u) {
+    if (SPRITE_MASK) {
         texel.r = 1.0 / 255.0;
     }
 
