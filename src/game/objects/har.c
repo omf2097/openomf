@@ -338,6 +338,9 @@ int har_is_blocking(har *h, af_move *move) {
         // throws cannot be blocked
         return 0;
     }
+    if(h->state == STATE_BLOCKSTUN) {
+        return 1;
+    }
     if(h->state == STATE_CROUCHBLOCK && move->category != CAT_JUMPING && h->executing_move == 0) {
         return 1;
     }
