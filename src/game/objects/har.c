@@ -410,7 +410,7 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t m
         object_create(obj, parent->gs, pos, vel);
         object_set_stl(obj, object_get_stl(parent));
         object_set_animation(obj, &move->ani);
-        object_set_gravity(obj, g / 256.0f);
+        object_set_gravity(obj, g / 100.0f);
         object_set_pal_offset(obj, object_get_pal_offset(parent));
         object_set_pal_limit(obj, object_get_pal_limit(parent));
         // Set all projectiles to their own layer + har layer
@@ -665,7 +665,7 @@ void har_move(object *obj) {
             obj->pos.x -= (h->back_speed * object_get_direction(obj)) * (h->hard_close ? 0.5 : 1.0);
         }
 
-        object_apply_controllable_velocity(obj, obj, last_input);
+        object_apply_controllable_velocity(obj, false, last_input);
     } else {
         obj->vel.y += obj->gravity;
         // Terminal Velocity
