@@ -1019,7 +1019,7 @@ int arena_handle_events(scene *scene, game_player *player, ctrl_event *i) {
                 need_sync += object_act(game_state_find_object(scene->gs, game_player_get_har_obj_id(player)),
                                         i->event_data.action);
 
-                if(!is_netplay(scene->gs)) {
+                if(!is_netplay(scene->gs) && !is_rec_playback(scene->gs)) {
                     // netplay will manage its own REC events
                     write_rec_move(scene, player, i->event_data.action);
                 }

@@ -1430,3 +1430,7 @@ bool is_demoplay(game_state *gs) {
 bool is_twoplayer(game_state *gs) {
     return !is_demoplay(gs) && !is_netplay(gs) && !is_singleplayer(gs);
 }
+
+bool is_rec_playback(game_state *gs) {
+    return strlen(gs->init_flags->rec_file) > 0 && gs->init_flags->playback == 1;
+}
