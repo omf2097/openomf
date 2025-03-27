@@ -47,3 +47,6 @@ uint32_t rand_intmax(void) {
 float rand_float(void) {
     return random_float(&rand_state);
 }
+fixedpt rand_fixedpt(fixedpt max) {
+    return random_fixedpt(&rand_state, max);
+}

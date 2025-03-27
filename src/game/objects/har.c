@@ -837,9 +837,16 @@ void har_spawn_oil(object *obj, vec2i pos, int amount, fixedpt gravityf, int lay
     // burning oil
     for(int i = 0; i < amount; i++) {
         // Calculate velocity etc.
-        fixedpt rv = fixedpt_fromint(rand_int(100) - 50) / 100;
+#if 0
+        float fvelx = (5 * cosf(90 + i - (amount) / 2 + frv)) * object_get_direction(obj);
+        float fvely = -12 * sinf(i / amount + frv);
+        fixedpt velx = fixedpt_rconst(fvelx);
+        fixedpt vely = fixedpt_rconst(fvely);
+#else
+        fixedpt rv = rand_fixedpt(FIXEDPT_ONE) - FIXEDPT_ONE_HALF;
         fixedpt velx = (5 * -fixedpt_cos(fixedpt_fromint(i - (amount) / 2) + rv)) * object_get_direction(obj);
-        fixedpt vely = -12 * fixedpt_sin(fixedpt_fromint(i) / amount + rv);
+        fixedpt vely = -12 * fixedpt_sin(rv);
+#endif
 
         // Make sure the oil drops have somekind of velocity
         // (to prevent floating scrap objects)
@@ -873,7 +880,7 @@ void har_spawn_scrap(object *obj, vec2i pos, int amount) {
     // wild ass guess
     int oil_amount = amount / 3;
     har *h = object_get_userdata(obj);
-    har_spawn_oil(obj, pos, oil_amount, 1, RENDER_LAYER_TOP);
+    har_spawn_oil(obj, pos, oil_amount, FIXEDPT_ONE, RENDER_LAYER_TOP);
 
     // scrap metal
     // TODO this assumes the default scrap level and does not consider BIG[1-9]

@@ -33,5 +33,6 @@ uint32_t rand_get_seed(void);
 uint32_t rand_int(uint32_t upperbound);
 uint32_t rand_intmax(void);
 float rand_float(void);
+fixedpt rand_fixedpt(fixedpt max);
 
 #endif // RANDOM_H
