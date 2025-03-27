@@ -532,7 +532,7 @@ void har_move(object *obj) {
         char last_input = get_last_input(h);
         // Change animation from jump to walk or idle,
         // depending on held inputs
-        if(h->state == STATE_JUMPING) {
+        if(h->state == STATE_JUMPING && enemy_har->is_grabbed == 0) {
             if(last_input == '6') {
                 h->state = STATE_WALKTO;
                 har_set_ani(obj, ANIM_WALKING, 1);
