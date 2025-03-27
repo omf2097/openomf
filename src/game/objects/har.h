@@ -21,11 +21,6 @@
 #define LAYER_PROJECTILE 0x20
 #define LAYER_HAZARD 0x40
 
-// Define what 1.0 is stored as in HAR endurance's fixed-point format
-#define HAR_ENDURANCE_FIXP_ONE 512
-typedef int32_t har_endurance_t; // 32 bits should be enough for anybody
-#define HAR_ENDURANCE_TOFLOAT(A) ((A) / (float)HAR_ENDURANCE_FIXP_ONE)
-
 enum
 {
     CAT_MISC = 0,
@@ -137,10 +132,10 @@ typedef struct har_t {
     uint8_t damage_done;     // Damage was done this animation
     uint8_t damage_received; // Damage was received this animation
     uint8_t air_attacked;
-    uint8_t is_wallhugging;          // HAR is standing right next to a wall
-    uint8_t is_grabbed;              // Is being moved by another object. Set by ex, ey tags
-    int16_t last_damage_value;       // Last damage value taken
-    har_endurance_t last_stun_value; // Last stun value taken. HAR_ENDURANCE fixed point.
+    uint8_t is_wallhugging;    // HAR is standing right next to a wall
+    uint8_t is_grabbed;        // Is being moved by another object. Set by ex, ey tags
+    int16_t last_damage_value; // Last damage value taken
+    int32_t last_stun_value;   // Last stun value taken. HAR_ENDURANCE fixed point.
 
     fixedpt jump_speedf;      // Agility generated speed modifier for jumping
     fixedpt superjump_speedf; // Agility generated speed modifier for jumping
@@ -153,7 +148,7 @@ typedef struct har_t {
 
     uint8_t stride;
     int16_t health_max, health;
-    har_endurance_t endurance_max, endurance;
+    int32_t endurance_max, endurance;
     char inputs[11];
     uint8_t hard_close;
 
