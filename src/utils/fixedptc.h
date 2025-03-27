@@ -211,7 +211,7 @@ static inline size_t fixedpt_str(fixedpt A, char *str, size_t bufsize, int max_d
     // accumulator for integer digits, can hold the max number of digits for FIXEDPT_BITS
     char acc[FIXEDPT_WCHARS] = {0};
     fixedptud fr, ip;
-    fixedptud magnitude;
+    fixedptud magnitude = (fixedptud)A;
     const fixedptud one = (fixedptud)1 << FIXEDPT_BITS;
     const fixedptud mask = one - 1;
     size_t num_places = 0;
@@ -246,10 +246,7 @@ static inline size_t fixedpt_str(fixedpt A, char *str, size_t bufsize, int max_d
 
     if(A < 0) {
         str[slen++] = '-';
-        // A *= -1;
-        magnitude = (fixedptud)(-(A + 1)) + 1;
-    } else {
-        magnitude = (fixedptud)A;
+        magnitude *= -1;
     }
 
     // Accumulate the integer digits in reverse order
