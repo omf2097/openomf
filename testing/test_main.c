@@ -104,7 +104,7 @@ int main(int argc, char **argv) {
         goto end;
     script_test_suite(suite);
 
-    suite = CU_add_suite("Fixed Point", NULL, NULL);
+    suite = CU_add_suite("Fixed Point String Printing", NULL, NULL);
     if(suite == NULL)
         goto end;
     fixedpt_str_test_suite(suite);
