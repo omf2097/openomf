@@ -84,6 +84,7 @@ typedef uint32_t fixedptud;
 #define FIXEDPT_MIN INT16_MIN
 #define FIXEDPT_MAX INT16_MAX
 #define FIXEDPTU_MAX UINT16_MAX
+#define FIXEDPT_WCHARS 5 // 16 bit numbers can use at most 5 decimal digits
 #elif FIXEDPT_BITS == 32
 typedef int32_t fixedpt;
 typedef int64_t fixedptd;
@@ -92,6 +93,7 @@ typedef uint64_t fixedptud;
 #define FIXEDPT_MIN INT32_MIN
 #define FIXEDPT_MAX INT32_MAX
 #define FIXEDPTU_MAX UINT32_MAX
+#define FIXEDPT_WCHARS 10 // 32 bit numbers can use at most 10 decimal digits
 #elif FIXEDPT_BITS == 64
 typedef int64_t fixedpt;
 typedef __int128_t fixedptd;
@@ -99,7 +101,8 @@ typedef uint64_t fixedptu;
 typedef __uint128_t fixedptud;
 #define FIXEDPT_MIN INT64_MIN
 #define FIXEDPT_MAX INT64_MAX
-#define FIXEDPTU_MAX UINT64_MAX
+#define FIXEDPTU_MAX UINT64_MAX // 64 bit numbers can use at most 20 decimal digits
+#define FIXEDPT_WCHARS 20
 #else
 #error "FIXEDPT_BITS must be equal to 16, 32, or 64"
 #endif
@@ -201,17 +204,20 @@ static inline fixedpt fixedpt_div(fixedpt A, fixedpt B) {
  */
 static inline size_t fixedpt_str(fixedpt A, char *str, size_t bufsize, int max_dec) {
     // boy this function sure is safe with pointers :(
-    size_t nint = 0;    // number of integer digits
-    size_t nfrac = 0;   // number of fractional digits
-    size_t slen = 0;    // string length used
-    char tmp[20] = {0}; // can hold a 64 bit integer's 20 digits
+    size_t nint = 0;  // number of integer digits
+    size_t nfrac = 0; // number of fractional digits
+    size_t slen = 0;  // string length used
+
+    // accumulator for integer digits, can hold the max number of digits for FIXEDPT_BITS
+    char acc[FIXEDPT_WCHARS] = {0};
     fixedptud fr, ip;
     fixedptud magnitude;
     const fixedptud one = (fixedptud)1 << FIXEDPT_BITS;
     const fixedptud mask = one - 1;
     size_t num_places = 0;
 
-    if(str == NULL || bufsize == 0) {
+    // return if the destination is null or too small
+    if(str == NULL || bufsize < 2) {
         return 0;
     }
 
@@ -246,14 +252,18 @@ static inline size_t fixedpt_str(fixedpt A, char *str, size_t bufsize, int max_d
         magnitude = (fixedptud)A;
     }
 
+    // Accumulate the integer digits in reverse order
+    // by dividing the integer component by 10 each time.
+    // Use do/while so at least a 0 is written
     ip = fixedpt_toint(magnitude);
     do {
-        tmp[nint++] = '0' + ip % 10;
+        acc[nint++] = '0' + ip % 10;
         ip /= 10;
-    } while(ip != 0 && nint < sizeof(tmp) - 1);
+    } while(ip != 0 && nint < sizeof(acc) - 1);
 
+    // reverse the accumulated digits into the output string
     while(nint > 0 && slen < bufsize - 1) {
-        str[slen++] = tmp[--nint];
+        str[slen++] = acc[--nint];
     }
 
     // check if we want, and have space for, decimal digits
@@ -268,6 +278,7 @@ static inline size_t fixedpt_str(fixedpt A, char *str, size_t bufsize, int max_d
             nfrac++;
         }
 
+        // trim any trailing 0s, if desired
         while(max_dec == -3 && nfrac > 0 && str[slen - 1] == '0') {
             slen--;
             nfrac--;
@@ -280,7 +291,7 @@ static inline size_t fixedpt_str(fixedpt A, char *str, size_t bufsize, int max_d
     }
 
     int bytes_used = slen < bufsize ? slen : bufsize - 1;
-    // always null terminate
+    // always null terminate because we will always write at least one byte
     str[bytes_used] = '\0';
     return bytes_used;
 }
