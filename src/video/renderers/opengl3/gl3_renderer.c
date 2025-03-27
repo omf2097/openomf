@@ -161,7 +161,6 @@ static bool reset_context_with(void *userdata, int window_w, int window_h, bool 
     ctx->fullscreen = fullscreen;
     ctx->vsync = vsync;
     ctx->aspect = aspect;
-    log_info("New aspect is %d", ctx->aspect);
     bool success = resize_window(ctx->window, window_w, window_h, fullscreen);
     success = set_vsync(ctx->vsync) && success;
 
