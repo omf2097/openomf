@@ -38,6 +38,7 @@ tests=(
     "Katana Wall Spin (14K) cannot be interrupted:KATANA-WALLSPIN-NOINTERRUPT.REC"
     "Being kicked in the back of the head by chronos matter phasing knocks you forwards, flipping you:KNOCKBACK-DIR.REC"
     "While walking, face your jumping enemy:FACE-JUMPING-ENEMY.REC"
+    "Nova's grenade should not fly over Electra's head:NOVA-GRENADE.REC"
 )
 
 # Setup temp directory for outputs
