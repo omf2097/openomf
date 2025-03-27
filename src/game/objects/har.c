@@ -2339,12 +2339,10 @@ void har_face_enemy(object *obj, object *obj_enemy) {
         // make sure we are facing the opponent
         vec2i pos = object_get_pos(obj);
         vec2i pos_enemy = object_get_pos(obj_enemy);
-        if(pos.x > pos_enemy.x) {
-            log_debug("HARS facing player %d LEFT", h->player_id);
-            object_set_direction(obj, OBJECT_FACE_LEFT);
-        } else {
-            log_debug("HARS facing player %d RIGHT", h->player_id);
-            object_set_direction(obj, OBJECT_FACE_RIGHT);
+        int new_facing = pos.x > pos_enemy.x ? OBJECT_FACE_LEFT : OBJECT_FACE_RIGHT;
+        if(obj->direction != new_facing) {
+            log_debug("HARS facing player %d %s", h->player_id, new_facing == OBJECT_FACE_LEFT ? "LEFT" : "RIGHT");
+            object_set_direction(obj, new_facing);
         }
     }
 }
