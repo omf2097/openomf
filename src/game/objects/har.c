@@ -732,7 +732,7 @@ static void har_take_damage(object *obj, const str *string, int damage, har_endu
 
     if(!h->throw_duration) {
         log_debug("applying %f stun damage to %f", HAR_ENDURANCE_TOFLOAT(stun), HAR_ENDURANCE_TOFLOAT(h->endurance));
-        h->endurance = har_endurance_saturating_sub(h->endurance, stun);
+        h->endurance -= stun;
     }
     if(h->endurance < HAR_ENDURANCE_FIXP_ONE) {
         if(h->state == STATE_STUNNED) {
@@ -1715,7 +1715,7 @@ void har_tick(object *obj) {
         if(h->throw_duration == 0) {
             // we've already called har_take_damage, so just apply the damage and check for defeat
             h->health -= h->last_damage_value;
-            h->endurance = har_endurance_saturating_sub(h->endurance, h->last_stun_value);
+            h->endurance -= h->last_stun_value;
             if(h->health <= 0) {
                 // Take a screencap of enemy har
                 game_player *other_player = game_state_get_player(obj->gs, !h->player_id);

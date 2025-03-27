@@ -23,12 +23,8 @@
 
 // Define what 1.0 is stored as in HAR endurance's fixed-point format
 #define HAR_ENDURANCE_FIXP_ONE 512
-typedef uint32_t har_endurance_t; // 32 bits should be enough for anybody
+typedef int32_t har_endurance_t; // 32 bits should be enough for anybody
 #define HAR_ENDURANCE_TOFLOAT(A) ((A) / (float)HAR_ENDURANCE_FIXP_ONE)
-
-static inline har_endurance_t har_endurance_saturating_sub(har_endurance_t e, har_endurance_t s) {
-    return e > s ? e - s : 0;
-}
 
 enum
 {
