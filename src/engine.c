@@ -197,8 +197,12 @@ void engine_run(engine_init_flags *init_flags) {
                     if(e.key.keysym.sym == SDLK_F5) {
                         visual_debugger = !visual_debugger;
                     }
-                    if(!console_window_is_open() && e.key.keysym.sym == SDLK_SPACE) {
-                        debugger_proceed = 1;
+                    if(visual_debugger && !console_window_is_open() && e.key.keysym.sym == SDLK_SPACE) {
+                        dynamic_wait += 20;
+                        static_wait += 20;
+                    } else if(visual_debugger && !console_window_is_open() &&
+                              (e.key.keysym.sym >= SDLK_1 && e.key.keysym.sym <= SDLK_9)) {
+                        debugger_proceed = 1 + e.key.keysym.sym - SDLK_1;
                     }
                     if(!console_window_is_open() && e.key.keysym.sym == SDLK_BACKSPACE) {
                         if(game_state_get_player(gs, 0)->ctrl->type == CTRL_TYPE_REC) {
@@ -296,10 +300,6 @@ void engine_run(engine_init_flags *init_flags) {
         if(!visual_debugger) {
             dynamic_wait += frame_dt;
             static_wait += frame_dt;
-        } else if(debugger_proceed) {
-            dynamic_wait += 20;
-            static_wait += 20;
-            debugger_proceed = 0;
         } else {
             console_tick(gs);
         }
@@ -337,10 +337,15 @@ void engine_run(engine_init_flags *init_flags) {
             // Tick dynamic features. This is a dynamically changing tick, and it depends on things such as
             // hit-pause, hit slowdown and game-speed slider. It is meant for ticking everything that has to do
             // with the actual gameplay stuff.
-            has_dynamic = dynamic_wait > game_state_ms_per_dyntick(gs);
+            int dyntick_ms = game_state_ms_per_dyntick(gs);
+            if(debugger_proceed > 0) {
+                dynamic_wait += dyntick_ms;
+                debugger_proceed--;
+            }
+            has_dynamic = dynamic_wait > dyntick_ms;
             if(has_dynamic) {
                 game_state_dynamic_tick(gs, false);
-                dynamic_wait -= game_state_ms_per_dyntick(gs);
+                dynamic_wait -= dyntick_ms;
                 if(gs->delay > 0) {
                     log_debug("applying delay %d", gs->delay);
                     SDL_Delay(4);
