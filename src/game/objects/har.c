@@ -2103,6 +2103,9 @@ int har_act(object *obj, int act_type) {
         return 0;
     }
 
+    // If the last key input before this one is older than 9 ticks don't consider any previous inputs, the buffer is
+    // essentially just the last input and any kick/punch key This means that you have 9 ticks between the last 2 key
+    // inputs to complete a move sequence
     char truncated_inputs[2] = {h->inputs[0], '\0'};
     af_move *move = match_move(obj, prefix, input_staleness <= 9 ? h->inputs : truncated_inputs);
 
