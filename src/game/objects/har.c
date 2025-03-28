@@ -1824,77 +1824,55 @@ void har_tick(object *obj) {
     }
 }
 
-void add_input_to_buffer(char *buf, char c) {
+static bool add_input_to_buffer(char *buf, char c) {
     // only add it if it is not the current head of the array
     if(buf[0] == c) {
-        return;
+        return false;
     }
 
     // use memmove to move everything over one spot in the array, leaving the first slot free
     memmove((buf) + 1, buf, 9);
     // write the new first element
     buf[0] = c;
+    return true;
 }
 
-void add_input(char *buf, int act_type, int direction) {
+static bool add_input(char *buf, int act_type, int direction) {
 
     if(act_type == ACT_NONE) {
-        return;
+        return false;
+    }
+    if(direction == OBJECT_FACE_LEFT) {
+        // flip left/right to simplify below switch
+        if(act_type & ACT_LEFT) {
+            act_type &= ~ACT_LEFT;
+            act_type |= ACT_RIGHT;
+        } else if(act_type & ACT_RIGHT) {
+            act_type &= ~ACT_RIGHT;
+            act_type |= ACT_LEFT;
+        }
     }
     // for the reason behind the numbers, look at a numpad sometime
     switch(act_type & ~(ACT_PUNCH | ACT_KICK)) {
         case ACT_NONE:
             // make sure punches and kicks on their own frame are separated from previous input
-            add_input_to_buffer(buf, '5');
-            break;
+            return add_input_to_buffer(buf, '5');
         case ACT_UP:
-            add_input_to_buffer(buf, '8');
-            break;
+            return add_input_to_buffer(buf, '8');
         case ACT_DOWN:
-            add_input_to_buffer(buf, '2');
-            break;
+            return add_input_to_buffer(buf, '2');
         case ACT_LEFT:
-            if(direction == OBJECT_FACE_LEFT) {
-                add_input_to_buffer(buf, '6');
-            } else {
-                add_input_to_buffer(buf, '4');
-            }
-            break;
+            return add_input_to_buffer(buf, '4');
         case ACT_RIGHT:
-            if(direction == OBJECT_FACE_LEFT) {
-                add_input_to_buffer(buf, '4');
-            } else {
-                add_input_to_buffer(buf, '6');
-            }
-            break;
+            return add_input_to_buffer(buf, '6');
         case ACT_UP | ACT_RIGHT:
-            if(direction == OBJECT_FACE_LEFT) {
-                add_input_to_buffer(buf, '7');
-            } else {
-                add_input_to_buffer(buf, '9');
-            }
-            break;
+            return add_input_to_buffer(buf, '9');
         case ACT_UP | ACT_LEFT:
-            if(direction == OBJECT_FACE_LEFT) {
-                add_input_to_buffer(buf, '9');
-            } else {
-                add_input_to_buffer(buf, '7');
-            }
-            break;
+            return add_input_to_buffer(buf, '7');
         case ACT_DOWN | ACT_RIGHT:
-            if(direction == OBJECT_FACE_LEFT) {
-                add_input_to_buffer(buf, '1');
-            } else {
-                add_input_to_buffer(buf, '3');
-            }
-            break;
+            return add_input_to_buffer(buf, '3');
         case ACT_DOWN | ACT_LEFT:
-            if(direction == OBJECT_FACE_LEFT) {
-                add_input_to_buffer(buf, '3');
-            } else {
-                add_input_to_buffer(buf, '1');
-            }
-            break;
+            return add_input_to_buffer(buf, '1');
         case ACT_STOP:
             // might just be kick or punch, check below
             break;
@@ -1904,8 +1882,9 @@ void add_input(char *buf, int act_type, int direction) {
     }
 
     if(act_type == ACT_STOP) {
-        add_input_to_buffer(buf, '5');
+        return add_input_to_buffer(buf, '5');
     }
+    return false;
 }
 
 af_move *match_move(object *obj, char prefix, char *inputs) {
@@ -2092,7 +2071,7 @@ int har_act(object *obj, int act_type) {
 
     int direction = object_get_direction(obj);
     // always queue input, I guess
-    add_input(h->inputs, act_type, direction);
+    bool input_changed = add_input(h->inputs, act_type, direction);
 
     char prefix = 1; // should never match anything, even the empty string
     if(act_type & ACT_KICK) {
@@ -2101,11 +2080,9 @@ int har_act(object *obj, int act_type) {
         prefix = 'P';
     }
 
-    uint32_t old_input_down_tick = h->input_down_tick;
-    if((act_type & ACT_DOWN) == 0 && (act_type & ACT_UP) == 0) {
-        h->input_down_tick = 0;
-    } else if((act_type & ACT_DOWN) != 0 && h->input_down_tick == 0) {
-        h->input_down_tick = obj->gs->tick;
+    uint32_t input_staleness = obj->gs->tick - h->input_change_tick;
+    if(input_changed) {
+        h->input_change_tick = obj->gs->tick;
     }
 
     if(!(h->state == STATE_STANDING || har_is_walking(h) || har_is_crouching(h) || h->state == STATE_JUMPING ||
@@ -2126,7 +2103,8 @@ int har_act(object *obj, int act_type) {
         return 0;
     }
 
-    af_move *move = match_move(obj, prefix, h->inputs);
+    char truncated_inputs[2] = {h->inputs[0], '\0'};
+    af_move *move = match_move(obj, prefix, input_staleness <= 9 ? h->inputs : truncated_inputs);
 
     if(game_state_get_player(obj->gs, h->player_id)->ez_destruct && move == NULL &&
        (h->state == STATE_VICTORY || h->state == STATE_SCRAP)) {
@@ -2305,7 +2283,7 @@ int har_act(object *obj, int act_type) {
                         object_set_stride(obj, 7);
                     }
                 }
-                if(old_input_down_tick != 0 && old_input_down_tick + 6 >= obj->gs->tick) {
+                if(input_staleness <= 6 && (h->inputs[1] == '1' || h->inputs[1] == '2' || h->inputs[1] == '3')) {
                     // jumping from crouch makes you jump 25% higher
                     vy = h->superjump_speed;
                 }
