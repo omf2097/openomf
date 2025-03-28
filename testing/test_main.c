@@ -19,6 +19,7 @@ void video_common_test_suite(CU_pSuite suite);
 int text_markup_suite_init(void);
 int text_markup_suite_free(void);
 void cp437_test_suite(CU_pSuite suite);
+void fixedpt_str_test_suite(CU_pSuite suite);
 
 int main(int argc, char **argv) {
     CU_pSuite suite = NULL;
@@ -108,6 +109,11 @@ int main(int argc, char **argv) {
     if(suite == NULL)
         goto end;
     script_test_suite(suite);
+
+    suite = CU_add_suite("Fixed Point String Printing", NULL, NULL);
+    if(suite == NULL)
+        goto end;
+    fixedpt_str_test_suite(suite);
 
     // Run tests
     CU_basic_set_mode(CU_BRM_VERBOSE);

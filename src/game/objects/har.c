@@ -308,7 +308,7 @@ void har_walk_to(object *obj, int destination) {
 
     fixedpt vx = h->fwd_speedf * object_get_direction(obj);
     char vx_buf[FIXEDPT_STR_BUFSIZE];
-    fixedpt_str(vx, vx_buf, -1);
+    fixedpt_str(vx, vx_buf, sizeof(vx_buf), -1);
     log_debug("set velocity to %s", vx_buf);
     object_set_vel(obj, vec2f_createf(vx, 0));
 
@@ -512,7 +512,7 @@ void har_move(object *obj) {
         return;
     } else if(h->walk_destination > 0) {
         char posx_buf[FIXEDPT_STR_BUFSIZE];
-        fixedpt_str(obj->pos.fx, posx_buf, -1);
+        fixedpt_str(obj->pos.fx, posx_buf, sizeof(posx_buf), -1);
         log_debug("still walking to %d, at %s", h->walk_destination, posx_buf);
     }
 
@@ -1235,8 +1235,8 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
     if(obj_b->gs->match_settings.rehit && b->state == STATE_FALLEN &&
        (!object_is_airborne(obj_b) || b->endurance <= 0)) {
         char xbuf[FIXEDPT_STR_BUFSIZE], ybuf[FIXEDPT_STR_BUFSIZE];
-        fixedpt_str(obj_b->pos.fx, xbuf, -1);
-        fixedpt_str(obj_b->pos.fy, ybuf, -1);
+        fixedpt_str(obj_b->pos.fx, xbuf, sizeof(xbuf), -1);
+        fixedpt_str(obj_b->pos.fy, ybuf, sizeof(ybuf), -1);
         log_debug("REHIT is not possible %d %s %s %d", object_is_airborne(obj_b), xbuf, ybuf, b->endurance);
         return 0;
     }
@@ -1281,7 +1281,7 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
                 // TODO use 90% of the block pushback as cornerpush for now
                 fixedpt push = -1 * object_get_direction(obj_a) *
                                ((move->block_stun - 2) * fixedpt_rconst(0.74 * 0.9) + fixedpt_rconst(0.9));
-                fixedpt_str(push, pushbuf, -1);
+                fixedpt_str(push, pushbuf, sizeof(pushbuf), -1);
                 log_debug("doing block cornerpush of %s", pushbuf);
                 vel.fx += push;
                 object_set_vel(obj_a, vel);
@@ -1289,7 +1289,7 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
                 vec2f vel = object_get_vel(obj_b);
                 fixedpt push = -1 * object_get_direction(obj_b) *
                                ((move->block_stun - 2) * fixedpt_rconst(0.74) + fixedpt_rconst(1));
-                fixedpt_str(push, pushbuf, -1);
+                fixedpt_str(push, pushbuf, sizeof(pushbuf), -1);
                 log_debug("doing block pushback of %s", pushbuf);
                 vel.fx += push;
                 object_set_vel(obj_b, vel);
@@ -1451,8 +1451,8 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
     if(o_har->gs->match_settings.rehit && h->state == STATE_FALLEN &&
        (!object_is_airborne(o_har) || h->endurance <= 0)) {
         char xbuf[FIXEDPT_STR_BUFSIZE], ybuf[FIXEDPT_STR_BUFSIZE];
-        fixedpt_str(o_har->pos.fx, xbuf, -1);
-        fixedpt_str(o_har->pos.fy, ybuf, -1);
+        fixedpt_str(o_har->pos.fx, xbuf, sizeof(xbuf), -1);
+        fixedpt_str(o_har->pos.fy, ybuf, sizeof(ybuf), -1);
         log_debug("REHIT is not possible %d %s %s %d", object_is_airborne(o_har), xbuf, ybuf, h->endurance);
         return;
     }
