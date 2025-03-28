@@ -39,6 +39,7 @@ tests=(
     "Being kicked in the back of the head by chronos matter phasing knocks you forwards, flipping you:KNOCKBACK-DIR.REC"
     "While walking, face your jumping enemy:FACE-JUMPING-ENEMY.REC"
     "Nova's grenade should not fly over Electra's head:NOVA-GRENADE.REC"
+    "Buffering 2 (DOWN) 6 ticks before jumping grants a SUPER JUMP. Only the first two jumps should be super.:SUPERJUMP.REC"
 )
 
 # Setup temp directory for outputs
