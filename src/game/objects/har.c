@@ -1911,9 +1911,15 @@ af_move *match_move(object *obj, char prefix, char *inputs) {
                     continue;
                 }
 
-                if(move->category == CAT_CLOSE && h->close != 1) {
-                    // not standing close enough
-                    continue;
+                if(move->category == CAT_CLOSE) {
+                    // CLOSE moves use the successor id field as a distance requirement
+                    object *enemy_obj = game_state_find_object(
+                        obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
+                    float throw_range = (float)obj->gs->match_settings.throw_range / 100.0f;
+                    if(object_distance(obj, enemy_obj) > move->successor_id * throw_range) {
+                        // not standing close enough
+                        continue;
+                    }
                 }
                 if(move->category == CAT_JUMPING && h->state != STATE_JUMPING) {
                     // not jumping
