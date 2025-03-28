@@ -91,10 +91,9 @@ void pilot_get_info(pilot *pilot, int id) {
             pilot->color_3 = 4;
             break;
         case PILOT_KREISSACK:
-            // totally made up shit here
-            pilot->power = 14;
-            pilot->agility = 14;
-            pilot->endurance = 14;
+            pilot->power = 16;
+            pilot->agility = 15;
+            pilot->endurance = 16;
             pilot->color_1 = 5;
             pilot->color_2 = 1;
             pilot->color_3 = 15;
