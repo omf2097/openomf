@@ -2319,7 +2319,7 @@ void har_face_enemy(object *obj, object *obj_enemy) {
     har *h = object_get_userdata(obj);
     har *har_enemy = object_get_userdata(obj_enemy);
 
-    if(h->in_stasis_ticks > 0)
+    if(h->in_stasis_ticks > 0 || h->executing_move == 1)
         return;
 
     if((h->state != STATE_RECOIL && h->state != STATE_STUNNED && h->state != STATE_FALLEN && h->state != STATE_DEFEAT &&
