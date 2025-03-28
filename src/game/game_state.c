@@ -1432,5 +1432,5 @@ bool is_twoplayer(game_state *gs) {
 }
 
 bool is_rec_playback(game_state *gs) {
-    return strlen(gs->init_flags->rec_file) > 0 && gs->init_flags->playback == 1;
+    return gs->init_flags->rec_file[0] != '\0' && gs->init_flags->playback == 1;
 }
