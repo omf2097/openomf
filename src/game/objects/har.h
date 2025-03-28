@@ -150,6 +150,7 @@ typedef struct har_t {
     int16_t health_max, health;
     float endurance_max, endurance;
     char inputs[11];
+    uint32_t input_down_tick;
     uint8_t hard_close;
 
     uint8_t stun_timer;

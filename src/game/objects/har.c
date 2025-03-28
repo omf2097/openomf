@@ -2108,6 +2108,13 @@ int har_act(object *obj, int act_type) {
         prefix = 'P';
     }
 
+    uint32_t old_input_down_tick = h->input_down_tick;
+    if((act_type & ACT_DOWN) == 0 && (act_type & ACT_UP) == 0) {
+        h->input_down_tick = 0;
+    } else if((act_type & ACT_DOWN) != 0 && h->input_down_tick == 0) {
+        h->input_down_tick = obj->gs->tick;
+    }
+
     if(!(h->state == STATE_STANDING || har_is_walking(h) || har_is_crouching(h) || h->state == STATE_JUMPING ||
          h->state == STATE_VICTORY || h->state == STATE_DONE || h->state == STATE_SCRAP || h->state == STATE_NONE) ||
        object_get_halt(obj)) {
@@ -2125,8 +2132,6 @@ int har_act(object *obj, int act_type) {
     if(h->air_attacked) {
         return 0;
     }
-
-    int oldstate = h->state;
 
     af_move *move = match_move(obj, prefix, h->inputs);
 
@@ -2307,8 +2312,8 @@ int har_act(object *obj, int act_type) {
                         object_set_stride(obj, 7);
                     }
                 }
-                if(oldstate == STATE_CROUCHING || oldstate == STATE_CROUCHBLOCK) {
-                    // jumping frop crouch makes you jump 25% higher
+                if(old_input_down_tick != 0 && old_input_down_tick + 6 >= obj->gs->tick) {
+                    // jumping from crouch makes you jump 25% higher
                     vy = h->superjump_speed;
                 }
                 object_set_vel(obj, vec2f_create(vx, vy));
