@@ -200,7 +200,7 @@ static inline fixedpt fixedpt_div(fixedpt A, fixedpt B) {
  * specified precisions. If set to -3, all the zero digits will be trimmed
  * from the end of the decimal digits.
  *
- * Returns the number of bytes written to `str`.
+ * Returns the number of bytes written to `str`, not counting the null terminator.
  */
 static inline size_t fixedpt_str(fixedpt A, char *str, size_t bufsize, int max_dec) {
     // boy this function sure is safe with pointers :(
@@ -211,13 +211,16 @@ static inline size_t fixedpt_str(fixedpt A, char *str, size_t bufsize, int max_d
     // accumulator for integer digits, can hold the max number of digits for FIXEDPT_BITS
     char acc[FIXEDPT_WCHARS] = {0};
     fixedptud fr, ip;
-    fixedptud magnitude = (fixedptud)A;
+    fixedptud magnitude = (fixedptud)(fixedptd)A;
     const fixedptud one = (fixedptud)1 << FIXEDPT_BITS;
     const fixedptud mask = one - 1;
     size_t num_places = 0;
 
     // return if the destination is null or too small
-    if(str == NULL || bufsize < 2) {
+    if(str == NULL || bufsize <= 0) {
+        return 0;
+    } else if(bufsize < 2) {
+        str[0] = '\0';
         return 0;
     }
 
@@ -287,8 +290,7 @@ static inline size_t fixedpt_str(fixedpt A, char *str, size_t bufsize, int max_d
         }
     }
 
-    int bytes_used = slen < bufsize ? slen : bufsize - 1;
-    // always null terminate because we will always write at least one byte
+    size_t bytes_used = slen < bufsize ? slen : bufsize - 1;
     str[bytes_used] = '\0';
     return bytes_used;
 }
