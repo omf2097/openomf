@@ -41,7 +41,7 @@ tests=(
     "Nova's grenade should not fly over Electra's head:NOVA-GRENADE.REC"
     "Buffering 2 (DOWN) 6 ticks before jumping grants a SUPER JUMP. Only the first two jumps should be super.:SUPERJUMP.REC"
     "Buffered inputs are only used to match moves if the direction has changed in the last 9 ticks:INPUT-FRESHNESS.REC"
-    "Stasis prevents walking and turning:STASIS-FREEZES.REC"
+    "Stasis prevents walking, turning, and endurance regen:STASIS-FREEZES.REC"
     "Don't turn around mid-kick:KICK-NOTURN.REC"
 )
 
