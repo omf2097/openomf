@@ -34,6 +34,35 @@ void rec_controller_free(controller *ctrl) {
     }
 }
 
+static int unpack_sd_action(sd_action move_action) {
+    assert((move_action & ~SD_ACT_VALID_BITS) == 0);
+
+    if(move_action == SD_ACT_NONE)
+        return ACT_STOP;
+
+    int action = 0;
+    if(move_action & SD_ACT_UP) {
+        action |= ACT_UP;
+    }
+    if(move_action & SD_ACT_DOWN) {
+        action |= ACT_DOWN;
+    }
+    if(move_action & SD_ACT_LEFT) {
+        action |= ACT_LEFT;
+    }
+    if(move_action & SD_ACT_RIGHT) {
+        action |= ACT_RIGHT;
+    }
+    if(move_action & SD_ACT_PUNCH) {
+        action |= ACT_PUNCH;
+    }
+    if(move_action & SD_ACT_KICK) {
+        action |= ACT_KICK;
+    }
+
+    return action;
+}
+
 int rec_controller_poll(controller *ctrl, ctrl_event **ev) {
     uint32_t ticks = ctrl->gs->int_tick;
     rec_controller_data *data = ctrl->data;
@@ -63,41 +92,11 @@ int rec_controller_poll(controller *ctrl, ctrl_event **ev) {
                     }
                 }
             } else if(move->lookup_id == 2) {
+                int action = unpack_sd_action(move->action);
+                data->last_action = action;
+                controller_cmd(ctrl, action, ev);
+                ctrl->last = action;
                 found_action = true;
-                if(move->action == SD_ACT_NONE) {
-                    data->last_action = ACT_STOP;
-                    controller_cmd(ctrl, ACT_STOP, ev);
-                    ctrl->last = ACT_STOP;
-                } else {
-                    int action = 0;
-                    if(move->action & SD_ACT_UP) {
-                        action |= ACT_UP;
-                    }
-
-                    if(move->action & SD_ACT_DOWN) {
-                        action |= ACT_DOWN;
-                    }
-
-                    if(move->action & SD_ACT_LEFT) {
-                        action |= ACT_LEFT;
-                    }
-
-                    if(move->action & SD_ACT_RIGHT) {
-                        action |= ACT_RIGHT;
-                    }
-                    if(move->action & SD_ACT_PUNCH) {
-                        action |= ACT_PUNCH;
-                    }
-                    if(move->action & SD_ACT_KICK) {
-                        action |= ACT_KICK;
-                    }
-
-                    if(action != 0) {
-                        data->last_action = action;
-                        controller_cmd(ctrl, action, ev);
-                        ctrl->last = action;
-                    }
-                }
             }
             j++;
         }
@@ -121,12 +120,36 @@ int rec_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
     return 0;
 }
 
+void rec_controller_find_old_last_action(controller *ctrl) {
+    rec_controller_data *data = ctrl->data;
+    uint32_t ticks = ctrl->gs->int_tick;
+
+    while(ticks-- != 0) {
+        bool found_action = false;
+        sd_rec_move *move;
+        unsigned int len;
+        for(int j = 0; hashmap_get_int(&data->tick_lookup, (ticks * 10) + j, (void **)(&move), &len) == 0; j++) {
+            if(move->lookup_id == 2) {
+                found_action = true;
+                ctrl->last = data->last_action = unpack_sd_action(move->action);
+            }
+        }
+        if(found_action) {
+            return;
+        }
+    }
+
+    // no action found
+    ctrl->last = data->last_action = ACT_STOP;
+    return;
+}
+
 void rec_controller_step_back(controller *ctrl) {
     rec_controller_data *data = ctrl->data;
-    ctrl->last = ACT_STOP;
-    data->last_action = ACT_STOP;
     if(data->player_id != 0) {
-        // only player 1 will rewind
+        // first player already handles/handled rewinding, so all we the second
+        // player have to do is reset our last_action controller state.
+        rec_controller_find_old_last_action(ctrl);
         return;
     }
     game_state *gs_bak = vector_back(&data->game_states);
@@ -151,6 +174,9 @@ void rec_controller_step_back(controller *ctrl) {
             c->gs = gs_new;
         }
     }
+
+    // reset first player controller's last_action state
+    rec_controller_find_old_last_action(ctrl);
 }
 
 void rec_controller_create(controller *ctrl, int player, sd_rec_file *rec) {

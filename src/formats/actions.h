@@ -23,5 +23,6 @@ typedef enum
 } sd_action;
 
 #define SD_MOVE_MASK (SD_ACT_UP | SD_ACT_DOWN | SD_ACT_LEFT | SD_ACT_RIGHT) ///< Mask of all movement keys
+#define SD_ACT_VALID_BITS 0x3Fu                                             ///< Mask of all valid bits of an sd_action
 
 #endif // SD_ACTIONS_H
