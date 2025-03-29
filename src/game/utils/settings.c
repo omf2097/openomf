@@ -70,6 +70,7 @@ const field f_video[] = {
     F_FIXEDSTRING(settings_video, renderer, ""),
     F_INT(settings_video, screen_w, 640),
     F_INT(settings_video, screen_h, 400),
+    F_INT(settings_video, framerate_limit, 0),
     F_BOOL(settings_video, vsync, 0),
     F_INT(settings_video, aspect, 0),
     F_BOOL(settings_video, fullscreen, 0),

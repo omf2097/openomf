@@ -36,6 +36,7 @@ int engine_init(engine_init_flags *init_flags) {
     int fs = setting->video.fullscreen;
     int vsync = setting->video.vsync;
     int aspect = setting->video.aspect;
+    int framerate_limit = setting->video.framerate_limit;
     int frequency = setting->sound.sample_rate;
     int resampler = setting->sound.music_resampler;
     bool mono = setting->sound.music_mono;
@@ -51,7 +52,7 @@ int engine_init(engine_init_flags *init_flags) {
     // Initialize everything.
     video_scan_renderers();
     audio_scan_backends();
-    if(!video_init(renderer, w, h, fs, vsync, aspect))
+    if(!video_init(renderer, w, h, fs, vsync, aspect, framerate_limit))
         goto exit_0;
     if(!audio_init(player, frequency, mono, resampler, music_volume, sound_volume))
         goto exit_1;

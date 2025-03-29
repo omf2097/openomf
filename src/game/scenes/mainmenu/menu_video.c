@@ -45,11 +45,28 @@ struct resolution_t {
     {8192, 4320, "8192x4320"},
 };
 
+struct framerate_t {
+    int rate;
+    const char *name;
+} _framerates[] = {
+    {0,   "None"   },
+    {30,  "30 fps" },
+    {60,  "60 fps" },
+    {75,  "75 fps" },
+    {90,  "90 fps" },
+    {120, "120 fps"},
+    {144, "144 fps"},
+    // TODO: Add 160, 240, 360 when we have a more precise delay method.
+};
+
 typedef struct resolution_t resolution;
+typedef struct framerate_t framerate;
 
 typedef struct {
     vec2i custom_resolution;
-    int is_custom_resolution;
+    bool is_custom_resolution;
+    int custom_framerate_limit;
+    bool is_custom_framerate_limit;
     settings_video old_video_settings;
 } video_menu_data;
 
@@ -60,6 +77,16 @@ resolution *find_resolution_by_settings(settings *s) {
     for(unsigned i = 0; i < N_ELEMENTS(_resolutions); i++) {
         if(w == _resolutions[i].w && h == _resolutions[i].h) {
             return &_resolutions[i];
+        }
+    }
+    return NULL;
+}
+
+framerate *find_framerate_by_settings(settings *s) {
+    int rate = s->video.framerate_limit;
+    for(unsigned i = 0; i < N_ELEMENTS(_framerates); i++) {
+        if(rate == _framerates[i].rate) {
+            return &_framerates[i];
         }
     }
     return NULL;
@@ -83,6 +110,20 @@ void resolution_toggled(component *c, void *userdata, int pos) {
     }
 }
 
+void framerate_toggled(component *c, void *userdata, int pos) {
+    video_menu_data *local = userdata;
+    settings_video *v = &settings_get()->video;
+    if(local->is_custom_framerate_limit) {
+        if(pos == 0) {
+            v->framerate_limit = local->custom_framerate_limit;
+        } else {
+            v->framerate_limit = _framerates[pos - 1].rate;
+        }
+    } else {
+        v->framerate_limit = _framerates[pos].rate;
+    }
+}
+
 void renderer_toggled(component *c, void *userdata, int pos) {
     settings_video *v = &settings_get()->video;
     const char *renderer;
@@ -98,12 +139,13 @@ void menu_video_done(component *c, void *u) {
     bool render_plugin_changed = strcmp(v->renderer, local->old_video_settings.renderer) != 0;
     if(render_plugin_changed) {
         video_close();
-        video_init(v->renderer, v->screen_w, v->screen_h, v->fullscreen, v->vsync, v->aspect);
+        video_init(v->renderer, v->screen_w, v->screen_h, v->fullscreen, v->vsync, v->aspect, v->framerate_limit);
         menu_set_submenu(c->parent, menu_video_confirm_create(s, &local->old_video_settings));
     } else if(local->old_video_settings.screen_w != v->screen_w || local->old_video_settings.screen_h != v->screen_h ||
               local->old_video_settings.fullscreen != v->fullscreen || local->old_video_settings.vsync != v->vsync ||
-              local->old_video_settings.aspect != v->aspect) {
-        video_reinit(v->screen_w, v->screen_h, v->fullscreen, v->vsync, v->aspect);
+              local->old_video_settings.aspect != v->aspect ||
+              local->old_video_settings.framerate_limit != v->framerate_limit) {
+        video_reinit(v->screen_w, v->screen_h, v->fullscreen, v->vsync, v->aspect, v->framerate_limit);
 
         menu_set_submenu(c->parent, menu_video_confirm_create(s, &local->old_video_settings));
     } else {
@@ -168,7 +210,7 @@ component *menu_video_create(scene *s) {
         textselector_add_option(res_selector, tmp_label);
         local->custom_resolution.x = setting->video.screen_w;
         local->custom_resolution.y = setting->video.screen_h;
-        local->is_custom_resolution = 1;
+        local->is_custom_resolution = true;
     }
 
     // Add standard resolutions
@@ -176,6 +218,29 @@ component *menu_video_create(scene *s) {
         textselector_add_option(res_selector, _resolutions[i].name);
         if(!local->is_custom_resolution && _resolutions[i].w == res->w && _resolutions[i].h == res->h) {
             textselector_set_pos(res_selector, i);
+        }
+    }
+
+    // Framerate limiter selector
+    component *framerate_limit_selector = textselector_create(
+        "FPS:", "Limit framerate to a given value. This is useful for e.g. power saving.", framerate_toggled, local);
+    menu_attach(menu, framerate_limit_selector);
+
+    // If custom framerate is set, add it as first selection
+    framerate *limit = find_framerate_by_settings(setting);
+    if(!limit) {
+        char tmp_label[32];
+        snprintf(tmp_label, 32, "%d Hz", setting->video.framerate_limit);
+        textselector_add_option(framerate_limit_selector, tmp_label);
+        local->custom_framerate_limit = setting->video.framerate_limit;
+        local->is_custom_framerate_limit = true;
+    }
+
+    // Add standard framerates
+    for(unsigned i = 0; i < N_ELEMENTS(_framerates); i++) {
+        textselector_add_option(framerate_limit_selector, _framerates[i].name);
+        if(!local->is_custom_resolution && _framerates[i].rate == limit->rate) {
+            textselector_set_pos(framerate_limit_selector, i);
         }
     }
 

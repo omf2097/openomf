@@ -43,6 +43,7 @@ typedef struct {
     char renderer[16];
     int screen_w;
     int screen_h;
+    int framerate_limit;
     int vsync;
     int aspect;
     int fullscreen;
