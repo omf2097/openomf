@@ -165,15 +165,15 @@ static void trnmenu_layout(component *c, int x, int y, int w, int h) {
 }
 
 static vec2f center(component *c) {
-    return vec2f_create(c->x + c->w / 2, c->y + c->h / 2);
+    return vec2f_create(fixedpt_fromint(c->x + c->w) / 2, fixedpt_fromint(c->y + c->h) / 2);
 }
 
 static vec2f rcenter(component *c) {
-    return vec2f_create(c->x + c->w, c->y + c->h / 2);
+    return vec2f_create(fixedpt_fromint(c->x + c->w), fixedpt_fromint(c->y + c->h) / 2);
 }
 
 static vec2f lcenter(component *c) {
-    return vec2f_create(c->x, c->y + c->h / 2);
+    return vec2f_create(fixedpt_fromint(c->x), fixedpt_fromint(c->y + c->h) / 2);
 }
 
 static int find_next_button(component *c, int act) {
@@ -184,7 +184,7 @@ static int find_next_button(component *c, int act) {
     sizer_begin_iterator(c, &it);
 
     component *cur = sizer_get(c, m->selected);
-    float best_dist = 9999.0f;
+    fixedpt best_dist = FIXEDPT_MAX;
     int best_idx = -1;
     int idx_now = 0;
     foreach(it, tmp) {
@@ -196,7 +196,7 @@ static int find_next_button(component *c, int act) {
         switch(act) {
             case ACT_LEFT:
                 if(t->x < cur->x) {
-                    float tdist = vec2f_dist(rcenter(t), lcenter(cur));
+                    fixedpt tdist = vec2f_dist(rcenter(t), lcenter(cur));
                     if(tdist < best_dist) {
                         best_dist = tdist;
                         best_idx = idx_now;
@@ -205,7 +205,7 @@ static int find_next_button(component *c, int act) {
                 break;
             case ACT_RIGHT:
                 if(t->x > cur->x) {
-                    float tdist = vec2f_dist(lcenter(t), rcenter(cur));
+                    fixedpt tdist = vec2f_dist(lcenter(t), rcenter(cur));
                     if(tdist < best_dist) {
                         best_dist = tdist;
                         best_idx = idx_now;
@@ -214,7 +214,7 @@ static int find_next_button(component *c, int act) {
                 break;
             case ACT_UP:
                 if(t->y < cur->y) {
-                    float tdist = vec2f_dist(center(t), center(cur));
+                    fixedpt tdist = vec2f_dist(center(t), center(cur));
                     if(tdist < best_dist) {
                         best_dist = tdist;
                         best_idx = idx_now;
@@ -223,7 +223,7 @@ static int find_next_button(component *c, int act) {
                 break;
             case ACT_DOWN:
                 if(t->y > cur->y) {
-                    float tdist = vec2f_dist(center(t), center(cur));
+                    fixedpt tdist = vec2f_dist(center(t), center(cur));
                     if(tdist < best_dist) {
                         best_dist = tdist;
                         best_idx = idx_now;

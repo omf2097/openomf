@@ -1,6 +1,7 @@
 #ifndef RANDOM_H
 #define RANDOM_H
 
+#include "fixedptc.h"
 #include <stdint.h>
 
 /* Note: do not typedef random here because it will clash with stdlib's (linux?) random() */
@@ -21,6 +22,9 @@ uint32_t random_intmax(struct random_t *r);
 /* Return a random float in 0 <= r <= 1.0f */
 float random_float(struct random_t *r);
 
+/* Return a random fixedpt in 0 <= r <= max */
+fixedpt random_fixedpt(struct random_t *r, fixedpt max);
+
 /* Same as the above but keeps an internal state
  * Use as a replacement for rand()
  */
@@ -29,5 +33,6 @@ uint32_t rand_get_seed(void);
 uint32_t rand_int(uint32_t upperbound);
 uint32_t rand_intmax(void);
 float rand_float(void);
+fixedpt rand_fixedpt(fixedpt max);
 
 #endif // RANDOM_H

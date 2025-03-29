@@ -17,9 +17,9 @@ typedef struct af_move_t {
     uint8_t block_stun;
     uint8_t throw_duration;
     uint8_t extra_string_selector;
-    float damage;
-    float raw_damage; // used to store the raw damage, unmodified by pilot stats
-    float stun;
+    int16_t damage;
+    uint8_t raw_damage; // used to store the raw damage, unmodified by pilot stats
+    int32_t stun;
     str move_string;
     str footer_string;
 #ifdef DEBUGMODE

@@ -1,4 +1,5 @@
 #include "utils/random.h"
+#include <assert.h>
 #include <limits.h>
 
 // A simple psuedorandom number generator
@@ -26,6 +27,11 @@ float random_float(struct random_t *r) {
     return (float)random_intmax(r) / (float)UINT_MAX;
 }
 
+fixedpt random_fixedpt(struct random_t *r, fixedpt max) {
+    static_assert(sizeof(fixedpt) <= sizeof(int), "or else rework this");
+    return random_int(r, max + 1);
+}
+
 void rand_seed(uint32_t seed) {
     random_seed(&rand_state, seed);
 }
@@ -40,4 +46,7 @@ uint32_t rand_intmax(void) {
 }
 float rand_float(void) {
     return random_float(&rand_state);
+}
+fixedpt rand_fixedpt(fixedpt max) {
+    return random_fixedpt(&rand_state, max);
 }

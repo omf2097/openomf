@@ -555,19 +555,20 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
     }
 
     // HAR must be in the air to be get faceplanted to a wall.
-    if(o_har->pos.y >= ARENA_FLOOR - 10) {
+    if(o_har->pos.fy >= ARENA_FLOORF - fixedpt_fromint(10)) {
         // TODO: Grounded desert wall logic
 
         return;
     }
 
-    float abs_velocity_h = fabsf(o_har->vel.x) / o_har->horizontal_velocity_modifier;
+    fixedpt abs_velocity_h = fixedpt_xdiv(fixedpt_abs(o_har->vel.fx), o_har->horizontal_velocity_modifierf);
 
-    if(abs_velocity_h > 2) {
-        int tolerance = arena_get_wall_slam_tolerance(scene->gs);
+    if(abs_velocity_h > fixedpt_fromint(2)) {
+        fixedpt tolerance = fixedpt_fromint(arena_get_wall_slam_tolerance(scene->gs));
 
         // log_debug("Checking if %f velocity will wallslam", abs_velocity_h);
-        if((abs_velocity_h + 0.5f) > tolerance && (h->state == STATE_FALLEN || h->state == STATE_RECOIL)) {
+        if((abs_velocity_h + fixedpt_rconst(0.5)) > tolerance &&
+           (h->state == STATE_FALLEN || h->state == STATE_RECOIL)) {
             h->state = STATE_WALLDAMAGE;
 
             bk_info *info = bk_get_info(scene->bk_data, 20 + wall);
@@ -587,7 +588,7 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
             info = bk_get_info(scene->bk_data, 22);
             if(info) { // Only Power Plant has the electric overlay effect
                 object *obj2 = omf_calloc(1, sizeof(object));
-                object_create(obj2, scene->gs, vec2i_create(o_har->pos.x, o_har->pos.y), vec2f_create(0, 0));
+                object_create(obj2, scene->gs, vec2f_to_i(o_har->pos), vec2f_create(0, 0));
                 object_set_stl(obj2, scene->bk_data->sound_translation_table);
                 object_set_animation(obj2, &info->ani);
                 object_attach_to(obj2, o_har);
@@ -603,8 +604,8 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
                 int variance = rand_int(20) - 10;
                 int anim_no = rand_int(2) + 24;
                 // log_debug("XXX anim = %d, variance = %d", anim_no, variance);
-                int pos_y = o_har->pos.y - object_get_size(o_har).y + variance + i * 25;
-                vec2i coord = vec2i_create(o_har->pos.x, pos_y);
+                vec2i coord = vec2f_to_i(o_har->pos);
+                coord.y -= object_get_size(o_har).y + variance + i * 25;
                 object *dust = omf_calloc(1, sizeof(object));
                 object_create(dust, scene->gs, coord, vec2f_create(0, 0));
                 object_set_stl(dust, scene->bk_data->sound_translation_table);
@@ -613,22 +614,22 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
             }
 
             // Wallhit sound
-            float d = ((float)o_har->pos.x) / 640.0f;
+            float d = fixedpt_tofloat(o_har->pos.fx) / 640.0f;
             float pos_pan = d - 0.25f;
             game_state_play_sound(o_har->gs, 68, 1.0f, pos_pan, 2.0f);
 
             // Set hit animation
             object_set_animation(o_har, &af_get_move(h->af_data, ANIM_DAMAGE)->ani);
             object_set_repeat(o_har, 0);
-            scene->gs->screen_shake_horizontal = 3 * fabsf(o_har->vel.x);
+            scene->gs->screen_shake_horizontal = fixedpt_toint(3 * fixedpt_abs(o_har->vel.fx));
             // from MASTER.DAT
             object_set_custom_string(o_har, "hQ1-hQ7-x-3Q5-x-2L5-x-2M900");
 
             if(wall == 1) {
-                o_har->pos.x = ARENA_RIGHT_WALL - 2;
+                o_har->pos.fx = ARENA_RIGHT_WALLF - fixedpt_fromint(2);
                 object_set_direction(o_har, OBJECT_FACE_RIGHT);
             } else {
-                o_har->pos.x = ARENA_LEFT_WALL + 2;
+                o_har->pos.fx = ARENA_LEFT_WALLF + fixedpt_fromint(2);
                 object_set_direction(o_har, OBJECT_FACE_LEFT);
             }
         } else {
@@ -833,6 +834,7 @@ uint32_t arena_state_hash(game_state *gs) {
         har *har = obj_har->userdata;
         vec2i pos = object_get_pos(obj_har);
         vec2f vel = object_get_vel(obj_har);
+        // TODO: Hash full-precision fixedpt pos, vel
         uint32_t x = (uint32_t)pos.x;
         uint32_t y = (uint32_t)pos.y;
         uint32_t health = (uint32_t)har->health;
@@ -845,7 +847,7 @@ uint32_t arena_state_hash(game_state *gs) {
         hash = ((hash << 5) + hash) + y;
         hash = ((hash << 5) + hash) + health;
         hash = ((hash << 5) + hash) + endurance;
-        hash = ((hash << 5) + hash) + (uint32_t)vel.x;
+        hash = ((hash << 5) + hash) + fixedpt_toint(vel.fx);
         // we are inconsistent on applying gravity
         // hash = ((hash << 5) + hash) + (uint32_t)vel.y;
         hash = ((hash << 5) + hash) + har->state;
@@ -908,8 +910,8 @@ void arena_state_dump(game_state *gs, char *buf, size_t bufsize) {
                        "player %d  power %d agility %d endurance %d HAR id %d  pos %d,%d, health %d, endurance %f, "
                        "velocity %f,%f, state %s, executing_move %d cur_anim %d\n",
                        i, player->pilot->power, player->pilot->agility, player->pilot->endurance, har->id, pos.x, pos.y,
-                       har->health, (float)har->endurance, vel.x, vel.y, state_name(har->state), har->executing_move,
-                       obj_har->cur_animation->id);
+                       har->health, (float)har->endurance, fixedpt_tofloat(vel.fx), fixedpt_tofloat(vel.fy),
+                       state_name(har->state), har->executing_move, obj_har->cur_animation->id);
     }
 }
 
@@ -1102,7 +1104,7 @@ bool har_in_defeat_animation(object *obj) {
 }
 
 bool defeated_at_rest(object *obj) {
-    return har_in_defeat_animation(obj) && !object_is_airborne(obj) && obj->vel.x == 0.0f;
+    return har_in_defeat_animation(obj) && !object_is_airborne(obj) && obj->vel.fx == 0;
 }
 
 bool har_unfinished_victory(object *obj) {
@@ -1224,9 +1226,10 @@ void arena_dynamic_tick(scene *scene, int paused) {
                     // Create the object
                     object *scrap = omf_calloc(1, sizeof(object));
                     int anim_no = rand_int(3) + ANIM_SCRAP_METAL;
-                    object_create(scrap, gs, pos, vec2f_create(velx, vely));
+                    object_create(scrap, gs, pos,
+                                  vec2f_create(fixedpt_rconst(velx), fixedpt_rconst(vely))); // abusing rconst
                     object_set_animation(scrap, &af_get_move(h->af_data, anim_no)->ani);
-                    object_set_gravity(scrap, 0.4f);
+                    object_set_gravity(scrap, fixedpt_rconst(0.4));
                     object_set_pal_offset(scrap, object_get_pal_offset(h_obj));
                     object_set_pal_limit(scrap, object_get_pal_limit(h_obj));
                     object_set_layers(scrap, LAYER_SCRAP);
@@ -1241,9 +1244,9 @@ void arena_dynamic_tick(scene *scene, int paused) {
 
         // check some invariants
         assert(player_frame_isset(obj_har[0], "ab") ||
-               (obj_har[0]->pos.x >= ARENA_LEFT_WALL && obj_har[0]->pos.x <= ARENA_RIGHT_WALL));
+               (obj_har[0]->pos.fx >= ARENA_LEFT_WALLF && obj_har[0]->pos.fx <= ARENA_RIGHT_WALLF));
         assert(player_frame_isset(obj_har[1], "ab") ||
-               (obj_har[1]->pos.x >= ARENA_LEFT_WALL && obj_har[1]->pos.x <= ARENA_RIGHT_WALL));
+               (obj_har[1]->pos.fx >= ARENA_LEFT_WALLF && obj_har[1]->pos.fx <= ARENA_RIGHT_WALLF));
         if(hars[0]->health == 0) {
             assert(hars[0]->state == STATE_DEFEAT || hars[0]->state == STATE_RECOIL || hars[0]->state == STATE_FALLEN ||
                    hars[0]->state == STATE_NONE || hars[0]->state == STATE_WALLDAMAGE);
@@ -1426,7 +1429,7 @@ static void arena_debug(scene *scene) {
             text_render_mode(&tconf_debug, TEXT_DEFAULT, 230 - (strlen(buf) * fnt->w), 5, 250, 6, buf);
         }
 
-        snprintf(buf, sizeof(buf), "%.2f", hars[i]->endurance);
+        snprintf(buf, sizeof(buf), "%d", hars[i]->endurance);
         if(i == 0) {
             text_render_mode(&tconf_debug, TEXT_DEFAULT, 70, 12, 250, 6, buf);
         } else {
@@ -1440,7 +1443,8 @@ static void arena_debug(scene *scene) {
             text_render_mode(&tconf_debug, TEXT_DEFAULT, 315 - (strlen(buf) * fnt->w), 48, 250, 6, buf);
         }
 
-        snprintf(buf, sizeof(buf), "pos: %.3f %.3f", obj_har[i]->pos.x, obj_har[i]->pos.y);
+        snprintf(buf, sizeof(buf), "pos: %.3f %.3f", fixedpt_tofloat(obj_har[i]->pos.fx),
+                 fixedpt_tofloat(obj_har[i]->pos.fy));
 
         if(i == 0) {
             text_render_mode(&tconf_debug, TEXT_DEFAULT, 5, 56, 250, 6, buf);
@@ -1448,7 +1452,8 @@ static void arena_debug(scene *scene) {
             text_render_mode(&tconf_debug, TEXT_DEFAULT, 315 - (strlen(buf) * fnt->w), 56, 250, 6, buf);
         }
 
-        snprintf(buf, sizeof(buf), "vel: %.3f %.3f", obj_har[i]->vel.x, obj_har[i]->vel.y);
+        snprintf(buf, sizeof(buf), "vel: %.3f %.3f", fixedpt_tofloat(obj_har[i]->vel.fx),
+                 fixedpt_tofloat(obj_har[i]->vel.fy));
 
         if(i == 0) {
             text_render_mode(&tconf_debug, TEXT_DEFAULT, 5, 62, 250, 6, buf);
@@ -1496,8 +1501,7 @@ void arena_clone(scene *src, scene *dst) {
 
 int arena_get_wall_slam_tolerance(game_state *gs) {
     if(gs->match_settings.hazards) {
-        int arena_id = gs->this_id - SCENE_ARENA0;
-        if(arena_id == 2) {
+        if(gs->this_id == SCENE_ARENA2) {
             return wall_slam_tolerance_powerplant;
         }
     }
