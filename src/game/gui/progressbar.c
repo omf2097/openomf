@@ -163,6 +163,7 @@ static void progressbar_layout(component *c, int x, int y, int w, int h) {
     image_rect_bevel(&tmp, 0, 0, w - 1, h - 1, bar->theme.border_topleft_color, bar->theme.border_bottomright_color,
                      bar->theme.border_bottomright_color, bar->theme.border_topleft_color);
     surface_create_from_image(bar->background, &tmp);
+    surface_set_transparency(bar->background, 0);
     image_free(&tmp);
 
     image_create(&tmp, w, h);
@@ -170,6 +171,7 @@ static void progressbar_layout(component *c, int x, int y, int w, int h) {
     image_rect_bevel(&tmp, 0, 0, w - 1, h - 1, bar->theme.border_topleft_color, bar->theme.border_bottomright_color,
                      bar->theme.border_bottomright_color, bar->theme.border_topleft_color);
     surface_create_from_image(bar->background_alt, &tmp);
+    surface_set_transparency(bar->background_alt, 0);
     image_free(&tmp);
 }
 
