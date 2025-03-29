@@ -96,7 +96,7 @@ typedef struct {
     text *player_bio[2];
 
     // nova selection cheat
-    unsigned char har_selected[2][10];
+    unsigned char cheat_selected[2][10];
     unsigned char katana_down_count[2];
 } melee_local;
 
@@ -348,9 +348,10 @@ void handle_action(scene *scene, int player, int action) {
                     local->pilot_id_a = CURSOR_INDEX(local, 0);
                     local->pilot_id_b = CURSOR_INDEX(local, 1);
 
-                    // nova selection cheat
-                    local->har_selected[0][local->pilot_id_a] = 1;
-                    local->har_selected[1][local->pilot_id_b] = 1;
+                    // prepare for nova selection cheat
+                    memset(local->cheat_selected, 0, sizeof(local->cheat_selected));
+                    local->cheat_selected[0][local->pilot_id_a] = 1;
+                    local->cheat_selected[1][local->pilot_id_b] = 1;
 
                     load_pilot(scene, 0);
 
@@ -360,15 +361,8 @@ void handle_action(scene *scene, int player, int action) {
                 } else {
                     int nova_activated[2] = {1, 1};
                     for(int i = 0; i < 2; i++) {
-                        for(int j = 0; j < 10; j++) {
-                            if(local->har_selected[i][j] == 0) {
-                                nova_activated[i] = 0;
-                                break;
-                            }
-                        }
-                        if(local->katana_down_count[i] < 11) {
-                            nova_activated[i] = 0;
-                        }
+                        nova_activated[i] = local->katana_down_count[i] >= 11 &&
+                                            !memchr(local->cheat_selected[i], 0, sizeof(local->cheat_selected[i]));
                     }
                     if(nova_activated[0] && CURSOR_NOVA_SELECT(local, 0)) {
                         player1->pilot->har_id = HAR_NOVA;
@@ -442,7 +436,7 @@ void handle_action(scene *scene, int player, int action) {
 
     // nova selection cheat
     if(local->page == HAR_SELECT) {
-        local->har_selected[player][5 * (*row) + *column] = 1;
+        local->cheat_selected[player][5 * (*row) + *column] = 1;
     }
 
     refresh_pilot_stats(local);
@@ -856,7 +850,7 @@ int melee_create(scene *scene) {
     set_cursor_colors(0, 0, false, false);
 
     // initialize nova selection cheat
-    memset(local->har_selected, 0, sizeof(local->har_selected));
+    memset(local->cheat_selected, 0, sizeof(local->cheat_selected));
     memset(local->katana_down_count, 0, sizeof(local->katana_down_count));
 
     // Set callbacks
