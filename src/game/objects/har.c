@@ -475,7 +475,7 @@ char get_last_input(har *har) {
 void har_move(object *obj) {
     har *h = object_get_userdata(obj);
 
-    if(h->is_grabbed > 0) {
+    if(h->is_grabbed > 0 || h->in_stasis_ticks > 0) {
         return;
     }
 
@@ -2318,6 +2318,10 @@ int har_act(object *obj, int act_type) {
 void har_face_enemy(object *obj, object *obj_enemy) {
     har *h = object_get_userdata(obj);
     har *har_enemy = object_get_userdata(obj_enemy);
+
+    if(h->in_stasis_ticks > 0)
+        return;
+
     if((h->state != STATE_RECOIL && h->state != STATE_STUNNED && h->state != STATE_FALLEN && h->state != STATE_DEFEAT &&
         h->state != STATE_JUMPING && (har_enemy->state != STATE_JUMPING || h->state == STATE_STANDING_UP)) ||
        // always face opponent when walking
