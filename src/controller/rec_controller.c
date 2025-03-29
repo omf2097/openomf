@@ -57,7 +57,7 @@ int rec_controller_poll(controller *ctrl, ctrl_event **ev) {
                 memcpy(buf + 1, move->extra_data, 7);
                 rec_assertion ass;
                 if(parse_assertion(buf, &ass)) {
-                    print_assertion(&ass);
+                    log_assertion(&ass);
                     if(!game_state_check_assertion_is_met(&ass, ctrl->gs)) {
                         abort();
                     }

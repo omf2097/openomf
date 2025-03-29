@@ -164,6 +164,12 @@ static inline void str_append_c(str *dst, const char *src) {
 }
 
 /**
+ * @brief Append the result of a format string to a string object.
+ * @details
+ */
+void str_append_format(str *dst, const char *format, ...);
+
+/**
  * @brief Replace content in string with something else.
  * @details Replace occurrences of the search string with the replacement string.
  *          Limit parameter can be used to limit replacement to a certain number
