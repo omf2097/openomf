@@ -43,7 +43,7 @@ void vga_state_push_palette(void) {
 
 void vga_state_pop_palette(void) {
     memcpy(&state.base, &state.pushed, sizeof(vga_palette));
-    damage_set_range(&state.dmg_base, 0, 255);
+    damage_set_all(&state.dmg_base);
 }
 
 void vga_state_render(void) {
@@ -76,7 +76,7 @@ void vga_state_mark_remaps_flushed(void) {
 }
 
 void vga_state_mark_dirty(void) {
-    damage_set_range(&state.dmg_base, 0, 255);
+    damage_set_all(&state.dmg_base);
     state.dirty_remaps = true;
 }
 
@@ -89,18 +89,18 @@ void vga_state_mul_base_palette(vga_index start, vga_index end, float multiplier
         c->g = multiplier * c->g;
         c->b = multiplier * c->b;
     }
-    damage_set_range(&state.dmg_base, start, end);
+    damage_add_range(&state.dmg_base, start, end);
 }
 
-bool vga_state_is_palette_dirty(vga_palette **palette, vga_index *dirty_range_start, vga_index *dirty_range_end) {
+bool vga_state_is_palette_dirty(vga_palette **palette, vga_index *dirty_range_first, vga_index *dirty_range_last) {
     assert(palette != NULL);
     if(state.dmg_current.dirty) {
         *palette = &state.current;
-        if(dirty_range_start != NULL) {
-            *dirty_range_start = state.dmg_current.dirty_range_start;
+        if(dirty_range_first != NULL) {
+            *dirty_range_first = state.dmg_current.dirty_range_first;
         }
-        if(dirty_range_end != NULL) {
-            *dirty_range_end = state.dmg_current.dirty_range_end;
+        if(dirty_range_last != NULL) {
+            *dirty_range_last = state.dmg_current.dirty_range_last;
         }
         return true;
     }
@@ -125,7 +125,7 @@ void vga_state_set_remaps_from(const vga_remap_tables *src) {
 void vga_state_set_base_palette_from(const vga_palette *src) {
     assert(src != NULL);
     memcpy(&state.base, src, sizeof(vga_palette));
-    damage_set_range(&state.dmg_base, 0, 255);
+    damage_set_all(&state.dmg_base);
 }
 
 void vga_state_set_base_palette_from_range(const vga_palette *src, vga_index dst_start, vga_index src_start,
@@ -134,26 +134,26 @@ void vga_state_set_base_palette_from_range(const vga_palette *src, vga_index dst
     assert(dst_start + count <= 256);
     assert(src_start + count <= 256);
     memcpy(&state.base.colors[dst_start], &src->colors[src_start], count * 3);
-    damage_set_range(&state.dmg_base, dst_start, dst_start + count);
+    damage_add_range(&state.dmg_base, dst_start, dst_start + count);
 }
 
 void vga_state_set_base_palette_index(vga_index index, const vga_color *color) {
     assert(color != NULL);
     state.base.colors[index] = *color;
-    damage_set_range(&state.dmg_base, index, index);
+    damage_add_range(&state.dmg_base, index, index + 1);
 }
 
 void vga_state_set_base_palette_range(vga_index start, vga_index count, vga_color *src_colors) {
     assert(start + count <= 256);
     memcpy(&state.base.colors[start], src_colors, count * 3);
-    damage_set_range(&state.dmg_base, start, start + count);
+    damage_add_range(&state.dmg_base, start, start + count);
 }
 
 void vga_state_copy_base_palette_range(vga_index dst, vga_index src, vga_index count) {
     assert(dst + count <= 256);
     assert(src + count <= 256);
     memmove(&state.base.colors[dst], &state.base.colors[src], count * 3);
-    damage_set_range(&state.dmg_base, dst, dst + count);
+    damage_add_range(&state.dmg_base, dst, dst + count);
 }
 
 void vga_state_enable_palette_transform(vga_palette_transform transform_callback, void *userdata) {
