@@ -275,6 +275,32 @@ void str_from_format(str *dst, const char *format, ...) {
     va_end(args2);
 }
 
+void str_append_format(str *dst, const char *format, ...) {
+    int size;
+    va_list args1;
+    va_list args2;
+
+    // Find size for the printf output. Make sure to copy the variadic
+    // args for the next vsnprintf call.
+    va_start(args1, format);
+    va_copy(args2, args1);
+    size = vsnprintf(NULL, 0, format, args1);
+    va_end(args1);
+
+    // vsnprintf may return -1 for errors, catch that here.
+    if(size < 0) {
+        log_error("Call to vsnprintf returned -1");
+        abort();
+    }
+
+    size_t offset = str_size(dst);
+
+    // Make sure there is enough room for existing contents + vsnprintf call + ending NULL
+    str_resize_and_copy_buffer(dst, offset + size);
+    vsnprintf(str_ptr(dst) + offset, size + 1, format, args2);
+    va_end(args2);
+}
+
 void str_from_slice(str *dst, const str *src, size_t start, size_t end) {
     assert(dst != src);
     assert(start < end);

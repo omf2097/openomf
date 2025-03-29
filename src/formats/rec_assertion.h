@@ -1,6 +1,7 @@
 #ifndef REC_ASSERTION_H
 #define REC_ASSERTION_H
 
+#include "utils/str.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -57,6 +58,8 @@ bool encode_assertion(const rec_assertion *assertion, uint8_t *buffer);
 rec_har_attr rec_assertion_get_har_attr(const char *key);
 int rec_assertion_get_operand(rec_assertion_operand *op, const char *operand, const char *value);
 
+void rec_assertion_to_str(str *s, const rec_assertion *assertion);
 void print_assertion(const rec_assertion *assertion);
+void log_assertion(const rec_assertion *assertion);
 
 #endif // REC_ASSERTION_H

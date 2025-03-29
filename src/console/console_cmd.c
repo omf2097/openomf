@@ -7,6 +7,7 @@
 #include "game/scenes/mechlab.h"
 #include "resources/ids.h"
 #include "utils/allocator.h"
+#include "utils/log.h"
 #include <stdio.h>
 
 // utils
@@ -433,7 +434,7 @@ int console_cmd_assert(game_state *gs, int argc, char **argv) {
         op.operand2.value.literal = rhs_long;
     }
 
-    print_assertion(&op);
+    log_assertion(&op);
 
     if(!game_state_check_assertion_is_met(&op, gs)) {
         console_output_addline("Assertion failed!");

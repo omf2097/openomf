@@ -1,6 +1,8 @@
 
 
 #include "formats/rec_assertion.h"
+#include "utils/log.h"
+#include "utils/str.h"
 
 // Bit reader helper structure
 typedef struct {
@@ -191,7 +193,7 @@ int rec_assertion_get_operand(rec_assertion_operand *op, const char *operand, co
 }
 
 // Helper function to print assertions
-void print_assertion(const rec_assertion *assertion) {
+void rec_assertion_to_str(str *s, const rec_assertion *assertion) {
     const char *op_str;
     switch(assertion->op) {
         case OP_LT:
@@ -211,23 +213,37 @@ void print_assertion(const rec_assertion *assertion) {
             break;
     }
 
-    printf("Assertion: ");
+    str_from_c(s, "Assertion: ");
 
     // Print operand 1
     if(assertion->operand1.is_literal) {
-        printf("%d", assertion->operand1.value.literal);
+        str_append_format(s, "%d", assertion->operand1.value.literal);
     } else {
-        printf("HAR %d's %s", assertion->operand1.value.attr.har_id,
-               attr_name[assertion->operand1.value.attr.attribute]);
+        str_append_format(s, "HAR %d's %s", assertion->operand1.value.attr.har_id,
+                          attr_name[assertion->operand1.value.attr.attribute]);
     }
 
-    printf(" %s ", op_str);
+    str_append_format(s, " %s ", op_str);
 
     // Print operand 2
     if(assertion->operand2.is_literal) {
-        printf("%d\n", assertion->operand2.value.literal);
+        str_append_format(s, "%d", assertion->operand2.value.literal);
     } else {
-        printf("HAR %d's %s\n", assertion->operand2.value.attr.har_id,
-               attr_name[assertion->operand2.value.attr.attribute]);
+        str_append_format(s, "HAR %d's %s", assertion->operand2.value.attr.har_id,
+                          attr_name[assertion->operand2.value.attr.attribute]);
     }
+}
+
+void print_assertion(const rec_assertion *assertion) {
+    str s;
+    rec_assertion_to_str(&s, assertion);
+    printf("%s\n", str_c(&s));
+    str_free(&s);
+}
+
+void log_assertion(const rec_assertion *assertion) {
+    str s;
+    rec_assertion_to_str(&s, assertion);
+    log_debug("%s", str_c(&s));
+    str_free(&s);
 }
