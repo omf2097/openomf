@@ -14,12 +14,15 @@ layout (location = 0) out vec4 color;
 
 void main() {
     vec4 texel = texture(framebuffer, tex_coord);
-    int remap_count = int(texel.b * 255.0);
-    float remap_index = clamp(texel.g * 255.0, 0, 18.0) / 18.0;
+    int remap = int(texel.g * 255.0);
+    float remap_index = float(remap % 19) / 18.0;
+    int remap_rounds = remap / 19;
+
+    // SPRITE_INDEX_ADD
     texel.r += texel.a;
 
     // TODO: precalculate palette to 2d texture for required remappings later.
-    for (int i = 0; i < remap_count; i++) {
+    for (int i = 0; i < remap_rounds; i++) {
         texel = texture(remaps, vec2(texel.r, remap_index));
     }
 
