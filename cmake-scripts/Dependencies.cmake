@@ -40,25 +40,8 @@ endif()
 
 # argtable
 add_library(openomf::argtable INTERFACE IMPORTED)
-if(VCPKG_TOOLCHAIN)
-    find_package(Argtable3 CONFIG REQUIRED)
-    target_link_libraries(openomf::argtable INTERFACE argtable3::argtable3)
-    target_compile_definitions(openomf::argtable INTERFACE ARGTABLE3_FOUND)
-else()
-    find_package(argtable2)
-    find_package(Argtable3 CONFIG)
-
-    if(ARGTABLE2_FOUND)
-        target_link_libraries(openomf::argtable INTERFACE ${ARGTABLE2_LIBRARY})
-        target_include_directories(openomf::argtable INTERFACE ${ARGTABLE2_INCLUDE_DIR})
-        target_compile_definitions(openomf::argtable INTERFACE ARGTABLE2_FOUND)
-    elseif(Argtable3_FOUND)
-        target_link_libraries(openomf::argtable INTERFACE argtable3::argtable3)
-        target_compile_definitions(openomf::argtable INTERFACE ARGTABLE3_FOUND)
-    else()
-        message(FATAL_ERROR "Neither argtable2 or argtable3 was found")
-    endif()
-endif()
+target_include_directories(openomf::argtable INTERFACE "${CMAKE_SOURCE_DIR}/src/vendored")
+target_compile_definitions(openomf::argtable INTERFACE ARGTABLE3_FOUND)
 
 # enet
 add_library(openomf::enet INTERFACE IMPORTED)

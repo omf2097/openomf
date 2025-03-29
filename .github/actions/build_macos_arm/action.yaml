@@ -10,7 +10,7 @@ runs:
       shell: bash
       run: |
         brew update
-        brew install cmake argtable cunit sdl2_mixer confuse enet sdl2 libxmp libpng opusfile libepoxy miniupnpc libnatpmp
+        brew install cmake cunit sdl2_mixer confuse enet sdl2 libxmp libpng opusfile libepoxy miniupnpc libnatpmp
 
     - name: Generate Release
       shell: bash
