@@ -506,9 +506,7 @@ void object_move(object *obj) {
 }
 
 float object_distance(object *a, object *b) {
-    float x_dist = b->pos.x - a->pos.x;
-    float y_dist = b->pos.y - a->pos.y;
-    return sqrtf((x_dist * x_dist) + (y_dist * y_dist));
+    return vec2f_dist(a->pos, b->pos);
 }
 
 /** Frees the object and all resources attached to it (even the animation, if it is owned by the object)
