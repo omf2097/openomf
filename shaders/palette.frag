@@ -13,6 +13,7 @@ flat in uint options;
 
 uniform sampler2D atlas;
 uniform sampler2D remaps;
+uniform sampler2D loopback;
 
 in vec4 gl_FragCoord;
 
@@ -20,10 +21,12 @@ bool SPRITE_REMAP = (options & 1u) != 0u;
 bool SPRITE_SHADOWMASK = (options & 2u) != 0u;
 bool SPRITE_INDEX_ADD = (options & 4u) != 0u;
 bool SPRITE_HAR_QUIRKS = (options & 8u) != 0u;
+bool SPRITE_LOOPBACK = (options & 0x10u) != 0u;
 
 
 float PHI = 1.61803398874989484820459;
 float ATLAS_H = 2048.0;
+vec2 NATIVE_SIZE = vec2(320.0, 200.0);
 
 float noise(in vec2 v) {
     return fract(tan(distance(v * PHI, v)) * v.x);
@@ -86,6 +89,24 @@ void main() {
     }
 
     bool NO_REMAP = SPRITE_HAR_QUIRKS && index > 0x30;
+
+    // chronos's stasis & shadow's shadow transparency
+    if(SPRITE_LOOPBACK) {
+        index = int(texel.r * 255.0);
+        if(index < 0x60) {
+            // grab color index we're drawing ontop of
+            int behind = int(texture(loopback, gl_FragCoord.xy / NATIVE_SIZE).r * 255.0);
+            // lookup behind in remap 5 to get brightness
+            vec4 remap = texture(remaps, vec2(float(behind) / 255.0, 4.0 / 18.0));
+            behind = 1 + clamp(int(remap.r * 255.0) - 0xA8, 0, 7) * 2;
+
+            // this indexed blending is not exactly correct, but i am
+            // done fiddling with it for now-- if someone finds the
+            // code for this in MASTER.DAT, then we can correct it.
+            index = (index & 0xF0) + ((index & 0x0F) * 3 + behind * 2) / 5;
+        }
+        texel.r = float(index) / 255.0;
+    }
 
     // If remapping is on, do it now.
     if (SPRITE_REMAP && !NO_REMAP) {
