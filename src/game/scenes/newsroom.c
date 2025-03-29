@@ -313,9 +313,9 @@ void newsroom_input_tick(scene *scene) {
                                     p2->pilot->power = p.power;
                                     p2->pilot->agility = p.agility;
                                     p2->pilot->sex = p.sex;
-                                    sd_pilot_set_player_color(p2->pilot, TERTIARY, p.colors[0]);
-                                    sd_pilot_set_player_color(p2->pilot, SECONDARY, p.colors[1]);
-                                    sd_pilot_set_player_color(p2->pilot, PRIMARY, p.colors[2]);
+                                    sd_pilot_set_player_color(p2->pilot, PRIMARY, p.color_1);
+                                    sd_pilot_set_player_color(p2->pilot, SECONDARY, p.color_2);
+                                    sd_pilot_set_player_color(p2->pilot, TERTIARY, p.color_3);
 
                                     strncpy_or_abort(p2->pilot->name, lang_get(p2->pilot->pilot_id + 20),
                                                      sizeof(p2->pilot->name));

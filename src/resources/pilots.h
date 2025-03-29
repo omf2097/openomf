@@ -3,7 +3,9 @@
 
 typedef struct pilot_t {
     int power, agility, endurance;
-    char colors[3];
+    uint8_t color_3; ///< HAR Tertiary Color.
+    uint8_t color_2; ///< HAR Secondary Color.
+    uint8_t color_1; ///< HAR Primary Color.
     void *userdata;
     int sex;
 } pilot;
