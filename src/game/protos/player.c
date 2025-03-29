@@ -57,7 +57,7 @@ void player_reload_with_str(object *obj, const char *custom_str) {
     player_reset(obj);
     obj->animation_state.reverse = 0;
     obj->slide_state.timer = 0;
-    obj->slide_state.vel = vec2f_createf(0, 0);
+    obj->slide_state.vel = vec2f_create(0, 0);
     obj->enemy_slide_state.timer = 0;
     obj->enemy_slide_state.dest = vec2i_create(0, 0);
     obj->enemy_slide_state.duration = 0;
@@ -438,7 +438,7 @@ void player_run(object *obj) {
             // Gravity for new object
             int mg = sd_script_isset(frame, "mg") ? sd_script_get(frame, "mg") : 0;
 
-            state->spawn(obj, sd_script_get(frame, "m"), vec2i_create(mx, my), vec2f_createf(vx, vy), mp, ms, mg,
+            state->spawn(obj, sd_script_get(frame, "m"), vec2i_create(mx, my), vec2f_create(vx, vy), mp, ms, mg,
                          state->spawn_userdata);
         }
 
@@ -592,7 +592,7 @@ void player_run(object *obj) {
 
         // Handle slides
         if(sd_script_isset(frame, "x=") || sd_script_isset(frame, "y=")) {
-            obj->slide_state.vel = vec2f_createf(0, 0);
+            obj->slide_state.vel = vec2f_create(0, 0);
         }
         if(sd_script_isset(frame, "x=")) {
             obj->pos.fx = obj->start.fx + fixedpt_fromint(sd_script_get(frame, "x=") * object_get_direction(obj));

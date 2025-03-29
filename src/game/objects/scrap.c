@@ -2,7 +2,7 @@
 #include "game/objects/arena_constraints.h"
 
 #define SCRAP_KEEPALIVE 220
-#define IS_ZEROF(n) (n < fixedpt_rconst(0.1) && n > fixedpt_rconst(-0.1))
+#define IS_ZERO(n) (n < fixedpt_rconst(0.1) && n > fixedpt_rconst(-0.1))
 
 // TODO: This is kind of quick and dirty, think of something better.
 void scrap_move(object *obj) {
@@ -13,7 +13,7 @@ void scrap_move(object *obj) {
     }
 
     pos.fx += vel.fx;
-    vel.fy += obj->gravityf;
+    vel.fy += obj->gravity;
     pos.fy += vel.fy;
 
 #define dampen 4 / 10
@@ -31,14 +31,14 @@ void scrap_move(object *obj) {
         vel.fy = -vel.fy * dampen;
         vel.fx = vel.fx * dampen + (rand_float() - 0.5f) * 3.0;
     }
-    if(IS_ZEROF(vel.fx))
+    if(IS_ZERO(vel.fx))
         vel.fx = 0;
     obj->pos = pos;
     object_set_vel(obj, vel);
 
     // If object is at rest, just halt animation
-    if(pos.fy >= (ARENA_FLOORF - fixedpt_fromint(5)) && IS_ZEROF(vel.fx) && vel.fy < obj->gravityf * 11 / 10 &&
-       vel.fy > obj->gravityf * -11 / 10) {
+    if(pos.fy >= (ARENA_FLOORF - fixedpt_fromint(5)) && IS_ZERO(vel.fx) && vel.fy < obj->gravity * 11 / 10 &&
+       vel.fy > obj->gravity * -11 / 10) {
         object_disable_rewind_tag(obj, 1);
     }
 }

@@ -167,7 +167,7 @@ void scene_fight_anim_start(void *scenedata, void *userdata) {
     scene *scene = game_state_get_scene(gs);
     animation *fight_ani = &bk_get_info(scene->bk_data, 10)->ani;
     object *fight = omf_calloc(1, sizeof(object));
-    object_create(fight, gs, fight_ani->start_pos, vec2f_createf(0, 0));
+    object_create(fight, gs, fight_ani->start_pos, vec2f_create(0, 0));
     object_set_stl(fight, bk_get_stl(scene->bk_data));
     object_set_animation(fight, fight_ani);
     // object_set_finish_cb(fight, scene_fight_anim_done);
@@ -198,7 +198,7 @@ void scene_youwin_anim_start(void *userdata) {
     scene *scene = game_state_get_scene(gs);
     animation *youwin_ani = &bk_get_info(scene->bk_data, 9)->ani;
     object *youwin = omf_calloc(1, sizeof(object));
-    object_create(youwin, gs, youwin_ani->start_pos, vec2f_createf(0, 0));
+    object_create(youwin, gs, youwin_ani->start_pos, vec2f_create(0, 0));
     object_set_stl(youwin, bk_get_stl(scene->bk_data));
     object_set_animation(youwin, youwin_ani);
     object_set_finish_cb(youwin, scene_youwin_anim_done);
@@ -222,7 +222,7 @@ void scene_youlose_anim_start(void *userdata) {
     scene *scene = game_state_get_scene(gs);
     animation *youlose_ani = &bk_get_info(scene->bk_data, 8)->ani;
     object *youlose = omf_calloc(1, sizeof(object));
-    object_create(youlose, gs, youlose_ani->start_pos, vec2f_createf(0, 0));
+    object_create(youlose, gs, youlose_ani->start_pos, vec2f_create(0, 0));
     object_set_stl(youlose, bk_get_stl(scene->bk_data));
     object_set_animation(youlose, youlose_ani);
     object_set_finish_cb(youlose, scene_youlose_anim_done);
@@ -429,7 +429,7 @@ void arena_reset(scene *sc) {
         object *har_obj = game_state_find_object(sc->gs, game_player_get_har_obj_id(player));
         har_reset(har_obj);
         object_set_pos(har_obj, pos[i]);
-        object_set_vel(har_obj, vec2f_createf(0, 0));
+        object_set_vel(har_obj, vec2f_create(0, 0));
         object_set_direction(har_obj, dir[i]);
         chr_score_clear_done(&player->score);
     }
@@ -447,7 +447,7 @@ void arena_reset(scene *sc) {
         // Start READY animation
         animation *ready_ani = &bk_get_info(sc->bk_data, 11)->ani;
         object *ready = omf_calloc(1, sizeof(object));
-        object_create(ready, sc->gs, ready_ani->start_pos, vec2f_createf(0, 0));
+        object_create(ready, sc->gs, ready_ani->start_pos, vec2f_create(0, 0));
         object_set_stl(ready, sc->bk_data->sound_translation_table);
         object_set_animation(ready, ready_ani);
         object_set_finish_cb(ready, scene_ready_anim_done);
@@ -457,7 +457,7 @@ void arena_reset(scene *sc) {
         // ROUND animation
         animation *round_ani = &bk_get_info(sc->bk_data, 6)->ani;
         object *round = omf_calloc(1, sizeof(object));
-        object_create(round, sc->gs, round_ani->start_pos, vec2f_createf(0, 0));
+        object_create(round, sc->gs, round_ani->start_pos, vec2f_create(0, 0));
         object_set_stl(round, sc->bk_data->sound_translation_table);
         object_set_animation(round, round_ani);
         object_set_finish_cb(round, scene_ready_anim_done);
@@ -467,7 +467,7 @@ void arena_reset(scene *sc) {
         // Round number
         animation *number_ani = &bk_get_info(sc->bk_data, 7)->ani;
         object *number = omf_calloc(1, sizeof(object));
-        object_create(number, sc->gs, number_ani->start_pos, vec2f_createf(0, 0));
+        object_create(number, sc->gs, number_ani->start_pos, vec2f_create(0, 0));
         object_set_stl(number, sc->bk_data->sound_translation_table);
         object_set_animation(number, number_ani);
         object_select_sprite(number, local->round);
@@ -574,7 +574,7 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
             bk_info *info = bk_get_info(scene->bk_data, 20 + wall);
             if(info) { // Only Power Plant and Desert have wall animations
                 object *obj = omf_calloc(1, sizeof(object));
-                object_create(obj, scene->gs, info->ani.start_pos, vec2f_createf(0, 0));
+                object_create(obj, scene->gs, info->ani.start_pos, vec2f_create(0, 0));
                 object_set_stl(obj, scene->bk_data->sound_translation_table);
                 object_set_animation(obj, &info->ani);
                 if(game_state_add_object(scene->gs, obj, RENDER_LAYER_BOTTOM, 1, 0) != 0) {
@@ -588,7 +588,7 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
             info = bk_get_info(scene->bk_data, 22);
             if(info) { // Only Power Plant has the electric overlay effect
                 object *obj2 = omf_calloc(1, sizeof(object));
-                object_create(obj2, scene->gs, vec2f_to_i(o_har->pos), vec2f_createf(0, 0));
+                object_create(obj2, scene->gs, vec2f_to_i(o_har->pos), vec2f_create(0, 0));
                 object_set_stl(obj2, scene->bk_data->sound_translation_table);
                 object_set_animation(obj2, &info->ani);
                 object_attach_to(obj2, o_har);
@@ -607,7 +607,7 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
                 vec2i coord = vec2f_to_i(o_har->pos);
                 coord.y -= object_get_size(o_har).y + variance + i * 25;
                 object *dust = omf_calloc(1, sizeof(object));
-                object_create(dust, scene->gs, coord, vec2f_createf(0, 0));
+                object_create(dust, scene->gs, coord, vec2f_create(0, 0));
                 object_set_stl(dust, scene->bk_data->sound_translation_table);
                 object_set_animation(dust, &bk_get_info(scene->bk_data, anim_no)->ani);
                 game_state_add_object(scene->gs, dust, RENDER_LAYER_MIDDLE, 0, 0);
@@ -636,7 +636,7 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
             bk_info *info = bk_get_info(scene->bk_data, 20 + wall);
             if(info && (info->hazard_damage == 0)) {
                 object *obj = omf_calloc(1, sizeof(object));
-                object_create(obj, scene->gs, info->ani.start_pos, vec2f_createf(0, 0));
+                object_create(obj, scene->gs, info->ani.start_pos, vec2f_create(0, 0));
                 object_set_stl(obj, scene->bk_data->sound_translation_table);
                 object_set_animation(obj, &info->ani);
                 // TODO: Adjust this animation based on velocity
@@ -1061,7 +1061,7 @@ void arena_spawn_hazard(scene *scene) {
             if(random_int(&scene->gs->rand, info->probability) == 1) {
                 // TODO don't spawn it if we already have this animation running
                 object *obj = omf_calloc(1, sizeof(object));
-                object_create(obj, scene->gs, info->ani.start_pos, vec2f_createf(0, 0));
+                object_create(obj, scene->gs, info->ani.start_pos, vec2f_create(0, 0));
                 object_set_stl(obj, scene->bk_data->sound_translation_table);
                 object_set_animation(obj, &info->ani);
                 if(scene->id == SCENE_ARENA3 && info->ani.id == 0) {
@@ -1227,9 +1227,9 @@ void arena_dynamic_tick(scene *scene, int paused) {
                     object *scrap = omf_calloc(1, sizeof(object));
                     int anim_no = rand_int(3) + ANIM_SCRAP_METAL;
                     object_create(scrap, gs, pos,
-                                  vec2f_createf(fixedpt_rconst(velx), fixedpt_rconst(vely))); // abusing rconst
+                                  vec2f_create(fixedpt_rconst(velx), fixedpt_rconst(vely))); // abusing rconst
                     object_set_animation(scrap, &af_get_move(h->af_data, anim_no)->ani);
-                    object_set_gravityf(scrap, fixedpt_rconst(0.4));
+                    object_set_gravity(scrap, fixedpt_rconst(0.4));
                     object_set_pal_offset(scrap, object_get_pal_offset(h_obj));
                     object_set_pal_limit(scrap, object_get_pal_limit(h_obj));
                     object_set_layers(scrap, LAYER_SCRAP);
@@ -1630,7 +1630,7 @@ int arena_create(scene *scene) {
             return 1;
         }
 
-        object_create(obj, scene->gs, pos[i], vec2f_createf(0, 0));
+        object_create(obj, scene->gs, pos[i], vec2f_create(0, 0));
         if(har_create(obj, scene->af_data[i], dir[i], player->pilot->har_id, player->pilot->pilot_id, i)) {
             return 1;
         }
@@ -1651,7 +1651,7 @@ int arena_create(scene *scene) {
             // render pilot portraits
             object *portrait = omf_calloc(1, sizeof(object));
             if(i == 0) {
-                object_create(portrait, scene->gs, vec2i_create(95, 0), vec2f_createf(0, 0));
+                object_create(portrait, scene->gs, vec2i_create(95, 0), vec2f_create(0, 0));
                 sprite *sp = omf_calloc(1, sizeof(sprite));
                 sprite_create(sp, player->pilot->photo, -1);
                 portrait->x_percent = 0.70f;
@@ -1662,7 +1662,7 @@ int arena_create(scene *scene) {
                 portrait->cur_sprite_id = 0;
                 game_state_add_object(scene->gs, portrait, RENDER_LAYER_TOP, 0, 0);
             } else {
-                object_create(portrait, scene->gs, vec2i_create(225, 0), vec2f_createf(0, 0));
+                object_create(portrait, scene->gs, vec2i_create(225, 0), vec2f_create(0, 0));
                 sprite *sp = omf_calloc(1, sizeof(sprite));
                 sprite_create(sp, player->pilot->photo, -1);
                 portrait->x_percent = 0.70f;
@@ -1685,7 +1685,7 @@ int arena_create(scene *scene) {
                         xoff = 210 - 9 * j - 3 - j;
                     }
                     animation *ani = &bk_get_info(scene->bk_data, 27)->ani;
-                    object_create(round_token, scene->gs, vec2i_create(xoff, 9), vec2f_createf(0, 0));
+                    object_create(round_token, scene->gs, vec2i_create(xoff, 9), vec2f_create(0, 0));
                     local->player_rounds[i][j] = round_token->id;
                     object_set_animation(round_token, ani);
                     object_select_sprite(round_token, 1);
@@ -1821,7 +1821,7 @@ int arena_create(scene *scene) {
         // Start READY animation
         animation *ready_ani = &bk_get_info(scene->bk_data, 11)->ani;
         object *ready = omf_calloc(1, sizeof(object));
-        object_create(ready, scene->gs, ready_ani->start_pos, vec2f_createf(0, 0));
+        object_create(ready, scene->gs, ready_ani->start_pos, vec2f_create(0, 0));
         object_set_stl(ready, scene->bk_data->sound_translation_table);
         object_set_animation(ready, ready_ani);
         object_set_finish_cb(ready, scene_ready_anim_done);
@@ -1831,7 +1831,7 @@ int arena_create(scene *scene) {
         // ROUND
         animation *round_ani = &bk_get_info(scene->bk_data, 6)->ani;
         object *round = omf_calloc(1, sizeof(object));
-        object_create(round, scene->gs, round_ani->start_pos, vec2f_createf(0, 0));
+        object_create(round, scene->gs, round_ani->start_pos, vec2f_create(0, 0));
         object_set_stl(round, scene->bk_data->sound_translation_table);
         object_set_animation(round, round_ani);
         object_set_finish_cb(round, scene_ready_anim_done);
@@ -1841,7 +1841,7 @@ int arena_create(scene *scene) {
         // Number
         animation *number_ani = &bk_get_info(scene->bk_data, 7)->ani;
         object *number = omf_calloc(1, sizeof(object));
-        object_create(number, scene->gs, number_ani->start_pos, vec2f_createf(0, 0));
+        object_create(number, scene->gs, number_ani->start_pos, vec2f_create(0, 0));
         object_set_stl(number, scene->bk_data->sound_translation_table);
         object_set_animation(number, number_ani);
         object_select_sprite(number, local->round);

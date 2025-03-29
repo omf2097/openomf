@@ -6,7 +6,7 @@
 #include "utils/log.h"
 #include <stdlib.h>
 
-#define IS_ZEROF(n) (n < fixedpt_rconst(0.1) && n > fixedpt_rconst(-0.1))
+#define IS_ZERO(n) (n < fixedpt_rconst(0.1) && n > fixedpt_rconst(-0.1))
 
 typedef struct projectile_local_t {
     uint8_t player_id;
@@ -31,7 +31,7 @@ void projectile_finished(object *obj) {
     if(move->successor_id) {
         object_set_animation(obj, &af_get_move(local->af_data, move->successor_id)->ani);
         object_set_repeat(obj, 0);
-        object_set_vel(obj, vec2f_createf(0, 0));
+        object_set_vel(obj, vec2f_create(0, 0));
         obj->animation_state.finished = 0;
     }
 }
@@ -49,7 +49,7 @@ void projectile_move(object *obj) {
     game_player *player = game_state_get_player(gs, projectile_get_owner(obj));
     object *obj_har = game_state_find_object(gs, game_player_get_har_obj_id(player));
 
-    obj->vel.fy += obj->gravityf;
+    obj->vel.fy += obj->gravity;
     obj->pos = vec2f_add(obj->pos, obj->vel);
 
 #define dampen 7 / 10
@@ -67,7 +67,7 @@ void projectile_move(object *obj) {
         }
         // if not invincible, not ignoring bounds checking and actually has an X velocity (the latter two help with
         // shadow grab)
-    } else if(!local->invincible && !player_frame_isset(obj, "bh") && !IS_ZEROF(obj->vel.fx)) {
+    } else if(!local->invincible && !player_frame_isset(obj, "bh") && !IS_ZERO(obj->vel.fx)) {
         if(obj->pos.fx < ARENA_LEFT_WALLF) {
             obj->pos.fx = ARENA_LEFT_WALLF;
             obj->animation_state.finished = 1;
@@ -88,8 +88,8 @@ void projectile_move(object *obj) {
         obj->animation_state.finished = 1;
         projectile_finished(obj);
     }
-    if(obj->pos.fy >= (ARENA_FLOORF - fixedpt_fromint(5)) && IS_ZEROF(obj->vel.fx) &&
-       obj->vel.fy < obj->gravityf * 11 / 10 && obj->vel.fy > obj->gravityf * -11 / 10 && local->ground_freeze) {
+    if(obj->pos.fy >= (ARENA_FLOORF - fixedpt_fromint(5)) && IS_ZERO(obj->vel.fx) &&
+       obj->vel.fy < obj->gravity * 11 / 10 && obj->vel.fy > obj->gravity * -11 / 10 && local->ground_freeze) {
 
         object_disable_rewind_tag(obj, 1);
     }

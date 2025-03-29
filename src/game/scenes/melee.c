@@ -738,14 +738,14 @@ static void load_har_portraits(scene *scene, melee_local *local) {
 static void load_hars(scene *scene, melee_local *local, bool player2_is_selectable) {
     animation *ani;
     ani = &bk_get_info(scene->bk_data, 18)->ani;
-    object_create(&local->har[0], scene->gs, vec2i_create(110, 95), vec2f_createf(0, 0));
+    object_create(&local->har[0], scene->gs, vec2i_create(110, 95), vec2f_create(0, 0));
     object_set_animation(&local->har[0], ani);
     object_select_sprite(&local->har[0], 0);
     object_set_repeat(&local->har[0], 1);
 
     if(player2_is_selectable) {
         ani = &bk_get_info(scene->bk_data, 18 + 4)->ani;
-        object_create(&local->har[1], scene->gs, vec2i_create(210, 95), vec2f_createf(0, 0));
+        object_create(&local->har[1], scene->gs, vec2i_create(210, 95), vec2f_create(0, 0));
         object_set_animation(&local->har[1], ani);
         object_select_sprite(&local->har[1], 0);
         object_set_repeat(&local->har[1], 1);
@@ -826,7 +826,7 @@ int melee_create(scene *scene) {
         str_format(&local->wins_text_a, "Wins: %d", s1->wins);
         str_format(&local->wins_text_b, "Wins: %d", s2->wins);
 
-        object_create(&local->big_portrait_2, scene->gs, vec2i_create(320, 0), vec2f_createf(0, 0));
+        object_create(&local->big_portrait_2, scene->gs, vec2i_create(320, 0), vec2f_create(0, 0));
         object_set_animation(&local->big_portrait_2, pilot_big_portraits);
         object_select_sprite(&local->big_portrait_2, 4);
         object_set_direction(&local->big_portrait_2, OBJECT_FACE_LEFT);

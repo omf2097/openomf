@@ -26,7 +26,7 @@
 #include "video/vga_state.h"
 #include "video/video.h"
 
-#define IS_ZEROF(n) (n < fixedpt_rconst(0.8) && n > fixedpt_rconst(-0.8))
+#define IS_ZERO(n) (n < fixedpt_rconst(0.8) && n > fixedpt_rconst(-0.8))
 
 void har_finished(object *obj);
 int har_act(object *obj, int act_type);
@@ -310,7 +310,7 @@ void har_walk_to(object *obj, int destination) {
     char vx_buf[FIXEDPT_STR_BUFSIZE];
     fixedpt_str(vx, vx_buf, sizeof(vx_buf), -1);
     log_debug("set velocity to %s", vx_buf);
-    object_set_vel(obj, vec2f_createf(vx, 0));
+    object_set_vel(obj, vec2f_create(vx, 0));
 
     object_set_animation(obj, &move->ani);
     object_set_repeat(obj, 1);
@@ -412,7 +412,7 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t m
         object_create(obj, parent->gs, pos, vel);
         object_set_stl(obj, object_get_stl(parent));
         object_set_animation(obj, &move->ani);
-        object_set_gravityf(obj, fixedpt_fromint(g) / 100);
+        object_set_gravity(obj, fixedpt_fromint(g) / 100);
         object_set_pal_offset(obj, object_get_pal_offset(parent));
         object_set_pal_limit(obj, object_get_pal_limit(parent));
         // Set all projectiles to their own layer + har layer
@@ -458,7 +458,7 @@ void har_floor_landing_effects(object *obj, bool play_sound) {
         vec2i coord = vec2f_to_i(obj->pos);
         coord.x += variance + i * 10;
         object *dust = omf_calloc(1, sizeof(object));
-        object_create(dust, obj->gs, coord, vec2f_createf(0, 0));
+        object_create(dust, obj->gs, coord, vec2f_create(0, 0));
         object_set_stl(dust, object_get_stl(obj));
         object_set_animation(dust, &bk_get_info(game_state_get_scene(obj->gs)->bk_data, 26)->ani);
         game_state_add_object(obj->gs, dust, RENDER_LAYER_MIDDLE, 0, 0);
@@ -498,7 +498,7 @@ void har_move(object *obj) {
             object_set_direction(obj, object_get_direction(obj) * -1);
         }
 
-        object_set_vel(obj, vec2f_createf(0, 0));
+        object_set_vel(obj, vec2f_create(0, 0));
         har_set_ani(obj, h->walk_done_anim, 0);
 
         af_move *move = af_get_move(h->af_data, h->walk_done_anim);
@@ -541,20 +541,20 @@ void har_move(object *obj) {
             if(last_input == '6') {
                 h->state = STATE_WALKTO;
                 har_set_ani(obj, ANIM_WALKING, 1);
-                object_set_vel(obj, vec2f_createf(0, 0));
+                object_set_vel(obj, vec2f_create(0, 0));
                 object_set_stride(obj, h->stride);
                 har_event_walk(h, 1, ctrl);
             } else if(last_input == '4') {
                 h->state = STATE_WALKFROM;
                 har_set_ani(obj, ANIM_WALKING, 1);
-                object_set_vel(obj, vec2f_createf(0, 0));
+                object_set_vel(obj, vec2f_create(0, 0));
                 object_set_stride(obj, h->stride);
                 har_event_walk(h, -1, ctrl);
             } else if(last_input == '7' || last_input == '8' || last_input == '9') {
                 har_set_ani(obj, ANIM_JUMPING, 0);
                 h->state = STATE_JUMPING;
                 fixedpt vx = 0;
-                fixedpt vy = h->jump_speedf;
+                fixedpt vy = h->jump_speed;
                 int jump_dir = 0;
                 int direction = object_get_direction(obj);
                 if(last_input == '9') {
@@ -577,10 +577,10 @@ void har_move(object *obj) {
                         object_set_stride(obj, 7);
                     }
                 }
-                object_set_vel(obj, vec2f_createf(vx, vy));
+                object_set_vel(obj, vec2f_create(vx, vy));
                 har_event_jump(h, jump_dir, ctrl);
             } else {
-                object_set_vel(obj, vec2f_createf(0, 0));
+                object_set_vel(obj, vec2f_create(0, 0));
                 h->state = STATE_STANDING;
                 har_set_ani(obj, ANIM_IDLE, 1);
                 object_set_stride(obj, h->stride);
@@ -625,7 +625,7 @@ void har_move(object *obj) {
 
                 h->state = STATE_DEFEAT;
                 har_set_ani(obj, h->custom_defeat_animation ? h->custom_defeat_animation : ANIM_DEFEAT, 0);
-            } else if(obj->pos.fy >= (ARENA_FLOORF - fixedpt_fromint(5)) && IS_ZEROF(obj->vel.fx) &&
+            } else if(obj->pos.fy >= (ARENA_FLOORF - fixedpt_fromint(5)) && IS_ZERO(obj->vel.fx) &&
                       player_is_last_frame(obj)) {
                 if(h->state == STATE_FALLEN) {
                     if(h->health <= 0) {
@@ -673,7 +673,7 @@ void har_move(object *obj) {
 
         object_apply_controllable_velocity(obj, false, last_input);
     } else {
-        obj->vel.fy += obj->gravityf;
+        obj->vel.fy += obj->gravity;
         // Terminal Velocity
         if(obj->vel.fy > fixedpt_fromint(13)) {
             obj->vel.fy = fixedpt_fromint(13);
@@ -831,7 +831,7 @@ static void har_take_damage(object *obj, const str *string, int damage, int32_t 
     }
 }
 
-void har_spawn_oil(object *obj, vec2i pos, int amount, fixedpt gravityf, int layer) {
+void har_spawn_oil(object *obj, vec2i pos, int amount, fixedpt gravity, int layer) {
     har *h = object_get_userdata(obj);
 
     // burning oil
@@ -856,10 +856,10 @@ void har_spawn_oil(object *obj, vec2i pos, int amount, fixedpt gravityf, int lay
         // Create the object
         object *scrap = omf_calloc(1, sizeof(object));
         int anim_no = ANIM_BURNING_OIL;
-        object_create(scrap, obj->gs, pos, vec2f_createf(velx, vely));
+        object_create(scrap, obj->gs, pos, vec2f_create(velx, vely));
         object_set_animation(scrap, &af_get_move(h->af_data, anim_no)->ani);
         object_set_stl(scrap, object_get_stl(obj));
-        object_set_gravityf(scrap, gravityf);
+        object_set_gravity(scrap, gravity);
         object_set_layers(scrap, LAYER_SCRAP);
         object_dynamic_tick(scrap);
         scrap_create(scrap);
@@ -915,10 +915,10 @@ void har_spawn_scrap(object *obj, vec2i pos, int amount) {
         // Create the object
         object *scrap = omf_calloc(1, sizeof(object));
         int anim_no = rand_int(3) + ANIM_SCRAP_METAL;
-        object_create(scrap, obj->gs, pos, vec2f_createf(velx, vely));
+        object_create(scrap, obj->gs, pos, vec2f_create(velx, vely));
         object_set_animation(scrap, &af_get_move(h->af_data, anim_no)->ani);
         object_set_stl(scrap, object_get_stl(obj));
-        object_set_gravityf(scrap, fixedpt_fromint(1));
+        object_set_gravity(scrap, fixedpt_fromint(1));
         object_set_pal_offset(scrap, object_get_pal_offset(obj));
         object_set_pal_limit(obj, object_get_pal_limit(obj));
         object_set_layers(scrap, LAYER_SCRAP);
@@ -952,12 +952,12 @@ void har_block(object *obj, vec2i hit_coord, uint8_t block_stun) {
     h->state = STATE_BLOCKSTUN;
     game_state_hit_pause(obj->gs);
     object *scrape = omf_calloc(1, sizeof(object));
-    object_create(scrape, obj->gs, hit_coord, vec2f_createf(0, 0));
+    object_create(scrape, obj->gs, hit_coord, vec2f_create(0, 0));
     object_set_animation(scrape, &af_get_move(h->af_data, ANIM_BLOCKING_SCRAPE)->ani);
     object_set_stl(scrape, object_get_stl(obj));
     object_set_direction(scrape, object_get_direction(obj));
     object_set_repeat(scrape, 0);
-    object_set_gravityf(scrape, 0);
+    object_set_gravity(scrape, 0);
     object_set_layers(scrape, LAYER_SCRAP);
     object_dynamic_tick(scrape);
     object_dynamic_tick(scrape);
@@ -1846,7 +1846,7 @@ void har_tick(object *obj) {
         sprite *nsp = sprite_copy(cur_sprite);
         surface_flatten_to_mask(nsp->data, 1);
         object *nobj = omf_calloc(1, sizeof(object));
-        object_create(nobj, obj->gs, object_get_pos(obj), vec2f_createf(0, 0));
+        object_create(nobj, obj->gs, object_get_pos(obj), vec2f_create(0, 0));
         object_set_stl(nobj, object_get_stl(obj));
         object_set_animation(nobj, create_animation_from_single(nsp, obj->cur_animation->start_pos));
         object_set_animation_owner(nobj, OWNER_OBJECT);
@@ -2173,8 +2173,8 @@ int har_act(object *obj, int act_type) {
         if(move->category == CAT_SCRAP || move->category == CAT_DESTRUCTION) {
             obj->horizontal_velocity_modifierf = FIXEDPT_ONE;
             obj->vertical_velocity_modifierf = FIXEDPT_ONE;
-            object_set_gravityf(obj, h->af_data->fall_speedf);
-            object_set_gravityf(enemy_obj, enemy_har->af_data->fall_speedf);
+            object_set_gravity(obj, h->af_data->fall_speed);
+            object_set_gravity(enemy_obj, enemy_har->af_data->fall_speed);
         }
 
         if(move->category == CAT_SCRAP) {
@@ -2272,16 +2272,16 @@ int har_act(object *obj, int act_type) {
         switch(newstate) {
             case STATE_CROUCHBLOCK:
                 har_set_ani(obj, ANIM_CROUCHING, 1);
-                object_set_vel(obj, vec2f_createf(0, 0));
+                object_set_vel(obj, vec2f_create(0, 0));
                 break;
             case STATE_CROUCHING:
                 har_set_ani(obj, ANIM_CROUCHING, 1);
-                object_set_vel(obj, vec2f_createf(0, 0));
+                object_set_vel(obj, vec2f_create(0, 0));
                 break;
             case STATE_STANDING:
                 har_set_ani(obj, ANIM_IDLE, 1);
                 object_set_stride(obj, h->stride);
-                object_set_vel(obj, vec2f_createf(0, 0));
+                object_set_vel(obj, vec2f_create(0, 0));
                 obj->slide_state.vel.fx = 0;
                 break;
             case STATE_WALKTO:
@@ -2297,7 +2297,7 @@ int har_act(object *obj, int act_type) {
             case STATE_JUMPING: {
                 har_set_ani(obj, ANIM_JUMPING, 0);
                 fixedpt vx = 0;
-                fixedpt vy = h->jump_speedf;
+                fixedpt vy = h->jump_speed;
                 int jump_dir = 0;
                 if(last_input == '9') {
                     vx = (h->fwd_speedf * direction);
@@ -2323,7 +2323,7 @@ int har_act(object *obj, int act_type) {
                     // jumping from crouch makes you jump 25% higher
                     vy = h->superjump_speedf;
                 }
-                object_set_vel(obj, vec2f_createf(vx, vy));
+                object_set_vel(obj, vec2f_create(vx, vy));
                 har_event_jump(h, jump_dir, ctrl);
                 break;
             }
@@ -2538,11 +2538,11 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     // up * vertical_agility_modifier * 266 / 256
     obj->horizontal_velocity_modifierf = fixedpt_fromint(gp->pilot->agility + 35) / 45;
     obj->vertical_velocity_modifierf = fixedpt_fromint(gp->pilot->agility + 20) / 30;
-    local->jump_speedf = af_data->jump_speedf * (gp->pilot->agility + 35) / 45 * 216 / 256;
-    local->superjump_speedf = af_data->jump_speedf * (gp->pilot->agility + 35) / 45 * 266 / 256;
-    local->fall_speedf = af_data->fall_speedf * (gp->pilot->agility + 20) / 30;
-    local->fwd_speedf = af_data->forward_speedf * (gp->pilot->agility + 20) / 30;
-    local->back_speedf = af_data->reverse_speedf * (gp->pilot->agility + 20) / 30;
+    local->jump_speed = af_data->jump_speed * (gp->pilot->agility + 35) / 45 * 216 / 256;
+    local->superjump_speedf = af_data->jump_speed * (gp->pilot->agility + 35) / 45 * 266 / 256;
+    local->fall_speed = af_data->fall_speed * (gp->pilot->agility + 20) / 30;
+    local->fwd_speedf = af_data->forward_speed * (gp->pilot->agility + 20) / 30;
+    local->back_speedf = af_data->reverse_speed * (gp->pilot->agility + 20) / 30;
     // TODO calculate a better value here
     local->stride = lrint(1 + (gp->pilot->agility / 20));
     log_debug("setting HAR stride to %d", local->stride);
@@ -2583,7 +2583,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     object_set_pal_limit(obj, (player_id + 1) * 48);
 
     // Object related stuff
-    object_set_gravityf(obj, local->fall_speedf);
+    object_set_gravity(obj, local->fall_speed);
     object_set_layers(obj, LAYER_HAR | (player_id == 0 ? LAYER_HAR1 : LAYER_HAR2));
     object_set_direction(obj, dir);
     object_set_repeat(obj, 1);
@@ -2781,7 +2781,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
 
 void har_reset(object *obj) {
     har *h = object_get_userdata(obj);
-    object_set_gravityf(obj, h->fall_speedf);
+    object_set_gravity(obj, h->fall_speed);
     h->close = 0;
     h->hard_close = 0;
     h->state = STATE_STANDING;

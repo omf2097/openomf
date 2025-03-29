@@ -10,10 +10,10 @@ void af_create(af *a, void *src) {
     a->id = sdaf->file_id;
     a->endurance = sdaf->endurance;
     a->health = sdaf->health;
-    a->forward_speedf = fixedpt_fromint(sdaf->forward_speed) / 256;
-    a->reverse_speedf = fixedpt_fromint(sdaf->reverse_speed) / 256;
-    a->jump_speedf = fixedpt_fromint(sdaf->jump_speed) / 256;
-    a->fall_speedf = fixedpt_fromint(sdaf->fall_speed) / 256;
+    a->forward_speed = fixedpt_fromint(sdaf->forward_speed) / 256;
+    a->reverse_speed = fixedpt_fromint(sdaf->reverse_speed) / 256;
+    a->jump_speed = fixedpt_fromint(sdaf->jump_speed) / 256;
+    a->fall_speed = fixedpt_fromint(sdaf->fall_speed) / 256;
 
     // Sound translation table
     memcpy(a->sound_translation_table, sdaf->soundtable, 30);

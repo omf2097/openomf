@@ -40,7 +40,7 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
     // Physics
     obj->layers = OBJECT_DEFAULT_LAYER;
     obj->group = GROUP_UNKNOWN;
-    obj->gravityf = 0;
+    obj->gravity = 0;
 
     // Video effect stuff
     obj->animation_video_effects = 0;
@@ -54,7 +54,7 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
     obj->orbit_tick = MATH_PI / 2.0f;
     obj->orbit_dest = obj->start;
     obj->orbit_pos = obj->start;
-    obj->orbit_pos_vary = vec2f_createf(0, 0);
+    obj->orbit_pos_vary = vec2f_create(0, 0);
 
     // Animation playback related
     obj->cur_animation_own = OWNER_EXTERNAL;
@@ -114,7 +114,7 @@ int object_clone(object *src, object *dst, game_state *gs) {
 // FIXME: This was removed in HEAD, not sure why or what is the replacement
 // TODO: GET RID
 void object_create_static(object *obj, game_state *gs) {
-    object_create(obj, gs, vec2i_create(0, 0), vec2f_createf(0, 0));
+    object_create(obj, gs, vec2i_create(0, 0), vec2f_create(0, 0));
 }
 
 void object_set_stride(object *obj, int stride) {
@@ -498,7 +498,7 @@ int object_act(object *obj, int action) {
 
 void object_move(object *obj) {
     if(obj->sprite_state.disable_gravity) {
-        object_set_vel(obj, vec2f_createf(0, 0));
+        object_set_vel(obj, vec2f_create(0, 0));
     }
     if(obj->move != NULL) {
         obj->move(obj);
@@ -676,12 +676,12 @@ void object_set_layers(object *obj, int layers) {
 void object_set_group(object *obj, int group) {
     obj->group = group;
 }
-void object_set_gravityf(object *obj, fixedpt gravity) {
-    obj->gravityf = gravity;
+void object_set_gravity(object *obj, fixedpt gravity) {
+    obj->gravity = gravity;
 }
 
-fixedpt object_get_gravityf(const object *obj) {
-    return obj->gravityf;
+fixedpt object_get_gravity(const object *obj) {
+    return obj->gravity;
 }
 int object_get_group(const object *obj) {
     return obj->group;

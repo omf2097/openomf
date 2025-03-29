@@ -102,17 +102,10 @@ static inline vec2i vec2i_create(int x, int y) {
     return v;
 }
 
-static inline vec2f vec2f_createf(fixedpt x, fixedpt y) {
+static inline vec2f vec2f_create(fixedpt x, fixedpt y) {
     vec2f v;
     v.fx = x;
     v.fy = y;
-    return v;
-}
-
-static inline vec2f vec2f_from_float(float x, float y) {
-    vec2f v;
-    v.fx = fixedpt_rconst(x);
-    v.fy = fixedpt_rconst(y);
     return v;
 }
 

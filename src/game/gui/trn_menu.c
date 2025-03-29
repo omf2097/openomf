@@ -87,7 +87,7 @@ void trnmenu_bind_hand(component *c, animation *hand_ani, game_state *gs) {
 
     // Set up new hand object
     m->hand.obj = omf_calloc(1, sizeof(object));
-    object_create(m->hand.obj, gs, vec2i_create(0, 0), vec2f_createf(0, 0));
+    object_create(m->hand.obj, gs, vec2i_create(0, 0), vec2f_create(0, 0));
     object_set_animation(m->hand.obj, hand_ani);
     object_set_userdata(m->hand.obj, &m->hand);
     object_set_finish_cb(m->hand.obj, trnmenu_hand_finished);
@@ -165,15 +165,15 @@ static void trnmenu_layout(component *c, int x, int y, int w, int h) {
 }
 
 static vec2f center(component *c) {
-    return vec2f_createf(fixedpt_fromint(c->x + c->w) / 2, fixedpt_fromint(c->y + c->h) / 2);
+    return vec2f_create(fixedpt_fromint(c->x + c->w) / 2, fixedpt_fromint(c->y + c->h) / 2);
 }
 
 static vec2f rcenter(component *c) {
-    return vec2f_createf(fixedpt_fromint(c->x + c->w), fixedpt_fromint(c->y + c->h) / 2);
+    return vec2f_create(fixedpt_fromint(c->x + c->w), fixedpt_fromint(c->y + c->h) / 2);
 }
 
 static vec2f lcenter(component *c) {
-    return vec2f_createf(fixedpt_fromint(c->x), fixedpt_fromint(c->y + c->h) / 2);
+    return vec2f_create(fixedpt_fromint(c->x), fixedpt_fromint(c->y + c->h) / 2);
 }
 
 static int find_next_button(component *c, int act) {

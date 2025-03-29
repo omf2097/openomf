@@ -90,7 +90,7 @@ bool mechlab_find_last_player(scene *scene) {
         object_free(local->mech);
         omf_free(local->mech);
         local->mech = omf_calloc(1, sizeof(object));
-        object_create(local->mech, scene->gs, vec2i_create(0, 0), vec2f_createf(0, 0));
+        object_create(local->mech, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
         object_set_animation(local->mech, initial_har_ani);
         object_set_repeat(local->mech, 1);
         object_dynamic_tick(local->mech);
@@ -108,7 +108,7 @@ void mechlab_load_har(scene *scene, sd_pilot *pilot) {
     object_free(local->mech);
     omf_free(local->mech);
     local->mech = omf_calloc(1, sizeof(object));
-    object_create(local->mech, scene->gs, vec2i_create(0, 0), vec2f_createf(0, 0));
+    object_create(local->mech, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
     object_set_animation(local->mech, initial_har_ani);
     object_set_repeat(local->mech, 1);
     object_dynamic_tick(local->mech);
@@ -210,7 +210,7 @@ void mechlab_update(scene *scene) {
         animation *initial_har_ani = &bk_get_info(scene->bk_data, 15 + p1->pilot->har_id)->ani;
         if(local->mech && object_get_animation(local->mech) != initial_har_ani) {
             object_free(local->mech);
-            object_create(local->mech, scene->gs, vec2i_create(0, 0), vec2f_createf(0, 0));
+            object_create(local->mech, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
             object_set_animation(local->mech, initial_har_ani);
             object_set_repeat(local->mech, 1);
             object_dynamic_tick(local->mech);
@@ -400,7 +400,7 @@ void mechlab_select_dashboard(scene *scene, dashboard_type type) {
             omf_free(local->mech);
             local->mech = omf_calloc(1, sizeof(object));
             animation *initial_har_ani = &bk_get_info(scene->bk_data, 15 + player1->pilot->har_id)->ani;
-            object_create(local->mech, scene->gs, vec2i_create(0, 0), vec2f_createf(0, 0));
+            object_create(local->mech, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
             object_set_animation(local->mech, initial_har_ani);
             object_set_repeat(local->mech, 1);
             object_dynamic_tick(local->mech);
@@ -549,7 +549,7 @@ int mechlab_create(scene *scene) {
     for(unsigned i = 0; i < N_ELEMENTS(bg_ani); i++) {
         sprite *spr = sprite_copy(animation_get_sprite(&bk_get_info(scene->bk_data, 14)->ani, i));
         bg_ani[i] = create_animation_from_single(spr, spr->pos);
-        object_create(&local->bg_obj[i], scene->gs, vec2i_create(0, 0), vec2f_createf(0, 0));
+        object_create(&local->bg_obj[i], scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
         object_set_animation(&local->bg_obj[i], bg_ani[i]);
         object_select_sprite(&local->bg_obj[i], 0);
         object_set_repeat(&local->bg_obj[i], 1);
