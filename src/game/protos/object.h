@@ -161,6 +161,7 @@ void object_static_tick(object *obj);
 void object_dynamic_tick(object *obj);
 void object_set_tick_pos(object *obj, int tick);
 void object_move(object *obj);
+float object_distance(object *a, object *b);
 void object_collide(object *a, object *b);
 int object_act(object *obj, int action);
 int object_finished(object *obj);
