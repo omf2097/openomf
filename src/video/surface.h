@@ -91,6 +91,15 @@ void surface_convert_to_grayscale(surface *sur, const vga_palette *pal, int rang
 void surface_convert_har_to_grayscale(surface *sur, uint8_t brightness);
 
 /**
+ * Creates a new surface that is the shadow of another.
+ * The shadow surface will be a fourth the height of the src.
+ *
+ * @param shadow Surface to create a shadow in
+ * @param src Source surface, to create a shadow from
+ */
+void surface_create_shadow(surface *shadow, const surface *src);
+
+/**
  * Write surface to a PNG file.
  *
  * @param sur Source surface

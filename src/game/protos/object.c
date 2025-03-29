@@ -437,17 +437,10 @@ void object_render_shadow(object *obj) {
         return;
     }
 
-    const sprite *cur_sprite = animation_get_sprite(obj->cur_animation, obj->cur_sprite_id);
+    sprite *cur_sprite = animation_get_sprite(obj->cur_animation, obj->cur_sprite_id);
     if(cur_sprite == NULL) {
         return;
     }
-
-    // Scale of the sprite on Y axis should be less than the
-    // height of the sprite because of light position
-    float scale_y = 0.25f;
-    int w = cur_sprite->data->w;
-    int h = cur_sprite->data->h;
-    int scaled_h = h * scale_y;
 
     // Determine X
     int flip_mode = obj->sprite_state.flipmode;
@@ -465,15 +458,14 @@ void object_render_shadow(object *obj) {
         opacity = clamp(state->blend_start + d, 0, 255);
     }
 
-    // Determine Y
-    int y = 190 - scaled_h;
+    // get or create shadow surface
+    surface *shadow = sprite_get_shadow(cur_sprite);
 
-    // Render shadow object twice with different offsets, so that
-    // the shadows seem a bit blobbier and shadow-y
-    for(int i = 0; i < 2; i++) {
-        video_draw_full(cur_sprite->data, x + i, y + i, w, scaled_h, 2, 1, obj->pal_offset, obj->pal_limit, opacity,
-                        flip_mode, SPRITE_MASK);
-    }
+    // Determine Y
+    int y = ARENA_FLOOR - shadow->h;
+
+    // Draw the shadow, using the texture data to determine which remap to use (uses the first four remaps)
+    video_draw_full(shadow, x, y, shadow->w, shadow->h, -1, 1, 0, 0, opacity, flip_mode, 0);
 }
 
 void object_palette_transform(object *obj) {

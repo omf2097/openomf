@@ -40,6 +40,24 @@ void surface_create_from_surface(surface *sur, int w, int h, int src_x, int src_
     sur->transparent = src->transparent;
 }
 
+void surface_create_shadow(surface *shadow, const surface *src) {
+    int w = src->w, h = src->h;
+    // one fourth scale, size rounded up
+    int yscale = 4;
+    int shadow_h = (h + yscale - 1) / yscale;
+
+    surface_create(shadow, w, shadow_h);
+    for(int x = 0; x < w; x++) {
+        for(int y = 0; y < h; y++) {
+            int src_offset = x + y * w;
+            if(src->data[src_offset] == src->transparent)
+                continue;
+            int dst_offset = x + y / yscale * w;
+            shadow->data[dst_offset]++;
+        }
+    }
+}
+
 void surface_create_from_image(surface *sur, image *img) {
     surface_create_from_data(sur, img->w, img->h, img->data);
     sur->transparent = -1;

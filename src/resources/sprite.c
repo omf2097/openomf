@@ -13,6 +13,7 @@ void sprite_create(sprite *sp, void *src, int id) {
     sd_sprite *sdsprite = (sd_sprite *)src;
     sp->id = id;
     sp->pos = vec2i_create(sdsprite->pos_x, sdsprite->pos_y);
+    sp->shadow = NULL;
 
     if(sdsprite->width == 0 || sdsprite->height == 0) {
         sp->data = NULL;
@@ -35,11 +36,13 @@ void sprite_create_reference(sprite *sp, void *src, int id, void *data) {
     sp->pos = vec2i_create(sdsprite->pos_x, sdsprite->pos_y);
     sp->data = data;
     sp->owned = false;
+    sp->shadow = NULL;
 }
 
 int sprite_clone(sprite *src, sprite *dst) {
     memcpy(dst, src, sizeof(sprite));
     dst->data = omf_calloc(1, sizeof(surface));
+    dst->shadow = NULL;
     surface_create_from(dst->data, src->data);
     return 0;
 }
@@ -49,6 +52,10 @@ void sprite_free(sprite *sp) {
         surface_free(sp->data);
         omf_free(sp->data);
     }
+    if(sp->shadow) {
+        surface_free(sp->shadow);
+        omf_free(sp->shadow);
+    }
 }
 
 vec2i sprite_get_size(sprite *sp) {
@@ -56,6 +63,16 @@ vec2i sprite_get_size(sprite *sp) {
         return vec2i_create(sp->data->w, sp->data->h);
     }
     return vec2i_create(0, 0);
+}
+
+surface *sprite_get_shadow(sprite *s) {
+    if(s->shadow)
+        return s->shadow;
+
+    s->shadow = omf_calloc(1, sizeof(surface));
+    surface_create_shadow(s->shadow, s->data);
+
+    return s->shadow;
 }
 
 sprite *sprite_copy(sprite *src) {
