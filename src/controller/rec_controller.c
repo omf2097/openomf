@@ -12,7 +12,6 @@ typedef struct {
     int player_id;
     uint32_t last_tick;
     uint32_t max_tick;
-    uint8_t last_action;
     hashmap tick_lookup;
     vector game_states;
 } rec_controller_data;
@@ -93,7 +92,6 @@ int rec_controller_poll(controller *ctrl, ctrl_event **ev) {
                 }
             } else if(move->lookup_id == 2) {
                 int action = unpack_sd_action(move->action);
-                data->last_action = action;
                 controller_cmd(ctrl, action, ev);
                 ctrl->last = action;
                 found_action = true;
@@ -101,7 +99,7 @@ int rec_controller_poll(controller *ctrl, ctrl_event **ev) {
             j++;
         }
         if(!found_action) {
-            controller_cmd(ctrl, data->last_action, ev);
+            controller_cmd(ctrl, ctrl->last, ev);
         }
     }
     data->last_tick = ticks;
@@ -131,7 +129,7 @@ void rec_controller_find_old_last_action(controller *ctrl) {
         for(int j = 0; hashmap_get_int(&data->tick_lookup, (ticks * 10) + j, (void **)(&move), &len) == 0; j++) {
             if(move->lookup_id == 2) {
                 found_action = true;
-                ctrl->last = data->last_action = unpack_sd_action(move->action);
+                ctrl->last = unpack_sd_action(move->action);
             }
         }
         if(found_action) {
@@ -140,7 +138,7 @@ void rec_controller_find_old_last_action(controller *ctrl) {
     }
 
     // no action found
-    ctrl->last = data->last_action = ACT_STOP;
+    ctrl->last = ACT_STOP;
     return;
 }
 
@@ -182,7 +180,6 @@ void rec_controller_step_back(controller *ctrl) {
 void rec_controller_create(controller *ctrl, int player, sd_rec_file *rec) {
     rec_controller_data *data = omf_calloc(1, sizeof(rec_controller_data));
     data->last_tick = 0;
-    data->last_action = ACT_STOP;
     data->player_id = player;
     hashmap_create(&data->tick_lookup);
     vector_create(&data->game_states, sizeof(game_state));
