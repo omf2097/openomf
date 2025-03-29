@@ -95,7 +95,8 @@ int game_state_get_assertion_operand(rec_assertion_operand *op, game_state *gs) 
             case ATTR_HEALTH:
                 return har->health;
             case ATTR_STAMINA:
-                return har->endurance;
+                // scale endurance by a magic number so it fits in a 16 bit integer
+                return har->endurance / 256;
             case ATTR_OPPONENT_DISTANCE: {
                 object *obj_opp = game_state_find_object(
                     gs, game_player_get_har_obj_id(game_state_get_player(gs, abs(op->value.attr.har_id - 1))));
@@ -156,7 +157,8 @@ bool game_state_check_assertion_is_met(rec_assertion *ass, game_state *gs) {
                     har->health = operand2;
                     return true;
                 case ATTR_STAMINA:
-                    har->endurance = operand2;
+                    // scale endurance by a magic number so it fits in a 16 bit integer
+                    har->endurance = min2(operand2 * 256, har->endurance_max);
                     return true;
                 default:
                     log_error("unsupported set");
