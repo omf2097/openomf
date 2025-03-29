@@ -9,6 +9,9 @@ void vga_palette_init(vga_palette *palette) {
 }
 
 void vga_palette_tint_range(vga_palette *pal, vga_index ref_index, vga_index start, vga_index end, uint8_t step) {
+    // NOTE: These functions are required to treat a range of 1,0 as starting at 1 and ending at 255.
+    // Why? Because Kreissack's Ker-Boom calls these with a start of 1, and a count of 255.. 1+255 = 0, in vga_indexes.
+    // Thus, the below for loops use an `i != end` inequality instead of `i < end`-- the latter breaks the Ker-Boom!
     assert(end + (vga_index)255 >= start);
     vga_color ref = pal->colors[ref_index];
     uint32_t m, u;
