@@ -259,6 +259,32 @@ static void reset_cursor_blinky(melee_local *local, int player) {
     }
 }
 
+static void load_pilot(scene *scene, int player_id) {
+    game_player *player = game_state_get_player(scene->gs, player_id);
+    melee_local *local = scene_get_userdata(scene);
+
+    int pilot_id = player_id == 0 ? local->pilot_id_a : local->pilot_id_b;
+
+    if(player->selectable) {
+        object *big_portrait = player_id == 0 ? &local->big_portrait_1 : &local->big_portrait_2;
+        object_select_sprite(big_portrait, pilot_id);
+    }
+
+    pilot p_a;
+    pilot_get_info(&p_a, pilot_id);
+
+    // update the player palette
+    pilot_get_info(&p_a, pilot_id);
+    player->pilot->endurance = p_a.endurance;
+    player->pilot->power = p_a.power;
+    player->pilot->agility = p_a.agility;
+    player->pilot->sex = p_a.sex;
+    sd_pilot_set_player_color(player->pilot, PRIMARY, p_a.color_1);
+    sd_pilot_set_player_color(player->pilot, SECONDARY, p_a.color_2);
+    sd_pilot_set_player_color(player->pilot, TERTIARY, p_a.color_3);
+    palette_load_player_colors(&player->pilot->palette, player_id);
+}
+
 void handle_action(scene *scene, int player, int action) {
     game_player *player1 = game_state_get_player(scene->gs, 0);
     game_player *player2 = game_state_get_player(scene->gs, 1);
@@ -326,31 +352,10 @@ void handle_action(scene *scene, int player, int action) {
                     local->har_selected[0][local->pilot_id_a] = 1;
                     local->har_selected[1][local->pilot_id_b] = 1;
 
-                    object_select_sprite(&local->big_portrait_1, local->pilot_id_a);
-                    // update the player palette
-                    pilot p_a;
-                    pilot_get_info(&p_a, local->pilot_id_a);
-                    player1->pilot->endurance = p_a.endurance;
-                    player1->pilot->power = p_a.power;
-                    player1->pilot->agility = p_a.agility;
-                    player1->pilot->sex = p_a.sex;
-                    sd_pilot_set_player_color(player1->pilot, PRIMARY, p_a.color_1);
-                    sd_pilot_set_player_color(player1->pilot, SECONDARY, p_a.color_2);
-                    sd_pilot_set_player_color(player1->pilot, TERTIARY, p_a.color_3);
-                    palette_load_player_colors(&player1->pilot->palette, 0);
+                    load_pilot(scene, 0);
 
                     if(player2->selectable) {
-                        object_select_sprite(&local->big_portrait_2, local->pilot_id_b);
-                        // update the player palette
-                        pilot_get_info(&p_a, local->pilot_id_b);
-                        player2->pilot->endurance = p_a.endurance;
-                        player2->pilot->power = p_a.power;
-                        player2->pilot->agility = p_a.agility;
-                        player2->pilot->sex = p_a.sex;
-                        sd_pilot_set_player_color(player2->pilot, PRIMARY, p_a.color_1);
-                        sd_pilot_set_player_color(player2->pilot, SECONDARY, p_a.color_2);
-                        sd_pilot_set_player_color(player2->pilot, TERTIARY, p_a.color_3);
-                        palette_load_player_colors(&player2->pilot->palette, 1);
+                        load_pilot(scene, 1);
                     }
                 } else {
                     int nova_activated[2] = {1, 1};
@@ -396,15 +401,8 @@ void handle_action(scene *scene, int player, int action) {
                             }
                         }
 
-                        pilot p_a;
-                        pilot_get_info(&p_a, player2->pilot->pilot_id);
-                        player2->pilot->endurance = p_a.endurance;
-                        player2->pilot->power = p_a.power;
-                        player2->pilot->agility = p_a.agility;
-                        player2->pilot->sex = p_a.sex;
-                        sd_pilot_set_player_color(player2->pilot, PRIMARY, p_a.color_1);
-                        sd_pilot_set_player_color(player2->pilot, SECONDARY, p_a.color_2);
-                        sd_pilot_set_player_color(player2->pilot, TERTIARY, p_a.color_3);
+                        local->pilot_id_b = player2->pilot->pilot_id;
+                        load_pilot(scene, 1);
                     }
                     // TODO in netplay, use the lobby names
                     strncpy_or_truncate(player1->pilot->name, lang_get(player1->pilot->pilot_id + 20),
