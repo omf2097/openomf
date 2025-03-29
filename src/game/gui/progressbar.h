@@ -29,5 +29,6 @@ component *progressbar_create(progressbar_theme theme, int orientation, int perc
 // set progressbar value, progressbar will lower from current value to new value one % per tick if `animate` is true
 void progressbar_set_progress(component *bar, int percentage, bool animate);
 void progressbar_set_flashing(component *bar, int flashing, int rate);
+void progressbar_set_highlight(component *bar, bool highlight);
 
 #endif // PROGRESSBAR_H

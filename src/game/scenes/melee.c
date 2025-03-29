@@ -60,6 +60,14 @@ typedef enum
     HAR_SELECT = 1
 } selection_page;
 
+enum
+{
+    STAT_POWER,
+    STAT_AGILITY,
+    STAT_ENDURANCE,
+    STAT_COUNT
+};
+
 typedef struct {
     cursor_data cursor[2];
     selection_page page;
@@ -75,9 +83,7 @@ typedef struct {
 
     object har[2];
 
-    component *bar_power[2];
-    component *bar_agility[2];
-    component *bar_endurance[2];
+    component *bar_stat[2][STAT_COUNT];
 
     int pilot_id_a;
     int pilot_id_b;
@@ -96,8 +102,11 @@ typedef struct {
     text *player_bio[2];
 
     // nova selection cheat
-    unsigned char har_selected[2][10];
+    unsigned char cheat_selected[2][10];
     unsigned char katana_down_count[2];
+    // pilot stat cheat. wrap around on both rows and select every pilot, then hold KICK to adjust stats.
+    unsigned char cheat_pilot_stats[2];
+    unsigned char cheat_pilot_stats_stat[2]; // which stat is selected?
 } melee_local;
 
 void handle_action(scene *scene, int player, int action);
@@ -110,9 +119,9 @@ void melee_free(scene *scene) {
     surface_free(&local->bg_player_bio);
     surface_free(&local->select_hilight);
     for(int i = 0; i < 2; i++) {
-        component_free(local->bar_power[i]);
-        component_free(local->bar_agility[i]);
-        component_free(local->bar_endurance[i]);
+        for(int j = 0; j < STAT_COUNT; j++) {
+            component_free(local->bar_stat[i][j]);
+        }
     }
 
     object_free(&local->har[0]);
@@ -176,6 +185,30 @@ static void load_pilot_portraits_palette(scene *scene) {
     vga_state_set_base_palette_from_range(bk_pal, 0x00, 0x00, 0x60);
 }
 
+static bool check_pilot_stat_cheat(scene *scene, int player_id) {
+    melee_local *local = scene_get_userdata(scene);
+
+    // if we haven't enabled the cheat yet, check the rules
+    if(local->cheat_pilot_stats[player_id] != 0xFF) {
+        if(local->cheat_pilot_stats[player_id] != 3)
+            return false; // haven't wrapped around both rows
+        if(memchr(local->cheat_selected[player_id], 0, sizeof(local->cheat_selected[player_id])) != NULL)
+            return false; // not all pilots have been selected
+
+        // mark cheat as enabled
+        local->cheat_pilot_stats[player_id] = 0xFF;
+
+        // select POWER stat.
+        local->cheat_pilot_stats_stat[player_id] = 0;
+    }
+
+    // disable KICK debouncing
+    game_player *player = game_state_get_player(scene->gs, player_id);
+    game_player_get_ctrl(player)->last &= ~ACT_KICK;
+
+    return true;
+}
+
 void melee_tick(scene *scene, int paused) {
     melee_local *local = scene_get_userdata(scene);
     game_player *player1 = game_state_get_player(scene->gs, 0);
@@ -219,16 +252,26 @@ void melee_tick(scene *scene, int paused) {
     local->ticks++;
 }
 
-void refresh_pilot_stats(melee_local *local) {
-    pilot p_a, p_b;
-    pilot_get_info(&p_a, CURSOR_INDEX(local, 0));
-    pilot_get_info(&p_b, CURSOR_INDEX(local, 1));
-    progressbar_set_progress(local->bar_power[0], (p_a.power * 100) / MAX_STAT, false);
-    progressbar_set_progress(local->bar_agility[0], (p_a.agility * 100) / MAX_STAT, false);
-    progressbar_set_progress(local->bar_endurance[0], (p_a.endurance * 100) / MAX_STAT, false);
-    progressbar_set_progress(local->bar_power[1], (p_b.power * 100) / MAX_STAT, false);
-    progressbar_set_progress(local->bar_agility[1], (p_b.agility * 100) / MAX_STAT, false);
-    progressbar_set_progress(local->bar_endurance[1], (p_b.endurance * 100) / MAX_STAT, false);
+static uint8_t *get_pilot_stat(sd_pilot *p, int stat) {
+    switch(stat) {
+        default:
+            assert(0);
+        case STAT_POWER:
+            return &p->power;
+        case STAT_AGILITY:
+            return &p->agility;
+        case STAT_ENDURANCE:
+            return &p->endurance;
+    }
+}
+
+static void refresh_pilot_stats(scene *scene, int player_id) {
+    melee_local *local = scene_get_userdata(scene);
+    game_player *player = game_state_get_player(scene->gs, player_id);
+    for(int stat = 0; stat < STAT_COUNT; stat++) {
+        progressbar_set_progress(local->bar_stat[player_id][stat],
+                                 (*get_pilot_stat(player->pilot, stat) * 100) / MAX_STAT, false);
+    }
 }
 
 void update_har(scene *scene, int player) {
@@ -259,6 +302,46 @@ static void reset_cursor_blinky(melee_local *local, int player) {
     }
 }
 
+static void load_pilot_stats(scene *scene, int player_id) {
+    game_player *player = game_state_get_player(scene->gs, player_id);
+    melee_local *local = scene_get_userdata(scene);
+
+    int pilot_id = player_id == 0 ? local->pilot_id_a : local->pilot_id_b;
+
+    pilot p_a;
+    pilot_get_info(&p_a, pilot_id);
+
+    if(player->selectable) {
+        object *big_portrait = player_id == 0 ? &local->big_portrait_1 : &local->big_portrait_2;
+        object_select_sprite(big_portrait, pilot_id);
+
+        text_set_from_c(local->player_bio[player_id], lang_get(135 + pilot_id));
+        object_select_sprite(big_portrait, pilot_id);
+    }
+
+    player->pilot->endurance = p_a.endurance;
+    player->pilot->power = p_a.power;
+    player->pilot->agility = p_a.agility;
+    player->pilot->sex = p_a.sex;
+    refresh_pilot_stats(scene, player_id);
+}
+
+static void load_pilot_colors(scene *scene, int player_id) {
+    game_player *player = game_state_get_player(scene->gs, player_id);
+    melee_local *local = scene_get_userdata(scene);
+
+    int pilot_id = player_id == 0 ? local->pilot_id_a : local->pilot_id_b;
+
+    pilot p_a;
+    pilot_get_info(&p_a, pilot_id);
+
+    // update the player palette
+    sd_pilot_set_player_color(player->pilot, PRIMARY, p_a.color_1);
+    sd_pilot_set_player_color(player->pilot, SECONDARY, p_a.color_2);
+    sd_pilot_set_player_color(player->pilot, TERTIARY, p_a.color_3);
+    palette_load_player_colors(&player->pilot->palette, player_id);
+}
+
 void handle_action(scene *scene, int player, int action) {
     game_player *player1 = game_state_get_player(scene->gs, 0);
     game_player *player2 = game_state_get_player(scene->gs, 1);
@@ -275,10 +358,16 @@ void handle_action(scene *scene, int player, int action) {
     int old_column = *column;
 
     switch(action) {
+        case ACT_STOP:
+            progressbar_set_highlight(local->bar_stat[player][local->cheat_pilot_stats_stat[player]], 0);
+            break;
         case ACT_LEFT:
             (*column)--;
             if(*column < 0) {
                 *column = 4;
+                if(local->page == PILOT_SELECT) {
+                    local->cheat_pilot_stats[player] |= *row + 1;
+                }
             }
             reset_cursor_blinky(local, player);
             break;
@@ -286,6 +375,9 @@ void handle_action(scene *scene, int player, int action) {
             (*column)++;
             if(*column > 4) {
                 *column = 0;
+                if(local->page == PILOT_SELECT) {
+                    local->cheat_pilot_stats[player] |= *row + 1;
+                }
             }
             reset_cursor_blinky(local, player);
             break;
@@ -308,7 +400,58 @@ void handle_action(scene *scene, int player, int action) {
                 }
             }
             break;
+        case ACT_KICK | ACT_UP:
+            if(local->page == PILOT_SELECT && check_pilot_stat_cheat(scene, player) &&
+               local->cheat_pilot_stats_stat[player] > 0) {
+                progressbar_set_highlight(local->bar_stat[player][local->cheat_pilot_stats_stat[player]], 0);
+                local->cheat_pilot_stats_stat[player]--;
+            }
+            break;
+        case ACT_KICK | ACT_DOWN:
+            if(local->page == PILOT_SELECT && check_pilot_stat_cheat(scene, player) &&
+               local->cheat_pilot_stats_stat[player] < 2) {
+                progressbar_set_highlight(local->bar_stat[player][local->cheat_pilot_stats_stat[player]], 0);
+                local->cheat_pilot_stats_stat[player]++;
+            }
+            break;
+        case ACT_KICK | ACT_LEFT:
+            if(local->page == PILOT_SELECT && check_pilot_stat_cheat(scene, player)) {
+                sd_pilot *pilot = game_state_get_player(scene->gs, player)->pilot;
+                int stat = local->cheat_pilot_stats_stat[player];
+                uint8_t *stat_val = get_pilot_stat(pilot, stat);
+                // reallocate points to other stats from selected stat
+                for(int other = 0; other < STAT_COUNT; other++) {
+                    uint8_t *other_val = get_pilot_stat(pilot, other);
+                    if(other == stat || *other_val >= MAX_STAT || *stat_val <= 0)
+                        continue;
+                    (*other_val)++;
+                    (*stat_val)--;
+                }
+                refresh_pilot_stats(scene, player);
+            }
+            break;
+        case ACT_KICK | ACT_RIGHT:
+            if(local->page == PILOT_SELECT && check_pilot_stat_cheat(scene, player)) {
+                sd_pilot *pilot = game_state_get_player(scene->gs, player)->pilot;
+                int stat = local->cheat_pilot_stats_stat[player];
+                uint8_t *stat_val = get_pilot_stat(pilot, stat);
+                // reallocate points from other stats into selected stat
+                for(int other = 0; other < STAT_COUNT; other++) {
+                    uint8_t *other_val = get_pilot_stat(pilot, other);
+                    if(other == stat || *other_val <= 0 || *stat_val >= MAX_STAT)
+                        continue;
+                    (*other_val)--;
+                    (*stat_val)++;
+                }
+                refresh_pilot_stats(scene, player);
+            }
+            break;
         case ACT_KICK:
+            if(local->page == PILOT_SELECT && check_pilot_stat_cheat(scene, player)) {
+                progressbar_set_highlight(local->bar_stat[player][local->cheat_pilot_stats_stat[player]], 1);
+                break;
+            }
+            // [[fallthrough]]
         case ACT_PUNCH:
             *done = 1;
             audio_play_sound(20, 0.5f, 0.0f, 2.0f);
@@ -322,48 +465,21 @@ void handle_action(scene *scene, int player, int action) {
                     local->pilot_id_a = CURSOR_INDEX(local, 0);
                     local->pilot_id_b = CURSOR_INDEX(local, 1);
 
-                    // nova selection cheat
-                    local->har_selected[0][local->pilot_id_a] = 1;
-                    local->har_selected[1][local->pilot_id_b] = 1;
+                    // prepare for nova selection cheat
+                    memset(local->cheat_selected, 0, sizeof(local->cheat_selected));
+                    local->cheat_selected[0][local->pilot_id_a] = 1;
+                    local->cheat_selected[1][local->pilot_id_b] = 1;
 
-                    object_select_sprite(&local->big_portrait_1, local->pilot_id_a);
-                    // update the player palette
-                    pilot p_a;
-                    pilot_get_info(&p_a, local->pilot_id_a);
-                    player1->pilot->endurance = p_a.endurance;
-                    player1->pilot->power = p_a.power;
-                    player1->pilot->agility = p_a.agility;
-                    player1->pilot->sex = p_a.sex;
-                    sd_pilot_set_player_color(player1->pilot, PRIMARY, p_a.color_1);
-                    sd_pilot_set_player_color(player1->pilot, SECONDARY, p_a.color_2);
-                    sd_pilot_set_player_color(player1->pilot, TERTIARY, p_a.color_3);
-                    palette_load_player_colors(&player1->pilot->palette, 0);
+                    load_pilot_colors(scene, 0);
 
                     if(player2->selectable) {
-                        object_select_sprite(&local->big_portrait_2, local->pilot_id_b);
-                        // update the player palette
-                        pilot_get_info(&p_a, local->pilot_id_b);
-                        player2->pilot->endurance = p_a.endurance;
-                        player2->pilot->power = p_a.power;
-                        player2->pilot->agility = p_a.agility;
-                        player2->pilot->sex = p_a.sex;
-                        sd_pilot_set_player_color(player2->pilot, PRIMARY, p_a.color_1);
-                        sd_pilot_set_player_color(player2->pilot, SECONDARY, p_a.color_2);
-                        sd_pilot_set_player_color(player2->pilot, TERTIARY, p_a.color_3);
-                        palette_load_player_colors(&player2->pilot->palette, 1);
+                        load_pilot_colors(scene, 1);
                     }
                 } else {
                     int nova_activated[2] = {1, 1};
                     for(int i = 0; i < 2; i++) {
-                        for(int j = 0; j < 10; j++) {
-                            if(local->har_selected[i][j] == 0) {
-                                nova_activated[i] = 0;
-                                break;
-                            }
-                        }
-                        if(local->katana_down_count[i] < 11) {
-                            nova_activated[i] = 0;
-                        }
+                        nova_activated[i] = local->katana_down_count[i] >= 11 &&
+                                            !memchr(local->cheat_selected[i], 0, sizeof(local->cheat_selected[i]));
                     }
                     if(nova_activated[0] && CURSOR_NOVA_SELECT(local, 0)) {
                         player1->pilot->har_id = HAR_NOVA;
@@ -396,15 +512,9 @@ void handle_action(scene *scene, int player, int action) {
                             }
                         }
 
-                        pilot p_a;
-                        pilot_get_info(&p_a, player2->pilot->pilot_id);
-                        player2->pilot->endurance = p_a.endurance;
-                        player2->pilot->power = p_a.power;
-                        player2->pilot->agility = p_a.agility;
-                        player2->pilot->sex = p_a.sex;
-                        sd_pilot_set_player_color(player2->pilot, PRIMARY, p_a.color_1);
-                        sd_pilot_set_player_color(player2->pilot, SECONDARY, p_a.color_2);
-                        sd_pilot_set_player_color(player2->pilot, TERTIARY, p_a.color_3);
+                        local->pilot_id_b = player2->pilot->pilot_id;
+                        load_pilot_stats(scene, player);
+                        load_pilot_colors(scene, 1);
                     }
                     // TODO in netplay, use the lobby names
                     strncpy_or_truncate(player1->pilot->name, lang_get(player1->pilot->pilot_id + 20),
@@ -430,24 +540,26 @@ void handle_action(scene *scene, int player, int action) {
     if(old_row != *row || old_column != *column) {
         float panning = (float)(*column) * (2.0f / 5.0f) - 0.5f;
         audio_play_sound(19, 0.5f, panning, 2.0f);
-        update_har(scene, player);
-    }
-
-    if(local->page == PILOT_SELECT) {
-        text_set_from_c(local->player_bio[0], lang_get(135 + CURSOR_INDEX(local, 0)));
-        object_select_sprite(&local->big_portrait_1, CURSOR_INDEX(local, 0));
-        if(player2->selectable) {
-            text_set_from_c(local->player_bio[1], lang_get(135 + CURSOR_INDEX(local, 1)));
-            object_select_sprite(&local->big_portrait_2, CURSOR_INDEX(local, 1));
+        if(local->page == PILOT_SELECT) {
+            if(player == 0) {
+                local->pilot_id_a = CURSOR_INDEX(local, player);
+            } else {
+                local->pilot_id_b = CURSOR_INDEX(local, player);
+            }
+            load_pilot_stats(scene, player);
+        } else {
+            update_har(scene, player);
         }
     }
 
-    // nova selection cheat
-    if(local->page == HAR_SELECT) {
-        local->har_selected[player][5 * (*row) + *column] = 1;
+#if 0
+    if(local->page == PILOT_SELECT) {
     }
 
     refresh_pilot_stats(local);
+#endif
+
+    local->cheat_selected[player][5 * (*row) + *column] = 1;
 }
 
 void melee_input_tick(scene *scene) {
@@ -560,9 +672,9 @@ static void render_pilot_select(melee_local *local, bool player2_is_selectable) 
     text_render_mode(&tconf_green, TEXT_DEFAULT, 74, 4, 85, 6, lang_get(216));
     text_render_mode(&tconf_green, TEXT_DEFAULT, 74, 22, 85, 6, lang_get(217));
     text_render_mode(&tconf_green, TEXT_DEFAULT, 74, 40, 85, 6, lang_get(218));
-    component_render(local->bar_power[0]);
-    component_render(local->bar_agility[0]);
-    component_render(local->bar_endurance[0]);
+    for(int stat = 0; stat < STAT_COUNT; stat++) {
+        component_render(local->bar_stat[0][stat]);
+    }
 
     object_render(&local->player2_placeholder);
 
@@ -580,9 +692,9 @@ static void render_pilot_select(melee_local *local, bool player2_is_selectable) 
         text_render_mode(&tconf_green, TEXT_DEFAULT, 320 - 66 - local->bg_player_stats.w, 22, 85, 6, lang_get(217));
         text_render_mode(&tconf_green, TEXT_DEFAULT, 320 - 66 - local->bg_player_stats.w, 40, 85, 6, lang_get(218));
 
-        component_render(local->bar_power[1]);
-        component_render(local->bar_agility[1]);
-        component_render(local->bar_endurance[1]);
+        for(int stat = 0; stat < STAT_COUNT; stat++) {
+            component_render(local->bar_stat[1][stat]);
+        }
     } else {
         // 'choose your pilot'
         text_render_mode(&tconf_green, TEXT_DEFAULT, 160, 97, 160, 6, lang_get(187));
@@ -843,23 +955,23 @@ int melee_create(scene *scene) {
     }
 
     for(int i = 0; i < 2; i++) {
-        local->bar_power[i] = progressbar_create(PROGRESSBAR_THEME_MELEE, PROGRESSBAR_LEFT, 50);
-        local->bar_agility[i] = progressbar_create(PROGRESSBAR_THEME_MELEE, PROGRESSBAR_LEFT, 50);
-        local->bar_endurance[i] = progressbar_create(PROGRESSBAR_THEME_MELEE, PROGRESSBAR_LEFT, 50);
+        int x = i == 0 ? (74) : (320 - 66 - local->bg_player_stats.w);
+        for(int stat = 0; stat < STAT_COUNT; stat++) {
+            int y = 12 + stat * 18;
+            local->bar_stat[i][stat] = progressbar_create(PROGRESSBAR_THEME_MELEE, PROGRESSBAR_LEFT, 50);
+            component_layout(local->bar_stat[i][stat], x, y, 20 * 4, 8);
+        }
     }
-    component_layout(local->bar_power[0], 74, 12, 20 * 4, 8);
-    component_layout(local->bar_agility[0], 74, 30, 20 * 4, 8);
-    component_layout(local->bar_endurance[0], 74, 48, 20 * 4, 8);
-    component_layout(local->bar_power[1], 320 - 66 - local->bg_player_stats.w, 12, 20 * 4, 8);
-    component_layout(local->bar_agility[1], 320 - 66 - local->bg_player_stats.w, 30, 20 * 4, 8);
-    component_layout(local->bar_endurance[1], 320 - 66 - local->bg_player_stats.w, 48, 20 * 4, 8);
 
-    refresh_pilot_stats(local);
+    load_pilot_stats(scene, 0);
+    load_pilot_stats(scene, 1);
+    // refresh_pilot_stats(local);
     set_cursor_colors(0, 0, false, false);
 
-    // initialize nova selection cheat
-    memset(local->har_selected, 0, sizeof(local->har_selected));
+    // initialize cheats
+    memset(local->cheat_selected, 0, sizeof(local->cheat_selected));
     memset(local->katana_down_count, 0, sizeof(local->katana_down_count));
+    memset(local->cheat_pilot_stats, 0, sizeof(local->cheat_pilot_stats));
 
     // Set callbacks
     scene_set_input_poll_cb(scene, melee_input_tick);

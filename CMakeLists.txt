@@ -314,6 +314,11 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     set(CMAKE_C_FLAGS_MINSIZEREL "${CMAKE_C_FLAGS_MINSIZEREL} -Wl,-s")
 endif()
 
+# Configure GCC to accept `// [[fallthrough]]` as a fallthrough comment.
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wimplicit-fallthrough=2")
+endif()
+
 set(COREINCS
     src
     ${CMAKE_CURRENT_BINARY_DIR}/src/

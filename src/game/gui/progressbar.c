@@ -51,6 +51,7 @@ typedef struct progressbar {
     int state;
     int tick;
     int refresh;
+    bool highlight;
 } progressbar;
 
 void progressbar_set_progress(component *c, int percentage, bool animate) {
@@ -73,6 +74,11 @@ void progressbar_set_flashing(component *c, int flashing, int rate) {
     }
     bar->flashing = clamp(flashing, 0, 1);
     bar->rate = (rate < 0) ? 0 : rate;
+}
+
+void progressbar_set_highlight(component *c, bool highlight) {
+    progressbar *bar = widget_get_obj(c);
+    bar->highlight = highlight;
 }
 
 static void progressbar_render(component *c) {
@@ -120,7 +126,8 @@ static void progressbar_render(component *c) {
 
     // Render block
     if(bar->block != NULL) {
-        video_draw(bar->block, c->x + (bar->orientation == PROGRESSBAR_LEFT ? 0 : c->w - bar->block->w), c->y);
+        video_draw_offset(bar->block, c->x + (bar->orientation == PROGRESSBAR_LEFT ? 0 : c->w - bar->block->w), c->y,
+                          bar->highlight ? 1 : 0, 255);
     }
 }
 
@@ -163,6 +170,7 @@ static void progressbar_layout(component *c, int x, int y, int w, int h) {
     image_rect_bevel(&tmp, 0, 0, w - 1, h - 1, bar->theme.border_topleft_color, bar->theme.border_bottomright_color,
                      bar->theme.border_bottomright_color, bar->theme.border_topleft_color);
     surface_create_from_image(bar->background, &tmp);
+    surface_set_transparency(bar->background, 0);
     image_free(&tmp);
 
     image_create(&tmp, w, h);
@@ -170,6 +178,7 @@ static void progressbar_layout(component *c, int x, int y, int w, int h) {
     image_rect_bevel(&tmp, 0, 0, w - 1, h - 1, bar->theme.border_topleft_color, bar->theme.border_bottomright_color,
                      bar->theme.border_bottomright_color, bar->theme.border_topleft_color);
     surface_create_from_image(bar->background_alt, &tmp);
+    surface_set_transparency(bar->background_alt, 0);
     image_free(&tmp);
 }
 
