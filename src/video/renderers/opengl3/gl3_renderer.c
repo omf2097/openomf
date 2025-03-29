@@ -266,10 +266,10 @@ static inline void set_screen_viewport(const gl3_context *ctx) {
  * If palette is dirty, flush it to the texture. Note that the range is inclusive (dirty area is start <= x <= end).
  */
 static inline void flush_palettes(gl3_context *ctx) {
-    vga_index range_start, range_end;
+    vga_index first, last;
     vga_palette *palette;
-    if(vga_state_is_palette_dirty(&palette, &range_start, &range_end)) {
-        shared_set_palette(ctx->shared, palette, range_start, range_end);
+    if(vga_state_is_palette_dirty(&palette, &first, &last)) {
+        shared_set_palette(ctx->shared, palette, first, last);
         vga_state_mark_palette_flushed();
     }
 }
