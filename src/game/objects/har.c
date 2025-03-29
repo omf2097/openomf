@@ -2113,6 +2113,11 @@ int har_act(object *obj, int act_type) {
     char truncated_inputs[2] = {h->inputs[0], '\0'};
     af_move *move = match_move(obj, prefix, input_staleness <= 9 ? h->inputs : truncated_inputs);
 
+    if(game_state_get_player(obj->gs, h->player_id)->ez_destruct && move == NULL &&
+       (h->state == STATE_VICTORY || h->state == STATE_SCRAP)) {
+        move = scrap_destruction_cheat(obj, prefix);
+    }
+
     if(move) {
 
         if(h->state == STATE_WALKTO || h->state == STATE_WALKFROM) {
