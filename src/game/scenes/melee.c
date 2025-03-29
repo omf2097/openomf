@@ -60,6 +60,14 @@ typedef enum
     HAR_SELECT = 1
 } selection_page;
 
+enum
+{
+    STAT_POWER,
+    STAT_AGILITY,
+    STAT_ENDURANCE,
+    STAT_COUNT
+};
+
 typedef struct {
     cursor_data cursor[2];
     selection_page page;
@@ -75,9 +83,7 @@ typedef struct {
 
     object har[2];
 
-    component *bar_power[2];
-    component *bar_agility[2];
-    component *bar_endurance[2];
+    component *bar_stat[2][STAT_COUNT];
 
     int pilot_id_a;
     int pilot_id_b;
@@ -110,9 +116,9 @@ void melee_free(scene *scene) {
     surface_free(&local->bg_player_bio);
     surface_free(&local->select_hilight);
     for(int i = 0; i < 2; i++) {
-        component_free(local->bar_power[i]);
-        component_free(local->bar_agility[i]);
-        component_free(local->bar_endurance[i]);
+        for(int j = 0; j < STAT_COUNT; j++) {
+            component_free(local->bar_stat[i][j]);
+        }
     }
 
     object_free(&local->har[0]);
@@ -219,16 +225,28 @@ void melee_tick(scene *scene, int paused) {
     local->ticks++;
 }
 
+static int *get_pilot_stat(pilot *p_a, int stat) {
+    switch(stat) {
+        default:
+            assert(0);
+        case STAT_POWER:
+            return &p_a->power;
+        case STAT_AGILITY:
+            return &p_a->agility;
+        case STAT_ENDURANCE:
+            return &p_a->endurance;
+    }
+}
+
 void refresh_pilot_stats(melee_local *local) {
-    pilot p_a, p_b;
-    pilot_get_info(&p_a, CURSOR_INDEX(local, 0));
-    pilot_get_info(&p_b, CURSOR_INDEX(local, 1));
-    progressbar_set_progress(local->bar_power[0], (p_a.power * 100) / MAX_STAT, false);
-    progressbar_set_progress(local->bar_agility[0], (p_a.agility * 100) / MAX_STAT, false);
-    progressbar_set_progress(local->bar_endurance[0], (p_a.endurance * 100) / MAX_STAT, false);
-    progressbar_set_progress(local->bar_power[1], (p_b.power * 100) / MAX_STAT, false);
-    progressbar_set_progress(local->bar_agility[1], (p_b.agility * 100) / MAX_STAT, false);
-    progressbar_set_progress(local->bar_endurance[1], (p_b.endurance * 100) / MAX_STAT, false);
+    for(int player_id = 0; player_id < 2; player_id++) {
+        pilot p_a;
+        pilot_get_info(&p_a, CURSOR_INDEX(local, player_id));
+        for(int stat = 0; stat < STAT_COUNT; stat++) {
+            progressbar_set_progress(local->bar_stat[player_id][stat], (*get_pilot_stat(&p_a, stat) * 100) / MAX_STAT,
+                                     false);
+        }
+    }
 }
 
 void update_har(scene *scene, int player) {
@@ -552,9 +570,9 @@ static void render_pilot_select(melee_local *local, bool player2_is_selectable) 
     text_render_mode(&tconf_green, TEXT_DEFAULT, 74, 4, 85, 6, lang_get(216));
     text_render_mode(&tconf_green, TEXT_DEFAULT, 74, 22, 85, 6, lang_get(217));
     text_render_mode(&tconf_green, TEXT_DEFAULT, 74, 40, 85, 6, lang_get(218));
-    component_render(local->bar_power[0]);
-    component_render(local->bar_agility[0]);
-    component_render(local->bar_endurance[0]);
+    for(int stat = 0; stat < STAT_COUNT; stat++) {
+        component_render(local->bar_stat[0][stat]);
+    }
 
     object_render(&local->player2_placeholder);
 
@@ -572,9 +590,9 @@ static void render_pilot_select(melee_local *local, bool player2_is_selectable) 
         text_render_mode(&tconf_green, TEXT_DEFAULT, 320 - 66 - local->bg_player_stats.w, 22, 85, 6, lang_get(217));
         text_render_mode(&tconf_green, TEXT_DEFAULT, 320 - 66 - local->bg_player_stats.w, 40, 85, 6, lang_get(218));
 
-        component_render(local->bar_power[1]);
-        component_render(local->bar_agility[1]);
-        component_render(local->bar_endurance[1]);
+        for(int stat = 0; stat < STAT_COUNT; stat++) {
+            component_render(local->bar_stat[1][stat]);
+        }
     } else {
         // 'choose your pilot'
         text_render_mode(&tconf_green, TEXT_DEFAULT, 160, 97, 160, 6, lang_get(187));
@@ -835,16 +853,13 @@ int melee_create(scene *scene) {
     }
 
     for(int i = 0; i < 2; i++) {
-        local->bar_power[i] = progressbar_create(PROGRESSBAR_THEME_MELEE, PROGRESSBAR_LEFT, 50);
-        local->bar_agility[i] = progressbar_create(PROGRESSBAR_THEME_MELEE, PROGRESSBAR_LEFT, 50);
-        local->bar_endurance[i] = progressbar_create(PROGRESSBAR_THEME_MELEE, PROGRESSBAR_LEFT, 50);
+        int x = i == 0 ? (74) : (320 - 66 - local->bg_player_stats.w);
+        for(int stat = 0; stat < STAT_COUNT; stat++) {
+            int y = 12 + stat * 18;
+            local->bar_stat[i][stat] = progressbar_create(PROGRESSBAR_THEME_MELEE, PROGRESSBAR_LEFT, 50);
+            component_layout(local->bar_stat[i][stat], x, y, 20 * 4, 8);
+        }
     }
-    component_layout(local->bar_power[0], 74, 12, 20 * 4, 8);
-    component_layout(local->bar_agility[0], 74, 30, 20 * 4, 8);
-    component_layout(local->bar_endurance[0], 74, 48, 20 * 4, 8);
-    component_layout(local->bar_power[1], 320 - 66 - local->bg_player_stats.w, 12, 20 * 4, 8);
-    component_layout(local->bar_agility[1], 320 - 66 - local->bg_player_stats.w, 30, 20 * 4, 8);
-    component_layout(local->bar_endurance[1], 320 - 66 - local->bg_player_stats.w, 48, 20 * 4, 8);
 
     refresh_pilot_stats(local);
     set_cursor_colors(0, 0, false, false);
