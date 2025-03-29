@@ -1910,8 +1910,8 @@ static bool add_input(char *buf, int act_type, int direction) {
 }
 
 bool is_har_idle_grounded(object *obj) {
-    return ((obj->cur_animation->id == ANIM_IDLE) || (obj->cur_animation->id == ANIM_CROUCHING)
-        || (obj->cur_animation->id == ANIM_WALKING)) && game_state_hars_are_alive(obj->gs);
+    return ((obj->cur_animation->id == ANIM_IDLE) || (obj->cur_animation->id == ANIM_CROUCHING) ||
+       (obj->cur_animation->id == ANIM_WALKING)) && game_state_hars_are_alive(obj->gs);
 }
 
 bool is_har_idle_air(object *obj) {
@@ -1995,7 +1995,7 @@ af_move *match_move(object *obj, char prefix, char *inputs) {
         if((move = af_get_move(h->af_data, i))) {
             len = str_size(&move->move_string);
             if(str_at(&move->move_string, 0) == prefix &&
-                (len == 1 || !strncmp(str_c(&move->move_string) + 1, inputs, len - 1))) {
+               (len == 1 || !strncmp(str_c(&move->move_string) + 1, inputs, len - 1))) {
                 if(is_move_chain_allowed(obj, move)) {
                     if(str_size(&move->move_string) > 1) {
                         // matched a move that was not just a 5P or 5K
