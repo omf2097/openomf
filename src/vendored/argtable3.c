@@ -316,8 +316,8 @@ int arg_hashtable_itr_search(arg_hashtable_itr_t* itr, arg_hashtable_t* h, void*
 #include <stdlib.h>
 #include <string.h>
 
-static void panic(const char* fmt, ...);
-static arg_panicfn* s_panic = panic;
+static void default_panic(const char* fmt, ...);
+static arg_panicfn* s_panic = default_panic;
 
 void dbg_printf(const char* fmt, ...) {
     va_list args;
@@ -326,7 +326,7 @@ void dbg_printf(const char* fmt, ...) {
     va_end(args);
 }
 
-static void panic(const char* fmt, ...) {
+static void default_panic(const char* fmt, ...) {
     va_list args;
     char* s;
 
@@ -353,6 +353,14 @@ static void panic(const char* fmt, ...) {
 void arg_set_panic(arg_panicfn* proc) {
     s_panic = proc;
 }
+
+// Ensure that execution does not proceed after calling s_panic,
+// even if the s_panic function pointer returns.
+#define s_panic(...) do {\
+        s_panic(__VA_ARGS__); \
+        abort(); \
+    } while(0)
+
 
 void* xmalloc(size_t size) {
     void* ret = malloc(size);
@@ -1163,7 +1171,7 @@ static void setup_append_buf(arg_dstr_t ds, int new_space) {
     }
 
     total_space = new_space + ds->append_used;
-    if (total_space >= ds->append_data_size) {
+    if (!ds->append_data || total_space >= ds->append_data_size) {
         char* newbuf;
 
         if (total_space < 100) {
@@ -2657,8 +2665,6 @@ struct arg_dbl* arg_dbl1(const char* shortopts, const char* longopts, const char
 struct arg_dbl* arg_dbln(const char* shortopts, const char* longopts, const char* datatype, int mincount, int maxcount, const char* glossary) {
     size_t nbytes;
     struct arg_dbl* result;
-    size_t addr;
-    size_t rem;
 
     /* foolproof things by ensuring maxcount is not less than mincount */
     maxcount = (maxcount < mincount) ? mincount : maxcount;
@@ -2687,10 +2693,10 @@ struct arg_dbl* arg_dbln(const char* shortopts, const char* longopts, const char
      * purely for SPARC and Motorola systems. They require floats and
      * doubles to be aligned on natural boundaries.
      */
-    addr = (size_t)(result + 1);
-    rem = addr % sizeof(double);
-    result->dval = (double*)(addr + sizeof(double) - rem);
-    ARG_TRACE(("addr=%p, dval=%p, sizeof(double)=%d rem=%d\n", addr, result->dval, (int)sizeof(double), (int)rem));
+    char *addr = (char *)(result + 1);
+    size_t padding = (sizeof(double) - (size_t)addr) % sizeof(double);
+    result->dval = (double*)(addr + padding);
+    ARG_TRACE(("addr=%p, dval=%p, sizeof(double)=%d padding=%d\n", addr, result->dval, (int)sizeof(double), (int)padding));
 
     result->count = 0;
 
@@ -4054,8 +4060,8 @@ static int trex_class(TRex* exp) {
     if (first != -1) {
         int c = first;
         exp->_nodes[chain].next = c;
-        chain = c;
-        first = -1;
+        // chain = c; // dead store
+        // first = -1; // dead store
     }
     /* hack? */
     exp->_nodes[ret].left = exp->_nodes[ret].next;
