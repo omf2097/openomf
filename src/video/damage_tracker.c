@@ -8,10 +8,6 @@ void damage_reset(damage_tracker *tracker) {
     tracker->dirty_range_first = 255;
 }
 
-void damage_copy(damage_tracker *dst, const damage_tracker *src) {
-    memcpy(dst, src, sizeof(damage_tracker));
-}
-
 void damage_combine(damage_tracker *dst, const damage_tracker *src) {
     if(!src->dirty) {
         return;
