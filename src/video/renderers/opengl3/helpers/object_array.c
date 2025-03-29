@@ -146,7 +146,7 @@ void object_array_draw(const object_array *array, object_array_batch *state) {
     ptr.opacity = opacity;                                                                                             \
     ptr.options = options;
 
-static void add_item(object_array *array, float dx, float dy, int x, int y, int w, int h, int tx, int ty, int tw,
+static void add_item(object_array *array, float dx, float dy, int x, int y_, int w, int h_, int tx, int ty, int tw,
                      int th, int flags, int transparency, int remap_offset, int remap_rounds, int pal_offset,
                      int pal_limit, int opacity, unsigned int options) {
     float tx0, tx1;
@@ -165,6 +165,13 @@ static void add_item(object_array *array, float dx, float dy, int x, int y, int 
     } else {
         ty0 = ty * dy;
         ty1 = (ty + th) * dy;
+    }
+
+    float y = y_;
+    float h = h_;
+    if(options & SPRITE_SHADOW) {
+        h /= 4.0f;
+        y -= h;
     }
 
     object_data *data = (object_data *)array->mapping;

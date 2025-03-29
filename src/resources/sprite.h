@@ -8,7 +8,7 @@ typedef struct sprite_t {
     int id;
     vec2i pos;
     surface *data;
-    bool owned; // if we own the surface data
+    bool owned; // if we own the `data` surface
 } sprite;
 
 void sprite_create(sprite *sp, void *src, int id);
