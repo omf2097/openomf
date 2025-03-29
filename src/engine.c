@@ -313,6 +313,13 @@ void engine_run(engine_init_flags *init_flags) {
         bool has_static = true;
         int tick_limit = MAX_TICKS_PER_FRAME;
         do {
+            int dyntick_ms = game_state_ms_per_dyntick(gs);
+            if(debugger_proceed > 0) {
+                dynamic_wait += dyntick_ms;
+                static_wait += STATIC_TICKS;
+                debugger_proceed--;
+            }
+
             // Tick static features. This is a fixed with-rate tick, and is meant for running things
             // that are not dependent on game speed (such as menus).
             has_static = static_wait > STATIC_TICKS;
@@ -337,11 +344,6 @@ void engine_run(engine_init_flags *init_flags) {
             // Tick dynamic features. This is a dynamically changing tick, and it depends on things such as
             // hit-pause, hit slowdown and game-speed slider. It is meant for ticking everything that has to do
             // with the actual gameplay stuff.
-            int dyntick_ms = game_state_ms_per_dyntick(gs);
-            if(debugger_proceed > 0) {
-                dynamic_wait += dyntick_ms;
-                debugger_proceed--;
-            }
             has_dynamic = dynamic_wait > dyntick_ms;
             if(has_dynamic) {
                 game_state_dynamic_tick(gs, false);
