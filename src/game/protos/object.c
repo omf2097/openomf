@@ -410,22 +410,22 @@ void object_render(object *obj) {
     } else if(object_has_effect(obj, EFFECT_DARK_TINT)) {
         remap_rounds = 0;
         remap_offset = 5;
-        options |= REMAP_SPRITE;
+        options |= SPRITE_REMAP;
     } else if(object_has_effect(obj, EFFECT_STASIS)) {
         remap_rounds = 0;
         remap_offset = 5;
-        options |= REMAP_SPRITE;
+        options |= SPRITE_REMAP;
     } else if(object_has_effect(obj, EFFECT_POSITIONAL_LIGHTING)) {
         int rx = x + (w >> 1);
         remap_rounds = 0;
         remap_offset = clamp(6 + floorf(((rx > 160) ? 320 - rx : rx) / 60), 6, 8);
-        options |= REMAP_SPRITE;
+        options |= SPRITE_REMAP;
     } else if(object_has_effect(obj, EFFECT_ADD)) {
         options |= SPRITE_INDEX_ADD;
     }
 
-    if((options & REMAP_SPRITE) != 0 && object_has_effect(obj, EFFECT_HAR_QUIRKS)) {
-        options |= USE_HAR_QUIRKS;
+    if((options & SPRITE_REMAP) != 0 && object_has_effect(obj, EFFECT_HAR_QUIRKS)) {
+        options |= SPRITE_HAR_QUIRKS;
     }
 
     video_draw_full(obj->cur_surface, x, y, w, h, remap_offset, remap_rounds, obj->pal_offset, obj->pal_limit, opacity,
