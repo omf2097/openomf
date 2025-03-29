@@ -188,7 +188,7 @@ static void add_item(object_array *array, float dx, float dy, int x, int y_, int
     array->fans_starts[array->item_count] = array->item_count * 4;
     array->fans_sizes[array->item_count] = 4;
     if(options & SPRITE_DARK_TINT) {
-        array->modes[array->item_count] = MODE_LOOPBACK;
+        array->modes[array->item_count] = MODE_DARK_TINT;
     } else if(remap_rounds > 0) {
         array->modes[array->item_count] = MODE_REMAP;
     } else if(options & SPRITE_INDEX_ADD) {
