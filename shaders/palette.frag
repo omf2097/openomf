@@ -34,9 +34,9 @@ float noise(in vec2 v) {
 
 vec4 handle(float index) {
     if (remap_rounds > 0) {
-        float r_index = remap_offset / 255.0 + index;
-        float r_rounds = remap_rounds / 255.0;
-        return vec4(0.0, r_index, r_rounds, 0.0);
+        float remap = float(remap_offset) / 255.0 + index
+            + float(remap_rounds) * 19.0 / 255.0;
+        return vec4(0.0, remap, 0.0, 0.0);
     }
     if (SPRITE_INDEX_ADD) {
         float add = (index * 255.0 * 60) / 255.0;
