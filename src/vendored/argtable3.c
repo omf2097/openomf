@@ -1016,7 +1016,7 @@ void arg_dstr_set(arg_dstr_t ds, char* str, arg_dstr_freefn* free_proc) {
             ds->data = ds->sbuf;
             ds->free_proc = ARG_DSTR_STATIC;
         }
-        strcpy(ds->data, str);
+        memcpy(ds->data, str, length + 1);
     } else {
         ds->data = str;
         ds->free_proc = free_proc;
@@ -1173,14 +1173,14 @@ static void setup_append_buf(arg_dstr_t ds, int new_space) {
         }
         newbuf = (char*)xmalloc((unsigned)total_space);
         memset(newbuf, 0, (size_t)total_space);
-        strcpy(newbuf, ds->data);
+        memcpy(newbuf, ds->data, ds->append_used + 1);
         if (ds->append_data != NULL) {
             xfree(ds->append_data);
         }
         ds->append_data = newbuf;
         ds->append_data_size = total_space;
-    } else if (ds->data != ds->append_data) {
-        strcpy(ds->append_data, ds->data);
+    } else if (ds->data != ds->append_data && ds->append_data != NULL) {
+        memcpy(ds->append_data, ds->data, ds->append_used + 1);
     }
 
     arg_dstr_free(ds);
