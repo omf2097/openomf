@@ -51,6 +51,7 @@ typedef struct progressbar {
     int state;
     int tick;
     int refresh;
+    bool highlight;
 } progressbar;
 
 void progressbar_set_progress(component *c, int percentage, bool animate) {
@@ -73,6 +74,11 @@ void progressbar_set_flashing(component *c, int flashing, int rate) {
     }
     bar->flashing = clamp(flashing, 0, 1);
     bar->rate = (rate < 0) ? 0 : rate;
+}
+
+void progressbar_set_highlight(component *c, bool highlight) {
+    progressbar *bar = widget_get_obj(c);
+    bar->highlight = highlight;
 }
 
 static void progressbar_render(component *c) {
@@ -120,7 +126,8 @@ static void progressbar_render(component *c) {
 
     // Render block
     if(bar->block != NULL) {
-        video_draw(bar->block, c->x + (bar->orientation == PROGRESSBAR_LEFT ? 0 : c->w - bar->block->w), c->y);
+        video_draw_offset(bar->block, c->x + (bar->orientation == PROGRESSBAR_LEFT ? 0 : c->w - bar->block->w), c->y,
+                          bar->highlight ? 1 : 0, 255);
     }
 }
 
