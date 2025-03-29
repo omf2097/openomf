@@ -2003,12 +2003,14 @@ getopt_long_only(int nargc, char * const *nargv, const char *options,
 
 char* arg_strptime(const char* buf, const char* fmt, struct tm* tm);
 
-static void arg_date_resetfn(struct arg_date* parent) {
+static void arg_date_resetfn(void* userdata) {
+    struct arg_date* parent = userdata;
     ARG_TRACE(("%s:resetfn(%p)\n", __FILE__, parent));
     parent->count = 0;
 }
 
-static int arg_date_scanfn(struct arg_date* parent, const char* argval) {
+static int arg_date_scanfn(void* userdata, const char* argval) {
+    struct arg_date* parent = userdata;
     int errorcode = 0;
 
     if (parent->count == parent->hdr.maxcount) {
@@ -2032,14 +2034,16 @@ static int arg_date_scanfn(struct arg_date* parent, const char* argval) {
     return errorcode;
 }
 
-static int arg_date_checkfn(struct arg_date* parent) {
+static int arg_date_checkfn(void* userdata) {
+    struct arg_date* parent = userdata;
     int errorcode = (parent->count < parent->hdr.mincount) ? ARG_ERR_MINCOUNT : 0;
 
     ARG_TRACE(("%s:checkfn(%p) returns %d\n", __FILE__, parent, errorcode));
     return errorcode;
 }
 
-static void arg_date_errorfn(struct arg_date* parent, arg_dstr_t ds, int errorcode, const char* argval, const char* progname) {
+static void arg_date_errorfn(void* userdata, arg_dstr_t ds, int errorcode, const char* argval, const char* progname) {
+    struct arg_date* parent = userdata;
     const char* shortopts = parent->hdr.shortopts;
     const char* longopts = parent->hdr.longopts;
     const char* datatype = parent->hdr.datatype;
@@ -2570,12 +2574,14 @@ static int conv_num(const char** buf, int* dest, int llim, int ulim) {
 
 #include <stdlib.h>
 
-static void arg_dbl_resetfn(struct arg_dbl* parent) {
+static void arg_dbl_resetfn(void* userdata) {
+    struct arg_dbl* parent = userdata;
     ARG_TRACE(("%s:resetfn(%p)\n", __FILE__, parent));
     parent->count = 0;
 }
 
-static int arg_dbl_scanfn(struct arg_dbl* parent, const char* argval) {
+static int arg_dbl_scanfn(void* userdata, const char* argval) {
+    struct arg_dbl* parent = userdata;
     int errorcode = 0;
 
     if (parent->count == parent->hdr.maxcount) {
@@ -2604,14 +2610,16 @@ static int arg_dbl_scanfn(struct arg_dbl* parent, const char* argval) {
     return errorcode;
 }
 
-static int arg_dbl_checkfn(struct arg_dbl* parent) {
+static int arg_dbl_checkfn(void* userdata) {
+    struct arg_dbl* parent = userdata;
     int errorcode = (parent->count < parent->hdr.mincount) ? ARG_ERR_MINCOUNT : 0;
 
     ARG_TRACE(("%s:checkfn(%p) returns %d\n", __FILE__, parent, errorcode));
     return errorcode;
 }
 
-static void arg_dbl_errorfn(struct arg_dbl* parent, arg_dstr_t ds, int errorcode, const char* argval, const char* progname) {
+static void arg_dbl_errorfn(void* userdata, arg_dstr_t ds, int errorcode, const char* argval, const char* progname) {
+    struct arg_dbl* parent = userdata;
     const char* shortopts = parent->hdr.shortopts;
     const char* longopts = parent->hdr.longopts;
     const char* datatype = parent->hdr.datatype;
@@ -2729,7 +2737,8 @@ struct arg_dbl* arg_dbln(const char* shortopts, const char* longopts, const char
 
 #include <stdlib.h>
 
-static void arg_end_resetfn(struct arg_end* parent) {
+static void arg_end_resetfn(void *userdata) {
+    struct arg_end* parent = userdata;
     ARG_TRACE(("%s:resetfn(%p)\n", __FILE__, parent));
     parent->count = 0;
 }
@@ -2868,7 +2877,8 @@ void arg_print_errors(FILE* fp, struct arg_end* end, const char* progname) {
 #define FILESEPARATOR2 '/'
 #endif
 
-static void arg_file_resetfn(struct arg_file* parent) {
+static void arg_file_resetfn(void* userdata) {
+    struct arg_file* parent = userdata;
     ARG_TRACE(("%s:resetfn(%p)\n", __FILE__, parent));
     parent->count = 0;
 }
@@ -2919,7 +2929,8 @@ static const char* arg_extension(const char* basename) {
     return result;
 }
 
-static int arg_file_scanfn(struct arg_file* parent, const char* argval) {
+static int arg_file_scanfn(void* userdata, const char* argval) {
+    struct arg_file* parent = userdata;
     int errorcode = 0;
 
     if (parent->count == parent->hdr.maxcount) {
@@ -2942,14 +2953,16 @@ static int arg_file_scanfn(struct arg_file* parent, const char* argval) {
     return errorcode;
 }
 
-static int arg_file_checkfn(struct arg_file* parent) {
+static int arg_file_checkfn(void* userdata) {
+    struct arg_file* parent = userdata;
     int errorcode = (parent->count < parent->hdr.mincount) ? ARG_ERR_MINCOUNT : 0;
 
     ARG_TRACE(("%s:checkfn(%p) returns %d\n", __FILE__, parent, errorcode));
     return errorcode;
 }
 
-static void arg_file_errorfn(struct arg_file* parent, arg_dstr_t ds, int errorcode, const char* argval, const char* progname) {
+static void arg_file_errorfn(void* userdata, arg_dstr_t ds, int errorcode, const char* argval, const char* progname) {
+    struct arg_file* parent = userdata;
     const char* shortopts = parent->hdr.shortopts;
     const char* longopts = parent->hdr.longopts;
     const char* datatype = parent->hdr.datatype;
@@ -3069,7 +3082,8 @@ struct arg_file* arg_filen(const char* shortopts, const char* longopts, const ch
 #include <limits.h>
 #include <stdlib.h>
 
-static void arg_int_resetfn(struct arg_int* parent) {
+static void arg_int_resetfn(void* userdata) {
+    struct arg_int* parent = userdata;
     ARG_TRACE(("%s:resetfn(%p)\n", __FILE__, parent));
     parent->count = 0;
 }
@@ -3165,7 +3179,8 @@ static int detectsuffix(const char* str, const char* suffix) {
     return (*str == '\0') ? 1 : 0;
 }
 
-static int arg_int_scanfn(struct arg_int* parent, const char* argval) {
+static int arg_int_scanfn(void* userdata, const char* argval) {
+    struct arg_int* parent = userdata;
     int errorcode = 0;
 
     if (parent->count == parent->hdr.maxcount) {
@@ -3236,13 +3251,15 @@ static int arg_int_scanfn(struct arg_int* parent, const char* argval) {
     return errorcode;
 }
 
-static int arg_int_checkfn(struct arg_int* parent) {
+static int arg_int_checkfn(void* userdata) {
+    struct arg_int* parent = userdata;
     int errorcode = (parent->count < parent->hdr.mincount) ? ARG_ERR_MINCOUNT : 0;
     /*printf("%s:checkfn(%p) returns %d\n",__FILE__,parent,errorcode);*/
     return errorcode;
 }
 
-static void arg_int_errorfn(struct arg_int* parent, arg_dstr_t ds, int errorcode, const char* argval, const char* progname) {
+static void arg_int_errorfn(void* userdata, arg_dstr_t ds, int errorcode, const char* argval, const char* progname) {
+    struct arg_int* parent = userdata;
     const char* shortopts = parent->hdr.shortopts;
     const char* longopts = parent->hdr.longopts;
     const char* datatype = parent->hdr.datatype;
@@ -3356,12 +3373,14 @@ struct arg_int* arg_intn(const char* shortopts, const char* longopts, const char
 
 #include <stdlib.h>
 
-static void arg_lit_resetfn(struct arg_lit* parent) {
+static void arg_lit_resetfn(void* userdata) {
+    struct arg_lit* parent = userdata;
     ARG_TRACE(("%s:resetfn(%p)\n", __FILE__, parent));
     parent->count = 0;
 }
 
-static int arg_lit_scanfn(struct arg_lit* parent, const char* argval) {
+static int arg_lit_scanfn(void* userdata, const char* argval) {
+    struct arg_lit* parent = userdata;
     int errorcode = 0;
     if (parent->count < parent->hdr.maxcount)
         parent->count++;
@@ -3372,13 +3391,15 @@ static int arg_lit_scanfn(struct arg_lit* parent, const char* argval) {
     return errorcode;
 }
 
-static int arg_lit_checkfn(struct arg_lit* parent) {
+static int arg_lit_checkfn(void* userdata) {
+    struct arg_lit* parent = userdata;
     int errorcode = (parent->count < parent->hdr.mincount) ? ARG_ERR_MINCOUNT : 0;
     ARG_TRACE(("%s:checkfn(%p) returns %d\n", __FILE__, parent, errorcode));
     return errorcode;
 }
 
-static void arg_lit_errorfn(struct arg_lit* parent, arg_dstr_t ds, int errorcode, const char* argval, const char* progname) {
+static void arg_lit_errorfn(void* userdata, arg_dstr_t ds, int errorcode, const char* argval, const char* progname) {
+    struct arg_lit* parent = userdata;
     const char* shortopts = parent->hdr.shortopts;
     const char* longopts = parent->hdr.longopts;
     const char* datatype = parent->hdr.datatype;
@@ -3618,12 +3639,14 @@ struct privhdr {
     int flags;
 };
 
-static void arg_rex_resetfn(struct arg_rex* parent) {
+static void arg_rex_resetfn(void* userdata) {
+    struct arg_rex* parent = userdata;
     ARG_TRACE(("%s:resetfn(%p)\n", __FILE__, parent));
     parent->count = 0;
 }
 
-static int arg_rex_scanfn(struct arg_rex* parent, const char* argval) {
+static int arg_rex_scanfn(void* userdata, const char* argval) {
+    struct arg_rex* parent = userdata;
     int errorcode = 0;
     const TRexChar* error = NULL;
     TRex* rex = NULL;
@@ -3657,7 +3680,8 @@ static int arg_rex_scanfn(struct arg_rex* parent, const char* argval) {
     return errorcode;
 }
 
-static int arg_rex_checkfn(struct arg_rex* parent) {
+static int arg_rex_checkfn(void* userdata) {
+    struct arg_rex* parent = userdata;
     int errorcode = (parent->count < parent->hdr.mincount) ? ARG_ERR_MINCOUNT : 0;
 #if 0
     struct privhdr *priv = (struct privhdr*)parent->hdr.priv;
@@ -3670,7 +3694,8 @@ static int arg_rex_checkfn(struct arg_rex* parent) {
     return errorcode;
 }
 
-static void arg_rex_errorfn(struct arg_rex* parent, arg_dstr_t ds, int errorcode, const char* argval, const char* progname) {
+static void arg_rex_errorfn(void* userdata, arg_dstr_t ds, int errorcode, const char* argval, const char* progname) {
+    struct arg_rex* parent = userdata;
     const char* shortopts = parent->hdr.shortopts;
     const char* longopts = parent->hdr.longopts;
     const char* datatype = parent->hdr.datatype;
@@ -4543,7 +4568,8 @@ TRexBool trex_getsubexp(TRex* exp, int n, TRexMatch* subexp) {
 
 #include <stdlib.h>
 
-static void arg_str_resetfn(struct arg_str* parent) {
+static void arg_str_resetfn(void* userdata) {
+    struct arg_str* parent = userdata;
     int i;
 
     ARG_TRACE(("%s:resetfn(%p)\n", __FILE__, parent));
@@ -4553,7 +4579,8 @@ static void arg_str_resetfn(struct arg_str* parent) {
     parent->count = 0;
 }
 
-static int arg_str_scanfn(struct arg_str* parent, const char* argval) {
+static int arg_str_scanfn(void* userdata, const char* argval) {
+    struct arg_str* parent = userdata;
     int errorcode = 0;
 
     if (parent->count == parent->hdr.maxcount) {
@@ -4572,14 +4599,16 @@ static int arg_str_scanfn(struct arg_str* parent, const char* argval) {
     return errorcode;
 }
 
-static int arg_str_checkfn(struct arg_str* parent) {
+static int arg_str_checkfn(void* userdata) {
+    struct arg_str* parent = userdata;
     int errorcode = (parent->count < parent->hdr.mincount) ? ARG_ERR_MINCOUNT : 0;
 
     ARG_TRACE(("%s:checkfn(%p) returns %d\n", __FILE__, parent, errorcode));
     return errorcode;
 }
 
-static void arg_str_errorfn(struct arg_str* parent, arg_dstr_t ds, int errorcode, const char* argval, const char* progname) {
+static void arg_str_errorfn(void* userdata, arg_dstr_t ds, int errorcode, const char* argval, const char* progname) {
+    struct arg_str* parent = userdata;
     const char* shortopts = parent->hdr.shortopts;
     const char* longopts = parent->hdr.longopts;
     const char* datatype = parent->hdr.datatype;
