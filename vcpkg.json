@@ -22,7 +22,6 @@
     "libepoxy",
     "enet",
     "libconfuse",
-    "argtable3",
     "libpng",
     "opusfile"
   ],

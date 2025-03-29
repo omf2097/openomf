@@ -8,7 +8,6 @@ Required:
 * SDL2 (>=2.0.16): http://www.libsdl.org/download-2.0.php
 * confuse: http://www.nongnu.org/confuse/
 * Enet: http://enet.bespin.org/
-* libargtable2 or libargtable3: http://argtable.sourceforge.net/ or http://www.argtable.org/
 * libpng: http://www.libpng.org/pub/png/libpng.html
 * zlib: http://www.zlib.net/ (for libpng)
 * SDL2_Mixer (>=2.0.4): https://github.com/libsdl-org/SDL_mixer
@@ -18,12 +17,12 @@ Required:
 
 On Ubuntu, it is possible to pull the libraries using apt-get.
 ```
-apt-get install cmake libargtable2-dev libcunit1-dev libsdl2-mixer-dev libconfuse-dev libenet-dev libsdl2-dev libxmp-dev libpng-dev libopusfile-dev libepoxy-dev libminiupnpc-dev libnatpmp-dev
+apt-get install cmake libcunit1-dev libsdl2-mixer-dev libconfuse-dev libenet-dev libsdl2-dev libxmp-dev libpng-dev libopusfile-dev libepoxy-dev libminiupnpc-dev libnatpmp-dev
 ```
 
 On Mac, you can use brew:
 ```
-brew install cmake argtable cunit sdl2_mixer confuse enet sdl2 libxmp libpng opusfile libepoxy
+brew install cmake cunit sdl2_mixer confuse enet sdl2 libxmp libpng opusfile libepoxy
 ```
 
 ### Acquiring the sources

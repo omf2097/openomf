@@ -27,7 +27,7 @@ jobs:
     - name: Install dependencies
       uses: Eeems-Org/apt-cache-action@v1.3
       with:
-        packages: cmake cmake-data ninja-build libargtable2-dev libcunit1-dev
+        packages: cmake cmake-data ninja-build libcunit1-dev
           libsdl2-mixer-dev libconfuse-dev libenet-dev libsdl2-dev libxmp-dev libpng-dev
           libopusfile-dev libepoxy-dev clang-${{ env.clang-version }} clang-tidy-${{ env.clang-version }}
           clang-format-${{ env.clang-version }} fd-find

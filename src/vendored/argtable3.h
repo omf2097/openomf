@@ -1,3 +1,4 @@
+// clang-format off
 /*******************************************************************************
  * argtable3: Declares the main interfaces of the library
  *

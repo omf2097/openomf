@@ -1,3 +1,4 @@
+// clang-format off
 /*******************************************************************************
  * This file is part of the argtable3 library.
  *
@@ -4976,9 +4977,13 @@ int arg_make_syntax_err_help_msg(arg_dstr_t ds, char* name, int help, int nerror
 #endif
 
 #ifdef _WIN32
+#ifdef WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#else
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #undef WIN32_LEAN_AND_MEAN
+#endif
 #endif
 
 #include <assert.h>
@@ -6011,6 +6016,7 @@ void arg_freetable(void** argtable, size_t n) {
     };
 }
 
+#if 0 // openomf: we're not building argtable3 as a DLL.
 #ifdef _WIN32
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved) {
     return TRUE;
@@ -6018,4 +6024,5 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved) {
     UNREFERENCED_PARAMETER(fdwReason);
     UNREFERENCED_PARAMETER(lpvReserved);
 }
+#endif
 #endif
