@@ -7,6 +7,7 @@
 #include "video/renderers/opengl3/helpers/render_target.h"
 #include "video/renderers/opengl3/helpers/shaders.h"
 #include "video/renderers/opengl3/helpers/shared.h"
+#include "video/renderers/opengl3/helpers/texture.h"
 #include "video/renderers/opengl3/helpers/texture_atlas.h"
 
 #include "utils/allocator.h"
@@ -17,6 +18,7 @@
 #define TEX_UNIT_ATLAS 0
 #define TEX_UNIT_FBO 1
 #define TEX_UNIT_REMAPS 2
+#define TEX_UNIT_LOOPBACK 3
 #define PAL_BLOCK_BINDING 0
 #define NATIVE_W 320
 #define NATIVE_H 200
@@ -28,6 +30,7 @@ typedef struct gl3_context {
     object_array *objects;
     shared *shared;
     render_target *target;
+    GLuint tex_loopback;
     remaps *remaps;
 
     int viewport_w;
@@ -119,6 +122,7 @@ static bool setup_context(void *userdata, int window_w, int window_h, bool fulls
     ctx->shared = shared_create();
     ctx->target = render_target_create(TEX_UNIT_FBO, NATIVE_W, NATIVE_H, GL_RGBA8, GL_RGBA);
     ctx->remaps = remaps_create(TEX_UNIT_REMAPS);
+    ctx->tex_loopback = texture_create(TEX_UNIT_LOOPBACK, NATIVE_W, NATIVE_H, GL_R8, GL_RED);
 
     vga_state_mark_dirty();
 
@@ -131,6 +135,7 @@ static bool setup_context(void *userdata, int window_w, int window_h, bool fulls
     bind_uniform_4fv(ctx->palette_prog_id, "projection", projection_matrix);
     bind_uniform_1i(ctx->palette_prog_id, "atlas", TEX_UNIT_ATLAS);
     bind_uniform_1i(ctx->palette_prog_id, "remaps", TEX_UNIT_REMAPS);
+    bind_uniform_1i(ctx->palette_prog_id, "loopback", TEX_UNIT_LOOPBACK);
 
     // Activate RGBA conversion program, and bind palette etc.
     activate_program(ctx->rgba_prog_id);
@@ -239,8 +244,10 @@ static inline void video_set_blend_mode(gl3_context *ctx, object_array_blend_mod
         glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     } else if(request_mode == MODE_ADD) {
         glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_TRUE);
-    } else {
+    } else if(request_mode == MODE_REMAP) {
         glColorMask(GL_FALSE, GL_TRUE, GL_TRUE, GL_TRUE);
+    } else if(request_mode == MODE_LOOPBACK) {
+        glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     }
 
     ctx->current_blend_mode = request_mode;
@@ -314,6 +321,9 @@ static inline void finish_offscreen(gl3_context *ctx) {
     object_array_blend_mode mode;
     while(object_array_get_batch(ctx->objects, &batch, &mode)) {
         video_set_blend_mode(ctx, mode);
+        if(mode == MODE_LOOPBACK) {
+            texture_update_from_framebuffer(TEX_UNIT_LOOPBACK, ctx->tex_loopback, 0, 0, 0, 0, NATIVE_W, NATIVE_H);
+        }
         object_array_draw(ctx->objects, &batch);
     }
 }

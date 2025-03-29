@@ -12,6 +12,8 @@ typedef enum
     SPRITE_INDEX_ADD = 0x04,
     // palette quirks for electra electricity and pyros fire
     SPRITE_HAR_QUIRKS = 0x08,
+    // use weird stasis/shadow color blending
+    SPRITE_DARK_TINT = 0x10,
 } renderer_options;
 
 typedef enum
