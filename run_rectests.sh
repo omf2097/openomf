@@ -49,6 +49,7 @@ temp_dir=$(mktemp -d)
 trap 'rm -rf "$temp_dir"' EXIT
 
 fail_count=0
+fail_summary=""
 
 echo "Running tests..."
 
@@ -69,12 +70,18 @@ for test in "${tests[@]}"; do
     if $OPENOMF_BIN --force-audio-backend=NULL --force-renderer=NULL --speed=10 -P "$RUNDIR/rectests/${filename}" >"$output_file"  2>&1; then
         echo " PASS"
     else
-        echo " FAILED"
+        echo " FAILED (${filename})"
+        fail_summary="${fail_summary} ${filename}"
         cat $output_file
         ((fail_count++))
     fi
     ((i++))
 done
 
-# Exit with non-zero status if any test failed
-exit $fail_count
+if [ $fail_count -ne 0 ]; then
+    fail_summary="Failed ${fail_count} tests:${fail_summary}"
+    echo "${fail_summary}"
+
+    # Exit with non-zero status if any test failed
+    exit $fail_count
+fi
