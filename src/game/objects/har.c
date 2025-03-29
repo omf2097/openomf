@@ -1911,7 +1911,8 @@ static bool add_input(char *buf, int act_type, int direction) {
 
 bool is_har_idle_grounded(object *obj) {
     return ((obj->cur_animation->id == ANIM_IDLE) || (obj->cur_animation->id == ANIM_CROUCHING) ||
-       (obj->cur_animation->id == ANIM_WALKING)) && game_state_hars_are_alive(obj->gs);
+            (obj->cur_animation->id == ANIM_WALKING)) &&
+           game_state_hars_are_alive(obj->gs);
 }
 
 bool is_har_idle_air(object *obj) {
