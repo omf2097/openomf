@@ -16,7 +16,7 @@ void vga_state_mark_palette_flushed(void);
 void vga_state_mark_remaps_flushed(void);
 void vga_state_mark_dirty(void);
 
-bool vga_state_is_palette_dirty(vga_palette **palette, vga_index *dirty_range_start, vga_index *dirty_range_end);
+bool vga_state_is_palette_dirty(vga_palette **palette, vga_index *dirty_range_first, vga_index *dirty_range_last);
 bool vga_state_is_remap_dirty(vga_remap_tables **remaps);
 
 /**

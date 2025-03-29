@@ -1659,7 +1659,7 @@ static void process_range(const har *h, damage_tracker *damage, vga_palette *pal
     } else {
         vga_palette_mix_range(pal, h->p_pal_ref, start, end, step);
     }
-    damage_set_range(damage, start, end);
+    damage_add_range(damage, start, end);
 }
 
 static void har_palette_transform(damage_tracker *damage, vga_palette *pal, void *obj) {

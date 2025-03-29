@@ -162,7 +162,7 @@ void object_scenewide_palette_transform(damage_tracker *damage, vga_palette *pal
     }
 
     // Mark the palette as damaged
-    damage_set_range(damage, start, end);
+    damage_add_range(damage, start, end);
 }
 
 void object_palette_copy_transform(damage_tracker *damage, vga_palette *pal, void *userdata) {
@@ -203,7 +203,7 @@ void object_palette_copy_transform(damage_tracker *damage, vga_palette *pal, voi
         }
     }
 
-    damage_set_range(damage, src_end, pos);
+    damage_add_range(damage, src_end, pos);
 }
 
 void object_dynamic_tick(object *obj) {

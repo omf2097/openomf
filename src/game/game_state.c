@@ -546,7 +546,7 @@ void cross_fade_transform(damage_tracker *damage, vga_palette *pal, void *userda
         pal->colors[i].b *= value;
     }
 
-    damage_set_range(damage, 0, 255);
+    damage_set_all(damage);
 }
 
 void game_state_render(game_state *gs) {
