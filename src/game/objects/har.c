@@ -338,6 +338,9 @@ int har_is_blocking(har *h, af_move *move) {
         // throws cannot be blocked
         return 0;
     }
+    if(h->state == STATE_BLOCKSTUN) {
+        return 1;
+    }
     if(h->state == STATE_CROUCHBLOCK && move->category != CAT_JUMPING && h->executing_move == 0) {
         return 1;
     }
@@ -919,6 +922,9 @@ void har_block(object *obj, vec2i hit_coord, uint8_t block_stun) {
     har *h = obj->userdata;
     if(h->state == STATE_WALKFROM) {
         object_set_animation(obj, &af_get_move(h->af_data, ANIM_STANDING_BLOCK)->ani);
+    } else if(h->state == STATE_BLOCKSTUN) {
+        // restart the block animation
+        object_set_animation(obj, obj->cur_animation);
     } else {
         object_set_animation(obj, &af_get_move(h->af_data, ANIM_CROUCHING_BLOCK)->ani);
     }
@@ -1452,7 +1458,16 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
             }
             har_event_enemy_block(other, move, true, ctrl_other);
             har_event_block(h, move, true, ctrl);
+            // Clear damage received flag, as projectiles always trigger a block.
+            // This is especially true for electra's shards.
+            h->damage_received = 0;
             har_block(o_har, hit_coord, move->block_stun);
+            // do block pushback
+            vec2f push = object_get_vel(o_har);
+            push.x = -1 * object_get_direction(o_har) * (((move->block_stun - 2) * 0.74) + 1);
+            log_debug("doing block pushback of %f",
+                      -1 * object_get_direction(o_har) * (((move->block_stun - 2) * 0.74) + 1));
+            object_set_vel(o_har, push);
             return;
         }
 
