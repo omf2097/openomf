@@ -631,5 +631,6 @@ int sd_script_letter_to_frame(char letter) {
 }
 
 char sd_script_frame_to_letter(int frame_id) {
+    assert(frame_id >= 0 && frame_id <= 25);
     return (char)(frame_id + 'A');
 }

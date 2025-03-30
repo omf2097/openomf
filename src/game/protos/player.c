@@ -567,10 +567,10 @@ void player_run(object *obj) {
         // BJ sets new animation for our HAR
         // TODO this is still wrong somehow, there's some kind of conditional
         // but it fixes gargoyle's scrap looping and some other stuff
+        // 3/30/2025 changing this to trigger at the end of the animation instead of immediately - Insanius
         if(sd_script_isset(frame, "bj")) {
             int new_ani = sd_script_get(frame, "bj");
-            har_set_ani(obj, new_ani, 0);
-            return;
+            obj->enqueued = new_ani;
         }
 
         if(sd_script_isset(frame, "bu") && obj->vel.y < 0.0f) {
@@ -735,18 +735,13 @@ uint32_t player_get_current_tick(const object *obj) {
     return obj->animation_state.current_tick;
 }
 
-int player_get_frame(const object *obj) {
+int player_get_last_frame(const object *obj) {
     const player_animation_state *state = &obj->animation_state;
-    return sd_script_get_frame_index_at(&state->parser, state->current_tick);
+    return sd_script_get_frame_at(&state->parser, sd_script_get_total_ticks(&state->parser) - 1)->sprite;
 }
 
-char player_get_frame_letter(const object *obj) {
-    return sd_script_frame_to_letter(player_get_frame(obj));
-}
-
-int player_is_last_frame(const object *obj) {
-    const player_animation_state *state = &obj->animation_state;
-    return sd_script_get_total_ticks(&state->parser) == (state->current_tick + 1);
+char player_get_last_frame_letter(const object *obj) {
+    return sd_script_frame_to_letter(player_get_last_frame(obj));
 }
 
 bool player_is_looping(const object *obj) {

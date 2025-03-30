@@ -567,7 +567,7 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
         int tolerance = arena_get_wall_slam_tolerance(scene->gs);
 
         // log_debug("Checking if %f velocity will wallslam", abs_velocity_h);
-        if((abs_velocity_h + 0.5f) > tolerance && (h->state == STATE_FALLEN || h->state == STATE_RECOIL)) {
+        if((abs_velocity_h + 0.5f) > tolerance && h->state == STATE_RECOIL) {
             h->state = STATE_WALLDAMAGE;
 
             bk_info *info = bk_get_info(scene->bk_data, 20 + wall);
@@ -870,8 +870,6 @@ char *state_name(int state) {
             return "jumping";
         case STATE_RECOIL:
             return "recoil";
-        case STATE_FALLEN:
-            return "fallen";
         case STATE_STANDING_UP:
             return "standing_up";
         case STATE_STUNNED:
@@ -1235,11 +1233,11 @@ void arena_dynamic_tick(scene *scene, int paused) {
         assert(player_frame_isset(obj_har[1], "ab") ||
                (obj_har[1]->pos.x >= ARENA_LEFT_WALL && obj_har[1]->pos.x <= ARENA_RIGHT_WALL));
         if(hars[0]->health == 0) {
-            assert(hars[0]->state == STATE_DEFEAT || hars[0]->state == STATE_RECOIL || hars[0]->state == STATE_FALLEN ||
+            assert(hars[0]->state == STATE_DEFEAT || hars[0]->state == STATE_RECOIL ||
                    hars[0]->state == STATE_NONE || hars[0]->state == STATE_WALLDAMAGE);
         }
         if(hars[1]->health == 0) {
-            assert(hars[1]->state == STATE_DEFEAT || hars[1]->state == STATE_RECOIL || hars[1]->state == STATE_FALLEN ||
+            assert(hars[1]->state == STATE_DEFEAT || hars[1]->state == STATE_RECOIL ||
                    hars[1]->state == STATE_NONE || hars[1]->state == STATE_WALLDAMAGE);
         }
     } // if(!paused)

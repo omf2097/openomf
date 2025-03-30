@@ -86,10 +86,9 @@ void player_next_frame(object *obj);
 void player_goto_frame(object *obj, int frame_id);
 int player_get_frame(const object *obj);
 void player_jump_to_tick(object *obj, int tick);
-char player_get_frame_letter(const object *obj);
+char player_get_last_frame_letter(const object *obj);
 unsigned int player_get_len_ticks(const object *obj);
 void player_set_delay(object *obj, int delay);
-int player_is_last_frame(const object *obj);
 bool player_is_looping(const object *obj);
 uint32_t player_get_current_tick(const object *obj);
 
