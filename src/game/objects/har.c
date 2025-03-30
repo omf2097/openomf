@@ -1187,7 +1187,7 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
     controller *ctrl_a = game_player_get_ctrl(game_state_get_player(obj_a->gs, a->player_id));
     controller *ctrl_b = game_player_get_ctrl(game_state_get_player(obj_b->gs, b->player_id));
 
-    if(b->state == STATE_STANDING_UP || b->state == STATE_WALLDAMAGE || b->state >= STATE_VICTORY) {
+    if(b->state == STATE_WALLDAMAGE || b->state >= STATE_VICTORY) {
         // can't hit em while they're down
         return 0;
     }
@@ -1198,7 +1198,7 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
     }
 
     // rehit mode is off
-    if(!obj_b->gs->match_settings.rehit && b->state == STATE_RECOIL) {
+    if(!obj_b->gs->match_settings.rehit && (b->state == STATE_RECOIL && object_is_airborne(obj_b))) {
         return 0;
     }
 
