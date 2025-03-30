@@ -1109,7 +1109,7 @@ bool har_unfinished_victory(object *obj) {
     if(h->walk_destination > 0 && h->walk_done_anim) {
         return true;
     }
-    return obj->cur_animation->id == ANIM_VICTORY && !player_is_last_frame(obj) && !player_is_looping(obj);
+    return false;
 }
 
 bool winner_needs_victory_pose(object *obj) {
@@ -1172,19 +1172,18 @@ void arena_dynamic_tick(scene *scene, int paused) {
                 }
                 local->win_state = NONE;
             } else if(local->win_state == DONE) {
+                local->ending_ticks++;
                 // you win/lose animation is done
                 if(player_frame_isset(obj_har[0], "be") || player_frame_isset(obj_har[1], "be") ||
-                   chr_score_onscreen(s1) || chr_score_onscreen(s2) || har_unfinished_victory(obj_har[0]) ||
-                   har_unfinished_victory(obj_har[1])) {
-                } else {
-                    local->ending_ticks++;
+                   chr_score_onscreen(s1) || chr_score_onscreen(s2)) {
+                   local->ending_ticks = 50;
                 }
             }
             if(local->ending_ticks == 18) {
                 arena_screengrab_winner(scene);
             }
 
-            if(local->ending_ticks == 40) {
+            if(local->ending_ticks == 80) {
                 // one HAR must be in victory pose and one must be in defeat or damage from scrap/destruction
                 assert(((obj_har[0]->cur_animation->id == ANIM_VICTORY ||
                          af_get_move(hars[0]->af_data, obj_har[0]->cur_animation->id)->category == CAT_SCRAP ||

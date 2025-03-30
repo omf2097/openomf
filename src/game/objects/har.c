@@ -533,9 +533,15 @@ void har_move(object *obj) {
         obj->pos.y = ARENA_FLOOR;
 
         char last_input = get_last_input(h);
-        // Change animation from jump to walk or idle,
-        // depending on held inputs
-        if(h->state == STATE_JUMPING && enemy_har->is_grabbed == 0) {
+        if(h->state == STATE_VICTORY && obj->vel.y > 0) {
+            object_set_vel(obj, vec2f_create(0, 0));
+            har_set_ani(obj, ANIM_IDLE, 1);
+            object_set_stride(obj, h->stride);
+            har_event_land(h, ctrl);
+            har_floor_landing_effects(obj, true);
+            // Change animation from jump to walk or idle,
+            // depending on held inputs
+        } else if(h->state == STATE_JUMPING && enemy_har->is_grabbed == 0) {
             if(last_input == '6') {
                 h->state = STATE_WALKTO;
                 har_set_ani(obj, ANIM_WALKING, 1);
@@ -608,6 +614,8 @@ void har_move(object *obj) {
                 } else {
                     obj->vel.y = 0;
                     obj->vel.x = 0;
+                    har_event_land(h, ctrl);
+                    har_finished(obj);
                 }
             }
 
@@ -616,28 +624,6 @@ void har_move(object *obj) {
             }
             if(obj->pos.x > ARENA_RIGHT_WALL) {
                 obj->pos.x = ARENA_RIGHT_WALL;
-            }
-
-            // prevent har from sliding after defeat, unless they're 'fallen'
-            if(h->state != STATE_DEFEAT && h->state != STATE_FALLEN && h->health <= 0 && player_is_last_frame(obj)) {
-
-                h->state = STATE_DEFEAT;
-                har_set_ani(obj, h->custom_defeat_animation ? h->custom_defeat_animation : ANIM_DEFEAT, 0);
-            } else if(obj->pos.y >= (ARENA_FLOOR - 5) && IS_ZERO(obj->vel.x) && player_is_last_frame(obj)) {
-                if(h->state == STATE_FALLEN) {
-                    if(h->health <= 0) {
-                        // fallen, but done bouncing
-                        h->state = STATE_DEFEAT;
-                        har_set_ani(obj, h->custom_defeat_animation ? h->custom_defeat_animation : ANIM_DEFEAT, 0);
-                    } else {
-                        h->state = STATE_STANDING_UP;
-                        har_set_ani(obj, ANIM_STANDUP, 0);
-                        har_face_enemy(obj, enemy_obj);
-                        har_event_land(h, ctrl);
-                    }
-                } else {
-                    har_finished(obj);
-                }
             }
         }
 
@@ -1793,7 +1779,7 @@ void har_tick(object *obj) {
         h->air_attacked = 0;
     }
 
-    if((h->state == STATE_DONE) && player_is_last_frame(obj) && obj->animation_state.entered_frame == 1) {
+    if(h->state == STATE_DONE) {
         // match is over
         har_event_done(h, ctrl);
     }
@@ -2225,15 +2211,6 @@ int har_act(object *obj, int act_type) {
         return 0;
     }
 
-    if(arena_state == ARENA_STATE_ENDING) {
-        if((h->state == STATE_VICTORY || h->state == STATE_DONE) && obj->cur_animation->id != ANIM_VICTORY &&
-           obj->cur_animation->id != ANIM_IDLE) {
-            // play idle while we wait for the defeated opponent to settle
-            har_set_ani(obj, ANIM_IDLE, 1);
-        }
-        return 0;
-    }
-
     if(!(is_har_idle_grounded(obj) || is_har_idle_air(obj))) {
         return 0;
     }
@@ -2378,6 +2355,17 @@ void har_finished(object *obj) {
         h->state = STATE_STANDING;
         har_set_ani(obj, ANIM_IDLE, 1);
         har_act(obj, ACT_NONE);
+    } else if(h->state == STATE_FALLEN) {
+        if(h->health > 0) {
+            h->state = STATE_STANDING_UP;
+            har_set_ani(obj, ANIM_STANDUP, 0);
+            object *enemy_obj =
+                game_state_find_object(obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
+            har_face_enemy(obj, enemy_obj);
+        } else {
+            h->state = STATE_DEFEAT;
+            har_set_ani(obj, h->custom_defeat_animation ? h->custom_defeat_animation : ANIM_DEFEAT, 0);
+        }
     } else if(h->state != STATE_CROUCHING && h->state != STATE_CROUCHBLOCK) {
         // Don't transition to standing state while in midair
         if(object_is_airborne(obj) && h->state == STATE_FALLEN) {

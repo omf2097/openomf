@@ -746,7 +746,7 @@ char player_get_frame_letter(const object *obj) {
 
 int player_is_last_frame(const object *obj) {
     const player_animation_state *state = &obj->animation_state;
-    return sd_script_is_last_frame_at(&state->parser, state->current_tick);
+    return sd_script_get_total_ticks(&state->parser) == (state->current_tick + 1);
 }
 
 bool player_is_looping(const object *obj) {
