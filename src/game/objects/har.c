@@ -2304,8 +2304,8 @@ void har_finished(object *obj) {
     if(obj->enqueued) {
         har_set_ani(obj, obj->enqueued, 0);
         obj->enqueued = 0;
-        object *enemy_obj = game_state_find_object(
-            obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
+        object *enemy_obj =
+            game_state_find_object(obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
         har_face_enemy(obj, enemy_obj);
     } else if(h->state == STATE_SCRAP || h->state == STATE_DESTRUCTION) {
         // play vistory animation again, but do not allow any more moves to be executed
