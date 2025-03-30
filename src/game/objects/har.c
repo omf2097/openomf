@@ -1187,7 +1187,7 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
     controller *ctrl_a = game_player_get_ctrl(game_state_get_player(obj_a->gs, a->player_id));
     controller *ctrl_b = game_player_get_ctrl(game_state_get_player(obj_b->gs, b->player_id));
 
-    if(b->state == STATE_WALLDAMAGE || b->state >= STATE_VICTORY) {
+    if(b->state == STATE_WALLDAMAGE || b->state >= STATE_VICTORY || b->state == STATE_STANDING_UP) {
         // can't hit em while they're down
         return 0;
     }
@@ -1216,6 +1216,11 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
     // Check for collisions by sprite collision points
     int level = 1;
     af_move *move = af_get_move(a->af_data, obj_a->cur_animation->id);
+
+    // is the HAR invulnerable to this kind of attack?
+    if(har_is_invincible(obj_b, move)) {
+        return 0;
+    }
 
     // check this mode hasn't already rehit
     if(rehit && strchr(b->rehits, move->id)) {
@@ -1258,11 +1263,6 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
                           -1 * object_get_direction(obj_b) * (((move->block_stun - 2) * 0.74) + 1));
                 object_set_vel(obj_b, push);
             }
-            return 0;
-        }
-
-        // is the HAR invulnerable to this kind of attack?
-        if(har_is_invincible(obj_b, move)) {
             return 0;
         }
 
@@ -1400,7 +1400,7 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
     har *other = object_get_userdata(
         game_state_find_object(o_har->gs, game_state_get_player(o_har->gs, abs(h->player_id - 1))->har_obj_id));
 
-    if(h->state == STATE_STANDING_UP || h->state == STATE_WALLDAMAGE || h->health <= 0 || h->state >= STATE_VICTORY) {
+    if(h->state == STATE_STANDING_UP || h->state == STATE_WALLDAMAGE || h->state >= STATE_VICTORY) {
         // can't hit em while they're down, or done
         return;
     }
