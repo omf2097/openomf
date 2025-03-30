@@ -171,21 +171,6 @@ void arena_speed_slide(component *c, void *userdata, int pos) {
     game_state_set_speed(sc->gs, pos + 5);
 }
 
-void scene_fight_anim_done(void *scenedata, void *userdata) {
-    scene *scene = scenedata;
-    // int parent_id = userdata;
-    // object *parent = game_state_find_object(scene->gs, parent_id;
-    arena_local *arena = scene_get_userdata(scene);
-
-    // This will release HARs for action
-    arena->state = ARENA_STATE_FIGHTING;
-    arena->state_ticks = 0;
-
-    // Custom object finisher callback requires that we
-    // mark object as finished manually, if necessary.
-    // parent->animation_state.finished = 1;
-}
-
 void scene_fight_anim_start(void *scenedata, void *userdata) {
     // Start FIGHT animation
     scene *sc = scenedata;
@@ -196,9 +181,7 @@ void scene_fight_anim_start(void *scenedata, void *userdata) {
     object_create(fight, gs, fight_ani->start_pos, vec2f_create(0, 0));
     object_set_stl(fight, bk_get_stl(scene->bk_data));
     object_set_animation(fight, fight_ani);
-    // object_set_finish_cb(fight, scene_fight_anim_done);
     game_state_add_object(gs, fight, RENDER_LAYER_TOP, 0, 0);
-    ticktimer_add(&scene->tick_timer, 24, scene_fight_anim_done, NULL /*fight->id*/);
 }
 
 void scene_ready_anim_done(object *parent) {
@@ -1257,6 +1240,10 @@ void arena_dynamic_tick(scene *scene, int paused) {
         } else if(local->state == ARENA_STATE_STARTING) {
             if(local->state_ticks == ARENA_CROSSFADE_TICKS) {
                 arena_create_roundstart_anim(scene);
+            } else if(local->state_ticks == 92) {
+                // release the HARs for action
+                local->state = ARENA_STATE_FIGHTING;
+                local->state_ticks = 0;
             }
         } else if(local->state == ARENA_STATE_ENDING) {
             // check if its time to put the winner into victory pose
