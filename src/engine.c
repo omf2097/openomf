@@ -217,6 +217,10 @@ void engine_run(engine_init_flags *init_flags) {
                                 gs = new_gs;
                                 game_state_clone_free(old_gs);
                                 omf_free(old_gs);
+
+                                // apply palette transforms
+                                game_state_palette_transform(gs);
+                                vga_state_render();
                             }
                             visual_debugger = 1;
                         }
