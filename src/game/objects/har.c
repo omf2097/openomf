@@ -1737,6 +1737,9 @@ void har_tick(object *obj) {
         }
     }
 
+    if(player_frame_isset(obj, "aa")) {
+        h->air_attacked = 0; // This tag allows you to attack again
+    }
     // Make sure HAR doesn't walk through walls
     // TODO: Roof!
     vec2i pos = object_get_pos(obj);
@@ -2337,13 +2340,6 @@ void har_face_enemy(object *obj, object *obj_enemy) {
 void har_finished(object *obj) {
     har *h = object_get_userdata(obj);
     controller *ctrl = game_player_get_ctrl(game_state_get_player(obj->gs, h->player_id));
-    if(h->enqueued) {
-        log_debug("playing enqueued animation %d", h->enqueued);
-        har_set_ani(obj, h->enqueued, 0);
-        h->enqueued = 0;
-        h->executing_move = 1;
-        return;
-    }
 
     h->executing_move = 0;
 
@@ -2534,8 +2530,6 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     local->throw_duration = 0;
 
     local->delay = 0;
-
-    local->enqueued = 0;
 
     local->walk_destination = -1;
     local->walk_done_anim = 0;
@@ -2762,7 +2756,6 @@ void har_reset(object *obj) {
     h->in_stasis_ticks = 0;
     h->throw_duration = 0;
 
-    h->enqueued = 0;
     h->walk_destination = -1;
     h->walk_done_anim = 0;
 

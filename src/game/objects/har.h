@@ -127,7 +127,6 @@ typedef struct har_t {
     uint8_t state;
     uint8_t executing_move;
     uint8_t close;
-    uint8_t enqueued;
     const af *af_data;
     uint8_t damage_done;     // Damage was done this animation
     uint8_t damage_received; // Damage was received this animation
