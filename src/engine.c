@@ -116,7 +116,7 @@ void save_rec(game_state *gs) {
     char *time = format_time();
     char *filename = omf_malloc(256);
     snprintf(filename, 256, "%s.rec", time);
-    sd_rec_finish(gs->rec, gs->int_tick);
+    sd_rec_finish(gs->rec, gs->tick);
     sd_rec_save(gs->rec, filename);
     log_info("REC saved: %s", filename);
     omf_free(filename);
