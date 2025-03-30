@@ -10,6 +10,7 @@ uniform sampler2D framebuffer;
 uniform sampler2D remaps;
 uniform uint framebuffer_options;
 
+// for info about these options, see renderer_framebuffer_options in video/enums.h
 bool FBUFOPT_CREDITS = (framebuffer_options & 0x01u) != 0u;
 
 
