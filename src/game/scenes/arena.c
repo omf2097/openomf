@@ -697,7 +697,6 @@ void arena_har_defeat_hook(int loser_player_id, scene *scene) {
             har_face_enemy(winner, loser);
             har_set_ani(winner, ANIM_VICTORY, 0);
         }
-        winner_har->enqueued = 0;
         local->over = 1;
         local->winner = winner_player_id;
         if(is_singleplayer(gs)) {

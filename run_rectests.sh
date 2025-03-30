@@ -44,6 +44,8 @@ tests=(
     "Stasis prevents walking, turning, and endurance regen:STASIS-FREEZES.REC"
     "Don't turn around mid-kick:KICK-NOTURN.REC"
     "Electra's shards can be blocked:SHARDS-ARE-BLOCKABLE.REC"
+    "Electra can throw Katana on wakeup without getting hit:WAKEUP_THROW.REC"
+    "Katana can chain stomps and end with a jump kick:STOMP.REC"
 )
 
 # Setup temp directory for outputs

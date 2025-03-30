@@ -1737,6 +1737,9 @@ void har_tick(object *obj) {
         }
     }
 
+    if(player_frame_isset(obj, "aa")) {
+        h->air_attacked = 0; // This tag allows you to attack again
+    }
     // Make sure HAR doesn't walk through walls
     // TODO: Roof!
     vec2i pos = object_get_pos(obj);
@@ -1909,123 +1912,104 @@ static bool add_input(char *buf, int act_type, int direction) {
     return false;
 }
 
+bool is_har_idle_grounded(object *obj) {
+    return ((obj->cur_animation->id == ANIM_IDLE) || (obj->cur_animation->id == ANIM_CROUCHING) ||
+            (obj->cur_animation->id == ANIM_WALKING)) &&
+           game_state_hars_are_alive(obj->gs);
+}
+
+bool is_har_idle_air(object *obj) {
+    return (obj->cur_animation->id == ANIM_JUMPING) && game_state_hars_are_alive(obj->gs);
+}
+
+bool is_move_chain_allowed(object *obj, af_move *move) {
+    har *h = object_get_userdata(obj);
+
+    bool allowed_in_idle = true;
+    if(move->pos_constraints & 0x2) { // Not allowed to perform this move normally
+        allowed_in_idle = false;
+    }
+
+    if(h->is_wallhugging != 1 && move->pos_constraints & 0x1) {
+        log_debug("Position contraint prevents move when not wallhugging!");
+        // required to be wall hugging
+        return false;
+    }
+
+    // check if the current frame allows chaining
+    bool allowed = false;
+    if(player_frame_isset(obj, "jn") && move->id == player_frame_get(obj, "jn")) {
+        allowed = true;
+    } else {
+        switch(move->category) {
+            case CAT_JUMPING:
+                // JZ should be checked in a bunch of other places but since it's only used for one move we'll cheat.
+                if(player_frame_isset(obj, "jz") || player_frame_isset(obj, "jj") ||
+                   (is_har_idle_air(obj) && allowed_in_idle && !h->air_attacked)) {
+                    allowed = true;
+                }
+                break;
+            case CAT_CLOSE:
+                if(player_frame_isset(obj, "jg") || (is_har_idle_grounded(obj) && allowed_in_idle)) {
+                    // CLOSE moves use the successor id field as a distance requirement
+                    object *enemy_obj = game_state_find_object(
+                        obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
+                    float throw_range = (float)obj->gs->match_settings.throw_range / 100.0f;
+                    if(object_distance(obj, enemy_obj) <= move->successor_id * throw_range) {
+                        allowed = true;
+                    }
+                }
+                break;
+            case CAT_LOW:
+                if(player_frame_isset(obj, "jl") || (is_har_idle_grounded(obj) && allowed_in_idle)) {
+                    allowed = true;
+                }
+                break;
+            case CAT_MEDIUM:
+                if(player_frame_isset(obj, "jm") || (is_har_idle_grounded(obj) && allowed_in_idle)) {
+                    allowed = true;
+                }
+                break;
+            case CAT_HIGH:
+                if(player_frame_isset(obj, "jh") || (is_har_idle_grounded(obj) && allowed_in_idle)) {
+                    allowed = true;
+                }
+                break;
+            case CAT_SCRAP:
+                if(player_frame_isset(obj, "jf") && h->state != STATE_DONE) {
+                    allowed = true;
+                }
+                break;
+            case CAT_DESTRUCTION:
+                if(player_frame_isset(obj, "jf2")) {
+                    allowed = true;
+                }
+                break;
+            default:
+                break;
+        }
+    }
+    return allowed;
+}
+
 af_move *match_move(object *obj, char prefix, char *inputs) {
     har *h = object_get_userdata(obj);
     af_move *move = NULL;
     size_t len;
+
     for(int i = 0; i < 70; i++) {
         if((move = af_get_move(h->af_data, i))) {
             len = str_size(&move->move_string);
             if(str_at(&move->move_string, 0) == prefix &&
                (len == 1 || !strncmp(str_c(&move->move_string) + 1, inputs, len - 1))) {
-                // try to avoid jaguar's K1 chaining into K while you're still
-                // holding a crouch button
-                // the 6 is for HARS, like jaguar, that lack a k6 or p6
-                if(len == 1 && inputs[0] != '5' && inputs[0] != 0 && inputs[0] != '6' &&
-                   move->category != CAT_JUMPING) {
-                    continue;
-                }
-
-                if(move->category == CAT_CLOSE) {
-                    // CLOSE moves use the successor id field as a distance requirement
-                    object *enemy_obj = game_state_find_object(
-                        obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
-                    float throw_range = (float)obj->gs->match_settings.throw_range / 100.0f;
-                    if(object_distance(obj, enemy_obj) > move->successor_id * throw_range) {
-                        // not standing close enough
-                        continue;
+                if(is_move_chain_allowed(obj, move)) {
+                    if(str_size(&move->move_string) > 1) {
+                        // matched a move that was not just a 5P or 5K
+                        // so truncate the buffer
+                        h->inputs[0] = 0;
                     }
+                    return move;
                 }
-                if(move->category == CAT_JUMPING && h->state != STATE_JUMPING) {
-                    // not jumping
-                    continue;
-                }
-                if(move->category != CAT_JUMPING && h->state == STATE_JUMPING) {
-                    // jumping but this move is not a jumping move
-                    continue;
-                }
-                if((move->category == CAT_SCRAP && h->state != STATE_VICTORY) ||
-                   (h->state == STATE_VICTORY && move->category != CAT_SCRAP)) {
-                    continue;
-                }
-
-                if((move->category == CAT_DESTRUCTION && h->state != STATE_SCRAP) ||
-                   (h->state == STATE_SCRAP && move->category != CAT_DESTRUCTION)) {
-                    continue;
-                }
-
-                if(move->category == CAT_FIRE_ICE) {
-                    continue;
-                }
-
-                if(h->state != STATE_JUMPING && move->pos_constraints & 0x2) {
-                    log_debug("Position contraint prevents move when not jumping!");
-                    // required to be jumping
-                    continue;
-                }
-                if(h->is_wallhugging != 1 && move->pos_constraints & 0x1) {
-                    log_debug("Position contraint prevents move when not wallhugging!");
-                    // required to be wall hugging
-                    continue;
-                }
-
-                if(h->executing_move && !h->enqueued) {
-                    // check if the current frame allows chaining
-                    int allowed = 0;
-                    if(player_frame_isset(obj, "jn") && i == player_frame_get(obj, "jn")) {
-                        allowed = 1;
-                    } else {
-                        switch(move->category) {
-                            case CAT_LOW:
-                                if(player_frame_isset(obj, "jl")) {
-                                    allowed = 1;
-                                }
-                                break;
-                            case CAT_MEDIUM:
-                                if(player_frame_isset(obj, "jm")) {
-                                    allowed = 1;
-                                }
-                                break;
-                            case CAT_HIGH:
-                                if(player_frame_isset(obj, "jh")) {
-                                    allowed = 1;
-                                }
-                                break;
-                            case CAT_SCRAP:
-                                if(player_frame_isset(obj, "jf")) {
-                                    allowed = 1;
-                                }
-                                break;
-                            case CAT_DESTRUCTION:
-                                if(player_frame_isset(obj, "jf2")) {
-                                    allowed = 1;
-                                }
-                                break;
-                        }
-                    }
-                    if(player_get_current_tick(obj) >= player_get_len_ticks(obj)) {
-                        log_debug("enqueueing %d %s", i, str_c(&move->move_string));
-                        h->enqueued = i;
-                        return NULL;
-                    }
-
-                    if(!allowed) {
-                        // not allowed
-                        continue;
-                    }
-                    log_debug("CHAINING");
-                }
-
-                if(str_size(&move->move_string) > 1) {
-                    // matched a move that was not just a 5P or 5K
-                    // so truncate the buffer
-                    h->inputs[0] = 0;
-                }
-
-                log_debug("matched move %d with string %s in state %d with input buffer %s", i,
-                          str_c(&move->move_string), h->state, h->inputs);
-                /*DEBUG("input was %s", h->inputs);*/
-                return move;
             }
         }
     }
@@ -2113,21 +2097,14 @@ int har_act(object *obj, int act_type) {
         h->input_change_tick = obj->gs->tick;
     }
 
-    if(!(h->state == STATE_STANDING || har_is_walking(h) || har_is_crouching(h) || h->state == STATE_JUMPING ||
-         h->state == STATE_VICTORY || h->state == STATE_SCRAP || h->state == STATE_NONE) ||
-       object_get_halt(obj)) {
-        // doing something else, ignore input
+    if(object_get_halt(obj)) {
+        // frozen, ignore input
         return 0;
     }
 
     // Don't allow movement if arena is starting or ending
     int arena_state = arena_get_state(game_state_get_scene(obj->gs));
     if(arena_state == ARENA_STATE_STARTING) {
-        return 0;
-    }
-
-    // don't allow multiple special moves in the air
-    if(h->air_attacked) {
         return 0;
     }
 
@@ -2206,9 +2183,7 @@ int har_act(object *obj, int act_type) {
     // Don't allow new movement while we're still executing a move
     if(h->executing_move) {
         if(obj->pos.y < ARENA_FLOOR) {
-            // XXX I think 'i' is for 'not interruptable'
-            // XXX I think this is wrong, so comment it out for now
-            if(h->state < STATE_JUMPING /*&& !player_frame_isset(obj, "i")*/) {
+            if(h->state < STATE_JUMPING) {
                 log_debug("standing move led to airborne one");
                 h->state = STATE_JUMPING;
             } else if(h->state != STATE_JUMPING) {
@@ -2256,6 +2231,10 @@ int har_act(object *obj, int act_type) {
             // play idle while we wait for the defeated opponent to settle
             har_set_ani(obj, ANIM_IDLE, 1);
         }
+        return 0;
+    }
+
+    if(!(is_har_idle_grounded(obj) || is_har_idle_air(obj))) {
         return 0;
     }
 
@@ -2361,13 +2340,6 @@ void har_face_enemy(object *obj, object *obj_enemy) {
 void har_finished(object *obj) {
     har *h = object_get_userdata(obj);
     controller *ctrl = game_player_get_ctrl(game_state_get_player(obj->gs, h->player_id));
-    if(h->enqueued) {
-        log_debug("playing enqueued animation %d", h->enqueued);
-        har_set_ani(obj, h->enqueued, 0);
-        h->enqueued = 0;
-        h->executing_move = 1;
-        return;
-    }
 
     h->executing_move = 0;
 
@@ -2558,8 +2530,6 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     local->throw_duration = 0;
 
     local->delay = 0;
-
-    local->enqueued = 0;
 
     local->walk_destination = -1;
     local->walk_done_anim = 0;
@@ -2786,7 +2756,6 @@ void har_reset(object *obj) {
     h->in_stasis_ticks = 0;
     h->throw_duration = 0;
 
-    h->enqueued = 0;
     h->walk_destination = -1;
     h->walk_done_anim = 0;
 

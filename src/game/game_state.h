@@ -38,6 +38,7 @@ int game_state_num_players(game_state *gs);
 void game_state_init_demo(game_state *gs);
 int game_state_ms_per_dyntick(game_state *gs);
 ticktimer *game_state_get_ticktimer(game_state *gs);
+bool game_state_hars_are_alive(game_state *gs);
 
 object *game_state_find_object(game_state *gs, uint32_t object_id);
 

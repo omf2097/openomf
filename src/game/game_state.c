@@ -1408,6 +1408,12 @@ int game_state_clone(game_state *src, game_state *dst) {
     return 0;
 }
 
+bool game_state_hars_are_alive(game_state *gs) {
+    har *h1 = object_get_userdata(game_state_find_object(gs, game_state_get_player(gs, 0)->har_obj_id));
+    har *h2 = object_get_userdata(game_state_find_object(gs, game_state_get_player(gs, 1)->har_obj_id));
+    return (h1->health > 0) && (h2->health > 0);
+}
+
 bool is_netplay(game_state *gs) {
     return game_state_get_player(gs, 0)->ctrl->type == CTRL_TYPE_NETWORK ||
            game_state_get_player(gs, 1)->ctrl->type == CTRL_TYPE_NETWORK;
