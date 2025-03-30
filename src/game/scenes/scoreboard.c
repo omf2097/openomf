@@ -226,7 +226,7 @@ int scoreboard_create(scene *scene) {
     local->new_score_slot = -1;
 
     // Darken the colors for the background a bit.
-    vga_state_mul_base_palette(0, 0xEF, 0.6f);
+    vga_state_mul_base_palette(0, 0xEF, 0.25f);
 
     // Arena menu theme
     gui_theme theme;
