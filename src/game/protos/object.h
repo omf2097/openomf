@@ -270,5 +270,8 @@ serial *object_get_serialization_point(const object *obj, unsigned int ticks_ago
 
 void object_set_spawn_cb(object *obj, object_state_add_cb cbf, void *userdata);
 void object_set_destroy_cb(object *obj, object_state_del_cb cbf, void *userdata);
+void object_set_disable_cb(object *obj, object_state_disable_cb cbf, void *userdata);
+
+void object_disable_animation(object *obj, uint8_t animation_id, uint16_t ticks);
 
 #endif // OBJECT_H
