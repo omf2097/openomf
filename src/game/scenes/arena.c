@@ -1082,7 +1082,8 @@ void arena_spawn_hazard(scene *scene) {
 
 bool har_in_defeat_animation(object *obj) {
     har *h = obj->userdata;
-    return obj->cur_animation->id == (h->custom_defeat_animation ? h->custom_defeat_animation : ANIM_DEFEAT);
+    int anim = obj->cur_animation->id;
+    return anim == h->custom_defeat_animation || anim == ANIM_DEFEAT || anim == ANIM_DAMAGE;
 }
 
 bool defeated_at_rest(object *obj) {
