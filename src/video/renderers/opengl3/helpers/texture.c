@@ -20,11 +20,6 @@ void texture_update(GLuint tex_unit, GLuint id, int x, int y, int w, int h, GLen
     glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, w, h, format, GL_UNSIGNED_BYTE, bytes);
 }
 
-void texture_update_from_framebuffer(GLuint tex_unit, GLuint id, int xoffset, int yoffset, int x, int y, int w, int h) {
-    bindings_bind_tex(tex_unit, id);
-    glCopyTexSubImage2D(GL_TEXTURE_2D, 0, xoffset, yoffset, x, y, w, h);
-}
-
 void texture_free(GLuint tex_unit, GLuint id) {
     bindings_unbind_tex(tex_unit, id);
     glDeleteTextures(1, &id);
