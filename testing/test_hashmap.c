@@ -15,6 +15,51 @@ void test_hashmap_create(void) {
     return;
 }
 
+void test_hashmap_put_get_int(void) {
+    hashmap test;
+    hashmap_create(&test);
+    int int_value1 = 1024;
+    hashmap_put_int(&test, 100, &int_value1, sizeof(int));
+    hashmap_put_int(&test, 100, &int_value1, sizeof(int));
+    int in_value2 = 2048;
+    hashmap_put_int(&test, 101, &in_value2, sizeof(int));
+    int in_value3 = 4096;
+    hashmap_put_int(&test, 102, &in_value3, sizeof(int));
+
+    CU_ASSERT(hashmap_reserved(&test) == 3);
+    iterator it;
+    hashmap_iter_begin(&test, &it);
+    hashmap_pair *pair;
+    foreach(it, pair) {
+        int key = *(int *)pair->key;
+        int value = *(int *)pair->value;
+        if(key == 100) {
+            CU_ASSERT(value == 1024);
+        } else if(key == 101) {
+            CU_ASSERT(value == 2048);
+        } else if(key == 102) {
+            CU_ASSERT(value == 4096);
+            hashmap_delete(&test, &it);
+        } else {
+            CU_ASSERT(false);
+        }
+    }
+    CU_ASSERT(hashmap_reserved(&test) == 2);
+
+    int *value2;
+    unsigned int value_len;
+    hashmap_get_int(&test, 100, (void **)&value2, &value_len);
+    CU_ASSERT(*value2 == 1024);
+    CU_ASSERT(value_len == sizeof(int));
+
+    hashmap_get_int(&test, 101, (void **)&value2, &value_len);
+    CU_ASSERT(*value2 == 2048);
+    CU_ASSERT(value_len == sizeof(int));
+
+    int ret = hashmap_get_int(&test, 103, (void **)&value2, &value_len);
+    CU_ASSERT(ret == 1);
+}
+
 void test_hashmap_delete(void) {
     hashmap test_map;
     hashmap_create(&test_map);
@@ -134,6 +179,9 @@ void hashmap_test_suite(CU_pSuite suite) {
         return;
     }
     if(CU_add_test(suite, "Test for hashmap auto resize", hashmap_test_autoresize) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for hashmap put/get/iterate int", test_hashmap_put_get_int) == NULL) {
         return;
     }
 }
