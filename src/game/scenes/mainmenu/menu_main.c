@@ -31,6 +31,9 @@ void mainmenu_1v1(component *c, void *userdata) {
                              settings_get()->gameplay.difficulty);
     _setup_ai(s->gs, 1);
 
+    // reset match settings if the user changed config
+    game_state_match_settings_reset(s->gs);
+
     // Load MELEE scene
     game_state_set_next(s->gs, SCENE_MELEE);
 }
@@ -54,12 +57,18 @@ void mainmenu_1v2(component *c, void *userdata) {
     chr_score_set_difficulty(game_player_get_score(game_state_get_player(s->gs, 0)), AI_DIFFICULTY_CHAMPION);
     chr_score_set_difficulty(game_player_get_score(game_state_get_player(s->gs, 1)), AI_DIFFICULTY_CHAMPION);
 
+    // reset match settings if the user changed config
+    game_state_match_settings_reset(s->gs);
+
     // Load MELEE scene
     game_state_set_next(s->gs, SCENE_MELEE);
 }
 
 void mainmenu_demo(component *c, void *userdata) {
     scene *s = userdata;
+
+    // reset match settings if the user changed config
+    game_state_match_settings_reset(s->gs);
 
     // Set up controllers
     game_state_init_demo(s->gs);
