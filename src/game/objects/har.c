@@ -2359,8 +2359,8 @@ void har_finished(object *obj) {
         if(h->health > 0) {
             h->state = STATE_STANDING_UP;
             har_set_ani(obj, ANIM_STANDUP, 0);
-            object *enemy_obj =
-                game_state_find_object(obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
+            object *enemy_obj = game_state_find_object(
+                obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
             har_face_enemy(obj, enemy_obj);
         } else {
             h->state = STATE_DEFEAT;
