@@ -867,10 +867,31 @@ static void load_hars(scene *scene, melee_local *local, bool player2_is_selectab
     }
 }
 
+int melee_event_cb(scene *scene, SDL_Event *e) {
+    melee_local *local = scene_get_userdata(scene);
+    if(local->page == HAR_SELECT && e->type == SDL_KEYDOWN && SDLK_1 <= e->key.keysym.sym &&
+       e->key.keysym.sym <= SDLK_6) {
+        // color cheat:
+        // press 1-3 to change pilot1 colors
+        // press 4-6 to change pilot2 colors in 2 player
+        int idx = e->key.keysym.sym - SDLK_1;
+        int pal_id = idx % 3;
+        int player_id = idx / 3;
+
+        game_player *player = game_state_get_player(scene->gs, player_id);
+        uint8_t color = sd_pilot_get_player_color(player->pilot, pal_id);
+        color = (color + 1) % 16;
+        sd_pilot_set_player_color(player->pilot, pal_id, color);
+        palette_load_player_colors(&player->pilot->palette, player_id);
+    }
+    return 1;
+}
+
 int melee_create(scene *scene) {
     // Init local data
     melee_local *local = omf_calloc(1, sizeof(melee_local));
     scene_set_userdata(scene, local);
+    scene->event = melee_event_cb;
 
     local->cursor[1].row = 0;
     local->cursor[1].column = 4;

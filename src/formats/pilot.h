@@ -153,6 +153,7 @@ void sd_pilot_save_to_mem(memwriter *mwriter, const sd_pilot *pilot);
 int sd_pilot_save(sd_writer *writer, const sd_pilot *pilot);
 
 void sd_pilot_set_player_color(sd_pilot *pilot, player_color index, uint8_t color);
+uint8_t sd_pilot_get_player_color(sd_pilot const *pilot, player_color index);
 void sd_pilot_exit_tournament(sd_pilot *pilot);
 
 #endif // SD_PILOT_H
