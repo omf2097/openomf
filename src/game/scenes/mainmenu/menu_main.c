@@ -31,6 +31,10 @@ void mainmenu_1v1(component *c, void *userdata) {
                              settings_get()->gameplay.difficulty);
     _setup_ai(s->gs, 1);
 
+    // clear player1's name so we know to open to the pilot select
+    game_player *player1 = game_state_get_player(s->gs, 0);
+    player1->pilot->name[0] = '\0';
+
     // Load MELEE scene
     game_state_set_next(s->gs, SCENE_MELEE);
 }
@@ -53,6 +57,10 @@ void mainmenu_1v2(component *c, void *userdata) {
 
     chr_score_set_difficulty(game_player_get_score(game_state_get_player(s->gs, 0)), AI_DIFFICULTY_CHAMPION);
     chr_score_set_difficulty(game_player_get_score(game_state_get_player(s->gs, 1)), AI_DIFFICULTY_CHAMPION);
+
+    // clear player1's name so we know to open to the pilot select
+    game_player *player1 = game_state_get_player(s->gs, 0);
+    player1->pilot->name[0] = '\0';
 
     // Load MELEE scene
     game_state_set_next(s->gs, SCENE_MELEE);
