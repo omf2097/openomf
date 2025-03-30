@@ -874,6 +874,7 @@ int melee_create(scene *scene) {
 
     local->cursor[1].row = 0;
     local->cursor[1].column = 4;
+    local->pilot_id_b = CURSOR_INDEX(local, 1);
 
     game_player *player1 = game_state_get_player(scene->gs, 0);
     game_player *player2 = game_state_get_player(scene->gs, 1);
