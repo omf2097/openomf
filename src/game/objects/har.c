@@ -1944,9 +1944,8 @@ bool is_move_chain_allowed(object *obj, af_move *move) {
         switch(move->category) {
             case CAT_JUMPING:
                 // JZ should be checked in a bunch of other places but since it's only used for one move we'll cheat.
-                if(player_frame_isset(obj, "jz") ||
-                 player_frame_isset(obj, "jj") ||
-                 (is_har_idle_air(obj) && allowed_in_idle && !h->air_attacked)) {
+                if(player_frame_isset(obj, "jz") || player_frame_isset(obj, "jj") ||
+                   (is_har_idle_air(obj) && allowed_in_idle && !h->air_attacked)) {
                     allowed = true;
                 }
                 break;
