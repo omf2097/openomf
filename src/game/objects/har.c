@@ -2323,6 +2323,7 @@ void har_finished(object *obj) {
         h->state = STATE_DEFEAT;
         har_set_ani(obj, h->custom_defeat_animation ? h->custom_defeat_animation : ANIM_DEFEAT, 0);
     } else if(h->state == STATE_RECOIL && player_get_last_frame_letter(obj) == 'M') {
+        har_event_recover(h, ctrl);
         h->state = STATE_STANDING_UP;
         object_set_custom_string(obj, "zzO7-bj2zzO2");
     } else if((h->state == STATE_RECOIL || h->state == STATE_STANDING_UP) && h->endurance < 1.0f) {
