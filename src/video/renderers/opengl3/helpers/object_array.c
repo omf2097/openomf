@@ -189,6 +189,8 @@ static void add_item(object_array *array, float dx, float dy, int x, int y, int 
     array->fans_sizes[array->item_count] = 4;
     if(options & SPRITE_DARK_TINT) {
         array->modes[array->item_count] = MODE_DARK_TINT;
+    } else if(options & SPRITE_SHADOW) {
+        array->modes[array->item_count] = MODE_SPRITE_SHADOW;
     } else if(remap_rounds > 0) {
         array->modes[array->item_count] = MODE_REMAP;
     } else if(options & SPRITE_INDEX_ADD) {

@@ -227,9 +227,20 @@ static inline void video_set_blend_mode(gl3_context *ctx, object_array_blend_mod
     } else if(request_mode == MODE_ADD) {
         glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_TRUE);
     } else if(request_mode == MODE_REMAP) {
-        glColorMask(GL_FALSE, GL_TRUE, GL_FALSE, GL_TRUE);
+        glColorMask(GL_FALSE, GL_TRUE, GL_FALSE, GL_FALSE);
+    } else if(request_mode == MODE_SPRITE_SHADOW) {
+        glColorMask(GL_FALSE, GL_TRUE, GL_FALSE, GL_FALSE);
+        glEnable(GL_BLEND);
+        glBlendEquation(GL_MAX);
     } else if(request_mode == MODE_DARK_TINT) {
         glColorMask(GL_FALSE, GL_TRUE, GL_TRUE, GL_TRUE);
+    } else {
+        assert(!"invalid blend mode");
+        return;
+    }
+
+    if(request_mode != MODE_SPRITE_SHADOW) {
+        glDisable(GL_BLEND);
     }
 
     ctx->current_blend_mode = request_mode;
