@@ -56,6 +56,10 @@
 #define TEXT_INACTIVE_COLOR 0xFE
 #define TEXT_SHADOW_COLOR 0xC0
 
+// How many dynamic ticks does it take for OMF 2097 to cross fade?
+// This effects gameplay and REC compatibility.
+#define ARENA_CROSSFADE_TICKS 30
+
 typedef enum
 {
     NONE = 0,
@@ -427,6 +431,43 @@ static void arena_end(scene *sc) {
     }
 }
 
+static void arena_create_roundstart_anim(scene *scene) {
+    arena_local *local = scene_get_userdata(scene);
+
+    if(local->rounds == 1) {
+        // Start READY animation
+        animation *ready_ani = &bk_get_info(scene->bk_data, 11)->ani;
+        object *ready = omf_calloc(1, sizeof(object));
+        object_create(ready, scene->gs, ready_ani->start_pos, vec2f_create(0, 0));
+        object_set_stl(ready, scene->bk_data->sound_translation_table);
+        object_set_animation(ready, ready_ani);
+        object_set_finish_cb(ready, scene_ready_anim_done);
+        object_set_group(ready, GROUP_ANNOUNCEMENT);
+        game_state_add_object(scene->gs, ready, RENDER_LAYER_TOP, 0, 0);
+    } else {
+        // ROUND
+        animation *round_ani = &bk_get_info(scene->bk_data, 6)->ani;
+        object *round = omf_calloc(1, sizeof(object));
+        object_create(round, scene->gs, round_ani->start_pos, vec2f_create(0, 0));
+        object_set_stl(round, scene->bk_data->sound_translation_table);
+        object_set_animation(round, round_ani);
+        object_set_finish_cb(round, scene_ready_anim_done);
+        object_set_group(round, GROUP_ANNOUNCEMENT);
+        game_state_add_object(scene->gs, round, RENDER_LAYER_TOP, 0, 0);
+
+        // Number
+        animation *number_ani = &bk_get_info(scene->bk_data, 7)->ani;
+        object *number = omf_calloc(1, sizeof(object));
+        object_create(number, scene->gs, number_ani->start_pos, vec2f_create(0, 0));
+        object_set_stl(number, scene->bk_data->sound_translation_table);
+        object_set_animation(number, number_ani);
+        object_select_sprite(number, local->round);
+        object_set_sprite_override(number, 1);
+        object_set_group(number, GROUP_ANNOUNCEMENT);
+        game_state_add_object(scene->gs, number, RENDER_LAYER_TOP, 0, 0);
+    }
+}
+
 void arena_reset(scene *sc) {
     arena_local *local = scene_get_userdata(sc);
     local->state = ARENA_STATE_STARTING;
@@ -463,39 +504,6 @@ void arena_reset(scene *sc) {
     sc->bk_data->sound_translation_table[14] = 10;               // READY
     sc->bk_data->sound_translation_table[15] = 16;               // ROUND
     sc->bk_data->sound_translation_table[3] = 23 + local->round; // NUMBER
-
-    if(local->rounds == 1) {
-        // Start READY animation
-        animation *ready_ani = &bk_get_info(sc->bk_data, 11)->ani;
-        object *ready = omf_calloc(1, sizeof(object));
-        object_create(ready, sc->gs, ready_ani->start_pos, vec2f_create(0, 0));
-        object_set_stl(ready, sc->bk_data->sound_translation_table);
-        object_set_animation(ready, ready_ani);
-        object_set_finish_cb(ready, scene_ready_anim_done);
-        object_set_group(ready, GROUP_ANNOUNCEMENT);
-        game_state_add_object(sc->gs, ready, RENDER_LAYER_TOP, 0, 0);
-    } else {
-        // ROUND animation
-        animation *round_ani = &bk_get_info(sc->bk_data, 6)->ani;
-        object *round = omf_calloc(1, sizeof(object));
-        object_create(round, sc->gs, round_ani->start_pos, vec2f_create(0, 0));
-        object_set_stl(round, sc->bk_data->sound_translation_table);
-        object_set_animation(round, round_ani);
-        object_set_finish_cb(round, scene_ready_anim_done);
-        object_set_group(round, GROUP_ANNOUNCEMENT);
-        game_state_add_object(sc->gs, round, RENDER_LAYER_TOP, 0, 0);
-
-        // Round number
-        animation *number_ani = &bk_get_info(sc->bk_data, 7)->ani;
-        object *number = omf_calloc(1, sizeof(object));
-        object_create(number, sc->gs, number_ani->start_pos, vec2f_create(0, 0));
-        object_set_stl(number, sc->bk_data->sound_translation_table);
-        object_set_animation(number, number_ani);
-        object_select_sprite(number, local->round);
-        object_set_sprite_override(number, 1);
-        object_set_group(number, GROUP_ANNOUNCEMENT);
-        game_state_add_object(sc->gs, number, RENDER_LAYER_TOP, 0, 0);
-    }
 
     // When playing the Desert arena in Arcade mode, change
     // the palette each round to simulate time passing.
@@ -1242,12 +1250,15 @@ void arena_dynamic_tick(scene *scene, int paused) {
         }
 
         // Endings and beginnings
-        if(local->state != ARENA_STATE_ENDING && local->state != ARENA_STATE_STARTING) {
+        if(local->state == ARENA_STATE_FIGHTING) {
             if(scene->gs->match_settings.hazards) {
                 arena_spawn_hazard(scene);
             }
-        }
-        if(local->state == ARENA_STATE_ENDING) {
+        } else if(local->state == ARENA_STATE_STARTING) {
+            if(local->state_ticks == ARENA_CROSSFADE_TICKS) {
+                arena_create_roundstart_anim(scene);
+            }
+        } else if(local->state == ARENA_STATE_ENDING) {
             // check if its time to put the winner into victory pose
             if(defeated_at_rest(obj_har[0]) && winner_needs_victory_pose(obj_har[1])) {
                 har_face_enemy(obj_har[1], obj_har[0]);
@@ -1948,38 +1959,6 @@ int arena_create(scene *scene) {
     // Disable the floating ball disappearence sound in fire arena
     if(scene->id == SCENE_ARENA3) {
         scene->bk_data->sound_translation_table[20] = 0;
-    }
-
-    if(local->rounds == 1) {
-        // Start READY animation
-        animation *ready_ani = &bk_get_info(scene->bk_data, 11)->ani;
-        object *ready = omf_calloc(1, sizeof(object));
-        object_create(ready, scene->gs, ready_ani->start_pos, vec2f_create(0, 0));
-        object_set_stl(ready, scene->bk_data->sound_translation_table);
-        object_set_animation(ready, ready_ani);
-        object_set_finish_cb(ready, scene_ready_anim_done);
-        object_set_group(ready, GROUP_ANNOUNCEMENT);
-        game_state_add_object(scene->gs, ready, RENDER_LAYER_TOP, 0, 0);
-    } else {
-        // ROUND
-        animation *round_ani = &bk_get_info(scene->bk_data, 6)->ani;
-        object *round = omf_calloc(1, sizeof(object));
-        object_create(round, scene->gs, round_ani->start_pos, vec2f_create(0, 0));
-        object_set_stl(round, scene->bk_data->sound_translation_table);
-        object_set_animation(round, round_ani);
-        object_set_finish_cb(round, scene_ready_anim_done);
-        object_set_group(round, GROUP_ANNOUNCEMENT);
-        game_state_add_object(scene->gs, round, RENDER_LAYER_TOP, 0, 0);
-
-        // Number
-        animation *number_ani = &bk_get_info(scene->bk_data, 7)->ani;
-        object *number = omf_calloc(1, sizeof(object));
-        object_create(number, scene->gs, number_ani->start_pos, vec2f_create(0, 0));
-        object_set_stl(number, scene->bk_data->sound_translation_table);
-        object_set_animation(number, number_ani);
-        object_select_sprite(number, local->round);
-        object_set_group(number, GROUP_ANNOUNCEMENT);
-        game_state_add_object(scene->gs, number, RENDER_LAYER_TOP, 0, 0);
     }
 
     // Callbacks
