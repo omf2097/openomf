@@ -1940,7 +1940,9 @@ bool is_move_chain_allowed(object *obj, af_move *move) {
     } else {
         switch(move->category) {
             case CAT_JUMPING:
-                if(player_frame_isset(obj, "jj") || (is_har_idle_air(obj) && allowed_in_idle)) {
+                // JZ should be checked in a bunch of other places but since it's only used for one move we'll cheat.
+                if(player_frame_isset(obj, "jz") || player_frame_isset(obj, "jj") ||
+                 (is_har_idle_air(obj) && allowed_in_idle && !h->air_attacked)) {
                     allowed = true;
                 }
                 break;
@@ -2100,11 +2102,6 @@ int har_act(object *obj, int act_type) {
     // Don't allow movement if arena is starting or ending
     int arena_state = arena_get_state(game_state_get_scene(obj->gs));
     if(arena_state == ARENA_STATE_STARTING) {
-        return 0;
-    }
-
-    // don't allow multiple special moves in the air
-    if(h->air_attacked) {
         return 0;
     }
 
