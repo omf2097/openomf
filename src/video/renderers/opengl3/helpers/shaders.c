@@ -133,13 +133,22 @@ void bind_uniform_4fv(GLuint program_id, const char *name, GLfloat *data) {
     glUniformMatrix4fv(ref, 1, GL_FALSE, data);
 }
 
-void bind_uniform_1i(GLuint program_id, const char *name, GLuint value) {
+void bind_uniform_1i(GLuint program_id, const char *name, GLint value) {
     GLint ref = glGetUniformLocation(program_id, name);
     if(ref == -1) {
         log_error("Unable to find uniform '%s'; glGetUniformLocation() returned -1", name);
         return;
     }
     glUniform1i(ref, value);
+}
+
+void bind_uniform_1u(GLuint program_id, const char *name, GLuint value) {
+    GLint ref = glGetUniformLocation(program_id, name);
+    if(ref == -1) {
+        log_error("Unable to find uniform '%s'; glGetUniformLocation() returned -1", name);
+        return;
+    }
+    glUniform1ui(ref, value);
 }
 
 void bind_uniform_block(GLuint program_id, const char *name, GLuint binding_id, GLuint buffer) {

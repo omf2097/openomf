@@ -147,7 +147,8 @@ void engine_run(engine_init_flags *init_flags) {
                 return;
             }
         }
-        video_render_prepare();
+        unsigned framebuffer_options = 0;
+        video_render_prepare(framebuffer_options);
         video_render_finish();
     }
 
@@ -365,7 +366,7 @@ void engine_run(engine_init_flags *init_flags) {
 
         // Do the actual video rendering jobs
         if(enable_screen_updates) {
-            video_render_prepare();
+            video_render_prepare(game_state_get_framebuffer_options(gs));
             game_state_render(gs);
             if(debugger_render) {
                 game_state_debug(gs);

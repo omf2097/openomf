@@ -615,6 +615,13 @@ void game_state_render(game_state *gs) {
     scene_render_overlay(gs->sc);
 }
 
+unsigned game_state_get_framebuffer_options(game_state *gs) {
+    if(gs->this_id == SCENE_CREDITS)
+        return FBUFOPT_CREDITS;
+
+    return 0;
+}
+
 void game_state_palette_transform(game_state *gs) {
     // object transforms
     render_obj *robj;

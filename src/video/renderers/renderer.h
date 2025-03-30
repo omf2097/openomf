@@ -32,7 +32,7 @@ typedef void (*draw_surface_fn)(void *ctx, const surface *src_surface, SDL_Rect 
 typedef void (*move_target_fn)(void *ctx, int x, int y);
 
 // Onscreen rendering state management, these must be implemented
-typedef void (*render_prepare_fn)(void *ctx);
+typedef void (*render_prepare_fn)(void *ctx, unsigned framebuffer_options);
 typedef void (*render_finish_fn)(void *ctx);
 
 // Offscreen rendering state management, these must be implemented
