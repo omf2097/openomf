@@ -178,6 +178,8 @@ typedef struct har_t {
 
     list har_hooks;
 
+    vector child_objects;
+
 #ifdef DEBUGMODE
     surface hit_pixel;
     surface har_origin;
@@ -203,5 +205,7 @@ void har_set_delay(object *obj, int delay);
 uint8_t har_player_id(object *obj);
 
 int16_t har_health_percent(har *h);
+
+void har_connect_child(object *obj, object *child);
 
 #endif // HAR_H

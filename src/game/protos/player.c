@@ -6,6 +6,7 @@
 #include "formats/script.h"
 #include "game/game_player.h"
 #include "game/game_state.h"
+#include "game/objects/projectile.h"
 #include "game/protos/object.h"
 #include "game/protos/player.h"
 #include "game/utils/settings.h"
@@ -254,6 +255,14 @@ void player_run(object *obj) {
             } else {
                 object_set_direction(obj, OBJECT_FACE_RIGHT);
             }
+        }
+
+        if(obj->group == GROUP_PROJECTILE && sd_script_isset(frame, "mc")) {
+            log_debug("connecting child %d to parent", obj->id);
+            // motion connect, attach this to the parent HAR
+            // so if the parent har takes damage we die, and we can relay damage to the parent HAR
+            // This is only used by shadow moves
+            projectile_connect_to_parent(obj);
         }
 
         if(sd_script_isset(frame, "bm")) {

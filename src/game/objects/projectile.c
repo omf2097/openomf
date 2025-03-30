@@ -16,6 +16,7 @@ typedef struct projectile_local_t {
     int invincible;
     bool has_hit;
     uint32_t linked_obj;
+    uint32_t parent_id;
 } projectile_local;
 
 void projectile_finished(object *obj) {
@@ -112,7 +113,8 @@ int projectile_clone_free(object *obj) {
     return 0;
 }
 
-int projectile_create(object *obj, har *har) {
+int projectile_create(object *obj, object *parent) {
+    har *har = object_get_userdata(parent);
     // strore the HAR in local userdata instead
     projectile_local *local = omf_calloc(1, sizeof(projectile_local));
     local->player_id = har->player_id;
@@ -120,6 +122,7 @@ int projectile_create(object *obj, har *har) {
     local->ground_freeze = 0;
     local->af_data = har->af_data;
     local->has_hit = false;
+    local->parent_id = parent->id;
 
     // Set up callbacks
     object_set_userdata(obj, local);
@@ -172,4 +175,12 @@ void projectile_clear_hit(object *obj) {
 void projectile_link_object(object *obj, object *link) {
     projectile_local *local = object_get_userdata(obj);
     local->linked_obj = link->id;
+}
+
+void projectile_connect_to_parent(object *obj) {
+    projectile_local *local = object_get_userdata(obj);
+    object *parent = game_state_find_object(obj->gs, local->parent_id);
+    if(parent) {
+        har_connect_child(parent, obj);
+    }
 }

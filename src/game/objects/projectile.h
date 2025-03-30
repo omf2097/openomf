@@ -6,7 +6,7 @@
 
 typedef struct har_t har;
 
-int projectile_create(object *obj, har *har);
+int projectile_create(object *obj, object *parent);
 const af *projectile_get_af_data(object *obj);
 uint8_t projectile_get_owner(object *obj);
 void projectile_set_wall_bounce(object *obj, int bounce);
@@ -18,5 +18,6 @@ bool projectile_did_hit(object *obj);
 void projectile_clear_hit(object *obj);
 
 void projectile_link_object(object *obj, object *link);
+void projectile_connect_to_parent(object *obj);
 
 #endif // PROJECTILE_H
