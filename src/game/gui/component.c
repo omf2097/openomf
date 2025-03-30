@@ -164,7 +164,7 @@ void component_set_help_text(component *c, const char *text) {
     if(c->help != NULL) {
         text_set_from_c(c->help, text);
     } else {
-        c->help = text_create_from_c(FONT_SMALL, TEXT_BBOX_MAX, TEXT_BBOX_MAX, text);
+        c->help = text_create_from_c(text);
     }
 }
 

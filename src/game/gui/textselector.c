@@ -164,7 +164,7 @@ component *textselector_create(const char *text, const char *help, textselector_
 
     text_selector *t = omf_calloc(1, sizeof(text_selector));
     str_from_c(&t->title, text);
-    t->text = text_create_with_size(FONT_BIG, TEXT_BBOX_MAX, TEXT_BBOX_MAX);
+    t->text = text_create();
     t->pos = &t->pos_;
     t->userdata = userdata;
     t->toggle = cb;

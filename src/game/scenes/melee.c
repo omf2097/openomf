@@ -889,7 +889,7 @@ int melee_create(scene *scene) {
     menu_background_create(&local->bg_player_bio, 160, 43, MenuBackgroundMeleeVs);
 
     for(int i = 0; i < 2; i++) {
-        local->player_bio[i] = text_create_with_size(FONT_SMALL, 156, 34);
+        local->player_bio[i] = text_create_with_font_and_size(FONT_SMALL, 156, 34);
         text_set_color(local->player_bio[i], TEXT_GREEN);
         text_set_shadow_style(local->player_bio[i], TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
         text_set_shadow_color(local->player_bio[i], TEXT_SHADOW_GREEN);

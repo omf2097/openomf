@@ -119,12 +119,7 @@ component *spritebutton_create(const char *text, const surface *img, bool disabl
     component_set_size_hints(c, img->w, img->h);
 
     spritebutton *b = omf_calloc(1, sizeof(spritebutton));
-    if(text != NULL) {
-        b->text = text_create_with_size(FONT_BIG, TEXT_BBOX_MAX, TEXT_BBOX_MAX);
-        text_set_from_c(b->text, text);
-    } else {
-        b->text = NULL;
-    }
+    b->text = (text != NULL) ? text_create_from_c(text) : NULL;
     b->click_cb = cb;
     b->vertical_align = TEXT_ALIGN_MIDDLE;
     b->horizontal_align = TEXT_ALIGN_CENTER;

@@ -62,10 +62,11 @@ static void defaults(text *t) {
     t->word_wrap = true;
 }
 
-text *text_create(font_size font) {
+text *text_create(void) {
     text *t = omf_calloc(1, sizeof(text));
-    t->font = font;
-    t->w = t->h = 0;
+    t->font = FONT_NONE;
+    t->w = TEXT_BBOX_MAX;
+    t->h = TEXT_BBOX_MAX;
     t->cache_flags = INVALIDATE_NONE;
     text_layout_create(&t->layout);
     str_create(&t->buf);
@@ -73,21 +74,28 @@ text *text_create(font_size font) {
     return t;
 }
 
-text *text_create_with_size(font_size font, uint16_t w, uint16_t h) {
-    text *t = text_create(font);
+text *text_create_with_font(font_size font) {
+    text *t = text_create();
+    t->font = font;
+    return t;
+}
+
+text *text_create_with_font_and_size(font_size font, uint16_t w, uint16_t h) {
+    text *t = text_create();
+    t->font = font;
     t->w = w;
     t->h = h;
     return t;
 }
 
-text *text_create_from_c(font_size font, uint16_t w, uint16_t h, const char *src) {
-    text *t = text_create_with_size(font, w, h);
+text *text_create_from_c(const char *src) {
+    text *t = text_create();
     text_set_from_c(t, src);
     return t;
 }
 
-text *text_create_from_str(font_size font, uint16_t w, uint16_t h, const str *src) {
-    text *t = text_create_with_size(font, w, h);
+text *text_create_from_str(const str *src) {
+    text *t = text_create();
     text_set_from_str(t, src);
     return t;
 }

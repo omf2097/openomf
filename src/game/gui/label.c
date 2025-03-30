@@ -123,7 +123,7 @@ component *label_create_with_width(const char *text, uint16_t max_width) {
     component_set_supports(c, true, false, false);
 
     label *local = omf_calloc(1, sizeof(label));
-    local->text = text_create_with_size(FONT_BIG, max_width, TEXT_BBOX_MAX);
+    local->text = text_create_with_font_and_size(FONT_BIG, max_width, TEXT_BBOX_MAX);
     local->override_color = -1;
     local->color_theme = 0; // 0 = primary color, 1 = secondary color.
     local->override_font = FONT_NONE;
