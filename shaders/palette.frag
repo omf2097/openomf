@@ -64,7 +64,7 @@ void main() {
         // make four samples to generate coverage
         int coverage = 0;
         for(int y = 0; y < 4; y++) {
-            float offset = float(y) / ATLAS_H;
+            float offset = float(y - 1) / ATLAS_H;
             vec4 texel = texture(atlas, tex_coord + vec2(0, offset));
             int index = int(texel.r * 255.0);
             coverage += int(index != transparency_index);
