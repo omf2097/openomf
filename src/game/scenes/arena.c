@@ -1104,14 +1104,6 @@ bool defeated_at_rest(object *obj) {
     return har_in_defeat_animation(obj) && !object_is_airborne(obj) && obj->vel.x == 0.0f;
 }
 
-bool har_unfinished_victory(object *obj) {
-    har *h = obj->userdata;
-    if(h->walk_destination > 0 && h->walk_done_anim) {
-        return true;
-    }
-    return false;
-}
-
 bool winner_needs_victory_pose(object *obj) {
     har *h = obj->userdata;
     return !object_is_airborne(obj) && (h->state == STATE_DONE || h->state == STATE_VICTORY) &&
