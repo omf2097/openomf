@@ -16,6 +16,7 @@ uniform sampler2D remaps;
 
 in vec4 gl_FragCoord;
 
+// for info about these options, see renderer_options in video/enums.h
 bool SPRITE_REMAP = (options & 1u) != 0u;
 bool SPRITE_SHADOWMASK = (options & 2u) != 0u;
 bool SPRITE_INDEX_ADD = (options & 4u) != 0u;
