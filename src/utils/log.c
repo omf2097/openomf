@@ -140,7 +140,11 @@ void log_msg(log_level level, const char *fmt, ...) {
         va_start(args, fmt);
         vfprintf(target->fp, fmt, args);
         va_end(args);
-        fprintf(target->fp, "\n");
+        if(state->colors && target->colors) {
+            fprintf(target->fp, "\x1b[0m\n");
+        } else {
+            fprintf(target->fp, "\n");
+        }
         fflush(target->fp);
         SDL_UnlockMutex(target->lock);
     }
