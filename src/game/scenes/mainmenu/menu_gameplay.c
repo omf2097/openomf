@@ -1,4 +1,5 @@
 #include "game/scenes/mainmenu/menu_gameplay.h"
+#include "game/scenes/mainmenu/menu_advanced.h"
 
 #include "game/common_defines.h"
 #include "game/gui/gui.h"
@@ -12,6 +13,11 @@ void menu_gameplay_done(component *c, void *u) {
 void menu_gameplay_speed_slide(component *c, void *userdata, int pos) {
     scene *sc = userdata;
     game_state_set_speed(sc->gs, pos + 5);
+}
+
+void menu_enter_advanced(component *c, void *userdata) {
+    scene *s = userdata;
+    menu_set_submenu(c->parent, menu_advanced_create(s));
 }
 
 component *menu_gameplay_create(scene *s) {
@@ -52,6 +58,9 @@ component *menu_gameplay_create(scene *s) {
                                                     "three rounds, or best three out of five rounds.",
                                                     NULL, NULL, &settings_get()->gameplay.rounds, round_type_names,
                                                     NUMBER_OF_ROUND_TYPES));
+
+    menu_attach(menu, button_create("ADVANCED", "Do I really have to tell you what this is?", false, false,
+                                    menu_enter_advanced, s));
     menu_attach(menu, button_create("DONE", "Go back to the main menu.", false, false, menu_gameplay_done, NULL));
     return menu;
 }
