@@ -26,7 +26,7 @@ console *con = NULL;
 // defined in console_cmd.c
 void console_init_cmd(void);
 
-int make_argv(char *p, char **argv) {
+static int make_argv(char *p, char **argv) {
     // split line into argv, warning: does not handle quoted strings
     int argc = 0;
     while(isspace(*p)) {
@@ -70,7 +70,7 @@ static void console_refresh(void) {
     str_free(&visible);
 }
 
-void console_add_history(const char *input, unsigned int len) {
+static void console_add_history(const char *input, unsigned int len) {
     iterator it;
     list_iter_begin(&con->history, &it);
 
@@ -89,7 +89,7 @@ void console_add_history(const char *input, unsigned int len) {
     con->hist_pos = -1;
 }
 
-void console_handle_line(game_state *gs) {
+static void console_handle_line(game_state *gs) {
     str_strip(&con->input);
     if(str_size(&con->input) == 0) {
         console_output_addline(">");
@@ -133,7 +133,7 @@ void console_handle_line(game_state *gs) {
     }
 }
 
-void console_output_scroll_to_end(void) {
+static void console_output_scroll_to_end(void) {
     // iterate the output buffer backward to count up to 16 lines or 480 chars, whichever comes first
     unsigned int lines = 0;
     unsigned int si;
@@ -161,7 +161,7 @@ void console_output_scroll_to_end(void) {
     con->output_pos = si;
 }
 
-void console_output_scroll_up(unsigned int lines) {
+static void console_output_scroll_up(unsigned int lines) {
     unsigned int l = 0;
     if(con->output_pos != con->output_head) {
         con->output_pos = BUFFER_DEC(con->output_pos);
@@ -178,7 +178,7 @@ void console_output_scroll_up(unsigned int lines) {
     }
 }
 
-void console_output_scroll_down(unsigned int lines) {
+static void console_output_scroll_down(unsigned int lines) {
     unsigned int l = 0;
     while(con->output_pos != con->output_tail) {
         con->output_pos = BUFFER_INC(con->output_pos);
@@ -207,6 +207,7 @@ void console_output_add(const char *text) {
 
     console_output_scroll_to_end();
 }
+
 void console_output_addline(const char *text) {
     console_output_add(text);
     console_output_add("\n");
