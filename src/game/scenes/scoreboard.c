@@ -218,6 +218,16 @@ static bool score_fits_scoreboard(scoreboard_local *local, unsigned int score) {
     return false;
 }
 
+static void scoreboard_startup(scene *scene, int id, int *m_load, int *m_repeat) {
+    switch(id) {
+        case 10:
+        case 11:
+            *m_load = 1;
+            *m_repeat = 1;
+            break;
+    }
+}
+
 int scoreboard_create(scene *scene) {
     // Init local data
     scoreboard_local *local = omf_calloc(1, sizeof(scoreboard_local));
@@ -312,6 +322,7 @@ int scoreboard_create(scene *scene) {
     scene_set_render_overlay_cb(scene, scoreboard_render_overlay);
     scene_set_free_cb(scene, scoreboard_free);
     scene_set_static_tick_cb(scene, scoreboard_tick);
+    scene_set_startup_cb(scene, scoreboard_startup);
 
     // All done
     return 0;
