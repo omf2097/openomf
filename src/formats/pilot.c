@@ -362,6 +362,20 @@ void sd_pilot_set_player_color(sd_pilot *pilot, player_color index, uint8_t colo
     }
 }
 
+uint8_t sd_pilot_get_player_color(sd_pilot const *pilot, player_color index) {
+    switch(index) {
+        case TERTIARY:
+            return pilot->color_3;
+        case SECONDARY:
+            return pilot->color_2;
+        case PRIMARY:
+            return pilot->color_1;
+        default:
+            assert(!"bad index");
+            return 0;
+    }
+}
+
 void sd_pilot_exit_tournament(sd_pilot *pilot) {
     pilot->rank = 0;
     pilot->trn_name[0] = '\0';
