@@ -227,9 +227,11 @@ static void move_target(void *userdata, int x, int y) {
     ctx->target_move_y = y;
 }
 
-static void render_prepare(void *userdata) {
+static void render_prepare(void *userdata, unsigned framebuffer_options) {
     gl3_context *ctx = userdata;
     object_array_prepare(ctx->objects);
+
+    bind_uniform_1u(ctx->rgba_prog_id, "framebuffer_options", framebuffer_options);
 }
 
 static inline void video_set_blend_mode(gl3_context *ctx, object_array_blend_mode request_mode) {

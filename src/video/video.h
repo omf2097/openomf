@@ -95,7 +95,7 @@ void video_draw_full(const surface *src_surface, int x, int y, int w, int h, int
 
 void video_signal_scene_change(void);
 
-void video_render_prepare(void);
+void video_render_prepare(unsigned framebuffer_options);
 void video_render_finish(void);
 void video_render_area_prepare(const SDL_Rect *area);
 void video_render_area_finish(surface *dst);

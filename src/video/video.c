@@ -164,8 +164,8 @@ void video_signal_scene_change(void) {
     current_renderer.signal_scene_change(current_renderer.ctx);
 }
 
-void video_render_prepare(void) {
-    current_renderer.render_prepare(current_renderer.ctx);
+void video_render_prepare(unsigned framebuffer_options) {
+    current_renderer.render_prepare(current_renderer.ctx, framebuffer_options);
 }
 
 void video_render_finish(void) {

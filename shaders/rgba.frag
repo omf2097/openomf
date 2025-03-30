@@ -8,12 +8,24 @@ layout (std140) uniform palette {
 
 uniform sampler2D framebuffer;
 uniform sampler2D remaps;
+uniform uint framebuffer_options;
+
+bool FBUFOPT_CREDITS = (framebuffer_options & 0x01u) != 0u;
+
 
 // Out
 layout (location = 0) out vec4 color;
 
 void main() {
     vec4 texel = texture(framebuffer, tex_coord);
+
+    if(FBUFOPT_CREDITS) {
+        // SPRITE_INDEX_ADD
+        int index = int((texel.r + texel.a) * 255.0);
+        color = colors[index];
+        return;
+    }
+
     int remap = int(texel.g * 255.0);
     float remap_index = float(remap % 19) / 18.0;
     int remap_rounds = remap / 19;
