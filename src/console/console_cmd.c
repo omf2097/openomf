@@ -350,6 +350,17 @@ int console_cmd_rank(game_state *gs, int argc, char **argv) {
     return 1;
 }
 
+int console_cmd_score(game_state *gs, int argc, char **argv) {
+    if(argc == 2) {
+        int i;
+        if(strtoint(argv[1], &i)) {
+            game_state_get_player(gs, 0)->score.score = i;
+            return 0;
+        }
+    }
+    return 1;
+}
+
 int console_cmd_assert(game_state *gs, int argc, char **argv) {
     if(argc != 4) {
         console_output_addline("Usage: assert harX.attr OP value");
@@ -466,4 +477,5 @@ void console_init_cmd(void) {
     console_add_cmd("money", &console_cmd_money, "Set tournament mode money");
     console_add_cmd("rank", &console_cmd_rank, "Set tournament mode rank");
     console_add_cmd("assert", &console_cmd_assert, "Insert an assertion into the current REC file");
+    console_add_cmd("score", &console_cmd_score, "Set current score");
 }
