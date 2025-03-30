@@ -128,7 +128,7 @@ component *textslider_create(const char *text, const char *help, unsigned int po
     component *c = widget_create();
 
     text_slider *t = omf_calloc(1, sizeof(text_slider));
-    t->text = text_create_with_size(FONT_SMALL, TEXT_BBOX_MAX, TEXT_BBOX_MAX);
+    t->text = text_create();
     t->ticks = 0;
     t->pos_ = 1;
     t->pos = &t->pos_;

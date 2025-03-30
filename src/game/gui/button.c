@@ -127,7 +127,7 @@ component *button_create(const char *text, const char *help, bool disabled, bool
     component_set_help_text(c, help);
 
     button *b = omf_calloc(1, sizeof(button));
-    b->text = text_create_with_size(FONT_BIG, TEXT_BBOX_MAX, TEXT_BBOX_MAX);
+    b->text = text_create();
     text_set_from_c(b->text, text);
     b->use_border = border;
     b->click_cb = cb;
