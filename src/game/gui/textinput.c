@@ -45,9 +45,9 @@ static void set_cursor(component *c, bool focused) {
         str tmp;
         str_from(&tmp, &ti->buf);
         if(ti->pos == str_size(&tmp)) {
-            str_append_c(&tmp, "\x7F");
+            str_append_char(&tmp, CURSOR_CHAR);
         } else {
-            str_set_at(&tmp, ti->pos, '\x7F');
+            str_set_at(&tmp, ti->pos, CURSOR_CHAR);
         }
         text_set_from_str(ti->text, &tmp);
         str_free(&tmp);
@@ -134,7 +134,7 @@ static int textinput_action(component *c, int action) {
     switch(action) {
         case ACT_RIGHT:
             if(cursor_char == '\0' && ti->pos >= str_size(&ti->buf)) {
-                str_append_c(&ti->buf, " ");
+                str_append_char(&ti->buf, ' ');
             }
             ti->pos = min2(ti->max_chars - 1, ti->pos + 1);
             refresh(c);
@@ -146,7 +146,7 @@ static int textinput_action(component *c, int action) {
         case ACT_UP:
             new_char = textinput_scroll_character(cursor_char, false);
             if(ti->pos >= str_size(&ti->buf)) {
-                str_append_buf(&ti->buf, &new_char, 1);
+                str_append_char(&ti->buf, new_char);
             } else {
                 str_set_at(&ti->buf, ti->pos, new_char);
             }
@@ -155,7 +155,7 @@ static int textinput_action(component *c, int action) {
         case ACT_DOWN:
             new_char = textinput_scroll_character(cursor_char, true);
             if(ti->pos >= str_size(&ti->buf)) {
-                str_append_buf(&ti->buf, &new_char, 1);
+                str_append_char(&ti->buf, new_char);
             } else {
                 str_set_at(&ti->buf, ti->pos, new_char);
             }
