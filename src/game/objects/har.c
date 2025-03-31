@@ -356,7 +356,12 @@ int har_is_invincible(object *obj, af_move *move) {
         return 1;
     }
     switch(move->category) {
-        // XX 'zg' is not handled here, but the game doesn't use it...
+        case CAT_CLOSE:
+            if(player_frame_isset(obj, "zg") || obj->cur_animation->id == ANIM_DAMAGE ||
+               obj->cur_animation->id == ANIM_STANDING_BLOCK || obj->cur_animation->id == ANIM_CROUCHING_BLOCK) {
+                return 1;
+            }
+            break;
         case CAT_LOW:
             if(player_frame_isset(obj, "zl")) {
                 return 1;
@@ -1955,7 +1960,8 @@ bool is_move_chain_allowed(object *obj, af_move *move) {
                     object *enemy_obj = game_state_find_object(
                         obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
                     float throw_range = (float)obj->gs->match_settings.throw_range / 100.0f;
-                    if(object_distance(obj, enemy_obj) <= move->successor_id * throw_range) {
+                    if(object_distance(obj, enemy_obj) <= move->successor_id * throw_range &&
+                       enemy_obj->pos.y == ARENA_FLOOR && !har_is_invincible(enemy_obj, move)) {
                         allowed = true;
                     }
                 }
