@@ -508,20 +508,20 @@ endif()
 include("cmake-scripts/BuildLanguages.cmake")
 
 # Copy some resources to destination resources directory to ease development setup.
-file(COPY resources/openomf.bk resources/gamecontrollerdb.txt DESTINATION resources)
+file(COPY resources/openomf.bk resources/gamecontrollerdb/gamecontrollerdb.txt DESTINATION resources)
 
 # Installation
 if(WIN32)
     # On windows, generate a flat directory structure under openomf/ subdir.
     # This way we have an "openomf/" root directory inside the zip file.
     install(TARGETS openomf RUNTIME DESTINATION openomf/ COMPONENT Binaries)
-    install(FILES resources/openomf.bk resources/gamecontrollerdb.txt DESTINATION openomf/resources/ COMPONENT Data)
+    install(FILES resources/openomf.bk resources/gamecontrollerdb/gamecontrollerdb.txt DESTINATION openomf/resources/ COMPONENT Data)
     install(DIRECTORY shaders/ DESTINATION openomf/shaders COMPONENT Data)
-    install(FILES README.md LICENSE NOTICE DESTINATION openomf/ COMPONENT Data)
+    install(FILES README.md LICENSE DESTINATION openomf/ COMPONENT Data)
 else()
     # On unixy systems, follow standard.
     install(TARGETS openomf RUNTIME DESTINATION bin COMPONENT Binaries)
-    install(FILES resources/openomf.bk resources/gamecontrollerdb.txt resources/icons/openomf.png
+    install(FILES LICENSE resources/openomf.bk resources/gamecontrollerdb/gamecontrollerdb.txt resources/icons/openomf.png
         DESTINATION share/games/openomf/
         COMPONENT Data
     )
