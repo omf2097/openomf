@@ -97,11 +97,11 @@ void text_generate_layout(text *t);
 /**
  * Render the text document to given coordinates.
  */
-void text_document_draw(text_document *d, uint16_t offset_x, uint16_t offset_y);
+void text_document_draw(text_document *d, int16_t offset_x, int16_t offset_y);
 
 /**
  * Render the text block to given coordinates.
  */
-void text_draw(text *t, uint16_t x, uint16_t y);
+void text_draw(text *t, int16_t x, int16_t y);
 
 #endif // TEXT_ENGINE_H

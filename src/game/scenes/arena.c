@@ -567,7 +567,7 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
         int tolerance = arena_get_wall_slam_tolerance(scene->gs);
 
         // log_debug("Checking if %f velocity will wallslam", abs_velocity_h);
-        if((abs_velocity_h + 0.5f) > tolerance && (h->state == STATE_FALLEN || h->state == STATE_RECOIL)) {
+        if((abs_velocity_h + 0.5f) > tolerance && h->state == STATE_RECOIL) {
             h->state = STATE_WALLDAMAGE;
 
             bk_info *info = bk_get_info(scene->bk_data, 20 + wall);
@@ -870,8 +870,6 @@ char *state_name(int state) {
             return "jumping";
         case STATE_RECOIL:
             return "recoil";
-        case STATE_FALLEN:
-            return "fallen";
         case STATE_STANDING_UP:
             return "standing_up";
         case STATE_STUNNED:
@@ -1104,14 +1102,6 @@ bool defeated_at_rest(object *obj) {
     return har_in_defeat_animation(obj) && !object_is_airborne(obj) && obj->vel.x == 0.0f;
 }
 
-bool har_unfinished_victory(object *obj) {
-    har *h = obj->userdata;
-    if(h->walk_destination > 0 && h->walk_done_anim) {
-        return true;
-    }
-    return obj->cur_animation->id == ANIM_VICTORY && !player_is_last_frame(obj) && !player_is_looping(obj);
-}
-
 bool winner_needs_victory_pose(object *obj) {
     har *h = obj->userdata;
     return !object_is_airborne(obj) && (h->state == STATE_DONE || h->state == STATE_VICTORY) &&
@@ -1172,19 +1162,16 @@ void arena_dynamic_tick(scene *scene, int paused) {
                 }
                 local->win_state = NONE;
             } else if(local->win_state == DONE) {
+                local->ending_ticks++;
                 // you win/lose animation is done
                 if(player_frame_isset(obj_har[0], "be") || player_frame_isset(obj_har[1], "be") ||
-                   chr_score_onscreen(s1) || chr_score_onscreen(s2) || har_unfinished_victory(obj_har[0]) ||
-                   har_unfinished_victory(obj_har[1])) {
-                } else {
-                    local->ending_ticks++;
+                   chr_score_onscreen(s1) || chr_score_onscreen(s2)) {
+                    local->ending_ticks = 50;
                 }
             }
-            if(local->ending_ticks == 18) {
-                arena_screengrab_winner(scene);
-            }
 
-            if(local->ending_ticks == 40) {
+            if(local->ending_ticks == 80) {
+                arena_screengrab_winner(scene);
                 // one HAR must be in victory pose and one must be in defeat or damage from scrap/destruction
                 assert(((obj_har[0]->cur_animation->id == ANIM_VICTORY ||
                          af_get_move(hars[0]->af_data, obj_har[0]->cur_animation->id)->category == CAT_SCRAP ||
@@ -1244,12 +1231,12 @@ void arena_dynamic_tick(scene *scene, int paused) {
         assert(player_frame_isset(obj_har[1], "ab") ||
                (obj_har[1]->pos.x >= ARENA_LEFT_WALL && obj_har[1]->pos.x <= ARENA_RIGHT_WALL));
         if(hars[0]->health == 0) {
-            assert(hars[0]->state == STATE_DEFEAT || hars[0]->state == STATE_RECOIL || hars[0]->state == STATE_FALLEN ||
-                   hars[0]->state == STATE_NONE || hars[0]->state == STATE_WALLDAMAGE);
+            assert(hars[0]->state == STATE_DEFEAT || hars[0]->state == STATE_RECOIL || hars[0]->state == STATE_NONE ||
+                   hars[0]->state == STATE_WALLDAMAGE);
         }
         if(hars[1]->health == 0) {
-            assert(hars[1]->state == STATE_DEFEAT || hars[1]->state == STATE_RECOIL || hars[1]->state == STATE_FALLEN ||
-                   hars[1]->state == STATE_NONE || hars[1]->state == STATE_WALLDAMAGE);
+            assert(hars[1]->state == STATE_DEFEAT || hars[1]->state == STATE_RECOIL || hars[1]->state == STATE_NONE ||
+                   hars[1]->state == STATE_WALLDAMAGE);
         }
     } // if(!paused)
 }

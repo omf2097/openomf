@@ -350,13 +350,33 @@ int har_is_blocking(har *h, af_move *move) {
     return 0;
 }
 
+bool is_in_range(object *obj, af_move *move) {
+    if(move->successor_id) { // This is a throw with limited range
+        // CLOSE moves use the successor id field as a distance requirement
+        float throw_range = (float)obj->gs->match_settings.throw_range / 100.0f;
+        har *h = object_get_userdata(obj);
+        object *enemy_obj =
+            game_state_find_object(obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
+        if(object_distance(obj, enemy_obj) > move->successor_id * throw_range) {
+            return false;
+        }
+    }
+    return true;
+}
+
 int har_is_invincible(object *obj, af_move *move) {
     if(player_frame_isset(obj, "zz")) {
         // blocks everything
         return 1;
     }
+
     switch(move->category) {
-        // XX 'zg' is not handled here, but the game doesn't use it...
+        case CAT_CLOSE:
+            if(player_frame_isset(obj, "zg") || obj->cur_animation->id == ANIM_DAMAGE ||
+               obj->cur_animation->id == ANIM_STANDING_BLOCK || obj->cur_animation->id == ANIM_CROUCHING_BLOCK) {
+                return 1;
+            }
+            break;
         case CAT_LOW:
             if(player_frame_isset(obj, "zl")) {
                 return 1;
@@ -482,8 +502,10 @@ void har_move(object *obj) {
         return;
     }
 
-    obj->pos.x += obj->vel.x;
-    obj->pos.y += obj->vel.y;
+    if(!player_frame_isset(obj, "h")) {
+        obj->pos.x += obj->vel.x;
+        obj->pos.y += obj->vel.y;
+    }
 
     object *enemy_obj =
         game_state_find_object(obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
@@ -533,9 +555,17 @@ void har_move(object *obj) {
         obj->pos.y = ARENA_FLOOR;
 
         char last_input = get_last_input(h);
-        // Change animation from jump to walk or idle,
-        // depending on held inputs
-        if(h->state == STATE_JUMPING && enemy_har->is_grabbed == 0) {
+        if(h->state == STATE_VICTORY && obj->vel.y > 0) {
+            // TODO: A trigger in arena.c often puts us in STATE_VICTORY too early, which can be a problem
+            // if we're still airborne.  This allows us to land somewhat properly.
+            object_set_vel(obj, vec2f_create(0, 0));
+            har_set_ani(obj, ANIM_IDLE, 1);
+            object_set_stride(obj, h->stride);
+            har_event_land(h, ctrl);
+            har_floor_landing_effects(obj, true);
+        } else if(h->state == STATE_JUMPING && enemy_har->is_grabbed == 0) {
+            // Change animation from jump to walk or idle,
+            // depending on held inputs
             if(last_input == '6') {
                 h->state = STATE_WALKTO;
                 har_set_ani(obj, ANIM_WALKING, 1);
@@ -587,10 +617,8 @@ void har_move(object *obj) {
             har_floor_landing_effects(obj, true);
 
             // make sure HAR's are facing each other
-            if(enemy_har->state != STATE_FALLEN) {
-                har_face_enemy(obj, enemy_obj);
-            }
-        } else if(h->state == STATE_FALLEN || h->state == STATE_RECOIL) {
+            har_face_enemy(obj, enemy_obj);
+        } else if(h->state == STATE_RECOIL) {
             if(obj->vel.y > 0) {
                 // bounce and screenshake if falling fast enough
                 if(obj->vel.y > 6) {
@@ -608,6 +636,8 @@ void har_move(object *obj) {
                 } else {
                     obj->vel.y = 0;
                     obj->vel.x = 0;
+                    har_event_land(h, ctrl);
+                    har_finished(obj);
                 }
             }
 
@@ -616,28 +646,6 @@ void har_move(object *obj) {
             }
             if(obj->pos.x > ARENA_RIGHT_WALL) {
                 obj->pos.x = ARENA_RIGHT_WALL;
-            }
-
-            // prevent har from sliding after defeat, unless they're 'fallen'
-            if(h->state != STATE_DEFEAT && h->state != STATE_FALLEN && h->health <= 0 && player_is_last_frame(obj)) {
-
-                h->state = STATE_DEFEAT;
-                har_set_ani(obj, h->custom_defeat_animation ? h->custom_defeat_animation : ANIM_DEFEAT, 0);
-            } else if(obj->pos.y >= (ARENA_FLOOR - 5) && IS_ZERO(obj->vel.x) && player_is_last_frame(obj)) {
-                if(h->state == STATE_FALLEN) {
-                    if(h->health <= 0) {
-                        // fallen, but done bouncing
-                        h->state = STATE_DEFEAT;
-                        har_set_ani(obj, h->custom_defeat_animation ? h->custom_defeat_animation : ANIM_DEFEAT, 0);
-                    } else {
-                        h->state = STATE_STANDING_UP;
-                        har_set_ani(obj, ANIM_STANDUP, 0);
-                        har_face_enemy(obj, enemy_obj);
-                        har_event_land(h, ctrl);
-                    }
-                } else {
-                    har_finished(obj);
-                }
             }
         }
 
@@ -801,7 +809,6 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
             // but we don't know what those conditions are
             obj->vel.x =
                 (((damage * 0.16666666f) + 2.0f) * object_get_direction(obj) * -1) * obj->horizontal_velocity_modifier;
-            h->state = STATE_FALLEN;
             object_set_stride(obj, 1);
         }
 
@@ -1063,12 +1070,12 @@ void har_check_closeness(object *obj_a, object *obj_b) {
     }
 
     // handle one HAR landing on top of another
-    if((a->state == STATE_JUMPING || a->state == STATE_FALLEN) && b->state != STATE_JUMPING &&
-       b->state != STATE_FALLEN) {
+    if((a->state == STATE_JUMPING || a->state == STATE_RECOIL) && b->state != STATE_JUMPING &&
+       b->state != STATE_RECOIL) {
         har_land_on_har(obj_a, obj_b, hard_limit, soft_limit);
         return;
-    } else if((b->state == STATE_JUMPING || b->state == STATE_FALLEN) && a->state != STATE_JUMPING &&
-              a->state != STATE_FALLEN) {
+    } else if((b->state == STATE_JUMPING || b->state == STATE_RECOIL) && a->state != STATE_JUMPING &&
+              a->state != STATE_RECOIL) {
         har_land_on_har(obj_b, obj_a, hard_limit, soft_limit);
         return;
     }
@@ -1204,7 +1211,7 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
     controller *ctrl_a = game_player_get_ctrl(game_state_get_player(obj_a->gs, a->player_id));
     controller *ctrl_b = game_player_get_ctrl(game_state_get_player(obj_b->gs, b->player_id));
 
-    if(b->state == STATE_STANDING_UP || b->state == STATE_WALLDAMAGE || b->state >= STATE_VICTORY) {
+    if(b->state == STATE_WALLDAMAGE || b->state >= STATE_VICTORY || b->state == STATE_STANDING_UP) {
         // can't hit em while they're down
         return 0;
     }
@@ -1215,12 +1222,12 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
     }
 
     // rehit mode is off
-    if(!obj_b->gs->match_settings.rehit && b->state == STATE_FALLEN) {
+    if(!obj_b->gs->match_settings.rehit && (b->state == STATE_RECOIL && object_is_airborne(obj_b))) {
         return 0;
     }
 
     // rehit mode is on, but the opponent isn't airborne or stunned
-    if(obj_b->gs->match_settings.rehit && b->state == STATE_FALLEN &&
+    if(obj_b->gs->match_settings.rehit && b->state == STATE_RECOIL &&
        (!object_is_airborne(obj_b) || b->endurance <= 0)) {
         log_debug("REHIT is not possible %d %f %f %f", object_is_airborne(obj_b), obj_b->pos.x, obj_b->pos.y,
                   b->endurance);
@@ -1228,11 +1235,20 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
     }
 
     bool rehit =
-        obj_b->gs->match_settings.rehit && b->state == STATE_FALLEN && object_is_airborne(obj_b) && b->endurance > 0;
+        obj_b->gs->match_settings.rehit && b->state == STATE_RECOIL && object_is_airborne(obj_b) && b->endurance > 0;
 
     // Check for collisions by sprite collision points
     int level = 1;
     af_move *move = af_get_move(a->af_data, obj_a->cur_animation->id);
+
+    // is the HAR invulnerable to this kind of attack?
+    if(har_is_invincible(obj_b, move)) {
+        return 0;
+    }
+
+    if(!is_in_range(obj_b, move)) { // Won't get hit by throws out of range
+        return 0;
+    }
 
     // check this mode hasn't already rehit
     if(rehit && strchr(b->rehits, move->id)) {
@@ -1278,11 +1294,6 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
             return 0;
         }
 
-        // is the HAR invulnerable to this kind of attack?
-        if(har_is_invincible(obj_b, move)) {
-            return 0;
-        }
-
         vec2i hit_coord2 = vec2i_create(0, 0);
 
         if(move->category != CAT_CLOSE && b->damage_done == 0 && loop == 0 &&
@@ -1293,7 +1304,7 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
                 return 0;
             }
             // check if they are still alive
-            if(b->state == STATE_FALLEN || b->state == STATE_STANDING_UP || b->state == STATE_WALLDAMAGE ||
+            if(b->state == STATE_RECOIL || b->state == STATE_STANDING_UP || b->state == STATE_WALLDAMAGE ||
                b->health <= 0 || b->state >= STATE_VICTORY) {
                 // can't hit em while they're down
                 return 0;
@@ -1417,19 +1428,19 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
     har *other = object_get_userdata(
         game_state_find_object(o_har->gs, game_state_get_player(o_har->gs, abs(h->player_id - 1))->har_obj_id));
 
-    if(h->state == STATE_STANDING_UP || h->state == STATE_WALLDAMAGE || h->health <= 0 || h->state >= STATE_VICTORY) {
+    if(h->state == STATE_STANDING_UP || h->state == STATE_WALLDAMAGE || h->state >= STATE_VICTORY) {
         // can't hit em while they're down, or done
         return;
     }
 
     // rehit mode is off
-    if(!o_har->gs->match_settings.rehit && h->state == STATE_FALLEN) {
+    if(!o_har->gs->match_settings.rehit && h->state == STATE_RECOIL) {
         log_debug("REHIT is off");
         return;
     }
 
     // rehit mode is on, but the opponent isn't airborne or stunned
-    if(o_har->gs->match_settings.rehit && h->state == STATE_FALLEN &&
+    if(o_har->gs->match_settings.rehit && h->state == STATE_RECOIL &&
        (!object_is_airborne(o_har) || h->endurance <= 0)) {
         log_debug("REHIT is not possible %d %f %f %f", object_is_airborne(o_har), o_har->pos.x, o_har->pos.y,
                   h->endurance);
@@ -1437,7 +1448,7 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
     }
 
     bool rehit =
-        o_har->gs->match_settings.rehit && h->state == STATE_FALLEN && object_is_airborne(o_har) && h->endurance > 0;
+        o_har->gs->match_settings.rehit && h->state == STATE_RECOIL && object_is_airborne(o_har) && h->endurance > 0;
 
     // Check for collisions by sprite collision points
     int level = 2;
@@ -1573,8 +1584,8 @@ void har_collide_with_hazard(object *o_har, object *o_hzd) {
     bk *bk_data = object_get_userdata(o_hzd);
     bk_info *anim = bk_get_info(bk_data, o_hzd->cur_animation->id);
 
-    if(h->state == STATE_FALLEN || h->state == STATE_STANDING_UP || h->health <= 0 || h->state >= STATE_VICTORY) {
-        // can't hit em while they're down, or done
+    if(h->state == STATE_STANDING_UP) {
+        // can't hit em while they're down
         return;
     }
 
@@ -1784,24 +1795,13 @@ void har_tick(object *obj) {
 
     // Object took walldamage, but has now landed
     if(h->state == STATE_WALLDAMAGE && !object_is_airborne(obj)) {
-        h->state = STATE_FALLEN;
+        h->state = STATE_RECOIL;
     }
 
     // Reset air_attacked when not in the air to prevent HAR from freezing
     if(!object_is_airborne(obj) && h->air_attacked) {
         har_event_air_attack_done(h, ctrl);
         h->air_attacked = 0;
-    }
-
-    if((h->state == STATE_DONE) && player_is_last_frame(obj) && obj->animation_state.entered_frame == 1) {
-        // match is over
-        har_event_done(h, ctrl);
-    }
-
-    if(pos.y < ARENA_FLOOR && h->state == STATE_RECOIL) {
-        log_debug("switching to fallen");
-        h->state = STATE_FALLEN;
-        har_event_recover(h, ctrl);
     }
 
     if(h->state == STATE_STUNNED) {
@@ -1822,7 +1822,7 @@ void har_tick(object *obj) {
     // Endurance restore
     if(h->health > 0 && h->endurance < h->endurance_max &&
        !(h->executing_move || h->in_stasis_ticks > 0 || h->state == STATE_RECOIL || h->state == STATE_STUNNED ||
-         h->state == STATE_FALLEN || h->state == STATE_STANDING_UP || h->state == STATE_DEFEAT)) {
+         h->state == STATE_STANDING_UP || h->state == STATE_DEFEAT)) {
         h->endurance += 0.0025f * h->endurance_max; // made up but plausible number
     }
 
@@ -1951,11 +1951,10 @@ bool is_move_chain_allowed(object *obj, af_move *move) {
                 break;
             case CAT_CLOSE:
                 if(player_frame_isset(obj, "jg") || (is_har_idle_grounded(obj) && allowed_in_idle)) {
-                    // CLOSE moves use the successor id field as a distance requirement
                     object *enemy_obj = game_state_find_object(
                         obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
-                    float throw_range = (float)obj->gs->match_settings.throw_range / 100.0f;
-                    if(object_distance(obj, enemy_obj) <= move->successor_id * throw_range) {
+                    if(enemy_obj->pos.y == ARENA_FLOOR && !har_is_invincible(enemy_obj, move) &&
+                       is_in_range(obj, move)) {
                         allowed = true;
                     }
                 }
@@ -2225,15 +2224,6 @@ int har_act(object *obj, int act_type) {
         return 0;
     }
 
-    if(arena_state == ARENA_STATE_ENDING) {
-        if((h->state == STATE_VICTORY || h->state == STATE_DONE) && obj->cur_animation->id != ANIM_VICTORY &&
-           obj->cur_animation->id != ANIM_IDLE) {
-            // play idle while we wait for the defeated opponent to settle
-            har_set_ani(obj, ANIM_IDLE, 1);
-        }
-        return 0;
-    }
-
     if(!(is_har_idle_grounded(obj) || is_har_idle_air(obj))) {
         return 0;
     }
@@ -2322,7 +2312,7 @@ void har_face_enemy(object *obj, object *obj_enemy) {
     if(h->in_stasis_ticks > 0 || h->executing_move == 1)
         return;
 
-    if((h->state != STATE_RECOIL && h->state != STATE_STUNNED && h->state != STATE_FALLEN && h->state != STATE_DEFEAT &&
+    if((h->state != STATE_RECOIL && h->state != STATE_STUNNED && h->state != STATE_DEFEAT &&
         h->state != STATE_JUMPING && (har_enemy->state != STATE_JUMPING || h->state == STATE_STANDING_UP)) ||
        // always face opponent when walking
        (h->state == STATE_WALKFROM || h->state == STATE_WALKTO)) {
@@ -2343,7 +2333,13 @@ void har_finished(object *obj) {
 
     h->executing_move = 0;
 
-    if(h->state == STATE_SCRAP || h->state == STATE_DESTRUCTION) {
+    if(obj->enqueued) {
+        har_set_ani(obj, obj->enqueued, 0);
+        obj->enqueued = 0;
+        object *enemy_obj =
+            game_state_find_object(obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
+        har_face_enemy(obj, enemy_obj);
+    } else if(h->state == STATE_SCRAP || h->state == STATE_DESTRUCTION) {
         // play vistory animation again, but do not allow any more moves to be executed
         h->state = STATE_DONE;
         har_set_ani(obj, ANIM_VICTORY, 0);
@@ -2358,6 +2354,10 @@ void har_finished(object *obj) {
     } else if(h->state == STATE_RECOIL && h->health <= 0) {
         h->state = STATE_DEFEAT;
         har_set_ani(obj, h->custom_defeat_animation ? h->custom_defeat_animation : ANIM_DEFEAT, 0);
+    } else if(h->state == STATE_RECOIL && player_get_last_frame_letter(obj) == 'M') {
+        har_event_recover(h, ctrl);
+        h->state = STATE_STANDING_UP;
+        object_set_custom_string(obj, "zzO7-bj2zzO2");
     } else if((h->state == STATE_RECOIL || h->state == STATE_STANDING_UP) && h->endurance < 1.0f) {
         if(h->state == STATE_RECOIL) {
             har_event_recover(h, ctrl);
@@ -2373,14 +2373,9 @@ void har_finished(object *obj) {
         har *enemy_h = object_get_userdata(enemy_obj);
         controller *enemy_ctrl = game_player_get_ctrl(game_state_get_player(enemy_obj->gs, enemy_h->player_id));
         har_event_enemy_stun(enemy_h, enemy_ctrl);
-    } else if(h->state == STATE_RECOIL) {
-        har_event_recover(h, ctrl);
-        h->state = STATE_STANDING;
-        har_set_ani(obj, ANIM_IDLE, 1);
-        har_act(obj, ACT_NONE);
     } else if(h->state != STATE_CROUCHING && h->state != STATE_CROUCHBLOCK) {
         // Don't transition to standing state while in midair
-        if(object_is_airborne(obj) && h->state == STATE_FALLEN) {
+        if(object_is_airborne(obj) && h->state == STATE_RECOIL) {
             if(h->health <= 0 || h->endurance <= 0) {
                 // leave them in the last frame until they hit the ground
                 obj->animation_state.finished = 0;
@@ -2390,6 +2385,11 @@ void har_finished(object *obj) {
                 h->state = STATE_JUMPING;
                 har_set_ani(obj, ANIM_JUMPING, 0);
             }
+        } else if(h->state == STATE_RECOIL) {
+            har_event_recover(h, ctrl);
+            h->state = STATE_STANDING;
+            har_set_ani(obj, ANIM_IDLE, 1);
+            har_act(obj, ACT_NONE);
         } else if(object_is_airborne(obj)) {
             // finished an attack animation in the air
             h->state = STATE_JUMPING;
