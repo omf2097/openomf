@@ -117,7 +117,7 @@ void save_rec(game_state *gs) {
     char *time = format_time();
     char *filename = omf_malloc(256);
     snprintf(filename, 256, "%s.rec", time);
-    sd_rec_finish(gs->rec, gs->int_tick);
+    sd_rec_finish(gs->rec, gs->tick);
     sd_rec_save(gs->rec, filename);
     log_info("REC saved: %s", filename);
     omf_free(filename);
@@ -148,7 +148,8 @@ void engine_run(engine_init_flags *init_flags) {
                 return;
             }
         }
-        video_render_prepare();
+        unsigned framebuffer_options = 0;
+        video_render_prepare(framebuffer_options);
         video_render_finish();
     }
 
@@ -366,7 +367,7 @@ void engine_run(engine_init_flags *init_flags) {
 
         // Do the actual video rendering jobs
         if(enable_screen_updates) {
-            video_render_prepare();
+            video_render_prepare(game_state_get_framebuffer_options(gs));
             game_state_render(gs);
             if(debugger_render) {
                 game_state_debug(gs);

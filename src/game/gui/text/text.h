@@ -19,10 +19,11 @@ typedef struct text_document text_document;
 // so we set TEXT_SHADOW_YELLOW to 0xC0 and it renders in 0xC1.
 #define TEXT_SHADOW_YELLOW 0xC0
 
-text *text_create(font_size font);
-text *text_create_with_size(font_size font, uint16_t w, uint16_t h);
-text *text_create_from_c(font_size font, uint16_t w, uint16_t h, const char *src);
-text *text_create_from_str(font_size font, uint16_t w, uint16_t h, const str *src);
+text *text_create(void);
+text *text_create_with_font(font_size font);
+text *text_create_with_font_and_size(font_size font, uint16_t w, uint16_t h);
+text *text_create_from_c(const char *src);
+text *text_create_from_str(const str *src);
 void text_free(text **t);
 
 text_document *text_document_create(void);
@@ -96,11 +97,11 @@ void text_generate_layout(text *t);
 /**
  * Render the text document to given coordinates.
  */
-void text_document_draw(text_document *d, uint16_t offset_x, uint16_t offset_y);
+void text_document_draw(text_document *d, int16_t offset_x, int16_t offset_y);
 
 /**
  * Render the text block to given coordinates.
  */
-void text_draw(text *t, uint16_t x, uint16_t y);
+void text_draw(text *t, int16_t x, int16_t y);
 
 #endif // TEXT_ENGINE_H

@@ -53,7 +53,7 @@ static void draw_surface(void *userdata, const surface *src_surface, SDL_Rect *d
 }
 static void move_target(void *userdata, int x, int y) {
 }
-static void render_prepare(void *userdata) {
+static void render_prepare(void *userdata, unsigned framebuffer_options) {
 }
 
 static void render_finish(void *userdata) {

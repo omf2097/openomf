@@ -7,6 +7,7 @@
 #include "video/renderers/opengl3/helpers/render_target.h"
 #include "video/renderers/opengl3/helpers/shaders.h"
 #include "video/renderers/opengl3/helpers/shared.h"
+#include "video/renderers/opengl3/helpers/texture.h"
 #include "video/renderers/opengl3/helpers/texture_atlas.h"
 
 #include "utils/allocator.h"
@@ -226,9 +227,11 @@ static void move_target(void *userdata, int x, int y) {
     ctx->target_move_y = y;
 }
 
-static void render_prepare(void *userdata) {
+static void render_prepare(void *userdata, unsigned framebuffer_options) {
     gl3_context *ctx = userdata;
     object_array_prepare(ctx->objects);
+
+    bind_uniform_1u(ctx->rgba_prog_id, "framebuffer_options", framebuffer_options);
 }
 
 static inline void video_set_blend_mode(gl3_context *ctx, object_array_blend_mode request_mode) {
@@ -239,8 +242,21 @@ static inline void video_set_blend_mode(gl3_context *ctx, object_array_blend_mod
         glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     } else if(request_mode == MODE_ADD) {
         glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_TRUE);
-    } else {
+    } else if(request_mode == MODE_REMAP) {
+        glColorMask(GL_FALSE, GL_TRUE, GL_FALSE, GL_FALSE);
+    } else if(request_mode == MODE_SPRITE_SHADOW) {
+        glColorMask(GL_FALSE, GL_TRUE, GL_FALSE, GL_FALSE);
+        glEnable(GL_BLEND);
+        glBlendEquation(GL_MAX);
+    } else if(request_mode == MODE_DARK_TINT) {
         glColorMask(GL_FALSE, GL_TRUE, GL_TRUE, GL_TRUE);
+    } else {
+        assert(!"invalid blend mode");
+        return;
+    }
+
+    if(request_mode != MODE_SPRITE_SHADOW) {
+        glDisable(GL_BLEND);
     }
 
     ctx->current_blend_mode = request_mode;
