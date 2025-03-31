@@ -12,7 +12,6 @@
       <url type="details">https://github.com/omf2097/openomf/releases/tag/0.8.0</url>
       <description>
         <p>0.8.0 is the "feature complete" alpha release of OpenOMF. All major gameplay components are now implemented.</p>
-        <p>If you experience rendering issues where no text appears, please try <code>flatpak run --env=LIBGL_ALWAYS_SOFTWARE=1 org.openomf.OpenOMF</code></p>
         <ul>
           <li>Netplay support (peer to peer and via a network lobby)</li>
           <li>SIM support in tournament mode</li>
@@ -78,6 +77,9 @@
     </p>
     <p>
       One Must Fall 2097 features a 1 player story mode, a 2 player mode, a tournament mode with RPG elements and network play.
+    </p>
+    <p>
+      If you experience rendering issues where no text appears, please try <code>flatpak run --env=LIBGL_ALWAYS_SOFTWARE=1 org.openomf.OpenOMF</code>
     </p>
   </description>
   
