@@ -19,8 +19,9 @@ void video_scan_renderers(void);
 int video_get_renderer_count(void);
 bool video_get_renderer_info(int index, const char **name, const char **description);
 
-bool video_init(const char *try_name, int window_w, int window_h, bool fullscreen, bool vsync, int aspect);
-bool video_reinit(int window_w, int window_h, bool fullscreen, bool vsync, int aspect);
+bool video_init(const char *try_name, int window_w, int window_h, bool fullscreen, bool vsync, int aspect,
+                int framerate_limit);
+bool video_reinit(int window_w, int window_h, bool fullscreen, bool vsync, int aspect, int framerate_limit);
 void video_reinit_renderer(void);
 void video_get_state(int *w, int *h, bool *fs, bool *vsync, int *aspect);
 void video_move_target(int x, int y);
@@ -94,7 +95,7 @@ void video_draw_full(const surface *src_surface, int x, int y, int w, int h, int
 
 void video_signal_scene_change(void);
 
-void video_render_prepare(void);
+void video_render_prepare(unsigned framebuffer_options);
 void video_render_finish(void);
 void video_render_area_prepare(const SDL_Rect *area);
 void video_render_area_finish(surface *dst);

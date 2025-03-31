@@ -384,8 +384,6 @@ static void arena_end(scene *sc) {
         } else {
             game_state_set_next(gs, SCENE_NEWSROOM);
         }
-    } else if(is_twoplayer(gs)) {
-        game_state_set_next(gs, SCENE_MELEE);
     } else if(gs->net_mode == NET_MODE_LOBBY) {
         if(game_state_get_player(scene->gs, 0)->ctrl->type == CTRL_TYPE_NETWORK) {
             net_controller_set_winner(game_state_get_player(scene->gs, 0)->ctrl, local->winner);
@@ -395,6 +393,8 @@ static void arena_end(scene *sc) {
         }
         game_state_set_next(gs, SCENE_LOBBY);
     } else {
+        player_winner->pilot->name[0] = '\0';
+        player_loser->pilot->name[0] = '\0';
         game_state_set_next(gs, SCENE_MELEE);
     }
 
@@ -918,7 +918,7 @@ void arena_free(scene *scene) {
     game_state_set_paused(scene->gs, 0);
 
     if(scene->gs->rec && scene->gs->init_flags->playback == 0) {
-        sd_rec_finish(scene->gs->rec, scene->gs->int_tick);
+        sd_rec_finish(scene->gs->rec, scene->gs->tick);
 
         if(scene->gs->init_flags->record == 1) {
             // we're supposed to save it

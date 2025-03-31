@@ -7,6 +7,7 @@
 #include "video/renderers/opengl3/helpers/render_target.h"
 #include "video/renderers/opengl3/helpers/shaders.h"
 #include "video/renderers/opengl3/helpers/shared.h"
+#include "video/renderers/opengl3/helpers/texture.h"
 #include "video/renderers/opengl3/helpers/texture_atlas.h"
 
 #include "utils/allocator.h"
@@ -42,6 +43,9 @@ typedef struct gl3_context {
     bool draw_atlas;
     SDL_Rect culling_area;
 
+    uint64_t framerate_limit;
+    uint64_t last_tick;
+
     object_array_blend_mode current_blend_mode;
     GLuint palette_prog_id;
     GLuint rgba_prog_id;
@@ -61,16 +65,28 @@ static const char *get_name(void) {
     return "OpenGL3";
 }
 
-static bool setup_context(void *userdata, int window_w, int window_h, bool fullscreen, bool vsync, int aspect) {
+static void set_framerate_limit(gl3_context *ctx, int framerate_limit) {
+    if(framerate_limit == 0) {
+        ctx->framerate_limit = 0;
+    } else {
+        ctx->framerate_limit = (1.0 / framerate_limit) * SDL_GetPerformanceFrequency();
+    }
+}
+
+static bool setup_context(void *userdata, int window_w, int window_h, bool fullscreen, bool vsync, int aspect,
+                          int framerate_limit) {
     gl3_context *ctx = userdata;
     ctx->screen_w = window_w;
     ctx->screen_h = window_h;
     ctx->fullscreen = fullscreen;
+    ctx->framerate_limit = framerate_limit;
     ctx->vsync = vsync;
     ctx->aspect = aspect;
     ctx->target_move_x = 0;
     ctx->target_move_y = 0;
     ctx->current_blend_mode = MODE_SET;
+    ctx->last_tick = SDL_GetPerformanceCounter();
+    set_framerate_limit(ctx, framerate_limit);
 
     if(!create_window(&ctx->window, window_w, window_h, fullscreen)) {
         goto error_0;
@@ -156,14 +172,15 @@ static void get_context_state(void *userdata, int *window_w, int *window_h, bool
         *aspect = ctx->aspect;
 }
 
-static bool reset_context_with(void *userdata, int window_w, int window_h, bool fullscreen, bool vsync, int aspect) {
+static bool reset_context_with(void *userdata, int window_w, int window_h, bool fullscreen, bool vsync, int aspect,
+                               int framerate_limit) {
     gl3_context *ctx = userdata;
     ctx->screen_w = window_w;
     ctx->screen_h = window_h;
     ctx->fullscreen = fullscreen;
     ctx->vsync = vsync;
     ctx->aspect = aspect;
-    log_info("New aspect is %d", ctx->aspect);
+    set_framerate_limit(ctx, framerate_limit);
     bool success = resize_window(ctx->window, window_w, window_h, fullscreen);
     success = set_vsync(ctx->vsync) && success;
 
@@ -210,9 +227,11 @@ static void move_target(void *userdata, int x, int y) {
     ctx->target_move_y = y;
 }
 
-static void render_prepare(void *userdata) {
+static void render_prepare(void *userdata, unsigned framebuffer_options) {
     gl3_context *ctx = userdata;
     object_array_prepare(ctx->objects);
+
+    bind_uniform_1u(ctx->rgba_prog_id, "framebuffer_options", framebuffer_options);
 }
 
 static inline void video_set_blend_mode(gl3_context *ctx, object_array_blend_mode request_mode) {
@@ -223,8 +242,21 @@ static inline void video_set_blend_mode(gl3_context *ctx, object_array_blend_mod
         glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     } else if(request_mode == MODE_ADD) {
         glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_TRUE);
-    } else {
+    } else if(request_mode == MODE_REMAP) {
+        glColorMask(GL_FALSE, GL_TRUE, GL_FALSE, GL_FALSE);
+    } else if(request_mode == MODE_SPRITE_SHADOW) {
+        glColorMask(GL_FALSE, GL_TRUE, GL_FALSE, GL_FALSE);
+        glEnable(GL_BLEND);
+        glBlendEquation(GL_MAX);
+    } else if(request_mode == MODE_DARK_TINT) {
         glColorMask(GL_FALSE, GL_TRUE, GL_TRUE, GL_TRUE);
+    } else {
+        assert(!"invalid blend mode");
+        return;
+    }
+
+    if(request_mode != MODE_SPRITE_SHADOW) {
+        glDisable(GL_BLEND);
     }
 
     ctx->current_blend_mode = request_mode;
@@ -335,6 +367,17 @@ static void render_finish(void *userdata) {
     // Flip buffers. If vsync is off, we should sleep here
     // so hat our main loop doesn't eat up all cpu :)
     SDL_GL_SwapWindow(ctx->window);
+
+    // Limit framerate if requested.
+    if(ctx->framerate_limit != 0) {
+        uint64_t frame_time = SDL_GetPerformanceCounter() - ctx->last_tick;
+        if(frame_time < ctx->framerate_limit) {
+            double wait = ctx->framerate_limit - frame_time;
+            double ms_conv = SDL_GetPerformanceFrequency() / 1000;
+            SDL_Delay(wait / ms_conv); // TODO: SDL_DelayNS() or alternative.
+        }
+        ctx->last_tick = SDL_GetPerformanceCounter();
+    }
 }
 
 static void render_area_prepare(void *userdata, const SDL_Rect *area) {

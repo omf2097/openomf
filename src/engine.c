@@ -36,6 +36,7 @@ int engine_init(engine_init_flags *init_flags) {
     int fs = setting->video.fullscreen;
     int vsync = setting->video.vsync;
     int aspect = setting->video.aspect;
+    int framerate_limit = setting->video.framerate_limit;
     int frequency = setting->sound.sample_rate;
     int resampler = setting->sound.music_resampler;
     bool mono = setting->sound.music_mono;
@@ -51,7 +52,7 @@ int engine_init(engine_init_flags *init_flags) {
     // Initialize everything.
     video_scan_renderers();
     audio_scan_backends();
-    if(!video_init(renderer, w, h, fs, vsync, aspect))
+    if(!video_init(renderer, w, h, fs, vsync, aspect, framerate_limit))
         goto exit_0;
     if(!audio_init(player, frequency, mono, resampler, music_volume, sound_volume))
         goto exit_1;
@@ -116,7 +117,7 @@ void save_rec(game_state *gs) {
     char *time = format_time();
     char *filename = omf_malloc(256);
     snprintf(filename, 256, "%s.rec", time);
-    sd_rec_finish(gs->rec, gs->int_tick);
+    sd_rec_finish(gs->rec, gs->tick);
     sd_rec_save(gs->rec, filename);
     log_info("REC saved: %s", filename);
     omf_free(filename);
@@ -147,7 +148,8 @@ void engine_run(engine_init_flags *init_flags) {
                 return;
             }
         }
-        video_render_prepare();
+        unsigned framebuffer_options = 0;
+        video_render_prepare(framebuffer_options);
         video_render_finish();
     }
 
@@ -365,7 +367,7 @@ void engine_run(engine_init_flags *init_flags) {
 
         // Do the actual video rendering jobs
         if(enable_screen_updates) {
-            video_render_prepare();
+            video_render_prepare(game_state_get_framebuffer_options(gs));
             game_state_render(gs);
             if(debugger_render) {
                 game_state_debug(gs);

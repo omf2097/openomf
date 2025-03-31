@@ -321,7 +321,7 @@ component *textinput_create(int max_chars, const char *help, const char *initial
     ti->text_horizontal_align = TEXT_ALIGN_CENTER;
     ti->text_shadow_color = 0;
     ti->text_shadow = GLYPH_SHADOW_NONE;
-    ti->text = text_create_with_size(FONT_SMALL, TEXT_BBOX_MAX, TEXT_BBOX_MAX);
+    ti->text = text_create();
     ti->pos = min2(str_size(&ti->buf), ti->max_chars);
 
     component_set_help_text(c, help);

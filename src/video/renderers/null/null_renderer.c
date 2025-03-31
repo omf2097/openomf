@@ -16,7 +16,8 @@ static const char *get_name(void) {
     return "NULL";
 }
 
-static bool setup_context(void *userdata, int window_w, int window_h, bool fullscreen, bool vsync, int aspect) {
+static bool setup_context(void *userdata, int window_w, int window_h, bool fullscreen, bool vsync, int aspect,
+                          int framerate_limit) {
     log_info("NULL Renderer initialized!");
     return true;
 }
@@ -35,7 +36,8 @@ static void get_context_state(void *userdata, int *window_w, int *window_h, bool
         *aspect = 0;
 }
 
-static bool reset_context_with(void *userdata, int window_w, int window_h, bool fullscreen, bool vsync, int aspect) {
+static bool reset_context_with(void *userdata, int window_w, int window_h, bool fullscreen, bool vsync, int aspect,
+                               int framerate_limit) {
     log_info("NULL renderer reset.");
     return true;
 }
@@ -51,7 +53,7 @@ static void draw_surface(void *userdata, const surface *src_surface, SDL_Rect *d
 }
 static void move_target(void *userdata, int x, int y) {
 }
-static void render_prepare(void *userdata) {
+static void render_prepare(void *userdata, unsigned framebuffer_options) {
 }
 
 static void render_finish(void *userdata) {

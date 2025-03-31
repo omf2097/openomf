@@ -130,11 +130,13 @@ static bool video_find_renderer(const char *try_name) {
     return false;
 }
 
-bool video_init(const char *try_name, int window_w, int window_h, bool fullscreen, bool vsync, int aspect) {
+bool video_init(const char *try_name, int window_w, int window_h, bool fullscreen, bool vsync, int aspect,
+                int framerate_limit) {
     if(!video_find_renderer(try_name))
         goto exit_0;
     current_renderer.create(&current_renderer);
-    if(!current_renderer.setup_context(current_renderer.ctx, window_w, window_h, fullscreen, vsync, aspect)) {
+    if(!current_renderer.setup_context(current_renderer.ctx, window_w, window_h, fullscreen, vsync, aspect,
+                                       framerate_limit)) {
         goto exit_1;
     }
     return true;
@@ -153,16 +155,17 @@ void video_reinit_renderer(void) {
     current_renderer.reset_context(current_renderer.ctx);
 }
 
-bool video_reinit(int window_w, int window_h, bool fullscreen, bool vsync, int aspect) {
-    return current_renderer.reset_context_with(current_renderer.ctx, window_w, window_h, fullscreen, vsync, aspect);
+bool video_reinit(int window_w, int window_h, bool fullscreen, bool vsync, int aspect, int framerate_limit) {
+    return current_renderer.reset_context_with(current_renderer.ctx, window_w, window_h, fullscreen, vsync, aspect,
+                                               framerate_limit);
 }
 
 void video_signal_scene_change(void) {
     current_renderer.signal_scene_change(current_renderer.ctx);
 }
 
-void video_render_prepare(void) {
-    current_renderer.render_prepare(current_renderer.ctx);
+void video_render_prepare(unsigned framebuffer_options) {
+    current_renderer.render_prepare(current_renderer.ctx, framebuffer_options);
 }
 
 void video_render_finish(void) {

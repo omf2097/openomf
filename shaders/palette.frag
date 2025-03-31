@@ -16,24 +16,35 @@ uniform sampler2D remaps;
 
 in vec4 gl_FragCoord;
 
-bool REMAP_SPRITE = (options & 1u) != 0u;
+// for info about these options, see renderer_options in video/enums.h
+bool SPRITE_REMAP = (options & 1u) != 0u;
 bool SPRITE_SHADOWMASK = (options & 2u) != 0u;
 bool SPRITE_INDEX_ADD = (options & 4u) != 0u;
-bool USE_HAR_QUIRKS = (options & 8u) != 0u;
+bool SPRITE_HAR_QUIRKS = (options & 8u) != 0u;
+bool SPRITE_DARK_TINT = (options & 0x10u) != 0u;
 
 
 float PHI = 1.61803398874989484820459;
 float ATLAS_H = 2048.0;
+vec2 NATIVE_SIZE = vec2(320.0, 200.0);
 
 float noise(in vec2 v) {
     return fract(tan(distance(v * PHI, v)) * v.x);
 }
 
 vec4 handle(float index) {
+    if (SPRITE_DARK_TINT) {
+        float remap_index = float(remap_offset) / 255.0;
+        // use magic rounds to detect if dark_tint's remap has been
+        // overwritten by the pause menu's background
+        int magic_remap_rounds = 12;
+        float remap = remap_index + float(magic_remap_rounds) * 19.0 / 255.0;
+        return vec4(0.0, remap, index, 0.0);
+    }
     if (remap_rounds > 0) {
-        float r_index = remap_offset / 255.0 + index;
-        float r_rounds = remap_rounds / 255.0;
-        return vec4(0.0, r_index, r_rounds, 0.0);
+        float remap_index = float(remap_offset) / 255.0 + index;
+        float remap = remap_index + float(remap_rounds) * 19.0 / 255.0;
+        return vec4(0.0, remap, 0.0, 0.0);
     }
     if (SPRITE_INDEX_ADD) {
         float add = (index * 255.0 * 60) / 255.0;
@@ -54,7 +65,7 @@ void main() {
         // make four samples to generate coverage
         int coverage = 0;
         for(int y = 0; y < 4; y++) {
-            float offset = float(y) / ATLAS_H;
+            float offset = float(y - 1) / ATLAS_H;
             vec4 texel = texture(atlas, tex_coord + vec2(0, offset));
             int index = int(texel.r * 255.0);
             coverage += int(index != transparency_index);
@@ -85,10 +96,10 @@ void main() {
         texel.r = clamp(texel.r + offset, 0, limit);
     }
 
-    bool NO_REMAP = USE_HAR_QUIRKS && index > 0x30;
+    bool NO_REMAP = SPRITE_HAR_QUIRKS && index > 0x30;
 
     // If remapping is on, do it now.
-    if (REMAP_SPRITE && !NO_REMAP) {
+    if (SPRITE_REMAP && !NO_REMAP) {
         vec4 remap = texture(remaps, vec2(texel.r, remap_offset / 18.0));
 
         texel = remap;

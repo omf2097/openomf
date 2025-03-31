@@ -18,10 +18,12 @@ typedef void (*init_renderer_fn)(renderer *renderer);
 typedef void (*close_renderer_fn)(renderer *renderer);
 
 // Renderer initialization and de-initialization, these must be implemented.
-typedef bool (*setup_context_fn)(void *ctx, int window_w, int window_h, bool fullscreen, bool vsync, int aspect);
+typedef bool (*setup_context_fn)(void *ctx, int window_w, int window_h, bool fullscreen, bool vsync, int aspect,
+                                 int framerate_limit);
 typedef void (*get_context_state_fn)(void *ctx, int *window_w, int *window_h, bool *fullscreen, bool *vsync,
                                      int *aspect);
-typedef bool (*reset_context_with_fn)(void *ctx, int window_w, int window_h, bool fullscreen, bool vsync, int aspect);
+typedef bool (*reset_context_with_fn)(void *ctx, int window_w, int window_h, bool fullscreen, bool vsync, int aspect,
+                                      int framerate_limit);
 typedef void (*reset_context_fn)(void *ctx);
 typedef void (*close_context_fn)(void *ctx);
 
@@ -32,7 +34,7 @@ typedef void (*draw_surface_fn)(void *ctx, const surface *src_surface, SDL_Rect 
 typedef void (*move_target_fn)(void *ctx, int x, int y);
 
 // Onscreen rendering state management, these must be implemented
-typedef void (*render_prepare_fn)(void *ctx);
+typedef void (*render_prepare_fn)(void *ctx, unsigned framebuffer_options);
 typedef void (*render_finish_fn)(void *ctx);
 
 // Offscreen rendering state management, these must be implemented

@@ -325,13 +325,13 @@ void object_apply_controllable_velocity(object *obj, bool is_projectile, char in
                 cy *= obj->vertical_velocity_modifier;
             }
             if(input == '8') {
-                obj->vel.y -= cy * object_get_direction(obj);
+                obj->vel.y -= cy;
             } else if(input == '2') {
-                obj->vel.y += cy * object_get_direction(obj);
+                obj->vel.y += cy;
             } else if(input == '3' || input == '1') {
-                obj->vel.y += cy * 0.7 * object_get_direction(obj);
+                obj->vel.y += cy * 0.7;
             } else if(input == '7' || input == '9') {
-                obj->vel.y -= cy * 0.7 * object_get_direction(obj);
+                obj->vel.y -= cy * 0.7;
             }
         }
     }
@@ -407,25 +407,21 @@ void object_render(object *obj) {
         remap_rounds = 1;
         remap_offset = clamp((opacity * 4) >> 8, 0, 3) - 1;
         opacity = 255; // Reset opacity for rendering
-    } else if(object_has_effect(obj, EFFECT_DARK_TINT)) {
+    } else if(object_has_effect(obj, EFFECT_DARK_TINT | EFFECT_STASIS)) {
         remap_rounds = 0;
         remap_offset = 5;
-        options |= REMAP_SPRITE;
-    } else if(object_has_effect(obj, EFFECT_STASIS)) {
-        remap_rounds = 0;
-        remap_offset = 5;
-        options |= REMAP_SPRITE;
+        options |= SPRITE_REMAP | SPRITE_DARK_TINT;
     } else if(object_has_effect(obj, EFFECT_POSITIONAL_LIGHTING)) {
         int rx = x + (w >> 1);
         remap_rounds = 0;
         remap_offset = clamp(6 + floorf(((rx > 160) ? 320 - rx : rx) / 60), 6, 8);
-        options |= REMAP_SPRITE;
+        options |= SPRITE_REMAP;
     } else if(object_has_effect(obj, EFFECT_ADD)) {
         options |= SPRITE_INDEX_ADD;
     }
 
-    if((options & REMAP_SPRITE) != 0 && object_has_effect(obj, EFFECT_HAR_QUIRKS)) {
-        options |= USE_HAR_QUIRKS;
+    if((options & SPRITE_REMAP) != 0 && object_has_effect(obj, EFFECT_HAR_QUIRKS)) {
+        options |= SPRITE_HAR_QUIRKS;
     }
 
     video_draw_full(obj->cur_surface, x, y, w, h, remap_offset, remap_rounds, obj->pal_offset, obj->pal_limit, opacity,

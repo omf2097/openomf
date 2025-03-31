@@ -562,6 +562,25 @@ void handle_action(scene *scene, int player, int action) {
     local->cheat_selected[player][5 * (*row) + *column] = 1;
 }
 
+// Move cursors to select Pilot or HARs specified by A and B.
+static void restore_cursors_to(melee_local *local, unsigned a, unsigned b) {
+    // note: a/b can be HAR_NOVA (10) when returning from VS,
+    // which the original game handles surprisingly elegantly.
+    // If we try to naively do that, our pointers all explode.
+    if(a == HAR_NOVA) {
+        a = HAR_FLAIL;
+    }
+    if(b == HAR_NOVA) {
+        b = HAR_FLAIL;
+    }
+    local->cursor[0].column = a % 5;
+    local->cursor[0].row = a / 5;
+    local->cursor[0].done = 0;
+    local->cursor[1].column = b % 5;
+    local->cursor[1].row = b / 5;
+    local->cursor[1].done = 0;
+}
+
 void melee_input_tick(scene *scene) {
     melee_local *local = scene_get_userdata(scene);
     game_player *player1 = game_state_get_player(scene->gs, 0);
@@ -600,12 +619,7 @@ void melee_input_tick(scene *scene) {
             audio_play_sound(20, 0.5f, 0.0f, 2.0f);
             if(local->page == HAR_SELECT) {
                 // restore the player selection
-                local->cursor[0].column = local->pilot_id_a % 5;
-                local->cursor[0].row = local->pilot_id_a / 5;
-                local->cursor[0].done = 0;
-                local->cursor[1].column = local->pilot_id_b % 5;
-                local->cursor[1].row = local->pilot_id_b / 5;
-                local->cursor[1].done = 0;
+                restore_cursors_to(local, local->pilot_id_a, local->pilot_id_b);
                 local->page = PILOT_SELECT;
                 load_pilot_portraits_palette(scene);
             } else {
@@ -848,49 +862,72 @@ static void load_har_portraits(scene *scene, melee_local *local) {
 }
 
 static void load_hars(scene *scene, melee_local *local, bool player2_is_selectable) {
-    animation *ani;
-    ani = &bk_get_info(scene->bk_data, 18)->ani;
     object_create(&local->har[0], scene->gs, vec2i_create(110, 95), vec2f_create(0, 0));
-    object_set_animation(&local->har[0], ani);
-    object_select_sprite(&local->har[0], 0);
-    object_set_repeat(&local->har[0], 1);
-
+    update_har(scene, 0);
     if(player2_is_selectable) {
-        ani = &bk_get_info(scene->bk_data, 18 + 4)->ani;
         object_create(&local->har[1], scene->gs, vec2i_create(210, 95), vec2f_create(0, 0));
-        object_set_animation(&local->har[1], ani);
-        object_select_sprite(&local->har[1], 0);
-        object_set_repeat(&local->har[1], 1);
+        update_har(scene, 1);
         object_set_direction(&local->har[1], OBJECT_FACE_LEFT);
         object_set_pal_offset(&local->har[1], 48);
         object_set_pal_limit(&local->har[1], 96);
     }
 }
 
+int melee_event_cb(scene *scene, SDL_Event *e) {
+    melee_local *local = scene_get_userdata(scene);
+    if(local->page == HAR_SELECT && e->type == SDL_KEYDOWN && SDLK_1 <= e->key.keysym.sym &&
+       e->key.keysym.sym <= SDLK_6) {
+        // color cheat:
+        // press 1-3 to change pilot1 colors
+        // press 4-6 to change pilot2 colors in 2 player
+        int idx = e->key.keysym.sym - SDLK_1;
+        int pal_id = idx % 3;
+        int player_id = idx / 3;
+
+        game_player *player = game_state_get_player(scene->gs, player_id);
+        uint8_t color = sd_pilot_get_player_color(player->pilot, pal_id);
+        color = (color + 1) % 16;
+        sd_pilot_set_player_color(player->pilot, pal_id, color);
+        palette_load_player_colors(&player->pilot->palette, player_id);
+    }
+    return 1;
+}
+
 int melee_create(scene *scene) {
     // Init local data
     melee_local *local = omf_calloc(1, sizeof(melee_local));
     scene_set_userdata(scene, local);
-
-    local->cursor[1].row = 0;
-    local->cursor[1].column = 4;
-    local->pilot_id_b = CURSOR_INDEX(local, 1);
+    scene->event = melee_event_cb;
 
     game_player *player1 = game_state_get_player(scene->gs, 0);
     game_player *player2 = game_state_get_player(scene->gs, 1);
 
+    // if we already have a pilot name, we're coming back from VS.
+    if(player1->pilot->name[0] != '\0' && (player2->pilot->name[0] != '\0' || !player2->selectable)) {
+        local->page = HAR_SELECT;
+        local->pilot_id_a = player1->pilot->pilot_id;
+        local->pilot_id_b = player2->pilot->pilot_id;
+        restore_cursors_to(local, player1->pilot->har_id, player2->pilot->har_id);
+
+        palette_load_player_colors(&player1->pilot->palette, 0);
+        palette_load_player_colors(&player2->pilot->palette, 1);
+    } else {
+        local->page = PILOT_SELECT;
+        local->pilot_id_a = PILOT_CRYSTAL;
+        local->pilot_id_b = PILOT_SHIRRO;
+        restore_cursors_to(local, local->pilot_id_a, local->pilot_id_b);
+
+        load_pilot_portraits_palette(scene);
+    }
+
     controller *player1_ctrl = game_player_get_ctrl(player1);
     controller *player2_ctrl = game_player_get_ctrl(player2);
-
-    palette_set_player_color(0, 8, 0);
-    palette_set_player_color(0, 8, 1);
-    palette_set_player_color(0, 8, 2);
 
     menu_background_create(&local->bg_player_stats, 90, 61, MenuBackgroundMeleeVs);
     menu_background_create(&local->bg_player_bio, 160, 43, MenuBackgroundMeleeVs);
 
     for(int i = 0; i < 2; i++) {
-        local->player_bio[i] = text_create_with_size(FONT_SMALL, 156, 34);
+        local->player_bio[i] = text_create_with_font_and_size(FONT_SMALL, 156, 34);
         text_set_color(local->player_bio[i], TEXT_GREEN);
         text_set_shadow_style(local->player_bio[i], TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
         text_set_shadow_color(local->player_bio[i], TEXT_SHADOW_GREEN);
@@ -924,7 +961,6 @@ int melee_create(scene *scene) {
 
     // Load HAR and Pilot face portraits and har sprites for the selection grid
     load_pilot_portraits(scene, local);
-    load_pilot_portraits_palette(scene);
     load_har_portraits(scene, local);
     load_hars(scene, local, player2->selectable);
 
