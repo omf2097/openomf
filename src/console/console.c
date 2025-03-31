@@ -51,16 +51,14 @@ static int make_argv(char *p, char **argv) {
 }
 
 static void console_refresh(void) {
-    char row[128] = {0};
-    int x = 0;
+    char row[2] = {0, 0};
     unsigned int lines = 0;
     str visible;
     str_create(&visible);
     for(unsigned int i = con->output_pos; i != con->output_tail && lines < 15; i = BUFFER_INC(i)) {
-        row[x] = con->output[i];
+        row[0] = con->output[i];
         str_append_c(&visible, row);
-        if(row[x] == '\n') {
-            x = 0;
+        if(row[0] == '\n') {
             lines++;
         }
     }
