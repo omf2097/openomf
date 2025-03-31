@@ -534,14 +534,16 @@ void har_move(object *obj) {
 
         char last_input = get_last_input(h);
         if(h->state == STATE_VICTORY && obj->vel.y > 0) {
+            // TODO: A trigger in arena.c often puts us in STATE_VICTORY too early, which can be a problem
+            // if we're still airborne.  This allows us to land somewhat properly.
             object_set_vel(obj, vec2f_create(0, 0));
             har_set_ani(obj, ANIM_IDLE, 1);
             object_set_stride(obj, h->stride);
             har_event_land(h, ctrl);
             har_floor_landing_effects(obj, true);
+        } else if(h->state == STATE_JUMPING && enemy_har->is_grabbed == 0) {
             // Change animation from jump to walk or idle,
             // depending on held inputs
-        } else if(h->state == STATE_JUMPING && enemy_har->is_grabbed == 0) {
             if(last_input == '6') {
                 h->state = STATE_WALKTO;
                 har_set_ani(obj, ANIM_WALKING, 1);
@@ -1555,6 +1557,11 @@ void har_collide_with_hazard(object *o_har, object *o_hzd) {
     har *h = object_get_userdata(o_har);
     bk *bk_data = object_get_userdata(o_hzd);
     bk_info *anim = bk_get_info(bk_data, o_hzd->cur_animation->id);
+
+    if(h->state == STATE_STANDING_UP) {
+        // can't hit em while they're down
+        return;
+    }
 
     if(h->state == STATE_VICTORY || h->state == STATE_DEFEAT || h->state == STATE_SCRAP ||
        h->state == STATE_DESTRUCTION || h->state == STATE_DONE || h->state == STATE_WALLDAMAGE) {
