@@ -69,7 +69,7 @@ bool lang_init(void) {
     log_info("Loaded language file '%s'.", filename);
 
     // Load up language2 file (OpenOMF)
-    str_append_c(&filename_str, "2");
+    str_append_char(&filename_str, '2');
     filename = str_c(&filename_str);
 
     language2 = omf_calloc(1, sizeof(sd_language));

@@ -37,9 +37,9 @@ static void refresh(component *c) {
     } else {
         for(int i = 0; i < t->positions; i++) {
             if(i + 1 > *t->pos) {
-                str_append_c(&txt, "|");
+                str_append_char(&txt, '|');
             } else {
-                str_append_c(&txt, "\x7f");
+                str_append_char(&txt, CURSOR_CHAR);
             }
         }
     }
