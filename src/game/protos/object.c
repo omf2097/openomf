@@ -325,13 +325,13 @@ void object_apply_controllable_velocity(object *obj, bool is_projectile, char in
                 cy *= obj->vertical_velocity_modifier;
             }
             if(input == '8') {
-                obj->vel.y -= cy * object_get_direction(obj);
+                obj->vel.y -= cy;
             } else if(input == '2') {
-                obj->vel.y += cy * object_get_direction(obj);
+                obj->vel.y += cy;
             } else if(input == '3' || input == '1') {
-                obj->vel.y += cy * 0.7 * object_get_direction(obj);
+                obj->vel.y += cy * 0.7;
             } else if(input == '7' || input == '9') {
-                obj->vel.y -= cy * 0.7 * object_get_direction(obj);
+                obj->vel.y -= cy * 0.7;
             }
         }
     }
