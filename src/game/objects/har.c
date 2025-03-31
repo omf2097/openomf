@@ -502,8 +502,10 @@ void har_move(object *obj) {
         return;
     }
 
-    obj->pos.x += obj->vel.x;
-    obj->pos.y += obj->vel.y;
+    if(!player_frame_isset(obj, "h")) {
+        obj->pos.x += obj->vel.x;
+        obj->pos.y += obj->vel.y;
+    }
 
     object *enemy_obj =
         game_state_find_object(obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
