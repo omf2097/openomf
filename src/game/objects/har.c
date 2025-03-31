@@ -350,13 +350,33 @@ int har_is_blocking(har *h, af_move *move) {
     return 0;
 }
 
+bool is_in_range(object *obj, af_move *move) {
+    if(move->successor_id) { // This is a throw with limited range
+        // CLOSE moves use the successor id field as a distance requirement
+        float throw_range = (float)obj->gs->match_settings.throw_range / 100.0f;
+        har *h = object_get_userdata(obj);
+        object *enemy_obj =
+            game_state_find_object(obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
+        if(object_distance(obj, enemy_obj) > move->successor_id * throw_range) {
+            return false;
+        }
+    }
+    return true;
+}
+
 int har_is_invincible(object *obj, af_move *move) {
     if(player_frame_isset(obj, "zz")) {
         // blocks everything
         return 1;
     }
+
     switch(move->category) {
-        // XX 'zg' is not handled here, but the game doesn't use it...
+        case CAT_CLOSE:
+            if(player_frame_isset(obj, "zg") || obj->cur_animation->id == ANIM_DAMAGE ||
+               obj->cur_animation->id == ANIM_STANDING_BLOCK || obj->cur_animation->id == ANIM_CROUCHING_BLOCK) {
+                return 1;
+            }
+            break;
         case CAT_LOW:
             if(player_frame_isset(obj, "zl")) {
                 return 1;
@@ -1285,6 +1305,10 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
             return 0;
         }
 
+        if(!is_in_range(obj_b, move)) { // Won't get hit by throws out of range
+            return 0;
+        }
+
         vec2i hit_coord2 = vec2i_create(0, 0);
 
         if(move->category != CAT_CLOSE && b->damage_done == 0 && loop == 0 &&
@@ -1953,11 +1977,10 @@ bool is_move_chain_allowed(object *obj, af_move *move) {
                 break;
             case CAT_CLOSE:
                 if(player_frame_isset(obj, "jg") || (is_har_idle_grounded(obj) && allowed_in_idle)) {
-                    // CLOSE moves use the successor id field as a distance requirement
                     object *enemy_obj = game_state_find_object(
                         obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
-                    float throw_range = (float)obj->gs->match_settings.throw_range / 100.0f;
-                    if(object_distance(obj, enemy_obj) <= move->successor_id * throw_range) {
+                    if(enemy_obj->pos.y == ARENA_FLOOR && !har_is_invincible(enemy_obj, move) &&
+                       is_in_range(obj, move)) {
                         allowed = true;
                     }
                 }
