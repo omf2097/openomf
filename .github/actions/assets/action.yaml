@@ -20,9 +20,14 @@ runs:
         key: openomf-assets.zip
 
     - name: Download assets file
-      if: steps.cache-assets.outputs.cache-hit != 'true'
+      if: ${{ (steps.cache-assets.outputs.cache-hit != 'true') && (runner.os == 'Linux') }}
       shell: bash
       run: wget -q "${{ inputs.asset_url }}" -O "${{ inputs.filename }}"
+
+    - name: Download assets file
+      if: ${{ (steps.cache-assets.outputs.cache-hit != 'true') && (runner.os == 'Windows') }}
+      shell: pwsh
+      run: Invoke-WebRequest "${{ inputs.asset_url }}" -OutFile "${{ inputs.filename }}"
 
     - name: Cache assets file
       if: steps.cache-assets.outputs.cache-hit != 'true'
