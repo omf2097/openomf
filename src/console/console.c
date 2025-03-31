@@ -1,6 +1,7 @@
 #include "console/console.h"
 #include "console/console_type.h"
 #include "game/gui/menu_background.h"
+#include "game/gui/text/text.h"
 #include "game/utils/settings.h"
 #include "utils/allocator.h"
 #include "utils/c_string_util.h"
@@ -25,7 +26,7 @@ console *con = NULL;
 // defined in console_cmd.c
 void console_init_cmd(void);
 
-int make_argv(char *p, char **argv) {
+static int make_argv(char *p, char **argv) {
     // split line into argv, warning: does not handle quoted strings
     int argc = 0;
     while(isspace(*p)) {
@@ -49,7 +50,27 @@ int make_argv(char *p, char **argv) {
     return argc;
 }
 
-void console_add_history(const char *input, unsigned int len) {
+static void console_refresh(void) {
+    char row[128] = {0};
+    int x = 0;
+    unsigned int lines = 0;
+    str visible;
+    str_create(&visible);
+    for(unsigned int i = con->output_pos; i != con->output_tail && lines < 15; i = BUFFER_INC(i)) {
+        row[x] = con->output[i];
+        str_append_c(&visible, row);
+        if(row[x] == '\n') {
+            x = 0;
+            lines++;
+        }
+    }
+    str_append(&visible, &con->input);
+    str_append_c(&visible, CURSOR_STR);
+    text_set_from_str(con->text, &visible);
+    str_free(&visible);
+}
+
+static void console_add_history(const char *input, unsigned int len) {
     iterator it;
     list_iter_begin(&con->history, &it);
 
@@ -62,13 +83,13 @@ void console_add_history(const char *input, unsigned int len) {
             }
             list_prepend(&con->history, input, len);
         }
-    } else if(input2 == NULL) {
+    } else {
         list_prepend(&con->history, input, len);
     }
     con->hist_pos = -1;
 }
 
-void console_handle_line(game_state *gs) {
+static void console_handle_line(game_state *gs) {
     str_strip(&con->input);
     if(str_size(&con->input) == 0) {
         console_output_addline(">");
@@ -98,7 +119,7 @@ void console_handle_line(game_state *gs) {
                     console_output_addline(buf);
                     log_debug("Error in console command %s: %s", argv[0], buf);
                 }
-                console_add_history(input_copy, sizeof(input_copy));
+                console_add_history(str_c(&con->input), str_size(&con->input) + 1);
             } else {
                 console_output_add("> ");
                 console_output_add(argv[0]);
@@ -112,7 +133,7 @@ void console_handle_line(game_state *gs) {
     }
 }
 
-void console_output_scroll_to_end(void) {
+static void console_output_scroll_to_end(void) {
     // iterate the output buffer backward to count up to 16 lines or 480 chars, whichever comes first
     unsigned int lines = 0;
     unsigned int si;
@@ -140,7 +161,7 @@ void console_output_scroll_to_end(void) {
     con->output_pos = si;
 }
 
-void console_output_scroll_up(unsigned int lines) {
+static void console_output_scroll_up(unsigned int lines) {
     unsigned int l = 0;
     if(con->output_pos != con->output_head) {
         con->output_pos = BUFFER_DEC(con->output_pos);
@@ -157,7 +178,7 @@ void console_output_scroll_up(unsigned int lines) {
     }
 }
 
-void console_output_scroll_down(unsigned int lines) {
+static void console_output_scroll_down(unsigned int lines) {
     unsigned int l = 0;
     while(con->output_pos != con->output_tail) {
         con->output_pos = BUFFER_INC(con->output_pos);
@@ -186,32 +207,10 @@ void console_output_add(const char *text) {
 
     console_output_scroll_to_end();
 }
+
 void console_output_addline(const char *text) {
     console_output_add(text);
     console_output_add("\n");
-}
-
-void console_output_render(void) {
-    int x = 0;
-    int y = 0;
-    unsigned int lines = 0;
-    text_settings tconf;
-    text_defaults(&tconf);
-    tconf.cforeground = TEXT_MEDIUM_GREEN;
-    tconf.font = FONT_SMALL;
-    const font *fnt = fonts_get_font(FONT_SMALL);
-    for(unsigned int i = con->output_pos; i != con->output_tail && lines < 15; i = BUFFER_INC(i)) {
-        char c = con->output[i];
-        if(c == '\n') {
-            x = 0;
-            y += fnt->h;
-            lines++;
-        } else {
-            // TODO add word wrapping?
-            text_render_char(&tconf, TEXT_MEDIUM_GREEN, x, y + con->y_pos - 100, c);
-            x += fnt->w;
-        }
-    }
 }
 
 bool console_init(void) {
@@ -228,7 +227,9 @@ bool console_init(void) {
     con->output_pos = 0;
     con->output_overflowing = 0;
     con->hist_pos = -1;
-    con->hist_pos_changed = 0;
+    con->text = text_create_with_font_and_size(FONT_SMALL, 320, 100);
+    text_set_color(con->text, TEXT_MEDIUM_GREEN);
+    text_set_line_spacing(con->text, 0);
     list_create(&con->history);
     hashmap_create(&con->cmds);
     menu_transparent_bg_create(&con->background1, 322, 101);
@@ -262,6 +263,7 @@ bool console_init(void) {
         console_output_add(CURSOR_STR);
     }
     console_output_addline("\n");
+    console_refresh();
 
     return true;
 }
@@ -272,6 +274,7 @@ void console_close(void) {
     list_free(&con->history);
     hashmap_free(&con->cmds);
     str_free(&con->input);
+    text_free(&con->text);
     omf_free(con);
 }
 
@@ -286,27 +289,25 @@ void console_event(game_state *gs, SDL_Event *e) {
                 c = tolower(c);
                 str_append_buf(&con->input, &c, 1);
             }
+            console_refresh();
         }
     } else if(e->type == SDL_KEYDOWN) {
         size_t len = str_size(&con->input);
         unsigned char scancode = e->key.keysym.scancode;
-        /*if ((code >= SDLK_a && code <= SDLK_z) || (code >= SDLK_0 && code <= SDLK_9) || code == SDLK_SPACE || code ==
-         * SDLK) {*/
-        // SDLK_UP and SDLK_DOWN does not work here
         if(scancode == SDL_SCANCODE_UP) {
             if(con->hist_pos < HISTORY_MAX && con->hist_pos < (signed int)(list_size(&con->history) - 1)) {
                 con->hist_pos++;
-                con->hist_pos_changed = 1;
+                str_set_c(&con->input, list_get(&con->history, con->hist_pos));
             }
         } else if(scancode == SDL_SCANCODE_DOWN) {
             if(con->hist_pos > -1) {
                 con->hist_pos--;
-                con->hist_pos_changed = 1;
+                if(con->hist_pos == -1) {
+                    str_truncate(&con->input, 0);
+                } else {
+                    str_set_c(&con->input, list_get(&con->history, con->hist_pos));
+                }
             }
-        } else if(scancode == SDL_SCANCODE_LEFT) {
-            // TODO move cursor to the left
-        } else if(scancode == SDL_SCANCODE_RIGHT) {
-            // TODO move cursor to the right
         } else if(scancode == SDL_SCANCODE_BACKSPACE || scancode == SDL_SCANCODE_DELETE) {
             if(len > 0) {
                 str_truncate(&con->input, len - 1);
@@ -320,33 +321,15 @@ void console_event(game_state *gs, SDL_Event *e) {
         } else if(scancode == SDL_SCANCODE_PAGEDOWN) {
             console_output_scroll_down(1);
         }
+        console_refresh();
     }
 }
 
 void console_render(void) {
     if(con->y_pos > 0) {
-        if(con->hist_pos != -1 && con->hist_pos_changed) {
-            const char *input = list_get(&con->history, con->hist_pos);
-            str_free(&con->input);
-            str_from_c(&con->input, input);
-            con->hist_pos_changed = 0;
-        }
-        if(con->hist_pos == -1 && con->hist_pos_changed) {
-            str_truncate(&con->input, 0);
-            con->hist_pos_changed = 0;
-        }
-        const font *fnt = fonts_get_font(FONT_SMALL);
         video_draw_remap(&con->background1, -1, con->y_pos - 101, 4, 1, 0);
         video_draw(&con->background2, -1, con->y_pos - 101);
-        text_settings tconf;
-        text_defaults(&tconf);
-        tconf.font = FONT_SMALL;
-        // input line
-        text_render_str(&tconf, TEXT_MEDIUM_GREEN, 0, con->y_pos - 7, 300, 6, &con->input);
-
-        // cursor
-        text_render(&tconf, TEXT_BLINKY_GREEN, str_size(&con->input) * fnt->w, con->y_pos - 7, 6, 6, CURSOR_STR);
-        console_output_render();
+        text_draw(con->text, 0, con->y_pos - 100);
     }
 }
 

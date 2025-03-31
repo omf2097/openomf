@@ -497,7 +497,7 @@ text *text_document_get_text(text_document *d, uint16_t index) {
     return vector_get(&d->text_objects, index);
 }
 
-void text_document_draw(text_document *d, uint16_t offset_x, uint16_t offset_y) {
+void text_document_draw(text_document *d, int16_t offset_x, int16_t offset_y) {
     iterator it;
     text *item;
     vector_iter_begin(&d->text_objects, &it);
@@ -517,7 +517,7 @@ void text_generate_layout(text *t) {
     }
 }
 
-static inline void draw_shadow(const text_layout_item *item, uint16_t offset_x, uint16_t offset_y, uint8_t shadow,
+static inline void draw_shadow(const text_layout_item *item, int16_t offset_x, int16_t offset_y, uint8_t shadow,
                                vga_index color) {
     int palette_offset = (int)color - 1;
     int x = item->x + offset_x;
@@ -532,15 +532,14 @@ static inline void draw_shadow(const text_layout_item *item, uint16_t offset_x, 
         video_draw_offset(item->glyph, x, y - 1, palette_offset, 255);
 }
 
-static inline void draw_foreground(const text_layout_item *item, uint16_t offset_x, uint16_t offset_y,
-                                   vga_index color) {
+static inline void draw_foreground(const text_layout_item *item, int16_t offset_x, int16_t offset_y, vga_index color) {
     int palette_offset = (int)color - 1;
     int x = item->x + offset_x;
     int y = item->y + offset_y;
     video_draw_offset(item->glyph, x, y, palette_offset, 255);
 }
 
-void text_draw(text *t, uint16_t offset_x, uint16_t offset_y) {
+void text_draw(text *t, int16_t offset_x, int16_t offset_y) {
     assert(t != NULL);
     text_layout_item *item;
     iterator it;
