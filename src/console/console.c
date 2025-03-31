@@ -18,8 +18,6 @@
 #define BUFFER_INC(b) (((b) + 1) % sizeof(con->output))
 #define BUFFER_DEC(b) (((b) + sizeof(con->output) - 1) % sizeof(con->output))
 
-#define CURSOR_STR "\x7f"
-
 // Console State
 console *con = NULL;
 
