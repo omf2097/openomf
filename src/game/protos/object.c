@@ -808,6 +808,11 @@ void object_set_destroy_cb(object *obj, object_state_del_cb cbf, void *userdata)
     obj->animation_state.destroy_userdata = userdata;
 }
 
+void object_set_disable_cb(object *obj, object_state_disable_cb cbf, void *userdata) {
+    obj->animation_state.disable = cbf;
+    obj->animation_state.disable_userdata = userdata;
+}
+
 int object_is_airborne(const object *obj) {
     return obj->pos.y < ARENA_FLOOR || obj->vel.y < 0;
 }
@@ -815,4 +820,11 @@ int object_is_airborne(const object *obj) {
 /* Attaches one object to another. Positions are synced to this from the attached. */
 void object_attach_to(object *obj, const object *attach_to) {
     obj->attached_to_id = attach_to->id;
+}
+
+void object_disable_animation(object *obj, uint8_t animation_id, uint16_t ticks) {
+
+    if(obj->animation_state.disable) {
+        obj->animation_state.disable(obj, animation_id, ticks, obj->animation_state.disable_userdata);
+    }
 }

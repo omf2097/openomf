@@ -179,6 +179,7 @@ typedef struct har_t {
     list har_hooks;
 
     vector child_objects;
+    hashmap disabled_animations;
 
 #ifdef DEBUGMODE
     surface hit_pixel;

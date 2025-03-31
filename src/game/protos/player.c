@@ -261,6 +261,29 @@ void player_run(object *obj) {
             projectile_connect_to_parent(obj);
         }
 
+        if(sd_script_isset(frame, "mu")) {
+            // mu tags depend on a previous mm tag, so we need to iterate all of then tags, keeping track of the last mm
+            // value we spawn
+            iterator it;
+            sd_script_tag *tag;
+            vector_iter_begin(&frame->tags, &it);
+            int mm = 0;
+            foreach(it, tag) {
+                if(strcmp(tag->key, "mm") == 0) {
+                    mm = tag->value;
+                } else if(strcmp(tag->key, "mu") == 0 && mm) {
+                    if(obj->cur_animation->id == 9) {
+                        // I know this might be hard to believe, but the mu tag applies to the ENEMY if you're in
+                        // animation 9. This is so the shadow grab lockout lives as long as the grabbed har is
+                        // immobilized.
+                        object_disable_animation(enemy, mm, tag->value);
+                    } else {
+                        object_disable_animation(obj, mm, tag->value);
+                    }
+                }
+            }
+        }
+
         if(sd_script_isset(frame, "bm")) {
             int destination = 160;
             if(sd_script_isset(frame, "am") && sd_script_isset(frame, "e")) {
@@ -304,7 +327,6 @@ void player_run(object *obj) {
 
     if(sd_script_isset(frame, "e") && enemy) {
 
-        log_debug("my position %f, %f, their position %f %f", obj->pos.x, obj->pos.y, enemy->pos.x, enemy->pos.y);
         // Set speed to 0, since we're being controlled by animation tag system
         obj->vel.x = 0;
         obj->vel.y = 0;
@@ -330,7 +352,6 @@ void player_run(object *obj) {
 
     if(sd_script_isset(frame, "at") && enemy) {
 
-        log_debug("my position %f, %f, their position %f %f", obj->pos.x, obj->pos.y, enemy->pos.x, enemy->pos.y);
         // set the object's X position to be behind the opponent
 
         if(obj->pos.x > enemy->pos.x) { // From right to left
@@ -381,7 +402,6 @@ void player_run(object *obj) {
     // Handle slide in relation to enemy
     if(obj->enemy_slide_state.timer > 0 && enemy) {
 
-        log_debug("my position %f, %f, their position %f %f", obj->pos.x, obj->pos.y, enemy->pos.x, enemy->pos.y);
         obj->enemy_slide_state.duration++;
         obj->pos.x = enemy->pos.x + obj->enemy_slide_state.dest.x;
         obj->pos.y = enemy->pos.y + obj->enemy_slide_state.dest.y;
@@ -403,8 +423,6 @@ void player_run(object *obj) {
 
             if(obj->animation_state.shadow_corner_hack && sd_script_get(frame, "m") == 65 && enemy) {
 
-                log_debug("my position %f, %f, their position %f %f", obj->pos.x, obj->pos.y, enemy->pos.x,
-                          enemy->pos.y);
                 mx = enemy->pos.x;
                 my = enemy->pos.y;
             }
@@ -569,7 +587,6 @@ void player_run(object *obj) {
         // If UA is set, force other HAR to damage animation
         if(sd_script_isset(frame, "ua") && enemy && enemy->cur_animation->id != 9) {
 
-            log_debug("my position %f, %f, their position %f %f", obj->pos.x, obj->pos.y, enemy->pos.x, enemy->pos.y);
             har_set_ani(enemy, 9, 0);
         }
 

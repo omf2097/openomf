@@ -11,6 +11,7 @@ typedef struct object_t object;
 typedef void (*object_state_add_cb)(object *parent, int id, vec2i pos, vec2f vel, uint8_t mp_flags, int s, int g,
                                     void *userdata);
 typedef void (*object_state_del_cb)(object *parent, int id, void *userdata);
+typedef void (*object_state_disable_cb)(object *parent, uint8_t id, uint16_t duration, void *userdata);
 
 typedef struct player_sprite_state_t {
     int flipmode;
@@ -66,9 +67,11 @@ typedef struct player_animation_state_t {
 
     void *spawn_userdata;
     void *destroy_userdata;
+    void *disable_userdata;
     uint32_t enemy_obj_id;
     object_state_add_cb spawn;
     object_state_del_cb destroy;
+    object_state_disable_cb disable;
 } player_animation_state;
 
 void player_create(object *obj);

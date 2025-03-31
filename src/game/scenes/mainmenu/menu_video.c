@@ -48,6 +48,7 @@ struct resolution_t {
 struct framerate_t {
     int rate;
     const char *name;
+    // TODO: Add 160, 240, 360 when we have a more precise delay method.
 } _framerates[] = {
     {0,   "None"   },
     {30,  "30 fps" },
@@ -56,7 +57,6 @@ struct framerate_t {
     {90,  "90 fps" },
     {120, "120 fps"},
     {144, "144 fps"},
-    // TODO: Add 160, 240, 360 when we have a more precise delay method.
 };
 
 typedef struct resolution_t resolution;

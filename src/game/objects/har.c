@@ -35,6 +35,7 @@ void har_spawn_scrap(object *obj, vec2i pos, int amount);
 void har_free(object *obj) {
     har *h = object_get_userdata(obj);
     list_free(&h->har_hooks);
+    hashmap_free(&h->disabled_animations);
 #ifdef DEBUGMODE
     surface_free(&h->hit_pixel);
     surface_free(&h->har_origin);
@@ -407,6 +408,12 @@ int har_is_invincible(object *obj, af_move *move) {
     return 0;
 }
 
+// Callback for temporarily disabling an animation
+void cb_har_disable_animation(object *parent, uint8_t animation_id, uint16_t ticks, void *userdata) {
+    har *h = userdata;
+    hashmap_put_int(&h->disabled_animations, (int)animation_id, &ticks, sizeof(ticks));
+}
+
 // Callback for spawning new objects, eg. projectiles
 void cb_har_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t mp_flags, int s, int g, void *userdata) {
     har *h = userdata;
@@ -451,6 +458,7 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t m
 
         // allow projectiles to spawn projectiles, eg. shadow's scrap animation
         object_set_spawn_cb(obj, cb_har_spawn_object, h);
+        object_set_disable_cb(obj, cb_har_disable_animation, h);
 
         // Handle Nova animation where the bot gets destroyed in single player
         if(h->id == 10 && id >= 25 && id <= 30) {
@@ -1866,6 +1874,21 @@ void har_tick(object *obj) {
         h->endurance += 0.0025f * h->endurance_max; // made up but plausible number
     }
 
+    // tick down disabled moves
+    if(hashmap_size(&h->disabled_animations)) {
+        iterator it;
+        hashmap_iter_begin(&h->disabled_animations, &it);
+        hashmap_pair *pair = NULL;
+        foreach(it, pair) {
+            uint16_t *value = pair->value;
+            if(*value <= 1) {
+                hashmap_delete(&h->disabled_animations, &it);
+            } else {
+                (*value)--;
+            }
+        }
+    }
+
     // Leave shadow trail
     // IF trail is on, copy current sprite to a new animation, and set animation string
     // to show the sprite with animation string that interpolates opacity down
@@ -1968,6 +1991,13 @@ bool is_move_chain_allowed(object *obj, af_move *move) {
     bool allowed_in_idle = true;
     if(move->pos_constraints & 0x2) { // Not allowed to perform this move normally
         allowed_in_idle = false;
+    }
+
+    unsigned int len;
+    uint16_t *count;
+    int move_key = move->id;
+    if(hashmap_get_int(&h->disabled_animations, move_key, (void **)(&count), &len) == 0) {
+        return false;
     }
 
     if(h->is_wallhugging != 1 && move->pos_constraints & 0x1) {
@@ -2477,20 +2507,28 @@ void har_install_hook(har *h, har_hook_cb hook, void *data) {
 }
 
 int har_clone(object *src, object *dst) {
-    har *local = omf_calloc(1, sizeof(har));
     har *oldlocal = object_get_userdata(src);
-    memcpy(local, object_get_userdata(src), sizeof(har));
+    har *local = omf_calloc(1, sizeof(har));
+    memcpy(local, oldlocal, sizeof(har));
     list_create(&local->har_hooks);
+    hashmap_create(&local->disabled_animations);
+    iterator it;
+    hashmap_iter_begin(&oldlocal->disabled_animations, &it);
+    hashmap_pair *pair = NULL;
+    foreach(it, pair) {
+        hashmap_put(&local->disabled_animations, pair->key, sizeof(int), pair->value, sizeof(uint16_t));
+    }
+
     object_set_userdata(dst, local);
     object_set_spawn_cb(dst, cb_har_spawn_object, local);
     vector_create(&local->child_objects, sizeof(uint32_t));
-    iterator it;
     uint32_t *child_id;
     vector_iter_begin(&oldlocal->child_objects, &it);
     foreach(it, child_id) {
         vector_append(&local->child_objects, child_id);
     }
     object_set_destroy_cb(dst, cb_har_destroy_object, local);
+    object_set_disable_cb(dst, cb_har_disable_animation, local);
     local->delay = 0;
     return 0;
 }
@@ -2499,6 +2537,7 @@ int har_clone_free(object *obj) {
     har *har = object_get_userdata(obj);
     list_free(&har->har_hooks);
     vector_free(&har->child_objects);
+    hashmap_free(&har->disabled_animations);
     omf_free(har);
     object_set_userdata(obj, NULL);
     return 0;
@@ -2596,6 +2635,8 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
 
     list_create(&local->har_hooks);
 
+    hashmap_create(&local->disabled_animations);
+
     local->stun_timer = 0;
 
     object_set_group(obj, GROUP_HAR);
@@ -2615,6 +2656,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     // New object spawner callback
     object_set_spawn_cb(obj, cb_har_spawn_object, local);
     object_set_destroy_cb(obj, cb_har_destroy_object, local);
+    object_set_disable_cb(obj, cb_har_disable_animation, local);
 
     // Set running animation
     har_set_ani(obj, ANIM_IDLE, 1);
