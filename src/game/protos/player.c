@@ -243,10 +243,6 @@ void player_run(object *obj) {
 #endif
         player_clear_frame(obj);
 
-        if(sd_script_isset(frame, "ar")) {
-            object_set_direction(obj, object_get_direction(obj) * -1);
-        }
-
         if(sd_script_isset(frame, "ac")) {
             // force the har to face the center of the arena
             if(obj->pos.x > 160) {
@@ -309,6 +305,10 @@ void player_run(object *obj) {
         obj->pos.y = enemy->pos.y;
         object_set_direction(obj, object_get_direction(enemy) * -1);
         // log_debug("E: pos.x = %f, pos.y = %f", obj->pos.x, obj->pos.y);
+    }
+
+    if(sd_script_isset(frame, "ar")) {
+        object_set_direction(obj, object_get_direction(obj) * -1);
     }
 
     int ab_flag = sd_script_isset(frame, "ab"); // Pass through walls
