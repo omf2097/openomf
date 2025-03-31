@@ -4,6 +4,7 @@
 #include "game/objects/arena_constraints.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
+#include "video/video.h"
 #include <stdlib.h>
 
 #define IS_ZERO(n) (n < 0.1 && n > -0.1)
@@ -39,6 +40,7 @@ void projectile_finished(object *obj) {
 
 void projectile_free(object *obj) {
     projectile_local *local = object_get_userdata(obj);
+
     omf_free(local);
     object_set_userdata(obj, NULL);
 }
@@ -121,6 +123,51 @@ int projectile_clone_free(object *obj) {
     return 0;
 }
 
+#ifdef DEBUGMODE
+static void projectile_debug(object *obj) {
+    projectile_local *local = object_get_userdata(obj);
+    if(obj->cur_sprite_id < 0) {
+        return;
+    }
+    // Some useful variables
+    vec2i pos_a = object_get_pos(obj); //, obj->cur_sprite->pos);
+    // vec2i size_a = object_get_size(obj);
+
+    // Make sure there are hitpoints to check.
+    if(vector_size(&obj->cur_animation->collision_coords) == 0) {
+        return;
+    }
+
+    // Iterate through hitpoints
+    iterator it;
+    collision_coord *cc;
+    vector_iter_begin(&obj->cur_animation->collision_coords, &it);
+
+    int found = 0;
+    foreach(it, cc) {
+        if(cc->frame_index != obj->cur_sprite_id)
+            continue;
+        found = 1;
+    }
+
+    if(!found) {
+        return;
+    }
+
+    object *parent = game_state_find_object(obj->gs, local->parent_id);
+    har *har_parent = object_get_userdata(parent);
+
+    vector_iter_begin(&obj->cur_animation->collision_coords, &it);
+    foreach(it, cc) {
+        if(cc->frame_index != obj->cur_sprite_id)
+            continue;
+        video_draw(&har_parent->hit_pixel, pos_a.x + (cc->pos.x * object_get_direction(obj)), pos_a.y + cc->pos.y);
+        /*log_debug("%d drawing hit point at %d %d ->%d %d", obj->cur_sprite_id, pos_a.x, pos_a.y, pos_a.x +
+         (cc->pos.x * flip), pos_a.y + cc->pos.y);*/
+    }
+}
+#endif // DEBUGMODE
+
 int projectile_create(object *obj, object *parent) {
     har *har = object_get_userdata(parent);
     // strore the HAR in local userdata instead
@@ -139,6 +186,11 @@ int projectile_create(object *obj, object *parent) {
     object_set_finish_cb(obj, projectile_finished);
     obj->clone = projectile_clone;
     obj->clone_free = projectile_clone_free;
+
+#ifdef DEBUGMODE
+    object_set_debug_cb(obj, projectile_debug);
+#endif
+
     return 0;
 }
 
