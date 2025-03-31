@@ -1303,7 +1303,7 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
             return 0;
         }
 
-        if(!is_in_range(obj, move)) { // Won't get hit by throws out of range
+        if(!is_in_range(obj_b, move)) { // Won't get hit by throws out of range
             return 0;
         }
 
