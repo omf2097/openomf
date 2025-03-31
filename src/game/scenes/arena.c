@@ -1169,11 +1169,9 @@ void arena_dynamic_tick(scene *scene, int paused) {
                     local->ending_ticks = 50;
                 }
             }
-            if(local->ending_ticks == 18) {
-                arena_screengrab_winner(scene);
-            }
 
             if(local->ending_ticks == 80) {
+                arena_screengrab_winner(scene);
                 // one HAR must be in victory pose and one must be in defeat or damage from scrap/destruction
                 assert(((obj_har[0]->cur_animation->id == ANIM_VICTORY ||
                          af_get_move(hars[0]->af_data, obj_har[0]->cur_animation->id)->category == CAT_SCRAP ||
