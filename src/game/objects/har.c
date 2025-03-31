@@ -39,6 +39,7 @@ void har_free(object *obj) {
     surface_free(&h->hit_pixel);
     surface_free(&h->har_origin);
 #endif
+    vector_free(&h->child_objects);
     omf_free(h);
     object_set_userdata(obj, NULL);
 }
@@ -444,7 +445,7 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t m
         object_set_shadow(obj, 1);
         object_set_direction(obj, object_get_direction(parent));
         obj->animation_state.enemy_obj_id = parent->animation_state.enemy_obj_id;
-        projectile_create(obj, h);
+        projectile_create(obj, parent);
 
         obj->animation_state.enemy_obj_id = parent->animation_state.enemy_obj_id;
 
@@ -710,6 +711,25 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
         if(linked) {
             // end the animation of the linked object, so it can go to the successor
             linked->animation_state.finished = 1;
+        }
+    }
+
+    if(vector_size(&h->child_objects)) {
+        // shadow children need to die when the controlling HAR is hit
+        iterator it;
+        uint32_t *child_id;
+        vector_iter_begin(&h->child_objects, &it);
+        foreach(it, child_id) {
+            object *child = game_state_find_object(obj->gs, *child_id);
+            if(child) {
+                int next_anim = af_get_move(h->af_data, child->cur_animation->id)->throw_duration;
+                if(next_anim) {
+                    object_set_animation(child, &af_get_move(h->af_data, next_anim)->ani);
+                } else {
+                    child->animation_state.finished = 1;
+                }
+            }
+            vector_delete(&h->child_objects, &it);
         }
     }
 
@@ -2438,10 +2458,18 @@ void har_install_hook(har *h, har_hook_cb hook, void *data) {
 
 int har_clone(object *src, object *dst) {
     har *local = omf_calloc(1, sizeof(har));
+    har *oldlocal = object_get_userdata(src);
     memcpy(local, object_get_userdata(src), sizeof(har));
     list_create(&local->har_hooks);
     object_set_userdata(dst, local);
     object_set_spawn_cb(dst, cb_har_spawn_object, local);
+    vector_create(&local->child_objects, sizeof(uint32_t));
+    iterator it;
+    uint32_t *child_id;
+    vector_iter_begin(&oldlocal->child_objects, &it);
+    foreach(it, child_id) {
+        vector_append(&local->child_objects, child_id);
+    }
     local->delay = 0;
     return 0;
 }
@@ -2449,6 +2477,7 @@ int har_clone(object *src, object *dst) {
 int har_clone_free(object *obj) {
     har *har = object_get_userdata(obj);
     list_free(&har->har_hooks);
+    vector_free(&har->child_objects);
     omf_free(har);
     object_set_userdata(obj, NULL);
     return 0;
@@ -2467,6 +2496,8 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
 
     game_player *gp = game_state_get_player(obj->gs, player_id);
     local->af_data = af_data;
+
+    vector_create(&local->child_objects, sizeof(uint32_t));
 
     // Save har id
     local->id = har_id;
@@ -2775,4 +2806,10 @@ uint8_t har_player_id(object *obj) {
 
 int16_t har_health_percent(har *h) {
     return 100 * h->health / h->health_max;
+}
+
+void har_connect_child(object *obj, object *child) {
+    har *h = object_get_userdata(obj);
+    log_debug("linking child %d to HAR", child->id);
+    vector_append(&h->child_objects, &child->id);
 }
