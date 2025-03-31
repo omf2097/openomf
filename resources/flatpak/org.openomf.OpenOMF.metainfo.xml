@@ -8,6 +8,19 @@
   </branding>
 
   <releases>
+    <release version="0.8.0" date="2025-04-01">
+      <url type="details">https://github.com/omf2097/openomf/releases/tag/0.8.0</url>
+      <description>
+        <p>0.8.0 is the "feature complete" alpha release of OpenOMF. All major gameplay components are now implemented.</p>
+        <ul>
+          <li>Netplay support (peer to peer and via a network lobby)</li>
+          <li>SIM support in tournament mode</li>
+          <li>Reworked text renderer and HELP menu</li>
+          <li>Opponent AI improvements</li>
+          <li>Large improvements to gameplay accuracy</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.7.1" date="2025-02-11">
       <url type="details">https://github.com/omf2097/openomf/releases/tag/0.7.1</url>
       <description>
