@@ -355,7 +355,8 @@ bool is_in_range(object *obj, af_move *move) {
         // CLOSE moves use the successor id field as a distance requirement
         float throw_range = (float)obj->gs->match_settings.throw_range / 100.0f;
         har *h = object_get_userdata(obj);
-        object *enemy_obj = game_state_find_object(obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
+        object *enemy_obj =
+            game_state_find_object(obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
         if(object_distance(obj, enemy_obj) > move->successor_id * throw_range) {
             return false;
         }
@@ -1974,7 +1975,8 @@ bool is_move_chain_allowed(object *obj, af_move *move) {
                 break;
             case CAT_CLOSE:
                 if(player_frame_isset(obj, "jg") || (is_har_idle_grounded(obj) && allowed_in_idle)) {
-                    object *enemy_obj = game_state_find_object(obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
+                    object *enemy_obj = game_state_find_object(
+                        obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
                     if(enemy_obj->pos.y == ARENA_FLOOR && !har_is_invincible(enemy_obj, move)) {
                         allowed = true;
                     }
