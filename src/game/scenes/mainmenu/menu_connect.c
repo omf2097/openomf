@@ -133,7 +133,7 @@ void menu_connect_tick(component *c) {
 
             log_debug("connected to server!");
             controller *player1_ctrl, *player2_ctrl;
-            keyboard_keys *keys;
+            // keyboard_keys *keys;
             game_player *p1 = game_state_get_player(gs, 0);
             game_player *p2 = game_state_get_player(gs, 1);
 
@@ -142,8 +142,10 @@ void menu_connect_tick(component *c) {
 
             p1->pilot->har_id = HAR_JAGUAR;
             p1->pilot->pilot_id = 0;
-            p2->pilot->har_id = HAR_JAGUAR;
-            p2->pilot->pilot_id = 0;
+            p2->pilot->har_id = HAR_PYROS;
+            p2->pilot->pilot_id = 9;
+
+            p1->sp_wins = 0;
 
             player1_ctrl = omf_calloc(1, sizeof(controller));
             controller_init(player1_ctrl, gs);
@@ -157,7 +159,7 @@ void menu_connect_tick(component *c) {
             game_player_set_ctrl(p1, player1_ctrl);
 
             // Player 2 controller -- Keyboard
-            settings_keyboard *k = &settings_get()->keys;
+            /*settings_keyboard *k = &settings_get()->keys;
             keys = omf_calloc(1, sizeof(keyboard_keys));
             keys->jump_up = SDL_GetScancodeFromName(k->key1_jump_up);
             keys->jump_right = SDL_GetScancodeFromName(k->key1_jump_right);
@@ -169,9 +171,10 @@ void menu_connect_tick(component *c) {
             keys->jump_left = SDL_GetScancodeFromName(k->key1_jump_left);
             keys->punch = SDL_GetScancodeFromName(k->key1_punch);
             keys->kick = SDL_GetScancodeFromName(k->key1_kick);
-            keyboard_create(player2_ctrl, keys, 0);
+            keyboard_create(player2_ctrl, keys, 0);*/
+            ai_controller_create(player2_ctrl, 4, p2->pilot, 9);
             game_player_set_ctrl(p2, player2_ctrl);
-            game_player_set_selectable(p2, 1);
+            game_player_set_selectable(p2, 0);
 
             chr_score_set_difficulty(game_player_get_score(game_state_get_player(gs, 0)), AI_DIFFICULTY_CHAMPION);
             chr_score_set_difficulty(game_player_get_score(game_state_get_player(gs, 1)), AI_DIFFICULTY_CHAMPION);
