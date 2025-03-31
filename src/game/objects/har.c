@@ -473,6 +473,26 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t m
     }
 }
 
+// Callback for destroying objects, eg. projectiles
+void cb_har_destroy_object(object *parent, int animation_id, void *userdata) {
+    har *h = userdata;
+    // find all projectiles owned by us with the supplied animation id
+    vector vec;
+    vector_create(&vec, sizeof(object *));
+    game_state_get_projectiles(parent->gs, &vec);
+
+    object **p;
+    iterator it;
+
+    vector_iter_begin(&vec, &it);
+    foreach(it, p) {
+        if(projectile_get_owner(*p) == h->player_id && object_get_animation(*p)->id == animation_id) {
+            game_state_del_object(parent->gs, *p);
+        }
+    }
+    vector_free(&vec);
+}
+
 void har_floor_landing_effects(object *obj, bool play_sound) {
     int amount = rand_int(2) + 1;
     for(int i = 0; i < amount; i++) {
@@ -2470,6 +2490,7 @@ int har_clone(object *src, object *dst) {
     foreach(it, child_id) {
         vector_append(&local->child_objects, child_id);
     }
+    object_set_destroy_cb(dst, cb_har_destroy_object, local);
     local->delay = 0;
     return 0;
 }
@@ -2593,6 +2614,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
 
     // New object spawner callback
     object_set_spawn_cb(obj, cb_har_spawn_object, local);
+    object_set_destroy_cb(obj, cb_har_destroy_object, local);
 
     // Set running animation
     har_set_ani(obj, ANIM_IDLE, 1);
