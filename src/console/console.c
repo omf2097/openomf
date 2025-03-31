@@ -119,7 +119,7 @@ static void console_handle_line(game_state *gs) {
                     console_output_addline(buf);
                     log_debug("Error in console command %s: %s", argv[0], buf);
                 }
-                console_add_history(str_c(&con->input), str_size(&con->input));
+                console_add_history(str_c(&con->input), str_size(&con->input) + 1);
             } else {
                 console_output_add("> ");
                 console_output_add(argv[0]);
