@@ -46,6 +46,7 @@ tests=(
     "Electra's shards can be blocked:SHARDS-ARE-BLOCKABLE.REC"
     "Electra can throw Katana on wakeup without getting hit:WAKEUP_THROW.REC"
     "Katana can chain stomps and end with a jump kick:STOMP.REC"
+    "Flail cannot hit air 66K throw out of range:THROW-RANGE.REC"
     "Gargoyle reaches the top of the stage:FLY.REC"
 )
 
