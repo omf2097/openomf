@@ -715,16 +715,19 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
     }
 
     if(vector_size(&h->child_objects)) {
-        // shadow children need to die on Hit
+        // shadow children need to die when the controlling HAR is hit
         iterator it;
         uint32_t *child_id;
         vector_iter_begin(&h->child_objects, &it);
         foreach(it, child_id) {
             object *child = game_state_find_object(obj->gs, *child_id);
             if(child) {
-                child->animation_state.finished = 1;
-                // TODO we need to do some fancy fadeout or something here
-                // or possibly go to the 'next animation' if supplied
+                int next_anim = af_get_move(h->af_data, child->cur_animation->id)->throw_duration;
+                if(next_anim) {
+                    object_set_animation(child, &af_get_move(h->af_data, next_anim)->ani);
+                } else {
+                    child->animation_state.finished = 1;
+                }
             }
             vector_delete(&h->child_objects, &it);
         }
