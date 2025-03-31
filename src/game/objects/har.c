@@ -370,10 +370,6 @@ int har_is_invincible(object *obj, af_move *move) {
         return 1;
     }
 
-    if(!is_in_range(obj, move)) { // Won't get hit by throws out of range
-        return 1;
-    }
-
     switch(move->category) {
         case CAT_CLOSE:
             if(player_frame_isset(obj, "zg") || obj->cur_animation->id == ANIM_DAMAGE ||
@@ -1307,6 +1303,10 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
             return 0;
         }
 
+        if(!is_in_range(obj, move)) { // Won't get hit by throws out of range
+            return 0;
+        }
+
         vec2i hit_coord2 = vec2i_create(0, 0);
 
         if(move->category != CAT_CLOSE && b->damage_done == 0 && loop == 0 &&
@@ -1977,7 +1977,8 @@ bool is_move_chain_allowed(object *obj, af_move *move) {
                 if(player_frame_isset(obj, "jg") || (is_har_idle_grounded(obj) && allowed_in_idle)) {
                     object *enemy_obj = game_state_find_object(
                         obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
-                    if(enemy_obj->pos.y == ARENA_FLOOR && !har_is_invincible(enemy_obj, move)) {
+                    if(enemy_obj->pos.y == ARENA_FLOOR && !har_is_invincible(enemy_obj, move) &&
+                       is_in_range(obj, move)) {
                         allowed = true;
                     }
                 }
