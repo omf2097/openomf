@@ -1245,7 +1245,7 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
     if(har_is_invincible(obj_b, move)) {
         return 0;
     }
-  
+
     if(!is_in_range(obj_b, move)) { // Won't get hit by throws out of range
         return 0;
     }
@@ -1293,7 +1293,7 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
             }
             return 0;
         }
-      
+
         vec2i hit_coord2 = vec2i_create(0, 0);
 
         if(move->category != CAT_CLOSE && b->damage_done == 0 && loop == 0 &&
