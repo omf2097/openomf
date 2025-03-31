@@ -52,7 +52,11 @@ static void refresh(component *c) {
     if(vector_size(&t->options) > 0 && str_size(&t->title) > 0) {
         // label & options
         char **opt = vector_get(&t->options, *t->pos);
-        str_from_format(&new, "%s %s", str_c(&t->title), *opt);
+        if(opt) {
+            str_from_format(&new, "%s %s", str_c(&t->title), *opt);
+        } else {
+            str_from_format(&new, "%s NULL", str_c(&t->title));
+        }
     } else if(vector_size(&t->options) > 0) {
         // no label, just options
         char **opt = vector_get(&t->options, *t->pos);
