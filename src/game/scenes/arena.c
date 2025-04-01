@@ -1197,6 +1197,45 @@ void push_players(scene *scene, game_player *p1, game_player *p2) {
     }
 }
 
+static void arena_crossfade_transform(damage_tracker *damage, vga_palette *pal, void *userdata) {
+    scene *scene = userdata;
+    arena_local *local = scene_get_userdata(scene);
+    int const target_tick = local->state == ARENA_STATE_STARTING ? 0 : (80 + ARENA_CROSSFADE_TICKS);
+    int progress = abs(local->state_ticks - target_tick);
+    float fraction = progress / (float)ARENA_CROSSFADE_TICKS;
+
+    // Set palette darkness value.
+    for(int i = 0; i < 256; i++) {
+        pal->colors[i].r *= fraction;
+        pal->colors[i].g *= fraction;
+        pal->colors[i].b *= fraction;
+    }
+
+    damage_set_all(damage);
+}
+
+// do arena crossfade between rounds
+static void arena_palette_transform(scene *scene) {
+    arena_local *local = scene_get_userdata(scene);
+
+    int target_tick;
+    if(local->state == ARENA_STATE_STARTING)
+        target_tick = 0;
+    else if(local->state == ARENA_STATE_ENDING)
+        target_tick = (80 + ARENA_CROSSFADE_TICKS);
+    else
+        return;
+
+    if(!settings_get()->video.crossfade_on)
+        return;
+
+    int progress = abs(local->state_ticks - target_tick);
+    if(progress >= ARENA_CROSSFADE_TICKS)
+        return;
+
+    vga_state_enable_palette_transform(arena_crossfade_transform, scene);
+}
+
 void arena_dynamic_tick(scene *scene, int paused) {
     arena_local *local = scene_get_userdata(scene);
     game_state *gs = scene->gs;
@@ -1274,8 +1313,11 @@ void arena_dynamic_tick(scene *scene, int paused) {
                 }
             }
 
-            if(local->state_ticks == 80) {
-                arena_screengrab_winner(scene);
+            int const target_end_ticks = 80;
+            if(local->state_ticks >= target_end_ticks) {
+                if(local->state_ticks == target_end_ticks) {
+                    arena_screengrab_winner(scene);
+                }
                 // one HAR must be in victory pose and one must be in defeat or damage from scrap/destruction
                 assert(((obj_har[0]->cur_animation->id == ANIM_VICTORY ||
                          af_get_move(hars[0]->af_data, obj_har[0]->cur_animation->id)->category == CAT_SCRAP ||
@@ -1285,11 +1327,14 @@ void arena_dynamic_tick(scene *scene, int paused) {
                          af_get_move(hars[1]->af_data, obj_har[1]->cur_animation->id)->category == CAT_SCRAP ||
                          af_get_move(hars[1]->af_data, obj_har[1]->cur_animation->id)->category == CAT_DESTRUCTION) &&
                         (har_in_defeat_animation(obj_har[0]) || obj_har[0]->cur_animation->id == ANIM_DAMAGE)));
-                if(!local->over) {
-                    local->round++;
-                    arena_reset(scene);
-                } else {
-                    arena_end(scene);
+                int progress = local->state_ticks - target_end_ticks;
+                if(progress >= ARENA_CROSSFADE_TICKS) {
+                    if(local->over) {
+                        arena_end(scene);
+                    } else {
+                        local->round++;
+                        arena_reset(scene);
+                    }
                 }
             }
         }
@@ -1958,6 +2003,7 @@ int arena_create(scene *scene) {
     scene_set_input_poll_cb(scene, arena_input_tick);
     scene_set_render_overlay_cb(scene, arena_render_overlay);
     scene_set_debug_cb(scene, arena_debug);
+    scene_set_palette_transform_cb(scene, arena_palette_transform);
     scene->clone = arena_clone;
 
     // initialize recording, if we're not doing playback
