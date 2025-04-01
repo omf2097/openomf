@@ -103,6 +103,14 @@ int projectile_clone(object *src, object *dst) {
     projectile_local *local = omf_calloc(1, sizeof(projectile_local));
     memcpy(local, object_get_userdata(src), sizeof(projectile_local));
     object_set_userdata(dst, local);
+
+    object *old_har_obj = dst->animation_state.disable_userdata;
+
+    object *har_obj = game_state_find_object(dst->gs, old_har_obj->id);
+
+    object_set_spawn_cb(dst, cb_har_spawn_object, har_obj);
+    object_set_disable_cb(dst, cb_har_disable_animation, har_obj);
+
     return 0;
 }
 
