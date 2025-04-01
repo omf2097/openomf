@@ -903,7 +903,6 @@ void lobby_tick(scene *scene, int paused) {
                         challengee = p1;
                     }
 
-
                     net_ctrl->har_obj_id = challengee->har_obj_id;
 
                     // Challenger -- Network
