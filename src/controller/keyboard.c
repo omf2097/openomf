@@ -53,7 +53,12 @@ int keyboard_poll(controller *ctrl, ctrl_event **ev) {
     }
 
     if(action == 0) {
-        keyboard_cmd(ctrl, ACT_STOP, ev);
+        // check if they're pressing esc instead
+        if(state[SDL_SCANCODE_ESCAPE]) {
+            keyboard_cmd(ctrl, ACT_ESC, ev);
+        } else {
+            keyboard_cmd(ctrl, ACT_STOP, ev);
+        }
     } else {
         keyboard_cmd(ctrl, action, ev);
     }

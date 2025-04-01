@@ -1964,6 +1964,8 @@ static bool add_input(char *buf, int act_type, int direction) {
         case ACT_STOP:
             // might just be kick or punch, check below
             break;
+        case ACT_ESC:
+            return false;
         default:
             log_warn("Ignored input: buf %s, act_type 0x%x, direction %d", buf, act_type, direction);
             assert(false);
