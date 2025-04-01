@@ -410,13 +410,15 @@ int har_is_invincible(object *obj, af_move *move) {
 
 // Callback for temporarily disabling an animation
 void cb_har_disable_animation(object *parent, uint8_t animation_id, uint16_t ticks, void *userdata) {
-    har *h = userdata;
+    object *har_obj = userdata;
+    har *h = object_get_userdata(har_obj);
     hashmap_put_int(&h->disabled_animations, (int)animation_id, &ticks, sizeof(ticks));
 }
 
 // Callback for spawning new objects, eg. projectiles
 void cb_har_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t mp_flags, int s, int g, void *userdata) {
-    har *h = userdata;
+    object *har_obj = userdata;
+    har *h = object_get_userdata(har_obj);
     vec2i p_pos = object_get_pos(parent);
 
     // can't do this in object, because it hoses the intro
@@ -457,8 +459,8 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t m
         obj->animation_state.enemy_obj_id = parent->animation_state.enemy_obj_id;
 
         // allow projectiles to spawn projectiles, eg. shadow's scrap animation
-        object_set_spawn_cb(obj, cb_har_spawn_object, h);
-        object_set_disable_cb(obj, cb_har_disable_animation, h);
+        object_set_spawn_cb(obj, cb_har_spawn_object, har_obj);
+        object_set_disable_cb(obj, cb_har_disable_animation, har_obj);
 
         // Handle Nova animation where the bot gets destroyed in single player
         if(h->id == 10 && id >= 25 && id <= 30) {
@@ -483,7 +485,9 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t m
 
 // Callback for destroying objects, eg. projectiles
 void cb_har_destroy_object(object *parent, int animation_id, void *userdata) {
-    har *h = userdata;
+    object *har_obj = userdata;
+    har *h = object_get_userdata(har_obj);
+
     // find all projectiles owned by us with the supplied animation id
     vector vec;
     vector_create(&vec, sizeof(object *));
@@ -2520,15 +2524,15 @@ int har_clone(object *src, object *dst) {
     }
 
     object_set_userdata(dst, local);
-    object_set_spawn_cb(dst, cb_har_spawn_object, local);
+    object_set_spawn_cb(dst, cb_har_spawn_object, dst);
     vector_create(&local->child_objects, sizeof(uint32_t));
     uint32_t *child_id;
     vector_iter_begin(&oldlocal->child_objects, &it);
     foreach(it, child_id) {
         vector_append(&local->child_objects, child_id);
     }
-    object_set_destroy_cb(dst, cb_har_destroy_object, local);
-    object_set_disable_cb(dst, cb_har_disable_animation, local);
+    object_set_destroy_cb(dst, cb_har_destroy_object, dst);
+    object_set_disable_cb(dst, cb_har_disable_animation, dst);
     local->delay = 0;
     return 0;
 }
@@ -2654,9 +2658,9 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     object_set_shadow(obj, 1);
 
     // New object spawner callback
-    object_set_spawn_cb(obj, cb_har_spawn_object, local);
-    object_set_destroy_cb(obj, cb_har_destroy_object, local);
-    object_set_disable_cb(obj, cb_har_disable_animation, local);
+    object_set_spawn_cb(obj, cb_har_spawn_object, obj);
+    object_set_destroy_cb(obj, cb_har_destroy_object, obj);
+    object_set_disable_cb(obj, cb_har_disable_animation, obj);
 
     // Set running animation
     har_set_ani(obj, ANIM_IDLE, 1);
