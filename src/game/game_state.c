@@ -699,6 +699,8 @@ void game_state_palette_transform(game_state *gs) {
     if(gs->next_wait_ticks > 0 || gs->this_wait_ticks > 0) {
         vga_state_enable_palette_transform(cross_fade_transform, gs);
     }
+
+    scene_palette_transform(gs->sc);
 }
 
 void game_state_debug(game_state *gs) {
@@ -1029,8 +1031,10 @@ void game_state_static_tick(game_state *gs, bool replay) {
         gs->next_wait_ticks--;
     }
 
+    bool crossfade_out = settings_get()->video.crossfade_on && !scene_is_arena(gs->sc);
+
     // We want to load another scene
-    if(gs->this_id != gs->next_id && (gs->next_wait_ticks <= 1 || !settings_get()->video.crossfade_on)) {
+    if(gs->this_id != gs->next_id && (gs->next_wait_ticks <= 1 || !crossfade_out)) {
         // If this is the end, set run to 0 so that engine knows to close here
         if(gs->next_id == SCENE_NONE) {
             log_debug("Next ID is SCENE_NONE! bailing.");
@@ -1044,8 +1048,10 @@ void game_state_static_tick(game_state *gs, bool replay) {
             gs->run = 0;
             return;
         }
-        if(settings_get()->video.crossfade_on) {
+        bool crossfade_in = settings_get()->video.crossfade_on && !scene_is_arena(gs->sc);
+        if(crossfade_in) {
             gs->this_wait_ticks = FRAME_WAIT_TICKS;
+            gs->next_wait_ticks = 0;
         } else {
             gs->this_wait_ticks = 0;
             gs->next_wait_ticks = 0;
