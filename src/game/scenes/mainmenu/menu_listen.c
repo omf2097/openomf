@@ -47,7 +47,6 @@ void menu_listen_tick(component *c) {
 
             log_debug("client connected!");
             controller *player1_ctrl, *player2_ctrl;
-            keyboard_keys *keys;
             game_player *p1 = game_state_get_player(gs, 0);
             game_player *p2 = game_state_get_player(gs, 1);
 
@@ -56,8 +55,10 @@ void menu_listen_tick(component *c) {
 
             p1->pilot->har_id = HAR_JAGUAR;
             p1->pilot->pilot_id = 0;
+            p1->pilot->name[0] = '\0';
             p2->pilot->har_id = HAR_JAGUAR;
             p2->pilot->pilot_id = 0;
+            p2->pilot->name[0] = '\0';
 
             player1_ctrl = omf_calloc(1, sizeof(controller));
             controller_init(player1_ctrl, gs);
@@ -66,21 +67,13 @@ void menu_listen_tick(component *c) {
             controller_init(player2_ctrl, gs);
             player2_ctrl->har_obj_id = p2->har_obj_id;
 
-            // Player 1 controller -- Keyboard
+            // Player 1 controller -- Local
             settings_keyboard *k = &settings_get()->keys;
-            keys = omf_calloc(1, sizeof(keyboard_keys));
-            keys->jump_up = SDL_GetScancodeFromName(k->key1_jump_up);
-            keys->jump_right = SDL_GetScancodeFromName(k->key1_jump_right);
-            keys->walk_right = SDL_GetScancodeFromName(k->key1_walk_right);
-            keys->duck_forward = SDL_GetScancodeFromName(k->key1_duck_forward);
-            keys->duck = SDL_GetScancodeFromName(k->key1_duck);
-            keys->duck_back = SDL_GetScancodeFromName(k->key1_duck_back);
-            keys->walk_back = SDL_GetScancodeFromName(k->key1_walk_back);
-            keys->jump_left = SDL_GetScancodeFromName(k->key1_jump_left);
-            keys->punch = SDL_GetScancodeFromName(k->key1_punch);
-            keys->kick = SDL_GetScancodeFromName(k->key1_kick);
-            keyboard_create(player1_ctrl, keys, 0);
-            game_player_set_ctrl(p1, player1_ctrl);
+            if(k->ctrl_type1 == CTRL_TYPE_KEYBOARD) {
+                _setup_keyboard(gs, 1);
+            } else if(k->ctrl_type1 == CTRL_TYPE_GAMEPAD) {
+                _setup_joystick(gs, 1, k->joy_name1, k->joy_offset1);
+            }
 
             // Player 2 controller -- Network
             net_controller_create(player2_ctrl, local->host, event.peer, NULL, ROLE_SERVER);

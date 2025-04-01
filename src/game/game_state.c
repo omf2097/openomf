@@ -191,7 +191,7 @@ void game_state_match_settings_reset(game_state *gs) {
 
 void game_state_match_settings_defaults(game_state *gs) {
     gs->match_settings.throw_range = 100;
-    gs->match_settings.hit_pause = 10;
+    gs->match_settings.hit_pause = 4;
     gs->match_settings.block_damage = 0;
     gs->match_settings.vitality = 100;
     gs->match_settings.jump_height = 100;
