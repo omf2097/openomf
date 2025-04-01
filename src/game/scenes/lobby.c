@@ -883,8 +883,10 @@ void lobby_tick(scene *scene, int paused) {
 
                     p1->pilot->har_id = HAR_JAGUAR;
                     p1->pilot->pilot_id = 0;
+                    p1->pilot->name[0] = '\0';
                     p2->pilot->har_id = HAR_JAGUAR;
                     p2->pilot->pilot_id = 0;
+                    p2->pilot->name[0] = '\0';
 
                     net_ctrl = omf_calloc(1, sizeof(controller));
                     controller_init(net_ctrl, gs);
@@ -1045,8 +1047,10 @@ void lobby_tick(scene *scene, int paused) {
 
                             p1->pilot->har_id = HAR_JAGUAR;
                             p1->pilot->pilot_id = 0;
+                            p1->pilot->name[0] = '\0';
                             p2->pilot->har_id = HAR_JAGUAR;
                             p2->pilot->pilot_id = 0;
+                            p2->pilot->name[0] = '\0';
 
                             net_ctrl = omf_calloc(1, sizeof(controller));
                             controller_init(net_ctrl, gs);
@@ -1140,8 +1144,10 @@ void lobby_tick(scene *scene, int paused) {
 
                         p1->pilot->har_id = HAR_JAGUAR;
                         p1->pilot->pilot_id = 0;
+                        p1->pilot->name[0] = '\0';
                         p2->pilot->har_id = HAR_JAGUAR;
                         p2->pilot->pilot_id = 0;
+                        p2->pilot->name[0] = '\0';
 
                         net_ctrl = omf_calloc(1, sizeof(controller));
                         controller_init(net_ctrl, gs);

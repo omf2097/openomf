@@ -141,8 +141,10 @@ void menu_connect_tick(component *c) {
 
             p1->pilot->har_id = HAR_JAGUAR;
             p1->pilot->pilot_id = 0;
+            p1->pilot->name[0] = '\0';
             p2->pilot->har_id = HAR_JAGUAR;
             p2->pilot->pilot_id = 0;
+            p2->pilot->name[0] = '\0';
 
             player1_ctrl = omf_calloc(1, sizeof(controller));
             controller_init(player1_ctrl, gs);
