@@ -203,6 +203,12 @@ void scene_debug(scene *scene) {
     }
 }
 
+void scene_palette_transform(scene *scene) {
+    if(scene->palette_transform) {
+        scene->palette_transform(scene);
+    }
+}
+
 int scene_anim_prio_override(scene *scene, int anim_id) {
     if(scene->prio_override != NULL) {
         return scene->prio_override(scene, anim_id);
@@ -282,6 +288,10 @@ void scene_set_render_overlay_cb(scene *scene, scene_render_overlay_cb cbfunc) {
 
 void scene_set_debug_cb(scene *scene, scene_debug_cb cbfunc) {
     scene->debug = cbfunc;
+}
+
+void scene_set_palette_transform_cb(scene *scene, scene_palette_transform_cb cbfunc) {
+    scene->palette_transform = cbfunc;
 }
 
 void scene_set_startup_cb(scene *scene, scene_startup_cb cbfunc) {
