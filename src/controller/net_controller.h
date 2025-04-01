@@ -19,4 +19,6 @@ ENetHost *net_controller_get_host(controller *ctrl);
 int net_controller_get_winner(controller *ctrl);
 void net_controller_set_winner(controller *ctrl, int winner);
 
+void menu_controller_hook(controller *ctrl, int action);
+
 #endif // NET_CONTROLLER_H

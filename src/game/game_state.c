@@ -244,6 +244,7 @@ int game_state_create(game_state *gs, engine_init_flags *init_flags) {
 
     gs->hide_ui = false;
     gs->menu_ctrl = omf_calloc(1, sizeof(controller));
+    controller_init(gs->menu_ctrl, gs);
 
     gs->sc = omf_calloc(1, sizeof(scene));
 
