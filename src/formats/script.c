@@ -395,7 +395,7 @@ int sd_script_encode(const sd_script *script, str *output) {
     vector_iter_begin(&script->frames, &it);
     foreach(it, frame) {
         sd_script_encode_frame(frame, output);
-        str_append_c(output, "-");
+        str_append_char(output, '-');
     }
 
     str_cut(output, 1); // Remove the last '-'

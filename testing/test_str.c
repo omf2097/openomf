@@ -497,7 +497,7 @@ void test_str_truncate(void) {
     str d;
     str_create(&d);
     for(size_t i = 0; i < initial_size; ++i) {
-        str_append_c(&d, "A");
+        str_append_char(&d, 'A');
     }
 
     // These should do nothing.

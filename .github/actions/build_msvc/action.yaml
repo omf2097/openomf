@@ -46,15 +46,15 @@ runs:
       shell: pwsh
       run: cmake --build build-msvc --config Release --target openomf
 
-    - name: Get OMF2097 assets
+    - name: Get openomf assets
       uses: ./.github/actions/assets
 
-    - name: Extract omf 2097 assets
+    - name: Extract openomf assets
       shell: pwsh
       run: |
-        Expand-Archive omf2097-assets.zip -PassThru
+        Expand-Archive openomf-assets.zip -PassThru
         mkdir install/openomf/resources
-        Move-Item -Path omf2097-assets/OMF2097/* -Destination install/openomf/resources/ -Force -PassThru
+        Move-Item -Path openomf-assets/OMF2097/* -Destination install/openomf/resources/ -Force -PassThru
 
     - name: Install openomf
       shell: pwsh

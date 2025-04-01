@@ -164,6 +164,14 @@ static inline void str_append_c(str *dst, const char *src) {
 }
 
 /**
+ * @brief Append a single char to a string object.
+ * @details Source string content will be copied.
+ */
+static inline void str_append_char(str *dst, char c) {
+    str_append_buf(dst, &c, 1);
+}
+
+/**
  * @brief Append the result of a format string to a string object.
  * @details
  */

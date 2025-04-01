@@ -20,12 +20,12 @@ runs:
         make -j $(getconf _NPROCESSORS_ONLN)
         make -j $(getconf _NPROCESSORS_ONLN) install
 
-    - name: Get OMF2097 assets
+    - name: Get openomf assets
       uses: ./.github/actions/assets
 
-    - name: Extract omf 2097 assets
+    - name: Extract openomf assets
       shell: bash
-      run: unzip -j omf2097-assets.zip -d build-release/release/usr/share/games/openomf
+      run: unzip -j openomf-assets.zip -d build-release/release/usr/share/games/openomf
 
     - name: Generate ZIP package
       shell: bash

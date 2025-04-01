@@ -18,8 +18,6 @@
 #define BUFFER_INC(b) (((b) + 1) % sizeof(con->output))
 #define BUFFER_DEC(b) (((b) + sizeof(con->output) - 1) % sizeof(con->output))
 
-#define CURSOR_STR "\x7f"
-
 // Console State
 console *con = NULL;
 
@@ -51,19 +49,18 @@ static int make_argv(char *p, char **argv) {
 }
 
 static void console_refresh(void) {
-    char row[2] = {0, 0};
     unsigned int lines = 0;
     str visible;
     str_create(&visible);
     for(unsigned int i = con->output_pos; i != con->output_tail && lines < 15; i = BUFFER_INC(i)) {
-        row[0] = con->output[i];
-        str_append_c(&visible, row);
-        if(row[0] == '\n') {
+        char c = con->output[i];
+        str_append_char(&visible, c);
+        if(c == '\n') {
             lines++;
         }
     }
     str_append(&visible, &con->input);
-    str_append_c(&visible, CURSOR_STR);
+    str_append_char(&visible, CURSOR_CHAR);
     text_set_from_str(con->text, &visible);
     str_free(&visible);
 }
@@ -284,8 +281,7 @@ void console_event(game_state *gs, SDL_Event *e) {
             char c = e->text.text[0];
             // only allow ASCII through
             if(isprint(c) && len < CONSOLE_LINE_MAX - 1) {
-                c = tolower(c);
-                str_append_buf(&con->input, &c, 1);
+                str_append_char(&con->input, tolower(c));
             }
             console_refresh();
         }

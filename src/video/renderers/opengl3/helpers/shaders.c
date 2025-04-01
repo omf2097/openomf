@@ -13,7 +13,7 @@ static void print_log(const char *buffer, long len, const char *header) {
     // Make sure the string always ends in one \n
     str_from_buf(&log, buffer, len);
     str_rstrip(&log);
-    str_append_c(&log, "\n");
+    str_append_char(&log, '\n');
 
     // Print line by line
     size_t pos = 0, last = 0;

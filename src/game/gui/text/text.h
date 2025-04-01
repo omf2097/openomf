@@ -19,6 +19,9 @@ typedef struct text_document text_document;
 // so we set TEXT_SHADOW_YELLOW to 0xC0 and it renders in 0xC1.
 #define TEXT_SHADOW_YELLOW 0xC0
 
+#define CURSOR_STR "\x7f"
+#define CURSOR_CHAR CURSOR_STR[0]
+
 text *text_create(void);
 text *text_create_with_font(font_size font);
 text *text_create_with_font_and_size(font_size font, uint16_t w, uint16_t h);

@@ -4,11 +4,11 @@ inputs:
   asset_url:
     description: 'Asset ZIP package URL'
     required: false
-    default: 'https://www.omf2097.com/pub/files/omf/omf2097-assets.zip'
+    default: 'https://www.omf2097.com/pub/files/omf/openomf-assets.zip'
   filename:
     description: 'Downloaded asset filename'
     required: false
-    default: 'omf2097-assets.zip'
+    default: 'openomf-assets.zip'
 runs:
   using: "composite"
   steps:
@@ -17,16 +17,21 @@ runs:
       uses: actions/cache/restore@v4
       with:
         path: "${{ inputs.filename }}"
-        key: omf2097-assets.zip
+        key: openomf-assets.zip
 
     - name: Download assets file
-      if: steps.cache-assets.outputs.cache-hit != 'true'
+      if: ${{ (steps.cache-assets.outputs.cache-hit != 'true') && (runner.os == 'Linux') }}
       shell: bash
       run: wget -q "${{ inputs.asset_url }}" -O "${{ inputs.filename }}"
+
+    - name: Download assets file
+      if: ${{ (steps.cache-assets.outputs.cache-hit != 'true') && (runner.os == 'Windows') }}
+      shell: pwsh
+      run: Invoke-WebRequest "${{ inputs.asset_url }}" -OutFile "${{ inputs.filename }}"
 
     - name: Cache assets file
       if: steps.cache-assets.outputs.cache-hit != 'true'
       uses: actions/cache/save@v4
       with:
         path: "${{ inputs.filename }}"
-        key: omf2097-assets.zip
+        key: openomf-assets.zip
