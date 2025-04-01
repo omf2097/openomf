@@ -1721,8 +1721,31 @@ static void process_range(const har *h, damage_tracker *damage, vga_palette *pal
     damage_add_range(damage, start, end);
 }
 
-static void har_palette_transform(damage_tracker *damage, vga_palette *pal, void *obj) {
+static void har_palette_transform(damage_tracker *damage, vga_palette *pal, void *userdata) {
+    object *obj = userdata;
     const har *h = object_get_userdata(obj);
+
+    if(object_has_effect(obj, EFFECT_POSITIONAL_LIGHTING)) {
+        int const mid = NATIVE_W / 2;
+        int x_dist = abs(mid - object_px(obj));
+        int y_dist = ARENA_FLOOR - object_py(obj);
+        int32_t blend_factor = (mid - x_dist - y_dist) / 2 - 30;
+
+        blend_factor = max2(blend_factor, -41);
+        uint8_t gray = blend_factor < 1 ? 1 : 53;
+        blend_factor = abs(blend_factor);
+
+        // convert from original game's 6 bit palette to 8 bit
+        gray *= 4;
+        blend_factor *= 4;
+
+        const int start = 48 * (h->player_id ^ h->p_har_switch) + 1;
+        const int end = start + 47;
+
+        vga_palette_light_range(pal, gray, start, end, blend_factor);
+        damage_add_range(damage, start, end);
+    }
+
     float step;
     if(h->p_fade_in_ticks_left > 0) {
         step = 1.0f - h->p_fade_in_ticks_left / (float)h->p_fade_in_ticks;
@@ -1739,7 +1762,8 @@ void har_tick(object *obj) {
     har *h = object_get_userdata(obj);
     controller *ctrl = game_player_get_ctrl(game_state_get_player(obj->gs, h->player_id));
 
-    if(h->p_fade_in_ticks_left > 0 || h->p_fade_out_ticks_left > 0 || h->p_sustain_ticks_left > 0) {
+    if(object_has_effect(obj, EFFECT_POSITIONAL_LIGHTING) || h->p_fade_in_ticks_left > 0 ||
+       h->p_fade_out_ticks_left > 0 || h->p_sustain_ticks_left > 0) {
         object_set_palette_transform_cb(obj, har_palette_transform);
     } else {
         object_set_palette_transform_cb(obj, NULL);

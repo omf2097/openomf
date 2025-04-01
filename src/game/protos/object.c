@@ -411,11 +411,6 @@ void object_render(object *obj) {
         remap_rounds = 0;
         remap_offset = 5;
         options |= SPRITE_REMAP | SPRITE_DARK_TINT;
-    } else if(object_has_effect(obj, EFFECT_POSITIONAL_LIGHTING)) {
-        int rx = x + (w >> 1);
-        remap_rounds = 0;
-        remap_offset = clamp(6 + floorf(((rx > 160) ? 320 - rx : rx) / 60), 6, 8);
-        options |= SPRITE_REMAP;
     } else if(object_has_effect(obj, EFFECT_ADD)) {
         options |= SPRITE_INDEX_ADD;
     }
