@@ -78,7 +78,7 @@ int joystick_name_to_id(const char *name, int offset) {
     return -1;
 }
 
-static int internal_joystick_poll(joystick *k, controller *ctrl, ctrl_event **ev) {
+static int internal_joystick_poll(joystick *k, controller *ctrl, ctrl_event **ev, bool allow_esc) {
     if(!SDL_GameControllerGetAttached(k->joy)) {
         controller_close(ctrl, ev);
         return 0;
@@ -142,7 +142,7 @@ static int internal_joystick_poll(joystick *k, controller *ctrl, ctrl_event **ev
         joystick_cmd(ctrl, action, ev);
     }
 
-    if(SDL_GameControllerGetButton(k->joy, k->keys->escape)) {
+    if(allow_esc && SDL_GameControllerGetButton(k->joy, k->keys->escape)) {
         joystick_cmd(ctrl, ACT_ESC, ev);
     }
 
@@ -159,7 +159,7 @@ int joystick_poll(controller *ctrl, ctrl_event **ev) {
     ctrl->last = ctrl->current;
     ctrl->current = 0;
 
-    return internal_joystick_poll(k, ctrl, ev);
+    return internal_joystick_poll(k, ctrl, ev, false);
 }
 
 int joystick_rumble(controller *ctrl, float magnitude, int duration) {
@@ -253,7 +253,7 @@ void joystick_menu_poll_all(controller *menu_ctrl, ctrl_event **ev) {
     SDL_GameController **gamepad;
     foreach(it, gamepad) {
         k.joy = *gamepad;
-        internal_joystick_poll(&k, menu_ctrl, ev);
+        internal_joystick_poll(&k, menu_ctrl, ev, true);
     }
 }
 
