@@ -83,7 +83,7 @@ typedef struct arena_local {
 
     int menu_visible;
     unsigned int state;
-    int ending_ticks;
+    int state_ticks;
 
     component *health_bars[2];
     component *endurance_bars[2];
@@ -175,6 +175,7 @@ void scene_fight_anim_done(void *scenedata, void *userdata) {
 
     // This will release HARs for action
     arena->state = ARENA_STATE_FIGHTING;
+    arena->state_ticks = 0;
 
     // Custom object finisher callback requires that we
     // mark object as finished manually, if necessary.
@@ -224,9 +225,6 @@ void scene_youwin_anim_start(void *userdata) {
     object_set_animation(youwin, youwin_ani);
     object_set_finish_cb(youwin, scene_youwin_anim_done);
     game_state_add_object(gs, youwin, RENDER_LAYER_MIDDLE, 0, 0);
-
-    // This will release HARs for action
-    /*arena->state = ARENA_STATE_ENDING;*/
 }
 
 void scene_youlose_anim_done(object *parent) {
@@ -248,9 +246,6 @@ void scene_youlose_anim_start(void *userdata) {
     object_set_animation(youlose, youlose_ani);
     object_set_finish_cb(youlose, scene_youlose_anim_done);
     game_state_add_object(gs, youlose, RENDER_LAYER_MIDDLE, 0, 0);
-
-    // This will release HARs for action
-    /*arena->state = ARENA_STATE_ENDING;*/
 }
 
 void arena_screengrab_winner(scene *sc) {
@@ -435,6 +430,7 @@ static void arena_end(scene *sc) {
 void arena_reset(scene *sc) {
     arena_local *local = scene_get_userdata(sc);
     local->state = ARENA_STATE_STARTING;
+    local->state_ticks = 0;
 
     log_debug("resetting arena");
 
@@ -808,8 +804,8 @@ void arena_har_hook(har_event event, void *data) {
             break;
         case HAR_EVENT_DEFEAT:
             if(arena->state != ARENA_STATE_ENDING) {
-                arena->ending_ticks = 0;
                 arena->state = ARENA_STATE_ENDING;
+                arena->state_ticks = 0;
                 arena_har_defeat_hook(event.player_id, scene);
             }
             break;
@@ -1224,6 +1220,8 @@ void arena_dynamic_tick(scene *scene, int paused) {
 
         push_players(scene, game_state_get_player(scene->gs, 0), game_state_get_player(scene->gs, 1));
 
+        local->state_ticks++;
+
         // Handle scrolling score texts
         chr_score_tick(game_player_get_score(game_state_get_player(scene->gs, 0)));
         chr_score_tick(game_player_get_score(game_state_get_player(scene->gs, 1)));
@@ -1270,16 +1268,15 @@ void arena_dynamic_tick(scene *scene, int paused) {
                 }
                 local->win_state = NONE;
             } else if(local->win_state == DONE) {
-                local->ending_ticks++;
                 // you win/lose animation is done
                 if(player_frame_isset(obj_har[0], "be") || player_frame_isset(obj_har[1], "be") ||
                    chr_score_onscreen(s1) || chr_score_onscreen(s2) || har_is_scrap_walking(obj_har[0]) ||
                    har_is_scrap_walking(obj_har[1])) {
-                    local->ending_ticks = 50;
+                    local->state_ticks = 50;
                 }
             }
 
-            if(local->ending_ticks == 80) {
+            if(local->state_ticks == 80) {
                 arena_screengrab_winner(scene);
                 // one HAR must be in victory pose and one must be in defeat or damage from scrap/destruction
                 assert(((obj_har[0]->cur_animation->id == ANIM_VICTORY ||
@@ -1684,7 +1681,7 @@ int arena_create(scene *scene) {
 
     // Set correct state
     local->state = ARENA_STATE_STARTING;
-    local->ending_ticks = 0;
+    local->state_ticks = 0;
     local->rein_enabled = 0;
 
     local->round = 0;
