@@ -873,8 +873,7 @@ void lobby_tick(scene *scene, int paused) {
                     enet_peer_send(local->peer, 0, packet);
                     serial_free(&ser);
 
-                    controller *player1_ctrl, *player2_ctrl;
-                    keyboard_keys *keys;
+                    controller *net_ctrl;
                     game_player *p1 = game_state_get_player(gs, 0);
                     game_player *p2 = game_state_get_player(gs, 1);
                     gs->net_mode = NET_MODE_LOBBY;
@@ -887,50 +886,37 @@ void lobby_tick(scene *scene, int paused) {
                     p2->pilot->har_id = HAR_JAGUAR;
                     p2->pilot->pilot_id = 0;
 
-                    player1_ctrl = omf_calloc(1, sizeof(controller));
-                    controller_init(player1_ctrl, gs);
-                    player1_ctrl->har_obj_id = p1->har_obj_id;
-                    player2_ctrl = omf_calloc(1, sizeof(controller));
-                    controller_init(player2_ctrl, gs);
-                    player2_ctrl->har_obj_id = p2->har_obj_id;
+                    net_ctrl = omf_calloc(1, sizeof(controller));
+                    controller_init(net_ctrl, gs);
 
-                    game_player *challenger, *challengee;
-                    controller *challenger_ctrl, *challengee_ctrl;
+                    game_player *challengee;
 
+                    int player_id = 0;
                     if(local->role == ROLE_CHALLENGER) {
                         // we did the connecting and we're the challenger
                         // so we are player 1
-                        challenger = p1;
                         challengee = p2;
-                        challenger_ctrl = player1_ctrl;
-                        challengee_ctrl = player2_ctrl;
                     } else {
-                        challenger = p2;
+                        player_id = 1;
                         challengee = p1;
-                        challenger_ctrl = player2_ctrl;
-                        challengee_ctrl = player1_ctrl;
                     }
 
-                    // Challenger -- Network
-                    net_controller_create(challengee_ctrl, local->client, event.peer, local->peer,
-                                          local->role == ROLE_CHALLENGER ? ROLE_SERVER : ROLE_CLIENT);
-                    game_player_set_ctrl(challengee, challengee_ctrl);
 
-                    // Challengee controller -- Keyboard
+                    net_ctrl->har_obj_id = challengee->har_obj_id;
+
+                    // Challenger -- Network
+                    net_controller_create(net_ctrl, local->client, event.peer, local->peer,
+                                          local->role == ROLE_CHALLENGER ? ROLE_SERVER : ROLE_CLIENT);
+                    game_player_set_ctrl(challengee, net_ctrl);
+
+                    // Challengee -- local
                     settings_keyboard *k = &settings_get()->keys;
-                    keys = omf_calloc(1, sizeof(keyboard_keys));
-                    keys->jump_up = SDL_GetScancodeFromName(k->key1_jump_up);
-                    keys->jump_right = SDL_GetScancodeFromName(k->key1_jump_right);
-                    keys->walk_right = SDL_GetScancodeFromName(k->key1_walk_right);
-                    keys->duck_forward = SDL_GetScancodeFromName(k->key1_duck_forward);
-                    keys->duck = SDL_GetScancodeFromName(k->key1_duck);
-                    keys->duck_back = SDL_GetScancodeFromName(k->key1_duck_back);
-                    keys->walk_back = SDL_GetScancodeFromName(k->key1_walk_back);
-                    keys->jump_left = SDL_GetScancodeFromName(k->key1_jump_left);
-                    keys->punch = SDL_GetScancodeFromName(k->key1_punch);
-                    keys->kick = SDL_GetScancodeFromName(k->key1_kick);
-                    keyboard_create(challenger_ctrl, keys, 0);
-                    game_player_set_ctrl(challenger, challenger_ctrl);
+                    if(k->ctrl_type1 == CTRL_TYPE_KEYBOARD) {
+                        _setup_keyboard(scene->gs, player_id);
+                    } else if(k->ctrl_type1 == CTRL_TYPE_GAMEPAD) {
+                        _setup_joystick(scene->gs, player_id, k->joy_name1, k->joy_offset1);
+                    }
+
                     game_player_set_selectable(challengee, 1);
 
                     chr_score_set_difficulty(game_player_get_score(game_state_get_player(gs, 0)),
@@ -1049,8 +1035,7 @@ void lobby_tick(scene *scene, int paused) {
                             enet_peer_send(local->peer, 0, packet);
                             serial_free(&reply_ser);
 
-                            controller *player1_ctrl, *player2_ctrl;
-                            keyboard_keys *keys;
+                            controller *net_ctrl;
                             game_player *p1 = game_state_get_player(gs, 0);
                             game_player *p2 = game_state_get_player(gs, 1);
                             gs->net_mode = NET_MODE_LOBBY;
@@ -1063,50 +1048,36 @@ void lobby_tick(scene *scene, int paused) {
                             p2->pilot->har_id = HAR_JAGUAR;
                             p2->pilot->pilot_id = 0;
 
-                            player1_ctrl = omf_calloc(1, sizeof(controller));
-                            controller_init(player1_ctrl, gs);
-                            player1_ctrl->har_obj_id = p1->har_obj_id;
-                            player2_ctrl = omf_calloc(1, sizeof(controller));
-                            controller_init(player2_ctrl, gs);
-                            player2_ctrl->har_obj_id = p2->har_obj_id;
+                            net_ctrl = omf_calloc(1, sizeof(controller));
+                            controller_init(net_ctrl, gs);
 
-                            game_player *challenger, *challengee;
-                            controller *challenger_ctrl, *challengee_ctrl;
+                            game_player *challengee;
 
+                            int player_id = 0;
                             if(local->role == ROLE_CHALLENGER) {
                                 // we were connected TO but we are the challenger
                                 // so we are player 1
-                                challenger = p1;
                                 challengee = p2;
-                                challenger_ctrl = player1_ctrl;
-                                challengee_ctrl = player2_ctrl;
                             } else {
-                                challenger = p2;
+                                player_id = 1;
                                 challengee = p1;
-                                challenger_ctrl = player2_ctrl;
-                                challengee_ctrl = player1_ctrl;
                             }
 
-                            // Challengee -- Network
-                            net_controller_create(challengee_ctrl, local->client, event.peer, local->peer,
-                                                  local->role == ROLE_CHALLENGER ? ROLE_SERVER : ROLE_CLIENT);
-                            game_player_set_ctrl(challengee, challengee_ctrl);
+                            net_ctrl->har_obj_id = challengee->har_obj_id;
 
-                            // Challenger controller -- Keyboard
+                            // Challengee -- Network
+                            net_controller_create(net_ctrl, local->client, event.peer, local->peer,
+                                                  local->role == ROLE_CHALLENGER ? ROLE_SERVER : ROLE_CLIENT);
+                            game_player_set_ctrl(challengee, net_ctrl);
+
+                            // Challenger -- local
                             settings_keyboard *k = &settings_get()->keys;
-                            keys = omf_calloc(1, sizeof(keyboard_keys));
-                            keys->jump_up = SDL_GetScancodeFromName(k->key1_jump_up);
-                            keys->jump_right = SDL_GetScancodeFromName(k->key1_jump_right);
-                            keys->walk_right = SDL_GetScancodeFromName(k->key1_walk_right);
-                            keys->duck_forward = SDL_GetScancodeFromName(k->key1_duck_forward);
-                            keys->duck = SDL_GetScancodeFromName(k->key1_duck);
-                            keys->duck_back = SDL_GetScancodeFromName(k->key1_duck_back);
-                            keys->walk_back = SDL_GetScancodeFromName(k->key1_walk_back);
-                            keys->jump_left = SDL_GetScancodeFromName(k->key1_jump_left);
-                            keys->punch = SDL_GetScancodeFromName(k->key1_punch);
-                            keys->kick = SDL_GetScancodeFromName(k->key1_kick);
-                            keyboard_create(challenger_ctrl, keys, 0);
-                            game_player_set_ctrl(challenger, challenger_ctrl);
+                            if(k->ctrl_type1 == CTRL_TYPE_KEYBOARD) {
+                                _setup_keyboard(scene->gs, player_id);
+                            } else if(k->ctrl_type1 == CTRL_TYPE_GAMEPAD) {
+                                _setup_joystick(scene->gs, player_id, k->joy_name1, k->joy_offset1);
+                            }
+
                             game_player_set_selectable(challengee, 1);
 
                             chr_score_set_difficulty(game_player_get_score(game_state_get_player(gs, 0)),
@@ -1159,8 +1130,7 @@ void lobby_tick(scene *scene, int paused) {
                         enet_peer_send(local->peer, 0, packet);
                         serial_free(&ser);
 
-                        controller *player1_ctrl, *player2_ctrl;
-                        keyboard_keys *keys;
+                        controller *net_ctrl;
                         game_player *p1 = game_state_get_player(gs, 0);
                         game_player *p2 = game_state_get_player(gs, 1);
                         gs->net_mode = NET_MODE_LOBBY;
@@ -1173,50 +1143,36 @@ void lobby_tick(scene *scene, int paused) {
                         p2->pilot->har_id = HAR_JAGUAR;
                         p2->pilot->pilot_id = 0;
 
-                        player1_ctrl = omf_calloc(1, sizeof(controller));
-                        controller_init(player1_ctrl, gs);
-                        player1_ctrl->har_obj_id = p1->har_obj_id;
-                        player2_ctrl = omf_calloc(1, sizeof(controller));
-                        controller_init(player2_ctrl, gs);
-                        player2_ctrl->har_obj_id = p2->har_obj_id;
+                        net_ctrl = omf_calloc(1, sizeof(controller));
+                        controller_init(net_ctrl, gs);
 
-                        game_player *challenger, *challengee;
-                        controller *challenger_ctrl, *challengee_ctrl;
+                        game_player *challengee;
 
+                        int player_id = 0;
                         if(local->role == ROLE_CHALLENGER) {
                             // we did the connecting and we're the challenger
                             // so we are player 1
-                            challenger = p1;
                             challengee = p2;
-                            challenger_ctrl = player1_ctrl;
-                            challengee_ctrl = player2_ctrl;
                         } else {
-                            challenger = p2;
+                            player_id = 1;
                             challengee = p1;
-                            challenger_ctrl = player2_ctrl;
-                            challengee_ctrl = player1_ctrl;
                         }
 
-                        // Challenger -- Network
-                        net_controller_create(challengee_ctrl, local->client, event.peer, local->peer,
-                                              local->role == ROLE_CHALLENGER ? ROLE_SERVER : ROLE_CLIENT);
-                        game_player_set_ctrl(challengee, challengee_ctrl);
+                        net_ctrl->har_obj_id = challengee->har_obj_id;
 
-                        // Challengee controller -- Keyboard
+                        // Challenger -- Network
+                        net_controller_create(net_ctrl, local->client, event.peer, local->peer,
+                                              local->role == ROLE_CHALLENGER ? ROLE_SERVER : ROLE_CLIENT);
+                        game_player_set_ctrl(challengee, net_ctrl);
+
+                        // Challengee -- local
                         settings_keyboard *k = &settings_get()->keys;
-                        keys = omf_calloc(1, sizeof(keyboard_keys));
-                        keys->jump_up = SDL_GetScancodeFromName(k->key1_jump_up);
-                        keys->jump_right = SDL_GetScancodeFromName(k->key1_jump_right);
-                        keys->walk_right = SDL_GetScancodeFromName(k->key1_walk_right);
-                        keys->duck_forward = SDL_GetScancodeFromName(k->key1_duck_forward);
-                        keys->duck = SDL_GetScancodeFromName(k->key1_duck);
-                        keys->duck_back = SDL_GetScancodeFromName(k->key1_duck_back);
-                        keys->walk_back = SDL_GetScancodeFromName(k->key1_walk_back);
-                        keys->jump_left = SDL_GetScancodeFromName(k->key1_jump_left);
-                        keys->punch = SDL_GetScancodeFromName(k->key1_punch);
-                        keys->kick = SDL_GetScancodeFromName(k->key1_kick);
-                        keyboard_create(challenger_ctrl, keys, 0);
-                        game_player_set_ctrl(challenger, challenger_ctrl);
+                        if(k->ctrl_type1 == CTRL_TYPE_KEYBOARD) {
+                            _setup_keyboard(scene->gs, player_id);
+                        } else if(k->ctrl_type1 == CTRL_TYPE_GAMEPAD) {
+                            _setup_joystick(scene->gs, player_id, k->joy_name1, k->joy_offset1);
+                        }
+
                         game_player_set_selectable(challengee, 1);
 
                         chr_score_set_difficulty(game_player_get_score(game_state_get_player(gs, 0)),
