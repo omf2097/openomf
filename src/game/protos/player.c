@@ -485,7 +485,7 @@ void player_run(object *obj) {
         // Sound playback
         if(sd_script_isset(frame, "s")) {
             float pitch = PITCH_DEFAULT;
-            float volume = VOLUME_DEFAULT * (settings_get()->sound.sound_vol / 10.0f);
+            float volume = VOLUME_DEFAULT;
             float panning = PANNING_DEFAULT;
             if(sd_script_isset(frame, "sf")) {
                 int sf = sd_script_get(frame, "sf");
@@ -500,7 +500,7 @@ void player_run(object *obj) {
             }
             if(sd_script_isset(frame, "l")) {
                 int v = clamp(sd_script_get(frame, "l"), 0, 100);
-                volume = (v / 100.0f) * (settings_get()->sound.sound_vol / 10.0f);
+                volume = (v / 100.0f);
             }
             if(sd_script_isset(frame, "sb")) {
                 panning = clamp(sd_script_get(frame, "sb"), -100, 100) / 100.0f;
