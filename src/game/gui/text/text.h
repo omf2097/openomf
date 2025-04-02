@@ -53,6 +53,7 @@ void text_set_glyph_margin(text *t, uint8_t glyph_margin);
 void text_set_word_wrap(text *t, bool enable);
 
 void text_get_str(const text *t, str *dst);
+const char *text_c(const text *t);
 font_size text_get_font(const text *t);
 void text_get_bounding_box(const text *t, uint16_t *w, uint16_t *h);
 vga_index text_get_color(const text *t);

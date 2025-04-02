@@ -1508,6 +1508,7 @@ static text *create_text_object(const char *str) {
     text_set_shadow_style(obj, GLYPH_SHADOW_RIGHT | GLYPH_SHADOW_BOTTOM);
     text_set_word_wrap(obj, false);
     text_set_from_c(obj, str);
+    text_generate_layout(obj);
     return obj;
 }
 
@@ -1785,8 +1786,7 @@ int arena_create(scene *scene) {
 
     // Score positioning
     chr_score_set_pos(game_player_get_score(_player[0]), 5, 33, OBJECT_FACE_RIGHT);
-    chr_score_set_pos(game_player_get_score(_player[1]), 315, 33,
-                      OBJECT_FACE_LEFT); // TODO: Set better coordinates for this
+    chr_score_set_pos(game_player_get_score(_player[1]), 315, 33, OBJECT_FACE_LEFT);
 
     // Possibly use tournament mode scoring
     chr_score_set_tournament_mode(game_player_get_score(_player[0]), local->tournament);
