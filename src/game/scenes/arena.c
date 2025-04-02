@@ -39,7 +39,7 @@
 
 // the pilot name, HAR, and score
 #define TEXT_HUD_COLOR 0xE7
-#define TEXT_HUD_SHADOW 0xF7
+#define TEXT_HUD_SHADOW 0xF8
 
 #define HAR1_START_POS 110
 #define HAR2_START_POS 210
@@ -63,7 +63,7 @@ typedef enum
     DONE
 } win_state;
 
-typedef struct arena_local_t {
+typedef struct arena_local {
     gui_frame *game_menu;
 
     int menu_visible;
@@ -72,6 +72,10 @@ typedef struct arena_local_t {
 
     component *health_bars[2];
     component *endurance_bars[2];
+
+    text *player_name[2];
+    text *player_har[2];
+    text *player_ping[2];
 
     int round;
     int rounds;
@@ -946,6 +950,13 @@ void arena_free(scene *scene) {
         component_free(local->endurance_bars[i]);
     }
 
+    // Free player texts
+    for(int i = 0; i < 2; i++) {
+        text_free(&local->player_name[i]);
+        text_free(&local->player_har[i]);
+        text_free(&local->player_ping[i]);
+    }
+
     settings_save();
 
     omf_free(local);
@@ -1303,14 +1314,6 @@ void arena_render_overlay(scene *scene) {
 
     char buf[40];
 
-    text_settings tconf_players;
-    text_defaults(&tconf_players);
-    tconf_players.font = FONT_SMALL;
-    tconf_players.cforeground = TEXT_HUD_COLOR;
-    tconf_players.cshadow = TEXT_HUD_SHADOW;
-    tconf_players.shadow = TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM;
-    const font *fnt = fonts_get_font(tconf_players.font);
-
     for(int i = 0; i < 2; i++) {
         player[i] = game_state_get_player(scene->gs, i);
         obj[i] = game_state_find_object(scene->gs, game_player_get_har_obj_id(player[i]));
@@ -1323,24 +1326,11 @@ void arena_render_overlay(scene *scene) {
         }
 
         // Render HAR and pilot names
-        const char *player1_name = NULL;
-        const char *player2_name = NULL;
-        player1_name = player[0]->pilot->name;
+        text_draw(local->player_name[0], 5, 19);
+        text_draw(local->player_har[0], 5, 26);
         if(player[1]->pilot) {
-            // when quitting this can go null
-            player2_name = player[1]->pilot->name;
-        }
-
-        text_render_mode(&tconf_players, TEXT_DEFAULT, 5, 19, 250, 6, player1_name);
-        text_render_mode(&tconf_players, TEXT_DEFAULT, 5, 26, 250, 6, lang_get((player[0]->pilot->har_id) + 31));
-
-        // when quitting, pilot can go null
-        if(player[1]->pilot) {
-            char const *player2_har = lang_get((player[1]->pilot->har_id) + 31);
-            int p2len = strlen(player2_name) * fnt->w;
-            int h2len = (strlen(player2_har) - 1) * fnt->w; // TODO: FIXME(lang): -1 because of errant newline
-            text_render_mode(&tconf_players, TEXT_DEFAULT, 315 - p2len, 19, 100, 6, player2_name);
-            text_render_mode(&tconf_players, TEXT_DEFAULT, 315 - h2len, 26, 100, 6, player2_har);
+            text_draw(local->player_name[1], 160, 19);
+            text_draw(local->player_har[1], 160, 26);
         }
 
         // Render score stuff
@@ -1350,12 +1340,13 @@ void arena_render_overlay(scene *scene) {
         // render ping, if player is networked
         if(player[0]->ctrl->type == CTRL_TYPE_NETWORK) {
             snprintf(buf, 40, "ping %d", player[0]->ctrl->rtt / 2);
-            text_render_mode(&tconf_players, TEXT_DEFAULT, 5, 40, 250, 6, buf);
+            text_set_from_c(local->player_ping[0], buf);
+            text_draw(local->player_ping[0], 5, 40);
         }
-
         if(player[1]->ctrl->type == CTRL_TYPE_NETWORK) {
             snprintf(buf, 40, "ping %d", player[1]->ctrl->rtt / 2);
-            text_render_mode(&tconf_players, TEXT_DEFAULT, 315 - (strlen(buf) * fnt->w), 40, 250, 6, buf);
+            text_set_from_c(local->player_ping[1], buf);
+            text_draw(local->player_ping[1], 160, 40);
         }
     }
 
@@ -1504,6 +1495,20 @@ void arena_startup(scene *scene, int id, int *m_load, int *m_repeat) {
                 return;
         }
     }
+}
+
+/**
+ * Creates text objects for har + player names and pings.
+ */
+static text *create_text_object(const char *str) {
+    // Width is screen size divided by two, minus left or right padding of 5 pixels.
+    text *obj = text_create_with_font_and_size(FONT_SMALL, 155, 6);
+    text_set_color(obj, TEXT_HUD_COLOR);
+    text_set_shadow_color(obj, TEXT_HUD_SHADOW);
+    text_set_shadow_style(obj, GLYPH_SHADOW_RIGHT | GLYPH_SHADOW_BOTTOM);
+    text_set_word_wrap(obj, false);
+    text_set_from_c(obj, str);
+    return obj;
 }
 
 int arena_create(scene *scene) {
@@ -1696,6 +1701,18 @@ int arena_create(scene *scene) {
         game_player_get_har_obj_id(_player[0]);
 
     maybe_install_har_hooks(scene);
+
+    // Set the name and HAR here, as they will remain static during the match. Ping will be dynamically set.
+    for(int i = 0; i < 2; i++) {
+        local->player_name[i] = create_text_object(_player[i]->pilot->name);
+        local->player_har[i] = create_text_object(lang_get(_player[i]->pilot->har_id + 31));
+        local->player_ping[i] = create_text_object("0");
+    }
+
+    // HAR 2 texts should be aligned to the right side of the screen.
+    text_set_horizontal_align(local->player_name[1], TEXT_ALIGN_RIGHT);
+    text_set_horizontal_align(local->player_har[1], TEXT_ALIGN_RIGHT);
+    text_set_horizontal_align(local->player_ping[1], TEXT_ALIGN_RIGHT);
 
     // Arena menu theme
     gui_theme theme;
