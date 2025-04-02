@@ -82,6 +82,8 @@ typedef struct arena_local_t {
 
     int player_rounds[2][4];
 
+    uint32_t player_entropy[2][2];
+
     int rein_enabled;
 
     sd_action rec_last[2];
@@ -957,6 +959,35 @@ void arena_clone_free(scene *scene) {
     omf_free(local);
 }
 
+static inline sd_action to_sd_action(int action) {
+    sd_action move_action = 0;
+    if(action & ACT_PUNCH) {
+        move_action |= SD_ACT_PUNCH;
+    }
+
+    if(action & ACT_KICK) {
+        move_action |= SD_ACT_KICK;
+    }
+
+    if(action & ACT_UP) {
+        move_action |= SD_ACT_UP;
+    }
+
+    if(action & ACT_DOWN) {
+        move_action |= SD_ACT_DOWN;
+    }
+
+    if(action & ACT_LEFT) {
+        move_action |= SD_ACT_LEFT;
+    }
+
+    if(action & ACT_RIGHT) {
+        move_action |= SD_ACT_RIGHT;
+    }
+
+    return move_action;
+}
+
 void write_rec_move(scene *scene, game_player *player, int action) {
     arena_local *local = scene_get_userdata(scene);
     sd_rec_move move;
@@ -968,34 +999,10 @@ void write_rec_move(scene *scene, game_player *player, int action) {
     move.tick = scene->gs->tick;
     move.lookup_id = 2;
     move.player_id = 0;
-    move.action = 0;
+    move.action = to_sd_action(action);
 
     if(player == game_state_get_player(scene->gs, 1)) {
         move.player_id = 1;
-    }
-
-    if(action & ACT_PUNCH) {
-        move.action |= SD_ACT_PUNCH;
-    }
-
-    if(action & ACT_KICK) {
-        move.action |= SD_ACT_KICK;
-    }
-
-    if(action & ACT_UP) {
-        move.action |= SD_ACT_UP;
-    }
-
-    if(action & ACT_DOWN) {
-        move.action |= SD_ACT_DOWN;
-    }
-
-    if(action & ACT_LEFT) {
-        move.action |= SD_ACT_LEFT;
-    }
-
-    if(action & ACT_RIGHT) {
-        move.action |= SD_ACT_RIGHT;
     }
 
     if(local->rec_last[move.player_id] == move.action) {
@@ -1010,7 +1017,8 @@ void write_rec_move(scene *scene, game_player *player, int action) {
     }
 }
 
-int arena_handle_events(scene *scene, game_player *player, ctrl_event *i) {
+static int arena_handle_events(scene *scene, game_player *player, ctrl_event *i, int player_id) {
+    arena_local *local = scene_get_userdata(scene);
     int need_sync = 0;
     if(i) {
         do {
@@ -1022,12 +1030,15 @@ int arena_handle_events(scene *scene, game_player *player, ctrl_event *i) {
                     // netplay will manage its own REC events
                     write_rec_move(scene, player, i->event_data.action);
                 }
+
+                // write the move into this player's hot entropy bucket.
+                uint32_t *entropy = &local->player_entropy[player_id][0];
+                *entropy = (*entropy) << 6 | to_sd_action(i->event_data.action);
             } else if(i->type == EVENT_TYPE_CLOSE) {
                 if(player->ctrl->type == CTRL_TYPE_REC) {
                     game_state_set_next(scene->gs, SCENE_NONE);
                 } else {
                     if(scene->gs->net_mode == NET_MODE_LOBBY) {
-                        arena_local *local = scene_get_userdata(scene);
                         if(game_state_get_player(scene->gs, 0)->ctrl->type == CTRL_TYPE_NETWORK) {
                             net_controller_set_winner(game_state_get_player(scene->gs, 0)->ctrl, local->winner);
                         }
@@ -1118,6 +1129,23 @@ void arena_dynamic_tick(scene *scene, int paused) {
         for(int i = 0; i < 2; i++) {
             obj_har[i] = game_state_find_object(gs, game_player_get_har_obj_id(game_state_get_player(gs, i)));
             hars[i] = obj_har[i]->userdata;
+        }
+
+        // fold player's inputs into the rng
+        if(gs->tick % 32 == 0) {
+            for(int player_id = 0; player_id < 2; player_id++) {
+                uint32_t *hot_entropy = &local->player_entropy[player_id][0];
+                uint32_t *cold_entropy = &local->player_entropy[player_id][1];
+
+                // abuse rng generator as a weak hash
+                if(*cold_entropy != 0)
+                    random_seed(&gs->rand, random_intmax(&gs->rand) + *cold_entropy);
+
+                // switch hot entropy to cold side for use once it's cooled off.
+                // we don't use hot entropy directly to prevent short net rollbacks from changing rng outcomes.
+                *cold_entropy = *hot_entropy;
+                *hot_entropy = 0;
+            }
         }
 
         // Handle scrolling score texts
@@ -1257,8 +1285,8 @@ void arena_input_tick(scene *scene) {
         controller_poll(player1->ctrl, &p1);
         controller_poll(player2->ctrl, &p2);
 
-        arena_handle_events(scene, player1, p1);
-        arena_handle_events(scene, player2, p2);
+        arena_handle_events(scene, player1, p1, 0);
+        arena_handle_events(scene, player2, p2, 1);
         controller_free_chain(p1);
         controller_free_chain(p2);
     }
@@ -1929,6 +1957,17 @@ int arena_create(scene *scene) {
         scene->gs->rec->round_type = scene->gs->match_settings.rounds;
         scene->gs->rec->hyper_mode = scene->gs->match_settings.fight_mode;
     }
+
+    // pull some entropy from the chosen HAR and pilot
+    uint32_t seed = 0;
+    for(int i = 0; i < 2; i++) {
+        game_player *player = game_state_get_player(scene->gs, i);
+        seed = (seed << 4) + player->pilot->har_id;
+        seed = (seed << 4) + (0x0F & player->pilot->name[0]);
+        seed = (seed << 4) + (0x0F & player->pilot->name[1]);
+        seed = (seed << 4) + (0x0F & player->pilot->name[2]);
+    }
+    random_seed(&scene->gs->rand, seed);
 
     // All done!
     return 0;
