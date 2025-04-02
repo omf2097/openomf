@@ -145,8 +145,9 @@ typedef struct har_t {
     int throw_duration;
 
     uint8_t stride;
+    int stun_factor;
     int16_t health_max, health;
-    float endurance_max, endurance;
+    int endurance_max, endurance;
     char inputs[11];
     uint32_t input_change_tick; // last tick the input direction changed
     uint8_t hard_close;

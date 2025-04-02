@@ -34,6 +34,7 @@
 #include "resources/sgmanager.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
+#include "utils/miscmath.h"
 #include "utils/random.h"
 #include "video/video.h"
 
@@ -902,10 +903,10 @@ void arena_state_dump(game_state *gs, char *buf, size_t bufsize) {
         vec2i pos = object_get_pos(obj_har);
         vec2f vel = object_get_vel(obj_har);
         off = snprintf(buf + off, bufsize - off,
-                       "player %d  power %d agility %d endurance %d HAR id %d  pos %d,%d, health %d, endurance %f, "
+                       "player %d  power %d agility %d endurance %d HAR id %d  pos %d,%d, health %d, endurance %d, "
                        "velocity %f,%f, state %s, executing_move %d cur_anim %d\n",
                        i, player->pilot->power, player->pilot->agility, player->pilot->endurance, har->id, pos.x, pos.y,
-                       har->health, (float)har->endurance, vel.x, vel.y, state_name(har->state), har->executing_move,
+                       har->health, har->endurance, vel.x, vel.y, state_name(har->state), har->executing_move,
                        obj_har->cur_animation->id);
     }
 }
@@ -1127,7 +1128,10 @@ void arena_dynamic_tick(scene *scene, int paused) {
         // Set and tick all proggressbars
         for(int i = 0; i < 2; i++) {
             float hp = (float)hars[i]->health / (float)hars[i]->health_max;
-            float en = (float)hars[i]->endurance / (float)hars[i]->endurance_max;
+            float en = 0.0f;
+            if((float)hars[i]->endurance >= 0) {
+                en = clampf(((float)hars[i]->endurance_max - (float)hars[i]->endurance) / (float)hars[i]->endurance_max, 0.0f, 1.0f);
+            }
             progressbar_set_progress(local->health_bars[i], hp * 100, !(gs->warp_speed || gs->clone));
             progressbar_set_progress(local->endurance_bars[i], en * 100, !(gs->warp_speed || gs->clone));
             progressbar_set_flashing(local->endurance_bars[i], (en * 100 < 50), 8);
@@ -1412,7 +1416,7 @@ static void arena_debug(scene *scene) {
             text_render_mode(&tconf_debug, TEXT_DEFAULT, 230 - (strlen(buf) * fnt->w), 5, 250, 6, buf);
         }
 
-        snprintf(buf, sizeof(buf), "%.2f", hars[i]->endurance);
+        snprintf(buf, sizeof(buf), "%d", hars[i]->endurance);
         if(i == 0) {
             text_render_mode(&tconf_debug, TEXT_DEFAULT, 70, 12, 250, 6, buf);
         } else {
