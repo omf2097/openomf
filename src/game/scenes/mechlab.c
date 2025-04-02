@@ -129,6 +129,24 @@ void mechlab_set_hint(scene *scene, const char *hint) {
     label_set_text(local->hint, hint);
 }
 
+static void mechlab_mech_finished_cb(object *obj) {
+    player_reset(obj);
+    player_run(obj);
+    object_set_halt(obj, 1);
+}
+
+void mechlab_spin_har(scene *scene, bool spin) {
+    mechlab_local *local = scene_get_userdata(scene);
+    if(spin) {
+        object_set_halt_ticks(local->mech, local->mech->halt);
+        object_set_repeat(local->mech, 1);
+    } else {
+        local->mech->halt_ticks = 0;
+        object_set_finish_cb(local->mech, mechlab_mech_finished_cb);
+        object_set_repeat(local->mech, 0);
+    }
+}
+
 sd_chr_enemy *mechlab_next_opponent(scene *scene) {
     game_player *p1 = game_state_get_player(scene->gs, 0);
     if(p1->chr->pilot.rank == 1) {
