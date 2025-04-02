@@ -17,8 +17,6 @@
 #include <stdio.h>
 
 // FIXME: No idea what these should be
-#define TEXT_COLOR 0xFE
-#define BLUE_TEXT_COLOR 0xFE
 #define TEXT_BLACK 1
 
 #define YELL_COLOR 3
@@ -30,6 +28,15 @@
 #define VERSION_BUF_SIZE 30
 // increment this when the protocol with the lobby server changes
 #define PROTOCOL_VERSION 0
+
+// GUI colors specific to palette used by lobby
+#define TEXT_PRIMARY_COLOR 6
+#define TEXT_SECONDARY_COLOR 6
+#define TEXT_DISABLED_COLOR 4
+#define TEXT_ACTIVE_COLOR 5
+#define TEXT_INACTIVE_COLOR 3
+#define TEXT_SHADOW_COLOR 6
+#define DIALOG_BORDER_COLOR 0xFE
 
 enum
 {
@@ -1385,14 +1392,14 @@ int lobby_create(scene *scene) {
     // Create lobby theme
     gui_theme theme;
     gui_theme_defaults(&theme);
-    theme.dialog.border_color = TEXT_MEDIUM_GREEN;
     theme.text.font = FONT_NET1;
-    theme.text.primary_color = 6;
-    theme.text.secondary_color = 6;
-    theme.text.disabled_color = 4;
-    theme.text.active_color = 5;
-    theme.text.inactive_color = 3;
-    theme.text.shadow_color = 6;
+    theme.dialog.border_color = DIALOG_BORDER_COLOR;
+    theme.text.primary_color = TEXT_PRIMARY_COLOR;
+    theme.text.secondary_color = TEXT_SECONDARY_COLOR;
+    theme.text.disabled_color = TEXT_DISABLED_COLOR;
+    theme.text.active_color = TEXT_ACTIVE_COLOR;
+    theme.text.inactive_color = TEXT_INACTIVE_COLOR;
+    theme.text.shadow_color = TEXT_SHADOW_COLOR;
 
     component *menu = menu_create();
     menu_set_horizontal(menu, true);
