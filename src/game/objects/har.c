@@ -502,9 +502,9 @@ void cb_har_destroy_object(object *parent, int animation_id, void *userdata) {
 }
 
 void har_floor_landing_effects(object *obj, bool play_sound) {
-    int amount = rand_int(2) + 1;
+    int amount = random_int(&obj->gs->rand, 2) + 1;
     for(int i = 0; i < amount; i++) {
-        int variance = rand_int(20) - 10;
+        int variance = random_int(&obj->gs->rand, 20) - 10;
         vec2i coord = vec2i_create(obj->pos.x + variance + i * 10, obj->pos.y);
         object *dust = omf_calloc(1, sizeof(object));
         object_create(dust, obj->gs, coord, vec2f_create(0, 0));
@@ -887,7 +887,7 @@ void har_spawn_oil(object *obj, vec2i pos, int amount, float gravity, int layer)
     // burning oil
     for(int i = 0; i < amount; i++) {
         // Calculate velocity etc.
-        float rv = rand_int(100) / 100.0f - 0.5;
+        float rv = random_int(&obj->gs->rand, 100) / 100.0f - 0.5;
         float velx = (5 * cosf(90 + i - (amount) / 2 + rv)) * object_get_direction(obj);
         float vely = -12 * sinf(i / amount + rv);
 
@@ -940,7 +940,7 @@ void har_spawn_scrap(object *obj, vec2i pos, int amount) {
     }
     for(int i = 0; i < scrap_amount; i++) {
         // Calculate velocity etc.
-        float rv = rand_int(100) / 100.0f - 0.5;
+        float rv = random_int(&obj->gs->rand, 100) / 100.0f - 0.5;
         float velx = (5 * cosf(90 + i - (scrap_amount) / 2 + rv)) * object_get_direction(obj);
         float vely = -12 * sinf(i / scrap_amount + rv);
 
@@ -957,7 +957,7 @@ void har_spawn_scrap(object *obj, vec2i pos, int amount) {
 
         // Create the object
         object *scrap = omf_calloc(1, sizeof(object));
-        int anim_no = rand_int(3) + ANIM_SCRAP_METAL;
+        int anim_no = random_int(&obj->gs->rand, 3) + ANIM_SCRAP_METAL;
         object_create(scrap, obj->gs, pos, vec2f_create(velx, vely));
         object_set_animation(scrap, &af_get_move(h->af_data, anim_no)->ani);
         object_set_stl(scrap, object_get_stl(obj));
