@@ -333,8 +333,6 @@ int game_state_create(game_state *gs, engine_init_flags *init_flags) {
         }
     }
 
-    random_seed(&gs->rand, time(NULL));
-
     // Initialize scene
     scene_init(gs->sc);
 
