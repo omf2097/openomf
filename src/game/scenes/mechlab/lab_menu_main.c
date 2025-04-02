@@ -122,6 +122,20 @@ void lab_menu_main_sim(component *c, void *userdata) {
     trnmenu_set_submenu(c->parent, mechlab_sim_menu_create(s));
 }
 
+enum lab_buttons
+{
+    LAB_BTN_ARENA,
+    LAB_BTN_TRAININGCOURSES,
+    LAB_BTN_BUY,
+    LAB_BTN_SELL,
+    LAB_BTN_LOAD,
+    LAB_BTN_NEW,
+    LAB_BTN_DELETE,
+    LAB_BTN_SIM,
+    LAB_BTN_QUIT,
+    LAB_BTN_NEWTOURNAMENT,
+};
+
 // clang-format off
 static const button_details details_list[] = {
     // CB, Text, Text align, Halign, Valigh, Pad top, Pad bottom, Pad left, Pad right, Disable by default
@@ -273,7 +287,7 @@ component *lab_menu_main_create(scene *s, bool character_loaded) {
         component_set_pos_hints(button, button_sprite->pos.x, button_sprite->pos.y);
 
         bool disabled = details_list[i].disabled;
-        if(i == 4) {
+        if(i == LAB_BTN_LOAD) {
             if(sg_count() > 0) {
                 // there are save games to load
                 disabled = false;
