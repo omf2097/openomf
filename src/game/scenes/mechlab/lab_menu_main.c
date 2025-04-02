@@ -266,7 +266,7 @@ static const spritebutton_tick_cb tick_cbs[] = {
     lab_menu_tick_in_tournament, // lab_menu_tick_delete,
     lab_menu_tick_in_tournament, // lab_menu_tick_sim,
     NULL,                        // lab_menu_tick_quit,
-    lab_menu_tick_in_tournament, // lab_menu_tick_tournament,
+    NULL,                        // lab_menu_tick_tournament,
 };
 
 component *lab_menu_main_create(scene *s, bool character_loaded) {
