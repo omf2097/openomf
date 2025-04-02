@@ -100,8 +100,6 @@ struct object_t {
     vec2f orbit_pos;
     vec2f orbit_pos_vary;
 
-    struct random_t rand_state;
-
     float x_percent;
     float y_percent;
     float gravity;

@@ -72,8 +72,6 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
     obj->age = 0;
     player_create(obj);
 
-    random_seed(&obj->rand_state, rand_intmax());
-
     // For enabling multiple hits per move
     obj->q_counter = 0;
     obj->q_val = 0;
