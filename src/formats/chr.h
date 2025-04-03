@@ -41,6 +41,7 @@ typedef struct {
     float winnings_multiplier;              ///< Tournament winnings multiplier
     sd_chr_enemy *enemies[MAX_CHR_ENEMIES]; ///< List of enemy states in current tournament
     unsigned int cutscene;                  ///< cutscene id for end of tournament
+    int tournament_id;                      //< misnomer? set to 4 for WORLD.BK cutscene quirks
     char *cutscene_text[10];                ///< cutscene dialog text
 } sd_chr_file;
 

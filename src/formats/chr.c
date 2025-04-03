@@ -128,6 +128,7 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
             // fallback to something sane
             chr->cutscene = SCENE_VS;
         }
+        chr->tournament_id = trn.tournament_id;
         chr->winnings_multiplier = trn.winnings_multiplier;
     }
 
