@@ -109,7 +109,7 @@ void lab_menu_main_load(component *c, void *userdata) {
 void lab_menu_main_delete(component *c, void *userdata) {
     scene *s = userdata;
     game_player *p1 = game_state_get_player(s->gs, 0);
-    if(sg_count() < 2 && p1->chr) {
+    if(sg_count() == 0 || (sg_count() < 2 && p1->chr)) {
         // none to delete
         return;
     }
@@ -263,7 +263,7 @@ static const spritebutton_tick_cb tick_cbs[] = {
     lab_menu_tick_in_tournament, // lab_menu_tick_sell,
     NULL,                        // lab_menu_tick_load,
     NULL,                        // lab_menu_tick_new,
-    lab_menu_tick_in_tournament, // lab_menu_tick_delete,
+    NULL,                        // lab_menu_tick_delete,
     lab_menu_tick_in_tournament, // lab_menu_tick_sim,
     NULL,                        // lab_menu_tick_quit,
     NULL,                        // lab_menu_tick_tournament,
