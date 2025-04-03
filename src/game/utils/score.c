@@ -8,7 +8,7 @@
 #include <stdio.h>
 
 #define TEXT_HUD_COLOR 0xE7
-#define TEXT_HUD_SHADOW 0xF7
+#define TEXT_HUD_SHADOW 0xF8
 
 #define SLIDER_DISTANCE 50
 #define SLIDER_HANG_TIME 25
@@ -17,7 +17,7 @@
 #define DESTRUCTION 200000
 
 typedef struct score_text {
-    char *text;
+    text *text;
     float position; // Position of text between middle of screen and (x,y). 1.0 at middle, 0.0 at end
     vec2i start;
     int points;
@@ -51,12 +51,30 @@ vec2i interpolate(vec2i start, vec2i end, float fraction) {
     return vec2i_create(nx, ny);
 }
 
+static text *create_text_obj(const char *str) {
+    text *obj = text_create_with_font_and_size(FONT_SMALL, 155, 6);
+    text_set_color(obj, TEXT_HUD_COLOR);
+    text_set_shadow_color(obj, TEXT_HUD_SHADOW);
+    text_set_shadow_style(obj, GLYPH_SHADOW_RIGHT | GLYPH_SHADOW_BOTTOM);
+    text_set_word_wrap(obj, false);
+    text_set_from_c(obj, str);
+    text_generate_layout(obj);
+    return obj;
+}
+
+static void set_score_text(text *dst, int score) {
+    char tmp[50];
+    score_format(score, tmp, 50);
+    text_set_from_c(dst, tmp);
+}
+
 void chr_score_create(chr_score *score) {
     score->difficulty = 0; // will be set later
     score->x = 0;
     score->y = 0;
     score->direction = OBJECT_FACE_RIGHT;
     score->multipliers = std_multipliers;
+    score->total = create_text_obj("0");
     list_create(&score->texts);
     chr_score_reset(score, 1);
     chr_score_reset_wins(score);
@@ -76,6 +94,7 @@ void chr_score_reset(chr_score *score, bool wipe) {
 
     if(wipe) {
         score->score = 0;
+        text_set_from_c(score->total, "0");
     }
     score->rounds = 0;
     score->consecutive_hits = 0;
@@ -87,7 +106,7 @@ void chr_score_reset(chr_score *score, bool wipe) {
     score->destruction = false;
     list_iter_begin(&score->texts, &it);
     foreach(it, t) {
-        omf_free(t->text);
+        text_free(&t->text);
         list_delete(&score->texts, &it);
     }
 }
@@ -100,6 +119,9 @@ void chr_score_set_pos(chr_score *score, int x, int y, int direction) {
     score->x = x;
     score->y = y;
     score->direction = direction;
+    if(score->direction == OBJECT_FACE_LEFT) {
+        text_set_horizontal_align(score->total, TEXT_ALIGN_RIGHT);
+    }
 }
 
 unsigned int chr_score_get_num_texts(chr_score *score) {
@@ -120,14 +142,17 @@ void chr_score_free(chr_score *score) {
 
     list_iter_begin(&score->texts, &it);
     foreach(it, t) {
-        omf_free(t->text);
+        text_free(&t->text);
     }
     list_free(&score->texts);
+
+    text_free(&score->total);
 }
 
 void chr_score_tick(chr_score *score) {
     iterator it;
     score_text *t;
+    bool text_needs_refresh = false;
     int lastage = -1;
 
     list_iter_begin(&score->texts, &it);
@@ -142,31 +167,22 @@ void chr_score_tick(chr_score *score) {
         lastage = t->age++;
         if(t->position < 0.0f) {
             score->score += t->points;
-            omf_free(t->text);
+            text_needs_refresh = true;
+            text_free(&t->text);
             list_delete(&score->texts, &it);
         }
+    }
+
+    if(text_needs_refresh) {
+        set_score_text(score->total, score->score);
     }
 }
 
 void chr_score_render(chr_score *score, bool render_total_points) {
-    text_settings tconf_score;
-    text_defaults(&tconf_score);
-    tconf_score.font = FONT_SMALL;
-    tconf_score.cforeground = TEXT_HUD_COLOR;
-    tconf_score.cshadow = TEXT_HUD_SHADOW;
-    tconf_score.shadow = TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM;
-    const font *fnt = fonts_get_font(tconf_score.font);
-
     if(render_total_points) {
-        char tmp[50];
-        score_format(score->score, tmp, 50);
-
-        if(score->direction == OBJECT_FACE_RIGHT) {
-            text_render_mode(&tconf_score, TEXT_DEFAULT, score->x, score->y, 200, 6, tmp);
-        } else {
-            int s2len = strlen(tmp) * fnt->w;
-            text_render_mode(&tconf_score, TEXT_DEFAULT, score->x - s2len, score->y, 200, 6, tmp);
-        }
+        // Correct x position by text object width
+        int x_correction = score->direction == OBJECT_FACE_LEFT ? 155 : 0;
+        text_draw(score->total, score->x - x_correction, score->y);
     }
 
     // Render all texts in list to right spot
@@ -180,11 +196,12 @@ void chr_score_render(chr_score *score, bool render_total_points) {
         if(lastage > 0 && (lastage - t->age) < SLIDER_DISTANCE) {
             break;
         }
-        pos = interpolate(vec2i_create(score->x, score->y), t->start, t->position);
-        if(score->direction == OBJECT_FACE_LEFT) {
-            pos = interpolate(vec2i_create(score->x - (strlen(t->text) * fnt->w), score->y), t->start, t->position);
+        if(score->direction == OBJECT_FACE_RIGHT) {
+            pos = interpolate(vec2i_create(score->x, score->y), t->start, t->position);
+        } else {
+            pos = interpolate(vec2i_create(score->x - text_get_layout_width(t->text), score->y), t->start, t->position);
         }
-        text_render_mode(&tconf_score, TEXT_DEFAULT, pos.x, pos.y, 200, 6, t->text);
+        text_draw(t->text, pos.x, pos.y);
         lastage = t->age;
     }
 }
@@ -192,13 +209,12 @@ void chr_score_render(chr_score *score, bool render_total_points) {
 void chr_score_add(chr_score *score, char *text, int points, vec2i pos, float position) {
     // Create texture
     // Add texture to list, set position to 1.0f, set points
-    const font *fnt = fonts_get_font(FONT_SMALL);
     score_text s;
-    s.text = text;
+    s.text = create_text_obj(text);
     s.points = points;
     s.start = pos;
     // center correctly initially, but end up justified
-    s.start.x -= ((strlen(s.text) * fnt->w) / 2);
+    s.start.x -= text_get_layout_width(s.text) / 2;
     s.position = position;
     s.age = 0;
 
@@ -212,28 +228,27 @@ void chr_score_hit(chr_score *score, int points) {
     score->consecutive_hit_score += points;
     score->combo_hits++;
     score->combo_hit_score += points;
+    set_score_text(score->total, score->score);
 }
 
 void chr_score_victory(chr_score *score, int health) {
+    char tmp[64];
     // Add texts for scrap bonus, perfect round, whatever
     score->wins++;
     score->health = health;
-    char *text;
     if(health == 100) {
-        text = omf_calloc(64, 1);
-        int len = snprintf(text, 64, "perfect round ");
+        int len = snprintf(tmp, 64, "perfect round ");
         int points = DESTRUCTION * chr_score_get_difficulty_multiplier(score);
-        score_format(points, text + len, 64 - len);
+        score_format(points, tmp + len, 64 - len);
         // XXX hardcode the y coordinate for now
-        chr_score_add(score, text, points, vec2i_create(160, 100), 1.0f);
+        chr_score_add(score, tmp, points, vec2i_create(160, 100), 1.0f);
     }
-    text = omf_calloc(64, 1);
 
-    int len = snprintf(text, 64, "vitality ");
+    int len = snprintf(tmp, 64, "vitality ");
     int points = truncf((DESTRUCTION * chr_score_get_difficulty_multiplier(score)) * (health / 100.0f));
-    score_format(points, text + len, 64 - len);
+    score_format(points, tmp + len, 64 - len);
     // XXX hardcode the y coordinate for now
-    chr_score_add(score, text, points, vec2i_create(160, 100), 1.0f);
+    chr_score_add(score, tmp, points, vec2i_create(160, 100), 1.0f);
 }
 
 void chr_score_scrap(chr_score *score) {
@@ -246,9 +261,9 @@ void chr_score_destruction(chr_score *score) {
 
 void chr_score_done(chr_score *score) {
     if(!score->done) {
+        char text[64];
         score->done = true;
         if(score->destruction) {
-            char *text = omf_calloc(64, 1);
             int len = snprintf(text, 64, "destruction bonus ");
             int points = DESTRUCTION * chr_score_get_difficulty_multiplier(score);
             score_format(points, text + len, 64 - len);
@@ -256,7 +271,6 @@ void chr_score_done(chr_score *score) {
             chr_score_add(score, text, points, vec2i_create(160, 100), 1.0f);
             score->destruction = false;
         } else if(score->scrap) {
-            char *text = omf_calloc(64, 1);
             int len = snprintf(text, 64, "scrap bonus ");
             int points = SCRAP * chr_score_get_difficulty_multiplier(score);
             score_format(points, text + len, 64 - len);
@@ -274,8 +288,8 @@ void chr_score_clear_done(chr_score *score) {
 int chr_score_interrupt(chr_score *score, vec2i pos) {
     // Enemy interrupted somehow, show consecutive hits or whatevera
     int ret = 0;
+    char text[64];
     if(score->consecutive_hits > 3) {
-        char *text = omf_calloc(64, 1);
         ret = 1;
         int len = snprintf(text, 64, "%d consecutive hits", score->consecutive_hits);
         if(score->consecutive_hit_score > 0) {
@@ -293,8 +307,8 @@ int chr_score_interrupt(chr_score *score, vec2i pos) {
 int chr_score_end_combo(chr_score *score, vec2i pos) {
     // enemy recovered control, end any combos
     int ret = 0;
+    char text[64];
     if(score->combo_hits > 1) {
-        char *text = omf_calloc(64, 1);
         ret = 1;
         int len = snprintf(text, 64, "%d hit combo", score->combo_hits);
         if(score->combo_hit_score > 0) {
@@ -313,12 +327,13 @@ int chr_score_clone(chr_score *src, chr_score *dst) {
     iterator it;
     score_text *t;
     memcpy(dst, src, sizeof(chr_score));
+    dst->total = create_text_obj(text_c(src->total));
     list_create(&dst->texts);
     list_iter_begin(&src->texts, &it);
     foreach(it, t) {
         score_text t2;
         memcpy(&t2, t, sizeof(score_text));
-        t2.text = omf_strdup(t->text);
+        t2.text = create_text_obj(text_c(t->text));
         list_append(&dst->texts, &t2, sizeof(score_text));
     }
     return 0;

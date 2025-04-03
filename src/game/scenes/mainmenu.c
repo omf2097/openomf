@@ -18,6 +18,7 @@
 #define TEXT_ACTIVE_COLOR 0xFF
 #define TEXT_INACTIVE_COLOR 0xFE
 #define TEXT_SHADOW_COLOR 0xC0
+#define DIALOG_BORDER_COLOR 0xFE
 
 typedef struct mainmenu_local_t {
     gui_frame *frame;
@@ -110,7 +111,7 @@ int mainmenu_create(scene *scene) {
     // Create main menu
     gui_theme theme;
     gui_theme_defaults(&theme);
-    theme.dialog.border_color = TEXT_MEDIUM_GREEN;
+    theme.dialog.border_color = DIALOG_BORDER_COLOR;
     theme.text.font = FONT_BIG;
     theme.text.primary_color = TEXT_PRIMARY_COLOR;
     theme.text.secondary_color = TEXT_SECONDARY_COLOR;
