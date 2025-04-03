@@ -23,10 +23,10 @@ int scene_create(scene *scene, game_state *gs, int scene_id) {
     }
 
     // Load BK
-    int resource_id = scene_to_resource(scene_id);
+    char const *bkfilename = scene_to_bkfilename(scene_id);
     scene->bk_data = omf_calloc(1, sizeof(bk));
-    if(load_bk_file(scene->bk_data, resource_id)) {
-        log_error("Unable to load scene %s (%s)!", scene_get_name(scene_id), get_resource_name(resource_id));
+    if(load_bk_file(scene->bk_data, bkfilename)) {
+        log_error("Unable to load scene %s (%s)!", scene_get_name(scene_id), bkfilename);
         return 1;
     }
     scene->id = scene_id;
@@ -60,7 +60,7 @@ int scene_create(scene *scene, game_state *gs, int scene_id) {
     vga_state_set_base_palette_index(0, &c);
 
     // All done.
-    log_debug("Loaded scene %s (%s).", scene_get_name(scene_id), get_resource_name(resource_id));
+    log_debug("Loaded scene %s (%s).", scene_get_name(scene_id), bkfilename);
     return 0;
 }
 
