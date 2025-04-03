@@ -9,6 +9,12 @@
 #include <stdio.h>
 #include <string.h>
 
+static int trn_sort_compare_fn(const void *a, const void *b) {
+    sd_tournament_file const *trn_a = a;
+    sd_tournament_file const *trn_b = b;
+    return (trn_a->registration_fee > trn_b->registration_fee) - (trn_a->registration_fee < trn_b->registration_fee);
+}
+
 void trnlist_init(vector *trnlist) {
     trnlist_free(trnlist);
 
@@ -48,6 +54,9 @@ void trnlist_init(vector *trnlist) {
         }
     }
     list_iter_end(&dirlist, &it);
+
+    // sort the tournaments by ascending registration fee
+    vector_sort(trnlist, trn_sort_compare_fn);
 
     log_debug("Loaded %d tournaments", vector_size(trnlist));
 
