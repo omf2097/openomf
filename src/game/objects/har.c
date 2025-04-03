@@ -795,7 +795,6 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
         h->endurance = ((((h->endurance - h->endurance_max) / 256) * -2.5) - 60) * 256;
     }
 
-
     if(h->health == 0) {
         // Take a screencap of enemy har
         game_player *other_player = game_state_get_player(obj->gs, !h->player_id);
@@ -1770,12 +1769,14 @@ void har_handle_stun(object *obj) {
                 h->endurance += h->stun_factor * 1.4;
             }
         } else { // Not yet stunned, handle regular stun recovery
-            if((obj->cur_animation->id == ANIM_IDLE) || (obj->cur_animation->id == ANIM_CROUCHING) || (obj->cur_animation->id == ANIM_VICTORY)) {
+            if((obj->cur_animation->id == ANIM_IDLE) || (obj->cur_animation->id == ANIM_CROUCHING) ||
+               (obj->cur_animation->id == ANIM_VICTORY)) {
                 float hpfactor = ((h->health_max * 5.0 / 9.0) + h->health) / h->health_max;
                 float stunfactor = 1.0 * h->stun_factor * h->endurance / h->endurance_max / 256.0;
 
                 h->endurance -= ((hpfactor * stunfactor) + 18.0 / 250.0) * 256;
-            } else if((obj->cur_animation->id == ANIM_CROUCHING_BLOCK) || (obj->cur_animation->id == ANIM_STANDING_BLOCK)) {
+            } else if((obj->cur_animation->id == ANIM_CROUCHING_BLOCK) ||
+                      (obj->cur_animation->id == ANIM_STANDING_BLOCK)) {
                 float hpfactor = (h->health_max * 25.0 / 27.0 + h->health) / h->health_max;
                 float stunfactor = 1.0 * h->stun_factor * h->endurance / h->endurance_max / 256.0;
 
@@ -2646,8 +2647,8 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     //  The stun cap is calculated as follows
     //  HAR Endurance * 3.6 * (Pilot Endurance + 16) / 23
     local->endurance_max = (af_data->endurance * 3.6 * (pilot->endurance + 16) / 23);
-    log_debug("HAR endurance is %d with pilot endurance %d and base endurance %f", local->endurance_max, pilot->endurance,
-              af_data->endurance);
+    log_debug("HAR endurance is %d with pilot endurance %d and base endurance %f", local->endurance_max,
+              pilot->endurance, af_data->endurance);
     local->stun_factor = 1.2 * 256 * (pilot->endurance + 30) / 40;
     log_debug("HAR stun factor is %d", local->stun_factor);
     // fwd speed = (Agility + 20) / 30 * fwd speed
