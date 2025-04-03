@@ -7,6 +7,8 @@
 #include "game/game_state.h"
 #include "game/gui/gui_frame.h"
 #include "game/gui/label.h"
+#include "game/gui/menu_background.h"
+#include "game/gui/text/text.h"
 #include "game/gui/textinput.h"
 #include "game/gui/trn_menu.h"
 #include "game/protos/object.h"
@@ -35,6 +37,12 @@
 #define TEXT_INACTIVE_COLOR 0xFE
 #define TEXT_SHADOW_COLOR 0xC0
 
+#define POPUP_TEXT_W 200
+#define POPUP_TEXT_H 48
+#define POPUP_BG_W (POPUP_TEXT_W + 40)
+#define POPUP_BG_H (POPUP_TEXT_H)
+#define POPUP_CENTERY 70
+
 typedef struct {
     dashboard_type dashtype;
     object bg_obj[3];
@@ -47,6 +55,9 @@ typedef struct {
     bool selling;
     component *hint;
     gui_theme theme; // Required by the hint component
+    text *popup;
+    surface popup_bg1;
+    surface popup_bg2;
 } mechlab_local;
 
 bool mechlab_find_last_player(scene *scene) {
@@ -173,6 +184,9 @@ void mechlab_free(scene *scene) {
         object_free(&local->bg_obj[i]);
     }
 
+    text_free(&local->popup);
+    surface_free(&local->popup_bg1);
+    surface_free(&local->popup_bg2);
     gui_frame_free(local->frame);
     gui_frame_free(local->dashboard);
     object_free(local->mech);
@@ -221,6 +235,16 @@ component *mechlab_sim_menu_create(scene *scene) {
     return menu;
 }
 
+void mechlab_open_popup(scene *scene, char const *message) {
+    mechlab_local *local = scene_get_userdata(scene);
+    text_free(&local->popup);
+    local->popup = text_create_from_c(message);
+    text_set_font(local->popup, FONT_BIG);
+    text_set_bounding_box(local->popup, POPUP_TEXT_W, POPUP_TEXT_H);
+    text_set_vertical_align(local->popup, TEXT_ALIGN_MIDDLE);
+    text_set_horizontal_align(local->popup, TEXT_ALIGN_CENTER);
+}
+
 void mechlab_update(scene *scene) {
     mechlab_local *local = scene_get_userdata(scene);
     game_player *p1 = game_state_get_player(scene->gs, 0);
@@ -265,6 +289,10 @@ static void mechlab_theme(gui_theme *theme) {
 
 void mechlab_tick(scene *scene, int paused) {
     mechlab_local *local = scene_get_userdata(scene);
+
+    if(local->popup) {
+        return;
+    }
 
     gui_frame_tick(local->frame);
     gui_frame_tick(local->dashboard);
@@ -481,6 +509,12 @@ void mechlab_render(scene *scene) {
         gui_frame_render(local->dashboard);
     }
     component_render(local->hint);
+
+    if(local->popup) {
+        video_draw_remap(&local->popup_bg1, (NATIVE_W - POPUP_BG_W) / 2, POPUP_CENTERY - POPUP_BG_H / 2, 4, 1, 0);
+        video_draw(&local->popup_bg2, (NATIVE_W - POPUP_BG_W) / 2, POPUP_CENTERY - POPUP_BG_H / 2);
+        text_draw(local->popup, (NATIVE_W - POPUP_TEXT_W) / 2, POPUP_CENTERY - POPUP_TEXT_H / 2);
+    }
 }
 
 void mechlab_input_tick(scene *scene) {
@@ -496,8 +530,14 @@ void mechlab_input_tick(scene *scene) {
     }
     do {
         if(i->type == EVENT_TYPE_ACTION) {
+            if(local->popup) {
+                if(i->event_data.action != ACT_STOP) {
+                    text_free(&local->popup);
+                }
+                continue;
+            }
             // If view is new dashboard view, pass all input to it
-            if(local->dashtype == DASHBOARD_NEW_PLAYER) {
+            else if(local->dashtype == DASHBOARD_NEW_PLAYER) {
                 // If inputting text for new player name is done, switch to next view.
                 // If ESC, exit view.
                 // Otherwise handle text input
@@ -587,6 +627,9 @@ int mechlab_create(scene *scene) {
     scene_set_userdata(scene, local);
     bool found = mechlab_find_last_player(scene);
     mechlab_select_dashboard(scene, DASHBOARD_STATS);
+
+    menu_transparent_bg_create(&local->popup_bg1, POPUP_BG_W, POPUP_BG_H);
+    menu_background_create(&local->popup_bg2, POPUP_BG_W, POPUP_BG_H, MenuBackgroundNewsroom);
 
     // Create main menu
     local->frame = gui_frame_create(&local->theme, 0, 0, 320, 200);

@@ -97,10 +97,12 @@ void lab_menu_main_load(component *c, void *userdata) {
     scene *s = userdata;
     game_player *p1 = game_state_get_player(s->gs, 0);
     if(sg_count() == 1 && p1->chr) {
-        // TODO one and only loaded
+        // one and only loaded
+        mechlab_open_popup(s, lang_get(158));
         return;
     } else if(sg_count() == 0) {
-        // TODO none to load
+        // none to load
+        mechlab_open_popup(s, lang_get(157));
         return;
     }
     trnmenu_set_submenu(c->parent, mechlab_chrload_menu_create(s));
@@ -109,8 +111,9 @@ void lab_menu_main_load(component *c, void *userdata) {
 void lab_menu_main_delete(component *c, void *userdata) {
     scene *s = userdata;
     game_player *p1 = game_state_get_player(s->gs, 0);
-    if(sg_count() == 0 || (sg_count() < 2 && p1->chr)) {
+    if(sg_count() == 0 || (sg_count() == 1 && p1->chr)) {
         // none to delete
+        mechlab_open_popup(s, lang_get(159));
         return;
     }
     trnmenu_set_submenu(c->parent, mechlab_chrdelete_menu_create(s));
@@ -143,9 +146,9 @@ static const button_details details_list[] = {
     {lab_menu_main_training_enter, "TRAINING COURSES", TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_MIDDLE, {22, 0, 0, 0}, true},
     {lab_menu_main_buy_enter,      "BUY",              TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP,    {0, 0, 2,  0}, true},
     {lab_menu_main_sell_enter,     "SELL",             TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP,    {0, 0, 2,  0}, true},
-    {lab_menu_main_load,           "LOAD",             TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_MIDDLE, {12, 0, 0, 0}, true},
+    {lab_menu_main_load,           "LOAD",             TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_MIDDLE, {12, 0, 0, 0}, false},
     {lab_menu_main_new,            "NEW",              TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_MIDDLE, {12, 0, 0, 0}, false},
-    {lab_menu_main_delete,         "DELETE",           TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_MIDDLE, {12, 0, 0, 0}, true},
+    {lab_menu_main_delete,         "DELETE",           TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_MIDDLE, {12, 0, 0, 0}, false},
     {lab_menu_main_sim,            "SIM",              TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP,    {0, 0, 2,  0}, true},
     {lab_menu_main_quit,           "QUIT",             TEXT_ROW_VERTICAL,   TEXT_ALIGN_CENTER, TEXT_ALIGN_MIDDLE, {1, 0, 0,  0}, false},
     {lab_menu_main_tournament,     "NEW TOURNAMENT",   TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_MIDDLE, {0, 0, 0,  0}, true},
