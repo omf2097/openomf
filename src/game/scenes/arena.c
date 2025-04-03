@@ -918,7 +918,11 @@ void arena_free(scene *scene) {
     game_state_set_paused(scene->gs, 0);
 
     if(scene->gs->rec && scene->gs->init_flags->playback == 0) {
-        sd_rec_finish(scene->gs->rec, scene->gs->tick);
+        if(!is_netplay(scene->gs) && !is_rec_playback(scene->gs)) {
+            // don't write a finisher in netplay or REC playback
+            // REC doesn't need it, and netplay will handle it itself
+            sd_rec_finish(scene->gs->rec, scene->gs->tick);
+        }
 
         if(scene->gs->init_flags->record == 1) {
             // we're supposed to save it

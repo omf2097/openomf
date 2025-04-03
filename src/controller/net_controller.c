@@ -889,6 +889,7 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                     game_state_clone_free(data->gs_bak);
                     omf_free(data->gs_bak);
                 }
+                sd_rec_finish(ctrl->gs->rec, ticks - data->local_proposal);
                 if(data->lobby) {
                     data->winner = arena_is_over(ctrl->gs->sc);
                     // lobby will handle the controller
@@ -909,6 +910,7 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
     if(has_received) {
         if(rewind_and_replay(data, ctrl->gs)) {
             if(data->lobby == data->peer) {
+                sd_rec_finish(ctrl->gs->rec, ticks - data->local_proposal);
                 game_state_set_next(ctrl->gs, SCENE_LOBBY);
                 return 1;
             }
