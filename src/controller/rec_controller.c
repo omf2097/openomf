@@ -102,7 +102,10 @@ int rec_controller_poll(controller *ctrl, ctrl_event **ev) {
             controller_cmd(ctrl, ctrl->last, ev);
         }
     }
-    data->last_tick = ticks;
+    if(ticks > data->last_tick) {
+        // don't allow this to go backwards if we have an errant out of order event
+        data->last_tick = ticks;
+    }
     return 0;
 }
 

@@ -581,6 +581,7 @@ void net_controller_free(controller *ctrl) {
 
         SDL_RWclose(data->trace_file);
     }
+    controller_clear_hooks(ctrl->gs->menu_ctrl);
     ENetEvent event;
     if(!data->disconnected) {
         if(data->peer == data->lobby) {
@@ -650,13 +651,10 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
     }
 
     if(data->gs_bak == NULL && data->disconnected == 0 && scene_is_arena(game_state_get_scene(ctrl->gs)) &&
-       (ticks - data->local_proposal) % 7 == 0 &&
        game_state_find_object(ctrl->gs, game_player_get_har_obj_id(game_state_get_player(ctrl->gs, 1)))) {
         arena_reset(ctrl->gs->sc);
         data->gs_bak = omf_calloc(1, sizeof(game_state));
         game_state_clone(ctrl->gs, data->gs_bak);
-        // bypass counter that tries to suppress input from previous scene
-        data->gs_bak->sc->static_ticks_since_start = 25;
         log_debug("cloned game state at arena tick %d hash %" PRIu32, data->gs_bak->int_tick - data->local_proposal,
                   arena_state_hash(data->gs_bak));
         data->local_proposal = ticks; // reset the tick offset to the start of the match
@@ -708,8 +706,9 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                             (ticks - data->local_proposal) - (peerticks + (avg_rtt(data->rttbuf, 100) / 2));
 
                         if(data->gs_bak && data->synchronized && data->frame_advantage > peer_frame_advantage + 1) {
-                            log_debug("%d %d (%d) frame advantage %d > %d", ticks - data->local_proposal, peerticks,
-                                      (avg_rtt(data->rttbuf, 100) / 2), data->frame_advantage, peer_frame_advantage);
+                            log_debug("local ticks %d  remote ticks %d (rtt %d) frame advantage %d > %d",
+                                      ticks - data->local_proposal, peerticks, (avg_rtt(data->rttbuf, 100) / 2),
+                                      data->frame_advantage, peer_frame_advantage);
                             ctrl->gs->delay = (data->frame_advantage - peer_frame_advantage) * 2;
                             data->gs_bak->delay = (data->frame_advantage - peer_frame_advantage) * 2;
                         } else {
@@ -722,7 +721,7 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                         for(size_t i = 18; i < event.packet->dataLength;) {
                             unsigned remote_tick = serial_read_uint32(&ser);
                             // dispatch keypress to scene
-                            int action = 0;
+                            uint8_t action = 0;
                             int k = 0;
                             do {
                                 action = serial_read_int8(&ser);
@@ -739,7 +738,11 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                                             has_received = 1;
                                         }
                                     } else {
-                                        controller_cmd(ctrl, action, ev);
+                                        if(action == ACT_ESC) {
+                                            ctrl->gs->menu_ctrl->queued = action;
+                                        } else {
+                                            controller_cmd(ctrl, action, ev);
+                                        }
                                     }
                                 }
 
@@ -886,6 +889,7 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                     game_state_clone_free(data->gs_bak);
                     omf_free(data->gs_bak);
                 }
+                sd_rec_finish(ctrl->gs->rec, ticks - data->local_proposal);
                 if(data->lobby) {
                     data->winner = arena_is_over(ctrl->gs->sc);
                     // lobby will handle the controller
@@ -906,6 +910,7 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
     if(has_received) {
         if(rewind_and_replay(data, ctrl->gs)) {
             if(data->lobby == data->peer) {
+                sd_rec_finish(ctrl->gs->rec, ticks - data->local_proposal);
                 game_state_set_next(ctrl->gs, SCENE_LOBBY);
                 return 1;
             }
@@ -988,6 +993,43 @@ void controller_hook(controller *ctrl, int action) {
             enet_peer_send(peer, 1, packet);
             enet_host_flush(host);
         }
+    } else {
+        log_debug("peer is null~");
+    }
+}
+
+void menu_controller_hook(controller *ctrl, int action) {
+
+    if(action != ACT_ESC) {
+        return;
+    }
+
+    if(ctrl->gs->menu_ctrl->queued == ACT_ESC) {
+        return;
+    }
+
+    wtf *data = ctrl->data;
+    ENetPeer *peer = data->peer;
+    ENetHost *host = data->host;
+
+    if(peer) {
+        serial ser;
+        ENetPacket *packet;
+        serial_create(&ser);
+        serial_write_int8(&ser, EVENT_TYPE_ACTION);
+        serial_write_uint32(&ser, 0);
+        serial_write_uint32(&ser, 0);
+        serial_write_uint32(&ser, 0);
+        serial_write_uint32(&ser, 0);
+        serial_write_int8(&ser, 0);
+        serial_write_uint32(&ser, udist(data->last_tick, data->local_proposal));
+        serial_write_int8(&ser, action);
+        serial_write_int8(&ser, 0);
+        // non gameplay events are not repeated, so they need to be reliable
+        packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
+        serial_free(&ser);
+        enet_peer_send(peer, 1, packet);
+        enet_host_flush(host);
     } else {
         log_debug("peer is null~");
     }

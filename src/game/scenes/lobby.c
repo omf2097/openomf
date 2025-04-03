@@ -913,7 +913,7 @@ void lobby_tick(scene *scene, int paused) {
                     // Challengee -- local
                     settings_keyboard *k = &settings_get()->keys;
                     if(k->ctrl_type1 == CTRL_TYPE_KEYBOARD) {
-                        _setup_keyboard(scene->gs, player_id);
+                        _setup_keyboard(scene->gs, player_id, 0);
                     } else if(k->ctrl_type1 == CTRL_TYPE_GAMEPAD) {
                         _setup_joystick(scene->gs, player_id, k->joy_name1, k->joy_offset1);
                     }
@@ -1076,7 +1076,7 @@ void lobby_tick(scene *scene, int paused) {
                             // Challenger -- local
                             settings_keyboard *k = &settings_get()->keys;
                             if(k->ctrl_type1 == CTRL_TYPE_KEYBOARD) {
-                                _setup_keyboard(scene->gs, player_id);
+                                _setup_keyboard(scene->gs, player_id, 0);
                             } else if(k->ctrl_type1 == CTRL_TYPE_GAMEPAD) {
                                 _setup_joystick(scene->gs, player_id, k->joy_name1, k->joy_offset1);
                             }
@@ -1173,7 +1173,7 @@ void lobby_tick(scene *scene, int paused) {
                         // Challengee -- local
                         settings_keyboard *k = &settings_get()->keys;
                         if(k->ctrl_type1 == CTRL_TYPE_KEYBOARD) {
-                            _setup_keyboard(scene->gs, player_id);
+                            _setup_keyboard(scene->gs, player_id, 0);
                         } else if(k->ctrl_type1 == CTRL_TYPE_GAMEPAD) {
                             _setup_joystick(scene->gs, player_id, k->joy_name1, k->joy_offset1);
                         }
