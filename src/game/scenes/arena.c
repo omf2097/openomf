@@ -56,6 +56,10 @@
 #define TEXT_INACTIVE_COLOR 0xFE
 #define TEXT_SHADOW_COLOR 0xC0
 
+// How many dynamic ticks does it take for OMF 2097 to cross fade?
+// This effects gameplay and REC compatibility.
+#define ARENA_CROSSFADE_TICKS 30
+
 typedef enum
 {
     NONE = 0,
@@ -69,7 +73,7 @@ typedef struct arena_local {
 
     int menu_visible;
     unsigned int state;
-    int ending_ticks;
+    int state_ticks;
 
     component *health_bars[2];
     component *endurance_bars[2];
@@ -151,20 +155,6 @@ void arena_speed_slide(component *c, void *userdata, int pos) {
     game_state_set_speed(sc->gs, pos + 5);
 }
 
-void scene_fight_anim_done(void *scenedata, void *userdata) {
-    scene *scene = scenedata;
-    // int parent_id = userdata;
-    // object *parent = game_state_find_object(scene->gs, parent_id;
-    arena_local *arena = scene_get_userdata(scene);
-
-    // This will release HARs for action
-    arena->state = ARENA_STATE_FIGHTING;
-
-    // Custom object finisher callback requires that we
-    // mark object as finished manually, if necessary.
-    // parent->animation_state.finished = 1;
-}
-
 void scene_fight_anim_start(void *scenedata, void *userdata) {
     // Start FIGHT animation
     scene *sc = scenedata;
@@ -175,9 +165,7 @@ void scene_fight_anim_start(void *scenedata, void *userdata) {
     object_create(fight, gs, fight_ani->start_pos, vec2f_create(0, 0));
     object_set_stl(fight, bk_get_stl(scene->bk_data));
     object_set_animation(fight, fight_ani);
-    // object_set_finish_cb(fight, scene_fight_anim_done);
     game_state_add_object(gs, fight, RENDER_LAYER_TOP, 0, 0);
-    ticktimer_add(&scene->tick_timer, 24, scene_fight_anim_done, NULL /*fight->id*/);
 }
 
 void scene_ready_anim_done(object *parent) {
@@ -208,9 +196,6 @@ void scene_youwin_anim_start(void *userdata) {
     object_set_animation(youwin, youwin_ani);
     object_set_finish_cb(youwin, scene_youwin_anim_done);
     game_state_add_object(gs, youwin, RENDER_LAYER_MIDDLE, 0, 0);
-
-    // This will release HARs for action
-    /*arena->state = ARENA_STATE_ENDING;*/
 }
 
 void scene_youlose_anim_done(object *parent) {
@@ -232,9 +217,6 @@ void scene_youlose_anim_start(void *userdata) {
     object_set_animation(youlose, youlose_ani);
     object_set_finish_cb(youlose, scene_youlose_anim_done);
     game_state_add_object(gs, youlose, RENDER_LAYER_MIDDLE, 0, 0);
-
-    // This will release HARs for action
-    /*arena->state = ARENA_STATE_ENDING;*/
 }
 
 void arena_screengrab_winner(scene *sc) {
@@ -412,9 +394,47 @@ static void arena_end(scene *sc) {
     }
 }
 
+static void arena_create_roundstart_anim(scene *scene) {
+    arena_local *local = scene_get_userdata(scene);
+
+    if(local->rounds == 1) {
+        // Start READY animation
+        animation *ready_ani = &bk_get_info(scene->bk_data, 11)->ani;
+        object *ready = omf_calloc(1, sizeof(object));
+        object_create(ready, scene->gs, ready_ani->start_pos, vec2f_create(0, 0));
+        object_set_stl(ready, scene->bk_data->sound_translation_table);
+        object_set_animation(ready, ready_ani);
+        object_set_finish_cb(ready, scene_ready_anim_done);
+        object_set_group(ready, GROUP_ANNOUNCEMENT);
+        game_state_add_object(scene->gs, ready, RENDER_LAYER_TOP, 0, 0);
+    } else {
+        // ROUND
+        animation *round_ani = &bk_get_info(scene->bk_data, 6)->ani;
+        object *round = omf_calloc(1, sizeof(object));
+        object_create(round, scene->gs, round_ani->start_pos, vec2f_create(0, 0));
+        object_set_stl(round, scene->bk_data->sound_translation_table);
+        object_set_animation(round, round_ani);
+        object_set_finish_cb(round, scene_ready_anim_done);
+        object_set_group(round, GROUP_ANNOUNCEMENT);
+        game_state_add_object(scene->gs, round, RENDER_LAYER_TOP, 0, 0);
+
+        // Number
+        animation *number_ani = &bk_get_info(scene->bk_data, 7)->ani;
+        object *number = omf_calloc(1, sizeof(object));
+        object_create(number, scene->gs, number_ani->start_pos, vec2f_create(0, 0));
+        object_set_stl(number, scene->bk_data->sound_translation_table);
+        object_set_animation(number, number_ani);
+        object_select_sprite(number, local->round);
+        object_set_sprite_override(number, 1);
+        object_set_group(number, GROUP_ANNOUNCEMENT);
+        game_state_add_object(scene->gs, number, RENDER_LAYER_TOP, 0, 0);
+    }
+}
+
 void arena_reset(scene *sc) {
     arena_local *local = scene_get_userdata(sc);
     local->state = ARENA_STATE_STARTING;
+    local->state_ticks = 0;
 
     log_debug("resetting arena");
 
@@ -447,39 +467,6 @@ void arena_reset(scene *sc) {
     sc->bk_data->sound_translation_table[14] = 10;               // READY
     sc->bk_data->sound_translation_table[15] = 16;               // ROUND
     sc->bk_data->sound_translation_table[3] = 23 + local->round; // NUMBER
-
-    if(local->rounds == 1) {
-        // Start READY animation
-        animation *ready_ani = &bk_get_info(sc->bk_data, 11)->ani;
-        object *ready = omf_calloc(1, sizeof(object));
-        object_create(ready, sc->gs, ready_ani->start_pos, vec2f_create(0, 0));
-        object_set_stl(ready, sc->bk_data->sound_translation_table);
-        object_set_animation(ready, ready_ani);
-        object_set_finish_cb(ready, scene_ready_anim_done);
-        object_set_group(ready, GROUP_ANNOUNCEMENT);
-        game_state_add_object(sc->gs, ready, RENDER_LAYER_TOP, 0, 0);
-    } else {
-        // ROUND animation
-        animation *round_ani = &bk_get_info(sc->bk_data, 6)->ani;
-        object *round = omf_calloc(1, sizeof(object));
-        object_create(round, sc->gs, round_ani->start_pos, vec2f_create(0, 0));
-        object_set_stl(round, sc->bk_data->sound_translation_table);
-        object_set_animation(round, round_ani);
-        object_set_finish_cb(round, scene_ready_anim_done);
-        object_set_group(round, GROUP_ANNOUNCEMENT);
-        game_state_add_object(sc->gs, round, RENDER_LAYER_TOP, 0, 0);
-
-        // Round number
-        animation *number_ani = &bk_get_info(sc->bk_data, 7)->ani;
-        object *number = omf_calloc(1, sizeof(object));
-        object_create(number, sc->gs, number_ani->start_pos, vec2f_create(0, 0));
-        object_set_stl(number, sc->bk_data->sound_translation_table);
-        object_set_animation(number, number_ani);
-        object_select_sprite(number, local->round);
-        object_set_sprite_override(number, 1);
-        object_set_group(number, GROUP_ANNOUNCEMENT);
-        game_state_add_object(sc->gs, number, RENDER_LAYER_TOP, 0, 0);
-    }
 
     // When playing the Desert arena in Arcade mode, change
     // the palette each round to simulate time passing.
@@ -793,8 +780,8 @@ void arena_har_hook(har_event event, void *data) {
             break;
         case HAR_EVENT_DEFEAT:
             if(arena->state != ARENA_STATE_ENDING) {
-                arena->ending_ticks = 0;
                 arena->state = ARENA_STATE_ENDING;
+                arena->state_ticks = 0;
                 arena_har_defeat_hook(event.player_id, scene);
             }
             break;
@@ -1111,7 +1098,8 @@ void arena_spawn_hazard(scene *scene) {
 
 bool har_in_defeat_animation(object *obj) {
     har *h = obj->userdata;
-    return obj->cur_animation->id == (h->custom_defeat_animation ? h->custom_defeat_animation : ANIM_DEFEAT);
+    int anim = obj->cur_animation->id;
+    return anim == h->custom_defeat_animation || anim == ANIM_DEFEAT || anim == ANIM_DAMAGE;
 }
 
 bool defeated_at_rest(object *obj) {
@@ -1122,6 +1110,45 @@ bool winner_needs_victory_pose(object *obj) {
     har *h = obj->userdata;
     return !object_is_airborne(obj) && (h->state == STATE_DONE || h->state == STATE_VICTORY) &&
            obj->cur_animation->id != ANIM_VICTORY;
+}
+
+static void arena_crossfade_transform(damage_tracker *damage, vga_palette *pal, void *userdata) {
+    scene *scene = userdata;
+    arena_local *local = scene_get_userdata(scene);
+    int const target_tick = local->state == ARENA_STATE_STARTING ? 0 : (80 + ARENA_CROSSFADE_TICKS);
+    int progress = abs(local->state_ticks - target_tick);
+    float fraction = progress / (float)ARENA_CROSSFADE_TICKS;
+
+    // Set palette darkness value.
+    for(int i = 0; i < 256; i++) {
+        pal->colors[i].r *= fraction;
+        pal->colors[i].g *= fraction;
+        pal->colors[i].b *= fraction;
+    }
+
+    damage_set_all(damage);
+}
+
+// do arena crossfade between rounds
+static void arena_palette_transform(scene *scene) {
+    arena_local *local = scene_get_userdata(scene);
+
+    int target_tick;
+    if(local->state == ARENA_STATE_STARTING)
+        target_tick = 0;
+    else if(local->state == ARENA_STATE_ENDING)
+        target_tick = (80 + ARENA_CROSSFADE_TICKS);
+    else
+        return;
+
+    if(!settings_get()->video.crossfade_on)
+        return;
+
+    int progress = abs(local->state_ticks - target_tick);
+    if(progress >= ARENA_CROSSFADE_TICKS)
+        return;
+
+    vga_state_enable_palette_transform(arena_crossfade_transform, scene);
 }
 
 void arena_dynamic_tick(scene *scene, int paused) {
@@ -1135,6 +1162,8 @@ void arena_dynamic_tick(scene *scene, int paused) {
             obj_har[i] = game_state_find_object(gs, game_player_get_har_obj_id(game_state_get_player(gs, i)));
             hars[i] = obj_har[i]->userdata;
         }
+
+        local->state_ticks++;
 
         // Handle scrolling score texts
         chr_score_tick(game_player_get_score(game_state_get_player(scene->gs, 0)));
@@ -1152,12 +1181,19 @@ void arena_dynamic_tick(scene *scene, int paused) {
         }
 
         // Endings and beginnings
-        if(local->state != ARENA_STATE_ENDING && local->state != ARENA_STATE_STARTING) {
+        if(local->state == ARENA_STATE_FIGHTING) {
             if(scene->gs->match_settings.hazards) {
                 arena_spawn_hazard(scene);
             }
-        }
-        if(local->state == ARENA_STATE_ENDING) {
+        } else if(local->state == ARENA_STATE_STARTING) {
+            if(local->state_ticks == ARENA_CROSSFADE_TICKS) {
+                arena_create_roundstart_anim(scene);
+            } else if(local->state_ticks == 92) {
+                // release the HARs for action
+                local->state = ARENA_STATE_FIGHTING;
+                local->state_ticks = 0;
+            }
+        } else if(local->state == ARENA_STATE_ENDING) {
             // check if its time to put the winner into victory pose
             if(defeated_at_rest(obj_har[0]) && winner_needs_victory_pose(obj_har[1])) {
                 har_face_enemy(obj_har[1], obj_har[0]);
@@ -1178,16 +1214,18 @@ void arena_dynamic_tick(scene *scene, int paused) {
                 }
                 local->win_state = NONE;
             } else if(local->win_state == DONE) {
-                local->ending_ticks++;
                 // you win/lose animation is done
                 if(player_frame_isset(obj_har[0], "be") || player_frame_isset(obj_har[1], "be") ||
                    chr_score_onscreen(s1) || chr_score_onscreen(s2)) {
-                    local->ending_ticks = 50;
+                    local->state_ticks = 50;
                 }
             }
 
-            if(local->ending_ticks == 80) {
-                arena_screengrab_winner(scene);
+            int const target_end_ticks = 80;
+            if(local->state_ticks >= target_end_ticks) {
+                if(local->state_ticks == target_end_ticks) {
+                    arena_screengrab_winner(scene);
+                }
                 // one HAR must be in victory pose and one must be in defeat or damage from scrap/destruction
                 assert(((obj_har[0]->cur_animation->id == ANIM_VICTORY ||
                          af_get_move(hars[0]->af_data, obj_har[0]->cur_animation->id)->category == CAT_SCRAP ||
@@ -1197,11 +1235,14 @@ void arena_dynamic_tick(scene *scene, int paused) {
                          af_get_move(hars[0]->af_data, obj_har[0]->cur_animation->id)->category == CAT_SCRAP ||
                          af_get_move(hars[0]->af_data, obj_har[0]->cur_animation->id)->category == CAT_DESTRUCTION) &&
                         (har_in_defeat_animation(obj_har[0]) || obj_har[1]->cur_animation->id == ANIM_DAMAGE)));
-                if(!local->over) {
-                    local->round++;
-                    arena_reset(scene);
-                } else {
-                    arena_end(scene);
+                int progress = local->state_ticks - target_end_ticks;
+                if(progress >= ARENA_CROSSFADE_TICKS) {
+                    if(local->over) {
+                        arena_end(scene);
+                    } else {
+                        local->round++;
+                        arena_reset(scene);
+                    }
                 }
             }
         }
@@ -1552,7 +1593,7 @@ int arena_create(scene *scene) {
 
     // Set correct state
     local->state = ARENA_STATE_STARTING;
-    local->ending_ticks = 0;
+    local->state_ticks = 0;
     local->rein_enabled = 0;
 
     local->round = 0;
@@ -1821,38 +1862,6 @@ int arena_create(scene *scene) {
         scene->bk_data->sound_translation_table[20] = 0;
     }
 
-    if(local->rounds == 1) {
-        // Start READY animation
-        animation *ready_ani = &bk_get_info(scene->bk_data, 11)->ani;
-        object *ready = omf_calloc(1, sizeof(object));
-        object_create(ready, scene->gs, ready_ani->start_pos, vec2f_create(0, 0));
-        object_set_stl(ready, scene->bk_data->sound_translation_table);
-        object_set_animation(ready, ready_ani);
-        object_set_finish_cb(ready, scene_ready_anim_done);
-        object_set_group(ready, GROUP_ANNOUNCEMENT);
-        game_state_add_object(scene->gs, ready, RENDER_LAYER_TOP, 0, 0);
-    } else {
-        // ROUND
-        animation *round_ani = &bk_get_info(scene->bk_data, 6)->ani;
-        object *round = omf_calloc(1, sizeof(object));
-        object_create(round, scene->gs, round_ani->start_pos, vec2f_create(0, 0));
-        object_set_stl(round, scene->bk_data->sound_translation_table);
-        object_set_animation(round, round_ani);
-        object_set_finish_cb(round, scene_ready_anim_done);
-        object_set_group(round, GROUP_ANNOUNCEMENT);
-        game_state_add_object(scene->gs, round, RENDER_LAYER_TOP, 0, 0);
-
-        // Number
-        animation *number_ani = &bk_get_info(scene->bk_data, 7)->ani;
-        object *number = omf_calloc(1, sizeof(object));
-        object_create(number, scene->gs, number_ani->start_pos, vec2f_create(0, 0));
-        object_set_stl(number, scene->bk_data->sound_translation_table);
-        object_set_animation(number, number_ani);
-        object_select_sprite(number, local->round);
-        object_set_group(number, GROUP_ANNOUNCEMENT);
-        game_state_add_object(scene->gs, number, RENDER_LAYER_TOP, 0, 0);
-    }
-
     // Callbacks
     scene_set_event_cb(scene, arena_event);
     scene_set_free_cb(scene, arena_free);
@@ -1863,6 +1872,7 @@ int arena_create(scene *scene) {
     scene_set_input_poll_cb(scene, arena_input_tick);
     scene_set_render_overlay_cb(scene, arena_render_overlay);
     scene_set_debug_cb(scene, arena_debug);
+    scene_set_palette_transform_cb(scene, arena_palette_transform);
     scene->clone = arena_clone;
 
     // initialize recording, if we're not doing playback
