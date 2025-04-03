@@ -1100,7 +1100,7 @@ int game_state_num_players(game_state *gs) {
     return N_ELEMENTS(gs->players);
 }
 
-void _setup_keyboard(game_state *gs, int player_id) {
+void _setup_keyboard(game_state *gs, int player_id, int control_id) {
     settings_keyboard *k = &settings_get()->keys;
     // Set up controller
     controller *ctrl = omf_calloc(1, sizeof(controller));
@@ -1109,7 +1109,7 @@ void _setup_keyboard(game_state *gs, int player_id) {
 
     // Set up keyboards
     keyboard_keys *keys = omf_calloc(1, sizeof(keyboard_keys));
-    if(player_id == 0) {
+    if(control_id == 0) {
         keys->jump_up = SDL_GetScancodeFromName(k->key1_jump_up);
         keys->jump_right = SDL_GetScancodeFromName(k->key1_jump_right);
         keys->walk_right = SDL_GetScancodeFromName(k->key1_walk_right);
@@ -1175,7 +1175,7 @@ static void _setup_rec_controller(game_state *gs, int player_id, sd_rec_file *re
 void reconfigure_controller(game_state *gs) {
     settings_keyboard *k = &settings_get()->keys;
     if(k->ctrl_type1 == CTRL_TYPE_KEYBOARD) {
-        _setup_keyboard(gs, 0);
+        _setup_keyboard(gs, 0, 0);
     } else if(k->ctrl_type1 == CTRL_TYPE_GAMEPAD) {
         if(!_setup_joystick(gs, 0, k->joy_name1, k->joy_offset1)) {
             // fallback on the good old keyboard
@@ -1185,7 +1185,7 @@ void reconfigure_controller(game_state *gs) {
     }
 
     // Set up second player keyboard to be available in menu
-    _setup_keyboard(gs, 1);
+    _setup_keyboard(gs, 1, 1);
 }
 
 void game_state_init_demo(game_state *gs) {

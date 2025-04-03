@@ -160,7 +160,7 @@ void menu_connect_tick(component *c) {
             // Player 2 controller -- Local
             settings_keyboard *k = &settings_get()->keys;
             if(k->ctrl_type1 == CTRL_TYPE_KEYBOARD) {
-                _setup_keyboard(gs, 1);
+                _setup_keyboard(gs, 1, 0);
             } else if(k->ctrl_type1 == CTRL_TYPE_GAMEPAD) {
                 _setup_joystick(gs, 1, k->joy_name1, k->joy_offset1);
             }
