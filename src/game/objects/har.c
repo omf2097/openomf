@@ -474,11 +474,6 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t m
 
         game_state_add_object(parent->gs, obj, RENDER_LAYER_MIDDLE, 0, 0);
     }
-
-    // When kreissack explodes, spwan some scrap too. Just to make it awesome.
-    if(h->id == 10 && id >= 25 && id <= 30) {
-        har_spawn_scrap(parent, pos, 12);
-    }
 }
 
 // Callback for destroying objects, eg. projectiles
