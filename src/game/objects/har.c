@@ -924,9 +924,7 @@ void har_spawn_scrap(object *obj, vec2i pos, int amount) {
     // TODO this assumes the default scrap level and does not consider BIG[1-9]
     int scrap_amount = 0;
     int destr = is_destruction(obj->gs);
-    if(destr) {
-        scrap_amount = 30;
-    } else if(amount > 11 && amount < 14) {
+    if(amount > 11 && amount < 14) {
         scrap_amount = 1;
     } else if(amount > 13 && amount < 16) {
         scrap_amount = 2;
@@ -939,7 +937,7 @@ void har_spawn_scrap(object *obj, vec2i pos, int amount) {
         float velx = (5 * cosf(90 + i - (scrap_amount) / 2 + rv)) * object_get_direction(obj);
         float vely = -12 * sinf(i / scrap_amount + rv);
 
-        // Make destruction moves look more impressive :P
+        // HACK: Make destruction moves look more impressive :P
         if(destr) {
             velx *= 5;
             vely *= 5;
