@@ -375,15 +375,6 @@ void mechlab_tick(scene *scene, int paused) {
             gui_frame_set_root(local->frame, menu);
             gui_frame_layout(local->frame);
         } else {
-            if(player1->chr) {
-                if(sg_save(player1->chr) != SD_SUCCESS) {
-                    log_error("Failed to save pilot %s", player1->chr->pilot.name);
-                }
-                sd_chr_free(player1->chr);
-                omf_free(player1->chr);
-                player1->pilot = omf_calloc(1, sizeof(sd_pilot));
-                sd_pilot_create(player1->pilot);
-            }
             game_state_set_next(scene->gs, SCENE_MENU);
         }
     }
