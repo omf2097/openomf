@@ -29,7 +29,10 @@ float ATLAS_H = 2048.0;
 vec2 NATIVE_SIZE = vec2(320.0, 200.0);
 
 float noise(in vec2 v) {
-    return fract(tan(distance(v * PHI, v)) * v.x);
+    // OMF had a fairly random offset for each row, because
+    // they applied their noise row by row.
+    // they then changed the threshold by 0x6b for each subsequent X.
+    return fract(tan(10 * PHI * v.y) + (float(0x6b) * v.x) / 256.0);
 }
 
 vec4 handle(float index) {
