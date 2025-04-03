@@ -81,7 +81,7 @@ const sd_tag sd_taglist[] = {
     {"mc",  0, NULL                                                                                                   },
     {"md",  1, "Destroy animation N"                                                                                  },
     {"mg",  1, "Gravity for spawned animation, default 0"                                                             },
-    {"mi",  1, NULL                                                                                                   },
+    {"mi",  1, "Instance count for spawned animation, default 1"                                                      },
     {"mm",  1, "Manipulate mrx and mry calculations"                                                                  },
     {"mn",  1, NULL                                                                                                   },
     {"mo",  0, NULL                                                                                                   },
