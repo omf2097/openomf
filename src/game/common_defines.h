@@ -10,7 +10,7 @@ const char *scene_get_name(unsigned int id);
 int scene_get_id(const char *);
 
 int har_to_resource(unsigned int id);
-int scene_to_resource(unsigned int id);
+char const *scene_to_bkfilename(unsigned int id);
 
 int rand_arena(void);
 

@@ -1,5 +1,6 @@
 #include "game/common_defines.h"
 #include "resources/ids.h"
+#include "resources/pathmanager.h"
 #include "utils/c_array_util.h"
 #include "utils/random.h"
 #include <stddef.h>
@@ -80,13 +81,13 @@ int har_to_resource(unsigned int id) {
     return AF_JAGUAR + id;
 }
 
-int scene_to_resource(unsigned int id) {
+char const *scene_to_bkfilename(unsigned int id) {
     switch(id) {
         case SCENE_SCOREBOARD:
-            return BK_MENU;
+            return pm_get_resource_path(BK_MENU);
         case SCENE_LOBBY:
-            return PCX_NETARENA;
+            return pm_get_resource_path(PCX_NETARENA);
         default:
-            return BK_INTRO + (id - 1);
+            return pm_get_resource_path(BK_INTRO + (id - 1));
     }
 }
