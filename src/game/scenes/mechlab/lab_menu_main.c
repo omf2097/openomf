@@ -296,6 +296,7 @@ component *lab_menu_main_create(scene *s, bool character_loaded) {
             disabled = false;
         }
         component_disable(button, disabled);
+        button->supports_select = !disabled;
 
         spritebutton_set_focus_cb(button, focus_cbs[i]);
         spritebutton_set_tick_cb(button, tick_cbs[i]);
