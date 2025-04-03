@@ -392,7 +392,8 @@ int newsroom_create(scene *scene) {
             local->challenger = fight_stats->challenger;
             p2->pilot = local->challenger;
             fight_stats->challenger = NULL;
-        } else if(p1->chr) {
+        } else if(p1->chr && p2->pilot && p2->pilot->rank != 0) {
+            // we didn't just beat an unranked challenger
             int health = game_player_get_score(p1)->health;
             // see if we have meet any unranked challenger criteria
             for(int k = p1->chr->pilot.enemies_ex_unranked - 1; k < p1->chr->pilot.enemies_inc_unranked; k++) {
@@ -421,7 +422,8 @@ int newsroom_create(scene *scene) {
                 }
             }
         }
-        if(!local->challenger && p1->chr && p1->chr->pilot.rank == 1) {
+        if(!local->challenger && p1->chr && p1->chr->pilot.rank == 1 && p2->pilot && p2->pilot->rank == 2) {
+            // we beat the champion, not an unranked challenger
             local->champion = true;
         }
         health = game_player_get_score(p1)->health;
