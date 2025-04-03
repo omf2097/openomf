@@ -68,7 +68,7 @@ int rec_controller_poll(controller *ctrl, ctrl_event **ev) {
     sd_rec_move *move;
     unsigned int len;
     if(ticks > data->max_tick) {
-        log_debug("closing controller");
+        log_debug("closing controller because tick %d is higher than max_tick %d", ticks, data->max_tick);
         controller_close(ctrl, ev);
         return 0;
     }
@@ -188,6 +188,7 @@ void rec_controller_create(controller *ctrl, int player, sd_rec_file *rec) {
     vector_create(&data->game_states, sizeof(game_state));
     uint32_t last_tick = 0;
     int j = 0;
+    data->max_tick = 0;
     for(unsigned int i = 0; i < rec->move_count; i++) {
         if(rec->moves[i].player_id == player && (rec->moves[i].lookup_id == 2 || rec->moves[i].lookup_id == 10)) {
             if(last_tick == rec->moves[i].tick) {
@@ -198,8 +199,10 @@ void rec_controller_create(controller *ctrl, int player, sd_rec_file *rec) {
             hashmap_put_int(&data->tick_lookup, (rec->moves[i].tick * 10) + j, &rec->moves[i], sizeof(sd_rec_move));
             last_tick = rec->moves[i].tick;
         }
+        if((rec->moves[i].lookup_id == 2 || rec->moves[i].lookup_id == 10) && rec->moves[i].tick > data->max_tick) {
+            data->max_tick = rec->moves[i].tick;
+        }
     }
-    data->max_tick = rec->moves[rec->move_count - 1].tick;
     log_debug("max tick is %" PRIu32, data->last_tick);
     ctrl->data = data;
     ctrl->type = CTRL_TYPE_REC;
