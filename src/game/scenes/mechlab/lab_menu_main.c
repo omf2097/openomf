@@ -141,17 +141,17 @@ enum lab_buttons
 
 // clang-format off
 static const button_details details_list[] = {
-    // CB, Text, Text align, Halign, Valigh, Pad top, Pad bottom, Pad left, Pad right, Disable by default
-    {lab_menu_main_arena,          "ARENA",            TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP,    {0, 0, 2,  0}, true},
-    {lab_menu_main_training_enter, "TRAINING COURSES", TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_MIDDLE, {22, 0, 0, 0}, true},
-    {lab_menu_main_buy_enter,      "BUY",              TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP,    {0, 0, 2,  0}, true},
-    {lab_menu_main_sell_enter,     "SELL",             TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP,    {0, 0, 2,  0}, true},
-    {lab_menu_main_load,           "LOAD",             TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_MIDDLE, {12, 0, 0, 0}, false},
-    {lab_menu_main_new,            "NEW",              TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_MIDDLE, {12, 0, 0, 0}, false},
-    {lab_menu_main_delete,         "DELETE",           TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_MIDDLE, {12, 0, 0, 0}, false},
-    {lab_menu_main_sim,            "SIM",              TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP,    {0, 0, 2,  0}, true},
-    {lab_menu_main_quit,           "QUIT",             TEXT_ROW_VERTICAL,   TEXT_ALIGN_CENTER, TEXT_ALIGN_MIDDLE, {1, 0, 0,  0}, false},
-    {lab_menu_main_tournament,     "NEW TOURNAMENT",   TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_MIDDLE, {0, 0, 0,  0}, true},
+    // CB, Text, Text align, Halign, Valigh, Pad top, Pad bottom, Pad left, Pad right
+    {lab_menu_main_arena,          "ARENA",            TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP,    {0, 0, 2,  0}},
+    {lab_menu_main_training_enter, "TRAINING COURSES", TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_MIDDLE, {22, 0, 0, 0}},
+    {lab_menu_main_buy_enter,      "BUY",              TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP,    {0, 0, 2,  0}},
+    {lab_menu_main_sell_enter,     "SELL",             TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP,    {0, 0, 2,  0}},
+    {lab_menu_main_load,           "LOAD",             TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_MIDDLE, {12, 0, 0, 0}},
+    {lab_menu_main_new,            "NEW",              TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_MIDDLE, {12, 0, 0, 0}},
+    {lab_menu_main_delete,         "DELETE",           TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_MIDDLE, {12, 0, 0, 0}},
+    {lab_menu_main_sim,            "SIM",              TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP,    {0, 0, 2,  0}},
+    {lab_menu_main_quit,           "QUIT",             TEXT_ROW_VERTICAL,   TEXT_ALIGN_CENTER, TEXT_ALIGN_MIDDLE, {1, 0, 0,  0}},
+    {lab_menu_main_tournament,     "NEW TOURNAMENT",   TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_MIDDLE, {0, 0, 0,  0}},
 };
 // clang-format on
 
@@ -259,6 +259,18 @@ void lab_menu_tick_in_tournament(component *c, void *userdata) {
     }
 }
 
+static void lab_menu_tick_chr_loaded(component *c, void *userdata) {
+    scene *s = userdata;
+    game_player *p1 = game_state_get_player(s->gs, 0);
+    if(p1->chr) {
+        component_disable(c, 0);
+        c->supports_select = true;
+    } else {
+        component_disable(c, 1);
+        c->supports_select = false;
+    }
+}
+
 static const spritebutton_tick_cb tick_cbs[] = {
     lab_menu_tick_arena,         // lab_menu_tick_arena,
     lab_menu_tick_in_tournament, // lab_menu_tick_training,
@@ -269,7 +281,7 @@ static const spritebutton_tick_cb tick_cbs[] = {
     NULL,                        // lab_menu_tick_delete,
     lab_menu_tick_in_tournament, // lab_menu_tick_sim,
     NULL,                        // lab_menu_tick_quit,
-    NULL,                        // lab_menu_tick_tournament,
+    lab_menu_tick_chr_loaded,    // lab_menu_tick_tournament,
 };
 
 component *lab_menu_main_create(scene *s, bool character_loaded) {
@@ -288,18 +300,6 @@ component *lab_menu_main_create(scene *s, bool character_loaded) {
         spritebutton_set_font(button, FONT_SMALL);
         spritebutton_set_text_color(button, TEXT_TRN_BLUE);
         component_set_pos_hints(button, button_sprite->pos.x, button_sprite->pos.y);
-
-        bool disabled = details_list[i].disabled;
-        if(i == LAB_BTN_LOAD) {
-            if(sg_count() > 0) {
-                // there are save games to load
-                disabled = false;
-            }
-        } else if(details_list[i].disabled == true && character_loaded == true) {
-            disabled = false;
-        }
-        component_disable(button, disabled);
-        button->supports_select = !disabled;
 
         spritebutton_set_focus_cb(button, focus_cbs[i]);
         spritebutton_set_tick_cb(button, tick_cbs[i]);
