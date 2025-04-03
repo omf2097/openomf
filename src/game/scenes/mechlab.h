@@ -29,6 +29,7 @@ void mechlab_enter_trnselect_menu(scene *s);
 component *mechlab_chrload_menu_create(scene *scene);
 component *mechlab_chrdelete_menu_create(scene *scene);
 component *mechlab_sim_menu_create(scene *scene);
+void mechlab_open_popup(scene *s, char const *message);
 
 void mechlab_select_dashboard(scene *scene, dashboard_type type);
 
