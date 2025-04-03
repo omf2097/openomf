@@ -49,7 +49,7 @@ void menu_help_free(component *c) {
 
 void menu_help_render(component *c) {
     help_menu_data *local = menu_get_userdata(c);
-    video_draw(&local->background1, 15, 15);
+    video_draw_remap(&local->background1, 15, 15, 4, 1, 0);
     video_draw(&local->background2, 15, 15);
 
     text_document_draw(local->td, 15, 20);
