@@ -7,6 +7,8 @@
 
 #include "formats/internal/reader.h"
 #include "utils/allocator.h"
+#include "utils/c_string_util.h"
+#include "utils/scandir.h"
 
 struct sd_reader {
     FILE *handle;
@@ -15,12 +17,41 @@ struct sd_reader {
 };
 
 sd_reader *sd_reader_open(const char *file) {
+    char *path_dup = omf_strdup(file);
+    char *path_dup2 = omf_strdup(file);
+    char *fn = omf_basename(path_dup);
+    char *directory = omf_dirname(path_dup2);
+
+    list dir_list;
+    list_create(&dir_list);
+    if(scan_directory(&dir_list, directory) != 0) {
+        list_free(&dir_list);
+        omf_free(path_dup);
+        omf_free(path_dup2);
+        return NULL;
+    }
+    iterator it;
+    list_iter_begin(&dir_list, &it);
+    const char *iter_fn;
+    char path[256];
+    memset(path, '\0', sizeof(path));
+    size_t fn_len = strlen(fn);
+    foreach(it, iter_fn) {
+        if(strlen(iter_fn) == fn_len && omf_strncasecmp(fn, iter_fn, fn_len) == 0) {
+            snprintf(path, sizeof(path), "%s/%s", directory, iter_fn);
+            break;
+        }
+    }
+    omf_free(path_dup);
+    omf_free(path_dup2);
+    list_free(&dir_list);
+    if(path[0] == '\0')
+        return NULL;
+
     sd_reader *reader = omf_calloc(1, sizeof(sd_reader));
-
     reader->sd_errno = 0;
-
     // Attempt to open file (note: Binary mode!)
-    reader->handle = fopen(file, "rb");
+    reader->handle = fopen(path, "rb");
     if(!reader->handle) {
         omf_free(reader);
         return NULL;
