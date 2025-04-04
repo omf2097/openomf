@@ -72,17 +72,13 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
     memreader_close(mr);
 
     char tmp[200];
-    str pic_file;
     str trn_file;
     sd_tournament_file trn;
     sd_pic_file pic, players;
     bool trn_loaded = false;
 
     if(dirname) {
-        str_from_c(&pic_file, chr->pilot.trn_image);
-        str_toupper(&pic_file);
-        snprintf(tmp, 200, "%s%s", dirname, str_c(&pic_file));
-        str_free(&pic_file);
+        snprintf(tmp, 200, "%s%s", dirname, chr->pilot.trn_image);
         sd_pic_create(&pic);
         sd_pic_load(&pic, tmp);
 
