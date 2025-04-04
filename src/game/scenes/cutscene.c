@@ -34,10 +34,12 @@ static int cutscene_next_scene(scene *scene) {
             return SCENE_END2;
         case SCENE_END2:
             return SCENE_SCOREBOARD;
-        default:
-            if(player1->chr) {
+        case SCENE_TRN_CUTSCENE:
+            if(player1->chr && scene->gs->fight_stats.winner != -1) {
                 return SCENE_VS;
             }
+            return SCENE_MECHLAB;
+        default:
             return SCENE_NONE;
     }
 }

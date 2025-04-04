@@ -592,6 +592,9 @@ int mechlab_create(scene *scene) {
     scene->gs->match_settings.vitality = 100;
     scene->gs->match_settings.rounds = 0;
 
+    // so 'SCENE TRN_CUTSCENE' console cheat skips the VS screen.
+    scene->gs->fight_stats.winner = -1;
+
     animation *bg_ani[3];
 
     // Init the background
