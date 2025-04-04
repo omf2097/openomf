@@ -115,19 +115,8 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
                 chr->cutscene_text[i] = omf_strdup(trn.locales[0]->end_texts[0][i]);
             }
         }
-        // TODO do something better here
-        if(strcmp("north_am.bk", trn.bk_name) == 0) {
-            chr->cutscene = SCENE_NORTHAM;
-        } else if(strcmp("katushai.bk", trn.bk_name) == 0) {
-            chr->cutscene = SCENE_KATUSHAI;
-        } else if(strcmp("war.bk", trn.bk_name) == 0) {
-            chr->cutscene = SCENE_WAR;
-        } else if(strcmp("world.bk", trn.bk_name) == 0) {
-            chr->cutscene = SCENE_WORLD;
-        } else {
-            // fallback to something sane
-            chr->cutscene = SCENE_VS;
-        }
+        static_assert(sizeof(chr->bk_name) == sizeof(trn.bk_name), "must match");
+        memcpy(chr->bk_name, trn.bk_name, sizeof(trn.bk_name));
         chr->tournament_id = trn.tournament_id;
         chr->winnings_multiplier = trn.winnings_multiplier;
     }

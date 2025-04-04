@@ -24,10 +24,10 @@ const char *har_type_names[] = {"JAGUAR",   "SHADOW", "THORN",    "PYROS",   "EL
                                 "SHREDDER", "FLAIL",  "GARGOYLE", "CHRONOS", "NOVA"};
 
 const char *scene_type_names[] = {
-    "SCENE_NONE",     "SCENE_INTRO",   "SCENE_OPENOMF", "SCENE_MENU",       "SCENE_END",    "SCENE_END1",
-    "SCENE_END2",     "SCENE_CREDITS", "SCENE_MECHLAB", "SCENE_VS",         "SCENE_MELEE",  "SCENE_NEWSROOM",
-    "SCENE_ARENA0",   "SCENE_ARENA1",  "SCENE_ARENA2",  "SCENE_ARENA3",     "SCENE_ARENA4", "SCENE_NORTHAM",
-    "SCENE_KATUSHAI", "SCENE_WAR",     "SCENE_WORLD",   "SCENE_SCOREBOARD", "SCENE_LOBBY",
+    "SCENE_NONE",   "SCENE_INTRO",    "SCENE_OPENOMF",      "SCENE_MENU",       "SCENE_END",
+    "SCENE_END1",   "SCENE_END2",     "SCENE_CREDITS",      "SCENE_MECHLAB",    "SCENE_VS",
+    "SCENE_MELEE",  "SCENE_NEWSROOM", "SCENE_ARENA0",       "SCENE_ARENA1",     "SCENE_ARENA2",
+    "SCENE_ARENA3", "SCENE_ARENA4",   "SCENE_TRN_CUTSCENE", "SCENE_SCOREBOARD", "SCENE_LOBBY",
 };
 
 int rand_arena(void) {
@@ -79,15 +79,4 @@ int scene_get_id(const char *name) {
 // For these to work, the resources table has to match the ID tables
 int har_to_resource(unsigned int id) {
     return AF_JAGUAR + id;
-}
-
-char const *scene_to_bkfilename(unsigned int id) {
-    switch(id) {
-        case SCENE_SCOREBOARD:
-            return pm_get_resource_path(BK_MENU);
-        case SCENE_LOBBY:
-            return pm_get_resource_path(PCX_NETARENA);
-        default:
-            return pm_get_resource_path(BK_INTRO + (id - 1));
-    }
 }

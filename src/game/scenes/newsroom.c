@@ -335,7 +335,7 @@ void newsroom_input_tick(scene *scene) {
                                 }
                             }
                             if(p1->chr && local->champion) {
-                                game_state_set_next(scene->gs, p1->chr->cutscene);
+                                game_state_set_next(scene->gs, SCENE_TRN_CUTSCENE);
                             } else {
                                 game_state_set_next(scene->gs, SCENE_VS);
                             }
