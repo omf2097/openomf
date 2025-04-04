@@ -38,14 +38,6 @@ const char *get_resource_file(unsigned int id) {
             return "MELEE.BK";
         case BK_VS:
             return "VS.BK";
-        case BK_NORTHAM:
-            return "NORTH_AM.BK";
-        case BK_KATUSHAI:
-            return "KATUSHAI.BK";
-        case BK_WAR:
-            return "WAR.BK";
-        case BK_WORLD:
-            return "WORLD.BK";
         case AF_JAGUAR:
             return "FIGHTR0.AF";
         case AF_SHADOW:
@@ -90,14 +82,6 @@ const char *get_resource_file(unsigned int id) {
             return "CHARSMAL.DAT";
         case DAT_ALTPALS:
             return "ALTPALS.DAT";
-        case PIC_NORTHAM:
-            return "NORTH_AM.PIC";
-        case PIC_KATUSHAI:
-            return "KATUSHAI.PIC";
-        case PIC_WAR:
-            return "WAR.PIC";
-        case PIC_WORLD:
-            return "WORLD.PIC";
         case PIC_PLAYERS:
             return "PLAYERS.PIC";
         case PCX_NETARENA:
@@ -146,14 +130,6 @@ const char *get_resource_name(unsigned int id) {
             return "BK_MELEE";
         case BK_VS:
             return "BK_VS";
-        case BK_NORTHAM:
-            return "BK_NORTHAM";
-        case BK_KATUSHAI:
-            return "BK_KATUSHAI";
-        case BK_WAR:
-            return "BK_WAR";
-        case BK_WORLD:
-            return "BK_WORLD";
         case AF_JAGUAR:
             return "AF_JAGUAR";
         case AF_SHADOW:
@@ -198,14 +174,6 @@ const char *get_resource_name(unsigned int id) {
             return "DAT_CHARSMAL";
         case DAT_ALTPALS:
             return "DAT_ALTPALS";
-        case PIC_NORTHAM:
-            return "PIC_NORTHAM";
-        case PIC_KATUSHAI:
-            return "PIC_KATUSHAI";
-        case PIC_WAR:
-            return "PIC_WAR";
-        case PIC_WORLD:
-            return "PIC_WORLD";
         case PIC_PLAYERS:
             return "PIC_PLAYERS";
         case PCX_NETARENA:
@@ -218,10 +186,6 @@ const char *get_resource_name(unsigned int id) {
 
 int is_arena(unsigned int id) {
     return (id >= BK_ARENA0 && id <= BK_ARENA4);
-}
-
-int is_scene(unsigned int id) {
-    return (id <= BK_WORLD);
 }
 
 int is_har(unsigned int id) {
@@ -240,8 +204,4 @@ int is_music(unsigned int id) {
             return 1;
     }
     return 0;
-}
-
-int is_pic(unsigned int id) {
-    return (id >= PIC_NORTHAM && id <= PIC_PLAYERS);
 }

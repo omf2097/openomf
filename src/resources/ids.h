@@ -19,10 +19,6 @@ typedef enum resource_id
     BK_ARENA2,
     BK_ARENA3,
     BK_ARENA4,
-    BK_NORTHAM,
-    BK_KATUSHAI,
-    BK_WAR,
-    BK_WORLD,
     AF_JAGUAR,
     AF_SHADOW,
     AF_THORN,
@@ -45,10 +41,6 @@ typedef enum resource_id
     DAT_GRAPHCHR,
     DAT_CHARSMAL,
     DAT_ALTPALS,
-    PIC_NORTHAM,
-    PIC_KATUSHAI,
-    PIC_WAR,
-    PIC_WORLD,
     PIC_PLAYERS,
     PCX_NETARENA,
     PCX_NETFONT1,
@@ -60,9 +52,7 @@ const char *get_resource_file(unsigned int id);
 const char *get_resource_name(unsigned int id);
 
 int is_arena(unsigned int id);
-int is_scene(unsigned int id);
 int is_har(unsigned int id);
 int is_music(unsigned int id);
-int is_pic(unsigned int id);
 
 #endif // IDS_H

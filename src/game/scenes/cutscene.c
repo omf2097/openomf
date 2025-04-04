@@ -179,10 +179,7 @@ int cutscene_create(scene *scene) {
             local->text_conf.cforeground = 0xF8;
             break;
 
-        case SCENE_NORTHAM:
-        case SCENE_KATUSHAI:
-        case SCENE_WAR:
-        case SCENE_WORLD:
+        case SCENE_TRN_CUTSCENE:
             if(p1->chr->tournament_id != 4) {
                 // Load colors for the HAR -- note that cutscenes use an expanded HAR color slides.
                 // World championship does not use these.
