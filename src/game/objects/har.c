@@ -792,6 +792,8 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
             h->endurance = 0;
         }
     } else if(h->endurance >= h->endurance_max) {
+        // Calculate how much dizzy time we have based on the stun limit overage.
+        // The more negative you go, the more time you're stunned.
         h->endurance = ((((h->endurance - h->endurance_max) / 256) * -2.5) - 60) * 256;
     }
 
@@ -1761,7 +1763,7 @@ static void har_palette_transform(damage_tracker *damage, vga_palette *pal, void
 void har_handle_stun(object *obj) {
     har *h = object_get_userdata(obj);
 
-    if(h->health <= 0) {
+    if(h->health <= 0) { // Lock the stun meter to near-empty when KO'd
         h->endurance = h->endurance_max - 2;
     } else {
         if(h->endurance < 1) { // We are currently dizzy, recover gradually
@@ -1769,28 +1771,25 @@ void har_handle_stun(object *obj) {
                 h->endurance += h->stun_factor * 1.4;
             }
         } else { // Not yet stunned, handle regular stun recovery
+            float stunfactor = 1.0 * h->stun_factor * h->endurance / h->endurance_max / 256.0;
             if((obj->cur_animation->id == ANIM_IDLE) || (obj->cur_animation->id == ANIM_CROUCHING) ||
                (obj->cur_animation->id == ANIM_VICTORY)) {
                 float hpfactor = ((h->health_max * 5.0 / 9.0) + h->health) / h->health_max;
-                float stunfactor = 1.0 * h->stun_factor * h->endurance / h->endurance_max / 256.0;
 
-                h->endurance -= ((hpfactor * stunfactor) + 18.0 / 250.0) * 256;
+                h->endurance -= ((hpfactor * stunfactor) + STUN_RECOVERY_CONSTANT) * 256;
             } else if((obj->cur_animation->id == ANIM_CROUCHING_BLOCK) ||
                       (obj->cur_animation->id == ANIM_STANDING_BLOCK)) {
                 float hpfactor = (h->health_max * 25.0 / 27.0 + h->health) / h->health_max;
-                float stunfactor = 1.0 * h->stun_factor * h->endurance / h->endurance_max / 256.0;
 
-                h->endurance -= ((hpfactor * stunfactor) + 27.0 / 250.0) * 256;
+                h->endurance -= ((hpfactor * stunfactor) + STUN_RECOVERY_BLOCKING_CONSTANT) * 256;
             } else if(obj->cur_animation->id == ANIM_JUMPING) {
                 float hpfactor = ((h->health_max * 25.0 / 81.0) + h->health) / h->health_max;
-                float stunfactor = 1.0 * h->stun_factor * h->endurance / h->endurance_max / 256.0;
 
-                h->endurance -= ((hpfactor * stunfactor) + 18.0 / 250.0) * 256;
+                h->endurance -= ((hpfactor * stunfactor) + STUN_RECOVERY_CONSTANT) * 256;
             } else if(obj->cur_animation->id < (ANIM_SCREW | ANIM_JUMPING)) { // Cover all other cases
                 float hpfactor = ((h->health_max * 5.0 / 27.0) + h->health) / h->health_max;
-                float stunfactor = 1.0 * h->stun_factor * h->endurance / h->endurance_max / 256.0;
 
-                h->endurance -= ((hpfactor * stunfactor) + 18.0 / 250.0) * 256;
+                h->endurance -= ((hpfactor * stunfactor) + STUN_RECOVERY_CONSTANT) * 256;
             }
             if(h->endurance < 0) {
                 h->endurance = 0;
