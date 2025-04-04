@@ -468,6 +468,18 @@ int mechlab_event(scene *scene, SDL_Event *event) {
         return 1;
     }
 
+    if(local->dashtype == DASHBOARD_STATS && event->type == SDL_KEYDOWN && event->key.keysym.sym == SDLK_e) {
+        // user is trying to use the cutscene replay cheat.
+        if(!player1->chr || player1->chr->bk_name[0] == '\0' || player1->pilot->rank != 1) {
+            log_info("Can't replay cutscene");
+        } else {
+            log_info("Replaying cutscene '%s'", player1->chr->bk_name);
+            scene->gs->fight_stats.winner = -1;
+            game_state_set_next(scene->gs, SCENE_TRN_CUTSCENE);
+            return 1;
+        }
+    }
+
     if(local->dashtype == DASHBOARD_NEW_PLAYER) {
         return gui_frame_event(local->dashboard, event);
     } else {
