@@ -30,7 +30,7 @@ void trnlist_init(vector *trnlist) {
 
     // Seek all files
     list_create(&dirlist);
-    ret = scan_directory_suffix(&dirlist, dirname, ".TRN");
+    ret = scan_directory_suffix_case(&dirlist, dirname, ".TRN");
     if(ret != 0) {
         goto error_0;
     }
