@@ -1,4 +1,6 @@
+#include <dirent.h>
 #include <errno.h>
+#include <libgen.h>
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -7,6 +9,7 @@
 
 #include "formats/internal/reader.h"
 #include "utils/allocator.h"
+#include "utils/c_string_util.h"
 
 struct sd_reader {
     FILE *handle;
@@ -18,9 +21,27 @@ sd_reader *sd_reader_open(const char *file) {
     sd_reader *reader = omf_calloc(1, sizeof(sd_reader));
 
     reader->sd_errno = 0;
+    char *path_dup = omf_strdup(file);
+    char *path_dup2 = omf_strdup(file);
+    char *fn = basename(path_dup);
+    char *directory = dirname(path_dup2);
+
+    DIR *d = opendir(directory);
+    char path[256];
+    if(d != NULL) {
+        struct dirent *dir;
+        while((dir = readdir(d)) != NULL) {
+            if(strcasecmp(fn, dir->d_name) == 0) {
+                snprintf(path, sizeof(path), "%s/%s", directory, dir->d_name);
+            }
+        }
+        omf_free(path_dup);
+        omf_free(path_dup2);
+        closedir(d);
+    }
 
     // Attempt to open file (note: Binary mode!)
-    reader->handle = fopen(file, "rb");
+    reader->handle = fopen(path, "rb");
     if(!reader->handle) {
         omf_free(reader);
         return NULL;
