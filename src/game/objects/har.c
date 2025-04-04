@@ -897,7 +897,12 @@ static vec2f har_debris_random_vel(object *har_obj, bool is_destruction) {
     return vel;
 }
 
-void har_spawn_oil(object *obj, vec2i pos, int amount, float gravity, int layer) {
+// gravity for sparks. scrap, nuts, and bolts seem to have different gravity
+static inline float har_sparks_random_gravity(object *har_obj) {
+    return (float)(rand_int(30) + 40) / 100.0;
+}
+
+static void har_spawn_oil(object *obj, vec2i pos, int amount, int layer) {
     har *h = object_get_userdata(obj);
 
     // burning oil
@@ -908,7 +913,7 @@ void har_spawn_oil(object *obj, vec2i pos, int amount, float gravity, int layer)
         object_create(scrap, obj->gs, pos, har_debris_random_vel(obj, false));
         object_set_animation(scrap, &af_get_move(h->af_data, anim_no)->ani);
         object_set_stl(scrap, object_get_stl(obj));
-        object_set_gravity(scrap, gravity);
+        object_set_gravity(scrap, har_sparks_random_gravity(obj));
         object_set_layers(scrap, LAYER_SCRAP);
         object_dynamic_tick(scrap);
         scrap_create(scrap);
@@ -929,7 +934,7 @@ void har_spawn_scrap(object *obj, vec2i pos, int amount) {
     // wild ass guess
     int oil_amount = amount / 3;
     har *h = object_get_userdata(obj);
-    har_spawn_oil(obj, pos, oil_amount, 1, RENDER_LAYER_TOP);
+    har_spawn_oil(obj, pos, oil_amount, RENDER_LAYER_TOP);
 
     // scrap metal
     // TODO this assumes the default scrap level and does not consider BIG[1-9]
@@ -948,7 +953,7 @@ void har_spawn_scrap(object *obj, vec2i pos, int amount) {
         object_create(scrap, obj->gs, pos, har_debris_random_vel(obj, h->state == STATE_DEFEAT));
         object_set_animation(scrap, &af_get_move(h->af_data, anim_no)->ani);
         object_set_stl(scrap, object_get_stl(obj));
-        object_set_gravity(scrap, 1);
+        object_set_gravity(scrap, 1.0f);
         object_set_pal_offset(scrap, object_get_pal_offset(obj));
         object_set_pal_limit(obj, object_get_pal_limit(obj));
         object_set_layers(scrap, LAYER_SCRAP);
@@ -1868,7 +1873,7 @@ void har_tick(object *obj) {
         if(h->stun_timer % 10 == 0) {
             vec2i pos = object_get_pos(obj);
             pos.y -= 60;
-            har_spawn_oil(obj, pos, 5, 0.5f, RENDER_LAYER_BOTTOM);
+            har_spawn_oil(obj, pos, 5, RENDER_LAYER_BOTTOM);
         }
         if(h->stun_timer > 100) {
             har_stunned_done(obj);
