@@ -40,8 +40,8 @@ typedef struct {
     sd_sprite *photo;                       ///< Pilot photo
     float winnings_multiplier;              ///< Tournament winnings multiplier
     sd_chr_enemy *enemies[MAX_CHR_ENEMIES]; ///< List of enemy states in current tournament
-    char bk_name[14];                       //< cutscene bk for end of tournament
-    int tournament_id;                      //< misnomer? set to 4 for WORLD.BK cutscene quirks
+    char bk_name[14];                       ///< cutscene bk for end of tournament
+    int tournament_id;                      ///< set to 4 for WORLD.BK cutscene quirks, also known as TOURNAMENT NUMBER
     char *cutscene_text[10];                ///< cutscene dialog text
 } sd_chr_file;
 
