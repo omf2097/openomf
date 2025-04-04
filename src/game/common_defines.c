@@ -2,7 +2,9 @@
 #include "resources/ids.h"
 #include "resources/pathmanager.h"
 #include "utils/c_array_util.h"
+#include "utils/c_string_util.h"
 #include "utils/random.h"
+#include "utils/str.h"
 #include <stddef.h>
 #include <string.h>
 
@@ -70,10 +72,21 @@ const char *scene_get_name(unsigned int id) {
 }
 
 int scene_get_id(const char *name) {
-    for(unsigned i = 0; i < N_ELEMENTS(scene_type_names); ++i)
-        if(strcmp(scene_type_names[i], name) == 0)
-            return (int)i;
-    return -1;
+    int scene_id = -1;
+
+    str name_upper;
+    str_from_c(&name_upper, name);
+    str_toupper(&name_upper);
+    name = str_c(&name_upper);
+    for(unsigned i = 0; i < N_ELEMENTS(scene_type_names); ++i) {
+        if(strcmp(scene_type_names[i], name) == 0 || strcmp(scene_type_names[i] + strlen("SCENE_"), name) == 0) {
+            scene_id = i;
+            break;
+        }
+    }
+    str_free(&name_upper);
+
+    return scene_id;
 }
 
 // For these to work, the resources table has to match the ID tables
