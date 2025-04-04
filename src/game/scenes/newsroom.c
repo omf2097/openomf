@@ -413,15 +413,21 @@ int newsroom_create(scene *scene) {
                        (!p->req_fighter || p->req_fighter == p1->pilot->har_id) &&
                        (!p->req_scrap || (p->req_scrap && fight_stats->finish >= FINISH_SCRAP)) &&
                        (!p->req_destroy || (p->req_destroy && fight_stats->finish == FINISH_DESTRUCTION))) {
-                        fight_stats->challenger = p;
-                        log_debug("found challenger!");
+                        // check if we just beat an unranked challenger, and if this new unranked is directly tied to
+                        // that (eg. Jazz Jackrabbit and Eva Earlong) otherwise don't allow another unranked to chain
+                        if(p2->pilot && (p2->pilot->rank != 0 ||
+                                         (p->req_enemy && &p1->chr->enemies[p->req_enemy - 1]->pilot == p2->pilot))) {
+                            fight_stats->challenger = p;
+                            log_debug("found challenger!");
+                        }
                         // XXX we are going to assume the first match, from the lowest in the file, is the one to choose
                         break;
                     }
                 }
             }
         }
-        if(!local->challenger && p1->chr && p1->chr->pilot.rank == 1) {
+        if(!local->challenger && p1->chr && p1->chr->pilot.rank == 1 && p2->pilot && p2->pilot->rank == 2) {
+            // we beat the champion, not an unranked challenger
             local->champion = true;
         }
         health = game_player_get_score(p1)->health;
