@@ -33,10 +33,9 @@ int scene_create(scene *scene, game_state *gs, int scene_id) {
                 bkfilename = path_buf;
                 break;
             }
-            log_info("Skipping SCENE_TRN_CUTSCENE, going to SCENE_VS instead.");
-            scene_id = SCENE_VS;
+            log_error("Not a valid time to be going to SCENE_TRN_CUTSCENE");
+            return 1;
         }
-            // fall through to SCENE_VS
         default:
             bkfilename = pm_get_resource_path(BK_INTRO + (scene_id - 1));
             break;
