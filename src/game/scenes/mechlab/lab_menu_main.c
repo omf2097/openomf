@@ -141,17 +141,17 @@ enum lab_buttons
 
 // clang-format off
 static const button_details details_list[] = {
-    // CB, Text, Text align, Halign, Valigh, Pad top, Pad bottom, Pad left, Pad right
-    {lab_menu_main_arena,          "ARENA",            TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP,    {0, 0, 2,  0}},
-    {lab_menu_main_training_enter, "TRAINING COURSES", TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_MIDDLE, {22, 0, 0, 0}},
-    {lab_menu_main_buy_enter,      "BUY",              TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP,    {0, 0, 2,  0}},
-    {lab_menu_main_sell_enter,     "SELL",             TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP,    {0, 0, 2,  0}},
-    {lab_menu_main_load,           "LOAD",             TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_MIDDLE, {12, 0, 0, 0}},
-    {lab_menu_main_new,            "NEW",              TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_MIDDLE, {12, 0, 0, 0}},
-    {lab_menu_main_delete,         "DELETE",           TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_MIDDLE, {12, 0, 0, 0}},
-    {lab_menu_main_sim,            "SIM",              TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP,    {0, 0, 2,  0}},
-    {lab_menu_main_quit,           "QUIT",             TEXT_ROW_VERTICAL,   TEXT_ALIGN_CENTER, TEXT_ALIGN_MIDDLE, {1, 0, 0,  0}},
-    {lab_menu_main_tournament,     "NEW TOURNAMENT",   TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_MIDDLE, {0, 0, 0,  0}},
+    // CB, Text, Text align, Halign, Valigh, Pad top, Pad bottom, Pad left, Pad right, Start Disabled (unused, use tickers instead)
+    {lab_menu_main_arena,          "ARENA",            TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP,    {0, 0, 2,  0}, false},
+    {lab_menu_main_training_enter, "TRAINING COURSES", TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_MIDDLE, {22, 0, 0, 0}, false},
+    {lab_menu_main_buy_enter,      "BUY",              TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP,    {0, 0, 2,  0}, false},
+    {lab_menu_main_sell_enter,     "SELL",             TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP,    {0, 0, 2,  0}, false},
+    {lab_menu_main_load,           "LOAD",             TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_MIDDLE, {12, 0, 0, 0}, false},
+    {lab_menu_main_new,            "NEW",              TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_MIDDLE, {12, 0, 0, 0}, false},
+    {lab_menu_main_delete,         "DELETE",           TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_MIDDLE, {12, 0, 0, 0}, false},
+    {lab_menu_main_sim,            "SIM",              TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP,    {0, 0, 2,  0}, false},
+    {lab_menu_main_quit,           "QUIT",             TEXT_ROW_VERTICAL,   TEXT_ALIGN_CENTER, TEXT_ALIGN_MIDDLE, {1, 0, 0,  0}, false},
+    {lab_menu_main_tournament,     "NEW TOURNAMENT",   TEXT_ROW_HORIZONTAL, TEXT_ALIGN_CENTER, TEXT_ALIGN_MIDDLE, {0, 0, 0,  0}, false},
 };
 // clang-format on
 

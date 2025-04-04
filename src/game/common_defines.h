@@ -106,8 +106,8 @@ enum
     PILOT_SEX_FEMALE
 };
 
-inline bool is_valid_scene(unsigned int id) {
-    return (id < NUMBER_OF_SCENE_TYPES);
+static inline bool is_valid_scene(unsigned int id) {
+    return id < NUMBER_OF_SCENE_TYPES;
 }
 
 #endif // COMMON_DEFINES_H
