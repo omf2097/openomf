@@ -117,62 +117,11 @@ elseif(MSVC AND VCPKG_TARGET_TRIPLET MATCHES "-windows-static-md$")
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
 endif()
 
-# See if we have Git, and use it to fetch current SHA1 hash
-find_package(Git)
-if(GIT_FOUND)
-    message(STATUS "Git found: ${GIT_EXECUTABLE}")
-    execute_process(
-        COMMAND ${GIT_EXECUTABLE} "rev-parse" "HEAD"
-        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-        OUTPUT_VARIABLE SHA1_HASH
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
-    message(STATUS "Git SHA1 Hash: ${SHA1_HASH}")
-    set_source_files_properties(src/main.c PROPERTIES COMPILE_DEFINITIONS SHA1_HASH="${SHA1_HASH}")
-
-    # git describe uses glob to match the tag, so no repeated character classes.
-    execute_process(
-        COMMAND ${GIT_EXECUTABLE} "describe" "--tags" "--match" "[0-9].[0-9].[0-9]" "--match" "[0-9].[0-9].[0-9][0-9]" "--match" "[0-9].[0-9].[0-9]-*" "--match" "[0-9].[0-9].[0-9][0-9]-*"
-        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-        OUTPUT_VARIABLE GIT_VERSION
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
-    execute_process(
-        COMMAND ${GIT_EXECUTABLE} "describe" "--tags" "--match" "[0-9].[0-9].[0-9]" "--match" "[0-9].[0-9].[0-9][0-9]" "--match" "[0-9].[0-9].[0-9]-*" "--match" "[0-9].[0-9].[0-9][0-9]-*" "--no-abbrev"
-        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-        OUTPUT_VARIABLE GIT_VERSION_NO_ABBREV
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
-
-    string(REGEX MATCH "^([0-9]+)\\.([0-9]+)\\.([0-9]+)(-.*)?" GIT_VERSION "${GIT_VERSION}")
-    set(VERSION_MAJOR ${CMAKE_MATCH_1})
-    set(VERSION_MINOR ${CMAKE_MATCH_2})
-    set(VERSION_PATCH ${CMAKE_MATCH_3})
-    set(VERSION_LABEL ${CMAKE_MATCH_4})
-    if(NOT VERSION_MAJOR)
-        set(VERSION_MAJOR 0)
-    endif()
-
-    if(NOT VERSION_MINOR)
-        set(VERSION_MINOR 0)
-    endif()
-
-    if(NOT VERSION_PATCH)
-        set(VERSION_PATCH 0)
-    endif()
-    string(REGEX MATCH "^[0-9]+\\.[0-9]+\\.[0-9]+(-.*)?" GIT_VERSION_NO_ABBREV "${GIT_VERSION_NO_ABBREV}")
-    set(VERSION_NO_ABBREV_LABEL ${CMAKE_MATCH_1})
-    if(NOT "${VERSION_LABEL}" STREQUAL "" AND "${VERSION_NO_ABBREV_LABEL}" STREQUAL "")
-        math(EXPR VERSION_PATCH "${VERSION_PATCH} + 1")
-    endif()
-
-    set(VERSION_DEFINITIONS V_MAJOR=${VERSION_MAJOR} V_MINOR=${VERSION_MINOR} V_PATCH=${VERSION_PATCH} V_LABEL="${VERSION_LABEL}")
-    set_source_files_properties(src/game/utils/version.c
-      PROPERTIES COMPILE_DEFINITIONS "${VERSION_DEFINITIONS}")
-
-    set(VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}${VERSION_LABEL})
-    message(STATUS "Version: ${VERSION}")
-endif()
+#configure version
+include("cmake-scripts/version.cmake")
+set_source_files_properties("src/main.c" PROPERTIES COMPILE_DEFINITIONS SHA1_HASH="${SHA1_HASH}")
+set(VERSION_DEFINITIONS V_MAJOR=${VERSION_MAJOR} V_MINOR=${VERSION_MINOR} V_PATCH=${VERSION_PATCH} V_LABEL="${VERSION_LABEL}")
+set_source_files_properties("src/game/utils/version.c" PROPERTIES COMPILE_DEFINITIONS "${VERSION_DEFINITIONS}")
 
 if(WIN32)
     # prevent Windows.h from automatically defining as many macros

@@ -21,8 +21,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-      with:
-        fetch-depth: '0'
 
     - name: Install dependencies
       uses: Eeems-Org/apt-cache-action@v1.3
@@ -68,8 +66,6 @@ jobs:
         - { arch: "arm64", build_languages: "OFF" }
     steps:
     - uses: actions/checkout@v4
-      with:
-        fetch-depth: '0'
     - name: Build MSVC binary
       uses: ./.github/actions/build_msvc
       with:
@@ -84,8 +80,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-      with:
-        fetch-depth: '0'
     - name: Build Ubuntu binary
       uses: ./.github/actions/build_ubuntu
 
@@ -97,8 +91,6 @@ jobs:
     runs-on: macos-14
     steps:
     - uses: actions/checkout@v4
-      with:
-        fetch-depth: '0'
     - name: Build MacOS ARM binary
       uses: ./.github/actions/build_macos_arm
 
@@ -110,8 +102,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-      with:
-        fetch-depth: '0'
     - name: Build Mingw-w64 binary
       uses: ./.github/actions/build_mingw
 
@@ -126,8 +116,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-      with:
-        fetch-depth: '0'
 
     - name: Get OpenOMF Version
       uses: ./.github/actions/version
