@@ -831,7 +831,10 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
             har_event_defeat(h, ctrl);
         }
 
-        if(object_is_airborne(obj)) {
+        if(h->throw_duration) {
+            // No special handling
+            object_set_stride(obj, 1);
+        } else if(object_is_airborne(obj)) {
             log_debug("airborne knockback");
             // append the 'airborne knockback' string to the hit string, replacing the final frame
             size_t last_line = 0;
