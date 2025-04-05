@@ -54,7 +54,7 @@ static void defaults(text *t) {
     t->margin.right = 0;
     t->margin.top = 0;
     t->margin.bottom = 0;
-    t->line_spacing = 1;
+    t->line_spacing = 0;
     t->letter_spacing = 0;
     t->direction = TEXT_ROW_HORIZONTAL;
     t->shadow = GLYPH_SHADOW_NONE;

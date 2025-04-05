@@ -274,7 +274,6 @@ static void textinput_init(component *c, const gui_theme *theme) {
     textinput *ti = widget_get_obj(c);
     text_set_font(ti->text, ti->font_size != FONT_NONE ? ti->font_size : theme->text.font);
     text_set_color(ti->text, theme->text.primary_color);
-    text_set_line_spacing(ti->text, 0);
     text_set_horizontal_align(ti->text, TEXT_ALIGN_LEFT);
     text_set_word_wrap(ti->text, false);
     text_set_shadow_style(ti->text, ti->text_shadow);

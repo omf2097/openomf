@@ -146,7 +146,6 @@ static void textselector_init(component *c, const gui_theme *theme) {
     text_selector *t = widget_get_obj(c);
     refresh(c);
     text_set_font(t->text, t->override_font != FONT_NONE ? t->override_font : theme->text.font);
-    text_set_line_spacing(t->text, 0);
     if(c->w_hint < 0 && c->h_hint < 0) {
         text_generate_layout(t->text);
         int text_width = text_get_layout_width(t->text);
