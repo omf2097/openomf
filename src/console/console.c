@@ -17,6 +17,7 @@
 #define HISTORY_MAX 100
 #define BUFFER_INC(b) (((b) + 1) % sizeof(con->output))
 #define BUFFER_DEC(b) (((b) + sizeof(con->output) - 1) % sizeof(con->output))
+#define CONSOLE_TEXT_COLOR 0xFE
 
 // Console State
 console *con = NULL;
@@ -223,7 +224,7 @@ bool console_init(void) {
     con->output_overflowing = 0;
     con->hist_pos = -1;
     con->text = text_create_with_font_and_size(FONT_SMALL, 320, 100);
-    text_set_color(con->text, TEXT_MEDIUM_GREEN);
+    text_set_color(con->text, CONSOLE_TEXT_COLOR);
     text_set_line_spacing(con->text, 0);
     list_create(&con->history);
     hashmap_create(&con->cmds);

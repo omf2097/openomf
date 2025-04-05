@@ -34,10 +34,12 @@ static int cutscene_next_scene(scene *scene) {
             return SCENE_END2;
         case SCENE_END2:
             return SCENE_SCOREBOARD;
-        default:
-            if(player1->chr) {
+        case SCENE_TRN_CUTSCENE:
+            if(player1->chr && scene->gs->fight_stats.winner != -1) {
                 return SCENE_VS;
             }
+            return SCENE_MECHLAB;
+        default:
             return SCENE_NONE;
     }
 }
@@ -179,14 +181,13 @@ int cutscene_create(scene *scene) {
             local->text_conf.cforeground = 0xF8;
             break;
 
-        case SCENE_NORTHAM:
-        case SCENE_KATUSHAI:
-        case SCENE_WAR:
-            // Load colors for the HAR -- note that cutscenes use an expanded HAR color slides.
-            // World championship does not use these.
-            palette_set_player_expanded_color(&p1->chr->pilot.palette);
-            // Fall through!
-        case SCENE_WORLD:
+        case SCENE_TRN_CUTSCENE:
+            if(p1->chr->tournament_id != 4) {
+                // Load colors for the HAR -- note that cutscenes use an expanded HAR color slides.
+                // World championship does not use these.
+                palette_set_player_expanded_color(&p1->chr->pilot.palette);
+            }
+
             audio_play_music(PSM_END);
 
             // load all the animations, in order
@@ -212,8 +213,8 @@ int cutscene_create(scene *scene) {
             break;
     }
 
-    // World championship victory scene has text at the top.
-    if(scene->id == SCENE_WORLD) {
+    if(p1->chr && p1->chr->tournament_id == 4) {
+        // World championship victory scene has text at the top.
         local->text_y = 10;
     }
 

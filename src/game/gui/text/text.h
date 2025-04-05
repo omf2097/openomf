@@ -14,6 +14,15 @@ typedef struct text_document text_document;
 
 #define TEXT_BBOX_MAX UINT16_MAX
 
+// For compatibility
+#ifndef TEXT_MEDIUM_GREEN
+#define TEXT_DARK_GREEN 0xFE
+#define TEXT_MEDIUM_GREEN 0xFE
+#define TEXT_BLINKY_GREEN 0xFF
+#define TEXT_BRIGHT_GREEN 0xFD
+#define TEXT_TRN_BLUE 0xAB
+#endif
+
 #define TEXT_YELLOW 0xF8
 // EDIT: for shadows, the palette *one after* cshadow is used.
 // so we set TEXT_SHADOW_YELLOW to 0xC0 and it renders in 0xC1.
@@ -53,6 +62,7 @@ void text_set_glyph_margin(text *t, uint8_t glyph_margin);
 void text_set_word_wrap(text *t, bool enable);
 
 void text_get_str(const text *t, str *dst);
+const char *text_c(const text *t);
 font_size text_get_font(const text *t);
 void text_get_bounding_box(const text *t, uint16_t *w, uint16_t *h);
 vga_index text_get_color(const text *t);

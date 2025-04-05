@@ -21,6 +21,9 @@
 #define LAYER_PROJECTILE 0x20
 #define LAYER_HAZARD 0x40
 
+#define STUN_RECOVERY_CONSTANT 18.0 / 250.0
+#define STUN_RECOVERY_BLOCKING_CONSTANT 27.0 / 250.0
+
 enum
 {
     CAT_MISC = 0,
@@ -145,8 +148,9 @@ typedef struct har_t {
     int throw_duration;
 
     uint8_t stride;
+    int stun_factor;
     int16_t health_max, health;
-    float endurance_max, endurance;
+    int endurance_max, endurance;
     char inputs[11];
     uint32_t input_change_tick; // last tick the input direction changed
     uint8_t hard_close;
@@ -208,5 +212,8 @@ uint8_t har_player_id(object *obj);
 int16_t har_health_percent(har *h);
 
 void har_connect_child(object *obj, object *child);
+
+void cb_har_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t mp_flags, int s, int g, void *userdata);
+void cb_har_disable_animation(object *parent, uint8_t animation_id, uint16_t ticks, void *userdata);
 
 #endif // HAR_H

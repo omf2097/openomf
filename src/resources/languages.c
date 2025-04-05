@@ -32,6 +32,14 @@ bool lang_init(void) {
         goto error_0;
     }
 
+    // Trim off the last linebreak from the translation texts. We don't need it.
+    for(unsigned int i = 0; i < language->count; i++) {
+        size_t len = strlen(language->strings[i].data);
+        if(len > 0 && language->strings[i].data[len - 1] == '\n') {
+            language->strings[i].data[len - 1] = '\0';
+        }
+    }
+
     // OMF GERMAN.DAT and old versions of ENGLISH.DAT have only 990 strings
     unsigned int const old_language_count = 990;
 

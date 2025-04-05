@@ -85,6 +85,11 @@ void keyboard_create(controller *ctrl, keyboard_keys *keys, int delay) {
 void keyboard_menu_poll(controller *ctrl, ctrl_event **ev) {
     const unsigned char *state = SDL_GetKeyboardState(NULL);
 
+    if(ctrl->queued != ACT_NONE) {
+        controller_cmd(ctrl, ctrl->queued, ev);
+        ctrl->queued = ACT_NONE;
+    }
+
     if(state[SDL_SCANCODE_RIGHT] || state[SDL_SCANCODE_KP_6]) {
         controller_cmd(ctrl, ACT_RIGHT, ev);
     }

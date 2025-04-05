@@ -3,6 +3,6 @@
 
 #include "resources/bk.h"
 
-int load_bk_file(bk *b, int id);
+int load_bk_file(bk *b, char const *filename);
 
 #endif // BK_LOADER_H

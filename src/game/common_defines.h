@@ -10,7 +10,6 @@ const char *scene_get_name(unsigned int id);
 int scene_get_id(const char *);
 
 int har_to_resource(unsigned int id);
-int scene_to_resource(unsigned int id);
 
 int rand_arena(void);
 
@@ -39,10 +38,7 @@ enum
     SCENE_ARENA2,
     SCENE_ARENA3,
     SCENE_ARENA4,
-    SCENE_NORTHAM,
-    SCENE_KATUSHAI,
-    SCENE_WAR,
-    SCENE_WORLD,
+    SCENE_TRN_CUTSCENE,
     SCENE_SCOREBOARD,
     SCENE_LOBBY,
     NUMBER_OF_SCENE_TYPES,
@@ -109,5 +105,9 @@ enum
     PILOT_SEX_MALE,
     PILOT_SEX_FEMALE
 };
+
+static inline bool is_valid_scene(unsigned int id) {
+    return id < NUMBER_OF_SCENE_TYPES;
+}
 
 #endif // COMMON_DEFINES_H

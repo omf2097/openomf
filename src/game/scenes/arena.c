@@ -34,12 +34,13 @@
 #include "resources/sgmanager.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
+#include "utils/miscmath.h"
 #include "utils/random.h"
 #include "video/video.h"
 
 // the pilot name, HAR, and score
 #define TEXT_HUD_COLOR 0xE7
-#define TEXT_HUD_SHADOW 0xF7
+#define TEXT_HUD_SHADOW 0xF8
 
 #define HAR1_START_POS 110
 #define HAR2_START_POS 210
@@ -48,6 +49,7 @@
 #define GAME_MENU_QUIT_ID 101
 
 // Colors specific to palette used by arena
+#define DIALOG_BORDER_COLOR 0xFE
 #define TEXT_PRIMARY_COLOR 0xFE
 #define TEXT_SECONDARY_COLOR 0xFD
 #define TEXT_DISABLED_COLOR 0xC0
@@ -63,8 +65,21 @@ typedef enum
     DONE
 } win_state;
 
-typedef struct arena_local_t {
+typedef struct debug_data {
+    text *tick_text;
+    text *seed_text;
+    text *ai_ctrl_state_text[2];
+    text *health_text[2];
+    text *endurance_text[2];
+    text *har_state_text[2];
+    text *har_pos_text[2];
+    text *har_vel_text[2];
+    text *har_ani_text[2];
+} debug_data;
+
+typedef struct arena_local {
     gui_frame *game_menu;
+    debug_data *debug;
 
     int menu_visible;
     unsigned int state;
@@ -72,6 +87,10 @@ typedef struct arena_local_t {
 
     component *health_bars[2];
     component *endurance_bars[2];
+
+    text *player_name[2];
+    text *player_har[2];
+    text *player_ping[2];
 
     int round;
     int rounds;
@@ -902,60 +921,15 @@ void arena_state_dump(game_state *gs, char *buf, size_t bufsize) {
         vec2i pos = object_get_pos(obj_har);
         vec2f vel = object_get_vel(obj_har);
         off = snprintf(buf + off, bufsize - off,
-                       "player %d  power %d agility %d endurance %d HAR id %d  pos %d,%d, health %d, endurance %f, "
+                       "player %d  power %d agility %d endurance %d HAR id %d  pos %d,%d, health %d, endurance %d, "
                        "velocity %f,%f, state %s, executing_move %d cur_anim %d\n",
                        i, player->pilot->power, player->pilot->agility, player->pilot->endurance, har->id, pos.x, pos.y,
-                       har->health, (float)har->endurance, vel.x, vel.y, state_name(har->state), har->executing_move,
+                       har->health, har->endurance, vel.x, vel.y, state_name(har->state), har->executing_move,
                        obj_har->cur_animation->id);
     }
 }
 
 // -------- Scene callbacks --------
-
-void arena_free(scene *scene) {
-    arena_local *local = scene_get_userdata(scene);
-
-    game_state_set_paused(scene->gs, 0);
-
-    if(scene->gs->rec && scene->gs->init_flags->playback == 0) {
-        sd_rec_finish(scene->gs->rec, scene->gs->tick);
-
-        if(scene->gs->init_flags->record == 1) {
-            // we're supposed to save it
-            sd_rec_save(scene->gs->rec, scene->gs->init_flags->rec_file);
-            sd_rec_free(scene->gs->rec);
-            omf_free(scene->gs->rec);
-            scene->gs->rec = NULL;
-        }
-    }
-
-    for(int i = 0; i < 2; i++) {
-        game_player *player = game_state_get_player(scene->gs, i);
-        game_player_set_har(player, NULL);
-        // game_player_set_ctrl(player, NULL);
-        controller_set_repeat(game_player_get_ctrl(player), 0);
-    }
-
-    gui_frame_free(local->game_menu);
-
-    audio_stop_music();
-
-    // Free bar components
-    for(int i = 0; i < 2; i++) {
-        component_free(local->health_bars[i]);
-        component_free(local->endurance_bars[i]);
-    }
-
-    settings_save();
-
-    omf_free(local);
-    scene_set_userdata(scene, local);
-}
-
-void arena_clone_free(scene *scene) {
-    arena_local *local = scene_get_userdata(scene);
-    omf_free(local);
-}
 
 void write_rec_move(scene *scene, game_player *player, int action) {
     arena_local *local = scene_get_userdata(scene);
@@ -1108,6 +1082,127 @@ bool winner_needs_victory_pose(object *obj) {
            obj->cur_animation->id != ANIM_VICTORY;
 }
 
+/**
+ * Creates text objects for har + player names and pings.
+ */
+static text *create_text_object(const char *str) {
+    // Width is screen size divided by two, minus left or right padding of 5 pixels.
+    text *obj = text_create_with_font_and_size(FONT_SMALL, 155, 6);
+    text_set_color(obj, TEXT_HUD_COLOR);
+    text_set_shadow_color(obj, TEXT_HUD_SHADOW);
+    text_set_shadow_style(obj, GLYPH_SHADOW_RIGHT | GLYPH_SHADOW_BOTTOM);
+    text_set_word_wrap(obj, false);
+    text_set_from_c(obj, str);
+    text_generate_layout(obj);
+    return obj;
+}
+
+/**
+ * Create debug data. This is only called if debug overlay is opened.
+ */
+static debug_data *create_debug_data(scene *scene) {
+    arena_local *local = scene_get_userdata(scene);
+    if(local->debug != NULL) {
+        return local->debug;
+    }
+
+    debug_data *data = omf_calloc(1, sizeof(debug_data));
+    data->seed_text = create_text_object("0");
+    data->tick_text = create_text_object("0");
+    for(int i = 0; i < 2; i++) {
+        data->ai_ctrl_state_text[i] = create_text_object("");
+        data->health_text[i] = create_text_object("0");
+        data->endurance_text[i] = create_text_object("0");
+        data->har_state_text[i] = create_text_object("0");
+        data->har_pos_text[i] = create_text_object("0");
+        data->har_vel_text[i] = create_text_object("0");
+        data->har_ani_text[i] = create_text_object("0");
+    }
+
+    // Texts on the right side of the screen are right-aligned for easier positioning.
+    text_set_horizontal_align(data->ai_ctrl_state_text[1], TEXT_ALIGN_RIGHT);
+    text_set_horizontal_align(data->health_text[1], TEXT_ALIGN_RIGHT);
+    text_set_horizontal_align(data->endurance_text[1], TEXT_ALIGN_RIGHT);
+    text_set_horizontal_align(data->har_state_text[1], TEXT_ALIGN_RIGHT);
+    text_set_horizontal_align(data->har_pos_text[1], TEXT_ALIGN_RIGHT);
+    text_set_horizontal_align(data->har_vel_text[1], TEXT_ALIGN_RIGHT);
+    text_set_horizontal_align(data->har_ani_text[1], TEXT_ALIGN_RIGHT);
+
+    local->debug = data;
+    return local->debug;
+}
+
+/**
+ * Free debug data. This should be called from arena_free()
+ */
+static void free_debug_data(scene *scene) {
+    arena_local *local = scene_get_userdata(scene);
+    if(local->debug == NULL) {
+        return;
+    }
+    text_free(&local->debug->seed_text);
+    text_free(&local->debug->tick_text);
+    for(int i = 0; i < 2; i++) {
+        text_free(&local->debug->ai_ctrl_state_text[i]);
+        text_free(&local->debug->health_text[i]);
+        text_free(&local->debug->endurance_text[i]);
+        text_free(&local->debug->har_state_text[i]);
+        text_free(&local->debug->har_pos_text[i]);
+        text_free(&local->debug->har_vel_text[i]);
+        text_free(&local->debug->har_ani_text[i]);
+    }
+    omf_free(local->debug);
+    local->debug = NULL;
+}
+
+static void arena_tick_debug(scene *scene) {
+    if(scene->gs->hide_ui) {
+        return;
+    }
+    // Note! This will return cached object if it exists.
+    debug_data *d = create_debug_data(scene);
+
+    char buf[100];
+    game_player *player[2];
+    object *obj_har[2];
+    har *hars[2];
+    for(int i = 0; i < 2; i++) {
+        player[i] = game_state_get_player(scene->gs, i);
+        obj_har[i] = game_state_find_object(scene->gs, game_player_get_har_obj_id(player[i]));
+        hars[i] = obj_har[i]->userdata;
+    }
+
+    snprintf(buf, 40, "%u", game_state_get_tick(scene->gs));
+    text_set_from_c(d->tick_text, buf);
+    snprintf(buf, 40, "%u", random_get_seed(&scene->gs->rand));
+    text_set_from_c(d->seed_text, buf);
+
+    if(player[0]->ctrl->type == CTRL_TYPE_AI) {
+        ai_controller_print_state(player[0]->ctrl, buf, sizeof(buf));
+        text_set_from_c(d->ai_ctrl_state_text[0], buf);
+    }
+    if(player[1]->ctrl->type == CTRL_TYPE_AI) {
+        ai_controller_print_state(player[1]->ctrl, buf, sizeof(buf));
+        text_set_from_c(d->ai_ctrl_state_text[1], buf);
+    }
+
+    for(int i = 0; i < 2; i++) {
+        snprintf(buf, sizeof(buf), "%d", hars[i]->health);
+        text_set_from_c(d->health_text[i], buf);
+        snprintf(buf, sizeof(buf), "%d", hars[i]->endurance);
+        text_set_from_c(d->endurance_text[i], buf);
+        snprintf(buf, sizeof(buf), "%s(%d)", state_name(hars[i]->state), hars[i]->state);
+        text_set_from_c(d->har_state_text[i], buf);
+        snprintf(buf, sizeof(buf), "pos: %.3f %.3f", obj_har[i]->pos.x, obj_har[i]->pos.y);
+        text_set_from_c(d->har_pos_text[i], buf);
+        snprintf(buf, sizeof(buf), "vel: %.3f %.3f", obj_har[i]->vel.x, obj_har[i]->vel.y);
+        text_set_from_c(d->har_vel_text[i], buf);
+        snprintf(buf, sizeof(buf), "aa: %d em: %d ani: %d", hars[i]->air_attacked, hars[i]->executing_move,
+                 obj_har[i]->cur_animation->id);
+        text_set_from_c(d->har_ani_text[i], buf);
+    }
+}
+
 void arena_dynamic_tick(scene *scene, int paused) {
     arena_local *local = scene_get_userdata(scene);
     game_state *gs = scene->gs;
@@ -1127,7 +1222,11 @@ void arena_dynamic_tick(scene *scene, int paused) {
         // Set and tick all proggressbars
         for(int i = 0; i < 2; i++) {
             float hp = (float)hars[i]->health / (float)hars[i]->health_max;
-            float en = (float)hars[i]->endurance / (float)hars[i]->endurance_max;
+            float en = 0.0f;
+            if((float)hars[i]->endurance >= 0) {
+                en = clampf(((float)hars[i]->endurance_max - (float)hars[i]->endurance) / (float)hars[i]->endurance_max,
+                            0.0f, 1.0f);
+            }
             progressbar_set_progress(local->health_bars[i], hp * 100, !(gs->warp_speed || gs->clone));
             progressbar_set_progress(local->endurance_bars[i], en * 100, !(gs->warp_speed || gs->clone));
             progressbar_set_flashing(local->endurance_bars[i], (en * 100 < 50), 8);
@@ -1239,6 +1338,8 @@ void arena_dynamic_tick(scene *scene, int paused) {
                    hars[1]->state == STATE_WALLDAMAGE);
         }
     } // if(!paused)
+
+    arena_tick_debug(scene);
 }
 
 void arena_static_tick(scene *scene, int paused) {
@@ -1303,14 +1404,6 @@ void arena_render_overlay(scene *scene) {
 
     char buf[40];
 
-    text_settings tconf_players;
-    text_defaults(&tconf_players);
-    tconf_players.font = FONT_SMALL;
-    tconf_players.cforeground = TEXT_HUD_COLOR;
-    tconf_players.cshadow = TEXT_HUD_SHADOW;
-    tconf_players.shadow = TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM;
-    const font *fnt = fonts_get_font(tconf_players.font);
-
     for(int i = 0; i < 2; i++) {
         player[i] = game_state_get_player(scene->gs, i);
         obj[i] = game_state_find_object(scene->gs, game_player_get_har_obj_id(player[i]));
@@ -1323,24 +1416,11 @@ void arena_render_overlay(scene *scene) {
         }
 
         // Render HAR and pilot names
-        const char *player1_name = NULL;
-        const char *player2_name = NULL;
-        player1_name = player[0]->pilot->name;
+        text_draw(local->player_name[0], 5, 19);
+        text_draw(local->player_har[0], 5, 26);
         if(player[1]->pilot) {
-            // when quitting this can go null
-            player2_name = player[1]->pilot->name;
-        }
-
-        text_render_mode(&tconf_players, TEXT_DEFAULT, 5, 19, 250, 6, player1_name);
-        text_render_mode(&tconf_players, TEXT_DEFAULT, 5, 26, 250, 6, lang_get((player[0]->pilot->har_id) + 31));
-
-        // when quitting, pilot can go null
-        if(player[1]->pilot) {
-            char const *player2_har = lang_get((player[1]->pilot->har_id) + 31);
-            int p2len = strlen(player2_name) * fnt->w;
-            int h2len = (strlen(player2_har) - 1) * fnt->w; // TODO: FIXME(lang): -1 because of errant newline
-            text_render_mode(&tconf_players, TEXT_DEFAULT, 315 - p2len, 19, 100, 6, player2_name);
-            text_render_mode(&tconf_players, TEXT_DEFAULT, 315 - h2len, 26, 100, 6, player2_har);
+            text_draw(local->player_name[1], 160, 19);
+            text_draw(local->player_har[1], 160, 26);
         }
 
         // Render score stuff
@@ -1350,12 +1430,13 @@ void arena_render_overlay(scene *scene) {
         // render ping, if player is networked
         if(player[0]->ctrl->type == CTRL_TYPE_NETWORK) {
             snprintf(buf, 40, "ping %d", player[0]->ctrl->rtt / 2);
-            text_render_mode(&tconf_players, TEXT_DEFAULT, 5, 40, 250, 6, buf);
+            text_set_from_c(local->player_ping[0], buf);
+            text_draw(local->player_ping[0], 5, 40);
         }
-
         if(player[1]->ctrl->type == CTRL_TYPE_NETWORK) {
             snprintf(buf, 40, "ping %d", player[1]->ctrl->rtt / 2);
-            text_render_mode(&tconf_players, TEXT_DEFAULT, 315 - (strlen(buf) * fnt->w), 40, 250, 6, buf);
+            text_set_from_c(local->player_ping[1], buf);
+            text_draw(local->player_ping[1], 160, 40);
         }
     }
 
@@ -1369,88 +1450,33 @@ static void arena_debug(scene *scene) {
     if(scene->gs->hide_ui) {
         return;
     }
+    // Note! This will return cached object if it exists.
+    debug_data *d = create_debug_data(scene);
 
-    char buf[100];
-    game_player *player[2];
-    object *obj_har[2];
-    har *hars[2];
-    for(int i = 0; i < 2; i++) {
-        player[i] = game_state_get_player(scene->gs, i);
-        obj_har[i] = game_state_find_object(scene->gs, game_player_get_har_obj_id(player[i]));
-        hars[i] = obj_har[i]->userdata;
-    }
+    // Values are ticked in arena_tick_debug()
 
-    text_settings tconf_debug;
-    text_defaults(&tconf_debug);
-    tconf_debug.font = FONT_SMALL;
-    tconf_debug.cforeground = TEXT_HUD_COLOR;
-    tconf_debug.cshadow = TEXT_HUD_SHADOW;
+    // Top of the screen
+    text_draw(d->tick_text, 160, 0);
+    text_draw(d->seed_text, 130, 8);
 
-    const font *fnt = fonts_get_font(tconf_debug.font);
+    // Left side of the screen
+    text_draw(d->ai_ctrl_state_text[0], 5, 40);
+    text_draw(d->health_text[0], 90, 5);
+    text_draw(d->endurance_text[0], 70, 12);
+    text_draw(d->har_state_text[0], 5, 48);
+    text_draw(d->har_pos_text[0], 5, 56);
+    text_draw(d->har_vel_text[0], 5, 63);
+    text_draw(d->har_ani_text[0], 5, 70);
 
-    snprintf(buf, 40, "%u", game_state_get_tick(scene->gs));
-    text_render_mode(&tconf_debug, TEXT_DEFAULT, 160, 0, 250, 6, buf);
-    snprintf(buf, 40, "%u", random_get_seed(&scene->gs->rand));
-    text_render_mode(&tconf_debug, TEXT_DEFAULT, 130, 8, 250, 6, buf);
-
-    if(player[0]->ctrl->type == CTRL_TYPE_AI) {
-        ai_controller_print_state(player[0]->ctrl, buf, sizeof(buf));
-        text_render_mode(&tconf_debug, TEXT_DEFAULT, 5, 40, 250, 6, buf);
-    }
-
-    if(player[1]->ctrl->type == CTRL_TYPE_AI) {
-        ai_controller_print_state(player[1]->ctrl, buf, sizeof(buf));
-        text_render_mode(&tconf_debug, TEXT_DEFAULT, 315 - (strlen(buf) * fnt->w), 40, 250, 6, buf);
-    }
-
-    for(int i = 0; i < 2; i++) {
-
-        snprintf(buf, sizeof(buf), "%d", hars[i]->health);
-        if(i == 0) {
-            text_render_mode(&tconf_debug, TEXT_DEFAULT, 90, 5, 250, 6, buf);
-        } else {
-            text_render_mode(&tconf_debug, TEXT_DEFAULT, 230 - (strlen(buf) * fnt->w), 5, 250, 6, buf);
-        }
-
-        snprintf(buf, sizeof(buf), "%.2f", hars[i]->endurance);
-        if(i == 0) {
-            text_render_mode(&tconf_debug, TEXT_DEFAULT, 70, 12, 250, 6, buf);
-        } else {
-            text_render_mode(&tconf_debug, TEXT_DEFAULT, 250 - (strlen(buf) * fnt->w), 12, 250, 6, buf);
-        }
-
-        snprintf(buf, sizeof(buf), "%s(%d)", state_name(hars[i]->state), hars[i]->state);
-        if(i == 0) {
-            text_render_mode(&tconf_debug, TEXT_DEFAULT, 5, 48, 250, 6, buf);
-        } else {
-            text_render_mode(&tconf_debug, TEXT_DEFAULT, 315 - (strlen(buf) * fnt->w), 48, 250, 6, buf);
-        }
-
-        snprintf(buf, sizeof(buf), "pos: %.3f %.3f", obj_har[i]->pos.x, obj_har[i]->pos.y);
-
-        if(i == 0) {
-            text_render_mode(&tconf_debug, TEXT_DEFAULT, 5, 56, 250, 6, buf);
-        } else {
-            text_render_mode(&tconf_debug, TEXT_DEFAULT, 315 - (strlen(buf) * fnt->w), 56, 250, 6, buf);
-        }
-
-        snprintf(buf, sizeof(buf), "vel: %.3f %.3f", obj_har[i]->vel.x, obj_har[i]->vel.y);
-
-        if(i == 0) {
-            text_render_mode(&tconf_debug, TEXT_DEFAULT, 5, 62, 250, 6, buf);
-        } else {
-            text_render_mode(&tconf_debug, TEXT_DEFAULT, 315 - (strlen(buf) * fnt->w), 62, 250, 6, buf);
-        }
-
-        snprintf(buf, sizeof(buf), "aa: %d em: %d ani: %d", hars[i]->air_attacked, hars[i]->executing_move,
-                 obj_har[i]->cur_animation->id);
-
-        if(i == 0) {
-            text_render_mode(&tconf_debug, TEXT_DEFAULT, 5, 70, 250, 6, buf);
-        } else {
-            text_render_mode(&tconf_debug, TEXT_DEFAULT, 315 - (strlen(buf) * fnt->w), 70, 250, 6, buf);
-        }
-    }
+    // Right side of the screen. The text items are all 155 pixels long and aligned to the right,
+    // so we just use 160 as X coordinate (with alignment as needed).
+    text_draw(d->ai_ctrl_state_text[1], 160, 40);
+    text_draw(d->health_text[1], 160 - 90, 5);
+    text_draw(d->endurance_text[1], 160 - 70, 12);
+    text_draw(d->har_state_text[1], 160, 48);
+    text_draw(d->har_pos_text[1], 160, 56);
+    text_draw(d->har_vel_text[1], 160, 63);
+    text_draw(d->har_ani_text[1], 160, 70);
 }
 
 int arena_get_state(scene *scene) {
@@ -1491,7 +1517,7 @@ int arena_get_wall_slam_tolerance(game_state *gs) {
     return wall_slam_tolerance_default;
 }
 
-void arena_startup(scene *scene, int id, int *m_load, int *m_repeat) {
+static void arena_startup(scene *scene, int id, int *m_load, int *m_repeat) {
     if(scene->bk_data->file_id == 64) {
         // Start up & repeat torches on arena startup
         switch(id) {
@@ -1504,6 +1530,63 @@ void arena_startup(scene *scene, int id, int *m_load, int *m_repeat) {
                 return;
         }
     }
+}
+
+static void arena_free(scene *scene) {
+    arena_local *local = scene_get_userdata(scene);
+    free_debug_data(scene);
+
+    game_state_set_paused(scene->gs, 0);
+
+    if(scene->gs->rec && scene->gs->init_flags->playback == 0) {
+        if(!is_netplay(scene->gs) && !is_rec_playback(scene->gs)) {
+            // don't write a finisher in netplay or REC playback
+            // REC doesn't need it, and netplay will handle it itself
+            sd_rec_finish(scene->gs->rec, scene->gs->tick);
+        }
+
+        if(scene->gs->init_flags->record == 1) {
+            // we're supposed to save it
+            sd_rec_save(scene->gs->rec, scene->gs->init_flags->rec_file);
+            sd_rec_free(scene->gs->rec);
+            omf_free(scene->gs->rec);
+            scene->gs->rec = NULL;
+        }
+    }
+
+    for(int i = 0; i < 2; i++) {
+        game_player *player = game_state_get_player(scene->gs, i);
+        game_player_set_har(player, NULL);
+        // game_player_set_ctrl(player, NULL);
+        controller_set_repeat(game_player_get_ctrl(player), 0);
+    }
+
+    gui_frame_free(local->game_menu);
+
+    audio_stop_music();
+
+    // Free bar components
+    for(int i = 0; i < 2; i++) {
+        component_free(local->health_bars[i]);
+        component_free(local->endurance_bars[i]);
+    }
+
+    // Free player texts
+    for(int i = 0; i < 2; i++) {
+        text_free(&local->player_name[i]);
+        text_free(&local->player_har[i]);
+        text_free(&local->player_ping[i]);
+    }
+
+    settings_save();
+
+    omf_free(local);
+    scene_set_userdata(scene, local);
+}
+
+void arena_clone_free(scene *scene) {
+    arena_local *local = scene_get_userdata(scene);
+    omf_free(local);
 }
 
 int arena_create(scene *scene) {
@@ -1697,10 +1780,22 @@ int arena_create(scene *scene) {
 
     maybe_install_har_hooks(scene);
 
+    // Set the name and HAR here, as they will remain static during the match. Ping will be dynamically set.
+    for(int i = 0; i < 2; i++) {
+        local->player_name[i] = create_text_object(_player[i]->pilot->name);
+        local->player_har[i] = create_text_object(lang_get(_player[i]->pilot->har_id + 31));
+        local->player_ping[i] = create_text_object("0");
+    }
+
+    // HAR 2 texts should be aligned to the right side of the screen.
+    text_set_horizontal_align(local->player_name[1], TEXT_ALIGN_RIGHT);
+    text_set_horizontal_align(local->player_har[1], TEXT_ALIGN_RIGHT);
+    text_set_horizontal_align(local->player_ping[1], TEXT_ALIGN_RIGHT);
+
     // Arena menu theme
     gui_theme theme;
     gui_theme_defaults(&theme);
-    theme.dialog.border_color = TEXT_MEDIUM_GREEN;
+    theme.dialog.border_color = DIALOG_BORDER_COLOR;
     theme.text.primary_color = TEXT_PRIMARY_COLOR;
     theme.text.secondary_color = TEXT_SECONDARY_COLOR;
     theme.text.disabled_color = TEXT_DISABLED_COLOR;
@@ -1768,8 +1863,7 @@ int arena_create(scene *scene) {
 
     // Score positioning
     chr_score_set_pos(game_player_get_score(_player[0]), 5, 33, OBJECT_FACE_RIGHT);
-    chr_score_set_pos(game_player_get_score(_player[1]), 315, 33,
-                      OBJECT_FACE_LEFT); // TODO: Set better coordinates for this
+    chr_score_set_pos(game_player_get_score(_player[1]), 315, 33, OBJECT_FACE_LEFT);
 
     // Possibly use tournament mode scoring
     chr_score_set_tournament_mode(game_player_get_score(_player[0]), local->tournament);

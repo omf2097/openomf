@@ -255,7 +255,7 @@ void har_stunned_done(object *har_obj) {
 
     if(h->state == STATE_STUNNED) {
         // refill endurance
-        h->endurance = h->endurance_max;
+        h->endurance = 0;
         h->state = STATE_STANDING;
         har_set_ani(har_obj, ANIM_IDLE, 1);
     }
@@ -410,13 +410,15 @@ int har_is_invincible(object *obj, af_move *move) {
 
 // Callback for temporarily disabling an animation
 void cb_har_disable_animation(object *parent, uint8_t animation_id, uint16_t ticks, void *userdata) {
-    har *h = userdata;
+    object *har_obj = userdata;
+    har *h = object_get_userdata(har_obj);
     hashmap_put_int(&h->disabled_animations, (int)animation_id, &ticks, sizeof(ticks));
 }
 
 // Callback for spawning new objects, eg. projectiles
 void cb_har_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t mp_flags, int s, int g, void *userdata) {
-    har *h = userdata;
+    object *har_obj = userdata;
+    har *h = object_get_userdata(har_obj);
     vec2i p_pos = object_get_pos(parent);
 
     // can't do this in object, because it hoses the intro
@@ -457,8 +459,8 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t m
         obj->animation_state.enemy_obj_id = parent->animation_state.enemy_obj_id;
 
         // allow projectiles to spawn projectiles, eg. shadow's scrap animation
-        object_set_spawn_cb(obj, cb_har_spawn_object, h);
-        object_set_disable_cb(obj, cb_har_disable_animation, h);
+        object_set_spawn_cb(obj, cb_har_spawn_object, har_obj);
+        object_set_disable_cb(obj, cb_har_disable_animation, har_obj);
 
         // Handle Nova animation where the bot gets destroyed in single player
         if(h->id == 10 && id >= 25 && id <= 30) {
@@ -478,7 +480,9 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t m
 
 // Callback for destroying objects, eg. projectiles
 void cb_har_destroy_object(object *parent, int animation_id, void *userdata) {
-    har *h = userdata;
+    object *har_obj = userdata;
+    har *h = object_get_userdata(har_obj);
+
     // find all projectiles owned by us with the supplied animation id
     vector vec;
     vector_create(&vec, sizeof(object *));
@@ -774,20 +778,22 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
     // Handle health changes
     if(h->health <= 0) {
         h->health = 0;
-        h->endurance = 0.0f;
     }
 
     if(!h->throw_duration) {
         log_debug("applying %f stun damage to %f", stun, h->endurance);
-        h->endurance -= stun;
+        h->endurance += stun;
     }
+
     if(h->endurance < 1.0f) {
         if(h->state == STATE_STUNNED) {
             // refill endurance
-            h->endurance = h->endurance_max;
-        } else {
-            h->endurance = 0.0f;
+            h->endurance = 0;
         }
+    } else if(h->endurance >= h->endurance_max) {
+        // Calculate how much dizzy time we have based on the stun limit overage.
+        // The more negative you go, the more time you're stunned.
+        h->endurance = ((((h->endurance - h->endurance_max) / 256) * -2.5) - 60) * 256;
     }
 
     if(h->health == 0) {
@@ -818,16 +824,6 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
             controller *ctrl = game_player_get_ctrl(game_state_get_player(obj->gs, h->player_id));
             // trigger the defeat hook immediately
             har_event_defeat(h, ctrl);
-
-            if(!object_is_airborne(obj)) {
-                // taken from MASTER.DAT
-                size_t last_line = 0;
-                if(!str_last_of(string, '-', &last_line)) {
-                    last_line = 0;
-                }
-                str_from_slice(&custom, string, 0, last_line);
-                str_append_c(&custom, "-x-20ox-20L1-ox-20L2-x-20zzs4l25sp13M1-zzM2");
-            }
         }
 
         if(object_is_airborne(obj)) {
@@ -839,7 +835,7 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
             }
 
             str_from_slice(&custom, string, 0, last_line);
-            if(h->endurance <= 0 || h->health <= 0) {
+            if(h->endurance < 0 || h->health <= 0) {
                 // this hit stunned them, so make them hit the floor stunned
                 str_append_c(&custom, "-L3-M5000");
             } else {
@@ -853,6 +849,16 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
             obj->vel.x =
                 (((damage * 0.16666666f) + 2.0f) * object_get_direction(obj) * -1) * obj->horizontal_velocity_modifier;
             object_set_stride(obj, 1);
+        } else {
+            if(h->health <= 0 || h->endurance < 0) {
+                // taken from MASTER.DAT
+                size_t last_line = 0;
+                if(!str_last_of(string, '-', &last_line)) {
+                    last_line = 0;
+                }
+                str_from_slice(&custom, string, 0, last_line);
+                str_append_c(&custom, "-x-20ox-20L1-ox-20L2-x-20zzs4l25sp13M1-zzM2");
+            }
         }
 
         if(str_size(&custom) > 0) {
@@ -1268,14 +1274,14 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
 
     // rehit mode is on, but the opponent isn't airborne or stunned
     if(obj_b->gs->match_settings.rehit && b->state == STATE_RECOIL &&
-       (!object_is_airborne(obj_b) || b->endurance <= 0)) {
+       (!object_is_airborne(obj_b) || b->endurance < 0)) {
         log_debug("REHIT is not possible %d %f %f %f", object_is_airborne(obj_b), obj_b->pos.x, obj_b->pos.y,
                   b->endurance);
         return 0;
     }
 
     bool rehit =
-        obj_b->gs->match_settings.rehit && b->state == STATE_RECOIL && object_is_airborne(obj_b) && b->endurance > 0;
+        obj_b->gs->match_settings.rehit && b->state == STATE_RECOIL && object_is_airborne(obj_b) && b->endurance >= 0;
 
     // Check for collisions by sprite collision points
     int level = 1;
@@ -1481,14 +1487,14 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
 
     // rehit mode is on, but the opponent isn't airborne or stunned
     if(o_har->gs->match_settings.rehit && h->state == STATE_RECOIL &&
-       (!object_is_airborne(o_har) || h->endurance <= 0)) {
+       (!object_is_airborne(o_har) || h->endurance < 0)) {
         log_debug("REHIT is not possible %d %f %f %f", object_is_airborne(o_har), o_har->pos.x, o_har->pos.y,
                   h->endurance);
         return;
     }
 
     bool rehit =
-        o_har->gs->match_settings.rehit && h->state == STATE_RECOIL && object_is_airborne(o_har) && h->endurance > 0;
+        o_har->gs->match_settings.rehit && h->state == STATE_RECOIL && object_is_airborne(o_har) && h->endurance >= 0;
 
     // Check for collisions by sprite collision points
     int level = 2;
@@ -1750,6 +1756,60 @@ static void har_palette_transform(damage_tracker *damage, vga_palette *pal, void
     }
 }
 
+void har_handle_stun(object *obj) {
+    har *h = object_get_userdata(obj);
+
+    if(h->health <= 0) { // Lock the stun meter to near-empty when KO'd
+        h->endurance = h->endurance_max - 2;
+    } else {
+        if(h->endurance < 1) { // We are currently dizzy, recover gradually
+            if(obj->cur_animation->id == ANIM_STUNNED) {
+                h->endurance += h->stun_factor * 1.4;
+            }
+        } else { // Not yet stunned, handle regular stun recovery
+            float stunfactor = 1.0 * h->stun_factor * h->endurance / h->endurance_max / 256.0;
+            if((obj->cur_animation->id == ANIM_IDLE) || (obj->cur_animation->id == ANIM_CROUCHING) ||
+               (obj->cur_animation->id == ANIM_VICTORY)) {
+                float hpfactor = ((h->health_max * 5.0 / 9.0) + h->health) / h->health_max;
+
+                h->endurance -= ((hpfactor * stunfactor) + STUN_RECOVERY_CONSTANT) * 256;
+            } else if((obj->cur_animation->id == ANIM_CROUCHING_BLOCK) ||
+                      (obj->cur_animation->id == ANIM_STANDING_BLOCK)) {
+                float hpfactor = (h->health_max * 25.0 / 27.0 + h->health) / h->health_max;
+
+                h->endurance -= ((hpfactor * stunfactor) + STUN_RECOVERY_BLOCKING_CONSTANT) * 256;
+            } else if(obj->cur_animation->id == ANIM_JUMPING) {
+                float hpfactor = ((h->health_max * 25.0 / 81.0) + h->health) / h->health_max;
+
+                h->endurance -= ((hpfactor * stunfactor) + STUN_RECOVERY_CONSTANT) * 256;
+            } else if(obj->cur_animation->id < (ANIM_SCREW | ANIM_JUMPING)) { // Cover all other cases
+                float hpfactor = ((h->health_max * 5.0 / 27.0) + h->health) / h->health_max;
+
+                h->endurance -= ((hpfactor * stunfactor) + STUN_RECOVERY_CONSTANT) * 256;
+            }
+            if(h->endurance < 0) {
+                h->endurance = 0;
+            }
+        }
+    }
+
+    if(h->state == STATE_STUNNED) {
+        h->stun_timer++;
+        if(h->stun_timer % 10 == 0) {
+            vec2i pos = object_get_pos(obj);
+            pos.y -= 60;
+            har_spawn_oil(obj, pos, 5, RENDER_LAYER_BOTTOM);
+        }
+
+        if(h->endurance >= 0) {
+            har_stunned_done(obj);
+            object *enemy_obj = game_state_find_object(
+                obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
+            har_face_enemy(obj, enemy_obj);
+        }
+    }
+}
+
 void har_tick(object *obj) {
     har *h = object_get_userdata(obj);
     controller *ctrl = game_player_get_ctrl(game_state_get_player(obj->gs, h->player_id));
@@ -1767,6 +1827,10 @@ void har_tick(object *obj) {
         h->p_sustain_ticks_left--;
     if(h->p_fade_out_ticks_left > 0)
         h->p_fade_out_ticks_left--;
+
+    if(!h->in_stasis_ticks && !h->throw_duration) {
+        har_handle_stun(obj);
+    }
 
     if(h->in_stasis_ticks > 0) {
         h->in_stasis_ticks--;
@@ -1790,15 +1854,12 @@ void har_tick(object *obj) {
         if(h->throw_duration == 0) {
             // we've already called har_take_damage, so just apply the damage and check for defeat
             h->health -= h->last_damage_value;
-            h->endurance -= h->last_stun_value;
+            h->endurance += h->last_stun_value;
             if(h->health <= 0) {
                 // Take a screencap of enemy har
                 game_player *other_player = game_state_get_player(obj->gs, !h->player_id);
                 object *other_har = game_state_find_object(obj->gs, other_player->har_obj_id);
                 har_screencaps_capture(&other_player->screencaps, other_har, obj, SCREENCAP_BLOW);
-
-                // empty endurance meter
-                h->endurance = 0;
 
                 // Slow down game more for last shot
                 log_debug("Slowdown: Slowing from %d to %d.", game_state_get_speed(obj->gs),
@@ -1866,29 +1927,6 @@ void har_tick(object *obj) {
     if(!object_is_airborne(obj) && h->air_attacked) {
         har_event_air_attack_done(h, ctrl);
         h->air_attacked = 0;
-    }
-
-    if(h->state == STATE_STUNNED) {
-        h->stun_timer++;
-        if(h->stun_timer % 10 == 0) {
-            vec2i pos = object_get_pos(obj);
-            pos.y -= 60;
-            har_spawn_oil(obj, pos, 5, RENDER_LAYER_BOTTOM);
-        }
-        if(h->stun_timer > 100) {
-            har_stunned_done(obj);
-            object *enemy_obj = game_state_find_object(
-                obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
-            har_face_enemy(obj, enemy_obj);
-        }
-    }
-
-    // Endurance restore
-    if(h->health > 0 && h->endurance < h->endurance_max &&
-       !(h->executing_move || h->in_stasis_ticks > 0 || h->state == STATE_RECOIL || h->state == STATE_STUNNED ||
-         h->state == STATE_STANDING_UP || h->state == STATE_DEFEAT)) {
-        h->endurance += 0.0025f * h->endurance_max; // made up but plausible number
-    }
 
     // tick down disabled moves
     if(hashmap_size(&h->disabled_animations)) {
@@ -2177,6 +2215,10 @@ int har_act(object *obj, int act_type) {
         prefix = 'P';
     }
 
+    if(prefix != 1 && h->endurance < 0) { // Mash to recover from stun faster!
+        h->endurance += 512;
+    }
+
     uint32_t input_staleness = obj->gs->tick - h->input_change_tick;
     if(input_changed) {
         h->input_change_tick = obj->gs->tick;
@@ -2444,12 +2486,11 @@ void har_finished(object *obj) {
         har_event_recover(h, ctrl);
         h->state = STATE_STANDING_UP;
         object_set_custom_string(obj, "zzO7-bj2zzO2");
-    } else if((h->state == STATE_RECOIL || h->state == STATE_STANDING_UP) && h->endurance < 1.0f) {
+    } else if((h->state == STATE_RECOIL || h->state == STATE_STANDING_UP) && h->endurance < 0) {
         if(h->state == STATE_RECOIL) {
             har_event_recover(h, ctrl);
         }
         h->state = STATE_STUNNED;
-        h->stun_timer = 0;
         har_set_ani(obj, ANIM_STUNNED, 1);
         har_event_stun(h, ctrl);
 
@@ -2536,15 +2577,15 @@ int har_clone(object *src, object *dst) {
     }
 
     object_set_userdata(dst, local);
-    object_set_spawn_cb(dst, cb_har_spawn_object, local);
+    object_set_spawn_cb(dst, cb_har_spawn_object, dst);
     vector_create(&local->child_objects, sizeof(uint32_t));
     uint32_t *child_id;
     vector_iter_begin(&oldlocal->child_objects, &it);
     foreach(it, child_id) {
         vector_append(&local->child_objects, child_id);
     }
-    object_set_destroy_cb(dst, cb_har_destroy_object, local);
-    object_set_disable_cb(dst, cb_har_disable_animation, local);
+    object_set_destroy_cb(dst, cb_har_destroy_object, dst);
+    object_set_disable_cb(dst, cb_har_disable_animation, dst);
     local->delay = 0;
     return 0;
 }
@@ -2599,9 +2640,11 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     // af_data->health);
     //  The stun cap is calculated as follows
     //  HAR Endurance * 3.6 * (Pilot Endurance + 16) / 23
-    local->endurance_max = local->endurance = af_data->endurance * 3.6 * (pilot->endurance + 16) / 23;
-    log_debug("HAR endurance is %f with pilot endurance %d and base endurance %f", local->endurance, pilot->endurance,
-              af_data->endurance);
+    local->endurance_max = (af_data->endurance * 3.6 * (pilot->endurance + 16) / 23);
+    log_debug("HAR endurance is %d with pilot endurance %d and base endurance %f", local->endurance_max,
+              pilot->endurance, af_data->endurance);
+    local->stun_factor = 1.2 * 256 * (pilot->endurance + 30) / 40;
+    log_debug("HAR stun factor is %d", local->stun_factor);
     // fwd speed = (Agility + 20) / 30 * fwd speed
     // back speed = (Agility + 20) / 30 * back speed
     // up speed = (Agility + 35) / 45 * up speed (edited)
@@ -2622,8 +2665,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     local->fall_speed = (((float)gp->pilot->agility + 20) / 30) * af_data->fall_speed;
     local->fwd_speed = (((float)gp->pilot->agility + 20) / 30) * af_data->forward_speed;
     local->back_speed = (((float)gp->pilot->agility + 20) / 30) * af_data->reverse_speed;
-    // TODO calculate a better value here
-    local->stride = lrint(1 + (gp->pilot->agility / 20));
+    local->stride = (gp->pilot->agility + 20) / 30;
     log_debug("setting HAR stride to %d", local->stride);
     local->close = 0;
     local->hard_close = 0;
@@ -2670,9 +2712,9 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     object_set_shadow(obj, 1);
 
     // New object spawner callback
-    object_set_spawn_cb(obj, cb_har_spawn_object, local);
-    object_set_destroy_cb(obj, cb_har_destroy_object, local);
-    object_set_disable_cb(obj, cb_har_disable_animation, local);
+    object_set_spawn_cb(obj, cb_har_spawn_object, obj);
+    object_set_destroy_cb(obj, cb_har_destroy_object, obj);
+    object_set_disable_cb(obj, cb_har_disable_animation, obj);
 
     // Set running animation
     har_set_ani(obj, ANIM_IDLE, 1);
@@ -2862,7 +2904,7 @@ void har_reset(object *obj) {
     h->is_grabbed = 0;
     h->inputs[10] = '\0';
     h->health = h->health_max;
-    h->endurance = h->endurance_max;
+    h->endurance = 0;
 
     h->in_stasis_ticks = 0;
     h->throw_duration = 0;

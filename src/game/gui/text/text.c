@@ -239,6 +239,10 @@ void text_get_str(const text *t, str *dst) {
     str_from(dst, &t->buf);
 }
 
+const char *text_c(const text *t) {
+    return str_c(&t->buf);
+}
+
 font_size text_get_font(const text *t) {
     return t->font;
 }

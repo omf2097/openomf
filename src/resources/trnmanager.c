@@ -3,18 +3,21 @@
 #include "formats/tournament.h"
 #include "resources/pathmanager.h"
 #include "utils/allocator.h"
-#include "utils/list.h"
 #include "utils/log.h"
 #include "utils/scandir.h"
+#include "utils/vector.h"
 #include <stdio.h>
 #include <string.h>
 
-static void trnlist_node_free_callback(void *data) {
-    sd_tournament_file *trn = data;
-    sd_tournament_free(trn);
+static int trn_sort_compare_fn(const void *a, const void *b) {
+    sd_tournament_file const *trn_a = a;
+    sd_tournament_file const *trn_b = b;
+    return (trn_a->registration_fee > trn_b->registration_fee) - (trn_a->registration_fee < trn_b->registration_fee);
 }
 
-list *trnlist_init(void) {
+void trnlist_init(vector *trnlist) {
+    trnlist_free(trnlist);
+
     int ret;
     list dirlist;
 
@@ -22,7 +25,7 @@ list *trnlist_init(void) {
     const char *dirname = pm_get_local_path(RESOURCE_PATH);
     if(dirname == NULL) {
         log_error("Could not find resources path! Something is wrong with tournament manager!");
-        return NULL;
+        return;
     }
 
     // Seek all files
@@ -34,9 +37,7 @@ list *trnlist_init(void) {
 
     log_debug("Found %d tournaments.", list_size(&dirlist));
 
-    list *trnlist = omf_calloc(1, sizeof(list));
-    list_create(trnlist);
-    list_set_node_free_cb(trnlist, trnlist_node_free_callback);
+    vector_create(trnlist, sizeof(sd_tournament_file));
 
     iterator it;
     list_iter_begin(&dirlist, &it);
@@ -47,21 +48,31 @@ list *trnlist_init(void) {
         sd_tournament_create(&trn);
         snprintf(tmp, 1024, "%s%s", dirname, trn_file);
         if(SD_SUCCESS == sd_tournament_load(&trn, tmp)) {
-            list_append(trnlist, &trn, sizeof(sd_tournament_file));
+            vector_append(trnlist, &trn);
         } else {
             log_error("Could not load tournament %s", trn_file);
         }
     }
     list_iter_end(&dirlist, &it);
 
-    log_debug("Loaded %d tournaments", list_size(trnlist));
+    // sort the tournaments by ascending registration fee
+    vector_sort(trnlist, trn_sort_compare_fn);
 
-    list_free(&dirlist);
-    return trnlist;
+    log_debug("Loaded %d tournaments", vector_size(trnlist));
 
 error_0:
     list_free(&dirlist);
-    return NULL;
+}
+
+void trnlist_free(vector *trnlist) {
+    iterator it;
+    vector_iter_begin(trnlist, &it);
+    sd_tournament_file *trn;
+    foreach(it, trn) {
+        sd_tournament_free(trn);
+    }
+
+    vector_free(trnlist);
 }
 
 int trn_load(sd_tournament_file *trn, const char *trnname) {

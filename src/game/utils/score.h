@@ -1,7 +1,7 @@
 #ifndef SCORE_H
 #define SCORE_H
 
-#include "game/gui/text_render.h"
+#include "game/gui/text/text.h"
 #include "game/protos/object.h"
 #include "utils/list.h"
 #include "video/surface.h"
@@ -26,6 +26,7 @@ typedef struct chr_score_t {
     int direction;
     int difficulty;
     list texts;
+    text *total;
 
     int consecutive_hits;
     int consecutive_hit_score;
