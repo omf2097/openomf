@@ -9,21 +9,7 @@
 #include <dirent.h>
 #endif
 
-static void check_valid_directory(char const *dir) {
-#ifndef NDEBUG
-    assert(dir != NULL);
-    assert(dir[0] != '\0');
-    size_t end = strlen(dir) - 1;
-#ifdef _WIN32
-    assert(dir[end] == '\\');
-#else
-    assert(dir[end] == '/');
-#endif
-#endif
-}
-
 int scan_directory(list *dir_list, const char *dir) {
-    check_valid_directory(dir);
 #if defined(_WIN32) || defined(WIN32)
 
     str glob;
@@ -58,7 +44,6 @@ int scan_directory(list *dir_list, const char *dir) {
 }
 
 int scan_directory_prefix(list *dir_list, const char *dir, const char *prefix) {
-    check_valid_directory(dir);
 #if defined(_WIN32) || defined(WIN32)
 
     str glob;
@@ -101,7 +86,6 @@ int scan_directory_prefix(list *dir_list, const char *dir, const char *prefix) {
 }
 
 int scan_directory_suffix(list *dir_list, const char *dir, const char *suffix) {
-    check_valid_directory(dir);
 #if defined(_WIN32) || defined(WIN32)
 
     str glob;
