@@ -30,7 +30,6 @@ typedef struct {
 
     trnmenu_hand hand;
 
-    char prev_submenu_state;
     component *submenu;
     trnmenu_submenu_init_cb submenu_init;
     trnmenu_submenu_done_cb submenu_done;
@@ -338,25 +337,24 @@ static void trnmenu_tick(component *c) {
     // Check if we need to run submenu done -callback
     // Also reset fade
     if(m->submenu != NULL && trnmenu_is_finished(m->submenu) && !trnmenu_is_fading(m->submenu)) {
-        if(!m->prev_submenu_state) {
-            m->fade = 1;
-            m->opacity_step = OPACITY_STEP;
-            sizer_set_opacity(c, 0.0f);
-            component *sel = sizer_get(c, m->selected);
-            if(sel != NULL)
-                component_focus(sel, 1);
+        m->fade = 1;
+        m->opacity_step = OPACITY_STEP;
+        sizer_set_opacity(c, 0.0f);
+        component *sel = sizer_get(c, m->selected);
+        if(sel != NULL)
+            component_focus(sel, 1);
 
-            if(m->submenu_done) {
-                m->submenu_done(c, m->submenu);
-            }
-
-            trnmenu *n = sizer_get_obj(m->submenu);
-            if(n->submenu_done) {
-                n->submenu_done(c, m->submenu);
-            }
-
-            m->prev_submenu_state = 1;
+        if(m->submenu_done) {
+            m->submenu_done(c, m->submenu);
         }
+
+        trnmenu *n = sizer_get_obj(m->submenu);
+        if(n->submenu_done) {
+            n->submenu_done(c, m->submenu);
+        }
+
+        component_free(m->submenu);
+        m->submenu = NULL;
     }
 
     // Tick hand animation
@@ -423,7 +421,6 @@ void trnmenu_set_submenu(component *c, component *submenu) {
         component_free(m->submenu);
     }
     m->submenu = submenu;
-    m->prev_submenu_state = 0;
     submenu->parent = c; // Set correct parent
     component_init(m->submenu, component_get_theme(c));
     component_layout(m->submenu, c->x, c->y, c->w, c->h);

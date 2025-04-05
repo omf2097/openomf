@@ -4,6 +4,7 @@
 #include "resources/af_loader.h"
 #include "resources/bk_loader.h"
 #include "resources/ids.h"
+#include "resources/pathmanager.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
 #include "utils/vec.h"
@@ -22,11 +23,34 @@ int scene_create(scene *scene, game_state *gs, int scene_id) {
         return 1;
     }
 
+    char path_buf[256];
+    char const *bkfilename;
+    switch(scene_id) {
+        case SCENE_TRN_CUTSCENE: {
+            game_player *player = game_state_get_player(gs, 0);
+            if(player && player->chr && player->chr->bk_name[0] != '\0') {
+                snprintf(path_buf, sizeof(path_buf), "%s/%s", pm_get_local_path(RESOURCE_PATH), player->chr->bk_name);
+                bkfilename = path_buf;
+                break;
+            }
+            log_error("Not a valid time to be going to SCENE_TRN_CUTSCENE");
+            return 1;
+        }
+        default:
+            bkfilename = pm_get_resource_path(BK_INTRO + (scene_id - 1));
+            break;
+        case SCENE_SCOREBOARD:
+            bkfilename = pm_get_resource_path(BK_MENU);
+            break;
+        case SCENE_LOBBY:
+            bkfilename = pm_get_resource_path(PCX_NETARENA);
+            break;
+    }
+
     // Load BK
-    int resource_id = scene_to_resource(scene_id);
     scene->bk_data = omf_calloc(1, sizeof(bk));
-    if(load_bk_file(scene->bk_data, resource_id)) {
-        log_error("Unable to load scene %s (%s)!", scene_get_name(scene_id), get_resource_name(resource_id));
+    if(load_bk_file(scene->bk_data, bkfilename)) {
+        log_error("Unable to load scene %s (%s)!", scene_get_name(scene_id), bkfilename);
         return 1;
     }
     scene->id = scene_id;
@@ -60,7 +84,7 @@ int scene_create(scene *scene, game_state *gs, int scene_id) {
     vga_state_set_base_palette_index(0, &c);
 
     // All done.
-    log_debug("Loaded scene %s (%s).", scene_get_name(scene_id), get_resource_name(resource_id));
+    log_debug("Loaded scene %s (%s).", scene_get_name(scene_id), bkfilename);
     return 0;
 }
 

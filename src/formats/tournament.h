@@ -58,7 +58,8 @@ typedef struct {
  */
 typedef struct {
     char filename[14];
-    uint32_t enemy_count;          ///< Number of enemies in tournament
+    uint16_t enemy_count; ///< Number of enemies in tournament
+    uint16_t unknown_b;
     char bk_name[14];              ///< Tournament BK filename
     float winnings_multiplier;     ///< Match winnings multiplier
     int32_t unknown_a;             ///< Unknown /todo find out

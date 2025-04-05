@@ -195,6 +195,9 @@ void component_free(component *c) {
     if(c == NULL) {
         return;
     }
+    if(c->is_focused != 0) {
+        component_focus(c, false);
+    }
     if(c->free != NULL) {
         c->free(c);
     }

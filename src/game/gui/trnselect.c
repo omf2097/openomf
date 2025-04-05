@@ -9,17 +9,16 @@
 #include "resources/sprite.h"
 #include "resources/trnmanager.h"
 #include "utils/allocator.h"
-#include "utils/list.h"
 #include "utils/log.h"
+#include "utils/vector.h"
 #include "video/vga_state.h"
 #include "video/video.h"
 
 // Local small gauge type
 typedef struct trnselect {
     sprite *img;
-    list *tournaments;
+    vector tournaments;
     component *label;
-    int max;
     int selected;
 } trnselect;
 
@@ -64,10 +63,7 @@ static void trnselect_free(component *c) {
         sprite_free(g->img);
         omf_free(g->img);
     }
-    if(g->tournaments != NULL) {
-        list_free(g->tournaments);
-        omf_free(g->tournaments);
-    }
+    trnlist_free(&g->tournaments);
     if(g->label) {
         component_free(g->label);
     }
@@ -77,10 +73,10 @@ static void trnselect_free(component *c) {
 void trnselect_next(component *c) {
     trnselect *local = widget_get_obj(c);
     local->selected++;
-    if(local->selected >= local->max) {
+    if(local->selected >= (int)vector_size(&local->tournaments)) {
         local->selected = 0;
     }
-    sd_tournament_file *trn = list_get(local->tournaments, local->selected);
+    sd_tournament_file *trn = trnselect_selected(c);
     sd_sprite *logo = trn->locales[0]->logo;
     vga_state_set_base_palette_from_range(&trn->pal, 128, 128, 40);
     load_description(&local->label, component_get_theme(c), trn->locales[0]);
@@ -92,9 +88,9 @@ void trnselect_prev(component *c) {
     trnselect *local = widget_get_obj(c);
     local->selected--;
     if(local->selected < 0) {
-        local->selected = local->max - 1;
+        local->selected = vector_size(&local->tournaments) - 1;
     }
-    sd_tournament_file *trn = list_get(local->tournaments, local->selected);
+    sd_tournament_file *trn = trnselect_selected(c);
     sd_sprite *logo = trn->locales[0]->logo;
     vga_state_set_base_palette_from_range(&trn->pal, 128, 128, 40);
     load_description(&local->label, component_get_theme(c), trn->locales[0]);
@@ -104,19 +100,18 @@ void trnselect_prev(component *c) {
 
 sd_tournament_file *trnselect_selected(component *c) {
     trnselect *local = widget_get_obj(c);
-    return list_get(local->tournaments, local->selected);
+    return vector_get(&local->tournaments, local->selected);
 }
 
 static void trnselect_init(component *c, const gui_theme *theme) {
     trnselect *local = widget_get_obj(c);
-    local->tournaments = trnlist_init();
-    local->max = list_size(local->tournaments);
+    trnlist_init(&local->tournaments);
     local->img = omf_calloc(1, sizeof(sprite));
     local->label = NULL;
 
     vga_state_push_palette(); // Backup the current palette
 
-    sd_tournament_file *trn = list_get(local->tournaments, local->selected);
+    sd_tournament_file *trn = trnselect_selected(c);
     sd_sprite *logo = trn->locales[0]->logo;
     vga_state_set_base_palette_from_range(&trn->pal, 128, 128, 40);
     load_description(&local->label, theme, trn->locales[0]);
@@ -131,8 +126,6 @@ component *trnselect_create(void) {
     // Local information
     trnselect *local = omf_calloc(1, sizeof(trnselect));
     local->selected = 0;
-    local->max = 0;
-    local->tournaments = NULL;
     local->img = NULL;
     local->label = NULL;
     widget_set_obj(c, local);

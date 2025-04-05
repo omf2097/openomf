@@ -151,10 +151,11 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
     }
 
     // Read enemy count and make sure it seems somwhat correct
-    uint32_t enemy_count = sd_read_udword(r);
+    uint16_t enemy_count = sd_read_uword(r);
     if(enemy_count >= MAX_TRN_ENEMIES || enemy_count == 0) {
         goto error_0;
     }
+    uint16_t unknown_b = sd_read_uword(r);
 
     char *justfile = strrchr(filename, pm_path_sep);
     if(justfile == NULL) {
@@ -163,6 +164,7 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
         strncpy_or_abort(trn->filename, justfile + 1, sizeof(trn->filename));
     }
     trn->enemy_count = enemy_count;
+    trn->unknown_b = unknown_b;
 
     // Read tournament data
     int victory_text_offset = sd_read_dword(r);
@@ -177,7 +179,7 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
     sd_reader_set(r, 300);
     int offset_list[MAX_TRN_ENEMIES + 2]; // Should be large enough
     memset(offset_list, 0, sizeof(offset_list));
-    for(unsigned i = 0; i < trn->enemy_count + 1; i++) {
+    for(int i = 0; i < trn->enemy_count + 1; i++) {
         offset_list[i] = sd_read_dword(r);
     }
 
@@ -271,7 +273,8 @@ int sd_tournament_save(const sd_tournament_file *trn, const char *filename) {
     }
 
     // Header
-    sd_write_udword(w, trn->enemy_count);
+    sd_write_word(w, trn->enemy_count);
+    sd_write_word(w, trn->unknown_b);
     sd_write_dword(w, 0); // Write this later!
     sd_write_buf(w, trn->bk_name, 14);
     sd_write_float(w, trn->winnings_multiplier);

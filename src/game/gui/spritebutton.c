@@ -35,7 +35,7 @@ static void spritebutton_render(component *c) {
 
     if(component_is_disabled(c)) {
         video_draw_offset(b->img, c->x, c->y, 5, 0x5F);
-    } else if(b->active_ticks > 0) {
+    } else if(b->active_ticks != 0) {
         video_draw(b->img, c->x, c->y);
     }
 
@@ -128,7 +128,7 @@ component *spritebutton_create(const char *text, const surface *img, bool disabl
     b->font = FONT_NONE;
     b->img = img;
     b->override_color = -1;
-    b->active_ticks = -1;
+    b->active_ticks = 0;
     b->userdata = userdata;
     b->tick_cb = NULL;
     b->focus_cb = NULL;

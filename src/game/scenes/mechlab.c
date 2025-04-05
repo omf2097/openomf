@@ -7,6 +7,8 @@
 #include "game/game_state.h"
 #include "game/gui/gui_frame.h"
 #include "game/gui/label.h"
+#include "game/gui/menu_background.h"
+#include "game/gui/text/text.h"
 #include "game/gui/textinput.h"
 #include "game/gui/trn_menu.h"
 #include "game/protos/object.h"
@@ -35,6 +37,12 @@
 #define TEXT_INACTIVE_COLOR 0xFE
 #define TEXT_SHADOW_COLOR 0xC0
 
+#define POPUP_TEXT_W 200
+#define POPUP_TEXT_H 48
+#define POPUP_BG_W (POPUP_TEXT_W + 40)
+#define POPUP_BG_H (POPUP_TEXT_H)
+#define POPUP_CENTERY 70
+
 typedef struct {
     dashboard_type dashtype;
     object bg_obj[3];
@@ -47,6 +55,9 @@ typedef struct {
     bool selling;
     component *hint;
     gui_theme theme; // Required by the hint component
+    text *popup;
+    surface popup_bg1;
+    surface popup_bg2;
 } mechlab_local;
 
 bool mechlab_find_last_player(scene *scene) {
@@ -129,6 +140,24 @@ void mechlab_set_hint(scene *scene, const char *hint) {
     label_set_text(local->hint, hint);
 }
 
+static void mechlab_mech_finished_cb(object *obj) {
+    player_reset(obj);
+    player_run(obj);
+    object_set_halt(obj, 1);
+}
+
+void mechlab_spin_har(scene *scene, bool spin) {
+    mechlab_local *local = scene_get_userdata(scene);
+    if(spin) {
+        object_set_halt_ticks(local->mech, local->mech->halt);
+        object_set_repeat(local->mech, 1);
+    } else {
+        local->mech->halt_ticks = 0;
+        object_set_finish_cb(local->mech, mechlab_mech_finished_cb);
+        object_set_repeat(local->mech, 0);
+    }
+}
+
 sd_chr_enemy *mechlab_next_opponent(scene *scene) {
     game_player *p1 = game_state_get_player(scene->gs, 0);
     if(p1->chr->pilot.rank == 1) {
@@ -155,6 +184,9 @@ void mechlab_free(scene *scene) {
         object_free(&local->bg_obj[i]);
     }
 
+    text_free(&local->popup);
+    surface_free(&local->popup_bg1);
+    surface_free(&local->popup_bg2);
     gui_frame_free(local->frame);
     gui_frame_free(local->dashboard);
     object_free(local->mech);
@@ -203,6 +235,16 @@ component *mechlab_sim_menu_create(scene *scene) {
     return menu;
 }
 
+void mechlab_open_popup(scene *scene, char const *message) {
+    mechlab_local *local = scene_get_userdata(scene);
+    text_free(&local->popup);
+    local->popup = text_create_from_c(message);
+    text_set_font(local->popup, FONT_BIG);
+    text_set_bounding_box(local->popup, POPUP_TEXT_W, POPUP_TEXT_H);
+    text_set_vertical_align(local->popup, TEXT_ALIGN_MIDDLE);
+    text_set_horizontal_align(local->popup, TEXT_ALIGN_CENTER);
+}
+
 void mechlab_update(scene *scene) {
     mechlab_local *local = scene_get_userdata(scene);
     game_player *p1 = game_state_get_player(scene->gs, 0);
@@ -247,6 +289,10 @@ static void mechlab_theme(gui_theme *theme) {
 
 void mechlab_tick(scene *scene, int paused) {
     mechlab_local *local = scene_get_userdata(scene);
+
+    if(local->popup) {
+        return;
+    }
 
     gui_frame_tick(local->frame);
     gui_frame_tick(local->dashboard);
@@ -329,15 +375,6 @@ void mechlab_tick(scene *scene, int paused) {
             gui_frame_set_root(local->frame, menu);
             gui_frame_layout(local->frame);
         } else {
-            if(player1->chr) {
-                if(sg_save(player1->chr) != SD_SUCCESS) {
-                    log_error("Failed to save pilot %s", player1->chr->pilot.name);
-                }
-                sd_chr_free(player1->chr);
-                omf_free(player1->chr);
-                player1->pilot = omf_calloc(1, sizeof(sd_pilot));
-                sd_pilot_create(player1->pilot);
-            }
             game_state_set_next(scene->gs, SCENE_MENU);
         }
     }
@@ -431,6 +468,18 @@ int mechlab_event(scene *scene, SDL_Event *event) {
         return 1;
     }
 
+    if(local->dashtype == DASHBOARD_STATS && event->type == SDL_KEYDOWN && event->key.keysym.sym == SDLK_e) {
+        // user is trying to use the cutscene replay cheat.
+        if(!player1->chr || player1->chr->bk_name[0] == '\0' || player1->pilot->rank != 1) {
+            log_info("Can't replay cutscene");
+        } else {
+            log_info("Replaying cutscene '%s'", player1->chr->bk_name);
+            scene->gs->fight_stats.winner = -1;
+            game_state_set_next(scene->gs, SCENE_TRN_CUTSCENE);
+            return 1;
+        }
+    }
+
     if(local->dashtype == DASHBOARD_NEW_PLAYER) {
         return gui_frame_event(local->dashboard, event);
     } else {
@@ -463,6 +512,12 @@ void mechlab_render(scene *scene) {
         gui_frame_render(local->dashboard);
     }
     component_render(local->hint);
+
+    if(local->popup) {
+        video_draw_remap(&local->popup_bg1, (NATIVE_W - POPUP_BG_W) / 2, POPUP_CENTERY - POPUP_BG_H / 2, 4, 1, 0);
+        video_draw(&local->popup_bg2, (NATIVE_W - POPUP_BG_W) / 2, POPUP_CENTERY - POPUP_BG_H / 2);
+        text_draw(local->popup, (NATIVE_W - POPUP_TEXT_W) / 2, POPUP_CENTERY - POPUP_TEXT_H / 2);
+    }
 }
 
 void mechlab_input_tick(scene *scene) {
@@ -478,8 +533,14 @@ void mechlab_input_tick(scene *scene) {
     }
     do {
         if(i->type == EVENT_TYPE_ACTION) {
+            if(local->popup) {
+                if(i->event_data.action != ACT_STOP) {
+                    text_free(&local->popup);
+                }
+                continue;
+            }
             // If view is new dashboard view, pass all input to it
-            if(local->dashtype == DASHBOARD_NEW_PLAYER) {
+            else if(local->dashtype == DASHBOARD_NEW_PLAYER) {
                 // If inputting text for new player name is done, switch to next view.
                 // If ESC, exit view.
                 // Otherwise handle text input
@@ -543,6 +604,9 @@ int mechlab_create(scene *scene) {
     scene->gs->match_settings.vitality = 100;
     scene->gs->match_settings.rounds = 0;
 
+    // so 'SCENE TRN_CUTSCENE' console cheat skips the VS screen.
+    scene->gs->fight_stats.winner = -1;
+
     animation *bg_ani[3];
 
     // Init the background
@@ -569,6 +633,9 @@ int mechlab_create(scene *scene) {
     scene_set_userdata(scene, local);
     bool found = mechlab_find_last_player(scene);
     mechlab_select_dashboard(scene, DASHBOARD_STATS);
+
+    menu_transparent_bg_create(&local->popup_bg1, POPUP_BG_W, POPUP_BG_H);
+    menu_background_create(&local->popup_bg2, POPUP_BG_W, POPUP_BG_H, MenuBackgroundNewsroom);
 
     // Create main menu
     local->frame = gui_frame_create(&local->theme, 0, 0, 320, 200);

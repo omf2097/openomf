@@ -391,8 +391,8 @@ static const spritebutton_tick_cb tickers[] = {NULL,
                                                NULL};
 
 void lab_menu_focus_blue(component *c, bool focused, void *userdata) {
+    scene *s = userdata;
     if(focused) {
-        scene *s = userdata;
         if(mechlab_get_selling(s)) {
             mechlab_set_hint(s, lang_get(547));
         } else {
@@ -401,11 +401,12 @@ void lab_menu_focus_blue(component *c, bool focused, void *userdata) {
         label_set_text(header_label, "");
         label_set_text(details_label, "");
     }
+    mechlab_spin_har(s, !focused);
 }
 
 void lab_menu_focus_yellow(component *c, bool focused, void *userdata) {
+    scene *s = userdata;
     if(focused) {
-        scene *s = userdata;
         if(mechlab_get_selling(s)) {
             mechlab_set_hint(s, lang_get(551));
         } else {
@@ -414,11 +415,12 @@ void lab_menu_focus_yellow(component *c, bool focused, void *userdata) {
         label_set_text(header_label, "");
         label_set_text(details_label, "");
     }
+    mechlab_spin_har(s, !focused);
 }
 
 void lab_menu_focus_red(component *c, bool focused, void *userdata) {
+    scene *s = userdata;
     if(focused) {
-        scene *s = userdata;
         if(mechlab_get_selling(s)) {
             mechlab_set_hint(s, lang_get(549));
         } else {
@@ -427,6 +429,7 @@ void lab_menu_focus_red(component *c, bool focused, void *userdata) {
         label_set_text(header_label, "");
         label_set_text(details_label, "");
     }
+    mechlab_spin_har(s, !focused);
 }
 
 static void lab_menu_focus_arm_power(component *c, bool focused, void *userdata) {

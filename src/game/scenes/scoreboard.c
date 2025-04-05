@@ -21,6 +21,7 @@
 
 static const char *SCORE_ROW_FMT = "%-18.16s%-9s%-9s%11s";
 
+#define DIALOG_BORDER_COLOR 0xFE
 #define TEXT_PRIMARY_COLOR 0xFD
 #define TEXT_SECONDARY_COLOR 0xFE
 #define TEXT_DISABLED_COLOR 0xC0
@@ -241,7 +242,7 @@ int scoreboard_create(scene *scene) {
     // Arena menu theme
     gui_theme theme;
     gui_theme_defaults(&theme);
-    theme.dialog.border_color = TEXT_MEDIUM_GREEN;
+    theme.dialog.border_color = DIALOG_BORDER_COLOR;
     theme.text.primary_color = TEXT_PRIMARY_COLOR;
     theme.text.secondary_color = TEXT_SECONDARY_COLOR;
     theme.text.disabled_color = TEXT_DISABLED_COLOR;

@@ -130,10 +130,11 @@ gui_frame *menu_keyboard_create(scene *s, const gui_theme *theme, int selected_p
     local->frame = gui_frame_create(theme, 25, 5, 270, 140);
     component *menu = menu_create();
     menu_attach(menu, label_create_title("CUSTOM KEYBOARD SETUP"));
+    char tmp_buf[32];
     for(int i = 0; i < 10; i++) {
-        local->keys[i] = button_create("", NULL, false, false, menu_keyboard_set_key,
+        snprintf(tmp_buf, 32, "%-19s%12s", keynames[i], *menu_get_key(local->selected_player, i));
+        local->keys[i] = button_create(tmp_buf, NULL, false, false, menu_keyboard_set_key,
                                        (void *)menu_get_key(local->selected_player, i));
-        set_button_text(local, i);
         menu_attach(menu, local->keys[i]);
     }
     menu_attach(menu, button_create("DONE", "Leave custom keyboard setup.", false, false, menu_keyboard_done, s));

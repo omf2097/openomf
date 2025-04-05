@@ -73,6 +73,7 @@ struct controller_t {
     int repeat_tick;
     int current;
     int last;
+    int queued;
 };
 
 void controller_init(controller *ctrl, game_state *gs);
