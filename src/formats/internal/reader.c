@@ -110,12 +110,18 @@ uint8_t sd_read_ubyte(sd_reader *reader) {
 uint16_t sd_read_uword(sd_reader *reader) {
     uint16_t d = 0;
     sd_read_buf(reader, (char *)&d, 2);
+#ifdef BIG_ENDIAN_BUILD
+    d = __builtin_bswap16(d);
+#endif
     return d;
 }
 
 uint32_t sd_read_udword(sd_reader *reader) {
     uint32_t d = 0;
     sd_read_buf(reader, (char *)&d, 4);
+#ifdef BIG_ENDIAN_BUILD
+    d = __builtin_bswap32(d);
+#endif
     return d;
 }
 
@@ -128,18 +134,31 @@ int8_t sd_read_byte(sd_reader *reader) {
 int16_t sd_read_word(sd_reader *reader) {
     int16_t d = 0;
     sd_read_buf(reader, (char *)&d, 2);
+#ifdef BIG_ENDIAN_BUILD
+    d = __builtin_bswap16(d);
+#endif
     return d;
 }
 
 int32_t sd_read_dword(sd_reader *reader) {
     int32_t d = 0;
     sd_read_buf(reader, (char *)&d, 4);
+#ifdef BIG_ENDIAN_BUILD
+    d = __builtin_bswap32(d);
+#endif
     return d;
 }
 
 float sd_read_float(sd_reader *reader) {
     float f = 0;
+#ifdef BIG_ENDIAN_BUILD
+    uint32_t r = 0;
+    sd_read_buf(reader, (char *)&r, 4);
+    r = __builtin_bswap32(r);
+    memcpy(&f, &r, sizeof(f));
+#else
     sd_read_buf(reader, (char *)&f, 4);
+#endif
     return f;
 }
 
@@ -152,12 +171,18 @@ uint8_t sd_peek_ubyte(sd_reader *reader) {
 uint16_t sd_peek_uword(sd_reader *reader) {
     uint16_t d = 0;
     sd_peek_buf(reader, (char *)&d, 2);
+#ifdef BIG_ENDIAN_BUILD
+    d = __builtin_bswap16(d);
+#endif
     return d;
 }
 
 uint32_t sd_peek_udword(sd_reader *reader) {
     uint32_t d = 0;
     sd_peek_buf(reader, (char *)&d, 4);
+#ifdef BIG_ENDIAN_BUILD
+    d = __builtin_bswap32(d);
+#endif
     return d;
 }
 
@@ -170,18 +195,27 @@ int8_t sd_peek_byte(sd_reader *reader) {
 int16_t sd_peek_word(sd_reader *reader) {
     int16_t d = 0;
     sd_peek_buf(reader, (char *)&d, 2);
+#ifdef BIG_ENDIAN_BUILD
+    d = __builtin_bswap16(d);
+#endif
     return d;
 }
 
 int32_t sd_peek_dword(sd_reader *reader) {
     int32_t d = 0;
     sd_peek_buf(reader, (char *)&d, 4);
+#ifdef BIG_ENDIAN_BUILD
+    d = __builtin_bswap32(d);
+#endif
     return d;
 }
 
 float sd_peek_float(sd_reader *reader) {
     float f = 0;
     sd_peek_buf(reader, (char *)&f, 4);
+#ifdef BIG_ENDIAN_BUILD
+    f = __builtin_bswap16(f);
+#endif
     return f;
 }
 
@@ -213,6 +247,16 @@ int sd_read_line(const sd_reader *reader, char *buffer, int maxlen) {
     if(fgets(buffer, maxlen, reader->handle) == NULL) {
         return 1;
     }
+#ifdef BIG_ENDIAN_BUILD
+    int len = maxlen;
+    for(int i = 0; i < len / 4; i += 1) {
+        ((int *)buffer)[i] = __builtin_bswap32(((int *)buffer)[i]);
+    }
+
+    if((len & 3) == 2) {
+        ((uint16_t *)buffer)[(len / 2) - 1] = __builtin_bswap16(((uint16_t *)buffer)[(len / 2) - 1]);
+    }
+#endif
     return 0;
 }
 
@@ -231,6 +275,15 @@ void sd_read_str(sd_reader *r, str *dst) {
     if(len > 0) {
         char *buf = omf_calloc(1, len + 1);
         sd_read_buf(r, buf, len);
+#ifdef BIG_ENDIAN_BUILD
+        for(int i = 0; i < len / 4; i += 1) {
+            ((int *)buf)[i] = __builtin_bswap32(((int *)buf)[i]);
+        }
+
+        if((len & 3) == 2) {
+            ((uint16_t *)buf)[(len / 2) - 1] = __builtin_bswap16(((uint16_t *)buf)[(len / 2) - 1]);
+        }
+#endif
         str_from_c(dst, buf);
         omf_free(buf);
     } else {
