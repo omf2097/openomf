@@ -21,6 +21,9 @@
 #define LAYER_PROJECTILE 0x20
 #define LAYER_HAZARD 0x40
 
+#define STUN_RECOVERY_CONSTANT 18.0 / 250.0
+#define STUN_RECOVERY_BLOCKING_CONSTANT 27.0 / 250.0
+
 enum
 {
     CAT_MISC = 0,
@@ -145,8 +148,9 @@ typedef struct har_t {
     int throw_duration;
 
     uint8_t stride;
+    int stun_factor;
     int16_t health_max, health;
-    float endurance_max, endurance;
+    int endurance_max, endurance;
     char inputs[11];
     uint32_t input_change_tick; // last tick the input direction changed
     uint8_t hard_close;
