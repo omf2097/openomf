@@ -346,7 +346,7 @@ void text_generate_document(text_document *td, str *buf0, font_size font_sz, uin
     int count = 0;
 
     while(start < len) {
-        while(buf[start] == '{') {
+        while(start < len && buf[start] == '{') {
             if(strncmp(buf + start, "{CENTER OFF}", 12) == 0) {
                 start += 12;
                 current_horizontal_align = TEXT_ALIGN_LEFT;
@@ -416,6 +416,7 @@ void text_generate_document(text_document *td, str *buf0, font_size font_sz, uin
                 }
             }
         }
+        start = min2(start, len);
 
         text *t = vector_append_ptr(&td->text_objects);
         defaults(t);
