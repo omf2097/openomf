@@ -566,6 +566,106 @@ void test_str_insert_c_at(void) {
     str_free(&d);
 }
 
+void test_str_split(void) {
+    str d;
+    vector v;
+
+    str_from_c(&d, "test-test2");
+    str_split(&v, &d, '-');
+
+    CU_ASSERT_FATAL(vector_size(&v) == 2);
+    CU_ASSERT_STRING_EQUAL(str_c(vector_get(&v, 0)), "test");
+    CU_ASSERT_STRING_EQUAL(str_c(vector_get(&v, 1)), "test2");
+
+    vector_free(&v);
+    str_free(&d);
+}
+
+void test_str_split_only_splitter(void) {
+    str d;
+    vector v;
+
+    str_from_c(&d, "-");
+    str_split(&v, &d, '-');
+
+    CU_ASSERT_FATAL(vector_size(&v) == 0);
+
+    vector_free(&v);
+    str_free(&d);
+}
+
+void test_str_split_splitter_starts(void) {
+    str d;
+    vector v;
+
+    str_from_c(&d, "-t");
+    str_split(&v, &d, '-');
+
+    CU_ASSERT_FATAL(vector_size(&v) == 1);
+    CU_ASSERT_STRING_EQUAL(str_c(vector_get(&v, 0)), "t");
+
+    vector_free(&v);
+    str_free(&d);
+}
+
+void test_str_split_splitter_ends(void) {
+    str d;
+    vector v;
+
+    str_from_c(&d, "test-");
+    str_split(&v, &d, '-');
+
+    CU_ASSERT_FATAL(vector_size(&v) == 1);
+    CU_ASSERT_STRING_EQUAL(str_c(vector_get(&v, 0)), "test");
+
+    vector_free(&v);
+    str_free(&d);
+}
+
+void test_str_split_multiple_splits(void) {
+    str d;
+    vector v;
+
+    str_from_c(&d, "test-test2-test3--test4-test5--");
+    str_split(&v, &d, '-');
+
+    CU_ASSERT_FATAL(vector_size(&v) == 5);
+    CU_ASSERT_STRING_EQUAL(str_c(vector_get(&v, 0)), "test");
+    CU_ASSERT_STRING_EQUAL(str_c(vector_get(&v, 1)), "test2");
+    CU_ASSERT_STRING_EQUAL(str_c(vector_get(&v, 2)), "test3");
+    CU_ASSERT_STRING_EQUAL(str_c(vector_get(&v, 3)), "test4");
+    CU_ASSERT_STRING_EQUAL(str_c(vector_get(&v, 4)), "test5");
+
+    vector_free(&v);
+    str_free(&d);
+}
+
+void test_str_split_no_splits(void) {
+    str d;
+    vector v;
+
+    str_from_c(&d, "test");
+    str_split(&v, &d, '-');
+
+    CU_ASSERT_FATAL(vector_size(&v) == 1);
+    CU_ASSERT_STRING_EQUAL(str_c(vector_get(&v, 0)), "test");
+
+    vector_free(&v);
+    str_free(&d);
+}
+
+void test_str_split_c(void) {
+    vector v;
+
+    str_split_c(&v, "test-test2", '-');
+
+    CU_ASSERT_FATAL(vector_size(&v) == 2);
+    CU_ASSERT_STRING_EQUAL(str_c(vector_get(&v, 0)), "test");
+    CU_ASSERT_STRING_EQUAL(str_c(vector_get(&v, 1)), "test2");
+
+    vector_free(&v);
+}
+
 void str_test_suite(CU_pSuite suite) {
     if(CU_add_test(suite, "Test for str_create", test_str_create) == NULL) {
         return;
@@ -703,6 +803,27 @@ void str_test_suite(CU_pSuite suite) {
         return;
     }
     if(CU_add_test(suite, "Test for str_insert_c_at", test_str_insert_c_at) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_split", test_str_split) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_split splitter char only", test_str_split_only_splitter) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_split splitter starts", test_str_split_splitter_starts) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_split splitter ends", test_str_split_splitter_ends) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_split multiple splits", test_str_split_multiple_splits) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_split no splits", test_str_split_no_splits) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_split_c", test_str_split_c) == NULL) {
         return;
     }
 }

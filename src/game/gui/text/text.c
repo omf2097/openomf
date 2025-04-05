@@ -54,7 +54,7 @@ static void defaults(text *t) {
     t->margin.right = 0;
     t->margin.top = 0;
     t->margin.bottom = 0;
-    t->line_spacing = 1;
+    t->line_spacing = 0;
     t->letter_spacing = 0;
     t->direction = TEXT_ROW_HORIZONTAL;
     t->shadow = GLYPH_SHADOW_NONE;
@@ -346,7 +346,7 @@ void text_generate_document(text_document *td, str *buf0, font_size font_sz, uin
     int count = 0;
 
     while(start < len) {
-        while(buf[start] == '{') {
+        while(start < len && buf[start] == '{') {
             if(strncmp(buf + start, "{CENTER OFF}", 12) == 0) {
                 start += 12;
                 current_horizontal_align = TEXT_ALIGN_LEFT;
@@ -416,6 +416,7 @@ void text_generate_document(text_document *td, str *buf0, font_size font_sz, uin
                 }
             }
         }
+        start = min2(start, len);
 
         text *t = vector_append_ptr(&td->text_objects);
         defaults(t);

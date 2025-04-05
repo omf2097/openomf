@@ -90,7 +90,6 @@ static void button_init(component *c, const gui_theme *theme) {
     text_set_color(b->text, theme->text.primary_color);
     text_set_shadow_style(b->text, b->text_shadow);
     text_set_shadow_color(b->text, b->text_shadow_color);
-    text_set_line_spacing(b->text, 0);
 
     if(c->w_hint < 0) {
         text_generate_layout(b->text);

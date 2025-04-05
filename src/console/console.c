@@ -225,7 +225,6 @@ bool console_init(void) {
     con->hist_pos = -1;
     con->text = text_create_with_font_and_size(FONT_SMALL, 320, 100);
     text_set_color(con->text, CONSOLE_TEXT_COLOR);
-    text_set_line_spacing(con->text, 0);
     list_create(&con->history);
     hashmap_create(&con->cmds);
     menu_transparent_bg_create(&con->background1, 322, 101);
