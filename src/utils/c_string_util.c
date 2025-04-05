@@ -35,6 +35,22 @@ char *omf_strndup_real(char const *s, size_t n, char const *file, int line) {
     return new_s;
 }
 
+int omf_strncasecmp(char const *s1, char const *s2, size_t n) {
+    unsigned char const *us1 = (unsigned char const *)s1;
+    unsigned char const *us2 = (unsigned char const *)s2;
+
+    while(n != 0 && *us1 != '\0' && tolower(*us1) == tolower(*us2)) {
+        ++us1;
+        ++us2;
+        --n;
+    }
+    if(n == 0) {
+        return 0;
+    } else {
+        return tolower(*us1) - tolower(*us2);
+    }
+}
+
 size_t omf_strnlen_s(char const *str, size_t strsz) {
     assert(!(!str && strsz));
     if(!str) {
