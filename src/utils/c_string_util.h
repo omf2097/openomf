@@ -9,6 +9,10 @@ char *strncpy_or_truncate(char *dest, const char *src, size_t n);
 // strncpy() that guarantees null-termination by aborting on overflow
 char *strncpy_or_abort(char *dest, const char *src, size_t n);
 
+// libgen.h
+char *omf_basename(char *s);
+char *omf_dirname(char *s);
+
 // strdup() that uses our allocator
 char *omf_strdup_real(char const *s, char const *file, int line);
 #define omf_strdup(s) omf_strdup_real((s), __FILE__, __LINE__)
