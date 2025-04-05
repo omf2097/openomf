@@ -1927,6 +1927,7 @@ void har_tick(object *obj) {
     if(!object_is_airborne(obj) && h->air_attacked) {
         har_event_air_attack_done(h, ctrl);
         h->air_attacked = 0;
+    }
 
     // tick down disabled moves
     if(hashmap_size(&h->disabled_animations)) {
