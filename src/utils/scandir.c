@@ -1,4 +1,5 @@
 #include "utils/scandir.h"
+#include "utils/c_string_util.h"
 #include "utils/str.h"
 #include <assert.h>
 #include <string.h>
@@ -57,7 +58,7 @@ int scan_directory_prefix(list *dir_list, const char *dir, const char *prefix) {
     size_t prefix_len = strlen(prefix);
     while(FindNextFileA(hFind, &entry) != FALSE) {
         size_t filename_len = strlen(entry.cFileName);
-        if(filename_len >= prefix_len && memcmp(entry.cFileName, prefix, prefix_len) == 0) {
+        if(filename_len >= prefix_len && omf_strncasecmp(entry.cFileName, prefix, prefix_len) == 0) {
             list_append(dir_list, entry.cFileName, filename_len + 1);
         }
     }
@@ -75,7 +76,7 @@ int scan_directory_prefix(list *dir_list, const char *dir, const char *prefix) {
     size_t prefix_len = strlen(prefix);
     while((entry = readdir(dp)) != NULL) {
         size_t filename_len = strlen(entry->d_name);
-        if(filename_len >= prefix_len && memcmp(entry->d_name, prefix, prefix_len) == 0) {
+        if(filename_len >= prefix_len && omf_strncasecmp(entry->d_name, prefix, prefix_len) == 0) {
             list_append(dir_list, entry->d_name, filename_len + 1);
         }
     }
@@ -99,7 +100,8 @@ int scan_directory_suffix(list *dir_list, const char *dir, const char *suffix) {
     size_t suffix_len = strlen(suffix);
     while(FindNextFileA(hFind, &entry) != FALSE) {
         size_t filename_len = strlen(entry.cFileName);
-        if(filename_len >= suffix_len && memcmp(entry.cFileName + filename_len - suffix_len, suffix, suffix_len) == 0) {
+        if(filename_len >= suffix_len &&
+           omf_strncasecmp(entry.cFileName + filename_len - suffix_len, suffix, suffix_len) == 0) {
             list_append(dir_list, entry.cFileName, filename_len + 1);
         }
     }
@@ -117,7 +119,8 @@ int scan_directory_suffix(list *dir_list, const char *dir, const char *suffix) {
     size_t suffix_len = strlen(suffix);
     while((entry = readdir(dp)) != NULL) {
         size_t filename_len = strlen(entry->d_name);
-        if(filename_len >= suffix_len && memcmp(entry->d_name + filename_len - suffix_len, suffix, suffix_len) == 0) {
+        if(filename_len >= suffix_len &&
+           omf_strncasecmp(entry->d_name + filename_len - suffix_len, suffix, suffix_len) == 0) {
             list_append(dir_list, entry->d_name, filename_len + 1);
         }
     }
