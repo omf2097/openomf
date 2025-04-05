@@ -8,6 +8,7 @@ void rec_test_suite(CU_pSuite suite);
 void trn_test_suite(CU_pSuite suite);
 void script_test_suite(CU_pSuite suite);
 void str_test_suite(CU_pSuite suite);
+void c_string_util_test_suite(CU_pSuite suite);
 void hashmap_test_suite(CU_pSuite suite);
 void vector_test_suite(CU_pSuite suite);
 void list_test_suite(CU_pSuite suite);
@@ -33,6 +34,11 @@ int main(int argc, char **argv) {
     if(str_suite == NULL)
         goto end;
     str_test_suite(str_suite);
+
+    CU_pSuite c_string_util_suite = CU_add_suite("C String Util", NULL, NULL);
+    if(c_string_util_suite == NULL)
+        goto end;
+    c_string_util_test_suite(c_string_util_suite);
 
     CU_pSuite hashmap_suite = CU_add_suite("Hashmap", NULL, NULL);
     if(hashmap_suite == NULL)

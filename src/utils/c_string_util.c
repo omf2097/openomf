@@ -4,6 +4,13 @@
 #include <assert.h>
 #include <string.h>
 
+#ifdef _WIN32
+#define PATH_DELIMITER_STR "\\"
+#else
+#define PATH_DELIMITER_STR "/"
+#endif
+#define PATH_DELIMITER_CHAR PATH_DELIMITER_STR[0]
+
 char *strncpy_or_truncate(char *dest, const char *src, size_t n) {
     char *ret = strncpy(dest, src, n);
     if(n > 0)
@@ -17,6 +24,64 @@ char *strncpy_or_abort(char *dest, const char *src, size_t n) {
         abort();
     memcpy(dest, src, len + 1);
     return dest;
+}
+
+char *omf_basename(char *s) {
+    size_t len = strlen(s);
+    if(len == 0) {
+        return s;
+    } else if(len == 1) {
+        if(s[0] == '.') {
+            return ".";
+        } else if(s[0] == PATH_DELIMITER_CHAR) {
+            return PATH_DELIMITER_STR;
+        }
+    } else if(len == 2) {
+        if(s[0] == '.' && s[1] == '.') {
+            return "..";
+        }
+    }
+    char *p = strrchr(s, PATH_DELIMITER_CHAR);
+    if(p != NULL) {
+        if(*(p + 1) == '\0') {
+            *p = '\0';
+        }
+        p = strrchr(s, PATH_DELIMITER_CHAR);
+        if(p != NULL) {
+            memmove(s, p + 1, strlen(p + 1) + 1);
+        }
+    }
+    return s;
+}
+
+char *omf_dirname(char *s) {
+    size_t len = strlen(s);
+    if(len == 0) {
+        return s;
+    } else if(len == 1) {
+        if(s[0] == '.') {
+            return ".";
+        } else if(s[0] == PATH_DELIMITER_CHAR) {
+            return PATH_DELIMITER_STR;
+        }
+    } else if(len == 2) {
+        if(s[0] == '.' && s[1] == '.') {
+            return ".";
+        }
+    }
+    char *p = strrchr(s, PATH_DELIMITER_CHAR);
+    if(p != NULL) {
+        *p = '\0';
+        if(*(p + 1) == '\0') {
+            p = strrchr(s, PATH_DELIMITER_CHAR);
+            if(p != NULL) {
+                *(p + 1) = '\0';
+            }
+        }
+    } else {
+        return ".";
+    }
+    return s;
 }
 
 char *omf_strdup_real(char const *s, char const *file, int line) {
@@ -33,6 +98,22 @@ char *omf_strndup_real(char const *s, size_t n, char const *file, int line) {
     char *new_s = omf_calloc_real(valid_range + 1, 1, file, line);
     memcpy(new_s, s, valid_range);
     return new_s;
+}
+
+int omf_strncasecmp(char const *s1, char const *s2, size_t n) {
+    unsigned char const *us1 = (unsigned char const *)s1;
+    unsigned char const *us2 = (unsigned char const *)s2;
+
+    while(n != 0 && *us1 != '\0' && (tolower(*us1) == tolower(*us2))) {
+        ++us1;
+        ++us2;
+        --n;
+    }
+    if(n == 0) {
+        return 0;
+    } else {
+        return (tolower(*us1) - tolower(*us2));
+    }
 }
 
 size_t omf_strnlen_s(char const *str, size_t strsz) {
