@@ -1189,7 +1189,7 @@ static void arena_tick_debug(scene *scene) {
     for(int i = 0; i < 2; i++) {
         snprintf(buf, sizeof(buf), "%d", hars[i]->health);
         text_set_from_c(d->health_text[i], buf);
-        snprintf(buf, sizeof(buf), "%.2f", hars[i]->endurance);
+        snprintf(buf, sizeof(buf), "%d", hars[i]->endurance);
         text_set_from_c(d->endurance_text[i], buf);
         snprintf(buf, sizeof(buf), "%s(%d)", state_name(hars[i]->state), hars[i]->state);
         text_set_from_c(d->har_state_text[i], buf);
