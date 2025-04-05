@@ -56,6 +56,12 @@ tests=(
 temp_dir=$(mktemp -d)
 trap 'rm -rf "$temp_dir"' EXIT
 
+interrupt() {
+    echo "Test run interrupted" >&2
+    exit 1
+}
+trap interrupt INT
+
 fail_count=0
 fail_summary=""
 
