@@ -575,6 +575,33 @@ bool str_insert_buf_at(str *dst, size_t pos, const char *src, size_t src_len) {
     return true;
 }
 
+static void free_text(void *obj) {
+    str_free((str *)obj);
+}
+
+void str_split(vector *dst, const str *src, char ch) {
+    vector_create_with_size_cb(dst, sizeof(str), 1, free_text);
+    size_t start = 0, end = 0;
+    while(str_find_next(src, ch, &end)) {
+        if(start != end) {
+            str *slice = vector_append_ptr(dst);
+            str_from_slice(slice, src, start, end);
+        }
+        start = ++end;
+    }
+    if(end < str_size(src)) {
+        str *slice = vector_append_ptr(dst);
+        str_from_slice(slice, src, end, str_size(src));
+    }
+}
+
+void str_split_c(vector *dst, const char *src, char ch) {
+    str tmp;
+    str_from_c(&tmp, src);
+    str_split(dst, &tmp, ch);
+    str_free(&tmp);
+}
+
 // ------------------------ Type conversion ------------------------
 
 bool str_to_float(const str *string, float *result) {
