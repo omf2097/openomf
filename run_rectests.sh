@@ -51,11 +51,18 @@ tests=(
     "Gargoyle reaches the top of the stage:FLY.REC"
     "Shadow grab can be interrupted by hitting the originating HAR:SHADOW-GRAB-INTERRUPT-HIT.REC"
     "Jaguar throw deals half stun due to rehit rules:DAMPENED_STUN.REC"
+    "Pyros's flames cannot be hit:PYROS_PRIORITY.REC"
 )
 
 # Setup temp directory for outputs
 temp_dir=$(mktemp -d)
 trap 'rm -rf "$temp_dir"' EXIT
+
+interrupt() {
+    echo "Test run interrupted" >&2
+    exit 1
+}
+trap interrupt INT
 
 fail_count=0
 fail_summary=""
