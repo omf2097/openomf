@@ -2666,11 +2666,13 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     // Health, endurance
     // HP is
     // (HAR hp * (Pilot Endurance + 25) / 35) * 1.1
-    local->health_max = local->health = ((af_data->health * vitality_multiplier * (pilot->endurance + 25) / 35) * 1.1) * power_multiplier;
+    local->health_max = local->health =
+        ((af_data->health * vitality_multiplier * (pilot->endurance + 25) / 35) * 1.1) * power_multiplier;
 
     // log_debug("HAR health is %d with pilot endurance %d and base health %d", local->health, pilot->endurance,
     // af_data->health);
-    log_debug("HAR endurance is %d with pilot endurance %d and base endurance %f", local->endurance_max, pilot->endurance, af_data->endurance);
+    log_debug("HAR endurance is %d with pilot endurance %d and base endurance %f", local->endurance_max,
+              pilot->endurance, af_data->endurance);
     log_debug("HAR stun factor is %d", local->stun_factor);
 
 
@@ -2690,7 +2692,8 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     obj->horizontal_velocity_modifier = horizontal_agility_modifier;
     obj->vertical_velocity_modifier = vertical_agility_modifier;
     local->jump_speed = (((float)gp->pilot->agility + 35) / 45) * af_data->jump_speed * jump_multiplier * 216 / 256;
-    local->superjump_speed = (((float)gp->pilot->agility + 35) / 45) * af_data->jump_speed * jump_multiplier * 266 / 256;
+    local->superjump_speed =
+        (((float)gp->pilot->agility + 35) / 45) * af_data->jump_speed * jump_multiplier * 266 / 256;
     local->fall_speed = (((float)gp->pilot->agility + 20) / 30) * af_data->fall_speed;
     local->fwd_speed = (((float)gp->pilot->agility + 20) / 30) * af_data->forward_speed;
     local->back_speed = (((float)gp->pilot->agility + 20) / 30) * af_data->reverse_speed;
