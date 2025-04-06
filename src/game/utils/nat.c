@@ -230,9 +230,9 @@ void nat_try_pmp(nat_ctx *ctx) {
         sendpublicaddressrequest(&ctx->natpmp);
         int r = readpmpresponse(ctx, &response);
         if(r == 0) {
+            ctx->type = NAT_TYPE_PMP;
             inet_ntop(AF_INET, (void *)&response.pnu.publicaddress.addr, ctx->wan_address, sizeof(ctx->wan_address));
         }
-        ctx->type = NAT_TYPE_PMP;
     } else {
         log_info("No NAT-PMP servers found");
     }
