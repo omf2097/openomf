@@ -2641,22 +2641,39 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
         power = obj->gs->match_settings.power1;
     }
 
-    // see https://www.omf2097.com/wiki/doku.php?id=omf2097:stats
-    float power_multiplier = 2.25 - 0.25 * power;
+    // cheap way to check if we're in tournament mode
+    bool is_tournament = pilot->photo != NULL;
+
+    float jump_multiplier = 1.0;
+    float vitality_multiplier = 1.0;
+    float power_multiplier = 1.0;
+    if(!is_tournament) {
+        jump_multiplier = obj->gs->match_settings.jump_height / 100.0;
+        vitality_multiplier = obj->gs->match_settings.vitality / 100.0;
+        // see https://www.omf2097.com/wiki/doku.php?id=omf2097:stats
+        power_multiplier = 2.25 - 0.25 * power; // TODO: skip when either player is AI
+
+        //  The stun cap is calculated as follows
+        //  HAR Endurance * 3.6 * (Pilot Endurance + 16) / 23
+        local->endurance_max = (af_data->endurance * 3.6 * (pilot->endurance + 16) / 23);
+        local->stun_factor = 1.2 * 256 * (pilot->endurance + 30) / 40;
+    } else {
+        local->endurance_max = (af_data->endurance * 3.6 * (pilot->endurance + 25) / 37);
+        local->endurance_max = (local->endurance_max * (pilot->stun_resistance + 2)) / 3;
+        local->stun_factor = (pilot->stun_resistance + 3.0) * 0.2 * 0.9 * 256.0 * (pilot->endurance + 30) / 40;
+    }
 
     // Health, endurance
     // HP is
     // (HAR hp * (Pilot Endurance + 25) / 35) * 1.1
-    local->health_max = local->health = ((af_data->health * (pilot->endurance + 25) / 35) * 1.1) * power_multiplier;
+    local->health_max = local->health = ((af_data->health * vitality_multiplier * (pilot->endurance + 25) / 35) * 1.1) * power_multiplier;
+
     // log_debug("HAR health is %d with pilot endurance %d and base health %d", local->health, pilot->endurance,
     // af_data->health);
-    //  The stun cap is calculated as follows
-    //  HAR Endurance * 3.6 * (Pilot Endurance + 16) / 23
-    local->endurance_max = (af_data->endurance * 3.6 * (pilot->endurance + 16) / 23);
-    log_debug("HAR endurance is %d with pilot endurance %d and base endurance %f", local->endurance_max,
-              pilot->endurance, af_data->endurance);
-    local->stun_factor = 1.2 * 256 * (pilot->endurance + 30) / 40;
+    log_debug("HAR endurance is %d with pilot endurance %d and base endurance %f", local->endurance_max, pilot->endurance, af_data->endurance);
     log_debug("HAR stun factor is %d", local->stun_factor);
+
+
     // fwd speed = (Agility + 20) / 30 * fwd speed
     // back speed = (Agility + 20) / 30 * back speed
     // up speed = (Agility + 35) / 45 * up speed (edited)
@@ -2672,8 +2689,8 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     float vertical_agility_modifier = ((float)gp->pilot->agility + 20) / 30;
     obj->horizontal_velocity_modifier = horizontal_agility_modifier;
     obj->vertical_velocity_modifier = vertical_agility_modifier;
-    local->jump_speed = (((float)gp->pilot->agility + 35) / 45) * af_data->jump_speed * 216 / 256;
-    local->superjump_speed = (((float)gp->pilot->agility + 35) / 45) * af_data->jump_speed * 266 / 256;
+    local->jump_speed = (((float)gp->pilot->agility + 35) / 45) * af_data->jump_speed * jump_multiplier * 216 / 256;
+    local->superjump_speed = (((float)gp->pilot->agility + 35) / 45) * af_data->jump_speed * jump_multiplier * 266 / 256;
     local->fall_speed = (((float)gp->pilot->agility + 20) / 30) * af_data->fall_speed;
     local->fwd_speed = (((float)gp->pilot->agility + 20) / 30) * af_data->forward_speed;
     local->back_speed = (((float)gp->pilot->agility + 20) / 30) * af_data->reverse_speed;
@@ -2769,12 +2786,11 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
 
     // fixup a bunch of stuff based on player stats
 
-    bool is_tournament = false;
+
     float leg_power = 0.0f;
     float arm_power = 0.0f;
     // cheap way to check if we're in tournament mode
-    if(pilot->photo != NULL) {
-        is_tournament = true;
+    if(is_tournament) {
         // (Limb Power + 3) * .192
         leg_power = (pilot->leg_power + 3) * 0.192f;
         arm_power = (pilot->arm_power + 3) * 0.192f;
