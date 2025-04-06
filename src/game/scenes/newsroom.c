@@ -21,7 +21,7 @@ typedef struct newsroom_local_t {
     int screen;
     surface news_bg1;
     surface news_bg2;
-    str news_str;
+    text *news_str;
     str pilot1, pilot2;
     int har1, har2;
     int sex1, sex2;
@@ -31,6 +31,8 @@ typedef struct newsroom_local_t {
     dialog continue_dialog;
     dialog accept_challenge_dialog;
 } newsroom_local;
+
+#define NEWS_TEXT_COLOR 0xCF
 
 // their
 const char *possessive_pronoun(int sex) {
@@ -123,8 +125,8 @@ void newsroom_fixup_str(newsroom_local *local) {
 
     newsroom_fixup_capitalization(&tmp);
 
-    str_free(&local->news_str);
-    local->news_str = tmp;
+    text_set_from_str(local->news_str, &tmp);
+    str_free(&tmp);
 }
 
 void newsroom_set_names(newsroom_local *local, const char *pilot1, const char *pilot2, int har1, int har2, int sex1,
@@ -147,7 +149,7 @@ void newsroom_free(scene *scene) {
     newsroom_local *local = scene_get_userdata(scene);
     surface_free(&local->news_bg1);
     surface_free(&local->news_bg2);
-    str_free(&local->news_str);
+    text_free(&local->news_str);
     str_free(&local->pilot1);
     str_free(&local->pilot2);
     dialog_free(&local->continue_dialog);
@@ -177,24 +179,10 @@ void newsroom_overlay_render(scene *scene) {
         }
     }
 
-    // Render text
-    if(str_size(&local->news_str) > 0) {
-        video_draw_remap(&local->news_bg1, 20, 131, 4, 1, 0);
-        video_draw(&local->news_bg2, 20, 131);
-        text_settings tconf_yellow;
-        text_defaults(&tconf_yellow);
-        tconf_yellow.font = FONT_BIG;
-        tconf_yellow.cforeground = COLOR_YELLOW;
-        tconf_yellow.shadow = TEXT_SHADOW_NONE;
-        tconf_yellow.cshadow = 202;
-        tconf_yellow.halign = TEXT_CENTER;
-        tconf_yellow.valign = TEXT_MIDDLE;
-        tconf_yellow.lspacing = 1;
-        tconf_yellow.strip_leading_whitespace = false;
-        tconf_yellow.strip_trailing_whitespace = true;
-        tconf_yellow.max_lines = 9;
-        text_render_mode(&tconf_yellow, TEXT_DEFAULT, 34, 155, 250, 6, str_c(&local->news_str));
-    }
+    // Render textbox
+    video_draw_remap(&local->news_bg1, 20, 131, 4, 1, 0);
+    video_draw(&local->news_bg2, 20, 131);
+    text_draw(local->news_str, 20, 131);
 
     // If the player has just become a new champion, show the sprite on top of the photo.
     if(local->champion && local->screen >= 2) {
@@ -368,6 +356,12 @@ int newsroom_create(scene *scene) {
     local->challenger = NULL;
     menu_transparent_bg_create(&local->news_bg1, 280, 55);
     menu_background_create(&local->news_bg2, 280, 55, MenuBackgroundNewsroom);
+
+    local->news_str = text_create_with_font_and_size(FONT_BIG, 280, 55);
+    text_set_horizontal_align(local->news_str, TEXT_ALIGN_CENTER);
+    text_set_vertical_align(local->news_str, TEXT_ALIGN_MIDDLE);
+    text_set_color(local->news_str, NEWS_TEXT_COLOR);
+    text_set_margin(local->news_str, (text_margin){1, 1, 1, 1});
 
     game_player *p1 = game_state_get_player(scene->gs, 0);
     game_player *p2 = game_state_get_player(scene->gs, 1);
