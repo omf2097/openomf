@@ -74,7 +74,7 @@ bool nat_create_upnp_mapping(nat_ctx *ctx, uint16_t int_port, uint16_t ext_port)
         }
         return true;
     } else {
-        log_debug("NAT-UPnP port %d -> %d mapping failed with %d", int_port, ext_port, error);
+        log_info("NAT-UPnP port %d -> %d mapping failed with %d", int_port, ext_port, error);
         if(error == 725 /* OnlyPermanentLeasesSupported */ && !ctx->use_permanent_lease) {
             log_info("NAT-UPnP error 725 is 'OnlyPermanentLeasesSupported', so retrying for a permanent lease.");
             ctx->use_permanent_lease = true;
@@ -107,6 +107,7 @@ bool nat_create_upnp_mapping(nat_ctx *ctx, uint16_t int_port, uint16_t ext_port)
 // helper function
 int readpmpresponse(nat_ctx *ctx, natpmpresp_t *response) {
     int r;
+    int i = 0;
     do {
         fd_set fds;
         struct timeval timeout;
@@ -123,7 +124,8 @@ int readpmpresponse(nat_ctx *ctx, natpmpresp_t *response) {
         getnatpmprequesttimeout(&ctx->natpmp, &timeout);
         select(FD_SETSIZE, &fds, NULL, NULL, &timeout);
         r = readnatpmpresponseorretry(&ctx->natpmp, response);
-    } while(r == NATPMP_TRYAGAIN);
+        i++;
+    } while(r == NATPMP_TRYAGAIN && i < 10);
     return r;
 }
 #endif
@@ -204,6 +206,8 @@ void nat_try_upnp(nat_ctx *ctx) {
             FreeUPNPUrls(&ctx->upnp_urls);
             freeUPNPDevlist(ctx->upnp_dev);
         }
+    } else {
+        log_info("NAT-UPnP discovery failed with error %d", error);
     }
 #else
     log_info("NAT-UPnP support not available");

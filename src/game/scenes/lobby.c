@@ -618,9 +618,9 @@ void lobby_try_connect(void *scenedata, void *userdata) {
     scene *s = scenedata;
     lobby_local *local = scene_get_userdata(s);
     if(local->opponent && !local->opponent_peer) {
-        log_debug("doing scheduled outbound connection to %d.%d.%d.%d port %d", local->opponent->address.host & 0xFF,
-                  (local->opponent->address.host >> 8) & 0xFF, (local->opponent->address.host >> 16) & 0xF,
-                  (local->opponent->address.host >> 24) & 0xFF, local->opponent->address.port);
+        log_info("doing scheduled outbound connection to %d.%d.%d.%d port %d", local->opponent->address.host & 0xFF,
+                 (local->opponent->address.host >> 8) & 0xFF, (local->opponent->address.host >> 16) & 0xF,
+                 (local->opponent->address.host >> 24) & 0xFF, local->opponent->address.port);
         local->opponent_peer = enet_host_connect(local->client, &local->opponent->address, 3, 0);
         if(local->opponent_peer) {
             enet_peer_timeout(local->opponent_peer, 4, 1000, 1000);
@@ -715,7 +715,7 @@ void lobby_tick(scene *scene, int paused) {
         address.host = ENET_HOST_ANY;
         address.port = settings_get()->net.net_listen_port_start;
 
-        log_debug("attempting to bind to port %d", address.port);
+        log_info("attempting to bind to port %d", address.port);
 
         if(address.port == 0) {
             address.port = rand_int(65535 - 1024) + 1024;
@@ -731,13 +731,13 @@ void lobby_tick(scene *scene, int paused) {
         }
         local->client = enet_host_create(&address, 2, 3, 0, 0);
         while(local->client == NULL) {
-            log_debug("requested port %d unavailable, trying ports %d to %d", address.port,
-                      settings_get()->net.net_listen_port_start, end_port);
+            log_info("requested port %d unavailable, trying ports %d to %d", address.port,
+                     settings_get()->net.net_listen_port_start, end_port);
             if(settings_get()->net.net_listen_port_start == 0) {
                 address.port = rand_int(65535 - 1024) + 1024;
                 randtries++;
                 if(randtries > 10) {
-                    log_debug("Failed to initialize ENet server, could not allocate random port");
+                    log_info("Failed to initialize ENet server, could not allocate random port");
 
                     lobby_show_dialog(scene, DIALOG_STYLE_OK,
                                       "Failed to initialize ENet server; could not allocate random port.",
@@ -749,7 +749,7 @@ void lobby_tick(scene *scene, int paused) {
             } else {
                 address.port++;
                 if(address.port > end_port) {
-                    log_debug("Failed to initialize ENet server, port range exhausted");
+                    log_info("Failed to initialize ENet server, port range exhausted");
 
                     lobby_show_dialog(scene, DIALOG_STYLE_OK, "Failed to initialize ENet server; port range exhausted.",
                                       lobby_dialog_close_exit);
@@ -759,9 +759,9 @@ void lobby_tick(scene *scene, int paused) {
                 }
                 randtries++;
                 if(randtries > 10) {
-                    log_debug("Failed to initialize ENet server, could not allocate port between %d and %d after 10 "
-                              "tries",
-                              settings_get()->net.net_listen_port_start, end_port);
+                    log_info("Failed to initialize ENet server, could not allocate port between %d and %d after 10 "
+                             "tries",
+                             settings_get()->net.net_listen_port_start, end_port);
 
                     lobby_show_dialog(
                         scene, DIALOG_STYLE_OK,
