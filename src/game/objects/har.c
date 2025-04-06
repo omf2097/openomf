@@ -2642,7 +2642,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     }
 
     // cheap way to check if we're in tournament mode
-    bool is_tournament = pilot->photo != NULL;
+    bool is_tournament = is_tournament(obj->gs);
 
     float jump_multiplier = 1.0;
     float vitality_multiplier = 1.0;
