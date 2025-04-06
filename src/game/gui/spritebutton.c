@@ -101,7 +101,6 @@ static void spritebutton_layout(component *c, int x, int y, int w, int h) {
     if(b->text != NULL) {
         text_set_font(b->text, b->font != FONT_NONE ? b->font : theme->text.font);
         text_set_color(b->text, b->override_color > -1 ? b->override_color : theme->text.primary_color);
-        text_set_line_spacing(b->text, 0);
         text_set_bounding_box(b->text, w, h);
         text_set_horizontal_align(b->text, b->horizontal_align);
         text_set_vertical_align(b->text, b->vertical_align);

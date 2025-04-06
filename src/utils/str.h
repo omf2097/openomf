@@ -1,6 +1,7 @@
 #ifndef STR_H
 #define STR_H
 
+#include "utils/vector.h"
 #include <stdbool.h>
 #include <stddef.h>
 #include <string.h>
@@ -310,5 +311,21 @@ bool str_to_int(const str *string, int *m);
  * @return const char*
  */
 const char *str_c(const str *src);
+
+/**
+ * Split string into pieces
+ * @param dst Destination vector that will be filled with string objects (do not preallocate)
+ * @param src Source string to split
+ * @param ch Split point character
+ */
+void str_split(vector *dst, const str *src, char ch);
+
+/**
+ * Split a C string into pieces
+ * @param dst Destination vector that will be filled with string objects (do not preallocate)
+ * @param src Source string to split
+ * @param ch Split point character
+ */
+void str_split_c(vector *dst, const char *src, char ch);
 
 #endif // STR_H

@@ -2,27 +2,25 @@
 
 #include "audio/audio.h"
 #include "game/game_state.h"
-#include "game/gui/text_render.h"
+#include "game/gui/text/text.h"
 #include "game/scenes/cutscene.h"
 #include "resources/ids.h"
 #include "resources/languages.h"
 #include "utils/allocator.h"
 #include "utils/c_string_util.h"
-#include "video/video.h"
+#include "utils/str.h"
+#include "utils/vector.h"
 
 #define END_TEXT 992
 #define END1_TEXT 993
 #define END2_TEXT 1003
 
 typedef struct cutscene_local {
-    char *text;
-    char *current;
-    size_t len;
+    vector texts;
+    text *current;
     int pos;
     int text_x;
     int text_y;
-    int text_width;
-    text_settings text_conf;
 } cutscene_local;
 
 static int cutscene_next_scene(scene *scene) {
@@ -56,18 +54,12 @@ static void cutscene_input_tick(scene *scene) {
         do {
             if(i->type == EVENT_TYPE_ACTION) {
                 if(i->event_data.action == ACT_KICK || i->event_data.action == ACT_PUNCH) {
-
                     if(player1->chr && player1->chr->cutscene_text[local->pos + 1]) {
                         local->pos++;
-                        local->current = player1->chr->cutscene_text[local->pos];
-                    } else if(!player1->chr && strlen(local->current) + local->pos < local->len) {
-                        local->pos += strlen(local->current) + 1;
-                        local->current += strlen(local->current) + 1;
-                        char *p;
-                        if((p = strchr(local->current, '\n'))) {
-                            // null out the byte
-                            *p = '\0';
-                        }
+                        text_set_from_c(local->current, player1->chr->cutscene_text[local->pos]);
+                    } else if(!player1->chr && local->pos < (int)vector_size(&local->texts) - 1) {
+                        local->pos++;
+                        text_set_from_str(local->current, vector_get(&local->texts, local->pos));
                     } else {
                         game_state_set_next(scene->gs, cutscene_next_scene(scene));
                     }
@@ -80,15 +72,15 @@ static void cutscene_input_tick(scene *scene) {
 
 static void cutscene_render_overlay(scene *scene) {
     cutscene_local *local = scene_get_userdata(scene);
-    text_render_mode(&local->text_conf, TEXT_DEFAULT, local->text_x, local->text_y, local->text_width, 200,
-                     local->current);
+    text_draw(local->current, local->text_x, local->text_y);
 }
 
 static void cutscene_free(scene *scene) {
     cutscene_local *local = scene_get_userdata(scene);
-    omf_free(local->text);
+    vector_free(&local->texts);
+    text_free(&local->current);
     omf_free(local);
-    scene_set_userdata(scene, local);
+    scene_set_userdata(scene, NULL);
 }
 
 static void cutscene_startup(scene *scene, int id, int *m_load, int *m_repeat) {
@@ -132,9 +124,8 @@ static void cutscene_dynamic_tick(scene *scene, int paused) {
 
 int cutscene_create(scene *scene) {
     cutscene_local *local = omf_calloc(1, sizeof(cutscene_local));
-    text_defaults(&local->text_conf);
-    local->text_conf.halign = TEXT_CENTER;
-    local->text_conf.font = FONT_SMALL;
+    local->current = text_create_with_font_and_size(FONT_SMALL, 300, 200);
+    text_set_horizontal_align(local->current, TEXT_ALIGN_CENTER);
 
     game_player *p1 = game_state_get_player(scene->gs, 0);
 
@@ -145,16 +136,14 @@ int cutscene_create(scene *scene) {
             text = lang_get(END_TEXT);
             local->text_x = 10;
             local->text_y = 5;
-            local->text_width = 300;
-            local->text_conf.cforeground = 0xF8;
+            text_set_color(local->current, 0xF8);
             break;
 
         case SCENE_END1:
             text = lang_get(END1_TEXT + p1->pilot->pilot_id);
             local->text_x = 10;
             local->text_y = 157;
-            local->text_width = 300;
-            local->text_conf.cforeground = 0xFD;
+            text_set_color(local->current, 0xFD);
 
             // Pilot face
             animation *ani = &bk_get_info(scene->bk_data, 3)->ani;
@@ -177,8 +166,7 @@ int cutscene_create(scene *scene) {
             text = lang_get(END2_TEXT + p1->pilot->pilot_id);
             local->text_x = 10;
             local->text_y = 160;
-            local->text_width = 300;
-            local->text_conf.cforeground = 0xF8;
+            text_set_color(local->current, 0xF8);
             break;
 
         case SCENE_TRN_CUTSCENE:
@@ -208,8 +196,7 @@ int cutscene_create(scene *scene) {
             }
             local->text_x = 10;
             local->text_y = 160;
-            local->text_width = 300;
-            local->text_conf.cforeground = 0xF8;
+            text_set_color(local->current, 0xF8);
             break;
     }
 
@@ -220,19 +207,11 @@ int cutscene_create(scene *scene) {
 
     if(p1->chr) {
         local->pos = 0;
-        local->current = p1->chr->cutscene_text[local->pos];
+        text_set_from_c(local->current, p1->chr->cutscene_text[local->pos]);
     } else {
-        size_t text_len = strlen(text);
-        local->len = text_len - 1;
+        str_split_c(&local->texts, text, '\n');
         local->pos = 0;
-        local->text = omf_strdup(text);
-        local->current = local->text;
-
-        char *p;
-        if((p = strchr(local->text, '\n'))) {
-            // null out the byte
-            *p = '\0';
-        }
+        text_set_from_str(local->current, vector_get(&local->texts, local->pos));
     }
 
     // Callbacks
