@@ -2641,13 +2641,10 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
         power = obj->gs->match_settings.power1;
     }
 
-    // cheap way to check if we're in tournament mode
-    bool is_tournament = is_tournament(obj->gs);
-
     float jump_multiplier = 1.0;
     float vitality_multiplier = 1.0;
     float power_multiplier = 1.0;
-    if(!is_tournament) {
+    if(!is_tournament(obj->gs)) {
         jump_multiplier = obj->gs->match_settings.jump_height / 100.0;
         vitality_multiplier = obj->gs->match_settings.vitality / 100.0;
         // see https://www.omf2097.com/wiki/doku.php?id=omf2097:stats
@@ -2791,7 +2788,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     float leg_power = 0.0f;
     float arm_power = 0.0f;
     // cheap way to check if we're in tournament mode
-    if(is_tournament) {
+    if(is_tournament(obj->gs)) {
         // (Limb Power + 3) * .192
         leg_power = (pilot->leg_power + 3) * 0.192f;
         arm_power = (pilot->arm_power + 3) * 0.192f;
@@ -2804,7 +2801,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     for(int i = 0; i < MAX_AF_MOVES; i++) {
         move = af_get_move(af_data, i);
         if(move != NULL) {
-            if(!is_tournament) {
+            if(!is_tournament(obj->gs)) {
                 // Single Player
                 // Damage = Base Damage * (20 + Power) / 30 + 1
                 //  Stun = (Base Damage + 6) * 512
