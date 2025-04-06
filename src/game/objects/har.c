@@ -2482,9 +2482,10 @@ void har_finished(object *obj) {
             game_state_find_object(obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
         har_face_enemy(obj, enemy_obj);
     } else if(h->state == STATE_SCRAP || h->state == STATE_DESTRUCTION) {
-        // play vistory animation again, but do not allow any more moves to be executed
+        // play victory animation again, but do not allow any more moves to be executed
         h->state = STATE_DONE;
         har_set_ani(obj, ANIM_VICTORY, 0);
+        har_event_done(h, ctrl);
     } else if(h->state == STATE_VICTORY || h->state == STATE_DONE) {
         // prevent object from being freed, hold last sprite of animation indefinitely
         obj->animation_state.finished = 0;
