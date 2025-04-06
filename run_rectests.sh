@@ -50,6 +50,7 @@ tests=(
     "Flail cannot hit air 66K throw out of range:THROW-RANGE.REC"
     "Gargoyle reaches the top of the stage:FLY.REC"
     "Shadow grab can be interrupted by hitting the originating HAR:SHADOW-GRAB-INTERRUPT-HIT.REC"
+    "Pyros's flames cannot be hit:PYROS_PRIORITY.REC"
 )
 
 # Setup temp directory for outputs
