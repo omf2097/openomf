@@ -1865,7 +1865,7 @@ int arena_create(scene *scene) {
     chr_score_set_tournament_mode(game_player_get_score(_player[1]), local->tournament);
 
     // Reset the score
-    chr_score_reset(game_player_get_score(_player[0]), !is_singleplayer(scene->gs));
+    chr_score_reset(game_player_get_score(_player[0]), is_tournament(scene->gs));
     chr_score_reset(game_player_get_score(_player[1]), 1);
 
     // Reset the win counter in single player mode
