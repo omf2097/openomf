@@ -181,6 +181,7 @@ void nat_try_upnp(nat_ctx *ctx) {
                                  2,       // TTL
                                  &error); // error condition
     if(ctx->upnp_dev) {
+        log_info("discovered UPnP server");
         // TODO check error here?
         // try to look up our lan address, to test it
 #if(MINIUPNPC_API_VERSION >= 18)
@@ -193,9 +194,9 @@ void nat_try_upnp(nat_ctx *ctx) {
 
         // look up possible "status" values, the number "1" indicates a valid IGD was found
         if(ctx->upnp_dev && status == 1) {
-            log_debug("discovered UPnP server");
             // get the external (WAN) IP address
             if(UPNP_GetExternalIPAddress(ctx->upnp_urls.controlURL, ctx->upnp_data.first.servicetype, ctx->wan_address)) {
+                log_warn("UPnP server failed to provide external IP address");
                 // if this fails, zero the field out
                 ctx->wan_address[0] = 0;
             }
@@ -203,6 +204,7 @@ void nat_try_upnp(nat_ctx *ctx) {
             ctx->wildcard_ext_port = false;
             ctx->type = NAT_TYPE_UPNP;
         } else {
+            log_warn("UPnP server failed to provide a valid IGD");
             FreeUPNPUrls(&ctx->upnp_urls);
             freeUPNPDevlist(ctx->upnp_dev);
         }
@@ -220,7 +222,7 @@ void nat_try_pmp(nat_ctx *ctx) {
     // try nat-pmp
     in_addr_t forcedgw = {0};
     if(initnatpmp(&ctx->natpmp, 0, forcedgw) == 0) {
-        log_debug("discovered NAT-PMP server");
+        log_info("discovered NAT-PMP server");
         natpmpresp_t response;
         sendpublicaddressrequest(&ctx->natpmp);
         int r = readpmpresponse(ctx, &response);
@@ -228,6 +230,8 @@ void nat_try_pmp(nat_ctx *ctx) {
             inet_ntop(AF_INET, (void *)&response.pnu.publicaddress.addr, ctx->wan_address, sizeof(ctx->wan_address));
         }
         ctx->type = NAT_TYPE_PMP;
+    } else {
+        log_info("No NAT-PMP servers found");
     }
 #else
     log_info("NAT-PMP support not available");
