@@ -106,7 +106,7 @@ bool nat_create_upnp_mapping(nat_ctx *ctx, uint16_t int_port, uint16_t ext_port)
 #ifdef NATPMP_FOUND
 // helper function
 int readpmpresponse(nat_ctx *ctx, natpmpresp_t *response) {
-    int r;
+    int r = NATPMP_TRYAGAIN;
     int i = 0;
     do {
         fd_set fds;
@@ -121,9 +121,12 @@ int readpmpresponse(nat_ctx *ctx, natpmpresp_t *response) {
 #else
         FD_SET(ctx->natpmp.s, &fds);
 #endif
-        getnatpmprequesttimeout(&ctx->natpmp, &timeout);
-        select(FD_SETSIZE, &fds, NULL, NULL, &timeout);
-        r = readnatpmpresponseorretry(&ctx->natpmp, response);
+        // getnatpmprequesttimeout(&ctx->natpmp, &timeout);
+        timeout.tv_sec = 3;
+        timeout.tv_usec = 0;
+        if(select(FD_SETSIZE, &fds, NULL, NULL, &timeout)) {
+            r = readnatpmpresponseorretry(&ctx->natpmp, response);
+        }
         i++;
     } while(r == NATPMP_TRYAGAIN && i < 10);
     return r;
