@@ -25,6 +25,9 @@ void log_set_colors(bool toggle);
 void log_add_stderr(log_level level, bool colors);
 void log_add_file(const char *filename, log_level level);
 
+log_level log_level_text_to_enum(const char *level, log_level default_value);
+bool is_log_level(const char *level);
+
 void log_msg(log_level level, const char *fmt, ...);
 
 #endif // LOG_H

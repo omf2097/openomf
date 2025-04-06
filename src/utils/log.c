@@ -4,11 +4,13 @@
 #include <assert.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <string.h>
 #include <time.h>
 
 #include "utils/allocator.h"
 
 #define MAX_TARGETS 3
+#define LOG_LEVELS 4
 
 typedef struct log_target {
     FILE *fp;
@@ -48,6 +50,24 @@ void log_init(void) {
     state->level = LOG_DEBUG;
     state->colors = false;
     state->target_count = 0;
+}
+
+log_level log_level_text_to_enum(const char *level, log_level default_value) {
+    for(int i = 0; i < LOG_LEVELS; i++) {
+        if(strncmp(level_names[i], level, strlen(level_names[i])) == 0) {
+            return i;
+        }
+    }
+    return default_value;
+}
+
+bool is_log_level(const char *level) {
+    for(int i = 0; i < LOG_LEVELS; i++) {
+        if(strcmp(level_names[i], level) == 0) {
+            return true;
+        }
+    }
+    return false;
 }
 
 static void close_targets(void) {
