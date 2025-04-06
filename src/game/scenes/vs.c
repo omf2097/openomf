@@ -3,13 +3,12 @@
 #include "game/game_state.h"
 #include "game/gui/dialog.h"
 #include "game/gui/menu_background.h"
-#include "game/gui/text_render.h"
+#include "game/gui/text/text.h"
 #include "game/protos/scene.h"
 #include "game/scenes/mechlab/lab_menu_customize.h"
 #include "game/utils/formatting.h"
 #include "game/utils/settings.h"
 #include "resources/languages.h"
-#include "resources/pathmanager.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
 #include "utils/miscmath.h"
@@ -39,9 +38,13 @@ typedef struct report_card {
 typedef struct vs_local {
     int arena_select_obj_id;
     surface arena_select_bg;
-    char vs_str[128];
     dialog quit_dialog;
     dialog too_pathetic_dialog;
+
+    text *vs_text;
+    text *insults[2];
+    text *arena_name;
+    text *arena_desc;
 
     report_card *report;
 } vs_local;
@@ -157,7 +160,11 @@ static void free_report_card(report_card *card) {
 
 static void vs_free(scene *scene) {
     vs_local *local = scene_get_userdata(scene);
-
+    text_free(&local->vs_text);
+    text_free(&local->arena_name);
+    text_free(&local->arena_desc);
+    text_free(&local->insults[0]);
+    text_free(&local->insults[1]);
     free_report_card(local->report);
     dialog_free(&local->quit_dialog);
     dialog_free(&local->too_pathetic_dialog);
@@ -197,6 +204,9 @@ void vs_handle_action(scene *scene, int action) {
                     }
                     object *arena_select = game_state_find_object(scene->gs, local->arena_select_obj_id);
                     object_select_sprite(arena_select, scene->gs->arena);
+
+                    text_set_from_c(local->arena_name, lang_get(56 + scene->gs->arena));
+                    text_set_from_c(local->arena_desc, lang_get(66 + scene->gs->arena));
                 }
                 break;
             case ACT_DOWN:
@@ -208,6 +218,9 @@ void vs_handle_action(scene *scene, int action) {
                     }
                     object *arena_select = game_state_find_object(scene->gs, local->arena_select_obj_id);
                     object_select_sprite(arena_select, scene->gs->arena);
+
+                    text_set_from_c(local->arena_name, lang_get(56 + scene->gs->arena));
+                    text_set_from_c(local->arena_desc, lang_get(66 + scene->gs->arena));
                 }
                 break;
         }
@@ -387,66 +400,70 @@ static void vs_render_fight_stats(scene *scene) {
     text_draw(card->opponent_right, 276, 115);
 }
 
+/**
+ * This creates the text object for the top X VS. Y title.
+ */
+static text *create_vs_text(const char *str) {
+    text *t = text_create_with_font_and_size(FONT_SMALL, 320, 6);
+    text_set_from_c(t, str);
+    text_set_horizontal_align(t, TEXT_ALIGN_CENTER);
+    text_set_color(t, COLOR_YELLOW);
+    text_set_shadow_color(t, 202);
+    text_set_shadow_style(t, GLYPH_SHADOW_RIGHT | GLYPH_SHADOW_BOTTOM);
+    return t;
+}
+
+/**
+ * This creates the text object for the arena name and description in 2 player game
+ */
+static text *create_arena_text(const char *str, int w, int h) {
+    text *t = text_create_with_font_and_size(FONT_SMALL, w, h);
+    text_set_from_c(t, str);
+    text_set_horizontal_align(t, TEXT_ALIGN_CENTER);
+    text_set_vertical_align(t, TEXT_ALIGN_MIDDLE);
+    text_set_color(t, COLOR_GREEN);
+    return t;
+}
+
+static text *create_insult_text(const char *str, int w, int h) {
+    text *t = text_create_with_font_and_size(FONT_SMALL, w, h);
+    text_set_from_c(t, str);
+    text_set_horizontal_align(t, TEXT_ALIGN_CENTER);
+    text_set_vertical_align(t, TEXT_ALIGN_MIDDLE);
+    text_set_color(t, COLOR_YELLOW);
+    return t;
+}
+
 static void vs_render(scene *scene) {
     vs_local *local = scene_get_userdata(scene);
-
     game_player *player1 = game_state_get_player(scene->gs, 0);
     game_player *player2 = game_state_get_player(scene->gs, 1);
 
-    // X vs Y
-    text_settings tconf_yellow;
-    text_defaults(&tconf_yellow);
-    tconf_yellow.font = FONT_SMALL;
-    tconf_yellow.cforeground = COLOR_YELLOW;
-    tconf_yellow.shadow = TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM;
-    tconf_yellow.cshadow = 202;
-    tconf_yellow.halign = TEXT_CENTER;
-
-    text_render_mode(&tconf_yellow, TEXT_DEFAULT, 0, 3, 320, 8, local->vs_str);
-
-    // no other text is shadowed
-    tconf_yellow.shadow = 0;
+    if(player2->pilot) {
+        text_draw(local->vs_text, 0, 3);
+    }
 
     if(player2->selectable) {
-        text_settings tconf_green;
-        text_defaults(&tconf_green);
-        tconf_green.font = FONT_SMALL;
-        tconf_green.cforeground = TEXT_GREEN;
-        tconf_green.shadow = TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM;
-        tconf_green.halign = TEXT_CENTER;
-        tconf_green.cshadow = TEXT_SHADOW_GREEN;
-
         // arena selection
         video_draw(&local->arena_select_bg, 55, 150);
-
-        // arena name
-        text_render_mode(&tconf_green, TEXT_DEFAULT, 56 + 72, 152, (211 - 72), 8, lang_get(56 + scene->gs->arena));
-
-        tconf_green.valign = TEXT_MIDDLE;
-        // arena description
-        text_render_mode(&tconf_green, TEXT_DEFAULT, 56 + 72, 153, (211 - 72), 50, lang_get(66 + scene->gs->arena));
+        text_draw(local->arena_name, 56 + 72, 152);
+        text_draw(local->arena_desc, 56 + 72, 153);
     } else if(player2->pilot && player2->pilot->pilot_id == PILOT_KREISSACK &&
               settings_get()->gameplay.difficulty < 2) {
         // kreissack, but not on Veteran or higher
-        tconf_yellow.halign = TEXT_CENTER;
-        text_render_mode(&tconf_yellow, TEXT_DEFAULT, 80, 165, 170, 60, lang_get(747));
-
+        text_draw(local->insults[1], 80, 165);
     } else if(player1->chr && player2->pilot) {
-        // tournament mode insult
-        tconf_yellow.halign = TEXT_RIGHT;
-        text_render_mode(&tconf_yellow, TEXT_DEFAULT, 100, 165, 150, 60, player2->pilot->quotes[0]);
+        // tournament insults
+        text_draw(local->insults[1], 100, 145);
     } else if(player2->pilot == NULL) {
+        // plug screen fight stats
         if(scene->gs->fight_stats.winner >= 0) {
             vs_render_fight_stats(scene);
         }
     } else {
-        // 1 player insult
-        tconf_yellow.valign = TEXT_MIDDLE;
-        tconf_yellow.halign = TEXT_CENTER;
-        text_render_mode(&tconf_yellow, TEXT_DEFAULT, 77, 150, 150, 30,
-                         lang_get(749 + (11 * player1->pilot->pilot_id) + player2->pilot->pilot_id));
-        text_render_mode(&tconf_yellow, TEXT_DEFAULT, 110, 170, 150, 30,
-                         lang_get(870 + (11 * player2->pilot->pilot_id) + player1->pilot->pilot_id));
+        // 1 player mode insults
+        text_draw(local->insults[0], 77, 150);
+        text_draw(local->insults[1], 110, 170);
     }
 }
 
@@ -523,9 +540,10 @@ int vs_create(scene *scene) {
         }
 
         player1->pilot->har_trades = new_trades;
-
     } else {
-        snprintf(local->vs_str, 128, "%s VS. %s", player1->pilot->name, player2->pilot->name);
+        char title[128];
+        snprintf(title, 128, "%s VS. %s", player1->pilot->name, player2->pilot->name);
+        local->vs_text = create_vs_text(title);
     }
 
     // Set player palettes
@@ -622,6 +640,8 @@ int vs_create(scene *scene) {
     if(player2->selectable) {
         // player1 gets to choose, start at arena 0
         scene->gs->arena = 0;
+        local->arena_name = create_arena_text(lang_get(56 + scene->gs->arena), (211 - 74), 6);
+        local->arena_desc = create_arena_text(lang_get(66 + scene->gs->arena), (211 - 74), 50);
     } else if(player2->pilot && player2->pilot->pilot_id == PILOT_KREISSACK) {
         // force arena 0 when fighting Kreissack in 1 player mode
         scene->gs->arena = 0;
@@ -630,6 +650,23 @@ int vs_create(scene *scene) {
         scene->gs->arena = rand_int(5);
     } else {
         // 1 player mode cycles through the arenas
+    }
+
+    // Insults
+    if(player2->pilot && player2->pilot->pilot_id == PILOT_KREISSACK && settings_get()->gameplay.difficulty < 2) {
+        // kreissack, but not on Veteran or higher
+        local->insults[0] = NULL;
+        local->insults[1] = create_insult_text(lang_get(747), 170, 60);
+    } else if(player1->chr && player2->pilot) {
+        // tournament mode
+        local->insults[0] = NULL;
+        local->insults[1] = create_insult_text(player2->pilot->quotes[0], 150, 60);
+    } else if(player2->pilot) {
+        // 1 player
+        local->insults[0] =
+            create_insult_text(lang_get(749 + (11 * player1->pilot->pilot_id) + player2->pilot->pilot_id), 150, 30);
+        local->insults[1] =
+            create_insult_text(lang_get(870 + (11 * player2->pilot->pilot_id) + player1->pilot->pilot_id), 150, 30);
     }
 
     // Arena
