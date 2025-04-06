@@ -132,7 +132,11 @@ int intersect_sprite_hitpoint(object *obj, object *target, int level, vec2i *poi
         if(target_dir == OBJECT_FACE_LEFT) {
             hitpoint = (ycoord * sfc->w) + (sfc->w - xcoord);
         }
-        if(hitpoint < sfc->w * sfc->h && sfc->data[hitpoint] != sfc->transparent) {
+        // Data bounds check
+        if(hitpoint >= sfc->w * sfc->h)
+            continue;
+        // Only main HAR colors count
+        if(sfc->data[hitpoint] != sfc->transparent && sfc->data[hitpoint] < 96) {
             hcoords[found++] = vec2i_create(xcoord, ycoord);
             if(found >= level) {
                 vec2f sum = vec2f_create(0, 0);
