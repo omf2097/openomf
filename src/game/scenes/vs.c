@@ -364,7 +364,7 @@ static report_card *create_report_card(const fight_stats *fight_stats) {
     score_format(fight_stats->repair_cost, money[2], sizeof(money[2]));
     score_format(fight_stats->profit, money[3], sizeof(money[3]));
     snprintf(text, sizeof(text), "$ %sK\n$ %sK\n$ %sK\n$ %sK", money[0], money[1], money[2], money[3]);
-    card->report_right = create_values_text("$ 0K\n$ 0K\n$ 0K\n$ 0K");
+    card->report_right = create_values_text(text);
 
     snprintf(text, sizeof(text), "%u\n%.1f\n%u\n%u%%", fight_stats->hits_landed[0], fight_stats->average_damage[0],
              fight_stats->total_attacks[0] - fight_stats->hits_landed[0], fight_stats->hit_miss_ratio[0]);
