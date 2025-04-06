@@ -2667,14 +2667,13 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     // HP is
     // (HAR hp * (Pilot Endurance + 25) / 35) * 1.1
     local->health_max = local->health =
-        ((af_data->health * vitality_multiplier * (pilot->endurance + 25) / 35) * 1.1) * power_multiplier;
+        ((af_data->health * (pilot->endurance + 25) / 35) * 1.1) * power_multiplier * vitality_multiplier;
 
     // log_debug("HAR health is %d with pilot endurance %d and base health %d", local->health, pilot->endurance,
     // af_data->health);
     log_debug("HAR endurance is %d with pilot endurance %d and base endurance %f", local->endurance_max,
               pilot->endurance, af_data->endurance);
     log_debug("HAR stun factor is %d", local->stun_factor);
-
 
     // fwd speed = (Agility + 20) / 30 * fwd speed
     // back speed = (Agility + 20) / 30 * back speed
@@ -2788,7 +2787,6 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     object_add_animation_effects(obj, EFFECT_HAR_QUIRKS);
 
     // fixup a bunch of stuff based on player stats
-
 
     float leg_power = 0.0f;
     float arm_power = 0.0f;
