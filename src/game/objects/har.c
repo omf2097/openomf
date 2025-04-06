@@ -786,8 +786,13 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
     }
 
     if(!h->throw_duration) {
-        log_debug("applying %f stun damage to %f", stun, h->endurance);
-        h->endurance += stun;
+        int stun_amount = stun;
+        if(h->state == STATE_RECOIL && object_is_airborne(obj)) { // Less stun on rehit and throws
+            stun_amount /= 2;
+        }
+        stun_amount = (stun_amount * 2 + 12) * 256;
+        log_debug("applying %f stun damage to %f", stun_amount, h->endurance);
+        h->endurance += stun_amount;
     }
 
     if(h->endurance < 1.0f) {
@@ -1865,7 +1870,12 @@ void har_tick(object *obj) {
         if(h->throw_duration == 0) {
             // we've already called har_take_damage, so just apply the damage and check for defeat
             h->health -= h->last_damage_value;
-            h->endurance += h->last_stun_value;
+            int stun_amount = h->last_stun_value;
+            if(h->state == STATE_RECOIL && object_is_airborne(obj)) {
+                stun_amount /= 2;
+            }
+            stun_amount = (stun_amount * 2 + 12) * 256;
+            h->endurance += stun_amount;
             if(h->health <= 0) {
                 // Take a screencap of enemy har
                 game_player *other_player = game_state_get_player(obj->gs, !h->player_id);
@@ -2792,7 +2802,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
                 // Damage = Base Damage * (20 + Power) / 30 + 1
                 //  Stun = (Base Damage + 6) * 512
                 if(move->damage) {
-                    move->stun = (move->damage + 6) * 512;
+                    move->stun = move->damage;
                     move->damage = move->damage * (20 + pilot->power) / 30 + 1;
                 }
                 // projectiles have hyper mode, but may have extra_string_selector of 0
@@ -2814,7 +2824,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
                 // Damage = (Base Damage * (25 + Power) / 35 + 1) * leg/arm power / armor
                 // Stun = ((Base Damage * (35 + Power) / 45) * 2 + 12) * 256
                 if(move->damage) {
-                    move->stun = ((move->damage * (35 + pilot->power) / 45) * 2 + 12) * 256;
+                    move->stun = move->damage * (35 + pilot->power) / 45;
                 }
 
                 // check for enhancements

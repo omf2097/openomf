@@ -50,6 +50,7 @@ tests=(
     "Flail cannot hit air 66K throw out of range:THROW-RANGE.REC"
     "Gargoyle reaches the top of the stage:FLY.REC"
     "Shadow grab can be interrupted by hitting the originating HAR:SHADOW-GRAB-INTERRUPT-HIT.REC"
+    "Jaguar throw deals half stun due to rehit rules:DAMPENED_STUN.REC"
 )
 
 # Setup temp directory for outputs
