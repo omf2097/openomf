@@ -267,6 +267,7 @@ void send_events(wtf *data) {
     list_iter_begin(transcript, &it);
     tick_events *ev = NULL;
     serial_create(&ser);
+    // ACTION header
     serial_write_int8(&ser, EVENT_TYPE_ACTION);
     serial_write_uint32(&ser, data->last_received_tick);
     serial_write_uint32(&ser, data->last_hash_tick);
@@ -281,6 +282,7 @@ void send_events(wtf *data) {
     foreach(it, ev) {
         if(ev->events[data->id][0] != 0 && ev->tick > data->last_acked_tick &&
            ev->tick < data->last_tick - data->local_proposal) {
+            // each tick is written as the 32 bit tick value and a 0 terminated list of actions on that tick
             serial_write_uint32(&ser, ev->tick);
             int i = 0;
             while(ev->events[data->id][i]) {
@@ -294,8 +296,9 @@ void send_events(wtf *data) {
     }
 
     if(!events) {
-        // nothing to send, so send a blank event
+        // nothing to send, so send a blank event for the last tick (stuff could still happen this tick)
         serial_write_int32(&ser, data->last_tick - data->local_proposal - 1);
+        // 0 terminate it immediately
         serial_write_int8(&ser, 0);
         last_sent_tick = data->last_tick - data->local_proposal - 1;
     }
@@ -745,6 +748,7 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                             uint8_t action = 0;
                             int k = 0;
                             do {
+                                // read the 0 terminated action list for this tick
                                 action = serial_read_int8(&ser);
                                 k++;
 

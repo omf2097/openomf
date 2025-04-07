@@ -74,7 +74,7 @@ bool nat_create_upnp_mapping(nat_ctx *ctx, uint16_t int_port, uint16_t ext_port)
         }
         return true;
     } else {
-        log_debug("NAT-UPnP port %d -> %d mapping failed with %d", int_port, ext_port, error);
+        log_info("NAT-UPnP port %d -> %d mapping failed with %d", int_port, ext_port, error);
         if(error == 725 /* OnlyPermanentLeasesSupported */ && !ctx->use_permanent_lease) {
             log_info("NAT-UPnP error 725 is 'OnlyPermanentLeasesSupported', so retrying for a permanent lease.");
             ctx->use_permanent_lease = true;
@@ -106,7 +106,8 @@ bool nat_create_upnp_mapping(nat_ctx *ctx, uint16_t int_port, uint16_t ext_port)
 #ifdef NATPMP_FOUND
 // helper function
 int readpmpresponse(nat_ctx *ctx, natpmpresp_t *response) {
-    int r;
+    int r = NATPMP_TRYAGAIN;
+    int i = 0;
     do {
         fd_set fds;
         struct timeval timeout;
@@ -120,10 +121,14 @@ int readpmpresponse(nat_ctx *ctx, natpmpresp_t *response) {
 #else
         FD_SET(ctx->natpmp.s, &fds);
 #endif
-        getnatpmprequesttimeout(&ctx->natpmp, &timeout);
-        select(FD_SETSIZE, &fds, NULL, NULL, &timeout);
-        r = readnatpmpresponseorretry(&ctx->natpmp, response);
-    } while(r == NATPMP_TRYAGAIN);
+        // getnatpmprequesttimeout(&ctx->natpmp, &timeout);
+        timeout.tv_sec = 3;
+        timeout.tv_usec = 0;
+        if(select(FD_SETSIZE, &fds, NULL, NULL, &timeout)) {
+            r = readnatpmpresponseorretry(&ctx->natpmp, response);
+        }
+        i++;
+    } while(r == NATPMP_TRYAGAIN && i < 10);
     return r;
 }
 #endif
@@ -179,6 +184,7 @@ void nat_try_upnp(nat_ctx *ctx) {
                                  2,       // TTL
                                  &error); // error condition
     if(ctx->upnp_dev) {
+        log_info("discovered UPnP server");
         // TODO check error here?
         // try to look up our lan address, to test it
 #if(MINIUPNPC_API_VERSION >= 18)
@@ -191,9 +197,9 @@ void nat_try_upnp(nat_ctx *ctx) {
 
         // look up possible "status" values, the number "1" indicates a valid IGD was found
         if(ctx->upnp_dev && status == 1) {
-            log_debug("discovered UPnP server");
             // get the external (WAN) IP address
             if(UPNP_GetExternalIPAddress(ctx->upnp_urls.controlURL, ctx->upnp_data.first.servicetype, ctx->wan_address)) {
+                log_warn("UPnP server failed to provide external IP address");
                 // if this fails, zero the field out
                 ctx->wan_address[0] = 0;
             }
@@ -201,9 +207,12 @@ void nat_try_upnp(nat_ctx *ctx) {
             ctx->wildcard_ext_port = false;
             ctx->type = NAT_TYPE_UPNP;
         } else {
+            log_warn("UPnP server failed to provide a valid IGD");
             FreeUPNPUrls(&ctx->upnp_urls);
             freeUPNPDevlist(ctx->upnp_dev);
         }
+    } else {
+        log_info("NAT-UPnP discovery failed with error %d", error);
     }
 #else
     log_info("NAT-UPnP support not available");
@@ -216,14 +225,16 @@ void nat_try_pmp(nat_ctx *ctx) {
     // try nat-pmp
     in_addr_t forcedgw = {0};
     if(initnatpmp(&ctx->natpmp, 0, forcedgw) == 0) {
-        log_debug("discovered NAT-PMP server");
+        log_info("discovered NAT-PMP server");
         natpmpresp_t response;
         sendpublicaddressrequest(&ctx->natpmp);
         int r = readpmpresponse(ctx, &response);
         if(r == 0) {
+            ctx->type = NAT_TYPE_PMP;
             inet_ntop(AF_INET, (void *)&response.pnu.publicaddress.addr, ctx->wan_address, sizeof(ctx->wan_address));
         }
-        ctx->type = NAT_TYPE_PMP;
+    } else {
+        log_info("No NAT-PMP servers found");
     }
 #else
     log_info("NAT-PMP support not available");
