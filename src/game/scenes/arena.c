@@ -1155,54 +1155,6 @@ static void free_debug_data(scene *scene) {
     local->debug = NULL;
 }
 
-static void arena_tick_debug(scene *scene) {
-    if(scene->gs->hide_ui) {
-        return;
-    }
-    // Note! This will return cached object if it exists.
-    debug_data *d = create_debug_data(scene);
-
-    char buf[100];
-    game_player *player[2];
-    object *obj_har[2];
-    har *hars[2];
-    for(int i = 0; i < 2; i++) {
-        player[i] = game_state_get_player(scene->gs, i);
-        obj_har[i] = game_state_find_object(scene->gs, game_player_get_har_obj_id(player[i]));
-        hars[i] = obj_har[i]->userdata;
-    }
-
-    snprintf(buf, 40, "%u", game_state_get_tick(scene->gs));
-    text_set_from_c(d->tick_text, buf);
-    snprintf(buf, 40, "%u", random_get_seed(&scene->gs->rand));
-    text_set_from_c(d->seed_text, buf);
-
-    if(player[0]->ctrl->type == CTRL_TYPE_AI) {
-        ai_controller_print_state(player[0]->ctrl, buf, sizeof(buf));
-        text_set_from_c(d->ai_ctrl_state_text[0], buf);
-    }
-    if(player[1]->ctrl->type == CTRL_TYPE_AI) {
-        ai_controller_print_state(player[1]->ctrl, buf, sizeof(buf));
-        text_set_from_c(d->ai_ctrl_state_text[1], buf);
-    }
-
-    for(int i = 0; i < 2; i++) {
-        snprintf(buf, sizeof(buf), "%d", hars[i]->health);
-        text_set_from_c(d->health_text[i], buf);
-        snprintf(buf, sizeof(buf), "%d", hars[i]->endurance);
-        text_set_from_c(d->endurance_text[i], buf);
-        snprintf(buf, sizeof(buf), "%s(%d)", state_name(hars[i]->state), hars[i]->state);
-        text_set_from_c(d->har_state_text[i], buf);
-        snprintf(buf, sizeof(buf), "pos: %.3f %.3f", obj_har[i]->pos.x, obj_har[i]->pos.y);
-        text_set_from_c(d->har_pos_text[i], buf);
-        snprintf(buf, sizeof(buf), "vel: %.3f %.3f", obj_har[i]->vel.x, obj_har[i]->vel.y);
-        text_set_from_c(d->har_vel_text[i], buf);
-        snprintf(buf, sizeof(buf), "aa: %d em: %d ani: %d", hars[i]->air_attacked, hars[i]->executing_move,
-                 obj_har[i]->cur_animation->id);
-        text_set_from_c(d->har_ani_text[i], buf);
-    }
-}
-
 void arena_dynamic_tick(scene *scene, int paused) {
     arena_local *local = scene_get_userdata(scene);
     game_state *gs = scene->gs;
@@ -1338,8 +1290,6 @@ void arena_dynamic_tick(scene *scene, int paused) {
                    hars[1]->state == STATE_WALLDAMAGE);
         }
     } // if(!paused)
-
-    arena_tick_debug(scene);
 }
 
 void arena_static_tick(scene *scene, int paused) {
@@ -1446,14 +1396,62 @@ void arena_render_overlay(scene *scene) {
     }
 }
 
-static void arena_debug(scene *scene) {
+static void arena_tick_debug(scene *scene) {
     if(scene->gs->hide_ui) {
         return;
     }
     // Note! This will return cached object if it exists.
     debug_data *d = create_debug_data(scene);
 
-    // Values are ticked in arena_tick_debug()
+    char buf[100];
+    game_player *player[2];
+    object *obj_har[2];
+    har *hars[2];
+    for(int i = 0; i < 2; i++) {
+        player[i] = game_state_get_player(scene->gs, i);
+        obj_har[i] = game_state_find_object(scene->gs, game_player_get_har_obj_id(player[i]));
+        hars[i] = obj_har[i]->userdata;
+    }
+
+    snprintf(buf, 40, "%u", game_state_get_tick(scene->gs));
+    text_set_from_c(d->tick_text, buf);
+    snprintf(buf, 40, "%u", random_get_seed(&scene->gs->rand));
+    text_set_from_c(d->seed_text, buf);
+
+    if(player[0]->ctrl->type == CTRL_TYPE_AI) {
+        ai_controller_print_state(player[0]->ctrl, buf, sizeof(buf));
+        text_set_from_c(d->ai_ctrl_state_text[0], buf);
+    }
+    if(player[1]->ctrl->type == CTRL_TYPE_AI) {
+        ai_controller_print_state(player[1]->ctrl, buf, sizeof(buf));
+        text_set_from_c(d->ai_ctrl_state_text[1], buf);
+    }
+
+    for(int i = 0; i < 2; i++) {
+        snprintf(buf, sizeof(buf), "%d", hars[i]->health);
+        text_set_from_c(d->health_text[i], buf);
+        snprintf(buf, sizeof(buf), "%d", hars[i]->endurance);
+        text_set_from_c(d->endurance_text[i], buf);
+        snprintf(buf, sizeof(buf), "%s(%d)", state_name(hars[i]->state), hars[i]->state);
+        text_set_from_c(d->har_state_text[i], buf);
+        snprintf(buf, sizeof(buf), "pos: %.3f %.3f", obj_har[i]->pos.x, obj_har[i]->pos.y);
+        text_set_from_c(d->har_pos_text[i], buf);
+        snprintf(buf, sizeof(buf), "vel: %.3f %.3f", obj_har[i]->vel.x, obj_har[i]->vel.y);
+        text_set_from_c(d->har_vel_text[i], buf);
+        snprintf(buf, sizeof(buf), "aa: %d em: %d ani: %d", hars[i]->air_attacked, hars[i]->executing_move,
+                 obj_har[i]->cur_animation->id);
+        text_set_from_c(d->har_ani_text[i], buf);
+    }
+}
+
+static void arena_debug(scene *scene) {
+    if(scene->gs->hide_ui) {
+        return;
+    }
+    arena_tick_debug(scene);
+
+    // Note! This will return cached object if it exists.
+    debug_data *d = create_debug_data(scene);
 
     // Top of the screen
     text_draw(d->tick_text, 160, 0);
