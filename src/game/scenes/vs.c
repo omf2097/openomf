@@ -3,13 +3,12 @@
 #include "game/game_state.h"
 #include "game/gui/dialog.h"
 #include "game/gui/menu_background.h"
-#include "game/gui/text_render.h"
+#include "game/gui/text/text.h"
 #include "game/protos/scene.h"
 #include "game/scenes/mechlab/lab_menu_customize.h"
 #include "game/utils/formatting.h"
 #include "game/utils/settings.h"
 #include "resources/languages.h"
-#include "resources/pathmanager.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
 #include "utils/miscmath.h"
@@ -24,12 +23,30 @@
 void cb_vs_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t mp_flags, int s, int g, void *userdata);
 void cb_vs_destroy_object(object *parent, int id, void *userdata);
 
-typedef struct vs_local_t {
+typedef struct report_card {
+    text *plug_whine;
+    text *report_title;
+    text *report_left;
+    text *report_right;
+    text *stats_title;
+    text *stats_self_left;
+    text *stats_self_right;
+    text *opponent_title;
+    text *opponent_right;
+} report_card;
+
+typedef struct vs_local {
     int arena_select_obj_id;
     surface arena_select_bg;
-    char vs_str[128];
     dialog quit_dialog;
     dialog too_pathetic_dialog;
+
+    text *vs_text;
+    text *insults[2];
+    text *arena_name;
+    text *arena_desc;
+
+    report_card *report;
 } vs_local;
 
 int vs_is_netplay(scene *scene) {
@@ -48,7 +65,7 @@ int vs_is_singleplayer(scene *scene) {
 }
 
 // Even indexes go to the left, odd to the right.
-// Welder does an additionale roll for the 3 places on the torso.
+// Welder does an additional roll for the 3 places on the torso.
 vec2i spawn_position(int index, int scientist) {
     switch(index) {
         case 0:
@@ -126,9 +143,29 @@ void cb_vs_destroy_object(object *parent, int id, void *userdata) {
     game_state_del_animation(parent->gs, id);
 }
 
-void vs_free(scene *scene) {
-    vs_local *local = scene_get_userdata(scene);
+static void free_report_card(report_card *card) {
+    if(card == NULL)
+        return;
+    text_free(&card->plug_whine);
+    text_free(&card->report_title);
+    text_free(&card->report_left);
+    text_free(&card->report_right);
+    text_free(&card->stats_title);
+    text_free(&card->stats_self_left);
+    text_free(&card->stats_self_right);
+    text_free(&card->opponent_title);
+    text_free(&card->opponent_right);
+    omf_free(card);
+}
 
+static void vs_free(scene *scene) {
+    vs_local *local = scene_get_userdata(scene);
+    text_free(&local->vs_text);
+    text_free(&local->arena_name);
+    text_free(&local->arena_desc);
+    text_free(&local->insults[0]);
+    text_free(&local->insults[1]);
+    free_report_card(local->report);
     dialog_free(&local->quit_dialog);
     dialog_free(&local->too_pathetic_dialog);
     surface_free(&local->arena_select_bg);
@@ -167,6 +204,9 @@ void vs_handle_action(scene *scene, int action) {
                     }
                     object *arena_select = game_state_find_object(scene->gs, local->arena_select_obj_id);
                     object_select_sprite(arena_select, scene->gs->arena);
+
+                    text_set_from_c(local->arena_name, lang_get(56 + scene->gs->arena));
+                    text_set_from_c(local->arena_desc, lang_get(66 + scene->gs->arena));
                 }
                 break;
             case ACT_DOWN:
@@ -178,6 +218,9 @@ void vs_handle_action(scene *scene, int action) {
                     }
                     object *arena_select = game_state_find_object(scene->gs, local->arena_select_obj_id);
                     object_select_sprite(arena_select, scene->gs->arena);
+
+                    text_set_from_c(local->arena_name, lang_get(56 + scene->gs->arena));
+                    text_set_from_c(local->arena_desc, lang_get(66 + scene->gs->arena));
                 }
                 break;
         }
@@ -255,143 +298,172 @@ void vs_input_tick(scene *scene) {
     controller_free_chain(p1);
 }
 
-void vs_render_fight_stats(scene *scene, text_settings *tconf_yellow) {
-    text_settings dark_green;
-    text_defaults(&dark_green);
-    dark_green.font = FONT_SMALL;
-    dark_green.cforeground = TEXT_DARK_GREEN;
-
-    text_settings light_green;
-    text_defaults(&light_green);
-    light_green.font = FONT_SMALL;
-    light_green.cforeground = TEXT_GREEN;
-
-    // render plug's bitching
-    char text[256];
-    char money[16];
-    fight_stats *fight_stats = &scene->gs->fight_stats;
-    snprintf(text, sizeof(text), lang_get(fight_stats->plug_text + PLUG_TEXT_START), fight_stats->sold);
-    text_render_mode(tconf_yellow, TEXT_DEFAULT, 90, 156, 198, 6, text);
-
-    text_render_mode(&light_green, TEXT_DEFAULT, 190, 6, 140, 6, "FINANCIAL REPORT");
-
-    text_render_mode(&dark_green, TEXT_DEFAULT, 190, 16, 90, 6, "WINNINGS:");
-    score_format(fight_stats->winnings, money, sizeof(money));
-    snprintf(text, sizeof(text), "$ %sK", money);
-    text_render_mode(&light_green, TEXT_DEFAULT, 250, 16, 140, 6, text);
-
-    text_render_mode(&dark_green, TEXT_DEFAULT, 196, 24, 90, 6, "BONUSES:");
-    score_format(fight_stats->bonuses, money, sizeof(money));
-    snprintf(text, sizeof(text), "$ %sK", money);
-    text_render_mode(&light_green, TEXT_DEFAULT, 250, 24, 140, 6, text);
-
-    text_render_mode(&dark_green, TEXT_DEFAULT, 172, 32, 90, 6, "REPAIR COST:");
-    score_format(fight_stats->repair_cost, money, sizeof(money));
-    snprintf(text, sizeof(text), "$ %sK", money);
-    text_render_mode(&light_green, TEXT_DEFAULT, 250, 32, 140, 6, text);
-
-    text_render_mode(&dark_green, TEXT_DEFAULT, 202, 40, 120, 6, "PROFIT:");
-    score_format(fight_stats->profit, money, sizeof(money));
-    snprintf(text, sizeof(text), "$ %sK", money);
-    text_render_mode(&light_green, TEXT_DEFAULT, 250, 40, 140, 6, text);
-
-    text_render_mode(&light_green, TEXT_DEFAULT, 210, 60, 60, 6, "FIGHT STATISTICS");
-
-    text_render_mode(&dark_green, TEXT_DEFAULT, 202, 79, 90, 6, "HITS LANDED:");
-    snprintf(text, sizeof(text), "%u", fight_stats->hits_landed[0]);
-    text_render_mode(&light_green, TEXT_DEFAULT, 276, 79, 80, 6, text);
-
-    text_render_mode(&dark_green, TEXT_DEFAULT, 184, 86, 90, 6, "AVERAGE DAMAGE:");
-    snprintf(text, sizeof(text), "%.1f", fight_stats->average_damage[0]);
-    text_render_mode(&light_green, TEXT_DEFAULT, 276, 86, 80, 6, text);
-
-    text_render_mode(&dark_green, TEXT_DEFAULT, 184, 93, 90, 6, "FAILED ATTACKS:");
-    snprintf(text, sizeof(text), "%u", fight_stats->total_attacks[0] - fight_stats->hits_landed[0]);
-    text_render_mode(&light_green, TEXT_DEFAULT, 276, 93, 80, 6, text);
-
-    text_render_mode(&dark_green, TEXT_DEFAULT, 184, 100, 90, 6, "HIT/MISS RATIO:");
-    snprintf(text, sizeof(text), "%u%%", fight_stats->hit_miss_ratio[0]);
-    text_render_mode(&light_green, TEXT_DEFAULT, 276, 100, 80, 6, text);
-
-    text_render_mode(&light_green, TEXT_DEFAULT, 210, 108, 80, 6, "OPPONENT");
-
-    text_render_mode(&dark_green, TEXT_DEFAULT, 202, 115, 90, 6, "HITS LANDED:");
-    snprintf(text, sizeof(text), "%u", fight_stats->hits_landed[1]);
-    text_render_mode(&light_green, TEXT_DEFAULT, 276, 115, 80, 6, text);
-
-    text_render_mode(&dark_green, TEXT_DEFAULT, 184, 123, 90, 6, "AVERAGE DAMAGE:");
-    snprintf(text, sizeof(text), "%.1f", fight_stats->average_damage[1]);
-    text_render_mode(&light_green, TEXT_DEFAULT, 276, 123, 80, 6, text);
-
-    text_render_mode(&dark_green, TEXT_DEFAULT, 184, 130, 90, 6, "FAILED ATTACKS:");
-    snprintf(text, sizeof(text), "%u", fight_stats->total_attacks[1] - fight_stats->hits_landed[1]);
-    text_render_mode(&light_green, TEXT_DEFAULT, 276, 130, 30, 6, text);
-
-    text_render_mode(&dark_green, TEXT_DEFAULT, 184, 137, 90, 6, "HIT/MISS RATIO:");
-    snprintf(text, sizeof(text), "%u%%", fight_stats->hit_miss_ratio[1]);
-    text_render_mode(&light_green, TEXT_DEFAULT, 276, 137, 40, 6, text);
+/**
+ * Create text entry for the end-of-tournament stats title texts
+ */
+static text *create_title_text(const char *str) {
+    text *t = text_create_with_font_and_size(FONT_SMALL, 150, 30);
+    text_set_from_c(t, str);
+    text_set_color(t, TEXT_GREEN);
+    text_set_horizontal_align(t, TEXT_ALIGN_CENTER);
+    text_generate_layout(t);
+    return t;
 }
 
-void vs_render(scene *scene) {
-    vs_local *local = scene_get_userdata(scene);
+/**
+ * Create text entry for the end-of-tournament stats label texts
+ */
+static text *create_labels_text(const char *str) {
+    text *t = text_create_with_font_and_size(FONT_SMALL, 150, 30);
+    text_set_from_c(t, str);
+    text_set_color(t, TEXT_DARK_GREEN);
+    text_set_line_spacing(t, 1);
+    text_set_horizontal_align(t, TEXT_ALIGN_RIGHT);
+    text_generate_layout(t);
+    return t;
+}
 
+/**
+ * Create text entry for the end-of-tournament stats value texts (money, etc.)
+ */
+static text *create_values_text(const char *str) {
+    text *t = text_create_with_font_and_size(FONT_SMALL, 150, 30);
+    text_set_from_c(t, str);
+    text_set_color(t, TEXT_GREEN);
+    text_set_line_spacing(t, 1);
+    text_set_horizontal_align(t, TEXT_ALIGN_LEFT);
+    text_generate_layout(t);
+    return t;
+}
+
+/**
+ * Create statistics texts for tournament plug screen. This should only be called if needed to save memory.
+ */
+static report_card *create_report_card(const fight_stats *fight_stats) {
+    char text[256];
+    char money[4][16];
+    report_card *card = omf_calloc(1, sizeof(report_card));
+
+    card->plug_whine = text_create_with_font_and_size(FONT_SMALL, 200, 55);
+    text_set_color(card->plug_whine, COLOR_YELLOW);
+    text_set_shadow_style(card->plug_whine, GLYPH_SHADOW_RIGHT | GLYPH_SHADOW_BOTTOM);
+    text_set_shadow_color(card->plug_whine, 202);
+    text_set_horizontal_align(card->plug_whine, TEXT_ALIGN_CENTER);
+    snprintf(text, sizeof(text), lang_get(fight_stats->plug_text + PLUG_TEXT_START), fight_stats->sold);
+    text_set_from_c(card->plug_whine, text);
+
+    // These are all static. Note that for opponent labels, we reuse the own stats label.
+    card->report_title = create_title_text("FINANCIAL REPORT");
+    card->stats_title = create_title_text("FIGHT\nSTATISTICS");
+    card->opponent_title = create_title_text("OPPONENT");
+    card->report_left = create_labels_text("WINNINGS:\nBONUSES:\nREPAIR COST:\nPROFIT:");
+    card->stats_self_left = create_labels_text("HITS LANDED:\nAVERAGE DAMAGE:\nFAILED ATTACKS:\nHIT/MISS RATIO:");
+
+    score_format(fight_stats->winnings, money[0], sizeof(money[0]));
+    score_format(fight_stats->bonuses, money[1], sizeof(money[1]));
+    score_format(fight_stats->repair_cost, money[2], sizeof(money[2]));
+    score_format(fight_stats->profit, money[3], sizeof(money[3]));
+    snprintf(text, sizeof(text), "$ %sK\n$ %sK\n$ %sK\n$ %sK", money[0], money[1], money[2], money[3]);
+    card->report_right = create_values_text(text);
+
+    snprintf(text, sizeof(text), "%u\n%.1f\n%u\n%u%%", fight_stats->hits_landed[0], fight_stats->average_damage[0],
+             fight_stats->total_attacks[0] - fight_stats->hits_landed[0], fight_stats->hit_miss_ratio[0]);
+    card->stats_self_right = create_values_text(text);
+
+    snprintf(text, sizeof(text), "%u\n%.1f\n%u\n%u%%", fight_stats->hits_landed[1], fight_stats->average_damage[1],
+             fight_stats->total_attacks[1] - fight_stats->hits_landed[1], fight_stats->hit_miss_ratio[1]);
+    card->opponent_right = create_values_text(text);
+
+    return card;
+}
+
+/**
+ * Only called if the scene is the Plug end-of-match screen.
+ */
+static void vs_render_fight_stats(scene *scene) {
+    vs_local *local = scene->userdata;
+    report_card *card = local->report;
+    assert(card != NULL);
+
+    text_draw(card->plug_whine, 90, 156);
+
+    text_draw(card->report_title, 163, 6);
+    text_draw(card->report_left, 250 - 150 - 6, 16);
+    text_draw(card->report_right, 250, 16);
+
+    text_draw(card->stats_title, 163, 60);
+    text_draw(card->stats_self_left, 276 - 150 - 6, 79);
+    text_draw(card->stats_self_right, 276, 79);
+
+    text_draw(card->opponent_title, 163, 108);
+    text_draw(card->stats_self_left, 276 - 150 - 6, 115);
+    text_draw(card->opponent_right, 276, 115);
+}
+
+/**
+ * This creates the text object for the top X VS. Y title.
+ */
+static text *create_vs_text(const char *str) {
+    text *t = text_create_with_font_and_size(FONT_SMALL, 320, 6);
+    text_set_from_c(t, str);
+    text_set_horizontal_align(t, TEXT_ALIGN_CENTER);
+    text_set_color(t, COLOR_YELLOW);
+    text_set_shadow_color(t, 202);
+    text_set_shadow_style(t, GLYPH_SHADOW_RIGHT | GLYPH_SHADOW_BOTTOM);
+    return t;
+}
+
+/**
+ * This creates the text object for the arena name and description in 2 player game
+ */
+static text *create_arena_text(const char *str, int w, int h) {
+    text *t = text_create_with_font_and_size(FONT_SMALL, w, h);
+    text_set_from_c(t, str);
+    text_set_horizontal_align(t, TEXT_ALIGN_CENTER);
+    text_set_vertical_align(t, TEXT_ALIGN_MIDDLE);
+    text_set_color(t, COLOR_GREEN);
+    return t;
+}
+
+static text *create_insult_text(const char *str, int w, int h) {
+    text *t = text_create_with_font_and_size(FONT_SMALL, w, h);
+    text_set_from_c(t, str);
+    text_set_horizontal_align(t, TEXT_ALIGN_CENTER);
+    text_set_vertical_align(t, TEXT_ALIGN_MIDDLE);
+    text_set_color(t, COLOR_YELLOW);
+    return t;
+}
+
+static void vs_render(scene *scene) {
+    vs_local *local = scene_get_userdata(scene);
     game_player *player1 = game_state_get_player(scene->gs, 0);
     game_player *player2 = game_state_get_player(scene->gs, 1);
 
-    // X vs Y
-    text_settings tconf_yellow;
-    text_defaults(&tconf_yellow);
-    tconf_yellow.font = FONT_SMALL;
-    tconf_yellow.cforeground = COLOR_YELLOW;
-    tconf_yellow.shadow = TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM;
-    tconf_yellow.cshadow = 202;
-    tconf_yellow.halign = TEXT_CENTER;
-
-    text_render_mode(&tconf_yellow, TEXT_DEFAULT, 0, 3, 320, 8, local->vs_str);
-
-    // no other text is shadowed
-    tconf_yellow.shadow = 0;
+    if(player2->pilot) {
+        text_draw(local->vs_text, 0, 3);
+    }
 
     if(player2->selectable) {
-        text_settings tconf_green;
-        text_defaults(&tconf_green);
-        tconf_green.font = FONT_SMALL;
-        tconf_green.cforeground = TEXT_GREEN;
-        tconf_green.shadow = TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM;
-        tconf_green.halign = TEXT_CENTER;
-        tconf_green.cshadow = TEXT_SHADOW_GREEN;
-
         // arena selection
         video_draw(&local->arena_select_bg, 55, 150);
-
-        // arena name
-        text_render_mode(&tconf_green, TEXT_DEFAULT, 56 + 72, 152, (211 - 72), 8, lang_get(56 + scene->gs->arena));
-
-        tconf_green.valign = TEXT_MIDDLE;
-        // arena description
-        text_render_mode(&tconf_green, TEXT_DEFAULT, 56 + 72, 153, (211 - 72), 50, lang_get(66 + scene->gs->arena));
+        text_draw(local->arena_name, 56 + 72, 152);
+        text_draw(local->arena_desc, 56 + 72, 153);
     } else if(player2->pilot && player2->pilot->pilot_id == PILOT_KREISSACK &&
               settings_get()->gameplay.difficulty < 2) {
         // kreissack, but not on Veteran or higher
-        tconf_yellow.halign = TEXT_CENTER;
-        text_render_mode(&tconf_yellow, TEXT_DEFAULT, 80, 165, 170, 60, lang_get(747));
-
+        text_draw(local->insults[1], 80, 165);
     } else if(player1->chr && player2->pilot) {
-        // tournament mode insult
-        tconf_yellow.halign = TEXT_RIGHT;
-        text_render_mode(&tconf_yellow, TEXT_DEFAULT, 100, 165, 150, 60, player2->pilot->quotes[0]);
+        // tournament insults
+        text_draw(local->insults[1], 100, 145);
     } else if(player2->pilot == NULL) {
+        // plug screen fight stats
         if(scene->gs->fight_stats.winner >= 0) {
-            vs_render_fight_stats(scene, &tconf_yellow);
+            vs_render_fight_stats(scene);
         }
     } else {
-        // 1 player insult
-        tconf_yellow.valign = TEXT_MIDDLE;
-        tconf_yellow.halign = TEXT_CENTER;
-        text_render_mode(&tconf_yellow, TEXT_DEFAULT, 77, 150, 150, 30,
-                         lang_get(749 + (11 * player1->pilot->pilot_id) + player2->pilot->pilot_id));
-        text_render_mode(&tconf_yellow, TEXT_DEFAULT, 110, 170, 150, 30,
-                         lang_get(870 + (11 * player2->pilot->pilot_id) + player1->pilot->pilot_id));
+        // 1 player mode insults
+        text_draw(local->insults[0], 77, 150);
+        text_draw(local->insults[1], 110, 170);
     }
 }
 
@@ -468,9 +540,10 @@ int vs_create(scene *scene) {
         }
 
         player1->pilot->har_trades = new_trades;
-
     } else {
-        snprintf(local->vs_str, 128, "%s VS. %s", player1->pilot->name, player2->pilot->name);
+        char title[128];
+        snprintf(title, 128, "%s VS. %s", player1->pilot->name, player2->pilot->name);
+        local->vs_text = create_vs_text(title);
     }
 
     // Set player palettes
@@ -550,6 +623,7 @@ int vs_create(scene *scene) {
         }
         object_set_halt(plug, 1);
         game_state_add_object(scene->gs, plug, RENDER_LAYER_TOP, 0, 0);
+        local->report = create_report_card(fight_stats); // Set up the statistics texts to the right side of the scene
     }
 
     if(player2->pilot != NULL) {
@@ -566,6 +640,8 @@ int vs_create(scene *scene) {
     if(player2->selectable) {
         // player1 gets to choose, start at arena 0
         scene->gs->arena = 0;
+        local->arena_name = create_arena_text(lang_get(56 + scene->gs->arena), (211 - 74), 6);
+        local->arena_desc = create_arena_text(lang_get(66 + scene->gs->arena), (211 - 74), 50);
     } else if(player2->pilot && player2->pilot->pilot_id == PILOT_KREISSACK) {
         // force arena 0 when fighting Kreissack in 1 player mode
         scene->gs->arena = 0;
@@ -574,6 +650,23 @@ int vs_create(scene *scene) {
         scene->gs->arena = rand_int(5);
     } else {
         // 1 player mode cycles through the arenas
+    }
+
+    // Insults
+    if(player2->pilot && player2->pilot->pilot_id == PILOT_KREISSACK && settings_get()->gameplay.difficulty < 2) {
+        // kreissack, but not on Veteran or higher
+        local->insults[0] = NULL;
+        local->insults[1] = create_insult_text(lang_get(747), 170, 60);
+    } else if(player1->chr && player2->pilot) {
+        // tournament mode
+        local->insults[0] = NULL;
+        local->insults[1] = create_insult_text(player2->pilot->quotes[0], 150, 60);
+    } else if(player2->pilot) {
+        // 1 player
+        local->insults[0] =
+            create_insult_text(lang_get(749 + (11 * player1->pilot->pilot_id) + player2->pilot->pilot_id), 150, 30);
+        local->insults[1] =
+            create_insult_text(lang_get(870 + (11 * player2->pilot->pilot_id) + player1->pilot->pilot_id), 150, 30);
     }
 
     // Arena

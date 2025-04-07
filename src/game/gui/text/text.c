@@ -101,7 +101,7 @@ text *text_create_from_str(const str *src) {
 }
 
 void text_free(text **t) {
-    if(*t != NULL) {
+    if(t != NULL && *t != NULL) {
         str_free(&(*t)->buf);
         text_layout_free(&(*t)->layout);
         omf_free(*t);
