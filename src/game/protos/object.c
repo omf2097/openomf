@@ -370,7 +370,12 @@ void object_render(object *obj) {
     }
 
     // Set X coord, take into account the HAR facing.
-    if(object_get_direction(obj) == OBJECT_FACE_LEFT) {
+    // Facing | Flip Flag | Result
+    //   0    |     0     |   0
+    //   1    |     0     |   1
+    //   0    |     1     |   1
+    //   1    |     1     |   0
+    if((object_get_direction(obj) == OBJECT_FACE_LEFT) != ((rstate->flipmode & FLIP_HORIZONTAL) != 0)) {
         x = obj->pos.x - cur_sprite->pos.x + rstate->o_correction.x - object_get_size(obj).x;
     } else {
         x = obj->pos.x + cur_sprite->pos.x + rstate->o_correction.x;
