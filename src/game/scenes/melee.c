@@ -7,7 +7,6 @@
 #include "game/gui/menu_background.h"
 #include "game/gui/progressbar.h"
 #include "game/gui/text/text.h"
-#include "game/gui/text_render.h"
 #include "game/protos/object.h"
 #include "game/protos/scene.h"
 #include "game/scenes/melee.h"
@@ -95,11 +94,12 @@ typedef struct {
     unsigned int ticks;
     unsigned int tickbase[2];
 
-    str vs_text;
-    str wins_text_a;
-    str wins_text_b;
-
+    text *wins[2];
+    text *har_title;
+    text *titles[2];
+    text *player_name[2];
     text *player_bio[2];
+    text *player_stats[3];
 
     // nova selection cheat
     unsigned char cheat_selected[2][10];
@@ -134,8 +134,16 @@ void melee_free(scene *scene) {
         surface_free(&local->pilot_portraits[i].disabled);
     }
 
-    text_free(&local->player_bio[0]);
-    text_free(&local->player_bio[1]);
+    for(int i = 0; i < 2; i++) {
+        text_free(&local->player_bio[i]);
+        text_free(&local->player_name[i]);
+        text_free(&local->titles[i]);
+        text_free(&local->wins[i]);
+    }
+    for(int i = 0; i < 3; i++) {
+        text_free(&local->player_stats[i]);
+    }
+    text_free(&local->har_title);
 
     object_free(&local->player2_placeholder);
     object_free(&local->unselected_pilot_portraits);
@@ -144,9 +152,6 @@ void melee_free(scene *scene) {
     if(player2->selectable) {
         object_free(&local->big_portrait_2);
     }
-    str_free(&local->vs_text);
-    str_free(&local->wins_text_a);
-    str_free(&local->wins_text_b);
     omf_free(local);
     scene_set_userdata(scene, local);
 }
@@ -275,7 +280,6 @@ static void refresh_pilot_stats(scene *scene, int player_id) {
 }
 
 void update_har(scene *scene, int player) {
-
     melee_local *local = scene_get_userdata(scene);
     if(local->page == HAR_SELECT) {
         game_player *player2 = game_state_get_player(scene->gs, 1);
@@ -287,8 +291,13 @@ void update_har(scene *scene, int player) {
         object_select_sprite(har, 0);
         object_set_repeat(har, 1);
         if(player2->selectable) {
-            str_format(&local->vs_text, "%s VS. %s", har_get_name(CURSOR_INDEX(local, 0)),
-                       har_get_name(CURSOR_INDEX(local, 1)));
+            str tmp;
+            str_from_format(&tmp, "%s VS. %s", har_get_name(CURSOR_INDEX(local, 0)),
+                            har_get_name(CURSOR_INDEX(local, 1)));
+            text_set_from_str(local->har_title, &tmp);
+            str_free(&tmp);
+        } else {
+            text_set_from_c(local->har_title, har_get_name(CURSOR_INDEX(local, 0)));
         }
     }
 }
@@ -316,6 +325,7 @@ static void load_pilot_stats(scene *scene, int player_id) {
         object_select_sprite(big_portrait, pilot_id);
 
         text_set_from_c(local->player_bio[player_id], lang_get(135 + pilot_id));
+        text_set_from_c(local->player_name[player_id], lang_get(20 + pilot_id));
         object_select_sprite(big_portrait, pilot_id);
     }
 
@@ -656,36 +666,38 @@ static void render_enabled_portrait(const portrait *portraits, cursor_data *curs
     }
 }
 
-static void render_pilot_select(melee_local *local, bool player2_is_selectable) {
-    int current_a = CURSOR_INDEX(local, 0);
-    int current_b = CURSOR_INDEX(local, 1);
+static text *create_green_text(int w, int h, const char *str) {
+    text *t = text_create_with_font_and_size(FONT_SMALL, w, h);
+    text_set_color(t, TEXT_GREEN);
+    text_set_shadow_style(t, GLYPH_SHADOW_RIGHT | GLYPH_SHADOW_BOTTOM);
+    text_set_shadow_color(t, TEXT_SHADOW_GREEN);
+    text_set_horizontal_align(t, TEXT_ALIGN_CENTER);
+    text_set_vertical_align(t, TEXT_ALIGN_MIDDLE);
+    text_set_from_c(t, str);
+    return t;
+}
 
+static text *create_black_text(int w, int h, const char *str) {
+    text *t = text_create_with_font_and_size(FONT_SMALL, w, h);
+    text_set_color(t, TEXT_BLACK);
+    text_set_shadow_style(t, GLYPH_SHADOW_TOP | GLYPH_SHADOW_LEFT);
+    text_set_shadow_color(t, TEXT_SHADOW_BLACK);
+    text_set_horizontal_align(t, TEXT_ALIGN_CENTER);
+    text_set_vertical_align(t, TEXT_ALIGN_MIDDLE);
+    text_set_from_c(t, str);
+    return t;
+}
+
+static void render_pilot_select(melee_local *local, bool player2_is_selectable) {
     video_draw(&local->bg_player_stats, 70, 0);
     video_draw(&local->bg_player_bio, 0, 62);
 
-    text_settings tconf_green;
-    text_defaults(&tconf_green);
-    tconf_green.font = FONT_SMALL;
-    tconf_green.cforeground = TEXT_GREEN;
-    tconf_green.shadow = TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM;
-    tconf_green.halign = TEXT_CENTER;
-    tconf_green.valign = TEXT_MIDDLE;
-    tconf_green.cshadow = TEXT_SHADOW_GREEN;
-
-    text_settings tconf_black;
-    text_defaults(&tconf_black);
-    tconf_black.font = FONT_SMALL;
-    tconf_black.cforeground = TEXT_BLACK;
-    tconf_black.shadow = TEXT_SHADOW_TOP | TEXT_SHADOW_LEFT;
-    tconf_black.halign = TEXT_CENTER;
-    tconf_black.cshadow = TEXT_SHADOW_BLACK;
-
-    // player bio
+    text_draw(local->player_name[0], 0, 52);
     text_draw(local->player_bio[0], 4, 66);
-    // player stats
-    text_render_mode(&tconf_green, TEXT_DEFAULT, 74, 4, 85, 6, lang_get(216));
-    text_render_mode(&tconf_green, TEXT_DEFAULT, 74, 22, 85, 6, lang_get(217));
-    text_render_mode(&tconf_green, TEXT_DEFAULT, 74, 40, 85, 6, lang_get(218));
+    text_draw(local->player_stats[0], 74, 4);
+    text_draw(local->player_stats[1], 74, 22);
+    text_draw(local->player_stats[2], 74, 40);
+
     for(int stat = 0; stat < STAT_COUNT; stat++) {
         component_render(local->bar_stat[0][stat]);
     }
@@ -693,29 +705,21 @@ static void render_pilot_select(melee_local *local, bool player2_is_selectable) 
     object_render(&local->player2_placeholder);
 
     if(player2_is_selectable) {
-        // player 2 name
-        text_render_mode(&tconf_black, TEXT_DEFAULT, 320 - 66, 52, 66, 6, lang_get(20 + current_b));
-
         video_draw(&local->bg_player_stats, 320 - 70 - local->bg_player_stats.w, 0);
         video_draw(&local->bg_player_bio, 320 - local->bg_player_bio.w, 62);
-        // player bio
-        text_draw(local->player_bio[1], 320 - local->bg_player_bio.w + 4, 66);
 
-        // player stats
-        text_render_mode(&tconf_green, TEXT_DEFAULT, 320 - 66 - local->bg_player_stats.w, 4, 85, 6, lang_get(216));
-        text_render_mode(&tconf_green, TEXT_DEFAULT, 320 - 66 - local->bg_player_stats.w, 22, 85, 6, lang_get(217));
-        text_render_mode(&tconf_green, TEXT_DEFAULT, 320 - 66 - local->bg_player_stats.w, 40, 85, 6, lang_get(218));
+        text_draw(local->player_name[1], 320 - 66, 52);
+        text_draw(local->player_bio[1], 320 - local->bg_player_bio.w + 4, 66);
+        text_draw(local->player_stats[0], 320 - 66 - local->bg_player_stats.w, 4);
+        text_draw(local->player_stats[1], 320 - 66 - local->bg_player_stats.w, 22);
+        text_draw(local->player_stats[2], 320 - 66 - local->bg_player_stats.w, 40);
 
         for(int stat = 0; stat < STAT_COUNT; stat++) {
             component_render(local->bar_stat[1][stat]);
         }
     } else {
-        // 'choose your pilot'
-        text_render_mode(&tconf_green, TEXT_DEFAULT, 160, 97, 160, 6, lang_get(187));
+        text_draw(local->titles[0], 160, 97);
     }
-
-    // player 1 name
-    text_render_mode(&tconf_black, TEXT_DEFAULT, 0, 52, 66, 6, lang_get(20 + current_a));
 
     object_render(&local->unselected_pilot_portraits);
     render_highlights(local, player2_is_selectable);
@@ -742,28 +746,12 @@ static void render_har_select(melee_local *local, bool player2_is_selectable) {
     render_enabled_portrait(local->har_portraits, &local->cursor[0], 0);
     object_render(&local->har[0]);
 
-    text_settings tconf_green;
-    text_defaults(&tconf_green);
-    tconf_green.font = FONT_SMALL;
-    tconf_green.cforeground = TEXT_GREEN;
-    tconf_green.shadow = TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM;
-    tconf_green.halign = TEXT_CENTER;
-    tconf_green.cshadow = TEXT_SHADOW_GREEN;
-
-    text_settings tconf_black;
-    text_defaults(&tconf_black);
-    tconf_black.font = FONT_SMALL;
-    tconf_black.cforeground = TEXT_BLACK;
-    tconf_black.shadow = TEXT_SHADOW_TOP | TEXT_SHADOW_LEFT;
-    tconf_black.halign = TEXT_CENTER;
-    tconf_black.cshadow = TEXT_SHADOW_BLACK;
-
     // player 1 name
-    text_render_mode(&tconf_black, TEXT_DEFAULT, 0, 52, 66, 6, lang_get(20 + local->pilot_id_a));
+    text_draw(local->player_name[0], 0, 52);
 
     if(player2_is_selectable) {
         // player 2 name
-        text_render_mode(&tconf_black, TEXT_DEFAULT, 320 - 66, 52, 66, 6, lang_get(20 + local->pilot_id_b));
+        text_draw(local->player_name[1], 320 - 66, 52);
 
         // currently selected player
         object_render(&local->big_portrait_2);
@@ -773,13 +761,13 @@ static void render_har_select(melee_local *local, bool player2_is_selectable) {
         object_render(&local->har[1]);
 
         // render HAR name (Har1 VS. Har2)
-        text_render_mode(&tconf_black, TEXT_DEFAULT, 80, 107, 150, 6, str_c(&local->vs_text));
+        text_draw(local->har_title, 0, 107);
     } else {
         // 'choose your Robot'
-        text_render_mode(&tconf_green, TEXT_DEFAULT, 160, 97, 160, 6, lang_get(186));
+        text_draw(local->titles[1], 160, 97);
 
         // render HAR name
-        text_render_mode(&tconf_black, TEXT_DEFAULT, 120, 107, 60, 6, har_get_name(CURSOR_INDEX(local, 0)));
+        text_draw(local->har_title, 0, 107);
     }
 }
 
@@ -793,18 +781,9 @@ void melee_render(scene *scene) {
         render_har_select(local, player2->selectable);
     }
 
-    text_settings tconf_black;
-    text_defaults(&tconf_black);
-    tconf_black.font = FONT_SMALL;
-    tconf_black.cforeground = TEXT_BLACK;
-    tconf_black.shadow = TEXT_SHADOW_TOP | TEXT_SHADOW_LEFT;
-    tconf_black.cshadow = TEXT_SHADOW_BLACK;
-
     if(player2->selectable) {
-        int text_x = 8;
-        text_render_mode(&tconf_black, TEXT_DEFAULT, text_x, 107, 50, 6, str_c(&local->wins_text_a));
-        text_x = 312 - text_width(&tconf_black, str_c(&local->wins_text_b));
-        text_render_mode(&tconf_black, TEXT_DEFAULT, text_x, 107, 50, 6, str_c(&local->wins_text_b));
+        text_draw(local->wins[0], 8, 107);
+        text_draw(local->wins[1], 160, 107);
     }
 }
 
@@ -926,17 +905,23 @@ int melee_create(scene *scene) {
     menu_background_create(&local->bg_player_stats, 90, 61, MenuBackgroundMeleeVs);
     menu_background_create(&local->bg_player_bio, 160, 43, MenuBackgroundMeleeVs);
 
+    // Player bio boxes and names for both players
     for(int i = 0; i < 2; i++) {
-        local->player_bio[i] = text_create_with_font_and_size(FONT_SMALL, 156, 34);
-        text_set_color(local->player_bio[i], TEXT_GREEN);
-        text_set_shadow_style(local->player_bio[i], TEXT_SHADOW_RIGHT | TEXT_SHADOW_BOTTOM);
-        text_set_shadow_color(local->player_bio[i], TEXT_SHADOW_GREEN);
-        text_set_horizontal_align(local->player_bio[i], TEXT_ALIGN_CENTER);
-        text_set_vertical_align(local->player_bio[i], TEXT_ALIGN_MIDDLE);
+        local->player_bio[i] = create_green_text(156, 34, lang_get(135 + CURSOR_INDEX(local, i)));
+        local->player_name[i] = create_black_text(66, 6, lang_get(20 + CURSOR_INDEX(local, i)));
         text_set_margin(local->player_bio[i], (text_margin){2, 2, 0, 0});
-        text_set_from_c(local->player_bio[i], lang_get(135 + CURSOR_INDEX(local, i)));
-        text_generate_layout(local->player_bio[i]);
     }
+    // Stats texts (POWER, AGILITY, ENDURANCE)
+    for(int i = 0; i < 3; i++) {
+        local->player_stats[i] = create_green_text(85, 6, lang_get(216 + i));
+    }
+
+    // Page titles. These are static.
+    local->titles[0] = create_green_text(160, 6, lang_get(187)); // 'choose your pilot'
+    local->titles[1] = create_green_text(160, 6, lang_get(186)); // 'choose your robot'
+
+    // This is used to either show the selected HAR name or both in the "X VS. Y" format.
+    local->har_title = create_black_text(320, 6, har_get_name(CURSOR_INDEX(local, 0)));
 
     // Create a black surface for the highlight box. We modify the palette in renderer.
     unsigned char *black = omf_calloc(1, 51 * 36);
@@ -971,11 +956,18 @@ int melee_create(scene *scene) {
     object_create_static(&local->big_portrait_1, scene->gs);
     object_set_animation(&local->big_portrait_1, pilot_big_portraits);
     object_select_sprite(&local->big_portrait_1, 0);
+
     if(player2->selectable) {
         chr_score *s1 = game_player_get_score(game_state_get_player(scene->gs, 0));
         chr_score *s2 = game_player_get_score(game_state_get_player(scene->gs, 1));
-        str_format(&local->wins_text_a, "Wins: %d", s1->wins);
-        str_format(&local->wins_text_b, "Wins: %d", s2->wins);
+
+        char tmp[64];
+        snprintf(tmp, sizeof(tmp), "Wins: %d", s1->wins);
+        local->wins[0] = create_black_text(160 - 8, 6, tmp);
+        text_set_horizontal_align(local->wins[0], TEXT_ALIGN_LEFT);
+        snprintf(tmp, sizeof(tmp), "Wins: %d", s2->wins);
+        local->wins[1] = create_black_text(160 - 8, 6, tmp);
+        text_set_horizontal_align(local->wins[1], TEXT_ALIGN_RIGHT);
 
         object_create(&local->big_portrait_2, scene->gs, vec2i_create(320, 0), vec2f_create(0, 0));
         object_set_animation(&local->big_portrait_2, pilot_big_portraits);
