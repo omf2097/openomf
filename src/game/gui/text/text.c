@@ -121,7 +121,7 @@ text_document *text_document_create(void) {
 }
 
 void text_document_free(text_document **d) {
-    if(*d != NULL) {
+    if(d != NULL && *d != NULL) {
         vector_free(&(*d)->text_objects);
         omf_free(*d);
     }
