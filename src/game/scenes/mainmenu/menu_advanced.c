@@ -37,7 +37,7 @@ component *menu_advanced_create(scene *s) {
     const char *on_off_opts[] = {"OFF", "ON"};
     const char *throw_ranges[] = {"0%",   "20%",  "40%",  "60%",  "80%",  "100%", "120%", "140%",
                                   "160%", "180%", "200%", "220%", "240%", "260%", "280%", "300%"};
-    const char *jump_heights[] = {"80%", "90%", "100%", "110%", "120%", "130%"};
+    const char *jump_heights[] = {"80%", "85%", "90%", "95%", "100%", "105%", "110%", "115%", "120%", "125%", "130%"};
     const char *hit_pauses[] = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"};
     const char *vitalities[] = {"80%",  "100%", "120%", "140%", "160%", "180%", "200%", "220%", "240%",
                                 "260%", "280%", "300%", "320%", "340%", "360%", "380%", "400%"};
@@ -46,7 +46,7 @@ component *menu_advanced_create(scene *s) {
 
     // convert the values from config into indexes into the option lists
     local->throw_range = clamp(settings_get()->advanced.throw_range / 20, 0, 15);
-    local->jump_height = clamp((settings_get()->advanced.jump_height - 80) / 10, 0, 5);
+    local->jump_height = clamp((settings_get()->advanced.jump_height - 80) / 5, 0, 10);
     local->vitality = clamp((settings_get()->advanced.vitality - 80) / 20, 0, 16);
     local->block_damage = clamp(settings_get()->advanced.block_damage / 5, 0, 7);
     menu_attach(menu, label_create_title("ADVANCED"));
@@ -65,17 +65,15 @@ component *menu_advanced_create(scene *s) {
     c = textselector_create_bind_opts("THROW RANGE", lang_get(278), NULL, NULL, &local->throw_range, throw_ranges, 16);
 
     menu_attach(menu, c);
-    c = textselector_create_bind_opts("JUMP HEIGHT", lang_get(279), NULL, NULL, &local->jump_height, jump_heights, 6);
+    c = textselector_create_bind_opts("JUMP HEIGHT", lang_get(279), NULL, NULL, &local->jump_height, jump_heights, 11);
 
-    component_disable(c, 1);
     menu_attach(menu, c);
     c = textselector_create_bind_opts("HIT PAUSE", lang_get(280), NULL, NULL, &settings_get()->advanced.hit_pause,
                                       hit_pauses, 11);
 
     menu_attach(menu, c);
-    c = textselector_create_bind_opts("VITALITY", lang_get(281), NULL, NULL, &local->vitality, vitalities, 17);
+    c = textselector_create_bind_opts("VITALITY x", lang_get(281), NULL, NULL, &local->vitality, vitalities, 17);
 
-    component_disable(c, 1);
     menu_attach(menu, c);
     c = textselector_create_bind_opts("KNOCK DOWN", lang_get(282), NULL, NULL, &settings_get()->advanced.knock_down,
                                       knock_downs, 4);

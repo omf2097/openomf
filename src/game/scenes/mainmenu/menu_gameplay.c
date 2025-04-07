@@ -59,7 +59,7 @@ component *menu_gameplay_create(scene *s) {
                                                     NULL, NULL, &settings_get()->gameplay.rounds, round_type_names,
                                                     NUMBER_OF_ROUND_TYPES));
 
-    menu_attach(menu, button_create("ADVANCED", "Do I really have to tell you what this is?", false, false,
+    menu_attach(menu, button_create("ADVANCED OPTIONS", "Do I really have to tell you what this is?", false, false,
                                     menu_enter_advanced, s));
     menu_attach(menu, button_create("DONE", "Go back to the main menu.", false, false, menu_gameplay_done, NULL));
     return menu;
