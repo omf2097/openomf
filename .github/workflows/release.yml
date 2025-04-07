@@ -19,6 +19,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
       with:
+        ref: ${{ github.event.pull_request.head.sha }}
         fetch-depth: '0'
     - name: Build MSVC binary
       uses: ./.github/actions/build_msvc
@@ -32,6 +33,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
       with:
+        ref: ${{ github.event.pull_request.head.sha }}
         fetch-depth: '0'
     - name: Build Ubuntu binary
       uses: ./.github/actions/build_ubuntu
@@ -42,6 +44,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
       with:
+        ref: ${{ github.event.pull_request.head.sha }}
         fetch-depth: '0'
     - name: Build MacOS ARM binary
       uses: ./.github/actions/build_macos_arm
@@ -53,6 +56,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
       with:
+        ref: ${{ github.event.pull_request.head.sha }}
         fetch-depth: '0'
 
     - uses: actions/download-artifact@v4
