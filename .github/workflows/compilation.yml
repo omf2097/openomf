@@ -89,6 +89,11 @@ jobs:
       with:
         ref: ${{ github.event.pull_request.head.sha }}
         fetch-depth: '0'
+
+    - name: git log -n5
+      shell: bash
+      run: git log --oneline -n5
+
     - name: Build Ubuntu binary
       uses: ./.github/actions/build_ubuntu
 
