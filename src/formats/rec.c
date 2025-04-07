@@ -45,6 +45,8 @@ void sd_rec_free(sd_rec_file *rec) {
     for(int i = 0; i < 2; i++) {
         sd_pilot_free(&rec->pilots[i].info);
     }
+    // zero it out so we can pass this so sd_rec_create can be used again
+    memset(rec, 0, sizeof(sd_rec_file));
 }
 
 int sd_rec_load(sd_rec_file *rec, const char *file) {
@@ -174,7 +176,7 @@ int sd_rec_load(sd_rec_file *rec, const char *file) {
         }
     }
 
-    // Okay, not reduce the allocated memory to match what we actually need
+    // Okay, now reduce the allocated memory to match what we actually need
     // Realloc should keep our old data intact
     rec->moves = omf_realloc(rec->moves, rec->move_count * sizeof(sd_rec_move));
 

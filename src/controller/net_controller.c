@@ -412,6 +412,7 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
             data->last_traced_tick = ev->tick;
 
             for(int j = 0; j < 2; j++) {
+                memset(&move, 0, sizeof(move));
                 move.tick = ev->tick;
                 move.lookup_id = 2;
                 move.player_id = j;
