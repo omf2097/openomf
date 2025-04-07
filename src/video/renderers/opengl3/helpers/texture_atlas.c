@@ -194,5 +194,5 @@ void atlas_reset(texture_atlas *atlas) {
     vector_clear(&atlas->free_space);
     zone item = {0, 0, atlas->w, atlas->h};
     vector_append(&atlas->free_space, &item);
-    log_info("Texture atlas reset");
+    log_debug("Texture atlas reset");
 }
