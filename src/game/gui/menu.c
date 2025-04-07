@@ -2,7 +2,6 @@
 #include "audio/audio.h"
 #include "game/gui/menu_background.h"
 #include "game/gui/sizer.h"
-#include "game/gui/text_render.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
 #include "utils/miscmath.h"

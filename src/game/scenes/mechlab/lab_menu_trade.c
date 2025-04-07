@@ -2,7 +2,6 @@
 
 #include "game/gui/sizer.h"
 #include "game/gui/spritebutton.h"
-#include "game/gui/text_render.h"
 #include "game/gui/trn_menu.h"
 #include "game/scenes/mechlab.h"
 #include "game/scenes/mechlab/button_details.h"

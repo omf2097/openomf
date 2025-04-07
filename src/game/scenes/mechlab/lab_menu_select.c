@@ -1,8 +1,6 @@
 #include "game/scenes/mechlab/lab_menu_select.h"
 #include "game/gui/label.h"
-#include "game/gui/sizer.h"
 #include "game/gui/spritebutton.h"
-#include "game/gui/text_render.h"
 #include "game/gui/trn_menu.h"
 #include "resources/bk.h"
 #include "resources/languages.h"

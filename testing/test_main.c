@@ -12,7 +12,6 @@ void hashmap_test_suite(CU_pSuite suite);
 void vector_test_suite(CU_pSuite suite);
 void list_test_suite(CU_pSuite suite);
 void array_test_suite(CU_pSuite suite);
-void text_render_test_suite(CU_pSuite suite);
 void text_layout_test_suite(CU_pSuite suite);
 void text_markup_test_suite(CU_pSuite suite);
 void video_common_test_suite(CU_pSuite suite);
@@ -58,11 +57,6 @@ int main(int argc, char **argv) {
     if(suite == NULL)
         goto end;
     video_common_test_suite(suite);
-
-    CU_pSuite text_render_suite = CU_add_suite("Text Renderer", NULL, NULL);
-    if(text_render_suite == NULL)
-        goto end;
-    text_render_test_suite(text_render_suite);
 
     CU_pSuite text_layout_suite = CU_add_suite("Text Layout", NULL, NULL);
     if(text_layout_suite == NULL)
