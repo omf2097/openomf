@@ -1456,6 +1456,8 @@ int lobby_create(scene *scene) {
         // destroy any leftover controllers
         game_player *player = game_state_get_player(scene->gs, i);
         game_player_set_ctrl(player, NULL);
+        // reset any scores
+        chr_score_reset(game_player_get_score(game_state_get_player(scene->gs, i)), true);
     }
     reconfigure_controller(scene->gs);
 
