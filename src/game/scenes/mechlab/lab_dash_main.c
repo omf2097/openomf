@@ -50,18 +50,13 @@ bool lab_dash_main_chr_load(component *c, void *userdata) {
     sd_chr_file *oldchr = p1->chr;
     sd_chr_file *chr = ((sd_chr_file *)list_get(dw->savegames, dw->index));
     p1->chr = omf_calloc(1, sizeof(sd_chr_file));
-    if(sg_load(p1->chr, chr->pilot.name) != SD_SUCCESS) {
-        // bad save, revert to the loaded character
-        omf_free(p1->chr);
-        p1->chr = oldchr;
-        trnmenu_finish(c->parent); // We refer to the components sizer
-        return true;
-    }
-    if(oldchr) {
-        log_debug("freeing loaded CHR %s", oldchr->pilot.name);
-        sd_chr_free(oldchr);
-        omf_free(oldchr);
-    }
+    memcpy(p1->chr, chr, sizeof(sd_chr_file));
+
+    assert(oldchr != NULL);
+    assert(oldchr != chr);
+    log_debug("Freeing previous CHR %s", oldchr->pilot.name);
+    sd_chr_free(oldchr);
+    omf_free(oldchr);
 
     p1->pilot = &p1->chr->pilot;
 
@@ -70,18 +65,19 @@ bool lab_dash_main_chr_load(component *c, void *userdata) {
         list_iter_begin(dw->savegames, &it);
         sd_chr_file *chr = NULL;
 
+        int16_t i = 0;
         foreach(it, chr) {
-            log_debug("freeing CHR %s", chr->pilot.name);
-            sd_chr_free(chr);
+            if(i != dw->index) {
+                log_debug("Freeing CHR %s", chr->pilot.name);
+                sd_chr_free(chr);
+            }
+            ++i;
         }
 
         list_free(dw->savegames);
         omf_free(dw->savegames);
     }
 
-    omf_free(settings_get()->tournament.last_name);
-    settings_get()->tournament.last_name = omf_strdup(p1->pilot->name);
-    settings_save();
     trnmenu_finish(c->parent); // We refer to the components sizer
     return true;
 }

@@ -95,6 +95,26 @@ int sd_chr_load(sd_chr_file *chr, const char *filename);
  */
 int sd_chr_save(sd_chr_file *chr, const char *filename);
 
+/*! \brief Get the sanitized CHR filename out of pilot name.
+ *
+ * The sanitization means that non-alphanumeric characters in pilot_name are
+ * replaced with "_" and alphanumeric characters are made uppercase. After
+ * those, ".CHR" is added in the end.
+ *
+ * \param pilot_name The pilot name.
+ * \param dst Output str.
+ */
+void sd_chr_append_sanitized_filename(str *dst, const char *pilot_name);
+
+/*! \brief Get the unsanitized CHR filename out of pilot name.
+ *
+ * The unsanitized CHR filename is pilot_name as is, with ".CHR" in the end.
+ *
+ * \param pilot_name The pilot name.
+ * \param dst Output str.
+ */
+void sd_chr_append_unsanitized_filename(str *dst, const char *pilot_name);
+
 /*! \brief Returns an enemy entry.
  *
  * Returns a pointer to a tournament enemy savestate entry.
