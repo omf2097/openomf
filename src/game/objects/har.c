@@ -1658,7 +1658,7 @@ void har_collide_with_hazard(object *o_har, object *o_hzd) {
     int level = 2;
     vec2i hit_coord;
     if(!h->damage_received && intersect_sprite_hitpoint(o_hzd, o_har, level, &hit_coord)) {
-        har_take_damage(o_har, &anim->footer_string, anim->hazard_damage, (anim->hazard_damage + 6) * 512);
+        har_take_damage(o_har, &anim->footer_string, anim->hazard_damage, anim->hazard_damage);
         controller *ctrl = game_player_get_ctrl(game_state_get_player(o_har->gs, h->player_id));
         har_event_hazard_hit(h, anim, ctrl);
         // fire enemy hazard hit event
