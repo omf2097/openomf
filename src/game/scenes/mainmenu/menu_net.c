@@ -1,6 +1,7 @@
 #include "game/scenes/mainmenu/menu_net.h"
 #include "game/scenes/mainmenu/menu_connect.h"
 #include "game/scenes/mainmenu/menu_listen.h"
+#include "game/scenes/mainmenu/menu_netconfig.h"
 #include "game/scenes/mainmenu/menu_widget_ids.h"
 
 #include "game/gui/gui.h"
@@ -28,6 +29,11 @@ void menu_net_listen(component *c, void *userdata) {
     }
 }
 
+void menu_net_config(component *c, void *userdata) {
+    scene *s = userdata;
+    menu_set_submenu(c->parent, menu_netconfig_create(s));
+}
+
 component *menu_net_create(scene *s) {
     component *menu = menu_create();
     menu_attach(menu, label_create_title("NETWORK PLAY"));
@@ -47,6 +53,9 @@ component *menu_net_create(scene *s) {
                                       menu_net_listen, s);
     widget_set_id(listen, NETWORK_LISTEN_BUTTON_ID);
     menu_attach(menu, listen);
+
+    component *config = button_create("CONFIGURATION", "Configure network options.", false, false, menu_net_config, s);
+    menu_attach(menu, config);
 
     menu_attach(menu, button_create("DONE", "Return to main menu.", false, false, menu_net_done, NULL));
     return menu;
