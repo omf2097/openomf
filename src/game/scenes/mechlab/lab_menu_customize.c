@@ -687,15 +687,15 @@ void lab_menu_focus_trade(component *c, bool focused, void *userdata) {
             if(tradecount == 1) {
                 snprintf(tmp, 200, "%s", lang_get(31 + trades[0]));
             } else if(tradecount == 2) {
-                snprintf(tmp, 200, "%s %s", lang_get(31 + trades[0]), lang_get(31 + trades[1]));
+                snprintf(tmp, 200, "%s\n%s", lang_get(31 + trades[0]), lang_get(31 + trades[1]));
             } else if(tradecount == 3) {
-                snprintf(tmp, 200, "%s %s %s", lang_get(31 + trades[0]), lang_get(31 + trades[1]),
+                snprintf(tmp, 200, "%s\n%s\n%s", lang_get(31 + trades[0]), lang_get(31 + trades[1]),
                          lang_get(31 + trades[2]));
             } else if(tradecount == 4) {
-                snprintf(tmp, 200, "%s %s %s %s", lang_get(31 + trades[0]), lang_get(31 + trades[1]),
+                snprintf(tmp, 200, "%s\n%s\n%s\n%s", lang_get(31 + trades[0]), lang_get(31 + trades[1]),
                          lang_get(31 + trades[2]), lang_get(31 + trades[3]));
             } else if(tradecount == 5) {
-                snprintf(tmp, 200, "%s %s %s %s %s", lang_get(31 + trades[0]), lang_get(31 + trades[1]),
+                snprintf(tmp, 200, "%s\n%s\n%s\n%s\n%s", lang_get(31 + trades[0]), lang_get(31 + trades[1]),
                          lang_get(31 + trades[2]), lang_get(31 + trades[3]), lang_get(31 + trades[4]));
             }
             label_set_text(details_label, tmp);
