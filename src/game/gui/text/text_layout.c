@@ -13,6 +13,13 @@ void text_layout_free(text_layout *layout) {
     vector_free(&layout->items);
 }
 
+void text_layout_clone(text_layout *dst, const text_layout *src) {
+    dst->w = src->w;
+    dst->h = src->h;
+    dst->rows = src->rows;
+    vector_clone(&dst->items, &src->items);
+}
+
 /**
  * Jumps over a line of text, and finds the starting index of the next line. If no text could not be fit into
  * the given space, start_index is returned.
