@@ -1238,9 +1238,9 @@ void arena_dynamic_tick(scene *scene, int paused) {
                          af_get_move(hars[0]->af_data, obj_har[0]->cur_animation->id)->category == CAT_DESTRUCTION) &&
                         (har_in_defeat_animation(obj_har[1]) || obj_har[1]->cur_animation->id == ANIM_DAMAGE)) ||
                        ((obj_har[1]->cur_animation->id == ANIM_VICTORY ||
-                         af_get_move(hars[0]->af_data, obj_har[0]->cur_animation->id)->category == CAT_SCRAP ||
-                         af_get_move(hars[0]->af_data, obj_har[0]->cur_animation->id)->category == CAT_DESTRUCTION) &&
-                        (har_in_defeat_animation(obj_har[0]) || obj_har[1]->cur_animation->id == ANIM_DAMAGE)));
+                         af_get_move(hars[1]->af_data, obj_har[1]->cur_animation->id)->category == CAT_SCRAP ||
+                         af_get_move(hars[1]->af_data, obj_har[1]->cur_animation->id)->category == CAT_DESTRUCTION) &&
+                        (har_in_defeat_animation(obj_har[0]) || obj_har[0]->cur_animation->id == ANIM_DAMAGE)));
                 if(!local->over) {
                     local->round++;
                     arena_reset(scene);
