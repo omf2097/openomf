@@ -16,6 +16,7 @@
 #include "formats/tournament.h"
 
 #define MAX_CHR_ENEMIES 256 ///< Maximum amount of enemies for a CHR file.
+#define MAX_CHR_BASENAME 8  ///< CHR filename format is: BASENAME.EXT, 8.3
 
 /*! \brief CHR enemy state entry
  *
@@ -94,6 +95,20 @@ int sd_chr_load(sd_chr_file *chr, const char *filename);
  * \param filename Name of the CHR file to save into.
  */
 int sd_chr_save(sd_chr_file *chr, const char *filename);
+
+/*! \brief Get CHR filename out of pilot name.
+ *
+ * \param pilot_name The pilot name.
+ * \param dst Output str.
+ */
+void sd_chr_append_filename(str *dst, const char *pilot_name);
+
+/*! \brief Get legacy CHR filename out of pilot name.
+ *
+ * \param pilot_name The pilot name.
+ * \param dst Output str.
+ */
+void sd_chr_append_legacy_filename(str *dst, const char *pilot_name);
 
 /*! \brief Returns an enemy entry.
  *

@@ -26,6 +26,7 @@
 #include "resources/sgmanager.h"
 #include "utils/allocator.h"
 #include "utils/c_array_util.h"
+#include "utils/c_string_util.h"
 #include "utils/log.h"
 #include "video/video.h"
 
