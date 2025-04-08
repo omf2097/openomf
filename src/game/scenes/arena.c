@@ -1081,6 +1081,14 @@ bool winner_needs_victory_pose(object *obj) {
            obj->cur_animation->id != ANIM_VICTORY;
 }
 
+bool har_is_scrap_walking(object *obj) {
+    har *h = obj->userdata;
+    if(h->walk_destination > 0 && h->walk_done_anim) {
+        return true;
+    }
+    return false;
+}
+
 /**
  * Creates text objects for har + player names and pings.
  */
@@ -1215,7 +1223,8 @@ void arena_dynamic_tick(scene *scene, int paused) {
                 local->ending_ticks++;
                 // you win/lose animation is done
                 if(player_frame_isset(obj_har[0], "be") || player_frame_isset(obj_har[1], "be") ||
-                   chr_score_onscreen(s1) || chr_score_onscreen(s2)) {
+                   chr_score_onscreen(s1) || chr_score_onscreen(s2) || har_is_scrap_walking(obj_har[0]) ||
+                   har_is_scrap_walking(obj_har[1])) {
                     local->ending_ticks = 50;
                 }
             }
@@ -1228,9 +1237,9 @@ void arena_dynamic_tick(scene *scene, int paused) {
                          af_get_move(hars[0]->af_data, obj_har[0]->cur_animation->id)->category == CAT_DESTRUCTION) &&
                         (har_in_defeat_animation(obj_har[1]) || obj_har[1]->cur_animation->id == ANIM_DAMAGE)) ||
                        ((obj_har[1]->cur_animation->id == ANIM_VICTORY ||
-                         af_get_move(hars[0]->af_data, obj_har[0]->cur_animation->id)->category == CAT_SCRAP ||
-                         af_get_move(hars[0]->af_data, obj_har[0]->cur_animation->id)->category == CAT_DESTRUCTION) &&
-                        (har_in_defeat_animation(obj_har[0]) || obj_har[1]->cur_animation->id == ANIM_DAMAGE)));
+                         af_get_move(hars[1]->af_data, obj_har[1]->cur_animation->id)->category == CAT_SCRAP ||
+                         af_get_move(hars[1]->af_data, obj_har[1]->cur_animation->id)->category == CAT_DESTRUCTION) &&
+                        (har_in_defeat_animation(obj_har[0]) || obj_har[0]->cur_animation->id == ANIM_DAMAGE)));
                 if(!local->over) {
                     local->round++;
                     arena_reset(scene);
