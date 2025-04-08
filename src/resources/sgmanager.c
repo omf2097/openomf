@@ -54,30 +54,17 @@ int sg_count(void) {
     }
     const char *dirname = pm_get_local_path(SAVE_PATH);
     list dirlist;
-    // Seek all files
     list_create(&dirlist);
-    scan_directory(&dirlist, dirname);
-
-    iterator it;
-    char *filename = NULL;
-    char *ext = NULL;
-
-    list_iter_begin(&dirlist, &it);
-    foreach(it, filename) {
-        if((ext = strrchr(filename, '.')) && strcmp(".CHR", ext) == 0) {
-            continue;
-        }
-        log_debug("ignoring file %s", filename);
-        // not a CHR file, get lost
-        list_delete(&dirlist, &it);
+    int ret;
+    if(scan_directory_suffix(&dirlist, dirname, ".CHR") != 0) {
+        ret = 0;
+        log_warn("Failed to scan %s to find *.CHR", dirname);
+    } else {
+        ret = list_size(&dirlist);
+        log_debug("Found %d savegames.", ret);
     }
-
-    log_debug("Found %d savegames.", list_size(&dirlist));
-    int size = list_size(&dirlist);
-
     list_free(&dirlist);
-
-    return size;
+    return ret;
 }
 
 list *sg_load_all(void) {
