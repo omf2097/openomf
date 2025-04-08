@@ -1,7 +1,5 @@
 #include "game/gui/text/text.h"
-#include "game/gui/text_render.h"
 #include "resources/fonts.h"
-#include "utils/allocator.h"
 #include "utils/str.h"
 #include "video/surface.h"
 #include <CUnit/CUnit.h>

@@ -3,7 +3,6 @@
 
 #include "formats/tournament.h"
 #include "game/gui/label.h"
-#include "game/gui/text_render.h"
 #include "game/gui/trnselect.h"
 #include "game/gui/widget.h"
 #include "resources/sprite.h"

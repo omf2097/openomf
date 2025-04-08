@@ -304,16 +304,6 @@ static void update_lobby_user_texts(lobby_user *user, bool create) {
 void lobby_render_overlay(scene *scene) {
     lobby_local *local = scene_get_userdata(scene);
 
-    text_settings font_big;
-    text_defaults(&font_big);
-    font_big.font = FONT_NET1;
-    font_big.cforeground = 3;
-
-    text_settings font_small;
-    text_defaults(&font_small);
-    font_small.font = FONT_NET2;
-    font_small.cforeground = 56;
-
     if(local->mode > LOBBY_YELL) {
         text_draw(local->titles[TITLE_PLAYER], 16, 7);
         text_draw(local->titles[TITLE_ACTION], 117, 7);
