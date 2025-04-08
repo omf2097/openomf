@@ -12,6 +12,8 @@
 #define MAX_TARGETS 3
 #define LOG_LEVELS 4
 
+static char last_error[256];
+
 typedef struct log_target {
     FILE *fp;
     log_level level;
@@ -160,6 +162,11 @@ void log_msg(log_level level, const char *fmt, ...) {
         va_start(args, fmt);
         vfprintf(target->fp, fmt, args);
         va_end(args);
+        if(level == LOG_ERROR) {
+            va_start(args, fmt);
+            vsnprintf(last_error, sizeof(last_error), fmt, args);
+            va_end(args);
+        }
         if(state->colors && target->colors) {
             fprintf(target->fp, "\x1b[0m\n");
         } else {
@@ -168,4 +175,8 @@ void log_msg(log_level level, const char *fmt, ...) {
         fflush(target->fp);
         SDL_UnlockMutex(target->lock);
     }
+}
+
+const char *log_last_error(void) {
+    return last_error;
 }

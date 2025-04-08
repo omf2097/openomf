@@ -282,7 +282,7 @@ int main(int argc, char *argv[]) {
 
     // Initialize engine
     if(engine_init(&init_flags)) {
-        err_msgbox("Failed to initialize game engine.");
+        err_msgbox("Failed to initialize game engine: %s", log_last_error());
         goto exit_4;
     }
 

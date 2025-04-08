@@ -62,7 +62,10 @@ static bool load_shader(GLuint program_id, GLenum shader_type, const char *shade
     str shader_source;
 
     str_from_format(&shader_path, "%s%s", pm_get_local_path(SHADER_PATH), shader_file);
-    str_from_file(&shader_source, str_c(&shader_path));
+    if(!str_from_file(&shader_source, str_c(&shader_path))) {
+        log_error("Failed to load shader from %s", str_c(&shader_path));
+        return false;
+    }
     const char *c_str = str_c(&shader_source);
 
     GLuint shader = glCreateShader(shader_type);
@@ -87,12 +90,15 @@ static bool load_shader(GLuint program_id, GLenum shader_type, const char *shade
 void delete_program(GLuint program_id) {
     GLsizei attached_count = 0;
     glGetProgramiv(program_id, GL_ATTACHED_SHADERS, &attached_count);
-    GLuint *shaders = omf_calloc(attached_count, sizeof(GLuint));
-    glUseProgram(0);
-    glGetAttachedShaders(program_id, attached_count, NULL, shaders);
-    for(int i = 0; i < attached_count; i++) {
-        log_debug("Shader %d deleted", shaders[i]);
-        glDeleteShader(shaders[i]); // Mark for removal, glDeleteProgram will handle deletion.
+    GLuint *shaders = NULL;
+    if(attached_count > 0) {
+        shaders = omf_calloc(attached_count, sizeof(GLuint));
+        glUseProgram(0);
+        glGetAttachedShaders(program_id, attached_count, NULL, shaders);
+        for(int i = 0; i < attached_count; i++) {
+            log_debug("Shader %d deleted", shaders[i]);
+            glDeleteShader(shaders[i]); // Mark for removal, glDeleteProgram will handle deletion.
+        }
     }
     glDeleteProgram(program_id);
     log_debug("Program %d deleted", program_id);

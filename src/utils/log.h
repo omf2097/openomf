@@ -30,4 +30,6 @@ bool is_log_level(const char *level);
 
 void log_msg(log_level level, const char *fmt, ...);
 
+const char *log_last_error(void);
+
 #endif // LOG_H

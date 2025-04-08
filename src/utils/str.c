@@ -214,13 +214,21 @@ void str_from_buf(str *dst, const char *buf, size_t len) {
     str_zero(dst);
 }
 
-void str_from_file(str *dst, const char *file_name) {
+bool str_from_file(str *dst, const char *file_name) {
     FILE *handle = file_open(file_name, "rb");
+    if(!handle) {
+        return false;
+    }
     long size = file_size(handle);
     str_create(dst);
-    file_read(handle, str_resize_buffer(dst, size), size);
+    if(!file_read(handle, str_resize_buffer(dst, size), size)) {
+        file_close(handle);
+        str_free(dst);
+        return false;
+    }
     file_close(handle);
     str_zero(dst);
+    return true;
 }
 
 void str_format(str *dst, const char *format, ...) {
