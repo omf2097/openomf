@@ -17,7 +17,6 @@
 #include "game/gui/label.h"
 #include "game/gui/menu.h"
 #include "game/gui/progressbar.h"
-#include "game/gui/text_render.h"
 #include "game/gui/textslider.h"
 #include "game/gui/widget.h"
 #include "game/objects/arena_constraints.h"

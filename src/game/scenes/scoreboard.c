@@ -3,7 +3,6 @@
 
 #include "game/common_defines.h"
 #include "game/gui/gui_frame.h"
-#include "game/gui/text_render.h"
 #include "game/gui/textinput.h"
 #include "game/scenes/scoreboard.h"
 #include "game/utils/formatting.h"

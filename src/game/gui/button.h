@@ -2,7 +2,6 @@
 #define BUTTON_H
 
 #include "game/gui/component.h"
-#include "game/gui/text_render.h"
 
 typedef void (*button_click_cb)(component *c, void *userdata);
 

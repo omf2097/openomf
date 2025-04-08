@@ -3,7 +3,6 @@
 
 #include "game/gui/component.h"
 #include "game/gui/gui_frame.h"
-#include "game/gui/text_render.h"
 #include "video/surface.h"
 
 typedef void (*menu_tick_cb)(component *c);

@@ -75,6 +75,16 @@ enum
 
 enum
 {
+    TITLE_PLAYER = 0,
+    TITLE_ACTION,
+    TITLE_WIN_LOSS,
+    TITLE_VERSION,
+    TITLE_USER_OF,
+    TITLE_COUNT,
+};
+
+enum
+{
     CHALLENGE_OFFER = 0,
     CHALLENGE_ACCEPT,
     CHALLENGE_REJECT,
@@ -99,12 +109,12 @@ enum
     PRESENCE_PONDERING,
     PRESENCE_FIGHTING,
     PRESENCE_WATCHING,
+    PRESENCE_COUNT,
 };
 
-typedef struct lobby_user_t {
+typedef struct lobby_user {
     char name[16];
     char version[VERSION_BUF_SIZE];
-    bool self;
     ENetAddress address;
     uint16_t port;     // port the server sees this user connecting from
     uint16_t ext_port; // port this user claims will route inbound to them (or 0)
@@ -112,9 +122,13 @@ typedef struct lobby_user_t {
     uint8_t wins;
     uint8_t losses;
     uint8_t status;
+
+    text *name_text;
+    text *wins_text;
+    text *version_text;
 } lobby_user;
 
-typedef struct lobby_local_t {
+typedef struct lobby_local {
     ENetHost *client;
     ENetPeer *peer;
     ENetPeer *opponent_peer;
@@ -140,6 +154,9 @@ typedef struct lobby_local_t {
 
     menu *joinmenu;
 
+    text *presences[PRESENCE_COUNT];
+    text *titles[5];
+
     gui_frame *frame;
     uint8_t role;
     // how many attempts we've made to get a working NAT address
@@ -153,22 +170,45 @@ typedef struct lobby_local_t {
     char helptext[80];
 } lobby_local;
 
-typedef struct log_event_t {
-    uint8_t color;
-    char msg[150];
+typedef struct log_event {
+    text *message;
 } log_event;
 
 void lobby_free(scene *scene) {
     lobby_local *local = scene_get_userdata(scene);
     gui_frame_free(local->frame);
+
+    // Free user records
+    iterator it;
+    lobby_user *user;
+    list_iter_begin(&local->users, &it);
+    foreach(it, user) {
+        text_free(&user->name_text);
+        text_free(&user->version_text);
+        text_free(&user->wins_text);
+    }
     list_free(&local->users);
+
+    // Free chat messages
+    log_event *log_msg;
+    list_iter_begin(&local->log, &it);
+    foreach(it, log_msg) {
+        text_free(&log_msg->message);
+    }
     list_free(&local->log);
+
     if(local->client) {
         enet_host_destroy(local->client);
     }
     if(local->dialog) {
         dialog_free(local->dialog);
         omf_free(local->dialog);
+    }
+    for(int i = 0; i < TITLE_COUNT; i++) {
+        text_free(&local->titles[i]);
+    }
+    for(int i = 0; i < PRESENCE_COUNT; i++) {
+        text_free(&local->presences[i]);
     }
 
     omf_free(local);
@@ -194,6 +234,12 @@ void lobby_show_dialog(scene *scene, int dialog_style, char *dialog_text, dialog
     dialog_show(local->dialog, 1);
 }
 
+static void update_active_user_text(lobby_local *local) {
+    char buf[64];
+    snprintf(buf, sizeof(buf), "%d of %d", local->active_user + 1, list_size(&local->users));
+    text_set_from_c(local->titles[TITLE_USER_OF], buf);
+}
+
 void lobby_input_tick(scene *scene) {
     lobby_local *local = scene_get_userdata(scene);
     ctrl_event *p1 = NULL, *i;
@@ -209,11 +255,13 @@ void lobby_input_tick(scene *scene) {
                 if(local->active_user >= list_size(&local->users)) {
                     local->active_user = 0;
                 }
+                update_active_user_text(local);
             } else if(i->type == EVENT_TYPE_ACTION && i->event_data.action == ACT_UP) {
                 local->active_user--;
                 if(local->active_user >= list_size(&local->users)) {
                     local->active_user = list_size(&local->users) - 1;
                 }
+                update_active_user_text(local);
             } else {
                 gui_frame_action(local->frame, p1->event_data.action);
             }
@@ -222,98 +270,81 @@ void lobby_input_tick(scene *scene) {
     controller_free_chain(p1);
 }
 
+static text *create_big_text(int w, int h, const char *str) {
+    text *t = text_create_with_font_and_size(FONT_NET1, w, h);
+    text_set_color(t, 3);
+    text_set_from_c(t, str);
+    return t;
+}
+
+static text *create_small_text(int w, int h, const char *str) {
+    text *t = text_create_with_font_and_size(FONT_NET2, w, h);
+    text_set_color(t, 56);
+    text_set_from_c(t, str);
+    return t;
+}
+
+static void update_lobby_user_texts(lobby_user *user, bool create) {
+    char wins[8];
+    snprintf(wins, sizeof(wins), "%d/%d", user->wins, user->losses);
+    if(create) {
+        user->name_text = create_big_text(90, 8, user->name);
+        user->wins_text = create_small_text(50, 6, wins);
+        user->version_text = create_small_text(140, 6, user->version);
+        text_set_color(user->name_text, 36);
+        text_set_color(user->wins_text, 56);
+        text_set_color(user->version_text, 56);
+    } else {
+        text_set_from_c(user->name_text, user->name);
+        text_set_from_c(user->wins_text, wins);
+        text_set_from_c(user->version_text, user->version);
+    }
+}
+
 void lobby_render_overlay(scene *scene) {
     lobby_local *local = scene_get_userdata(scene);
 
-    char buf[100];
-    int longest = 0;
-
-    text_settings font_big;
-    text_defaults(&font_big);
-    font_big.font = FONT_NET1;
-    font_big.cforeground = 3;
-
-    text_settings font_small;
-    text_defaults(&font_small);
-    font_small.font = FONT_NET2;
-    font_small.cforeground = 56;
-
     if(local->mode > LOBBY_YELL) {
-        snprintf(buf, sizeof(buf), "Player");
-        text_render_mode(&font_big, TEXT_DEFAULT, 16, 7, 50, 8, buf);
-
-        snprintf(buf, sizeof(buf), "Action");
-        text_render_mode(&font_big, TEXT_DEFAULT, 117, 7, 50, 8, buf);
-
-        snprintf(buf, sizeof(buf), "Wn/Loss");
-        text_render_mode(&font_small, TEXT_DEFAULT, 200, 8, 50, 6, buf);
-
-        snprintf(buf, sizeof(buf), "Version");
-        text_render_mode(&font_small, TEXT_DEFAULT, 240, 8, 50, 6, buf);
-
-        snprintf(buf, sizeof(buf), "%d of %d", local->active_user + 1, list_size(&local->users));
-        text_render_mode(&font_small, TEXT_DEFAULT, 284, 8, 40, 6, buf);
+        text_draw(local->titles[TITLE_PLAYER], 16, 7);
+        text_draw(local->titles[TITLE_ACTION], 117, 7);
+        text_draw(local->titles[TITLE_WIN_LOSS], 200, 8);
+        text_draw(local->titles[TITLE_VERSION], 240, 8);
+        text_draw(local->titles[TITLE_USER_OF], 284, 8);
 
         iterator it;
         lobby_user *user;
         list_iter_begin(&local->users, &it);
         int i = 0;
         while((user = iter_next(&it)) && i < 8) {
-            if(i == local->active_user) {
-                font_big.cforeground = 7;
+            text_set_color(user->name_text, (i == local->active_user) ? 7 : 36);
+            text_draw(user->name_text, 16, 18 + (10 * i));
+
+            if(user->status > 0 && user->status < PRESENCE_COUNT) {
+                text_draw(local->presences[user->status], 117, 18 + (10 * i));
             } else {
-                font_big.cforeground = 36;
+                text_draw(local->presences[PRESENCE_UNKNOWN], 117, 18 + (10 * i));
             }
-            text_render_mode(&font_big, TEXT_DEFAULT, 16, 18 + (10 * i), 90, 8, user->name);
-            // render player status
-            font_small.cforeground = 40;
-            switch(user->status) {
-                case PRESENCE_STARTING:
-                    text_render_mode(&font_small, TEXT_DEFAULT, 117, 18 + (10 * i), 70, 6, "starting");
-                    break;
-                case PRESENCE_AVAILABLE:
-                    text_render_mode(&font_small, TEXT_DEFAULT, 117, 18 + (10 * i), 70, 6, "available");
-                    break;
-                case PRESENCE_FIGHTING:
-                    text_render_mode(&font_small, TEXT_DEFAULT, 117, 18 + (10 * i), 70, 6, "fighting");
-                    break;
-                case PRESENCE_CHALLENGING:
-                    text_render_mode(&font_small, TEXT_DEFAULT, 117, 18 + (10 * i), 70, 6, "challenging");
-                    break;
-                case PRESENCE_PONDERING:
-                    text_render_mode(&font_small, TEXT_DEFAULT, 117, 18 + (10 * i), 70, 6, "pondering");
-                    break;
-                case PRESENCE_WATCHING:
-                    text_render_mode(&font_small, TEXT_DEFAULT, 117, 18 + (10 * i), 70, 6, "watching");
-                    break;
-                default:
-                    text_render_mode(&font_small, TEXT_DEFAULT, 117, 18 + (10 * i), 70, 6, "unknown");
-            }
-            char wins[8];
-            snprintf(wins, sizeof(wins), "%d/%d", user->wins, user->losses);
-            font_small.cforeground = 56;
-            text_render_mode(&font_small, TEXT_DEFAULT, 200, 18 + (10 * i), 50, 6, wins);
-            text_render_mode(&font_small, TEXT_DEFAULT, 240, 18 + (10 * i), 140, 6, user->version);
+
+            text_draw(user->wins_text, 200, 18 + (10 * i));
+            text_draw(user->version_text, 240, 18 + (10 * i));
             i++;
         }
 
-        i = 0;
+        int left = 32;
         list_iter_end(&local->log, &it);
-        log_event *logmsg;
-        while((logmsg = iter_prev(&it)) && i < 4) {
-            font_big.cforeground = logmsg->color;
-            i += text_find_line_count(&font_big, 300 / 8, 3, strlen(logmsg->msg), logmsg->msg, &longest);
-            text_render_mode(&font_big, TEXT_DEFAULT, 10, 198 - (8 * i), 300, 8, logmsg->msg);
+        log_event *log_msg;
+        while((log_msg = iter_prev(&it)) && left > 0) {
+            left -= text_get_layout_height(log_msg->message);
+            text_draw(log_msg->message, 10, 168 + left);
         }
     } else if(local->mode == LOBBY_YELL) {
         iterator it;
-        int i = 0;
+        int left = 140;
         list_iter_end(&local->log, &it);
-        log_event *logmsg;
-        while((logmsg = iter_prev(&it)) && i < 17) {
-            font_big.cforeground = logmsg->color;
-            i += text_find_line_count(&font_big, 300 / 8, 3, strlen(logmsg->msg), logmsg->msg, &longest);
-            text_render_mode(&font_big, TEXT_DEFAULT, 10, 140 - (8 * i), 300, 8, logmsg->msg);
+        log_event *log_msg;
+        while((log_msg = iter_prev(&it)) && left > 0) {
+            left -= text_get_layout_height(log_msg->message);
+            text_draw(log_msg->message, 10, left);
         }
     }
 
@@ -456,6 +487,15 @@ component *lobby_yell_create(scene *s) {
     return menu;
 }
 
+static text *create_log_message(const char *status, vga_index color) {
+    text *t = text_create_with_font_and_size(FONT_NET1, 300, 200);
+    text_set_color(t, color);
+    text_generate_layout(t);
+    text_set_from_c(t, status);
+    text_generate_layout(t);
+    return t;
+}
+
 void lobby_do_whisper(component *c, void *userdata) {
     menu *m = sizer_get_obj(c->parent);
     scene *s = userdata;
@@ -480,10 +520,11 @@ void lobby_do_whisper(component *c, void *userdata) {
 
         enet_peer_send(local->peer, 0, packet);
 
-        log_event log;
-        log.color = WHISPER_COLOR;
-        snprintf(log.msg, sizeof(log.msg), "%s: %s", local->name, whisper);
+        str tmp;
+        str_from_format(&tmp, "%s: %s", local->name, whisper);
+        log_event log = {create_log_message(str_c(&tmp), WHISPER_COLOR)};
         list_append(&local->log, &log, sizeof(log));
+        str_free(&tmp);
 
         m->finished = 1;
         local->mode = LOBBY_MAIN;
@@ -945,6 +986,7 @@ void lobby_tick(scene *scene, int paused) {
                 switch(control_byte >> 4) {
                     case PACKET_PRESENCE: {
                         lobby_user user;
+                        memset(&user, 0, sizeof(lobby_user));
                         user.id = serial_read_uint32(&ser);
                         user.address.host = serial_read_uint32(&ser);
                         user.port = serial_read_uint16(&ser);
@@ -980,20 +1022,23 @@ void lobby_tick(scene *scene, int paused) {
                                         u->port = user.port;
                                         u->ext_port = user.ext_port;
                                         u->address.port = user.address.port;
-                                        memcpy(user.version, u->version, sizeof(user.version));
+                                        memcpy(u->version, user.version, sizeof(u->version));
+                                        update_lobby_user_texts(u, false);
                                         break;
                                     }
                                 }
-
                                 if(!found) {
+                                    update_lobby_user_texts(&user, true);
                                     list_append(&local->users, &user, sizeof(lobby_user));
                                     if(control_byte & 0x8) {
-                                        log_event log;
-                                        log.color = JOIN_COLOR;
-                                        snprintf(log.msg, sizeof(log.msg), "%s has entered the Arena", user.name),
-                                            list_append(&local->log, &log, sizeof(log));
+                                        str tmp;
+                                        str_from_format(&tmp, "%s has entered the Arena", user.name);
+                                        log_event log = {create_log_message(str_c(&tmp), JOIN_COLOR)};
+                                        list_append(&local->log, &log, sizeof(log));
+                                        str_free(&tmp);
                                     }
                                 }
+                                update_active_user_text(local);
                             }
                         }
                     } break;
@@ -1103,21 +1148,21 @@ void lobby_tick(scene *scene, int paused) {
                         }
                         break;
                     case PACKET_YELL: {
-                        log_event log;
-                        log.color = YELL_COLOR;
-                        strncpy_or_truncate(log.msg, (char *)event.packet->data + 1, sizeof(log.msg));
+                        char tmp[150];
+                        strncpy_or_truncate(tmp, (char *)event.packet->data + 1, sizeof(tmp));
+                        log_event log = {create_log_message(tmp, YELL_COLOR)};
                         list_append(&local->log, &log, sizeof(log));
                     } break;
                     case PACKET_WHISPER: {
-                        log_event log;
-                        log.color = WHISPER_COLOR;
-                        strncpy_or_truncate(log.msg, (char *)event.packet->data + 1, sizeof(log.msg));
+                        char tmp[150];
+                        strncpy_or_truncate(tmp, (char *)event.packet->data + 1, sizeof(tmp));
+                        log_event log = {create_log_message(tmp, WHISPER_COLOR)};
                         list_append(&local->log, &log, sizeof(log));
                     } break;
                     case PACKET_ANNOUNCEMENT: {
-                        log_event log;
-                        log.color = ANNOUNCEMENT_COLOR;
-                        strncpy_or_truncate(log.msg, (char *)event.packet->data + 1, sizeof(log.msg));
+                        char tmp[150];
+                        strncpy_or_truncate(tmp, (char *)event.packet->data + 1, sizeof(tmp));
+                        log_event log = {create_log_message(tmp, ANNOUNCEMENT_COLOR)};
                         list_append(&local->log, &log, sizeof(log));
                     } break;
                     case PACKET_RELAY: {
@@ -1202,10 +1247,11 @@ void lobby_tick(scene *scene, int paused) {
                         lobby_user *user;
                         foreach(it, user) {
                             if(user->id == connect_id) {
-                                log_event log;
-                                log.color = LEAVE_COLOR;
-                                snprintf(log.msg, sizeof(log.msg), "%s has left the Arena", user->name);
+                                str tmp;
+                                str_from_format(&tmp, "%s has left the Arena", user->name);
+                                log_event log = {create_log_message(str_c(&tmp), LEAVE_COLOR)};
                                 list_append(&local->log, &log, sizeof(log));
+                                str_free(&tmp);
                                 if(local->opponent == user) {
                                     local->opponent = NULL;
                                     // any existing dialogs were for this user
@@ -1215,6 +1261,9 @@ void lobby_tick(scene *scene, int paused) {
                                     }
                                     // TODO do we need to pop a dialog saying "user disconnected"?
                                 }
+                                text_free(&user->wins_text);
+                                text_free(&user->version_text);
+                                text_free(&user->name_text);
                                 list_delete(&local->users, &it);
                                 break;
                             }
@@ -1344,6 +1393,7 @@ void lobby_tick(scene *scene, int paused) {
         }
     }
     local->active_user = min2(local->active_user, list_size(&local->users) - 1);
+    update_active_user_text(local);
     gui_frame_tick(local->frame);
 
     component *c = gui_frame_get_root(local->frame);
@@ -1460,6 +1510,21 @@ int lobby_create(scene *scene) {
         chr_score_reset(game_player_get_score(game_state_get_player(scene->gs, i)), true);
     }
     reconfigure_controller(scene->gs);
+
+    // Title texts
+    local->titles[0] = create_big_text(50, 8, "Player");
+    local->titles[1] = create_big_text(50, 8, "Action");
+    local->titles[2] = create_small_text(50, 6, "Wn/Loss");
+    local->titles[3] = create_small_text(50, 6, "Version");
+    local->titles[4] = create_small_text(40, 6, "0 of 0");
+
+    // Presence texts. These should match the enums.
+    const char *presences[] = {"",          "unknown",  "starting", "available", "practicing", "challenging",
+                               "pondering", "fighting", "watching"};
+    for(int i = 0; i < PRESENCE_COUNT; i++) {
+        local->presences[i] = create_small_text(70, 6, presences[i]);
+        text_set_color(local->presences[i], 40);
+    }
 
     local->frame = gui_frame_create(&theme, 9, 132, 300, 8);
     gui_frame_set_root(local->frame, menu);

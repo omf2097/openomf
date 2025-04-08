@@ -6,7 +6,6 @@
 #include "formats/rec.h"
 #include "game/game_player.h"
 #include "game/game_state.h"
-#include "game/gui/text_render.h"
 #include "game/utils/settings.h"
 #include "resources/languages.h"
 #include "resources/sounds_loader.h"
