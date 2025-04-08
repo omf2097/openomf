@@ -531,7 +531,7 @@ void lobby_do_whisper(component *c, void *userdata) {
         enet_peer_send(local->peer, 0, packet);
 
         str tmp;
-        str_from_format(&tmp, "%s: %s", local->nat, whisper);
+        str_from_format(&tmp, "%s: %s", local->name, whisper);
         log_event log = {create_log_message(str_c(&tmp), WHISPER_COLOR)};
         list_append(&local->log, &log, sizeof(log));
         str_free(&tmp);
