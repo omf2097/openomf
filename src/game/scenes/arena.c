@@ -1082,6 +1082,14 @@ bool winner_needs_victory_pose(object *obj) {
            obj->cur_animation->id != ANIM_VICTORY;
 }
 
+bool har_is_scrap_walking(object *obj) {
+    har *h = obj->userdata;
+    if(h->walk_destination > 0 && h->walk_done_anim) {
+        return true;
+    }
+    return false;
+}
+
 /**
  * Creates text objects for har + player names and pings.
  */
@@ -1216,7 +1224,8 @@ void arena_dynamic_tick(scene *scene, int paused) {
                 local->ending_ticks++;
                 // you win/lose animation is done
                 if(player_frame_isset(obj_har[0], "be") || player_frame_isset(obj_har[1], "be") ||
-                   chr_score_onscreen(s1) || chr_score_onscreen(s2)) {
+                   chr_score_onscreen(s1) || chr_score_onscreen(s2) || har_is_scrap_walking(obj_har[0]) ||
+                   har_is_scrap_walking(obj_har[1])) {
                     local->ending_ticks = 50;
                 }
             }
