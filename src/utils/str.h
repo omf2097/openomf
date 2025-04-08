@@ -59,8 +59,10 @@ static inline void str_from_c(str *dst, const char *src) {
  * @details Full source file content will be read, whether it contains null characters or not.
  * @param dst Target string buffer
  * @param file_name Filename to read
+ * @return true If success
+ * @return false If failure (result value is invalid)
  */
-void str_from_file(str *dst, const char *file_name);
+bool str_from_file(str *dst, const char *file_name);
 
 /**
  * @brief Create a string object by format string

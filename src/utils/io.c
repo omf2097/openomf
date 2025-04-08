@@ -13,7 +13,7 @@ FILE *file_open(const char *file_name, const char *mode) {
     FILE *handle = fopen(file_name, mode);
     if(handle == NULL) {
         log_error("Unable to open file '%s'", file_name);
-        abort();
+        return NULL;
     }
     return handle;
 }
@@ -24,7 +24,7 @@ long file_size(FILE *handle) {
     return info.st_size;
 }
 
-void file_read(FILE *handle, char *buffer, long size) {
+bool file_read(FILE *handle, char *buffer, long size) {
     size_t ptr = 0;
     size_t read_size;
     while(1) {
@@ -33,13 +33,14 @@ void file_read(FILE *handle, char *buffer, long size) {
         }
         if(ferror(handle)) {
             log_error("Error while reading file");
-            abort();
+            return false;
         }
         read_size = min2(size - ptr, READ_BLOCK_SIZE);
         if(read_size <= 0)
             break;
         ptr += fread(buffer + ptr, 1, read_size, handle);
     }
+    return true;
 }
 
 void file_close(FILE *handle) {

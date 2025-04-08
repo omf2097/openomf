@@ -5,7 +5,7 @@
 
 FILE *file_open(const char *file_name, const char *mode);
 long file_size(FILE *handle);
-void file_read(FILE *handle, char *buffer, long size);
+bool file_read(FILE *handle, char *buffer, long size);
 void file_close(FILE *handle);
 
 #endif // UTILS_IO_H
