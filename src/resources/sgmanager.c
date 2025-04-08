@@ -5,8 +5,10 @@
 #include "resources/pathmanager.h"
 #include "utils/allocator.h"
 #include "utils/c_string_util.h"
+#include "utils/io.h"
 #include "utils/log.h"
 #include "utils/scandir.h"
+#include <errno.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -100,52 +102,69 @@ list *sg_load_all(void) {
     return chrlist;
 }
 
-int sg_load(sd_chr_file *chr, const char *pilotname) {
-    char tmp[1024];
+int sg_load(sd_chr_file *chr, const char *basename) {
+    str path;
+    str_from_c(&path, pm_get_local_path(SAVE_PATH));
+    str_append_c(&path, basename);
+    size_t pilot_len = strlen(basename);
+    if(pilot_len >= 4 && strcmp(&basename[pilot_len - 4], ".CHR") != 0)
+        str_append_c(&path, ".CHR");
 
-    // Form the savegame filename
-    const char *dirname = pm_get_local_path(SAVE_PATH);
-    snprintf(tmp, 1024, "%s%s.CHR", dirname, pilotname);
-
-    // Attempt to load
     sd_chr_create(chr);
-    int ret = sd_chr_load(chr, tmp);
+    int ret = sd_chr_load(chr, str_c(&path));
     if(ret != SD_SUCCESS) {
-        log_error("Unable to load savegame file '%s'.", tmp);
-        return ret;
+        log_error("Loading pilot %s from %s failed: %s", basename, str_c(&path), sd_get_error(ret));
+    } else {
+        log_info("Loaded pilot %s from %s", basename, str_c(&path));
     }
-
-    // Load colors from other files
-    sd_pilot_set_player_color(&chr->pilot, PRIMARY, chr->pilot.color_1);
-    sd_pilot_set_player_color(&chr->pilot, SECONDARY, chr->pilot.color_2);
-    sd_pilot_set_player_color(&chr->pilot, TERTIARY, chr->pilot.color_3);
-
-    return SD_SUCCESS;
+    str_free(&path);
+    return ret;
 }
 
 int sg_save(sd_chr_file *chr) {
-    char filename[1024];
+    str path;
     const char *dirname = pm_get_local_path(SAVE_PATH);
-    snprintf(filename, sizeof(filename), "%s%s.CHR", dirname, chr->pilot.name);
-    int ret = sd_chr_save(chr, filename);
-    if(ret == SD_SUCCESS) {
-        log_debug("Saved pilot %s in %s", chr->pilot.name, filename);
+    str_from_c(&path, dirname);
+
+    // If the unsanitized filename exists, keep using it.
+    sd_chr_append_unsanitized_filename(&path, chr->pilot.name);
+    if(!file_exists(str_c(&path))) {
+        // Otherwise, use the sanitized filename.
+        str_truncate(&path, strlen(dirname));
+        sd_chr_append_sanitized_filename(&path, chr->pilot.name);
+    }
+    int ret = sd_chr_save(chr, str_c(&path));
+    if(ret != SD_SUCCESS) {
+        log_error("Saving pilot %s to %s failed: %s", chr->pilot.name, str_c(&path), strerror(errno));
+    } else {
+        log_info("Saved pilot %s to %s", chr->pilot.name, str_c(&path));
+        str_cut_left(&path, strlen(dirname));
         omf_free(settings_get()->tournament.last_name);
-        settings_get()->tournament.last_name = omf_strdup(chr->pilot.name);
+        settings_get()->tournament.last_name = omf_strdup(str_c(&path));
         settings_save();
     }
+    str_free(&path);
     return ret;
 }
 
 int sg_delete(const char *pilotname) {
-    char pathname[1024];
-
+    str path;
     const char *dirname = pm_get_local_path(SAVE_PATH);
-    snprintf(pathname, sizeof(pathname), "%s%s.CHR", dirname, pilotname);
-    int ret = remove(pathname);
-    if(ret != 0) {
-        log_error("Failed to delete %s: %m", pathname);
-        return SD_FILE_UNLINK_ERROR;
+    str_from_c(&path, dirname);
+
+    // First try the sanitized filename.
+    sd_chr_append_sanitized_filename(&path, pilotname);
+    if(!file_exists(str_c(&path))) {
+        // Sanitized filename did not exist, let's try the unsanitized.
+        str_truncate(&path, strlen(dirname));
+        sd_chr_append_unsanitized_filename(&path, pilotname);
     }
-    return SD_SUCCESS;
+    int ret = remove(str_c(&path));
+    if(ret != 0) {
+        log_error("Failed to delete %s: %s", str_c(&path), strerror(errno));
+    } else {
+        log_info("Removed %s", str_c(&path));
+    }
+    str_free(&path);
+    return ret;
 }

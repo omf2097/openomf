@@ -217,6 +217,11 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
 
     chr->pilot.photo = chr->photo;
 
+    // Load colors from other files
+    sd_pilot_set_player_color(&chr->pilot, PRIMARY, chr->pilot.color_1);
+    sd_pilot_set_player_color(&chr->pilot, SECONDARY, chr->pilot.color_2);
+    sd_pilot_set_player_color(&chr->pilot, TERTIARY, chr->pilot.color_3);
+
     // Close & return
     sd_reader_close(r);
 
@@ -283,6 +288,20 @@ int sd_chr_save(sd_chr_file *chr, const char *filename) {
     // Close & return
     sd_writer_close(w);
     return SD_SUCCESS;
+}
+
+void sd_chr_append_sanitized_filename(str *dst, const char *pilot_name) {
+    size_t len = strlen(pilot_name);
+    for(size_t i = 0; i < len; ++i) {
+        unsigned char c = pilot_name[i];
+        str_append_char(dst, isalnum(c) ? toupper(c) : '_');
+    }
+    str_append_c(dst, ".CHR");
+}
+
+void sd_chr_append_unsanitized_filename(str *dst, const char *pilot_name) {
+    str_append_c(dst, pilot_name);
+    str_append_c(dst, ".CHR");
 }
 
 void sd_chr_free(sd_chr_file *chr) {
