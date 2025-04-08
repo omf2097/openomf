@@ -2,6 +2,7 @@
 #include "formats/sprite.h"
 #include "game/game_state.h"
 #include "game/objects/arena_constraints.h"
+#include "resources/af_move.h"
 #include "utils/allocator.h"
 #include "utils/c_string_util.h"
 #include "utils/log.h"
@@ -363,7 +364,7 @@ void object_render(object *obj) {
         y = obj->pos.y - cur_sprite->pos.y + rstate->o_correction.y - object_get_size(obj).y;
 
         if(obj->cur_animation->id == ANIM_JUMPING) {
-            y -= 100;
+            y -= JUMP_COORD_ADJUSTMENT * 2;
         }
     } else {
         y = obj->pos.y + cur_sprite->pos.y + rstate->o_correction.y;

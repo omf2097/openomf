@@ -21,7 +21,7 @@ void af_move_create(af_move *move, array *sprites, void *src, int id) {
     animation_create(&move->ani, sprites, sdmv->animation, id);
     if(id == ANIM_JUMPING) {
         // fixup the jump coordinates
-        animation_fixup_coordinates(&move->ani, 0, -50);
+        animation_fixup_coordinates(&move->ani, 0, JUMP_COORD_ADJUSTMENT * -1);
     }
 }
 

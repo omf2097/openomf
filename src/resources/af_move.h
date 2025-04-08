@@ -5,6 +5,8 @@
 #include "utils/array.h"
 #include "utils/str.h"
 
+#define JUMP_COORD_ADJUSTMENT 60
+
 typedef struct af_move_t {
     int id;
     animation ani;
