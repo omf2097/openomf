@@ -476,11 +476,6 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t m
 
         game_state_add_object(parent->gs, obj, RENDER_LAYER_MIDDLE, 0, 0);
     }
-
-    // When kreissack explodes, spwan some scrap too. Just to make it awesome.
-    if(h->id == 10 && id >= 25 && id <= 30) {
-        har_spawn_scrap(parent, pos, 12);
-    }
 }
 
 // Callback for destroying objects, eg. projectiles
@@ -895,28 +890,44 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
     }
 }
 
-void har_spawn_oil(object *obj, vec2i pos, int amount, float gravity, int layer) {
+// for scrap, nuts, bolts, and sparks (aka burning oil)
+static vec2f har_debris_random_vel(object *har_obj, bool is_destruction) {
+    vec2f vel;
+    vel.x = rand_float() * 4.0f - 2.0f;
+    vel.y = rand_float() * 4.0f - 2.0f;
+
+    // FIXME: burning oil/sparks in destruction and scrap animations
+    // FIXME: how does the original game handle scrap velocity in destruction anims?
+    if(is_destruction) {
+        // For scrap and destruction animations, make the scrap fly all over the place!
+        vel.x *= 10.0f;
+        vel.y *= 10.0f;
+    } else {
+        // push scrap and sparks upwards and away from the direction of impact
+        vel.x -= object_get_direction(har_obj) * 5.1f;
+        vel.y -= 3.0f;
+    }
+
+    return vel;
+}
+
+// gravity for sparks. scrap, nuts, and bolts seem to have different gravity
+static inline float har_sparks_random_gravity(object *har_obj) {
+    return (float)(rand_int(30) + 40) / 100.0;
+}
+
+static void har_spawn_oil(object *obj, vec2i pos, int amount, int layer) {
     har *h = object_get_userdata(obj);
 
     // burning oil
     for(int i = 0; i < amount; i++) {
-        // Calculate velocity etc.
-        float rv = rand_int(100) / 100.0f - 0.5;
-        float velx = (5 * cosf(90 + i - (amount) / 2 + rv)) * object_get_direction(obj);
-        float vely = -12 * sinf(i / amount + rv);
-
-        // Make sure the oil drops have somekind of velocity
-        // (to prevent floating scrap objects)
-        if(vely < 0.1f && vely > -0.1f)
-            vely += 0.21f;
-
         // Create the object
         object *scrap = omf_calloc(1, sizeof(object));
         int anim_no = ANIM_BURNING_OIL;
-        object_create(scrap, obj->gs, pos, vec2f_create(velx, vely));
+        object_create(scrap, obj->gs, pos, har_debris_random_vel(obj, false));
         object_set_animation(scrap, &af_get_move(h->af_data, anim_no)->ani);
         object_set_stl(scrap, object_get_stl(obj));
-        object_set_gravity(scrap, gravity);
+        object_set_gravity(scrap, har_sparks_random_gravity(obj));
         object_set_layers(scrap, LAYER_SCRAP);
         object_dynamic_tick(scrap);
         scrap_create(scrap);
@@ -937,15 +948,12 @@ void har_spawn_scrap(object *obj, vec2i pos, int amount) {
     // wild ass guess
     int oil_amount = amount / 3;
     har *h = object_get_userdata(obj);
-    har_spawn_oil(obj, pos, oil_amount, 1, RENDER_LAYER_TOP);
+    har_spawn_oil(obj, pos, oil_amount, RENDER_LAYER_TOP);
 
     // scrap metal
     // TODO this assumes the default scrap level and does not consider BIG[1-9]
     int scrap_amount = 0;
-    int destr = is_destruction(obj->gs);
-    if(destr) {
-        scrap_amount = 30;
-    } else if(amount > 11 && amount < 14) {
+    if(amount > 11 && amount < 14) {
         scrap_amount = 1;
     } else if(amount > 13 && amount < 16) {
         scrap_amount = 2;
@@ -953,29 +961,13 @@ void har_spawn_scrap(object *obj, vec2i pos, int amount) {
         scrap_amount = 3;
     }
     for(int i = 0; i < scrap_amount; i++) {
-        // Calculate velocity etc.
-        float rv = rand_int(100) / 100.0f - 0.5;
-        float velx = (5 * cosf(90 + i - (scrap_amount) / 2 + rv)) * object_get_direction(obj);
-        float vely = -12 * sinf(i / scrap_amount + rv);
-
-        // Make destruction moves look more impressive :P
-        if(destr) {
-            velx *= 5;
-            vely *= 5;
-        }
-
-        // Make sure scrap has somekind of velocity
-        // (to prevent floating scrap objects)
-        if(vely < 0.1f && vely > -0.1f)
-            vely += 0.21f;
-
         // Create the object
         object *scrap = omf_calloc(1, sizeof(object));
         int anim_no = rand_int(3) + ANIM_SCRAP_METAL;
-        object_create(scrap, obj->gs, pos, vec2f_create(velx, vely));
+        object_create(scrap, obj->gs, pos, har_debris_random_vel(obj, h->state == STATE_DEFEAT));
         object_set_animation(scrap, &af_get_move(h->af_data, anim_no)->ani);
         object_set_stl(scrap, object_get_stl(obj));
-        object_set_gravity(scrap, 1);
+        object_set_gravity(scrap, 1.0f);
         object_set_pal_offset(scrap, object_get_pal_offset(obj));
         object_set_pal_limit(obj, object_get_pal_limit(obj));
         object_set_layers(scrap, LAYER_SCRAP);
@@ -1814,7 +1806,7 @@ void har_handle_stun(object *obj) {
         if(h->stun_timer % 10 == 0) {
             vec2i pos = object_get_pos(obj);
             pos.y -= 60;
-            har_spawn_oil(obj, pos, 5, 0.5f, RENDER_LAYER_BOTTOM);
+            har_spawn_oil(obj, pos, 5, RENDER_LAYER_BOTTOM);
         }
 
         if(h->endurance >= 0) {

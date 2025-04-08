@@ -427,23 +427,20 @@ void player_run(object *obj) {
                 my = enemy->pos.y;
             }
 
+            // Instance count
+            int instances = 1;
+            if(sd_script_isset(frame, "mi")) {
+                instances = sd_script_get(frame, "mi");
+                log_debug("spawning %d instances", instances);
+            }
+
             // Staring X coordinate for new animation
-            if(sd_script_isset(frame, "mrx")) {
-                int mrx = sd_script_get(frame, "mrx");
-                int mm = sd_script_isset(frame, "mm") ? sd_script_get(frame, "mm") : mrx;
-                mx = random_int(&obj->gs->rand, 320 - 2 * mm) + mrx;
-                log_debug("randomized mx as %d", mx);
-            } else if(sd_script_isset(frame, "mx")) {
+            if(sd_script_isset(frame, "mx")) {
                 mx = obj->start.x + (sd_script_get(frame, "mx") * object_get_direction(obj));
             }
 
             // Staring Y coordinate for new animation
-            if(sd_script_isset(frame, "mry")) {
-                int mry = sd_script_get(frame, "mry");
-                int mm = sd_script_isset(frame, "mm") ? sd_script_get(frame, "mm") : mry;
-                my = random_int(&obj->gs->rand, 320 - 2 * mm) + mry;
-                log_debug("randomized my as %d", my);
-            } else if(sd_script_isset(frame, "my")) {
+            if(sd_script_isset(frame, "my")) {
                 my = obj->start.y + sd_script_get(frame, "my");
             }
 
@@ -461,8 +458,24 @@ void player_run(object *obj) {
             // Gravity for new object
             int mg = sd_script_isset(frame, "mg") ? sd_script_get(frame, "mg") : 0;
 
-            state->spawn(obj, sd_script_get(frame, "m"), vec2i_create(mx, my), vec2f_create(vx, vy), mp, ms, mg,
-                         state->spawn_userdata);
+            for(int i = 0; i < instances; i++) {
+                // random starting coordinates
+                if(sd_script_isset(frame, "mrx")) {
+                    int mrx = sd_script_get(frame, "mrx");
+                    int mm = sd_script_isset(frame, "mm") ? sd_script_get(frame, "mm") : mrx;
+                    mx = random_int(&obj->gs->rand, 320 - 2 * mm) + mrx;
+                    log_debug("randomized mx as %d", mx);
+                }
+                if(sd_script_isset(frame, "mry")) {
+                    int mry = sd_script_get(frame, "mry");
+                    int mm = sd_script_isset(frame, "mm") ? sd_script_get(frame, "mm") : mry;
+                    my = random_int(&obj->gs->rand, 320 - 2 * mm) + mry;
+                    log_debug("randomized my as %d", my);
+                }
+
+                state->spawn(obj, sd_script_get(frame, "m"), vec2i_create(mx, my), vec2f_create(vx, vy), mp, ms, mg,
+                             state->spawn_userdata);
+            }
         }
 
         // Animation deletion
