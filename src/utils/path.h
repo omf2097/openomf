@@ -36,7 +36,6 @@ void path_append(path *path, ...); // Append new elements
 void path_parent(path *path);  // Drop last element
 void path_absolute(path *path);
 
-bool path_file_length(path *path, size_t *length);
-bool path_read_file(path *path, char *buffer, size_t length);
+FILE *path_open(const path *path, const char *mode);
 
 #endif // PATH_H
