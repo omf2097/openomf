@@ -8,6 +8,22 @@
   </branding>
 
   <releases>
+    <release version="0.8.1" date="2025-04-09">
+      <url type="details">https://github.com/omf2097/openomf/releases/tag/0.8.1</url>
+      <description>
+        <p>0.8.1 is a bugfix release to fix some issues found after releasing 0.8.0</p>
+        <ul>
+          <li>Improve netplay latency and reliability</li>
+          <li>Fix custom key bindings</li>
+          <li>Fix incorrect controls in netplay sometimes</li>
+          <li>Various Tournament mode UI fixes</li>
+          <li>Implement correct stun mechanics</li>
+          <li>Fix some NAT traversal issues, and add a network configuration menu</li>
+          <li>Fan made tournament support (still a bit experimental)</li>
+          <li>Various smaller gameplay and UI fixes</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.8.0" date="2025-04-01">
       <url type="details">https://github.com/omf2097/openomf/releases/tag/0.8.0</url>
       <description>
