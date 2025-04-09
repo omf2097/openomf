@@ -20,7 +20,7 @@ void menu_advanced_done(component *c, void *u) {
 
     // convert the positions back into values
     settings_get()->advanced.throw_range = local->throw_range * 20;
-    settings_get()->advanced.jump_height = (local->jump_height * 10) + 80;
+    settings_get()->advanced.jump_height = (local->jump_height * 5) + 80;
     settings_get()->advanced.vitality = (local->vitality * 20) + 80;
     settings_get()->advanced.block_damage = local->block_damage * 5;
 
