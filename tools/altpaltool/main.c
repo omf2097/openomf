@@ -6,11 +6,7 @@
 #include "formats/altpal.h"
 #include "formats/error.h"
 #include "utils/c_array_util.h"
-#if defined(ARGTABLE2_FOUND)
-#include <argtable2.h>
-#elif defined(ARGTABLE3_FOUND)
 #include <argtable3.h>
-#endif
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>

@@ -10,16 +10,12 @@
 #include "utils/c_array_util.h"
 #include "utils/cp437.h"
 #include "utils/str.h"
+#include <argtable3.h>
 #include <assert.h>
 #include <ctype.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-#if defined(ARGTABLE2_FOUND)
-#include <argtable2.h>
-#elif defined(ARGTABLE3_FOUND)
-#include <argtable3.h>
-#endif
 
 #define MAX_LINE 2048
 #define MAX_DATA 8192 // Data field cannot exceed 32 bytes
