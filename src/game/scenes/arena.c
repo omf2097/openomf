@@ -1311,6 +1311,7 @@ void push_players(scene *scene, game_player *p1, game_player *p2) {
     har *h1 = obj_p1->userdata;
     har *h2 = obj_p2->userdata;
 
+    // Check at least one HAR is on the floor
     if(!(obj_p1->pos.y == ARENA_FLOOR || obj_p2->pos.y == ARENA_FLOOR)) {
         return;
     }
