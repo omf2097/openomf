@@ -36,6 +36,7 @@ text *text_create_with_font(font_size font);
 text *text_create_with_font_and_size(font_size font, uint16_t w, uint16_t h);
 text *text_create_from_c(const char *src);
 text *text_create_from_str(const str *src);
+text *text_clone(const text *src);
 void text_free(text **t);
 
 text_document *text_document_create(void);

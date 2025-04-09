@@ -327,15 +327,13 @@ int chr_score_clone(chr_score *src, chr_score *dst) {
     iterator it;
     score_text *t;
     memcpy(dst, src, sizeof(chr_score));
-    dst->total = create_text_obj(text_c(src->total));
-    text_set_horizontal_align(dst->total, text_get_horizontal_align(src->total));
+    dst->total = text_clone(src->total);
     list_create(&dst->texts);
     list_iter_begin(&src->texts, &it);
     foreach(it, t) {
         score_text t2;
         memcpy(&t2, t, sizeof(score_text));
-        t2.text = create_text_obj(text_c(t->text));
-        text_set_horizontal_align(t2.text, text_get_horizontal_align(t->text));
+        t2.text = text_clone(t->text);
         list_append(&dst->texts, &t2, sizeof(score_text));
     }
     return 0;

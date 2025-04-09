@@ -41,6 +41,14 @@ struct text {
     uint8_t word_wrap;
 };
 
+text *text_clone(const text *src) {
+    text *dst = omf_malloc(sizeof(text));
+    memcpy(dst, src, sizeof(text));
+    str_from(&dst->buf, &src->buf);
+    text_layout_clone(&dst->layout, &src->layout);
+    return dst;
+}
+
 struct text_document {
     vector text_objects;
 };

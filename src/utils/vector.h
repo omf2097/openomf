@@ -20,6 +20,7 @@ void vector_create_cb(vector *vector, unsigned int block_size, vector_free_cb fr
 void vector_create_with_size(vector *vector, unsigned int block_size, unsigned int initial_size);
 void vector_create_with_size_cb(vector *vector, unsigned int block_size, unsigned int initial_size,
                                 vector_free_cb free_cb);
+void vector_clone(vector *dst, const vector *src);
 void vector_free(vector *vector);
 
 void *vector_get(const vector *vector, unsigned int key);
