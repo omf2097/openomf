@@ -1,13 +1,9 @@
-#if defined(ARGTABLE2_FOUND)
-#include <argtable2.h>
-#elif defined(ARGTABLE3_FOUND)
-#include <argtable3.h>
-#endif
 #include "formats/error.h"
 #include "formats/pcx.h"
 #include "utils/allocator.h"
 #include "utils/c_array_util.h"
 #include <SDL.h>
+#include <argtable3.h>
 #include <errno.h>
 #include <inttypes.h>
 #include <stdint.h>

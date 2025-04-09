@@ -4,11 +4,7 @@
  * @license MIT
  */
 
-#if defined(ARGTABLE2_FOUND)
-#include <argtable2.h>
-#elif defined(ARGTABLE3_FOUND)
 #include <argtable3.h>
-#endif
 #include <stdint.h>
 #include <string.h>
 
