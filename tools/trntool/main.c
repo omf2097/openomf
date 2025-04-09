@@ -102,9 +102,11 @@ int main(int argc, char *argv[]) {
     }
 
     // Get tournament
+    path trn_path;
+    path_from_c(&trn_path, file->filename[0]);
     sd_tournament_file trn;
     sd_tournament_create(&trn);
-    int ret = sd_tournament_load(&trn, file->filename[0]);
+    int ret = sd_tournament_load(&trn, &trn_path);
     if(ret != SD_SUCCESS) {
         printf("TRN file %s could not be loaded: %s\n", file->filename[0], sd_get_error(ret));
         goto exit_0;
@@ -149,7 +151,9 @@ int main(int argc, char *argv[]) {
     }
 
     if(output->count > 0) {
-        ret = sd_tournament_save(&trn, output->filename[0]);
+        path save_path;
+        path_from_c(&save_path, output->filename[0]);
+        ret = sd_tournament_save(&trn, &save_path);
         if(ret != SD_SUCCESS) {
             printf("Failed to save TRN file to %s: %s\n", output->filename[0], sd_get_error(ret));
         } else {

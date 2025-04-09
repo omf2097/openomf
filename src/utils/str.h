@@ -338,4 +338,37 @@ void str_split(vector *dst, const str *src, char ch);
  */
 void str_split_c(vector *dst, const char *src, char ch);
 
+/**
+ * Check if string starts with a given string
+ * @param src String to check
+ * @param prefix Prefix to look for
+ * @return True if the source string starts with the given prefix
+ */
+bool str_starts_with(const str *src, const char *prefix);
+
+/**
+ * Check if string ends with a given string
+ * @param src String to check
+ * @param suffix Suffix to look for
+ * @return True if the source string ends with the given suffix
+ */
+bool str_ends_with(const str *src, const char *suffix);
+
+/**
+ * Check if str matches a given glob pattern. Note! Only a single \* supported!
+ * @param test String to test
+ * @param pattern Glob pattern, e.g. 'path/\*.CHR'
+ * @return True if matched, false if not.
+ */
+bool str_match(const str *test, const char *pattern);
+
+/**
+ * Check if str matches a given glob pattern. Note! Only a single \* supported!
+ * This is the case-insensitive version of str_match().
+ * @param test String to test
+ * @param pattern Glob pattern, e.g. 'path/\*.CHR'
+ * @return True if matched, false if not.
+ */
+bool str_imatch(const str *test, const char *pattern);
+
 #endif // STR_H
