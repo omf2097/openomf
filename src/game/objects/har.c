@@ -2229,13 +2229,16 @@ int har_act(object *obj, int act_type) {
         prefix = 'P';
     }
 
-    if(prefix != 1 && h->endurance < 0) { // Mash to recover from stun faster!
-        h->endurance += 512;
-    }
-
     uint32_t input_staleness = obj->gs->tick - h->input_change_tick;
     if(input_changed) {
         h->input_change_tick = obj->gs->tick;
+    }
+
+    if(h->endurance < 0) {
+        if(prefix != 1) { // Mash to recover from stun faster!
+            h->endurance += 512;
+        }
+        return 0;
     }
 
     if(object_get_halt(obj)) {
