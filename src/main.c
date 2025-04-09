@@ -3,8 +3,8 @@
 #include "game/game_state.h"
 #include "game/utils/settings.h"
 #include "game/utils/version.h"
-#include "resources/ids.h"
-#include "resources/pathmanager.h"
+#include "resources/resource_files.h"
+#include "resources/resource_paths.h"
 #include "resources/sgmanager.h"
 #include "utils/allocator.h"
 #include "utils/c_array_util.h"
@@ -12,6 +12,7 @@
 #include "utils/log.h"
 #include "utils/msgbox.h"
 #include "utils/random.h"
+
 #include <SDL.h>
 #include <argtable3.h>
 #include <enet/enet.h>
@@ -61,14 +62,6 @@ int main(int argc, char *argv[]) {
     unsigned short listen_port = 0;
     engine_init_flags init_flags;
     memset(&init_flags, 0, sizeof(init_flags));
-    int ret = 0;
-
-    // Path manager
-    if(pm_init() != 0) {
-        err_msgbox(pm_get_errormsg());
-        fprintf(stderr, "Error: %s.\n", pm_get_errormsg());
-        return 1;
-    }
 
     struct arg_lit *help = arg_lit0("h", "help", "print this help and exit");
     struct arg_lit *vers = arg_lit0("v", "version", "print version information and exit");
@@ -179,7 +172,6 @@ int main(int argc, char *argv[]) {
 
     // Init log
     log_init();
-    log_add_file(pm_get_local_path(LOG_PATH), LOG_INFO);
 #if defined(USE_COLORS)
     log_set_colors(true);
 #else
@@ -199,29 +191,33 @@ int main(int argc, char *argv[]) {
         log_set_level(log_level_text_to_enum(log_level->sval[0], LOG_INFO));
     }
 
+    // Load file paths
+    if(!resource_path_init()) {
+        goto exit_0;
+    }
+    resource_path_create_dirs();
+
+    // Initialize logfile writing now that we have the directories.
+    const path log_filename = get_log_filename();
+    log_add_file(path_c(&log_filename), LOG_INFO);
+
     // Simple header
     log_info("Starting OpenOMF v%s", get_version_string());
     if(strlen(git_sha1_hash) > 0) {
         log_info("Git SHA1 hash: %s", git_sha1_hash);
     }
 
-    // Dump path manager log
-    pm_log();
-
     // Random seed
     rand_seed(time(NULL));
 
     // Init config
-    if(settings_init(pm_get_local_path(CONFIG_PATH))) {
+    const path settings_filename = get_config_filename();
+    if(settings_init(path_c(&settings_filename))) {
         err_msgbox("Failed to initialize settings file");
         log_error("Failed to initialize settings file");
         goto exit_1;
     }
     settings_load();
-
-    // Savegame directory check and create
-    // TODO: Handle errors
-    sg_init();
 
     // Network game override stuff
     if(ip) {
@@ -312,6 +308,5 @@ exit_0:
         omf_free(trace_file);
     }
     arg_freetable(argtable, N_ELEMENTS(argtable));
-    pm_free();
-    return ret;
+    return 0;
 }

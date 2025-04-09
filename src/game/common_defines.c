@@ -1,8 +1,6 @@
 #include "game/common_defines.h"
 #include "resources/ids.h"
-#include "resources/pathmanager.h"
 #include "utils/c_array_util.h"
-#include "utils/c_string_util.h"
 #include "utils/random.h"
 #include "utils/str.h"
 #include <stddef.h>

@@ -7,10 +7,11 @@
 #include "game/gui/gui.h"
 #include "game/utils/settings.h"
 #include "resources/languages.h"
-#include "resources/pathmanager.h"
+#include "resources/resource_files.h"
 #include "utils/allocator.h"
 #include "utils/list.h"
 #include "utils/log.h"
+#include "utils/path.h"
 #include "utils/scandir.h"
 #include "utils/str.h"
 
@@ -62,45 +63,43 @@ component *menu_language_create(scene *s) {
     language_menu_data *local = omf_calloc(1, sizeof(language_menu_data));
 
     // Load settings etc.
-    settings *setting = settings_get();
+    const settings *setting = settings_get();
+    const path english_dat = get_resource_filename("ENGLISH.DAT");
+    const path german_dat = get_resource_filename("GERMAN.DAT");
 
-    // Find path to languages
-    const char *dirname = pm_get_local_path(RESOURCE_PATH);
-    if(dirname == NULL) {
-        log_error("Could not find resources path for menu_language!");
-        omf_free(local);
-        return NULL;
-    }
+    list dir_list;
+    list_create(&dir_list);
+    list_append(&dir_list, &english_dat, sizeof(path));
+    list_append(&dir_list, &german_dat, sizeof(path));
+    scan_resource_path(&dir_list, "*.LNG");
 
-    list dirlist;
-    // Seek all files
-    list_create(&dirlist);
-    list_append(&dirlist, "ENGLISH.DAT", strlen("ENGLISH.DAT") + 1);
-    list_append(&dirlist, "GERMAN.DAT", strlen("GERMAN.DAT") + 1);
-    scan_directory_suffix(&dirlist, dirname, ".LNG");
-    local->language_filenames = omf_malloc(list_size(&dirlist) * sizeof(char *));
-    local->language_names = omf_malloc(list_size(&dirlist) * sizeof(char *));
+    local->language_filenames = omf_malloc(list_size(&dir_list) * sizeof(char *));
+    local->language_names = omf_malloc(list_size(&dir_list) * sizeof(char *));
     local->language_count = 0;
 
+    str name, ext;
     iterator it;
-    list_iter_begin(&dirlist, &it);
-    char const *filename;
-    str filename2;
-    str_create(&filename2);
-    foreach(it, filename) {
+    list_iter_begin(&dir_list, &it);
+    path *language_file2;
+    foreach(it, language_file2) {
         // Get localized language name from OpenOMF .DAT2 or .LNG2 file
-        str_format(&filename2, "%s%s2", dirname, filename);
+        path_ext(language_file2, &ext);
+        str_append_char(&ext, '2');
+        path_set_ext(language_file2, str_c(&ext));
+        str_free(&ext);
+
         sd_language lang2;
         if(sd_language_create(&lang2) != SD_SUCCESS) {
             continue;
         }
-        if(sd_language_load(&lang2, str_c(&filename2))) {
-            log_info("Warning: Unable to load OpenOMF language file '%s'!", str_c(&filename2));
+        if(sd_language_load(&lang2, path_c(language_file2))) {
+            log_info("Warning: Unable to load OpenOMF language file '%s'!", path_c(language_file2));
             sd_language_free(&lang2);
             continue;
         }
         if(lang2.count != LANG2_STR_COUNT) {
-            log_info("Warning: Invalid OpenOMF language file '%s', got %d entries!", str_c(&filename2), lang2.count);
+            log_info("Warning: Invalid OpenOMF language file '%s', got %d entries!", path_c(language_file2),
+                     lang2.count);
             sd_language_free(&lang2);
             continue;
         }
@@ -108,11 +107,13 @@ component *menu_language_create(scene *s) {
         lang2.strings[LANG2_STR_LANGUAGE].data = NULL;
         sd_language_free(&lang2);
 
-        if(strcmp(setting->language.language, filename) == 0) {
+        path_filename(language_file2, &name);
+        if(str_match(&name, setting->language.language)) {
             local->selected_language = local->language_count;
         }
+        str_free(&name);
 
-        int id = local->language_count++;
+        const int id = local->language_count++;
         local->language_names[id] = language_name;
 
         // move filename into language_filenames
@@ -120,7 +121,7 @@ component *menu_language_create(scene *s) {
         local->language_filenames[id] = now->data;
         now->data = NULL;
     }
-    list_free(&dirlist);
+    list_free(&dir_list);
 
     // Create menu and its header
     component *menu = menu_create();
