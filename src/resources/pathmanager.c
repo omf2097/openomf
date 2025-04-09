@@ -4,17 +4,16 @@
 #include <string.h>
 
 #if defined(_WIN32) || defined(WIN32)
-#include <shlobj.h>  //SHCreateDirectoryEx
-#include <shlwapi.h> //PathFileExists
+#include <shlobj.h> // SHCreateDirectoryEx
 #else
 #include <sys/stat.h> // mkdir
-#include <unistd.h>
 #endif
 
 #include "resources/pathmanager.h"
 #include "utils/allocator.h"
 #include "utils/c_string_util.h"
 #include "utils/crash.h"
+#include "utils/io.h"
 #include "utils/log.h"
 #include "utils/str.h"
 
@@ -69,14 +68,6 @@ static void resource_path_build(int path_id, const char *path, const char *ext) 
         resource_paths[path_id] = omf_realloc(resource_paths[path_id], len);
         snprintf(resource_paths[path_id], len, "%s%c%s", path, get_platform_sep(), ext);
     }
-}
-
-static bool file_exists(const char *test) {
-#if defined(_WIN32) || defined(WIN32)
-    return PathFileExistsA(test) == TRUE;
-#else
-    return access(test, F_OK) == 0;
-#endif
 }
 
 // Makes sure resource file exists
@@ -238,16 +229,7 @@ int pm_in_release_mode(void) {
 }
 
 int pm_in_portable_mode(void) {
-#if defined(_WIN32) || defined(WIN32)
-    if(PathFileExistsA(configfile_name) != FALSE) {
-        return 1;
-    }
-#else
-    if(access(configfile_name, F_OK) != -1) {
-        return 1;
-    }
-#endif
-    return 0;
+    return file_exists(configfile_name);
 }
 
 char *pm_get_local_base_dir(void) {
