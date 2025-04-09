@@ -8,4 +8,6 @@ long file_size(FILE *handle);
 bool file_read(FILE *handle, char *buffer, long size);
 void file_close(FILE *handle);
 
+bool file_exists(const char *file_name);
+
 #endif // UTILS_IO_H
