@@ -1325,7 +1325,7 @@ void push_players(scene *scene, game_player *p1, game_player *p2) {
     // TODO: Find out what flag 941_4 is checking
     // afigure.cpp line 302
     while(abs(object_px(obj_p1) - object_px(obj_p2)) < 30 && abs(object_py(obj_p1) - object_py(obj_p2)) < clearance &&
-        !h1->throw_duration && !h2->throw_duration) {
+          !h1->throw_duration && !h2->throw_duration) {
         float p1x = obj_p1->pos.x;
         float p2x = obj_p2->pos.x;
         if(p1x < p2x) {
