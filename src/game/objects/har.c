@@ -2235,7 +2235,7 @@ int har_act(object *obj, int act_type) {
     }
 
     if(h->endurance < 0) {
-        if(prefix != 1) { // Mash to recover from stun faster!
+        if(prefix == 'K' || prefix == 'P') { // Mash to recover from stun faster!
             h->endurance += 512;
         }
         return 0;
