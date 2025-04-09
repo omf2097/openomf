@@ -1277,7 +1277,6 @@ void arena_dynamic_tick(scene *scene, int paused) {
                     object_set_layers(scrap, LAYER_SCRAP);
                     object_set_shadow(scrap, 1);
                     object_set_group(scrap, GROUP_SCRAP);
-                    object_dynamic_tick(scrap);
                     scrap_create(scrap);
                     game_state_add_object(gs, scrap, RENDER_LAYER_TOP, 0, 0);
                 }

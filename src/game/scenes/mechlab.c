@@ -104,7 +104,6 @@ bool mechlab_find_last_player(scene *scene) {
         object_create(local->mech, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
         object_set_animation(local->mech, initial_har_ani);
         object_set_repeat(local->mech, 1);
-        object_dynamic_tick(local->mech);
         sd_pilot *old_pilot = game_player_get_pilot(p1);
         if(&p1->chr->pilot != old_pilot) {
             game_player_set_pilot(p1, &p1->chr->pilot);
@@ -122,7 +121,6 @@ void mechlab_load_har(scene *scene, sd_pilot *pilot) {
     object_create(local->mech, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
     object_set_animation(local->mech, initial_har_ani);
     object_set_repeat(local->mech, 1);
-    object_dynamic_tick(local->mech);
 }
 
 void mechlab_set_selling(scene *scene, bool selling) {
@@ -142,7 +140,6 @@ void mechlab_set_hint(scene *scene, const char *hint) {
 
 static void mechlab_mech_finished_cb(object *obj) {
     player_reset(obj);
-    player_run(obj);
     object_set_halt(obj, 1);
 }
 
@@ -255,7 +252,6 @@ void mechlab_update(scene *scene) {
             object_create(local->mech, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
             object_set_animation(local->mech, initial_har_ani);
             object_set_repeat(local->mech, 1);
-            object_dynamic_tick(local->mech);
         }
         switch(local->dashtype) {
             // Dashboard with the gauges etc.
@@ -440,7 +436,6 @@ void mechlab_select_dashboard(scene *scene, dashboard_type type) {
             object_create(local->mech, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
             object_set_animation(local->mech, initial_har_ani);
             object_set_repeat(local->mech, 1);
-            object_dynamic_tick(local->mech);
 
             gui_frame_set_root(local->dashboard, lab_dash_newplayer_create(scene, &local->nw));
             gui_frame_layout(local->dashboard);
