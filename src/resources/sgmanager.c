@@ -68,38 +68,32 @@ int sg_count(void) {
 }
 
 list *sg_load_all(void) {
-
     if(sg_init()) {
         return NULL;
     }
-
     const char *dirname = pm_get_local_path(SAVE_PATH);
     list dirlist;
-    // Seek all files
     list_create(&dirlist);
-    scan_directory(&dirlist, dirname);
-
-    log_debug("Found %d savegames.", list_size(&dirlist) - 2);
+    if(scan_directory_suffix(&dirlist, dirname, ".CHR") != 0) {
+        log_warn("Failed to scan %s to find *.CHR", dirname);
+        return NULL;
+    }
+    log_debug("Found %d savegames", list_size(&dirlist));
 
     list *chrlist = omf_calloc(1, sizeof(list));
-
+    list_create(chrlist);
     iterator it;
     list_iter_begin(&dirlist, &it);
     char *chrfile;
-    char *ext;
     foreach(it, chrfile) {
-        if(strcmp(".", chrfile) == 0 || strcmp("..", chrfile) == 0) {
-            continue;
+        sd_chr_file *chr = omf_calloc(1, sizeof(sd_chr_file));
+        if(sg_load(chr, chrfile) == SD_SUCCESS) {
+            list_append(chrlist, chr, sizeof(sd_chr_file));
+            log_debug("Loaded %s", chrfile);
+        } else {
+            log_warn("Failed to load save %s", chrfile);
         }
-        if((ext = strrchr(chrfile, '.')) && strcmp(".CHR", ext) == 0) {
-            sd_chr_file *chr = omf_calloc(1, sizeof(sd_chr_file));
-            ext[0] = 0;
-            log_debug("%s", chrfile);
-            if(sg_load(chr, chrfile) == SD_SUCCESS) {
-                list_append(chrlist, chr, sizeof(sd_chr_file));
-            }
-            omf_free(chr);
-        }
+        omf_free(chr);
     }
 
     list_free(&dirlist);
