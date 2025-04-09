@@ -316,6 +316,41 @@ void send_events(wtf *data) {
     enet_host_flush(host);
 }
 
+void send_game_information(wtf *data) {
+    serial ser;
+    ENetPacket *packet;
+    ENetPeer *peer = data->peer;
+    ENetHost *host = data->host;
+    game_state *gs = data->gs_bak;
+    game_player *player = game_state_get_player(gs, data->id);
+
+    serial_create(&ser);
+    // ACTION header
+    serial_write_int8(&ser, EVENT_TYPE_GAME_INFO);
+    // for now, just send the game info we absolutely need
+    // the arena ID and the pilot info. All the other settings are locked.
+    serial_write_int8(&ser, gs->this_id - SCENE_ARENA0);
+    serial_write_int8(&ser, player->pilot->har_id);
+    serial_write_int8(&ser, player->pilot->power);
+    serial_write_int8(&ser, player->pilot->agility);
+    serial_write_int8(&ser, player->pilot->endurance);
+    serial_write_int8(&ser, sd_pilot_get_player_color(player->pilot, PRIMARY));
+    serial_write_int8(&ser, sd_pilot_get_player_color(player->pilot, SECONDARY));
+    serial_write_int8(&ser, sd_pilot_get_player_color(player->pilot, TERTIARY));
+    serial_write_int8(&ser, strlen(player->pilot->name));
+    serial_write(&ser, player->pilot->name, strlen(player->pilot->name));
+
+    packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
+    enet_peer_send(peer, 2, packet);
+    if(data->lobby && peer != data->lobby) {
+        // CC the events to the lobby, unless the lobby is already the peer
+        packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
+        enet_peer_send(data->lobby, 2, packet);
+    }
+    serial_free(&ser);
+    enet_host_flush(host);
+}
+
 // replay the game state, using the input logs from both sides
 int rewind_and_replay(wtf *data, game_state *gs_current) {
     // first, find the last frame we have input from the other side
@@ -492,6 +527,16 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
 
             log_debug("arena hash mismatch at %d (%d) -- got %" PRIu32 " expected %" PRIu32 "!",
                       gs->int_tick - data->local_proposal, data->peer_last_hash_tick, data->peer_last_hash, arena_hash);
+
+            // Update our last hash to this mismatched one, and send the events to the peer.
+            // This accomplishes two things:
+            // * The peer will see the mismatch as well, and also terminate
+            // * The lobby will see both sets of events, and both mismatches
+            data->last_hash_tick = gs->int_tick - data->local_proposal;
+            data->last_hash = arena_hash;
+            send_events(data);
+
+            // reset the controller game states
             for(int i = 0; i < game_state_num_players(gs); i++) {
                 game_player *gp = game_state_get_player(gs, i);
                 controller *c = game_player_get_ctrl(gp);
@@ -668,11 +713,15 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
         } else {
             // proposal expired
             data->local_proposal = 0;
+            data->peer_proposal = 0;
         }
     }
 
     if(data->local_proposal && ticks > data->local_proposal && !data->synchronized) {
         log_debug("missed synchronize tick %" PRIu32 " -- @ %" PRIu32, data->local_proposal, ticks);
+        data->local_proposal = 0;
+        data->peer_proposal = 0;
+        data->confirmed = false;
     }
 
     if(data->gs_bak == NULL && data->disconnected == 0 && scene_is_arena(game_state_get_scene(ctrl->gs)) &&
@@ -680,6 +729,7 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
         arena_reset(ctrl->gs->sc);
         data->gs_bak = omf_calloc(1, sizeof(game_state));
         game_state_clone(ctrl->gs, data->gs_bak);
+        send_game_information(data);
         log_debug("cloned game state at arena tick %d hash %" PRIu32, data->gs_bak->int_tick - data->local_proposal,
                   arena_state_hash(data->gs_bak));
         data->local_proposal = ticks; // reset the tick offset to the start of the match
@@ -896,6 +946,72 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                             data->confirmed = true;
                         }
                     } break;
+                    case EVENT_TYPE_GAME_INFO: {
+                        // cross-check the config with the peer
+                        uint8_t val = serial_read_int8(&ser);
+                        game_player *player = game_state_get_player(ctrl->gs, abs(data->id - 1));
+                        if(data->gs_bak && ctrl->gs->this_id - SCENE_ARENA0 != val) {
+                            log_error("Arena ID mismatch, we had %d they had %d", ctrl->gs->this_id - SCENE_ARENA0,
+                                      val);
+                            enet_peer_disconnect(data->peer, 0);
+                            return 1;
+                        }
+                        val = serial_read_int8(&ser);
+                        if(player->pilot->har_id != val) {
+                            log_error("HAR ID mismatch, we had %d they had %d", player->pilot->har_id, val);
+                            enet_peer_disconnect(data->peer, 0);
+                            return 1;
+                        }
+                        val = serial_read_int8(&ser);
+                        if(player->pilot->power != val) {
+                            log_error("Pilot power mismatch, we had %d they had %d", player->pilot->power, val);
+                            enet_peer_disconnect(data->peer, 0);
+                            return 1;
+                        }
+                        val = serial_read_int8(&ser);
+                        if(player->pilot->agility != val) {
+                            log_error("Pilot agility mismatch, we had %d they had %d", player->pilot->agility, val);
+                            enet_peer_disconnect(data->peer, 0);
+                            return 1;
+                        }
+                        val = serial_read_int8(&ser);
+                        if(player->pilot->endurance != val) {
+                            log_error("Pilot endurance mismatch, we had %d they had %d", player->pilot->endurance, val);
+                            enet_peer_disconnect(data->peer, 0);
+                            return 1;
+                        }
+                        val = serial_read_int8(&ser);
+                        if(sd_pilot_get_player_color(player->pilot, PRIMARY) != val) {
+                            log_error("Pilot primary color mismatch, we had %d they had %d",
+                                      sd_pilot_get_player_color(player->pilot, PRIMARY), val);
+                            enet_peer_disconnect(data->peer, 0);
+                            return 1;
+                        }
+                        val = serial_read_int8(&ser);
+                        if(sd_pilot_get_player_color(player->pilot, SECONDARY) != val) {
+                            log_error("Pilot secondary color mismatch, we had %d they had %d",
+                                      sd_pilot_get_player_color(player->pilot, SECONDARY), val);
+                            enet_peer_disconnect(data->peer, 0);
+                            return 1;
+                        }
+                        val = serial_read_int8(&ser);
+                        if(sd_pilot_get_player_color(player->pilot, TERTIARY) != val) {
+                            log_error("Pilot tertiary color mismatch, we had %d they had %d",
+                                      sd_pilot_get_player_color(player->pilot, TERTIARY), val);
+                            enet_peer_disconnect(data->peer, 0);
+                            return 1;
+                        }
+
+                        val = serial_read_int8(&ser);
+                        char name_buf[20];
+                        serial_read(&ser, name_buf, min2(sizeof(name_buf) - 1, val));
+                        name_buf[19] = '\0';
+                        if(strncmp(player->pilot->name, name_buf, strlen(player->pilot->name)) != 0) {
+                            log_error("Pilot name mismatch, we had %d they had %d", player->pilot->name, name_buf);
+                            enet_peer_disconnect(data->peer, 0);
+                            return 1;
+                        }
+                    } break;
                     default:
                         // Event type is unknown or we don't care about it
                         break;
@@ -912,7 +1028,9 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                     game_state_clone_free(data->gs_bak);
                     omf_free(data->gs_bak);
                 }
-                sd_rec_finish(ctrl->gs->rec, ticks - data->local_proposal);
+                if(ctrl->gs->rec) {
+                    sd_rec_finish(ctrl->gs->rec, ticks - data->local_proposal);
+                }
                 if(data->lobby) {
                     data->winner = arena_is_over(ctrl->gs->sc);
                     // lobby will handle the controller
@@ -934,7 +1052,9 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
         log_debug("last received is now %d", data->last_received_tick);
         if(rewind_and_replay(data, ctrl->gs)) {
             if(data->lobby == data->peer) {
-                sd_rec_finish(ctrl->gs->rec, ticks - data->local_proposal);
+                if(ctrl->gs->rec) {
+                    sd_rec_finish(ctrl->gs->rec, ticks - data->local_proposal);
+                }
                 game_state_set_next(ctrl->gs, SCENE_LOBBY);
                 return 1;
             }
