@@ -11,7 +11,8 @@ typedef struct path {
 } path;
 
 // Normalize separator to "/"
-void path_create(path *path, const char *str);
+void path_from_c(path *path, const char *str);
+void path_from_parts(path *path, ...);
 void path_preferences_dir(path *dst);  // Init with preferences directory (users writeable directory)
 void path_resources_dir(path *dst); // Init with resources directory (read-only game data)
 
@@ -31,7 +32,7 @@ bool path_rmdir(const path *path);
 void path_glob_begin(const path *path, iterator *iter);
 void path_glob_iter_begin(const path *path, const char *pattern, iterator *iter);
 
-void path_append(path *path, const char *str); // Append new element
+void path_append(path *path, ...); // Append new elements
 void path_parent(path *path);  // Drop last element
 void path_absolute(path *path);
 
