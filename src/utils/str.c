@@ -419,6 +419,17 @@ void str_cut(str *dst, size_t len) {
     str_zero(dst);
 }
 
+void str_cut_left(str *dst, size_t len) {
+    size_t dst_len = str_size(dst);
+    if(len > dst_len)
+        len = dst_len;
+    char *ptr = str_ptr(dst);
+    dst_len -= len;
+    memmove(ptr, &ptr[len], dst_len);
+    str_resize_and_copy_buffer(dst, dst_len);
+    str_zero(dst);
+}
+
 void str_truncate(str *dst, size_t max_len) {
     size_t old_len = str_size(dst);
     if(old_len > max_len) {
