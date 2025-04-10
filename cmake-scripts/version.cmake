@@ -89,6 +89,7 @@ execute_process(
 execute_process(
     COMMAND "${GIT_EXECUTABLE}" cat-file -e "0.4"
     OUTPUT_QUIET ERROR_QUIET
+    RESULT_VARIABLE "GIT_ERRORCODE"
 )
 if(GIT_ERRORCODE)
     # tag 0.4 wasn't found, so fetch all tags
