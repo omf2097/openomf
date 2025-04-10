@@ -23,6 +23,8 @@
 
 #define STUN_RECOVERY_CONSTANT 18.0 / 250.0
 #define STUN_RECOVERY_BLOCKING_CONSTANT 27.0 / 250.0
+#define HEIGHT_STANDING 55
+#define HEIGHT_CROUCHING 30
 
 enum
 {
@@ -128,7 +130,7 @@ typedef struct har_t {
     uint8_t pilot_id;  // Pilot ID
     uint8_t state;
     uint8_t executing_move;
-    uint8_t close;
+    uint8_t close; // This helps the AI
     const af *af_data;
     uint8_t damage_done;     // Damage was done this animation
     uint8_t damage_received; // Damage was received this animation
@@ -146,6 +148,7 @@ typedef struct har_t {
 
     int in_stasis_ticks; // Handle stasis activator
     int throw_duration;
+    int height;
 
     uint8_t stride;
     int stun_factor;
@@ -153,7 +156,6 @@ typedef struct har_t {
     int endurance_max, endurance;
     char inputs[11];
     uint32_t input_change_tick; // last tick the input direction changed
-    uint8_t hard_close;
 
     uint8_t stun_timer;
     uint8_t delay; // used for 'stretching' frames in netplay
