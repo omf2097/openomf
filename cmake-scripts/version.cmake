@@ -60,6 +60,8 @@ endmacro()
 if(DEFINED CMAKE_SCRIPT_MODE_FILE)
     # suppress find_package's status message in script mode
     set(GIT_FIND_QUIETLY QUIET)
+    # treat version errors as fatal
+    set(VERSION_REQUIRED ON)
 endif()
 
 find_package(Git ${GIT_FIND_QUIETLY})
