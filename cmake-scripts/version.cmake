@@ -114,9 +114,15 @@ execute_process(
 # List all tags, newest to oldest
 execute_process(
     COMMAND "${GIT_EXECUTABLE}" tag "--sort=-version:refname"
-    ERROR_QUIET
     OUTPUT_VARIABLE "VERSION_TAGS"
+    ERROR_VARIABLE "VERSION_TAGS"
+    RESULT_VARIABLE "GIT_ERRORCODE"
 )
+
+if(GIT_ERRORCODE)
+    message(WARNING "Failed to list tags.\n${VERSION_TAGS}")
+    version_error("CANTLISTTAGS")
+endif()
 
 # example of what could be in VERSION_TAGS after the previous command:
 #
@@ -142,9 +148,11 @@ execute_process(
 string(REGEX MATCH "([^\n]+)\n*$" outvar_dontcare "${HEAD_TIMESTAMP}")
 set(HEAD_TIMESTAMP "${CMAKE_MATCH_1}")
 
+SET(VERSION_TAGS_UNMODIFIED "${VERSION_TAGS}")
 while(1) # loop until we found a release that is not newer than HEAD
 
     if("${VERSION_TAGS}" STREQUAL "")
+        message(WARNING "Failed to find previous release tag. git tag list:\n${VERSION_TAGS_UNMODIFIED}")
         # if this version error is tripped, I suspect someone's RTC battery
         # has died and their computer time has reset to the 1970's.
         version_error("CLOCKERROR")
