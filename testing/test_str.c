@@ -492,6 +492,26 @@ void test_str_set_at(void) {
     str_free(&d);
 }
 
+void test_str_cut_left(void) {
+    str d;
+    str_from_c(&d, "ABCDEFGHIJ");
+
+    CU_ASSERT(str_size(&d) == 10);
+    str_cut_left(&d, 0);
+    CU_ASSERT(str_size(&d) == 10);
+    str_cut_left(&d, 1);
+    CU_ASSERT(str_size(&d) == 9);
+    CU_ASSERT_STRING_EQUAL(str_c(&d), "BCDEFGHIJ");
+    str_cut_left(&d, 4);
+    CU_ASSERT(str_size(&d) == 5);
+    CU_ASSERT_STRING_EQUAL(str_c(&d), "FGHIJ");
+    str_cut_left(&d, 10);
+    CU_ASSERT(str_size(&d) == 0);
+    CU_ASSERT_STRING_EQUAL(str_c(&d), "");
+
+    str_free(&d);
+}
+
 void test_str_truncate(void) {
     size_t initial_size = STR_STACK_SIZE + 1;
     str d;
@@ -794,6 +814,9 @@ void str_test_suite(CU_pSuite suite) {
         return;
     }
     if(CU_add_test(suite, "Test for str_set", test_str_set) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_cut_left", test_str_cut_left) == NULL) {
         return;
     }
     if(CU_add_test(suite, "Test for str_truncate", test_str_truncate) == NULL) {

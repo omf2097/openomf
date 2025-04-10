@@ -103,6 +103,14 @@ void str_format(str *dst, const char *format, ...);
 void str_cut(str *dst, size_t len);
 
 /**
+ * @brief Cut away amount of characters from the start of the string.
+ * @details If cut amount is larger than the length of the string, the whole string will be cleared.
+ * @param dst String to cut
+ * @param len Amount to cut
+ */
+void str_cut_left(str *dst, size_t len);
+
+/**
  * @brief Reduce the string length to max_len if it exceeds it.
  * @param dst The string to truncate.
  * @param max_len The new maximum length of the string.
