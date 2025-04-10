@@ -7,8 +7,10 @@
 #include "utils/iterator.h"
 #include "utils/str.h"
 
+#define PATH_MAX_LENGTH 1024
+
 typedef struct path {
-    char path[1024]; // overkill
+    char buf[PATH_MAX_LENGTH];
 } path;
 
 // Normalize separator to "/"
