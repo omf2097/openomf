@@ -282,7 +282,6 @@ void har_set_ani(object *obj, int animation_id, int repeat) {
     }
     object_set_repeat(obj, repeat);
     object_set_stride(obj, 1);
-    object_dynamic_tick(obj);
     // update this so mx/my have correct origins
     obj->start = obj->pos;
     h->damage_done = 0;
@@ -316,7 +315,6 @@ void har_walk_to(object *obj, int destination) {
     object_set_repeat(obj, 1);
     object_set_stride(obj, 1);
     h->walk_destination = destination;
-    object_dynamic_tick(obj);
     // update this so mx/my have correct origins
     obj->start = obj->pos;
 }
@@ -555,7 +553,6 @@ void har_move(object *obj) {
         object_set_animation(enemy_obj, &af_get_move(enemy_har->af_data, ANIM_DAMAGE)->ani);
         object_set_repeat(enemy_obj, 0);
         object_set_custom_string(enemy_obj, str_c(&move->footer_string));
-        object_dynamic_tick(enemy_obj);
 
         h->walk_destination = -1;
         h->walk_done_anim = 0;
@@ -877,7 +874,6 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
             object_set_custom_string(obj, str_c(string));
             log_debug("HAR %s animation set to %s", har_get_name(h->id), str_c(string));
         }
-        object_dynamic_tick(obj);
 
         // XXX hack - if the first frame has the 'k' tag, treat it as some vertical knockback
         // we can't do this in player.c because it breaks the jaguar leap, which also uses the 'k' tag.
@@ -929,7 +925,6 @@ static void har_spawn_oil(object *obj, vec2i pos, int amount, int layer) {
         object_set_stl(scrap, object_get_stl(obj));
         object_set_gravity(scrap, har_sparks_random_gravity(obj));
         object_set_layers(scrap, LAYER_SCRAP);
-        object_dynamic_tick(scrap);
         scrap_create(scrap);
         game_state_add_object(obj->gs, scrap, layer, 0, 0);
     }
@@ -972,7 +967,6 @@ void har_spawn_scrap(object *obj, vec2i pos, int amount) {
         object_set_pal_limit(obj, object_get_pal_limit(obj));
         object_set_layers(scrap, LAYER_SCRAP);
         object_set_group(scrap, GROUP_SCRAP);
-        object_dynamic_tick(scrap);
         object_set_shadow(scrap, 1);
         scrap_create(scrap);
         game_state_add_object(obj->gs, scrap, RENDER_LAYER_TOP, 0, 0);
@@ -995,7 +989,6 @@ void har_block(object *obj, vec2i hit_coord, uint8_t block_stun) {
     snprintf(stun_str, sizeof(stun_str), "A%d", block_stun);
     object_set_custom_string(obj, stun_str);
     object_set_repeat(obj, 0);
-    object_dynamic_tick(obj);
     // blocking spark
     if(h->damage_received) {
         // don't make another scrape
@@ -1011,8 +1004,6 @@ void har_block(object *obj, vec2i hit_coord, uint8_t block_stun) {
     object_set_repeat(scrape, 0);
     object_set_gravity(scrape, 0);
     object_set_layers(scrape, LAYER_SCRAP);
-    object_dynamic_tick(scrape);
-    object_dynamic_tick(scrape);
     game_state_play_sound(obj->gs, 3, 0.7f, 0.5f, 1.0f);
     game_state_add_object(obj->gs, scrape, RENDER_LAYER_MIDDLE, 0, 0);
     h->damage_received = 1;
@@ -1975,7 +1966,6 @@ void har_tick(object *obj) {
         object_set_custom_string(nobj, "bs100A1-bf0A15");
         object_add_animation_effects(nobj, EFFECT_SHADOW);
         object_set_direction(nobj, object_get_direction(obj));
-        object_dynamic_tick(nobj);
         game_state_add_object(obj->gs, nobj, RENDER_LAYER_BOTTOM, 0, 0);
     }
 }
@@ -2309,7 +2299,6 @@ int har_act(object *obj, int act_type) {
             object_set_animation(enemy_obj, &af_get_move(enemy_har->af_data, ANIM_DAMAGE)->ani);
             object_set_repeat(enemy_obj, 0);
             object_set_custom_string(enemy_obj, str_c(&move->footer_string));
-            object_dynamic_tick(enemy_obj);
         }
 
         if(h->state == STATE_NONE) {

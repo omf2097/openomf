@@ -55,7 +55,6 @@ void player_reload_with_str(object *obj, const char *custom_str) {
     }
 
     // Set player state
-    player_reset(obj);
     obj->animation_state.reverse = 0;
     obj->slide_state.timer = 0;
     obj->slide_state.vel = vec2f_create(0, 0);
@@ -65,6 +64,7 @@ void player_reload_with_str(object *obj, const char *custom_str) {
     obj->q_counter = 0;
     obj->q_val = 0;
     obj->can_hit = 0;
+    player_reset(obj);
 }
 
 void player_reload(object *obj) {
@@ -77,6 +77,7 @@ void player_reset(object *obj) {
     obj->animation_state.finished = 0;
     obj->animation_state.previous = -1;
     obj->animation_state.disable_d = 0;
+    player_run(obj, false);
 }
 
 int player_frame_isset(const object *obj, const char *tag) {
@@ -183,7 +184,7 @@ void player_describe_mp_flags(const sd_script_frame *frame, int mp) {
 }
 #endif /* DEBUGMODE */
 
-void player_run(object *obj) {
+void player_run(object *obj, bool tick) {
     // Some vars for easier life
     player_animation_state *state = &obj->animation_state;
     player_sprite_state *rstate = &obj->sprite_state;
@@ -198,7 +199,7 @@ void player_run(object *obj) {
     if(frame == NULL) {
         if(state->repeat) {
             player_reset(obj);
-            frame = sd_script_get_frame_at(&state->parser, state->current_tick);
+            return;
         } else {
             state->finished = 1;
             if(obj->finish != NULL) {
@@ -724,15 +725,17 @@ void player_run(object *obj) {
     }
 
     // Animation ticks
-    state->previous_tick = state->current_tick;
-    if(state->reverse) {
-        state->current_tick--;
-    } else {
-        state->current_tick++;
-    }
+    if(tick) {
+        state->previous_tick = state->current_tick;
+        if(state->reverse) {
+            state->current_tick--;
+        } else {
+            state->current_tick++;
+        }
 
-    // Sprite ticks
-    rstate->timer++;
+        // Sprite ticks
+        rstate->timer++;
+    }
 
     // All done.
     return;

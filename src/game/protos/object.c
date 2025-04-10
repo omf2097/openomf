@@ -240,7 +240,7 @@ void object_dynamic_tick(object *obj) {
     // Run animation player LAST, so that we have operated what we want on the current tick.
     if(obj->cur_animation != NULL && obj->halt == 0) {
         for(int i = 0; i < obj->stride; i++) {
-            player_run(obj);
+            player_run(obj, true);
         }
     }
 }

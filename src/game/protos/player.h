@@ -82,7 +82,7 @@ void player_reload_with_str(object *obj, const char *str);
 void player_reset(object *obj);
 int player_frame_isset(const object *obj, const char *tag);
 int player_frame_get(const object *obj, const char *tag);
-void player_run(object *obj);
+void player_run(object *obj, bool tick);
 void player_set_repeat(object *obj, int repeat);
 int player_get_repeat(const object *obj);
 void player_next_frame(object *obj);
