@@ -549,7 +549,7 @@ void mechlab_input_tick(scene *scene) {
                     mechlab_select_dashboard(scene, DASHBOARD_STATS);
                     gui_frame_set_root(local->frame, lab_menu_main_create(scene, found));
                     gui_frame_layout(local->frame);
-                } else if(i->event_data.action == ACT_KICK || i->event_data.action == ACT_PUNCH) {
+                } else if(i->event_data.action == ACT_PUNCH) {
                     if(strlen(textinput_value(local->nw.input)) > 0) {
                         strncpy(player1->pilot->name, textinput_value(local->nw.input), 17);
                         trnmenu_finish(
