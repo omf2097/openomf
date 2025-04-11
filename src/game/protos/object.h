@@ -93,12 +93,7 @@ struct object_t {
     int8_t q_val;
     int8_t can_hit;
 
-    int8_t orbit;
-    float orbit_tick;
-    vec2f orbit_dest;
-    vec2f orbit_dest_dir;
-    vec2f orbit_pos;
-    vec2f orbit_pos_vary;
+    int8_t orb_val;
 
     struct random_t rand_state;
 

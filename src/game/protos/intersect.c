@@ -61,7 +61,7 @@ int intersect_object_point(object *obj, vec2i point) {
  * \param point Approximate point of collision
  * \return 1 if collision detected, 0 if not.
  */
-int intersect_sprite_hitpoint(object *obj, object *target, int level, vec2i *point) {
+int intersect(object *obj, object *target, int level, vec2i *point, bool is_har) {
     // Make sure both objects have sprites going
     if(obj->cur_sprite_id < 0 || target->cur_sprite_id < 0) {
         return 0;
@@ -136,7 +136,7 @@ int intersect_sprite_hitpoint(object *obj, object *target, int level, vec2i *poi
         if(hitpoint >= sfc->w * sfc->h)
             continue;
         // Only main HAR colors count
-        if(sfc->data[hitpoint] != sfc->transparent && sfc->data[hitpoint] < 96) {
+        if(sfc->data[hitpoint] != sfc->transparent && (sfc->data[hitpoint] < 96 || !is_har)) {
             hcoords[found++] = vec2i_create(xcoord, ycoord);
             if(found >= level) {
                 vec2f sum = vec2f_create(0, 0);
@@ -152,4 +152,12 @@ int intersect_sprite_hitpoint(object *obj, object *target, int level, vec2i *poi
     }
 
     return 0;
+}
+
+int intersect_sprite_hitpoint(object *obj, object *target, int level, vec2i *point) {
+    return intersect(obj, target, level, point, false);
+}
+
+int intersect_har_sprite_hitpoint(object *obj, object *target, int level, vec2i *point) {
+    return intersect(obj, target, level, point, true);
 }

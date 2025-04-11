@@ -676,12 +676,7 @@ void player_run(object *obj) {
                 }
             }
         }
-        if(sd_script_isset(frame, "as")) {
-            // make the object move around the screen in a circular motion until end of frame
-            obj->orbit = 1;
-        } else {
-            obj->orbit = 0;
-        }
+
         if(sd_script_isset(frame, "q")) {
             obj->q_val = sd_script_get(frame, "q");
             // Enable hit if the q value is higher than the hit count for this animation
@@ -713,6 +708,28 @@ void player_run(object *obj) {
                 rstate->flipmode ^= FLIP_VERTICAL;
             }
         }
+    }
+
+    // Orb meandering.  Only the fire pit orb should have this tag set.
+    if(sd_script_isset(frame, "as")) {
+        double t = sinf(((obj->orb_val & 7) + 8.f) * ((abs(obj->orb_val * 4) + obj->gs->tick) * 0.003574533) +
+                        obj->orb_val * 3.0) *
+                       65.0 +
+                   160.0;
+        double t2 = cosf(((obj->orb_val & 7) + 8.f) * ((abs(obj->orb_val * 2) + obj->gs->tick) * 0.004974533) +
+                         obj->orb_val * 4.0) *
+                    65.0;
+        obj->pos.x = (t+t2);
+        t = cosf(((obj->orb_val & 7) + 8.f) * ((abs(obj->orb_val * 2) + obj->gs->tick) * 0.005874533) +
+                 obj->orb_val * 6.0) *
+                30.0 +
+            60.0;
+        t2 = sinf(((obj->orb_val & 7) + 8.f) * ((abs(obj->orb_val * 4) + obj->gs->tick) * 0.004174533) +
+                  obj->orb_val * 3.0) *
+             30.0;
+        obj->pos.y = (t+t2);
+        obj->vel.x = 0;
+        obj->vel.y = 0;
     }
 
     // Tick management
