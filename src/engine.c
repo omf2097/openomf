@@ -331,9 +331,7 @@ void engine_run(engine_init_flags *init_flags) {
                     // one of the controllers wants to replace the game state
                     game_state *old_gs = gs;
                     game_state *new_gs = gs->new_state;
-                    log_debug("replacing game state! %p %p", old_gs, new_gs);
                     gs = new_gs;
-                    log_debug("gs new state %p", gs->new_state);
                     // gs->new_state = NULL;
                     game_state_clone_free(old_gs);
                     omf_free(old_gs);
