@@ -366,6 +366,40 @@ void test_frame_to_letter(void) {
     CU_ASSERT(sd_script_frame_to_letter(25) == 'Z');
 }
 
+void test_invalid_tag(void) {
+    int fail_at;
+    sd_script s;
+    CU_ASSERT_FATAL(sd_script_create(&s) == SD_SUCCESS);
+    int ret = sd_script_decode(&s,
+                               "bm10amex+20beA1-usbebxA6-bes21l60B8-beC3-beuD4-uabeujf2jfE3-uabeujf2jfF4-uabeujf2jfG4-"
+                               "uabewjf2jfH4-uabeujf2jfD4-uabeujf2jfE3-uabeujf2jfF4-uabeujf2jfG4-uabewjf2jfH4-"
+                               "uabeujf2jfD4-uabeujf2jfE3-uabeujf2jfF4-uabeujf2jfG4-uabewjf2jfH4-uabeujf2jfD4-"
+                               "uabeujf2jfE3-uabeujf2jfF4-uabeujf2jfG4-uabewjf2jfH4-uabewjf2jfI5-uabewjf2jfJ7",
+                               &fail_at);
+    CU_ASSERT(ret == SD_SUCCESS);
+    CU_ASSERT_EQUAL(46, sd_script_get_total_ticks(&s));
+    sd_script_free(&s);
+}
+void test_invalid_lowercase_frame(void) {
+    int fail_at;
+    sd_script s;
+    CU_ASSERT_FATAL(sd_script_create(&s) == SD_SUCCESS);
+    int ret = sd_script_decode(&s, "A130-B30-C10-D10-E10-F10-rfC10-rfD10-rfE10-rff10-C10-B30-A130", &fail_at);
+    CU_ASSERT(ret == SD_SUCCESS);
+    CU_ASSERT_EQUAL(390, sd_script_get_total_ticks(&s));
+    sd_script_free(&s);
+}
+
+void test_spurious_dashes(void) {
+    int fail_at;
+    sd_script s;
+    CU_ASSERT_FATAL(sd_script_create(&s) == SD_SUCCESS);
+    int ret = sd_script_decode(&s, "hx+9y-2C5-hx+8-y-3D3-hx+7y-4E3-hx+6y-5F3-vx-7y-7F1-G5", &fail_at);
+    CU_ASSERT(ret == SD_SUCCESS);
+    CU_ASSERT_EQUAL(17, sd_script_get_total_ticks(&s));
+    sd_script_free(&s);
+}
+
 void script_test_suite(CU_pSuite suite) {
     if(CU_add_test(suite, "test of sd_script_create", test_script_create) == NULL) {
         return;
@@ -461,6 +495,15 @@ void script_test_suite(CU_pSuite suite) {
         return;
     }
     if(CU_add_test(suite, "test of all OMF strings", test_script_all) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "test invalid tag string", test_invalid_tag) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "test invalid lowercase frame id", test_invalid_lowercase_frame) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "test spurious dashes", test_spurious_dashes) == NULL) {
         return;
     }
 }
