@@ -334,13 +334,20 @@ int sd_script_decode(sd_script *script, const char *input, int *invalid_pos) {
     sd_script_tag tag;
     str_from_c(&src, input);
     sd_script_frame_create(&frame, 0, 0);
+    bool frame_valid = true;
     sd_script_tag_create(&tag);
 
     int now = 0;
     while(now < (int)str_size(&src)) {
         if(parse_frame(&frame, &src, &now)) {
-            vector_append(&script->frames, &frame);
+            // only retain valid frames
+            if(frame_valid) {
+                vector_append(&script->frames, &frame);
+            } else {
+                sd_script_frame_free(&frame);
+            }
             sd_script_frame_create(&frame, 0, 0);
+            frame_valid = true;
             continue;
         }
         if(parse_tag(&tag, &src, &now)) {
@@ -350,18 +357,17 @@ int sd_script_decode(sd_script *script, const char *input, int *invalid_pos) {
         }
         // There are some invalid tags -- Just read them, so that we can round-trip properly.
         if(parse_invalid_tag(&tag, &src, &now)) {
-            vector_append(&frame.tags, &tag);
-            sd_script_tag_create(&tag);
+            frame_valid = false;
             continue;
         }
         // Some string(s) have spurious dashes -- ignore the dashes in those cases.
         if(parse_spurious_dash(&src, &now)) {
+            frame_valid = false;
             continue;
         }
         // There are a couple of cases where uppercase frame letter is lowercase. Try to fix.
         if(try_parse_bad_frame(&frame, &src, &now)) {
-            vector_append(&script->frames, &frame);
-            sd_script_frame_create(&frame, 0, 0);
+            frame_valid = false;
             continue;
         }
         goto failed_parse;
