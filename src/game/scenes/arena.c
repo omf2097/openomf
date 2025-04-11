@@ -560,33 +560,58 @@ void arena_har_recover_hook(int player_id, scene *scene) {
     chr_score_end_combo(score, object_get_pos(o_har));
 }
 
-void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
+bool can_wallslam(int player_id, scene *scene) {
     object *o_har =
         game_state_find_object(scene->gs, game_player_get_har_obj_id(game_state_get_player(scene->gs, player_id)));
     har *h = object_get_userdata(o_har);
+    object *o_har2 =
+        game_state_find_object(scene->gs, game_player_get_har_obj_id(game_state_get_player(scene->gs, !player_id)));
 
-    // log_debug("Player %d hit wall %d", player_id, wall);
+    if(player_frame_isset(o_har2, "cw")) {
+        return true;
+    }
 
     // Don't allow object to collide if it is being grabbed.
     if(h->is_grabbed) {
-        return;
+        return false;
     }
 
     // HAR must be in the air to be get faceplanted to a wall.
     if(o_har->pos.y >= ARENA_FLOOR - 10) {
         // TODO: Grounded desert wall logic
+        return false;
+    }
 
+    return true;
+}
+
+void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
+    object *o_har =
+        game_state_find_object(scene->gs, game_player_get_har_obj_id(game_state_get_player(scene->gs, player_id)));
+    har *h = object_get_userdata(o_har);
+    object *o_har2 =
+        game_state_find_object(scene->gs, game_player_get_har_obj_id(game_state_get_player(scene->gs, !player_id)));
+
+    // log_debug("Player %d hit wall %d", player_id, wall);
+    if(!can_wallslam(player_id, scene)) {
         return;
     }
 
     float abs_velocity_h = fabsf(o_har->vel.x) / o_har->horizontal_velocity_modifier;
+    if(player_frame_isset(o_har2, "cw")) {
+        abs_velocity_h = 7;
+    }
 
     if(abs_velocity_h > 2) {
         int tolerance = arena_get_wall_slam_tolerance(scene->gs);
 
         // log_debug("Checking if %f velocity will wallslam", abs_velocity_h);
-        if((abs_velocity_h + 0.5f) > tolerance && h->state == STATE_RECOIL) {
+        if((abs_velocity_h + 0.5f) > tolerance && (h->state == STATE_RECOIL || h->state == STATE_DEFEAT)) {
             h->state = STATE_WALLDAMAGE;
+
+            if(o_har->pos.y == ARENA_FLOOR) {
+                o_har->pos.y -= 10;
+            }
 
             bk_info *info = bk_get_info(scene->bk_data, 20 + wall);
             if(info) { // Only Power Plant and Desert have wall animations

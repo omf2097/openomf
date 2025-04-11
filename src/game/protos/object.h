@@ -115,6 +115,7 @@ struct object_t {
 
     animation *cur_animation;
     int cur_sprite_id;
+    uint8_t last_anim; // Set by "ua" to check for unique animation changes
     const char *sound_translation_table;
     uint8_t sprite_override; //< Tells whether cur_sprite should be kept constant regardless of anim string.
 
