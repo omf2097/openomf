@@ -5,6 +5,10 @@
 #include "utils/log.h"
 #include "utils/miscmath.h"
 
+#if defined(_WIN32) || defined(WIN32)
+#include <shlwapi.h> // PathFileExistsA
+#endif
+
 // Anything above this seems to die on MSYS2 + mingw to EINVAL (22). Not sure why.
 // Anyways, touch at your own peril.
 #define READ_BLOCK_SIZE 1024
@@ -45,4 +49,12 @@ bool file_read(FILE *handle, char *buffer, long size) {
 
 void file_close(FILE *handle) {
     fclose(handle);
+}
+
+bool file_exists(const char *file_name) {
+#if defined(_WIN32) || defined(WIN32)
+    return PathFileExistsA(file_name) == TRUE;
+#else
+    return access(file_name, F_OK) == 0;
+#endif
 }
