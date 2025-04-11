@@ -1316,7 +1316,7 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
         obj_a->can_hit = 0;
     }
     if(a->damage_done == 0 &&
-       (intersect_sprite_hitpoint(obj_a, obj_b, level, &hit_coord) || move->category == CAT_CLOSE ||
+       (intersect_har_sprite_hitpoint(obj_a, obj_b, level, &hit_coord) || move->category == CAT_CLOSE ||
         (player_frame_isset(obj_a, "ue") && b->state != STATE_JUMPING))) {
 
         obj_a->q_counter = obj_a->q_val;
@@ -1351,7 +1351,7 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
         vec2i hit_coord2 = vec2i_create(0, 0);
 
         if(move->category != CAT_CLOSE && b->damage_done == 0 && loop == 0 &&
-           intersect_sprite_hitpoint(obj_b, obj_a, level, &hit_coord2)) {
+           intersect_har_sprite_hitpoint(obj_b, obj_a, level, &hit_coord2)) {
             log_debug("both hars hit at the same time!");
             if(har_collide_with_har(obj_b, obj_a, 1)) {
                 // other player threw us
@@ -1507,7 +1507,7 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
     // Check for collisions by sprite collision points
     int level = 2;
     vec2i hit_coord;
-    if(intersect_sprite_hitpoint(o_pjt, o_har, level, &hit_coord)) {
+    if(intersect_har_sprite_hitpoint(o_pjt, o_har, level, &hit_coord)) {
         af_move *move = af_get_move(prog_owner_af_data, o_pjt->cur_animation->id);
 
         controller *ctrl = game_player_get_ctrl(game_state_get_player(o_har->gs, h->player_id));
@@ -1657,7 +1657,7 @@ void har_collide_with_hazard(object *o_har, object *o_hzd) {
     // Check for collisions by sprite collision points
     int level = 2;
     vec2i hit_coord;
-    if(!h->damage_received && intersect_sprite_hitpoint(o_hzd, o_har, level, &hit_coord)) {
+    if(!h->damage_received && intersect_har_sprite_hitpoint(o_hzd, o_har, level, &hit_coord)) {
         har_take_damage(o_har, &anim->footer_string, anim->hazard_damage, anim->hazard_damage);
         controller *ctrl = game_player_get_ctrl(game_state_get_player(o_har->gs, h->player_id));
         har_event_hazard_hit(h, anim, ctrl);
