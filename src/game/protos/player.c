@@ -719,7 +719,7 @@ void player_run(object *obj) {
         double t2 = cosf(((obj->orb_val & 7) + 8.f) * ((abs(obj->orb_val * 2) + obj->gs->tick) * 0.004974533) +
                          obj->orb_val * 4.0) *
                     65.0;
-        obj->pos.x = (t+t2);
+        obj->pos.x = (t + t2);
         t = cosf(((obj->orb_val & 7) + 8.f) * ((abs(obj->orb_val * 2) + obj->gs->tick) * 0.005874533) +
                  obj->orb_val * 6.0) *
                 30.0 +
@@ -727,7 +727,7 @@ void player_run(object *obj) {
         t2 = sinf(((obj->orb_val & 7) + 8.f) * ((abs(obj->orb_val * 4) + obj->gs->tick) * 0.004174533) +
                   obj->orb_val * 3.0) *
              30.0;
-        obj->pos.y = (t+t2);
+        obj->pos.y = (t + t2);
         obj->vel.x = 0;
         obj->vel.y = 0;
     }
