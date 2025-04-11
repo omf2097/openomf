@@ -1890,8 +1890,8 @@ void har_tick(object *obj) {
         h->air_attacked = 0; // This tag allows you to attack again
     }
 
-    object *enemy_obj = game_state_find_object(
-            obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
+    object *enemy_obj =
+        game_state_find_object(obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
 
     // Make sure HAR doesn't walk through walls
     // TODO: Roof!

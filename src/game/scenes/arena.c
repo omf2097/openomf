@@ -562,10 +562,10 @@ void arena_har_recover_hook(int player_id, scene *scene) {
 
 bool can_wallslam(int player_id, scene *scene) {
     object *o_har =
-            game_state_find_object(scene->gs, game_player_get_har_obj_id(game_state_get_player(scene->gs, player_id)));
+        game_state_find_object(scene->gs, game_player_get_har_obj_id(game_state_get_player(scene->gs, player_id)));
     har *h = object_get_userdata(o_har);
     object *o_har2 =
-            game_state_find_object(scene->gs, game_player_get_har_obj_id(game_state_get_player(scene->gs, !player_id)));
+        game_state_find_object(scene->gs, game_player_get_har_obj_id(game_state_get_player(scene->gs, !player_id)));
 
     if(player_frame_isset(o_har2, "cw")) {
         return true;
