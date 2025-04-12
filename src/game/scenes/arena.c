@@ -734,16 +734,6 @@ void arena_har_defeat_hook(int loser_player_id, scene *scene) {
     }
 }
 
-void arena_maybe_turn_har(int player_id, scene *scene) {
-    int other_player_id = abs(player_id - 1);
-    object *obj_har1 =
-        game_state_find_object(scene->gs, game_player_get_har_obj_id(game_state_get_player(scene->gs, player_id)));
-    object *obj_har2 = game_state_find_object(
-        scene->gs, game_player_get_har_obj_id(game_state_get_player(scene->gs, other_player_id)));
-
-    har_face_enemy(obj_har1, obj_har2);
-}
-
 void arena_har_hook(har_event event, void *data) {
     scene *scene = data;
     fight_stats *fight_stats = &scene->gs->fight_stats;
@@ -768,10 +758,6 @@ void arena_har_hook(har_event event, void *data) {
             if(object_is_airborne(obj_har1)) {
                 har1->air_attacked = 1;
                 log_debug("AIR ATTACK %u", event.player_id);
-            } else {
-                // XXX this breaks the backwards razor spin and anything else using the 'ar' tag, so lets disable it for
-                // now
-                // arena_maybe_turn_har(event.player_id, scene);
             }
             break;
         case HAR_EVENT_LAND:
