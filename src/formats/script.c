@@ -3,11 +3,8 @@
 #include "formats/taglist.h"
 #include "utils/allocator.h"
 #include "utils/str.h"
-#include <ctype.h>
-#include <string.h>
 
-#define INVALID_TAG_COUNT 5
-static const char *INVALID_TAGS[INVALID_TAG_COUNT] = {"u", "c", "p", "o", "z"};
+static const char *INVALID_TAGS[] = {"c", "p", "o", "z", NULL}; // NULL guarded
 
 int sd_script_create(sd_script *script) {
     if(script == NULL) {
@@ -245,16 +242,10 @@ static bool parse_tag(sd_script_tag *new, str *src, int *now) {
     if(!is_tag_letter(str_at(src, *now))) {
         return false;
     }
-
     // Check if tag is legit.
     str test;
     for(int m = 3; m > 0; m--) {
         str_from_slice(&test, src, *now, *now + m);
-        if(str_equal_c(&test, "usw") && find_numeric_span(src, *now + m) > *now + m) {
-            // Fixup rare usw30/usw case, which can be u + sw30 or us + w
-            str_free(&test);
-            return false;
-        }
         if(test_tag_slice(&test, new, src, now)) {
             str_free(&test);
             return true;
@@ -272,7 +263,7 @@ static bool parse_invalid_tag(sd_script_tag *new, str *src, int *now) {
     // Check if tag is an invalid tag.
     str test;
     str_from_slice(&test, src, *now, *now + 1);
-    for(int i = 0; i < INVALID_TAG_COUNT; i++) {
+    for(int i = 0; INVALID_TAGS[i] != NULL; i++) {
         const char *tag = INVALID_TAGS[i];
         if(str_equal_c(&test, tag)) {
             new->key = tag;
@@ -297,30 +288,33 @@ static bool parse_frame(sd_script_frame *frame, str *src, int *now) {
     return false;
 }
 
-static bool try_parse_bad_frame(sd_script_frame *frame, str *src, int *now) {
-    // First, try to snoop without actually moving the pointer.
-    const char frame_id = str_at(src, *now);
-    if(!is_tag_letter(frame_id)) { // Lowercase instead of uppercase (bug)
-        return false;
+static void on_fail_seek_end(str *src, int *now) {
+    while(str_at(src, *now) != '-' && *now < (int)str_size(src)) {
+        (*now)++;
     }
-    const char next_num = str_at(src, (*now) + 1);
-    if(!is_numeric(next_num)) { // Next char must be numeric in this special case.
-        return false;
-    }
-
-    // Okay, we got it. Read the frame.
-    (*now)++; // Hop over the frame ID
-    frame->sprite = sd_script_letter_to_frame(toupper(frame_id));
-    frame->tick_len = read_int(src, now);
-    (*now)++; // Bypass separator '-'
-    return true;
+    (*now)++;
 }
 
-static bool parse_spurious_dash(str *src, int *now) {
-    const char ch = str_at(src, *now);
-    if(ch == '-') {
-        (*now)++;
-        return true;
+static bool decode_next_frame(sd_script_frame *frame, str *src, int *now) {
+    sd_script_tag tag;
+    sd_script_tag_create(&tag);
+    while(*now < (int)str_size(src)) {
+        if(parse_frame(frame, src, now)) {
+            return true;
+        }
+        if(parse_tag(&tag, src, now)) {
+            vector_append(&frame->tags, &tag);
+            sd_script_tag_create(&tag);
+            continue;
+        }
+        // There are some invalid tags -- Just read them, so that we can round-trip properly.
+        if(parse_invalid_tag(&tag, src, now)) {
+            vector_append(&frame->tags, &tag);
+            sd_script_tag_create(&tag);
+            continue;
+        }
+        on_fail_seek_end(src, now);
+        return false;
     }
     return false;
 }
@@ -330,53 +324,30 @@ int sd_script_decode(sd_script *script, const char *input, int *invalid_pos) {
         return SD_INVALID_INPUT;
 
     str src;
-    sd_script_frame frame;
-    sd_script_tag tag;
     str_from_c(&src, input);
-    sd_script_frame_create(&frame, 0, 0);
-    sd_script_tag_create(&tag);
 
     int now = 0;
+    int prev = 0;
     while(now < (int)str_size(&src)) {
-        if(parse_frame(&frame, &src, &now)) {
+        sd_script_frame frame;
+        sd_script_frame_create(&frame, 0, 0);
+        if(decode_next_frame(&frame, &src, &now)) {
             vector_append(&script->frames, &frame);
-            sd_script_frame_create(&frame, 0, 0);
-            continue;
+        } else {
+            sd_script_frame_free(&frame);
         }
-        if(parse_tag(&tag, &src, &now)) {
-            vector_append(&frame.tags, &tag);
-            sd_script_tag_create(&tag);
-            continue;
+        if(prev == now) {
+            // If we are not moving, then something crashed badly.
+            goto fail;
         }
-        // There are some invalid tags -- Just read them, so that we can round-trip properly.
-        if(parse_invalid_tag(&tag, &src, &now)) {
-            vector_append(&frame.tags, &tag);
-            sd_script_tag_create(&tag);
-            continue;
-        }
-        // Some string(s) have spurious dashes -- ignore the dashes in those cases.
-        if(parse_spurious_dash(&src, &now)) {
-            continue;
-        }
-        // There are a couple of cases where uppercase frame letter is lowercase. Try to fix.
-        if(try_parse_bad_frame(&frame, &src, &now)) {
-            vector_append(&script->frames, &frame);
-            sd_script_frame_create(&frame, 0, 0);
-            continue;
-        }
-        goto failed_parse;
+        prev = now;
     }
 
     str_free(&src);
-    sd_script_frame_free(&frame);
     return SD_SUCCESS;
 
-failed_parse:
-    if(invalid_pos != NULL) {
-        *invalid_pos = now;
-    }
-    str_free(&src);
-    sd_script_frame_free(&frame);
+fail:
+    *invalid_pos = now;
     return SD_ANIM_INVALID_STRING;
 }
 
