@@ -148,7 +148,7 @@ typedef struct har_t {
 
     int in_stasis_ticks; // Handle stasis activator
     int throw_duration;
-    int height;
+    int height; // Distance required to jump over this HAR
 
     uint8_t stride;
     int stun_factor;

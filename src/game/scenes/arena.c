@@ -1299,6 +1299,11 @@ void arena_static_tick(scene *scene, int paused) {
     gui_frame_tick(local->game_menu);
 }
 
+/**
+ * Function to keep both players physically apart when overlapping.
+ * There are checks to make sure at least one player is on the ground and that the other player
+ * isn't high enough in the air to jump over.
+ */
 void push_players(scene *scene, game_player *p1, game_player *p2) {
     object *obj_p1 = game_state_find_object(scene->gs, game_player_get_har_obj_id(p1));
     object *obj_p2 = game_state_find_object(scene->gs, game_player_get_har_obj_id(p2));
@@ -1329,20 +1334,8 @@ void push_players(scene *scene, game_player *p1, game_player *p2) {
             p1x += 1;
             p2x -= 1;
         }
-        if(p1x < ARENA_LEFT_WALL) {
-            p1x = ARENA_LEFT_WALL;
-        }
-        if(p2x < ARENA_LEFT_WALL) {
-            p2x = ARENA_LEFT_WALL;
-        }
-        if(p1x > ARENA_RIGHT_WALL) {
-            p1x = ARENA_RIGHT_WALL;
-        }
-        if(p2x > ARENA_RIGHT_WALL) {
-            p2x = ARENA_RIGHT_WALL;
-        }
-        obj_p1->pos.x = p1x;
-        obj_p2->pos.x = p2x;
+        obj_p1->pos.x = clampf(p1x, ARENA_LEFT_WALL, ARENA_RIGHT_WALL);
+        obj_p2->pos.x = clampf(p2x, ARENA_LEFT_WALL, ARENA_RIGHT_WALL);
     }
 }
 
