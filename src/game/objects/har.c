@@ -2264,11 +2264,6 @@ int har_act(object *obj, int act_type) {
     char truncated_inputs[2] = {h->inputs[0], '\0'};
     af_move *move = match_move(obj, prefix, input_staleness <= 9 ? h->inputs : truncated_inputs);
 
-    // Prefetch enemy object & har links, they may be needed
-    object *enemy_obj =
-        game_state_find_object(obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
-    har *enemy_har = (har *)enemy_obj->userdata;
-
     if(player_frame_isset(obj, "jn") && player_frame_isset(obj, "cw") && (enemy_har->state == STATE_WALLDAMAGE)) {
         move = af_get_move(h->af_data, player_frame_get(obj, "jn"));
     }
