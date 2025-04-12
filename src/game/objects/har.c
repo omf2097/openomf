@@ -2217,10 +2217,6 @@ int har_act(object *obj, int act_type) {
         game_state_find_object(obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
     har *enemy_har = (har *)enemy_obj->userdata;
 
-    if(is_har_idle_grounded(obj) && (object_distance(obj, enemy_obj) > 4)) {
-        har_face_enemy(obj, enemy_obj);
-    }
-
     int direction = object_get_direction(obj);
     // always queue input, I guess
     bool input_changed = add_input(h->inputs, act_type, direction);
@@ -2247,6 +2243,10 @@ int har_act(object *obj, int act_type) {
     if(object_get_halt(obj)) {
         // frozen, ignore input
         return 0;
+    }
+
+    if(is_har_idle_grounded(obj) && (object_distance(obj, enemy_obj) > 4)) {
+        har_face_enemy(obj, enemy_obj);
     }
 
     // Don't allow movement if arena is starting or ending

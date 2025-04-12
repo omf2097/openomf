@@ -42,7 +42,7 @@ tests=(
     "Buffering 2 (DOWN) 6 ticks before jumping grants a SUPER JUMP. Only the first two jumps should be super.:SUPERJUMP.REC"
     "Buffered inputs are only used to match moves if the direction has changed in the last 9 ticks:INPUT-FRESHNESS.REC"
     "Stasis prevents walking, turning, and endurance regen:STASIS-FREEZES.REC"
-    "Don't turn around mid-kick:KICK-NOTURN.REC"
+    "Don't reverse inputs before turning:KICK-NOTURN.REC"
     "Electra's shards can be blocked:SHARDS-ARE-BLOCKABLE.REC"
     "Electra can throw Katana on wakeup without getting hit:WAKEUP_THROW.REC"
     "Katana can chain stomps and end with a jump kick:STOMP.REC"
