@@ -1479,6 +1479,11 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
     har *other = object_get_userdata(
         game_state_find_object(o_har->gs, game_state_get_player(o_har->gs, abs(h->player_id - 1))->har_obj_id));
 
+    // Check if collisions are switched off
+    if(player_frame_isset(o_pjt, "n")) {
+        return;
+    }
+
     if(h->state == STATE_STANDING_UP || h->state == STATE_WALLDAMAGE || h->state >= STATE_VICTORY) {
         // can't hit em while they're down, or done
         return;
@@ -1609,12 +1614,6 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
 
         har_spawn_scrap(o_har, hit_coord, move->block_stun);
         h->damage_received = 1;
-
-        if(player_frame_isset(o_pjt, "uz")) {
-            // associate this with the enemy HAR
-            h->linked_obj = o_pjt->id;
-            projectile_link_object(o_pjt, o_har);
-        }
 
         // Switch to successor animation if one exists for this projectile
         // CAT CLOSE is a check for shadow grab, but there's probably a special flag
@@ -1883,17 +1882,21 @@ void har_tick(object *obj) {
     if(player_frame_isset(obj, "aa")) {
         h->air_attacked = 0; // This tag allows you to attack again
     }
+
+    object *enemy_obj =
+        game_state_find_object(obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
+
     // Make sure HAR doesn't walk through walls
     // TODO: Roof!
     vec2i pos = object_get_pos(obj);
     int ab_flag = player_frame_isset(obj, "ab");
-    if(h->state != STATE_DEFEAT && !ab_flag) {
+    if((h->state != STATE_DEFEAT && !ab_flag) || player_frame_isset(enemy_obj, "cw")) {
         int wall_flag = player_frame_isset(obj, "aw");
         int wall = 0;
-        if(pos.x < ARENA_LEFT_WALL) {
+        if(pos.x <= ARENA_LEFT_WALL) {
             pos.x = ARENA_LEFT_WALL;
             obj->wall_collision = true;
-        } else if(pos.x > ARENA_RIGHT_WALL) {
+        } else if(pos.x >= ARENA_RIGHT_WALL) {
             pos.x = ARENA_RIGHT_WALL;
             wall = 1;
             obj->wall_collision = true;
@@ -2261,6 +2264,15 @@ int har_act(object *obj, int act_type) {
     char truncated_inputs[2] = {h->inputs[0], '\0'};
     af_move *move = match_move(obj, prefix, input_staleness <= 9 ? h->inputs : truncated_inputs);
 
+    // Prefetch enemy object & har links, they may be needed
+    object *enemy_obj =
+        game_state_find_object(obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
+    har *enemy_har = (har *)enemy_obj->userdata;
+
+    if(player_frame_isset(obj, "jn") && player_frame_isset(obj, "cw") && (enemy_har->state == STATE_WALLDAMAGE)) {
+        move = af_get_move(h->af_data, player_frame_get(obj, "jn"));
+    }
+
     if(game_state_get_player(obj->gs, h->player_id)->ez_destruct && move == NULL &&
        (h->state == STATE_VICTORY || h->state == STATE_SCRAP)) {
         move = scrap_destruction_cheat(obj, prefix);
@@ -2300,14 +2312,6 @@ int har_act(object *obj, int act_type) {
             har_event_destruction(h, ctrl);
         } else {
             har_event_attack(h, move, ctrl);
-        }
-
-        // make the other har participate in the scrap/destruction if there's not a walk involved
-        if((move->category == CAT_SCRAP || move->category == CAT_DESTRUCTION) && h->walk_destination < 0) {
-            object_set_animation(enemy_obj, &af_get_move(enemy_har->af_data, ANIM_DAMAGE)->ani);
-            object_set_repeat(enemy_obj, 0);
-            object_set_custom_string(enemy_obj, str_c(&move->footer_string));
-            object_dynamic_tick(enemy_obj);
         }
 
         if(h->state == STATE_NONE) {
@@ -2389,7 +2393,6 @@ int har_act(object *obj, int act_type) {
                 har_set_ani(obj, ANIM_IDLE, 1);
                 object_set_stride(obj, h->stride);
                 object_set_vel(obj, vec2f_create(0, 0));
-                obj->slide_state.vel.x = 0;
                 break;
             case STATE_WALKTO:
                 har_set_ani(obj, ANIM_WALKING, 1);

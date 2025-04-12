@@ -57,11 +57,6 @@ void player_reload_with_str(object *obj, const char *custom_str) {
     // Set player state
     player_reset(obj);
     obj->animation_state.reverse = 0;
-    obj->slide_state.timer = 0;
-    obj->slide_state.vel = vec2f_create(0, 0);
-    obj->enemy_slide_state.timer = 0;
-    obj->enemy_slide_state.dest = vec2i_create(0, 0);
-    obj->enemy_slide_state.duration = 0;
     obj->q_counter = 0;
     obj->q_val = 0;
     obj->can_hit = 0;
@@ -261,6 +256,16 @@ void player_run(object *obj) {
             projectile_connect_to_parent(obj);
         }
 
+        if(obj->group == GROUP_PROJECTILE && sd_script_isset(frame, "uz")) {
+            // Used only by shadow grab, basically it connects the projectile and the HAR together
+            // the HAR should be held struggling until this animation ends, unless the HAR takes a hit, in which case
+            // the projectile's animation should end.
+            har *h = object_get_userdata(enemy);
+            // associate this with the enemy HAR
+            h->linked_obj = obj->id;
+            projectile_link_object(obj, enemy);
+        }
+
         if(sd_script_isset(frame, "mu")) {
             // mu tags depend on a previous mm tag, so we need to iterate all of then tags, keeping track of the last mm
             // value we spawn
@@ -389,22 +394,6 @@ void player_run(object *obj) {
             // log_debug("pos x+%d, y+%d to x=%f, y=%f", trans_x * (mp & 0x20 ? -1 : 1), trans_y, obj->pos.x,
             // obj->pos.y);
         }
-    }
-
-    // Handle slide operations on self
-    if(obj->slide_state.timer > 0) {
-        obj->pos.x += obj->slide_state.vel.x;
-        obj->pos.y += obj->slide_state.vel.y;
-        obj->slide_state.timer--;
-    }
-
-    // Handle slide in relation to enemy
-    if(obj->enemy_slide_state.timer > 0 && enemy) {
-
-        obj->enemy_slide_state.duration++;
-        obj->pos.x = enemy->pos.x + obj->enemy_slide_state.dest.x;
-        obj->pos.y = enemy->pos.y + obj->enemy_slide_state.dest.y;
-        obj->enemy_slide_state.timer--;
     }
 
     if(obj->group == GROUP_HAR && enemy && !ab_flag) {
@@ -597,9 +586,18 @@ void player_run(object *obj) {
         }
 
         // If UA is set, force other HAR to damage animation
-        if(sd_script_isset(frame, "ua") && enemy && enemy->cur_animation->id != 9) {
-
-            har_set_ani(enemy, 9, 0);
+        if(sd_script_isset(frame, "ua") && enemy) {
+            har *h = object_get_userdata(obj);
+            if(enemy->cur_animation->id != ANIM_DAMAGE) {
+                har *eh = object_get_userdata(enemy);
+                object_set_animation(enemy, &af_get_move(eh->af_data, ANIM_DAMAGE)->ani);
+                eh->state = STATE_RECOIL;
+            }
+            af_move *move = af_get_move(h->af_data, obj->cur_animation->id);
+            object_set_custom_string(enemy, str_c(&move->footer_string));
+            object_set_repeat(enemy, 0);
+            object_set_stride(enemy, 1);
+            enemy->animation_state.current_tick = obj->animation_state.current_tick;
         }
 
         // BJ sets new animation for our HAR
@@ -611,70 +609,11 @@ void player_run(object *obj) {
             obj->enqueued = new_ani;
         }
 
-        if(sd_script_isset(frame, "bu") && obj->vel.y < 0.0f) {
-            float x_dist = dist(obj->pos.x, 160);
-            // assume that bu is used in conjunction with 'vy-X' and that we want to land in the center of the arena
-            obj->slide_state.vel.x = x_dist / (obj->vel.y * -2);
-            obj->slide_state.timer = obj->vel.y * -2;
-        }
-
         // handle scaling on the Y axis
         if(sd_script_isset(frame, "y")) {
             obj->y_percent = sd_script_get(frame, "y") / 100.0f;
         }
 
-        // Handle slides
-        if(sd_script_isset(frame, "x=") || sd_script_isset(frame, "y=")) {
-            obj->slide_state.vel = vec2f_create(0, 0);
-        }
-        if(sd_script_isset(frame, "x=")) {
-            obj->pos.x = obj->start.x + (sd_script_get(frame, "x=") * object_get_direction(obj));
-
-            // Find frame ID by tick
-            int frame_id = sd_script_next_frame_with_tag(&state->parser, "x=", state->current_tick);
-
-            // Handle it!
-            if(frame_id >= 0) {
-                int mr = sd_script_get_tick_pos_at_frame(&state->parser, frame_id);
-                int r = mr - state->current_tick - frame->tick_len;
-                int next_x = sd_script_get(sd_script_get_frame(&state->parser, frame_id), "x=");
-                int slide = obj->start.x + (next_x * object_get_direction(obj));
-                if(slide != obj->pos.x) {
-                    obj->slide_state.vel.x = dist(obj->pos.x, slide) / (float)(frame->tick_len + r);
-                    obj->slide_state.timer = frame->tick_len + r;
-                    /* log_debug("Slide object %d for X = %f for a total of %d + %d = %d ticks.",
-                            obj->cur_animation->id,
-                            obj->slide_state.vel.x,
-                            frame->tick_len,
-                            r,
-                            frame->tick_len + r);*/
-                }
-            }
-        }
-        if(sd_script_isset(frame, "y=")) {
-            obj->pos.y = obj->start.y + sd_script_get(frame, "y=");
-
-            // Find frame ID by tick
-            int frame_id = sd_script_next_frame_with_tag(&state->parser, "y=", state->current_tick);
-
-            // handle it!
-            if(frame_id >= 0) {
-                int mr = sd_script_get_tick_pos_at_frame(&state->parser, frame_id);
-                int r = mr - state->current_tick - frame->tick_len;
-                int next_y = sd_script_get(sd_script_get_frame(&state->parser, frame_id), "y=");
-                int slide = next_y + obj->start.y;
-                if(slide != obj->pos.y) {
-                    obj->slide_state.vel.y = dist(obj->pos.y, slide) / (float)(frame->tick_len + r);
-                    obj->slide_state.timer = frame->tick_len + r;
-                    /* log_debug("Slide object %d for Y = %f for a total of %d + %d = %d ticks.",
-                            obj->cur_animation->id,
-                            obj->slide_state.vel.y,
-                            frame->tick_len,
-                            r,
-                            frame->tick_len + r);*/
-                }
-            }
-        }
         if(sd_script_isset(frame, "as")) {
             // make the object move around the screen in a circular motion until end of frame
             obj->orbit = 1;
@@ -712,6 +651,12 @@ void player_run(object *obj) {
                 rstate->flipmode ^= FLIP_VERTICAL;
             }
         }
+    }
+
+    if(sd_script_isset(frame, "bu") && obj->vel.y < 0.0f) {
+        float x_dist = dist(obj->pos.x, 160);
+        // assume that bu is used in conjunction with 'vy-X' and that we want to land in the center of the arena
+        obj->vel.x = x_dist / (obj->vel.y * -2);
     }
 
     // Tick management
