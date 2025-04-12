@@ -648,9 +648,6 @@ void har_move(object *obj) {
             }
             har_event_land(h, ctrl);
             har_floor_landing_effects(obj, true);
-
-            // make sure HAR's are facing each other
-            har_face_enemy(obj, enemy_obj);
         } else if(h->state == STATE_RECOIL) {
             if(obj->vel.y > 0) {
                 // bounce and screenshake if falling fast enough
@@ -1332,6 +1329,11 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
     har *other = object_get_userdata(
         game_state_find_object(o_har->gs, game_state_get_player(o_har->gs, abs(h->player_id - 1))->har_obj_id));
 
+    // Check if collisions are switched off
+    if(player_frame_isset(o_pjt, "n")) {
+        return;
+    }
+
     if(h->state == STATE_STANDING_UP || h->state == STATE_WALLDAMAGE || h->state >= STATE_VICTORY) {
         // can't hit em while they're down, or done
         return;
@@ -1462,12 +1464,6 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
 
         har_spawn_scrap(o_har, hit_coord, move->block_stun);
         h->damage_received = 1;
-
-        if(player_frame_isset(o_pjt, "uz")) {
-            // associate this with the enemy HAR
-            h->linked_obj = o_pjt->id;
-            projectile_link_object(o_pjt, o_har);
-        }
 
         // Switch to successor animation if one exists for this projectile
         // CAT CLOSE is a check for shadow grab, but there's probably a special flag
@@ -1661,9 +1657,6 @@ void har_handle_stun(object *obj) {
 
         if(h->endurance >= 0) {
             har_stunned_done(obj);
-            object *enemy_obj = game_state_find_object(
-                obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
-            har_face_enemy(obj, enemy_obj);
         }
     }
 }
@@ -1739,17 +1732,21 @@ void har_tick(object *obj) {
     if(player_frame_isset(obj, "aa")) {
         h->air_attacked = 0; // This tag allows you to attack again
     }
+
+    object *enemy_obj =
+        game_state_find_object(obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
+
     // Make sure HAR doesn't walk through walls
     // TODO: Roof!
     vec2i pos = object_get_pos(obj);
     int ab_flag = player_frame_isset(obj, "ab");
-    if(h->state != STATE_DEFEAT && !ab_flag) {
+    if((h->state != STATE_DEFEAT && !ab_flag) || player_frame_isset(enemy_obj, "cw")) {
         int wall_flag = player_frame_isset(obj, "aw");
         int wall = 0;
-        if(pos.x < ARENA_LEFT_WALL) {
+        if(pos.x <= ARENA_LEFT_WALL) {
             pos.x = ARENA_LEFT_WALL;
             obj->wall_collision = true;
-        } else if(pos.x > ARENA_RIGHT_WALL) {
+        } else if(pos.x >= ARENA_RIGHT_WALL) {
             pos.x = ARENA_RIGHT_WALL;
             wall = 1;
             obj->wall_collision = true;
@@ -2068,6 +2065,11 @@ int har_act(object *obj, int act_type) {
     har *h = object_get_userdata(obj);
     controller *ctrl = game_player_get_ctrl(game_state_get_player(obj->gs, h->player_id));
 
+    // Prefetch enemy object & har links, they may be needed
+    object *enemy_obj =
+        game_state_find_object(obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
+    har *enemy_har = (har *)enemy_obj->userdata;
+
     int direction = object_get_direction(obj);
     // always queue input, I guess
     bool input_changed = add_input(h->inputs, act_type, direction);
@@ -2079,18 +2081,25 @@ int har_act(object *obj, int act_type) {
         prefix = 'P';
     }
 
-    if(prefix != 1 && h->endurance < 0) { // Mash to recover from stun faster!
-        h->endurance += 512;
-    }
-
     uint32_t input_staleness = obj->gs->tick - h->input_change_tick;
     if(input_changed) {
         h->input_change_tick = obj->gs->tick;
     }
 
+    if(h->endurance < 0) {
+        if(prefix == 'K' || prefix == 'P') { // Mash to recover from stun faster!
+            h->endurance += 512;
+        }
+        return 0;
+    }
+
     if(object_get_halt(obj)) {
         // frozen, ignore input
         return 0;
+    }
+
+    if(is_har_idle_grounded(obj) && (object_distance(obj, enemy_obj) > 4)) {
+        har_face_enemy(obj, enemy_obj);
     }
 
     // Don't allow movement if arena is starting or ending
@@ -2104,6 +2113,15 @@ int har_act(object *obj, int act_type) {
     // inputs to complete a move sequence
     char truncated_inputs[2] = {h->inputs[0], '\0'};
     af_move *move = match_move(obj, prefix, input_staleness <= 9 ? h->inputs : truncated_inputs);
+
+    // Prefetch enemy object & har links, they may be needed
+    object *enemy_obj =
+        game_state_find_object(obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
+    har *enemy_har = (har *)enemy_obj->userdata;
+
+    if(player_frame_isset(obj, "jn") && player_frame_isset(obj, "cw") && (enemy_har->state == STATE_WALLDAMAGE)) {
+        move = af_get_move(h->af_data, player_frame_get(obj, "jn"));
+    }
 
     if(game_state_get_player(obj->gs, h->player_id)->ez_destruct && move == NULL &&
        (h->state == STATE_VICTORY || h->state == STATE_SCRAP)) {
@@ -2125,11 +2143,6 @@ int har_act(object *obj, int act_type) {
         // h->inputs[0] = '\0';
         h->executing_move = 1;
 
-        // Prefetch enemy object & har links, they may be needed
-        object *enemy_obj =
-            game_state_find_object(obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
-        har *enemy_har = (har *)enemy_obj->userdata;
-
         // If animation is scrap or destruction, then remove our customizations
         // from gravity/fall speed, and just use the HARs native value.
         if(move->category == CAT_SCRAP || move->category == CAT_DESTRUCTION) {
@@ -2149,14 +2162,6 @@ int har_act(object *obj, int act_type) {
             har_event_destruction(h, ctrl);
         } else {
             har_event_attack(h, move, ctrl);
-        }
-
-        // make the other har participate in the scrap/destruction if there's not a walk involved
-        if((move->category == CAT_SCRAP || move->category == CAT_DESTRUCTION) && h->walk_destination < 0) {
-            object_set_animation(enemy_obj, &af_get_move(enemy_har->af_data, ANIM_DAMAGE)->ani);
-            object_set_repeat(enemy_obj, 0);
-            object_set_custom_string(enemy_obj, str_c(&move->footer_string));
-            object_dynamic_tick(enemy_obj);
         }
 
         if(h->state == STATE_NONE) {
@@ -2238,7 +2243,6 @@ int har_act(object *obj, int act_type) {
                 har_set_ani(obj, ANIM_IDLE, 1);
                 object_set_stride(obj, h->stride);
                 object_set_vel(obj, vec2f_create(0, 0));
-                obj->slide_state.vel.x = 0;
                 break;
             case STATE_WALKTO:
                 har_set_ani(obj, ANIM_WALKING, 1);
@@ -2299,23 +2303,16 @@ int har_act(object *obj, int act_type) {
 
 void har_face_enemy(object *obj, object *obj_enemy) {
     har *h = object_get_userdata(obj);
-    har *har_enemy = object_get_userdata(obj_enemy);
 
-    if(h->in_stasis_ticks > 0 || h->executing_move == 1)
+    if(h->in_stasis_ticks > 0)
         return;
 
-    if((h->state != STATE_RECOIL && h->state != STATE_STUNNED && h->state != STATE_DEFEAT &&
-        h->state != STATE_JUMPING && (har_enemy->state != STATE_JUMPING || h->state == STATE_STANDING_UP)) ||
-       // always face opponent when walking
-       (h->state == STATE_WALKFROM || h->state == STATE_WALKTO)) {
-        // make sure we are facing the opponent
-        vec2i pos = object_get_pos(obj);
-        vec2i pos_enemy = object_get_pos(obj_enemy);
-        int new_facing = pos.x > pos_enemy.x ? OBJECT_FACE_LEFT : OBJECT_FACE_RIGHT;
-        if(obj->direction != new_facing) {
-            log_debug("HARS facing player %d %s", h->player_id, new_facing == OBJECT_FACE_LEFT ? "LEFT" : "RIGHT");
-            object_set_direction(obj, new_facing);
-        }
+    vec2i pos = object_get_pos(obj);
+    vec2i pos_enemy = object_get_pos(obj_enemy);
+    int new_facing = pos.x > pos_enemy.x ? OBJECT_FACE_LEFT : OBJECT_FACE_RIGHT;
+    if(obj->direction != new_facing) {
+        log_debug("HARS facing player %d %s", h->player_id, new_facing == OBJECT_FACE_LEFT ? "LEFT" : "RIGHT");
+        object_set_direction(obj, new_facing);
     }
 }
 
@@ -2327,10 +2324,12 @@ void har_finished(object *obj) {
 
     if(obj->enqueued) {
         har_set_ani(obj, obj->enqueued, 0);
+        if(obj->enqueued == ANIM_STANDUP) {
+            object *enemy_obj = game_state_find_object(
+                obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
+            har_face_enemy(obj, enemy_obj);
+        }
         obj->enqueued = 0;
-        object *enemy_obj =
-            game_state_find_object(obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
-        har_face_enemy(obj, enemy_obj);
     } else if(h->state == STATE_SCRAP || h->state == STATE_DESTRUCTION) {
         // play victory animation again, but do not allow any more moves to be executed
         h->state = STATE_DONE;
@@ -2413,9 +2412,6 @@ void har_finished(object *obj) {
         // har_act MUST provide a new state
         assert(h->state != STATE_NONE);
     }
-
-    // now is a good time to check we're facing the right way
-    har_face_enemy(obj, obj_enemy);
 }
 
 void har_install_hook(har *h, har_hook_cb hook, void *data) {

@@ -560,33 +560,58 @@ void arena_har_recover_hook(int player_id, scene *scene) {
     chr_score_end_combo(score, object_get_pos(o_har));
 }
 
-void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
+bool can_wallslam(int player_id, scene *scene) {
     object *o_har =
         game_state_find_object(scene->gs, game_player_get_har_obj_id(game_state_get_player(scene->gs, player_id)));
     har *h = object_get_userdata(o_har);
+    object *o_har2 =
+        game_state_find_object(scene->gs, game_player_get_har_obj_id(game_state_get_player(scene->gs, !player_id)));
 
-    // log_debug("Player %d hit wall %d", player_id, wall);
+    if(player_frame_isset(o_har2, "cw")) {
+        return true;
+    }
 
     // Don't allow object to collide if it is being grabbed.
     if(h->is_grabbed) {
-        return;
+        return false;
     }
 
     // HAR must be in the air to be get faceplanted to a wall.
     if(o_har->pos.y >= ARENA_FLOOR - 10) {
         // TODO: Grounded desert wall logic
+        return false;
+    }
 
+    return true;
+}
+
+void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
+    object *o_har =
+        game_state_find_object(scene->gs, game_player_get_har_obj_id(game_state_get_player(scene->gs, player_id)));
+    har *h = object_get_userdata(o_har);
+    object *o_har2 =
+        game_state_find_object(scene->gs, game_player_get_har_obj_id(game_state_get_player(scene->gs, !player_id)));
+
+    // log_debug("Player %d hit wall %d", player_id, wall);
+    if(!can_wallslam(player_id, scene)) {
         return;
     }
 
     float abs_velocity_h = fabsf(o_har->vel.x) / o_har->horizontal_velocity_modifier;
+    if(player_frame_isset(o_har2, "cw")) {
+        abs_velocity_h = 7;
+    }
 
     if(abs_velocity_h > 2) {
         int tolerance = arena_get_wall_slam_tolerance(scene->gs);
 
         // log_debug("Checking if %f velocity will wallslam", abs_velocity_h);
-        if((abs_velocity_h + 0.5f) > tolerance && h->state == STATE_RECOIL) {
+        if((abs_velocity_h + 0.5f) > tolerance && (h->state == STATE_RECOIL || h->state == STATE_DEFEAT)) {
             h->state = STATE_WALLDAMAGE;
+
+            if(o_har->pos.y == ARENA_FLOOR) {
+                o_har->pos.y -= 10;
+            }
 
             bk_info *info = bk_get_info(scene->bk_data, 20 + wall);
             if(info) { // Only Power Plant and Desert have wall animations
@@ -734,40 +759,20 @@ void arena_har_defeat_hook(int loser_player_id, scene *scene) {
     }
 }
 
-void arena_maybe_turn_har(int player_id, scene *scene) {
-    int other_player_id = abs(player_id - 1);
-    object *obj_har1 =
-        game_state_find_object(scene->gs, game_player_get_har_obj_id(game_state_get_player(scene->gs, player_id)));
-    object *obj_har2 = game_state_find_object(
-        scene->gs, game_player_get_har_obj_id(game_state_get_player(scene->gs, other_player_id)));
-
-    har_face_enemy(obj_har1, obj_har2);
-}
-
 void arena_har_hook(har_event event, void *data) {
     scene *scene = data;
     fight_stats *fight_stats = &scene->gs->fight_stats;
-    int other_player_id = abs(event.player_id - 1);
     arena_local *arena = scene_get_userdata(scene);
     chr_score *score = game_player_get_score(game_state_get_player(scene->gs, event.player_id));
     object *obj_har1 = game_state_find_object(
         scene->gs, game_player_get_har_obj_id(game_state_get_player(scene->gs, event.player_id)));
-    object *obj_har2 = game_state_find_object(
-        scene->gs, game_player_get_har_obj_id(game_state_get_player(scene->gs, other_player_id)));
     har *har1 = obj_har1->userdata;
-    har *har2 = obj_har2->userdata;
     switch(event.type) {
         case HAR_EVENT_WALK:
-            arena_maybe_turn_har(event.player_id, scene);
-            break;
         case HAR_EVENT_AIR_TURN:
-            arena_maybe_turn_har(event.player_id, scene);
             break;
         case HAR_EVENT_TAKE_HIT:
         case HAR_EVENT_TAKE_HIT_PROJECTILE:
-            if(af_get_move(har2->af_data, obj_har2->cur_animation->id)->category != CAT_CLOSE) {
-                arena_maybe_turn_har(event.player_id, scene);
-            }
             arena_har_take_hit_hook(event.player_id, event.move, scene);
             break;
         case HAR_EVENT_HIT_WALL:
@@ -778,19 +783,9 @@ void arena_har_hook(har_event event, void *data) {
             if(object_is_airborne(obj_har1)) {
                 har1->air_attacked = 1;
                 log_debug("AIR ATTACK %u", event.player_id);
-            } else {
-                // XXX this breaks the backwards razor spin and anything else using the 'ar' tag, so lets disable it for
-                // now
-                // arena_maybe_turn_har(event.player_id, scene);
             }
             break;
         case HAR_EVENT_LAND:
-            if(har2->state == STATE_STANDING || har_is_crouching(har2) || har_is_walking(har2) ||
-               har2->executing_move) {
-                // if the other HAR is jumping or recoiling, don't flip the direction. This specifically is to fix
-                // jaguar ending up facing backwards after an overhead throw.
-                arena_maybe_turn_har(other_player_id, scene);
-            }
             log_debug("LAND %u", event.player_id);
             break;
         case HAR_EVENT_AIR_ATTACK_DONE:
@@ -800,7 +795,6 @@ void arena_har_hook(har_event event, void *data) {
         case HAR_EVENT_RECOVER:
             arena_har_recover_hook(event.player_id, scene);
             if(!object_is_airborne(obj_har1)) {
-                arena_maybe_turn_har(event.player_id, scene);
                 log_debug("RECOVER %u", event.player_id);
             }
             break;

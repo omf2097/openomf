@@ -21,6 +21,7 @@ typedef struct text_layout {
 } text_layout;
 
 void text_layout_create(text_layout *layout);
+void text_layout_clone(text_layout *dst, const text_layout *src);
 void text_layout_free(text_layout *layout);
 size_t find_next_line_end(const str *buf, const font *font, text_row_direction direction, size_t start_index,
                           uint8_t letter_spacing, uint16_t max_width, bool word_wrap);

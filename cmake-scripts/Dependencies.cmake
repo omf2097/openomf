@@ -41,7 +41,6 @@ endif()
 # argtable
 add_library(openomf::argtable INTERFACE IMPORTED)
 target_include_directories(openomf::argtable INTERFACE "${CMAKE_SOURCE_DIR}/src/vendored")
-target_compile_definitions(openomf::argtable INTERFACE ARGTABLE3_FOUND)
 
 # enet
 add_library(openomf::enet INTERFACE IMPORTED)
