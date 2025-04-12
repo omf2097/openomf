@@ -2391,7 +2391,6 @@ int har_act(object *obj, int act_type) {
                 har_set_ani(obj, ANIM_IDLE, 1);
                 object_set_stride(obj, h->stride);
                 object_set_vel(obj, vec2f_create(0, 0));
-                obj->slide_state.vel.x = 0;
                 break;
             case STATE_WALKTO:
                 har_set_ani(obj, ANIM_WALKING, 1);
