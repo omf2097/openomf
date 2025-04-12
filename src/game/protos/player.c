@@ -580,7 +580,8 @@ void player_run(object *obj) {
         if(sd_script_isset(frame, "ua") && enemy) {
             har *h = object_get_userdata(obj);
             if(enemy->cur_animation->id != ANIM_DAMAGE) {
-                object_set_animation(enemy, &af_get_move(h->af_data, ANIM_DAMAGE)->ani);
+                har *eh = object_get_userdata(enemy);
+                object_set_animation(enemy, &af_get_move(eh->af_data, ANIM_DAMAGE)->ani);
             }
             af_move *move = af_get_move(h->af_data, obj->cur_animation->id);
             object_set_custom_string(enemy, str_c(&move->footer_string));
