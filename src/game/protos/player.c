@@ -577,7 +577,7 @@ void player_run(object *obj) {
         }
 
         // If UA is set, force other HAR to damage animation
-        if(sd_script_isset(frame, "ua") && enemy && (obj->last_anim != obj->cur_animation->id)) {
+        if(sd_script_isset(frame, "ua") && enemy) {
             har *h = object_get_userdata(obj);
             if(enemy->cur_animation->id != ANIM_DAMAGE) {
                 object_set_animation(enemy, &af_get_move(h->af_data, ANIM_DAMAGE)->ani);
@@ -585,7 +585,6 @@ void player_run(object *obj) {
             af_move *move = af_get_move(h->af_data, obj->cur_animation->id);
             object_set_custom_string(enemy, str_c(&move->footer_string));
             enemy->animation_state.current_tick = obj->animation_state.current_tick;
-            obj->last_anim = obj->cur_animation->id;
         }
 
         // BJ sets new animation for our HAR
