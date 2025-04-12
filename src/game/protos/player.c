@@ -592,9 +592,12 @@ void player_run(object *obj) {
             if(enemy->cur_animation->id != ANIM_DAMAGE) {
                 har *eh = object_get_userdata(enemy);
                 object_set_animation(enemy, &af_get_move(eh->af_data, ANIM_DAMAGE)->ani);
+                eh->state = STATE_RECOIL;
             }
             af_move *move = af_get_move(h->af_data, obj->cur_animation->id);
             object_set_custom_string(enemy, str_c(&move->footer_string));
+            object_set_repeat(enemy, 0);
+            object_set_stride(enemy, 1);
             enemy->animation_state.current_tick = obj->animation_state.current_tick;
         }
 

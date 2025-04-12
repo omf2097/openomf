@@ -1482,6 +1482,11 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
     har *other = object_get_userdata(
         game_state_find_object(o_har->gs, game_state_get_player(o_har->gs, abs(h->player_id - 1))->har_obj_id));
 
+    // Check if collisions are switched off
+    if(player_frame_isset(o_pjt, "n")) {
+        return;
+    }
+
     if(h->state == STATE_STANDING_UP || h->state == STATE_WALLDAMAGE || h->state >= STATE_VICTORY) {
         // can't hit em while they're down, or done
         return;
