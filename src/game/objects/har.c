@@ -1613,12 +1613,6 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
         har_spawn_scrap(o_har, hit_coord, move->block_stun);
         h->damage_received = 1;
 
-        if(player_frame_isset(o_pjt, "uz")) {
-            // associate this with the enemy HAR
-            h->linked_obj = o_pjt->id;
-            projectile_link_object(o_pjt, o_har);
-        }
-
         // Switch to successor animation if one exists for this projectile
         // CAT CLOSE is a check for shadow grab, but there's probably a special flag
         if(move->successor_id && move->category != CAT_CLOSE) {

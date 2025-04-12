@@ -256,6 +256,16 @@ void player_run(object *obj) {
             projectile_connect_to_parent(obj);
         }
 
+        if(obj->group == GROUP_PROJECTILE && sd_script_isset(frame, "uz")) {
+            // Used only by shadow grab, basically it connects the projectile and the HAR together
+            // the HAR should be held struggling until this animation ends, unless the HAR takes a hit, in which case
+            // the projectile's animation should end.
+            har *h = object_get_userdata(enemy);
+            // associate this with the enemy HAR
+            h->linked_obj = obj->id;
+            projectile_link_object(obj, enemy);
+        }
+
         if(sd_script_isset(frame, "mu")) {
             // mu tags depend on a previous mm tag, so we need to iterate all of then tags, keeping track of the last mm
             // value we spawn
