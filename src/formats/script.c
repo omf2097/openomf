@@ -4,10 +4,8 @@
 #include "utils/allocator.h"
 #include "utils/str.h"
 #include <ctype.h>
-#include <string.h>
 
-#define INVALID_TAG_COUNT 5
-static const char *INVALID_TAGS[INVALID_TAG_COUNT] = {"c", "p", "o", "z"};
+static const char *INVALID_TAGS[] = {"c", "p", "o", "z", NULL}; // NULL guarded
 
 int sd_script_create(sd_script *script) {
     if(script == NULL) {
@@ -245,7 +243,6 @@ static bool parse_tag(sd_script_tag *new, str *src, int *now) {
     if(!is_tag_letter(str_at(src, *now))) {
         return false;
     }
-
     // Check if tag is legit.
     str test;
     for(int m = 3; m > 0; m--) {
@@ -272,7 +269,7 @@ static bool parse_invalid_tag(sd_script_tag *new, str *src, int *now) {
     // Check if tag is an invalid tag.
     str test;
     str_from_slice(&test, src, *now, *now + 1);
-    for(int i = 0; i < INVALID_TAG_COUNT; i++) {
+    for(int i = 0; INVALID_TAGS[i] != NULL; i++) {
         const char *tag = INVALID_TAGS[i];
         if(str_equal_c(&test, tag)) {
             new->key = tag;
