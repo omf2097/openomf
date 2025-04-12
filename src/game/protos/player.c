@@ -649,21 +649,14 @@ void player_run(object *obj) {
 
     // Orb meandering.  Only the fire pit orb should have this tag set.
     if(sd_script_isset(frame, "as")) {
-        double t = sinf(((obj->orb_val & 7) + 8.f) * ((abs(obj->orb_val * 4) + obj->gs->tick) * 0.003574533) +
-                        obj->orb_val * 3.0) *
-                       65.0 +
-                   160.0;
-        double t2 = cosf(((obj->orb_val & 7) + 8.f) * ((abs(obj->orb_val * 2) + obj->gs->tick) * 0.004974533) +
-                         obj->orb_val * 4.0) *
-                    65.0;
+        double base_val = (obj->orb_val & 7) + 8.f;
+        double delta_1 = abs(obj->orb_val * 4) + obj->gs->tick;
+        double delta_2 = abs(obj->orb_val * 2) + obj->gs->tick;
+        double t = sinf(base_val * (delta_1 * 0.003574533) + obj->orb_val * 3.0) * 65.0 + 160.0;
+        double t2 = cosf(base_val * (delta_2 * 0.004974533) + obj->orb_val * 4.0) * 65.0;
         obj->pos.x = (t + t2);
-        t = cosf(((obj->orb_val & 7) + 8.f) * ((abs(obj->orb_val * 2) + obj->gs->tick) * 0.005874533) +
-                 obj->orb_val * 6.0) *
-                30.0 +
-            60.0;
-        t2 = sinf(((obj->orb_val & 7) + 8.f) * ((abs(obj->orb_val * 4) + obj->gs->tick) * 0.004174533) +
-                  obj->orb_val * 3.0) *
-             30.0;
+        t = cosf(base_val * (delta_2 * 0.005874533) + obj->orb_val * 6.0) * 30.0 + 60.0;
+        t2 = sinf(base_val * (delta_1 * 0.004174533) + obj->orb_val * 3.0) * 30.0;
         obj->pos.y = (t + t2);
         obj->vel.x = 0;
         obj->vel.y = 0;
