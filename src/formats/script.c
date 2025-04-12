@@ -7,7 +7,7 @@
 #include <string.h>
 
 #define INVALID_TAG_COUNT 5
-static const char *INVALID_TAGS[INVALID_TAG_COUNT] = {"u", "c", "p", "o", "z"};
+static const char *INVALID_TAGS[INVALID_TAG_COUNT] = {"c", "p", "o", "z"};
 
 int sd_script_create(sd_script *script) {
     if(script == NULL) {
