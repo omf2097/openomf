@@ -322,16 +322,15 @@ void player_run(object *obj) {
                 return;
             }
         }
+    }
 
-        if(sd_script_isset(frame, "h")) {
-            // Hover, reset all velocities to 0 on every frame
-            obj->vel.x = 0;
-            obj->vel.y = 0;
-        }
+    if(sd_script_isset(frame, "h")) {
+        // Hover, reset all velocities to 0 on every frame
+        obj->vel.x = 0;
+        obj->vel.y = 0;
     }
 
     if(sd_script_isset(frame, "e") && enemy) {
-
         // Set speed to 0, since we're being controlled by animation tag system
         obj->vel.x = 0;
         obj->vel.y = 0;
@@ -339,6 +338,11 @@ void player_run(object *obj) {
         // Reset position to enemy coordinates and make sure facing is set correctly
         obj->pos.x = enemy->pos.x;
         obj->pos.y = enemy->pos.y;
+
+        if(sd_script_isset(frame, "am")) {
+            obj->pos.y = ARENA_FLOOR;
+        }
+
         object_set_direction(obj, object_get_direction(enemy) * -1);
         // log_debug("E: pos.x = %f, pos.y = %f", obj->pos.x, obj->pos.y);
     }
@@ -662,10 +666,15 @@ void player_run(object *obj) {
         obj->vel.y = 0;
     }
 
-    if(sd_script_isset(frame, "bu") && obj->vel.y < 0.0f) {
-        float x_dist = dist(obj->pos.x, 160);
-        // assume that bu is used in conjunction with 'vy-X' and that we want to land in the center of the arena
-        obj->vel.x = x_dist / (obj->vel.y * -2);
+    if(sd_script_isset(frame, "bu")) {
+        if(obj->vel.y < 0.0f) {
+            float x_dist = dist(obj->pos.x, 160);
+            // assume that bu is used in conjunction with 'vy-X' and that we want to land in the center of the arena
+            obj->vel.x = x_dist / (obj->vel.y * -2);
+        } else {
+            // teleport offscreen (Thorn's scrap)
+            obj->pos.x = 160;
+        }
     }
 
     // Tick management

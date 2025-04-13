@@ -175,6 +175,7 @@ typedef struct har_t {
     int walk_destination;
 
     int walk_done_anim;
+    int walk_done_tick;
 
     uint8_t custom_defeat_animation;
 

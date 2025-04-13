@@ -307,6 +307,7 @@ void har_walk_to(object *obj, int destination) {
     af_move *move = af_get_move(h->af_data, 10);
 
     h->walk_done_anim = obj->cur_animation->id;
+    h->walk_done_tick = obj->animation_state.current_tick;
 
     float vx = h->fwd_speed * object_get_direction(obj);
     log_debug("set velocity to %f", vx);
@@ -550,15 +551,11 @@ void har_move(object *obj) {
 
         object_set_vel(obj, vec2f_create(0, 0));
         har_set_ani(obj, h->walk_done_anim, 0);
-
-        af_move *move = af_get_move(h->af_data, h->walk_done_anim);
-        object_set_animation(enemy_obj, &af_get_move(enemy_har->af_data, ANIM_DAMAGE)->ani);
-        object_set_repeat(enemy_obj, 0);
-        object_set_custom_string(enemy_obj, str_c(&move->footer_string));
-        object_dynamic_tick(enemy_obj);
+        obj->animation_state.current_tick = h->walk_done_tick;
 
         h->walk_destination = -1;
         h->walk_done_anim = 0;
+        h->walk_done_tick = 0;
         return;
     } else if(h->walk_destination > 0) {
         log_debug("still walking to %d, at %f", h->walk_destination, obj->pos.x);
@@ -703,7 +700,12 @@ void har_move(object *obj) {
 
         object_apply_controllable_velocity(obj, false, last_input);
     } else {
-        obj->vel.y += obj->gravity;
+        if(h->health <= 0) {
+            obj->vel.y += 230.0/256.0;
+        } else {
+            obj->vel.y += obj->gravity;
+        }
+
         // Terminal Velocity
         if(obj->vel.y > 13) {
             obj->vel.y = 13;
