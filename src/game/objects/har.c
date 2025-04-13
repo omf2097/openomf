@@ -701,7 +701,7 @@ void har_move(object *obj) {
         object_apply_controllable_velocity(obj, false, last_input);
     } else {
         if(h->health <= 0) {
-            obj->vel.y += 230.0/256.0;
+            obj->vel.y += 230.0 / 256.0;
         } else {
             obj->vel.y += obj->gravity;
         }
