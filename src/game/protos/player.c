@@ -345,6 +345,7 @@ void player_run(object *obj) {
 
     if(sd_script_isset(frame, "ar")) {
         object_set_direction(obj, object_get_direction(obj) * -1);
+        trans_x *= -1;
     }
 
     int ab_flag = sd_script_isset(frame, "ab"); // Pass through walls
@@ -408,12 +409,6 @@ void player_run(object *obj) {
             int my = 0;
             float vx = 0;
             float vy = 0;
-
-            if(obj->animation_state.shadow_corner_hack && sd_script_get(frame, "m") == 65 && enemy) {
-
-                mx = enemy->pos.x;
-                my = enemy->pos.y;
-            }
 
             // Instance count
             int instances = 1;
