@@ -280,6 +280,11 @@ void har_set_ani(object *obj, int animation_id, int repeat) {
     if(move->category == CAT_JUMPING) {
         h->state = STATE_JUMPING;
     }
+    if(move->category == CAT_LOW || animation_id == ANIM_CROUCHING || animation_id == ANIM_CROUCHING_BLOCK) {
+        h->height = HEIGHT_CROUCHING;
+    } else {
+        h->height = HEIGHT_STANDING;
+    }
     object_set_repeat(obj, repeat);
     object_set_stride(obj, 1);
     object_dynamic_tick(obj);
@@ -695,10 +700,10 @@ void har_move(object *obj) {
 
         if(h->state == STATE_WALKTO) {
             har_face_enemy(obj, enemy_obj);
-            obj->pos.x += (h->fwd_speed * object_get_direction(obj)) * (h->hard_close ? 0.0 : 1.0);
+            obj->pos.x += (h->fwd_speed * object_get_direction(obj));
         } else if(h->state == STATE_WALKFROM) {
             har_face_enemy(obj, enemy_obj);
-            obj->pos.x -= (h->back_speed * object_get_direction(obj)) * (h->hard_close ? 0.5 : 1.0);
+            obj->pos.x -= (h->back_speed * object_get_direction(obj));
         }
 
         object_apply_controllable_velocity(obj, false, last_input);
@@ -1015,173 +1020,18 @@ void har_block(object *obj, vec2i hit_coord, uint8_t block_stun) {
     h->damage_received = 1;
 }
 
-void har_land_on_har(object *obj_a, object *obj_b, int hard_limit, int soft_limit) {
-    vec2i pos_a = object_get_pos(obj_a);
-    vec2i pos_b = object_get_pos(obj_b);
-    sprite *sprite_a = animation_get_sprite(obj_a->cur_animation, obj_a->cur_sprite_id);
-    sprite *sprite_b = animation_get_sprite(obj_b->cur_animation, obj_b->cur_sprite_id);
-
-    vec2i size_b = sprite_get_size(sprite_b);
-
-    // the 50 here is to reverse the damage done in har_fix_sprite_coords
-    int y1 = pos_a.y + sprite_a->pos.y + 50;
-    int y2 = pos_b.y - size_b.y;
-
-    // XXX make this code less redundanta
-    if(object_get_direction(obj_a) == OBJECT_FACE_LEFT) {
-        if(pos_a.x <= pos_b.x + hard_limit && pos_a.x >= pos_b.x && y1 >= y2) {
-            if(pos_b.x == ARENA_LEFT_WALL) {
-                pos_a.x = pos_b.x + hard_limit;
-                object_set_pos(obj_a, pos_a);
-            } else {
-                // landed in front of the HAR, push opponent back
-                int t = hard_limit - (pos_a.x - pos_b.x);
-                pos_b.x = pos_b.x - t / 2;
-                object_set_pos(obj_b, pos_b);
-                pos_a.x = pos_a.x + t / 2;
-                object_set_pos(obj_a, pos_a);
-            }
-        } else if(pos_a.x + hard_limit >= pos_b.x && pos_a.x <= pos_b.x && y1 >= y2) {
-            if(pos_b.x == ARENA_LEFT_WALL) {
-                pos_a.x = pos_b.x + hard_limit;
-                object_set_pos(obj_a, pos_a);
-            } else {
-                // landed behind of the HAR, push opponent forwards
-                int t = hard_limit - (pos_b.x - pos_a.x);
-                pos_b.x = pos_b.x + t / 2;
-                object_set_pos(obj_b, pos_b);
-                pos_a.x = pos_a.x - t / 2;
-                object_set_pos(obj_a, pos_a);
-            }
-        }
-    } else if(object_get_direction(obj_a) == OBJECT_FACE_RIGHT) {
-        if(pos_a.x + hard_limit >= pos_b.x && pos_a.x <= pos_b.x && y1 >= y2) {
-            if(pos_b.x == ARENA_RIGHT_WALL) {
-                pos_a.x = pos_b.x - hard_limit;
-                object_set_pos(obj_a, pos_a);
-            } else {
-                // landed in front of the HAR, push opponent back
-                int t = hard_limit - (pos_b.x - pos_a.x);
-                pos_b.x = pos_b.x + t / 2;
-                object_set_pos(obj_b, pos_b);
-                pos_a.x = pos_a.x - t / 2;
-                object_set_pos(obj_a, pos_a);
-            }
-        } else if(pos_a.x <= pos_b.x + hard_limit && pos_a.x >= pos_b.x && y1 >= y2) {
-            if(pos_b.x == ARENA_RIGHT_WALL) {
-                pos_a.x = pos_b.x - hard_limit;
-                object_set_pos(obj_a, pos_a);
-            } else {
-                // landed behind of the HAR, push opponent forwards
-                int t = hard_limit - (pos_b.x - pos_a.x);
-                pos_b.x = pos_b.x - t / 2;
-                object_set_pos(obj_b, pos_b);
-                pos_a.x = pos_a.x + t / 2;
-                object_set_pos(obj_a, pos_a);
-            }
-        }
-    }
-}
-
+// This function now only exists to help out the AI
 void har_check_closeness(object *obj_a, object *obj_b) {
     vec2i pos_a = object_get_pos(obj_a);
     vec2i pos_b = object_get_pos(obj_b);
     har *a = object_get_userdata(obj_a);
     har *b = object_get_userdata(obj_b);
-    sprite *sprite_a = animation_get_sprite(obj_a->cur_animation, obj_a->cur_sprite_id);
-    sprite *sprite_b = animation_get_sprite(obj_b->cur_animation, obj_b->cur_sprite_id);
-    int hard_limit = 32; // Push opponent if HARs too close. Harrison-Stetson method value.
-    // TODO verify throw distance soft limit
     int soft_limit = 45; // Sets HAR A as being close to HAR B if closer than this. This should be affected by throw
                          // distance setting.
 
     // Reset closeness state
     a->close = 0;
     b->close = 0;
-    a->hard_close = 0;
-    b->hard_close = 0;
-
-    if(!sprite_a || !sprite_b) {
-        // no sprite, eg chronos' teleport
-        return;
-    }
-
-    if(object_is_airborne(obj_a) && object_is_airborne(obj_b)) {
-        // HARs clip through each other in the air
-        return;
-    }
-
-    if(a->throw_duration || b->throw_duration) {
-        // don't mess with coreography
-        return;
-    }
-
-    if(a->health <= 0 || b->health <= 0) {
-        return;
-    }
-
-    // handle one HAR landing on top of another
-    if((a->state == STATE_JUMPING || a->state == STATE_RECOIL) && b->state != STATE_JUMPING &&
-       b->state != STATE_RECOIL) {
-        har_land_on_har(obj_a, obj_b, hard_limit, soft_limit);
-        return;
-    } else if((b->state == STATE_JUMPING || b->state == STATE_RECOIL) && a->state != STATE_JUMPING &&
-              a->state != STATE_RECOIL) {
-        har_land_on_har(obj_b, obj_a, hard_limit, soft_limit);
-        return;
-    }
-
-    if(abs(pos_a.x - pos_b.x) <= hard_limit) {
-        a->hard_close = 1;
-        b->hard_close = 1;
-    }
-
-    float a_speed = (a->fwd_speed * object_get_direction(obj_a)) * (a->hard_close ? 0.5 : 1.0);
-    float b_speed = (b->fwd_speed * object_get_direction(obj_b)) * (b->hard_close ? 0.5 : 1.0);
-
-    bool pushed = true;
-    // If HARs get too close together, handle it
-    if(a->state == STATE_WALKTO && b->state == STATE_WALKTO && a->hard_close) {
-        // both hars are walking into each other, figure out the resulting vector and apply it
-        obj_b->pos.x += b_speed + a_speed;
-        obj_a->pos.x += a_speed + b_speed;
-    } else if(a->state == STATE_WALKTO && a->hard_close) {
-        // A pushes B
-        obj_b->pos.x += a_speed;
-    } else if(b->state == STATE_WALKTO && b->hard_close) {
-        // B pushes A
-        obj_a->pos.x += b_speed;
-    } else {
-        pushed = false;
-    }
-
-    if(fabsf(obj_a->pos.x - obj_b->pos.x) < hard_limit && a->state != STATE_JUMPING && b->state != STATE_JUMPING) {
-        if(obj_a->pos.x <= ARENA_LEFT_WALL) {
-            obj_a->pos.x = ARENA_LEFT_WALL;
-            obj_b->pos.x = ARENA_LEFT_WALL + hard_limit;
-        } else if(obj_b->pos.x <= ARENA_LEFT_WALL) {
-            obj_b->pos.x = ARENA_LEFT_WALL;
-            obj_a->pos.x = ARENA_LEFT_WALL + hard_limit;
-        } else if(obj_a->pos.x >= ARENA_RIGHT_WALL) {
-            obj_a->pos.x = ARENA_RIGHT_WALL;
-            obj_b->pos.x = ARENA_RIGHT_WALL - hard_limit;
-        } else if(obj_b->pos.x >= ARENA_RIGHT_WALL) {
-            obj_b->pos.x = ARENA_RIGHT_WALL;
-            obj_a->pos.x = ARENA_RIGHT_WALL - hard_limit;
-        } else if(!pushed) {
-            // they're simply too close
-            float distance = hard_limit - fabsf(obj_a->pos.x - obj_b->pos.x);
-            if(obj_a->pos.x < obj_b->pos.x) {
-                obj_a->pos.x -= distance / 2.0;
-                obj_a->pos.x = clampf(obj_a->pos.x, ARENA_LEFT_WALL, ARENA_RIGHT_WALL);
-                obj_b->pos.x = obj_a->pos.x + hard_limit;
-            } else {
-                obj_a->pos.x += distance / 2.0;
-                obj_a->pos.x = clampf(obj_a->pos.x, ARENA_LEFT_WALL, ARENA_RIGHT_WALL);
-                obj_b->pos.x = obj_a->pos.x - hard_limit;
-            }
-        }
-    }
 
     // track if the hars are "close"
     // TODO defensive throws setting may impact this
@@ -1700,7 +1550,7 @@ void har_collide(object *obj_a, object *obj_b) {
         return;
     }
 
-    // Check for closeness between HARs and handle it
+    // Check for closeness between HARs
     har_check_closeness(obj_a, obj_b);
 
     // Handle har collisions
@@ -2690,7 +2540,6 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     local->stride = (gp->pilot->agility + 20) / 30;
     log_debug("setting HAR stride to %d", local->stride);
     local->close = 0;
-    local->hard_close = 0;
     local->state = STATE_STANDING;
     local->executing_move = 0;
     local->air_attacked = 0;
@@ -2916,7 +2765,6 @@ void har_reset(object *obj) {
     har *h = object_get_userdata(obj);
     object_set_gravity(obj, h->fall_speed);
     h->close = 0;
-    h->hard_close = 0;
     h->state = STATE_STANDING;
     h->executing_move = 0;
     h->air_attacked = 0;

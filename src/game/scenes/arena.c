@@ -1299,6 +1299,46 @@ void arena_static_tick(scene *scene, int paused) {
     gui_frame_tick(local->game_menu);
 }
 
+/**
+ * Function to keep both players physically apart when overlapping.
+ * There are checks to make sure at least one player is on the ground and that the other player
+ * isn't high enough in the air to jump over.
+ */
+void push_players(scene *scene, game_player *p1, game_player *p2) {
+    object *obj_p1 = game_state_find_object(scene->gs, game_player_get_har_obj_id(p1));
+    object *obj_p2 = game_state_find_object(scene->gs, game_player_get_har_obj_id(p2));
+    har *h1 = obj_p1->userdata;
+    har *h2 = obj_p2->userdata;
+
+    // Check at least one HAR is on the floor
+    if(!(obj_p1->pos.y == ARENA_FLOOR || obj_p2->pos.y == ARENA_FLOOR) || h1->health <= 0 || h2->health <= 0) {
+        return;
+    }
+
+    short clearance;
+    if(obj_p1->pos.y < obj_p2->pos.y) {
+        clearance = h1->height;
+    } else {
+        clearance = h2->height;
+    }
+    // TODO: Find out what flag 941_4 is checking
+    // afigure.cpp line 302
+    while(abs(object_px(obj_p1) - object_px(obj_p2)) < 30 && abs(object_py(obj_p1) - object_py(obj_p2)) < clearance &&
+          !h1->throw_duration && !h2->throw_duration) {
+        float p1x = obj_p1->pos.x;
+        float p2x = obj_p2->pos.x;
+        if(p1x < p2x) {
+            p1x -= 1;
+            p2x += 1;
+        } else {
+            p1x += 1;
+            p2x -= 1;
+        }
+        obj_p1->pos.x = clampf(p1x, ARENA_LEFT_WALL, ARENA_RIGHT_WALL);
+        obj_p2->pos.x = clampf(p2x, ARENA_LEFT_WALL, ARENA_RIGHT_WALL);
+    }
+}
+
 void arena_input_tick(scene *scene) {
     arena_local *local = scene_get_userdata(scene);
 
@@ -1309,6 +1349,8 @@ void arena_input_tick(scene *scene) {
         ctrl_event *p1 = NULL, *p2 = NULL;
         controller_poll(player1->ctrl, &p1);
         controller_poll(player2->ctrl, &p2);
+
+        push_players(scene, player1, player2);
 
         arena_handle_events(scene, player1, p1);
         arena_handle_events(scene, player2, p2);
