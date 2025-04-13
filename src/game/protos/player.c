@@ -57,6 +57,8 @@ void player_reload_with_str(object *obj, const char *custom_str) {
     // Set player state
     player_reset(obj);
     obj->animation_state.reverse = 0;
+    obj->slide_state.timer = 0;
+    obj->slide_state.vel = vec2f_create(0, 0);
     obj->q_counter = 0;
     obj->q_val = 0;
     obj->can_hit = 0;
@@ -396,6 +398,13 @@ void player_run(object *obj) {
         }
     }
 
+    // Handle slide operations on self
+    if(obj->slide_state.timer > 0) {
+        obj->pos.x += obj->slide_state.vel.x;
+        obj->pos.y += obj->slide_state.vel.y;
+        obj->slide_state.timer--;
+    }
+
     if(obj->group == GROUP_HAR && enemy && !ab_flag) {
         obj->pos.x = clampf(obj->pos.x, ARENA_LEFT_WALL, ARENA_RIGHT_WALL);
     }
@@ -612,6 +621,59 @@ void player_run(object *obj) {
         // handle scaling on the Y axis
         if(sd_script_isset(frame, "y")) {
             obj->y_percent = sd_script_get(frame, "y") / 100.0f;
+        }
+
+        // Handle slides
+        if(sd_script_isset(frame, "x=") || sd_script_isset(frame, "y=")) {
+            obj->vel = vec2f_create(0, 0);
+        }
+        if(sd_script_isset(frame, "x=")) {
+            obj->pos.x = obj->start.x + (sd_script_get(frame, "x=") * object_get_direction(obj));
+
+            // Find frame ID by tick
+            int frame_id = sd_script_next_frame_with_tag(&state->parser, "x=", state->current_tick);
+
+            // Handle it!
+            if(frame_id >= 0) {
+                int mr = sd_script_get_tick_pos_at_frame(&state->parser, frame_id);
+                int r = mr - state->current_tick - frame->tick_len;
+                int next_x = sd_script_get(sd_script_get_frame(&state->parser, frame_id), "x=");
+                int slide = obj->start.x + (next_x * object_get_direction(obj));
+                if(slide != obj->pos.x) {
+                    obj->slide_state.vel.x = dist(obj->pos.x, slide) / (float)(frame->tick_len + r);
+                    obj->slide_state.timer = frame->tick_len + r;
+                    /* log_debug("Slide object %d for X = %f for a total of %d + %d = %d ticks.",
+                            obj->cur_animation->id,
+                            obj->slide_state.vel.x,
+                            frame->tick_len,
+                            r,
+                            frame->tick_len + r);*/
+                }
+            }
+        }
+        if(sd_script_isset(frame, "y=")) {
+            obj->pos.y = obj->start.y + sd_script_get(frame, "y=");
+
+            // Find frame ID by tick
+            int frame_id = sd_script_next_frame_with_tag(&state->parser, "y=", state->current_tick);
+
+            // handle it!
+            if(frame_id >= 0) {
+                int mr = sd_script_get_tick_pos_at_frame(&state->parser, frame_id);
+                int r = mr - state->current_tick - frame->tick_len;
+                int next_y = sd_script_get(sd_script_get_frame(&state->parser, frame_id), "y=");
+                int slide = next_y + obj->start.y;
+                if(slide != obj->pos.y) {
+                    obj->slide_state.vel.y = dist(obj->pos.y, slide) / (float)(frame->tick_len + r);
+                    obj->slide_state.timer = frame->tick_len + r;
+                    /* log_debug("Slide object %d for Y = %f for a total of %d + %d = %d ticks.",
+                            obj->cur_animation->id,
+                            obj->slide_state.vel.y,
+                            frame->tick_len,
+                            r,
+                            frame->tick_len + r);*/
+                }
+            }
         }
 
         if(sd_script_isset(frame, "q")) {
