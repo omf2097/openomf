@@ -993,16 +993,11 @@ void har_block(object *obj, vec2i hit_coord, uint8_t block_stun) {
     }
     // the HARs have a lame blank frame in their animation string, so use a custom one
 
-    char stun_str[5];
-    snprintf(stun_str, sizeof(stun_str), "A%d", block_stun);
-    object_set_custom_string(obj, stun_str);
+    object_set_custom_string(obj, "A1");
     object_set_repeat(obj, 0);
     object_dynamic_tick(obj);
+    h->block_duration = block_stun;
     // blocking spark
-    if(h->damage_received) {
-        // don't make another scrape
-        return;
-    }
     h->state = STATE_BLOCKSTUN;
     game_state_hit_pause(obj->gs);
     object *scrape = omf_calloc(1, sizeof(object));
@@ -2325,6 +2320,16 @@ void har_finished(object *obj) {
             har_face_enemy(obj, enemy_obj);
         }
         obj->enqueued = 0;
+    } else if(h->block_duration && (h->state == STATE_BLOCKSTUN || h->state == STATE_CROUCHBLOCK)) {
+        object *enemy_obj = game_state_find_object(
+            obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
+        object_set_custom_string(obj, "A1");
+        object_dynamic_tick(obj);
+        h->block_duration--;
+        // If UL is set, force other HAR to stay in blockstun if they're in it
+        if(player_frame_isset(enemy_obj, "ul")) {
+            h->block_duration = 1;
+        }
     } else if(h->state == STATE_SCRAP || h->state == STATE_DESTRUCTION) {
         // play victory animation again, but do not allow any more moves to be executed
         h->state = STATE_DONE;
