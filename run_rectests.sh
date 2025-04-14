@@ -53,6 +53,7 @@ tests=(
     "Jaguar throw deals half stun due to rehit rules:DAMPENED_STUN.REC"
     "Pyros's flames cannot be hit:PYROS_PRIORITY.REC"
     "Flail's destruct sequence works completely:FLAIL_DESTRUCT.REC"
+    "Electra is stuck blocking until Thorn's ul tag wears off:UL_TAG_HOLD_UP.REC"
     "Pyros's destruct sequence works completely:PYROS_DESTRUCT.REC"
 )
 
