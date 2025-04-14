@@ -270,7 +270,6 @@ void player_run(object *obj) {
         // BJ sets new animation for our HAR
         // TODO this is still wrong somehow, there's some kind of conditional
         // but it fixes gargoyle's scrap looping and some other stuff
-        // 3/30/2025 changing this to trigger at the end of the animation instead of immediately - Insanius
         if(sd_script_isset(frame, "bj")) {
             int new_ani = sd_script_get(frame, "bj");
             har_set_ani(obj, new_ani, 0);
