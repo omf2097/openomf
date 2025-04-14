@@ -312,6 +312,7 @@ void har_walk_to(object *obj, int destination) {
     af_move *move = af_get_move(h->af_data, 10);
 
     h->walk_done_anim = obj->cur_animation->id;
+    h->walk_done_tick = obj->animation_state.current_tick;
 
     float vx = h->fwd_speed * object_get_direction(obj);
     log_debug("set velocity to %f", vx);
@@ -535,10 +536,8 @@ void har_move(object *obj) {
         return;
     }
 
-    if(!player_frame_isset(obj, "h")) {
-        obj->pos.x += obj->vel.x;
-        obj->pos.y += obj->vel.y;
-    }
+    obj->pos.x += obj->vel.x;
+    obj->pos.y += obj->vel.y;
 
     object *enemy_obj =
         game_state_find_object(obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
@@ -555,15 +554,11 @@ void har_move(object *obj) {
 
         object_set_vel(obj, vec2f_create(0, 0));
         har_set_ani(obj, h->walk_done_anim, 0);
-
-        af_move *move = af_get_move(h->af_data, h->walk_done_anim);
-        object_set_animation(enemy_obj, &af_get_move(enemy_har->af_data, ANIM_DAMAGE)->ani);
-        object_set_repeat(enemy_obj, 0);
-        object_set_custom_string(enemy_obj, str_c(&move->footer_string));
-        object_dynamic_tick(enemy_obj);
+        obj->animation_state.current_tick = h->walk_done_tick;
 
         h->walk_destination = -1;
         h->walk_done_anim = 0;
+        h->walk_done_tick = 0;
         return;
     } else if(h->walk_destination > 0) {
         log_debug("still walking to %d, at %f", h->walk_destination, obj->pos.x);
@@ -582,136 +577,151 @@ void har_move(object *obj) {
     }
 
     // Handle floor collisions
-    if(obj->pos.y >= ARENA_FLOOR) {
-        controller *ctrl = game_player_get_ctrl(game_state_get_player(obj->gs, h->player_id));
+    if(!player_frame_isset(obj, "h")) {
+        if(obj->pos.y >= ARENA_FLOOR) {
+            controller *ctrl = game_player_get_ctrl(game_state_get_player(obj->gs, h->player_id));
 
-        obj->pos.y = ARENA_FLOOR;
+            obj->pos.y = ARENA_FLOOR;
 
-        char last_input = get_last_input(h);
-        if(h->state == STATE_VICTORY && obj->vel.y > 0) {
-            // TODO: A trigger in arena.c often puts us in STATE_VICTORY too early, which can be a problem
-            // if we're still airborne.  This allows us to land somewhat properly.
-            object_set_vel(obj, vec2f_create(0, 0));
-            har_set_ani(obj, ANIM_IDLE, 1);
-            object_set_stride(obj, h->stride);
-            har_event_land(h, ctrl);
-            har_floor_landing_effects(obj, true);
-        } else if(h->state == STATE_JUMPING && enemy_har->is_grabbed == 0 && !player_frame_isset(obj, "cg")) {
-            // Change animation from jump to walk or idle,
-            // depending on held inputs
-            if(last_input == '6') {
-                h->state = STATE_WALKTO;
-                har_set_ani(obj, ANIM_WALKING, 1);
+            char last_input = get_last_input(h);
+            if(player_frame_isset(obj, "cl")) {
+                af_move *move = af_get_move(h->af_data, obj->cur_animation->id);
                 object_set_vel(obj, vec2f_create(0, 0));
-                object_set_stride(obj, h->stride);
-                har_event_walk(h, 1, ctrl);
-            } else if(last_input == '4') {
-                h->state = STATE_WALKFROM;
-                har_set_ani(obj, ANIM_WALKING, 1);
+                har_set_ani(obj, move->next_move, 0);
+                object_set_stride(obj, 1);
+            } else if((h->state == STATE_SCRAP || h->state == STATE_DESTRUCTION) && obj->vel.y > 0) {
                 object_set_vel(obj, vec2f_create(0, 0));
-                object_set_stride(obj, h->stride);
-                har_event_walk(h, -1, ctrl);
-            } else if(last_input == '7' || last_input == '8' || last_input == '9') {
-                har_set_ani(obj, ANIM_JUMPING, 0);
-                h->state = STATE_JUMPING;
-                float vx = 0.0f;
-                float vy = h->jump_speed;
-                int jump_dir = 0;
-                int direction = object_get_direction(obj);
-                if(last_input == '9') {
-                    vx = (h->fwd_speed * direction);
-                    object_set_tick_pos(obj, 110);
-                    object_set_stride(obj, 7); // Pass 7 frames per tick
-                    jump_dir = 1;
-                } else if(last_input == '7') {
-                    // If we are jumping backwards, start animation from end
-                    // at -100 frames (seems to be about right)
-                    object_set_playback_direction(obj, PLAY_BACKWARDS);
-                    object_set_tick_pos(obj, -110);
-                    vx = (h->back_speed * direction * -1);
-                    object_set_stride(obj, 7); // Pass 7 frames per tick
-                    jump_dir = -1;
-                } else {
-                    // we are jumping upwards
-                    object_set_tick_pos(obj, 110);
-                    if(h->id == HAR_GARGOYLE) {
-                        object_set_stride(obj, 7);
-                    }
-                }
-                object_set_vel(obj, vec2f_create(vx, vy));
-                har_event_jump(h, jump_dir, ctrl);
-            } else {
+                har_finished(obj);
+                har_floor_landing_effects(obj, true);
+            } else if((h->state == STATE_VICTORY) && obj->vel.y > 0) {
+                // TODO: A trigger in arena.c often puts us in STATE_VICTORY too early, which can be a problem
+                // if we're still airborne.  This allows us to land somewhat properly.
                 object_set_vel(obj, vec2f_create(0, 0));
-                h->state = STATE_STANDING;
                 har_set_ani(obj, ANIM_IDLE, 1);
                 object_set_stride(obj, h->stride);
-            }
-            har_event_land(h, ctrl);
-            har_floor_landing_effects(obj, true);
-        } else if(h->state == STATE_RECOIL) {
-            if(obj->vel.y > 0) {
-                // bounce and screenshake if falling fast enough
-                if(obj->vel.y > 6) {
-                    har_floor_landing_effects(obj, false);
-                    obj->vel.y = -3;
-                    obj->vel.x = obj->vel.x / 2;
-                    if(h->id != 10) {
-                        object_set_custom_string(obj, "l20s4sp13zzN3-zzM100");
-                        obj->gs->screen_shake_vertical = 5; // Multiplied by 5 to make it visible
+                har_event_land(h, ctrl);
+                har_floor_landing_effects(obj, true);
+            } else if(h->state == STATE_JUMPING && enemy_har->is_grabbed == 0 && !player_frame_isset(obj, "cg")) {
+                // Change animation from jump to walk or idle,
+                // depending on held inputs
+                if(last_input == '6') {
+                    h->state = STATE_WALKTO;
+                    har_set_ani(obj, ANIM_WALKING, 1);
+                    object_set_vel(obj, vec2f_create(0, 0));
+                    object_set_stride(obj, h->stride);
+                    har_event_walk(h, 1, ctrl);
+                } else if(last_input == '4') {
+                    h->state = STATE_WALKFROM;
+                    har_set_ani(obj, ANIM_WALKING, 1);
+                    object_set_vel(obj, vec2f_create(0, 0));
+                    object_set_stride(obj, h->stride);
+                    har_event_walk(h, -1, ctrl);
+                } else if(last_input == '7' || last_input == '8' || last_input == '9') {
+                    har_set_ani(obj, ANIM_JUMPING, 0);
+                    h->state = STATE_JUMPING;
+                    float vx = 0.0f;
+                    float vy = h->jump_speed;
+                    int jump_dir = 0;
+                    int direction = object_get_direction(obj);
+                    if(last_input == '9') {
+                        vx = (h->fwd_speed * direction);
+                        object_set_tick_pos(obj, 110);
+                        object_set_stride(obj, 7); // Pass 7 frames per tick
+                        jump_dir = 1;
+                    } else if(last_input == '7') {
+                        // If we are jumping backwards, start animation from end
+                        // at -100 frames (seems to be about right)
+                        object_set_playback_direction(obj, PLAY_BACKWARDS);
+                        object_set_tick_pos(obj, -110);
+                        vx = (h->back_speed * direction * -1);
+                        object_set_stride(obj, 7); // Pass 7 frames per tick
+                        jump_dir = -1;
                     } else {
-                        // Nova falls harder
-                        object_set_custom_string(obj, "l40s4sp13zzN3-zzM100");
-                        obj->gs->screen_shake_vertical = 15; // Multiplied by 5 to make it visible
+                        // we are jumping upwards
+                        object_set_tick_pos(obj, 110);
+                        if(h->id == HAR_GARGOYLE) {
+                            object_set_stride(obj, 7);
+                        }
                     }
+                    object_set_vel(obj, vec2f_create(vx, vy));
+                    har_event_jump(h, jump_dir, ctrl);
                 } else {
-                    obj->vel.y = 0;
-                    obj->vel.x = 0;
-                    har_event_land(h, ctrl);
-                    har_finished(obj);
+                    object_set_vel(obj, vec2f_create(0, 0));
+                    h->state = STATE_STANDING;
+                    har_set_ani(obj, ANIM_IDLE, 1);
+                    object_set_stride(obj, h->stride);
+                }
+                har_event_land(h, ctrl);
+                har_floor_landing_effects(obj, true);
+            } else if(h->state == STATE_RECOIL) {
+                if(obj->vel.y > 0) {
+                    // bounce and screenshake if falling fast enough
+                    if(obj->vel.y > 6) {
+                        har_floor_landing_effects(obj, false);
+                        obj->vel.y = -3;
+                        obj->vel.x = obj->vel.x / 2;
+                        if(h->id != 10) {
+                            object_set_custom_string(obj, "l20s4sp13zzN3-zzM100");
+                            obj->gs->screen_shake_vertical = 5; // Multiplied by 5 to make it visible
+                        } else {
+                            // Nova falls harder
+                            object_set_custom_string(obj, "l40s4sp13zzN3-zzM100");
+                            obj->gs->screen_shake_vertical = 15; // Multiplied by 5 to make it visible
+                        }
+                    } else {
+                        obj->vel.y = 0;
+                        obj->vel.x = 0;
+                        har_event_land(h, ctrl);
+                        har_finished(obj);
+                    }
+                }
+
+                if(obj->pos.x < ARENA_LEFT_WALL) {
+                    obj->pos.x = ARENA_LEFT_WALL;
+                }
+                if(obj->pos.x > ARENA_RIGHT_WALL) {
+                    obj->pos.x = ARENA_RIGHT_WALL;
                 }
             }
 
-            if(obj->pos.x < ARENA_LEFT_WALL) {
-                obj->pos.x = ARENA_LEFT_WALL;
-            }
-            if(obj->pos.x > ARENA_RIGHT_WALL) {
-                obj->pos.x = ARENA_RIGHT_WALL;
-            }
-        }
-
-        if(h->state != STATE_SCRAP) {
-            // add some friction from the floor if we're not walking during scrap
-            // This is important to dampen/eliminate the velocity added from pushing away from the other HAR
-            // friction decreases velocity by 1 each tick, and sets it to 0 if its under |2|
-            if(obj->vel.x > 0.0f) {
-                if(obj->vel.x < 2.0f) {
-                    obj->vel.x = 0.0f;
-                } else {
-                    obj->vel.x -= 1.0f;
-                }
-            } else if(obj->vel.x < 0.0f) {
-                if(obj->vel.x > -2.0f) {
-                    obj->vel.x = 0.0f;
-                } else {
-                    obj->vel.x += 1.0f;
+            if(h->state != STATE_SCRAP) {
+                // add some friction from the floor if we're not walking during scrap
+                // This is important to dampen/eliminate the velocity added from pushing away from the other HAR
+                // friction decreases velocity by 1 each tick, and sets it to 0 if its under |2|
+                if(obj->vel.x > 0.0f) {
+                    if(obj->vel.x < 2.0f) {
+                        obj->vel.x = 0.0f;
+                    } else {
+                        obj->vel.x -= 1.0f;
+                    }
+                } else if(obj->vel.x < 0.0f) {
+                    if(obj->vel.x > -2.0f) {
+                        obj->vel.x = 0.0f;
+                    } else {
+                        obj->vel.x += 1.0f;
+                    }
                 }
             }
-        }
 
-        if(h->state == STATE_WALKTO) {
-            har_face_enemy(obj, enemy_obj);
-            obj->pos.x += (h->fwd_speed * object_get_direction(obj));
-        } else if(h->state == STATE_WALKFROM) {
-            har_face_enemy(obj, enemy_obj);
-            obj->pos.x -= (h->back_speed * object_get_direction(obj));
-        }
+            if(h->state == STATE_WALKTO) {
+                har_face_enemy(obj, enemy_obj);
+                obj->pos.x += (h->fwd_speed * object_get_direction(obj));
+            } else if(h->state == STATE_WALKFROM) {
+                har_face_enemy(obj, enemy_obj);
+                obj->pos.x -= (h->back_speed * object_get_direction(obj));
+            }
 
-        object_apply_controllable_velocity(obj, false, last_input);
-    } else {
-        obj->vel.y += obj->gravity;
-        // Terminal Velocity
-        if(obj->vel.y > 13) {
-            obj->vel.y = 13;
+            object_apply_controllable_velocity(obj, false, last_input);
+        } else {
+            if(game_state_hars_are_alive(obj->gs)) {
+                obj->vel.y += obj->gravity;
+            } else {
+                obj->vel.y += 230.0 / 256.0;
+            }
+            // Terminal Velocity
+            if(obj->vel.y > 13) {
+                obj->vel.y = 13;
+            }
         }
     }
 }
@@ -803,10 +813,11 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
         h->endurance = ((((h->endurance - h->endurance_max) / 256) * -2.5) - 60) * 256;
     }
 
+    game_player *other_player = game_state_get_player(obj->gs, !h->player_id);
+    object *other_har = game_state_find_object(obj->gs, other_player->har_obj_id);
+
     if(h->health == 0) {
         // Take a screencap of enemy har
-        game_player *other_player = game_state_get_player(obj->gs, !h->player_id);
-        object *other_har = game_state_find_object(obj->gs, other_player->har_obj_id);
         har_screencaps_capture(&other_player->screencaps, other_har, obj, SCREENCAP_BLOW);
 
         // Slow down game more for last shot
@@ -815,7 +826,9 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
         game_state_slowdown(obj->gs, 12,
                             h->health == 0 ? game_state_get_speed(obj->gs) - 10 : game_state_get_speed(obj->gs) - 6);
     } else {
-        game_state_hit_pause(obj->gs);
+        if(player_frame_isset(other_har, "cp")) {
+            game_state_hit_pause(obj->gs);
+        }
     }
 
     str custom;
@@ -993,18 +1006,12 @@ void har_block(object *obj, vec2i hit_coord, uint8_t block_stun) {
     }
     // the HARs have a lame blank frame in their animation string, so use a custom one
 
-    char stun_str[5];
-    snprintf(stun_str, sizeof(stun_str), "A%d", block_stun);
-    object_set_custom_string(obj, stun_str);
+    object_set_custom_string(obj, "A1");
     object_set_repeat(obj, 0);
     object_dynamic_tick(obj);
+    h->block_duration = block_stun;
     // blocking spark
-    if(h->damage_received) {
-        // don't make another scrape
-        return;
-    }
     h->state = STATE_BLOCKSTUN;
-    game_state_hit_pause(obj->gs);
     object *scrape = omf_calloc(1, sizeof(object));
     object_create(scrape, obj->gs, hit_coord, vec2f_create(0, 0));
     object_set_animation(scrape, &af_get_move(h->af_data, ANIM_BLOCKING_SCRAPE)->ani);
@@ -1960,12 +1967,12 @@ bool is_move_chain_allowed(object *obj, af_move *move) {
                 }
                 break;
             case CAT_SCRAP:
-                if(player_frame_isset(obj, "jf") && h->state != STATE_DONE) {
+                if(player_frame_isset(obj, "jf") && h->state != STATE_DONE && allowed_in_idle) {
                     allowed = true;
                 }
                 break;
             case CAT_DESTRUCTION:
-                if(player_frame_isset(obj, "jf2")) {
+                if(player_frame_isset(obj, "jf2") && allowed_in_idle) {
                     allowed = true;
                 }
                 break;
@@ -2325,6 +2332,16 @@ void har_finished(object *obj) {
             har_face_enemy(obj, enemy_obj);
         }
         obj->enqueued = 0;
+    } else if(h->block_duration && (h->state == STATE_BLOCKSTUN || h->state == STATE_CROUCHBLOCK)) {
+        object *enemy_obj =
+            game_state_find_object(obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
+        object_set_custom_string(obj, "A1");
+        object_dynamic_tick(obj);
+        h->block_duration--;
+        // If UL is set, force other HAR to stay in blockstun if they're in it
+        if(player_frame_isset(enemy_obj, "ul")) {
+            h->block_duration = 1;
+        }
     } else if(h->state == STATE_SCRAP || h->state == STATE_DESTRUCTION) {
         // play victory animation again, but do not allow any more moves to be executed
         h->state = STATE_DONE;
