@@ -2196,17 +2196,16 @@ int har_act(object *obj, int act_type) {
         }
 
         // Send an event if the har tries to turn in the air by pressing either left/right/downleft/downright
-        int opp_id = h->player_id ? 0 : 1;
-        object *opp =
-            game_state_find_object(obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, opp_id)));
         if(last_input == '4' || last_input == '6' || last_input == '1' || last_input == '3') {
-            if(object_get_pos(obj).x > object_get_pos(opp).x) {
+            if(object_get_pos(obj).x > object_get_pos(enemy_obj).x) {
                 if(direction != OBJECT_FACE_LEFT) {
+                    har_face_enemy(obj, enemy_obj);
                     har_event_air_turn(h, ctrl);
                     return 1;
                 }
             } else {
                 if(direction != OBJECT_FACE_RIGHT) {
+                    har_face_enemy(obj, enemy_obj);
                     har_event_air_turn(h, ctrl);
                     return 1;
                 }
