@@ -53,6 +53,7 @@ tests=(
     "Jaguar throw deals half stun due to rehit rules:DAMPENED_STUN.REC"
     "Pyros's flames cannot be hit:PYROS_PRIORITY.REC"
     "Flail's destruct sequence works completely:FLAIL_DESTRUCT.REC"
+    "Jaguar hits with a turnaround j.K:AIR_TURN.REC"
 )
 
 # Setup temp directory for outputs
