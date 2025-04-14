@@ -214,7 +214,7 @@ void player_run(object *obj) {
     // Get MP flag content, set to 0 if not set.
     uint8_t mp = sd_script_isset(frame, "mp") ? sd_script_get(frame, "mp") & 0xFF : 0;
 
-    if(sd_script_isset(frame, "e") && enemy) {
+    if(sd_script_isset(frame, "e") && enemy && !sd_script_isset(frame, "am")) {
 
         // Set speed to 0, since we're being controlled by animation tag system
         obj->vel.x = 0;
