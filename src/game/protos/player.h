@@ -37,6 +37,11 @@ typedef struct player_sprite_state_t {
     bool bd_flag;        // bd
 } player_sprite_state;
 
+typedef struct player_slide_op_t {
+    vec2f vel;
+    int timer;
+} player_slide_state;
+
 typedef struct player_animation_state_t {
     uint32_t previous_tick;
     uint32_t current_tick;
