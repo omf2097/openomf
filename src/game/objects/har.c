@@ -803,10 +803,11 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
         h->endurance = ((((h->endurance - h->endurance_max) / 256) * -2.5) - 60) * 256;
     }
 
+    game_player *other_player = game_state_get_player(obj->gs, !h->player_id);
+    object *other_har = game_state_find_object(obj->gs, other_player->har_obj_id);
+
     if(h->health == 0) {
         // Take a screencap of enemy har
-        game_player *other_player = game_state_get_player(obj->gs, !h->player_id);
-        object *other_har = game_state_find_object(obj->gs, other_player->har_obj_id);
         har_screencaps_capture(&other_player->screencaps, other_har, obj, SCREENCAP_BLOW);
 
         // Slow down game more for last shot
@@ -815,7 +816,9 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
         game_state_slowdown(obj->gs, 12,
                             h->health == 0 ? game_state_get_speed(obj->gs) - 10 : game_state_get_speed(obj->gs) - 6);
     } else {
-        game_state_hit_pause(obj->gs);
+        if(player_frame_isset(other_har, "cp")) {
+            game_state_hit_pause(obj->gs);
+        }
     }
 
     str custom;
@@ -1004,7 +1007,6 @@ void har_block(object *obj, vec2i hit_coord, uint8_t block_stun) {
         return;
     }
     h->state = STATE_BLOCKSTUN;
-    game_state_hit_pause(obj->gs);
     object *scrape = omf_calloc(1, sizeof(object));
     object_create(scrape, obj->gs, hit_coord, vec2f_create(0, 0));
     object_set_animation(scrape, &af_get_move(h->af_data, ANIM_BLOCKING_SCRAPE)->ani);
