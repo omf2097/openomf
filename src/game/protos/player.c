@@ -216,6 +216,23 @@ void player_run(object *obj) {
     // Get MP flag content, set to 0 if not set.
     uint8_t mp = sd_script_isset(frame, "mp") ? sd_script_get(frame, "mp") & 0xFF : 0;
 
+    if(sd_script_isset(frame, "e") && enemy && !sd_script_isset(frame, "am")) {
+
+        // Set speed to 0, since we're being controlled by animation tag system
+        obj->vel.x = 0;
+        obj->vel.y = 0;
+
+        // Reset position to enemy coordinates and make sure facing is set correctly
+        obj->pos.x = enemy->pos.x;
+        obj->pos.y = enemy->pos.y;
+        object_set_direction(obj, object_get_direction(enemy) * -1);
+        // log_debug("E: pos.x = %f, pos.y = %f", obj->pos.x, obj->pos.y);
+    }
+
+    if(sd_script_isset(frame, "ar")) {
+        object_set_direction(obj, object_get_direction(obj) * -1);
+    }
+
     // Reset the wall collision condition
     obj->wall_collision = false;
     // See if x+/- or y+/- are set and save values
@@ -332,27 +349,6 @@ void player_run(object *obj) {
         obj->vel.y = 0;
     }
 
-    if(sd_script_isset(frame, "e") && enemy) {
-        // Set speed to 0, since we're being controlled by animation tag system
-        obj->vel.x = 0;
-        obj->vel.y = 0;
-
-        // Reset position to enemy coordinates and make sure facing is set correctly
-        obj->pos.x = enemy->pos.x;
-        obj->pos.y = enemy->pos.y;
-
-        if(sd_script_isset(frame, "am")) {
-            obj->pos.y = ARENA_FLOOR;
-        }
-
-        object_set_direction(obj, object_get_direction(enemy) * -1);
-        // log_debug("E: pos.x = %f, pos.y = %f", obj->pos.x, obj->pos.y);
-    }
-
-    if(sd_script_isset(frame, "ar")) {
-        object_set_direction(obj, object_get_direction(obj) * -1);
-    }
-
     int ab_flag = sd_script_isset(frame, "ab"); // Pass through walls
 
     // Set to ground
@@ -421,12 +417,6 @@ void player_run(object *obj) {
             int my = 0;
             float vx = 0;
             float vy = 0;
-
-            if(obj->animation_state.shadow_corner_hack && sd_script_get(frame, "m") == 65 && enemy) {
-
-                mx = enemy->pos.x;
-                my = enemy->pos.y;
-            }
 
             // Instance count
             int instances = 1;
