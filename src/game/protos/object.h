@@ -85,8 +85,6 @@ struct object_t {
     int8_t group;
     // Set when moving against the wall either by continuous velocity or by instantaneous position changes.
     bool wall_collision;
-    // Set by the BJ tag, jump to this animation when the current one ends
-    uint8_t enqueued;
 
     // Set by q tag
     int8_t q_counter;

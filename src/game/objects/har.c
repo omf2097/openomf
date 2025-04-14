@@ -2324,15 +2324,7 @@ void har_finished(object *obj) {
 
     h->executing_move = 0;
 
-    if(obj->enqueued) {
-        har_set_ani(obj, obj->enqueued, 0);
-        if(obj->enqueued == ANIM_STANDUP) {
-            object *enemy_obj = game_state_find_object(
-                obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
-            har_face_enemy(obj, enemy_obj);
-        }
-        obj->enqueued = 0;
-    } else if(h->block_duration && (h->state == STATE_BLOCKSTUN || h->state == STATE_CROUCHBLOCK)) {
+    if(h->block_duration && (h->state == STATE_BLOCKSTUN || h->state == STATE_CROUCHBLOCK)) {
         object *enemy_obj =
             game_state_find_object(obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
         object_set_custom_string(obj, "A1");
