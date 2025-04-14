@@ -2321,8 +2321,8 @@ void har_finished(object *obj) {
         }
         obj->enqueued = 0;
     } else if(h->block_duration && (h->state == STATE_BLOCKSTUN || h->state == STATE_CROUCHBLOCK)) {
-        object *enemy_obj = game_state_find_object(
-            obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
+        object *enemy_obj =
+            game_state_find_object(obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
         object_set_custom_string(obj, "A1");
         object_dynamic_tick(obj);
         h->block_duration--;
