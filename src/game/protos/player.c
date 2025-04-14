@@ -57,6 +57,8 @@ void player_reload_with_str(object *obj, const char *custom_str) {
     // Set player state
     player_reset(obj);
     obj->animation_state.reverse = 0;
+    obj->slide_state.timer = 0;
+    obj->slide_state.vel = vec2f_create(0, 0);
     obj->q_counter = 0;
     obj->q_val = 0;
     obj->can_hit = 0;
@@ -339,12 +341,12 @@ void player_run(object *obj) {
                 return;
             }
         }
+    }
 
-        if(sd_script_isset(frame, "h")) {
-            // Hover, reset all velocities to 0 on every frame
-            obj->vel.x = 0;
-            obj->vel.y = 0;
-        }
+    if(sd_script_isset(frame, "h")) {
+        // Hover, reset all velocities to 0 on every frame
+        obj->vel.x = 0;
+        obj->vel.y = 0;
     }
 
     int ab_flag = sd_script_isset(frame, "ab"); // Pass through walls
@@ -394,6 +396,13 @@ void player_run(object *obj) {
             // log_debug("pos x+%d, y+%d to x=%f, y=%f", trans_x * (mp & 0x20 ? -1 : 1), trans_y, obj->pos.x,
             // obj->pos.y);
         }
+    }
+
+    // Handle slide operations on self
+    if(obj->slide_state.timer > 0) {
+        obj->pos.x += obj->slide_state.vel.x;
+        obj->pos.y += obj->slide_state.vel.y;
+        obj->slide_state.timer--;
     }
 
     if(obj->group == GROUP_HAR && enemy && !ab_flag) {
@@ -608,6 +617,59 @@ void player_run(object *obj) {
             obj->y_percent = sd_script_get(frame, "y") / 100.0f;
         }
 
+        // Handle slides
+        if(sd_script_isset(frame, "x=") || sd_script_isset(frame, "y=")) {
+            obj->vel = vec2f_create(0, 0);
+        }
+        if(sd_script_isset(frame, "x=")) {
+            obj->pos.x = obj->start.x + (sd_script_get(frame, "x=") * object_get_direction(obj));
+
+            // Find frame ID by tick
+            int frame_id = sd_script_next_frame_with_tag(&state->parser, "x=", state->current_tick);
+
+            // Handle it!
+            if(frame_id >= 0) {
+                int mr = sd_script_get_tick_pos_at_frame(&state->parser, frame_id);
+                int r = mr - state->current_tick - frame->tick_len;
+                int next_x = sd_script_get(sd_script_get_frame(&state->parser, frame_id), "x=");
+                int slide = obj->start.x + (next_x * object_get_direction(obj));
+                if(slide != obj->pos.x) {
+                    obj->slide_state.vel.x = dist(obj->pos.x, slide) / (float)(frame->tick_len + r);
+                    obj->slide_state.timer = frame->tick_len + r;
+                    /* log_debug("Slide object %d for X = %f for a total of %d + %d = %d ticks.",
+                            obj->cur_animation->id,
+                            obj->slide_state.vel.x,
+                            frame->tick_len,
+                            r,
+                            frame->tick_len + r);*/
+                }
+            }
+        }
+        if(sd_script_isset(frame, "y=")) {
+            obj->pos.y = obj->start.y + sd_script_get(frame, "y=");
+
+            // Find frame ID by tick
+            int frame_id = sd_script_next_frame_with_tag(&state->parser, "y=", state->current_tick);
+
+            // handle it!
+            if(frame_id >= 0) {
+                int mr = sd_script_get_tick_pos_at_frame(&state->parser, frame_id);
+                int r = mr - state->current_tick - frame->tick_len;
+                int next_y = sd_script_get(sd_script_get_frame(&state->parser, frame_id), "y=");
+                int slide = next_y + obj->start.y;
+                if(slide != obj->pos.y) {
+                    obj->slide_state.vel.y = dist(obj->pos.y, slide) / (float)(frame->tick_len + r);
+                    obj->slide_state.timer = frame->tick_len + r;
+                    /* log_debug("Slide object %d for Y = %f for a total of %d + %d = %d ticks.",
+                            obj->cur_animation->id,
+                            obj->slide_state.vel.y,
+                            frame->tick_len,
+                            r,
+                            frame->tick_len + r);*/
+                }
+            }
+        }
+
         if(sd_script_isset(frame, "q")) {
             obj->q_val = sd_script_get(frame, "q");
             // Enable hit if the q value is higher than the hit count for this animation
@@ -656,10 +718,15 @@ void player_run(object *obj) {
         obj->vel.y = 0;
     }
 
-    if(sd_script_isset(frame, "bu") && obj->vel.y < 0.0f) {
-        float x_dist = dist(obj->pos.x, 160);
-        // assume that bu is used in conjunction with 'vy-X' and that we want to land in the center of the arena
-        obj->vel.x = x_dist / (obj->vel.y * -2);
+    if(sd_script_isset(frame, "bu")) {
+        if(obj->vel.y < 0.0f) {
+            float x_dist = dist(obj->pos.x, 160);
+            // assume that bu is used in conjunction with 'vy-X' and that we want to land in the center of the arena
+            obj->vel.x = x_dist / (obj->vel.y * -2);
+        } else {
+            // teleport offscreen (Thorn's scrap)
+            obj->pos.x = 160;
+        }
     }
 
     // Tick management
