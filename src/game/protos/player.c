@@ -739,11 +739,28 @@ void player_run(object *obj) {
         }
     }
 
+    if(sd_script_isset(frame, "cg")) {
+        obj->animation_state.disable_d = obj->pos.y < ARENA_FLOOR ? 1 : 0;
+
+        if(obj->pos.y >= ARENA_FLOOR) {
+            har *h = object_get_userdata(obj);
+            obj->pos.y = ARENA_FLOOR;
+            obj->vel.y = 0;
+            h->state = STATE_STANDING;
+        }
+    }
+
     // Tick management
     if(sd_script_isset(frame, "d") && !obj->animation_state.disable_d) {
         state->previous_tick = state->current_tick;
-        state->current_tick = sd_script_get(frame, "d") + 1;
-        state->looping = true;
+        int tick_value = sd_script_get(frame, "d");
+        if(tick_value >= 0) {
+            state->current_tick = tick_value + 1;
+            state->looping = true;
+        } else {
+            tick_value = sd_script_get_total_ticks(&state->parser) + tick_value;
+            state->current_tick = tick_value;
+        }
         return;
     }
 

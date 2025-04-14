@@ -55,6 +55,7 @@ tests=(
     "Flail's destruct sequence works completely:FLAIL_DESTRUCT.REC"
     "Electra is stuck blocking until Thorn's ul tag wears off:UL_TAG_HOLD_UP.REC"
     "Pyros's destruct sequence works completely:PYROS_DESTRUCT.REC"
+    "Katana's corkscrew blade has landing recovery:LANDING_RECOVERY.REC"
 )
 
 # Setup temp directory for outputs

@@ -601,7 +601,7 @@ void har_move(object *obj) {
                 object_set_stride(obj, h->stride);
                 har_event_land(h, ctrl);
                 har_floor_landing_effects(obj, true);
-            } else if(h->state == STATE_JUMPING && enemy_har->is_grabbed == 0) {
+            } else if(h->state == STATE_JUMPING && enemy_har->is_grabbed == 0 && !player_frame_isset(obj, "cg")) {
                 // Change animation from jump to walk or idle,
                 // depending on held inputs
                 if(last_input == '6') {
