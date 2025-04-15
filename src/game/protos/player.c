@@ -822,3 +822,14 @@ bool player_is_looping(const object *obj) {
     const player_animation_state *state = &obj->animation_state;
     return state->looping;
 }
+
+bool player_get_current_string(const object *obj, str *dst) {
+    const player_animation_state *state = &obj->animation_state;
+    const sd_script_frame *frame = sd_script_get_frame_at(&state->parser, state->current_tick);
+    str_create(dst);
+    if(sd_script_encode_frame(frame, dst) != SD_SUCCESS) {
+        str_free(dst);
+        return false;
+    }
+    return true;
+}

@@ -3,6 +3,7 @@
 
 #include "game/protos/player.h"
 #include "game/utils/serial.h"
+#include "game/gui/text/text.h"
 #include "resources/animation.h"
 #include "resources/sprite.h"
 #include "utils/hashmap.h"
@@ -143,6 +144,10 @@ struct object_t {
     object_debug_cb debug;
     object_clone_cb clone;
     object_clone_free_cb clone_free;
+
+#ifdef DEBUGMODE
+    text *current_str;
+#endif
 };
 
 void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel);
