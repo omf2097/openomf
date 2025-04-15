@@ -13,8 +13,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define UNUSED(x) (void)(x)
-
 static uint32_t object_id = 1;
 
 /** \brief Creates a new, empty object.
@@ -89,6 +87,14 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
     obj->debug = NULL;
     obj->clone = NULL;
     obj->clone_free = NULL;
+
+#ifdef DEBUGMODE
+    obj->current_str = text_create_with_font_and_size(FONT_SMALL, 320, 6);
+    text_set_color(obj->current_str, 0xE7);
+    text_set_shadow_color(obj->current_str, 0xF8);
+    text_set_shadow_style(obj->current_str, GLYPH_SHADOW_RIGHT | GLYPH_SHADOW_BOTTOM);
+    text_set_word_wrap(obj->current_str, false);
+#endif
 }
 
 int object_clone(object *src, object *dst, game_state *gs) {
@@ -233,6 +239,17 @@ void object_dynamic_tick(object *obj) {
         obj->sprite_state.screen_shake_horizontal = 0;
     }
 
+#ifdef DEBUGMODE
+    // Set the debug string
+    str tmp;
+    if(player_get_current_string(obj, &tmp)) {
+        text_set_from_str(obj->current_str, &tmp);
+        str_free(&tmp);
+    } else {
+        text_set_from_c(obj->current_str, "");
+    }
+#endif
+
     // Run animation player LAST, so that we have operated what we want on the current tick.
     if(obj->cur_animation != NULL && obj->halt == 0) {
         for(int i = 0; i < obj->stride; i++) {
@@ -261,6 +278,9 @@ void object_set_tick_pos(object *obj, int tick) {
 }
 
 void object_debug(object *obj) {
+#ifdef DEBUGMODE
+    text_draw(obj->current_str, obj->pos.x, obj->pos.y);
+#endif
     if(obj->debug != NULL) {
         obj->debug(obj);
     }
@@ -509,6 +529,9 @@ void object_free(object *obj) {
         animation_free(obj->cur_animation);
         omf_free(obj->cur_animation);
     }
+#ifdef DEBUGMODE
+    text_free(&obj->current_str);
+#endif
     obj->cur_surface = NULL;
     obj->cur_animation = NULL;
 }

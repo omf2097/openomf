@@ -88,5 +88,6 @@ unsigned int player_get_len_ticks(const object *obj);
 void player_set_delay(object *obj, int delay);
 bool player_is_looping(const object *obj);
 uint32_t player_get_current_tick(const object *obj);
+bool player_get_current_string(const object *obj, str *dst);
 
 #endif // PLAYER_H
