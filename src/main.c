@@ -189,6 +189,7 @@ int main(int argc, char *argv[]) {
     log_add_stderr(LOG_DEBUG, true);
     log_set_level(LOG_DEBUG);
 #else
+    log_add_stdout(LOG_INFO, true);
     log_set_level(LOG_INFO); // In release mode, drop debugs.
 #endif
     if(log_level->count > 0) {
