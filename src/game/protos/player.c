@@ -267,6 +267,19 @@ void player_run(object *obj) {
             }
         }
 
+        // BJ sets new animation for our HAR
+        // TODO this is still wrong somehow, there's some kind of conditional
+        // but it fixes gargoyle's scrap looping and some other stuff
+        if(sd_script_isset(frame, "bj")) {
+            int new_ani = sd_script_get(frame, "bj");
+            har_set_ani(obj, new_ani, 0);
+            if(new_ani == ANIM_STANDUP) {
+                har_face_enemy(obj, enemy);
+            }
+            object_dynamic_tick(obj);
+            return;
+        }
+
         if(obj->group == GROUP_PROJECTILE && sd_script_isset(frame, "mc")) {
             log_debug("connecting child %d to parent", obj->id);
             // motion connect, attach this to the parent HAR
@@ -601,15 +614,6 @@ void player_run(object *obj) {
             object_set_repeat(enemy, 0);
             object_set_stride(enemy, 1);
             enemy->animation_state.current_tick = obj->animation_state.current_tick;
-        }
-
-        // BJ sets new animation for our HAR
-        // TODO this is still wrong somehow, there's some kind of conditional
-        // but it fixes gargoyle's scrap looping and some other stuff
-        // 3/30/2025 changing this to trigger at the end of the animation instead of immediately - Insanius
-        if(sd_script_isset(frame, "bj")) {
-            int new_ani = sd_script_get(frame, "bj");
-            obj->enqueued = new_ani;
         }
 
         // handle scaling on the Y axis
