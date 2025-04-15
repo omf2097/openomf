@@ -119,6 +119,10 @@ void log_add_stderr(log_level level, bool colors) {
     log_add_fp(stderr, false, level, colors);
 }
 
+void log_add_stdout(log_level level, bool colors) {
+    log_add_fp(stdout, false, level, colors);
+}
+
 void log_add_file(const char *filename, log_level level) {
     FILE *fp = fopen(filename, "w");
     if(fp) {

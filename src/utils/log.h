@@ -23,6 +23,7 @@ void log_close(void);
 void log_set_level(log_level level);
 void log_set_colors(bool toggle);
 void log_add_stderr(log_level level, bool colors);
+void log_add_stdout(log_level level, bool colors);
 void log_add_file(const char *filename, log_level level);
 
 log_level log_level_text_to_enum(const char *level, log_level default_value);
