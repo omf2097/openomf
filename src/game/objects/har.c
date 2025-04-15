@@ -2338,8 +2338,8 @@ void har_finished(object *obj) {
         object_set_custom_string(obj, "A1");
         object_dynamic_tick(obj);
         h->block_duration--;
-        // If UL is set, force other HAR to stay in blockstun if they're in it
-        if(player_frame_isset(enemy_obj, "ul")) {
+        // If UR is set, force other HAR to stay in blockstun if they're in it
+        if(player_frame_isset(enemy_obj, "ur")) {
             h->block_duration = 1;
         }
     } else if(h->state == STATE_SCRAP || h->state == STATE_DESTRUCTION) {
