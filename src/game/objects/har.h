@@ -173,8 +173,6 @@ typedef struct har_t {
     // int16_t p_max_intensity;  // "pp"
     uint8_t p_color_fn;
 
-    uint32_t linked_obj;
-
     int walk_destination;
 
     int walk_done_anim;
@@ -186,7 +184,6 @@ typedef struct har_t {
 
     list har_hooks;
 
-    vector child_objects;
     hashmap disabled_animations;
 
 #ifdef DEBUGMODE
@@ -214,8 +211,6 @@ void har_set_delay(object *obj, int delay);
 uint8_t har_player_id(object *obj);
 
 int16_t har_health_percent(har *h);
-
-void har_connect_child(object *obj, object *child);
 
 void cb_har_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t mp_flags, int s, int g, void *userdata);
 void cb_har_disable_animation(object *parent, uint8_t animation_id, uint16_t ticks, void *userdata);
