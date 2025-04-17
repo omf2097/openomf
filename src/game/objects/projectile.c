@@ -42,6 +42,7 @@ void projectile_finished(object *obj) {
     }
     af_move *move = af_get_move(local->af_data, obj->cur_animation->id);
     if(move->successor_id) {
+        log_warn("going to successor %d", move->successor_id);
         object_set_animation(obj, &af_get_move(local->af_data, move->successor_id)->ani);
         object_set_repeat(obj, 0);
         object_set_vel(obj, vec2f_create(0, 0));
@@ -274,12 +275,4 @@ bool projectile_did_hit(const object *obj) {
 void projectile_clear_hit(object *obj) {
     projectile_local *local = object_get_userdata(obj);
     local->has_hit = false;
-}
-
-void projectile_connect_to_parent(object *obj) {
-    projectile_local *local = object_get_userdata(obj);
-    object *parent = game_state_find_object(obj->gs, local->parent_id);
-    if(parent) {
-        har_connect_child(parent, obj);
-    }
 }
