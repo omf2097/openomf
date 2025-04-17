@@ -587,6 +587,14 @@ void player_run(object *obj) {
             state->pal_copy_entries = sd_script_get(frame, "bc"); // Number of indexes to copy
         }
 
+        if(sd_script_isset(frame, "by")) {
+            object_set_shadow(obj, 0);
+        }
+
+        if(sd_script_isset(frame, "bw")) {
+            object_set_shadow(obj, 1);
+        }
+
         // Handle position correction
         if(sd_script_isset(frame, "ox")) {
             log_debug("O_CORRECTION: X = %d", sd_script_get(frame, "ox"));
@@ -599,6 +607,10 @@ void player_run(object *obj) {
             rstate->o_correction.y = sd_script_get(frame, "oy");
         } else {
             rstate->o_correction.y = 0;
+        }
+
+        if(sd_script_isset(frame, "bo")) {
+            player_set_shadow_correction_y(obj, sd_script_get(frame, "bo"));
         }
 
         // If UA is set, force other HAR to damage animation
@@ -821,4 +833,11 @@ char player_get_last_frame_letter(const object *obj) {
 bool player_is_looping(const object *obj) {
     const player_animation_state *state = &obj->animation_state;
     return state->looping;
+}
+
+void player_set_shadow_correction_y(object *obj, int value) {
+    obj->o_shadow_correction = value;
+    if(value == 0) {
+        obj->cast_shadow = 0;
+    }
 }

@@ -457,7 +457,7 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t m
         // To avoid projectile-to-projectile collisions, set them to same group
         object_set_group(obj, GROUP_PROJECTILE);
         object_set_repeat(obj, 0);
-        object_set_shadow(obj, 1);
+        object_set_shadow(obj, 0);
         object_set_direction(obj, object_get_direction(parent));
         obj->animation_state.enemy_obj_id = parent->animation_state.enemy_obj_id;
         projectile_create(obj, parent);

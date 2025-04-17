@@ -121,6 +121,7 @@ struct object_t {
     int16_t halt_ticks;
     uint8_t stride;
     uint8_t cast_shadow;
+    int o_shadow_correction;
     // pointer into obj->cur_sprite->data
     surface *cur_surface;
 
