@@ -470,9 +470,9 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
                     event_names(buf0, ev->events[0]);
                     event_names(buf1, ev->events[1]);
 
-                    int sz =
-                        snprintf(buf, sizeof(buf), "tick %d -- player 1 %s (%d) -- player 2 %s (%d) -- hash %" PRIu32 "\n",
-                                ev->tick, buf0, ev->events[0][0], buf1, ev->events[1][0], arena_hash);
+                    int sz = snprintf(buf, sizeof(buf),
+                                      "tick %d -- player 1 %s (%d) -- player 2 %s (%d) -- hash %" PRIu32 "\n", ev->tick,
+                                      buf0, ev->events[0][0], buf1, ev->events[1][0], arena_hash);
                     SDL_RWwrite(data->trace_file, buf, sz, 1);
                     arena_state_dump(gs, buf, sizeof(buf));
                     SDL_RWwrite(data->trace_file, buf, strlen(buf), 1);
@@ -480,14 +480,13 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
             }
             ev = iter_next(&it);
             if(ev) {
-            log_warn("next event is at %d", ev->tick);
+                log_warn("next event is at %d", ev->tick);
             }
         }
 
         // The next tick is past when we have agreement, so we need to save the last known good game state
         // for future replays
-        if(gs_new == NULL && gs->int_tick - data->local_proposal == last_agreed &&
-           gs->int_tick > gs_old->int_tick) {
+        if(gs_new == NULL && gs->int_tick - data->local_proposal == last_agreed && gs->int_tick > gs_old->int_tick) {
             log_debug("saving game state at last agreed on tick %d with hash %" PRIu32,
                       gs->int_tick - data->local_proposal, arena_state_hash(gs));
             // save off the game state at the point we last agreed
@@ -499,8 +498,8 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
             omf_free(gs_old);
         }
 
-        if(data->peer_last_hash_tick && gs->int_tick - data->local_proposal == data->peer_last_hash_tick && data->peer_last_hash != arena_hash &&
-           gs->int_tick - data->local_proposal <= last_agreed) {
+        if(data->peer_last_hash_tick && gs->int_tick - data->local_proposal == data->peer_last_hash_tick &&
+           data->peer_last_hash != arena_hash && gs->int_tick - data->local_proposal <= last_agreed) {
             if(ev && data->trace_file) {
                 int sz = snprintf(buf, sizeof(buf), "---MISMATCH at %d (%d) got %" PRIu32 " expected %" PRIu32 "\n",
                                   gs->int_tick - data->local_proposal, data->peer_last_hash_tick, data->peer_last_hash,
@@ -544,7 +543,8 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
             log_debug("arena hashes agree!");
         }
 
-        if(gs->int_tick - data->local_proposal <= last_agreed && data->last_hash_tick < gs->int_tick - data->local_proposal) {
+        if(gs->int_tick - data->local_proposal <= last_agreed &&
+           data->last_hash_tick < gs->int_tick - data->local_proposal) {
             data->last_hash_tick = gs->int_tick - data->local_proposal;
             data->last_hash = arena_hash;
         }
@@ -813,7 +813,8 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                                 has_received = 1;
                             }
                             // even if their tick is ahead of ours, keep last_received_tick below our local tick
-                            data->last_received_tick = min2(ticks - data->local_proposal - 1, max2(data->last_received_tick, peerticks));
+                            data->last_received_tick =
+                                min2(ticks - data->local_proposal - 1, max2(data->last_received_tick, peerticks));
                             data->last_acked_tick = max2(data->last_acked_tick, last_acked);
 
                             if(peer_last_hash_tick > data->peer_last_hash_tick) {
