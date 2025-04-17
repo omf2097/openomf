@@ -16,7 +16,6 @@ typedef struct projectile_local_t {
     int ground_freeze;
     int invincible;
     bool has_hit;
-    uint32_t linked_obj;
     uint32_t parent_id;
 
 #ifdef DEBUGMODE
@@ -32,8 +31,11 @@ void debug_surfaces_create(object *obj);
 void projectile_finished(object *obj) {
     projectile_local *local = object_get_userdata(obj);
 
-    if(local->linked_obj) {
-        object *linked = game_state_find_object(obj->gs, local->linked_obj);
+    log_warn("projectile with flags %d finished", obj->object_flags);
+
+    if(obj->object_flags & OBJECT_FLAGS_UZ) {
+        // release the held HAR
+        object *linked = game_state_find_object(obj->gs, obj->animation_state.enemy_obj_id);
         if(linked) {
             linked->animation_state.disable_d = 1;
         }
@@ -236,11 +238,11 @@ int projectile_create(object *obj, object *parent) {
     return 0;
 }
 
-const af *projectile_get_af_data(object *obj) {
+const af *projectile_get_af_data(const object *obj) {
     return ((projectile_local *)object_get_userdata(obj))->af_data;
 }
 
-uint8_t projectile_get_owner(object *obj) {
+uint8_t projectile_get_owner(const object *obj) {
     return ((projectile_local *)object_get_userdata(obj))->player_id;
 }
 
@@ -264,7 +266,7 @@ void projectile_mark_hit(object *obj) {
     local->has_hit = true;
 }
 
-bool projectile_did_hit(object *obj) {
+bool projectile_did_hit(const object *obj) {
     projectile_local *local = object_get_userdata(obj);
     return local->has_hit;
 }
@@ -272,11 +274,6 @@ bool projectile_did_hit(object *obj) {
 void projectile_clear_hit(object *obj) {
     projectile_local *local = object_get_userdata(obj);
     local->has_hit = false;
-}
-
-void projectile_link_object(object *obj, object *link) {
-    projectile_local *local = object_get_userdata(obj);
-    local->linked_obj = link->id;
 }
 
 void projectile_connect_to_parent(object *obj) {

@@ -778,6 +778,38 @@ void apply_stun_damage(object *obj, int stun_amount) {
     }
 }
 
+struct linked_object_query {
+    uint8_t owner_id;
+    uint32_t mask;
+};
+
+bool har_find_linked_objects_pred(const object *obj, void *data) {
+    struct linked_object_query *q = data;
+    if(obj->group != GROUP_PROJECTILE) {
+        return false;
+    }
+    if(projectile_get_owner(obj) != q->owner_id) {
+        return false;
+    }
+    if(obj->object_flags & q->mask) {
+        return true;
+    }
+    return false;
+}
+
+int har_find_linked_objects(object *obj, vector *vec) {
+    har *h = object_get_userdata(obj);
+    // we want to find 2 sets of objects:
+    // Objects created by us, with the UD flag set
+    struct linked_object_query q = {.owner_id = h->player_id, .mask = OBJECT_FLAGS_UD};
+    int r = game_state_find_objects(obj->gs, vec, har_find_linked_objects_pred, &q);
+    // Objects created by the enemy, with the UZ flag set
+    q.owner_id = abs(h->player_id - 1);
+    q.mask = OBJECT_FLAGS_UZ;
+    r += game_state_find_objects(obj->gs, vec, har_find_linked_objects_pred, &q);
+    return r;
+}
+
 void har_take_damage(object *obj, const str *string, float damage, float stun) {
     har *h = object_get_userdata(obj);
 
@@ -797,13 +829,26 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
     // interrupted
     h->executing_move = 0;
 
-    if(h->linked_obj) {
-        object *linked = game_state_find_object(obj->gs, h->linked_obj);
-        if(linked) {
+    game_player *other_player = game_state_get_player(obj->gs, !h->player_id);
+    object *other_har = game_state_find_object(obj->gs, other_player->har_obj_id);
+
+    vector vec;
+    vector_create(&vec, sizeof(object *));
+    if(har_find_linked_objects(obj, &vec)) {
+        log_warn("found linked objects");
+        iterator it;
+        vector_iter_begin(&vec, &it);
+        object **linked;
+        foreach(it, linked) {
+            // if MC and UZ is set, switch the object's gravity to the owning HAR's gravity
+            if((*linked)->object_flags & OBJECT_FLAGS_MC && (*linked)->object_flags & OBJECT_FLAGS_UZ) {
+                object_set_gravity(*linked, object_get_gravity(other_har));
+            }
             // end the animation of the linked object, so it can go to the successor
-            linked->animation_state.finished = 1;
+            (*linked)->animation_state.finished = 1;
         }
     }
+    vector_free(&vec);
 
     if(vector_size(&h->child_objects)) {
         // shadow children need to die when the controlling HAR is hit
@@ -844,9 +889,6 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
     if(h->health <= 0) {
         h->health = 0;
     }
-
-    game_player *other_player = game_state_get_player(obj->gs, !h->player_id);
-    object *other_har = game_state_find_object(obj->gs, other_player->har_obj_id);
 
     if(h->health == 0) {
         // Take a screencap of enemy har
@@ -1161,8 +1203,6 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
     // rehit mode is on, but the opponent isn't airborne or stunned
     if(obj_b->gs->match_settings.rehit && b->state == STATE_RECOIL &&
        (!object_is_airborne(obj_b) || b->endurance < 0)) {
-        log_debug("REHIT is not possible %d %f %f %f", object_is_airborne(obj_b), obj_b->pos.x, obj_b->pos.y,
-                  b->endurance);
         return 0;
     }
 
@@ -1371,8 +1411,6 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
     // rehit mode is on, but the opponent isn't airborne or stunned
     if(o_har->gs->match_settings.rehit && h->state == STATE_RECOIL &&
        (!object_is_airborne(o_har) || h->endurance < 0)) {
-        log_debug("REHIT is not possible %d %f %f %f", object_is_airborne(o_har), o_har->pos.x, o_har->pos.y,
-                  h->endurance);
         return;
     }
 
