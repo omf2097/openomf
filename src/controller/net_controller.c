@@ -381,7 +381,6 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
     ev = iter_next(&it);
 
     while(gs->int_tick < gs_current->int_tick) {
-        log_info("tick is %d", gs->int_tick - data->local_proposal);
         while(ev && ev->tick + data->local_proposal < data->gs_bak->int_tick) {
             // tick too old to matter
             list_delete(transcript, &it);
