@@ -443,7 +443,7 @@ void object_render_shadow(object *obj) {
     }
 
     if(flip_mode & FLIP_HORIZONTAL) {
-        x += - ((cur_sprite->pos.x + obj->sprite_state.o_correction.x) * obj->x_percent) - object_get_size(obj).x;
+        x += -((cur_sprite->pos.x + obj->sprite_state.o_correction.x) * obj->x_percent) - object_get_size(obj).x;
     } else {
         x += ((cur_sprite->pos.x + obj->sprite_state.o_correction.x) * obj->x_percent);
     }
