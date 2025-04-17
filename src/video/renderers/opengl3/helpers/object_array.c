@@ -149,13 +149,6 @@ void object_array_draw(const object_array *array, object_array_batch *state) {
 static void add_item(object_array *array, float dx, float dy, int x, int y, int w, int h, int tx, int ty, int tw,
                      int th, int flags, int transparency, int remap_offset, int remap_rounds, int pal_offset,
                      int pal_limit, int opacity, unsigned int options) {
-    if(options & SPRITE_SHADOW) {
-        int h_full = h;
-        h /= 4;
-        y -= h;
-        th = th * h * 4 / h_full;
-    }
-
     float tx0, tx1;
     if(flags & FLIP_HORIZONTAL) {
         tx0 = (tx + tw) * dx;

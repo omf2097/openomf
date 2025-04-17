@@ -357,13 +357,19 @@ void object_render(object *obj) {
 
     // Set Y coord, take into account sprite flipping
     if(rstate->flipmode & FLIP_VERTICAL) {
-        y = obj->pos.y - cur_sprite->pos.y + rstate->o_correction.y - object_get_size(obj).y;
+        y = obj->pos.y - ((cur_sprite->pos.y + rstate->o_correction.y) * obj->y_percent) - object_get_size(obj).y;
 
         if(obj->cur_animation->id == ANIM_JUMPING) {
             y -= JUMP_COORD_ADJUSTMENT * 2;
         }
     } else {
-        y = obj->pos.y + cur_sprite->pos.y + rstate->o_correction.y;
+        y = obj->pos.y + ((cur_sprite->pos.y + rstate->o_correction.y) * obj->y_percent);
+    }
+
+    // Flip to face the right direction
+    int flip_mode = rstate->flipmode;
+    if(object_get_direction(obj) == OBJECT_FACE_LEFT) {
+        flip_mode ^= FLIP_HORIZONTAL;
     }
 
     // Set X coord, take into account the HAR facing.
@@ -372,20 +378,10 @@ void object_render(object *obj) {
     //   1    |     0     |   1
     //   0    |     1     |   1
     //   1    |     1     |   0
-    if((object_get_direction(obj) == OBJECT_FACE_LEFT) != ((rstate->flipmode & FLIP_HORIZONTAL) != 0)) {
-        x = obj->pos.x - cur_sprite->pos.x + rstate->o_correction.x - object_get_size(obj).x;
+    if(flip_mode & FLIP_HORIZONTAL) {
+        x = obj->pos.x - ((cur_sprite->pos.x + rstate->o_correction.x) * obj->x_percent) - object_get_size(obj).x;
     } else {
-        x = obj->pos.x + cur_sprite->pos.x + rstate->o_correction.x;
-    }
-
-    // Centrify if scaled
-    x = x + (obj->cur_surface->w - w) / 2;
-    y = y + (obj->cur_surface->h - h) / 2;
-
-    // Flip to face the right direction
-    int flip_mode = rstate->flipmode;
-    if(object_get_direction(obj) == OBJECT_FACE_LEFT) {
-        flip_mode ^= FLIP_HORIZONTAL;
+        x = obj->pos.x + ((cur_sprite->pos.x + rstate->o_correction.x) * obj->x_percent);
     }
 
     uint8_t opacity = rstate->blend_finish;
@@ -435,15 +431,21 @@ void object_render_shadow(object *obj) {
         return;
     }
 
-    int w = cur_sprite->data->w;
-    int h = cur_sprite->data->h;
+    int x = obj->pos.x;
+    int y = ARENA_FLOOR;
+    int w = cur_sprite->data->w * obj->x_percent;
+    int h = (cur_sprite->data->h * obj->y_percent) / 4;
 
     // Determine X
     int flip_mode = obj->sprite_state.flipmode;
-    int x = obj->pos.x + cur_sprite->pos.x + obj->sprite_state.o_correction.x;
     if(object_get_direction(obj) == OBJECT_FACE_LEFT) {
-        x = (obj->pos.x + obj->sprite_state.o_correction.x) - cur_sprite->pos.x - object_get_size(obj).x;
         flip_mode ^= FLIP_HORIZONTAL;
+    }
+
+    if(flip_mode & FLIP_HORIZONTAL) {
+        x += - ((cur_sprite->pos.x + obj->sprite_state.o_correction.x) * obj->x_percent) - object_get_size(obj).x;
+    } else {
+        x += ((cur_sprite->pos.x + obj->sprite_state.o_correction.x) * obj->x_percent);
     }
 
     player_sprite_state *state = &obj->sprite_state;
@@ -454,8 +456,8 @@ void object_render_shadow(object *obj) {
         opacity = clamp(state->blend_start + d, 0, 255);
     }
 
-    // Draw at ARENA_FLOOR
-    int y = ARENA_FLOOR;
+    int correction_y = obj->sprite_state.o_correction.y + obj->o_shadow_correction;
+    y += ((cur_sprite->pos.y + correction_y) * obj->y_percent) / 4;
 
     // Draw the shadow, using the texture data to determine which remap to use (uses the first four remaps)
     video_draw_full(cur_sprite->data, x, y, w, h, -1, 1, 0, 0, opacity, flip_mode, SPRITE_SHADOW);
