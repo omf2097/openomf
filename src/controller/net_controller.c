@@ -278,8 +278,6 @@ void send_events(wtf *data) {
     serial_write_uint32(&ser, data->gs_bak->int_tick - data->local_proposal);
     serial_write_int8(&ser, data->frame_advantage);
 
-    int events = 0;
-
     int last_sent_tick = 0;
 
     foreach(it, ev) {
@@ -294,7 +292,6 @@ void send_events(wtf *data) {
             }
             serial_write_int8(&ser, 0);
             last_sent_tick = ev->tick;
-            events++;
         }
     }
 
