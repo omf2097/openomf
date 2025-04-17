@@ -285,8 +285,9 @@ static void arena_end(scene *sc) {
         fight_stats->repair_cost = (1.0f - hp_percentage) * trade_value;
 
         float winnings_multiplier = player_winner->chr->winnings_multiplier;
-        fight_stats->winnings = (player_loser->pilot->money + player_loser->pilot->winnings) * winnings_multiplier;
-        fight_stats->winnings += (int)(400 * hp_percentage);
+        fight_stats->winnings =
+            winnings_multiplier * (calculate_winnings(player_winner->pilot, false) +
+                                   calculate_winnings(player_loser->pilot, true) + player_loser->pilot->winnings);
 
         // secret players have no rank, and don't increase your own ranking
         if(!gs->match_settings.sim && player_loser->pilot->rank > 0) {
