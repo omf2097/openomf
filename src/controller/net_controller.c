@@ -272,7 +272,9 @@ void send_events(wtf *data) {
     serial_write_uint32(&ser, data->last_received_tick);
     serial_write_uint32(&ser, data->last_hash_tick);
     serial_write_uint32(&ser, data->last_hash);
+    // our tick
     serial_write_uint32(&ser, data->last_tick - data->local_proposal - 1);
+    // the tick of our shared saved state
     serial_write_uint32(&ser, data->gs_bak->int_tick - data->local_proposal);
     serial_write_int8(&ser, data->frame_advantage);
 
@@ -283,7 +285,7 @@ void send_events(wtf *data) {
     foreach(it, ev) {
         if(ev->events[data->id][0] != 0 && ev->tick > data->last_acked_tick &&
            ev->tick < data->last_tick - data->local_proposal) {
-            // each tick is written as the 32 bit tick value and a 0 terminated list of actions on that tick
+            // each tick is written as the 32 bit tick value and a 0 terminated list of u8 actions on that tick
             serial_write_uint32(&ser, ev->tick);
             int i = 0;
             while(ev->events[data->id][i]) {
@@ -294,14 +296,6 @@ void send_events(wtf *data) {
             last_sent_tick = ev->tick;
             events++;
         }
-    }
-
-    if(false && !events) {
-        // nothing to send, so send a blank event for the last tick (stuff could still happen this tick)
-        serial_write_int32(&ser, data->last_tick - data->local_proposal - 1);
-        // 0 terminate it immediately
-        serial_write_int8(&ser, 0);
-        last_sent_tick = data->last_tick - data->local_proposal - 1;
     }
 
     data->last_sent_tick = max2(data->last_sent_tick, last_sent_tick);
@@ -388,21 +382,16 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
     uint32_t last_agreed = data->last_acked_tick;
 
     ev = iter_next(&it);
-    if(ev) {
-        log_warn("first event is at %d", ev->tick);
-    }
 
     while(gs->int_tick < gs_current->int_tick) {
         log_info("tick is %d", gs->int_tick - data->local_proposal);
         while(ev && ev->tick + data->local_proposal < data->gs_bak->int_tick) {
-            log_info("deleting event %d", ev->tick);
             // tick too old to matter
             list_delete(transcript, &it);
             ev = iter_next(&it);
         }
 
         if(ev && ev->tick == gs->int_tick - data->local_proposal) {
-            log_warn("replaying events at %d", ev->tick);
             // feed in the inputs
             for(int j = 0; j < 2; j++) {
                 int player_id = j;
@@ -479,9 +468,6 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
                 }
             }
             ev = iter_next(&it);
-            if(ev) {
-                log_warn("next event is at %d", ev->tick);
-            }
         }
 
         // The next tick is past when we have agreement, so we need to save the last known good game state
@@ -810,6 +796,7 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                         }
                         if(data->synchronized && data->gs_bak) {
                             if(last_acked > data->last_acked_tick) {
+                                // the remote state has updated, so we may be able to advance our local state more
                                 has_received = 1;
                             }
                             // even if their tick is ahead of ours, keep last_received_tick below our local tick
@@ -1110,12 +1097,14 @@ void controller_hook(controller *ctrl, int action) {
             ENetPacket *packet;
             serial_create(&ser);
             serial_write_int8(&ser, EVENT_TYPE_ACTION);
+            // blank header
             serial_write_uint32(&ser, 0);
             serial_write_uint32(&ser, 0);
             serial_write_uint32(&ser, 0);
             serial_write_uint32(&ser, 0);
             serial_write_uint32(&ser, 0);
             serial_write_int8(&ser, 0);
+            // write the action as a tick and the 0 terminated action list
             serial_write_uint32(&ser, udist(data->last_tick, data->local_proposal));
             serial_write_int8(&ser, action);
             serial_write_int8(&ser, 0);
@@ -1149,12 +1138,14 @@ void menu_controller_hook(controller *ctrl, int action) {
         ENetPacket *packet;
         serial_create(&ser);
         serial_write_int8(&ser, EVENT_TYPE_ACTION);
+        // blank header
         serial_write_uint32(&ser, 0);
         serial_write_uint32(&ser, 0);
         serial_write_uint32(&ser, 0);
         serial_write_uint32(&ser, 0);
         serial_write_uint32(&ser, 0);
         serial_write_int8(&ser, 0);
+        // write the action as a tick and the 0 terminated action list
         serial_write_uint32(&ser, udist(data->last_tick, data->local_proposal));
         serial_write_int8(&ser, action);
         serial_write_int8(&ser, 0);
