@@ -1036,6 +1036,7 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
             enet_peer_disconnect(data->peer, 0);
             return 0;
         }
+        // at a minimum let the other side know we've handled their events
         send_events(data);
         data->last_rewind_tick = ticks;
     }
