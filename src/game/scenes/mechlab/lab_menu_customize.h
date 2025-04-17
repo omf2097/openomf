@@ -6,6 +6,7 @@
 
 component *lab_menu_customize_create(scene *s);
 int calculate_trade_value(sd_pilot *pilot);
+int calculate_winnings(sd_pilot *pilot, bool add_har_base);
 int sell_highest_value_upgrade(sd_pilot *pilot, char *sold);
 int har_price(int har_id);
 
