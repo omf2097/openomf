@@ -42,6 +42,8 @@ ticktimer *game_state_get_ticktimer(game_state *gs);
 bool game_state_hars_are_alive(game_state *gs);
 
 object *game_state_find_object(game_state *gs, uint32_t object_id);
+int game_state_find_objects(game_state *gs, vector *out, bool (*predicate)(const object *obj, void *user_data),
+                            void *ud);
 
 // used to play sounds that may be subject to rollback (eg sounds from player.c, HAR and arena)
 void game_state_play_sound(game_state *gs, int id, float volume, float panning, float pitch);
