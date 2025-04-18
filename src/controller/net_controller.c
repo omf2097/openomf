@@ -384,6 +384,8 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
 
     ev = iter_next(&it);
 
+    uint32_t start_tick = gs->int_tick - data->local_proposal;
+
     while(gs->int_tick < gs_current->int_tick) {
         while(ev && ev->tick + data->local_proposal < data->gs_bak->int_tick) {
             // tick too old to matter
@@ -391,7 +393,7 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
             ev = iter_next(&it);
         }
 
-        if(ev && ev->tick == gs->int_tick - data->local_proposal && ev->tick > gs_old->int_tick - data->local_proposal) {
+        if(ev && ev->tick == gs->int_tick - data->local_proposal && ev->tick > start_tick) {
             // feed in the inputs
             for(int j = 0; j < 2; j++) {
                 int player_id = j;
