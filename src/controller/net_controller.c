@@ -150,6 +150,10 @@ void insert_event(wtf *data, uint32_t tick, uint16_t action, int id, int directi
 
             for(int j = 0; j < 11; j++) {
                 if(ev->events[id][j] == 0) {
+                    if(id != data->id && j > 0 && ev->events[id][j - 1] == action) {
+                        // dedup peer
+                        return;
+                    }
                     ev->events[id][j] = action;
                     ev->direction[id] = direction;
                     break;
@@ -464,6 +468,15 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
                 }
             }
             ev = iter_next(&it);
+        } else if(gs->int_tick - data->local_proposal <= last_agreed &&
+                  gs->int_tick - data->local_proposal > data->last_traced_tick) {
+            data->last_traced_tick = gs->int_tick - data->local_proposal;
+            // no event, just write the hash
+            int sz = snprintf(buf, sizeof(buf), "tick %d  -- hash %" PRIu32 "\n", gs->int_tick - data->local_proposal,
+                              arena_hash);
+            SDL_RWwrite(data->trace_file, buf, sz, 1);
+            arena_state_dump(gs, buf, sizeof(buf));
+            SDL_RWwrite(data->trace_file, buf, strlen(buf), 1);
         }
 
         // The next tick is past when we have agreement, so we need to save the last known good game state
@@ -731,7 +744,7 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
         list_create(&data->transcript);
     }
 
-    int has_received = 0;
+    bool has_received = false;
 
     while(enet_host_service(host, &event, 0) > 0) {
         switch(event.type) {
@@ -762,7 +775,7 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                             }
                         }
 
-                        for(size_t i = 18 + 4; i < event.packet->dataLength;) {
+                        for(size_t i = ser.rpos; i < event.packet->dataLength;) {
                             unsigned remote_tick = serial_read_uint32(&ser);
                             // dispatch keypress to scene
                             uint8_t action = 0;
@@ -774,7 +787,7 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
 
                                 if(data->synchronized && data->gs_bak) {
                                     if(remote_tick > data->last_received_tick) {
-                                        has_received = 1;
+                                        has_received = true;
                                         if(action) {
                                             insert_event(data, remote_tick, action, abs(data->id - 1),
                                                          OBJECT_FACE_NONE);
@@ -791,9 +804,10 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                             i += 4 + k;
                         }
                         if(data->synchronized && data->gs_bak) {
-                            if(last_acked > data->last_acked_tick) {
+                            // the 20 is here to avoid doing blank replays too often
+                            if(last_acked > data->last_acked_tick + 20) {
                                 // the remote state has updated, so we may be able to advance our local state more
-                                has_received = 1;
+                                has_received = true;
                             }
                             // even if their tick is ahead of ours, keep last_received_tick below our local tick
                             data->last_received_tick =
