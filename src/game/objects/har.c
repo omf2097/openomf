@@ -736,7 +736,7 @@ void apply_stun_damage(object *obj, int stun_amount) {
     log_debug("applying %f stun damage to %f", stun_amount, h->endurance);
     h->endurance += stun_amount;
 
-    if(h->endurance < 1.0f) {
+    if(h->endurance < 1) {
         if(h->state == STATE_STUNNED) {
             // refill endurance
             h->endurance = 0;
