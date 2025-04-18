@@ -384,8 +384,6 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
 
     ev = iter_next(&it);
 
-    int res = 0;
-
     while(gs->int_tick < gs_current->int_tick) {
         while(ev && ev->tick + data->local_proposal < data->gs_bak->int_tick) {
             // tick too old to matter
@@ -393,7 +391,7 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
             ev = iter_next(&it);
         }
 
-        if(ev && ev->tick == gs->int_tick - data->local_proposal) {
+        if(ev && ev->tick == gs->int_tick - data->local_proposal && ev->tick > gs_old->int_tick - data->local_proposal) {
             // feed in the inputs
             for(int j = 0; j < 2; j++) {
                 int player_id = j;
@@ -535,7 +533,7 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
                     c->gs = gs_current;
                 }
             }
-            res = 1;
+            return 1;
         } else if(gs->int_tick - data->local_proposal == data->peer_last_hash_tick) {
             log_debug("arena hashes agree!");
         }
@@ -571,7 +569,7 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
     }
     gs_current->new_state = gs;
     data->gs_bak->new_state = NULL;
-    return res;
+    return 0;
 }
 
 ENetPeer *net_controller_get_lobby_connection(controller *ctrl) {
