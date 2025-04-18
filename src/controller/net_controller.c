@@ -384,6 +384,8 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
 
     ev = iter_next(&it);
 
+    int res = 0;
+
     while(gs->int_tick < gs_current->int_tick) {
         while(ev && ev->tick + data->local_proposal < data->gs_bak->int_tick) {
             // tick too old to matter
@@ -533,7 +535,7 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
                     c->gs = gs_current;
                 }
             }
-            return 1;
+            res = 1;
         } else if(gs->int_tick - data->local_proposal == data->peer_last_hash_tick) {
             log_debug("arena hashes agree!");
         }
@@ -569,7 +571,7 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
     }
     gs_current->new_state = gs;
     data->gs_bak->new_state = NULL;
-    return 0;
+    return res;
 }
 
 ENetPeer *net_controller_get_lobby_connection(controller *ctrl) {
@@ -641,7 +643,7 @@ void net_controller_free(controller *ctrl) {
             goto done;
         }
         log_debug("closing connection");
-        enet_peer_disconnect(data->peer, 0);
+        enet_peer_disconnect_later(data->peer, 0);
 
         while(enet_host_service(data->host, &event, 3000) > 0) {
             switch(event.type) {
@@ -941,52 +943,52 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                         if(data->gs_bak && ctrl->gs->this_id - SCENE_ARENA0 != val) {
                             log_error("Arena ID mismatch, we had %d they had %d", ctrl->gs->this_id - SCENE_ARENA0,
                                       val);
-                            enet_peer_disconnect(data->peer, 0);
+                            enet_peer_disconnect_later(data->peer, 0);
                             return 1;
                         }
                         val = serial_read_int8(&ser);
                         if(player->pilot->har_id != val) {
                             log_error("HAR ID mismatch, we had %d they had %d", player->pilot->har_id, val);
-                            enet_peer_disconnect(data->peer, 0);
+                            enet_peer_disconnect_later(data->peer, 0);
                             return 1;
                         }
                         val = serial_read_int8(&ser);
                         if(player->pilot->power != val) {
                             log_error("Pilot power mismatch, we had %d they had %d", player->pilot->power, val);
-                            enet_peer_disconnect(data->peer, 0);
+                            enet_peer_disconnect_later(data->peer, 0);
                             return 1;
                         }
                         val = serial_read_int8(&ser);
                         if(player->pilot->agility != val) {
                             log_error("Pilot agility mismatch, we had %d they had %d", player->pilot->agility, val);
-                            enet_peer_disconnect(data->peer, 0);
+                            enet_peer_disconnect_later(data->peer, 0);
                             return 1;
                         }
                         val = serial_read_int8(&ser);
                         if(player->pilot->endurance != val) {
                             log_error("Pilot endurance mismatch, we had %d they had %d", player->pilot->endurance, val);
-                            enet_peer_disconnect(data->peer, 0);
+                            enet_peer_disconnect_later(data->peer, 0);
                             return 1;
                         }
                         val = serial_read_int8(&ser);
                         if(sd_pilot_get_player_color(player->pilot, PRIMARY) != val) {
                             log_error("Pilot primary color mismatch, we had %d they had %d",
                                       sd_pilot_get_player_color(player->pilot, PRIMARY), val);
-                            enet_peer_disconnect(data->peer, 0);
+                            enet_peer_disconnect_later(data->peer, 0);
                             return 1;
                         }
                         val = serial_read_int8(&ser);
                         if(sd_pilot_get_player_color(player->pilot, SECONDARY) != val) {
                             log_error("Pilot secondary color mismatch, we had %d they had %d",
                                       sd_pilot_get_player_color(player->pilot, SECONDARY), val);
-                            enet_peer_disconnect(data->peer, 0);
+                            enet_peer_disconnect_later(data->peer, 0);
                             return 1;
                         }
                         val = serial_read_int8(&ser);
                         if(sd_pilot_get_player_color(player->pilot, TERTIARY) != val) {
                             log_error("Pilot tertiary color mismatch, we had %d they had %d",
                                       sd_pilot_get_player_color(player->pilot, TERTIARY), val);
-                            enet_peer_disconnect(data->peer, 0);
+                            enet_peer_disconnect_later(data->peer, 0);
                             return 1;
                         }
 
@@ -996,7 +998,7 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                         name_buf[19] = '\0';
                         if(strncmp(player->pilot->name, name_buf, strlen(player->pilot->name)) != 0) {
                             log_error("Pilot name mismatch, we had %d they had %d", player->pilot->name, name_buf);
-                            enet_peer_disconnect(data->peer, 0);
+                            enet_peer_disconnect_later(data->peer, 0);
                             return 1;
                         }
                     } break;
@@ -1039,14 +1041,14 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
     if(has_received && ticks > data->last_rewind_tick) {
         log_debug("last received is now %d", data->last_received_tick);
         if(rewind_and_replay(data, ctrl->gs)) {
+            if(ctrl->gs->rec) {
+                sd_rec_finish(ctrl->gs->rec, ticks - data->local_proposal);
+            }
             if(data->lobby == data->peer) {
-                if(ctrl->gs->rec) {
-                    sd_rec_finish(ctrl->gs->rec, ticks - data->local_proposal);
-                }
                 game_state_set_next(ctrl->gs, SCENE_LOBBY);
                 return 1;
             }
-            enet_peer_disconnect(data->peer, 0);
+            enet_peer_disconnect_later(data->peer, 0);
             return 0;
         }
         // at a minimum let the other side know we've handled their events
