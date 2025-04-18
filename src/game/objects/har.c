@@ -1085,29 +1085,19 @@ void har_debug(object *obj) {
         return;
     }
 
+    if(obj->hit_pixels_disabled) {
+        return;
+    }
+
     // Iterate through hitpoints
     iterator it;
     collision_coord *cc;
     vector_iter_begin(&obj->cur_animation->collision_coords, &it);
 
-    int found = 0;
-    foreach(it, cc) {
-        if(cc->frame_index != obj->cur_sprite_id)
-            continue;
-        found = 1;
-    }
-
-    if(!found) {
-        return;
-    }
-
-    vector_iter_begin(&obj->cur_animation->collision_coords, &it);
     foreach(it, cc) {
         if(cc->frame_index != obj->cur_sprite_id)
             continue;
         video_draw(&h->hit_pixel, pos_a.x + (cc->pos.x * flip), pos_a.y + cc->pos.y);
-        /*log_debug("%d drawing hit point at %d %d ->%d %d", obj->cur_sprite_id, pos_a.x, pos_a.y, pos_a.x +
-         (cc->pos.x * flip), pos_a.y + cc->pos.y);*/
     }
 }
 #endif // DEBUGMODE
@@ -1128,6 +1118,10 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
 
     if(a->in_stasis_ticks) {
         // frozen HARs can't hit
+        return 0;
+    }
+
+    if(obj_a->hit_pixels_disabled) {
         return 0;
     }
 
@@ -1339,7 +1333,7 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
         game_state_find_object(o_har->gs, game_state_get_player(o_har->gs, abs(h->player_id - 1))->har_obj_id));
 
     // Check if collisions are switched off
-    if(player_frame_isset(o_pjt, "n")) {
+    if(o_pjt->hit_pixels_disabled) {
         return;
     }
 
@@ -1505,7 +1499,7 @@ void har_collide_with_hazard(object *o_har, object *o_hzd) {
     }
 
     // Check if collisions are switched off for the hazard
-    if(player_frame_isset(o_hzd, "n")) {
+    if(o_hzd->hit_pixels_disabled) {
         return;
     }
 

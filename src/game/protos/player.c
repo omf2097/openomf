@@ -267,6 +267,13 @@ void player_run(object *obj) {
             }
         }
 
+        // TODO this needs to somehow be delayed for 1 tick
+        if(sd_script_isset(frame, "n")) {
+            obj->hit_pixels_disabled = true;
+        } else {
+            obj->hit_pixels_disabled = false;
+        }
+
         // BJ sets new animation for our HAR
         // TODO this is still wrong somehow, there's some kind of conditional
         // but it fixes gargoyle's scrap looping and some other stuff

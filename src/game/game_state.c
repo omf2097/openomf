@@ -641,10 +641,12 @@ void game_state_palette_transform(game_state *gs) {
 void game_state_debug(game_state *gs) {
     // If we are in debug mode, handle HAR debug layers
 #ifdef DEBUGMODE
-    for(int i = 0; i < 2; i++) {
-        object *h = game_state_find_object(gs, game_state_get_player(gs, i)->har_obj_id);
-        if(h != NULL) {
-            object_debug(h);
+    render_obj *robj;
+    iterator it;
+    vector_iter_begin(&gs->objects, &it);
+    foreach(it, robj) {
+        if(robj->obj != NULL) {
+            object_debug(robj->obj);
         }
     }
     scene_debug(gs->sc);
