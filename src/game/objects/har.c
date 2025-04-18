@@ -726,6 +726,28 @@ void har_move(object *obj) {
     }
 }
 
+void apply_stun_damage(object *obj, int stun_amount) {
+    har *h = object_get_userdata(obj);
+
+    if(h->state == STATE_RECOIL && object_is_airborne(obj)) { // Less stun on rehit and throws
+        stun_amount /= 2;
+    }
+    stun_amount = (stun_amount * 2 + 12) * 256;
+    log_debug("applying %f stun damage to %f", stun_amount, h->endurance);
+    h->endurance += stun_amount;
+
+    if(h->endurance < 1) {
+        if(h->state == STATE_STUNNED) {
+            // refill endurance
+            h->endurance = 0;
+        }
+    } else if(h->endurance >= h->endurance_max) {
+        // Calculate how much dizzy time we have based on the stun limit overage.
+        // The more negative you go, the more time you're stunned.
+        h->endurance = ((((h->endurance - h->endurance_max) / 256) * -2.5) - 60) * 256;
+    }
+}
+
 void har_take_damage(object *obj, const str *string, float damage, float stun) {
     har *h = object_get_userdata(obj);
 
@@ -785,32 +807,12 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
         } else {
             h->health -= damage;
         }
+        apply_stun_damage(obj, stun);
     }
 
     // Handle health changes
     if(h->health <= 0) {
         h->health = 0;
-    }
-
-    if(!h->throw_duration) {
-        int stun_amount = stun;
-        if(h->state == STATE_RECOIL && object_is_airborne(obj)) { // Less stun on rehit and throws
-            stun_amount /= 2;
-        }
-        stun_amount = (stun_amount * 2 + 12) * 256;
-        log_debug("applying %f stun damage to %f", stun_amount, h->endurance);
-        h->endurance += stun_amount;
-    }
-
-    if(h->endurance < 1.0f) {
-        if(h->state == STATE_STUNNED) {
-            // refill endurance
-            h->endurance = 0;
-        }
-    } else if(h->endurance >= h->endurance_max) {
-        // Calculate how much dizzy time we have based on the stun limit overage.
-        // The more negative you go, the more time you're stunned.
-        h->endurance = ((((h->endurance - h->endurance_max) / 256) * -2.5) - 60) * 256;
     }
 
     game_player *other_player = game_state_get_player(obj->gs, !h->player_id);
@@ -1712,12 +1714,8 @@ void har_tick(object *obj) {
         if(h->throw_duration == 0) {
             // we've already called har_take_damage, so just apply the damage and check for defeat
             h->health -= h->last_damage_value;
-            int stun_amount = h->last_stun_value;
-            if(h->state == STATE_RECOIL && object_is_airborne(obj)) {
-                stun_amount /= 2;
-            }
-            stun_amount = (stun_amount * 2 + 12) * 256;
-            h->endurance += stun_amount;
+            apply_stun_damage(obj, h->last_stun_value);
+
             if(h->health <= 0) {
                 // Take a screencap of enemy har
                 game_player *other_player = game_state_get_player(obj->gs, !h->player_id);
