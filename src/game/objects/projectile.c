@@ -45,6 +45,10 @@ void projectile_finished(object *obj) {
 
 void projectile_free(object *obj) {
     projectile_local *local = object_get_userdata(obj);
+#ifdef DEBUGMODE
+    surface_free(&local->hit_pixel);
+    surface_free(&local->proj_origin);
+#endif
     omf_free(local);
     object_set_userdata(obj, NULL);
 }
