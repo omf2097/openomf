@@ -104,6 +104,15 @@ void controller_cmd(controller *ctrl, int action, ctrl_event **ev) {
         action = ACT_STOP;
     }
 
+    // fire any installed hooks *immediately*, no delay
+    iterator it;
+    hook_function **p = 0;
+    list_iter_begin(&ctrl->hooks, &it);
+    foreach(it, p) {
+        hook_function hook = **p;
+        (hook.fp)(hook.source, action);
+    }
+
     if(ctrl->delay) {
         // enqueue delayed events
         struct event_buffer_element *buf = vector_get(ctrl->buffer, (ctrl->gs->int_tick + ctrl->delay) % 11);
@@ -130,29 +139,11 @@ void controller_cmd(controller *ctrl, int action, ctrl_event **ev) {
         }
 
         for(int i = 0; i < 10 && buf->actions[i] != 0; i++) {
-            // fire any installed hooks
-            iterator it;
-            hook_function **p = 0;
-            list_iter_begin(&ctrl->hooks, &it);
-            foreach(it, p) {
-                hook_function hook = **p;
-                (hook.fp)(hook.source, buf->actions[i]);
-            }
 
             ctrl_action_push(ev, buf->actions[i]);
         }
     } else {
         // no delay
-
-        // fire any installed hooks
-        iterator it;
-        hook_function **p = 0;
-        list_iter_begin(&ctrl->hooks, &it);
-        foreach(it, p) {
-            hook_function hook = **p;
-            (hook.fp)(hook.source, action);
-        }
-
         ctrl_action_push(ev, action);
     }
 }
