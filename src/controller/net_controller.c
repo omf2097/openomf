@@ -61,10 +61,12 @@ typedef struct {
     uint32_t last_hash_tick;
     // the last (local) action we recorded
     uint8_t last_action;
-    // the last (local) direction we were facing when the last action occured
-    int8_t last_direction;
     // the last tick we did a rewind/replay
     uint32_t last_rewind_tick;
+    // the last tick the peer did input
+    uint32_t last_peer_input_tick;
+    // the last action the peer took
+    uint8_t last_peer_action;
     SDL_RWops *trace_file;
     game_state *gs_bak;
     int winner;
@@ -73,7 +75,6 @@ typedef struct {
 typedef struct {
     uint32_t tick;
     uint8_t events[2][11];
-    int8_t direction[2];
 } tick_events;
 
 // simple standard deviation calculation
@@ -86,21 +87,25 @@ float stddev(float average, int data[], int n) {
 }
 
 // calculate average round trip time, ignoring outliers outside 2 standard deviations
-int avg_rtt(int data[], int n) {
+int avg_rtt(wtf *data) {
     float average = 0.0f;
     float sum = 0.0f;
     float result = 0.0f;
     int j = 0;
+    int n = data->rttpos;
+    if(data->rttfilled) {
+        n = 100;
+    }
     for(int i = 0; i < n; i++) {
-        sum += data[i];
+        sum += data->rttbuf[i];
     }
     average = sum / (n * 1.0);
 
-    float sd = stddev(average, data, n);
+    float sd = stddev(average, data->rttbuf, n);
     // log_debug("sum %f, stddev %f, average %f", sum, sd, average);
     for(int i = 0; i < n; i++) {
-        if(fabsf(data[i] - average) <= sd * 2) {
-            result += data[i];
+        if(fabsf(data->rttbuf[i] - average) <= sd * 2) {
+            result += data->rttbuf[i];
             j++;
         }
     }
@@ -111,51 +116,47 @@ int avg_rtt(int data[], int n) {
 }
 
 // insert an event into the event trace
-void insert_event(wtf *data, uint32_t tick, uint16_t action, int id, int direction) {
+void insert_event(wtf *data, uint32_t tick, uint16_t action, int id) {
 
     iterator it;
     list *transcript = &data->transcript;
     list_iter_begin(transcript, &it);
     tick_events *ev = NULL;
     tick_events *nev = NULL;
-    tick_events *last_ev = NULL;
     tick_events event;
     event.tick = tick;
     memset(event.events[id], 0, 11);
     memset(event.events[abs(id - 1)], 0, 11);
     event.events[id][0] = action;
-    event.direction[id] = direction;
     int i = 0;
 
+    if(data->id == id && data->last_action == action) {
+        // dedup inputs
+        return;
+    }
+
+    if(data->id != id && data->last_peer_action == action) {
+        // dedup inputs
+        return;
+    }
+
+    if(id != data->id && tick >= data->last_peer_input_tick) {
+        data->last_peer_action = action;
+        data->last_peer_input_tick = tick;
+    }
+
     foreach(it, ev) {
-        if(id == data->id && ev->events[id][0]) {
-            // we had events this tick, so get the last action and direction
-            last_ev = ev;
-            data->last_direction = last_ev->direction[id];
-            int j = 0;
-            while(last_ev->events[id][j] != 0) {
-                data->last_action = last_ev->events[id][j];
-                j++;
-            }
-        }
         if(i == 0 && ev->tick > tick) {
             list_prepend(transcript, &event, sizeof(tick_events));
             goto done;
         } else if(ev->tick == tick) {
-            if(id == data->id && action == data->last_action && data->last_direction &&
-               data->last_direction == direction) {
-                // dedup;
-                return;
-            }
-
             for(int j = 0; j < 11; j++) {
                 if(ev->events[id][j] == 0) {
-                    if(id != data->id && j > 0 && ev->events[id][j - 1] == action) {
-                        // dedup peer
+                    if(j > 0 && ev->events[id][j - 1] == action) {
+                        // dedup
                         return;
                     }
                     ev->events[id][j] = action;
-                    ev->direction[id] = direction;
                     break;
                 }
             }
@@ -163,37 +164,27 @@ void insert_event(wtf *data, uint32_t tick, uint16_t action, int id, int directi
         }
         nev = iter_peek(&it);
         if(ev->tick < tick && nev && nev->tick > tick) {
-            if(id == data->id && action == data->last_action && data->last_direction &&
-               data->last_direction == direction) {
-                // dedup
-                return;
-            }
             list_iter_append(&it, &event, sizeof(tick_events));
             goto done;
         }
         i++;
     }
     // either the list is empty, or this tick is later than anything else
-    if(id == data->id && action == data->last_action && data->last_direction && data->last_direction == direction) {
-        // dedup;
-        return;
-    }
     list_append(transcript, &event, sizeof(tick_events));
 done:
     if(id == data->id) {
         data->last_action = action;
-        data->last_direction = direction;
     }
 }
 
 // check if we have any events to send
-bool has_event(wtf *data) {
+bool has_event(wtf *data, int delay) {
 
     iterator it;
     list_iter_begin(&data->transcript, &it);
     tick_events *ev = NULL;
     foreach(it, ev) {
-        if(ev->tick < data->last_tick && ev->tick > data->last_sent_tick && ev->events[data->id][0]) {
+        if(ev->tick < data->last_tick + delay && ev->tick > data->last_sent_tick && ev->events[data->id][0]) {
             return true;
         }
     }
@@ -261,7 +252,7 @@ void print_transcript(list *transcript) {
 }
 
 // send any events we've made that are older than the last acked event from the peer
-void send_events(wtf *data) {
+void send_events(wtf *data, int delay) {
     serial ser;
     ENetPacket *packet;
     ENetPeer *peer = data->peer;
@@ -286,7 +277,7 @@ void send_events(wtf *data) {
 
     foreach(it, ev) {
         if(ev->events[data->id][0] != 0 && ev->tick > data->last_acked_tick &&
-           ev->tick < data->last_tick - data->local_proposal) {
+           ev->tick < data->last_tick - data->local_proposal + delay) {
             // each tick is written as the 32 bit tick value and a 0 terminated list of u8 actions on that tick
             serial_write_uint32(&ser, ev->tick);
             int i = 0;
@@ -348,10 +339,11 @@ void send_game_information(wtf *data) {
 }
 
 // replay the game state, using the input logs from both sides
-int rewind_and_replay(wtf *data, game_state *gs_current) {
+int rewind_and_replay(wtf *data, controller *ctrl) {
     // first, find the last frame we have input from the other side
     // this will be our next checkpoint (as no events can come in before
     iterator it;
+    game_state *gs_current = ctrl->gs;
     list *transcript = &data->transcript;
     list_iter_begin(transcript, &it);
     tick_events *ev = NULL;
@@ -380,7 +372,7 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
 
     uint32_t arena_hash = arena_state_hash(gs);
 
-    uint32_t last_agreed = data->last_acked_tick;
+    uint32_t confirm_frame = data->last_acked_tick;
 
     ev = iter_next(&it);
 
@@ -407,7 +399,8 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
 
             arena_hash = arena_state_hash(gs);
 
-            if((ev->events[0][0] || ev->events[1][0]) && ev->tick <= last_agreed && ev->tick > data->last_traced_tick) {
+            if((ev->events[0][0] || ev->events[1][0]) && ev->tick <= confirm_frame &&
+               ev->tick > data->last_traced_tick) {
                 // this event has been agreed on by both sides
                 sd_rec_move move;
                 data->last_traced_tick = ev->tick;
@@ -470,7 +463,7 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
                 }
             }
             ev = iter_next(&it);
-        } else if(gs->int_tick - data->local_proposal <= last_agreed &&
+        } else if(data->trace_file && gs->int_tick - data->local_proposal <= confirm_frame &&
                   gs->int_tick - data->local_proposal > data->last_traced_tick) {
             data->last_traced_tick = gs->int_tick - data->local_proposal;
             // no event, just write the hash
@@ -483,7 +476,7 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
 
         // The next tick is past when we have agreement, so we need to save the last known good game state
         // for future replays
-        if(gs_new == NULL && gs->int_tick - data->local_proposal == last_agreed && gs->int_tick > gs_old->int_tick) {
+        if(gs_new == NULL && gs->int_tick - data->local_proposal == confirm_frame && gs->int_tick > gs_old->int_tick) {
             log_debug("saving game state at last agreed on tick %d with hash %" PRIu32,
                       gs->int_tick - data->local_proposal, arena_state_hash(gs));
             // save off the game state at the point we last agreed
@@ -496,7 +489,7 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
         }
 
         if(data->peer_last_hash_tick && gs->int_tick - data->local_proposal == data->peer_last_hash_tick &&
-           data->peer_last_hash != arena_hash && gs->int_tick - data->local_proposal <= last_agreed) {
+           data->peer_last_hash != arena_hash && gs->int_tick - data->local_proposal <= confirm_frame) {
             if(ev && data->trace_file) {
                 int sz = snprintf(buf, sizeof(buf), "---MISMATCH at %d (%d) got %" PRIu32 " expected %" PRIu32 "\n",
                                   gs->int_tick - data->local_proposal, data->peer_last_hash_tick, data->peer_last_hash,
@@ -525,7 +518,7 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
             // * The lobby will see both sets of events, and both mismatches
             data->last_hash_tick = gs->int_tick - data->local_proposal;
             data->last_hash = arena_hash;
-            send_events(data);
+            send_events(data, NET_INPUT_DELAY);
 
             // reset the controller game states
             for(int i = 0; i < game_state_num_players(gs); i++) {
@@ -540,7 +533,7 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
             log_debug("arena hashes agree!");
         }
 
-        if(gs->int_tick - data->local_proposal <= last_agreed &&
+        if(gs->int_tick - data->local_proposal <= confirm_frame &&
            data->last_hash_tick < gs->int_tick - data->local_proposal) {
             data->last_hash_tick = gs->int_tick - data->local_proposal;
             data->last_hash = arena_hash;
@@ -684,9 +677,9 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
     serial ser;
     uint32_t ticks = ctrl->gs->int_tick;
 
-    if(data->gs_bak && has_event(data) && ticks > data->last_tick) {
+    if(data->gs_bak && has_event(data, NET_INPUT_DELAY) && ticks > data->last_tick) {
         data->last_tick = ticks;
-        send_events(data);
+        send_events(data, NET_INPUT_DELAY);
     }
 
     data->last_tick = ticks;
@@ -725,7 +718,6 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
         game_state_clone_free(data->gs_bak);
         omf_free(data->gs_bak);
         data->last_action = ACT_NONE;
-        data->last_direction = OBJECT_FACE_NONE;
         data->synchronized = false;
         data->local_proposal = 0;
         data->peer_proposal = 0;
@@ -747,6 +739,7 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
     }
 
     bool has_received = false;
+    bool rapid_rtt_change = false;
 
     while(enet_host_service(host, &event, 0) > 0) {
         switch(event.type) {
@@ -761,12 +754,11 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                         serial_read_uint32(&ser);
                         int8_t peer_frame_advantage = serial_read_int8(&ser);
 
-                        data->frame_advantage =
-                            (ticks - data->local_proposal) - (peerticks + (avg_rtt(data->rttbuf, 100) / 2));
+                        data->frame_advantage = (ticks - data->local_proposal) - (peerticks + (avg_rtt(data) / 2));
 
                         if(data->gs_bak && data->synchronized && data->frame_advantage > peer_frame_advantage + 1) {
                             log_debug("local ticks %d  remote ticks %d (rtt %d) frame advantage %d > %d",
-                                      ticks - data->local_proposal, peerticks, (avg_rtt(data->rttbuf, 100) / 2),
+                                      ticks - data->local_proposal, peerticks, (avg_rtt(data) / 2),
                                       data->frame_advantage, peer_frame_advantage);
                             ctrl->gs->delay = (data->frame_advantage - peer_frame_advantage) * 2;
                             data->gs_bak->delay = (data->frame_advantage - peer_frame_advantage) * 2;
@@ -791,8 +783,7 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                                     if(remote_tick > data->last_received_tick) {
                                         has_received = true;
                                         if(action) {
-                                            insert_event(data, remote_tick, action, abs(data->id - 1),
-                                                         OBJECT_FACE_NONE);
+                                            insert_event(data, remote_tick, action, abs(data->id - 1));
                                         }
                                     }
                                 } else {
@@ -812,8 +803,8 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                                 has_received = true;
                             }
                             // even if their tick is ahead of ours, keep last_received_tick below our local tick
-                            data->last_received_tick =
-                                min2(ticks - data->local_proposal - 1, max2(data->last_received_tick, peerticks));
+                            data->last_received_tick = min2(ticks - data->local_proposal - 1 + NET_INPUT_DELAY,
+                                                            max2(data->last_received_tick, peerticks));
                             data->last_acked_tick = max2(data->last_acked_tick, last_acked);
 
                             if(peer_last_hash_tick > data->peer_last_hash_tick) {
@@ -873,6 +864,7 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                                 serial_free(&start_ser);
                             }
 
+                            int old_rtt = avg_rtt(data);
                             // log_debug("RTT was %d ticks", newrtt);
                             data->rttbuf[data->rttpos++] = newrtt;
                             data->tick_offset = newrtt;
@@ -880,7 +872,16 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                                 data->rttpos = 0;
                                 data->rttfilled = 1;
                             }
-                            ctrl->rtt = peer->roundTripTime;
+                            float rtt_percent_delta = (float)newrtt / (float)old_rtt;
+                            // check if the last RTT was more than 10% off the average
+                            if(rtt_percent_delta > 1.1f || rtt_percent_delta < 0.9f) {
+                                rapid_rtt_change = true;
+                            }
+                            if(data->peer != data->lobby) {
+                                ctrl->rtt = peer->roundTripTime;
+                            } else {
+                                ctrl->rtt = avg_rtt(data) * game_state_ms_per_dyntick(ctrl->gs);
+                            }
                             data->outstanding_hb = 0;
                             data->last_hb = ticks;
                         } else {
@@ -1038,9 +1039,9 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
 
     // if the match is actually proceeding
     // AND we've received events then try a rewind/replay
-    if(has_received && ticks > data->last_rewind_tick) {
+    if((has_received && ticks > data->last_rewind_tick) || data->last_received_tick > data->last_rewind_tick) {
         log_debug("last received is now %d", data->last_received_tick);
-        if(rewind_and_replay(data, ctrl->gs)) {
+        if(rewind_and_replay(data, ctrl)) {
             if(ctrl->gs->rec) {
                 sd_rec_finish(ctrl->gs->rec, ticks - data->local_proposal);
             }
@@ -1052,12 +1053,13 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
             return 0;
         }
         // at a minimum let the other side know we've handled their events
-        send_events(data);
+        send_events(data, NET_INPUT_DELAY);
         data->last_rewind_tick = ticks;
     }
 
     unsigned tick_interval = 5;
-    if(data->rttfilled) {
+    // sample slower once we've filled the buffer and the ping seems stable
+    if(data->rttfilled && !rapid_rtt_change) {
         tick_interval = 20;
     }
 
@@ -1093,18 +1095,16 @@ void controller_hook(controller *ctrl, int action) {
 
     game_player *player = game_state_get_player(ctrl->gs, data->id);
     object *har_obj = game_state_find_object(ctrl->gs, game_player_get_har_obj_id(player));
-    int direction = OBJECT_FACE_NONE;
     if(har_obj) {
         har *har = object_get_userdata(har_obj);
         data->last_har_state = har->state;
-        direction = object_get_direction(har_obj);
     }
 
     if(peer) {
         // log_debug("Local event %d at %d", action, data->last_tick - data->local_proposal);
         if(data->synchronized && data->gs_bak) {
-            insert_event(data, ctrl->gs->int_tick - data->local_proposal /*+ (ctrl->rtt / 2)*/, action, data->id,
-                         direction);
+            insert_event(data, ctrl->gs->int_tick - data->local_proposal + NET_INPUT_DELAY /*+ (ctrl->rtt / 2)*/,
+                         action, data->id);
         } else {
             serial ser;
             ENetPacket *packet;
@@ -1172,6 +1172,18 @@ void menu_controller_hook(controller *ctrl, int action) {
     }
 }
 
+int net_controller_poll(controller *ctrl, ctrl_event **ev) {
+    wtf *data = ctrl->data;
+    // if we're replaying don't do this
+    if(ctrl->gs->clone) {
+        return 0;
+    }
+
+    // return the last input we've gotten from the peer
+    controller_cmd(ctrl, data->last_peer_action, ev);
+    return 0;
+}
+
 void net_controller_create(controller *ctrl, ENetHost *host, ENetPeer *peer, ENetPeer *lobby, int id) {
     wtf *data = omf_calloc(1, sizeof(wtf));
     data->id = id;
@@ -1198,7 +1210,8 @@ void net_controller_create(controller *ctrl, ENetHost *host, ENetPeer *peer, ENe
     data->last_traced_tick = 0;
     data->winner = -1;
     data->last_action = ACT_NONE;
-    data->last_direction = OBJECT_FACE_NONE;
+    data->last_peer_action = ACT_NONE;
+    data->last_peer_input_tick = 0;
     char *trace_file = settings_get()->net.trace_file;
     if(trace_file) {
         data->trace_file = SDL_RWFromFile(trace_file, "w");
@@ -1212,4 +1225,5 @@ void net_controller_create(controller *ctrl, ENetHost *host, ENetPeer *peer, ENe
     ctrl->tick_fun = &net_controller_tick;
     ctrl->controller_hook = &controller_hook;
     ctrl->free_fun = &net_controller_free;
+    ctrl->poll_fun = &net_controller_poll;
 }

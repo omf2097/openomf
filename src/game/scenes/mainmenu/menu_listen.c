@@ -74,6 +74,9 @@ void menu_listen_tick(component *c) {
             } else if(k->ctrl_type1 == CTRL_TYPE_GAMEPAD) {
                 _setup_joystick(gs, 0, k->joy_name1, k->joy_offset1);
             }
+            if(!controller_set_delay(game_player_get_ctrl(game_state_get_player(gs, 0)), NET_INPUT_DELAY)) {
+                log_error("unable to set network controller delay");
+            }
 
             // Player 2 controller -- Network
             net_controller_create(player2_ctrl, local->host, event.peer, NULL, ROLE_SERVER);

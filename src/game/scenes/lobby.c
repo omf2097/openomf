@@ -965,6 +965,10 @@ void lobby_tick(scene *scene, int paused) {
                     } else if(k->ctrl_type1 == CTRL_TYPE_GAMEPAD) {
                         _setup_joystick(scene->gs, player_id, k->joy_name1, k->joy_offset1);
                     }
+                    if(!controller_set_delay(game_player_get_ctrl(game_state_get_player(gs, player_id)),
+                                             NET_INPUT_DELAY)) {
+                        log_error("unable to set network controller delay");
+                    }
 
                     game_player_set_selectable(challengee, 1);
 
@@ -1130,6 +1134,10 @@ void lobby_tick(scene *scene, int paused) {
                             } else if(k->ctrl_type1 == CTRL_TYPE_GAMEPAD) {
                                 _setup_joystick(scene->gs, player_id, k->joy_name1, k->joy_offset1);
                             }
+                            if(!controller_set_delay(game_player_get_ctrl(game_state_get_player(gs, player_id)),
+                                                     NET_INPUT_DELAY)) {
+                                log_error("unable to set network controller delay");
+                            }
 
                             game_player_set_selectable(challengee, 1);
 
@@ -1226,6 +1234,10 @@ void lobby_tick(scene *scene, int paused) {
                             _setup_keyboard(scene->gs, player_id, 0);
                         } else if(k->ctrl_type1 == CTRL_TYPE_GAMEPAD) {
                             _setup_joystick(scene->gs, player_id, k->joy_name1, k->joy_offset1);
+                        }
+                        if(!controller_set_delay(game_player_get_ctrl(game_state_get_player(gs, player_id)),
+                                                 NET_INPUT_DELAY)) {
+                            log_error("unable to set network controller delay");
                         }
 
                         game_player_set_selectable(challengee, 1);

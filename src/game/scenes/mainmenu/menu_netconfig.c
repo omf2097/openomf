@@ -22,7 +22,6 @@ component *menu_netconfig_create(scene *s) {
     menu_attach(menu, textselector_create_bind_opts("ENABLE UPnP",
                                                     "Enable this if your router has working UPnP, disable otherwise.",
                                                     NULL, NULL, &settings_get()->net.net_use_upnp, bool_opts, 2));
-
     menu_attach(menu, button_create("DONE", "Go back to the main menu.", false, false, menu_netconfig_done, NULL));
     return menu;
 }

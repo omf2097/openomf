@@ -25,6 +25,10 @@ typedef struct projectile_local_t {
 #endif
 } projectile_local;
 
+#ifdef DEBUGMODE
+void debug_surfaces_create(object *obj);
+#endif
+
 void projectile_finished(object *obj) {
     projectile_local *local = object_get_userdata(obj);
 
@@ -118,14 +122,21 @@ int projectile_clone(object *src, object *dst) {
 
     object *har_obj = game_state_find_object(dst->gs, old_har_obj->id);
 
+#ifdef DEBUGMODE
+    debug_surfaces_create(dst);
+#endif
+
     object_set_spawn_cb(dst, cb_har_spawn_object, har_obj);
     object_set_disable_cb(dst, cb_har_disable_animation, har_obj);
-
     return 0;
 }
 
 int projectile_clone_free(object *obj) {
     projectile_local *local = object_get_userdata(obj);
+#ifdef DEBUGMODE
+    surface_free(&local->hit_pixel);
+    surface_free(&local->proj_origin);
+#endif
     omf_free(local);
     object_set_userdata(obj, NULL);
     return 0;
@@ -176,6 +187,26 @@ void projectile_debug(object *obj) {
         video_draw(&h->hit_pixel, pos_a.x + (cc->pos.x * flip), pos_a.y + cc->pos.y);
     }
 }
+
+void debug_surfaces_create(object *obj) {
+    projectile_local *local = object_get_userdata(obj);
+    surface_create(&local->hit_pixel, 1, 1);
+    surface_clear(&local->hit_pixel);
+    image img;
+    surface_to_image(&local->hit_pixel, &img);
+    image_set_pixel(&img, 0, 0, 0xf3);
+    surface_create(&local->proj_origin, 4, 4);
+    surface_clear(&local->proj_origin);
+    surface_to_image(&local->proj_origin, &img);
+    image_set_pixel(&img, 0, 0, 0xf6);
+    image_set_pixel(&img, 0, 1, 0xf6);
+    image_set_pixel(&img, 0, 2, 0xf6);
+    image_set_pixel(&img, 0, 3, 0xf6);
+    image_set_pixel(&img, 1, 3, 0xf6);
+    image_set_pixel(&img, 2, 3, 0xf6);
+    image_set_pixel(&img, 3, 3, 0xf6);
+}
+
 #endif
 
 int projectile_create(object *obj, object *parent) {
@@ -197,21 +228,7 @@ int projectile_create(object *obj, object *parent) {
 
 #ifdef DEBUGMODE
     object_set_debug_cb(obj, projectile_debug);
-    surface_create(&local->hit_pixel, 1, 1);
-    surface_clear(&local->hit_pixel);
-    image img;
-    surface_to_image(&local->hit_pixel, &img);
-    image_set_pixel(&img, 0, 0, 0xf3);
-    surface_create(&local->proj_origin, 4, 4);
-    surface_clear(&local->proj_origin);
-    surface_to_image(&local->proj_origin, &img);
-    image_set_pixel(&img, 0, 0, 0xf6);
-    image_set_pixel(&img, 0, 1, 0xf6);
-    image_set_pixel(&img, 0, 2, 0xf6);
-    image_set_pixel(&img, 0, 3, 0xf6);
-    image_set_pixel(&img, 1, 3, 0xf6);
-    image_set_pixel(&img, 2, 3, 0xf6);
-    image_set_pixel(&img, 3, 3, 0xf6);
+    debug_surfaces_create(obj);
 #endif
 
     obj->clone = projectile_clone;

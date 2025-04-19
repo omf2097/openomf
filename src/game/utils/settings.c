@@ -128,6 +128,7 @@ const field f_keyboard[] = {
     F_STRING(settings_keyboard, key1_jump_left, "Home"),
     F_STRING(settings_keyboard, key1_kick, "Right Shift"),
     F_STRING(settings_keyboard, key1_punch, "Return"),
+    F_INT(settings_keyboard, input1_delay, 0),
 
     // Player two
     F_INT(settings_keyboard, ctrl_type2, CTRL_TYPE_KEYBOARD),
@@ -143,6 +144,7 @@ const field f_keyboard[] = {
     F_STRING(settings_keyboard, key2_jump_left, "Q"),
     F_STRING(settings_keyboard, key2_kick, "Left Shift"),
     F_STRING(settings_keyboard, key2_punch, "Left Ctrl"),
+    F_INT(settings_keyboard, input2_delay, 0),
 };
 
 const field f_net[] = {
@@ -156,7 +158,7 @@ const field f_net[] = {
     F_INT(settings_network, net_ext_port_start, 0),
     F_INT(settings_network, net_ext_port_end, 0),
     F_BOOL(settings_network, net_use_pmp, 1),
-    F_BOOL(settings_network, net_use_upnp, 1)
+    F_BOOL(settings_network, net_use_upnp, 1),
 };
 
 // Map struct to field

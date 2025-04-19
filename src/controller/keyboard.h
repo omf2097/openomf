@@ -26,7 +26,7 @@ struct keyboard_t {
     keyboard_keys *keys;
 };
 
-void keyboard_create(controller *ctrl, keyboard_keys *keys, int delay);
+void keyboard_create(controller *ctrl, keyboard_keys *keys);
 void keyboard_free(controller *ctrl);
 int keyboard_binds_key(controller *ctrl, SDL_Event *event);
 
