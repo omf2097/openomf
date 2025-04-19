@@ -344,7 +344,9 @@ void object_render(object *obj) {
         return;
 
     // Set current surface
-    obj->cur_surface = cur_sprite->data;
+    if(!obj->surface_override) {
+        obj->cur_surface = cur_sprite->data;
+    }
 
     // Something to ease the pain ...
     player_sprite_state *rstate = &obj->sprite_state;

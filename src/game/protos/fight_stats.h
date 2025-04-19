@@ -21,6 +21,8 @@ typedef struct fight_stats_t {
     int bonuses;
     int repair_cost;
     int profit;
+    int hp;
+    int max_hp;
 
     fight_finisher finish;
 
