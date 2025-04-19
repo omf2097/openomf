@@ -365,8 +365,8 @@ int newsroom_create(scene *scene) {
     game_player *p1 = game_state_get_player(scene->gs, 0);
     game_player *p2 = game_state_get_player(scene->gs, 1);
 
-    if(p1->chr && p2->pilot && p2->pilot->only_fight_once) {
-        // we beat an only fight once pilot, we never want to see them again
+    if(p1->chr && p2->pilot && (p2->pilot->only_fight_once || (p2->pilot->secret && p2->sp_wins == 0))) {
+        // We never want to see this pilot again this tournament.
         // TODO figure out how the original disables them from fighting again
         // XXX just give them a very high rank for now?
         p2->pilot->rank = p1->chr->pilot.enemies_inc_unranked + 1;
