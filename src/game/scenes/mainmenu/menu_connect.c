@@ -164,6 +164,7 @@ void menu_connect_tick(component *c) {
             } else if(k->ctrl_type1 == CTRL_TYPE_GAMEPAD) {
                 _setup_joystick(gs, 1, k->joy_name1, k->joy_offset1);
             }
+            controller_set_delay(player2_ctrl, settings_get()->net.net_input_delay);
             game_player_set_selectable(p2, 1);
 
             chr_score_set_difficulty(game_player_get_score(game_state_get_player(gs, 0)), AI_DIFFICULTY_CHAMPION);

@@ -191,6 +191,7 @@ int joystick_create(controller *ctrl, int joystick_id) {
     ctrl->type = CTRL_TYPE_GAMEPAD;
     ctrl->poll_fun = &joystick_poll;
     ctrl->free_fun = &joystick_free;
+    ctrl->supports_delay = true;
 
     k->joy = SDL_GameControllerOpen(joystick_id);
     if(k->joy) {
