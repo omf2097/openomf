@@ -110,6 +110,7 @@ struct object_t {
     int cur_sprite_id;
     const char *sound_translation_table;
     uint8_t sprite_override; //< Tells whether cur_sprite should be kept constant regardless of anim string.
+    bool surface_override; // Tell if we've messed with the sprite and shouldn't touch it
 
     // 0 if this object is not attached to any other objects
     // non zero object id if it is. In this case, velocity and direction will be matched.

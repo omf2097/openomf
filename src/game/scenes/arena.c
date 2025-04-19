@@ -277,6 +277,9 @@ static void arena_end(scene *sc) {
     object *winner = game_state_find_object(scene->gs, game_player_get_har_obj_id(player_winner));
     har *winner_har = object_get_userdata(winner);
 
+    fight_stats->hp = winner_har->health;
+    fight_stats->max_hp = winner_har->health_max;
+
     // if tournament player won
     if(is_tournament(gs) && local->winner == 0) {
         // TODO The repair costs formula here is completely bogus
