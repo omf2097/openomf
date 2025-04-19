@@ -1169,7 +1169,7 @@ int _setup_joystick(game_state *gs, int player_id, const char *joyname, int offs
     if(player_id == 0) {
         controller_set_delay(ctrl, settings_get()->keys.input1_delay);
     } else {
-        controller_set_delay(ctrl, settings_get()->keys.input1_delay);
+        controller_set_delay(ctrl, settings_get()->keys.input2_delay);
     }
     game_player_set_ctrl(player, ctrl);
     game_player_set_selectable(player, 1);
