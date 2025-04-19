@@ -1348,12 +1348,6 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
         return;
     }
 
-    // rehit mode is off
-    if(!o_har->gs->match_settings.rehit && h->state == STATE_RECOIL) {
-        log_debug("REHIT is off");
-        return;
-    }
-
     // rehit mode is on, but the opponent isn't airborne or stunned
     if(o_har->gs->match_settings.rehit && h->state == STATE_RECOIL &&
        (!object_is_airborne(o_har) || h->endurance < 0)) {
