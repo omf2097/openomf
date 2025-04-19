@@ -4,6 +4,7 @@
 #include "game/objects/arena_constraints.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
+#include "video/video.h"
 #include <stdlib.h>
 
 #define IS_ZERO(n) (n < 0.1 && n > -0.1)
@@ -17,6 +18,11 @@ typedef struct projectile_local_t {
     bool has_hit;
     uint32_t linked_obj;
     uint32_t parent_id;
+
+#ifdef DEBUGMODE
+    surface hit_pixel;
+    surface proj_origin;
+#endif
 } projectile_local;
 
 void projectile_finished(object *obj) {
@@ -39,6 +45,10 @@ void projectile_finished(object *obj) {
 
 void projectile_free(object *obj) {
     projectile_local *local = object_get_userdata(obj);
+#ifdef DEBUGMODE
+    surface_free(&local->hit_pixel);
+    surface_free(&local->proj_origin);
+#endif
     omf_free(local);
     object_set_userdata(obj, NULL);
 }
@@ -121,6 +131,53 @@ int projectile_clone_free(object *obj) {
     return 0;
 }
 
+#ifdef DEBUGMODE
+void projectile_debug(object *obj) {
+    projectile_local *h = object_get_userdata(obj);
+
+    if(obj->cur_sprite_id < 0) {
+        return;
+    }
+    // Some useful variables
+    vec2i pos_a = object_get_pos(obj); //, obj->cur_sprite->pos);
+    // vec2i size_a = object_get_size(obj);
+
+    int flip = 1;
+
+    if(object_get_direction(obj) == OBJECT_FACE_LEFT) {
+        // pos_a.x = object_get_pos(obj).x + ((obj->cur_sprite->pos.x * -1) - size_a.x);
+        flip = -1;
+    }
+
+    int flip_mode = obj->sprite_state.flipmode;
+    if(object_get_direction(obj) == OBJECT_FACE_LEFT) {
+        flip_mode ^= FLIP_HORIZONTAL;
+    }
+
+    video_draw_full(&h->proj_origin, pos_a.x - 2, pos_a.y - 2, 4, 4, 0, 0, 0, 255, 255, flip_mode, 0);
+
+    // Make sure there are hitpoints to check.
+    if(vector_size(&obj->cur_animation->collision_coords) == 0) {
+        return;
+    }
+
+    if(obj->hit_pixels_disabled) {
+        return;
+    }
+
+    // Iterate through hitpoints
+    iterator it;
+    collision_coord *cc;
+    vector_iter_begin(&obj->cur_animation->collision_coords, &it);
+
+    foreach(it, cc) {
+        if(cc->frame_index != obj->cur_sprite_id)
+            continue;
+        video_draw(&h->hit_pixel, pos_a.x + (cc->pos.x * flip), pos_a.y + cc->pos.y);
+    }
+}
+#endif
+
 int projectile_create(object *obj, object *parent) {
     har *har = object_get_userdata(parent);
     // strore the HAR in local userdata instead
@@ -137,6 +194,26 @@ int projectile_create(object *obj, object *parent) {
     object_set_free_cb(obj, projectile_free);
     object_set_move_cb(obj, projectile_move);
     object_set_finish_cb(obj, projectile_finished);
+
+#ifdef DEBUGMODE
+    object_set_debug_cb(obj, projectile_debug);
+    surface_create(&local->hit_pixel, 1, 1);
+    surface_clear(&local->hit_pixel);
+    image img;
+    surface_to_image(&local->hit_pixel, &img);
+    image_set_pixel(&img, 0, 0, 0xf3);
+    surface_create(&local->proj_origin, 4, 4);
+    surface_clear(&local->proj_origin);
+    surface_to_image(&local->proj_origin, &img);
+    image_set_pixel(&img, 0, 0, 0xf6);
+    image_set_pixel(&img, 0, 1, 0xf6);
+    image_set_pixel(&img, 0, 2, 0xf6);
+    image_set_pixel(&img, 0, 3, 0xf6);
+    image_set_pixel(&img, 1, 3, 0xf6);
+    image_set_pixel(&img, 2, 3, 0xf6);
+    image_set_pixel(&img, 3, 3, 0xf6);
+#endif
+
     obj->clone = projectile_clone;
     obj->clone_free = projectile_clone_free;
     return 0;

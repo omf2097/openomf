@@ -85,6 +85,7 @@ struct object_t {
     int8_t group;
     // Set when moving against the wall either by continuous velocity or by instantaneous position changes.
     bool wall_collision;
+    bool hit_pixels_disabled;
 
     // Set by q tag
     int8_t q_counter;
