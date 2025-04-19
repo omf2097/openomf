@@ -939,16 +939,18 @@ void lobby_tick(scene *scene, int paused) {
                     net_ctrl = omf_calloc(1, sizeof(controller));
                     controller_init(net_ctrl, gs);
 
-                    game_player *challengee;
+                    game_player *challengee, *challenger;
 
                     int player_id = 0;
                     if(local->role == ROLE_CHALLENGER) {
                         // we did the connecting and we're the challenger
                         // so we are player 1
+                        challenger = p1;
                         challengee = p2;
                     } else {
                         player_id = 1;
                         challengee = p1;
+                        challenger = p2;
                     }
 
                     net_ctrl->har_obj_id = challengee->har_obj_id;
@@ -965,6 +967,7 @@ void lobby_tick(scene *scene, int paused) {
                     } else if(k->ctrl_type1 == CTRL_TYPE_GAMEPAD) {
                         _setup_joystick(scene->gs, player_id, k->joy_name1, k->joy_offset1);
                     }
+                    controller_set_delay(challenger->ctrl, settings_get()->net.net_input_delay);
 
                     game_player_set_selectable(challengee, 1);
 
@@ -1104,16 +1107,18 @@ void lobby_tick(scene *scene, int paused) {
                             net_ctrl = omf_calloc(1, sizeof(controller));
                             controller_init(net_ctrl, gs);
 
-                            game_player *challengee;
+                            game_player *challengee, *challenger;
 
                             int player_id = 0;
                             if(local->role == ROLE_CHALLENGER) {
                                 // we were connected TO but we are the challenger
                                 // so we are player 1
+                                challenger = p1;
                                 challengee = p2;
                             } else {
                                 player_id = 1;
                                 challengee = p1;
+                                challenger = p2;
                             }
 
                             net_ctrl->har_obj_id = challengee->har_obj_id;
@@ -1130,6 +1135,7 @@ void lobby_tick(scene *scene, int paused) {
                             } else if(k->ctrl_type1 == CTRL_TYPE_GAMEPAD) {
                                 _setup_joystick(scene->gs, player_id, k->joy_name1, k->joy_offset1);
                             }
+                            controller_set_delay(challenger->ctrl, settings_get()->net.net_input_delay);
 
                             game_player_set_selectable(challengee, 1);
 
@@ -1201,16 +1207,18 @@ void lobby_tick(scene *scene, int paused) {
                         net_ctrl = omf_calloc(1, sizeof(controller));
                         controller_init(net_ctrl, gs);
 
-                        game_player *challengee;
+                        game_player *challengee, *challenger;
 
                         int player_id = 0;
                         if(local->role == ROLE_CHALLENGER) {
                             // we did the connecting and we're the challenger
                             // so we are player 1
+                            challenger = p1;
                             challengee = p2;
                         } else {
                             player_id = 1;
                             challengee = p1;
+                            challenger = p2;
                         }
 
                         net_ctrl->har_obj_id = challengee->har_obj_id;
@@ -1227,6 +1235,7 @@ void lobby_tick(scene *scene, int paused) {
                         } else if(k->ctrl_type1 == CTRL_TYPE_GAMEPAD) {
                             _setup_joystick(scene->gs, player_id, k->joy_name1, k->joy_offset1);
                         }
+                        controller_set_delay(challenger->ctrl, settings_get()->net.net_input_delay);
 
                         game_player_set_selectable(challengee, 1);
 

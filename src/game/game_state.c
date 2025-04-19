@@ -1137,6 +1137,12 @@ void _setup_keyboard(game_state *gs, int player_id, int control_id) {
 
     keyboard_create(ctrl, keys, 0);
 
+    if(control_id == 0) {
+        controller_set_delay(ctrl, k->input1_delay);
+    } else {
+        controller_set_delay(ctrl, k->input2_delay);
+    }
+
     // Set up player controller
     game_player_set_ctrl(player, ctrl);
     game_player_set_selectable(player, 1);
@@ -1160,6 +1166,11 @@ int _setup_joystick(game_state *gs, int player_id, const char *joyname, int offs
     controller_init(ctrl, gs);
 
     int res = joystick_create(ctrl, joystick_name_to_id(joyname, offset));
+    if(player_id == 0) {
+        controller_set_delay(ctrl, settings_get()->keys.input1_delay);
+    } else {
+        controller_set_delay(ctrl, settings_get()->keys.input1_delay);
+    }
     game_player_set_ctrl(player, ctrl);
     game_player_set_selectable(player, 1);
     return res;

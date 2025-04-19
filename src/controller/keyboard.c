@@ -80,6 +80,7 @@ void keyboard_create(controller *ctrl, keyboard_keys *keys, int delay) {
     ctrl->type = CTRL_TYPE_KEYBOARD;
     ctrl->poll_fun = &keyboard_poll;
     ctrl->free_fun = &keyboard_free;
+    ctrl->supports_delay = true;
 }
 
 void keyboard_menu_poll(controller *ctrl, ctrl_event **ev) {

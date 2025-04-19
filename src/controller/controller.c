@@ -8,8 +8,14 @@ typedef struct {
     controller *source;
 } hook_function;
 
+struct event_buffer_element {
+    uint32_t tick;
+    uint8_t actions[10];
+};
+
 void controller_init(controller *ctrl, game_state *gs) {
     list_create(&ctrl->hooks);
+    ctrl->buffer = NULL;
     ctrl->gs = gs;
     ctrl->extra_events = NULL;
     ctrl->har_obj_id = 0;
@@ -20,6 +26,8 @@ void controller_init(controller *ctrl, game_state *gs) {
     ctrl->rumble_fun = NULL;
     ctrl->rtt = 0;
     ctrl->repeat = 0;
+    ctrl->delay = 0;
+    ctrl->supports_delay = false;
 }
 
 void controller_add_hook(controller *ctrl, controller *source, void (*fp)(controller *ctrl, int act_type)) {
@@ -52,6 +60,10 @@ void controller_free_chain(ctrl_event *ev) {
 void controller_free(controller *ctrl) {
     controller_clear_hooks(ctrl);
     list_free(&ctrl->hooks);
+    if(ctrl->buffer) {
+        vector_free(ctrl->buffer);
+        omf_free(ctrl->buffer);
+    }
     ctrl->free_fun(ctrl);
 }
 
@@ -92,16 +104,57 @@ void controller_cmd(controller *ctrl, int action, ctrl_event **ev) {
         action = ACT_STOP;
     }
 
-    // fire any installed hooks
-    iterator it;
-    hook_function **p = 0;
-    list_iter_begin(&ctrl->hooks, &it);
-    foreach(it, p) {
-        hook_function hook = **p;
-        (hook.fp)(hook.source, action);
-    }
+    if(ctrl->delay) {
+        // enqueue delayed events
+        struct event_buffer_element *buf = vector_get(ctrl->buffer, (ctrl->gs->int_tick + ctrl->delay) % 11);
+        if(buf->tick != ctrl->gs->int_tick + ctrl->delay) {
+            // stale buffer element, zero it out
+            memset(buf, 0, sizeof(struct event_buffer_element));
+            buf->tick = ctrl->gs->int_tick + ctrl->delay;
+        }
+        for(int i = 0; i < 10; i++) {
+            if(buf->actions[i] != 0) {
+                continue;
+            }
+            if(i > 0 && buf->actions[i - 1] == action) {
+                break;
+            }
+            buf->actions[i] = action;
+        }
 
-    ctrl_action_push(ev, action);
+        // send any delayed events out
+        buf = vector_get(ctrl->buffer, (ctrl->gs->int_tick) % 11);
+        if(buf->tick != ctrl->gs->int_tick) {
+            log_debug("stale tick in event buffer %d expected %d", buf->tick, ctrl->gs->int_tick);
+            return;
+        }
+
+        for(int i = 0; i < 10 && buf->actions[i] != 0; i++) {
+            // fire any installed hooks
+            iterator it;
+            hook_function **p = 0;
+            list_iter_begin(&ctrl->hooks, &it);
+            foreach(it, p) {
+                hook_function hook = **p;
+                (hook.fp)(hook.source, buf->actions[i]);
+            }
+
+            ctrl_action_push(ev, buf->actions[i]);
+        }
+    } else {
+        // no delay
+
+        // fire any installed hooks
+        iterator it;
+        hook_function **p = 0;
+        list_iter_begin(&ctrl->hooks, &it);
+        foreach(it, p) {
+            hook_function hook = **p;
+            (hook.fp)(hook.source, action);
+        }
+
+        ctrl_action_push(ev, action);
+    }
 }
 
 void controller_close(controller *ctrl, ctrl_event **ev) {
@@ -145,6 +198,23 @@ int controller_har_hook(controller *ctrl, har_event event) {
 
 void controller_set_repeat(controller *ctrl, int repeat) {
     ctrl->repeat = repeat;
+}
+
+bool controller_set_delay(controller *ctrl, uint8_t delay) {
+    if(ctrl->supports_delay && delay <= 10) {
+        if(!ctrl->buffer) {
+            ctrl->buffer = omf_calloc(sizeof(vector), 1);
+            vector_create_with_size(ctrl->buffer, sizeof(struct event_buffer_element), 11);
+            struct event_buffer_element buf;
+            memset(&buf, 0, sizeof(struct event_buffer_element));
+            for(int i = 0; i < 11; i++) {
+                vector_append(ctrl->buffer, &buf);
+            }
+        }
+        ctrl->delay = delay;
+        return true;
+    }
+    return false;
 }
 
 int controller_rumble(controller *ctrl, float magnitude, int duration) {
