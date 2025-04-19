@@ -201,7 +201,7 @@ void controller_set_repeat(controller *ctrl, int repeat) {
 }
 
 bool controller_set_delay(controller *ctrl, uint8_t delay) {
-    if(ctrl->supports_delay && delay <= 10) {
+    if(ctrl->supports_delay && delay > 0 && delay <= 10) {
         if(!ctrl->buffer) {
             ctrl->buffer = omf_calloc(sizeof(vector), 1);
             vector_create_with_size(ctrl->buffer, sizeof(struct event_buffer_element), 11);
