@@ -152,6 +152,7 @@ int console_cmd_har(game_state *gs, int argc, char **argv) {
                 object_create(obj, gs, pos, vec2f_create(0, 0));
                 // set the object to the same as the old one, so all the references remain intact
                 obj->id = har_obj->id;
+                obj->animation_state.enemy_obj_id = har_obj->animation_state.enemy_obj_id;
 
                 if(har_create(obj, game_state_get_scene(gs)->af_data[0], hd, player->pilot->har_id,
                               player->pilot->pilot_id, 0)) {
