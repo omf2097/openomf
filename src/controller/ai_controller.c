@@ -2653,6 +2653,17 @@ int ai_controller_poll(controller *ctrl, ctrl_event **ev) {
                                 !(a->tactic->attack_type == ATTACK_CHARGE || a->tactic->attack_type == ATTACK_PUSH ||
                                   a->tactic->attack_type == ATTACK_TRIP));
 
+    if(o) {
+        object *enemy = game_state_find_object(ctrl->gs, o->animation_state.enemy_obj_id);
+        // UJ tag signals to the AI it should probably jump
+        if(can_move && can_interupt_tactic && player_frame_isset(enemy, "uj") && smart_sometimes(a)) {
+            reset_tactic_state(a);
+            controller_cmd(ctrl, ACT_UP, ev);
+            controller_cmd(ctrl, ACT_STOP, ev);
+            return 0;
+        }
+    }
+
     // be wary of repeated throws while attempting to complete a tactic
     if(can_move && can_interupt_tactic && a->thrown > 1 && a->difficulty > 2) {
         // attempt a quick attack to disrupt their grab/throw
