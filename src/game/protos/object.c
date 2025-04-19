@@ -307,13 +307,13 @@ void object_apply_controllable_velocity(object *obj, bool is_projectile, char in
             cx *= obj->horizontal_velocity_modifier;
         }
         if(input == '4') {
-            obj->vel.x -= cx * object_get_direction(obj);
+            obj->cvel.x -= cx * object_get_direction(obj);
         } else if(input == '6') {
-            obj->vel.x += cx * object_get_direction(obj);
+            obj->cvel.x += cx * object_get_direction(obj);
         } else if(input == '3' || input == '9') {
-            obj->vel.x += cx * 0.7 * object_get_direction(obj);
+            obj->cvel.x += cx * 0.7 * object_get_direction(obj);
         } else if(input == '1' || input == '7') {
-            obj->vel.x -= cx * 0.7 * object_get_direction(obj);
+            obj->cvel.x -= cx * 0.7 * object_get_direction(obj);
         }
         // CY needs CX to be set
         if(player_frame_isset(obj, "cy")) {
@@ -322,15 +322,18 @@ void object_apply_controllable_velocity(object *obj, bool is_projectile, char in
                 cy *= obj->vertical_velocity_modifier;
             }
             if(input == '8') {
-                obj->vel.y -= cy;
+                obj->cvel.y -= cy;
             } else if(input == '2') {
-                obj->vel.y += cy;
+                obj->cvel.y += cy;
             } else if(input == '3' || input == '1') {
-                obj->vel.y += cy * 0.7;
+                obj->cvel.y += cy * 0.7;
             } else if(input == '7' || input == '9') {
-                obj->vel.y -= cy * 0.7;
+                obj->cvel.y -= cy * 0.7;
             }
         }
+    } else {
+        obj->cvel.x = 0;
+        obj->cvel.y = 0;
     }
 }
 

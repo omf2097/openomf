@@ -60,9 +60,9 @@ void projectile_move(object *obj) {
     game_player *player = game_state_get_player(gs, projectile_get_owner(obj));
     object *obj_har = game_state_find_object(gs, game_player_get_har_obj_id(player));
 
-    obj->pos.x += obj->vel.x;
+    obj->pos.x += (obj->vel.x + obj->cvel.x);
     obj->vel.y += obj->gravity;
-    obj->pos.y += obj->vel.y;
+    obj->pos.y += (obj->vel.y + obj->cvel.y);
 
     float dampen = 0.7f;
 

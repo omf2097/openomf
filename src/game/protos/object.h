@@ -79,6 +79,7 @@ struct object_t {
     vec2f start;
     vec2f pos;
     vec2f vel;
+    vec2f cvel;
     float vertical_velocity_modifier;
     float horizontal_velocity_modifier;
     int8_t direction;
