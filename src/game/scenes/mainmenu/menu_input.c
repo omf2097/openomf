@@ -214,7 +214,7 @@ component *menu_input_create(scene *s, int player_id) {
 
     int *bind_var = &settings_get()->keys.input1_delay;
 
-    if(player_id == 1) {
+    if(player_id == 2) {
         bind_var = &settings_get()->keys.input2_delay;
     }
     menu_attach(menu, textselector_create_bind_opts("INPUT DELAY",
