@@ -193,10 +193,12 @@ set(VERSION_LABEL "${CMAKE_MATCH_4}")
 execute_process(
     COMMAND "${GIT_EXECUTABLE}" describe HEAD --exact-match --match "${LATEST_RELEASE_TAG}"
     OUTPUT_QUIET ERROR_QUIET
-    RESULT_VARIABLE GIT_ERRORCODE
+    RESULT_VARIABLE "GIT_ERRORCODE"
 )
 if(NOT GIT_ERRORCODE)
     # a perfect match!
+    # don't append the shorthash on a perfect match
+    unset(SHA1_HASH_SHORT)
     version_finally()
     return()
 endif()
