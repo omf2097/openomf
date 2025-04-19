@@ -1630,25 +1630,25 @@ void har_handle_stun(object *obj) {
                 h->endurance += h->stun_factor * 1.4;
             }
         } else { // Not yet stunned, handle regular stun recovery
-            float stunfactor = 1.0 * h->stun_factor * h->endurance / h->endurance_max / 256.0;
+            float stunfactor = 1.0 * h->stun_factor * h->endurance / h->endurance_max;
             if((obj->cur_animation->id == ANIM_IDLE) || (obj->cur_animation->id == ANIM_CROUCHING) ||
                (obj->cur_animation->id == ANIM_VICTORY)) {
                 float hpfactor = ((h->health_max * 5.0 / 9.0) + h->health) / h->health_max;
 
-                h->endurance -= ((hpfactor * stunfactor) + STUN_RECOVERY_CONSTANT) * 256;
+                h->endurance -= (hpfactor * stunfactor) + STUN_RECOVERY_CONSTANT;
             } else if((obj->cur_animation->id == ANIM_CROUCHING_BLOCK) ||
                       (obj->cur_animation->id == ANIM_STANDING_BLOCK)) {
                 float hpfactor = (h->health_max * 25.0 / 27.0 + h->health) / h->health_max;
 
-                h->endurance -= ((hpfactor * stunfactor) + STUN_RECOVERY_BLOCKING_CONSTANT) * 256;
+                h->endurance -= (hpfactor * stunfactor) + STUN_RECOVERY_BLOCKING_CONSTANT;
             } else if(obj->cur_animation->id == ANIM_JUMPING) {
                 float hpfactor = ((h->health_max * 25.0 / 81.0) + h->health) / h->health_max;
 
-                h->endurance -= ((hpfactor * stunfactor) + STUN_RECOVERY_CONSTANT) * 256;
+                h->endurance -= (hpfactor * stunfactor) + STUN_RECOVERY_CONSTANT;
             } else if(obj->cur_animation->id < (ANIM_SCREW | ANIM_JUMPING)) { // Cover all other cases
                 float hpfactor = ((h->health_max * 5.0 / 27.0) + h->health) / h->health_max;
 
-                h->endurance -= ((hpfactor * stunfactor) + STUN_RECOVERY_CONSTANT) * 256;
+                h->endurance -= (hpfactor * stunfactor) + STUN_RECOVERY_CONSTANT;
             }
             if(h->endurance < 0) {
                 h->endurance = 0;

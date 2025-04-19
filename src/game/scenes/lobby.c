@@ -981,8 +981,6 @@ void lobby_tick(scene *scene, int paused) {
 
                 serial_create_from(&ser, (const char *)event.packet->data, event.packet->dataLength);
                 uint8_t control_byte = serial_read_int8(&ser);
-                log_debug("A packet of length %u with control byte %d was received on channel %u.",
-                          event.packet->dataLength, control_byte, event.channelID);
                 switch(control_byte >> 4) {
                     case PACKET_PRESENCE: {
                         lobby_user user;
