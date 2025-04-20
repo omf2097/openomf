@@ -373,9 +373,9 @@ static void arena_end(scene *sc) {
                p2->pilot->enhancements[p1->pilot->har_id] == p1->pilot->enhancements[p1->pilot->har_id] + 1) {
                 p1->pilot->enhancements[p1->pilot->har_id] = p2->pilot->enhancements[p1->pilot->har_id];
                 fight_stats->plug_text = PLUG_ENHANCEMENT;
-            } else if(hp_left_percent >= 75) {
+            } else if(hp_left_percent >= 70) {
                 fight_stats->plug_text = PLUG_WIN_BIG + rand_int(3);
-            } else if(hp_left_percent >= 50) {
+            } else if(hp_left_percent >= 30) {
                 fight_stats->plug_text = PLUG_WIN_OK + rand_int(3);
             } else {
                 fight_stats->plug_text = PLUG_WIN + rand_int(3);
