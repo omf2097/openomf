@@ -205,6 +205,7 @@ bool controller_set_delay(controller *ctrl, uint8_t delay) {
         ctrl->delay = delay;
         return true;
     }
+    ctrl->delay = 0;
     return false;
 }
 
