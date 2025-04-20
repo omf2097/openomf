@@ -178,6 +178,7 @@ void menu_input_free(component *c) {
 
 component *menu_input_create(scene *s, int player_id) {
     menu_input_local *local = omf_calloc(1, sizeof(menu_input_local));
+    const char *input_delays[] = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"};
     local->selected_player = player_id;
 
     component *menu = menu_create();
@@ -210,6 +211,16 @@ component *menu_input_create(scene *s, int player_id) {
     }
     menu_attach(menu, joy1);
     menu_attach(menu, joy2);
+
+    int *bind_var = &settings_get()->keys.input1_delay;
+
+    if(player_id == 2) {
+        bind_var = &settings_get()->keys.input2_delay;
+    }
+    menu_attach(menu, textselector_create_bind_opts("INPUT DELAY",
+                                                    "Set input delay, useful for local netplay practice, default is 0",
+                                                    NULL, NULL, bind_var, input_delays, 11));
+
     menu_attach(menu, button_create("DONE", "Leave without changing anything.", false, false, menu_input_done, NULL));
 
     menu_set_userdata(menu, local);
