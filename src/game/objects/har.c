@@ -38,12 +38,13 @@ void har_free(object *obj) {
     hashmap_free(&h->disabled_animations);
     iterator it;
     hashmap_pair *pair = NULL;
-    hashmap_iter_begin(&h->trail_cache, &it);
+    hashmap_iter_begin(h->trail_cache, &it);
     foreach(it, pair) {
         animation *anim = pair->value;
         animation_free(anim);
     }
-    hashmap_free(&h->trail_cache);
+    hashmap_free(h->trail_cache);
+    omf_free(h->trail_cache);
 #ifdef DEBUGMODE
     surface_free(&h->hit_pixel);
     surface_free(&h->har_origin);
@@ -1820,15 +1821,15 @@ void har_tick(object *obj) {
     if(object_has_effect(obj, EFFECT_TRAIL) && obj->age % 2 == 0 &&
        (cur_sprite = animation_get_sprite(obj->cur_animation, obj->cur_sprite_id))) {
         animation *anim = NULL;
-        if(hashmap_get_int(&h->trail_cache, obj->cur_sprite_id, (void **)&anim, NULL)) {
+        if(hashmap_get_int(h->trail_cache, obj->cur_sprite_id, (void **)&anim, NULL)) {
             sprite *nsp = sprite_copy(cur_sprite);
             surface_flatten_to_mask(nsp->data, 1);
             // this allocates a animation object that we don't want, as the contents get copied into the hashmap
             anim = create_animation_from_single(nsp, obj->cur_animation->start_pos);
-            hashmap_put_int(&h->trail_cache, obj->cur_sprite_id, anim, sizeof(animation));
+            hashmap_put_int(h->trail_cache, obj->cur_sprite_id, anim, sizeof(animation));
             // release the allocated pointer and read back out the copied version from the hashmap
             omf_free(anim);
-            hashmap_get_int(&h->trail_cache, obj->cur_sprite_id, (void **)&anim, NULL);
+            hashmap_get_int(h->trail_cache, obj->cur_sprite_id, (void **)&anim, NULL);
         }
         object *nobj = omf_calloc(1, sizeof(object));
         object_create(nobj, obj->gs, object_get_pos(obj), vec2f_create(0, 0));
@@ -2582,7 +2583,9 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     list_create(&local->har_hooks);
 
     hashmap_create(&local->disabled_animations);
-    hashmap_create(&local->trail_cache);
+    // allocate this on the heap so a realloc won't break clones
+    local->trail_cache = omf_calloc(1, sizeof(hashmap));
+    hashmap_create(local->trail_cache);
 
     local->stun_timer = 0;
 
