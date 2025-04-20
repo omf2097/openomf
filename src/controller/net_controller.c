@@ -380,11 +380,22 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
 
     uint32_t arena_hash = arena_state_hash(gs);
 
-    uint32_t last_agreed = data->last_acked_tick;
+    uint32_t confirm_frame = data->last_acked_tick;
 
     ev = iter_next(&it);
 
     uint32_t start_tick = gs->int_tick - data->local_proposal;
+
+    vector deferred_events;
+    vector_create_with_size(&deferred_events, sizeof(tick_events), 27);
+    tick_events bev;
+    memset(&bev, 0, sizeof(tick_events));
+    for(int i = 0; i < 27; i++) {
+        vector_append(&deferred_events, &bev);
+    }
+    uint8_t input_delay = settings_get()->net.net_input_delay;
+
+    bool replace_state = false;
 
     while(gs->int_tick < gs_current->int_tick) {
         while(ev && ev->tick + data->local_proposal < data->gs_bak->int_tick) {
@@ -393,21 +404,43 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
             ev = iter_next(&it);
         }
 
+        // replay any delayed ticks *after* the confirmed frame
+        if(input_delay && gs->int_tick - data->local_proposal > confirm_frame) {
+            tick_events *dev = vector_get(&deferred_events, (gs->int_tick - data->local_proposal) % 27);
+            if(dev && dev->tick + input_delay == gs->int_tick - data->local_proposal) {
+                game_player *player = game_state_get_player(gs,data->id);
+                int k = 0;
+                do {
+                    object_act(game_state_find_object(gs, game_player_get_har_obj_id(player)), dev->events[data->id][k]);
+                    k++;
+                } while(dev->events[data->id][k]);
+            }
+        }
+
         if(ev && ev->tick == gs->int_tick - data->local_proposal && ev->tick > start_tick) {
             // feed in the inputs
             for(int j = 0; j < 2; j++) {
                 int player_id = j;
                 game_player *player = game_state_get_player(gs, player_id);
                 int k = 0;
-                do {
-                    object_act(game_state_find_object(gs, game_player_get_har_obj_id(player)), ev->events[j][k]);
-                    k++;
-                } while(ev->events[j][k]);
+                // check if there's an event that should force a state replacement
+                if(player_id != data->id && ev->events[player_id][0]) {
+                    replace_state = true;
+                }
+                if(player_id == data->id && ev->events[player_id][0] && input_delay && ev->tick > confirm_frame) {
+                    // queue the input up
+                    vector_set(&deferred_events, (ev->tick + input_delay) % 27, ev);
+                } else {
+                    do {
+                        object_act(game_state_find_object(gs, game_player_get_har_obj_id(player)), ev->events[j][k]);
+                        k++;
+                    } while(ev->events[j][k]);
+                }
             }
 
             arena_hash = arena_state_hash(gs);
 
-            if((ev->events[0][0] || ev->events[1][0]) && ev->tick <= last_agreed && ev->tick > data->last_traced_tick) {
+            if((ev->events[0][0] || ev->events[1][0]) && ev->tick <= confirm_frame && ev->tick > data->last_traced_tick) {
                 // this event has been agreed on by both sides
                 sd_rec_move move;
                 data->last_traced_tick = ev->tick;
@@ -470,7 +503,7 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
                 }
             }
             ev = iter_next(&it);
-        } else if(gs->int_tick - data->local_proposal <= last_agreed &&
+        } else if(gs->int_tick - data->local_proposal <= confirm_frame &&
                   gs->int_tick - data->local_proposal > data->last_traced_tick) {
             data->last_traced_tick = gs->int_tick - data->local_proposal;
             // no event, just write the hash
@@ -483,7 +516,7 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
 
         // The next tick is past when we have agreement, so we need to save the last known good game state
         // for future replays
-        if(gs_new == NULL && gs->int_tick - data->local_proposal == last_agreed && gs->int_tick > gs_old->int_tick) {
+        if(gs_new == NULL && gs->int_tick - data->local_proposal == confirm_frame && gs->int_tick > gs_old->int_tick) {
             log_debug("saving game state at last agreed on tick %d with hash %" PRIu32,
                       gs->int_tick - data->local_proposal, arena_state_hash(gs));
             // save off the game state at the point we last agreed
@@ -496,7 +529,7 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
         }
 
         if(data->peer_last_hash_tick && gs->int_tick - data->local_proposal == data->peer_last_hash_tick &&
-           data->peer_last_hash != arena_hash && gs->int_tick - data->local_proposal <= last_agreed) {
+           data->peer_last_hash != arena_hash && gs->int_tick - data->local_proposal <= confirm_frame) {
             if(ev && data->trace_file) {
                 int sz = snprintf(buf, sizeof(buf), "---MISMATCH at %d (%d) got %" PRIu32 " expected %" PRIu32 "\n",
                                   gs->int_tick - data->local_proposal, data->peer_last_hash_tick, data->peer_last_hash,
@@ -535,12 +568,13 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
                     c->gs = gs_current;
                 }
             }
+            vector_free(&deferred_events);
             return 1;
         } else if(gs->int_tick - data->local_proposal == data->peer_last_hash_tick) {
             log_debug("arena hashes agree!");
         }
 
-        if(gs->int_tick - data->local_proposal <= last_agreed &&
+        if(gs->int_tick - data->local_proposal <= confirm_frame &&
            data->last_hash_tick < gs->int_tick - data->local_proposal) {
             data->last_hash_tick = gs->int_tick - data->local_proposal;
             data->last_hash = arena_hash;
@@ -550,6 +584,8 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
         arena_hash = arena_state_hash(gs);
         tick_count++;
     }
+
+    vector_free(&deferred_events);
 
     uint64_t replay_end = SDL_GetTicks64();
 
@@ -563,14 +599,27 @@ int rewind_and_replay(wtf *data, game_state *gs_current) {
 
     log_debug("replayed %d ticks in %d milliseconds", tick_count, replay_end - replay_start);
 
-    // replace the game state with the replayed one
-    gs->new_state = NULL;
-    if(gs_current->new_state) {
-        game_state_clone_free(gs_current->new_state);
-        omf_free(gs_current->new_state);
+    if(replace_state) {
+        // replace the game state with the replayed one
+        gs->new_state = NULL;
+        if(gs_current->new_state) {
+            game_state_clone_free(gs_current->new_state);
+            omf_free(gs_current->new_state);
+        }
+        gs_current->new_state = gs;
+        data->gs_bak->new_state = NULL;
+    } else {
+        log_debug("NOT replacing game state on replay");
+        // reset the controller game states
+        for(int i = 0; i < game_state_num_players(gs); i++) {
+            game_player *gp = game_state_get_player(gs, i);
+            controller *c = game_player_get_ctrl(gp);
+            if(c) {
+                c->gs = gs_current;
+            }
+        }
+        game_state_clone_free(gs);
     }
-    gs_current->new_state = gs;
-    data->gs_bak->new_state = NULL;
     return 0;
 }
 
