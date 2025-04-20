@@ -62,14 +62,14 @@ int calculate_trade_value(sd_pilot *pilot) {
     return trade_value * 0.85;
 }
 
-static const int32_t arm_leg_value[10] = {0, 9, 34, 94, 197, 351, 606, 1034, 1675, 2700};
-static const int32_t armor_value[10] = {0, 22, 86, 235, 492, 876, 1516, 2584, 4186, 6748};
-static const int32_t stun_value[10] = {0, 13, 51, 141, 294, 526, 910, 1551, 2511, 4463};
+static const int32_t arm_leg_value[10] = {0, 10, 40, 111, 231, 412, 713, 1216, 1969, 3175};
+static const int32_t armor_value[10] = {0, 25, 100, 277, 578, 1030, 1784, 3040, 4924, 7939};
+static const int32_t stun_value[10] = {0, 15, 60, 166, 347, 618, 1070, 1824, 2954, 4763};
 
 int calculate_winnings(sd_pilot *pilot, bool add_har_base) {
     int winnings = 0;
     if(add_har_base) {
-        winnings = (har_prices[pilot->har_id] + 29000) / 89;
+        winnings = (har_prices[pilot->har_id] / 76) + 384;
     }
     for(int i = 1; i <= pilot->arm_power; i++) {
         winnings += arm_leg_value[i];
