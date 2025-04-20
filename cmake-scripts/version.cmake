@@ -160,7 +160,7 @@ while(1) # loop until we found a release that is not newer than HEAD
     endif()
 
     # use regex to extract the first release tag from the list
-    string(REGEX MATCH "(^|\n)([0-9]+[.][0-9]+[.][0-9]+(-)[A-Za-z0-9.]*)(\n.*|$)" outvar_dontcare "${VERSION_TAGS}")
+    string(REGEX MATCH "(^|\n)([0-9]+[.][0-9]+[.][0-9]+(-[A-Za-z0-9.]*)?)(\n.*|$)" outvar_dontcare "${VERSION_TAGS}")
     set(LATEST_RELEASE_TAG "${CMAKE_MATCH_2}")
     set(VERSION_TAGS "${CMAKE_MATCH_4}") # set VERSION_TAGS to the older ones we haven't look at yet.
 
@@ -193,10 +193,12 @@ set(VERSION_LABEL "${CMAKE_MATCH_4}")
 execute_process(
     COMMAND "${GIT_EXECUTABLE}" describe HEAD --exact-match --match "${LATEST_RELEASE_TAG}"
     OUTPUT_QUIET ERROR_QUIET
-    RESULT_VARIABLE GIT_ERRORCODE
+    RESULT_VARIABLE "GIT_ERRORCODE"
 )
 if(NOT GIT_ERRORCODE)
     # a perfect match!
+    # don't append the shorthash on a perfect match
+    unset(SHA1_HASH_SHORT)
     version_finally()
     return()
 endif()
