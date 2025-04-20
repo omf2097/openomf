@@ -1742,10 +1742,10 @@ void har_tick(object *obj) {
     if((h->state != STATE_DEFEAT && !ab_flag) || player_frame_isset(enemy_obj, "cw")) {
         int wall_flag = player_frame_isset(obj, "aw");
         int wall = 0;
-        if(pos.x <= ARENA_LEFT_WALL) {
+        if(pos.x < ARENA_LEFT_WALL) {
             pos.x = ARENA_LEFT_WALL;
             obj->wall_collision = true;
-        } else if(pos.x >= ARENA_RIGHT_WALL) {
+        } else if(pos.x > ARENA_RIGHT_WALL) {
             pos.x = ARENA_RIGHT_WALL;
             wall = 1;
             obj->wall_collision = true;
