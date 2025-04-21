@@ -73,15 +73,21 @@ void surface_create_from(surface *dst, const surface *src) {
 
 void surface_multiply_decal(surface *src, const surface *decal, int dst_x, int dst_y) {
     int src_offset, decal_offset;
-    char color, value;
+    int color, value;
     for(int y = 0; y < decal->h; y++) {
+        if(y >= src->h) {
+            continue;
+        }
         for(int x = 0; x < decal->w; x++) {
-            src_offset = (dst_x + x + (dst_y + y) * src->w);
-            decal_offset = (x + y * decal->w);
-            if(src_offset > sizeof(src->data)) {
+            if(x >= src->w) {
                 continue;
             }
+            src_offset = (dst_x + x + (dst_y + y) * src->w);
+            decal_offset = (x + y * decal->w);
             if(src->data[src_offset] == 0) {
+                continue;
+            }
+            if(decal->data[decal_offset] == 0) {
                 continue;
             }
             color = src->data[src_offset] & 0xf0;
@@ -90,7 +96,7 @@ void surface_multiply_decal(surface *src, const surface *decal, int dst_x, int d
             if(value > 15) {
                 value = 15;
             }
-            src->data[src_offset] = color + value;
+            src->data[src_offset] = color | value;
         }
     }
     src->guid = guid++;
