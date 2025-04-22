@@ -94,7 +94,6 @@ int spec_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                             log_error("Error while creating arena");
                         }
 
-
                     } break;
                     case 1: {
                         uint8_t action;
@@ -106,7 +105,8 @@ int spec_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                                 int k = 0;
                                 do {
                                     action = serial_read_int8(&ser);
-                                    log_debug("tick %d read action %d at %d for player %d as position %d", event.ticks, action, k, j, i);
+                                    log_debug("tick %d read action %d at %d for player %d as position %d", event.ticks,
+                                              action, k, j, i);
                                     event.actions[j][k] = action;
                                     k++;
                                 } while(action);
@@ -115,13 +115,13 @@ int spec_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                             i += 4;
                             hashmap_put_int(data->tick_lookup, event.ticks, &event, sizeof(spec_controller_event));
 
-                            if(event.ticks > 100 && !data->started ) {
+                            if(event.ticks > 100 && !data->started) {
                                 // insert the starting tick into the hashmap so we can offset all events from that
                                 hashmap_put_int(data->tick_lookup, 0, &ctrl->gs->tick, sizeof(ticks));
                                 log_info("spectator start tick was %d", ticks);
 
                                 // jump into the arena scene
-                                //ctrl->gs->this_id = data->nscene;
+                                // ctrl->gs->this_id = data->nscene;
                                 ctrl->gs->next_id = data->nscene;
 
                                 if(scene_create(ctrl->gs->sc, ctrl->gs, data->nscene)) {

@@ -95,8 +95,9 @@ enum
     CHALLENGE_ERROR,
 };
 
-enum {
-    SPECTATE_ACCEPT=1,
+enum
+{
+    SPECTATE_ACCEPT = 1,
     SPECTATE_ERROR,
 };
 
@@ -251,19 +252,20 @@ static void update_active_user_text(lobby_local *local) {
     lobby_user *user = list_get(&local->users, local->active_user);
 
     if(user) {
-    if(user->status == PRESENCE_FIGHTING) {
-        button_set_text(local->challenge_button, "Spectate");
-        component_set_help_text(local->challenge_button, "Spectate this match.");
-    } else {
-        button_set_text(local->challenge_button, "Challenge");
-        component_set_help_text(local->challenge_button, "Challenge this player to a fight. Challenge yourself for 1-player game.");
-    }
+        if(user->status == PRESENCE_FIGHTING) {
+            button_set_text(local->challenge_button, "Spectate");
+            component_set_help_text(local->challenge_button, "Spectate this match.");
+        } else {
+            button_set_text(local->challenge_button, "Challenge");
+            component_set_help_text(local->challenge_button,
+                                    "Challenge this player to a fight. Challenge yourself for 1-player game.");
+        }
 
-    if(user->status != PRESENCE_AVAILABLE && user->status != PRESENCE_FIGHTING) {
-        component_disable(local->challenge_button, 1);
-    } else {
-        component_disable(local->challenge_button, 0);
-    }
+        if(user->status != PRESENCE_AVAILABLE && user->status != PRESENCE_FIGHTING) {
+            component_disable(local->challenge_button, 1);
+        } else {
+            component_disable(local->challenge_button, 0);
+        }
     }
 }
 
@@ -467,7 +469,7 @@ component *lobby_challenge_create(scene *s) {
     lobby_user *user = list_get(&local->users, local->active_user);
     if(user->status == PRESENCE_AVAILABLE) {
         snprintf(local->helptext, sizeof(local->helptext), "Challenge %s?", user->name);
-    } else if (user->status == PRESENCE_FIGHTING) {
+    } else if(user->status == PRESENCE_FIGHTING) {
         // TODO have the user struct contain who they're fighting
         snprintf(local->helptext, sizeof(local->helptext), "Spectate %s?", user->name);
     } else {
@@ -476,8 +478,8 @@ component *lobby_challenge_create(scene *s) {
     component *challenge_label = label_create(local->helptext);
     component *yes_button;
     if(user->status == PRESENCE_AVAILABLE) {
-         yes_button = button_create("Yes", NULL, false, false, lobby_do_challenge, s);
-    } else if (user->status == PRESENCE_FIGHTING) {
+        yes_button = button_create("Yes", NULL, false, false, lobby_do_challenge, s);
+    } else if(user->status == PRESENCE_FIGHTING) {
         yes_button = button_create("Yes", NULL, false, false, lobby_do_spectate, s);
     }
 
@@ -496,7 +498,7 @@ component *lobby_challenge_create(scene *s) {
 void lobby_challenge(component *c, void *userdata) {
     scene *s = userdata;
     component *submenu = lobby_challenge_create(s);
-    if (submenu) {
+    if(submenu) {
         menu_set_submenu(c->parent, submenu);
     }
 }
@@ -1413,43 +1415,43 @@ void lobby_tick(scene *scene, int paused) {
                         }
                     } break;
                     case PACKET_SPECTATE: {
-                                              switch(control_byte & 0xf) {
-                                                  case SPECTATE_ACCEPT:
-                                                      {
-                                                          lobby_show_dialog(scene, DIALOG_STYLE_CANCEL, "Waiting for match to begin...", lobby_dialog_cancel_challenge);
+                        switch(control_byte & 0xf) {
+                            case SPECTATE_ACCEPT: {
+                                lobby_show_dialog(scene, DIALOG_STYLE_CANCEL, "Waiting for match to begin...",
+                                                  lobby_dialog_cancel_challenge);
 
-                                                          // set up the spec controllers and set controllers_connected
-                                                          controller *c1, *c2;
-                                                          game_player *p1 = game_state_get_player(gs, 0);
-                                                          game_player *p2 = game_state_get_player(gs, 1);
-                                                          gs->net_mode = NET_MODE_LOBBY;
+                                // set up the spec controllers and set controllers_connected
+                                controller *c1, *c2;
+                                game_player *p1 = game_state_get_player(gs, 0);
+                                game_player *p2 = game_state_get_player(gs, 1);
+                                gs->net_mode = NET_MODE_LOBBY;
 
-                                                          // force the speed to 3
-                                                          game_state_set_speed(gs, 10);
+                                // force the speed to 3
+                                game_state_set_speed(gs, 10);
 
-                                                          c1 = omf_calloc(1, sizeof(controller));
-                                                          c2 = omf_calloc(1, sizeof(controller));
-                                                          controller_init(c1, gs);
-                                                          controller_init(c2, gs);
+                                c1 = omf_calloc(1, sizeof(controller));
+                                c2 = omf_calloc(1, sizeof(controller));
+                                controller_init(c1, gs);
+                                controller_init(c2, gs);
 
-                                                          hashmap *h = omf_calloc(1, sizeof(hashmap));
-                                                          hashmap_create(h);
-                                                          spec_controller_create(c1, 0, local->client, local->peer, h);
-                                                          game_player_set_ctrl(p1, c1);
-                                                          spec_controller_create(c2, 1, NULL, NULL, h);
-                                                          game_player_set_ctrl(p2, c2);
+                                hashmap *h = omf_calloc(1, sizeof(hashmap));
+                                hashmap_create(h);
+                                spec_controller_create(c1, 0, local->client, local->peer, h);
+                                game_player_set_ctrl(p1, c1);
+                                spec_controller_create(c2, 1, NULL, NULL, h);
+                                game_player_set_ctrl(p2, c2);
 
-                                                          chr_score_set_difficulty(game_player_get_score(game_state_get_player(gs, 0)),
-                                                                  AI_DIFFICULTY_CHAMPION);
-                                                          chr_score_set_difficulty(game_player_get_score(game_state_get_player(gs, 1)),
-                                                                  AI_DIFFICULTY_CHAMPION);
+                                chr_score_set_difficulty(game_player_get_score(game_state_get_player(gs, 0)),
+                                                         AI_DIFFICULTY_CHAMPION);
+                                chr_score_set_difficulty(game_player_get_score(game_state_get_player(gs, 1)),
+                                                         AI_DIFFICULTY_CHAMPION);
 
-                                                          local->controllers_created = true;
-                                                          log_info("jumping into spectate mode");
+                                local->controllers_created = true;
+                                log_info("jumping into spectate mode");
 
-                                                      }break;
-                                              }
-                                          }break;
+                            } break;
+                        }
+                    } break;
                     default:
                         log_debug("unknown packet of type %d received", event.packet->data[0] >> 4);
                         break;
