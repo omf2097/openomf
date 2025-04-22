@@ -545,8 +545,8 @@ void har_move(object *obj) {
         return;
     }
 
-    obj->pos.x += obj->vel.x;
-    obj->pos.y += obj->vel.y;
+    obj->pos.x += (obj->vel.x + obj->cvel.x);
+    obj->pos.y += (obj->vel.y + obj->cvel.y);
 
     object *enemy_obj =
         game_state_find_object(obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
@@ -1351,12 +1351,6 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
         return;
     }
 
-    // rehit mode is off
-    if(!o_har->gs->match_settings.rehit && h->state == STATE_RECOIL) {
-        log_debug("REHIT is off");
-        return;
-    }
-
     // rehit mode is on, but the opponent isn't airborne or stunned
     if(o_har->gs->match_settings.rehit && h->state == STATE_RECOIL &&
        (!object_is_airborne(o_har) || h->endurance < 0)) {
@@ -1371,7 +1365,13 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
     // Check for collisions by sprite collision points
     int level = 2;
     vec2i hit_coord;
+    if(o_pjt->can_hit) {
+        projectile_clear_hit(o_pjt);
+        o_pjt->can_hit = 0;
+    }
     if(intersect_har_sprite_hitpoint(o_pjt, o_har, level, &hit_coord)) {
+        o_pjt->q_counter = o_pjt->q_val;
+
         af_move *move = af_get_move(prog_owner_af_data, o_pjt->cur_animation->id);
 
         controller *ctrl = game_player_get_ctrl(game_state_get_player(o_har->gs, h->player_id));
@@ -1431,11 +1431,10 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
         if(player_frame_isset(o_pjt, "af")) {
             // statis ticks is the raw damage from the move
             h->in_stasis_ticks = move->raw_damage;
-        } else {
-            if(move->damage > 0) {
-                // assume all projectile that do damage have a footer string
-                assert(str_size(&move->footer_string) > 0);
-            }
+        } else if(move->damage > 0) {
+            // assume all projectile that do damage have a footer string
+            assert(str_size(&move->footer_string) > 0);
+
             // Just take damage normally if there is no footer string in successor
             log_debug("projectile dealt damage of %f", move->damage);
             log_debug("projectile %d dealt damage of %f", move->id, move->damage);
@@ -1465,6 +1464,8 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
                     }
                 }
             }
+
+        } else if(move->category == CAT_CLOSE) {
             // shadow grab is a projectile
             h->throw_duration = move->throw_duration;
         }
