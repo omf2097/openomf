@@ -92,7 +92,7 @@ void surface_multiply_decal(surface *src, const surface *decal, int dst_x, int d
             }
             color = src->data[src_offset] & 0xf0;
             value = src->data[src_offset] & 0x0f;
-            value = (value * decal->data[decal_offset])>>4;
+            value = (value * decal->data[decal_offset]) >> 4;
             if(value > 15) {
                 value = 15;
             }

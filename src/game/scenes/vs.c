@@ -634,7 +634,8 @@ int vs_create(scene *scene) {
         int scrape_no;
         for(int n = 0; n < n_scrapes; n++) {
             scrape_no = rand_int(animation_get_sprite_count(ani));
-            surface_multiply_decal(har_sprite->data, animation_get_sprite(ani, scrape_no)->data, rand_int(160), rand_int(120));
+            surface_multiply_decal(har_sprite->data, animation_get_sprite(ani, scrape_no)->data, rand_int(160),
+                                   rand_int(120));
         }
         player1_har->cur_surface = har_sprite->data;
     }
