@@ -34,7 +34,6 @@ typedef struct object_array {
     GLuint vao_id;
     GLfloat src_w; // Source texture width
     GLfloat src_h; // Source texture height
-    int vbo_flip;
     int item_count;
     object_data *mapping;
     GLint fans_starts[MAX_FANS];
