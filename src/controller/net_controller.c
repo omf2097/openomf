@@ -10,7 +10,6 @@
 #include "game/scenes/arena.h"
 #include "game/utils/serial.h"
 #include "game/utils/settings.h"
-#include "resources/ids.h"
 #include "utils/allocator.h"
 #include "utils/list.h"
 #include "utils/log.h"

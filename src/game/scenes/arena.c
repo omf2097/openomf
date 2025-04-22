@@ -2019,8 +2019,8 @@ int arena_create(scene *scene) {
             case CTRL_TYPE_NETWORK:
                 scene->gs->rec->p1_controller = REC_CONTROLLER_NETWORK;
                 break;
-            default:
-                assert(false);
+            default: {}
+                //assert(false);
         }
 
         // player 2's controller
@@ -2038,8 +2038,8 @@ int arena_create(scene *scene) {
             case CTRL_TYPE_NETWORK:
                 scene->gs->rec->p2_controller = REC_CONTROLLER_NETWORK;
                 break;
-            default:
-                assert(false);
+            default: {}
+                //assert(false);
         }
 
         // this is how p2 is actually configured
@@ -2050,8 +2050,8 @@ int arena_create(scene *scene) {
             case CTRL_TYPE_GAMEPAD:
                 scene->gs->rec->p2_controller_ = REC_CONTROLLER_JOYSTICK2;
                 break;
-            default:
-                assert(false);
+            default: {}
+                //assert(false);
         }
 
         // capture the match settings
