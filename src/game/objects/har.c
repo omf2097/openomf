@@ -585,6 +585,9 @@ void har_move(object *obj) {
         h->is_wallhugging = 0;
     }
 
+    char last_input = get_last_input(h);
+    object_apply_controllable_velocity(obj, false, last_input);
+
     // Handle floor collisions
     if(!player_frame_isset(obj, "h")) {
         if(obj->pos.y >= ARENA_FLOOR) {
@@ -592,7 +595,6 @@ void har_move(object *obj) {
 
             obj->pos.y = ARENA_FLOOR;
 
-            char last_input = get_last_input(h);
             if(player_frame_isset(obj, "cl")) {
                 af_move *move = af_get_move(h->af_data, obj->cur_animation->id);
                 object_set_vel(obj, vec2f_create(0, 0));
@@ -719,8 +721,6 @@ void har_move(object *obj) {
                 har_face_enemy(obj, enemy_obj);
                 obj->pos.x -= (h->back_speed * object_get_direction(obj));
             }
-
-            object_apply_controllable_velocity(obj, false, last_input);
         } else {
             if(game_state_hars_are_alive(obj->gs)) {
                 obj->vel.y += obj->gravity;
