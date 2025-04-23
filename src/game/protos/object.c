@@ -816,7 +816,7 @@ void object_set_disable_cb(object *obj, object_state_disable_cb cbf, void *userd
 }
 
 int object_is_airborne(const object *obj) {
-    return obj->pos.y < ARENA_FLOOR || obj->vel.y < 0;
+    return obj->pos.y < ARENA_FLOOR || obj->vel.y < 0 || player_frame_isset(obj, "ug");
 }
 
 /* Attaches one object to another. Positions are synced to this from the attached. */

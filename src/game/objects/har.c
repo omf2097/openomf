@@ -343,6 +343,12 @@ int har_is_walking(har *h) {
     return 0;
 }
 
+bool is_har_idle_grounded(object *obj) {
+    return ((obj->cur_animation->id == ANIM_IDLE) || (obj->cur_animation->id == ANIM_CROUCHING) ||
+            (obj->cur_animation->id == ANIM_WALKING)) &&
+           game_state_hars_are_alive(obj->gs);
+}
+
 int har_is_crouching(har *h) {
     if(h->state == STATE_CROUCHING || h->state == STATE_CROUCHBLOCK) {
         return 1;
@@ -350,20 +356,41 @@ int har_is_crouching(har *h) {
     return 0;
 }
 
-int har_is_blocking(har *h, af_move *move) {
-    if(move->category == CAT_CLOSE) {
-        // throws cannot be blocked
+char get_last_input(har *har) {
+    return har->inputs[0];
+}
+
+int har_is_blocking(object *obj, af_move *move) {
+    har *h = obj->userdata;
+
+    // HAR is busy and cannot block, or jumped.
+    if(!is_har_idle_grounded(obj) && h->state != STATE_BLOCKSTUN && h->state != STATE_CROUCHBLOCK) {
         return 0;
     }
-    if(h->state == STATE_BLOCKSTUN) {
-        return 1;
+
+    char last_input = get_last_input(h);
+    if(obj->crossup_protection) {
+        if(last_input == '6') {
+            last_input = '4';
+        } else if(last_input == '3') {
+            last_input = '1';
+        }
     }
-    if(h->state == STATE_CROUCHBLOCK && move->category != CAT_JUMPING && h->executing_move == 0) {
-        return 1;
+
+    switch(move->category) {
+        case CAT_CLOSE:
+            // throws cannot be blocked
+            return 0;
+        case CAT_LOW:
+            return (last_input == '1') ? 1 : 0;
+        case CAT_JUMPING:
+            return (last_input == '4') ? 1 : 0;
+        default:
+            if((last_input == '1') || (last_input == '4')) {
+                return 1;
+            }
     }
-    if(h->state == STATE_WALKFROM && move->category != CAT_LOW && h->executing_move == 0) {
-        return 1;
-    }
+
     return 0;
 }
 
@@ -532,10 +559,6 @@ void har_floor_landing_effects(object *obj, bool play_sound) {
         float pos_pan = ((float)obj->pos.x - 160.0f) / 160.0f;
         game_state_play_sound(obj->gs, 56, 0.3f, pos_pan, 2.2f);
     }
-}
-
-char get_last_input(har *har) {
-    return har->inputs[0];
 }
 
 void har_move(object *obj) {
@@ -1180,7 +1203,7 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
 
         obj_a->q_counter = obj_a->q_val;
 
-        if(har_is_blocking(b, move) &&
+        if(har_is_blocking(obj_b, move) &&
            // earthquake smash is unblockable
            !player_frame_isset(obj_a, "ue")) {
             a->damage_done = 1;
@@ -1376,7 +1399,7 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
 
         controller *ctrl = game_player_get_ctrl(game_state_get_player(o_har->gs, h->player_id));
         controller *ctrl_other = game_player_get_ctrl(game_state_get_player(o_pjt->gs, other->player_id));
-        if(har_is_blocking(h, move)) {
+        if(har_is_blocking(o_har, move)) {
             projectile_mark_hit(o_pjt); // prevent this projectile from hitting again
             o_pjt->animation_state.finished = 1;
             if(move->successor_id && move->category != CAT_CLOSE) {
@@ -1905,12 +1928,6 @@ static bool add_input(char *buf, int act_type, int direction) {
         return add_input_to_buffer(buf, '5');
     }
     return false;
-}
-
-bool is_har_idle_grounded(object *obj) {
-    return ((obj->cur_animation->id == ANIM_IDLE) || (obj->cur_animation->id == ANIM_CROUCHING) ||
-            (obj->cur_animation->id == ANIM_WALKING)) &&
-           game_state_hars_are_alive(obj->gs);
 }
 
 bool is_har_idle_air(object *obj) {

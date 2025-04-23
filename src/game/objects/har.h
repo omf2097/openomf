@@ -206,7 +206,7 @@ void har_walk_to(object *obj, int destination);
 int har_is_active(object *obj);
 int har_is_crouching(har *h);
 int har_is_walking(har *h);
-int har_is_blocking(har *h, af_move *move);
+int har_is_blocking(object *obj, af_move *move);
 void har_copy_actions(object *new, object *old);
 void har_reset(object *obj);
 

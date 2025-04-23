@@ -229,6 +229,14 @@ void player_run(object *obj) {
         // log_debug("E: pos.x = %f, pos.y = %f", obj->pos.x, obj->pos.y);
     }
 
+    if(enemy) {
+        if(sd_script_isset(frame, "ag")) {
+            enemy->crossup_protection = true;
+        } else {
+            enemy->crossup_protection = false;
+        }
+    }
+
     if(sd_script_isset(frame, "ar")) {
         object_set_direction(obj, object_get_direction(obj) * -1);
     }
