@@ -230,11 +230,7 @@ void player_run(object *obj) {
     }
 
     if(enemy) {
-        if(sd_script_isset(frame, "ag")) {
-            enemy->crossup_protection = true;
-        } else {
-            enemy->crossup_protection = false;
-        }
+        enemy->crossup_protection = sd_script_isset(frame, "ag");
     }
 
     if(sd_script_isset(frame, "ar")) {
