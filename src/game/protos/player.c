@@ -367,6 +367,8 @@ void player_run(object *obj) {
         // Hover, reset all velocities to 0 on every frame
         obj->vel.x = 0;
         obj->vel.y = 0;
+        obj->cvel.x = 0;
+        obj->cvel.y = 0;
     }
 
     int ab_flag = sd_script_isset(frame, "ab"); // Pass through walls
