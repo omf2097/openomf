@@ -19,8 +19,6 @@
 #define PANNING_MIN -1.0f
 #define PITCH_MIN 0.5f
 
-#define SOURCE_FREQ 8000
-
 typedef struct audio_sample_rate {
     unsigned int sample_rate;
     bool is_default;
@@ -54,7 +52,7 @@ typedef bool (*setup_backend_context_fn)(void *ctx, unsigned sample_rate, bool m
 typedef void (*close_backend_context_fn)(void *ctx);
 
 // Playback handling.
-typedef int (*play_sound_fn)(void *ctx, const char *buf, size_t len, float volume, float panning, float pitch,
+typedef int (*play_sound_fn)(void *ctx, const char *buf, size_t len, int freq, float volume, float panning, float pitch,
                              int fade);
 typedef void (*play_music_fn)(void *ctx, const music_source *src);
 typedef void (*stop_music_fn)(void *ctx);

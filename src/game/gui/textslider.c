@@ -79,7 +79,7 @@ static int textslider_action(component *c, int action) {
     if(old_pos != *t->pos) {
         // Play menu sound
         refresh(c);
-        audio_play_sound(20, 0.5f, panning, 2.0f);
+        audio_play_sound(20, 0.5f, panning, 1.0f);
         if(t->slide) {
             t->slide(c, t->userdata, *t->pos);
         }

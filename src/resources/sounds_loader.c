@@ -31,7 +31,7 @@ error_0:
     return false;
 }
 
-bool sounds_loader_get(int id, char **buffer, int *len) {
+bool sounds_loader_get(int id, char **buffer, int *len, int *freq) {
     // Make sure the data is ok and sound exists
     if(sound_data == NULL)
         return false;
@@ -43,6 +43,7 @@ bool sounds_loader_get(int id, char **buffer, int *len) {
     }
     *buffer = sample->data;
     *len = sample->len;
+    *freq = 1000000 / (256 - sample->unknown);
     return true;
 }
 

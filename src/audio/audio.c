@@ -163,7 +163,8 @@ int audio_play_sound(int id, float volume, float panning, float pitch) {
     // Load sample (8000Hz, mono, 8bit)
     char *src_buf;
     int src_len;
-    if(!sounds_loader_get(id, &src_buf, &src_len)) {
+    int src_freq;
+    if(!sounds_loader_get(id, &src_buf, &src_len, &src_freq)) {
         log_error("Requested sound sample %d not found", id);
         return -1;
     }
@@ -173,12 +174,12 @@ int audio_play_sound(int id, float volume, float panning, float pitch) {
     }
 
     // Tell the backend to play it.
-    return current_backend.play_sound(current_backend.ctx, src_buf, src_len, volume, panning, pitch, 0);
+    return current_backend.play_sound(current_backend.ctx, src_buf, src_len, src_freq, volume, panning, pitch, 0);
 }
 
-int audio_play_sound_buf(char *src_buf, int src_len, float volume, float panning, float pitch, int fade) {
+int audio_play_sound_buf(char *src_buf, int src_len, int src_freq, float volume, float panning, float pitch, int fade) {
     // Tell the backend to play it.
-    return current_backend.play_sound(current_backend.ctx, src_buf, src_len, volume, panning, pitch, fade);
+    return current_backend.play_sound(current_backend.ctx, src_buf, src_len, src_freq, volume, panning, pitch, fade);
 }
 
 void audio_fade_out(int playback_id, int ms) {
@@ -247,7 +248,6 @@ unsigned audio_get_sample_rates(const audio_sample_rate **sample_rates) {
     return current_backend.get_sample_rates(sample_rates);
 }
 
-int pitched_samplerate(float pitch) {
-    // all our audio is 8khz for now
-    return (int)(SOURCE_FREQ * clampf(pitch, PITCH_MIN, PITCH_MAX));
+int pitched_samplerate(int src_freq, float pitch) {
+    return (int)(src_freq * clampf(pitch, PITCH_MIN, PITCH_MAX));
 }

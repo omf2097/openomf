@@ -92,13 +92,13 @@ static inline void free_chunk(sdl_audio_context *ctx, int i) {
     }
 }
 
-static bool audio_get_chunk(sdl_audio_context *ctx, Mix_Chunk *chunk, const char *src_buf, size_t src_len, float volume,
-                            float pitch) {
+static bool audio_get_chunk(sdl_audio_context *ctx, Mix_Chunk *chunk, const char *src_buf, size_t src_len, int src_freq,
+                            float volume, float pitch) {
     Uint8 *dst_buf;
     SDL_AudioCVT cvt;
 
     // Converter for sound samples.
-    int src_freq = SOURCE_FREQ * pitch;
+    src_freq = src_freq * pitch;
     if(SDL_BuildAudioCVT(&cvt, AUDIO_U8, 1, src_freq, ctx->format, ctx->channels, ctx->sample_rate) < 0) {
         log_error("Unable to build audio converter: %s", SDL_GetError());
         goto exit_0;
@@ -155,8 +155,8 @@ static void get_info(void *userdata, unsigned *sample_rate, unsigned *channels, 
         *resampler = ctx->resampler;
 }
 
-static int play_sound(void *userdata, const char *src_buf, size_t src_len, float volume, float panning, float pitch,
-                      int fade) {
+static int play_sound(void *userdata, const char *src_buf, size_t src_len, int src_freq, float volume, float panning,
+                      float pitch, int fade) {
     assert(userdata);
     sdl_audio_context *ctx = userdata;
 
@@ -173,7 +173,7 @@ static int play_sound(void *userdata, const char *src_buf, size_t src_len, float
         return -1;
     }
     free_chunk(ctx, channel); // Make sure old chunk is deallocated, if one exists.
-    if(!audio_get_chunk(ctx, &ctx->channel_chunks[channel], src_buf, src_len, volume, pitch)) {
+    if(!audio_get_chunk(ctx, &ctx->channel_chunks[channel], src_buf, src_len, src_freq, volume, pitch)) {
         log_error("Unable to play sound: Failed to load chunk");
         return -1;
     }
