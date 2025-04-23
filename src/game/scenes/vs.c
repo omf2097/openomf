@@ -624,6 +624,20 @@ int vs_create(scene *scene) {
         object_set_halt(plug, 1);
         game_state_add_object(scene->gs, plug, RENDER_LAYER_TOP, 0, 0);
         local->report = create_report_card(fight_stats); // Set up the statistics texts to the right side of the scene
+
+        // Let's add some scrapes
+        sprite *har_sprite = animation_get_sprite(player1_har->cur_animation, player1->pilot->har_id);
+        ani = &bk_get_info(scene->bk_data, 9)->ani;
+
+        int n_scrapes = ((fight_stats->max_hp - fight_stats->hp) * 170) / fight_stats->max_hp;
+        log_debug("Creating %d scrapes", n_scrapes);
+        int scrape_no;
+        for(int n = 0; n < n_scrapes; n++) {
+            scrape_no = rand_int(animation_get_sprite_count(ani));
+            surface_multiply_decal(har_sprite->data, animation_get_sprite(ani, scrape_no)->data, rand_int(160),
+                                   rand_int(120));
+        }
+        player1_har->cur_surface = har_sprite->data;
     }
 
     if(player2->pilot != NULL) {

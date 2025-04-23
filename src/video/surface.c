@@ -71,6 +71,37 @@ void surface_create_from(surface *dst, const surface *src) {
     dst->transparent = src->transparent;
 }
 
+void surface_multiply_decal(surface *src, const surface *decal, int dst_x, int dst_y) {
+    int src_offset, decal_offset;
+    int color, value;
+    for(int y = 0; y < decal->h; y++) {
+        if(y >= src->h) {
+            continue;
+        }
+        for(int x = 0; x < decal->w; x++) {
+            if(x >= src->w) {
+                continue;
+            }
+            src_offset = (dst_x + x + (dst_y + y) * src->w);
+            decal_offset = (x + y * decal->w);
+            if(src->data[src_offset] == 0) {
+                continue;
+            }
+            if(decal->data[decal_offset] == 0) {
+                continue;
+            }
+            color = src->data[src_offset] & 0xf0;
+            value = src->data[src_offset] & 0x0f;
+            value = (value * decal->data[decal_offset]) >> 4;
+            if(value > 15) {
+                value = 15;
+            }
+            src->data[src_offset] = color | value;
+        }
+    }
+    src->guid = guid++;
+}
+
 // Copies a an area of old surface to an entirely new surface
 void surface_sub(surface *dst, const surface *src, int dst_x, int dst_y, int src_x, int src_y, int w, int h,
                  int method) {
