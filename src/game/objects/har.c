@@ -1030,13 +1030,11 @@ void har_spawn_scrap(object *obj, vec2i pos, int amount) {
 
 void har_block(object *obj, vec2i hit_coord, uint8_t block_stun) {
     har *h = obj->userdata;
-    if(h->state == STATE_WALKFROM) {
-        object_set_animation(obj, &af_get_move(h->af_data, ANIM_STANDING_BLOCK)->ani);
-    } else if(h->state == STATE_BLOCKSTUN) {
-        // restart the block animation
-        object_set_animation(obj, obj->cur_animation);
-    } else {
+    char last_input = get_last_input(h);
+    if(last_input == '1' || last_input == '3') {
         object_set_animation(obj, &af_get_move(h->af_data, ANIM_CROUCHING_BLOCK)->ani);
+    } else {
+        object_set_animation(obj, &af_get_move(h->af_data, ANIM_STANDING_BLOCK)->ani);
     }
     // the HARs have a lame blank frame in their animation string, so use a custom one
 
