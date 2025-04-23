@@ -19,8 +19,6 @@
 #define PANNING_MIN -1.0f
 #define PITCH_MIN 0.5f
 
-#define SOURCE_FREQ 8000
-
 typedef struct audio_sample_rate {
     unsigned int sample_rate;
     bool is_default;
