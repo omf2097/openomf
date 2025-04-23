@@ -6,6 +6,7 @@
 #include "game/protos/object.h"
 #include "game/utils/serial.h"
 #include "utils/list.h"
+#include "utils/vector.h"
 
 enum
 {
@@ -31,6 +32,8 @@ enum
     CTRL_TYPE_REC
 };
 
+// TODO this should be reduced to only ACTION and CLOSE
+// the rest are netplay specific and should not live here
 enum
 {
     EVENT_TYPE_ACTION,
@@ -45,6 +48,7 @@ typedef struct ctrl_event_t ctrl_event;
 
 struct ctrl_event_t {
     int type;
+    // TODO the 'ser' component is no longer used, remove it and this union
     union {
         int action;
         serial *ser;
@@ -56,8 +60,11 @@ typedef struct controller_t controller;
 
 struct controller_t {
     game_state *gs;
+    uint8_t delay;
+    bool supports_delay;
     uint32_t har_obj_id;
     list hooks;
+    vector *buffer;
     ctrl_event *extra_events;
     int (*tick_fun)(controller *ctrl, uint32_t ticks, ctrl_event **ev);
     int (*dyntick_fun)(controller *ctrl, uint32_t ticks, ctrl_event **ev);
@@ -89,6 +96,7 @@ void controller_clear_hooks(controller *ctrl);
 void controller_free_chain(ctrl_event *ev);
 void controller_free(controller *ctrl);
 void controller_set_repeat(controller *ctrl, int repeat);
+bool controller_set_delay(controller *ctrl, uint8_t delay);
 int controller_rumble(controller *ctrl, float magnitude, int duration);
 void controller_rewind(controller *ctrl);
 

@@ -1,6 +1,8 @@
 #ifndef NET_CONTROLLER_H
 #define NET_CONTROLLER_H
 
+#define NET_INPUT_DELAY 2
+
 #include "controller/controller.h"
 #include <SDL.h>
 #include <enet/enet.h>

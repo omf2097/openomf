@@ -92,6 +92,7 @@ typedef struct {
     char *key1_jump_left;
     char *key1_kick;
     char *key1_punch;
+    int input1_delay;
 
     // Player two
     int ctrl_type2;
@@ -107,6 +108,7 @@ typedef struct {
     char *key2_jump_left;
     char *key2_kick;
     char *key2_punch;
+    int input2_delay;
 } settings_keyboard;
 
 typedef struct {
