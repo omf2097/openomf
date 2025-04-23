@@ -229,6 +229,10 @@ void player_run(object *obj) {
         // log_debug("E: pos.x = %f, pos.y = %f", obj->pos.x, obj->pos.y);
     }
 
+    if(enemy) {
+        enemy->crossup_protection = sd_script_isset(frame, "ag");
+    }
+
     if(sd_script_isset(frame, "ar")) {
         object_set_direction(obj, object_get_direction(obj) * -1);
     }
@@ -328,7 +332,7 @@ void player_run(object *obj) {
             }
         }
 
-        if(sd_script_isset(frame, "bm")) {
+        if(sd_script_isset(frame, "bm") && enemy) {
             int destination = 160;
             if(sd_script_isset(frame, "am") && sd_script_isset(frame, "e")) {
                 // destination is the enemy's position
