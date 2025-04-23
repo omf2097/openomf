@@ -315,12 +315,9 @@ void object_apply_controllable_velocity(object *obj, bool is_projectile, char in
         } else if(input == '1' || input == '7') {
             obj->cvel.x -= cx * 0.7 * object_get_direction(obj);
         }
-        // CY needs CX to be set
-        if(player_frame_isset(obj, "cy")) {
+        // CY needs CX to be set, and only works for projectiles
+        if(player_frame_isset(obj, "cy") && is_projectile) {
             float cy = player_frame_get(obj, "cy") / 10.0;
-            if(!is_projectile) {
-                cy *= obj->vertical_velocity_modifier;
-            }
             if(input == '8') {
                 obj->cvel.y -= cy;
             } else if(input == '2') {
