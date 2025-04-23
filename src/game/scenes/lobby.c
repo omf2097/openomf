@@ -481,6 +481,8 @@ component *lobby_challenge_create(scene *s) {
         yes_button = button_create("Yes", NULL, false, false, lobby_do_challenge, s);
     } else if(user->status == PRESENCE_FIGHTING) {
         yes_button = button_create("Yes", NULL, false, false, lobby_do_spectate, s);
+    } else {
+        return NULL;
     }
 
     component *no_button = button_create("No", NULL, false, false, lobby_cancel_challenge, s);

@@ -317,6 +317,7 @@ void send_game_information(wtf *data) {
     // the arena ID and the pilot info. All the other settings are locked.
     serial_write_int8(&ser, gs->this_id - SCENE_ARENA0);
     serial_write_int8(&ser, player->pilot->har_id);
+    serial_write_int8(&ser, player->pilot->pilot_id);
     serial_write_int8(&ser, player->pilot->power);
     serial_write_int8(&ser, player->pilot->agility);
     serial_write_int8(&ser, player->pilot->endurance);
@@ -949,6 +950,12 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                         val = serial_read_int8(&ser);
                         if(player->pilot->har_id != val) {
                             log_error("HAR ID mismatch, we had %d they had %d", player->pilot->har_id, val);
+                            enet_peer_disconnect_later(data->peer, 0);
+                            return 1;
+                        }
+                        val = serial_read_int8(&ser);
+                        if(player->pilot->pilot_id != val) {
+                            log_error("Pilot ID mismatch, we had %d they had %d", player->pilot->pilot_id, val);
                             enet_peer_disconnect_later(data->peer, 0);
                             return 1;
                         }

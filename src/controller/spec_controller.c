@@ -57,6 +57,7 @@ int spec_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                         game_state_set_speed(ctrl->gs, 10);
 
                         p1->pilot->har_id = serial_read_int8(&ser);
+                        p1->pilot->pilot_id = serial_read_int8(&ser);
                         p1->pilot->power = serial_read_int8(&ser);
                         p1->pilot->agility = serial_read_int8(&ser);
                         p1->pilot->endurance = serial_read_int8(&ser);
@@ -68,6 +69,7 @@ int spec_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                         p1->pilot->name[namelen] = '\0';
 
                         p2->pilot->har_id = serial_read_int8(&ser);
+                        p2->pilot->pilot_id = serial_read_int8(&ser);
                         p2->pilot->power = serial_read_int8(&ser);
                         p2->pilot->agility = serial_read_int8(&ser);
                         p2->pilot->endurance = serial_read_int8(&ser);
