@@ -949,8 +949,8 @@ void game_state_merge_sounds(game_state *old, game_state *new) {
             // guard against playing beyond the end of the buffer
             if(offset < src_len) {
                 // TODO decide on a fade in time
-                s->playback_id =
-                    audio_play_sound_buf(src_buf + offset, src_len - offset, s->freq, s->volume, s->panning, s->pitch, 500);
+                s->playback_id = audio_play_sound_buf(src_buf + offset, src_len - offset, s->freq, s->volume,
+                                                      s->panning, s->pitch, 500);
             }
         }
     }
