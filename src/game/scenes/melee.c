@@ -464,7 +464,7 @@ void handle_action(scene *scene, int player, int action) {
             // [[fallthrough]]
         case ACT_PUNCH:
             *done = 1;
-            audio_play_sound(20, 0.5f, 0.0f, 2.0f);
+            audio_play_sound(20, 0.5f, 0.0f, 1.0f);
             if(CURSOR_A_DONE(local) && (CURSOR_B_DONE(local) || !player2->selectable)) {
                 local->cursor[0].done = 0;
                 local->cursor[1].done = 0;
@@ -549,7 +549,7 @@ void handle_action(scene *scene, int player, int action) {
 
     if(old_row != *row || old_column != *column) {
         float panning = (float)(*column) * (2.0f / 5.0f) - 0.5f;
-        audio_play_sound(19, 0.5f, panning, 2.0f);
+        audio_play_sound(19, 0.5f, panning, 1.0f);
         if(local->page == PILOT_SELECT) {
             if(player == 0) {
                 local->pilot_id_a = CURSOR_INDEX(local, player);
@@ -626,7 +626,7 @@ void melee_input_tick(scene *scene) {
 
     for(i = menu_ev; i; i = i->next) {
         if(i->type == EVENT_TYPE_ACTION && i->event_data.action == ACT_ESC) {
-            audio_play_sound(20, 0.5f, 0.0f, 2.0f);
+            audio_play_sound(20, 0.5f, 0.0f, 1.0f);
             if(local->page == HAR_SELECT) {
                 // restore the player selection
                 restore_cursors_to(local, local->pilot_id_a, local->pilot_id_b);
