@@ -336,7 +336,7 @@ void player_run(object *obj) {
             }
         }
 
-        if(sd_script_isset(frame, "bm")) {
+        if(sd_script_isset(frame, "bm") && enemy) {
             int destination = 160;
             if(sd_script_isset(frame, "am") && sd_script_isset(frame, "e")) {
                 // destination is the enemy's position
