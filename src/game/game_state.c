@@ -66,6 +66,7 @@ typedef struct {
     int id;
     int length;
     int duration;
+    int freq;
     float volume;
     float panning;
     float pitch;
@@ -923,15 +924,15 @@ void game_state_merge_sounds(game_state *old, game_state *new) {
             assert(s->playback_id == -1);
 
             // calculate the offset into the buffer we need
-            int total_duration = (int)(s->length / (pitched_samplerate(s->pitch) * 1000));
+            int total_duration = (int)(s->length / (pitched_samplerate(s->freq, s->pitch) * 1000));
             int elapsed_ms = total_duration - s->duration;
-            // with 8khz 8 bit mono, we can just multiply ms by 8, adjusted by the pitch
-            int offset = elapsed_ms * 8 * clampf(s->pitch, PITCH_MIN, PITCH_MAX);
+            int offset = elapsed_ms * s->freq * clampf(s->pitch, PITCH_MIN, PITCH_MAX) / 1000;
 
             // Load sample (8000Hz, mono, 8bit)
             char *src_buf;
             int src_len;
-            if(!sounds_loader_get(s->id, &src_buf, &src_len)) {
+            int src_freq;
+            if(!sounds_loader_get(s->id, &src_buf, &src_len, &src_freq)) {
                 log_error("Requested sound sample %d not found", s->id);
                 return;
             }
@@ -949,7 +950,7 @@ void game_state_merge_sounds(game_state *old, game_state *new) {
             if(offset < src_len) {
                 // TODO decide on a fade in time
                 s->playback_id =
-                    audio_play_sound_buf(src_buf + offset, src_len - offset, s->volume, s->panning, s->pitch, 500);
+                    audio_play_sound_buf(src_buf + offset, src_len - offset, s->freq, s->volume, s->panning, s->pitch, 500);
             }
         }
     }
@@ -1343,7 +1344,8 @@ void game_state_play_sound(game_state *gs, int id, float volume, float panning, 
     // Load sample (8000Hz, mono, 8bit)
     char *src_buf;
     int src_len;
-    if(!sounds_loader_get(id, &src_buf, &src_len)) {
+    int src_freq;
+    if(!sounds_loader_get(id, &src_buf, &src_len, &src_freq)) {
         log_error("Requested sound sample %d not found", id);
         return;
     }
@@ -1356,7 +1358,8 @@ void game_state_play_sound(game_state *gs, int id, float volume, float panning, 
     s.tick = gs->int_tick;
     s.id = id;
     s.length = src_len;
-    s.duration = src_len / (pitched_samplerate(pitch) * 1000);
+    s.duration = src_len / (pitched_samplerate(src_freq, pitch) * 1000);
+    s.freq = src_freq;
     s.volume = volume;
     s.panning = panning;
     s.pitch = pitch;
@@ -1366,7 +1369,7 @@ void game_state_play_sound(game_state *gs, int id, float volume, float panning, 
         // do not actually begin playback if this is a cloned game state
         // cloned game states that are promoted to the active game state
         // will have this flag removed
-        s.playback_id = audio_play_sound_buf(src_buf, src_len, volume, panning, pitch, 0);
+        s.playback_id = audio_play_sound_buf(src_buf, src_len, src_freq, volume, panning, pitch, 0);
         if(s.playback_id == -1) {
             // don't track sounds that failed to play
             return;
