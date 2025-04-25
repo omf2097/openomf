@@ -133,6 +133,8 @@ void game_menu_quit(component *c, void *userdata) {
         } else {
             game_state_set_next(s->gs, SCENE_VS);
         }
+    } else if(is_spectator(s->gs)) {
+        game_state_set_next(s->gs, SCENE_LOBBY);
     } else {
         game_state_set_next(s->gs, SCENE_MENU);
     }

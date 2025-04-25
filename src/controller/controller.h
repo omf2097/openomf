@@ -29,7 +29,8 @@ enum
     CTRL_TYPE_GAMEPAD,
     CTRL_TYPE_NETWORK,
     CTRL_TYPE_AI,
-    CTRL_TYPE_REC
+    CTRL_TYPE_REC,
+    CTRL_TYPE_SPECTATOR
 };
 
 // TODO this should be reduced to only ACTION and CLOSE

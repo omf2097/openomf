@@ -79,5 +79,6 @@ bool is_tournament(game_state *gs);
 bool is_demoplay(game_state *gs);
 bool is_twoplayer(game_state *gs);
 bool is_rec_playback(game_state *gs);
+bool is_spectator(game_state *gs);
 
 #endif // GAME_STATE_H

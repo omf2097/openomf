@@ -214,6 +214,16 @@ void spec_controller_find_old_last_action(controller *ctrl) {
     return;
 }
 
+ENetPeer *spec_controller_get_lobby_connection(controller *ctrl) {
+    spec_controller_data *data = ctrl->data;
+    return data->peer;
+}
+
+ENetHost *spec_controller_get_host(controller *ctrl) {
+    spec_controller_data *data = ctrl->data;
+    return data->host;
+}
+
 void spec_controller_create(controller *ctrl, int player, ENetHost *host, ENetPeer *lobby, hashmap *events) {
     spec_controller_data *data = omf_calloc(1, sizeof(spec_controller_data));
     data->last_tick = 0;
@@ -224,7 +234,7 @@ void spec_controller_create(controller *ctrl, int player, ENetHost *host, ENetPe
     data->max_tick = 0;
     data->started = false;
     ctrl->data = data;
-    ctrl->type = CTRL_TYPE_REC;
+    ctrl->type = CTRL_TYPE_SPECTATOR;
     ctrl->poll_fun = &spec_controller_poll;
     ctrl->tick_fun = &spec_controller_tick;
     ctrl->free_fun = &spec_controller_free;

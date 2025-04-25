@@ -1615,6 +1615,13 @@ int lobby_create(scene *scene) {
         winner = net_controller_get_winner(game_state_get_player(scene->gs, 1)->ctrl);
         local->mode = LOBBY_MAIN;
         local->nat_tries = 12;
+    } else if(game_state_get_player(scene->gs, 0)->ctrl->type == CTRL_TYPE_SPECTATOR) {
+        // in spectator mode, only the first controller can have the enet data
+        local->peer = spec_controller_get_lobby_connection(game_state_get_player(scene->gs, 0)->ctrl);
+        local->client = spec_controller_get_host(game_state_get_player(scene->gs, 0)->ctrl);
+        local->nat = local->peer->data;
+        local->mode = LOBBY_MAIN;
+        local->nat_tries = 12;
     }
 
     // Cleanups and resets

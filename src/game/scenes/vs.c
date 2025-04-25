@@ -64,13 +64,6 @@ int vs_is_singleplayer(scene *scene) {
     return 0;
 }
 
-int is_spectator(scene *scene) {
-    if(game_state_get_player(scene->gs, 1)->ctrl->type == CTRL_TYPE_REC) {
-        return 1;
-    }
-    return 0;
-}
-
 // Even indexes go to the left, odd to the right.
 // Welder does an additional roll for the 3 places on the torso.
 vec2i spawn_position(int index, int scientist) {
@@ -282,6 +275,8 @@ void vs_input_tick(scene *scene) {
                     // null out the  p2 pilot
                     game_state_get_player(scene->gs, 1)->pilot = NULL;
                     game_state_set_next(scene->gs, SCENE_MECHLAB);
+                } else if(is_spectator(scene->gs)) {
+                    game_state_set_next(scene->gs, SCENE_LOBBY);
                 } else {
                     game_state_set_next(scene->gs, SCENE_MELEE);
                 }
@@ -658,7 +653,7 @@ int vs_create(scene *scene) {
                     SUB_METHOD_MIRROR);          // Flip the right side horizontally
     }
 
-    if(player2->selectable && !is_spectator(scene)) {
+    if(player2->selectable && !is_spectator(scene->gs)) {
         // player1 gets to choose, start at arena 0
         scene->gs->arena = 0;
         local->arena_name = create_arena_text(lang_get(56 + scene->gs->arena), (211 - 74), 6);
@@ -669,7 +664,7 @@ int vs_create(scene *scene) {
     } else if(is_tournament(scene->gs) || is_demoplay(scene->gs)) {
         // pick random arenas
         scene->gs->arena = rand_int(5);
-    } else if(is_spectator(scene)) {
+    } else if(is_spectator(scene->gs)) {
         local->arena_name = create_arena_text(lang_get(56 + scene->gs->arena), (211 - 74), 6);
         local->arena_desc = create_arena_text(lang_get(66 + scene->gs->arena), (211 - 74), 50);
     } else {

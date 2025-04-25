@@ -1470,6 +1470,13 @@ bool is_tournament(game_state *gs) {
     return game_state_get_player(gs, 0)->chr;
 }
 
+bool is_spectator(game_state *gs) {
+    if(game_state_get_player(gs, 0)->ctrl->type == CTRL_TYPE_SPECTATOR) {
+        return 1;
+    }
+    return 0;
+}
+
 bool is_demoplay(game_state *gs) {
     return game_state_get_player(gs, 0)->ctrl->type == CTRL_TYPE_AI &&
            game_state_get_player(gs, 1)->ctrl->type == CTRL_TYPE_AI;
