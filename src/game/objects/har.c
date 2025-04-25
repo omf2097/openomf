@@ -2787,6 +2787,10 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
                           str_c(&move->ani.animation_string));
                 str_set_c(&move->move_string, "!");
             }
+            if(move->pos_constraints & 0x40) {
+                // TODO: disable all fire/ice moves indiscriminately for now
+                str_set_c(&move->move_string, "!");
+            }
         }
     }
 
