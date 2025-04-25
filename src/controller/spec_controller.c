@@ -80,7 +80,9 @@ int spec_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                         serial_read(&ser, p2->pilot->name, namelen);
                         p2->pilot->name[namelen] = '\0';
 
-                        random_seed(&ctrl->gs->rand, serial_read_uint32(&ser));
+                        uint32_t seed = serial_read_uint32(&ser);
+                        log_debug("spectator random seed set to %d", seed);
+                        random_seed(&ctrl->gs->rand, seed);
 
                         data->nscene = SCENE_ARENA0 + serial_read_int8(&ser);
 
@@ -103,14 +105,13 @@ int spec_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                         uint8_t action;
                         for(size_t i = ser.rpos; i < event.packet->dataLength;) {
                             spec_controller_event event;
+                            memset(&event, 0, sizeof(spec_controller_event));
                             event.ticks = serial_read_uint32(&ser);
 
                             for(int j = 0; j < 2; j++) {
                                 int k = 0;
                                 do {
                                     action = serial_read_int8(&ser);
-                                    log_debug("tick %d read action %d at %d for player %d as position %d", event.ticks,
-                                              action, k, j, i);
                                     event.actions[j][k] = action;
                                     k++;
                                 } while(action);
@@ -168,7 +169,7 @@ int spec_controller_poll(controller *ctrl, ctrl_event **ev) {
 
     bool found_action = false;
 
-    if(data->last_tick != ticks) {
+    if(data->last_tick != ticks && ticks > 0) {
         if(hashmap_get_int(data->tick_lookup, ticks, (void **)(&move), &len) == 0) {
             int i = 0;
             uint8_t action;

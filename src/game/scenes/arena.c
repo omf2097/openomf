@@ -2018,12 +2018,12 @@ int arena_create(scene *scene) {
             case CTRL_TYPE_AI:
                 scene->gs->rec->p1_controller = REC_CONTROLLER_AI;
                 break;
+            case CTRL_TYPE_SPECTATOR:
             case CTRL_TYPE_NETWORK:
                 scene->gs->rec->p1_controller = REC_CONTROLLER_NETWORK;
                 break;
-            default: {
-            }
-                // assert(false);
+            default:
+                assert(false);
         }
 
         // player 2's controller
@@ -2038,25 +2038,28 @@ int arena_create(scene *scene) {
             case CTRL_TYPE_AI:
                 scene->gs->rec->p2_controller = REC_CONTROLLER_AI;
                 break;
+            case CTRL_TYPE_SPECTATOR:
             case CTRL_TYPE_NETWORK:
                 scene->gs->rec->p2_controller = REC_CONTROLLER_NETWORK;
                 break;
-            default: {
-            }
-                // assert(false);
+            default:
+                assert(false);
         }
 
-        // this is how p2 is actually configured
-        switch(settings_get()->keys.ctrl_type1) {
-            case CTRL_TYPE_KEYBOARD:
-                scene->gs->rec->p2_controller_ = REC_CONTROLLER_LEFT_KEYBOARD;
-                break;
-            case CTRL_TYPE_GAMEPAD:
-                scene->gs->rec->p2_controller_ = REC_CONTROLLER_JOYSTICK2;
-                break;
-            default: {
+        if(game_state_get_player(scene->gs, 1)->ctrl->type == CTRL_TYPE_SPECTATOR) {
+            scene->gs->rec->p2_controller_ = REC_CONTROLLER_NETWORK;
+        } else {
+            // this is how p2 is actually configured
+            switch(settings_get()->keys.ctrl_type1) {
+                case CTRL_TYPE_KEYBOARD:
+                    scene->gs->rec->p2_controller_ = REC_CONTROLLER_LEFT_KEYBOARD;
+                    break;
+                case CTRL_TYPE_GAMEPAD:
+                    scene->gs->rec->p2_controller_ = REC_CONTROLLER_JOYSTICK2;
+                    break;
+                default:
+                    assert(false);
             }
-                // assert(false);
         }
 
         // capture the match settings
