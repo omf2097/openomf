@@ -1138,7 +1138,7 @@ void calc_damage_and_stun(object *obj, af_move *move, int *damage, int *stun) {
     int multiplier = 100;
     if(player_frame_isset(obj, "k")) {
         multiplier = player_frame_get(obj, "k") + 10;
-        //log_debug("Set multiplier %d", multiplier);
+        // log_debug("Set multiplier %d", multiplier);
     }
 
     *damage = move->damage * multiplier / 100;
@@ -1181,7 +1181,7 @@ void calc_damage_and_stun(object *obj, af_move *move, int *damage, int *stun) {
                 *damage = *damage * arm_power * leg_power;
         }
     }
-    //log_debug("Calculated damage %d", *damage);
+    // log_debug("Calculated damage %d", *damage);
 }
 
 // function to check if har A is hitting har B. Returns 1 if the har is executing a priority move which
