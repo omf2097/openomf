@@ -1130,6 +1130,60 @@ void har_debug(object *obj) {
 }
 #endif // DEBUGMODE
 
+void calc_damage_and_stun(object *obj, af_move *move, int *damage, int *stun) {
+    har *h = obj->userdata;
+    game_player *gp = game_state_get_player(obj->gs, h->player_id);
+    sd_pilot *pilot = gp->pilot;
+
+    int multiplier = 100;
+    if(player_frame_isset(obj, "k")) {
+        multiplier = player_frame_get(obj, "k") + 10;
+        //log_debug("Set multiplier %d", multiplier);
+    }
+
+    *damage = move->damage * multiplier / 100;
+    if(multiplier < 100) {
+        *damage = *damage + 1;
+    }
+
+    if(!is_tournament(obj->gs)) {
+        // Single Player
+        // Damage = Base Damage * (20 + Power) / 30 + 1
+        //  Stun = (Base Damage * 2 + 12) * 256
+        *stun = *damage;
+        *damage = *damage * (20 + pilot->power) / 30 + 1;
+    } else {
+        // Tournament Mode
+        // Damage = (Base Damage * (25 + Power) / 35 + 1) * leg/arm power / armor
+        // Stun = ((Base Damage * (35 + Power) / 45) * 2 + 12) * 256
+        *stun = *damage * (35 + pilot->power) / 45;
+        *damage = *damage * (25 + pilot->power) / 35 + 1;
+
+        // (Limb Power + 3) * .192
+        float leg_power = (pilot->leg_power + 3) * 0.192f;
+        float arm_power = (pilot->arm_power + 3) * 0.192f;
+
+        switch(move->extra_string_selector) {
+            case 0:
+                break;
+            case 1:
+            case 3:
+                // apply arm power for damage
+                *damage = *damage * arm_power;
+                break;
+            case 2:
+            case 4:
+                // apply leg power for damage
+                *damage = *damage * leg_power;
+                break;
+            case 5:
+                // apply leg and arm power for damage
+                *damage = *damage * arm_power * leg_power;
+        }
+    }
+    //log_debug("Calculated damage %d", *damage);
+}
+
 // function to check if har A is hitting har B. Returns 1 if the har is executing a priority move which
 // would interrupt B. Currently only throws are considered priority.
 int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
@@ -1277,8 +1331,12 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
             }
         }
 
+        int damage = 0;
+        int stun = 0;
+        calc_damage_and_stun(obj_a, move, &damage, &stun);
+
         // rehits only do 60% damage
-        int damage = rehit ? move->damage * 0.6 : move->damage;
+        damage = rehit ? damage * 0.6 : damage;
 
         if(object_is_airborne(obj_a) && object_is_airborne(obj_b)) {
             // modify the horizontal velocity of the attacker when doing air knockback
@@ -1297,12 +1355,12 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
         if(player_frame_isset(obj_a, "ai")) {
             str str;
             str_from_c(&str, "A1-s01l50B2-C2-L5-M400");
-            har_take_damage(obj_b, &str, damage, move->stun);
+            har_take_damage(obj_b, &str, damage, stun);
             str_free(&str);
             obj_b->vel.x = -5.0 * object_get_direction(obj_b);
             obj_b->vel.y = -9.0;
         } else {
-            har_take_damage(obj_b, &move->footer_string, damage, move->stun);
+            har_take_damage(obj_b, &move->footer_string, damage, stun);
         }
 
         if(rehit) {
@@ -1461,16 +1519,19 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
             // face B to the direction they're being attacked from
             object_set_direction(o_har, -object_get_direction(o_pjt));
 
-            int damage = rehit ? move->damage * 0.6 : move->damage;
+            int damage = 0;
+            int stun = 0;
+            calc_damage_and_stun(o_pjt, move, &damage, &stun);
+            damage = rehit ? damage * 0.6 : damage;
             if(player_frame_isset(o_pjt, "ai")) {
                 str str;
                 str_from_c(&str, "A1-s01l50B2-C2-L5-M400");
-                har_take_damage(o_har, &str, damage, move->stun);
+                har_take_damage(o_har, &str, damage, stun);
                 str_free(&str);
                 o_har->vel.x = -5.0 * object_get_direction(o_har);
                 o_har->vel.y = -9.0;
             } else {
-                har_take_damage(o_har, &move->footer_string, damage, move->stun);
+                har_take_damage(o_har, &move->footer_string, damage, stun);
                 if(rehit) {
                     o_har->vel.y -= 3;
                 }
@@ -2661,32 +2722,14 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     // Enable Electra Electricity & Pyros Fire palette tricks
     object_add_animation_effects(obj, EFFECT_HAR_QUIRKS);
 
-    // fixup a bunch of stuff based on player stats
-
-    float leg_power = 0.0f;
-    float arm_power = 0.0f;
-    // cheap way to check if we're in tournament mode
-    if(is_tournament(obj->gs)) {
-        // (Limb Power + 3) * .192
-        leg_power = (pilot->leg_power + 3) * 0.192f;
-        arm_power = (pilot->arm_power + 3) * 0.192f;
-    }
-
     af_move *move;
     int extra_index;
     int fight_mode = obj->gs->match_settings.fight_mode;
-    // apply pilot stats and HAR upgrades/enhancements/hyper mode to the HAR
+    // apply HAR upgrades/enhancements/hyper mode to the HAR
     for(int i = 0; i < MAX_AF_MOVES; i++) {
         move = af_get_move(af_data, i);
         if(move != NULL) {
             if(!is_tournament(obj->gs)) {
-                // Single Player
-                // Damage = Base Damage * (20 + Power) / 30 + 1
-                //  Stun = (Base Damage + 6) * 512
-                if(move->damage) {
-                    move->stun = move->damage;
-                    move->damage = move->damage * (20 + pilot->power) / 30 + 1;
-                }
                 // projectiles have hyper mode, but may have extra_string_selector of 0
                 if(move->ani.extra_string_count > 0 && move->extra_string_selector != 1 &&
                    move->extra_string_selector != 2) {
@@ -2702,12 +2745,6 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
             } else {
                 // normal or hyper
                 extra_index = fight_mode ? 1 : 0;
-                // Tournament Mode
-                // Damage = (Base Damage * (25 + Power) / 35 + 1) * leg/arm power / armor
-                // Stun = ((Base Damage * (35 + Power) / 45) * 2 + 12) * 256
-                if(move->damage) {
-                    move->stun = move->damage * (35 + pilot->power) / 45;
-                }
 
                 // check for enhancements
                 if(move->ani.extra_string_count > 0 && move->extra_string_selector != 1 &&
@@ -2739,10 +2776,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
                     case 0:
                         break;
                     case 1:
-                        // arm speed and power
-                        if(move->damage) {
-                            move->damage = (move->damage * (25 + pilot->power) / 35 + 1) * arm_power;
-                        }
+                        // arm speed
                         if(move->ani.extra_string_count > 0) {
                             // sometimes there's not enough extra strings, so take the last available
                             str_set(&move->ani.animation_string,
@@ -2751,10 +2785,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
                         }
                         break;
                     case 2:
-                        // leg speed and power
-                        if(move->damage) {
-                            move->damage = (move->damage * (25 + pilot->power) / 35 + 1) * leg_power;
-                        }
+                        // leg speed
                         if(move->ani.extra_string_count > 0) {
                             // sometimes there's not enough extra strings, so take the last available
                             str_set(&move->ani.animation_string,
@@ -2763,22 +2794,8 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
                         }
                         break;
                     case 3:
-                        // apply arm power for damage
-                        if(move->damage) {
-                            move->damage = (move->damage * (25 + pilot->power) / 35 + 1) * arm_power;
-                        }
-                        break;
                     case 4:
-                        // apply leg power for damage
-                        if(move->damage) {
-                            move->damage = (move->damage * (25 + pilot->power) / 35 + 1) * leg_power;
-                        }
-                        break;
                     case 5:
-                        // apply leg and arm power for damage
-                        if(move->damage) {
-                            move->damage = (move->damage * (25 + pilot->power) / 35 + 1) * arm_power * leg_power;
-                        }
                         break;
                 }
             }
