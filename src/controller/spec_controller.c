@@ -80,6 +80,8 @@ int spec_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                         serial_read(&ser, p2->pilot->name, namelen);
                         p2->pilot->name[namelen] = '\0';
 
+                        random_seed(&ctrl->gs->rand, serial_read_uint32(&ser));
+
                         data->nscene = SCENE_ARENA0 + serial_read_int8(&ser);
 
                         ctrl->gs->arena = data->nscene - SCENE_ARENA0;
