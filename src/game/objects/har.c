@@ -1195,13 +1195,11 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
     }
     if(a->damage_done == 0 &&
        (intersect_har_sprite_hitpoint(obj_a, obj_b, level, &hit_coord) || move->category == CAT_CLOSE ||
-        (player_frame_isset(obj_a, "ue") && b->state != STATE_JUMPING))) {
+        (player_frame_isset(obj_a, "ue") && !object_is_airborne(obj_b)))) {
 
         obj_a->q_counter = obj_a->q_val;
 
-        if(har_is_blocking(obj_b, move) &&
-           // earthquake smash is unblockable
-           !player_frame_isset(obj_a, "ue")) {
+        if(har_is_blocking(obj_b, move) && !player_frame_isset(obj_a, "bn")) {
             a->damage_done = 1;
             har_event_enemy_block(a, move, false, ctrl_a);
             har_event_block(b, move, false, ctrl_b);
@@ -1395,7 +1393,7 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
 
         controller *ctrl = game_player_get_ctrl(game_state_get_player(o_har->gs, h->player_id));
         controller *ctrl_other = game_player_get_ctrl(game_state_get_player(o_pjt->gs, other->player_id));
-        if(har_is_blocking(o_har, move)) {
+        if(har_is_blocking(o_har, move) && !player_frame_isset(o_pjt, "bn")) {
             projectile_mark_hit(o_pjt); // prevent this projectile from hitting again
             o_pjt->animation_state.finished = 1;
             if(move->successor_id && move->category != CAT_CLOSE) {
