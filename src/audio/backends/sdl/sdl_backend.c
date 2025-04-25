@@ -1,7 +1,7 @@
-#include "audio/audio.h"
 #include "audio/backends/sdl/sdl_backend.h"
 #include "audio/backends/audio_backend.h"
 #include "audio/sources/music_source.h"
+#include "audio/audio.h"
 #include "utils/allocator.h"
 #include "utils/c_array_util.h"
 #include "utils/log.h"
