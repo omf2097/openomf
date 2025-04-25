@@ -514,19 +514,13 @@ void player_run(object *obj) {
 
         // Sound playback
         if(sd_script_isset(frame, "s")) {
-            float pitch = PITCH_DEFAULT;
+            int pitch = 0;
             float volume = VOLUME_DEFAULT;
             float panning = PANNING_DEFAULT;
             if(sd_script_isset(frame, "sf")) {
-                int sf = sd_script_get(frame, "sf");
-                assert(sf >= -128 && sf <= 128);
-                // 10 gallon harrison stetson right here
-                if(obj->group != GROUP_HAR && obj->group != GROUP_PROJECTILE) {
-                    pitch = 1.0f + (clamp(sf, -128, 128) / 200.0f);
-                } else {
-                    pitch = 3.0f + (clamp(sf, -128, 128) / 20.0f);
-                }
-                log_debug("object in group %d sound freq is %d, pitch now %f", obj->group, sf, pitch);
+                pitch = sd_script_get(frame, "sf");
+                assert(pitch >= -128 && pitch <= 128);
+                log_debug("object in group %d sound freq adjustment is %d", obj->group, pitch);
             }
             if(sd_script_isset(frame, "l")) {
                 int v = clamp(sd_script_get(frame, "l"), 0, 100);

@@ -61,7 +61,7 @@ static int button_action(component *c, int action) {
         if(b->click_cb) {
             b->click_cb(c, b->userdata);
         }
-        audio_play_sound(20, 0.5f, 0.0f, 1.0f);
+        audio_play_sound(20, 0.5f, 0.0f, 0);
         return 0;
     }
     return 1;

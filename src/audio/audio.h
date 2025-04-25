@@ -38,7 +38,7 @@ void audio_close(void);
  * @param pitch Sound pitch 0.0f ... n
  * @return backend specific reference ID to the playing sound for later use with audio_fade_out or -1 on failure
  */
-int audio_play_sound(int id, float volume, float panning, float pitch);
+int audio_play_sound(int id, float volume, float panning, int pitch);
 
 /**
  * Plays sound with given parameters from a buffer.
@@ -51,7 +51,7 @@ int audio_play_sound(int id, float volume, float panning, float pitch);
  * @param fade How many milliseconds to fade in the playback over
  * @return backend specific reference ID to the playing sound for later use with audio_fade_out or -1 on failure
  */
-int audio_play_sound_buf(char *src_buf, int src_len, int src_freq, float volume, float panning, float pitch, int fade);
+int audio_play_sound_buf(char *src_buf, int src_len, int src_freq, float volume, float panning, int pitch, int fade);
 
 /**
  * Fade out audio already playing
@@ -93,6 +93,6 @@ unsigned audio_get_sample_rates(const audio_sample_rate **sample_rates);
 /**
  * Calculate sample rate after applying a pitch
  */
-int pitched_samplerate(int freq, float pitch);
+int pitched_samplerate(int freq, int pitch);
 
 #endif // AUDIO_H

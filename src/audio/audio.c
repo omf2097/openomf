@@ -156,7 +156,7 @@ void audio_close(void) {
     current_music = NUMBER_OF_RESOURCES;
 }
 
-int audio_play_sound(int id, float volume, float panning, float pitch) {
+int audio_play_sound(int id, float volume, float panning, int pitch) {
     if(id < 0 || id > 299)
         return -1;
 
@@ -177,7 +177,7 @@ int audio_play_sound(int id, float volume, float panning, float pitch) {
     return current_backend.play_sound(current_backend.ctx, src_buf, src_len, src_freq, volume, panning, pitch, 0);
 }
 
-int audio_play_sound_buf(char *src_buf, int src_len, int src_freq, float volume, float panning, float pitch, int fade) {
+int audio_play_sound_buf(char *src_buf, int src_len, int src_freq, float volume, float panning, int pitch, int fade) {
     // Tell the backend to play it.
     return current_backend.play_sound(current_backend.ctx, src_buf, src_len, src_freq, volume, panning, pitch, fade);
 }
@@ -248,6 +248,18 @@ unsigned audio_get_sample_rates(const audio_sample_rate **sample_rates) {
     return current_backend.get_sample_rates(sample_rates);
 }
 
-int pitched_samplerate(int src_freq, float pitch) {
-    return (int)(src_freq * clampf(pitch, PITCH_MIN, PITCH_MAX));
+int pitched_samplerate(int src_freq, int pitch) {
+    if(pitch < -20) {
+        pitch = -20;
+    }
+
+    if(pitch) {
+        if(pitch > 0) {
+            src_freq += (src_freq * (pitch * 3)) / 100;
+        } else {
+            src_freq += (src_freq * (pitch * 2)) / 100;
+        }
+    }
+
+    return src_freq;
 }

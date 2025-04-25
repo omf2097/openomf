@@ -69,7 +69,7 @@ typedef struct {
     int freq;
     float volume;
     float panning;
-    float pitch;
+    int pitch;
     int playback_id;
 } playing_sound;
 
@@ -924,9 +924,10 @@ void game_state_merge_sounds(game_state *old, game_state *new) {
             assert(s->playback_id == -1);
 
             // calculate the offset into the buffer we need
-            int total_duration = (int)(s->length / (pitched_samplerate(s->freq, s->pitch) * 1000));
+            int adjusted_samplerate = pitched_samplerate(s->freq, s->pitch);
+            int total_duration = (int)(s->length / (adjusted_samplerate * 1000));
             int elapsed_ms = total_duration - s->duration;
-            int offset = elapsed_ms * s->freq * clampf(s->pitch, PITCH_MIN, PITCH_MAX) / 1000;
+            int offset = elapsed_ms * adjusted_samplerate / 1000;
 
             // Load sample (8000Hz, mono, 8bit)
             char *src_buf;
@@ -1348,7 +1349,7 @@ object *game_state_find_object(game_state *gs, uint32_t object_id) {
     return NULL;
 }
 
-void game_state_play_sound(game_state *gs, int id, float volume, float panning, float pitch) {
+void game_state_play_sound(game_state *gs, int id, float volume, float panning, int pitch) {
     if(id < 0 || id > 299)
         return;
 
