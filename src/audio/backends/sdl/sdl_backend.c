@@ -1,3 +1,4 @@
+#include "audio/audio.h"
 #include "audio/backends/sdl/sdl_backend.h"
 #include "audio/backends/audio_backend.h"
 #include "audio/sources/music_source.h"
@@ -93,12 +94,12 @@ static inline void free_chunk(sdl_audio_context *ctx, int i) {
 }
 
 static bool audio_get_chunk(sdl_audio_context *ctx, Mix_Chunk *chunk, const char *src_buf, size_t src_len, int src_freq,
-                            float volume, float pitch) {
+                            float volume, int pitch) {
     Uint8 *dst_buf;
     SDL_AudioCVT cvt;
 
     // Converter for sound samples.
-    src_freq = src_freq * pitch;
+    src_freq = pitched_samplerate(src_freq, pitch);
     if(SDL_BuildAudioCVT(&cvt, AUDIO_U8, 1, src_freq, ctx->format, ctx->channels, ctx->sample_rate) < 0) {
         log_error("Unable to build audio converter: %s", SDL_GetError());
         goto exit_0;
@@ -156,7 +157,7 @@ static void get_info(void *userdata, unsigned *sample_rate, unsigned *channels, 
 }
 
 static int play_sound(void *userdata, const char *src_buf, size_t src_len, int src_freq, float volume, float panning,
-                      float pitch, int fade) {
+                      int pitch, int fade) {
     assert(userdata);
     sdl_audio_context *ctx = userdata;
 
@@ -165,7 +166,6 @@ static int play_sound(void *userdata, const char *src_buf, size_t src_len, int s
 
     volume = clampf(volume, VOLUME_MIN, VOLUME_MAX);
     panning = clampf(panning, PANNING_MIN, PANNING_MAX);
-    pitch = clampf(pitch, PITCH_MIN, PITCH_MAX);
     pan_left = (panning > 0) ? 1.0f - panning : 1.0f;
     pan_right = (panning < 0) ? 1.0f + panning : 1.0f;
 

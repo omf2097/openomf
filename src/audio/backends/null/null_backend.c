@@ -42,7 +42,7 @@ static void set_backend_music_volume(void *userdata, float volume) {
 }
 
 static int play_sound(void *userdata, const char *src_buf, size_t src_len, int src_freq, float volume, float panning,
-                      float pitch, int fade) {
+                      int pitch, int fade) {
     return -1;
 }
 
