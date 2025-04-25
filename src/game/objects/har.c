@@ -557,7 +557,7 @@ void har_floor_landing_effects(object *obj, bool play_sound) {
     // Landing sound
     if(play_sound) {
         float pos_pan = ((float)obj->pos.x - 160.0f) / 160.0f;
-        game_state_play_sound(obj->gs, 56, 0.3f, pos_pan, 2.2f);
+        game_state_play_sound(obj->gs, 56, 0.3f, pos_pan, 0);
     }
 }
 
@@ -1052,7 +1052,7 @@ void har_block(object *obj, vec2i hit_coord, uint8_t block_stun) {
     object_set_layers(scrape, LAYER_SCRAP);
     object_dynamic_tick(scrape);
     object_dynamic_tick(scrape);
-    game_state_play_sound(obj->gs, 3, 0.7f, 0.5f, 1.0f);
+    game_state_play_sound(obj->gs, 3, 0.7f, 0.5f, 0);
     game_state_add_object(obj->gs, scrape, RENDER_LAYER_MIDDLE, 0, 0);
     h->damage_received = 1;
 }
@@ -1249,13 +1249,11 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
     }
     if(a->damage_done == 0 &&
        (intersect_har_sprite_hitpoint(obj_a, obj_b, level, &hit_coord) || move->category == CAT_CLOSE ||
-        (player_frame_isset(obj_a, "ue") && b->state != STATE_JUMPING))) {
+        (player_frame_isset(obj_a, "ue") && !object_is_airborne(obj_b)))) {
 
         obj_a->q_counter = obj_a->q_val;
 
-        if(har_is_blocking(obj_b, move) &&
-           // earthquake smash is unblockable
-           !player_frame_isset(obj_a, "ue")) {
+        if(har_is_blocking(obj_b, move) && !player_frame_isset(obj_a, "bn")) {
             a->damage_done = 1;
             har_event_enemy_block(a, move, false, ctrl_a);
             har_event_block(b, move, false, ctrl_b);
@@ -1453,7 +1451,7 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
 
         controller *ctrl = game_player_get_ctrl(game_state_get_player(o_har->gs, h->player_id));
         controller *ctrl_other = game_player_get_ctrl(game_state_get_player(o_pjt->gs, other->player_id));
-        if(har_is_blocking(o_har, move)) {
+        if(har_is_blocking(o_har, move) && !player_frame_isset(o_pjt, "bn")) {
             projectile_mark_hit(o_pjt); // prevent this projectile from hitting again
             o_pjt->animation_state.finished = 1;
             if(move->successor_id && move->category != CAT_CLOSE) {
@@ -2804,6 +2802,10 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
                 // scramble the move string
                 log_debug("disabling move %d on har %d because it has no-op animation string '%s'", i, har_id,
                           str_c(&move->ani.animation_string));
+                str_set_c(&move->move_string, "!");
+            }
+            if(move->pos_constraints & 0x40) {
+                // TODO: disable all fire/ice moves indiscriminately for now
                 str_set_c(&move->move_string, "!");
             }
         }
