@@ -862,9 +862,8 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                                 enet_peer_send(peer, 1, start_packet);
                                 if(data->lobby && peer != data->lobby) {
                                     // CC the events to the lobby, unless the lobby is already the peer
-                                    start_packet =
-                                        enet_packet_create(start_ser.data, serial_len(&start_ser),
-                                                ENET_PACKET_FLAG_RELIABLE);
+                                    start_packet = enet_packet_create(start_ser.data, serial_len(&start_ser),
+                                                                      ENET_PACKET_FLAG_RELIABLE);
                                     enet_peer_send(data->lobby, 2, start_packet);
                                 }
                                 enet_host_flush(host);
@@ -933,8 +932,8 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                             enet_peer_send(peer, 1, start_packet);
                             if(data->lobby && peer != data->lobby) {
                                 // CC the events to the lobby, unless the lobby is already the peer
-                                start_packet =
-                                    enet_packet_create(start_ser.data, serial_len(&start_ser), ENET_PACKET_FLAG_RELIABLE);
+                                start_packet = enet_packet_create(start_ser.data, serial_len(&start_ser),
+                                                                  ENET_PACKET_FLAG_RELIABLE);
                                 enet_peer_send(data->lobby, 2, start_packet);
                             }
                             enet_host_flush(host);
