@@ -800,11 +800,11 @@ int har_find_linked_objects(object *obj, vector *vec) {
     har *h = object_get_userdata(obj);
     // we want to find 2 sets of objects:
     // Objects created by us, with the UD flag set
-    struct linked_object_query q = {.owner_id = h->player_id, .mask = OBJECT_FLAGS_UD};
+    struct linked_object_query q = {.owner_id = h->player_id, .mask = OBJECT_FLAGS_NEXT_ANIM_ON_OWNER_HIT};
     int r = game_state_find_objects(obj->gs, vec, har_find_linked_objects_pred, &q);
     // Objects created by the enemy, with the UZ flag set
     q.owner_id = abs(h->player_id - 1);
-    q.mask = OBJECT_FLAGS_UZ;
+    q.mask = OBJECT_FLAGS_NEXT_ANIM_ON_ENEMY_HIT;
     r += game_state_find_objects(obj->gs, vec, har_find_linked_objects_pred, &q);
     return r;
 }
@@ -834,14 +834,13 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
     vector vec;
     vector_create(&vec, sizeof(object *));
     if(har_find_linked_objects(obj, &vec)) {
-        log_warn("found linked objects");
         iterator it;
         vector_iter_begin(&vec, &it);
         object **linked;
         foreach(it, linked) {
-            log_warn("linked object has flags %d", (*linked)->object_flags);
-            // if MC and UZ is set, switch the object's gravity to the owning HAR's gravity
-            if((*linked)->object_flags & OBJECT_FLAGS_MC && (*linked)->object_flags & OBJECT_FLAGS_UZ) {
+            // if MC and UD is set, switch the object's gravity to the owning HAR's gravity
+            if((*linked)->object_flags & OBJECT_FLAGS_MC &&
+               (*linked)->object_flags & OBJECT_FLAGS_NEXT_ANIM_ON_OWNER_HIT) {
                 object_set_gravity(*linked, object_get_gravity(other_har));
             }
             // end the animation of the linked object, so it can go to the successor

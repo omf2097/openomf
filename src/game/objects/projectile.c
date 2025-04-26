@@ -31,9 +31,7 @@ void debug_surfaces_create(object *obj);
 void projectile_finished(object *obj) {
     projectile_local *local = object_get_userdata(obj);
 
-    log_warn("projectile with flags %d finished", obj->object_flags);
-
-    if(obj->object_flags & OBJECT_FLAGS_UZ) {
+    if(obj->object_flags & OBJECT_FLAGS_NEXT_ANIM_ON_ENEMY_HIT) {
         // release the held HAR
         object *linked = game_state_find_object(obj->gs, obj->animation_state.enemy_obj_id);
         if(linked) {
@@ -42,7 +40,6 @@ void projectile_finished(object *obj) {
     }
     af_move *move = af_get_move(local->af_data, obj->cur_animation->id);
     if(move->successor_id) {
-        log_warn("going to successor %d", move->successor_id);
         object_set_animation(obj, &af_get_move(local->af_data, move->successor_id)->ani);
         object_set_repeat(obj, 0);
         object_set_vel(obj, vec2f_create(0, 0));

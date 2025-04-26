@@ -62,10 +62,9 @@ enum
 enum
 {
     OBJECT_FLAGS_NONE = 0,
-    OBJECT_FLAGS_UC = 0x1,
-    OBJECT_FLAGS_UD = 0x2,
-    OBJECT_FLAGS_UZ = 0x4,
-    OBJECT_FLAGS_MC = 0x8,
+    OBJECT_FLAGS_NEXT_ANIM_ON_OWNER_HIT = 0x1,
+    OBJECT_FLAGS_NEXT_ANIM_ON_ENEMY_HIT = 0x2,
+    OBJECT_FLAGS_MC = 0x4,
 };
 
 typedef struct object_t object;

@@ -296,19 +296,14 @@ void player_run(object *obj) {
             obj->object_flags |= OBJECT_FLAGS_MC;
         }
 
-        if(sd_script_isset(frame, "uc")) {
-            // unknown
-            obj->object_flags |= OBJECT_FLAGS_UC;
-        }
-
         if(sd_script_isset(frame, "ud")) {
             // object moves to next animation when owning HAR is hit
-            obj->object_flags |= OBJECT_FLAGS_UD;
+            obj->object_flags |= OBJECT_FLAGS_NEXT_ANIM_ON_OWNER_HIT;
         }
 
         if(sd_script_isset(frame, "uz")) {
             // object moves to next animation when enemy HAR is hit
-            obj->object_flags |= OBJECT_FLAGS_UZ;
+            obj->object_flags |= OBJECT_FLAGS_NEXT_ANIM_ON_ENEMY_HIT;
         }
 
         if(sd_script_isset(frame, "mu")) {
