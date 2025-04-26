@@ -23,6 +23,7 @@ tests=(
     "Jaguar doing a standing throw as the winning move should not cause a slide:JAG-NO-SLIDE-WIN-THROW.REC"
     "Flail charging punch should cancel when blocked:FLAIL_454P.REC"
     "Jaguar should keep walking right after doing a standing throw if the input is held:KEEP-WALKING-AFTER-JAG-STANDING-THROW.REC"
+    "Jaguar should be able to walk underneath Gargoyle:WALK_UNDERNEATH.REC"
     "Test Jaguar destruction:JAG-DESTRUCT.REC"
     "Kreissack has a custom defeat animation:KREISSACK.REC"
     "Shadow grab should work in the middle and the corners of arena:SHADOW-GRAB.REC"
