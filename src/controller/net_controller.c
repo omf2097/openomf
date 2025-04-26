@@ -134,7 +134,7 @@ void insert_event(wtf *data, uint32_t tick, uint16_t action, int id) {
         return;
     }
 
-    if(data->id != id && data->last_peer_action == action) {
+    if(data->id != id && tick >= data->last_peer_input_tick && data->last_peer_action == action) {
         // dedup inputs
         return;
     }
@@ -397,6 +397,7 @@ int rewind_and_replay(wtf *data, controller *ctrl) {
                 } while(ev->events[j][k]);
             }
 
+            // update arena hash now inputs have been done
             arena_hash = arena_state_hash(gs);
 
             if((ev->events[0][0] || ev->events[1][0]) && ev->tick <= confirm_frame &&
@@ -463,15 +464,29 @@ int rewind_and_replay(wtf *data, controller *ctrl) {
                 }
             }
             ev = iter_next(&it);
-        } else if(data->trace_file && gs->int_tick - data->local_proposal <= confirm_frame &&
-                  gs->int_tick - data->local_proposal > data->last_traced_tick) {
-            data->last_traced_tick = gs->int_tick - data->local_proposal;
-            // no event, just write the hash
-            int sz = snprintf(buf, sizeof(buf), "tick %d  -- hash %" PRIu32 "\n", gs->int_tick - data->local_proposal,
-                              arena_hash);
-            SDL_RWwrite(data->trace_file, buf, sz, 1);
-            arena_state_dump(gs, buf, sizeof(buf));
-            SDL_RWwrite(data->trace_file, buf, strlen(buf), 1);
+        } else {
+            // send dummy events to simulate the controllers being polled
+            // this is needed because there's a bunch of logic chained off har_act and it expects to be called every
+            // tick
+            for(int i = 0; i < 2; i++) {
+                int player_id = i;
+                game_player *player = game_state_get_player(gs, player_id);
+                object_act(game_state_find_object(gs, game_player_get_har_obj_id(player)), ACT_NONE);
+            }
+
+            // update arena hash now inputs have been done
+            arena_hash = arena_state_hash(gs);
+
+            if(data->trace_file && gs->int_tick - data->local_proposal <= confirm_frame &&
+               gs->int_tick - data->local_proposal > data->last_traced_tick) {
+                data->last_traced_tick = gs->int_tick - data->local_proposal;
+                // no event, just write the hash
+                int sz = snprintf(buf, sizeof(buf), "tick %d  -- hash %" PRIu32 "\n",
+                                  gs->int_tick - data->local_proposal, arena_hash);
+                SDL_RWwrite(data->trace_file, buf, sz, 1);
+                arena_state_dump(gs, buf, sizeof(buf));
+                SDL_RWwrite(data->trace_file, buf, strlen(buf), 1);
+            }
         }
 
         // The next tick is past when we have agreement, so we need to save the last known good game state
@@ -540,7 +555,6 @@ int rewind_and_replay(wtf *data, controller *ctrl) {
         }
 
         game_state_dynamic_tick(gs, true);
-        arena_hash = arena_state_hash(gs);
         tick_count++;
     }
 
@@ -564,6 +578,7 @@ int rewind_and_replay(wtf *data, controller *ctrl) {
     }
     gs_current->new_state = gs;
     data->gs_bak->new_state = NULL;
+
     return 0;
 }
 
@@ -1196,9 +1211,34 @@ int net_controller_poll(controller *ctrl, ctrl_event **ev) {
     if(ctrl->gs->clone) {
         return 0;
     }
+    iterator it;
+    list *transcript = &data->transcript;
+    list_iter_begin(transcript, &it);
+    tick_events *e = NULL;
+    int id = abs(data->id - 1);
+    uint32_t current_tick = ctrl->gs->int_tick - data->local_proposal;
+    // last peer input may be from before, so start with that
+    uint8_t last = data->last_peer_action;
 
+    foreach(it, e) {
+        if(e->events[id][0] != 0 && e->tick == current_tick) {
+            // events for the current tick, send em all
+            int i = 0;
+            while(e->events[id][i]) {
+                controller_cmd(ctrl, e->events[id][i], ev);
+                i++;
+            }
+            return 0;
+        } else if(e->events[id][0] != 0 && e->tick < current_tick) {
+            int i = 0;
+            while(e->events[id][i]) {
+                last = e->events[id][i];
+                i++;
+            }
+        }
+    }
     // return the last input we've gotten from the peer
-    controller_cmd(ctrl, data->last_peer_action, ev);
+    controller_cmd(ctrl, last, ev);
     return 0;
 }
 
