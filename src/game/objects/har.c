@@ -2101,7 +2101,7 @@ af_move *match_move(object *obj, char prefix, char *inputs) {
     af_move *move = NULL;
     size_t len;
 
-    for(int i = 15; i < 70; i++) {
+    for(int i = ANIM_SCREW + 1; i < 70; i++) {
         if((move = af_get_move(h->af_data, i))) {
             len = str_size(&move->move_string);
             if(str_at(&move->move_string, 0) == prefix &&
