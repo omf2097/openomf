@@ -1349,6 +1349,21 @@ object *game_state_find_object(game_state *gs, uint32_t object_id) {
     return NULL;
 }
 
+int game_state_find_objects(game_state *gs, vector *out, bool (*predicate)(const object *obj, void *user_data),
+                            void *ud) {
+    int r = 0;
+    iterator it;
+    vector_iter_begin(&gs->objects, &it);
+    render_obj *robj;
+    foreach(it, robj) {
+        if(predicate(robj->obj, ud)) {
+            vector_append(out, &robj->obj);
+            r++;
+        }
+    }
+    return r;
+}
+
 void game_state_play_sound(game_state *gs, int id, float volume, float panning, int pitch) {
     if(id < 0 || id > 299)
         return;

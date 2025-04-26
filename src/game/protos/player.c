@@ -291,22 +291,19 @@ void player_run(object *obj) {
             return;
         }
 
-        if(obj->group == GROUP_PROJECTILE && sd_script_isset(frame, "mc")) {
-            log_debug("connecting child %d to parent", obj->id);
-            // motion connect, attach this to the parent HAR
-            // so if the parent har takes damage we die, and we can relay damage to the parent HAR
-            // This is only used by shadow moves
-            projectile_connect_to_parent(obj);
+        if(sd_script_isset(frame, "mc")) {
+            // if UC is also set, when UC proceeds to the next animation, set the object gravity to the HAR's gravity
+            obj->object_flags |= OBJECT_FLAGS_MC;
         }
 
-        if(obj->group == GROUP_PROJECTILE && sd_script_isset(frame, "uz")) {
-            // Used only by shadow grab, basically it connects the projectile and the HAR together
-            // the HAR should be held struggling until this animation ends, unless the HAR takes a hit, in which case
-            // the projectile's animation should end.
-            har *h = object_get_userdata(enemy);
-            // associate this with the enemy HAR
-            h->linked_obj = obj->id;
-            projectile_link_object(obj, enemy);
+        if(sd_script_isset(frame, "ud")) {
+            // object moves to next animation when owning HAR is hit
+            obj->object_flags |= OBJECT_FLAGS_NEXT_ANIM_ON_OWNER_HIT;
+        }
+
+        if(sd_script_isset(frame, "uz")) {
+            // object moves to next animation when enemy HAR is hit
+            obj->object_flags |= OBJECT_FLAGS_NEXT_ANIM_ON_ENEMY_HIT;
         }
 
         if(sd_script_isset(frame, "mu")) {

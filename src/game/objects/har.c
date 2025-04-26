@@ -49,7 +49,6 @@ void har_free(object *obj) {
     surface_free(&h->hit_pixel);
     surface_free(&h->har_origin);
 #endif
-    vector_free(&h->child_objects);
     omf_free(h);
     object_set_userdata(obj, NULL);
 }
@@ -778,6 +777,38 @@ void apply_stun_damage(object *obj, int stun_amount) {
     }
 }
 
+struct linked_object_query {
+    uint8_t owner_id;
+    uint32_t mask;
+};
+
+bool har_find_linked_objects_pred(const object *obj, void *data) {
+    struct linked_object_query *q = data;
+    if(obj->group != GROUP_PROJECTILE) {
+        return false;
+    }
+    if(projectile_get_owner(obj) != q->owner_id) {
+        return false;
+    }
+    if(obj->object_flags & q->mask) {
+        return true;
+    }
+    return false;
+}
+
+int har_find_linked_objects(object *obj, vector *vec) {
+    har *h = object_get_userdata(obj);
+    // we want to find 2 sets of objects:
+    // Objects created by us, with the UD flag set
+    struct linked_object_query q = {.owner_id = h->player_id, .mask = OBJECT_FLAGS_NEXT_ANIM_ON_OWNER_HIT};
+    int r = game_state_find_objects(obj->gs, vec, har_find_linked_objects_pred, &q);
+    // Objects created by the enemy, with the UZ flag set
+    q.owner_id = abs(h->player_id - 1);
+    q.mask = OBJECT_FLAGS_NEXT_ANIM_ON_ENEMY_HIT;
+    r += game_state_find_objects(obj->gs, vec, har_find_linked_objects_pred, &q);
+    return r;
+}
+
 void har_take_damage(object *obj, const str *string, float damage, float stun) {
     har *h = object_get_userdata(obj);
 
@@ -797,32 +828,31 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
     // interrupted
     h->executing_move = 0;
 
-    if(h->linked_obj) {
-        object *linked = game_state_find_object(obj->gs, h->linked_obj);
-        if(linked) {
-            // end the animation of the linked object, so it can go to the successor
-            linked->animation_state.finished = 1;
-        }
-    }
+    game_player *other_player = game_state_get_player(obj->gs, !h->player_id);
+    object *other_har = game_state_find_object(obj->gs, other_player->har_obj_id);
 
-    if(vector_size(&h->child_objects)) {
-        // shadow children need to die when the controlling HAR is hit
+    vector vec;
+    vector_create(&vec, sizeof(object *));
+    if(har_find_linked_objects(obj, &vec)) {
         iterator it;
-        uint32_t *child_id;
-        vector_iter_begin(&h->child_objects, &it);
-        foreach(it, child_id) {
-            object *child = game_state_find_object(obj->gs, *child_id);
-            if(child) {
-                int next_anim = af_get_move(h->af_data, child->cur_animation->id)->throw_duration;
-                if(next_anim) {
-                    object_set_animation(child, &af_get_move(h->af_data, next_anim)->ani);
-                } else {
-                    child->animation_state.finished = 1;
-                }
+        vector_iter_begin(&vec, &it);
+        object **linked;
+        foreach(it, linked) {
+            // if MC and UD is set, switch the object's gravity to the owning HAR's gravity
+            if((*linked)->object_flags & OBJECT_FLAGS_MC &&
+               (*linked)->object_flags & OBJECT_FLAGS_NEXT_ANIM_ON_OWNER_HIT) {
+                object_set_gravity(*linked, object_get_gravity(other_har));
             }
-            vector_delete(&h->child_objects, &it);
+            // end the animation of the linked object, so it can go to the successor
+            int next_anim = af_get_move(projectile_get_af_data(*linked), (*linked)->cur_animation->id)->throw_duration;
+            if(next_anim && projectile_get_owner(*linked) == h->player_id) {
+                object_set_animation(*linked, &af_get_move(projectile_get_af_data(*linked), next_anim)->ani);
+            } else {
+                projectile_finished(*linked);
+            }
         }
     }
+    vector_free(&vec);
 
     game_player *player = game_state_get_player(obj->gs, h->player_id);
     // If god mode is not on, take damage
@@ -844,9 +874,6 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
     if(h->health <= 0) {
         h->health = 0;
     }
-
-    game_player *other_player = game_state_get_player(obj->gs, !h->player_id);
-    object *other_har = game_state_find_object(obj->gs, other_player->har_obj_id);
 
     if(h->health == 0) {
         // Take a screencap of enemy har
@@ -1139,10 +1166,12 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
     controller *ctrl_a = game_player_get_ctrl(game_state_get_player(obj_a->gs, a->player_id));
     controller *ctrl_b = game_player_get_ctrl(game_state_get_player(obj_b->gs, b->player_id));
 
-    if(b->state == STATE_WALLDAMAGE || b->state >= STATE_VICTORY || b->state == STATE_STANDING_UP) {
-        // can't hit em while they're down
-        return 0;
-    }
+    // Check for collisions by sprite collision points
+    int level = 1;
+    af_move *move = af_get_move(a->af_data, obj_a->cur_animation->id);
+
+    bool rehit =
+        obj_b->gs->match_settings.rehit && b->state == STATE_RECOIL && object_is_airborne(obj_b) && b->endurance >= 0;
 
     if(a->in_stasis_ticks) {
         // frozen HARs can't hit
@@ -1157,34 +1186,38 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
     if(!obj_b->gs->match_settings.rehit && (b->state == STATE_RECOIL && object_is_airborne(obj_b))) {
         return 0;
     }
+    // if UH is set, bypass many of the collision bypass checks
+    // TODO check these are the right ones
+    if(!player_frame_isset(obj_b, "uh")) {
+        if(b->state == STATE_WALLDAMAGE || b->state >= STATE_VICTORY || b->state == STATE_STANDING_UP) {
+            // can't hit em while they're down
+            return 0;
+        }
 
-    // rehit mode is on, but the opponent isn't airborne or stunned
-    if(obj_b->gs->match_settings.rehit && b->state == STATE_RECOIL &&
-       (!object_is_airborne(obj_b) || b->endurance < 0)) {
-        log_debug("REHIT is not possible %d %f %f %f", object_is_airborne(obj_b), obj_b->pos.x, obj_b->pos.y,
-                  b->endurance);
-        return 0;
-    }
+        // rehit mode is off
+        if(!obj_b->gs->match_settings.rehit && (b->state == STATE_RECOIL && object_is_airborne(obj_b))) {
+            return 0;
+        }
 
-    bool rehit =
-        obj_b->gs->match_settings.rehit && b->state == STATE_RECOIL && object_is_airborne(obj_b) && b->endurance >= 0;
+        // rehit mode is on, but the opponent isn't airborne or stunned
+        if(obj_b->gs->match_settings.rehit && b->state == STATE_RECOIL &&
+           (!object_is_airborne(obj_b) || b->endurance < 0)) {
+            return 0;
+        }
 
-    // Check for collisions by sprite collision points
-    int level = 1;
-    af_move *move = af_get_move(a->af_data, obj_a->cur_animation->id);
+        // is the HAR invulnerable to this kind of attack?
+        if(har_is_invincible(obj_b, move)) {
+            return 0;
+        }
 
-    // is the HAR invulnerable to this kind of attack?
-    if(har_is_invincible(obj_b, move)) {
-        return 0;
+        // check this mode hasn't already rehit
+        if(rehit && strchr(b->rehits, move->id)) {
+            log_debug("move %d has already done a rehit");
+            return 0;
+        }
     }
 
     if(!is_in_range(obj_b, move)) { // Won't get hit by throws out of range
-        return 0;
-    }
-
-    // check this mode hasn't already rehit
-    if(rehit && strchr(b->rehits, move->id)) {
-        log_debug("move %d has already done a rehit");
         return 0;
     }
 
@@ -1371,8 +1404,6 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
     // rehit mode is on, but the opponent isn't airborne or stunned
     if(o_har->gs->match_settings.rehit && h->state == STATE_RECOIL &&
        (!object_is_airborne(o_har) || h->endurance < 0)) {
-        log_debug("REHIT is not possible %d %f %f %f", object_is_airborne(o_har), o_har->pos.x, o_har->pos.y,
-                  h->endurance);
         return;
     }
 
@@ -2464,12 +2495,6 @@ int har_clone(object *src, object *dst) {
 
     object_set_userdata(dst, local);
     object_set_spawn_cb(dst, cb_har_spawn_object, dst);
-    vector_create(&local->child_objects, sizeof(uint32_t));
-    uint32_t *child_id;
-    vector_iter_begin(&oldlocal->child_objects, &it);
-    foreach(it, child_id) {
-        vector_append(&local->child_objects, child_id);
-    }
     object_set_destroy_cb(dst, cb_har_destroy_object, dst);
     object_set_disable_cb(dst, cb_har_disable_animation, dst);
     local->delay = 0;
@@ -2479,7 +2504,6 @@ int har_clone(object *src, object *dst) {
 int har_clone_free(object *obj) {
     har *har = object_get_userdata(obj);
     list_free(&har->har_hooks);
-    vector_free(&har->child_objects);
     hashmap_free(&har->disabled_animations);
     omf_free(har);
     object_set_userdata(obj, NULL);
@@ -2499,8 +2523,6 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
 
     game_player *gp = game_state_get_player(obj->gs, player_id);
     local->af_data = af_data;
-
-    vector_create(&local->child_objects, sizeof(uint32_t));
 
     // Save har id
     local->id = har_id;
@@ -2833,10 +2855,4 @@ uint8_t har_player_id(object *obj) {
 
 int16_t har_health_percent(har *h) {
     return 100 * h->health / h->health_max;
-}
-
-void har_connect_child(object *obj, object *child) {
-    har *h = object_get_userdata(obj);
-    log_debug("linking child %d to HAR", child->id);
-    vector_append(&h->child_objects, &child->id);
 }

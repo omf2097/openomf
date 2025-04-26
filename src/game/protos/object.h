@@ -59,6 +59,14 @@ enum
     EFFECT_HAR_QUIRKS = 0x100,
 };
 
+enum
+{
+    OBJECT_FLAGS_NONE = 0,
+    OBJECT_FLAGS_NEXT_ANIM_ON_OWNER_HIT = 0x1,
+    OBJECT_FLAGS_NEXT_ANIM_ON_ENEMY_HIT = 0x2,
+    OBJECT_FLAGS_MC = 0x4,
+};
+
 typedef struct object_t object;
 typedef struct game_state_t game_state;
 
@@ -105,6 +113,8 @@ struct object_t {
     // Bitmask for several video effects (shadow, etc.)
     uint32_t frame_video_effects;     //< Effects that only last for current frame
     uint32_t animation_video_effects; //< Effects that last for the entire animation
+
+    uint32_t object_flags; //< Various object flags set by animation tags
 
     uint8_t layers;
     uint8_t cur_animation_own;
