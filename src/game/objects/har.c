@@ -355,8 +355,31 @@ int har_is_crouching(har *h) {
     return 0;
 }
 
-char get_last_input(har *har) {
-    return har->inputs[0];
+char flip_input(char c, int direction) {
+    if(direction == OBJECT_FACE_LEFT) {
+        switch(c) {
+            case '7':
+                return '9';
+            case '4':
+                return '6';
+            case '1':
+                return '3';
+            case '9':
+                return '7';
+            case '6':
+                return '4';
+            case '3':
+                return '1';
+            default:
+                return c;
+        }
+    }
+    return c;
+}
+
+char get_last_input(object *obj) {
+    har *har = object_get_userdata(obj);
+    return flip_input(har->inputs[0], object_get_direction(obj));
 }
 
 int har_is_blocking(object *obj, af_move *move) {
@@ -367,7 +390,7 @@ int har_is_blocking(object *obj, af_move *move) {
         return 0;
     }
 
-    char last_input = get_last_input(h);
+    char last_input = get_last_input(obj);
     if(obj->crossup_protection) {
         if(last_input == '6') {
             last_input = '4';
@@ -567,7 +590,7 @@ void har_move(object *obj) {
         return;
     }
 
-    char last_input = get_last_input(h);
+    char last_input = get_last_input(obj);
     object_apply_controllable_velocity(obj, false, last_input);
 
     obj->pos.x += (obj->vel.x + obj->cvel.x);
@@ -1055,7 +1078,7 @@ void har_spawn_scrap(object *obj, vec2i pos, int amount) {
 
 void har_block(object *obj, vec2i hit_coord, uint8_t block_stun) {
     har *h = obj->userdata;
-    char last_input = get_last_input(h);
+    char last_input = get_last_input(obj);
     if(last_input == '1' || last_input == '3') {
         object_set_animation(obj, &af_get_move(h->af_data, ANIM_CROUCHING_BLOCK)->ani);
     } else {
@@ -1971,16 +1994,6 @@ static bool add_input(char *buf, int act_type, int direction) {
     if(act_type == ACT_NONE) {
         return false;
     }
-    if(direction == OBJECT_FACE_LEFT) {
-        // flip left/right to simplify below switch
-        if(act_type & ACT_LEFT) {
-            act_type &= ~ACT_LEFT;
-            act_type |= ACT_RIGHT;
-        } else if(act_type & ACT_RIGHT) {
-            act_type &= ~ACT_RIGHT;
-            act_type |= ACT_LEFT;
-        }
-    }
     // for the reason behind the numbers, look at a numpad sometime
     switch(act_type & ~(ACT_PUNCH | ACT_KICK)) {
         case ACT_NONE:
@@ -2231,8 +2244,16 @@ int har_act(object *obj, int act_type) {
     // If the last key input before this one is older than 9 ticks don't consider any previous inputs, the buffer is
     // essentially just the last input and any kick/punch key This means that you have 9 ticks between the last 2 key
     // inputs to complete a move sequence
-    char truncated_inputs[2] = {h->inputs[0], '\0'};
-    af_move *move = match_move(obj, prefix, input_staleness <= 9 ? h->inputs : truncated_inputs);
+    char truncated_inputs[11];
+    if(input_staleness > 9) {
+        truncated_inputs[0] = flip_input(h->inputs[0], direction);
+        truncated_inputs[1] = '\0';
+    } else {
+        for(int i = 0; i < 11; i++) {
+            truncated_inputs[i] = flip_input(h->inputs[i], direction);
+        }
+    }
+    af_move *move = match_move(obj, prefix, truncated_inputs);
 
     if(player_frame_isset(obj, "jn") && player_frame_isset(obj, "cw") && (enemy_har->state == STATE_WALLDAMAGE)) {
         move = af_get_move(h->af_data, player_frame_get(obj, "jn"));
@@ -2304,7 +2325,7 @@ int har_act(object *obj, int act_type) {
         return 0;
     }
 
-    char last_input = get_last_input(h);
+    char last_input = get_last_input(obj);
     if(object_is_airborne(obj)) {
         // airborne
 
