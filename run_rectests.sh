@@ -58,6 +58,7 @@ tests=(
     "Katana's corkscrew blade has landing recovery:LANDING_RECOVERY.REC"
     "Flail 66K is unblockable:UNBLOCKABLE_THROW.REC"
     "Electra 66P dodges Earthquake Smash:DODGE_EARTHQUAKE.REC"
+    "Katana's extended rising blade deals the correct amount of damage:KATANA_DAMAGE.REC"
 )
 
 # Setup temp directory for outputs

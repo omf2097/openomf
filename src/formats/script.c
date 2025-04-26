@@ -488,8 +488,8 @@ const sd_script_tag *sd_script_get_tag(const sd_script_frame *frame, const char 
     }
     iterator it;
     sd_script_tag *now;
-    vector_iter_begin(&frame->tags, &it);
-    foreach(it, now) {
+    vector_iter_end(&frame->tags, &it);
+    foreach_reverse(it, now) {
         if(strcmp(tag, now->key) == 0) {
             return now;
         }
