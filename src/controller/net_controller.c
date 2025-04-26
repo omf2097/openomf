@@ -378,14 +378,14 @@ int rewind_and_replay(wtf *data, controller *ctrl) {
 
     uint32_t start_tick = gs->int_tick - data->local_proposal;
 
-    while(gs->int_tick < gs_current->int_tick) {
-        while(ev && ev->tick + data->local_proposal < data->gs_bak->int_tick) {
-            // tick too old to matter
-            list_delete(transcript, &it);
-            ev = iter_next(&it);
-        }
+    while(ev && ev->tick <= start_tick) {
+        // tick too old to matter
+        list_delete(transcript, &it);
+        ev = iter_next(&it);
+    }
 
-        if(ev && ev->tick == gs->int_tick - data->local_proposal && ev->tick > start_tick) {
+    while(gs->int_tick < gs_current->int_tick) {
+        if(ev && ev->tick == gs->int_tick - data->local_proposal) {
             // feed in the inputs
             for(int j = 0; j < 2; j++) {
                 int player_id = j;
