@@ -370,7 +370,7 @@ int rewind_and_replay(wtf *data, controller *ctrl) {
     uint64_t replay_start = SDL_GetTicks64();
     int tick_count = 0;
 
-    uint32_t arena_hash = arena_state_hash(gs);
+    uint32_t arena_hash;
 
     uint32_t confirm_frame = data->last_acked_tick;
 
@@ -465,13 +465,16 @@ int rewind_and_replay(wtf *data, controller *ctrl) {
             }
             ev = iter_next(&it);
         } else {
-            // send dummy events to simulate the controllers being polled
-            // this is needed because there's a bunch of logic chained off har_act and it expects to be called every
-            // tick
-            for(int i = 0; i < 2; i++) {
-                int player_id = i;
-                game_player *player = game_state_get_player(gs, player_id);
-                object_act(game_state_find_object(gs, game_player_get_har_obj_id(player)), ACT_NONE);
+            // only do this if we're not on the first tick of the replay
+            if(gs->int_tick - data->local_proposal > start_tick) {
+                // send dummy events to simulate the controllers being polled
+                // this is needed because there's a bunch of logic chained off har_act and it expects to be called every
+                // tick
+                for(int i = 0; i < 2; i++) {
+                    int player_id = i;
+                    game_player *player = game_state_get_player(gs, player_id);
+                    object_act(game_state_find_object(gs, game_player_get_har_obj_id(player)), ACT_NONE);
+                }
             }
 
             // update arena hash now inputs have been done

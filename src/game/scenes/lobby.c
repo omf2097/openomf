@@ -1678,9 +1678,8 @@ int lobby_create(scene *scene) {
 
     } else {
         serial ser;
-        serial_create(&ser);
-
         if(winner >= 0) {
+            serial_create(&ser);
             serial_write_int8(&ser, PACKET_CHALLENGE << 4 | CHALLENGE_DONE);
             serial_write_int8(&ser, (uint8_t)winner);
             ENetPacket *packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
@@ -1688,13 +1687,13 @@ int lobby_create(scene *scene) {
             serial_free(&ser);
         }
 
+        serial_create(&ser);
         // send the server a REFRESH command so we can get the userlist, our username, etc
         serial_write_int8(&ser, (uint8_t)(PACKET_REFRESH << 4 | PRESENCE_AVAILABLE));
 
         ENetPacket *packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
-        serial_free(&ser);
-
         enet_peer_send(local->peer, 0, packet);
+        serial_free(&ser);
     }
 
     scene_set_input_poll_cb(scene, lobby_input_tick);
