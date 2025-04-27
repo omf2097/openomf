@@ -75,11 +75,11 @@ void surface_multiply_decal(surface *src, const surface *decal, int dst_x, int d
     int src_offset, decal_offset;
     int color, value;
     for(int y = 0; y < decal->h; y++) {
-        if(y >= src->h) {
+        if((dst_y + y) >= src->h) {
             continue;
         }
         for(int x = 0; x < decal->w; x++) {
-            if(x >= src->w) {
+            if((dst_x + x) >= src->w) {
                 continue;
             }
             src_offset = (dst_x + x + (dst_y + y) * src->w);
