@@ -8,6 +8,20 @@
   </branding>
 
   <releases>
+    <release version="0.8.2" date="2025-04-26">
+      <url type="details">https://github.com/omf2097/openomf/releases/tag/0.8.2</url>
+      <description>
+        <p>0.8.2 continues the bugfix and feature additions to the 0.8 branch</p>
+        <ul>
+          <li>Experimental netplay spectator mode</li>
+          <li>Fix more netplay bugs and improve performance</li>
+          <li>Fix infinite unranked challengers in tournament mode</li>
+          <li>Fix most (all?) scrap/destructs</li>
+          <li>Implement and correct several more animation tags</li>
+          <li>Many other small gameplay fixes</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.8.1" date="2025-04-09">
       <url type="details">https://github.com/omf2097/openomf/releases/tag/0.8.1</url>
       <description>
