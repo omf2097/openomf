@@ -1048,6 +1048,13 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                 data->disconnected = 1;
                 event.peer->data = NULL;
                 data->synchronized = false;
+                data->winner = arena_is_over(ctrl->gs->sc);
+                if(data->winner == -1) {
+                    // match did not end cleanly
+                    // so force the game to playback ALL events to try to update the trace/rec files
+                    data->last_received_tick = ctrl->gs->int_tick - data->local_proposal;
+                    rewind_and_replay(data, ctrl);
+                }
                 if(data->gs_bak) {
                     game_state_clone_free(data->gs_bak);
                     omf_free(data->gs_bak);
@@ -1056,7 +1063,6 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                     sd_rec_finish(ctrl->gs->rec, ticks - data->local_proposal);
                 }
                 if(data->lobby) {
-                    data->winner = arena_is_over(ctrl->gs->sc);
                     // lobby will handle the controller
                     game_state_set_next(ctrl->gs, SCENE_LOBBY);
                 } else {
