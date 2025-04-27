@@ -2106,6 +2106,12 @@ bool is_move_chain_allowed(object *obj, af_move *move) {
                 break;
         }
     }
+
+    bool is_over = arena_is_over(obj->gs->sc) != -1;
+    if(move->category == CAT_SCRAP && !is_over) {
+        allowed = false;
+    }
+
     return allowed;
 }
 
