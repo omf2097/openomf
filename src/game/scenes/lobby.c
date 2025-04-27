@@ -7,7 +7,8 @@
 #include "utils/c_string_util.h"
 #include "utils/log.h"
 #include "utils/miscmath.h"
-#include "video/video.h"
+
+#include "controller/spec_controller.h"
 
 #include "game/utils/nat.h"
 #include "game/utils/settings.h"
@@ -63,6 +64,7 @@ enum
     PACKET_REFRESH,
     PACKET_ANNOUNCEMENT,
     PACKET_RELAY,
+    PACKET_SPECTATE,
 };
 
 enum
@@ -91,6 +93,12 @@ enum
     CHALLENGE_CANCEL,
     CHALLENGE_DONE,
     CHALLENGE_ERROR,
+};
+
+enum
+{
+    SPECTATE_ACCEPT = 1,
+    SPECTATE_ERROR,
 };
 
 enum
@@ -156,6 +164,8 @@ typedef struct lobby_local {
 
     text *presences[PRESENCE_COUNT];
     text *titles[5];
+
+    component *challenge_button;
 
     gui_frame *frame;
     uint8_t role;
@@ -238,6 +248,25 @@ static void update_active_user_text(lobby_local *local) {
     char buf[64];
     snprintf(buf, sizeof(buf), "%d of %d", local->active_user + 1, list_size(&local->users));
     text_set_from_c(local->titles[TITLE_USER_OF], buf);
+
+    lobby_user *user = list_get(&local->users, local->active_user);
+
+    if(user) {
+        if(user->status == PRESENCE_FIGHTING) {
+            button_set_text(local->challenge_button, "Spectate");
+            component_set_help_text(local->challenge_button, "Spectate this match.");
+        } else {
+            button_set_text(local->challenge_button, "Challenge");
+            component_set_help_text(local->challenge_button,
+                                    "Challenge this player to a fight. Challenge yourself for 1-player game.");
+        }
+
+        if(user->status != PRESENCE_AVAILABLE && user->status != PRESENCE_FIGHTING) {
+            component_disable(local->challenge_button, 1);
+        } else {
+            component_disable(local->challenge_button, 0);
+        }
+    }
 }
 
 void lobby_input_tick(scene *scene) {
@@ -399,6 +428,28 @@ void lobby_do_challenge(component *c, void *userdata) {
     enet_peer_send(local->peer, 0, packet);
 }
 
+void lobby_do_spectate(component *c, void *userdata) {
+    scene *s = userdata;
+    lobby_local *local = scene_get_userdata(s);
+    lobby_user *user = list_get(&local->users, local->active_user);
+    local->opponent = user;
+    char buf[80];
+
+    snprintf(buf, sizeof(buf), "Spectating %s...", user->name);
+
+    lobby_show_dialog(s, DIALOG_STYLE_CANCEL, buf, lobby_dialog_cancel_challenge);
+
+    serial ser;
+    serial_create(&ser);
+    serial_write_int8(&ser, (uint8_t)(PACKET_SPECTATE << 4));
+    serial_write_int32(&ser, user->id);
+
+    ENetPacket *packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
+    serial_free(&ser);
+
+    enet_peer_send(local->peer, 0, packet);
+}
+
 void lobby_cancel_challenge(component *c, void *userdata) {
     menu *m = sizer_get_obj(c->parent);
     scene *s = userdata;
@@ -416,11 +467,25 @@ component *lobby_challenge_create(scene *s) {
     menu_set_padding(menu, 0);
 
     lobby_user *user = list_get(&local->users, local->active_user);
-    snprintf(local->helptext, sizeof(local->helptext), "Challenge %s?", user->name);
+    if(user->status == PRESENCE_AVAILABLE) {
+        snprintf(local->helptext, sizeof(local->helptext), "Challenge %s?", user->name);
+    } else if(user->status == PRESENCE_FIGHTING) {
+        // TODO have the user struct contain who they're fighting
+        snprintf(local->helptext, sizeof(local->helptext), "Spectate %s?", user->name);
+    } else {
+        return NULL;
+    }
     component *challenge_label = label_create(local->helptext);
-    component *yes_button = button_create("Yes", NULL, false, false, lobby_do_challenge, s);
-    component *no_button = button_create("No", NULL, false, false, lobby_cancel_challenge, s);
+    component *yes_button;
+    if(user->status == PRESENCE_AVAILABLE) {
+        yes_button = button_create("Yes", NULL, false, false, lobby_do_challenge, s);
+    } else if(user->status == PRESENCE_FIGHTING) {
+        yes_button = button_create("Yes", NULL, false, false, lobby_do_spectate, s);
+    } else {
+        return NULL;
+    }
 
+    component *no_button = button_create("No", NULL, false, false, lobby_cancel_challenge, s);
     label_set_text_shadow(challenge_label, GLYPH_SHADOW_BOTTOM, 9);
     button_set_text_shadow(yes_button, GLYPH_SHADOW_BOTTOM, 9);
     button_set_text_shadow(no_button, GLYPH_SHADOW_BOTTOM, 9);
@@ -434,7 +499,10 @@ component *lobby_challenge_create(scene *s) {
 
 void lobby_challenge(component *c, void *userdata) {
     scene *s = userdata;
-    menu_set_submenu(c->parent, lobby_challenge_create(s));
+    component *submenu = lobby_challenge_create(s);
+    if(submenu) {
+        menu_set_submenu(c->parent, submenu);
+    }
 }
 
 void lobby_do_yell(component *c, void *userdata) {
@@ -1348,6 +1416,44 @@ void lobby_tick(scene *scene, int paused) {
                             } break;
                         }
                     } break;
+                    case PACKET_SPECTATE: {
+                        switch(control_byte & 0xf) {
+                            case SPECTATE_ACCEPT: {
+                                lobby_show_dialog(scene, DIALOG_STYLE_CANCEL, "Waiting for match to begin...",
+                                                  lobby_dialog_cancel_challenge);
+
+                                // set up the spec controllers and set controllers_connected
+                                controller *c1, *c2;
+                                game_player *p1 = game_state_get_player(gs, 0);
+                                game_player *p2 = game_state_get_player(gs, 1);
+                                gs->net_mode = NET_MODE_LOBBY;
+
+                                // force the speed to 3
+                                game_state_set_speed(gs, 10);
+
+                                c1 = omf_calloc(1, sizeof(controller));
+                                c2 = omf_calloc(1, sizeof(controller));
+                                controller_init(c1, gs);
+                                controller_init(c2, gs);
+
+                                hashmap *h = omf_calloc(1, sizeof(hashmap));
+                                hashmap_create(h);
+                                spec_controller_create(c1, 0, local->client, local->peer, h);
+                                game_player_set_ctrl(p1, c1);
+                                spec_controller_create(c2, 1, NULL, NULL, h);
+                                game_player_set_ctrl(p2, c2);
+
+                                chr_score_set_difficulty(game_player_get_score(game_state_get_player(gs, 0)),
+                                                         AI_DIFFICULTY_CHAMPION);
+                                chr_score_set_difficulty(game_player_get_score(game_state_get_player(gs, 1)),
+                                                         AI_DIFFICULTY_CHAMPION);
+
+                                local->controllers_created = true;
+                                log_info("jumping into spectate mode");
+
+                            } break;
+                        }
+                    } break;
                     default:
                         log_debug("unknown packet of type %d received", event.packet->data[0] >> 4);
                         break;
@@ -1469,7 +1575,7 @@ int lobby_create(scene *scene) {
     menu_set_help_pos(menu, 10, 155, 500, 10);
 
     menu_set_help_text_settings(menu, FONT_NET2, TEXT_ALIGN_LEFT, 56);
-    component *challenge_button =
+    local->challenge_button =
         button_create("Challenge", "Challenge this player to a fight. Challenge yourself for 1-player game.", false,
                       false, lobby_challenge, scene);
     component *whisper_button =
@@ -1480,13 +1586,13 @@ int lobby_create(scene *scene) {
         button_create("Refresh", "Refresh the player list.", false, false, lobby_refresh, scene);
     component *exit_button = button_create("Exit", "Exit and disconnect.", false, false, lobby_exit, scene);
 
-    button_set_text_shadow(challenge_button, GLYPH_SHADOW_BOTTOM, 9);
+    button_set_text_shadow(local->challenge_button, GLYPH_SHADOW_BOTTOM, 9);
     button_set_text_shadow(whisper_button, GLYPH_SHADOW_BOTTOM, 9);
     button_set_text_shadow(yell_button, GLYPH_SHADOW_BOTTOM, 9);
     button_set_text_shadow(refresh_button, GLYPH_SHADOW_BOTTOM, 9);
     button_set_text_shadow(exit_button, GLYPH_SHADOW_BOTTOM, 9);
 
-    menu_attach(menu, challenge_button);
+    menu_attach(menu, local->challenge_button);
     menu_attach(menu, whisper_button);
     menu_attach(menu, yell_button);
     menu_attach(menu, refresh_button);
@@ -1507,6 +1613,13 @@ int lobby_create(scene *scene) {
         local->client = net_controller_get_host(game_state_get_player(scene->gs, 1)->ctrl);
         local->nat = local->peer->data;
         winner = net_controller_get_winner(game_state_get_player(scene->gs, 1)->ctrl);
+        local->mode = LOBBY_MAIN;
+        local->nat_tries = 12;
+    } else if(game_state_get_player(scene->gs, 0)->ctrl->type == CTRL_TYPE_SPECTATOR) {
+        // in spectator mode, only the first controller can have the enet data
+        local->peer = spec_controller_get_lobby_connection(game_state_get_player(scene->gs, 0)->ctrl);
+        local->client = spec_controller_get_host(game_state_get_player(scene->gs, 0)->ctrl);
+        local->nat = local->peer->data;
         local->mode = LOBBY_MAIN;
         local->nat_tries = 12;
     }
@@ -1565,9 +1678,8 @@ int lobby_create(scene *scene) {
 
     } else {
         serial ser;
-        serial_create(&ser);
-
         if(winner >= 0) {
+            serial_create(&ser);
             serial_write_int8(&ser, PACKET_CHALLENGE << 4 | CHALLENGE_DONE);
             serial_write_int8(&ser, (uint8_t)winner);
             ENetPacket *packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
@@ -1575,13 +1687,13 @@ int lobby_create(scene *scene) {
             serial_free(&ser);
         }
 
+        serial_create(&ser);
         // send the server a REFRESH command so we can get the userlist, our username, etc
-        serial_write_int8(&ser, (uint8_t)(PACKET_REFRESH << 4));
+        serial_write_int8(&ser, (uint8_t)(PACKET_REFRESH << 4 | PRESENCE_AVAILABLE));
 
         ENetPacket *packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
-        serial_free(&ser);
-
         enet_peer_send(local->peer, 0, packet);
+        serial_free(&ser);
     }
 
     scene_set_input_poll_cb(scene, lobby_input_tick);
