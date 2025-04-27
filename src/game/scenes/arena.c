@@ -1092,7 +1092,7 @@ bool har_is_scrap_walking(object *obj) {
  */
 static text *create_text_object(const char *str) {
     // Width is screen size divided by two, minus left or right padding of 5 pixels.
-    text *obj = text_create_with_font_and_size(FONT_SMALL, 155, 6);
+    text *obj = text_create_with_font_and_size(FONT_SMALL, 155, 5);
     text_set_color(obj, TEXT_HUD_COLOR);
     text_set_shadow_color(obj, TEXT_HUD_SHADOW);
     text_set_shadow_style(obj, GLYPH_SHADOW_RIGHT | GLYPH_SHADOW_BOTTOM);
@@ -1417,11 +1417,11 @@ void arena_render_overlay(scene *scene) {
         }
 
         // Render HAR and pilot names
-        text_draw(local->player_name[0], 5, 19);
-        text_draw(local->player_har[0], 5, 26);
+        text_draw(local->player_name[0], 4, 18);
+        text_draw(local->player_har[0], 4, 25);
         if(player[1]->pilot) {
-            text_draw(local->player_name[1], 160, 19);
-            text_draw(local->player_har[1], 160, 26);
+            text_draw(local->player_name[1], 161, 18);
+            text_draw(local->player_har[1], 161, 25);
         }
 
         // Render score stuff
@@ -1762,7 +1762,7 @@ int arena_create(scene *scene) {
             // render pilot portraits
             object *portrait = omf_calloc(1, sizeof(object));
             if(i == 0) {
-                object_create(portrait, scene->gs, vec2i_create(102, 0), vec2f_create(0, 0));
+                object_create(portrait, scene->gs, vec2i_create(107, 5), vec2f_create(0, 0));
                 sprite *sp = omf_calloc(1, sizeof(sprite));
                 sprite_create(sp, player->pilot->photo, -1);
                 portrait->x_percent = 0.70f;
@@ -1773,7 +1773,7 @@ int arena_create(scene *scene) {
                 portrait->cur_sprite_id = 0;
                 game_state_add_object(scene->gs, portrait, RENDER_LAYER_TOP, 0, 0);
             } else {
-                object_create(portrait, scene->gs, vec2i_create(232, 0), vec2f_create(0, 0));
+                object_create(portrait, scene->gs, vec2i_create(235, 5), vec2f_create(0, 0));
                 sprite *sp = omf_calloc(1, sizeof(sprite));
                 sprite_create(sp, player->pilot->photo, -1);
                 portrait->x_percent = 0.70f;
@@ -1786,7 +1786,7 @@ int arena_create(scene *scene) {
                 game_state_add_object(scene->gs, portrait, RENDER_LAYER_TOP, 0, 0);
             }
 
-        } else if(local->rounds > 1) {
+        } else {
             // Create round tokens
             for(int j = 0; j < 4; j++) {
                 if(j < ceilf(local->rounds / 2.0f)) {
@@ -1899,17 +1899,17 @@ int arena_create(scene *scene) {
 
     // Health and endurance bars
     local->health_bars[0] = progressbar_create(PROGRESSBAR_THEME_HEALTH, PROGRESSBAR_RIGHT, 100);
-    component_layout(local->health_bars[0], 5, 5, 100, 8);
+    component_layout(local->health_bars[0], 4, 4, 100, 8);
     local->health_bars[1] = progressbar_create(PROGRESSBAR_THEME_HEALTH, PROGRESSBAR_LEFT, 100);
-    component_layout(local->health_bars[1], 215, 5, 100, 8);
+    component_layout(local->health_bars[1], 216, 4, 100, 8);
     local->endurance_bars[0] = progressbar_create(PROGRESSBAR_THEME_ENDURANCE, PROGRESSBAR_RIGHT, 100);
-    component_layout(local->endurance_bars[0], 5, 14, 100, 4);
+    component_layout(local->endurance_bars[0], 4, 13, 100, 4);
     local->endurance_bars[1] = progressbar_create(PROGRESSBAR_THEME_ENDURANCE, PROGRESSBAR_LEFT, 100);
-    component_layout(local->endurance_bars[1], 215, 14, 100, 4);
+    component_layout(local->endurance_bars[1], 216, 13, 100, 4);
 
     // Score positioning
-    chr_score_set_pos(game_player_get_score(_player[0]), 5, 33, OBJECT_FACE_RIGHT);
-    chr_score_set_pos(game_player_get_score(_player[1]), 315, 33, OBJECT_FACE_LEFT);
+    chr_score_set_pos(game_player_get_score(_player[0]), 4, 32, OBJECT_FACE_RIGHT);
+    chr_score_set_pos(game_player_get_score(_player[1]), 316, 32, OBJECT_FACE_LEFT);
 
     // Possibly use tournament mode scoring
     chr_score_set_tournament_mode(game_player_get_score(_player[0]), local->tournament);
