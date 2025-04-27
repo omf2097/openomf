@@ -868,6 +868,7 @@ uint32_t arena_state_hash(game_state *gs) {
         hash = ((hash << 5) + hash) + har->state;
         hash = ((hash << 5) + hash) + har->executing_move;
         hash = ((hash << 5) + hash) + obj_har->cur_animation->id;
+        hash = ((hash << 5) + hash) + random_get_seed(&gs->rand);
     }
     return hash;
 }
@@ -921,10 +922,10 @@ void arena_state_dump(game_state *gs, char *buf, size_t bufsize) {
         vec2f vel = object_get_vel(obj_har);
         off = snprintf(buf + off, bufsize - off,
                        "player %d  power %d agility %d endurance %d HAR id %d  pos %d,%d, health %d, endurance %d, "
-                       "velocity %f,%f, state %s, executing_move %d cur_anim %d\n",
+                       "velocity %f,%f, state %s, executing_move %d cur_anim %d seed %" PRIu32 "\n",
                        i, player->pilot->power, player->pilot->agility, player->pilot->endurance, har->id, pos.x, pos.y,
                        har->health, har->endurance, vel.x, vel.y, state_name(har->state), har->executing_move,
-                       obj_har->cur_animation->id);
+                       obj_har->cur_animation->id, random_get_seed(&gs->rand));
     }
 }
 
@@ -1032,6 +1033,8 @@ void arena_spawn_hazard(scene *scene) {
                 object_create(obj, scene->gs, info->ani.start_pos, vec2f_create(0, 0));
                 object_set_stl(obj, scene->bk_data->sound_translation_table);
                 object_set_animation(obj, &info->ani);
+                // fire pit wandering (in case this is an orb)
+                obj->orb_val = random_int(&scene->gs->rand, 255) - 127;
                 if(scene->id == SCENE_ARENA3 && info->ani.id == 0) {
                     // XXX fire pit orb has a bug whwre it double spawns. Use a custom animation string to avoid it
                     // it mioght be to do with the 'mp' tag, which we don't currently understand

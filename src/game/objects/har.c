@@ -785,8 +785,9 @@ void apply_stun_damage(object *obj, int stun_amount) {
         stun_amount /= 2;
     }
     stun_amount = (stun_amount * 2 + 12) * 256;
-    log_debug("applying %f stun damage to %f", stun_amount, h->endurance);
+    log_debug("applying %d endurance damage to %d", stun_amount, h->endurance);
     h->endurance += stun_amount;
+    log_debug("endurance is now %d", h->endurance);
 
     if(h->endurance < 1) {
         if(h->state == STATE_STUNNED) {
@@ -1758,6 +1759,8 @@ static void har_palette_transform(damage_tracker *damage, vga_palette *pal, void
 void har_handle_stun(object *obj) {
     har *h = object_get_userdata(obj);
 
+    uint32_t old_endurance = h->endurance;
+
     if(h->health <= 0) { // Lock the stun meter to near-empty when KO'd
         h->endurance = h->endurance_max - 2;
     } else {
@@ -1804,6 +1807,8 @@ void har_handle_stun(object *obj) {
             har_stunned_done(obj);
         }
     }
+
+    log_debug("har endurance went from %d to %d on tick %d", old_endurance, h->endurance, obj->gs->int_tick);
 }
 
 void har_tick(object *obj) {

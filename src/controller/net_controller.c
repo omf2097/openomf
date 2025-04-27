@@ -394,7 +394,7 @@ int rewind_and_replay(wtf *data, controller *ctrl) {
                 do {
                     object_act(game_state_find_object(gs, game_player_get_har_obj_id(player)), ev->events[j][k]);
                     k++;
-                } while(ev->events[j][k]);
+                } while(ev->events[j][k] && k < 11);
             }
 
             // update arena hash now inputs have been done
@@ -414,7 +414,7 @@ int rewind_and_replay(wtf *data, controller *ctrl) {
                     move.action = 0;
 
                     int k = 0;
-                    while(ev->events[j][k]) {
+                    while(ev->events[j][k] && k < 11) {
                         if(ev->events[j][k] & ACT_PUNCH) {
                             move.action |= SD_ACT_PUNCH;
                         }
@@ -1240,7 +1240,7 @@ int net_controller_poll(controller *ctrl, ctrl_event **ev) {
             return 0;
         } else if(e->events[id][0] != 0 && e->tick < current_tick) {
             int i = 0;
-            while(e->events[id][i]) {
+            while(e->events[id][i] && i < 11) {
                 last = e->events[id][i];
                 i++;
             }
