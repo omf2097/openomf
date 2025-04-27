@@ -346,6 +346,27 @@ void newsroom_startup(scene *scene, int id, int *m_load, int *m_repeat) {
     }
 }
 
+// Make a bitset of the challenger requirements in order to create
+// a weighted score to compare with other challengers.
+static int32_t challenger_score(sd_pilot *p, game_player *p1, game_player *p2, fight_stats *fight_stats) {
+    if(p == NULL)
+        return -1;
+
+    int32_t ret = 0;
+    int health = game_player_get_score(p1)->health;
+    ret |= (!p->req_max_rank || p->req_max_rank >= p1->pilot->rank);
+    ret |= (!p->req_vitality || p->req_vitality <= health) << 1;
+    ret |= (!p->req_accuracy || p->req_accuracy <= fight_stats->hit_miss_ratio[0]) << 2;
+    ret |= (!p->req_avg_dmg || p->req_avg_dmg <= fight_stats->average_damage[0]) << 3;
+    ret |= (!p->req_difficulty || p->req_difficulty <= p1->pilot->difficulty) << 4;
+    ret |= (!p->req_fighter || p->req_fighter == p1->pilot->har_id) << 5;
+    ret |= (!p->req_scrap || (p->req_scrap && fight_stats->finish >= FINISH_SCRAP)) << 6;
+    ret |= (!p->req_destroy || (p->req_destroy && fight_stats->finish == FINISH_DESTRUCTION)) << 7;
+    ret |= (!p->req_enemy || &p1->chr->enemies[p->req_enemy - 1]->pilot == p2->pilot) << 8;
+
+    return ret;
+}
+
 int newsroom_create(scene *scene) {
     newsroom_local *local = omf_calloc(1, sizeof(newsroom_local));
 
@@ -408,13 +429,13 @@ int newsroom_create(scene *scene) {
                        (!p->req_destroy || (p->req_destroy && fight_stats->finish == FINISH_DESTRUCTION))) {
                         // check if we just beat an unranked challenger, and if this new unranked is directly tied to
                         // that (eg. Jazz Jackrabbit and Eva Earlong) otherwise don't allow another unranked to chain
-                        if(p2->pilot && (p2->pilot->rank != 0 ||
+                        if(p2->pilot && (p2->pilot->secret == 0 ||
                                          (p->req_enemy && &p1->chr->enemies[p->req_enemy - 1]->pilot == p2->pilot))) {
-                            fight_stats->challenger = p;
-                            log_debug("found challenger!");
+                            log_debug("found a challenger!");
+                            if(challenger_score(p, p1, p2, fight_stats) >
+                               challenger_score(fight_stats->challenger, p1, p2, fight_stats))
+                                fight_stats->challenger = p;
                         }
-                        // XXX we are going to assume the first match, from the lowest in the file, is the one to choose
-                        break;
                     }
                 }
             }
