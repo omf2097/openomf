@@ -50,9 +50,6 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
     // Attachment stuff
     obj->attached_to_id = 0;
 
-    // Fire orb wandering
-    obj->orb_val = random_int(&gs->rand, 255) - 127;
-
     // Animation playback related
     obj->cur_animation_own = OWNER_EXTERNAL;
     obj->cur_animation = NULL;
@@ -68,8 +65,6 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
     obj->cast_shadow = 0;
     obj->age = 0;
     player_create(obj);
-
-    random_seed(&obj->rand_state, rand_intmax());
 
     // For enabling multiple hits per move
     obj->q_counter = 0;

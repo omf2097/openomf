@@ -71,9 +71,11 @@ typedef struct {
     int winner;
 } wtf;
 
+#define MAX_EVENTS_PER_TICK 11
+
 typedef struct {
     uint32_t tick;
-    uint8_t events[2][11];
+    uint8_t events[2][MAX_EVENTS_PER_TICK];
 } tick_events;
 
 // simple standard deviation calculation
@@ -124,8 +126,8 @@ void insert_event(wtf *data, uint32_t tick, uint16_t action, int id) {
     tick_events *nev = NULL;
     tick_events event;
     event.tick = tick;
-    memset(event.events[id], 0, 11);
-    memset(event.events[abs(id - 1)], 0, 11);
+    memset(event.events[id], 0, MAX_EVENTS_PER_TICK);
+    memset(event.events[abs(id - 1)], 0, MAX_EVENTS_PER_TICK);
     event.events[id][0] = action;
     int i = 0;
 
@@ -149,7 +151,7 @@ void insert_event(wtf *data, uint32_t tick, uint16_t action, int id) {
             list_prepend(transcript, &event, sizeof(tick_events));
             goto done;
         } else if(ev->tick == tick) {
-            for(int j = 0; j < 11; j++) {
+            for(int j = 0; j < MAX_EVENTS_PER_TICK; j++) {
                 if(ev->events[id][j] == 0) {
                     if(j > 0 && ev->events[id][j - 1] == action) {
                         // dedup
@@ -195,7 +197,7 @@ bool has_event(wtf *data, int delay) {
 
 void event_names(char *buf, uint8_t *actions) {
 
-    for(int i = 0; i < 11; i++) {
+    for(int i = 0; i < MAX_EVENTS_PER_TICK; i++) {
         uint8_t action = actions[i];
         if(action == ACT_STOP) {
             buf[0] = '5';
@@ -394,7 +396,7 @@ int rewind_and_replay(wtf *data, controller *ctrl) {
                 do {
                     object_act(game_state_find_object(gs, game_player_get_har_obj_id(player)), ev->events[j][k]);
                     k++;
-                } while(ev->events[j][k]);
+                } while(ev->events[j][k] && k < MAX_EVENTS_PER_TICK);
             }
 
             // update arena hash now inputs have been done
@@ -414,7 +416,7 @@ int rewind_and_replay(wtf *data, controller *ctrl) {
                     move.action = 0;
 
                     int k = 0;
-                    while(ev->events[j][k]) {
+                    while(ev->events[j][k] && k < MAX_EVENTS_PER_TICK) {
                         if(ev->events[j][k] & ACT_PUNCH) {
                             move.action |= SD_ACT_PUNCH;
                         }
@@ -1240,7 +1242,7 @@ int net_controller_poll(controller *ctrl, ctrl_event **ev) {
             return 0;
         } else if(e->events[id][0] != 0 && e->tick < current_tick) {
             int i = 0;
-            while(e->events[id][i]) {
+            while(e->events[id][i] && i < MAX_EVENTS_PER_TICK) {
                 last = e->events[id][i];
                 i++;
             }

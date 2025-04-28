@@ -104,8 +104,6 @@ struct object_t {
 
     int8_t orb_val;
 
-    struct random_t rand_state;
-
     float x_percent;
     float y_percent;
     float gravity;

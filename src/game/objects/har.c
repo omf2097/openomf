@@ -795,7 +795,7 @@ void apply_stun_damage(object *obj, int stun_amount) {
         stun_amount /= 2;
     }
     stun_amount = (stun_amount * 2 + 12) * 256;
-    log_debug("applying %f stun damage to %f", stun_amount, h->endurance);
+    log_debug("applying %d endurance damage to %d", stun_amount, h->endurance);
     h->endurance += stun_amount;
 
     if(h->endurance < 1) {

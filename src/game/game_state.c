@@ -1011,10 +1011,6 @@ void game_state_static_tick(game_state *gs, bool replay) {
 // This function is called when the game speed requires it
 void game_state_dynamic_tick(game_state *gs, bool replay) {
 
-    if(gs->hit_pause > 0) {
-        gs->hit_pause--;
-        return;
-    }
     // Change the screen shake value downwards
     if(gs->screen_shake_horizontal > 0 && !gs->paused) {
         gs->screen_shake_horizontal--;
@@ -1049,8 +1045,12 @@ void game_state_dynamic_tick(game_state *gs, bool replay) {
         game_state_dyntick_controllers(gs);
     }
 
-    // Tick scene
-    scene_dynamic_tick(gs->sc, game_state_is_paused(gs));
+    if(gs->hit_pause > 0) {
+        gs->hit_pause--;
+    } else {
+        // Tick scene
+        scene_dynamic_tick(gs->sc, game_state_is_paused(gs));
+    }
 
     // Poll input. If console is opened, do not poll the controllers.
     if((!console_window_is_open() || gs->init_flags->playback) && !replay) {
