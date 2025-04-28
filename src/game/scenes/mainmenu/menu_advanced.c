@@ -54,7 +54,6 @@ component *menu_advanced_create(scene *s) {
 
     component *c = textselector_create_bind_opts("REHIT MODE", lang_get(276), NULL, NULL,
                                                  &settings_get()->advanced.rehit_mode, on_off_opts, 2);
-    component_disable(c, 1);
     menu_attach(menu, c);
 
     c = textselector_create_bind_opts("DEF. THROWS", lang_get(277), NULL, NULL,
