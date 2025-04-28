@@ -1285,7 +1285,7 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
 
             // check this mode hasn't already rehit
             if(strchr(b->rehits, move->id)) {
-                log_debug("move %d has already done a rehit");
+                log_debug("move %d has already done a rehit", move->id);
                 return 0;
             }
         }
@@ -1495,7 +1495,7 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
 
         // check this mode hasn't already rehit
         if(strchr(h->rehits, o_pjt->cur_animation->id)) {
-            log_debug("move %d has already done a rehit");
+            log_debug("move %d has already done a rehit", o_pjt->cur_animation->id);
             return;
         }
     }
