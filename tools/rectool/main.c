@@ -239,6 +239,8 @@ void rec_entry_get_key(sd_rec_file *rec, int entry_id, const char *key) {
 int rec_key_get_id(const char *key) {
     if(strcmp(key, "entry") == 0)
         return 0;
+    if(strcmp(key, "rehit") == 0)
+        return 1;
     return -1;
 }
 
@@ -259,6 +261,9 @@ void rec_set_key(sd_rec_file *rec, const char **key, int kcount, const char *val
                 return;
             }
         } break;
+        case 1:
+            rec->rehit_mode = strcasecmp(value, "on") == 0 ? 1 : 0;
+            break;
         default:
             printf("Unknown key %s!\n", key[0]);
     }
@@ -298,6 +303,9 @@ void rec_get_key(sd_rec_file *rec, const char **key, int kcount) {
                 return;
             }
         } break;
+        case 1:
+            printf("Rehit mode:   %s\n", onoff[rec->rehit_mode]);
+            break;
         default:
             printf("Unknown key %s!\n", key[0]);
     }
