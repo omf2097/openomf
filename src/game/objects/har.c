@@ -583,6 +583,15 @@ void har_floor_landing_effects(object *obj, bool play_sound) {
     }
 }
 
+void disable_rehit(har *h, af_move *move) {
+    h->rehits[strlen(h->rehits)] = move->id;
+}
+
+void clear_rehits(har *h) {
+    memset(h->rehits, 0, sizeof(h->rehits));
+    h->rehit_combo = false;
+}
+
 void har_move(object *obj) {
     har *h = object_get_userdata(obj);
 
@@ -638,6 +647,7 @@ void har_move(object *obj) {
         controller *ctrl = game_player_get_ctrl(game_state_get_player(obj->gs, h->player_id));
 
         obj->pos.y = ARENA_FLOOR;
+        clear_rehits(h);
 
         if(player_frame_isset(obj, "cl")) {
             af_move *move = af_get_move(h->af_data, obj->cur_animation->id);
@@ -1247,9 +1257,6 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
     int level = 1;
     af_move *move = af_get_move(a->af_data, obj_a->cur_animation->id);
 
-    bool rehit =
-        obj_b->gs->match_settings.rehit && b->state == STATE_RECOIL && object_is_airborne(obj_b) && b->endurance >= 0;
-
     if(a->in_stasis_ticks) {
         // frozen HARs can't hit
         return 0;
@@ -1259,10 +1266,9 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
         return 0;
     }
 
-    // rehit mode is off
-    if(!obj_b->gs->match_settings.rehit && (b->state == STATE_RECOIL && object_is_airborne(obj_b))) {
-        return 0;
-    }
+    // Track this now so we don't re-evaluate after the hit registers
+    bool air_hit = object_is_airborne(obj_b);
+
     // if UH is set, bypass many of the collision bypass checks
     // TODO check these are the right ones
     if(!player_frame_isset(obj_b, "uh")) {
@@ -1271,25 +1277,21 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
             return 0;
         }
 
-        // rehit mode is off
-        if(!obj_b->gs->match_settings.rehit && (b->state == STATE_RECOIL && object_is_airborne(obj_b))) {
-            return 0;
-        }
+        if(b->rehit_combo) {
+            // rehit mode is off
+            if(!obj_b->gs->match_settings.rehit) {
+                return 0;
+            }
 
-        // rehit mode is on, but the opponent isn't airborne or stunned
-        if(obj_b->gs->match_settings.rehit && b->state == STATE_RECOIL &&
-           (!object_is_airborne(obj_b) || b->endurance < 0)) {
-            return 0;
+            // check this mode hasn't already rehit
+            if(strchr(b->rehits, move->id)) {
+                log_debug("move %d has already done a rehit", move->id);
+                return 0;
+            }
         }
 
         // is the HAR invulnerable to this kind of attack?
         if(har_is_invincible(obj_b, move)) {
-            return 0;
-        }
-
-        // check this mode hasn't already rehit
-        if(rehit && strchr(b->rehits, move->id)) {
-            log_debug("move %d has already done a rehit");
             return 0;
         }
     }
@@ -1390,7 +1392,8 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
         calc_damage_and_stun(obj_a, move, &damage, &stun);
 
         // rehits only do 60% damage
-        damage = rehit ? damage * 0.6 : damage;
+        // TODO: validate this formula
+        damage = air_hit ? damage * 0.6 : damage;
 
         if(object_is_airborne(obj_a) && object_is_airborne(obj_b)) {
             // modify the horizontal velocity of the attacker when doing air knockback
@@ -1417,11 +1420,8 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
             har_take_damage(obj_b, &move->footer_string, damage, stun);
         }
 
-        if(rehit) {
+        if(b->rehit_combo) {
             obj_b->vel.y -= 3;
-            b->rehits[strlen(b->rehits)] = move->id;
-        } else {
-            memset(b->rehits, 0, sizeof(b->rehits));
         }
 
         if((hit_coord.x != 0 || hit_coord.y != 0) && damage != 0) {
@@ -1458,6 +1458,8 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
 
         a->damage_done = 1;
         b->damage_received = 1;
+        b->rehit_combo = air_hit;
+        disable_rehit(b, move);
 
         // return if this move had priority
         return move->category == CAT_CLOSE ? 1 : 0;
@@ -1482,14 +1484,21 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
         return;
     }
 
-    // rehit mode is on, but the opponent isn't airborne or stunned
-    if(o_har->gs->match_settings.rehit && h->state == STATE_RECOIL &&
-       (!object_is_airborne(o_har) || h->endurance < 0)) {
-        return;
-    }
+    // Track this now so we don't re-evaluate after the hit registers
+    bool air_hit = object_is_airborne(o_har);
 
-    bool rehit =
-        o_har->gs->match_settings.rehit && h->state == STATE_RECOIL && object_is_airborne(o_har) && h->endurance >= 0;
+    if(h->rehit_combo) {
+        // rehit mode is off
+        if(!o_har->gs->match_settings.rehit) {
+            return;
+        }
+
+        // check this mode hasn't already rehit
+        if(strchr(h->rehits, o_pjt->cur_animation->id)) {
+            log_debug("move %d has already done a rehit", o_pjt->cur_animation->id);
+            return;
+        }
+    }
 
     // Check for collisions by sprite collision points
     int level = 2;
@@ -1574,7 +1583,7 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
             int damage = 0;
             int stun = 0;
             calc_damage_and_stun(o_pjt, move, &damage, &stun);
-            damage = rehit ? damage * 0.6 : damage;
+            damage = air_hit ? damage * 0.6 : damage;
             if(player_frame_isset(o_pjt, "ai")) {
                 str str;
                 str_from_c(&str, "A1-s01l50B2-C2-L5-M400");
@@ -1584,7 +1593,7 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
                 o_har->vel.y = -9.0;
             } else {
                 har_take_damage(o_har, &move->footer_string, damage, stun);
-                if(rehit) {
+                if(air_hit) {
                     o_har->vel.y -= 3;
                 }
                 if(!h->is_wallhugging && !object_is_airborne(o_har)) {
@@ -1609,6 +1618,8 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
 
         har_spawn_scrap(o_har, hit_coord, move->block_stun);
         h->damage_received = 1;
+        h->rehit_combo = air_hit;
+        disable_rehit(h, move);
 
         // Switch to successor animation if one exists for this projectile
         // CAT CLOSE is a check for shadow grab, but there's probably a special flag
@@ -1628,6 +1639,16 @@ void har_collide_with_hazard(object *o_har, object *o_hzd) {
     har *h = object_get_userdata(o_har);
     bk *bk_data = object_get_userdata(o_hzd);
     bk_info *anim = bk_get_info(bk_data, o_hzd->cur_animation->id);
+
+    // Track this now so we don't re-evaluate after the hit registers
+    bool air_hit = object_is_airborne(o_har);
+
+    if(h->rehit_combo) {
+        // rehit mode is off
+        if(!o_har->gs->match_settings.rehit) {
+            return;
+        }
+    }
 
     if(h->state == STATE_STANDING_UP) {
         // can't hit em while they're down
@@ -1664,6 +1685,7 @@ void har_collide_with_hazard(object *o_har, object *o_hzd) {
         }
         har_spawn_scrap(o_har, hit_coord, 9);
         h->damage_received = 1;
+        h->rehit_combo = air_hit;
     } else if(anim->chain_hit && intersect_sprite_hitpoint(o_har, o_hzd, level, &hit_coord)) {
         // we can punch this! Only set on fire pit orb
         anim = bk_get_info(bk_data, anim->chain_hit);
@@ -2271,7 +2293,7 @@ int har_act(object *obj, int act_type) {
     }
 
     if(move) {
-
+        clear_rehits(h);
         if(h->state == STATE_WALKTO || h->state == STATE_WALKFROM) {
             // switch to standing to cancel any walk velocity changes
             h->state = STATE_STANDING;

@@ -59,6 +59,9 @@ tests=(
     "Flail 66K is unblockable:UNBLOCKABLE_THROW.REC"
     "Electra 66P dodges Earthquake Smash:DODGE_EARTHQUAKE.REC"
     "Katana's extended rising blade deals the correct amount of damage:KATANA_DAMAGE.REC"
+    "Enemies have invuln after recovering from an air hit:AIR_IMMUNITY_NO_REHIT.REC"
+    "Enemies cannot be juggled by the same move:AIR_IMMUNITY_REHIT.REC"
+    "Jaguar's Bread And Butter throw combo:REHIT_COMBO.REC"
 )
 
 # Setup temp directory for outputs
