@@ -354,15 +354,15 @@ static int32_t challenger_score(sd_pilot *p, game_player *p1, game_player *p2, f
 
     int32_t ret = 0;
     int health = game_player_get_score(p1)->health;
-    ret |= (!p->req_max_rank || p->req_max_rank >= p1->pilot->rank);
-    ret |= (!p->req_vitality || p->req_vitality <= health) << 1;
-    ret |= (!p->req_accuracy || p->req_accuracy <= fight_stats->hit_miss_ratio[0]) << 2;
-    ret |= (!p->req_avg_dmg || p->req_avg_dmg <= fight_stats->average_damage[0]) << 3;
-    ret |= (!p->req_difficulty || p->req_difficulty <= p1->pilot->difficulty) << 4;
-    ret |= (!p->req_fighter || p->req_fighter == p1->pilot->har_id) << 5;
-    ret |= (!p->req_scrap || (p->req_scrap && fight_stats->finish >= FINISH_SCRAP)) << 6;
-    ret |= (!p->req_destroy || (p->req_destroy && fight_stats->finish == FINISH_DESTRUCTION)) << 7;
-    ret |= (!p->req_enemy || &p1->chr->enemies[p->req_enemy - 1]->pilot == p2->pilot) << 8;
+    ret |= (p->req_max_rank && p->req_max_rank >= p1->pilot->rank);
+    ret |= (p->req_vitality && p->req_vitality <= health) << 1;
+    ret |= (p->req_accuracy && p->req_accuracy <= fight_stats->hit_miss_ratio[0]) << 2;
+    ret |= (p->req_avg_dmg && p->req_avg_dmg <= fight_stats->average_damage[0]) << 3;
+    ret |= (p->req_difficulty && p->req_difficulty <= p1->pilot->difficulty) << 4;
+    ret |= (p->req_fighter && p->req_fighter == p1->pilot->har_id) << 5;
+    ret |= (p->req_scrap && (p->req_scrap && fight_stats->finish >= FINISH_SCRAP)) << 6;
+    ret |= (p->req_destroy && (p->req_destroy && fight_stats->finish == FINISH_DESTRUCTION)) << 7;
+    ret |= (p->req_enemy && &p1->chr->enemies[p->req_enemy - 1]->pilot == p2->pilot) << 8;
 
     return ret;
 }
