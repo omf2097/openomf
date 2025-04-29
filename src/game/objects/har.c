@@ -917,10 +917,6 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
                   h->health == 0 ? game_state_get_speed(obj->gs) - 10 : game_state_get_speed(obj->gs) - 6);
         game_state_slowdown(obj->gs, 12,
                             h->health == 0 ? game_state_get_speed(obj->gs) - 10 : game_state_get_speed(obj->gs) - 6);
-    } else {
-        if(player_frame_isset(other_har, "cp")) {
-            game_state_hit_pause(obj->gs);
-        }
     }
 
     str custom;
@@ -1310,6 +1306,7 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
         (player_frame_isset(obj_a, "ue") && !object_is_airborne(obj_b)))) {
 
         obj_a->q_counter = obj_a->q_val;
+        obj_a->should_hitpause = true;
 
         if(har_is_blocking(obj_b, move) && !player_frame_isset(obj_a, "bn")) {
             a->damage_done = 1;

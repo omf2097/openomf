@@ -96,6 +96,7 @@ struct object_t {
     bool wall_collision;
     bool hit_pixels_disabled;
     bool crossup_protection;
+    bool should_hitpause;
 
     // Set by q tag
     int8_t q_counter;
