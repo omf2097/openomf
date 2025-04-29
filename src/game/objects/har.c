@@ -1397,9 +1397,8 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
         int stun = 0;
         calc_damage_and_stun(obj_a, move, &damage, &stun);
 
-        // rehits only do 60% damage
-        // TODO: validate this formula
-        damage = air_hit ? damage * 0.6 : damage;
+        // rehits do 60% more damage
+        damage = b->rehit_combo ? damage / 0.6 : damage;
 
         if(object_is_airborne(obj_a) && object_is_airborne(obj_b)) {
             // modify the horizontal velocity of the attacker when doing air knockback
@@ -1579,7 +1578,7 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
             int damage = 0;
             int stun = 0;
             calc_damage_and_stun(o_pjt, move, &damage, &stun);
-            damage = air_hit ? damage * 0.6 : damage;
+            damage = h->rehit_combo ? damage / 0.6 : damage;
 
             har_take_damage(o_har, &move->footer_string, damage, stun);
             if(air_hit) {
