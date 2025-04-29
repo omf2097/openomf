@@ -941,6 +941,12 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
         if(h->throw_duration) {
             // No special handling
             object_set_stride(obj, 1);
+        } else if(player_frame_isset(other_har, "ai")) {
+            log_debug("grounded launch");
+            str_from_c(&custom, "A1-s01l50B2-C2-L5-M400");
+            obj->vel.x = -5.0 * object_get_direction(obj);
+            obj->vel.y = -9.0;
+            object_set_stride(obj, 1);
         } else if(object_is_airborne(obj)) {
             log_debug("airborne knockback");
             // append the 'airborne knockback' string to the hit string, replacing the final frame
@@ -1267,7 +1273,7 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
     }
 
     // Track this now so we don't re-evaluate after the hit registers
-    bool air_hit = object_is_airborne(obj_b);
+    bool air_hit = object_is_airborne(obj_b) || player_frame_isset(obj_a, "ai");
 
     // if UH is set, bypass many of the collision bypass checks
     // TODO check these are the right ones
@@ -1408,17 +1414,7 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
 
         // face B to the direction they're being attacked from
         object_set_direction(obj_b, -object_get_direction(obj_a));
-
-        if(player_frame_isset(obj_a, "ai")) {
-            str str;
-            str_from_c(&str, "A1-s01l50B2-C2-L5-M400");
-            har_take_damage(obj_b, &str, damage, stun);
-            str_free(&str);
-            obj_b->vel.x = -5.0 * object_get_direction(obj_b);
-            obj_b->vel.y = -9.0;
-        } else {
-            har_take_damage(obj_b, &move->footer_string, damage, stun);
-        }
+        har_take_damage(obj_b, &move->footer_string, damage, stun);
 
         if(b->rehit_combo) {
             obj_b->vel.y -= 3;
@@ -1584,25 +1580,17 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
             int stun = 0;
             calc_damage_and_stun(o_pjt, move, &damage, &stun);
             damage = air_hit ? damage * 0.6 : damage;
-            if(player_frame_isset(o_pjt, "ai")) {
-                str str;
-                str_from_c(&str, "A1-s01l50B2-C2-L5-M400");
-                har_take_damage(o_har, &str, damage, stun);
-                str_free(&str);
-                o_har->vel.x = -5.0 * object_get_direction(o_har);
-                o_har->vel.y = -9.0;
-            } else {
-                har_take_damage(o_har, &move->footer_string, damage, stun);
-                if(air_hit) {
-                    o_har->vel.y -= 3;
-                }
-                if(!h->is_wallhugging && !object_is_airborne(o_har)) {
-                    vec2f push = object_get_vel(o_har);
-                    if(fabsf(push.x) < 7.0f) {
-                        log_debug("doing knockback of 7");
-                        push.x = -7.0f * object_get_direction(o_har);
-                        object_set_vel(o_har, push);
-                    }
+
+            har_take_damage(o_har, &move->footer_string, damage, stun);
+            if(air_hit) {
+                o_har->vel.y -= 3;
+            }
+            if(!h->is_wallhugging && !object_is_airborne(o_har)) {
+                vec2f push = object_get_vel(o_har);
+                if(fabsf(push.x) < 7.0f) {
+                    log_debug("doing knockback of 7");
+                    push.x = -7.0f * object_get_direction(o_har);
+                    object_set_vel(o_har, push);
                 }
             }
 
