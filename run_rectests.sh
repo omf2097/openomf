@@ -62,6 +62,7 @@ tests=(
     "Enemies have invuln after recovering from an air hit:AIR_IMMUNITY_NO_REHIT.REC"
     "Enemies cannot be juggled by the same move:AIR_IMMUNITY_REHIT.REC"
     "Jaguar's Bread And Butter throw combo:REHIT_COMBO.REC"
+    "Players cannot blocking while attacking:BLOCKING_INTERRUPT.REC"
 )
 
 # Setup temp directory for outputs
