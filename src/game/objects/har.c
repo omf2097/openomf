@@ -383,10 +383,9 @@ char get_last_input(object *obj) {
 }
 
 int har_is_blocking(object *obj, af_move *move) {
-    har *h = obj->userdata;
-
     // HAR is busy and cannot block, or jumped.
-    if(!is_har_idle_grounded(obj) && h->state != STATE_BLOCKSTUN && h->state != STATE_CROUCHBLOCK) {
+    if(!is_har_idle_grounded(obj) && obj->cur_animation->id != ANIM_STANDING_BLOCK &&
+       obj->cur_animation->id != ANIM_CROUCHING_BLOCK) {
         return 0;
     }
 

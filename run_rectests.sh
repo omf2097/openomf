@@ -63,6 +63,7 @@ tests=(
     "Enemies cannot be juggled by the same move:AIR_IMMUNITY_REHIT.REC"
     "Jaguar's Bread And Butter throw combo:REHIT_COMBO.REC"
     "Jaguar cannot pick up the opponent off the ground:WAKEUP_THROW_PROTECTION.REC"
+    "Players cannot blocking while attacking:BLOCKING_INTERRUPT.REC"
 )
 
 # Setup temp directory for outputs
