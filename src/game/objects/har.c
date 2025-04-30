@@ -1427,6 +1427,9 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
             har_spawn_scrap(obj_b, hit_coord, move->block_stun);
         }
 
+        b->rehit_combo = air_hit;
+        disable_rehit(b, move);
+
         if(move->next_move) {
             af_move *next_move = af_get_move(a->af_data, move->next_move);
             if(str_size(&move->footer_string) == 0 && b->health == 0 && next_move->damage > 0) {
@@ -1457,8 +1460,6 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
 
         a->damage_done = 1;
         b->damage_received = 1;
-        b->rehit_combo = air_hit;
-        disable_rehit(b, move);
 
         // return if this move had priority
         return move->category == CAT_CLOSE ? 1 : 0;
