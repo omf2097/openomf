@@ -847,6 +847,12 @@ void calc_damage_and_stun(object *obj, af_move *move, int *damage, int *stun) {
     game_player *gp = game_state_get_player(obj->gs, h->player_id);
     sd_pilot *pilot = gp->pilot;
 
+    if(move->category == CAT_VICTORY) {
+        *damage = move->damage;
+        *stun = *damage;
+        return;
+    }
+
     int multiplier = 100;
     if(player_frame_isset(obj, "k")) {
         multiplier = player_frame_get(obj, "k") + 10;
