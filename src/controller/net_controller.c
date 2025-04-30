@@ -1054,7 +1054,7 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                 event.peer->data = NULL;
                 data->synchronized = false;
                 data->winner = arena_is_over(ctrl->gs->sc);
-                if(data->winner == -1) {
+                if(data->winner == -1 && data->gs_bak) {
                     // match did not end cleanly
                     // so force the game to playback ALL events to try to update the trace/rec files
                     data->last_received_tick = ctrl->gs->int_tick - data->local_proposal;
