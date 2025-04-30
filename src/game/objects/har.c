@@ -439,7 +439,8 @@ int har_is_invincible(object *obj, af_move *move) {
     switch(move->category) {
         case CAT_CLOSE:
             if(player_frame_isset(obj, "zg") || obj->cur_animation->id == ANIM_DAMAGE ||
-               obj->cur_animation->id == ANIM_STANDING_BLOCK || obj->cur_animation->id == ANIM_CROUCHING_BLOCK) {
+               obj->cur_animation->id == ANIM_STANDING_BLOCK || obj->cur_animation->id == ANIM_CROUCHING_BLOCK ||
+               obj->cur_animation->id == ANIM_STANDUP) {
                 return 1;
             }
             break;
