@@ -63,6 +63,7 @@ tests=(
     "Enemies cannot be juggled by the same move:AIR_IMMUNITY_REHIT.REC"
     "Jaguar's Bread And Butter throw combo:REHIT_COMBO.REC"
     "Players cannot blocking while attacking:BLOCKING_INTERRUPT.REC"
+    "Katana cannot infinitely heel stomp to the moon with rehit mode:SPACE_JUMP.REC"
 )
 
 # Setup temp directory for outputs
