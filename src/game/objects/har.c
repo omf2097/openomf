@@ -1023,8 +1023,8 @@ void har_take_damage(object *obj, af_move *move) {
             // TODO there's an alternative formula used in some conditions:
             // (((damage * 0.09523809523809523) + 3.5)  * -1) * obj->vertical_velocity_modifier
             // but we don't know what those conditions are
-            obj->vel.x =
-                (((move->damage * 0.16666666f) + 2.0f) * object_get_direction(obj) * -1) * obj->horizontal_velocity_modifier;
+            obj->vel.x = (((move->damage * 0.16666666f) + 2.0f) * object_get_direction(obj) * -1) *
+                         obj->horizontal_velocity_modifier;
             object_set_stride(obj, 1);
         } else {
             if(h->health <= 0 || h->endurance < 0) {
