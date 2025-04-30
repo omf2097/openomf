@@ -306,6 +306,11 @@ void player_run(object *obj) {
             obj->object_flags |= OBJECT_FLAGS_NEXT_ANIM_ON_ENEMY_HIT;
         }
 
+        if(sd_script_isset(frame, "cp") && obj->should_hitpause) {
+            obj->should_hitpause = false;
+            game_state_hit_pause(obj->gs);
+        }
+
         if(sd_script_isset(frame, "mu")) {
             // mu tags depend on a previous mm tag, so we need to iterate all of then tags, keeping track of the last mm
             // value we spawn
