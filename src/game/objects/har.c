@@ -383,10 +383,9 @@ char get_last_input(object *obj) {
 }
 
 int har_is_blocking(object *obj, af_move *move) {
-    har *h = obj->userdata;
-
     // HAR is busy and cannot block, or jumped.
-    if(!is_har_idle_grounded(obj) && h->state != STATE_BLOCKSTUN && h->state != STATE_CROUCHBLOCK) {
+    if(!is_har_idle_grounded(obj) && obj->cur_animation->id != ANIM_STANDING_BLOCK &&
+       obj->cur_animation->id != ANIM_CROUCHING_BLOCK) {
         return 0;
     }
 
@@ -439,7 +438,8 @@ int har_is_invincible(object *obj, af_move *move) {
     switch(move->category) {
         case CAT_CLOSE:
             if(player_frame_isset(obj, "zg") || obj->cur_animation->id == ANIM_DAMAGE ||
-               obj->cur_animation->id == ANIM_STANDING_BLOCK || obj->cur_animation->id == ANIM_CROUCHING_BLOCK) {
+               obj->cur_animation->id == ANIM_STANDING_BLOCK || obj->cur_animation->id == ANIM_CROUCHING_BLOCK ||
+               obj->cur_animation->id == ANIM_STANDUP) {
                 return 1;
             }
             break;
@@ -983,10 +983,6 @@ void har_take_damage(object *obj, af_move *move) {
                   h->health == 0 ? game_state_get_speed(obj->gs) - 10 : game_state_get_speed(obj->gs) - 6);
         game_state_slowdown(obj->gs, 12,
                             h->health == 0 ? game_state_get_speed(obj->gs) - 10 : game_state_get_speed(obj->gs) - 6);
-    } else {
-        if(player_frame_isset(other_har, "cp")) {
-            game_state_hit_pause(obj->gs);
-        }
     }
 
     const str *string = &move->footer_string;
@@ -1324,6 +1320,7 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
         (player_frame_isset(obj_a, "ue") && !object_is_airborne(obj_b)))) {
 
         obj_a->q_counter = obj_a->q_val;
+        obj_a->should_hitpause = true;
 
         if(har_is_blocking(obj_b, move) && !player_frame_isset(obj_a, "bn")) {
             a->damage_done = 1;
@@ -1424,6 +1421,9 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
             har_spawn_scrap(obj_b, hit_coord, move->block_stun);
         }
 
+        b->rehit_combo = air_hit;
+        disable_rehit(b, move);
+
         if(move->next_move) {
             af_move *next_move = af_get_move(a->af_data, move->next_move);
             if(str_size(&move->footer_string) == 0 && b->health == 0 && next_move->damage > 0) {
@@ -1454,8 +1454,6 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
 
         a->damage_done = 1;
         b->damage_received = 1;
-        b->rehit_combo = air_hit;
-        disable_rehit(b, move);
 
         // return if this move had priority
         return move->category == CAT_CLOSE ? 1 : 0;
@@ -2786,49 +2784,41 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     for(int i = 0; i < MAX_AF_MOVES; i++) {
         move = af_get_move(af_data, i);
         if(move != NULL) {
-            if(!is_tournament(obj->gs)) {
-                // projectiles have hyper mode, but may have extra_string_selector of 0
-                if(move->ani.extra_string_count > 0 && move->extra_string_selector != 1 &&
-                   move->extra_string_selector != 2) {
-                    str *str = vector_get(&move->ani.extra_strings, fight_mode ? 1 : 0);
-                    if(str && str_size(str) != 0 && !str_equal_c(str, "!")) {
-                        // its not the empty string and its not the string '!'
-                        // so we should use it
-                        str_set(&move->ani.animation_string, vector_get(&move->ani.extra_strings, fight_mode ? 1 : 0));
+            // normal or hyper
+            extra_index = fight_mode ? 1 : 0;
+
+            // check for enhancements
+            if(move->ani.extra_string_count > 0 && move->extra_string_selector != 1 &&
+               move->extra_string_selector != 2) {
+                // if you have 1 enhancement choose extra string 2
+                // if you have 2 enhancements choose extra string 3
+                // if you have 3 enhancements choose extra string 4
+                // if that string doesn't exist, pick the highest one
+                if(pilot->enhancements[har_id] > 0) {
+                    // find the last populated enhancement index, or 1 (hyper)
+                    int enhancement_str = min2(1 + pilot->enhancements[har_id], move->ani.extra_string_count - 1);
+                    // don't override the hyper mode switch
+                    if(enhancement_str >= 2) {
+                        extra_index = enhancement_str;
+                    }
+                }
+
+                str *str = vector_get(&move->ani.extra_strings, extra_index);
+                if(str && str_size(str) != 0 && !str_equal_c(str, "!")) {
+                    // its not the empty string and its not the string '!'
+                    // so we should use it
+                    str_set(&move->ani.animation_string, str);
+                    if(pilot->enhancements[har_id] > 0) {
+                        log_debug("using enhancement %d string '%s' for animation %d on har %d",
+                                  pilot->enhancements[har_id], str_c(str), i, har_id);
+                    } else {
                         log_debug("using %s mode string '%s' for animation %d on har %d",
                                   fight_mode ? "hyper" : "normal", str_c(str), i, har_id);
                     }
                 }
-            } else {
-                // normal or hyper
-                extra_index = fight_mode ? 1 : 0;
+            }
 
-                // check for enhancements
-                if(move->ani.extra_string_count > 0 && move->extra_string_selector != 1 &&
-                   move->extra_string_selector != 2) {
-                    // if you have 1 enhancement choose extra string 2
-                    // if you have 2 enhancements choose extra string 3
-                    // if you have 3 enhancements choose extra string 4
-                    // if that string doesn't exist, pick the highest one
-                    if(pilot->enhancements[har_id] > 0) {
-                        // find the last populated enhancement index, or 1 (hyper)
-                        extra_index = min2(1 + pilot->enhancements[har_id], move->ani.extra_string_count - 1);
-                    }
-
-                    str *str = vector_get(&move->ani.extra_strings, extra_index);
-                    if(str && str_size(str) != 0 && !str_equal_c(str, "!")) {
-                        // its not the empty string and its not the string '!'
-                        // so we should use it
-                        str_set(&move->ani.animation_string, str);
-                        if(pilot->enhancements[har_id] > 0) {
-                            log_debug("using enhancement %d string '%s' for animation %d on har %d",
-                                      pilot->enhancements[har_id], str_c(str), i, har_id);
-                        } else {
-                            log_debug("using %s mode string '%s' for animation %d on har %d",
-                                      fight_mode ? "hyper" : "normal", str_c(str), i, har_id);
-                        }
-                    }
-                }
+            if(is_tournament(obj->gs)) {
                 switch(move->extra_string_selector) {
                     case 0:
                         break;
