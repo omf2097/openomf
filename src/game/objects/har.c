@@ -2796,49 +2796,41 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     for(int i = 0; i < MAX_AF_MOVES; i++) {
         move = af_get_move(af_data, i);
         if(move != NULL) {
-            if(!is_tournament(obj->gs)) {
-                // projectiles have hyper mode, but may have extra_string_selector of 0
-                if(move->ani.extra_string_count > 0 && move->extra_string_selector != 1 &&
-                   move->extra_string_selector != 2) {
-                    str *str = vector_get(&move->ani.extra_strings, fight_mode ? 1 : 0);
-                    if(str && str_size(str) != 0 && !str_equal_c(str, "!")) {
-                        // its not the empty string and its not the string '!'
-                        // so we should use it
-                        str_set(&move->ani.animation_string, vector_get(&move->ani.extra_strings, fight_mode ? 1 : 0));
+            // normal or hyper
+            extra_index = fight_mode ? 1 : 0;
+
+            // check for enhancements
+            if(move->ani.extra_string_count > 0 && move->extra_string_selector != 1 &&
+               move->extra_string_selector != 2) {
+                // if you have 1 enhancement choose extra string 2
+                // if you have 2 enhancements choose extra string 3
+                // if you have 3 enhancements choose extra string 4
+                // if that string doesn't exist, pick the highest one
+                if(pilot->enhancements[har_id] > 0) {
+                    // find the last populated enhancement index, or 1 (hyper)
+                    int enhancement_str = min2(1 + pilot->enhancements[har_id], move->ani.extra_string_count - 1);
+                    // don't override the hyper mode switch
+                    if(enhancement_str >= 2) {
+                        extra_index = enhancement_str;
+                    }
+                }
+
+                str *str = vector_get(&move->ani.extra_strings, extra_index);
+                if(str && str_size(str) != 0 && !str_equal_c(str, "!")) {
+                    // its not the empty string and its not the string '!'
+                    // so we should use it
+                    str_set(&move->ani.animation_string, str);
+                    if(pilot->enhancements[har_id] > 0) {
+                        log_debug("using enhancement %d string '%s' for animation %d on har %d",
+                                  pilot->enhancements[har_id], str_c(str), i, har_id);
+                    } else {
                         log_debug("using %s mode string '%s' for animation %d on har %d",
                                   fight_mode ? "hyper" : "normal", str_c(str), i, har_id);
                     }
                 }
-            } else {
-                // normal or hyper
-                extra_index = fight_mode ? 1 : 0;
+            }
 
-                // check for enhancements
-                if(move->ani.extra_string_count > 0 && move->extra_string_selector != 1 &&
-                   move->extra_string_selector != 2) {
-                    // if you have 1 enhancement choose extra string 2
-                    // if you have 2 enhancements choose extra string 3
-                    // if you have 3 enhancements choose extra string 4
-                    // if that string doesn't exist, pick the highest one
-                    if(pilot->enhancements[har_id] > 0) {
-                        // find the last populated enhancement index, or 1 (hyper)
-                        extra_index = min2(1 + pilot->enhancements[har_id], move->ani.extra_string_count - 1);
-                    }
-
-                    str *str = vector_get(&move->ani.extra_strings, extra_index);
-                    if(str && str_size(str) != 0 && !str_equal_c(str, "!")) {
-                        // its not the empty string and its not the string '!'
-                        // so we should use it
-                        str_set(&move->ani.animation_string, str);
-                        if(pilot->enhancements[har_id] > 0) {
-                            log_debug("using enhancement %d string '%s' for animation %d on har %d",
-                                      pilot->enhancements[har_id], str_c(str), i, har_id);
-                        } else {
-                            log_debug("using %s mode string '%s' for animation %d on har %d",
-                                      fight_mode ? "hyper" : "normal", str_c(str), i, har_id);
-                        }
-                    }
-                }
+            if(is_tournament(obj->gs)) {
                 switch(move->extra_string_selector) {
                     case 0:
                         break;
