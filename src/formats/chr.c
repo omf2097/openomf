@@ -12,6 +12,7 @@
 #include "formats/internal/writer.h"
 #include "formats/pic.h"
 #include "formats/tournament.h"
+#include "game/scenes/mechlab/har_economy.h"
 #include "resources/resource_files.h"
 #include "resources/trnmanager.h"
 #include "utils/allocator.h"
@@ -120,7 +121,7 @@ int sd_chr_load(sd_chr_file *chr, const path *filename) {
         sd_pilot_load_player_from_mem(mr, &chr->enemies[i]->pilot);
         if(chr->enemies[i]->pilot.har_id == 255) {
             // pick a random HAR
-            chr->enemies[i]->pilot.har_id = rand_int(10);
+            purchase_random_har(&chr->enemies[i]->pilot);
         }
         if(trn_loaded) {
             memcpy(&chr->enemies[i]->pilot.palette, &pic.photos[trn.enemies[i]->photo_id]->pal, sizeof(vga_palette));
