@@ -121,7 +121,7 @@ int main(int argc, char *argv[]) {
     if(export->count > 0 && bkfile->count > 0) {
         if(bk.palette_count < 1) {
             printf("BK file %s does not have palettes.\n", bkfile->filename[0]);
-            goto exit_1;
+            goto exit_2;
         }
 
         sd_rgba_image img;
@@ -139,7 +139,7 @@ int main(int argc, char *argv[]) {
         int enemy_id = enemy->ival[0];
         if(enemy_id < 0 || enemy_id >= chr.pilot.enemies_inc_unranked) {
             printf("Enemy index out of bounds.\n");
-            goto exit_1;
+            goto exit_2;
         }
         print_enemy_info(&chr, enemy_id);
     } else {
@@ -166,8 +166,9 @@ int main(int argc, char *argv[]) {
     }
 
     // Quit
-exit_1:
+exit_2:
     sd_bk_free(&bk);
+exit_1:
     sd_chr_free(&chr);
 exit_0:
     arg_freetable(argtable, N_ELEMENTS(argtable));
