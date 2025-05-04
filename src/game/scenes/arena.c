@@ -302,10 +302,10 @@ static void arena_end(scene *sc) {
             (player_loser->pilot->total_value + player_loser->pilot->money) / 45 + (int)player_loser->pilot->winnings;
         fight_stats->winnings = t3 + (v2c / t2) * (1.0 / 30.0);
         if(player_winner->pilot->rank - 1 < N_ELEMENTS(rank_additions)) {
-            // FIXME: Name and update unk_f_c
-            fight_stats->winnings += player_winner->pilot->unk_f_c * rank_additions[player_winner->pilot->rank - 1];
+            fight_stats->winnings +=
+                player_winner->pilot->trn_rank_money * rank_additions[player_winner->pilot->rank - 1];
         } else {
-            fight_stats->winnings += player_winner->pilot->unk_f_c * 5.0f;
+            fight_stats->winnings += player_winner->pilot->trn_rank_money * 5.0f;
         }
         fight_stats->winnings *= 0.7f;
         fight_stats->winnings *= winnings_multiplier;
