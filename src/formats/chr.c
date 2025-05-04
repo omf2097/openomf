@@ -11,6 +11,8 @@
 #include "formats/internal/writer.h"
 #include "formats/pic.h"
 #include "formats/tournament.h"
+#include "game/common_defines.h"
+#include "game/scenes/mechlab/lab_har_constants.h"
 #include "resources/resource_files.h"
 #include "resources/trnmanager.h"
 #include "utils/allocator.h"
@@ -48,6 +50,19 @@ int sd_chr_from_trn(sd_chr_file *chr, sd_tournament_file *trn, sd_pilot *pilot) 
     chr->photo = omf_calloc(1, sizeof(sd_sprite));
     sd_sprite_copy(chr->photo, pilot->photo);
     return SD_SUCCESS;
+}
+
+static void purchase_random_har(sd_pilot *pilot) {
+    int32_t possible_purchases[10];
+    size_t n = 0;
+    for(int32_t i = 0; i < 10; ++i) {
+        if(pilot->money >= har_prices[i]) {
+            possible_purchases[n] = i;
+            ++n;
+        }
+    }
+    pilot->har_id = possible_purchases[rand_int(n)];
+    pilot->money -= har_prices[pilot->har_id];
 }
 
 int sd_chr_load(sd_chr_file *chr, const path *filename) {
@@ -119,7 +134,7 @@ int sd_chr_load(sd_chr_file *chr, const path *filename) {
         sd_pilot_load_player_from_mem(mr, &chr->enemies[i]->pilot);
         if(chr->enemies[i]->pilot.har_id == 255) {
             // pick a random HAR
-            chr->enemies[i]->pilot.har_id = rand_int(10);
+            purchase_random_har(&chr->enemies[i]->pilot);
         }
         if(trn_loaded) {
             memcpy(&chr->enemies[i]->pilot.palette, &pic.photos[trn.enemies[i]->photo_id]->pal, sizeof(vga_palette));
