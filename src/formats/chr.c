@@ -129,7 +129,7 @@ int sd_chr_load(sd_chr_file *chr, const path *filename) {
             chr->enemies[i]->pilot.photo = omf_calloc(1, sizeof(sd_sprite));
             sd_sprite_copy(chr->enemies[i]->pilot.photo, pic.photos[trn.enemies[i]->photo_id]->sprite);
             //  copy all the "pilot" fields (eg. winnings) over from the tournament file
-            chr->enemies[i]->pilot.unk_f_c = trn.enemies[i]->unk_f_c;
+            chr->enemies[i]->pilot.trn_rank_money = trn.enemies[i]->trn_rank_money;
             chr->enemies[i]->pilot.trn_winnings_mult = trn.enemies[i]->trn_winnings_mult;
             chr->enemies[i]->pilot.pilot_id = trn.enemies[i]->pilot_id;
             chr->enemies[i]->pilot.unknown_k = trn.enemies[i]->unknown_k;
