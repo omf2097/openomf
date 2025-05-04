@@ -13,6 +13,7 @@
 #include "formats/pic.h"
 #include "formats/tournament.h"
 #include "game/scenes/mechlab/har_economy.h"
+#include "game/scenes/mechlab/lab_menu_customize.h"
 #include "resources/resource_files.h"
 #include "resources/trnmanager.h"
 #include "utils/allocator.h"
@@ -44,6 +45,17 @@ int sd_chr_from_trn(sd_chr_file *chr, sd_tournament_file *trn, sd_pilot *pilot) 
     chr->pilot.enemies_inc_unranked = trn->enemy_count;
     chr->pilot.enemies_ex_unranked = ranked;
     chr->pilot.rank = ranked + 1;
+
+    int32_t pilot_total_value = calculate_trade_value(&chr->pilot) + chr->pilot.money + (har_prices[0] * 85) / 100;
+    float extra_value = (pilot_total_value - trn->assumed_initial_value) / 320;
+    int32_t extra = extra_value / 0.6f;
+    if(extra > 1500) {
+        extra = 1500;
+    } else if(extra < 0) {
+        extra = 0;
+    }
+    chr->pilot.trn_rank_money = (ranked + 10) * 0.5 + (extra / 15);
+
     strncpy_or_abort(chr->pilot.trn_name, trn->filename, sizeof(chr->pilot.trn_name));
     strncpy_or_abort(chr->pilot.trn_desc, trn->locales[0]->title, sizeof(chr->pilot.trn_desc));
     strncpy_or_abort(chr->pilot.trn_image, trn->pic_file, sizeof(chr->pilot.trn_image));
