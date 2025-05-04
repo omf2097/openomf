@@ -35,4 +35,6 @@ void purchase_random_har_upgrades(sd_pilot *pilot);
 void upgrade_har(sd_pilot *pilot, enum HAR_UPGRADE);
 int32_t upgrade_price(sd_pilot *pilot, enum HAR_UPGRADE);
 
+void update_total_value(sd_pilot *);
+
 #endif // HAR_ECONOMY_H
