@@ -1,5 +1,6 @@
 #include "game/scenes/mechlab/har_economy.h"
 #include "formats/pilot.h"
+#include "utils/c_array_util.h"
 #include "utils/log.h"
 #include "utils/random.h"
 
@@ -112,4 +113,69 @@ void upgrade_har(sd_pilot *pilot, enum HAR_UPGRADE upgrade) {
         default:
             abort();
     }
+}
+
+static void update_total_value(sd_pilot *pilot) {
+    int value = har_prices[pilot->har_id];
+    for(int i = 1; i < pilot->arm_power; i++) {
+        value += har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[i] * arm_leg_multiplier;
+    }
+
+    for(int i = 1; i < pilot->arm_speed; i++) {
+        value += har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[i] * arm_leg_multiplier;
+    }
+
+    for(int i = 1; i < pilot->leg_power; i++) {
+        value += har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[i] * arm_leg_multiplier;
+    }
+
+    for(int i = 1; i < pilot->leg_speed; i++) {
+        value += har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[i] * arm_leg_multiplier;
+    }
+
+    for(int i = 1; i < pilot->armor; i++) {
+        value += har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[i] * armor_multiplier;
+    }
+
+    for(int i = 1; i < pilot->stun_resistance; i++) {
+        value += har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[i] * stun_res_multiplier;
+    }
+
+    pilot->total_value = (value * 70) / 100;
+}
+
+static int rank_additions[] = {
+    500, 200, 160, 120, 100, 90, 80, 70, 60, 55, 50, 45, 40, 35, 30, 25, 20,
+    17,  15,  14,  13,  12,  11, 11, 10, 9,  8,  8,  7,  7,  6,  6,  5,  0,
+};
+
+static float rank_scale(unsigned rank) {
+    assert(rank >= 1);
+    rank -= 1;
+    float a = rank * 0.1 + 1.0;
+    float b = rank * 0.2 + 1.0;
+    return b * a * a;
+}
+
+static float rank_bonus(unsigned rank) {
+    assert(rank >= 1);
+    rank -= 1;
+    if(rank < N_ELEMENTS(rank_additions)) {
+        return rank_additions[rank];
+    }
+    return 5.0;
+}
+
+float calculate_winnings(sd_pilot *winner, sd_pilot *loser, float winnings_multiplier) {
+    update_total_value(winner);
+    update_total_value(loser);
+
+    int adjusted_value = winner->total_value - (har_prices[0] * 85) / 100 - 500;
+    float loser_value = (loser->total_value + loser->money) / 45.0 + (int)loser->winnings;
+    float winnings = loser_value + (adjusted_value / rank_scale(winner->rank) / 30.0);
+
+    winnings += winner->trn_rank_money * rank_bonus(winner->rank);
+    winnings *= 0.7f;
+    winnings *= winnings_multiplier;
+    return winnings;
 }
