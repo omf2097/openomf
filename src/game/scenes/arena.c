@@ -23,6 +23,7 @@
 #include "game/objects/har.h"
 #include "game/objects/hazard.h"
 #include "game/objects/scrap.h"
+#include "game/protos/economy.h"
 #include "game/protos/object.h"
 #include "game/scenes/arena.h"
 #include "game/scenes/mechlab/lab_har_constants.h"
@@ -292,8 +293,11 @@ static void arena_end(scene *sc) {
         float hp_percentage = (float)winner_har->health / (float)winner_har->health_max;
         fight_stats->repair_cost = (1.0f - hp_percentage) * trade_value;
 
+        // FIXME: Still way off
+        update_total_value(player_winner->pilot);
+        update_total_value(player_loser->pilot);
         float winnings_multiplier = player_winner->chr->winnings_multiplier;
-        player_winner->pilot->total_value = trade_value + player_winner->pilot->money;
+
         int v2c = player_winner->pilot->total_value - (har_prices[0] * 85) / 100 - 500;
         double t = ((player_winner->pilot->rank - 1) * 0.1 + 1.0);
         float tf = t;
