@@ -76,7 +76,7 @@ void export_to(sd_font *font, const char *filename, int split) {
             sprintf(path, "%s/uni%04x.png", filename, i);
             int ret = sd_rgba_image_to_png(&ch_img, path);
             if(ret != SD_SUCCESS) {
-                printf("Error while exporting to %s: %s.", path, sd_get_error(ret));
+                printf("Failed to export the font to %s\n", path);
             }
         }
         sd_rgba_image_free(&ch_img);
@@ -94,7 +94,7 @@ void export_to(sd_font *font, const char *filename, int split) {
         sd_rgba_image_free(&ch_img);
         int ret = sd_rgba_image_to_png(&dst_img, filename);
         if(ret != SD_SUCCESS) {
-            printf("Error while exporting to %s: %s.", filename, sd_get_error(ret));
+            printf("Failed to export the font to %s\n", filename);
         }
         sd_rgba_image_free(&dst_img);
     }
