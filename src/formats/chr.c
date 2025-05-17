@@ -12,6 +12,8 @@
 #include "formats/pic.h"
 #include "formats/tournament.h"
 #include "game/common_defines.h"
+#include "game/scenes/mechlab/lab_har_constants.h"
+#include "game/scenes/mechlab/lab_menu_customize.h"
 #include "resources/pathmanager.h"
 #include "resources/trnmanager.h"
 #include "utils/allocator.h"
@@ -43,12 +45,35 @@ int sd_chr_from_trn(sd_chr_file *chr, sd_tournament_file *trn, sd_pilot *pilot) 
     chr->pilot.enemies_inc_unranked = trn->enemy_count;
     chr->pilot.enemies_ex_unranked = ranked;
     chr->pilot.rank = ranked + 1;
+
+    int32_t pilot_total_value = calculate_trade_value(&chr->pilot) + chr->pilot.money + (har_prices[0] * 85) / 100;
+    float extra_value = (pilot_total_value - trn->assumed_initial_value) / 320;
+    int32_t extra = extra_value / 0.6f;
+    if(extra > 1500)
+        extra = 1500;
+    if(extra < 0)
+        extra = 0;
+    chr->pilot.trn_rank_money = (ranked + 10) * 0.5 + (extra / 15);
+
     strncpy_or_abort(chr->pilot.trn_name, trn->filename, sizeof(chr->pilot.trn_name));
     strncpy_or_abort(chr->pilot.trn_desc, trn->locales[0]->title, sizeof(chr->pilot.trn_desc));
     strncpy_or_abort(chr->pilot.trn_image, trn->pic_file, sizeof(chr->pilot.trn_image));
     chr->photo = omf_calloc(1, sizeof(sd_sprite));
     sd_sprite_copy(chr->photo, pilot->photo);
     return SD_SUCCESS;
+}
+
+static void purchase_random_har(sd_pilot *pilot) {
+    int32_t possible_purchases[10];
+    size_t n = 0;
+    for(int32_t i = 0; i < 10; ++i) {
+        if(pilot->money >= har_prices[i]) {
+            possible_purchases[n] = i;
+            ++n;
+        }
+    }
+    pilot->har_id = possible_purchases[rand_int(n)];
+    pilot->money -= har_prices[pilot->har_id];
 }
 
 int sd_chr_load(sd_chr_file *chr, const char *filename) {
@@ -125,14 +150,14 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
         sd_pilot_load_player_from_mem(mr, &chr->enemies[i]->pilot);
         if(chr->enemies[i]->pilot.har_id == 255) {
             // pick a random HAR
-            chr->enemies[i]->pilot.har_id = rand_int(10);
+            purchase_random_har(&chr->enemies[i]->pilot);
         }
         if(trn_loaded) {
             memcpy(&chr->enemies[i]->pilot.palette, &pic.photos[trn.enemies[i]->photo_id]->pal, sizeof(vga_palette));
             chr->enemies[i]->pilot.photo = omf_calloc(1, sizeof(sd_sprite));
             sd_sprite_copy(chr->enemies[i]->pilot.photo, pic.photos[trn.enemies[i]->photo_id]->sprite);
-            //  copy all the "pilot" fields (eg. winnings) over from the tournament file
-            chr->enemies[i]->pilot.unk_f_c = trn.enemies[i]->unk_f_c;
+            // copy all the "pilot" fields (eg. winnings) over from the tournament file
+            chr->enemies[i]->pilot.trn_rank_money = trn.enemies[i]->trn_rank_money;
             chr->enemies[i]->pilot.unk_f_d = trn.enemies[i]->unk_f_d;
             chr->enemies[i]->pilot.pilot_id = trn.enemies[i]->pilot_id;
             chr->enemies[i]->pilot.unknown_k = trn.enemies[i]->unknown_k;
