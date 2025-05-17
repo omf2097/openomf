@@ -110,7 +110,16 @@ endif()
 execute_process(
     COMMAND "${GIT_EXECUTABLE}" config "--comment" "set by version.cmake, to sort prerelease versions as older than releases." "versionsort.suffix" "-"
     OUTPUT_QUIET ERROR_QUIET
+    RESULT_VARIABLE "GIT_ERRORCODE"
 )
+
+if(GIT_ERRORCODE)
+    # retry without the --comment argument, which was added in git 2.45, released april 2024
+    execute_process(
+        COMMAND "${GIT_EXECUTABLE}" config "versionsort.suffix" "-"
+        OUTPUT_QUIET ERROR_QUIET
+    )
+endif()
 
 # List all tags, newest to oldest
 execute_process(
