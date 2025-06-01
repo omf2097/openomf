@@ -640,13 +640,13 @@ void melee_input_tick(scene *scene) {
     controller_free_chain(menu_ev);
 }
 
-static void draw_highlight(const melee_local *local, const cursor_data *cursor, int offset) {
+static void draw_highlight(melee_local *local, const cursor_data *cursor, int offset) {
     int x = 11 + (62 * cursor->column);
     int y = 115 + (42 * cursor->row);
     video_draw_offset(&local->select_hilight, x, y, offset, 255);
 }
 
-static void render_highlights(const melee_local *local, bool player2_is_selectable) {
+static void render_highlights(melee_local *local, bool player2_is_selectable) {
     if(player2_is_selectable && CURSORS_MATCH(local)) {
         draw_highlight(local, &local->cursor[0], VIOLET_CURSOR_INDEX);
     } else {
@@ -657,8 +657,8 @@ static void render_highlights(const melee_local *local, bool player2_is_selectab
     }
 }
 
-static void render_enabled_portrait(const portrait *portraits, cursor_data *cursor, int player) {
-    const portrait *p = &portraits[5 * cursor->row + cursor->column];
+static void render_enabled_portrait(portrait *portraits, cursor_data *cursor, int player) {
+    portrait *p = &portraits[5 * cursor->row + cursor->column];
     if(player < 0) {
         video_draw(&p->enabled, p->x, p->y);
     } else {

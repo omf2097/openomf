@@ -14,7 +14,7 @@ typedef struct button_details {
     bool disabled;
 } button_details;
 
-component *sprite_button_from_details(const button_details *details, const char *text, const surface *img,
+component *sprite_button_from_details(const button_details *details, const char *text, surface *img,
                                       void *userdata);
 
 #endif // BUTTON_DETAILS_H

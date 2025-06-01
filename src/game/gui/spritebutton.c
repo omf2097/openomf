@@ -12,7 +12,7 @@
 
 typedef struct spritebutton {
     text *text;
-    const surface *img;
+    surface *img;
     int active_ticks;
 
     int16_t override_color;
@@ -110,7 +110,7 @@ static void spritebutton_layout(component *c, int x, int y, int w, int h) {
     }
 }
 
-component *spritebutton_create(const char *text, const surface *img, bool disabled, spritebutton_click_cb cb,
+component *spritebutton_create(const char *text, surface *img, bool disabled, spritebutton_click_cb cb,
                                void *userdata) {
     component *c = widget_create();
     component_disable(c, disabled);

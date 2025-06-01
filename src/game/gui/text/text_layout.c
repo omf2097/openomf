@@ -226,7 +226,7 @@ void text_layout_compute(text_layout *layout, const str *buf, const font *font, 
     foreach(it, row) {
         uint16_t x = halign_offset(horizontal_align, max_width, row->size.w);
         for(size_t i = row->start_index; i < row->end_index; i++) {
-            const surface *glyph = font_get_surface(font, src[i]);
+            surface *glyph = font_get_surface(font, src[i]);
             if(glyph != NULL) {
                 text_layout_item *item = vector_append_ptr(&layout->items);
                 item->glyph = glyph;

@@ -28,7 +28,7 @@ typedef void (*reset_context_fn)(void *ctx);
 typedef void (*close_context_fn)(void *ctx);
 
 // Rendering functions, there must be implemented
-typedef void (*draw_surface_fn)(void *ctx, const surface *src_surface, SDL_Rect *rect, int remap_offset,
+typedef void (*draw_surface_fn)(void *ctx, surface *src_surface, SDL_Rect *rect, int remap_offset,
                                 int remap_rounds, int palette_offset, int palette_limit, int opacity,
                                 unsigned int flip_mode, unsigned int options);
 typedef void (*move_target_fn)(void *ctx, int x, int y);

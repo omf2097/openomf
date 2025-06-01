@@ -4,10 +4,11 @@
 #include "formats/vga_image.h"
 #include "video/image.h"
 #include "video/vga_palette.h"
+#include "utils/sprite_atlas.h"
 #include <SDL.h>
 
 typedef struct surface {
-    unsigned int guid;
+    atlas_index handle;
     int w;
     int h;
     int transparent;

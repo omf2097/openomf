@@ -197,13 +197,13 @@ void video_schedule_screenshot(video_screenshot_signal callback) {
     current_renderer.capture_screen(current_renderer.ctx, callback);
 }
 
-static inline void draw_args(const surface *sur, SDL_Rect *dst, int remap_offset, int remap_rounds, int palette_offset,
+static inline void draw_args(surface *sur, SDL_Rect *dst, int remap_offset, int remap_rounds, int palette_offset,
                              int palette_limit, int opacity, unsigned int flip_mode, unsigned int options) {
     current_renderer.draw_surface(current_renderer.ctx, sur, dst, remap_offset, remap_rounds, palette_offset,
                                   palette_limit, opacity, flip_mode, options);
 }
 
-void video_draw_full(const surface *src_surface, int x, int y, int w, int h, int remap_offset, int remap_rounds,
+void video_draw_full(surface *src_surface, int x, int y, int w, int h, int remap_offset, int remap_rounds,
                      int palette_offset, int palette_limit, int opacity, unsigned int flip_mode, unsigned int options) {
     SDL_Rect dst;
     dst.w = w;
@@ -214,7 +214,7 @@ void video_draw_full(const surface *src_surface, int x, int y, int w, int h, int
               options);
 }
 
-void video_draw_offset(const surface *src_surface, int x, int y, int offset, int limit) {
+void video_draw_offset(surface *src_surface, int x, int y, int offset, int limit) {
     SDL_Rect dst;
     dst.w = src_surface->w;
     dst.h = src_surface->h;
@@ -223,7 +223,7 @@ void video_draw_offset(const surface *src_surface, int x, int y, int offset, int
     draw_args(src_surface, &dst, 0, 0, offset, limit, 255, 0, 0);
 }
 
-void video_draw_size(const surface *src_surface, int x, int y, int w, int h) {
+void video_draw_size(surface *src_surface, int x, int y, int w, int h) {
     SDL_Rect dst;
     dst.w = w;
     dst.h = h;
@@ -232,7 +232,7 @@ void video_draw_size(const surface *src_surface, int x, int y, int w, int h) {
     draw_args(src_surface, &dst, 0, 0, 0, 255, 255, 0, 0);
 }
 
-void video_draw(const surface *src_surface, int x, int y) {
+void video_draw(surface *src_surface, int x, int y) {
     SDL_Rect dst;
     dst.w = src_surface->w;
     dst.h = src_surface->h;
@@ -241,7 +241,7 @@ void video_draw(const surface *src_surface, int x, int y) {
     draw_args(src_surface, &dst, 0, 0, 0, 255, 255, 0, 0);
 }
 
-void video_draw_remap(const surface *src_surface, int x, int y, int remap_offset, int remap_rounds,
+void video_draw_remap(surface *src_surface, int x, int y, int remap_offset, int remap_rounds,
                       unsigned int options) {
     SDL_Rect dst;
     dst.w = src_surface->w;

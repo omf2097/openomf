@@ -27,6 +27,7 @@ void *vector_get(const vector *vector, unsigned int key);
 int vector_set(vector *vector, unsigned int key, const void *value);
 void vector_append(vector *vector, const void *value);
 void *vector_append_ptr(vector *vec);
+void *vector_append_ptr_index(vector *vec, size_t *index);
 
 void vector_sort(vector *vector, vector_compare_func cf);
 
@@ -45,6 +46,7 @@ static inline unsigned int vector_size(const vector *vec) {
     return vec->blocks;
 }
 
+void vector_reserve(vector *vec, size_t count);
 void vector_clear(vector *vec);
 
 #endif // VECTOR_H

@@ -1,6 +1,6 @@
 #include "game/scenes/mechlab/button_details.h"
 
-component *sprite_button_from_details(const button_details *details, const char *text, const surface *img,
+component *sprite_button_from_details(const button_details *details, const char *text, surface *img,
                                       void *userdata) {
     component *b =
         spritebutton_create(text != NULL ? text : details->text, img, details->disabled, details->cb, userdata);

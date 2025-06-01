@@ -10,7 +10,7 @@
 typedef struct text_layout_item {
     uint16_t x; // Relative X coordinate within the bounding box
     uint16_t y; // Relative Y coordinate within the bounding box
-    const surface *glyph;
+    surface *glyph;
 } text_layout_item;
 
 typedef struct text_layout {

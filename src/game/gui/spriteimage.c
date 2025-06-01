@@ -7,7 +7,7 @@
 #include "video/video.h"
 
 typedef struct spriteimage {
-    const surface *img;
+    surface *img;
     bool owns_sprite;
 } spriteimage;
 
@@ -31,7 +31,7 @@ void spriteimage_set_owns_sprite(component *c, bool owns_sprite) {
     sb->owns_sprite = owns_sprite;
 }
 
-component *spriteimage_create(const surface *img) {
+component *spriteimage_create(surface *img) {
     component *c = widget_create();
     component_disable(c, 1);
     c->supports_focus = 0;

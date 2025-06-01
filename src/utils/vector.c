@@ -92,17 +92,35 @@ static void vector_grow(vector *vec) {
     vec->reserved = new_size;
 }
 
-void *vector_append_ptr(vector *vec) {
+static inline void* vector_append_inner(vector *vec, size_t *index) {
     if(vec->blocks >= vec->reserved) {
         vector_grow(vec);
     }
     void *dst = (char *)(vec->data + vec->blocks * vec->block_size);
+    if(index != NULL) {
+        *index = vec->blocks;
+    }
     vec->blocks++;
     return dst;
 }
 
+void *vector_append_ptr_index(vector *vec, size_t *index) {
+    return vector_append_inner(vec, index);
+}
+
+void *vector_append_ptr(vector *vec) {
+    return vector_append_inner(vec, NULL);
+}
+
 void vector_append(vector *vec, const void *value) {
-    memmove(vector_append_ptr(vec), value, vec->block_size);
+    memmove(vector_append_inner(vec, NULL), value, vec->block_size);
+}
+
+void vector_reserve(vector *vec, size_t count) {
+    vec->blocks += count;
+    if(vec->blocks >= vec->reserved) {
+        vector_grow(vec);
+    }
 }
 
 void vector_pop(vector *vec) {

@@ -8,11 +8,10 @@
 #include "video/renderers/opengl3/helpers/shaders.h"
 #include "video/renderers/opengl3/helpers/shared.h"
 #include "video/renderers/opengl3/helpers/texture.h"
-#include "video/renderers/opengl3/helpers/texture_atlas.h"
 
+#include "utils/sprite_atlas.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
-#include "utils/miscmath.h"
 #include "video/vga_state.h"
 
 #define TEX_UNIT_ATLAS 0
@@ -25,7 +24,7 @@
 typedef struct gl3_context {
     SDL_Window *window;
     SDL_GLContext *gl_context;
-    texture_atlas *atlas;
+    sprite_atlas *atlas;
     object_array *objects;
     shared *shared;
     render_target *target;
@@ -49,6 +48,7 @@ typedef struct gl3_context {
     object_array_blend_mode current_blend_mode;
     GLuint palette_prog_id;
     GLuint rgba_prog_id;
+    GLuint atlas_tex_id;
 
     video_screenshot_signal screenshot_cb;
 } gl3_context;
@@ -115,7 +115,8 @@ static bool setup_context(void *userdata, int window_w, int window_h, bool fulls
     glPixelStorei(GL_PACK_ALIGNMENT, 1);
 
     // Create the rest of the graphics objects
-    ctx->atlas = atlas_create(TEX_UNIT_ATLAS, 2048, 2048);
+    ctx->atlas = atlas_create(2048, 2048);
+    ctx->atlas_tex_id = texture_create(TEX_UNIT_ATLAS, 2048, 2048, GL_R8, GL_RED);
     ctx->objects = object_array_create(2048.0f, 2048.0f);
     ctx->shared = shared_create();
     ctx->target = render_target_create(TEX_UNIT_FBO, NATIVE_W, NATIVE_H, GL_RGBA8, GL_RGBA);
@@ -202,6 +203,7 @@ static void close_context(void *userdata) {
     shared_free(&ctx->shared);
     object_array_free(&ctx->objects);
     atlas_free(&ctx->atlas);
+    texture_free(TEX_UNIT_ATLAS, ctx->atlas_tex_id);
     delete_program(ctx->palette_prog_id);
     delete_program(ctx->rgba_prog_id);
     SDL_GL_DeleteContext(ctx->gl_context);
@@ -209,16 +211,27 @@ static void close_context(void *userdata) {
     log_info("OpenGL3 renderer closed.");
 }
 
-static void draw_surface(void *userdata, const surface *src_surface, SDL_Rect *dst, int remap_offset, int remap_rounds,
+static void draw_surface(void *userdata, surface *src_surface, SDL_Rect *dst, int remap_offset, int remap_rounds,
                          int palette_offset, int palette_limit, int opacity, unsigned int flip_mode,
                          unsigned int options) {
     gl3_context *ctx = userdata;
-    uint16_t tx, ty, tw, th;
-    if(atlas_get(ctx->atlas, src_surface, &tx, &ty, &tw, &th)) {
-        object_array_add(ctx->objects, dst->x, dst->y, dst->w, dst->h, tx, ty, tw, th, flip_mode,
-                         src_surface->transparent, remap_offset, remap_rounds, palette_offset, palette_limit, opacity,
-                         options);
+
+    // First, try to fetch existing surface coordinates from atlas. It should exist, if handle is set.
+    rect16 area;
+    if(src_surface->handle != -1 && !atlas_get(ctx->atlas, src_surface->handle, &area)) {
+        log_error("Unable to find matching surface from atlas for id %d", src_surface->handle);
+        src_surface->handle = -1;
     }
+
+    // If surface was not yet uploaded OR we somehow failed the fetch, insert a new entry to the atlas.
+    if(src_surface->handle == -1) {
+        src_surface->handle = atlas_insert(ctx->atlas, src_surface->w, src_surface->h, &area);
+        texture_update(TEX_UNIT_ATLAS, ctx->atlas_tex_id, area.x, area.y, area.w, area.h, GL_RED, (const char *)src_surface->data);
+    }
+
+    object_array_add(ctx->objects, dst->x, dst->y, dst->w, dst->h, area.x, area.y, area.w, area.h, flip_mode,
+                     src_surface->transparent, remap_offset, remap_rounds, palette_offset, palette_limit, opacity,
+                     options);
 }
 
 static void move_target(void *userdata, int x, int y) {
@@ -403,8 +416,8 @@ static void capture_screen(void *userdata, video_screenshot_signal screenshot_cb
 }
 
 static void signal_scene_change(void *userdata) {
-    gl3_context *ctx = userdata;
-    atlas_reset(ctx->atlas);
+    //gl3_context *ctx = userdata;
+    //atlas_reset(ctx->atlas);
 }
 
 static void signal_draw_atlas(void *userdata, bool toggle) {

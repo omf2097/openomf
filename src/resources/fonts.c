@@ -35,7 +35,7 @@ static int text_char_to_glyph_index(char c) {
     return ic - FIRST_PRINTABLE_CHAR;
 }
 
-const surface *font_get_surface(const font *font, char ch) {
+surface *font_get_surface(const font *font, char ch) {
     int code = text_char_to_glyph_index(ch);
     if(code < 0) {
         return NULL;

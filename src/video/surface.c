@@ -4,13 +4,9 @@
 #include "utils/png_writer.h"
 #include <stdlib.h>
 
-// Each surface is tagged with a unique key. This is then used for texture atlas.
-// This keeps track of the last index used.
-static unsigned int guid = 0;
-
 void surface_create(surface *sur, int w, int h) {
     sur->data = omf_calloc(1, w * h);
-    sur->guid = guid++;
+    sur->handle = -1;
     sur->w = w;
     sur->h = h;
     sur->transparent = 0;
@@ -62,7 +58,7 @@ void surface_free(surface *sur) {
 
 void surface_clear(surface *sur) {
     memset(sur->data, 0, sur->w * sur->h);
-    sur->guid = guid++;
+    sur->handle = -1;
 }
 
 void surface_create_from(surface *dst, const surface *src) {
@@ -89,7 +85,7 @@ void surface_sub(surface *dst, const surface *src, int dst_x, int dst_y, int src
             dst->data[dst_offset] = src->data[src_offset];
         }
     }
-    dst->guid = guid++;
+    dst->handle = -1;
 }
 
 static uint8_t find_closest_gray(const vga_palette *pal, int range_start, int range_end, int ref) {
@@ -123,7 +119,7 @@ void surface_flatten_to_mask(surface *sur, uint8_t value) {
             continue;
         sur->data[i] = value;
     }
-    sur->guid = guid++;
+    sur->handle = -1;
 }
 
 void surface_convert_to_grayscale(surface *sur, const vga_palette *pal, int range_start, int range_end,
@@ -151,7 +147,7 @@ void surface_convert_to_grayscale(surface *sur, const vga_palette *pal, int rang
             continue;
         sur->data[i] = mapping[idx];
     }
-    sur->guid = guid++;
+    sur->handle = -1;
 }
 
 void surface_convert_har_to_grayscale(surface *sur, uint8_t brightness) {
@@ -162,7 +158,7 @@ void surface_convert_har_to_grayscale(surface *sur, uint8_t brightness) {
             sur->data[i] = 0xD0 + brightness * (idx % 0x10) / 0x0F;
         }
     }
-    sur->guid = guid++;
+    sur->handle = -1;
 }
 
 void surface_compress_index_blocks(surface *sur, int range_start, int range_end, int block_size, int amount) {
@@ -176,7 +172,7 @@ void surface_compress_index_blocks(surface *sur, int range_start, int range_end,
             sur->data[i] = idx - old_idx + new_idx;
         }
     }
-    sur->guid = guid++;
+    sur->handle = -1;
 }
 
 void surface_compress_remap(surface *sur, int range_start, int range_end, int remap_to, int amount) {
@@ -191,7 +187,7 @@ void surface_compress_remap(surface *sur, int range_start, int range_end, int re
             }
         }
     }
-    sur->guid = guid++;
+    sur->handle = -1;
 }
 
 bool surface_write_png(const surface *sur, const vga_palette *pal, const char *filename) {

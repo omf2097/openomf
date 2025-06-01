@@ -23,7 +23,7 @@ typedef struct font {
 
 void font_create(font *f);
 void font_free(font *font);
-const surface *font_get_surface(const font *font, char ch);
+surface *font_get_surface(const font *font, char ch);
 
 bool fonts_init(void);
 void fonts_close(void);

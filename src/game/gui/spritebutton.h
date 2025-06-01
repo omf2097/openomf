@@ -9,7 +9,7 @@ typedef void (*spritebutton_click_cb)(component *c, void *userdata);
 typedef void (*spritebutton_tick_cb)(component *c, void *userdata);
 typedef void (*spritebutton_focus_cb)(component *c, bool focused, void *userdata);
 
-component *spritebutton_create(const char *text, const surface *img, bool disabled, spritebutton_click_cb cb,
+component *spritebutton_create(const char *text, surface *img, bool disabled, spritebutton_click_cb cb,
                                void *userdata);
 
 void spritebutton_set_horizontal_align(component *c, text_horizontal_align align);

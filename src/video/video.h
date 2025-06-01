@@ -34,7 +34,7 @@ void video_move_target(int x, int y);
  * @param x Destination X
  * @param y Destination y
  */
-void video_draw(const surface *src_surface, int x, int y);
+void video_draw(surface *src_surface, int x, int y);
 
 /**
  * Render a sprite using remapping.
@@ -46,7 +46,7 @@ void video_draw(const surface *src_surface, int x, int y);
  * @param remap_rounds Count of rounds to run the pixel through the remapping table
  * @param options Renderer effect options
  */
-void video_draw_remap(const surface *src_surface, int x, int y, int remap_offset, int remap_rounds,
+void video_draw_remap(surface *src_surface, int x, int y, int remap_offset, int remap_rounds,
                       unsigned int options);
 
 /**
@@ -60,7 +60,7 @@ void video_draw_remap(const surface *src_surface, int x, int y, int remap_offset
  * @param palette_offset Palette offset (default = 0)
  * @param palette_limit Palette offset max limit (default = 255)
  */
-void video_draw_offset(const surface *src_surface, int x, int y, int palette_offset, int palette_limit);
+void video_draw_offset(surface *src_surface, int x, int y, int palette_offset, int palette_limit);
 
 /**
  * Render a sprite on the screen using at given size. Surface will be scaled as needed to fit the
@@ -72,7 +72,7 @@ void video_draw_offset(const surface *src_surface, int x, int y, int palette_off
  * @param w Destination width
  * @param h Destination height
  */
-void video_draw_size(const surface *src_surface, int x, int y, int w, int h);
+void video_draw_size(surface *src_surface, int x, int y, int w, int h);
 
 /**
  * Render a sprite on the screen.
@@ -90,7 +90,7 @@ void video_draw_size(const surface *src_surface, int x, int y, int w, int h);
  * @param flip_mode Sprite flipping options
  * @param options Renderer effect options
  */
-void video_draw_full(const surface *src_surface, int x, int y, int w, int h, int remap_offset, int remap_rounds,
+void video_draw_full(surface *src_surface, int x, int y, int w, int h, int remap_offset, int remap_rounds,
                      int palette_offset, int palette_limit, int opacity, unsigned int flip_mode, unsigned int options);
 
 void video_signal_scene_change(void);
