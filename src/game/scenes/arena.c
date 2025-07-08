@@ -23,8 +23,10 @@
 #include "game/objects/har.h"
 #include "game/objects/hazard.h"
 #include "game/objects/scrap.h"
+#include "game/protos/economy.h"
 #include "game/protos/object.h"
 #include "game/scenes/arena.h"
+#include "game/scenes/mechlab/lab_har_constants.h"
 #include "game/scenes/mechlab/lab_menu_customize.h"
 #include "game/utils/score.h"
 #include "game/utils/settings.h"
@@ -32,6 +34,7 @@
 #include "resources/languages.h"
 #include "resources/sgmanager.h"
 #include "utils/allocator.h"
+#include "utils/c_array_util.h"
 #include "utils/log.h"
 #include "utils/miscmath.h"
 #include "utils/random.h"
@@ -266,6 +269,11 @@ void arena_screengrab_winner(scene *sc) {
     }
 }
 
+static int rank_additions[] = {
+    500, 200, 160, 120, 100, 90, 80, 70, 60, 55, 50, 45, 40, 35, 30, 25, 20,
+    17,  15,  14,  13,  12,  11, 11, 10, 9,  8,  8,  7,  7,  6,  6,  5,  0,
+};
+
 static void arena_end(scene *sc) {
     game_state *gs = sc->gs;
     arena_local *local = scene_get_userdata(sc);
@@ -284,16 +292,6 @@ static void arena_end(scene *sc) {
 
     // if tournament player won
     if(is_tournament(gs) && local->winner == 0) {
-        // TODO The repair costs formula here is completely bogus
-        int trade_value = calculate_trade_value(player_winner->pilot) / 100;
-        float hp_percentage = (float)winner_har->health / (float)winner_har->health_max;
-        fight_stats->repair_cost = (1.0f - hp_percentage) * trade_value;
-
-        float winnings_multiplier = player_winner->chr->winnings_multiplier;
-        fight_stats->winnings =
-            winnings_multiplier * (calculate_winnings(player_winner->pilot, false) +
-                                   calculate_winnings(player_loser->pilot, true) + player_loser->pilot->winnings);
-
         // secret players have no rank, and don't increase your own ranking
         if(!gs->match_settings.sim && player_loser->pilot->rank > 0) {
             player_winner->pilot->rank--;
@@ -307,6 +305,31 @@ static void arena_end(scene *sc) {
                 }
             }
         }
+        // TODO The repair costs formula here is completely bogus
+        int trade_value = calculate_trade_value(player_winner->pilot) / 100;
+        float hp_percentage = (float)winner_har->health / (float)winner_har->health_max;
+        fight_stats->repair_cost = (1.0f - hp_percentage) * trade_value;
+
+        // FIXME: Still way off
+        update_total_value(player_winner->pilot);
+        update_total_value(player_loser->pilot);
+        float winnings_multiplier = player_winner->chr->winnings_multiplier;
+
+        int v2c = player_winner->pilot->total_value - (har_prices[0] * 85) / 100 - 500;
+        double t = ((player_winner->pilot->rank - 1) * 0.1 + 1.0);
+        float tf = t;
+        double t2 = ((player_winner->pilot->rank - 1) * 0.2 + 1.0) * (tf * t);
+        double t3 =
+            (player_loser->pilot->total_value + player_loser->pilot->money) / 45 + (int)player_loser->pilot->winnings;
+        fight_stats->winnings = t3 + (v2c / t2) * (1.0 / 30.0);
+        if(player_winner->pilot->rank - 1 < N_ELEMENTS(rank_additions)) {
+            fight_stats->winnings +=
+                player_winner->pilot->trn_rank_money * rank_additions[player_winner->pilot->rank - 1];
+        } else {
+            fight_stats->winnings += player_winner->pilot->trn_rank_money * 5.0f;
+        }
+        fight_stats->winnings *= 0.7f;
+        fight_stats->winnings *= winnings_multiplier;
     }
     // if tournament player lost
     else if(is_tournament(gs) && local->winner == 1) {
