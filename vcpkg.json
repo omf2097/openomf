@@ -26,6 +26,10 @@
     "opusfile"
   ],
   "features": {
+    "ci-deps": {
+      "description": "pull in everything for CI",
+      "dependencies": [ "cunit", "miniupnpc", "libnatpmp" ]
+    },
     "use-tests": {
       "description": "build cunit for USE_TESTS",
       "dependencies": [ "cunit" ]
