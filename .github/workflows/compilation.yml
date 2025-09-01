@@ -61,24 +61,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check out VCPKG
-        # must be checked out *after* openomf.git
-        uses: actions/checkout@v4
+      - name: Prepare VCPKG
+        # must be done *after* openomf has been checked out
+        uses: johnwason/vcpkg-action@v7.0.1
+        id: prepare-vcpkg
         with:
-          repository: 'microsoft/vcpkg'
-          path: 'vcpkg'
+          manifest-dir: ${{ github.workspace }}
+          triplet: x64-windows-static
+          token: ${{ github.token }}
+          extra-args: --x-feature ci-deps
 
       - uses: lukka/get-cmake@latest
 
       - uses: ilammy/msvc-dev-cmd@v1
 
-      - name: Install VCPKG Dependencies, Configure CMake
-        env:
-          VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
+      - name: Configure CMake
         run: >
           cmake -S . -B build-msvc
-          --toolchain vcpkg/scripts/buildsystems/vcpkg.cmake
-          -DVCPKG_TARGET_TRIPLET="x64-windows-static"
+          ${{ steps.prepare-vcpkg.outputs.vcpkg-cmake-config }}
           -A x64
           -DUSE_TESTS=On
           -DBUILD_LANGUAGES=Off
