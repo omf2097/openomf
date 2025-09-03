@@ -1064,19 +1064,31 @@ void har_take_damage(object *obj, af_move *move) {
 // for scrap, nuts, bolts, and sparks (aka burning oil)
 static vec2f har_debris_random_vel(object *har_obj, bool is_destruction) {
     vec2f vel;
-    vel.x = rand_float() * 4.0f - 2.0f;
-    vel.y = rand_float() * 4.0f - 2.0f;
+    vel.x = (rand_float() * 4.0f) - 2.0f;
+    vel.y = (rand_float() * 4.0f) - 2.0f;
 
     // FIXME: burning oil/sparks in destruction and scrap animations
     // FIXME: how does the original game handle scrap velocity in destruction anims?
     if(is_destruction) {
+        int x = rand_int(1);
+        // 50/50 directional split
+        if(x == 0) {
+            x = -1;
+        }
         // For scrap and destruction animations, make the scrap fly all over the place!
-        vel.x *= 10.0f;
+        vel.x *= x * 10.0f;
         vel.y *= 10.0f;
     } else {
         // push scrap and sparks upwards and away from the direction of impact
-        vel.x -= object_get_direction(har_obj) * 5.1f;
-        vel.y -= 3.0f;
+        int x = rand_int(4);
+        if(x == 0) {
+            // one quarter chance of going towards the impact direction
+            x = -1;
+        } else {
+            x = 1;
+        }
+        vel.x *= x * object_get_direction(har_obj) * 4.0f;
+        vel.y *= 3.0f;
     }
 
     return vel;
@@ -1087,6 +1099,15 @@ static inline float har_sparks_random_gravity(object *har_obj) {
     return (float)(rand_int(30) + 40) / 100.0;
 }
 
+// TODO: This is kind of a hack. It's used to check if either
+// HAR is doing destruction. If there is any way to do this better,
+// this should be changed.
+int is_destruction(game_state *gs) {
+    har *har_a = object_get_userdata(game_state_find_object(gs, game_state_get_player(gs, 0)->har_obj_id));
+    har *har_b = object_get_userdata(game_state_find_object(gs, game_state_get_player(gs, 1)->har_obj_id));
+    return (har_a->state == STATE_DESTRUCTION || har_b->state == STATE_DESTRUCTION);
+}
+
 static void har_spawn_oil(object *obj, vec2i pos, int amount, int layer) {
     har *h = object_get_userdata(obj);
 
@@ -1095,7 +1116,7 @@ static void har_spawn_oil(object *obj, vec2i pos, int amount, int layer) {
         // Create the object
         object *scrap = omf_calloc(1, sizeof(object));
         int anim_no = ANIM_BURNING_OIL;
-        object_create(scrap, obj->gs, pos, har_debris_random_vel(obj, false));
+        object_create(scrap, obj->gs, pos, har_debris_random_vel(obj, is_destruction(obj->gs)));
         object_set_animation(scrap, &af_get_move(h->af_data, anim_no)->ani);
         object_set_stl(scrap, object_get_stl(obj));
         object_set_gravity(scrap, har_sparks_random_gravity(obj));
@@ -1104,15 +1125,6 @@ static void har_spawn_oil(object *obj, vec2i pos, int amount, int layer) {
         scrap_create(scrap);
         game_state_add_object(obj->gs, scrap, layer, 0, 0);
     }
-}
-
-// TODO: This is kind of a hack. It's used to check if either
-// HAR is doing destruction. If there is any way to do this better,
-// this should be changed.
-int is_destruction(game_state *gs) {
-    har *har_a = object_get_userdata(game_state_find_object(gs, game_state_get_player(gs, 0)->har_obj_id));
-    har *har_b = object_get_userdata(game_state_find_object(gs, game_state_get_player(gs, 1)->har_obj_id));
-    return (har_a->state == STATE_DESTRUCTION || har_b->state == STATE_DESTRUCTION);
 }
 
 void har_spawn_scrap(object *obj, vec2i pos, int amount) {
@@ -1135,7 +1147,7 @@ void har_spawn_scrap(object *obj, vec2i pos, int amount) {
         // Create the object
         object *scrap = omf_calloc(1, sizeof(object));
         int anim_no = rand_int(3) + ANIM_SCRAP_METAL;
-        object_create(scrap, obj->gs, pos, har_debris_random_vel(obj, h->state == STATE_DEFEAT));
+        object_create(scrap, obj->gs, pos, har_debris_random_vel(obj, is_destruction(obj->gs)));
         object_set_animation(scrap, &af_get_move(h->af_data, anim_no)->ani);
         object_set_stl(scrap, object_get_stl(obj));
         object_set_gravity(scrap, 1.0f);
