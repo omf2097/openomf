@@ -254,14 +254,14 @@ void lobby_decode_match_settings(serial *ser, match_settings *ms) {
     ms->vitality = serial_read_int16(ser);
     ms->jump_height = serial_read_int16(ser);
     uint32_t in = serial_read_int32(ser);
-    ms->knock_down = (in >> 0) & 0x03;  // 00000000 00000000 00000000 00000011 (2)
-    ms->rehit = (in >> 2) & 0x01;  // 00000000 00000000 00000000 00000100 (1)
-    ms->defensive_throws = (in >> 3) & 0x01;  // 00000000 00000000 00000000 00001000 (1)
-    ms->power1 = (in >> 9) & 0x1F;    // 00000000 00000000 00111110 00000000 (5)
-    ms->power2 = (in >> 14) & 0x1F;   // 00000000 00000111 11000000 00000000 (5)
-    ms->hazards = (in >> 19) & 0x01;    // 00000000 00001000 00000000 00000000 (1)
-    ms->rounds = (in >> 20) & 0x03; // 00000000 00110000 00000000 00000000 (2)
-    ms->fight_mode = (in >> 24) & 0x01; // 00000001 00000000 00000000 00000000 (1)
+    ms->knock_down = (in >> 0) & 0x03;       // 00000000 00000000 00000000 00000011 (2)
+    ms->rehit = (in >> 2) & 0x01;            // 00000000 00000000 00000000 00000100 (1)
+    ms->defensive_throws = (in >> 3) & 0x01; // 00000000 00000000 00000000 00001000 (1)
+    ms->power1 = (in >> 9) & 0x1F;           // 00000000 00000000 00111110 00000000 (5)
+    ms->power2 = (in >> 14) & 0x1F;          // 00000000 00000111 11000000 00000000 (5)
+    ms->hazards = (in >> 19) & 0x01;         // 00000000 00001000 00000000 00000000 (1)
+    ms->rounds = (in >> 20) & 0x03;          // 00000000 00110000 00000000 00000000 (2)
+    ms->fight_mode = (in >> 24) & 0x01;      // 00000001 00000000 00000000 00000000 (1)
 }
 
 void lobby_print_match_settings(const int user_id, const match_settings *settings) {
