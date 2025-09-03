@@ -91,7 +91,7 @@ void sd_pilot_load_from_mem(memreader *mr, sd_pilot *pilot) {
     memread_buf(mr, pilot->trn_desc, 31);
     memread_buf(mr, pilot->trn_image, 13);
 
-    pilot->unk_f_c = memread_float(mr);
+    pilot->trn_rank_money = memread_float(mr);
     pilot->unk_f_d = memread_float(mr);
     sd_mskip(mr, 40); // Pointless pointers
     pilot->pilot_id = memread_ubyte(mr);
@@ -225,7 +225,7 @@ void sd_pilot_save_to_mem(memwriter *w, const sd_pilot *pilot) {
     memwrite_buf(w, pilot->trn_desc, 31);
     memwrite_buf(w, pilot->trn_image, 13);
 
-    memwrite_float(w, pilot->unk_f_c);
+    memwrite_float(w, pilot->trn_rank_money);
     memwrite_float(w, pilot->unk_f_d);
     memwrite_fill(w, 0, 40);
     memwrite_ubyte(w, pilot->pilot_id);
