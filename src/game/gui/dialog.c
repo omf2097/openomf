@@ -28,7 +28,7 @@ void dialog_yes_ok(component *c, void *userdata) {
     }
 }
 
-void dialog_create(dialog *dlg, dialog_style style, const char *text, int x, int y) {
+void dialog_create_h(dialog *dlg, dialog_style style, const char *text, int x, int y, int h) {
     gui_theme theme;
     gui_theme_defaults(&theme);
     theme.dialog.border_color = TEXT_MEDIUM_GREEN;
@@ -72,9 +72,13 @@ void dialog_create(dialog *dlg, dialog_style style, const char *text, int x, int
         menu_attach(menu2, button_create("OK", NULL, false, true, dialog_yes_ok, dlg));
     }
 
-    dlg->frame = gui_frame_create(&theme, x, y, w, 60);
+    dlg->frame = gui_frame_create(&theme, x, y, w, h);
     gui_frame_set_root(dlg->frame, menu);
     gui_frame_layout(dlg->frame);
+}
+
+void dialog_create(dialog *dlg, dialog_style style, const char *text, int x, int y) {
+    dialog_create_h(dlg, style, text, x, y, 60);
 }
 
 void dialog_free(dialog *dlg) {
