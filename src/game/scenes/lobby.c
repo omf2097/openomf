@@ -130,6 +130,7 @@ typedef struct lobby_user {
     uint8_t wins;
     uint8_t losses;
     uint8_t status;
+    uint32_t opponent_id;
     match_settings match_settings;
 
     text *name_text;
@@ -224,44 +225,6 @@ void lobby_free(scene *scene) {
 
     omf_free(local);
     scene_set_userdata(scene, local);
-}
-
-// 14 bytes of match settings
-void lobby_encode_match_settings(serial *ser, match_settings *ms) {
-    serial_write_int16(ser, ms->throw_range);
-    serial_write_int16(ser, ms->hit_pause);
-    serial_write_int16(ser, ms->block_damage);
-    serial_write_int16(ser, ms->vitality);
-    serial_write_int16(ser, ms->jump_height);
-    uint32_t out = 0;
-    out |= (ms->knock_down & 0x3) << 0;
-    out |= (ms->rehit & 0x1) << 2;
-    out |= (ms->defensive_throws & 0x1) << 3;
-    out |= (ms->power1 & 0x1F) << 9;
-    out |= (ms->power2 & 0x1F) << 14;
-    out |= (ms->hazards & 0x1) << 19;
-    out |= (ms->rounds & 0x3) << 20;
-    out |= (ms->fight_mode & 0x1) << 24;
-
-    serial_write_int32(ser, out);
-}
-
-// 14 bytes of match settings
-void lobby_decode_match_settings(serial *ser, match_settings *ms) {
-    ms->throw_range = serial_read_int16(ser);
-    ms->hit_pause = serial_read_int16(ser);
-    ms->block_damage = serial_read_int16(ser);
-    ms->vitality = serial_read_int16(ser);
-    ms->jump_height = serial_read_int16(ser);
-    uint32_t in = serial_read_int32(ser);
-    ms->knock_down = (in >> 0) & 0x03;       // 00000000 00000000 00000000 00000011 (2)
-    ms->rehit = (in >> 2) & 0x01;            // 00000000 00000000 00000000 00000100 (1)
-    ms->defensive_throws = (in >> 3) & 0x01; // 00000000 00000000 00000000 00001000 (1)
-    ms->power1 = (in >> 9) & 0x1F;           // 00000000 00000000 00111110 00000000 (5)
-    ms->power2 = (in >> 14) & 0x1F;          // 00000000 00000111 11000000 00000000 (5)
-    ms->hazards = (in >> 19) & 0x01;         // 00000000 00001000 00000000 00000000 (1)
-    ms->rounds = (in >> 20) & 0x03;          // 00000000 00110000 00000000 00000000 (2)
-    ms->fight_mode = (in >> 24) & 0x01;      // 00000001 00000000 00000000 00000000 (1)
 }
 
 void lobby_print_match_settings(const int user_id, const match_settings *settings) {
@@ -553,7 +516,7 @@ void lobby_dialog_do_spectate(dialog *dlg, dialog_result result) {
 }
 
 char *challengeStr = "Challenge %s?\n\nRounds %s\nHazards %s\nFight Mode %s\nRehit Mode %s";
-char *spectateStr = "Spectate %s?\n\nRounds %s\nHazards %s\nFight Mode %s\nRehit Mode %s";
+char *spectateStr = "Spectate %s vs %s?";
 
 char *get_fight_mode_setting_string(bool setting) {
     if(setting) {
@@ -589,26 +552,33 @@ void lobby_challenge_create(scene *s) {
 
     char buf[255];
     lobby_user *user = list_get(&local->users, local->active_user);
-    char *formatString;
     if(user->status == PRESENCE_AVAILABLE) {
-        formatString = challengeStr;
+        match_settings *ms = &user->match_settings;
+        snprintf(buf, sizeof(buf), challengeStr, user->name, get_round_setting_string(ms->rounds),
+                 get_on_off_setting_string(ms->hazards), get_fight_mode_setting_string(ms->fight_mode),
+                 get_on_off_setting_string(ms->rehit));
     } else if(user->status == PRESENCE_FIGHTING) {
-        // TODO have the user struct contain who they're fighting
-        formatString = spectateStr;
+        iterator it;
+        list_iter_begin(&local->users, &it);
+        lobby_user *u;
+        bool found = false;
+        foreach(it, u) {
+            if(u->id == user->opponent_id) {
+                found = true;
+                snprintf(buf, sizeof(buf), spectateStr, user->name, u->name);
+            }
+        }
+        if(!found) {
+            return;
+        }
     } else {
         return;
     }
 
-    match_settings *ms = &user->match_settings;
-
-    snprintf(buf, sizeof(buf), formatString, user->name, get_round_setting_string(ms->rounds),
-             get_on_off_setting_string(ms->hazards), get_fight_mode_setting_string(ms->fight_mode),
-             get_on_off_setting_string(ms->rehit));
-
     if(user->status == PRESENCE_AVAILABLE) {
         lobby_show_dialog_large(s, DIALOG_STYLE_YES_NO, buf, lobby_dialog_do_challenge);
     } else if(user->status == PRESENCE_FIGHTING) {
-        lobby_show_dialog_large(s, DIALOG_STYLE_YES_NO, buf, lobby_dialog_do_spectate);
+        lobby_show_dialog(s, DIALOG_STYLE_YES_NO, buf, lobby_dialog_do_spectate);
     }
 }
 
@@ -801,7 +771,7 @@ void lobby_entered_name(component *c, void *userdata) {
         } else {
             serial_write_int16(&ser, local->client->address.port);
         }
-        lobby_encode_match_settings(&ser, &scene->gs->match_settings);
+        game_state_encode_match_settings(&ser, &scene->gs->match_settings);
         serial_write_int8(&ser, strlen(version));
         serial_write(&ser, version, strlen(version));
         const char *name = textinput_value(c);
@@ -1183,7 +1153,8 @@ void lobby_tick(scene *scene, int paused) {
                         user.wins = serial_read_int8(&ser);
                         user.losses = serial_read_int8(&ser);
                         user.status = serial_read_int8(&ser);
-                        lobby_decode_match_settings(&ser, &user.match_settings);
+                        user.opponent_id = serial_read_int32(&ser);
+                        game_state_decode_match_settings(&ser, &user.match_settings);
                         lobby_print_match_settings(user.id, &user.match_settings);
                         uint8_t version_len = serial_read_int8(&ser);
                         if(version_len < sizeof(user.version)) {
@@ -1204,6 +1175,7 @@ void lobby_tick(scene *scene, int paused) {
                                         u->wins = user.wins;
                                         u->losses = user.losses;
                                         u->status = user.status;
+                                        u->opponent_id = user.opponent_id;
                                         u->address.host = user.address.host;
                                         u->port = user.port;
                                         u->ext_port = user.ext_port;
@@ -1548,7 +1520,6 @@ void lobby_tick(scene *scene, int paused) {
 
                                 // force the speed to 3
                                 game_state_set_speed(gs, 10);
-                                game_state_copy_match_settings(gs, &local->opponent->match_settings);
 
                                 c1 = omf_calloc(1, sizeof(controller));
                                 c2 = omf_calloc(1, sizeof(controller));
