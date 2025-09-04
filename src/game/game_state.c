@@ -73,6 +73,44 @@ typedef struct {
     int playback_id;
 } playing_sound;
 
+// 14 bytes of match settings
+void game_state_encode_match_settings(serial *ser, match_settings *ms) {
+    serial_write_int16(ser, ms->throw_range);
+    serial_write_int16(ser, ms->hit_pause);
+    serial_write_int16(ser, ms->block_damage);
+    serial_write_int16(ser, ms->vitality);
+    serial_write_int16(ser, ms->jump_height);
+    uint32_t out = 0;
+    out |= (ms->knock_down & 0x3) << 0;
+    out |= (ms->rehit & 0x1) << 2;
+    out |= (ms->defensive_throws & 0x1) << 3;
+    out |= (ms->power1 & 0x1F) << 9;
+    out |= (ms->power2 & 0x1F) << 14;
+    out |= (ms->hazards & 0x1) << 19;
+    out |= (ms->rounds & 0x3) << 20;
+    out |= (ms->fight_mode & 0x1) << 24;
+
+    serial_write_int32(ser, out);
+}
+
+// 14 bytes of match settings
+void game_state_decode_match_settings(serial *ser, match_settings *ms) {
+    ms->throw_range = serial_read_int16(ser);
+    ms->hit_pause = serial_read_int16(ser);
+    ms->block_damage = serial_read_int16(ser);
+    ms->vitality = serial_read_int16(ser);
+    ms->jump_height = serial_read_int16(ser);
+    uint32_t in = serial_read_int32(ser);
+    ms->knock_down = (in >> 0) & 0x03;       // 00000000 00000000 00000000 00000011 (2)
+    ms->rehit = (in >> 2) & 0x01;            // 00000000 00000000 00000000 00000100 (1)
+    ms->defensive_throws = (in >> 3) & 0x01; // 00000000 00000000 00000000 00001000 (1)
+    ms->power1 = (in >> 9) & 0x1F;           // 00000000 00000000 00111110 00000000 (5)
+    ms->power2 = (in >> 14) & 0x1F;          // 00000000 00000111 11000000 00000000 (5)
+    ms->hazards = (in >> 19) & 0x01;         // 00000000 00001000 00000000 00000000 (1)
+    ms->rounds = (in >> 20) & 0x03;          // 00000000 00110000 00000000 00000000 (2)
+    ms->fight_mode = (in >> 24) & 0x01;      // 00000001 00000000 00000000 00000000 (1)
+}
+
 int game_state_get_assertion_operand(rec_assertion_operand *op, game_state *gs) {
     if(op->is_literal) {
         return op->value.literal;

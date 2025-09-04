@@ -49,12 +49,17 @@ int spec_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                 serial_create_from(&ser, (const char *)event.packet->data, event.packet->dataLength);
                 switch(serial_read_int8(&ser)) {
                     case 0: {
+                        match_settings ms;
                         // init packet, describes the pilots and arena, we can use this to start the arena
                         game_player *p1 = game_state_get_player(ctrl->gs, 0);
                         game_player *p2 = game_state_get_player(ctrl->gs, 1);
 
                         // force the speed to 3
                         game_state_set_speed(ctrl->gs, 10);
+
+                        // decode the match settings from the lobby and apply them
+                        game_state_decode_match_settings(&ser, &ms);
+                        game_state_copy_match_settings(ctrl->gs, &ms);
 
                         p1->pilot->har_id = serial_read_int8(&ser);
                         p1->pilot->pilot_id = serial_read_int8(&ser);
