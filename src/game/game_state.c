@@ -191,7 +191,7 @@ void game_state_match_settings_reset(game_state *gs) {
 }
 
 void game_state_copy_match_settings(game_state *gs, const match_settings *ms) {
-    log_debug("Copying settings, hyper mode is %d", ms->fight_mode);
+    log_debug("Copying settings");
     gs->match_settings.throw_range = ms->throw_range;
     gs->match_settings.hit_pause = ms->hit_pause;
     gs->match_settings.block_damage = ms->block_damage;
