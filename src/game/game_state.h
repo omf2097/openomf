@@ -17,6 +17,7 @@ typedef struct ctrl_event_t ctrl_event;
 bool game_state_check_assertion_is_met(rec_assertion *ass, game_state *gs);
 
 void game_state_match_settings_reset(game_state *gs);
+void game_state_copy_match_settings(game_state *gs, const match_settings *ms);
 void game_state_match_settings_defaults(game_state *gs);
 int game_state_create(game_state *gs, engine_init_flags *init_flags);
 void game_state_free(game_state **gs);

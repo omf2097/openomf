@@ -190,6 +190,24 @@ void game_state_match_settings_reset(game_state *gs) {
     gs->match_settings.sim = false;
 }
 
+void game_state_copy_match_settings(game_state *gs, const match_settings *ms) {
+    log_debug("Copying settings, hyper mode is %d", ms->fight_mode);
+    gs->match_settings.throw_range = ms->throw_range;
+    gs->match_settings.hit_pause = ms->hit_pause;
+    gs->match_settings.block_damage = ms->block_damage;
+    gs->match_settings.vitality = ms->vitality;
+    gs->match_settings.jump_height = ms->jump_height;
+    gs->match_settings.knock_down = ms->knock_down;
+    gs->match_settings.rehit = ms->rehit;
+    gs->match_settings.defensive_throws = ms->defensive_throws;
+    gs->match_settings.power1 = ms->power1;
+    gs->match_settings.power2 = ms->power2;
+    gs->match_settings.hazards = ms->hazards;
+    gs->match_settings.rounds = ms->rounds;
+    gs->match_settings.fight_mode = ms->fight_mode;
+    gs->match_settings.sim = false;
+}
+
 void game_state_match_settings_defaults(game_state *gs) {
     gs->match_settings.throw_range = 100;
     gs->match_settings.hit_pause = 4;

@@ -149,7 +149,7 @@ typedef struct lobby_local {
     list users;
     // what submenu we're in (STARTING/MAIN/YELL, etc)
     uint8_t mode;
-    // when challening a peer, tracks how many connection attempts we've made
+    // when challenging a peer, tracks how many connection attempts we've made
     // each side will make several attempts, depending on whether the 'external port' has been provided
     uint8_t connection_count;
     // the index of the currently selected user in the user list
@@ -286,6 +286,20 @@ void lobby_print_match_settings(const int user_id, const match_settings *setting
 static int lobby_event(scene *scene, SDL_Event *e) {
     lobby_local *local = scene_get_userdata(scene);
     return gui_frame_event(local->frame, e);
+}
+
+void lobby_show_dialog_large(scene *scene, int dialog_style, char *dialog_text, dialog_clicked_cb callback) {
+    lobby_local *local = scene_get_userdata(scene);
+    if(local->dialog) {
+        dialog_free(local->dialog);
+        omf_free(local->dialog);
+    }
+    local->dialog = omf_calloc(1, sizeof(dialog));
+    dialog_create_h(local->dialog, dialog_style, dialog_text, 72, 60, 84);
+    local->dialog->userdata = scene;
+    local->dialog->clicked = callback;
+
+    dialog_show(local->dialog, 1);
 }
 
 void lobby_show_dialog(scene *scene, int dialog_style, char *dialog_text, dialog_clicked_cb callback) {
@@ -516,51 +530,91 @@ void lobby_cancel_challenge(component *c, void *userdata) {
     local->mode = LOBBY_MAIN;
 }
 
-component *lobby_challenge_create(scene *s) {
+void lobby_dialog_do_challenge(dialog *dlg, dialog_result result) {
+    dialog_show(dlg, 0);
+    scene *s = dlg->userdata;
+    lobby_local *local = scene_get_userdata(s);
+    if(result == DIALOG_RESULT_NO) {
+        local->mode = LOBBY_MAIN;
+    } else if(result == DIALOG_RESULT_YES_OK) {
+        lobby_do_challenge(NULL, s);
+    }
+}
+
+void lobby_dialog_do_spectate(dialog *dlg, dialog_result result) {
+    dialog_show(dlg, 0);
+    scene *s = dlg->userdata;
+    lobby_local *local = scene_get_userdata(s);
+    if(result == DIALOG_RESULT_NO) {
+        local->mode = LOBBY_MAIN;
+    } else if(result == DIALOG_RESULT_YES_OK) {
+        lobby_do_spectate(NULL, s);
+    }
+}
+
+char *challengeStr = "Challenge %s?\n\nRounds %s\nHazards %s\nFight Mode %s\nRehit Mode %s";
+char *spectateStr = "Spectate %s?\n\nRounds %s\nHazards %s\nFight Mode %s\nRehit Mode %s";
+
+char *get_fight_mode_setting_string(bool setting) {
+    if(setting) {
+        return "Hyper";
+    }
+    return "Normal";
+}
+
+char *get_on_off_setting_string(bool setting) {
+    if(setting) {
+        return "On";
+    }
+    return "Off";
+}
+
+char *get_round_setting_string(int rounds) {
+    switch(rounds) {
+        case 0:
+            return "1";
+        case 1:
+            return "2/3";
+        case 2:
+            return "3/5";
+        case 3:
+            return "4/7";
+        default:;
+    }
+    return "ERR";
+}
+
+void lobby_challenge_create(scene *s) {
     lobby_local *local = scene_get_userdata(s);
 
-    component *menu = menu_create();
-    menu_set_horizontal(menu, true);
-    menu_set_background(menu, false);
-    menu_set_padding(menu, 0);
-
+    char buf[255];
     lobby_user *user = list_get(&local->users, local->active_user);
+    char *formatString;
     if(user->status == PRESENCE_AVAILABLE) {
-        snprintf(local->helptext, sizeof(local->helptext), "Challenge %s?", user->name);
+        formatString = challengeStr;
     } else if(user->status == PRESENCE_FIGHTING) {
         // TODO have the user struct contain who they're fighting
-        snprintf(local->helptext, sizeof(local->helptext), "Spectate %s?", user->name);
+        formatString = spectateStr;
     } else {
-        return NULL;
+        return;
     }
-    component *challenge_label = label_create(local->helptext);
-    component *yes_button;
+
+    match_settings *ms = &user->match_settings;
+
+    snprintf(buf, sizeof(buf), formatString, user->name, get_round_setting_string(ms->rounds),
+             get_on_off_setting_string(ms->hazards), get_fight_mode_setting_string(ms->fight_mode),
+             get_on_off_setting_string(ms->rehit));
+
     if(user->status == PRESENCE_AVAILABLE) {
-        yes_button = button_create("Yes", NULL, false, false, lobby_do_challenge, s);
+        lobby_show_dialog_large(s, DIALOG_STYLE_YES_NO, buf, lobby_dialog_do_challenge);
     } else if(user->status == PRESENCE_FIGHTING) {
-        yes_button = button_create("Yes", NULL, false, false, lobby_do_spectate, s);
-    } else {
-        return NULL;
+        lobby_show_dialog_large(s, DIALOG_STYLE_YES_NO, buf, lobby_dialog_do_spectate);
     }
-
-    component *no_button = button_create("No", NULL, false, false, lobby_cancel_challenge, s);
-    label_set_text_shadow(challenge_label, GLYPH_SHADOW_BOTTOM, 9);
-    button_set_text_shadow(yes_button, GLYPH_SHADOW_BOTTOM, 9);
-    button_set_text_shadow(no_button, GLYPH_SHADOW_BOTTOM, 9);
-
-    menu_attach(menu, challenge_label);
-    menu_attach(menu, yes_button);
-    menu_attach(menu, no_button);
-
-    return menu;
 }
 
 void lobby_challenge(component *c, void *userdata) {
     scene *s = userdata;
-    component *submenu = lobby_challenge_create(s);
-    if(submenu) {
-        menu_set_submenu(c->parent, submenu);
-    }
+    lobby_challenge_create(s);
 }
 
 void lobby_do_yell(component *c, void *userdata) {
@@ -1073,6 +1127,7 @@ void lobby_tick(scene *scene, int paused) {
                         // we did the connecting and we're the challenger
                         // so we are player 1
                         challengee = p2;
+                        game_state_copy_match_settings(gs, &local->opponent->match_settings);
                     } else {
                         player_id = 1;
                         challengee = p1;
@@ -1244,6 +1299,7 @@ void lobby_tick(scene *scene, int paused) {
                                 // we were connected TO but we are the challenger
                                 // so we are player 1
                                 challengee = p2;
+                                game_state_copy_match_settings(gs, &local->opponent->match_settings);
                             } else {
                                 player_id = 1;
                                 challengee = p1;
@@ -1345,6 +1401,7 @@ void lobby_tick(scene *scene, int paused) {
                             // we did the connecting and we're the challenger
                             // so we are player 1
                             challengee = p2;
+                            game_state_copy_match_settings(gs, &local->opponent->match_settings);
                         } else {
                             player_id = 1;
                             challengee = p1;
@@ -1491,6 +1548,7 @@ void lobby_tick(scene *scene, int paused) {
 
                                 // force the speed to 3
                                 game_state_set_speed(gs, 10);
+                                game_state_copy_match_settings(gs, &local->opponent->match_settings);
 
                                 c1 = omf_calloc(1, sizeof(controller));
                                 c2 = omf_calloc(1, sizeof(controller));
