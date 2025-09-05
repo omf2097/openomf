@@ -36,6 +36,7 @@ typedef struct dialog {
     dialog_clicked_cb clicked;
 } dialog;
 
+void dialog_create_h(dialog *dlg, dialog_style style, const char *text, int x, int y, int h);
 void dialog_create(dialog *dlg, dialog_style style, const char *text, int x, int y);
 void dialog_free(dialog *dlg);
 void dialog_show(dialog *dlg, int visible);

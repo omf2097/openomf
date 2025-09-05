@@ -130,6 +130,7 @@ typedef struct lobby_user {
     uint8_t wins;
     uint8_t losses;
     uint8_t status;
+    uint32_t opponent_id;
     match_settings match_settings;
 
     text *name_text;
@@ -149,7 +150,7 @@ typedef struct lobby_local {
     list users;
     // what submenu we're in (STARTING/MAIN/YELL, etc)
     uint8_t mode;
-    // when challening a peer, tracks how many connection attempts we've made
+    // when challenging a peer, tracks how many connection attempts we've made
     // each side will make several attempts, depending on whether the 'external port' has been provided
     uint8_t connection_count;
     // the index of the currently selected user in the user list
@@ -226,44 +227,6 @@ void lobby_free(scene *scene) {
     scene_set_userdata(scene, local);
 }
 
-// 14 bytes of match settings
-void lobby_encode_match_settings(serial *ser, match_settings *ms) {
-    serial_write_int16(ser, ms->throw_range);
-    serial_write_int16(ser, ms->hit_pause);
-    serial_write_int16(ser, ms->block_damage);
-    serial_write_int16(ser, ms->vitality);
-    serial_write_int16(ser, ms->jump_height);
-    uint32_t out = 0;
-    out |= (ms->knock_down & 0x3) << 0;
-    out |= (ms->rehit & 0x1) << 2;
-    out |= (ms->defensive_throws & 0x1) << 3;
-    out |= (ms->power1 & 0x1F) << 9;
-    out |= (ms->power2 & 0x1F) << 14;
-    out |= (ms->hazards & 0x1) << 19;
-    out |= (ms->rounds & 0x3) << 20;
-    out |= (ms->fight_mode & 0x1) << 24;
-
-    serial_write_int32(ser, out);
-}
-
-// 14 bytes of match settings
-void lobby_decode_match_settings(serial *ser, match_settings *ms) {
-    ms->throw_range = serial_read_int16(ser);
-    ms->hit_pause = serial_read_int16(ser);
-    ms->block_damage = serial_read_int16(ser);
-    ms->vitality = serial_read_int16(ser);
-    ms->jump_height = serial_read_int16(ser);
-    uint32_t in = serial_read_int32(ser);
-    ms->knock_down = (in >> 0) & 0x03;       // 00000000 00000000 00000000 00000011 (2)
-    ms->rehit = (in >> 2) & 0x01;            // 00000000 00000000 00000000 00000100 (1)
-    ms->defensive_throws = (in >> 3) & 0x01; // 00000000 00000000 00000000 00001000 (1)
-    ms->power1 = (in >> 9) & 0x1F;           // 00000000 00000000 00111110 00000000 (5)
-    ms->power2 = (in >> 14) & 0x1F;          // 00000000 00000111 11000000 00000000 (5)
-    ms->hazards = (in >> 19) & 0x01;         // 00000000 00001000 00000000 00000000 (1)
-    ms->rounds = (in >> 20) & 0x03;          // 00000000 00110000 00000000 00000000 (2)
-    ms->fight_mode = (in >> 24) & 0x01;      // 00000001 00000000 00000000 00000000 (1)
-}
-
 void lobby_print_match_settings(const int user_id, const match_settings *settings) {
     log_debug("match_settings for user %u: {", user_id);
     log_debug("  throw_range: %u", settings->throw_range);
@@ -286,6 +249,20 @@ void lobby_print_match_settings(const int user_id, const match_settings *setting
 static int lobby_event(scene *scene, SDL_Event *e) {
     lobby_local *local = scene_get_userdata(scene);
     return gui_frame_event(local->frame, e);
+}
+
+void lobby_show_dialog_large(scene *scene, int dialog_style, char *dialog_text, dialog_clicked_cb callback) {
+    lobby_local *local = scene_get_userdata(scene);
+    if(local->dialog) {
+        dialog_free(local->dialog);
+        omf_free(local->dialog);
+    }
+    local->dialog = omf_calloc(1, sizeof(dialog));
+    dialog_create_h(local->dialog, dialog_style, dialog_text, 72, 60, 84);
+    local->dialog->userdata = scene;
+    local->dialog->clicked = callback;
+
+    dialog_show(local->dialog, 1);
 }
 
 void lobby_show_dialog(scene *scene, int dialog_style, char *dialog_text, dialog_clicked_cb callback) {
@@ -516,51 +493,98 @@ void lobby_cancel_challenge(component *c, void *userdata) {
     local->mode = LOBBY_MAIN;
 }
 
-component *lobby_challenge_create(scene *s) {
+void lobby_dialog_do_challenge(dialog *dlg, dialog_result result) {
+    dialog_show(dlg, 0);
+    scene *s = dlg->userdata;
+    lobby_local *local = scene_get_userdata(s);
+    if(result == DIALOG_RESULT_NO) {
+        local->mode = LOBBY_MAIN;
+    } else if(result == DIALOG_RESULT_YES_OK) {
+        lobby_do_challenge(NULL, s);
+    }
+}
+
+void lobby_dialog_do_spectate(dialog *dlg, dialog_result result) {
+    dialog_show(dlg, 0);
+    scene *s = dlg->userdata;
+    lobby_local *local = scene_get_userdata(s);
+    if(result == DIALOG_RESULT_NO) {
+        local->mode = LOBBY_MAIN;
+    } else if(result == DIALOG_RESULT_YES_OK) {
+        lobby_do_spectate(NULL, s);
+    }
+}
+
+char *challengeStr = "Challenge %s?\n\nRounds %s\nHazards %s\nFight Mode %s\nRehit Mode %s";
+char *spectateStr = "Spectate %s vs %s?";
+
+char *get_fight_mode_setting_string(bool setting) {
+    if(setting) {
+        return "Hyper";
+    }
+    return "Normal";
+}
+
+char *get_on_off_setting_string(bool setting) {
+    if(setting) {
+        return "On";
+    }
+    return "Off";
+}
+
+char *get_round_setting_string(int rounds) {
+    switch(rounds) {
+        case 0:
+            return "1";
+        case 1:
+            return "2/3";
+        case 2:
+            return "3/5";
+        case 3:
+            return "4/7";
+        default:;
+    }
+    return "ERR";
+}
+
+void lobby_challenge_create(scene *s) {
     lobby_local *local = scene_get_userdata(s);
 
-    component *menu = menu_create();
-    menu_set_horizontal(menu, true);
-    menu_set_background(menu, false);
-    menu_set_padding(menu, 0);
-
+    char buf[255];
     lobby_user *user = list_get(&local->users, local->active_user);
     if(user->status == PRESENCE_AVAILABLE) {
-        snprintf(local->helptext, sizeof(local->helptext), "Challenge %s?", user->name);
+        match_settings *ms = &user->match_settings;
+        snprintf(buf, sizeof(buf), challengeStr, user->name, get_round_setting_string(ms->rounds),
+                 get_on_off_setting_string(ms->hazards), get_fight_mode_setting_string(ms->fight_mode),
+                 get_on_off_setting_string(ms->rehit));
     } else if(user->status == PRESENCE_FIGHTING) {
-        // TODO have the user struct contain who they're fighting
-        snprintf(local->helptext, sizeof(local->helptext), "Spectate %s?", user->name);
+        iterator it;
+        list_iter_begin(&local->users, &it);
+        lobby_user *u;
+        bool found = false;
+        foreach(it, u) {
+            if(u->id == user->opponent_id) {
+                found = true;
+                snprintf(buf, sizeof(buf), spectateStr, user->name, u->name);
+            }
+        }
+        if(!found) {
+            return;
+        }
     } else {
-        return NULL;
+        return;
     }
-    component *challenge_label = label_create(local->helptext);
-    component *yes_button;
+
     if(user->status == PRESENCE_AVAILABLE) {
-        yes_button = button_create("Yes", NULL, false, false, lobby_do_challenge, s);
+        lobby_show_dialog_large(s, DIALOG_STYLE_YES_NO, buf, lobby_dialog_do_challenge);
     } else if(user->status == PRESENCE_FIGHTING) {
-        yes_button = button_create("Yes", NULL, false, false, lobby_do_spectate, s);
-    } else {
-        return NULL;
+        lobby_show_dialog(s, DIALOG_STYLE_YES_NO, buf, lobby_dialog_do_spectate);
     }
-
-    component *no_button = button_create("No", NULL, false, false, lobby_cancel_challenge, s);
-    label_set_text_shadow(challenge_label, GLYPH_SHADOW_BOTTOM, 9);
-    button_set_text_shadow(yes_button, GLYPH_SHADOW_BOTTOM, 9);
-    button_set_text_shadow(no_button, GLYPH_SHADOW_BOTTOM, 9);
-
-    menu_attach(menu, challenge_label);
-    menu_attach(menu, yes_button);
-    menu_attach(menu, no_button);
-
-    return menu;
 }
 
 void lobby_challenge(component *c, void *userdata) {
     scene *s = userdata;
-    component *submenu = lobby_challenge_create(s);
-    if(submenu) {
-        menu_set_submenu(c->parent, submenu);
-    }
+    lobby_challenge_create(s);
 }
 
 void lobby_do_yell(component *c, void *userdata) {
@@ -747,7 +771,7 @@ void lobby_entered_name(component *c, void *userdata) {
         } else {
             serial_write_int16(&ser, local->client->address.port);
         }
-        lobby_encode_match_settings(&ser, &scene->gs->match_settings);
+        game_state_encode_match_settings(&ser, &scene->gs->match_settings);
         serial_write_int8(&ser, strlen(version));
         serial_write(&ser, version, strlen(version));
         const char *name = textinput_value(c);
@@ -1073,10 +1097,14 @@ void lobby_tick(scene *scene, int paused) {
                         // we did the connecting and we're the challenger
                         // so we are player 1
                         challengee = p2;
+                        game_state_copy_match_settings(gs, &local->opponent->match_settings);
                     } else {
                         player_id = 1;
                         challengee = p1;
                     }
+
+                    game_state_set_pilot_name(gs, player_id, local->name);
+                    game_state_set_pilot_name(gs, (player_id + 1) % 2, local->opponent->name);
 
                     net_ctrl->har_obj_id = challengee->har_obj_id;
 
@@ -1128,7 +1156,8 @@ void lobby_tick(scene *scene, int paused) {
                         user.wins = serial_read_int8(&ser);
                         user.losses = serial_read_int8(&ser);
                         user.status = serial_read_int8(&ser);
-                        lobby_decode_match_settings(&ser, &user.match_settings);
+                        user.opponent_id = serial_read_int32(&ser);
+                        game_state_decode_match_settings(&ser, &user.match_settings);
                         lobby_print_match_settings(user.id, &user.match_settings);
                         uint8_t version_len = serial_read_int8(&ser);
                         if(version_len < sizeof(user.version)) {
@@ -1149,6 +1178,7 @@ void lobby_tick(scene *scene, int paused) {
                                         u->wins = user.wins;
                                         u->losses = user.losses;
                                         u->status = user.status;
+                                        u->opponent_id = user.opponent_id;
                                         u->address.host = user.address.host;
                                         u->port = user.port;
                                         u->ext_port = user.ext_port;
@@ -1244,10 +1274,14 @@ void lobby_tick(scene *scene, int paused) {
                                 // we were connected TO but we are the challenger
                                 // so we are player 1
                                 challengee = p2;
+                                game_state_copy_match_settings(gs, &local->opponent->match_settings);
                             } else {
                                 player_id = 1;
                                 challengee = p1;
                             }
+
+                            game_state_set_pilot_name(gs, player_id, local->name);
+                            game_state_set_pilot_name(gs, (player_id + 1) % 2, local->opponent->name);
 
                             net_ctrl->har_obj_id = challengee->har_obj_id;
 
@@ -1345,10 +1379,14 @@ void lobby_tick(scene *scene, int paused) {
                             // we did the connecting and we're the challenger
                             // so we are player 1
                             challengee = p2;
+                            game_state_copy_match_settings(gs, &local->opponent->match_settings);
                         } else {
                             player_id = 1;
                             challengee = p1;
                         }
+
+                        game_state_set_pilot_name(gs, player_id, local->name);
+                        game_state_set_pilot_name(gs, (player_id + 1) % 2, local->opponent->name);
 
                         net_ctrl->har_obj_id = challengee->har_obj_id;
 
