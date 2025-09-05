@@ -16,6 +16,7 @@ typedef struct ctrl_event_t ctrl_event;
 
 void game_state_encode_match_settings(serial *ser, match_settings *ms);
 void game_state_decode_match_settings(serial *ser, match_settings *ms);
+void game_state_set_pilot_name(game_state *gs, int pilot_id, const char *pilot_name);
 
 bool game_state_check_assertion_is_met(rec_assertion *ass, game_state *gs);
 

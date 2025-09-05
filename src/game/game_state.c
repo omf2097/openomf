@@ -111,6 +111,10 @@ void game_state_decode_match_settings(serial *ser, match_settings *ms) {
     ms->fight_mode = (in >> 24) & 0x01;      // 00000001 00000000 00000000 00000000 (1)
 }
 
+void game_state_set_pilot_name(game_state *gs, int pilot_id, const char *pilot_name) {
+    strncpy_or_truncate(gs->players[pilot_id]->pilot->name, pilot_name, sizeof(gs->players[pilot_id]->pilot->name));
+}
+
 int game_state_get_assertion_operand(rec_assertion_operand *op, game_state *gs) {
     if(op->is_literal) {
         return op->value.literal;
