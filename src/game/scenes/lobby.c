@@ -1104,7 +1104,7 @@ void lobby_tick(scene *scene, int paused) {
                     }
 
                     game_state_set_pilot_name(gs, player_id, local->name);
-                    game_state_set_pilot_name(gs, (player_id+1)%2, local->opponent->name);
+                    game_state_set_pilot_name(gs, (player_id + 1) % 2, local->opponent->name);
 
                     net_ctrl->har_obj_id = challengee->har_obj_id;
 
@@ -1281,7 +1281,7 @@ void lobby_tick(scene *scene, int paused) {
                             }
 
                             game_state_set_pilot_name(gs, player_id, local->name);
-                            game_state_set_pilot_name(gs, (player_id+1)%2, local->opponent->name);
+                            game_state_set_pilot_name(gs, (player_id + 1) % 2, local->opponent->name);
 
                             net_ctrl->har_obj_id = challengee->har_obj_id;
 
@@ -1386,7 +1386,7 @@ void lobby_tick(scene *scene, int paused) {
                         }
 
                         game_state_set_pilot_name(gs, player_id, local->name);
-                        game_state_set_pilot_name(gs, (player_id+1)%2, local->opponent->name);
+                        game_state_set_pilot_name(gs, (player_id + 1) % 2, local->opponent->name);
 
                         net_ctrl->har_obj_id = challengee->har_obj_id;
 
