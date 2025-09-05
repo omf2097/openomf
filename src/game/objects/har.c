@@ -842,8 +842,70 @@ int har_find_linked_objects(object *obj, vector *vec) {
     return r;
 }
 
-void har_take_damage(object *obj, const str *string, float damage, float stun) {
+void calc_damage_and_stun(object *obj, af_move *move, int *damage, int *stun) {
+    har *h = obj->userdata;
+    game_player *gp = game_state_get_player(obj->gs, h->player_id);
+    sd_pilot *pilot = gp->pilot;
+
+    if(move->category == CAT_VICTORY) {
+        *damage = move->damage;
+        *stun = *damage;
+        return;
+    }
+
+    int multiplier = 100;
+    if(player_frame_isset(obj, "k")) {
+        multiplier = player_frame_get(obj, "k") + 10;
+        // log_debug("Set multiplier %d", multiplier);
+    }
+
+    *damage = move->damage * multiplier / 100;
+    if(multiplier < 100) {
+        *damage = *damage + 1;
+    }
+
+    if(!is_tournament(obj->gs)) {
+        // Single Player
+        // Damage = Base Damage * (20 + Power) / 30 + 1
+        //  Stun = (Base Damage * 2 + 12) * 256
+        *stun = *damage;
+        *damage = *damage * (20 + pilot->power) / 30 + 1;
+    } else {
+        // Tournament Mode
+        // Damage = (Base Damage * (25 + Power) / 35 + 1) * leg/arm power / armor
+        // Stun = ((Base Damage * (35 + Power) / 45) * 2 + 12) * 256
+        *stun = *damage * (35 + pilot->power) / 45;
+        *damage = *damage * (25 + pilot->power) / 35 + 1;
+
+        // (Limb Power + 3) * .192
+        float leg_power = (pilot->leg_power + 3) * 0.192f;
+        float arm_power = (pilot->arm_power + 3) * 0.192f;
+
+        switch(move->extra_string_selector) {
+            case 0:
+                break;
+            case 1:
+            case 3:
+                // apply arm power for damage
+                *damage = *damage * arm_power;
+                break;
+            case 2:
+            case 4:
+                // apply leg power for damage
+                *damage = *damage * leg_power;
+                break;
+            case 5:
+                // apply leg and arm power for damage
+                *damage = *damage * arm_power * leg_power;
+        }
+    }
+    // log_debug("Calculated damage %d", *damage);
+}
+
+void har_take_damage(object *obj, af_move *move) {
     har *h = object_get_userdata(obj);
+    game_player *other_player = game_state_get_player(obj->gs, !h->player_id);
+    object *other_har = game_state_find_object(obj->gs, other_player->har_obj_id);
 
     if(h->state == STATE_VICTORY || h->state == STATE_DONE) {
         // can't die if the other guy died first
@@ -853,6 +915,13 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
     // Got hit, disable stasis activator on this bot
     h->in_stasis_ticks = 1;
 
+    int damage = 0;
+    int stun = 0;
+    calc_damage_and_stun(other_har, move, &damage, &stun);
+
+    // rehits do 60% more damage
+    damage = h->rehit_combo ? damage / 0.6 : damage;
+
     // Save damage taken
     h->last_damage_value = damage;
 
@@ -860,9 +929,6 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
 
     // interrupted
     h->executing_move = 0;
-
-    game_player *other_player = game_state_get_player(obj->gs, !h->player_id);
-    object *other_har = game_state_find_object(obj->gs, other_player->har_obj_id);
 
     vector vec;
     vector_create(&vec, sizeof(object *));
@@ -919,6 +985,7 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
                             h->health == 0 ? game_state_get_speed(obj->gs) - 10 : game_state_get_speed(obj->gs) - 6);
     }
 
+    const str *string = &move->footer_string;
     str custom;
     str_create(&custom);
 
@@ -937,15 +1004,16 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
         if(h->throw_duration) {
             // No special handling
             object_set_stride(obj, 1);
+        } else if(player_frame_isset(other_har, "ai") && (move->category != CAT_PROJECTILE)) {
+            log_debug("grounded launch");
+            str_from_c(&custom, "A1-s01l50B2-C2-L5-M400");
+            obj->vel.x = -5.0 * object_get_direction(obj);
+            obj->vel.y = -9.0;
+            object_set_stride(obj, 1);
         } else if(object_is_airborne(obj)) {
             log_debug("airborne knockback");
-            // append the 'airborne knockback' string to the hit string, replacing the final frame
-            size_t last_line = 0;
-            if(!str_last_of(string, '-', &last_line)) {
-                last_line = 0;
-            }
-
-            str_from_slice(&custom, string, 0, last_line);
+            // append the 'airborne knockback' string to the hit string
+            str_from(&custom, string);
             if(h->endurance < 0 || h->health <= 0) {
                 // this hit stunned them, so make them hit the floor stunned
                 str_append_c(&custom, "-L3-M5000");
@@ -953,12 +1021,12 @@ void har_take_damage(object *obj, const str *string, float damage, float stun) {
                 str_append_c(&custom, "-L2-M5-L2");
             }
 
-            obj->vel.y = obj->vertical_velocity_modifier * ((((30.0f - damage) * 0.133333f) + 6.5f) * -1.0);
+            obj->vel.y = obj->vertical_velocity_modifier * ((((30.0f - move->damage) * 0.133333f) + 6.5f) * -1.0);
             // TODO there's an alternative formula used in some conditions:
             // (((damage * 0.09523809523809523) + 3.5)  * -1) * obj->vertical_velocity_modifier
             // but we don't know what those conditions are
-            obj->vel.x =
-                (((damage * 0.16666666f) + 2.0f) * object_get_direction(obj) * -1) * obj->horizontal_velocity_modifier;
+            obj->vel.x = (((move->damage * 0.16666666f) + 2.0f) * object_get_direction(obj) * -1) *
+                         obj->horizontal_velocity_modifier;
             object_set_stride(obj, 1);
         } else {
             if(h->health <= 0 || h->endurance < 0) {
@@ -1198,60 +1266,6 @@ void har_debug(object *obj) {
 }
 #endif // DEBUGMODE
 
-void calc_damage_and_stun(object *obj, af_move *move, int *damage, int *stun) {
-    har *h = obj->userdata;
-    game_player *gp = game_state_get_player(obj->gs, h->player_id);
-    sd_pilot *pilot = gp->pilot;
-
-    int multiplier = 100;
-    if(player_frame_isset(obj, "k")) {
-        multiplier = player_frame_get(obj, "k") + 10;
-        // log_debug("Set multiplier %d", multiplier);
-    }
-
-    *damage = move->damage * multiplier / 100;
-    if(multiplier < 100) {
-        *damage = *damage + 1;
-    }
-
-    if(!is_tournament(obj->gs)) {
-        // Single Player
-        // Damage = Base Damage * (20 + Power) / 30 + 1
-        //  Stun = (Base Damage * 2 + 12) * 256
-        *stun = *damage;
-        *damage = *damage * (20 + pilot->power) / 30 + 1;
-    } else {
-        // Tournament Mode
-        // Damage = (Base Damage * (25 + Power) / 35 + 1) * leg/arm power / armor
-        // Stun = ((Base Damage * (35 + Power) / 45) * 2 + 12) * 256
-        *stun = *damage * (35 + pilot->power) / 45;
-        *damage = *damage * (25 + pilot->power) / 35 + 1;
-
-        // (Limb Power + 3) * .192
-        float leg_power = (pilot->leg_power + 3) * 0.192f;
-        float arm_power = (pilot->arm_power + 3) * 0.192f;
-
-        switch(move->extra_string_selector) {
-            case 0:
-                break;
-            case 1:
-            case 3:
-                // apply arm power for damage
-                *damage = *damage * arm_power;
-                break;
-            case 2:
-            case 4:
-                // apply leg power for damage
-                *damage = *damage * leg_power;
-                break;
-            case 5:
-                // apply leg and arm power for damage
-                *damage = *damage * arm_power * leg_power;
-        }
-    }
-    // log_debug("Calculated damage %d", *damage);
-}
-
 // function to check if har A is hitting har B. Returns 1 if the har is executing a priority move which
 // would interrupt B. Currently only throws are considered priority.
 int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
@@ -1275,7 +1289,7 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
     }
 
     // Track this now so we don't re-evaluate after the hit registers
-    bool air_hit = object_is_airborne(obj_b);
+    bool air_hit = object_is_airborne(obj_b) || player_frame_isset(obj_a, "ai");
 
     // if UH is set, bypass many of the collision bypass checks
     // TODO check these are the right ones
@@ -1396,14 +1410,6 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
             }
         }
 
-        int damage = 0;
-        int stun = 0;
-        calc_damage_and_stun(obj_a, move, &damage, &stun);
-
-        // rehits only do 60% damage
-        // TODO: validate this formula
-        damage = air_hit ? damage * 0.6 : damage;
-
         if(object_is_airborne(obj_a) && object_is_airborne(obj_b)) {
             // modify the horizontal velocity of the attacker when doing air knockback
             obj_a->vel.x *= 0.7f;
@@ -1417,23 +1423,13 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
 
         // face B to the direction they're being attacked from
         object_set_direction(obj_b, -object_get_direction(obj_a));
-
-        if(player_frame_isset(obj_a, "ai")) {
-            str str;
-            str_from_c(&str, "A1-s01l50B2-C2-L5-M400");
-            har_take_damage(obj_b, &str, damage, stun);
-            str_free(&str);
-            obj_b->vel.x = -5.0 * object_get_direction(obj_b);
-            obj_b->vel.y = -9.0;
-        } else {
-            har_take_damage(obj_b, &move->footer_string, damage, stun);
-        }
+        har_take_damage(obj_b, move);
 
         if(b->rehit_combo) {
             obj_b->vel.y -= 3;
         }
 
-        if((hit_coord.x != 0 || hit_coord.y != 0) && damage != 0) {
+        if((hit_coord.x != 0 || hit_coord.y != 0) && move->damage != 0) {
             har_spawn_scrap(obj_b, hit_coord, move->block_stun);
         }
 
@@ -1578,7 +1574,7 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
         // Exception case for chronos' time freeze
         if(player_frame_isset(o_pjt, "af")) {
             // statis ticks is the raw damage from the move
-            h->in_stasis_ticks = move->raw_damage;
+            h->in_stasis_ticks = move->damage;
         } else if(move->damage > 0) {
             // assume all projectile that do damage have a footer string
             assert(str_size(&move->footer_string) > 0);
@@ -1590,29 +1586,16 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
             // face B to the direction they're being attacked from
             object_set_direction(o_har, -object_get_direction(o_pjt));
 
-            int damage = 0;
-            int stun = 0;
-            calc_damage_and_stun(o_pjt, move, &damage, &stun);
-            damage = air_hit ? damage * 0.6 : damage;
-            if(player_frame_isset(o_pjt, "ai")) {
-                str str;
-                str_from_c(&str, "A1-s01l50B2-C2-L5-M400");
-                har_take_damage(o_har, &str, damage, stun);
-                str_free(&str);
-                o_har->vel.x = -5.0 * object_get_direction(o_har);
-                o_har->vel.y = -9.0;
-            } else {
-                har_take_damage(o_har, &move->footer_string, damage, stun);
-                if(air_hit) {
-                    o_har->vel.y -= 3;
-                }
-                if(!h->is_wallhugging && !object_is_airborne(o_har)) {
-                    vec2f push = object_get_vel(o_har);
-                    if(fabsf(push.x) < 7.0f) {
-                        log_debug("doing knockback of 7");
-                        push.x = -7.0f * object_get_direction(o_har);
-                        object_set_vel(o_har, push);
-                    }
+            har_take_damage(o_har, move);
+            if(air_hit) {
+                o_har->vel.y -= 3;
+            }
+            if(!h->is_wallhugging && !object_is_airborne(o_har)) {
+                vec2f push = object_get_vel(o_har);
+                if(fabsf(push.x) < 7.0f) {
+                    log_debug("doing knockback of 7");
+                    push.x = -7.0f * object_get_direction(o_har);
+                    object_set_vel(o_har, push);
                 }
             }
 
@@ -1680,7 +1663,12 @@ void har_collide_with_hazard(object *o_har, object *o_hzd) {
     int level = 2;
     vec2i hit_coord;
     if(!h->damage_received && intersect_har_sprite_hitpoint(o_hzd, o_har, level, &hit_coord)) {
-        har_take_damage(o_har, &anim->footer_string, anim->hazard_damage, anim->hazard_damage);
+        af_move *move = omf_calloc(1, sizeof(af_move));
+        move->damage = anim->hazard_damage;
+        move->footer_string = anim->footer_string;
+        move->category = CAT_VICTORY;
+        har_take_damage(o_har, move);
+        omf_free(move);
         controller *ctrl = game_player_get_ctrl(game_state_get_player(o_har->gs, h->player_id));
         har_event_hazard_hit(h, anim, ctrl);
         // fire enemy hazard hit event
