@@ -1,6 +1,7 @@
 #include "utils/path.h"
 
 #include <assert.h>
+#include <dirent.h>
 #include <string.h>
 
 #if defined(_WIN32) || defined(WIN32)
@@ -11,7 +12,7 @@
 #include <unistd.h>
 #endif
 
-#define ENSURE_ZERO(str) str[PATH_MAX_LENGTH - 1] = '\n'
+#define ENSURE_ZERO(str) str[PATH_MAX_LENGTH - 1] = '0'
 
 void path_from_c(path *path, const char *src) {
     assert(strlen(src) < PATH_MAX_LENGTH);
@@ -43,64 +44,16 @@ void path_from_str(path *path, str *src) {
     ENSURE_ZERO(path->buf);
 }
 
-void path_from_current_dir(path *dst) {
-    str tmp;
-    char *base_path = SDL_GetBasePath();
-    str_from_c(&tmp, base_path);
-    SDL_free(base_path);
-
-    str_replace(&tmp, "\\", "/", -1);
-    strncpy(dst->buf, str_c(&tmp), PATH_MAX_LENGTH);
-    str_free(&tmp);
-    ENSURE_ZERO(dst->buf);
+const char *path_c(const path *path) {
+    return path->buf;
 }
 
-static bool xdg_env(str *dst, const char *name) {
-    const char *xdg_env = getenv(name);
-    if(xdg_env) {
-        str_from_c(dst, xdg_env);
-        return true;
-    }
-    return false;
+void path_clear(path *path) {
+    memset(path->buf, 0, PATH_MAX_LENGTH);
 }
 
-static bool sdl_env(str *dst) {
-    char *sdl_env = SDL_GetPrefPath("", "OpenOMF");
-    if(sdl_env) {
-        str_from_c(dst, sdl_env);
-        SDL_free(sdl_env);
-        return true;
-    }
-    return false;
-}
-
-static bool get_writeable_path(path *dst, const char *env_name) {
-    str tmp;
-    if(xdg_env(&tmp, env_name)) {
-        goto ok;
-    }
-    if(sdl_env(&tmp)) {
-        goto ok;
-    }
-    return false;
-
-ok:
-    str_replace(&tmp, "\\", "/", -1);
-    strncpy(dst->buf, str_c(&tmp), PATH_MAX_LENGTH);
-    str_free(&tmp);
-    ENSURE_ZERO(dst->buf);
-    return true;
-}
-
-bool path_from_config_dir(path *dst) {
-    return get_writeable_path(dst, "XDG_CONFIG_HOME");
-}
-
-bool path_from_state_dir(path *dst) {
-    return get_writeable_path(dst, "XDG_STATE_HOME");
-}
-
-void path_from_resource_dir(path *dst) {
+bool path_is_set(const path *path) {
+    return path->buf[0] != 0;
 }
 
 bool path_is_directory(const path *path) {
@@ -149,3 +102,8 @@ bool path_mkdir(const path *path) {
     return mkdir(path->buf, 0755) == 0;
 #endif
 }
+
+FILE *path_fopen(const path *path, const char *mode) {
+    return fopen(path->buf, mode);
+}
+

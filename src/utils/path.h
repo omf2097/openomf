@@ -18,10 +18,9 @@ void path_from_c(path *path, const char *src);
 void path_from_parts(path *path, ...);
 void path_from_str(path *path, str *src);
 
-void path_from_current_dir(path *dst); // Current binary directory path (without the filename)
-bool path_from_config_dir(path *dst);  // Init with config directory (users writeable for config files)
-bool path_from_state_dir(path *dst);   // Init with state directory (users writeable for saved games, screenshots, etc.)
-void path_from_resource_dir(path *dst); // Init with resources directory (read-only game data)
+const char *path_c(const path *path);
+void path_clear(path *path);
+bool path_is_set(const path *path);
 
 bool path_is_directory(const path *path);
 bool path_is_file(const path *path);
