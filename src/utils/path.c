@@ -20,14 +20,14 @@ void path_from_c(path *path, const char *src) {
     ENSURE_ZERO(path->buf);
 }
 
-void path_from_parts(path *path, ...) {
-    const char *arg;
+void _path_from_parts(path *path, int nargs, ...) {
     str tmp;
     str_create(&tmp);
 
     va_list ap;
-    va_start(ap, path);
-    while((arg = va_arg(ap, char *)) != NULL) {
+    va_start(ap, nargs);
+    for (int i = 0; i < nargs; i++) {
+        const char *arg = va_arg(ap, char *);
         str_append_c(&tmp, arg);
         str_append_char(&tmp, '/');
     }
@@ -61,7 +61,7 @@ bool path_is_directory(const path *path) {
     return PathIsDirectory(path->buf) == TRUE;
 #else
     struct stat sb;
-    if(stat(path->buf, &sb) == 0)
+    if(stat(path->buf, &sb) != 0)
         return false;
     return (sb.st_mode & S_IFMT) == S_IFDIR;
 #endif

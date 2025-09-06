@@ -16,25 +16,23 @@
 
 #ifndef DEFAULT_RESOURCE_PATH
 // This should be set by CMake
-#define DEFAULT_RESOURCE_PATH "./"
+#define DEFAULT_RESOURCE_PATH ""
 #endif
 
 static path resource_dir = {0};
 static path config_dir = {0};
 static path state_dir = {0};
 
-/*
-static void find_current_dir(path *dst) {
-    str tmp;
-    char *base_path = SDL_GetBasePath();
-    str_from_c(&tmp, base_path);
-    SDL_free(base_path);
 
-    str_replace(&tmp, "\\", "/", -1);
-    strncpy(dst->buf, str_c(&tmp), PATH_MAX_LENGTH);
-    str_free(&tmp);
+static bool base_path(str *dst) {
+    char *sdl_env = SDL_GetBasePath();
+    if(sdl_env) {
+        str_from_c(dst, sdl_env);
+        SDL_free(sdl_env);
+        return true;
+    }
+    return false;
 }
-*/
 
 static bool env_str(str *dst, const char *name) {
     const char *env_path = getenv(name);
@@ -78,22 +76,29 @@ ok:
     return true;
 }
 
-static bool scan_potential_resource_dirs(path *dst, str *src, const char *find) {
-    str *test_path;
+static bool scan_potential_resource_dirs(path *dst, const str *src, const char *find) {
+    str *slice;
+    path test;
     vector paths;
     iterator it;
+
     str_split(&paths, src, ':');
     vector_iter_begin(&paths, &it);
-    foreach(it, test_path) {
-        str_append_c(test_path, find);
-        log_debug("Testing %s ...", str_c(test_path));
-        path_from_str(dst, test_path);
-        if (!path_is_directory(dst)) {
-            path_clear(dst);
+    foreach(it, slice) {
+        str_replace(slice, "\\", "/", -1);
+        path_from_parts(&test, str_c(slice), find);
+        log_debug("Testing %s ...", path_c(&test));
+        if (!path_is_directory(&test)) {
+            path_clear(&test);
         }
     }
     vector_free(&paths);
-    return path_is_set(dst);
+
+    if(path_is_set(&test)) {
+        *dst = test;
+        return true;
+    }
+    return false;
 }
 
 static bool find_resource_path(path *dst) {
@@ -113,6 +118,13 @@ static bool find_resource_path(path *dst) {
         }
         str_free(&tmp);
     }
+    if(base_path(&tmp)) {
+        if(scan_potential_resource_dirs(dst, &tmp, "resources/")) {
+            log_debug("Resources found in base directory: %s", path_c(dst));
+            goto ok;
+        }
+        str_free(&tmp);
+    }
     if(strlen(DEFAULT_RESOURCE_PATH) > 0) {
         str_from_c(&tmp, DEFAULT_RESOURCE_PATH);
         if(scan_potential_resource_dirs(dst, &tmp, "resources/")) {
@@ -124,8 +136,6 @@ static bool find_resource_path(path *dst) {
     return false;
 
 ok:
-    str_replace(&tmp, "\\", "/", -1);
-    path_from_c(dst, str_c(&tmp));
     str_free(&tmp);
     return true;
 }
@@ -139,7 +149,7 @@ bool resource_path_init(void) {
         log_error("Unable to find config path!");
         return false;
     }
-    if(!find_resource_path(&config_dir)) {
+    if(!find_resource_path(&resource_dir)) {
         log_error("Unable to find resource path!");
         return false;
     }

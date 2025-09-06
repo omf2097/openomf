@@ -9,14 +9,18 @@
 
 #define PATH_MAX_LENGTH 1024
 
+#define PATH_NARGS(...) (sizeof((const char*[]){__VA_ARGS__})/sizeof(const char*))
+
 typedef struct path {
     char buf[PATH_MAX_LENGTH];
 } path;
 
 // Normalize separator to "/"
 void path_from_c(path *path, const char *src);
-void path_from_parts(path *path, ...);
+void _path_from_parts(path *path, int nargs, ...);
 void path_from_str(path *path, str *src);
+
+#define path_from_parts(path, ...) _path_from_parts(path, PATH_NARGS(__VA_ARGS__), __VA_ARGS__)
 
 const char *path_c(const path *path);
 void path_clear(path *path);
