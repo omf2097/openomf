@@ -12,6 +12,8 @@
 #include "utils/log.h"
 #include "utils/msgbox.h"
 #include "utils/random.h"
+#include "utils/resource_paths.h"
+
 #include <SDL.h>
 #include <argtable3.h>
 #include <enet/enet.h>
@@ -179,7 +181,6 @@ int main(int argc, char *argv[]) {
 
     // Init log
     log_init();
-    log_add_file(pm_get_local_path(LOG_PATH), LOG_INFO);
 #if defined(USE_COLORS)
     log_set_colors(true);
 #else
@@ -198,6 +199,12 @@ int main(int argc, char *argv[]) {
         }
         log_set_level(log_level_text_to_enum(log_level->sval[0], LOG_INFO));
     }
+
+    // Load file paths
+    if(!resource_path_init()) {
+        goto exit_0;
+    }
+    log_add_file(pm_get_local_path(LOG_PATH), LOG_INFO);
 
     // Simple header
     log_info("Starting OpenOMF v%s", get_version_string());
