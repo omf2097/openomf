@@ -393,10 +393,11 @@ int rewind_and_replay(wtf *data, controller *ctrl) {
                 int player_id = j;
                 game_player *player = game_state_get_player(gs, player_id);
                 int k = 0;
-                do {
+                // send at least one event into the object, even if it's a ACT_NONE
+                while((k == 0 || ev->events[j][k]) && k < MAX_EVENTS_PER_TICK) {
                     object_act(game_state_find_object(gs, game_player_get_har_obj_id(player)), ev->events[j][k]);
                     k++;
-                } while(ev->events[j][k] && k < MAX_EVENTS_PER_TICK);
+                }
             }
 
             // update arena hash now inputs have been done

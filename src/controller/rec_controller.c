@@ -151,6 +151,7 @@ void rec_controller_step_back(controller *ctrl) {
         // first player already handles/handled rewinding, so all we the second
         // player have to do is reset our last_action controller state.
         rec_controller_find_old_last_action(ctrl);
+        data->last_tick = ctrl->gs->tick;
         return;
     }
     game_state *gs_bak = vector_back(&data->game_states);
@@ -164,6 +165,8 @@ void rec_controller_step_back(controller *ctrl) {
     game_state_clone(gs_bak, gs_new);
     gs_new->clone = false;
     ctrl->gs->new_state = gs_new;
+
+    data->last_tick = ctrl->gs->tick;
 
     log_debug("REWOUND game state from %d to %d", ctrl->gs->tick, gs_new->tick);
 
