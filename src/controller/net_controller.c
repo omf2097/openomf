@@ -417,6 +417,7 @@ int rewind_and_replay(wtf *data, controller *ctrl) {
 
                     int k = 0;
                     while(ev->events[j][k] && k < MAX_EVENTS_PER_TICK) {
+                        move.action = 0;
                         if(ev->events[j][k] & ACT_PUNCH) {
                             move.action |= SD_ACT_PUNCH;
                         }
@@ -441,8 +442,12 @@ int rewind_and_replay(wtf *data, controller *ctrl) {
                             move.action |= SD_ACT_RIGHT;
                         }
 
-                        if(ev->events[j][k] == ACT_NONE) {
+                        if(ev->events[j][k] == ACT_STOP) {
                             move.action = SD_ACT_NONE;
+                        } else if (!move.action) {
+                            log_warn("saw no action in %d", ev->events[j][k]);
+                            // skip any ACT_NONEs
+                            continue;
                         }
 
                         sd_rec_insert_action(gs->rec, gs->rec->move_count, &move);
