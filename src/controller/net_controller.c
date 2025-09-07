@@ -15,69 +15,6 @@
 #include "utils/log.h"
 #include "utils/miscmath.h"
 
-typedef struct {
-    ENetHost *host;
-    ENetPeer *peer;
-    ENetPeer *lobby;
-    int id;
-    uint32_t last_hb;
-    uint32_t outstanding_hb;
-    int disconnected;
-    int rttbuf[100];
-    int rttpos;
-    int rttfilled;
-    // tracks how far apart our and the peer's ticks are
-    int tick_offset;
-    // tracks the frame advantage we have, if any
-    int frame_advantage;
-    // have we synchronized our ticks with the peer
-    bool synchronized;
-    // how many times we've tried to guess the peer's tick
-    int guesses;
-    // how many ticks we've told the peer to adjust to align our clocks
-    uint32_t peer_proposal;
-    // how many ticks we're offsetting the local ticks by to align our clocks
-    uint32_t local_proposal;
-    // has the peer agreed to our alignment proposal
-    bool confirmed;
-    // the last tick we've seen
-    uint32_t last_tick;
-    // the last tick we've sent to the peer
-    uint32_t last_sent_tick;
-    list transcript;
-    // the last tick we've received from the peer
-    uint32_t last_received_tick;
-    // the tick of the last event the peer has ACKed
-    uint32_t last_acked_tick;
-    int last_har_state;
-    // the last tick we've written to a trace file or a REC
-    uint32_t last_traced_tick;
-    uint32_t peer_last_hash;
-    // the tick of the last game state hash the peer sent us
-    uint32_t peer_last_hash_tick;
-    uint32_t last_hash;
-    // the tick of our last game state hash
-    uint32_t last_hash_tick;
-    // the last (local) action we recorded
-    uint8_t last_action;
-    // the last tick we did a rewind/replay
-    uint32_t last_rewind_tick;
-    // the last tick the peer did input
-    uint32_t last_peer_input_tick;
-    // the last action the peer took
-    uint8_t last_peer_action;
-    SDL_RWops *trace_file;
-    game_state *gs_bak;
-    int winner;
-} wtf;
-
-#define MAX_EVENTS_PER_TICK 11
-
-typedef struct {
-    uint32_t tick;
-    uint8_t events[2][MAX_EVENTS_PER_TICK];
-} tick_events;
-
 // simple standard deviation calculation
 float stddev(float average, int data[], int n) {
     float variance = 0.0f;
