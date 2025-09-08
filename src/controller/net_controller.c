@@ -42,6 +42,7 @@ typedef struct {
     bool confirmed;
     // the last tick we've seen
     uint32_t last_tick;
+    uint32_t last_int_tick;
     // the last tick we've sent to the peer
     uint32_t last_sent_tick;
     list transcript;
@@ -703,12 +704,16 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
     uint32_t ticks = ctrl->gs->tick;
     uint32_t int_ticks = ctrl->gs->int_tick;
 
-    if(data->gs_bak && has_event(data, NET_INPUT_DELAY) && ticks > data->last_tick) {
-        data->last_tick = ticks;
+    if(data->gs_bak && has_event(data, NET_INPUT_DELAY) && int_ticks > data->last_int_tick) {
         send_events(data, NET_INPUT_DELAY);
     }
 
-    data->last_tick = ticks;
+    if(int_ticks > data->last_int_tick) {
+        data->last_int_tick = int_ticks;
+        data->last_tick = ticks;
+    }
+
+    ticks = data->last_tick;
 
     if(ticks == data->local_proposal && !data->synchronized) {
         if(data->confirmed) {
@@ -1090,7 +1095,7 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
 
     // if the match is actually proceeding
     // AND we've received events then try a rewind/replay
-    if((has_received && ticks > data->last_rewind_tick) || data->last_received_tick > data->last_rewind_tick) {
+    if((has_received && int_ticks > data->last_rewind_tick)) {// || (data->gs_bak && data->last_received_tick + tick_drift > data->last_rewind_tick)) {
         log_debug("last received is now %d", data->last_received_tick);
         if(rewind_and_replay(data, ctrl)) {
             if(ctrl->gs->rec) {
@@ -1105,7 +1110,7 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
         }
         // at a minimum let the other side know we've handled their events
         send_events(data, NET_INPUT_DELAY);
-        data->last_rewind_tick = ticks;
+        data->last_rewind_tick = int_ticks;
     }
 
     unsigned tick_interval = 5;
