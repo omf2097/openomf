@@ -1199,6 +1199,9 @@ void lobby_tick(scene *scene, int paused) {
                                         str_free(&tmp);
                                     }
                                 }
+                                if(local->id == user.id) {
+                                    strncpy_or_truncate(local->name, user.name, sizeof(local->name));
+                                }
                                 update_active_user_text(local);
                             }
                         }

@@ -1048,7 +1048,7 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                         serial_read(&ser, name_buf, min2(sizeof(name_buf) - 1, val));
                         name_buf[19] = '\0';
                         if(strncmp(player->pilot->name, name_buf, strlen(player->pilot->name)) != 0) {
-                            log_error("Pilot name mismatch, we had %d they had %d", player->pilot->name, name_buf);
+                            log_error("Pilot name mismatch, we had %s they had %s %d", player->pilot->name, name_buf, val );
                             enet_peer_disconnect_later(data->peer, 0);
                             return 1;
                         }
