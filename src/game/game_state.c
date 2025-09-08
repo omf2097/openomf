@@ -879,12 +879,12 @@ void game_state_call_move(game_state *gs) {
 }
 
 void game_state_tick_controllers(game_state *gs) {
-    controller_tick(gs->menu_ctrl, gs->int_tick, &gs->menu_ctrl->extra_events);
+    controller_tick(gs->menu_ctrl, gs->tick, &gs->menu_ctrl->extra_events);
     for(int i = 0; i < game_state_num_players(gs); i++) {
         game_player *gp = game_state_get_player(gs, i);
         controller *c = game_player_get_ctrl(gp);
         if(c) {
-            controller_tick(c, gs->int_tick, &c->extra_events);
+            controller_tick(c, gs->tick, &c->extra_events);
         }
     }
 }
@@ -1070,6 +1070,11 @@ void game_state_static_tick(game_state *gs, bool replay) {
 
 // This function is called when the game speed requires it
 void game_state_dynamic_tick(game_state *gs, bool replay) {
+
+    if(replay) {
+        // hit pause is meaningless when replaying
+        gs->hit_pause = 0;
+    }
 
     if(gs->hit_pause > 0) {
         gs->hit_pause--;
@@ -1444,7 +1449,7 @@ void game_state_play_sound(game_state *gs, int id, float volume, float panning, 
     }
 
     playing_sound s;
-    s.tick = gs->int_tick;
+    s.tick = gs->tick;
     s.id = id;
     s.length = src_len;
     s.duration = src_len / (pitched_samplerate(src_freq, pitch) * 1000);
