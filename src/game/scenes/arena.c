@@ -2088,6 +2088,17 @@ int arena_create(scene *scene) {
         scene->gs->rec->hazards = scene->gs->match_settings.hazards;
         scene->gs->rec->round_type = scene->gs->match_settings.rounds;
         scene->gs->rec->hyper_mode = scene->gs->match_settings.fight_mode;
+
+        // insert the random seed into the REC
+        sd_rec_move mv;
+        memset(&mv, 0, sizeof(sd_rec_move));
+        mv.lookup_id = 96;
+        mv.raw_action = 0;
+        mv.extra_data = malloc(7);
+        mv.tick = 1;
+        uint32_t seed = random_get_seed(&scene->gs->rand);
+        memcpy(mv.extra_data, &seed, sizeof(seed));
+        sd_rec_insert_action_at_tick(scene->gs->rec, &mv);
     }
 
     // All done!

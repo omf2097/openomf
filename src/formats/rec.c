@@ -17,6 +17,7 @@ int sd_rec_extra_len(int key) {
             return 60;
         case 10:
         case 18:
+        case 96:
             return 8;
     }
     return 0;
