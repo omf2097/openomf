@@ -8,6 +8,17 @@
   </branding>
 
   <releases>
+    <release version="0.8.4" date="2025-09-09">
+      <url type="details">https://github.com/omf2097/openomf/releases/tag/0.8.4</url>
+      <description>
+        <p>0.8.4 continues the bugfix and feature additions to the 0.8 branch</p>
+        <ul>
+          <li>Netplay bugfixes</li>
+          <li>Spectator/netplay REC desync fixes</li>
+          <li>Gameplay fixes</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.8.3" date="2025-06-16">
       <url type="details">https://github.com/omf2097/openomf/releases/tag/0.8.3</url>
       <description>
