@@ -121,6 +121,10 @@ void print_rec_root_info(sd_rec_file *rec) {
                 if(parse_assertion(buf, &ass)) {
                     print_assertion(&ass);
                 }
+            } else if(rec->moves[i].lookup_id == 96) {
+                uint32_t seed;
+                memcpy(&seed, rec->moves[i].extra_data, sizeof(seed));
+                printf("Set random seed to %d", seed);
             } else if(rec->moves[i].lookup_id > 2) {
                 tmp[0] = rec->moves[i].raw_action;
                 memcpy(tmp + 1, rec->moves[i].extra_data, sd_rec_extra_len(rec->moves[i].lookup_id) - 1);
