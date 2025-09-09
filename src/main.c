@@ -261,9 +261,14 @@ int main(int argc, char *argv[]) {
     log_info("Found SDL v%d.%d.%d", sdl_linked.major, sdl_linked.minor, sdl_linked.patch);
     log_info("Running on platform: %s", SDL_GetPlatform());
 
-    if(SDL_InitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC)) {
-        err_msgbox("SDL2 Initialization failed: %s", SDL_GetError());
+    if(SDL_InitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER)) {
+        err_msgbox("Joystick initialization failed: %s", SDL_GetError());
         goto exit_2;
+    }
+
+    // Just warn if haptic subsystem does not get initialized.
+    if(SDL_InitSubSystem(SDL_INIT_HAPTIC)) {
+        log_warn("Haptic subsystem failed to initialize -- rumble will be disabled.");
     }
 
     // Load game controller support

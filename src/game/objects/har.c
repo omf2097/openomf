@@ -285,7 +285,7 @@ void har_set_ani(object *obj, int animation_id, int repeat) {
     // we shouldn't be idling while defeated
     assert(!((animation_id == ANIM_IDLE || animation_id == ANIM_CROUCHING) && h->health <= 0));
 
-    if(move->category == CAT_JUMPING) {
+    if(move->category == CAT_JUMPING && h->state < STATE_VICTORY) {
         h->state = STATE_JUMPING;
     }
     if(move->category == CAT_LOW || animation_id == ANIM_CROUCHING || animation_id == ANIM_CROUCHING_BLOCK) {
@@ -1443,7 +1443,7 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
                 // we want to keep the opponent alive until the next thing hits
                 b->health = 1;
             }
-            log_debug("HAR %s going to next move %d", har_get_name(b->id), move->next_move);
+            log_debug("HAR %s going to next move %d", har_get_name(a->id), move->next_move);
 
             har_set_ani(obj_a, move->next_move, 0);
 

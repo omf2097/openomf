@@ -74,6 +74,7 @@ typedef struct debug_data {
     text *har_pos_text[2];
     text *har_vel_text[2];
     text *har_ani_text[2];
+    text *har_input_text[2];
 } debug_data;
 
 typedef struct arena_local {
@@ -1128,6 +1129,7 @@ static debug_data *create_debug_data(scene *scene) {
         data->har_pos_text[i] = create_text_object("0");
         data->har_vel_text[i] = create_text_object("0");
         data->har_ani_text[i] = create_text_object("0");
+        data->har_input_text[i] = create_text_object("0");
     }
 
     // Texts on the right side of the screen are right-aligned for easier positioning.
@@ -1138,6 +1140,7 @@ static debug_data *create_debug_data(scene *scene) {
     text_set_horizontal_align(data->har_pos_text[1], TEXT_ALIGN_RIGHT);
     text_set_horizontal_align(data->har_vel_text[1], TEXT_ALIGN_RIGHT);
     text_set_horizontal_align(data->har_ani_text[1], TEXT_ALIGN_RIGHT);
+    text_set_horizontal_align(data->har_input_text[1], TEXT_ALIGN_RIGHT);
 
     local->debug = data;
     return local->debug;
@@ -1161,6 +1164,7 @@ static void free_debug_data(scene *scene) {
         text_free(&local->debug->har_pos_text[i]);
         text_free(&local->debug->har_vel_text[i]);
         text_free(&local->debug->har_ani_text[i]);
+        text_free(&local->debug->har_input_text[i]);
     }
     omf_free(local->debug);
     local->debug = NULL;
@@ -1498,6 +1502,8 @@ static void arena_tick_debug(scene *scene) {
         snprintf(buf, sizeof(buf), "aa: %d em: %d ani: %d", hars[i]->air_attacked, hars[i]->executing_move,
                  obj_har[i]->cur_animation->id);
         text_set_from_c(d->har_ani_text[i], buf);
+        snprintf(buf, sizeof(buf), "inputs %s", hars[i]->inputs);
+        text_set_from_c(d->har_input_text[i], buf);
     }
 }
 
@@ -1522,6 +1528,7 @@ static void arena_debug(scene *scene) {
     text_draw(d->har_pos_text[0], 5, 56);
     text_draw(d->har_vel_text[0], 5, 63);
     text_draw(d->har_ani_text[0], 5, 70);
+    text_draw(d->har_input_text[0], 5, 77);
 
     // Right side of the screen. The text items are all 155 pixels long and aligned to the right,
     // so we just use 160 as X coordinate (with alignment as needed).
@@ -1532,6 +1539,7 @@ static void arena_debug(scene *scene) {
     text_draw(d->har_pos_text[1], 160, 56);
     text_draw(d->har_vel_text[1], 160, 63);
     text_draw(d->har_ani_text[1], 160, 70);
+    text_draw(d->har_input_text[1], 160, 77);
 }
 
 int arena_get_state(scene *scene) {
