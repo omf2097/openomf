@@ -285,7 +285,7 @@ void har_set_ani(object *obj, int animation_id, int repeat) {
     // we shouldn't be idling while defeated
     assert(!((animation_id == ANIM_IDLE || animation_id == ANIM_CROUCHING) && h->health <= 0));
 
-    if(move->category == CAT_JUMPING) {
+    if(move->category == CAT_JUMPING && h->state < STATE_VICTORY) {
         h->state = STATE_JUMPING;
     }
     if(move->category == CAT_LOW || animation_id == ANIM_CROUCHING || animation_id == ANIM_CROUCHING_BLOCK) {
@@ -719,26 +719,30 @@ void har_move(object *obj) {
             har_event_land(h, ctrl);
             har_floor_landing_effects(obj, true);
         } else if(h->state == STATE_RECOIL) {
-            if(obj->vel.y > 0) {
-                // bounce and screenshake if falling fast enough
-                if(obj->vel.y > 6) {
-                    har_floor_landing_effects(obj, false);
-                    obj->vel.y = -3;
-                    obj->vel.x = obj->vel.x / 2;
-                    if(h->id != 10) {
-                        object_set_custom_string(obj, "l20s4sp13zzN3-zzM100");
-                        obj->gs->screen_shake_vertical = 5; // Multiplied by 5 to make it visible
-                    } else {
-                        // Nova falls harder
-                        object_set_custom_string(obj, "l40s4sp13zzN3-zzM100");
-                        obj->gs->screen_shake_vertical = 15; // Multiplied by 5 to make it visible
-                    }
+            // bounce and screenshake if falling fast enough
+            if(obj->vel.y > 6) {
+                har_floor_landing_effects(obj, false);
+                obj->vel.y = -3;
+                obj->vel.x = obj->vel.x / 2;
+                if(h->id != 10) {
+                    object_set_custom_string(obj, "l20s4sp13zzN3-zzM100");
+                    obj->gs->screen_shake_vertical = 5; // Multiplied by 5 to make it visible
                 } else {
-                    obj->vel.y = 0;
-                    obj->vel.x = 0;
-                    har_event_land(h, ctrl);
-                    har_finished(obj);
+                    // Nova falls harder
+                    object_set_custom_string(obj, "l40s4sp13zzN3-zzM100");
+                    obj->gs->screen_shake_vertical = 15; // Multiplied by 5 to make it visible
                 }
+            }
+            // cause a knockdown even while not falling
+            if(obj->vel.y >= 0 && obj->animation_state.current_tick > 5 && obj->cur_sprite_id == 12 && !h->is_grabbed) {
+                obj->vel.y = 1;
+            }
+            // stop if still falling
+            if(obj->vel.y > 0) {
+                obj->vel.y = 0;
+                obj->vel.x = 0;
+                har_event_land(h, ctrl);
+                har_finished(obj);
             }
 
             if(obj->pos.x < ARENA_LEFT_WALL) {
@@ -803,10 +807,6 @@ void apply_stun_damage(object *obj, int stun_amount) {
             // refill endurance
             h->endurance = 0;
         }
-    } else if(h->endurance >= h->endurance_max) {
-        // Calculate how much dizzy time we have based on the stun limit overage.
-        // The more negative you go, the more time you're stunned.
-        h->endurance = ((((h->endurance - h->endurance_max) / 256) * -2.5) - 60) * 256;
     }
 }
 
@@ -1014,7 +1014,7 @@ void har_take_damage(object *obj, af_move *move) {
             log_debug("airborne knockback");
             // append the 'airborne knockback' string to the hit string
             str_from(&custom, string);
-            if(h->endurance < 0 || h->health <= 0) {
+            if(h->endurance >= h->endurance_max || h->health <= 0) {
                 // this hit stunned them, so make them hit the floor stunned
                 str_append_c(&custom, "-L3-M5000");
             } else {
@@ -1029,7 +1029,7 @@ void har_take_damage(object *obj, af_move *move) {
                          obj->horizontal_velocity_modifier;
             object_set_stride(obj, 1);
         } else {
-            if(h->health <= 0 || h->endurance < 0) {
+            if(h->health <= 0 || h->endurance >= h->endurance_max) {
                 // taken from MASTER.DAT
                 size_t last_line = 0;
                 if(!str_last_of(string, '-', &last_line)) {
@@ -1443,7 +1443,7 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
                 // we want to keep the opponent alive until the next thing hits
                 b->health = 1;
             }
-            log_debug("HAR %s going to next move %d", har_get_name(b->id), move->next_move);
+            log_debug("HAR %s going to next move %d", har_get_name(a->id), move->next_move);
 
             har_set_ani(obj_a, move->next_move, 0);
 
@@ -1780,7 +1780,7 @@ void har_handle_stun(object *obj) {
 
     if(h->health <= 0) { // Lock the stun meter to near-empty when KO'd
         h->endurance = h->endurance_max - 2;
-    } else {
+    } else if(h->endurance < h->endurance_max) {
         if(h->endurance < 1) { // We are currently dizzy, recover gradually
             if(obj->cur_animation->id == ANIM_STUNNED) {
                 h->endurance += h->stun_factor * 1.4;
@@ -2514,9 +2514,14 @@ void har_finished(object *obj) {
         har_event_recover(h, ctrl);
         h->state = STATE_STANDING_UP;
         object_set_custom_string(obj, "zzO7-bj2zzO2");
-    } else if((h->state == STATE_RECOIL || h->state == STATE_STANDING_UP) && h->endurance < 0) {
+    } else if((h->state == STATE_RECOIL || h->state == STATE_STANDING_UP) && h->endurance >= h->endurance_max) {
         if(h->state == STATE_RECOIL) {
             har_event_recover(h, ctrl);
+        }
+        if(h->endurance >= h->endurance_max) {
+            // Calculate how much dizzy time we have based on the stun limit overage.
+            // The more negative you go, the more time you're stunned.
+            h->endurance = ((((h->endurance - h->endurance_max) / 256) * -2.5) - 60) * 256;
         }
         h->state = STATE_STUNNED;
         har_set_ani(obj, ANIM_STUNNED, 1);

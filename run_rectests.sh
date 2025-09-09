@@ -35,6 +35,7 @@ tests=(
     "HARs play ANIM_DEFEAT instead of idle:NO-IDLE-DEFEAT.REC"
     "Electra P656 cannot be interrupted during anim 36:ELECTRA-MOVE36-EMFLAG.REC"
     "Chronos matter phasing (14K) noclips through both walls:CHRONOS-WALLNOCLIP.REC"
+    "Chronos can control teleport by holding left/right:CHRONOS_TELEPORT_CONTROL.REC"
     "Electra Extended Rolling Thunder plays anim 40 upon hitting the wall:ELECTRA-EXROLLTHNDR-WALLBOUNCE.REC"
     "Katana Wall Spin (14K) cannot be interrupted:KATANA-WALLSPIN-NOINTERRUPT.REC"
     "Being kicked in the back of the head by chronos matter phasing knocks you forwards, flipping you:KNOCKBACK-DIR.REC"
@@ -66,6 +67,8 @@ tests=(
     "Players cannot blocking while attacking:BLOCKING_INTERRUPT.REC"
     "Katana cannot infinitely heel stomp to the moon with rehit mode:SPACE_JUMP.REC"
     "Katana can turn around after heel stomp connects:KATANA_STOMP_TURN.REC"
+    "Nova can combo a stunned HAR from belly flop and enemy continues to be stunned:NOVA_FLOP_STUN_COMBO.REC"
+    "Katana enters winpose after landing from heel stomp:KATANA_WINPOSE.REC"
 )
 
 # Setup temp directory for outputs

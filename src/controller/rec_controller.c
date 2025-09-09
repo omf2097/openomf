@@ -90,6 +90,11 @@ int rec_controller_poll(controller *ctrl, ctrl_event **ev) {
                         abort();
                     }
                 }
+            } else if(move->lookup_id == 96) {
+                uint32_t seed;
+                memcpy(&seed, move->extra_data, sizeof(seed));
+                log_debug("setting random seed to %d from REC file", seed);
+                random_seed(&ctrl->gs->rand, seed);
             } else if(move->lookup_id == 2) {
                 int action = unpack_sd_action(move->action);
                 controller_cmd(ctrl, action, ev);
@@ -193,7 +198,8 @@ void rec_controller_create(controller *ctrl, int player, sd_rec_file *rec) {
     int j = 0;
     data->max_tick = 0;
     for(unsigned int i = 0; i < rec->move_count; i++) {
-        if(rec->moves[i].player_id == player && (rec->moves[i].lookup_id == 2 || rec->moves[i].lookup_id == 10)) {
+        if(rec->moves[i].player_id == player &&
+           (rec->moves[i].lookup_id == 2 || rec->moves[i].lookup_id == 10 || rec->moves[i].lookup_id == 96)) {
             if(last_tick == rec->moves[i].tick) {
                 j++;
             } else {
