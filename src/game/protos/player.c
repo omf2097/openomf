@@ -386,13 +386,20 @@ void player_run(object *obj) {
     }
 
     if(sd_script_isset(frame, "at") && enemy) {
-        // TODO: Modify this with correct push behavior after the push PR is in
-        // set the object's X position to be behind the opponent
-
-        if(obj->pos.x > enemy->pos.x) { // From right to left
-            obj->pos.x = enemy->pos.x - object_get_size(obj).x / 2;
-        } else { // From left to right
-            obj->pos.x = enemy->pos.x + object_get_size(enemy).x / 2;
+        har *har = object_get_userdata(obj);
+        switch(har->inputs[0]) {
+            case '6':
+                obj->pos.x = ARENA_RIGHT_WALL - random_int(&obj->gs->rand, 30);
+                break;
+            case '4':
+                obj->pos.x = ARENA_LEFT_WALL + random_int(&obj->gs->rand, 30);
+                break;
+            default:
+                if(obj->pos.x > enemy->pos.x) { // From right to left
+                    obj->pos.x = enemy->pos.x - 40;
+                } else { // From left to right
+                    obj->pos.x = enemy->pos.x + 40;
+                }
         }
     }
 
