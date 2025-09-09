@@ -385,6 +385,28 @@ void player_run(object *obj) {
         obj->pos.y = ARENA_FLOOR;
     }
 
+    if(sd_script_isset(frame, "ad")) {
+        har *har = object_get_userdata(obj);
+        int new_facing = obj->direction;
+        switch(har->inputs[0]) {
+            case '4':
+            case '1':
+                new_facing = OBJECT_FACE_LEFT;
+                break;
+            case '6':
+            case '3':
+                new_facing = OBJECT_FACE_RIGHT;
+                break;
+            default:
+                break;
+        }
+        if(obj->direction != new_facing) {
+            object_set_direction(obj, new_facing);
+            obj->vel.x *= -1;
+            trans_x *= -1;
+        }
+    }
+
     if(sd_script_isset(frame, "at") && enemy) {
         // TODO: Modify this with correct push behavior after the push PR is in
         // set the object's X position to be behind the opponent
