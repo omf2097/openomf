@@ -73,6 +73,48 @@ typedef struct {
     int playback_id;
 } playing_sound;
 
+// 14 bytes of match settings
+void game_state_encode_match_settings(serial *ser, match_settings *ms) {
+    serial_write_int16(ser, ms->throw_range);
+    serial_write_int16(ser, ms->hit_pause);
+    serial_write_int16(ser, ms->block_damage);
+    serial_write_int16(ser, ms->vitality);
+    serial_write_int16(ser, ms->jump_height);
+    uint32_t out = 0;
+    out |= (ms->knock_down & 0x3) << 0;
+    out |= (ms->rehit & 0x1) << 2;
+    out |= (ms->defensive_throws & 0x1) << 3;
+    out |= (ms->power1 & 0x1F) << 9;
+    out |= (ms->power2 & 0x1F) << 14;
+    out |= (ms->hazards & 0x1) << 19;
+    out |= (ms->rounds & 0x3) << 20;
+    out |= (ms->fight_mode & 0x1) << 24;
+
+    serial_write_int32(ser, out);
+}
+
+// 14 bytes of match settings
+void game_state_decode_match_settings(serial *ser, match_settings *ms) {
+    ms->throw_range = serial_read_int16(ser);
+    ms->hit_pause = serial_read_int16(ser);
+    ms->block_damage = serial_read_int16(ser);
+    ms->vitality = serial_read_int16(ser);
+    ms->jump_height = serial_read_int16(ser);
+    uint32_t in = serial_read_int32(ser);
+    ms->knock_down = (in >> 0) & 0x03;       // 00000000 00000000 00000000 00000011 (2)
+    ms->rehit = (in >> 2) & 0x01;            // 00000000 00000000 00000000 00000100 (1)
+    ms->defensive_throws = (in >> 3) & 0x01; // 00000000 00000000 00000000 00001000 (1)
+    ms->power1 = (in >> 9) & 0x1F;           // 00000000 00000000 00111110 00000000 (5)
+    ms->power2 = (in >> 14) & 0x1F;          // 00000000 00000111 11000000 00000000 (5)
+    ms->hazards = (in >> 19) & 0x01;         // 00000000 00001000 00000000 00000000 (1)
+    ms->rounds = (in >> 20) & 0x03;          // 00000000 00110000 00000000 00000000 (2)
+    ms->fight_mode = (in >> 24) & 0x01;      // 00000001 00000000 00000000 00000000 (1)
+}
+
+void game_state_set_pilot_name(game_state *gs, int pilot_id, const char *pilot_name) {
+    strncpy_or_truncate(gs->players[pilot_id]->pilot->name, pilot_name, sizeof(gs->players[pilot_id]->pilot->name));
+}
+
 int game_state_get_assertion_operand(rec_assertion_operand *op, game_state *gs) {
     if(op->is_literal) {
         return op->value.literal;
@@ -187,6 +229,24 @@ void game_state_match_settings_reset(game_state *gs) {
     gs->match_settings.hazards = settings_get()->gameplay.hazards_on;
     gs->match_settings.rounds = settings_get()->gameplay.rounds;
     gs->match_settings.fight_mode = settings_get()->gameplay.fight_mode;
+    gs->match_settings.sim = false;
+}
+
+void game_state_copy_match_settings(game_state *gs, const match_settings *ms) {
+    log_debug("Copying settings");
+    gs->match_settings.throw_range = ms->throw_range;
+    gs->match_settings.hit_pause = ms->hit_pause;
+    gs->match_settings.block_damage = ms->block_damage;
+    gs->match_settings.vitality = ms->vitality;
+    gs->match_settings.jump_height = ms->jump_height;
+    gs->match_settings.knock_down = ms->knock_down;
+    gs->match_settings.rehit = ms->rehit;
+    gs->match_settings.defensive_throws = ms->defensive_throws;
+    gs->match_settings.power1 = ms->power1;
+    gs->match_settings.power2 = ms->power2;
+    gs->match_settings.hazards = ms->hazards;
+    gs->match_settings.rounds = ms->rounds;
+    gs->match_settings.fight_mode = ms->fight_mode;
     gs->match_settings.sim = false;
 }
 
@@ -819,12 +879,12 @@ void game_state_call_move(game_state *gs) {
 }
 
 void game_state_tick_controllers(game_state *gs) {
-    controller_tick(gs->menu_ctrl, gs->int_tick, &gs->menu_ctrl->extra_events);
+    controller_tick(gs->menu_ctrl, gs->tick, &gs->menu_ctrl->extra_events);
     for(int i = 0; i < game_state_num_players(gs); i++) {
         game_player *gp = game_state_get_player(gs, i);
         controller *c = game_player_get_ctrl(gp);
         if(c) {
-            controller_tick(c, gs->int_tick, &c->extra_events);
+            controller_tick(c, gs->tick, &c->extra_events);
         }
     }
 }
@@ -1010,6 +1070,11 @@ void game_state_static_tick(game_state *gs, bool replay) {
 
 // This function is called when the game speed requires it
 void game_state_dynamic_tick(game_state *gs, bool replay) {
+
+    if(replay) {
+        // hit pause is meaningless when replaying
+        gs->hit_pause = 0;
+    }
 
     if(gs->hit_pause > 0) {
         gs->hit_pause--;
@@ -1384,7 +1449,7 @@ void game_state_play_sound(game_state *gs, int id, float volume, float panning, 
     }
 
     playing_sound s;
-    s.tick = gs->int_tick;
+    s.tick = gs->tick;
     s.id = id;
     s.length = src_len;
     s.duration = src_len / (pitched_samplerate(src_freq, pitch) * 1000);

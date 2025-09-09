@@ -66,6 +66,7 @@ tests=(
     "Jaguar cannot pick up the opponent off the ground:WAKEUP_THROW_PROTECTION.REC"
     "Players cannot blocking while attacking:BLOCKING_INTERRUPT.REC"
     "Katana cannot infinitely heel stomp to the moon with rehit mode:SPACE_JUMP.REC"
+    "Katana can turn around after heel stomp connects:KATANA_STOMP_TURN.REC"
     "Nova can combo a stunned HAR from belly flop and enemy continues to be stunned:NOVA_FLOP_STUN_COMBO.REC"
     "Katana enters winpose after landing from heel stomp:KATANA_WINPOSE.REC"
 )

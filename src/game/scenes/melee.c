@@ -107,6 +107,8 @@ typedef struct {
     // pilot stat cheat. wrap around on both rows and select every pilot, then hold KICK to adjust stats.
     unsigned char cheat_pilot_stats[2];
     unsigned char cheat_pilot_stats_stat[2]; // which stat is selected?
+
+    bool network_game;
 } melee_local;
 
 void handle_action(scene *scene, int player, int action);
@@ -526,20 +528,21 @@ void handle_action(scene *scene, int player, int action) {
                         load_pilot_stats(scene, player);
                         load_pilot_colors(scene, 1);
                     }
-                    // TODO in netplay, use the lobby names
-                    strncpy_or_truncate(player1->pilot->name, lang_get(player1->pilot->pilot_id + 20),
-                                        sizeof(player1->pilot->name));
-                    // TODO: lang: remove (the need for) newline stripping
-                    // 1player name strings end in a newline...
-                    if(player1->pilot->name[strlen(player1->pilot->name) - 1] == '\n') {
-                        player1->pilot->name[strlen(player1->pilot->name) - 1] = 0;
-                    }
-                    strncpy_or_truncate(player2->pilot->name, lang_get(player2->pilot->pilot_id + 20),
-                                        sizeof(player2->pilot->name));
-                    // TODO: lang: remove (the need for) newline stripping
-                    // 1player name strings end in a newline...
-                    if(player2->pilot->name[strlen(player2->pilot->name) - 1] == '\n') {
-                        player2->pilot->name[strlen(player2->pilot->name) - 1] = 0;
+                    if(!local->network_game) {
+                        strncpy_or_truncate(player1->pilot->name, lang_get(player1->pilot->pilot_id + 20),
+                                            sizeof(player1->pilot->name));
+                        // TODO: lang: remove (the need for) newline stripping
+                        // 1player name strings end in a newline...
+                        if(player1->pilot->name[strlen(player1->pilot->name) - 1] == '\n') {
+                            player1->pilot->name[strlen(player1->pilot->name) - 1] = 0;
+                        }
+                        strncpy_or_truncate(player2->pilot->name, lang_get(player2->pilot->pilot_id + 20),
+                                            sizeof(player2->pilot->name));
+                        // TODO: lang: remove (the need for) newline stripping
+                        // 1player name strings end in a newline...
+                        if(player2->pilot->name[strlen(player2->pilot->name) - 1] == '\n') {
+                            player2->pilot->name[strlen(player2->pilot->name) - 1] = 0;
+                        }
                     }
                     game_state_set_next(scene->gs, SCENE_VS);
                 }
@@ -881,8 +884,16 @@ int melee_create(scene *scene) {
     game_player *player1 = game_state_get_player(scene->gs, 0);
     game_player *player2 = game_state_get_player(scene->gs, 1);
 
+    local->network_game = false;
+    if(player1->ctrl && player2->ctrl) {
+        if(player1->ctrl->type == CTRL_TYPE_NETWORK || player2->ctrl->type == CTRL_TYPE_NETWORK) {
+            local->network_game = true;
+        }
+    }
+
     // if we already have a pilot name, we're coming back from VS.
-    if(player1->pilot->name[0] != '\0' && (player2->pilot->name[0] != '\0' || !player2->selectable)) {
+    if(!local->network_game && player1->pilot->name[0] != '\0' &&
+       (player2->pilot->name[0] != '\0' || !player2->selectable)) {
         local->page = HAR_SELECT;
         local->pilot_id_a = player1->pilot->pilot_id;
         local->pilot_id_b = player2->pilot->pilot_id;

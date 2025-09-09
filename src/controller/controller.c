@@ -117,12 +117,11 @@ void controller_cmd(controller *ctrl, int action, ctrl_event **ev) {
 
     if(ctrl->delay) {
         // enqueue delayed events
-        struct event_buffer_element *buf =
-            vector_get(ctrl->buffer, (ctrl->gs->int_tick + ctrl->delay) % DELAY_BUFFER_SIZE);
-        if(buf->tick != ctrl->gs->int_tick + ctrl->delay) {
+        struct event_buffer_element *buf = vector_get(ctrl->buffer, (ctrl->gs->tick + ctrl->delay) % DELAY_BUFFER_SIZE);
+        if(buf->tick != ctrl->gs->tick + ctrl->delay) {
             // stale buffer element, zero it out
             memset(buf, 0, sizeof(struct event_buffer_element));
-            buf->tick = ctrl->gs->int_tick + ctrl->delay;
+            buf->tick = ctrl->gs->tick + ctrl->delay;
         }
         for(int i = 0; i < 10; i++) {
             if(buf->actions[i] != 0) {
@@ -135,8 +134,8 @@ void controller_cmd(controller *ctrl, int action, ctrl_event **ev) {
         }
 
         // send any delayed events out
-        buf = vector_get(ctrl->buffer, (ctrl->gs->int_tick) % DELAY_BUFFER_SIZE);
-        if(buf->tick != ctrl->gs->int_tick) {
+        buf = vector_get(ctrl->buffer, (ctrl->gs->tick) % DELAY_BUFFER_SIZE);
+        if(buf->tick != ctrl->gs->tick) {
             return;
         }
 
