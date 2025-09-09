@@ -1048,7 +1048,7 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                         serial_read(&ser, name_buf, min2(sizeof(name_buf) - 1, val));
                         name_buf[19] = '\0';
                         if(strncmp(player->pilot->name, name_buf, strlen(player->pilot->name)) != 0) {
-                            log_error("Pilot name mismatch, we had %s they had %s %d", player->pilot->name, name_buf, val );
+                            log_error("Pilot name mismatch, we had %s they had %s", player->pilot->name, name_buf);
                             enet_peer_disconnect_later(data->peer, 0);
                             return 1;
                         }
@@ -1095,7 +1095,9 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
 
     // if the match is actually proceeding
     // AND we've received events then try a rewind/replay
-    if((has_received && int_ticks > data->last_rewind_tick)) {// || (data->gs_bak && data->last_received_tick + tick_drift > data->last_rewind_tick)) {
+    if((has_received && int_ticks > data->last_rewind_tick)) {
+        // || (data->gs_bak && data->last_received_tick +
+        // tick_drift > data->last_rewind_tick)) {
         log_debug("last received is now %d", data->last_received_tick);
         if(rewind_and_replay(data, ctrl)) {
             if(ctrl->gs->rec) {
