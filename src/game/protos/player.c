@@ -390,10 +390,12 @@ void player_run(object *obj) {
         int new_facing = obj->direction;
         switch(har->inputs[0]) {
             case '4':
+            case '7':
             case '1':
                 new_facing = OBJECT_FACE_LEFT;
                 break;
             case '6':
+            case '9':
             case '3':
                 new_facing = OBJECT_FACE_RIGHT;
                 break;
