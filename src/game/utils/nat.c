@@ -122,13 +122,13 @@ int readpmpresponse(nat_ctx *ctx, natpmpresp_t *response) {
         FD_SET(ctx->natpmp.s, &fds);
 #endif
         // getnatpmprequesttimeout(&ctx->natpmp, &timeout);
-        timeout.tv_sec = 3;
-        timeout.tv_usec = 0;
+        timeout.tv_sec = 0;
+        timeout.tv_usec = 250000;
         if(select(FD_SETSIZE, &fds, NULL, NULL, &timeout)) {
             r = readnatpmpresponseorretry(&ctx->natpmp, response);
         }
         i++;
-    } while(r == NATPMP_TRYAGAIN && i < 10);
+    } while(r == NATPMP_TRYAGAIN && i < 3);
     return r;
 }
 #endif
@@ -176,7 +176,7 @@ bool nat_create_mapping(nat_ctx *ctx, uint16_t int_port, uint16_t ext_port) {
 void nat_try_upnp(nat_ctx *ctx) {
 #ifdef MINIUPNPC_FOUND
     int error = 0;
-    ctx->upnp_dev = upnpDiscover(500,    // time to wait (milliseconds)
+    ctx->upnp_dev = upnpDiscover(50,    // time to wait (milliseconds)
                                  NULL,    // multicast interface (or null defaults to 239.255.255.250)
                                  NULL,    // path to minissdpd socket (or null defaults to /var/run/minissdpd.sock)
                                  0,       // source port to use (or zero defaults to port 1900)
@@ -184,7 +184,6 @@ void nat_try_upnp(nat_ctx *ctx) {
                                  2,       // TTL
                                  &error); // error condition
     if(ctx->upnp_dev) {
-        log_info("discovered UPnP server");
         // TODO check error here?
         // try to look up our lan address, to test it
 #if(MINIUPNPC_API_VERSION >= 18)
@@ -197,6 +196,7 @@ void nat_try_upnp(nat_ctx *ctx) {
 
         // look up possible "status" values, the number "1" indicates a valid IGD was found
         if(ctx->upnp_dev && status == 1) {
+            log_info("discovered UPnP server");
             // get the external (WAN) IP address
             if(UPNP_GetExternalIPAddress(ctx->upnp_urls.controlURL, ctx->upnp_data.first.servicetype, ctx->wan_address)) {
                 log_warn("UPnP server failed to provide external IP address");
@@ -225,11 +225,11 @@ void nat_try_pmp(nat_ctx *ctx) {
     // try nat-pmp
     in_addr_t forcedgw = {0};
     if(initnatpmp(&ctx->natpmp, 0, forcedgw) == 0) {
-        log_info("discovered NAT-PMP server");
         natpmpresp_t response;
         sendpublicaddressrequest(&ctx->natpmp);
         int r = readpmpresponse(ctx, &response);
         if(r == 0) {
+            log_info("discovered NAT-PMP server");
             ctx->type = NAT_TYPE_PMP;
             inet_ntop(AF_INET, (void *)&response.pnu.publicaddress.addr, ctx->wan_address, sizeof(ctx->wan_address));
         }
