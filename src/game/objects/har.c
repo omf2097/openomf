@@ -416,13 +416,22 @@ int har_is_blocking(object *obj, af_move *move) {
 }
 
 bool is_in_range(object *obj, af_move *move) {
-    if(move->successor_id) { // This is a throw with limited range
+    har *h = object_get_userdata(obj);
+    af_move *check_move = move;
+    if(move->next_move) {
+        af_move *next_move = af_get_move(h->af_data, move->next_move);
+        if(next_move->category == CAT_CLOSE) {
+            check_move = next_move;
+        }
+    }
+
+    if(check_move->successor_id) { // This is a throw with limited range
         // CLOSE moves use the successor id field as a distance requirement
         float throw_range = (float)obj->gs->match_settings.throw_range / 100.0f;
-        har *h = object_get_userdata(obj);
+
         object *enemy_obj =
             game_state_find_object(obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
-        if(object_distance(obj, enemy_obj) > move->successor_id * throw_range) {
+        if(object_distance(obj, enemy_obj) > check_move->successor_id * throw_range) {
             return false;
         }
     }
@@ -1318,7 +1327,7 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
         }
     }
 
-    if(!is_in_range(obj_b, move)) { // Won't get hit by throws out of range
+    if(!is_in_range(obj_a, move)) { // Won't get hit by throws out of range
         return 0;
     }
 
@@ -1437,12 +1446,6 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
         disable_rehit(b, move);
 
         if(move->next_move) {
-            af_move *next_move = af_get_move(a->af_data, move->next_move);
-            if(str_size(&move->footer_string) == 0 && b->health == 0 && next_move->damage > 0) {
-                // chained move like thorn's spike charge
-                // we want to keep the opponent alive until the next thing hits
-                b->health = 1;
-            }
             log_debug("HAR %s going to next move %d", har_get_name(a->id), move->next_move);
 
             har_set_ani(obj_a, move->next_move, 0);
