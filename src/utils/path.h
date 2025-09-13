@@ -100,17 +100,63 @@ void path_stem(const path *path, str *dst);
  */
 void path_filename(const path *path, str *dst);
 
+/**
+ * Checks if path is a directory
+ * @param p Path to check
+ * @return True if path is a directory, otherwise false.
+ */
 bool path_is_directory(const path *p);
+
+/**
+ * Checks if path is a file
+ * @param p Path to check
+ * @return True if path is a file, otherwise false.
+ */
 bool path_is_file(const path *p);
+
+/**
+ * Checks if path exists (is file or directory)
+ * @param p Path to check
+ * @return True if path exists, otherwise false.
+ */
 bool path_exists(const path *p);
 
+/**
+ * Create a file.
+ * @param p File path to create
+ * @return True if operation succeeded, false if not.
+ */
 bool path_touch(const path *p);
+
+/**
+ * Delete a file.
+ * @param p File path to delete
+ * @return True if operation succeeded, false if not.
+ */
 bool path_unlink(const path *p);
 
+/**
+ * Create a directory.
+ * @param p Directory path to create
+ * @return True if operation succeeded, false if not.
+ */
 bool path_mkdir(const path *p);
+
+/**
+ * Delete a directory.
+ * @param p Directory path to delete
+ * @return True if operation succeeded, false if not.
+ */
 bool path_rmdir(const path *p);
 
-/** Iterate using glob pattern */
+/**
+ * Find files from the path using a glob pattern
+ * Note! Only a single '*' supported!
+ * @param dir Directory path to scan
+ * @param results Result list. Note! This must be pre-allocated using list_create() !
+ * @param pattern Pattern to search for, e.g. '*.TXT'.
+ * @return True if operation succeeded, false if not.
+ */
 bool path_glob(const path *dir, list *results, const char *pattern);
 
 void path_set_ext(path *path, const char *ext); // Change or set suffix to something e.
