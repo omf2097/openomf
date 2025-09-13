@@ -17,49 +17,112 @@ typedef struct path {
     char buf[PATH_MAX_LENGTH];
 } path;
 
-// Normalize separator to "/"
+/**
+ * Create a path from C string.
+ * @param path Path to write into. Contents will be replaced!
+ * @param src C string object to read.
+ */
 void path_from_c(path *path, const char *src);
-void path_from_str(path *path, str *src);
+
+/**
+ * Create a path from str object.
+ * @param path Path to write into. Contents will be replaced!
+ * @param src String object to read.
+ */
+void path_from_str(path *path, const str *src);
+
+/**
+ * Create a path from components.
+ * @param path Path to write into. Contents will be replaced!
+ * @param nargs Number of arguments
+ * @param ... List of C strings to be used as path components.
+ */
 void _path_from_parts(path *path, int nargs, ...);
+
+/**
+ * Create a path from components.
+ * @param path Path to write into. Contents will be replaced!
+ * @param ... List of C strings to be used as path components.
+ */
 #define path_from_parts(path, ...) _path_from_parts(path, PATH_NARGS(__VA_ARGS__), __VA_ARGS__)
 
-const char *path_c(const path *path);
-void path_clear(path *path);
-bool path_is_set(const path *path);
+/**
+ * Create a randomly named temporary directory and get its path
+ * @param path Path to write into. Contents will be replaced!
+ */
+bool path_create_tmpdir(path *path);
 
-bool path_is_directory(const path *path);
-bool path_is_file(const path *path);
-bool path_exists(const path *path);
+/**
+ * Return a C string pointer to the path. This will be valid as long as the path exists.
+ * @param path Path to operate on
+ * @return C string pointer to the path data.
+ */
+const char *path_c(const path *path);
+
+/**
+ * Clear path. After this, path_is_set() will return false.
+ * @param path Path to check
+ */
+void path_clear(path *path);
+
+/**
+ * Checks if path has a value.
+ * @param path Path to check
+ * @return True if path has something, false if not.
+ */
+bool path_is_set(const path *path);
 
 /**
  * Get the extension of the last component (if any)
  * @param path Path to check
  * @param dst Target string. Note that this will be allocated!
- * @return True if there was an extension, false if not.
  */
-bool path_ext(const path *path, str *dst);      // Suffix of the final path component (if any)
+void path_ext(const path *path, str *dst);
+
+/**
+ * Get path parents (path without the filename and extension)
+ * @param path Path to check
+ * @param dst Target string. Note that this will be allocated!
+ */
+void path_parents(const path *path, str *dst);
+
+/**
+ * Get path stem (last component without the file extension)
+ * @param path Path to check
+ * @param dst Target string. Note that this will be allocated!
+ */
+void path_stem(const path *path, str *dst);
+
+/**
+ * Get path filename (last component with the file extension)
+ * @param path Path to check
+ * @param dst Target string. Note that this will be allocated!
+ */
+void path_filename(const path *path, str *dst);
+
+bool path_is_directory(const path *p);
+bool path_is_file(const path *p);
+bool path_exists(const path *p);
+
+bool path_touch(const path *p);
+bool path_unlink(const path *p);
+
+bool path_mkdir(const path *p);
+bool path_rmdir(const path *p);
+
+/** Iterate using glob pattern */
+bool path_glob(const path *dir, list *results, const char *pattern);
+
 void path_set_ext(path *path, const char *ext); // Change or set suffix to something e.
 
 /** Convert filename into DOS format (replace anything odd with underscore, and capitalize everything) */
 void path_dossify_filename(path *path);
-
-/** Get path stem (last component without the file extension) */
-void path_stem(const path *path, str *dst);
-
-/** Get path filename (last component with the file extension) */
-void path_filename(const path *path, str *dst);
-
-bool path_unlink(const path *path);
-bool path_mkdir(const path *path);
-
-/** Iterate using glob pattern */
-bool path_glob(const path *dir, list *results, const char *pattern);
 
 void _path_append(path *path, int nargs, ...);
 #define path_append(path, ...) _path_append(path, PATH_NARGS(__VA_ARGS__), __VA_ARGS__)
 void path_pop(path *path); // Drop last element
 void path_absolute(path *path);
 
-FILE *path_fopen(const path *path, const char *mode);
+FILE *path_fopen(const path *file, const char *mode);
 
 #endif // PATH_H
