@@ -159,16 +159,40 @@ bool path_rmdir(const path *p);
  */
 bool path_glob(const path *dir, list *results, const char *pattern);
 
-void path_set_ext(path *path, const char *ext); // Change or set suffix to something e.
+/**
+ * Set new file extension for the file path. Old file extension (if it exists) will be replaced.
+ * @param path File path to modify
+ * @param ext New file extension
+ */
+void path_set_ext(path *path, const char *ext);
 
-/** Convert filename into DOS format (replace anything odd with underscore, and capitalize everything) */
+/**
+ * Convert filename into DOS format (replace anything odd with underscore, and capitalize everything)
+ * @param path Path to modify
+ */
 void path_dossify_filename(path *path);
 
+/**
+ * Append components to an existing path
+ * @param path Path to append into.
+ * @param nargs Number of arguments
+ * @param ... List of C strings to be used as path components.
+ */
 void _path_append(path *path, int nargs, ...);
-#define path_append(path, ...) _path_append(path, PATH_NARGS(__VA_ARGS__), __VA_ARGS__)
-void path_pop(path *path); // Drop last element
-void path_absolute(path *path);
 
+/**
+ * Append components to an existing path
+ * @param path Path to append into.
+ * @param ... List of C strings to be used as path components.
+ */
+#define path_append(path, ...) _path_append(path, PATH_NARGS(__VA_ARGS__), __VA_ARGS__)
+
+/**
+ * Open path as a file using given mode.
+ * @param file File path to open
+ * @param mode Mode to use (see fopen() for reference).
+ * @return File handle on success or NULL on failure.
+ */
 FILE *path_fopen(const path *file, const char *mode);
 
 #endif // PATH_H

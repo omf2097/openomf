@@ -340,13 +340,15 @@ bool path_glob(const path *dir, list *results, const char *pattern) {
     path test;
 #if defined(_WIN32) || defined(WIN32)
     str glob;
-    str_from_format(&glob, "%s*", dir);
+    str_from_format(&glob, "%s/*", path_c(dir));
+    str_replace(&glob, "/", "\\", -1);
     WIN32_FIND_DATAA entry;
     HANDLE hFind;
     if((hFind = FindFirstFileA(str_c(&glob), &entry)) == INVALID_HANDLE_VALUE) {
         str_free(&glob);
         return false;
     }
+    str_free(&glob);
     while(FindNextFileA(hFind, &entry) != FALSE) {
         path_from_parts(&test, dir->buf, entry.cFileName);
         path_filename(&test, &name);
@@ -356,7 +358,6 @@ bool path_glob(const path *dir, list *results, const char *pattern) {
         str_free(&name);
     }
     FindClose(hFind);
-    str_free(&glob);
     return true;
 #else
     DIR *dp;

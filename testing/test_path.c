@@ -387,6 +387,43 @@ void test_path_glob(void) {
     list_free(&files);
 }
 
+void test_path_set_ext(void) {
+    path p;
+    path_from_c(&p, "/this/is/test/file.ext");
+    path_set_ext(&p, ".new");
+    CU_ASSERT_STRING_EQUAL(p.buf, "/this/is/test/file.new");
+
+    path_from_c(&p, "/this/is/test/file");
+    path_set_ext(&p, ".new");
+    CU_ASSERT_STRING_EQUAL(p.buf, "/this/is/test/file.new");
+
+    path_from_c(&p, "/this/is/test/.file");
+    path_set_ext(&p, ".new");
+    CU_ASSERT_STRING_EQUAL(p.buf, "/this/is/test/.file.new");
+
+    path_from_c(&p, "/this/is/.test/file");
+    path_set_ext(&p, ".new");
+    CU_ASSERT_STRING_EQUAL(p.buf, "/this/is/.test/file.new");
+}
+
+void test_path_dossify_filename(void) {
+    path p;
+    path_from_c(&p, "/file^name.chr");
+    path_dossify_filename(&p);
+    CU_ASSERT_STRING_EQUAL(p.buf, "/FILE_NAME.CHR");
+
+    path_from_c(&p, "/name");
+    path_dossify_filename(&p);
+    CU_ASSERT_STRING_EQUAL(p.buf, "/NAME");
+}
+
+void test_path_append(void) {
+    path p;
+    path_from_c(&p, "/home/openomf");
+    path_append(&p, ".local", "share", "test.ogg");
+    CU_ASSERT_STRING_EQUAL(p.buf, "/home/openomf/.local/share/test.ogg");
+}
+
 #define ADD_TEST(desc, fn)                                                                                             \
     if(CU_add_test(suite, desc, fn) == NULL) {                                                                         \
         return;                                                                                                        \
@@ -409,4 +446,7 @@ void path_test_suite(CU_pSuite suite) {
     ADD_TEST("test path_touch & path_unlink", test_path_touch_and_unlink);
     ADD_TEST("test path_mkdir & path_rmdir", test_path_mkdir_and_rmdir);
     ADD_TEST("test path_glob", test_path_glob);
+    ADD_TEST("test path_set_ext", test_path_set_ext);
+    ADD_TEST("test path_dossify_filename", test_path_dossify_filename);
+    ADD_TEST("test path_append", test_path_append);
 }
