@@ -356,6 +356,37 @@ void test_path_mkdir_and_rmdir(void) {
     CU_ASSERT(path_is_directory(&tmp) == false);
 }
 
+void test_path_glob(void) {
+    path p = get_test_dir();
+    list files;
+
+    list_create(&files);
+    path_glob(&p, &files, "*.ext1");
+    CU_ASSERT(list_size(&files) == 2);
+    list_free(&files);
+
+    list_create(&files);
+    path_glob(&p, &files, "*.ext2");
+    CU_ASSERT(list_size(&files) == 2);
+    list_free(&files);
+
+    list_create(&files);
+    path_glob(&p, &files, "test*");
+    CU_ASSERT(list_size(&files) == 4);
+    list_free(&files);
+
+    list_create(&files);
+    path_glob(&p, &files, "test3.*");
+    CU_ASSERT(list_size(&files) == 1);
+
+    str tmp;
+    str_from_c(&tmp, path_c(list_get(&files, 0)));
+    CU_ASSERT(str_ends_with(&tmp, "test3.ext2"));
+    str_free(&tmp);
+
+    list_free(&files);
+}
+
 #define ADD_TEST(desc, fn)                                                                                             \
     if(CU_add_test(suite, desc, fn) == NULL) {                                                                         \
         return;                                                                                                        \
@@ -377,4 +408,5 @@ void path_test_suite(CU_pSuite suite) {
     ADD_TEST("test path_is_file", test_path_is_file);
     ADD_TEST("test path_touch & path_unlink", test_path_touch_and_unlink);
     ADD_TEST("test path_mkdir & path_rmdir", test_path_mkdir_and_rmdir);
+    ADD_TEST("test path_glob", test_path_glob);
 }
