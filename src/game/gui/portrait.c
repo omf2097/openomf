@@ -2,7 +2,8 @@
 #include "formats/error.h"
 #include "formats/pic.h"
 #include "game/gui/widget.h"
-#include "resources/pathmanager.h"
+#include "resources/ids.h"
+#include "resources/resource_files.h"
 #include "resources/sprite.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
@@ -31,21 +32,17 @@ static void portrait_free(component *c) {
 }
 
 int portrait_load(sd_sprite *s, vga_palette *pal, int pic_id, int pilot_id) {
-    const char *filename = pm_get_resource_path(pic_id);
-    if(filename == NULL) {
-        log_error("Could not find requested PIC file handle.");
-        return SD_FILE_OPEN_ERROR;
-    }
+    const path filename = get_resource_filename(get_resource_file(pic_id));
 
     // Load PIC file and make a surface
     sd_pic_file pics;
     sd_pic_create(&pics);
-    int ret = sd_pic_load(&pics, filename);
+    int ret = sd_pic_load(&pics, path_c(&filename));
     if(ret != SD_SUCCESS) {
-        log_error("Could not load PIC file %s: %s", filename, sd_get_error(ret));
+        log_error("Could not load PIC file %s: %s", path_c(&filename), sd_get_error(ret));
         return ret;
     } else {
-        log_debug("PIC file %s loaded, selecting picture %d.", get_resource_name(pic_id), pilot_id);
+        log_debug("PIC file %s loaded, selecting picture %d.", path_c(&filename), pilot_id);
     }
 
     sd_sprite_free(s);

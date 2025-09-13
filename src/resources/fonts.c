@@ -2,8 +2,8 @@
 #include "formats/error.h"
 #include "formats/pcx.h"
 #include "resources/fonts.h"
-#include "resources/ids.h"
-#include "resources/pathmanager.h"
+
+#include "resource_files.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
 #include "utils/vector.h"
@@ -124,43 +124,43 @@ static int pcx_font_load(font *font, const char *filename, int8_t palette_offset
 }
 
 bool fonts_init(void) {
+    path filename;
     font_create(&font_small);
     font_create(&font_large);
     font_create(&font_net1);
     font_create(&font_net2);
-    const char *filename = NULL;
 
     // Load small font
-    filename = pm_get_resource_path(DAT_CHARSMAL);
-    if(font_load(&font_small, filename, FONT_SMALL)) {
+    filename = get_resource_filename("CHARSMAL.DAT");
+    if(font_load(&font_small, path_c(&filename), FONT_SMALL)) {
         log_error("Unable to load font file '%s'!", filename);
         goto error_4;
     }
-    log_info("Loaded font file '%s'", filename);
+    log_info("Loaded font file '%s'", path_c(&filename));
 
     // Load big font
-    filename = pm_get_resource_path(DAT_GRAPHCHR);
-    if(font_load(&font_large, filename, FONT_BIG)) {
-        log_error("Unable to load font file '%s'!", filename);
+    filename = get_resource_filename("GRAPHCHR.DAT");
+    if(font_load(&font_large, path_c(&filename), FONT_BIG)) {
+        log_error("Unable to load font file '%s'!", path_c(&filename));
         goto error_3;
     }
-    log_info("Loaded font file '%s'", filename);
+    log_info("Loaded font file '%s'", path_c(&filename));
 
     // Load big net font
-    filename = pm_get_resource_path(PCX_NETFONT1);
-    if(pcx_font_load(&font_net1, filename, 3)) {
-        log_error("Unable to load font file '%s'!", filename);
+    filename = get_resource_filename("NETFONT1.PCX");
+    if(pcx_font_load(&font_net1, path_c(&filename), 3)) {
+        log_error("Unable to load font file '%s'!", path_c(&filename));
         goto error_2;
     }
-    log_info("Loaded font file '%s'", filename);
+    log_info("Loaded font file '%s'", path_c(&filename));
 
     // Load small net font
-    filename = pm_get_resource_path(PCX_NETFONT2);
-    if(pcx_font_load(&font_net2, filename, 16)) {
-        log_error("Unable to load font file '%s'!", filename);
+    filename = get_resource_filename("NETFONT2.PCX");
+    if(pcx_font_load(&font_net2, path_c(&filename), 16)) {
+        log_error("Unable to load font file '%s'!", path_c(&filename));
         goto error_1;
     }
-    log_info("Loaded font file '%s'", filename);
+    log_info("Loaded font file '%s'", path_c(&filename));
 
     // All done.
     fonts_loaded = 1;

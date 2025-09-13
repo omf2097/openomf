@@ -1,8 +1,8 @@
 #include "resources/sounds_loader.h"
+
 #include "formats/error.h"
 #include "formats/sounds.h"
-#include "resources/ids.h"
-#include "resources/pathmanager.h"
+#include "resource_files.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
 #include <stdlib.h>
@@ -10,18 +10,18 @@
 static sd_sound_file *sound_data = NULL;
 
 bool sounds_loader_init(void) {
-    const char *filename = pm_get_resource_path(DAT_SOUNDS);
+    path filename = get_resource_filename("SOUNDS.DAT");
 
     // Load sounds
     sound_data = omf_calloc(1, sizeof(sd_sound_file));
     if(sd_sounds_create(sound_data) != SD_SUCCESS) {
         goto error_0;
     }
-    if(sd_sounds_load(sound_data, filename)) {
-        log_error("Unable to load sounds file '%s'!", filename);
+    if(sd_sounds_load(sound_data, path_c(&filename))) {
+        log_error("Unable to load sounds file '%s'!", path_c(&filename));
         goto error_1;
     }
-    log_info("Loaded sounds file '%s'.", filename);
+    log_info("Loaded sounds file '%s'.", path_c(&filename));
     return true;
 
 error_1:

@@ -11,8 +11,7 @@
 #include "formats/internal/writer.h"
 #include "formats/pic.h"
 #include "formats/tournament.h"
-#include "game/common_defines.h"
-#include "resources/pathmanager.h"
+#include "resources/resource_files.h"
 #include "resources/trnmanager.h"
 #include "utils/allocator.h"
 #include "utils/c_string_util.h"
@@ -58,8 +57,6 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
 
     sd_reader *r = sd_reader_open(filename);
 
-    const char *dirname = pm_get_local_path(RESOURCE_PATH);
-
     if(!r) {
         return SD_FILE_OPEN_ERROR;
     }
@@ -71,34 +68,33 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
     sd_pilot_load_from_mem(mr, &chr->pilot);
     memreader_close(mr);
 
-    char tmp[256];
     sd_tournament_file trn;
     sd_pic_file pic, players;
     bool trn_loaded = false;
 
-    if(dirname) {
-        snprintf(tmp, sizeof(tmp), "%s%s", dirname, chr->pilot.trn_image);
-        sd_pic_create(&pic);
-        sd_pic_load(&pic, tmp);
+    path image_path = get_resource_filename(chr->pilot.trn_image);
+    path_dossify_filename(&image_path);
+    log_debug("loading tournament image from %s", path_c(&image_path));
+    sd_pic_create(&pic);
+    if(sd_pic_load(&pic, path_c(&image_path)) != SD_SUCCESS) {
+        log_error("failed to load tournament image from %s", path_c(&image_path));
+    }
 
-        const char *players_filename = pm_get_resource_path(PIC_PLAYERS);
-        if(players_filename) {
-            log_debug("trying to load players.pic from %s", players_filename);
-            // Load PIC file and make a surface
-            sd_pic_create(&players);
-            int ret = sd_pic_load(&players, players_filename);
-            if(ret == SD_SUCCESS) {
-                // Load player gender from PLAYERS.PIC
-                log_debug("loading %d from players.pic", chr->pilot.photo_id);
-                const sd_pic_photo *photo = sd_pic_get(&players, chr->pilot.photo_id);
-                chr->pilot.sex = photo->sex;
-                sd_pic_free(&players);
-            }
-        }
+    // Load PIC file and make a surface
+    const path players_path = get_resource_filename("PLAYERS.PIC");
+    // log_debug("trying to load players.pic from %s", path_c(&players_path));
+    sd_pic_create(&players);
+    const int ret = sd_pic_load(&players, path_c(&players_path));
+    if(ret == SD_SUCCESS) {
+        // Load player gender from PLAYERS.PIC
+        // log_debug("loading %d from players.pic", chr->pilot.photo_id);
+        const sd_pic_photo *photo = sd_pic_get(&players, chr->pilot.photo_id);
+        chr->pilot.sex = photo->sex;
+        sd_pic_free(&players);
+    }
 
-        if(*chr->pilot.trn_name != '\0') {
-            trn_loaded = trn_load(&trn, chr->pilot.trn_name) == 0;
-        }
+    if(*chr->pilot.trn_name != '\0') {
+        trn_loaded = trn_load(&trn, chr->pilot.trn_name) == 0;
     }
 
     if(trn_loaded) {
@@ -206,8 +202,7 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
     // Load sprite
     chr->photo = omf_calloc(1, sizeof(sd_sprite));
     sd_sprite_create(chr->photo);
-    int ret = sd_sprite_load(r, chr->photo);
-    if(ret != SD_SUCCESS) {
+    if(sd_sprite_load(r, chr->photo) != SD_SUCCESS) {
         goto error_1;
     }
 

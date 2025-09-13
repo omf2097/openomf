@@ -6,7 +6,7 @@
 #include "formats/internal/reader.h"
 #include "formats/internal/writer.h"
 #include "formats/palette.h"
-#include "resources/pathmanager.h"
+#include "resources/resource_files.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
 
@@ -14,17 +14,17 @@ altpal_file *altpals = NULL; // Extern
 
 int altpals_init(void) {
     // Get filename
-    const char *filename = pm_get_resource_path(DAT_ALTPALS);
+    const path filename = get_resource_filename("ALTPALS.DAT");
 
     altpals = omf_calloc(1, sizeof(altpal_file));
     if(altpal_create(altpals) != SD_SUCCESS) {
         goto error_0;
     }
-    if(altpals_load(altpals, filename) != SD_SUCCESS) {
-        log_error("Unable to load altpals file '%s'!", filename);
+    if(altpals_load(altpals, path_c(&filename)) != SD_SUCCESS) {
+        log_error("Unable to load altpals file '%s'!", path_c(&filename));
         goto error_1;
     }
-    log_info("Loaded altpals file '%s'.", filename);
+    log_info("Loaded altpals file '%s'.", path_c(&filename));
     return 0;
 
 error_1:

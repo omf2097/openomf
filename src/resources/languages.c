@@ -1,34 +1,33 @@
 #include "resources/languages.h"
+
 #include "formats/error.h"
 #include "formats/language.h"
 #include "game/utils/settings.h"
-#include "resources/pathmanager.h"
+#include "resource_files.h"
+#include "resource_paths.h"
 #include "utils/allocator.h"
 #include "utils/c_array_util.h"
 #include "utils/log.h"
 #include "utils/str.h"
 #include <string.h>
 
-static sd_language *language;
-static sd_language *language2;
+static sd_language *language = NULL;
+static sd_language *language2 = NULL;
 
 bool lang_init(void) {
     language = NULL;
     language2 = NULL;
 
-    str filename_str;
-    const char *dirname = pm_get_local_path(RESOURCE_PATH);
-    const char *lang = settings_get()->language.language;
-    str_from_format(&filename_str, "%s%s", dirname, lang);
-    char const *filename = str_c(&filename_str);
+    path language_file1, language_file2;
+    language_file1 = language_file2 = get_resource_filename(settings_get()->language.language);
 
     // Load up language file
     language = omf_calloc(1, sizeof(sd_language));
     if(sd_language_create(language) != SD_SUCCESS) {
         goto error_0;
     }
-    if(sd_language_load(language, filename)) {
-        log_error("Unable to load language file '%s'!", filename);
+    if(sd_language_load(language, path_c(&language_file1))) {
+        log_error("Unable to load language file '%s'!", path_c(&language_file1));
         goto error_0;
     }
 
@@ -70,39 +69,39 @@ bool lang_init(void) {
         language->strings = expanded_strings;
     }
     if(language->count != LANG_STR_COUNT) {
-        log_error("Unable to load language file '%s', unsupported or corrupt file!", filename);
+        log_error("Unable to load language file '%s', unsupported or corrupt file!", path_c(&language_file1));
         goto error_0;
     }
 
-    log_info("Loaded language file '%s'.", filename);
+    log_info("Loaded language file '%s'.", path_c(&language_file1));
 
     // Load up language2 file (OpenOMF)
-    str_append_char(&filename_str, '2');
-    filename = str_c(&filename_str);
+    str ext;
+    path_ext(&language_file2, &ext);
+    str_append_char(&ext, '2');
+    path_set_ext(&language_file2, str_c(&ext));
+    str_free(&ext);
 
     language2 = omf_calloc(1, sizeof(sd_language));
     if(sd_language_create(language2) != SD_SUCCESS) {
         goto error_0;
     }
-    if(sd_language_load(language2, filename)) {
-        log_error("Unable to load OpenOMF language file '%s'!", filename);
+    if(sd_language_load(language2, path_c(&language_file2))) {
+        log_error("Unable to load OpenOMF language file '%s'!", path_c(&language_file2));
         goto error_0;
     }
     if(language2->count != LANG2_STR_COUNT) {
-        log_error("Unable to load OpenOMF language file '%s', unsupported or corrupt file!", filename);
+        log_error("Unable to load OpenOMF language file '%s', unsupported or corrupt file!", path_c(&language_file2));
         goto error_0;
     }
 
-    log_info("Loaded OpenOMF language file '%s'.", filename);
-
-    str_free(&filename_str);
+    log_info("Loaded OpenOMF language file '%s'.", path_c(&language_file2));
 
     // XXX we're wasting 32KB of memory on language->strings[...].description
 
     return true;
 
 error_0:
-    str_free(&filename_str);
     lang_close();
     return false;
 }

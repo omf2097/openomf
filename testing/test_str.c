@@ -686,6 +686,66 @@ void test_str_split_c(void) {
     vector_free(&v);
 }
 
+void test_str_starts_with(void) {
+    str d;
+    str_from_c(&d, "test1-test2-test3");
+    CU_ASSERT_FATAL(str_starts_with(&d, "test3") == false);
+    CU_ASSERT_FATAL(str_starts_with(&d, "test1") == true);
+    CU_ASSERT_FATAL(str_starts_with(&d, "test1-test2-test3") == true);
+    CU_ASSERT_FATAL(str_starts_with(&d, "test1-test2-test3-") == false);
+    CU_ASSERT_FATAL(str_starts_with(&d, "test1-test2-test3-test4") == false);
+}
+
+void test_str_ends_with(void) {
+    str d;
+    str_from_c(&d, "test1-test2-test3");
+    CU_ASSERT_FATAL(str_ends_with(&d, "test1") == false);
+    CU_ASSERT_FATAL(str_ends_with(&d, "test3") == true);
+    CU_ASSERT_FATAL(str_ends_with(&d, "test1-test2-test3") == true);
+    CU_ASSERT_FATAL(str_ends_with(&d, "-test1-test2-test3") == false);
+    CU_ASSERT_FATAL(str_ends_with(&d, "test0-test1-test2-test3") == false);
+}
+
+void test_str_match(void) {
+    str d;
+    str_from_c(&d, "test1-test2-test3");
+    CU_ASSERT_FATAL(str_match(&d, "test1-*-test3") == true);
+    CU_ASSERT_FATAL(str_match(&d, "test1-*-test2") == false);
+    CU_ASSERT_FATAL(str_match(&d, "test2-*-test3") == false);
+    CU_ASSERT_FATAL(str_match(&d, "test1-*") == true);
+    CU_ASSERT_FATAL(str_match(&d, "test2-*") == false);
+    CU_ASSERT_FATAL(str_match(&d, "*-test3") == true);
+    CU_ASSERT_FATAL(str_match(&d, "*-test4") == false);
+    CU_ASSERT_FATAL(str_match(&d, "test1-test2-test3") == true);
+    CU_ASSERT_FATAL(str_match(&d, "test1-test2-test4") == false);
+    CU_ASSERT_FATAL(str_match(&d, "test1-test2-test44") == false);
+}
+
+void test_str_imatch(void) {
+    str d;
+    str_from_c(&d, "test1-test2-test3");
+    CU_ASSERT_FATAL(str_match(&d, "test1-*-test3") == true);
+    CU_ASSERT_FATAL(str_match(&d, "test1-*-test2") == false);
+    CU_ASSERT_FATAL(str_match(&d, "test2-*-test3") == false);
+    CU_ASSERT_FATAL(str_match(&d, "test1-*") == true);
+    CU_ASSERT_FATAL(str_match(&d, "test2-*") == false);
+    CU_ASSERT_FATAL(str_match(&d, "*-test3") == true);
+    CU_ASSERT_FATAL(str_match(&d, "*-test4") == false);
+    CU_ASSERT_FATAL(str_match(&d, "test1-test2-test3") == true);
+    CU_ASSERT_FATAL(str_match(&d, "test1-test2-test4") == false);
+    CU_ASSERT_FATAL(str_match(&d, "test1-test2-test44") == false);
+    CU_ASSERT_FATAL(str_imatch(&d, "TEST1-*-TEST3") == true);
+    CU_ASSERT_FATAL(str_imatch(&d, "TEST1-*-TEST2") == false);
+    CU_ASSERT_FATAL(str_imatch(&d, "TEST2-*-TEST3") == false);
+    CU_ASSERT_FATAL(str_imatch(&d, "TEST1-*") == true);
+    CU_ASSERT_FATAL(str_imatch(&d, "TEST2-*") == false);
+    CU_ASSERT_FATAL(str_imatch(&d, "*-TEST3") == true);
+    CU_ASSERT_FATAL(str_imatch(&d, "*-TEST4") == false);
+    CU_ASSERT_FATAL(str_imatch(&d, "TEST1-TEST2-TEST3") == true);
+    CU_ASSERT_FATAL(str_imatch(&d, "TEST1-TEST2-TEST4") == false);
+    CU_ASSERT_FATAL(str_imatch(&d, "TEST1-TEST2-TEST44") == false);
+}
+
 void str_test_suite(CU_pSuite suite) {
     if(CU_add_test(suite, "Test for str_create", test_str_create) == NULL) {
         return;
@@ -847,6 +907,20 @@ void str_test_suite(CU_pSuite suite) {
         return;
     }
     if(CU_add_test(suite, "Test for str_split_c", test_str_split_c) == NULL) {
+        return;
+    }
+
+    if(CU_add_test(suite, "Test for str_starts_with", test_str_starts_with) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_ends_with", test_str_ends_with) == NULL) {
+        return;
+    }
+
+    if(CU_add_test(suite, "Test for str_match", test_str_match) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_imatch", test_str_imatch) == NULL) {
         return;
     }
 }

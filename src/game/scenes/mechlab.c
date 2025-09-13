@@ -22,7 +22,6 @@
 #include "game/scenes/mechlab/lab_menu_select.h"
 #include "game/utils/settings.h"
 #include "resources/languages.h"
-#include "resources/pathmanager.h"
 #include "resources/sgmanager.h"
 #include "utils/allocator.h"
 #include "utils/c_array_util.h"
@@ -73,14 +72,14 @@ bool mechlab_find_last_player(scene *scene) {
     // ... and attempt to load it, if one was found and we don't have one already loaded
     if(!p1->chr && last_name != NULL) {
         sd_chr_file *chr = omf_calloc(1, sizeof(sd_chr_file));
-        int ret = sg_load(chr, last_name);
+        int ret = sg_load_pilot(chr, last_name);
         if(ret != SD_SUCCESS) {
             omf_free(chr);
-            log_error("Could not load saved game for playername '%s': %s!", last_name, sd_get_error(ret));
+            log_error("Could not load saved game for pilot '%s': %s!", last_name, sd_get_error(ret));
             last_name = NULL;
         } else {
             p1->chr = chr;
-            log_debug("Loaded savegame for playername '%s'.", last_name);
+            log_debug("Loaded savegame for pilot '%s'.", last_name);
         }
     }
 

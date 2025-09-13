@@ -36,8 +36,10 @@ void test_sd_trn_roundtripping(void) {
     n_trn.enemy_count = 1;
     snprintf(n_trn.enemies[0]->name, 18, "test_pilot");
 
-    CU_ASSERT(sd_tournament_save(&n_trn, "test.trn") == SD_SUCCESS);
-    CU_ASSERT(sd_tournament_load(&l_trn, "test.trn") == SD_SUCCESS);
+    path filename;
+    path_from_c(&filename, "test.trn");
+    CU_ASSERT(sd_tournament_save(&n_trn, &filename) == SD_SUCCESS);
+    CU_ASSERT(sd_tournament_load(&l_trn, &filename) == SD_SUCCESS);
 
     CU_ASSERT(n_trn.enemy_count == l_trn.enemy_count);
     CU_ASSERT(n_trn.winnings_multiplier == l_trn.winnings_multiplier);

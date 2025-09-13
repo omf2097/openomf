@@ -13,6 +13,7 @@
 #include "formats/palette.h"
 #include "formats/pilot.h"
 #include "formats/sprite.h"
+#include "utils/path.h"
 
 #define MAX_TRN_ENEMIES 256 ///< Maximum amount of tournament enemies
 #define MAX_TRN_LOCALES 10  ///< Maximum amount of tournament locales (some of these are unused)
@@ -99,7 +100,7 @@ int sd_tournament_create(sd_tournament_file *trn);
  * \param trn TRN file struct pointer.
  * \param filename Name of the TRN file to load from.
  */
-int sd_tournament_load(sd_tournament_file *trn, const char *filename);
+int sd_tournament_load(sd_tournament_file *trn, const path *filename);
 
 /*! \brief Save TRN file
  *
@@ -112,7 +113,7 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename);
  * \param trn TRN file struct pointer.
  * \param filename Name of the TRN file to save into.
  */
-int sd_tournament_save(const sd_tournament_file *trn, const char *filename);
+int sd_tournament_save(const sd_tournament_file *trn, const path *filename);
 
 int sd_tournament_set_bk_name(sd_tournament_file *trn, const char *bk_name);
 int sd_tournament_set_pic_name(sd_tournament_file *trn, const char *pic_name);

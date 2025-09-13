@@ -1,7 +1,8 @@
 #include "resources/scores.h"
+
 #include "formats/error.h"
 #include "formats/score.h"
-#include "resources/pathmanager.h"
+#include "resource_files.h"
 #include "utils/log.h"
 #include <string.h>
 
@@ -21,7 +22,8 @@ int scores_read(scoreboard *sb) {
     if(sd_score_create(&score_file) != SD_SUCCESS) {
         goto error_0;
     }
-    if(sd_score_load(&score_file, pm_get_local_path(SCORE_PATH)) != SD_SUCCESS) {
+    const path score_filename = get_scores_filename();
+    if(sd_score_load(&score_file, path_c(&score_filename)) != SD_SUCCESS) {
         log_error("Failure while attempting to open scores file!");
         goto error_1;
     }
@@ -64,7 +66,8 @@ int scores_write(scoreboard *sb) {
     }
 
     // Save
-    sd_score_save(&score_file, pm_get_local_path(SCORE_PATH));
+    const path score_filename = get_scores_filename();
+    sd_score_save(&score_file, path_c(&score_filename));
 
     // All done
     sd_score_free(&score_file);

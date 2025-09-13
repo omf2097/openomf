@@ -2,7 +2,6 @@
 #define AUDIO_BACKEND_H
 
 #include "audio/sources/music_source.h"
-#include "resources/pathmanager.h"
 
 #include <stdbool.h>
 #include <stddef.h>

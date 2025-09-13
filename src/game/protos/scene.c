@@ -4,9 +4,10 @@
 #include "resources/af_loader.h"
 #include "resources/bk_loader.h"
 #include "resources/ids.h"
-#include "resources/pathmanager.h"
+#include "resources/resource_files.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
+#include "utils/path.h"
 #include "utils/vec.h"
 #include "video/vga_state.h"
 #include "video/video.h"
@@ -23,34 +24,33 @@ int scene_create(scene *scene, game_state *gs, int scene_id) {
         return 1;
     }
 
-    char path_buf[256];
-    char const *bkfilename;
+    path bk_filename;
     switch(scene_id) {
         case SCENE_TRN_CUTSCENE: {
             game_player *player = game_state_get_player(gs, 0);
             if(player && player->chr && player->chr->bk_name[0] != '\0') {
-                snprintf(path_buf, sizeof(path_buf), "%s/%s", pm_get_local_path(RESOURCE_PATH), player->chr->bk_name);
-                bkfilename = path_buf;
+                bk_filename = get_resource_filename(player->chr->bk_name);
+                path_dossify_filename(&bk_filename);
                 break;
             }
             log_error("Not a valid time to be going to SCENE_TRN_CUTSCENE");
             return 1;
         }
         default:
-            bkfilename = pm_get_resource_path(BK_INTRO + (scene_id - 1));
+            bk_filename = get_resource_filename(get_resource_file(BK_INTRO + (scene_id - 1)));
             break;
         case SCENE_SCOREBOARD:
-            bkfilename = pm_get_resource_path(BK_MENU);
+            bk_filename = get_resource_filename("MENU.BK");
             break;
         case SCENE_LOBBY:
-            bkfilename = pm_get_resource_path(PCX_NETARENA);
+            bk_filename = get_resource_filename("NETARENA.PCX");
             break;
     }
 
     // Load BK
     scene->bk_data = omf_calloc(1, sizeof(bk));
-    if(load_bk_file(scene->bk_data, bkfilename)) {
-        log_error("Unable to load scene %s (%s)!", scene_get_name(scene_id), bkfilename);
+    if(load_bk_file(scene->bk_data, path_c(&bk_filename))) {
+        log_error("Unable to load scene %s (%s)!", scene_get_name(scene_id), path_c(&bk_filename));
         return 1;
     }
     scene->id = scene_id;
@@ -84,7 +84,7 @@ int scene_create(scene *scene, game_state *gs, int scene_id) {
     vga_state_set_base_palette_index(0, &c);
 
     // All done.
-    log_debug("Loaded scene %s (%s).", scene_get_name(scene_id), bkfilename);
+    log_debug("Loaded scene %s (%s).", scene_get_name(scene_id), path_c(&bk_filename));
     return 0;
 }
 

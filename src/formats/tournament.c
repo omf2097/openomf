@@ -6,9 +6,9 @@
 #include "formats/internal/reader.h"
 #include "formats/internal/writer.h"
 #include "formats/tournament.h"
-#include "resources/pathmanager.h"
 #include "utils/allocator.h"
 #include "utils/c_string_util.h"
+#include "utils/path.h"
 
 int sd_tournament_create(sd_tournament_file *trn) {
     if(trn == NULL) {
@@ -133,13 +133,13 @@ static void parse_tournament_description(sd_tournament_locale *locale) {
     }
 }
 
-int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
+int sd_tournament_load(sd_tournament_file *trn, const path *filename) {
     int ret = SD_FILE_PARSE_ERROR;
     if(trn == NULL || filename == NULL) {
         return SD_INVALID_INPUT;
     }
 
-    sd_reader *r = sd_reader_open(filename);
+    sd_reader *r = sd_reader_open(path_c(filename));
     if(!r) {
         return SD_FILE_OPEN_ERROR;
     }
@@ -150,19 +150,17 @@ int sd_tournament_load(sd_tournament_file *trn, const char *filename) {
         goto error_0;
     }
 
-    // Read enemy count and make sure it seems somwhat correct
+    // Read enemy count and make sure it seems somewhat correct
     uint16_t enemy_count = sd_read_uword(r);
     if(enemy_count >= MAX_TRN_ENEMIES || enemy_count == 0) {
         goto error_0;
     }
     uint16_t unknown_b = sd_read_uword(r);
 
-    char *justfile = strrchr(filename, pm_path_sep);
-    if(justfile == NULL) {
-        strncpy_or_abort(trn->filename, filename, sizeof(trn->filename));
-    } else {
-        strncpy_or_abort(trn->filename, justfile + 1, sizeof(trn->filename));
-    }
+    str name;
+    path_filename(filename, &name);
+    strncpy_or_abort(trn->filename, str_c(&name), sizeof(trn->filename));
+    str_free(&name);
     trn->enemy_count = enemy_count;
     trn->unknown_b = unknown_b;
 
@@ -262,12 +260,12 @@ error_0:
     return ret;
 }
 
-int sd_tournament_save(const sd_tournament_file *trn, const char *filename) {
+int sd_tournament_save(const sd_tournament_file *trn, const path *filename) {
     if(trn == NULL || filename == NULL) {
         return SD_INVALID_INPUT;
     }
 
-    sd_writer *w = sd_writer_open(filename);
+    sd_writer *w = sd_writer_open(path_c(filename));
     if(!w) {
         return SD_FILE_OPEN_ERROR;
     }
@@ -378,7 +376,7 @@ int sd_tournament_save(const sd_tournament_file *trn, const char *filename) {
     return SD_SUCCESS;
 
 error:
-    remove(filename);
+    path_unlink(filename);
     sd_writer_close(w);
     return SD_FILE_WRITE_ERROR;
 }

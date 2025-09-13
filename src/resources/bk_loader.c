@@ -1,7 +1,6 @@
 #include "resources/bk_loader.h"
 #include "formats/bk.h"
 #include "formats/error.h"
-#include "resources/pathmanager.h"
 
 int load_bk_file(bk *b, char const *filename) {
     // Load up BK file from libSD
