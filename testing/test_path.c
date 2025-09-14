@@ -336,6 +336,15 @@ void test_path_is_file(void) {
     CU_ASSERT(path_is_file(&p) == true);
 }
 
+bool fake_touch(const path *path) {
+    FILE *fp = fopen(path->buf, "w");
+    if(fp == NULL) {
+        return false;
+    }
+    fclose(fp);
+    return true;
+}
+
 void test_path_touch_and_unlink(void) {
     path tmp;
     path_create_tmpdir(&tmp);
@@ -343,7 +352,7 @@ void test_path_touch_and_unlink(void) {
     path_append(&tmp, "deleteable.file");
     CU_ASSERT(path_is_file(&tmp) == false);
 
-    CU_ASSERT(path_touch(&tmp) == true);
+    CU_ASSERT(fake_touch(&tmp) == true);
     CU_ASSERT(path_is_file(&tmp) == true);
 
     CU_ASSERT(path_unlink(&tmp) == true);

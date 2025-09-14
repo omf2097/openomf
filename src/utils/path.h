@@ -121,13 +121,6 @@ bool path_is_file(const path *p);
 bool path_exists(const path *p);
 
 /**
- * Create a file.
- * @param p File path to create
- * @return True if operation succeeded, false if not.
- */
-bool path_touch(const path *p);
-
-/**
  * Delete a file. For removing a directory, see path_rmdir().
  * @param p File path to delete
  * @return True if operation succeeded, false if not.

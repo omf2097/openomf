@@ -268,15 +268,6 @@ void path_filename(const path *path, str *dst) {
     str_free(&tmp);
 }
 
-bool path_touch(const path *path) {
-    FILE *fp = fopen(path->buf, "w");
-    if(fp == NULL) {
-        return false;
-    }
-    fclose(fp);
-    return true;
-}
-
 bool path_unlink(const path *p) {
 #if defined(_WIN32) || defined(WIN32)
     const path tmp = convert_to_windows_slashes(p);
