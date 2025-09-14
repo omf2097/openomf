@@ -243,7 +243,7 @@ int console_cmd_stun(game_state *gs, int argc, char **argv) {
         if(!har_obj)
             return 1;
         har *har = object_get_userdata(har_obj);
-        har->endurance = 0;
+        har->endurance = har->endurance_max;
         har->state = STATE_RECOIL;
         return 0;
     }

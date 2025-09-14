@@ -801,18 +801,18 @@ void har_move(object *obj) {
 void apply_stun_damage(object *obj, int stun_amount) {
     har *h = object_get_userdata(obj);
 
-    if(h->state == STATE_RECOIL && object_is_airborne(obj)) { // Less stun on rehit and throws
-        stun_amount /= 2;
-    }
-    stun_amount = (stun_amount * 2 + 12) * 256;
-    log_debug("applying %d endurance damage to %d", stun_amount, h->endurance);
-    h->endurance += stun_amount;
-
-    if(h->endurance < 1) {
+    if(h->endurance < 0) {
         if(h->state == STATE_STUNNED) {
             // refill endurance
             h->endurance = 0;
         }
+    } else {
+        if(h->state == STATE_RECOIL && object_is_airborne(obj)) { // Less stun on rehit and throws
+            stun_amount /= 2;
+        }
+        stun_amount = (stun_amount * 2 + 12) * 256;
+        log_debug("applying %d endurance damage to %d", stun_amount, h->endurance);
+        h->endurance += stun_amount;
     }
 }
 
@@ -1035,7 +1035,7 @@ void har_take_damage(object *obj, af_move *move) {
                          obj->horizontal_velocity_modifier;
             object_set_stride(obj, 1);
         } else {
-            if(h->health <= 0 || h->endurance >= h->endurance_max) {
+            if(h->health <= 0 || h->endurance >= h->endurance_max || h->endurance < 0) {
                 // taken from MASTER.DAT
                 size_t last_line = 0;
                 if(!str_last_of(string, '-', &last_line)) {
@@ -1886,7 +1886,11 @@ void har_tick(object *obj) {
         if(h->throw_duration == 0) {
             // we've already called har_take_damage, so just apply the damage and check for defeat
             h->health -= h->last_damage_value;
-            apply_stun_damage(obj, h->last_stun_value);
+            if(h->endurance < 0) {
+                h->endurance = 0;
+            } else {
+                apply_stun_damage(obj, h->last_stun_value);
+            }
 
             if(h->health <= 0) {
                 // Take a screencap of enemy har
@@ -2530,7 +2534,8 @@ void har_finished(object *obj) {
         har_event_recover(h, ctrl);
         h->state = STATE_STANDING_UP;
         object_set_custom_string(obj, "zzO7-bj2zzO2");
-    } else if((h->state == STATE_RECOIL || h->state == STATE_STANDING_UP) && h->endurance >= h->endurance_max) {
+    } else if((h->state == STATE_RECOIL || h->state == STATE_STANDING_UP) &&
+              (h->endurance >= h->endurance_max || h->endurance < 0)) {
         if(h->state == STATE_RECOIL) {
             har_event_recover(h, ctrl);
         }
