@@ -7,8 +7,10 @@ void test_path_from_c(void) {
     path_from_c(&p, "this/is/a/test");
     CU_ASSERT_STRING_EQUAL(p.buf, "this/is/a/test");
 
+#if defined(_WIN32) || defined(WIN32)
     path_from_c(&p, "C:\\this\\is\\a\\test");
     CU_ASSERT_STRING_EQUAL(p.buf, "C:/this/is/a/test");
+#endif
 }
 
 void test_path_from_parts(void) {
@@ -22,8 +24,10 @@ void test_path_from_parts(void) {
     path_from_parts(&p, "/", "this", "is", "a", "test");
     CU_ASSERT_STRING_EQUAL(p.buf, "/this/is/a/test");
 
+#if defined(_WIN32) || defined(WIN32)
     path_from_parts(&p, "C:\\", "this", "is", "a", "test");
     CU_ASSERT_STRING_EQUAL(p.buf, "C:/this/is/a/test");
+#endif
 }
 
 void test_path_create_tmpdir(void) {
@@ -41,10 +45,12 @@ void test_path_from_str(void) {
     CU_ASSERT_STRING_EQUAL(p.buf, "this/is/a/test");
     str_free(&t);
 
+#if defined(_WIN32) || defined(WIN32)
     str_from_c(&t, "C:\\this\\is\\a\\test");
     path_from_str(&p, &t);
     CU_ASSERT_STRING_EQUAL(p.buf, "C:/this/is/a/test");
     str_free(&t);
+#endif
 }
 
 void test_path_clear(void) {
@@ -274,17 +280,14 @@ void test_path_filename(void) {
 }
 
 static path get_test_dir(void) {
-    path base_dir, result;
-    str parents;
-    if(strlen(__FILE__) == 0) {
-        printf("__FILE__ size is 0, unable to test!");
+    path result;
+    if(strlen(TESTS_ROOT_DIR) == 0) {
+        printf("TESTS_ROOT_DIR size is 0, unable to test!");
         abort();
     }
-    path_from_c(&base_dir, __FILE__);
-    path_parents(&base_dir, &parents);
-    path_from_str(&result, &parents);
+    path_from_c(&result, TESTS_ROOT_DIR);
+    printf("%s\n", path_c(&result));
     path_append(&result, "path_tests");
-    str_free(&parents);
     return result;
 }
 

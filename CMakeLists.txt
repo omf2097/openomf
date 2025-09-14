@@ -48,8 +48,6 @@ if(MSVC)
     # remove cmake's default /W3 to avoid warning D9025
     string(REGEX REPLACE "/W3" "" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /permissive- /W4 /WX")
-    # Add full path to __FILE__ macro (for unit-tests)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /FC")
     # Disable select warnings:
     # C4100: unreferenced formal parameter
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4100")

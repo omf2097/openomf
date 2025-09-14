@@ -18,6 +18,7 @@
 
 #define ENSURE_ZERO(str) str[PATH_MAX_LENGTH - 1] = '\0'
 
+#if defined(_WIN32) || defined(WIN32)
 static void normalize_slashes(path *p) {
     char *str = p->buf;
     while(*str != '\0') {
@@ -27,26 +28,15 @@ static void normalize_slashes(path *p) {
         str++;
     }
 }
-
-#if defined(_WIN32) || defined(WIN32)
-static path convert_to_windows_slashes(const path *p) {
-    path tmp = *p;
-    char *str = tmp.buf;
-    while(*str != '\0') {
-        if(*str == '/') {
-            *str = '\\';
-        }
-        str++;
-    }
-    return tmp;
-}
 #endif
 
 void path_from_c(path *path, const char *src) {
     assert(strlen(src) < PATH_MAX_LENGTH);
     strncpy(path->buf, src, PATH_MAX_LENGTH);
     ENSURE_ZERO(path->buf);
+#if defined(_WIN32) || defined(WIN32)
     normalize_slashes(path);
+#endif
 }
 
 void _path_from_parts(path *path, const int nargs, ...) {
@@ -58,7 +48,9 @@ void _path_from_parts(path *path, const int nargs, ...) {
     for(int i = 0; i < nargs; i++) {
         const char *arg = va_arg(ap, char *);
         str_append_c(&tmp, arg);
+#if defined(_WIN32) || defined(WIN32)
         str_replace(&tmp, "\\", "/", -1);
+#endif
         if(!str_ends_with(&tmp, "/")) {
             str_append_char(&tmp, '/');
         }
@@ -75,7 +67,9 @@ void path_from_str(path *path, const str *src) {
     assert(str_size(src) < PATH_MAX_LENGTH);
     strncpy(path->buf, str_c(src), PATH_MAX_LENGTH);
     ENSURE_ZERO(path->buf);
+#if defined(_WIN32) || defined(WIN32)
     normalize_slashes(path);
+#endif
 }
 
 #if defined(_WIN32) || defined(WIN32)
@@ -322,7 +316,9 @@ void _path_append(path *path, const int nargs, ...) {
     for(int i = 0; i < nargs; i++) {
         const char *arg = va_arg(ap, char *);
         str_append_c(&tmp, arg);
+#if defined(_WIN32) || defined(WIN32)
         str_replace(&tmp, "\\", "/", -1);
+#endif
         if(!str_ends_with(&tmp, "/")) {
             str_append_char(&tmp, '/');
         }
