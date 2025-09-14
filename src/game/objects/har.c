@@ -1035,7 +1035,7 @@ void har_take_damage(object *obj, af_move *move) {
                          obj->horizontal_velocity_modifier;
             object_set_stride(obj, 1);
         } else {
-            if(h->health <= 0 || h->endurance >= h->endurance_max) {
+            if(h->health <= 0 || h->endurance >= h->endurance_max || h->endurance < 0) {
                 // taken from MASTER.DAT
                 size_t last_line = 0;
                 if(!str_last_of(string, '-', &last_line)) {
@@ -2518,7 +2518,8 @@ void har_finished(object *obj) {
         har_event_recover(h, ctrl);
         h->state = STATE_STANDING_UP;
         object_set_custom_string(obj, "zzO7-bj2zzO2");
-    } else if((h->state == STATE_RECOIL || h->state == STATE_STANDING_UP) && h->endurance >= h->endurance_max) {
+    } else if((h->state == STATE_RECOIL || h->state == STATE_STANDING_UP) &&
+              (h->endurance >= h->endurance_max || h->endurance < 0)) {
         if(h->state == STATE_RECOIL) {
             har_event_recover(h, ctrl);
         }
