@@ -72,7 +72,7 @@ void path_clear(path *path);
 bool path_is_set(const path *path);
 
 /**
- * Get the extension of the last component (if any)
+ * Get the extension of the last component (if any). If there are multiple extensions, only the last will be returned.
  * @param path Path to check
  * @param dst Target string. Note that this will be allocated!
  */

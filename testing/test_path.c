@@ -72,6 +72,11 @@ void test_path_ext(void) {
     CU_ASSERT_STRING_EQUAL(str_c(&test), ".file");
     str_free(&test);
 
+    path_from_c(&p, "/home/user/test.ext1.ext2");
+    path_ext(&p, &test);
+    CU_ASSERT_STRING_EQUAL(str_c(&test), ".ext2");
+    str_free(&test);
+
     path_from_c(&p, "/home/user/test");
     path_ext(&p, &test);
     CU_ASSERT_STRING_EQUAL(str_c(&test), "");
