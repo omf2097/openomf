@@ -16,7 +16,7 @@
 #include <unistd.h>
 #endif
 
-#define ENSURE_ZERO(str) str[PATH_MAX_LENGTH - 1] = '0'
+#define ENSURE_ZERO(str) str[PATH_MAX_LENGTH - 1] = '\0'
 
 static void normalize_slashes(path *p) {
     char *str = p->buf;
