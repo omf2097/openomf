@@ -6,10 +6,9 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-#include "utils/iterator.h"
 #include "utils/str.h"
 
-#define PATH_MAX_LENGTH 1024
+#define PATH_MAX_LENGTH 256
 
 #define PATH_NARGS(...) (sizeof((const char *[]){__VA_ARGS__}) / sizeof(const char *))
 
