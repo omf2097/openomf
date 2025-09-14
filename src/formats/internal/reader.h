@@ -1,14 +1,14 @@
 #ifndef SD_READER_H
 #define SD_READER_H
 
-#include <stdbool.h>
 #include <stdint.h>
 
+#include "utils/path.h"
 #include "utils/str.h"
 
 typedef struct sd_reader sd_reader;
 
-sd_reader *sd_reader_open(const char *file);
+sd_reader *sd_reader_open(const path *filename);
 
 /**
  * Check for errors

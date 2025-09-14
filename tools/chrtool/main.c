@@ -92,12 +92,15 @@ int main(int argc, char *argv[]) {
         goto exit_0;
     }
 
+    path input_filename;
+    path_from_c(&input_filename, file->filename[0]);
+
     // Load file
     sd_chr_file chr;
     sd_chr_create(&chr);
-    int ret = sd_chr_load(&chr, file->filename[0]);
+    int ret = sd_chr_load(&chr, &input_filename);
     if(ret != SD_SUCCESS) {
-        printf("Unable to load chr file %s: %s.\n", file->filename[0], sd_get_error(ret));
+        printf("Unable to load chr file %s: %s.\n", path_c(&input_filename), sd_get_error(ret));
         goto exit_1;
     }
 
@@ -105,9 +108,11 @@ int main(int argc, char *argv[]) {
     sd_bk_file bk;
     sd_bk_create(&bk);
     if(bkfile->count > 0) {
-        int ret = sd_bk_load(&bk, bkfile->filename[0]);
+        path bk_filename;
+        path_from_c(&bk_filename, bkfile->filename[0]);
+        int ret = sd_bk_load(&bk, &bk_filename);
         if(ret != SD_SUCCESS) {
-            printf("Unable to load BK file %s: %s.\n", bkfile->filename[0], sd_get_error(ret));
+            printf("Unable to load BK file %s: %s.\n", path_c(&bk_filename), sd_get_error(ret));
             goto exit_1;
         }
     }
@@ -152,9 +157,11 @@ int main(int argc, char *argv[]) {
 
     // Saving
     if(output->count > 0) {
-        ret = sd_chr_save(&chr, output->filename[0]);
+        path output_filename;
+        path_from_c(&output_filename, output->filename[0]);
+        ret = sd_chr_save(&chr, &output_filename);
         if(ret != SD_SUCCESS) {
-            printf("Failed saving CHR file to %s: %s", output->filename[0], sd_get_error(ret));
+            printf("Failed saving CHR file to %s: %s", path_c(&output_filename), sd_get_error(ret));
         }
     }
 

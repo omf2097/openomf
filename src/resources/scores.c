@@ -23,7 +23,7 @@ int scores_read(scoreboard *sb) {
         goto error_0;
     }
     const path score_filename = get_scores_filename();
-    if(sd_score_load(&score_file, path_c(&score_filename)) != SD_SUCCESS) {
+    if(sd_score_load(&score_file, &score_filename) != SD_SUCCESS) {
         log_error("Failure while attempting to open scores file!");
         goto error_1;
     }
@@ -67,7 +67,7 @@ int scores_write(scoreboard *sb) {
 
     // Save
     const path score_filename = get_scores_filename();
-    sd_score_save(&score_file, path_c(&score_filename));
+    sd_score_save(&score_file, &score_filename);
 
     // All done
     sd_score_free(&score_file);

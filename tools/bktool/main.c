@@ -487,7 +487,7 @@ void bk_pop_key(sd_bk_file *bk, const char **key) {
     }
 }
 
-void bk_export_key(sd_bk_file *bk, const char **key, int kcount, const char *filename) {
+void bk_export_key(sd_bk_file *bk, const char **key, int kcount, const path *filename) {
     switch(bk_key_get_id(key[0])) {
         case 1: {
             if(kcount <= 1) {
@@ -519,7 +519,7 @@ void bk_export_key(sd_bk_file *bk, const char **key, int kcount, const char *fil
             }
             int ret = sd_vga_image_to_png(img, pal, filename);
             if(ret != SD_SUCCESS) {
-                printf("Error while exporting background to %s: %s\n", filename, sd_get_error(ret));
+                printf("Error while exporting background to %s: %s\n", path_c(filename), sd_get_error(ret));
                 return;
             }
         } break;
@@ -528,7 +528,7 @@ void bk_export_key(sd_bk_file *bk, const char **key, int kcount, const char *fil
     }
 }
 
-void bk_import_key(sd_bk_file *bk, const char **key, int kcount, const char *filename) {
+void bk_import_key(sd_bk_file *bk, const char **key, int kcount, const path *filename) {
     switch(bk_key_get_id(key[0])) {
         case 1: {
             if(kcount <= 1) {
@@ -551,7 +551,7 @@ void bk_import_key(sd_bk_file *bk, const char **key, int kcount, const char *fil
             sd_vga_image img;
             int ret = sd_vga_image_from_png(&img, filename);
             if(ret != SD_SUCCESS) {
-                printf("Error while attempting to import %s: %s\n", filename, sd_get_error(ret));
+                printf("Error while attempting to import %s: %s\n", path_c(filename), sd_get_error(ret));
                 return;
             }
             sd_bk_set_background(bk, &img);
@@ -745,11 +745,14 @@ int main(int argc, char *argv[]) {
     // Init SDL
     SDL_Init(SDL_INIT_VIDEO);
 
+    path input_filename;
+    path_from_c(&input_filename, file->filename[0]);
+
     // Load file
     sd_bk_file bk;
     sd_bk_create(&bk);
     if(file->count > 0) {
-        int ret = sd_bk_load(&bk, file->filename[0]);
+        int ret = sd_bk_load(&bk, &input_filename);
         if(ret != SD_SUCCESS) {
             printf("Unable to load BK file! [%d] %s.\n", ret, sd_get_error(ret));
             goto exit_1;
@@ -794,9 +797,13 @@ int main(int argc, char *argv[]) {
             if(value->count > 0) {
                 sprite_set_key(sp, key->sval, key->count, value->sval[0]);
             } else if(export->count > 0) {
-                sprite_export_key(sp, key->sval, key->count, export->filename[0], &bk);
+                path export_filename;
+                path_from_c(&export_filename, export->filename[0]);
+                sprite_export_key(sp, key->sval, key->count, &export_filename, &bk);
             } else if(import->count > 0) {
-                sprite_import_key(sp, key->sval, key->count, import->filename[0]);
+                path import_filename;
+                path_from_c(&import_filename, import->filename[0]);
+                sprite_import_key(sp, key->sval, key->count, &import_filename);
             } else {
                 sprite_get_key(sp, key->sval, key->count);
             }
@@ -869,9 +876,13 @@ int main(int argc, char *argv[]) {
             } else if(pop->count > 0) {
                 bk_pop_key(&bk, key->sval);
             } else if(export->count > 0) {
-                bk_export_key(&bk, key->sval, key->count, export->filename[0]);
+                path export_filename;
+                path_from_c(&export_filename, export->filename[0]);
+                bk_export_key(&bk, key->sval, key->count, &export_filename);
             } else if(import->count > 0) {
-                bk_import_key(&bk, key->sval, key->count, import->filename[0]);
+                path import_filename;
+                path_from_c(&import_filename, import->filename[0]);
+                bk_import_key(&bk, key->sval, key->count, &import_filename);
             } else {
                 bk_get_key(&bk, key->sval, key->count);
             }
@@ -885,7 +896,9 @@ int main(int argc, char *argv[]) {
 done:
     // Write output file
     if(output->count > 0) {
-        int ret = sd_bk_save(&bk, output->filename[0]);
+        path output_filename;
+        path_from_c(&output_filename, output->filename[0]);
+        int ret = sd_bk_save(&bk, &output_filename);
         if(ret != SD_SUCCESS) {
             printf("Error attempting to save to %s: %s\n", output->filename[0], sd_get_error(ret));
         }

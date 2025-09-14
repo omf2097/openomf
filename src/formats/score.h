@@ -11,6 +11,7 @@
 #ifndef SD_SCORE_H
 #define SD_SCORE_H
 
+#include "utils/path.h"
 #include <stdint.h>
 
 #define SD_SCORE_PAGES 4    ///< Number of scoreboard pages
@@ -75,7 +76,7 @@ void sd_score_free(sd_score *score);
  * \param score Score struct pointer.
  * \param filename Name of the score file to load from.
  */
-int sd_score_load(sd_score *score, const char *filename);
+int sd_score_load(sd_score *score, const path *filename);
 
 /*! \brief Save score file
  *
@@ -88,7 +89,7 @@ int sd_score_load(sd_score *score, const char *filename);
  * \param score Score struct pointer.
  * \param filename Name of the score file to save into.
  */
-int sd_score_save(const sd_score *score, const char *filename);
+int sd_score_save(const sd_score *score, const path *filename);
 
 /*! \brief Returns a score information entry.
  *

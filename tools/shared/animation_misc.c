@@ -74,7 +74,7 @@ void sprite_keylist(void) {
     printf("* image\n");
 }
 
-void sprite_export_key(sd_sprite *s, const char **key, int kcount, const char *filename, sd_bk_file *bk) {
+void sprite_export_key(sd_sprite *s, const char **key, int kcount, const path *filename, sd_bk_file *bk) {
     switch(sprite_key_get_id(key[0])) {
         case 1:
         case 2:
@@ -96,7 +96,7 @@ void sprite_export_key(sd_sprite *s, const char **key, int kcount, const char *f
             ret = sd_vga_image_to_png(&img, pal, filename);
             sd_vga_image_free(&img);
             if(ret != SD_SUCCESS) {
-                printf("Error while exporting sprite to %s: %s\n", filename, sd_get_error(ret));
+                printf("Error while exporting sprite to %s: %s\n", path_c(filename), sd_get_error(ret));
                 return;
             }
         } break;
@@ -105,7 +105,7 @@ void sprite_export_key(sd_sprite *s, const char **key, int kcount, const char *f
     }
 }
 
-void sprite_import_key(sd_sprite *s, const char **key, int kcount, const char *filename) {
+void sprite_import_key(sd_sprite *s, const char **key, int kcount, const path *filename) {
     switch(sprite_key_get_id(key[0])) {
         case 1:
         case 2:
@@ -116,7 +116,7 @@ void sprite_import_key(sd_sprite *s, const char **key, int kcount, const char *f
             sd_vga_image img;
             int ret = sd_vga_image_from_png(&img, filename);
             if(ret != SD_SUCCESS) {
-                printf("Error while importing sprite from %s: %s\n", filename, sd_get_error(ret));
+                printf("Error while importing sprite from %s: %s\n", path_c(filename), sd_get_error(ret));
                 return;
             }
 

@@ -7,7 +7,6 @@
 #include "utils/allocator.h"
 #include "utils/c_string_util.h"
 #include "utils/log.h"
-#include "utils/scandir.h"
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
@@ -58,11 +57,11 @@ list *sg_load_all(void) {
 
 int sg_load(sd_chr_file *chr, const path *file_name) {
     sd_chr_create(chr);
-    const int ret = sd_chr_load(chr, path_c(file_name));
+    const int ret = sd_chr_load(chr, file_name);
     if(ret != SD_SUCCESS) {
         log_error("Loading savegame %s failed: %s", path_c(file_name), sd_get_error(ret));
     } else {
-        log_info("Loaded savegamne from %s", path_c(file_name));
+        log_info("Loaded savegame from %s", path_c(file_name));
     }
     return ret;
 }
@@ -81,7 +80,7 @@ int sg_save(sd_chr_file *chr) {
     path_set_ext(&save, ".CHR");
     path_dossify_filename(&save);
 
-    const int ret = sd_chr_save(chr, path_c(&save));
+    const int ret = sd_chr_save(chr, &save);
     if(ret != SD_SUCCESS) {
         log_error("Saving pilot %s to %s failed: %s", chr->pilot.name, path_c(&save), strerror(errno));
     } else {

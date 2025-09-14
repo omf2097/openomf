@@ -30,12 +30,15 @@ void test_bk_roundtrip(void) {
     new.unknown_a = 2;
     memset(new.soundtable, 10, sizeof(new.soundtable));
 
+    path test_file;
+    path_from_c(&test_file, "test.bk");
+
     // Roundtripping
     ret = sd_bk_create(&loaded);
     CU_ASSERT(ret == SD_SUCCESS);
-    ret = sd_bk_save(&new, "test.bk");
+    ret = sd_bk_save(&new, &test_file);
     CU_ASSERT(ret == SD_SUCCESS);
-    ret = sd_bk_load(&loaded, "test.bk");
+    ret = sd_bk_load(&loaded, &test_file);
     CU_ASSERT(ret == SD_SUCCESS);
 
     // Quick & dirty

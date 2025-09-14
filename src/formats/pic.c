@@ -30,7 +30,7 @@ void free_photos(sd_pic_file *pic) {
     }
 }
 
-int sd_pic_load(sd_pic_file *pic, const char *filename) {
+int sd_pic_load(sd_pic_file *pic, const path *filename) {
     int ret = SD_FILE_PARSE_ERROR;
     if(pic == NULL || filename == NULL) {
         return SD_INVALID_INPUT;
@@ -108,7 +108,7 @@ error_0:
     return ret;
 }
 
-int sd_pic_save(const sd_pic_file *pic, const char *filename) {
+int sd_pic_save(const sd_pic_file *pic, const path *filename) {
     if(pic == NULL || filename == NULL) {
         return SD_INVALID_INPUT;
     }
@@ -163,7 +163,7 @@ int sd_pic_save(const sd_pic_file *pic, const char *filename) {
     return SD_SUCCESS;
 
 error:
-    remove(filename);
+    path_unlink(filename);
     sd_writer_close(w);
     return SD_FILE_WRITE_ERROR;
 }

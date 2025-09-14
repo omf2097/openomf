@@ -139,7 +139,7 @@ int sd_tournament_load(sd_tournament_file *trn, const path *filename) {
         return SD_INVALID_INPUT;
     }
 
-    sd_reader *r = sd_reader_open(path_c(filename));
+    sd_reader *r = sd_reader_open(filename);
     if(!r) {
         return SD_FILE_OPEN_ERROR;
     }
@@ -265,7 +265,7 @@ int sd_tournament_save(const sd_tournament_file *trn, const path *filename) {
         return SD_INVALID_INPUT;
     }
 
-    sd_writer *w = sd_writer_open(path_c(filename));
+    sd_writer *w = sd_writer_open(filename);
     if(!w) {
         return SD_FILE_OPEN_ERROR;
     }

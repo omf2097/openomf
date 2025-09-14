@@ -134,11 +134,14 @@ int main(int argc, char *argv[]) {
         goto exit_0;
     }
 
+    path input_filename;
+    path_from_c(&input_filename, file->filename[0]);
+
     // Load file
     sd_setup_file setup;
     sd_setup_create(&setup);
     if(file->count > 0) {
-        int ret = sd_setup_load(&setup, file->filename[0]);
+        int ret = sd_setup_load(&setup, &input_filename);
         if(ret != SD_SUCCESS) {
             printf("Unable to load setup file! [%d] %s.\n", ret, sd_get_error(ret));
             goto exit_1;

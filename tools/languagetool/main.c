@@ -309,8 +309,11 @@ int main(int argc, char *argv[]) {
     // Get strings
     int ret;
 
+    path input_filename;
+    path_from_c(&input_filename, file->filename[0]);
+
     if(file->count > 0) {
-        ret = sd_language_load(&language, file->filename[0]);
+        ret = sd_language_load(&language, &input_filename);
         language_is_utf8 = false;
         if(ret != SD_SUCCESS) {
             fprintf(stderr, "Language file could not be loaded! Error [%d] %s\n", ret, sd_get_error(ret));
@@ -387,6 +390,9 @@ int main(int argc, char *argv[]) {
 
     // Save
     if(output->count > 0) {
+        path output_filename;
+        path_from_c(&output_filename, output->filename[0]);
+
         char const *expected_output_extensions[] = {".DAT", ".DAT2", ".LNG", ".LNG2"};
         bool unexpected_extension = true;
         for(size_t i = 0; i < N_ELEMENTS(expected_output_extensions); i++) {
@@ -396,7 +402,8 @@ int main(int argc, char *argv[]) {
             }
         }
         if(unexpected_extension) {
-            fprintf(stderr, "Refusing to save language file to %s: unexpected file extension.\n", output->filename[0]);
+            fprintf(stderr, "Refusing to save language file to %s: unexpected file extension.\n",
+                    path_c(&output_filename));
             goto exit_0;
         }
 
@@ -411,9 +418,9 @@ int main(int argc, char *argv[]) {
             assert(!language_is_utf8); // silence dead store warning
         }
 
-        ret = sd_language_save(&language, output->filename[0]);
+        ret = sd_language_save(&language, &output_filename);
         if(ret != SD_SUCCESS) {
-            fprintf(stderr, "Failed saving language file to %s: %s\n", output->filename[0], sd_get_error(ret));
+            fprintf(stderr, "Failed saving language file to %s: %s\n", path_c(&output_filename), sd_get_error(ret));
             goto exit_0;
         }
     }

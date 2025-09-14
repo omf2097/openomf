@@ -10,6 +10,8 @@
 #ifndef SD_LANGUAGE_H
 #define SD_LANGUAGE_H
 
+#include "utils/path.h"
+
 /*! \brief Language string container
  *
  * Contains a single language string and a short description for it. Descriptions
@@ -61,7 +63,7 @@ void sd_language_free(sd_language *language);
  * \param language Language struct pointer.
  * \param filename Name of the language file to load from.
  */
-int sd_language_load(sd_language *language, const char *filename);
+int sd_language_load(sd_language *language, const path *filename);
 
 /*! \brief Save language file
  *
@@ -74,7 +76,7 @@ int sd_language_load(sd_language *language, const char *filename);
  * \param language Language struct pointer.
  * \param filename Name of the language file to save into.
  */
-int sd_language_save(sd_language *language, const char *filename);
+int sd_language_save(sd_language *language, const path *filename);
 
 /*! \brief Returns a language string entry.
  *

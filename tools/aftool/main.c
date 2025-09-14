@@ -809,11 +809,14 @@ int main(int argc, char *argv[]) {
     // Init SDL
     SDL_Init(SDL_INIT_VIDEO);
 
+    path input_filename;
+    path_from_c(&input_filename, file->filename[0]);
+
     // Load file
     sd_af_file af;
     sd_af_create(&af);
     if(file->count > 0) {
-        int ret = sd_af_load(&af, file->filename[0]);
+        int ret = sd_af_load(&af, &input_filename);
         if(ret != SD_SUCCESS) {
             printf("Unable to load AF file! [%d] %s.\n", ret, sd_get_error(ret));
             goto exit_1;
@@ -824,7 +827,9 @@ int main(int argc, char *argv[]) {
     sd_bk_file bk;
     sd_bk_create(&bk);
     if(pal->count > 0) {
-        int ret = sd_bk_load(&bk, pal->filename[0]);
+        path pal_filename;
+        path_from_c(&pal_filename, pal->filename[0]);
+        int ret = sd_bk_load(&bk, &pal_filename);
         if(ret != SD_SUCCESS) {
             printf("Unable to load Palette BK file! [%d] %s\n", ret, sd_get_error(ret));
             goto exit_2;
@@ -923,9 +928,11 @@ int main(int argc, char *argv[]) {
 
     // Write output file
     if(output->count > 0) {
-        int ret = sd_af_save(&af, output->filename[0]);
+        path output_filename;
+        path_from_c(&output_filename, output->filename[0]);
+        int ret = sd_af_save(&af, &output_filename);
         if(ret != SD_SUCCESS) {
-            printf("Error attempting to save to %s: %s\n", output->filename[0], sd_get_error(ret));
+            printf("Error attempting to save to %s: %s\n", path_c(&output_filename), sd_get_error(ret));
         }
     }
 

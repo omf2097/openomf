@@ -174,7 +174,7 @@ void vga_state_enable_palette_transform(vga_palette_transform transform_callback
 /**
  * For debug use only!
  */
-void vga_state_debug_screenshot(const char *filename) {
+void vga_state_debug_screenshot(const path *filename) {
     unsigned char img[256];
     for(int i = 0; i < 256; i++) {
         img[i] = i;

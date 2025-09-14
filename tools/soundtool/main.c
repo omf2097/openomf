@@ -86,10 +86,13 @@ int main(int argc, char *argv[]) {
         goto exit_0;
     }
 
+    path input_filename;
+    path_from_c(&input_filename, file->filename[0]);
+
     // Open sounds.dat
     sd_sound_file sf;
     sd_sounds_create(&sf);
-    retcode = sd_sounds_load(&sf, file->filename[0]);
+    retcode = sd_sounds_load(&sf, &input_filename);
     if(retcode) {
         printf("Error %d: %s\n", retcode, sd_get_error(retcode));
         goto exit_1;
@@ -155,16 +158,20 @@ int main(int argc, char *argv[]) {
                 SDL_CloseAudioDevice(dev);
             }
         } else if(import->count > 0) {
-            if(sd_sound_from_au(&sf, sound_id, import->filename[0]) != SD_SUCCESS) {
-                printf("Importing sample %d from file %s failed.\n", sound_id, import->filename[0]);
+            path import_filename;
+            path_from_c(&import_filename, import->filename[0]);
+            if(sd_sound_from_au(&sf, sound_id, &import_filename) != SD_SUCCESS) {
+                printf("Importing sample %d from file %s failed.\n", sound_id, path_c(&import_filename));
             } else {
-                printf("Importing sample %d from file %s succeeded.\n", sound_id, import->filename[0]);
+                printf("Importing sample %d from file %s succeeded.\n", sound_id, path_c(&import_filename));
             }
         } else if(export->count > 0) {
-            if(sd_sound_to_au(&sf, sound_id, export->filename[0]) != SD_SUCCESS) {
-                printf("Exporting sample %d to file %s failed.\n", sound_id, export->filename[0]);
+            path export_filename;
+            path_from_c(&export_filename, export->filename[0]);
+            if(sd_sound_to_au(&sf, sound_id, &export_filename) != SD_SUCCESS) {
+                printf("Exporting sample %d to file %s failed.\n", sound_id, path_c(&export_filename));
             } else {
-                printf("Exporting sample %d to file %s succeeded.\n", sound_id, export->filename[0]);
+                printf("Exporting sample %d to file %s succeeded.\n", sound_id, path_c(&export_filename));
             }
         } else {
             printf("Selected sample %d\n", sound_id);
@@ -190,7 +197,9 @@ int main(int argc, char *argv[]) {
     }
 
     if(output->count > 0) {
-        if(sd_sounds_save(&sf, output->filename[0]) != SD_SUCCESS) {
+        path output_filename;
+        path_from_c(&output_filename, output->filename[0]);
+        if(sd_sounds_save(&sf, &output_filename) != SD_SUCCESS) {
             printf("Saving soundfile to %s failed.\n", output->filename[0]);
         }
     }

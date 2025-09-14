@@ -48,7 +48,7 @@ static void read_png_data(unsigned char *dst, png_structp png_ptr, png_infop inf
     png_free(png_ptr, row_pointers);
 }
 
-bool read_paletted_png(const char *filename, unsigned char *dst) {
+bool read_paletted_png(const path *filename, unsigned char *dst) {
     assert(filename != NULL);
     assert(dst != NULL);
 
@@ -56,7 +56,7 @@ bool read_paletted_png(const char *filename, unsigned char *dst) {
     png_structp png_ptr = NULL;
     png_infop info_ptr = NULL;
 
-    if((handle = open_and_check(filename)) == NULL) {
+    if((handle = open_and_check(path_c(filename))) == NULL) {
         log_error("Unable to read PNG file: Could not open file for reading");
         return false;
     }

@@ -43,7 +43,7 @@ const surface *font_get_surface(const font *font, char ch) {
     return vector_get(&font->surfaces, code);
 }
 
-static int font_load(font *font, const char *filename, unsigned int size) {
+static int font_load(font *font, const path *filename, unsigned int size) {
     sd_vga_image img;
     sd_font sdfont;
     int pixsize;
@@ -90,7 +90,7 @@ static int font_load(font *font, const char *filename, unsigned int size) {
     return 0;
 }
 
-static int pcx_font_load(font *font, const char *filename, int8_t palette_offset) {
+static int pcx_font_load(font *font, const path *filename, int8_t palette_offset) {
     sd_vga_image img;
     pcx_font pcx_font;
     int pixsize;
@@ -132,7 +132,7 @@ bool fonts_init(void) {
 
     // Load small font
     filename = get_resource_filename("CHARSMAL.DAT");
-    if(font_load(&font_small, path_c(&filename), FONT_SMALL)) {
+    if(font_load(&font_small, &filename, FONT_SMALL)) {
         log_error("Unable to load font file '%s'!", filename);
         goto error_4;
     }
@@ -140,7 +140,7 @@ bool fonts_init(void) {
 
     // Load big font
     filename = get_resource_filename("GRAPHCHR.DAT");
-    if(font_load(&font_large, path_c(&filename), FONT_BIG)) {
+    if(font_load(&font_large, &filename, FONT_BIG)) {
         log_error("Unable to load font file '%s'!", path_c(&filename));
         goto error_3;
     }
@@ -148,7 +148,7 @@ bool fonts_init(void) {
 
     // Load big net font
     filename = get_resource_filename("NETFONT1.PCX");
-    if(pcx_font_load(&font_net1, path_c(&filename), 3)) {
+    if(pcx_font_load(&font_net1, &filename, 3)) {
         log_error("Unable to load font file '%s'!", path_c(&filename));
         goto error_2;
     }
@@ -156,7 +156,7 @@ bool fonts_init(void) {
 
     // Load small net font
     filename = get_resource_filename("NETFONT2.PCX");
-    if(pcx_font_load(&font_net2, path_c(&filename), 16)) {
+    if(pcx_font_load(&font_net2, &filename, 16)) {
         log_error("Unable to load font file '%s'!", path_c(&filename));
         goto error_1;
     }

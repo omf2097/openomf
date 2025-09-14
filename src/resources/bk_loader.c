@@ -2,7 +2,7 @@
 #include "formats/bk.h"
 #include "formats/error.h"
 
-int load_bk_file(bk *b, char const *filename) {
+int load_bk_file(bk *b, const path *filename) {
     // Load up BK file from libSD
     sd_bk_file tmp;
     if(sd_bk_create(&tmp) != SD_SUCCESS) {

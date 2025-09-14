@@ -1,5 +1,4 @@
 #include <errno.h>
-#include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -8,7 +7,6 @@
 #include "formats/internal/reader.h"
 #include "utils/allocator.h"
 #include "utils/c_string_util.h"
-#include "utils/scandir.h"
 
 struct sd_reader {
     FILE *handle;
@@ -16,19 +14,11 @@ struct sd_reader {
     int sd_errno;
 };
 
-sd_reader *sd_reader_open(const char *file) {
-#if !defined(_WIN32) && !defined(WIN32)
-    char path_buf[256];
-    strncpy_or_abort(path_buf, file, sizeof(path_buf));
-    if(!scan_directory_for_file(path_buf, sizeof(path_buf))) {
-        return NULL;
-    }
-    file = path_buf;
-#endif
+sd_reader *sd_reader_open(const path *filename) {
     sd_reader *reader = omf_calloc(1, sizeof(sd_reader));
     reader->sd_errno = 0;
     // Attempt to open file (note: Binary mode!)
-    reader->handle = fopen(file, "rb");
+    reader->handle = path_fopen(filename, "rb");
     if(!reader->handle) {
         omf_free(reader);
         return NULL;

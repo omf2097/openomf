@@ -17,7 +17,7 @@ bool sounds_loader_init(void) {
     if(sd_sounds_create(sound_data) != SD_SUCCESS) {
         goto error_0;
     }
-    if(sd_sounds_load(sound_data, path_c(&filename))) {
+    if(sd_sounds_load(sound_data, &filename)) {
         log_error("Unable to load sounds file '%s'!", path_c(&filename));
         goto error_1;
     }

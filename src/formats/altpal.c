@@ -20,7 +20,7 @@ int altpals_init(void) {
     if(altpal_create(altpals) != SD_SUCCESS) {
         goto error_0;
     }
-    if(altpals_load(altpals, path_c(&filename)) != SD_SUCCESS) {
+    if(altpals_load(altpals, &filename) != SD_SUCCESS) {
         log_error("Unable to load altpals file '%s'!", path_c(&filename));
         goto error_1;
     }
@@ -49,7 +49,7 @@ int altpal_create(altpal_file *ap) {
     return SD_SUCCESS;
 }
 
-int altpals_load(altpal_file *ap, const char *filename) {
+int altpals_load(altpal_file *ap, const path *filename) {
     sd_reader *r = sd_reader_open(filename);
     if(!r) {
         return SD_FILE_OPEN_ERROR;
@@ -64,7 +64,7 @@ int altpals_load(altpal_file *ap, const char *filename) {
     return SD_SUCCESS;
 }
 
-int altpals_save(altpal_file *ap, const char *filename) {
+int altpals_save(altpal_file *ap, const path *filename) {
     sd_writer *w = sd_writer_open(filename);
     if(!w) {
         return SD_FILE_OPEN_ERROR;

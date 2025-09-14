@@ -9,6 +9,7 @@
 
 #ifndef SD_RGBA_IMAGE_H
 #define SD_RGBA_IMAGE_H
+#include "utils/path.h"
 
 /*! \brief RGBA image
  *
@@ -96,7 +97,7 @@ int sd_rgba_image_blit(sd_rgba_image *dst, const sd_rgba_image *src, int x, int 
  * \param img Source image pointer
  * \param filename Destination filename
  */
-int sd_rgba_image_to_png(const sd_rgba_image *img, const char *filename);
+int sd_rgba_image_to_png(const sd_rgba_image *img, const path *filename);
 
 /*! \brief Free RGBA image structure
  *

@@ -196,9 +196,13 @@ int main(int argc, char *argv[]) {
         goto exit_0;
     }
 
+    path file_a, file_b;
+    path_from_c(&file_a, afile->filename[0]);
+    path_from_c(&file_b, bfile->filename[0]);
+
     // Load A file
     sd_af_create(&af_a);
-    ret = sd_af_load(&af_a, afile->filename[0]);
+    ret = sd_af_load(&af_a, &file_a);
     if(ret != SD_SUCCESS) {
         printf("Unable to load AF file! [%d] %s.\n", ret, sd_get_error(ret));
         goto exit_1;
@@ -206,7 +210,7 @@ int main(int argc, char *argv[]) {
 
     // Load B file
     sd_af_create(&af_b);
-    ret = sd_af_load(&af_b, bfile->filename[0]);
+    ret = sd_af_load(&af_b, &file_b);
     if(ret != SD_SUCCESS) {
         printf("Unable to load AF file! [%d] %s.\n", ret, sd_get_error(ret));
         goto exit_2;

@@ -44,7 +44,7 @@ unsigned char palette_resolve_color(uint8_t r, uint8_t g, uint8_t b, const vga_p
     return 0;
 }
 
-int palette_to_gimp_palette(const vga_palette *pal, const char *filename) {
+int palette_to_gimp_palette(const vga_palette *pal, const path *filename) {
     sd_writer *w;
     unsigned char r, g, b;
     int i;
@@ -71,7 +71,7 @@ int palette_to_gimp_palette(const vga_palette *pal, const char *filename) {
     return SD_SUCCESS;
 }
 
-int palette_from_gimp_palette(vga_palette *pal, const char *filename) {
+int palette_from_gimp_palette(vga_palette *pal, const path *filename) {
     sd_reader *rd;
     char tmp[128];
     int i;

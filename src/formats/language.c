@@ -30,7 +30,7 @@ void sd_language_free(sd_language *language) {
     }
 }
 
-int sd_language_load(sd_language *language, const char *filename) {
+int sd_language_load(sd_language *language, const path *filename) {
     if(language == NULL || filename == NULL) {
         return SD_INVALID_INPUT;
     }
@@ -119,7 +119,7 @@ void sd_language_append(sd_language *language, const char *description, const ch
     language->strings[language->count - 1].data = omf_strdup(data);
 }
 
-int sd_language_save(sd_language *language, const char *filename) {
+int sd_language_save(sd_language *language, const path *filename) {
     if(language == NULL || filename == NULL) {
         return SD_INVALID_INPUT;
     }

@@ -80,7 +80,7 @@ int sd_chr_from_trn(sd_chr_file *chr, sd_tournament_file *trn, sd_pilot *pilot);
  * \param chr CHR struct pointer.
  * \param filename Name of the CHR file to load from.
  */
-int sd_chr_load(sd_chr_file *chr, const char *filename);
+int sd_chr_load(sd_chr_file *chr, const path *filename);
 
 /*! \brief Save .CHR file
  *
@@ -93,7 +93,7 @@ int sd_chr_load(sd_chr_file *chr, const char *filename);
  * \param chr CHR struct pointer.
  * \param filename Name of the CHR file to save into.
  */
-int sd_chr_save(sd_chr_file *chr, const char *filename);
+int sd_chr_save(sd_chr_file *chr, const path *filename);
 
 /*! \brief Get the sanitized CHR filename out of pilot name.
  *

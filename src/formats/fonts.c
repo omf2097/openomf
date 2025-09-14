@@ -16,7 +16,7 @@ int sd_font_create(sd_font *font) {
 void sd_font_free(sd_font *font) {
 }
 
-int sd_font_load(sd_font *font, const char *file, unsigned int font_h) {
+int sd_font_load(sd_font *font, const path *file, unsigned int font_h) {
     if(font == NULL || file == NULL) {
         return SD_INVALID_INPUT;
     }
@@ -39,7 +39,7 @@ int sd_font_load(sd_font *font, const char *file, unsigned int font_h) {
     return SD_SUCCESS;
 }
 
-int sd_font_save(const sd_font *font, const char *file) {
+int sd_font_save(const sd_font *font, const path *file) {
     if(font == NULL || file == NULL) {
         return SD_INVALID_INPUT;
     }

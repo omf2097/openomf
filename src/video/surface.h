@@ -99,6 +99,6 @@ void surface_convert_har_to_grayscale(surface *sur, uint8_t brightness);
  * @param filename Target filename to write
  * @return True on success, false on any failure.
  */
-bool surface_write_png(const surface *sur, const vga_palette *pal, const char *filename);
+bool surface_write_png(const surface *sur, const vga_palette *pal, const path *filename);
 
 #endif // SURFACE_H

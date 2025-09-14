@@ -360,9 +360,5 @@ bool path_glob(const path *dir, list *results, const char *pattern) {
 }
 
 FILE *path_fopen(const path *file, const char *mode) {
-#if defined(_WIN32) || defined(WIN32)
     return fopen(file->buf, mode);
-#else
-    return fopen(file->buf, mode);
-#endif
 }

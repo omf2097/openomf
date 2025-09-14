@@ -10,6 +10,7 @@
 #ifndef SD_SOUNDS_H
 #define SD_SOUNDS_H
 
+#include "utils/path.h"
 #include <inttypes.h>
 
 #define SD_SOUNDS_MAX 299 ///< Maximum amount of sounds allowed in the SOUNDS.DAT file.
@@ -82,7 +83,7 @@ const sd_sound *sd_sounds_get(const sd_sound_file *sf, int id);
  * \param num Sound ID to export to
  * \param filename Destination filename
  */
-int sd_sound_to_au(const sd_sound_file *sf, int num, const char *filename);
+int sd_sound_to_au(const sd_sound_file *sf, int num, const path *filename);
 
 /*! \brief Load a sound from an AU file.
  *
@@ -98,7 +99,7 @@ int sd_sound_to_au(const sd_sound_file *sf, int num, const char *filename);
  * \param num Sound ID to import
  * \param filename Source filename
  */
-int sd_sound_from_au(sd_sound_file *sf, int num, const char *filename);
+int sd_sound_from_au(sd_sound_file *sf, int num, const path *filename);
 
 /*! \brief Load sounds file
  *
@@ -113,7 +114,7 @@ int sd_sound_from_au(sd_sound_file *sf, int num, const char *filename);
  * \param sf Sounds struct pointer.
  * \param filename Name of the sounds file to load from.
  */
-int sd_sounds_load(sd_sound_file *sf, const char *filename);
+int sd_sounds_load(sd_sound_file *sf, const path *filename);
 
 /*! \brief Save sounds file
  *
@@ -126,6 +127,6 @@ int sd_sounds_load(sd_sound_file *sf, const char *filename);
  * \param sf Sounds struct pointer.
  * \param filename Name of the sounds file to save into.
  */
-int sd_sounds_save(const sd_sound_file *sf, const char *filename);
+int sd_sounds_save(const sd_sound_file *sf, const path *filename);
 
 #endif // SD_SOUNDS_H

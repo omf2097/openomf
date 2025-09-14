@@ -43,7 +43,7 @@ unsigned char palette_resolve_color(uint8_t r, uint8_t g, uint8_t b, const vga_p
  * \param pal Palette to export.
  * \param filename Name of the file to export to.
  */
-int palette_to_gimp_palette(const vga_palette *pal, const char *filename);
+int palette_to_gimp_palette(const vga_palette *pal, const path *filename);
 
 /*! \brief Imports palette from GIMP palette file.
  *
@@ -58,7 +58,7 @@ int palette_to_gimp_palette(const vga_palette *pal, const char *filename);
  * \param palette Palette to import to.
  * \param filename Name of the file to import from.
  */
-int palette_from_gimp_palette(vga_palette *pal, const char *filename);
+int palette_from_gimp_palette(vga_palette *pal, const path *filename);
 
 void palette_set_menu_colors(void);
 void palette_pulse_menu_colors(int tick);

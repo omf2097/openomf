@@ -14,7 +14,7 @@ int load_af_file(af *a, int id) {
     if(sd_af_create(&tmp) != SD_SUCCESS) {
         return 1;
     }
-    if(sd_af_load(&tmp, path_c(&filename)) != SD_SUCCESS) {
+    if(sd_af_load(&tmp, &filename) != SD_SUCCESS) {
         sd_af_free(&tmp);
         return 1;
     }

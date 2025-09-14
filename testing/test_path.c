@@ -287,7 +287,6 @@ static path get_test_dir(void) {
         abort();
     }
     path_from_c(&result, TESTS_ROOT_DIR);
-    printf("%s\n", path_c(&result));
     path_append(&result, "path_tests");
     return result;
 }

@@ -37,7 +37,7 @@ int portrait_load(sd_sprite *s, vga_palette *pal, int pic_id, int pilot_id) {
     // Load PIC file and make a surface
     sd_pic_file pics;
     sd_pic_create(&pics);
-    int ret = sd_pic_load(&pics, path_c(&filename));
+    int ret = sd_pic_load(&pics, &filename);
     if(ret != SD_SUCCESS) {
         log_error("Could not load PIC file %s: %s", path_c(&filename), sd_get_error(ret));
         return ret;

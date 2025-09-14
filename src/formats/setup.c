@@ -17,7 +17,7 @@ void sd_setup_free(sd_setup_file *setup) {
         return;
 }
 
-int sd_setup_load(sd_setup_file *setup, const char *file) {
+int sd_setup_load(sd_setup_file *setup, const path *file) {
     int ret = SD_FILE_PARSE_ERROR;
     if(setup == NULL || file == NULL) {
         return SD_INVALID_INPUT;

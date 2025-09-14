@@ -50,7 +50,7 @@ void sd_rec_free(sd_rec_file *rec) {
     memset(rec, 0, sizeof(sd_rec_file));
 }
 
-int sd_rec_load(sd_rec_file *rec, const char *file) {
+int sd_rec_load(sd_rec_file *rec, const path *file) {
     int ret = SD_FILE_PARSE_ERROR;
     if(rec == NULL || file == NULL) {
         return SD_INVALID_INPUT;
@@ -190,7 +190,7 @@ error_0:
     return ret;
 }
 
-int sd_rec_save(sd_rec_file *rec, const char *file) {
+int sd_rec_save(sd_rec_file *rec, const path *file) {
     sd_writer *w;
 
     if(rec == NULL || file == NULL) {

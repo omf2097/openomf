@@ -103,7 +103,7 @@ void sd_af_postprocess(sd_af_file *af) {
     }
 }
 
-int sd_af_load(sd_af_file *af, const char *filename) {
+int sd_af_load(sd_af_file *af, const path *filename) {
     int ret = SD_SUCCESS;
     uint8_t moveno = 0;
     sd_reader *r;
@@ -155,7 +155,7 @@ cleanup:
     return ret;
 }
 
-int sd_af_save(const sd_af_file *af, const char *filename) {
+int sd_af_save(const sd_af_file *af, const path *filename) {
     int ret;
     sd_writer *w;
 

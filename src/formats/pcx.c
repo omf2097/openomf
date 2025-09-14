@@ -23,7 +23,7 @@ static unsigned decode_next_bytes(char *dest, sd_reader *reader) {
     return repeat;
 }
 
-int pcx_load(pcx_file *pcx, const char *filename) {
+int pcx_load(pcx_file *pcx, const path *filename) {
     memset(pcx, 0, sizeof(*pcx));
 
     sd_reader *reader = sd_reader_open(filename);
@@ -93,7 +93,7 @@ int pcx_load(pcx_file *pcx, const char *filename) {
     return SD_SUCCESS;
 }
 
-int pcx_load_font(pcx_font *font, const char *filename) {
+int pcx_load_font(pcx_font *font, const path *filename) {
     memset(font, 0, sizeof(pcx_font));
     int ret = SD_SUCCESS;
     if((ret = pcx_load(&font->pcx, filename)) != SD_SUCCESS) {
