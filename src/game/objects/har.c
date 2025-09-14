@@ -801,18 +801,18 @@ void har_move(object *obj) {
 void apply_stun_damage(object *obj, int stun_amount) {
     har *h = object_get_userdata(obj);
 
-    if(h->state == STATE_RECOIL && object_is_airborne(obj)) { // Less stun on rehit and throws
-        stun_amount /= 2;
-    }
-    stun_amount = (stun_amount * 2 + 12) * 256;
-    log_debug("applying %d endurance damage to %d", stun_amount, h->endurance);
-    h->endurance += stun_amount;
-
-    if(h->endurance < 1) {
+    if(h->endurance < 0) {
         if(h->state == STATE_STUNNED) {
             // refill endurance
             h->endurance = 0;
         }
+    } else {
+        if(h->state == STATE_RECOIL && object_is_airborne(obj)) { // Less stun on rehit and throws
+            stun_amount /= 2;
+        }
+        stun_amount = (stun_amount * 2 + 12) * 256;
+        log_debug("applying %d endurance damage to %d", stun_amount, h->endurance);
+        h->endurance += stun_amount;
     }
 }
 
