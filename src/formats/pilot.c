@@ -4,7 +4,7 @@
 #include "formats/error.h"
 #include "formats/pic.h"
 #include "formats/pilot.h"
-#include "resources/pathmanager.h"
+#include "resources/resource_files.h"
 #include "utils/allocator.h"
 #include "utils/c_string_util.h"
 #include "utils/log.h"
@@ -340,17 +340,14 @@ void sd_pilot_set_player_color(sd_pilot *pilot, player_color index, uint8_t colo
     if(color < 16) {
         palette_load_altpal_player_color(&pilot->palette, 0, color, index);
     } else if(color == 16) {
-        const char *players_filename = pm_get_resource_path(PIC_PLAYERS);
-        if(!players_filename)
-            return;
-        log_debug("trying to load players.pic from %s", players_filename);
-        // Load PIC file and make a surface
+        const path players_filename = get_resource_filename("PLAYERS.PIC");
+        // log_debug("trying to load players.pic from %s", path_c(&players_filename));
+        //  Load PIC file and make a surface
         sd_pic_file players;
         sd_pic_create(&players);
-        int ret = sd_pic_load(&players, players_filename);
+        int ret = sd_pic_load(&players, path_c(&players_filename));
         if(ret == SD_SUCCESS) {
             // Load player palette from PLAYERS.PIC
-            log_debug("loading %d from players.pic", pilot->photo_id);
             const sd_pic_photo *photo = sd_pic_get(&players, pilot->photo_id);
             if(photo) {
                 memcpy(&pilot->palette.colors[index * 0x10], &photo->pal.colors[index * 0x10],

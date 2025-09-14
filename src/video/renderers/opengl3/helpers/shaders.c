@@ -1,5 +1,5 @@
 #include "video/renderers/opengl3/helpers/shaders.h"
-#include "resources/pathmanager.h"
+#include "resources/resource_files.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
 #include "utils/str.h"
@@ -58,12 +58,11 @@ static void print_program_log(const GLuint program) {
 }
 
 static bool load_shader(GLuint program_id, GLenum shader_type, const char *shader_file) {
-    str shader_path;
     str shader_source;
 
-    str_from_format(&shader_path, "%s%s", pm_get_local_path(SHADER_PATH), shader_file);
-    if(!str_from_file(&shader_source, str_c(&shader_path))) {
-        log_error("Failed to load shader from %s", str_c(&shader_path));
+    const path shader_path = get_shader_filename(shader_file);
+    if(!str_from_file(&shader_source, path_c(&shader_path))) {
+        log_error("Failed to load shader from %s", path_c(&shader_path));
         return false;
     }
     const char *c_str = str_c(&shader_source);
@@ -73,7 +72,6 @@ static bool load_shader(GLuint program_id, GLenum shader_type, const char *shade
     glCompileShader(shader);
 
     str_free(&shader_source);
-    str_free(&shader_path);
 
     GLint status = GL_FALSE;
     glGetShaderiv(shader, GL_COMPILE_STATUS, &status);

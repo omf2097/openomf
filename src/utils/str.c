@@ -645,3 +645,78 @@ bool str_to_int(const str *string, int *result) {
     }
     return got;
 }
+
+bool str_starts_with(const str *src, const char *prefix) {
+    const size_t prefix_len = strlen(prefix);
+    if(str_size(src) < prefix_len)
+        return false;
+    const char *ptr = str_c(src);
+    return memcmp(ptr, prefix, prefix_len) == 0;
+}
+
+bool str_ends_with(const str *src, const char *suffix) {
+    const size_t suffix_len = strlen(suffix);
+    const size_t src_len = str_size(src);
+    if(src_len < suffix_len)
+        return false;
+    const char *ptr = str_c(src);
+    return memcmp(ptr + (src_len - suffix_len), suffix, suffix_len) == 0;
+}
+
+bool str_match(const str *test, const char *pattern) {
+    const char *string = str_c(test);
+    while(*string != '\0' && *pattern != '\0') {
+        if(*string == *pattern) {
+            string++;
+            pattern++;
+            continue;
+        }
+        if(*pattern == '*') {
+            if(*(pattern + 1) == '\0')
+                return true;
+            if(strcmp(string, pattern + 1) == 0) {
+                pattern++;
+            } else {
+                string++;
+            }
+            continue;
+        }
+        return false;
+    }
+    if(*pattern == '*')
+        pattern++;
+    return *string == '\0' && *pattern == '\0';
+}
+
+int strcmp_i(char const *s1, char const *s2) {
+    while(*s1 != '\0' && *s2 != '\0' && tolower(*s1) == tolower(*s2)) {
+        s1++;
+        s2++;
+    }
+    return tolower(*s1) - tolower(*s2);
+}
+
+bool str_imatch(const str *test, const char *pattern) {
+    const char *string = str_c(test);
+    while(*string != '\0' && *pattern != '\0') {
+        if(tolower(*string) == tolower(*pattern)) {
+            string++;
+            pattern++;
+            continue;
+        }
+        if(*pattern == '*') {
+            if(*(pattern + 1) == '\0')
+                return true;
+            if(strcmp_i(string, pattern + 1) == 0) {
+                pattern++;
+            } else {
+                string++;
+            }
+            continue;
+        }
+        return false;
+    }
+    if(*pattern == '*')
+        pattern++;
+    return *string == '\0' && *pattern == '\0';
+}
