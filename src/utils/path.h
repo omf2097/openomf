@@ -153,7 +153,7 @@ bool path_rmdir(const path *p);
  * Find files from the path using a glob pattern
  * Note! Only a single '*' supported!
  * @param dir Directory path to scan
- * @param results Result list. Note! This must be pre-allocated using list_create() !
+ * @param results Result list. This must be preallocated, and results are appended to an existing list.
  * @param pattern Pattern to search for, e.g. '*.TXT'.
  * @return True if operation succeeded, false if not.
  */
