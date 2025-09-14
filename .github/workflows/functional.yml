@@ -46,9 +46,6 @@ jobs:
     - name: Extract openomf assets
       run: unzip -j openomf-assets.zip -d build-test/resources
 
-    - name: Copy new assets
-      run: cp resources/openomf.bk build-test/resources/ && ls -la build-test/resources
-
     - name: Run rec tests
       run: ./run_rectests.sh build-test
 
