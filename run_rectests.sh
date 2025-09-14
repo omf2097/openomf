@@ -70,6 +70,7 @@ tests=(
     "Katana cannot infinitely heel stomp to the moon with rehit mode:SPACE_JUMP.REC"
     "Katana can turn around after heel stomp connects:KATANA_STOMP_TURN.REC"
     "Nova can combo a stunned HAR from belly flop and enemy continues to be stunned:NOVA_FLOP_STUN_COMBO.REC"
+    "Rehit juggles are not allowed against stunned opponents:NO_STUN_JUGGLE.REC"
     "Katana enters winpose after landing from heel stomp:KATANA_WINPOSE.REC"
 )
 
