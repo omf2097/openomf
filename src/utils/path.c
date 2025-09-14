@@ -126,8 +126,7 @@ bool path_is_set(const path *path) {
 
 bool path_is_directory(const path *p) {
 #if defined(_WIN32) || defined(WIN32)
-    path tmp = convert_to_windows_slashes(p);
-    return PathIsDirectoryA(tmp.buf) == FILE_ATTRIBUTE_DIRECTORY;
+    return PathIsDirectoryA(p->buf) == FILE_ATTRIBUTE_DIRECTORY;
 #else
     struct stat sb;
     if(stat(p->buf, &sb) != 0)
@@ -138,8 +137,7 @@ bool path_is_directory(const path *p) {
 
 bool path_is_file(const path *p) {
 #if defined(_WIN32) || defined(WIN32)
-    path tmp = convert_to_windows_slashes(p);
-    DWORD attrib = GetFileAttributesA(tmp.buf);
+    DWORD attrib = GetFileAttributesA(p->buf);
     return (attrib & FILE_ATTRIBUTE_DIRECTORY) == 0;
 #else
     struct stat sb;
@@ -151,8 +149,7 @@ bool path_is_file(const path *p) {
 
 bool path_exists(const path *p) {
 #if defined(_WIN32) || defined(WIN32)
-    path tmp = convert_to_windows_slashes(p);
-    return PathFileExistsA(tmp.buf) == TRUE;
+    return PathFileExistsA(p->buf) == TRUE;
 #else
     return access(p->buf, F_OK) == 0;
 #endif
@@ -270,8 +267,7 @@ void path_filename(const path *path, str *dst) {
 
 bool path_unlink(const path *p) {
 #if defined(_WIN32) || defined(WIN32)
-    const path tmp = convert_to_windows_slashes(p);
-    return DeleteFile(tmp.buf) != 0;
+    return DeleteFile(p->buf) != 0;
 #else
     return unlink(p->buf) == 0;
 #endif
@@ -279,8 +275,7 @@ bool path_unlink(const path *p) {
 
 bool path_mkdir(const path *p) {
 #if defined(_WIN32) || defined(WIN32)
-    const path tmp = convert_to_windows_slashes(p);
-    return SHCreateDirectoryEx(NULL, tmp.buf, NULL) == ERROR_SUCCESS;
+    return SHCreateDirectoryEx(NULL, p->buf, NULL) == ERROR_SUCCESS;
 #else
     return mkdir(p->buf, 0755) == 0;
 #endif
@@ -288,8 +283,7 @@ bool path_mkdir(const path *p) {
 
 bool path_rmdir(const path *p) {
 #if defined(_WIN32) || defined(WIN32)
-    const path tmp = convert_to_windows_slashes(p);
-    return RemoveDirectoryA(tmp.buf);
+    return RemoveDirectoryA(p->buf);
 #else
     return rmdir(p->buf) == 0;
 #endif
@@ -367,9 +361,7 @@ bool path_glob(const path *dir, list *results, const char *pattern) {
 
 FILE *path_fopen(const path *file, const char *mode) {
 #if defined(_WIN32) || defined(WIN32)
-    path tmp = *file;
-    convert_to_windows_slashes(&tmp);
-    return fopen(tmp.buf, mode);
+    return fopen(file->buf, mode);
 #else
     return fopen(file->buf, mode);
 #endif
