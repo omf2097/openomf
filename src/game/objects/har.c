@@ -1870,7 +1870,11 @@ void har_tick(object *obj) {
         if(h->throw_duration == 0) {
             // we've already called har_take_damage, so just apply the damage and check for defeat
             h->health -= h->last_damage_value;
-            apply_stun_damage(obj, h->last_stun_value);
+            if(h->endurance < 0) {
+                h->endurance = 0;
+            } else {
+                apply_stun_damage(obj, h->last_stun_value);
+            }
 
             if(h->health <= 0) {
                 // Take a screencap of enemy har
