@@ -128,7 +128,7 @@ bool path_exists(const path *p);
 bool path_touch(const path *p);
 
 /**
- * Delete a file.
+ * Delete a file. For removing a directory, see path_rmdir().
  * @param p File path to delete
  * @return True if operation succeeded, false if not.
  */
@@ -142,7 +142,7 @@ bool path_unlink(const path *p);
 bool path_mkdir(const path *p);
 
 /**
- * Delete a directory.
+ * Delete a directory. For removing a file, see path_unlink(). Directory must be empty!
  * @param p Directory path to delete
  * @return True if operation succeeded, false if not.
  */
