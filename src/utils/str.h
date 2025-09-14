@@ -331,14 +331,6 @@ const char *str_c(const str *src);
 void str_split(vector *dst, const str *src, char ch);
 
 /**
- * Join string pieces into one
- * @param dst Destination string to be filled with the joined pieces (Do not preallocate)
- * @param src Source vector full of initialized str's
- * @param ch Join point character
- */
-void str_join(str *dst, const vector *src, char ch);
-
-/**
  * Split a C string into pieces
  * @param dst Destination vector that will be filled with string objects (do not preallocate)
  * @param src Source string to split

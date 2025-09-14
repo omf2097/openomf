@@ -614,18 +614,6 @@ void str_split(vector *dst, const str *src, char ch) {
     }
 }
 
-void str_join(str *dst, const vector *src, char ch) {
-    str_create(dst);
-    str *p;
-    iterator it;
-    vector_iter_begin(src, &it);
-    foreach(it, p) {
-        str_append(dst, p);
-        str_append_char(dst, ch);
-    }
-    str_truncate(dst, str_size(dst) - 1);
-}
-
 void str_split_c(vector *dst, const char *src, char ch) {
     str tmp;
     str_from_c(&tmp, src);
