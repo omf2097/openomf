@@ -1694,7 +1694,23 @@ void har_collide_with_hazard(object *o_har, object *o_hzd) {
     }
 }
 
+bool is_har_throwing(object *o_har) {
+    har *h = object_get_userdata(o_har);
+    af_move *move = af_get_move(h->af_data, o_har->cur_animation->id);
+    if(move->category != CAT_CLOSE) {
+        return false;
+    }
+    game_player *other_player = game_state_get_player(o_har->gs, !h->player_id);
+    object *other_har = game_state_find_object(o_har->gs, other_player->har_obj_id);
+    har *e_h = object_get_userdata(other_har);
+    return e_h->throw_duration > 0;
+}
+
 void har_collide(object *obj_a, object *obj_b) {
+    if(is_har_throwing(obj_a)) {
+        return;
+    }
+
     // Check if this is projectile to har collision
     if(object_get_layers(obj_a) & LAYER_PROJECTILE) {
         har_collide_with_projectile(obj_b, obj_a);
