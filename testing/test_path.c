@@ -441,6 +441,17 @@ void test_path_append(void) {
     CU_ASSERT_STRING_EQUAL(p.buf, "/home/openomf/.local/share/test.ogg");
 }
 
+void test_path_resolve(void) {
+    const path base = get_test_dir();
+
+    path p = base;
+    path_append(&p, "../");
+    CU_ASSERT(path_resolve(&p) == true);
+    CU_ASSERT(path_is_directory(&p) == true);
+    path_append(&p, "path_tests");
+    CU_ASSERT_STRING_EQUAL(p.buf, base.buf);
+}
+
 void path_test_suite(CU_pSuite suite) {
     ADD_TEST("test path_from_c", test_path_from_c);
     ADD_TEST("test path_from_parts", test_path_from_parts);
@@ -461,4 +472,5 @@ void path_test_suite(CU_pSuite suite) {
     ADD_TEST("test path_set_ext", test_path_set_ext);
     ADD_TEST("test path_dossify_filename", test_path_dossify_filename);
     ADD_TEST("test path_append", test_path_append);
+    ADD_TEST("test path_resolve", test_path_resolve);
 }

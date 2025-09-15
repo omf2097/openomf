@@ -116,6 +116,27 @@ const char *path_c(const path *path) {
     return path->buf;
 }
 
+bool path_resolve(path *p) {
+#if defined(_WIN32) || defined(WIN32)
+    path tmp;
+    DWORD ret = GetFullPathNameA(p->buf, strlen(p->buf), tmp.buf, NULL);
+    if(ret > 0 && ret < PATH_MAX_LENGTH) {
+        *p = tmp;
+        normalize_slashes(p);
+        return true;
+    }
+    return false;
+#else
+    char *resolved = realpath(p->buf, NULL);
+    if(resolved == NULL) {
+        return false;
+    }
+    strncpy_or_abort(p->buf, resolved, PATH_MAX_LENGTH);
+    free(resolved);
+    return true;
+#endif
+}
+
 void path_clear(path *path) {
     memset(path->buf, 0, PATH_MAX_LENGTH);
 }

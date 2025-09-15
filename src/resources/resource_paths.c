@@ -1,4 +1,6 @@
 #include "resources/resource_paths.h"
+
+#include "utils/allocator.h"
 #include "utils/log.h"
 #include "utils/path.h"
 #include "utils/vector.h"
@@ -83,20 +85,29 @@ ok:
 
 static bool scan_potential_resource_dirs(path *result, const str *src, const char *find, const char *append) {
     str *slice;
-    path test;
+    path *base = omf_malloc(sizeof(path));
+    path *test = omf_malloc(sizeof(path));
     vector paths;
     iterator it;
 
     str_split(&paths, src, ':');
     vector_iter_begin(&paths, &it);
     foreach(it, slice) {
-        path_from_parts(&test, str_c(slice), find);
-        log_debug("Looking for resources in %s ...", path_c(&test));
-        if(path_is_file(&test)) {
-            path_from_parts(result, str_c(slice), append);
+        path_from_str(base, slice);
+        if(!path_resolve(base)) {
+            log_warn("Unable to resolve %s; does it exist?", path_c(base));
+            continue;
+        }
+        path_from_parts(test, path_c(base), find);
+        log_debug("Looking for resources in %s ...", path_c(test));
+        if(path_is_file(test)) {
+            path_from_parts(result, path_c(base), append);
             break;
         }
     }
+
+    omf_free(base);
+    omf_free(test);
     vector_free(&paths);
     return path_is_set(result);
 }
