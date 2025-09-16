@@ -107,7 +107,7 @@ sd_move *sd_af_get_move(sd_af_file *af, int index);
  * \param af AF struct pointer.
  * \param filename Name of the AF file.
  */
-int sd_af_load(sd_af_file *af, const char *filename);
+int sd_af_load(sd_af_file *af, const path *filename);
 
 /*! \brief Save AF file
  *
@@ -120,7 +120,7 @@ int sd_af_load(sd_af_file *af, const char *filename);
  * \param af AF struct pointer.
  * \param filename Name of the AF file
  */
-int sd_af_save(const sd_af_file *af, const char *filename);
+int sd_af_save(const sd_af_file *af, const path *filename);
 
 /*! \brief Free AF file structure
  *

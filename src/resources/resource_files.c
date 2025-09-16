@@ -21,6 +21,34 @@ path get_scores_filename(void) {
     return name;
 }
 
+path get_screenshot_filename(const char *timestamp) {
+    char name[64];
+    snprintf(name, 64, "screenshot_%s.png", timestamp);
+
+    path path = get_state_dir();
+    path_append(&path, "screenshot");
+    if(!path_exists(&path)) {
+        path_mkdir(&path);
+    }
+
+    path_append(&path, name);
+    return path;
+}
+
+path get_snapshot_rec_filename(const char *timestamp) {
+    char name[64];
+    snprintf(name, 64, "%s.rec", timestamp);
+
+    path path = get_state_dir();
+    path_append(&path, "rec");
+    if(!path_exists(&path)) {
+        path_mkdir(&path);
+    }
+
+    path_append(&path, name);
+    return path;
+}
+
 path get_save_directory(void) {
     path name = get_state_dir();
     path_append(&name, "save");

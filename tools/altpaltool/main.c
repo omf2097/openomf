@@ -71,12 +71,15 @@ int main(int argc, char *argv[]) {
         goto exit_0;
     }
 
+    path input_filename;
+    path_from_c(&input_filename, file->filename[0]);
+
     // Load file
     altpal_file alt;
     altpal_create(&alt);
-    int ret = altpals_load(&alt, file->filename[0]);
+    int ret = altpals_load(&alt, &input_filename);
     if(ret != SD_SUCCESS) {
-        printf("Unable to load altpals file %s: %s.\n", file->filename[0], sd_get_error(ret));
+        printf("Unable to load altpals file %s: %s.\n", path_c(&input_filename), sd_get_error(ret));
         goto exit_1;
     }
 
@@ -89,28 +92,34 @@ int main(int argc, char *argv[]) {
 
     // Check what to do
     if(export->count > 0) {
-        ret = palette_to_gimp_palette(&alt.palettes[pal_id], export->filename[0]);
+        path export_filename;
+        path_from_c(&export_filename, export->filename[0]);
+        ret = palette_to_gimp_palette(&alt.palettes[pal_id], &export_filename);
         if(ret == SD_SUCCESS) {
-            printf("Palette %d exported to file %s succesfully.\n", pal_id, export->filename[0]);
+            printf("Palette %d exported to file %s succesfully.\n", pal_id, path_c(&export_filename));
         } else {
-            printf("Error while attempting to save palette %d to file %s: %s", pal_id, export->filename[0],
+            printf("Error while attempting to save palette %d to file %s: %s", pal_id, path_c(&export_filename),
                    sd_get_error(ret));
         }
     } else if(import->count > 0) {
-        ret = palette_from_gimp_palette(&alt.palettes[pal_id], import->filename[0]);
+        path import_filename;
+        path_from_c(&import_filename, import->filename[0]);
+        ret = palette_from_gimp_palette(&alt.palettes[pal_id], &import_filename);
         if(ret == SD_SUCCESS) {
-            printf("Palette %d imported from file %s succesfully.\n", pal_id, import->filename[0]);
+            printf("Palette %d imported from file %s succesfully.\n", pal_id, path_c(&import_filename));
         } else {
-            printf("Error while attempting to load palette %d from file %s: %s", pal_id, import->filename[0],
+            printf("Error while attempting to load palette %d from file %s: %s", pal_id, path_c(&import_filename),
                    sd_get_error(ret));
         }
     }
 
     // Write output file
     if(output->count > 0) {
-        ret = altpals_save(&alt, output->filename[0]);
+        path output_filename;
+        path_from_c(&output_filename, output->filename[0]);
+        ret = altpals_save(&alt, &output_filename);
         if(ret != SD_SUCCESS) {
-            printf("Failed saving altpals file to %s: %s", output->filename[0], sd_get_error(ret));
+            printf("Failed saving altpals file to %s: %s", path_c(&output_filename), sd_get_error(ret));
         }
     }
 

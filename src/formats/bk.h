@@ -196,8 +196,8 @@ vga_palette *sd_bk_get_palette(const sd_bk_file *bk, int index);
  * \param bk BK struct pointer.
  * \param filename Name of the BK file to load from.
  */
-int sd_bk_load(sd_bk_file *bk, const char *filename);
-int sd_bk_load_from_pcx(sd_bk_file *bk, const char *filename);
+int sd_bk_load(sd_bk_file *bk, const path *filename);
+int sd_bk_load_from_pcx(sd_bk_file *bk, const path *filename);
 
 /*! \brief Save .BK file
  *
@@ -210,7 +210,7 @@ int sd_bk_load_from_pcx(sd_bk_file *bk, const char *filename);
  * \param bk BK struct pointer.
  * \param filename Name of the BK file to save into.
  */
-int sd_bk_save(const sd_bk_file *bk, const char *filename);
+int sd_bk_save(const sd_bk_file *bk, const path *filename);
 
 /*! \brief Free BK file structure
  *

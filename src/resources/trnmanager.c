@@ -5,10 +5,8 @@
 #include "resource_files.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
-#include "utils/scandir.h"
 #include "utils/vector.h"
 #include <stdio.h>
-#include <string.h>
 
 static int trn_sort_compare_fn(const void *a, const void *b) {
     sd_tournament_file const *trn_a = a;

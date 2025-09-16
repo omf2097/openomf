@@ -17,7 +17,7 @@ int sd_score_create(sd_score *score) {
 void sd_score_free(sd_score *score) {
 }
 
-int sd_score_load(sd_score *score, const char *filename) {
+int sd_score_load(sd_score *score, const path *filename) {
     if(score == NULL || filename == NULL) {
         return SD_INVALID_INPUT;
     }
@@ -50,7 +50,7 @@ read_error:
     return SD_FILE_PARSE_ERROR;
 }
 
-int sd_score_save(const sd_score *score, const char *filename) {
+int sd_score_save(const sd_score *score, const path *filename) {
     if(score == NULL || filename == NULL) {
         return SD_INVALID_INPUT;
     }

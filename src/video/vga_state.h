@@ -1,6 +1,7 @@
 #ifndef VGA_STATE_H
 #define VGA_STATE_H
 
+#include "utils/path.h"
 #include "video/damage_tracker.h"
 #include "video/vga_palette.h"
 #include "video/vga_remap.h"
@@ -41,6 +42,6 @@ void vga_state_copy_base_palette_range(vga_index dst, vga_index src, vga_index c
 void vga_state_enable_palette_transform(vga_palette_transform transform_callback, void *userdata);
 
 // Take debug snapshot of the current palette state.
-void vga_state_debug_screenshot(const char *filename);
+void vga_state_debug_screenshot(const path *filename);
 
 #endif // VGA_STATE_H

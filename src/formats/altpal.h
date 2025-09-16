@@ -51,7 +51,7 @@ int altpal_create(altpal_file *ap);
  * \param ap Altpal struct pointer
  * \param filename Filename to load from.
  */
-int altpals_load(altpal_file *ap, const char *filename);
+int altpals_load(altpal_file *ap, const path *filename);
 
 /*! \brief Save altpals structure to file.
  *
@@ -64,7 +64,7 @@ int altpals_load(altpal_file *ap, const char *filename);
  * \param ap Altpal struct pointer
  * \param filename Filename to save into.
  */
-int altpals_save(altpal_file *ap, const char *filename);
+int altpals_save(altpal_file *ap, const path *filename);
 
 /*! \brief Free alternate palette structure
  *

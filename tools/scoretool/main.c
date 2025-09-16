@@ -74,12 +74,15 @@ int main(int argc, char *argv[]) {
         goto exit_0;
     }
 
+    path input_filename;
+    path_from_c(&input_filename, file->filename[0]);
+
     // Get score information
     sd_score score;
     sd_score_create(&score);
-    int ret = sd_score_load(&score, file->filename[0]);
+    int ret = sd_score_load(&score, &input_filename);
     if(ret != SD_SUCCESS) {
-        printf("Score file %s could not be loaded: %s\n", file->filename[0], sd_get_error(ret));
+        printf("Score file %s could not be loaded: %s\n", path_c(&input_filename), sd_get_error(ret));
         goto exit_0;
     }
 
@@ -102,9 +105,11 @@ int main(int argc, char *argv[]) {
 
     // Save if necessary
     if(output->count > 0) {
-        ret = sd_score_save(&score, output->filename[0]);
+        path output_filename;
+        path_from_c(&output_filename, output->filename[0]);
+        ret = sd_score_save(&score, &output_filename);
         if(ret != SD_SUCCESS) {
-            printf("Failed to save scores file to %s: %s\n", output->filename[0], sd_get_error(ret));
+            printf("Failed to save scores file to %s: %s\n", path_c(&output_filename), sd_get_error(ret));
         }
     }
 

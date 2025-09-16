@@ -67,12 +67,15 @@ void test_af_roundtrip(void) {
     ret = sd_af_set_move(&new, 0, &move);
     CU_ASSERT(ret == SD_SUCCESS);
 
+    path test_af_file;
+    path_from_c(&test_af_file, "test.af");
+
     // Roundtripping
     ret = sd_af_create(&loaded);
     CU_ASSERT(ret == SD_SUCCESS);
-    ret = sd_af_save(&new, "test.af");
+    ret = sd_af_save(&new, &test_af_file);
     CU_ASSERT(ret == SD_SUCCESS);
-    ret = sd_af_load(&loaded, "test.af");
+    ret = sd_af_load(&loaded, &test_af_file);
     CU_ASSERT(ret == SD_SUCCESS);
 
     // Check some random samples from sd_af_file

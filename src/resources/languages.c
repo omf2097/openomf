@@ -26,7 +26,7 @@ bool lang_init(void) {
     if(sd_language_create(language) != SD_SUCCESS) {
         goto error_0;
     }
-    if(sd_language_load(language, path_c(&language_file1))) {
+    if(sd_language_load(language, &language_file1)) {
         log_error("Unable to load language file '%s'!", path_c(&language_file1));
         goto error_0;
     }
@@ -86,7 +86,7 @@ bool lang_init(void) {
     if(sd_language_create(language2) != SD_SUCCESS) {
         goto error_0;
     }
-    if(sd_language_load(language2, path_c(&language_file2))) {
+    if(sd_language_load(language2, &language_file2)) {
         log_error("Unable to load OpenOMF language file '%s'!", path_c(&language_file2));
         goto error_0;
     }

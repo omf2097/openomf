@@ -1,16 +1,18 @@
 #ifndef ENGINE_H
 #define ENGINE_H
 
+#include "utils/path.h"
+
 // static tick duration, in ms
 #define STATIC_TICKS 10
 
-typedef struct engine_init_flags_t {
+typedef struct engine_init_flags {
     unsigned int net_mode;
     unsigned int record;
     unsigned int playback;
     char force_renderer[16];
     char force_audio_backend[16];
-    char rec_file[255];
+    path rec_file;
     int warpspeed;
     int speed;
 } engine_init_flags;

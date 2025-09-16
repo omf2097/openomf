@@ -118,10 +118,13 @@ int main(int argc, char *argv[]) {
         goto exit_0;
     }
 
+    path input_filename;
+    path_from_c(&input_filename, file->filename[0]);
+
     if(font->count) {
         pcx_font *pcx_font = omf_calloc(1, sizeof(*pcx_font));
-        if(pcx_load_font(pcx_font, file->filename[0]) != SD_SUCCESS) {
-            printf("Could not load %s: %s\n", file->filename[0], strerror(errno));
+        if(pcx_load_font(pcx_font, &input_filename) != SD_SUCCESS) {
+            printf("Could not load %s: %s\n", path_c(&input_filename), strerror(errno));
             pcx_font_free(pcx_font);
             omf_free(pcx_font);
             goto exit_0;
@@ -134,8 +137,8 @@ int main(int argc, char *argv[]) {
         }
     } else {
         pcx_file *pcx = omf_calloc(1, sizeof(*pcx));
-        if(pcx_load(pcx, file->filename[0]) != SD_SUCCESS) {
-            printf("Could not load %s: %s\n", file->filename[0], strerror(errno));
+        if(pcx_load(pcx, &input_filename) != SD_SUCCESS) {
+            printf("Could not load %s: %s\n", path_c(&input_filename), strerror(errno));
             goto exit_0;
         }
         printf("Manufacturer: %" PRIx8 "\n", pcx->manufacturer);

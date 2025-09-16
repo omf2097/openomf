@@ -68,7 +68,7 @@ void sd_pic_free(sd_pic_file *pic);
  * \param pic PIC file struct pointer.
  * \param filename Name of the PIC file to load from.
  */
-int sd_pic_load(sd_pic_file *pic, const char *filename);
+int sd_pic_load(sd_pic_file *pic, const path *filename);
 
 /*! \brief Save PIC file
  *
@@ -81,7 +81,7 @@ int sd_pic_load(sd_pic_file *pic, const char *filename);
  * \param pic PIC file struct pointer.
  * \param filename Name of the PIC file to save into.
  */
-int sd_pic_save(const sd_pic_file *pic, const char *filename);
+int sd_pic_save(const sd_pic_file *pic, const path *filename);
 
 /*! \brief Returns a PIC image entry.
  *

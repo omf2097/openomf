@@ -11,10 +11,8 @@
 #define SD_REC_H
 
 #include "formats/actions.h"
-#include "formats/palette.h"
 #include "formats/pilot.h"
-#include "formats/sprite.h"
-#include <stddef.h>
+#include "utils/path.h"
 #include <stdint.h>
 
 /*! \brief REC action record
@@ -137,7 +135,7 @@ void sd_rec_free(sd_rec_file *rec);
  * \param rec BK struct pointer.
  * \param filename Name of the BK file to load from.
  */
-int sd_rec_load(sd_rec_file *rec, const char *filename);
+int sd_rec_load(sd_rec_file *rec, const path *filename);
 
 /*! \brief Save .REC file
  *
@@ -150,7 +148,7 @@ int sd_rec_load(sd_rec_file *rec, const char *filename);
  * \param rec REC struct pointer.
  * \param filename Name of the REC file to save into.
  */
-int sd_rec_save(sd_rec_file *rec, const char *filename);
+int sd_rec_save(sd_rec_file *rec, const path *filename);
 
 /*! \brief Deletes a REC event record
  *

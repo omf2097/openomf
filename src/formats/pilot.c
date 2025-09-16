@@ -345,7 +345,7 @@ void sd_pilot_set_player_color(sd_pilot *pilot, player_color index, uint8_t colo
         //  Load PIC file and make a surface
         sd_pic_file players;
         sd_pic_create(&players);
-        int ret = sd_pic_load(&players, path_c(&players_filename));
+        int ret = sd_pic_load(&players, &players_filename);
         if(ret == SD_SUCCESS) {
             // Load player palette from PLAYERS.PIC
             const sd_pic_photo *photo = sd_pic_get(&players, pilot->photo_id);

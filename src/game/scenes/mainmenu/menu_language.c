@@ -12,7 +12,6 @@
 #include "utils/list.h"
 #include "utils/log.h"
 #include "utils/path.h"
-#include "utils/scandir.h"
 #include "utils/str.h"
 
 typedef struct {
@@ -92,7 +91,7 @@ component *menu_language_create(scene *s) {
         if(sd_language_create(&lang2) != SD_SUCCESS) {
             continue;
         }
-        if(sd_language_load(&lang2, path_c(language_file2))) {
+        if(sd_language_load(&lang2, language_file2)) {
             log_info("Warning: Unable to load OpenOMF language file '%s'!", path_c(language_file2));
             sd_language_free(&lang2);
             continue;

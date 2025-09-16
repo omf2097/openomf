@@ -78,12 +78,12 @@ void game_state_del_animation(game_state *gs, int anim_id);
 void game_state_get_projectiles(game_state *gs, vector *obj_proj);
 void game_state_clear_objects(game_state *gs, int mask);
 
-bool is_netplay(game_state *gs);
-bool is_singleplayer(game_state *gs);
-bool is_tournament(game_state *gs);
-bool is_demoplay(game_state *gs);
-bool is_twoplayer(game_state *gs);
-bool is_rec_playback(game_state *gs);
-bool is_spectator(game_state *gs);
+bool is_netplay(const game_state *gs);
+bool is_singleplayer(const game_state *gs);
+bool is_tournament(const game_state *gs);
+bool is_demoplay(const game_state *gs);
+bool is_twoplayer(const game_state *gs);
+bool is_rec_playback(const game_state *gs);
+bool is_spectator(const game_state *gs);
 
 #endif // GAME_STATE_H

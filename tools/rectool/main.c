@@ -394,11 +394,14 @@ int main(int argc, char *argv[]) {
         goto exit_0;
     }
 
+    path input_filename;
+    path_from_c(&input_filename, file->filename[0]);
+
     // Load file
     sd_rec_file rec;
     sd_rec_create(&rec);
     if(file->count > 0) {
-        int ret = sd_rec_load(&rec, file->filename[0]);
+        int ret = sd_rec_load(&rec, &input_filename);
         if(ret != SD_SUCCESS) {
             printf("Unable to load REC file! [%d] %s.\n", ret, sd_get_error(ret));
             goto exit_1;
@@ -526,8 +529,13 @@ int main(int argc, char *argv[]) {
 
     // Write output file
     if(output->count > 0 || inplace->count > 0) {
-        char const *filename = inplace->count ? file->filename[0] : output->filename[0];
-        if(sd_rec_save(&rec, filename) != SD_SUCCESS) {
+        path output_filename;
+        if(inplace->count) {
+            output_filename = input_filename;
+        } else {
+            path_from_c(&output_filename, output->filename[0]);
+        }
+        if(sd_rec_save(&rec, &output_filename) != SD_SUCCESS) {
             printf("Save didn't succeed!");
         }
     }

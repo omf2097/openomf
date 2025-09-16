@@ -62,7 +62,7 @@ int sd_vga_image_decode(sd_rgba_image *dst, const sd_vga_image *src, const vga_p
     return SD_SUCCESS;
 }
 
-int sd_vga_image_from_png(sd_vga_image *img, const char *filename) {
+int sd_vga_image_from_png(sd_vga_image *img, const path *filename) {
     if(sd_vga_image_create(img, 320, 200) != SD_SUCCESS) {
         return SD_FAILURE;
     }
@@ -72,7 +72,7 @@ int sd_vga_image_from_png(sd_vga_image *img, const char *filename) {
     return SD_SUCCESS;
 }
 
-int sd_vga_image_to_png(const sd_vga_image *img, const vga_palette *pal, const char *filename) {
+int sd_vga_image_to_png(const sd_vga_image *img, const vga_palette *pal, const path *filename) {
     if(img == NULL || filename == NULL) {
         return SD_INVALID_INPUT;
     }

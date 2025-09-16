@@ -47,8 +47,8 @@ typedef struct {
     pcx_font_glyph glyphs[256];
 } pcx_font;
 
-int pcx_load(pcx_file *pcx, const char *filename);
-int pcx_load_font(pcx_font *font, const char *filename);
+int pcx_load(pcx_file *pcx, const path *filename);
+int pcx_load_font(pcx_font *font, const path *filename);
 int pcx_font_decode(const pcx_font *font, sd_vga_image *o, uint8_t ch, int8_t palette_offset);
 void pcx_free(pcx_file *pcx);
 void pcx_font_free(pcx_font *font);

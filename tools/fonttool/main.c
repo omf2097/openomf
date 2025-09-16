@@ -66,17 +66,20 @@ SDL_Surface *render_text(sd_font *font, const char *text, int area_w) {
     return surface;
 }
 
-void export_to(sd_font *font, const char *filename, int split) {
+void export_to(sd_font *font, const path *directory, int split) {
     if(split) {
-        char path[256];
+        char tmp[32];
+        path filename;
         sd_rgba_image ch_img;
         sd_rgba_image_create(&ch_img, font->h, font->h);
         for(int i = 32; i < 256; i++) {
+            filename = *directory;
             sd_font_decode_rgb(font, &ch_img, (char)(i - 32), 0, 0, 0);
-            sprintf(path, "%s/uni%04x.png", filename, i);
-            int ret = sd_rgba_image_to_png(&ch_img, path);
+            snprintf(tmp, 32, "uni%04x.png", i);
+            path_append(&filename, tmp);
+            int ret = sd_rgba_image_to_png(&ch_img, &filename);
             if(ret != SD_SUCCESS) {
-                printf("Failed to export the font to %s\n", path);
+                printf("Failed to export the font to %s\n", path_c(&filename));
             }
         }
         sd_rgba_image_free(&ch_img);
@@ -92,9 +95,9 @@ void export_to(sd_font *font, const char *filename, int split) {
             sd_rgba_image_blit(&dst_img, &ch_img, x * font->h, y * font->h);
         }
         sd_rgba_image_free(&ch_img);
-        int ret = sd_rgba_image_to_png(&dst_img, filename);
+        int ret = sd_rgba_image_to_png(&dst_img, directory);
         if(ret != SD_SUCCESS) {
-            printf("Failed to export the font to %s\n", filename);
+            printf("Failed to export the font to %s\n", path_c(directory));
         }
         sd_rgba_image_free(&dst_img);
     }
@@ -221,10 +224,13 @@ int main(int argc, char *argv[]) {
         goto exit_0;
     }
 
+    path input_filename;
+    path_from_c(&input_filename, file->filename[0]);
+
     // Load fonts
     sd_font font;
     sd_font_create(&font);
-    int ret = sd_font_load(&font, file->filename[0], _fs);
+    int ret = sd_font_load(&font, &input_filename, _fs);
     if(ret != SD_SUCCESS) {
         printf("Couldn't load small font file! Error [%d] %s.\n", ret, sd_get_error(ret));
         goto exit_1;
@@ -232,7 +238,9 @@ int main(int argc, char *argv[]) {
 
     // Export or display
     if(export->count > 0) {
-        export_to(&font, export->filename[0], (split->count > 0));
+        path export_filename;
+        path_from_c(&export_filename, export->filename[0]);
+        export_to(&font, &export_filename, (split->count > 0));
     } else {
         // Scale
         int _sc = 1;

@@ -63,10 +63,13 @@ int main(int argc, char *argv[]) {
         goto exit_0;
     }
 
+    path input_filename;
+    path_from_c(&input_filename, file->filename[0]);
+
     // Get strings
     sd_pic_file pic;
     sd_pic_create(&pic);
-    int ret = sd_pic_load(&pic, file->filename[0]);
+    int ret = sd_pic_load(&pic, &input_filename);
     if(ret != SD_SUCCESS) {
         printf("PIC file could not be loaded! Error [%d] %s\n", ret, sd_get_error(ret));
         goto exit_0;
@@ -75,8 +78,10 @@ int main(int argc, char *argv[]) {
     // Load bk file if necessary
     sd_bk_file bk;
     if(bkfile->count > 0) {
+        path bk_filename;
+        path_from_c(&bk_filename, bkfile->filename[0]);
         sd_bk_create(&bk);
-        ret = sd_bk_load(&bk, bkfile->filename[0]);
+        ret = sd_bk_load(&bk, &bk_filename);
         if(ret != SD_SUCCESS) {
             printf("Could not load BK file: %s\n", sd_get_error(ret));
             goto exit_1;
@@ -121,9 +126,11 @@ int main(int argc, char *argv[]) {
     }
 
     if(output->count > 0) {
-        ret = sd_pic_save(&pic, output->filename[0]);
+        path output_filename;
+        path_from_c(&output_filename, output->filename[0]);
+        ret = sd_pic_save(&pic, &output_filename);
         if(ret != SD_SUCCESS) {
-            printf("Failed to save PIC file to %s: %s.", output->filename[0], sd_get_error(ret));
+            printf("Failed to save PIC file to %s: %s.", path_c(&output_filename), sd_get_error(ret));
         }
     }
 

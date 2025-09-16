@@ -92,16 +92,19 @@ void sd_bk_postprocess(sd_bk_file *bk) {
     }
 }
 
-int sd_bk_load(sd_bk_file *bk, const char *filename) {
+int sd_bk_load(sd_bk_file *bk, const path *filename) {
     uint16_t img_w, img_h;
     uint8_t animno = 0;
     sd_reader *r;
     int ret = SD_SUCCESS;
 
-    size_t fn_len = strlen(filename);
-    if(fn_len >= 4 && strncmp(&filename[fn_len - 4], ".PCX", 4) == 0) {
+    str ext;
+    path_ext(filename, &ext);
+    if(str_equal_c(&ext, ".PCX")) {
+        str_free(&ext);
         return sd_bk_load_from_pcx(bk, filename);
     }
+    str_free(&ext);
 
     // Initialize reader
     if(!(r = sd_reader_open(filename))) {
@@ -164,7 +167,7 @@ exit_0:
     return ret;
 }
 
-int sd_bk_load_from_pcx(sd_bk_file *bk, const char *filename) {
+int sd_bk_load_from_pcx(sd_bk_file *bk, const path *filename) {
     int ret;
     pcx_file *pcx = omf_calloc(1, sizeof(pcx_file));
     if((ret = pcx_load(pcx, filename)) != SD_SUCCESS) {
@@ -183,7 +186,7 @@ int sd_bk_load_from_pcx(sd_bk_file *bk, const char *filename) {
     return SD_SUCCESS;
 }
 
-int sd_bk_save(const sd_bk_file *bk, const char *filename) {
+int sd_bk_save(const sd_bk_file *bk, const path *filename) {
     long rpos = 0;
     long opos = 0;
     sd_writer *w;
@@ -262,7 +265,7 @@ int sd_bk_save(const sd_bk_file *bk, const char *filename) {
     return SD_SUCCESS;
 
 error:
-    remove(filename);
+    path_unlink(filename);
     sd_writer_close(w);
     return SD_FILE_WRITE_ERROR;
 }

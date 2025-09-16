@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "utils/path.h"
 #include "utils/str.h"
 
 typedef struct sd_writer sd_writer;
@@ -11,7 +12,7 @@ typedef struct sd_writer sd_writer;
 /**
  * Open file for writing. If file exists, it will be overwritten.
  */
-sd_writer *sd_writer_open(const char *file);
+sd_writer *sd_writer_open(const path *filename);
 
 /**
  * Check for errors

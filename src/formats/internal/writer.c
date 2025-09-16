@@ -1,5 +1,4 @@
 #include <errno.h>
-#include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,10 +12,10 @@ struct sd_writer {
     int sd_errno;
 };
 
-sd_writer *sd_writer_open(const char *file) {
+sd_writer *sd_writer_open(const path *filename) {
     sd_writer *writer = omf_calloc(1, sizeof(sd_writer));
 
-    writer->handle = fopen(file, "wb");
+    writer->handle = path_fopen(filename, "wb");
     writer->sd_errno = 0;
     if(!writer->handle) {
         omf_free(writer);

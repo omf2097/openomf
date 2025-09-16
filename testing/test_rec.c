@@ -36,10 +36,13 @@ void test_sd_rec_free(void) {
 void test_rec_roundtrip(void) {
     sd_rec_file loaded;
 
+    path test_file;
+    path_from_c(&test_file, "test.rec");
+
     // Roundtripping
     CU_ASSERT(sd_rec_create(&loaded) == SD_SUCCESS);
-    CU_ASSERT(sd_rec_save(&rec, "test.rec") == SD_SUCCESS);
-    CU_ASSERT(sd_rec_load(&loaded, "test.rec") == SD_SUCCESS);
+    CU_ASSERT(sd_rec_save(&rec, &test_file) == SD_SUCCESS);
+    CU_ASSERT(sd_rec_load(&loaded, &test_file) == SD_SUCCESS);
 
     // Make sure the RECs seem the same
     CU_ASSERT(rec.move_count == loaded.move_count);
@@ -65,8 +68,10 @@ void test_rec_roundtrip(void) {
 }
 
 void test_crystal_shirro_load(void) {
+    path test_path;
+    path_from_parts(&test_path, TESTS_ROOT_DIR, "recs", "crystal-shirro.rec");
     CU_ASSERT(sd_rec_create(&rec) == SD_SUCCESS);
-    CU_ASSERT(sd_rec_load(&rec, TESTS_ROOT_DIR "/recs/crystal-shirro.rec") == SD_SUCCESS);
+    CU_ASSERT(sd_rec_load(&rec, &test_path) == SD_SUCCESS);
     sd_rec_free(&rec);
 }
 

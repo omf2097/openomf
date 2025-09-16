@@ -65,7 +65,7 @@ void sd_font_free(sd_font *font);
  * \param filename Name of the fontfile to load from.
  * \param font_h Font height. For CHRSMAL.DAT this is 6, for GRAPHCHR.DAT this is 8.
  */
-int sd_font_load(sd_font *font, const char *filename, unsigned int font_h);
+int sd_font_load(sd_font *font, const path *filename, unsigned int font_h);
 
 /*! \brief Save fontfile
  *
@@ -78,7 +78,7 @@ int sd_font_load(sd_font *font, const char *filename, unsigned int font_h);
  * \param font Font struct pointer.
  * \param filename Name of the fontfile to save into.
  */
-int sd_font_save(const sd_font *font, const char *filename);
+int sd_font_save(const sd_font *font, const path *filename);
 
 /*! \brief Decodes a character to an image
  *

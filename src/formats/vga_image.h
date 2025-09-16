@@ -103,7 +103,7 @@ int sd_vga_image_decode(sd_rgba_image *dst, const sd_vga_image *src, const vga_p
  * \param img Destination image pointer
  * \param filename Source filename
  */
-int sd_vga_image_from_png(sd_vga_image *img, const char *filename);
+int sd_vga_image_from_png(sd_vga_image *img, const path *filename);
 
 /*! \brief Save an indexed image from a PNG file.
  *
@@ -120,6 +120,6 @@ int sd_vga_image_from_png(sd_vga_image *img, const char *filename);
  * \param pal Palette for the image
  * \param filename Destination filename
  */
-int sd_vga_image_to_png(const sd_vga_image *img, const vga_palette *pal, const char *filename);
+int sd_vga_image_to_png(const sd_vga_image *img, const vga_palette *pal, const path *filename);
 
 #endif // SD_VGA_IMAGE_H

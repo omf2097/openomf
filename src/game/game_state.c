@@ -317,17 +317,17 @@ int game_state_create(game_state *gs, engine_init_flags *init_flags) {
 
     reconfigure_controller(gs);
     int nscene;
-    if(strlen(init_flags->rec_file) > 0 && init_flags->playback == 1) {
+    if(path_is_set(&init_flags->rec_file) > 0 && init_flags->playback == 1) {
         gs->rec = omf_malloc(sizeof(sd_rec_file));
         sd_rec_create(gs->rec);
-        int ret = sd_rec_load(gs->rec, init_flags->rec_file);
+        int ret = sd_rec_load(gs->rec, &init_flags->rec_file);
         if(ret != SD_SUCCESS) {
-            log_error("Unable to load recording %s.", init_flags->rec_file);
+            log_error("Unable to load recording %s.", path_c(&init_flags->rec_file));
             goto error_0;
         }
 
         nscene = SCENE_ARENA0 + gs->rec->arena_id;
-        log_debug("playing recording file %s", init_flags->rec_file);
+        log_debug("playing recording file %s", path_c(&init_flags->rec_file));
         gs->this_id = nscene;
         gs->next_id = nscene;
 
@@ -1521,38 +1521,38 @@ bool game_state_hars_are_alive(game_state *gs) {
     return (h1->health > 0) && (h2->health > 0);
 }
 
-bool is_netplay(game_state *gs) {
+bool is_netplay(const game_state *gs) {
     return game_state_get_player(gs, 0)->ctrl->type == CTRL_TYPE_NETWORK ||
            game_state_get_player(gs, 1)->ctrl->type == CTRL_TYPE_NETWORK;
 }
 
-bool is_singleplayer(game_state *gs) {
+bool is_singleplayer(const game_state *gs) {
     if(gs->rec && gs->init_flags->playback == 1 && gs->rec->p2_controller == REC_CONTROLLER_AI) {
         return true;
     }
     return game_state_get_player(gs, 1)->ctrl->type == CTRL_TYPE_AI;
 }
 
-bool is_tournament(game_state *gs) {
+bool is_tournament(const game_state *gs) {
     return game_state_get_player(gs, 0)->chr;
 }
 
-bool is_spectator(game_state *gs) {
+bool is_spectator(const game_state *gs) {
     if(game_state_get_player(gs, 0)->ctrl->type == CTRL_TYPE_SPECTATOR) {
         return 1;
     }
     return 0;
 }
 
-bool is_demoplay(game_state *gs) {
+bool is_demoplay(const game_state *gs) {
     return game_state_get_player(gs, 0)->ctrl->type == CTRL_TYPE_AI &&
            game_state_get_player(gs, 1)->ctrl->type == CTRL_TYPE_AI;
 }
 
-bool is_twoplayer(game_state *gs) {
+bool is_twoplayer(const game_state *gs) {
     return !is_demoplay(gs) && !is_netplay(gs) && !is_singleplayer(gs);
 }
 
-bool is_rec_playback(game_state *gs) {
-    return gs->init_flags->rec_file[0] != '\0' && gs->init_flags->playback == 1;
+bool is_rec_playback(const game_state *gs) {
+    return path_is_set(&gs->init_flags->rec_file) && gs->init_flags->playback == 1;
 }

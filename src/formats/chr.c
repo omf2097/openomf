@@ -50,7 +50,7 @@ int sd_chr_from_trn(sd_chr_file *chr, sd_tournament_file *trn, sd_pilot *pilot) 
     return SD_SUCCESS;
 }
 
-int sd_chr_load(sd_chr_file *chr, const char *filename) {
+int sd_chr_load(sd_chr_file *chr, const path *filename) {
     if(chr == NULL || filename == NULL) {
         return SD_INVALID_INPUT;
     }
@@ -76,14 +76,14 @@ int sd_chr_load(sd_chr_file *chr, const char *filename) {
     path_dossify_filename(&image_path);
     log_debug("loading tournament image from %s", path_c(&image_path));
     sd_pic_create(&pic);
-    if(sd_pic_load(&pic, path_c(&image_path)) != SD_SUCCESS) {
+    if(sd_pic_load(&pic, &image_path) != SD_SUCCESS) {
         log_error("failed to load tournament image from %s", path_c(&image_path));
     }
 
     // Load PIC file and make a surface
     const path players_path = get_resource_filename("PLAYERS.PIC");
     sd_pic_create(&players);
-    const int ret = sd_pic_load(&players, path_c(&players_path));
+    const int ret = sd_pic_load(&players, &players_path);
     if(ret == SD_SUCCESS) {
         // Load player gender from PLAYERS.PIC
         const sd_pic_photo *photo = sd_pic_get(&players, chr->pilot.photo_id);
@@ -231,7 +231,7 @@ error_1:
     return SD_FILE_PARSE_ERROR;
 }
 
-int sd_chr_save(sd_chr_file *chr, const char *filename) {
+int sd_chr_save(sd_chr_file *chr, const path *filename) {
     if(chr == NULL || filename == NULL) {
         return SD_INVALID_INPUT;
     }

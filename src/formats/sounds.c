@@ -15,7 +15,7 @@ int sd_sounds_create(sd_sound_file *sf) {
     return SD_SUCCESS;
 }
 
-int sd_sounds_load(sd_sound_file *sf, const char *filename) {
+int sd_sounds_load(sd_sound_file *sf, const path *filename) {
     if(sf == NULL || filename == NULL) {
         return SD_INVALID_INPUT;
     }
@@ -54,7 +54,7 @@ int sd_sounds_load(sd_sound_file *sf, const char *filename) {
     return SD_SUCCESS;
 }
 
-int sd_sounds_save(const sd_sound_file *sf, const char *filename) {
+int sd_sounds_save(const sd_sound_file *sf, const path *filename) {
     if(sf == NULL || filename == NULL) {
         return SD_INVALID_INPUT;
     }
@@ -95,7 +95,7 @@ const sd_sound *sd_sounds_get(const sd_sound_file *sf, int id) {
     return &sf->sounds[id];
 }
 
-int sd_sound_from_au(sd_sound_file *sf, int num, const char *filename) {
+int sd_sound_from_au(sd_sound_file *sf, int num, const path *filename) {
     int ret = SD_SUCCESS;
     if(sf == NULL || filename == NULL || num < 0 || num >= 299) {
         return SD_INVALID_INPUT;
@@ -159,7 +159,7 @@ error_0:
     return ret;
 }
 
-int sd_sound_to_au(const sd_sound_file *sf, int num, const char *filename) {
+int sd_sound_to_au(const sd_sound_file *sf, int num, const path *filename) {
     if(sf == NULL || filename == NULL || num < 0 || num >= 299) {
         return SD_INVALID_INPUT;
     }

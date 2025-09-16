@@ -12,7 +12,7 @@ static void abort_png(png_structp png, const char *err) {
     crash(err);
 }
 
-bool write_rgb_png(const char *filename, int w, int h, const unsigned char *data, bool has_alpha, bool flip) {
+bool write_rgb_png(const path *filename, int w, int h, const unsigned char *data, bool has_alpha, bool flip) {
     assert(filename != NULL);
     assert(data != NULL);
 
@@ -20,7 +20,7 @@ bool write_rgb_png(const char *filename, int w, int h, const unsigned char *data
     png_structp png_ptr;
     png_infop info_ptr;
 
-    if((handle = fopen(filename, "wb")) == NULL) {
+    if((handle = path_fopen(filename, "wb")) == NULL) {
         log_error("Unable to write PNG file: Could not open file for writing");
         return false;
     }
@@ -50,7 +50,7 @@ bool write_rgb_png(const char *filename, int w, int h, const unsigned char *data
     return true;
 }
 
-bool write_paletted_png(const char *filename, int w, int h, const vga_palette *pal, const unsigned char *data) {
+bool write_paletted_png(const path *filename, int w, int h, const vga_palette *pal, const unsigned char *data) {
     assert(filename != NULL);
     assert(data != NULL);
     assert(w * h > 0);
@@ -64,7 +64,7 @@ bool write_paletted_png(const char *filename, int w, int h, const vga_palette *p
     out.flags = 0;
     out.format = PNG_FORMAT_RGB_COLORMAP;
     out.colormap_entries = 256;
-    png_image_write_to_file(&out, filename, 0, data, w, pal->colors);
+    png_image_write_to_file(&out, path_c(filename), 0, data, w, pal->colors);
 
     if(PNG_IMAGE_FAILED(out)) {
         log_error("Unable to write PNG file: %s", out.message);

@@ -136,10 +136,10 @@ int main(int argc, char *argv[]) {
         init_flags.net_mode = NET_MODE_LOBBY;
     } else if(play->count > 0) {
         init_flags.playback = 1;
-        strncpy(init_flags.rec_file, play->filename[0], 254);
+        path_from_c(&init_flags.rec_file, play->filename[0]);
     } else if(rec->count > 0) {
         init_flags.record = 1;
-        strncpy(init_flags.rec_file, rec->filename[0], 254);
+        path_from_c(&init_flags.rec_file, rec->filename[0]);
     }
 
     if(warp->count > 0) {

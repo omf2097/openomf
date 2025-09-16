@@ -8,6 +8,8 @@
 #include "game/game_state.h"
 #include "game/utils/settings.h"
 #include "resources/languages.h"
+#include "resources/resource_files.h"
+#include "resources/resource_paths.h"
 #include "resources/sounds_loader.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
@@ -91,14 +93,12 @@ exit_0:
 
 void save_screenshot(const SDL_Rect *r, unsigned char *data, bool flip) {
     char *time = format_time();
-    char *filename = omf_malloc(256);
-    snprintf(filename, 256, "screenshot_%s.png", time);
-    if(write_rgb_png(filename, r->w, r->h, data, false, flip)) {
-        log_info("Got a screenshot: %s", filename);
+    path filename = get_screenshot_filename(time);
+    if(write_rgb_png(&filename, r->w, r->h, data, false, flip)) {
+        log_info("Got a screenshot: %s", path_c(&filename));
     } else {
-        log_error("Screenshot write operation failed (%s)", filename);
+        log_error("Screenshot write operation failed (%s)", path_c(&filename));
     }
-    omf_free(filename);
     omf_free(time);
 }
 
@@ -106,20 +106,20 @@ void save_palette_shot(void) {
     char *time = format_time();
     char *filename = omf_malloc(256);
     snprintf(filename, 256, "debug_palette_%s_%d.png", time, debug_palette_number++);
-    vga_state_debug_screenshot(filename);
-    log_info("Palette saved: %s", filename);
+    path tmp;
+    path_from_c(&tmp, filename);
+    vga_state_debug_screenshot(&tmp);
+    log_info("Palette saved: %s", path_c(&tmp));
     omf_free(filename);
     omf_free(time);
 }
 
 void save_rec(game_state *gs) {
     char *time = format_time();
-    char *filename = omf_malloc(256);
-    snprintf(filename, 256, "%s.rec", time);
+    path filename = get_snapshot_rec_filename(time);
     sd_rec_finish(gs->rec, gs->tick);
-    sd_rec_save(gs->rec, filename);
-    log_info("REC saved: %s", filename);
-    omf_free(filename);
+    sd_rec_save(gs->rec, &filename);
+    log_info("REC saved: %s", path_c(&filename));
     omf_free(time);
 }
 
