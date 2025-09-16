@@ -59,6 +59,13 @@ bool path_create_tmpdir(path *path);
 const char *path_c(const path *path);
 
 /**
+ * Convert the path to absolute, so that it no longer uses '.', '..' or symlinks.
+ * @param path Path to convert to absolute
+ * @return Returns true if conversion was succesful, and false if not.
+ */
+bool path_resolve(path *path);
+
+/**
  * Clear path. After this, path_is_set() will return false.
  * @param path Path to check
  */
