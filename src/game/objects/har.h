@@ -137,6 +137,7 @@ typedef struct har_t {
     uint8_t air_attacked;
     uint8_t is_wallhugging;  // HAR is standing right next to a wall
     uint8_t is_grabbed;      // Is being moved by another object. Set by ex, ey tags
+    uint8_t jump_delay; // Prevent HARs from jumping again too soon
     float last_damage_value; // Last damage value taken
     float last_stun_value;   // Last stun value taken
 
