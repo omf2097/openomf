@@ -64,7 +64,6 @@ void _path_from_parts(path *path, const int nargs, ...) {
 }
 
 void path_from_str(path *path, const str *src) {
-    assert(str_size(src) < PATH_MAX_LENGTH);
     strncpy_or_abort(path->buf, str_c(src), PATH_MAX_LENGTH);
     ENSURE_ZERO(path->buf);
 #if defined(_WIN32) || defined(WIN32)
