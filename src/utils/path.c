@@ -32,7 +32,7 @@ static void normalize_slashes(path *p) {
 
 void path_from_c(path *path, const char *src) {
     assert(strlen(src) < PATH_MAX_LENGTH);
-    strncpy(path->buf, src, PATH_MAX_LENGTH);
+    strncpy_or_abort(path->buf, src, PATH_MAX_LENGTH);
     ENSURE_ZERO(path->buf);
 #if defined(_WIN32) || defined(WIN32)
     normalize_slashes(path);
@@ -64,8 +64,7 @@ void _path_from_parts(path *path, const int nargs, ...) {
 }
 
 void path_from_str(path *path, const str *src) {
-    assert(str_size(src) < PATH_MAX_LENGTH);
-    strncpy(path->buf, str_c(src), PATH_MAX_LENGTH);
+    strncpy_or_abort(path->buf, str_c(src), PATH_MAX_LENGTH);
     ENSURE_ZERO(path->buf);
 #if defined(_WIN32) || defined(WIN32)
     normalize_slashes(path);
