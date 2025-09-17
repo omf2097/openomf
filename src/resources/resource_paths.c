@@ -85,8 +85,8 @@ ok:
 
 static bool scan_potential_resource_dirs(path *result, const str *src, const char *find, const char *append) {
     str *slice;
-    path *base = omf_malloc(sizeof(path));
-    path *test = omf_malloc(sizeof(path));
+    path *base = omf_calloc(1, sizeof(path));
+    path *test = omf_calloc(1, sizeof(path));
     vector paths;
     iterator it;
 
