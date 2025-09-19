@@ -4,6 +4,6 @@
 #include "formats/chr.h"
 #include "utils/list.h"
 
-int mod_count(void);
+bool modmanager_init(void);
 
 #endif // MODMANAGER_H
