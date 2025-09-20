@@ -232,7 +232,6 @@ bool str_from_file(str *dst, const char *file_name) {
 }
 
 void str_format(str *dst, const char *format, ...) {
-    int size;
     va_list args1;
     va_list args2;
 
@@ -240,13 +239,12 @@ void str_format(str *dst, const char *format, ...) {
     // args for the next vsnprintf call.
     va_start(args1, format);
     va_copy(args2, args1);
-    size = vsnprintf(NULL, 0, format, args1);
+    const int size = vsnprintf(NULL, 0, format, args1);
     va_end(args1);
 
     // vsnprintf may return -1 for errors, catch that here.
     if(size < 0) {
-        log_error("Call to vsnprintf returned -1");
-        abort();
+        crash("Call to vsnprintf returned -1");
     }
 
     // Make sure there is enough room for our vsnprintf call plus ending NULL,
@@ -259,7 +257,6 @@ void str_format(str *dst, const char *format, ...) {
 }
 
 void str_from_format(str *dst, const char *format, ...) {
-    int size;
     va_list args1;
     va_list args2;
 
@@ -267,13 +264,12 @@ void str_from_format(str *dst, const char *format, ...) {
     // args for the next vsnprintf call.
     va_start(args1, format);
     va_copy(args2, args1);
-    size = vsnprintf(NULL, 0, format, args1);
+    const int size = vsnprintf(NULL, 0, format, args1);
     va_end(args1);
 
     // vsnprintf may return -1 for errors, catch that here.
     if(size < 0) {
-        log_error("Call to vsnprintf returned -1");
-        abort();
+        crash("Call to vsnprintf returned -1");
     }
 
     // Make sure there is enough room for our vsnprintf call plus ending NULL,

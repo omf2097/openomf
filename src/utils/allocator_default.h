@@ -1,6 +1,8 @@
 #ifndef ALLOCATOR_DEFAULT_H
 #define ALLOCATOR_DEFAULT_H
 
+#include "utils/crash.h"
+
 #include <assert.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -13,8 +15,7 @@ static inline void *omf_malloc_real(size_t size, const char *file, int line) {
     void *ret = malloc(size);
     if(ret != NULL)
         return ret;
-    fprintf(stderr, _text_malloc_error, size, file, line);
-    abort();
+    crash_with_args(_text_malloc_error, size);
 }
 
 static inline void *omf_calloc_real(size_t nmemb, size_t size, const char *file, int line) {
@@ -23,8 +24,7 @@ static inline void *omf_calloc_real(size_t nmemb, size_t size, const char *file,
     void *ret = calloc(nmemb, size);
     if(ret != NULL)
         return ret;
-    fprintf(stderr, _text_calloc_error, nmemb, size, file, line);
-    abort();
+    crash_with_args(_text_calloc_error, nmemb, size);
 }
 
 static inline void *omf_realloc_real(void *ptr, size_t size, const char *file, int line) {
@@ -33,8 +33,7 @@ static inline void *omf_realloc_real(void *ptr, size_t size, const char *file, i
     if(ret != NULL) {
         return ret;
     }
-    fprintf(stderr, _text_realloc_error, ptr, size, file, line);
-    abort();
+    crash_with_args(_text_realloc_error, ptr, size);
 }
 
 #endif // ALLOCATOR_DEFAULT_H
