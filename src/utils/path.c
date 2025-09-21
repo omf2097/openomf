@@ -1,9 +1,9 @@
 #include "utils/path.h"
-
-#include "c_string_util.h"
-#include "log.h"
+#include "utils/c_string_util.h"
+#include "utils/log.h"
 
 #include <assert.h>
+#include <stdarg.h>
 #include <string.h>
 
 #if defined(_WIN32) || defined(WIN32)
@@ -31,8 +31,7 @@ static void normalize_slashes(path *p) {
 #endif
 
 void path_from_c(path *path, const char *src) {
-    assert(strlen(src) < PATH_MAX_LENGTH);
-    strncpy(path->buf, src, PATH_MAX_LENGTH);
+    strncpy_or_abort(path->buf, src, PATH_MAX_LENGTH);
     ENSURE_ZERO(path->buf);
 #if defined(_WIN32) || defined(WIN32)
     normalize_slashes(path);
@@ -64,8 +63,7 @@ void _path_from_parts(path *path, const int nargs, ...) {
 }
 
 void path_from_str(path *path, const str *src) {
-    assert(str_size(src) < PATH_MAX_LENGTH);
-    strncpy(path->buf, str_c(src), PATH_MAX_LENGTH);
+    strncpy_or_abort(path->buf, str_c(src), PATH_MAX_LENGTH);
     ENSURE_ZERO(path->buf);
 #if defined(_WIN32) || defined(WIN32)
     normalize_slashes(path);
@@ -116,17 +114,11 @@ const char *path_c(const path *path) {
     return path->buf;
 }
 
-bool path_resolve(path *p) {
 #if defined(_WIN32) || defined(WIN32)
-    path tmp;
-    DWORD ret = GetFullPathNameA(p->buf, strlen(p->buf), tmp.buf, NULL);
-    if(ret > 0 && ret < PATH_MAX_LENGTH) {
-        *p = tmp;
-        normalize_slashes(p);
-        return true;
-    }
-    return false;
-#else
+#define realpath(N, R) _fullpath((R), (N), PATH_MAX_LENGTH)
+#endif
+
+bool path_resolve(path *p) {
     char *resolved = realpath(p->buf, NULL);
     if(resolved == NULL) {
         return false;
@@ -134,7 +126,6 @@ bool path_resolve(path *p) {
     strncpy_or_abort(p->buf, resolved, PATH_MAX_LENGTH);
     free(resolved);
     return true;
-#endif
 }
 
 void path_clear(path *path) {
