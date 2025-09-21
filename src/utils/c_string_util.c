@@ -1,5 +1,6 @@
 #include "utils/c_string_util.h"
 #include "utils/allocator.h"
+#include "utils/crash.h"
 #include "utils/miscmath.h"
 #include <assert.h>
 #include <string.h>
@@ -14,7 +15,7 @@ char *strncpy_or_truncate(char *dest, const char *src, size_t n) {
 char *strncpy_or_abort(char *dest, const char *src, size_t n) {
     size_t len = omf_strnlen_s(src, n);
     if(len >= n)
-        abort();
+        crash("String length too long!");
     memcpy(dest, src, len + 1);
     return dest;
 }

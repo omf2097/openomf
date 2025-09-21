@@ -1,5 +1,6 @@
 #include "formats/error.h"
-#include <stdlib.h>
+
+#include <assert.h>
 
 const char *sd_get_error(enum SD_ERRORCODE error_code) {
     switch(error_code) {
@@ -30,5 +31,6 @@ const char *sd_get_error(enum SD_ERRORCODE error_code) {
         case SD_FAILURE:
             return "General failure";
     }
-    abort();
+    assert(false && "Unknown error type");
+    return "Unknown error type";
 }

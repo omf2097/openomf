@@ -5,6 +5,7 @@
 #include "game/game_state_type.h"
 #include "game/protos/scene.h"
 #include "utils/allocator.h"
+#include "utils/crash.h"
 #include "utils/log.h"
 #include <inttypes.h>
 
@@ -87,7 +88,7 @@ int rec_controller_poll(controller *ctrl, ctrl_event **ev) {
                 if(parse_assertion(buf, &ass)) {
                     log_assertion(&ass);
                     if(!game_state_check_assertion_is_met(&ass, ctrl->gs)) {
-                        abort();
+                        crash("REC file assert failed!");
                     }
                 }
             } else if(move->lookup_id == 96) {

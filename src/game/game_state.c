@@ -30,6 +30,7 @@
 #include "utils/allocator.h"
 #include "utils/c_array_util.h"
 #include "utils/c_string_util.h"
+#include "utils/crash.h"
 #include "utils/log.h"
 #include "utils/miscmath.h"
 #include "video/vga_state.h"
@@ -115,42 +116,43 @@ void game_state_set_pilot_name(game_state *gs, int pilot_id, const char *pilot_n
     strncpy_or_truncate(gs->players[pilot_id]->pilot->name, pilot_name, sizeof(gs->players[pilot_id]->pilot->name));
 }
 
-int game_state_get_assertion_operand(rec_assertion_operand *op, game_state *gs) {
+int game_state_get_assertion_operand(const rec_assertion_operand *op, game_state *gs) {
     if(op->is_literal) {
         return op->value.literal;
-    } else {
-        object *obj =
-            game_state_find_object(gs, game_player_get_har_obj_id(game_state_get_player(gs, op->value.attr.har_id)));
-        har *har = object_get_userdata(obj);
-        switch(op->value.attr.attribute) {
-            case ATTR_X_POS:
-                return obj->pos.x;
-            case ATTR_Y_POS:
-                return obj->pos.y;
-            case ATTR_X_VEL:
-                return obj->vel.x;
-            case ATTR_Y_VEL:
-                return obj->vel.y;
-            case ATTR_STATE_ID:
-                return har->state;
-            case ATTR_ANIMATION_ID:
-                return obj->cur_animation->id;
-            case ATTR_HEALTH:
-                return har->health;
-            case ATTR_STAMINA:
-                // scale endurance by a magic number so it fits in a 16 bit integer
-                return har->endurance / 256;
-            case ATTR_OPPONENT_DISTANCE: {
-                object *obj_opp = game_state_find_object(
-                    gs, game_player_get_har_obj_id(game_state_get_player(gs, abs(op->value.attr.har_id - 1))));
-                return fabsf(obj->pos.x - obj_opp->pos.x);
-                case ATTR_DIRECTION:
-                    return object_get_direction(obj);
-            }
-            default:
-                abort();
-        }
     }
+
+    const object *obj =
+        game_state_find_object(gs, game_player_get_har_obj_id(game_state_get_player(gs, op->value.attr.har_id)));
+    const har *har = object_get_userdata(obj);
+    switch(op->value.attr.attribute) {
+        case ATTR_X_POS:
+            return obj->pos.x;
+        case ATTR_Y_POS:
+            return obj->pos.y;
+        case ATTR_X_VEL:
+            return obj->vel.x;
+        case ATTR_Y_VEL:
+            return obj->vel.y;
+        case ATTR_STATE_ID:
+            return har->state;
+        case ATTR_ANIMATION_ID:
+            return obj->cur_animation->id;
+        case ATTR_HEALTH:
+            return har->health;
+        case ATTR_STAMINA:
+            // scale endurance by a magic number so it fits in a 16 bit integer
+            return har->endurance / 256;
+        case ATTR_OPPONENT_DISTANCE: {
+            object *obj_opp = game_state_find_object(
+                gs, game_player_get_har_obj_id(game_state_get_player(gs, abs(op->value.attr.har_id - 1))));
+            return fabsf(obj->pos.x - obj_opp->pos.x);
+            case ATTR_DIRECTION:
+                return object_get_direction(obj);
+        }
+        default:
+            break;
+    }
+    crash("Unknown attr in REC file test assertion");
 }
 
 bool game_state_check_assertion_is_met(rec_assertion *ass, game_state *gs) {
