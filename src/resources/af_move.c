@@ -1,7 +1,7 @@
 #include "resources/af_move.h"
 #include "formats/move.h"
 
-void af_move_create(af_move *move, array *sprites, void *src, int id) {
+void af_move_create(int file_id, af_move *move, array *sprites, void *src, int id) {
     sd_move *sdmv = (sd_move *)src;
     str_from_c(&move->move_string, sdmv->move_string);
     str_from_c(&move->footer_string, sdmv->footer_string);
@@ -17,7 +17,7 @@ void af_move_create(af_move *move, array *sprites, void *src, int id) {
     move->pos_constraints = sdmv->pos_constraint;
     move->throw_duration = sdmv->throw_duration;
     move->extra_string_selector = sdmv->extra_string_selector;
-    animation_create(&move->ani, sprites, sdmv->animation, id);
+    animation_create(AF_ANIMATION, file_id, &move->ani, sprites, sdmv->animation, id);
     if(id == ANIM_JUMPING) {
         // fixup the jump coordinates
         animation_fixup_coordinates(&move->ani, 0, JUMP_COORD_ADJUSTMENT * -1);

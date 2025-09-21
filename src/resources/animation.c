@@ -7,7 +7,7 @@ typedef struct sprite_reference_t {
     sprite *sprite;
 } sprite_reference;
 
-void animation_create(animation *ani, array *sprites, void *src, int id) {
+void animation_create(animation_source type, int file_id, animation *ani, array *sprites, void *src, int id) {
     sd_animation *sdani = (sd_animation *)src;
 
     // Copy simple stuff
@@ -49,6 +49,7 @@ void animation_create(animation *ani, array *sprites, void *src, int id) {
             vector_append(&ani->sprites, &spr);
         } else {
             tmp_sprite = omf_calloc(1, sizeof(sprite));
+            // TODO check the mod overrides for a replacement sprite
             sprite_create(tmp_sprite, (void *)sdani->sprites[i], i);
             sprite_reference spr;
             spr.sprite = tmp_sprite;

@@ -107,6 +107,3 @@ path get_user_mod_directory(void) {
     }
     return name;
 }
-
-
-
