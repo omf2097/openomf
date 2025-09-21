@@ -9,6 +9,8 @@ typedef struct surface {
     unsigned int guid;
     int w;
     int h;
+    int render_w;
+    int render_h;
     int transparent;
     vga_pixel *data;
 } surface;
