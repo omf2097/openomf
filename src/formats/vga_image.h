@@ -123,7 +123,7 @@ int sd_vga_image_from_png(sd_vga_image *img, const path *filename);
  * \param len Source memory buffer length
  */
 
-int sd_vga_image_from_png_in_memory(sd_vga_image *img, const unsigned char *buf, size_t len);
+int sd_vga_image_from_png_in_memory(sd_vga_image *img, const unsigned char *buf, size_t len, bool allow_transparency);
 
 /*! \brief Save an indexed image from a PNG file.
  *

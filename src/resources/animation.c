@@ -1,4 +1,5 @@
 #include "resources/animation.h"
+#include "resources/modmanager.h"
 #include "formats/animation.h"
 #include "utils/allocator.h"
 #include <stdlib.h>
@@ -49,8 +50,17 @@ void animation_create(animation_source type, int file_id, animation *ani, array 
             vector_append(&ani->sprites, &spr);
         } else {
             tmp_sprite = omf_calloc(1, sizeof(sprite));
+            sd_sprite *sp;
             // TODO check the mod overrides for a replacement sprite
-            sprite_create(tmp_sprite, (void *)sdani->sprites[i], i);
+            if(modmanager_get_sprite(type, file_id, ani->id, i, &sp)) {
+                sprite_create(tmp_sprite, (void *)sp, i);
+                tmp_sprite->data->render_w = sdani->sprites[i]->width;
+                tmp_sprite->data->render_h = sdani->sprites[i]->height;
+                tmp_sprite->pos.x = sdani->sprites[i]->pos_x;
+                tmp_sprite->pos.y = sdani->sprites[i]->pos_y;
+            } else {
+                sprite_create(tmp_sprite, (void *)sdani->sprites[i], i);
+            }
             sprite_reference spr;
             spr.sprite = tmp_sprite;
             if(sdani->sprites[i]->index) {

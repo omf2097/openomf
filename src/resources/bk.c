@@ -16,6 +16,8 @@ void bk_create(bk *b, void *src) {
     if(modmanager_get_bk_background(b->file_id, &img)) {
         log_info("using modified BK background");
         surface_create_from_vga(&b->background, img);
+        b->background.render_w = 320;
+        b->background.render_h = 200;
     } else {
         surface_create_from_vga(&b->background, sdbk->background);
     }

@@ -190,8 +190,7 @@ void scene_render_overlay(scene *scene) {
 }
 
 void scene_render(scene *scene) {
-    // render potential high res asset with original dimensions
-    video_draw_size(&scene->bk_data->background, 0, 0, 320, 200);
+    video_draw(&scene->bk_data->background, 0, 0);
 
     if(scene->render != NULL) {
         scene->render(scene);

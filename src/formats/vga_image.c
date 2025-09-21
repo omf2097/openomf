@@ -73,11 +73,11 @@ int sd_vga_image_from_png(sd_vga_image *img, const path *filename) {
     return SD_SUCCESS;
 }
 
-int sd_vga_image_from_png_in_memory(sd_vga_image *img, const unsigned char *buf, size_t len) {
+int sd_vga_image_from_png_in_memory(sd_vga_image *img, const unsigned char *buf, size_t len, bool allow_transparency) {
     int w = 0;
     int h = 0;
     // first do a read to figure out dimensions
-    if(!read_paletted_png_from_memory(buf, len, NULL, &w, &h)) {
+    if(!read_paletted_png_from_memory(buf, len, NULL, &w, &h, allow_transparency)) {
         return SD_FAILURE;
     }
     log_info("allocating png %dx%d", w, h);
@@ -85,7 +85,7 @@ int sd_vga_image_from_png_in_memory(sd_vga_image *img, const unsigned char *buf,
         return SD_FAILURE;
     }
 
-    if(!read_paletted_png_from_memory(buf, len, (unsigned char *)img->data, &w, &h)) {
+    if(!read_paletted_png_from_memory(buf, len, (unsigned char *)img->data, &w, &h, allow_transparency)) {
         return SD_FAILURE;
     }
 
