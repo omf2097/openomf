@@ -37,14 +37,15 @@ error:
 }
 
 static void read_png_data(unsigned char *dst, png_structp png_ptr, png_infop info_ptr, int w, int h) {
-    png_bytep *row_pointers = png_malloc(png_ptr, h * png_get_rowbytes(png_ptr, info_ptr));
-    png_read_image(png_ptr, row_pointers);
+    png_uint_32 row_bytes = png_get_rowbytes(png_ptr, info_ptr);
+    png_bytep *row_pointers = png_malloc(png_ptr, h * row_bytes);
+    log_info("allocated %dx%d bytes for row pointers", h, row_bytes);
+
     for(int y = 0; y < h; y++) {
-        png_byte *row = row_pointers[y];
-        for(int x = 0; x < w; x++) {
-            dst[w * y + x] = row[x];
-        }
+        row_pointers[y] = dst + (y * row_bytes);
     }
+
+    png_read_image(png_ptr, row_pointers);
     png_free(png_ptr, row_pointers);
 }
 
@@ -87,9 +88,76 @@ bool read_paletted_png(const path *filename, unsigned char *dst) {
     return valid;
 }
 
+typedef struct {
+    const unsigned char *buffer;
+    size_t size;
+    size_t offset;
+} memory_reader_state;
+
+static void read_memory_data(png_structp png_ptr, png_bytep out, png_size_t length) {
+    memory_reader_state *state = (memory_reader_state *)png_get_io_ptr(png_ptr);
+    if(state->offset + length > state->size) {
+        png_error(png_ptr, "Read beyond end of buffer");
+    }
+    memcpy(out, state->buffer + state->offset, length);
+    state->offset += length;
+}
+
+bool read_paletted_png_from_memory(const unsigned char *buffer, size_t size, unsigned char *dst, int *w, int *h) {
+    assert(buffer != NULL);
+
+    // Check signature
+    if(size < SIGNATURE_SIZE || !png_check_sig((png_bytep)buffer, SIGNATURE_SIZE)) {
+        log_error("Invalid PNG signature in memory buffer");
+        return false;
+    }
+
+    png_structp png_ptr = NULL;
+    png_infop info_ptr = NULL;
+
+    if(!(png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, &abort_png, NULL))) {
+        crash("Unable to allocate libpng read struct: Out of memory!");
+    }
+    if(!(info_ptr = png_create_info_struct(png_ptr))) {
+        png_destroy_read_struct(&png_ptr, NULL, NULL);
+        crash("Unable to allocate libpng info struct: Out of memory!");
+    }
+
+    // Set up memory reading
+    memory_reader_state state = {buffer + SIGNATURE_SIZE, size - SIGNATURE_SIZE, 0};
+    png_set_read_fn(png_ptr, &state, read_memory_data);
+    png_set_sig_bytes(png_ptr, SIGNATURE_SIZE);
+
+    png_read_info(png_ptr, info_ptr);
+    *w = png_get_image_width(png_ptr, info_ptr);
+    *h = png_get_image_height(png_ptr, info_ptr);
+    png_byte color_type = png_get_color_type(png_ptr, info_ptr);
+    png_byte bit_depth = png_get_bit_depth(png_ptr, info_ptr);
+
+    bool valid = color_type == PNG_COLOR_TYPE_PALETTE && bit_depth == 8;
+    if(valid) {
+        if(dst) {
+            // if DST is null, we're probably trying to get the size
+            read_png_data(dst, png_ptr, info_ptr, *w, *h);
+        }
+    } else {
+        log_error("PNG must be paletted image");
+    }
+
+    log_info("png is %dx%d", *w, *h);
+
+    png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+    return valid;
+}
+
 #else // PNG_FOUND
 
-bool png_read_paletted(const char *filename, unsigned char *dst) {
+bool read_paletted_png(const path *filename, unsigned char *dst) {
+    PERROR("PNG reading is not supported in current build!");
+    return false;
+}
+
+bool read_paletted_png_from_memory(const char *filename, unsigned char *dst, int *w, int *h) {
     PERROR("PNG reading is not supported in current build!");
     return false;
 }

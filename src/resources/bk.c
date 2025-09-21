@@ -1,6 +1,8 @@
 #include "formats/bk.h"
 #include "resources/bk.h"
+#include "resources/modmanager.h"
 #include "utils/allocator.h"
+#include "utils/log.h"
 #include <string.h>
 
 void bk_create(bk *b, void *src) {
@@ -10,7 +12,13 @@ void bk_create(bk *b, void *src) {
     b->file_id = sdbk->file_id;
 
     // Copy VGA image
-    surface_create_from_vga(&b->background, sdbk->background);
+    sd_vga_image *img;
+    if(modmanager_get_bk_background(b->file_id, &img)) {
+        log_info("using modified BK background");
+        surface_create_from_vga(&b->background, img);
+    } else {
+        surface_create_from_vga(&b->background, sdbk->background);
+    }
 
     // Copy sound translation table
     memcpy(b->sound_translation_table, sdbk->soundtable, 30);
@@ -31,7 +39,7 @@ void bk_create(bk *b, void *src) {
     bk_info tmp_bk_info;
     for(int i = 0; i < 50; i++) {
         if(sdbk->anims[i] != NULL) {
-            bk_info_create(&tmp_bk_info, &b->sprites, (void *)sdbk->anims[i], i);
+            bk_info_create(b->file_id, &tmp_bk_info, &b->sprites, (void *)sdbk->anims[i], i);
             hashmap_put_int(&b->infos, i, &tmp_bk_info, sizeof(bk_info));
         }
     }

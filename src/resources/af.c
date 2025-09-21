@@ -31,7 +31,7 @@ void af_create(af *a, void *src) {
     for(int i = 0; i < 70; i++) {
         if(sdaf->moves[i] != NULL) {
             af_move *move = omf_calloc(1, sizeof(af_move));
-            af_move_create(move, &a->sprites, (void *)sdaf->moves[i], i);
+            af_move_create(a->id, move, &a->sprites, (void *)sdaf->moves[i], i);
             array_set(&a->moves, i, move);
         }
     }
