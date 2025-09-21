@@ -71,13 +71,28 @@ bool modmanager_init(void) {
                     if(strcmp("background.png", str_c(&fn)) == 0) {
                         // parse as background image
                         sd_vga_image img;
-                        sd_vga_image_from_png_in_memory(&img, entry_buf, entry_size);
+                        if(sd_vga_image_from_png_in_memory(&img, entry_buf, entry_size, false) == SD_SUCCESS) {
 
-                        log_info("got vga image %dx%d with size %d", img.w, img.h, sizeof(img));
+                            log_info("got vga image %dx%d with size %d", img.w, img.h, sizeof(img));
 
-                        hashmap_put_str(&mod_resources, str_c(&filename), &img, sizeof(img));
+                            hashmap_put_str(&mod_resources, str_c(&filename), &img, sizeof(img));
+                        } else {
+                            log_warn("failed to load background image %s", str_c(&filename));
+                        }
                     } else if(strcmp(".png", str_c(&ext)) == 0) {
                         // parse as sprite
+                        sd_vga_image img;
+                        if(sd_vga_image_from_png_in_memory(&img, entry_buf, entry_size, true) == SD_SUCCESS) {
+                            sd_sprite s;
+                            if(strcmp("7_0.png", str_c(&fn)) == 0) {
+                                log_warn("pixel 0 has pallete %d", img.data[0]);
+                            }
+                            if(sd_sprite_vga_encode(&s, &img) == SD_SUCCESS) {
+                                hashmap_put_str(&mod_resources, str_c(&filename), &s, sizeof(s));
+                            } else {
+                                log_warn("failed to load sprite %s", str_c(&filename));
+                            }
+                        }
                     }
 
                     // TODO each filename should be a list
@@ -121,4 +136,50 @@ bool modmanager_get_bk_background(int file_id, sd_vga_image **img) {
         return true;
     }
     return false;
+}
+
+bool modmanager_get_sprite(animation_source source, int file_id, int animation, int frame, sd_sprite **spr) {
+    str filename;
+    switch(source) {
+        case AF_ANIMATION:
+            str_from_format(&filename, "fighters/fighter%d/%d/%d_%d.png", file_id, animation, animation, frame);
+            break;
+        case BK_ANIMATION:
+            {
+                switch(file_id) {
+                    case 8:
+                        str_from_format(&filename, "arenas/arena0/%d/%d_%d.png", animation, animation, frame);
+                        break;
+                    case 16:
+                        str_from_format(&filename, "arenas/arena1/%d/%d_%d.png", animation, animation, frame);
+                        break;
+                    case 32:
+                        str_from_format(&filename, "arenas/arena2/%d/%d_%d.png", animation, animation, frame);
+                        break;
+                    case 64:
+                        str_from_format(&filename, "arenas/arena3/%d/%d_%d.png", animation, animation, frame);
+                        break;
+                    case 128:
+                        str_from_format(&filename, "arenas/arena4/%d/%d_%d.png", animation, animation, frame);
+                        break;
+                    default:
+                        return false;
+                }
+                break;
+            }
+        default:
+            return false;
+    }
+
+    unsigned int len;
+    if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)spr, &len)) {
+        log_info("got sprite %dx%d with size %d", (*spr)->width, (*spr)->height, len);
+        return true;
+    }
+
+
+    //log_warn("MISS for sprite %s", str_c(&filename));
+
+    return false;
+
 }

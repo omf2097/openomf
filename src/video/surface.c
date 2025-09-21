@@ -13,6 +13,8 @@ void surface_create(surface *sur, int w, int h) {
     sur->guid = guid++;
     sur->w = w;
     sur->h = h;
+    sur->render_w = w;
+    sur->render_h = h;
     sur->transparent = 0;
 }
 
