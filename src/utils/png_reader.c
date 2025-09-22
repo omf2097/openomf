@@ -103,7 +103,8 @@ static void read_memory_data(png_structp png_ptr, png_bytep out, png_size_t leng
     state->offset += length;
 }
 
-bool read_paletted_png_from_memory(const unsigned char *buffer, size_t size, unsigned char *dst, int *w, int *h, bool allow_transparency) {
+bool read_paletted_png_from_memory(const unsigned char *buffer, size_t size, unsigned char *dst, int *w, int *h,
+                                   bool allow_transparency) {
     assert(buffer != NULL);
 
     // Check signature
@@ -134,7 +135,7 @@ bool read_paletted_png_from_memory(const unsigned char *buffer, size_t size, uns
     int num_trans = 0;
     png_color_16p trans_values = NULL;
 
-    if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)) {
+    if(png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)) {
         png_get_tRNS(png_ptr, info_ptr, &trans, &num_trans, &trans_values);
     }
 
@@ -155,12 +156,12 @@ bool read_paletted_png_from_memory(const unsigned char *buffer, size_t size, uns
             read_png_data(dst, png_ptr, info_ptr, *w, *h);
 
             // remap all transparent pixels to palette index 0
-            if (allow_transparency && trans) {
-                for (int y = 0; y < *h; y++) {
-                    for (int x = 0; x < *w; x++) {
+            if(allow_transparency && trans) {
+                for(int y = 0; y < *h; y++) {
+                    for(int x = 0; x < *w; x++) {
                         int idx = (*w) * y + x;
                         png_byte pixel = dst[idx];
-                        if (pixel < num_trans && trans[pixel] == 0) {
+                        if(pixel < num_trans && trans[pixel] == 0) {
                             dst[idx] = 0;
                         }
                     }
