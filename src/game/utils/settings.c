@@ -87,6 +87,7 @@ const field f_sound[] = {
     F_INT(settings_sound, sample_rate, 48000),
     F_INT(settings_sound, music_resampler, 1),
     F_STRING(settings_sound, player, ""),
+    F_INT(settings_sound, music_type, 0),
 };
 
 const field f_gameplay[] = {
