@@ -14,6 +14,8 @@
 #include <opusfile.h>
 #endif
 
+#include <confuse.h>
+
 hashmap mod_resources;
 
 typedef struct {
@@ -101,6 +103,20 @@ bool modmanager_init(void) {
                             } else {
                                 log_warn("failed to load sprite %s", str_c(&filename));
                             }
+                        }
+                    } else if(strcmp(".ini", str_c(&ext)) == 0) {
+                        list *l;
+                        unsigned int len;
+                        if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&l, &len)) {
+                            list_append(l, entry_buf, entry_size);
+                        } else {
+                            l = omf_calloc(1, sizeof(list));
+                            char *ini_buf = omf_calloc(1, entry_size + 1);
+                            // XXX the file buffer is NOT null terminated
+                            strncpy(ini_buf, entry_buf, entry_size);
+                            list_create(l);
+                            list_append(l, ini_buf, entry_size + 1);
+                            hashmap_put_str(&mod_resources, str_c(&filename), l, sizeof(list));
                         }
 #ifdef OPUSFILE_FOUND
                     } else if(strcmp(".ogg", str_c(&ext)) == 0) {
@@ -260,4 +276,356 @@ bool modmanager_get_music(str *name, unsigned int index, unsigned char **buf, si
     log_warn("MISS for %s", str_c(&filename));
 
     return false;
+}
+
+bool modmanager_parse_af_move_mod(const char *buf, af_move *current_move) {
+    if(!buf || !current_move)
+        return false;
+
+    cfg_opt_t af_opts[] = {
+        CFG_INT("pos_constraints", current_move->pos_constraints, CFGF_NONE),
+        CFG_INT("next_move", current_move->next_move, CFGF_NONE),
+        CFG_INT("successor_id", current_move->successor_id, CFGF_NONE),
+        CFG_INT("category", current_move->category, CFGF_NONE), CFG_INT("points", current_move->points, CFGF_NONE),
+        CFG_INT("block_damage", current_move->block_damage, CFGF_NONE),
+        CFG_INT("block_stun", current_move->block_stun, CFGF_NONE),
+        CFG_INT("throw_duration", current_move->throw_duration, CFGF_NONE),
+        CFG_INT("extra_string_selector", current_move->extra_string_selector, CFGF_NONE),
+        CFG_FLOAT("damage", current_move->damage, CFGF_NONE), CFG_FLOAT("stun", current_move->stun, CFGF_NONE),
+        CFG_STR("move_string", str_c(&current_move->move_string), CFGF_NONE),
+        CFG_STR("footer_string", str_c(&current_move->footer_string), CFGF_NONE),
+
+        // Animation-specific options
+        CFG_INT("start_x", current_move->ani.start_pos.x, CFGF_NONE),
+        CFG_INT("start_y", current_move->ani.start_pos.y, CFGF_NONE),
+        CFG_STR("animation_string", str_c(&current_move->ani.animation_string), CFGF_NONE), CFG_END()};
+
+    cfg_t *cfg = cfg_init(af_opts, CFGF_NONE);
+
+    if(cfg_parse_buf(cfg, buf) == CFG_PARSE_ERROR) {
+        cfg_free(cfg);
+        return false;
+    }
+
+    // Update integer fields only if they changed
+    if(current_move->pos_constraints != cfg_getint(cfg, "pos_constraints")) {
+        log_info("setting pos_constraints from %u to %d", current_move->pos_constraints,
+                 cfg_getint(cfg, "pos_constraints"));
+        current_move->pos_constraints = cfg_getint(cfg, "pos_constraints");
+    }
+
+    if(current_move->next_move != cfg_getint(cfg, "next_move")) {
+        log_info("setting next_move from %u to %d", current_move->next_move, cfg_getint(cfg, "next_move"));
+        current_move->next_move = cfg_getint(cfg, "next_move");
+    }
+
+    if(current_move->successor_id != cfg_getint(cfg, "successor_id")) {
+        log_info("setting successor_id from %u to %d", current_move->successor_id, cfg_getint(cfg, "successor_id"));
+        current_move->successor_id = cfg_getint(cfg, "successor_id");
+    }
+
+    if(current_move->category != cfg_getint(cfg, "category")) {
+        log_info("setting category from %u to %d", current_move->category, cfg_getint(cfg, "category"));
+        current_move->category = cfg_getint(cfg, "category");
+    }
+
+    if(current_move->points != cfg_getint(cfg, "points")) {
+        log_info("setting points from %u to %d", current_move->points, cfg_getint(cfg, "points"));
+        current_move->points = cfg_getint(cfg, "points");
+    }
+
+    if(current_move->block_damage != cfg_getint(cfg, "block_damage")) {
+        log_info("setting block_damage from %u to %d", current_move->block_damage, cfg_getint(cfg, "block_damage"));
+        current_move->block_damage = cfg_getint(cfg, "block_damage");
+    }
+
+    if(current_move->block_stun != cfg_getint(cfg, "block_stun")) {
+        log_info("setting block_stun from %u to %d", current_move->block_stun, cfg_getint(cfg, "block_stun"));
+        current_move->block_stun = cfg_getint(cfg, "block_stun");
+    }
+
+    if(current_move->throw_duration != cfg_getint(cfg, "throw_duration")) {
+        log_info("setting throw_duration from %u to %d", current_move->throw_duration,
+                 cfg_getint(cfg, "throw_duration"));
+        current_move->throw_duration = cfg_getint(cfg, "throw_duration");
+    }
+
+    if(current_move->extra_string_selector != cfg_getint(cfg, "extra_string_selector")) {
+        log_info("setting extra_string_selector from %u to %d", current_move->extra_string_selector,
+                 cfg_getint(cfg, "extra_string_selector"));
+        current_move->extra_string_selector = cfg_getint(cfg, "extra_string_selector");
+    }
+
+    if(current_move->ani.start_pos.x != cfg_getint(cfg, "start_x")) {
+        log_info("setting start_x from %d to %d", current_move->ani.start_pos.x, cfg_getint(cfg, "start_x"));
+        current_move->ani.start_pos.x = cfg_getint(cfg, "start_x");
+    }
+
+    if(current_move->ani.start_pos.y != cfg_getint(cfg, "start_y")) {
+        log_info("setting start_y from %d to %d", current_move->ani.start_pos.y, cfg_getint(cfg, "start_y"));
+        current_move->ani.start_pos.y = cfg_getint(cfg, "start_y");
+    }
+
+    // Update float fields only if they changed
+    if(current_move->damage != cfg_getfloat(cfg, "damage")) {
+        log_info("setting damage from %f to %f", current_move->damage, cfg_getfloat(cfg, "damage"));
+        current_move->damage = cfg_getfloat(cfg, "damage");
+    }
+
+    if(current_move->stun != cfg_getfloat(cfg, "stun")) {
+        log_info("setting stun from %f to %f", current_move->stun, cfg_getfloat(cfg, "stun"));
+        current_move->stun = cfg_getfloat(cfg, "stun");
+    }
+
+    // Update string fields if they were modified
+    char *move_str = cfg_getstr(cfg, "move_string");
+    if(move_str && strcmp(move_str, str_c(&current_move->move_string)) != 0) {
+        log_info("setting move_string from '%s' to '%s'", str_c(&current_move->move_string), move_str);
+        str_free(&current_move->move_string);
+        str_from_c(&current_move->move_string, move_str);
+    }
+
+    char *footer_str = cfg_getstr(cfg, "footer_string");
+    if(footer_str && strcmp(footer_str, str_c(&current_move->footer_string)) != 0) {
+        log_info("setting footer_string from '%s' to '%s'", str_c(&current_move->footer_string), footer_str);
+        str_free(&current_move->footer_string);
+        str_from_c(&current_move->footer_string, footer_str);
+    }
+
+    char *anim_str = cfg_getstr(cfg, "animation_string");
+    if(anim_str && strcmp(anim_str, str_c(&current_move->ani.animation_string)) != 0) {
+        log_info("setting animation_string from '%s' to '%s'", str_c(&current_move->ani.animation_string), anim_str);
+        str_free(&current_move->ani.animation_string);
+        str_from_c(&current_move->ani.animation_string, anim_str);
+    }
+
+    cfg_free(cfg);
+    return true;
+}
+
+bool modmanager_parse_bk_info_mod(const char *buf, bk_info *current_info) {
+    if(!buf || !current_info)
+        return false;
+
+    cfg_opt_t bk_opts[] = {CFG_INT("chain_hit", current_info->chain_hit, CFGF_NONE),
+                           CFG_INT("chain_no_hit", current_info->chain_no_hit, CFGF_NONE),
+                           CFG_INT("load_on_start", current_info->load_on_start, CFGF_NONE),
+                           CFG_INT("probability", current_info->probability, CFGF_NONE),
+                           CFG_INT("hazard_damage", current_info->hazard_damage, CFGF_NONE),
+                           CFG_STR("footer_string", str_c(&current_info->footer_string), CFGF_NONE),
+
+                           // Animation-specific options
+                           CFG_INT("start_x", current_info->ani.start_pos.x, CFGF_NONE),
+                           CFG_INT("start_y", current_info->ani.start_pos.y, CFGF_NONE),
+                           CFG_STR("animation_string", str_c(&current_info->ani.animation_string), CFGF_NONE),
+                           CFG_END()};
+
+    cfg_t *cfg = cfg_init(bk_opts, CFGF_NONE);
+
+    if(cfg_parse_buf(cfg, buf) == CFG_PARSE_ERROR) {
+        cfg_free(cfg);
+        return false;
+    }
+
+    // Update integer fields only if they changed
+    if(current_info->chain_hit != cfg_getint(cfg, "chain_hit")) {
+        log_info("setting chain_hit from %u to %d", current_info->chain_hit, cfg_getint(cfg, "chain_hit"));
+        current_info->chain_hit = cfg_getint(cfg, "chain_hit");
+    }
+
+    if(current_info->chain_no_hit != cfg_getint(cfg, "chain_no_hit")) {
+        log_info("setting chain_no_hit from %u to %d", current_info->chain_no_hit, cfg_getint(cfg, "chain_no_hit"));
+        current_info->chain_no_hit = cfg_getint(cfg, "chain_no_hit");
+    }
+
+    if(current_info->load_on_start != cfg_getint(cfg, "load_on_start")) {
+        log_info("setting load_on_start from %u to %d", current_info->load_on_start, cfg_getint(cfg, "load_on_start"));
+        current_info->load_on_start = cfg_getint(cfg, "load_on_start");
+    }
+
+    if(current_info->probability != cfg_getint(cfg, "probability")) {
+        log_info("setting probability from %u to %d", current_info->probability, cfg_getint(cfg, "probability"));
+        current_info->probability = cfg_getint(cfg, "probability");
+    }
+
+    if(current_info->hazard_damage != cfg_getint(cfg, "hazard_damage")) {
+        log_info("setting hazard_damage from %u to %d", current_info->hazard_damage, cfg_getint(cfg, "hazard_damage"));
+        current_info->hazard_damage = cfg_getint(cfg, "hazard_damage");
+    }
+
+    if(current_info->ani.start_pos.x != cfg_getint(cfg, "start_x")) {
+        log_info("setting start_x from %d to %d", current_info->ani.start_pos.x, cfg_getint(cfg, "start_x"));
+        current_info->ani.start_pos.x = cfg_getint(cfg, "start_x");
+    }
+
+    if(current_info->ani.start_pos.y != cfg_getint(cfg, "start_y")) {
+        log_info("setting start_y from %d to %d", current_info->ani.start_pos.y, cfg_getint(cfg, "start_y"));
+        current_info->ani.start_pos.y = cfg_getint(cfg, "start_y");
+    }
+
+    // Update string fields if they were modified
+    char *footer_str = cfg_getstr(cfg, "footer_string");
+    if(footer_str && strcmp(footer_str, str_c(&current_info->footer_string)) != 0) {
+        log_info("setting footer_string from '%s' to '%s'", str_c(&current_info->footer_string), footer_str);
+        str_free(&current_info->footer_string);
+        str_from_c(&current_info->footer_string, footer_str);
+    }
+
+    char *anim_str = cfg_getstr(cfg, "animation_string");
+    if(anim_str && strcmp(anim_str, str_c(&current_info->ani.animation_string)) != 0) {
+        log_info("setting animation_string from '%s' to '%s'", str_c(&current_info->ani.animation_string), anim_str);
+        str_free(&current_info->ani.animation_string);
+        str_from_c(&current_info->ani.animation_string, anim_str);
+    }
+
+    cfg_free(cfg);
+    return true;
+}
+
+// Helper function to generate mod filename for AF moves
+bool modmanager_get_af_move(int fighter_id, int move_id, af_move *move_data) {
+    if(!move_data)
+        return false;
+
+    str filename;
+    str_from_format(&filename, "fighters/fighter%d/%d/animdata.ini", fighter_id, move_id);
+
+    list *l;
+    unsigned int len;
+    bool result = false;
+    if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&l, &len)) {
+        log_info("HIT %s", str_c(&filename));
+        iterator it;
+        list_iter_begin(l, &it);
+        char *buf;
+        foreach(it, buf) {
+            result |= modmanager_parse_af_move_mod(buf, move_data);
+        }
+    }
+
+    str_free(&filename);
+    return result;
+}
+
+// Helper function to generate mod filename for BK animations
+bool modmanager_get_bk_animation(int arena_id, int anim_id, bk_info *bk_data) {
+    if(!bk_data)
+        return false;
+
+    str filename;
+
+    // Map arena ID to index
+    int arena_index = -1;
+    switch(arena_id) {
+        case 8:
+            arena_index = 0;
+            break;
+        case 16:
+            arena_index = 1;
+            break;
+        case 32:
+            arena_index = 2;
+            break;
+        case 64:
+            arena_index = 3;
+            break;
+        case 128:
+            arena_index = 4;
+            break;
+        default:
+            return false;
+    }
+
+    str_from_format(&filename, "arenas/arena%d/%d/animdata.ini", arena_index, anim_id);
+
+    list *l;
+    unsigned int len = 0;
+
+    bool result = false;
+    if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&l, &len)) {
+        iterator it;
+        list_iter_begin(l, &it);
+        char *buf;
+        foreach(it, buf) {
+            result |= modmanager_parse_bk_info_mod(buf, bk_data);
+        }
+    }
+
+    str_free(&filename);
+    return result;
+}
+
+bool modmanager_parse_fighter_header_mod(const char *buf, af *fighter) {
+
+    cfg_opt_t header_opts[] = {CFG_FLOAT("endurance", fighter->endurance, CFGF_NONE),
+                               CFG_INT("health", fighter->health, CFGF_NONE),
+                               CFG_FLOAT("forward_speed", fighter->forward_speed, CFGF_NONE),
+                               CFG_FLOAT("reverse_speed", fighter->reverse_speed, CFGF_NONE),
+                               CFG_FLOAT("jump_speed", fighter->jump_speed, CFGF_NONE),
+                               CFG_FLOAT("fall_speed", fighter->fall_speed, CFGF_NONE),
+                               CFG_END()};
+
+    cfg_t *cfg = cfg_init(header_opts, CFGF_NONE);
+
+    if(cfg_parse_buf(cfg, buf) == CFG_PARSE_ERROR) {
+        cfg_free(cfg);
+        return false;
+    }
+
+    // Update each field only if it changed, with logging
+    if(fighter->endurance != cfg_getfloat(cfg, "endurance")) {
+        log_info("setting endurance from %f to %f", fighter->endurance, cfg_getfloat(cfg, "endurance"));
+        fighter->endurance = cfg_getfloat(cfg, "endurance");
+    }
+
+    if(fighter->health != cfg_getint(cfg, "health")) {
+        log_info("setting health from %u to %d", fighter->health, cfg_getint(cfg, "health"));
+        fighter->health = cfg_getint(cfg, "health");
+    }
+
+    if(fighter->forward_speed != cfg_getfloat(cfg, "forward_speed")) {
+        log_info("setting forward speed from %f to %f", fighter->forward_speed, cfg_getfloat(cfg, "forward_speed"));
+        fighter->forward_speed = cfg_getfloat(cfg, "forward_speed");
+    }
+
+    if(fighter->reverse_speed != cfg_getfloat(cfg, "reverse_speed")) {
+        log_info("setting reverse speed from %f to %f", fighter->reverse_speed, cfg_getfloat(cfg, "reverse_speed"));
+        fighter->reverse_speed = cfg_getfloat(cfg, "reverse_speed");
+    }
+
+    if(fighter->jump_speed != cfg_getfloat(cfg, "jump_speed")) {
+        log_info("setting jump speed from %f to %f", fighter->jump_speed, cfg_getfloat(cfg, "jump_speed"));
+        fighter->jump_speed = cfg_getfloat(cfg, "jump_speed");
+    }
+
+    if(fighter->fall_speed != cfg_getfloat(cfg, "fall_speed")) {
+        log_info("setting fall speed from %f to %f", fighter->fall_speed, cfg_getfloat(cfg, "fall_speed"));
+        fighter->fall_speed = cfg_getfloat(cfg, "fall_speed");
+    }
+
+    cfg_free(cfg);
+    return true;
+}
+
+// Helper function to load fighter header mod
+bool modmanager_get_fighter_header(int fighter_id, af *fighter) {
+
+    str filename;
+    str_from_format(&filename, "fighters/fighter%d/header.ini", fighter_id);
+
+    list *l;
+    unsigned int len = 0;
+
+    bool result = false;
+    if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&l, &len)) {
+        iterator it;
+        list_iter_begin(l, &it);
+        char *buf;
+        foreach(it, buf) {
+            result |= modmanager_parse_fighter_header_mod(buf, fighter);
+        }
+    }
+
+    str_free(&filename);
+    return result;
 }
