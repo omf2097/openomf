@@ -1,4 +1,5 @@
 #include "game/audio/audio_sources.h"
+#include "game/utils/settings.h"
 #include "audio/music_sources/opus_source.h"
 #include "audio/music_sources/psm_source.h"
 #include "audio/sound_sources/dat_source.h"
@@ -54,7 +55,13 @@ bool music_source_pick(music_source *src, const resource_id id, const unsigned c
     path_stem(&music, &fn);
     int music_count = modmanager_count_music(&fn);
     int rand = rand_int(music_count + 1);
-    if(rand && modmanager_get_music(&fn, rand - 1, &buf, &len)) {
+    int music_type = settings_get()->sound.music_type;
+
+    if(music_count > 0 && music_type == 1 && rand == 0) {
+        // remixes only, never select an original track (0)
+        rand = rand_int(music_count) + 1;
+    }
+    if(music_type != 0 && rand && modmanager_get_music(&fn, rand - 1, &buf, &len)) {
         log_debug("found replacement music file for %s.PSM", str_c(&fn));
         return opus_load_memory(src, (int)channels, (int)sample_rate, buf, len);
     }
