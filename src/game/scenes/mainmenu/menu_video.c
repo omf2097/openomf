@@ -59,8 +59,19 @@ struct framerate_t {
     {144, "144 fps"},
 };
 
+struct framebuffer_scale_t {
+    int factor;
+    const char *name;
+} _framebuffer_scaling_factors[] = {
+    {1, "1x"},
+    {2, "2x"},
+    {4, "4x"},
+    {8, "8x"},
+};
+
 typedef struct resolution_t resolution;
 typedef struct framerate_t framerate;
+typedef struct framebuffer_scale_t framebuffer_scale;
 
 typedef struct {
     vec2i custom_resolution;
@@ -87,6 +98,16 @@ framerate *find_framerate_by_settings(settings *s) {
     for(unsigned i = 0; i < N_ELEMENTS(_framerates); i++) {
         if(rate == _framerates[i].rate) {
             return &_framerates[i];
+        }
+    }
+    return NULL;
+}
+
+framebuffer_scale *find_framebuffer_scale_by_settings(settings *s) {
+    int fb_scale = s->video.fb_scale;
+    for(unsigned i = 0; i < N_ELEMENTS(_framebuffer_scaling_factors); i++) {
+        if(fb_scale == _framebuffer_scaling_factors[i].factor) {
+            return &_framebuffer_scaling_factors[i];
         }
     }
     return NULL;
@@ -124,6 +145,11 @@ void framerate_toggled(component *c, void *userdata, int pos) {
     }
 }
 
+void fb_scaling_toggled(component *c, void *userdata, int pos) {
+    settings_video *v = &settings_get()->video;
+    v->fb_scale = _framebuffer_scaling_factors[pos].factor;
+}
+
 void renderer_toggled(component *c, void *userdata, int pos) {
     settings_video *v = &settings_get()->video;
     const char *renderer;
@@ -139,13 +165,15 @@ void menu_video_done(component *c, void *u) {
     bool render_plugin_changed = strcmp(v->renderer, local->old_video_settings.renderer) != 0;
     if(render_plugin_changed) {
         video_close();
-        video_init(v->renderer, v->screen_w, v->screen_h, v->fullscreen, v->vsync, v->aspect, v->framerate_limit);
+        video_init(v->renderer, v->screen_w, v->screen_h, v->fullscreen, v->vsync, v->aspect, v->framerate_limit,
+                   v->fb_scale);
         menu_set_submenu(c->parent, menu_video_confirm_create(s, &local->old_video_settings));
     } else if(local->old_video_settings.screen_w != v->screen_w || local->old_video_settings.screen_h != v->screen_h ||
               local->old_video_settings.fullscreen != v->fullscreen || local->old_video_settings.vsync != v->vsync ||
               local->old_video_settings.aspect != v->aspect ||
-              local->old_video_settings.framerate_limit != v->framerate_limit) {
-        video_reinit(v->screen_w, v->screen_h, v->fullscreen, v->vsync, v->aspect, v->framerate_limit);
+              local->old_video_settings.framerate_limit != v->framerate_limit ||
+              local->old_video_settings.fb_scale != v->fb_scale) {
+        video_reinit(v->screen_w, v->screen_h, v->fullscreen, v->vsync, v->aspect, v->framerate_limit, v->fb_scale);
 
         menu_set_submenu(c->parent, menu_video_confirm_create(s, &local->old_video_settings));
     } else {
@@ -239,8 +267,24 @@ component *menu_video_create(scene *s) {
     // Add standard framerates
     for(unsigned i = 0; i < N_ELEMENTS(_framerates); i++) {
         textselector_add_option(framerate_limit_selector, _framerates[i].name);
-        if(!local->is_custom_resolution && _framerates[i].rate == limit->rate) {
+        if(!local->is_custom_framerate_limit && limit != NULL && _framerates[i].rate == limit->rate) {
             textselector_set_pos(framerate_limit_selector, i);
+        }
+    }
+
+    // Framerate limiter selector
+    component *fb_scaling = textselector_create("FB SCALE:",
+                                                "Set internal framebuffer scaling factor. You need to bump this if you "
+                                                "are using higher resolution sprites from mods.",
+                                                fb_scaling_toggled, local);
+    menu_attach(menu, fb_scaling);
+
+    // Add standard framebuffer scaling factors
+    framebuffer_scale *scale = find_framebuffer_scale_by_settings(setting);
+    for(unsigned i = 0; i < N_ELEMENTS(_framebuffer_scaling_factors); i++) {
+        textselector_add_option(fb_scaling, _framebuffer_scaling_factors[i].name);
+        if(scale != NULL && _framebuffer_scaling_factors[i].factor == scale->factor) {
+            textselector_set_pos(fb_scaling, i);
         }
     }
 

@@ -131,12 +131,12 @@ static bool video_find_renderer(const char *try_name) {
 }
 
 bool video_init(const char *try_name, int window_w, int window_h, bool fullscreen, bool vsync, int aspect,
-                int framerate_limit) {
+                int framerate_limit, int fb_scale) {
     if(!video_find_renderer(try_name))
         goto exit_0;
     current_renderer.create(&current_renderer);
     if(!current_renderer.setup_context(current_renderer.ctx, window_w, window_h, fullscreen, vsync, aspect,
-                                       framerate_limit)) {
+                                       framerate_limit, fb_scale)) {
         goto exit_1;
     }
     return true;
@@ -155,9 +155,10 @@ void video_reinit_renderer(void) {
     current_renderer.reset_context(current_renderer.ctx);
 }
 
-bool video_reinit(int window_w, int window_h, bool fullscreen, bool vsync, int aspect, int framerate_limit) {
+bool video_reinit(int window_w, int window_h, bool fullscreen, bool vsync, int aspect, int framerate_limit,
+                  int fb_scale) {
     return current_renderer.reset_context_with(current_renderer.ctx, window_w, window_h, fullscreen, vsync, aspect,
-                                               framerate_limit);
+                                               framerate_limit, fb_scale);
 }
 
 void video_signal_scene_change(void) {
@@ -189,8 +190,8 @@ void video_move_target(int x, int y) {
     current_renderer.move_target(current_renderer.ctx, x, y);
 }
 
-void video_get_state(int *w, int *h, bool *fs, bool *vsync, int *aspect) {
-    current_renderer.get_context_state(current_renderer.ctx, w, h, fs, vsync, aspect);
+void video_get_state(int *w, int *h, bool *fs, bool *vsync, int *aspect, int *fb_scale) {
+    current_renderer.get_context_state(current_renderer.ctx, w, h, fs, vsync, aspect, fb_scale);
 }
 
 void video_schedule_screenshot(video_screenshot_signal callback) {

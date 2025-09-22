@@ -37,6 +37,7 @@ int engine_init(engine_init_flags *init_flags) {
     int fs = setting->video.fullscreen;
     int vsync = setting->video.vsync;
     int aspect = setting->video.aspect;
+    int fb_scale = setting->video.fb_scale;
     int framerate_limit = setting->video.framerate_limit;
     int frequency = setting->sound.sample_rate;
     int resampler = setting->sound.music_resampler;
@@ -53,7 +54,7 @@ int engine_init(engine_init_flags *init_flags) {
     // Initialize everything.
     video_scan_renderers();
     audio_scan_backends();
-    if(!video_init(renderer, w, h, fs, vsync, aspect, framerate_limit))
+    if(!video_init(renderer, w, h, fs, vsync, aspect, framerate_limit, fb_scale))
         goto exit_0;
     if(!audio_init(player, frequency, mono, resampler, music_volume, sound_volume))
         goto exit_1;
@@ -249,7 +250,7 @@ void engine_run(engine_init_flags *init_flags) {
                             enable_screen_updates = 1;
                             break;
                         case SDL_WINDOWEVENT_RESTORED:
-                            video_get_state(NULL, NULL, &check_fs, NULL, NULL);
+                            video_get_state(NULL, NULL, &check_fs, NULL, NULL, NULL);
                             if(check_fs) {
                                 video_reinit_renderer();
                             }
