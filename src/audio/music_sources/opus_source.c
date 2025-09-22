@@ -189,7 +189,6 @@ exit_0:
     return false;
 }
 
-
 #else
 
 bool opus_load(music_source *src, const int channels, const int sample_rate, const char *file) {

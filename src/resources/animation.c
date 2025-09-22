@@ -1,6 +1,6 @@
 #include "resources/animation.h"
-#include "resources/modmanager.h"
 #include "formats/animation.h"
+#include "resources/modmanager.h"
 #include "utils/allocator.h"
 #include <stdlib.h>
 

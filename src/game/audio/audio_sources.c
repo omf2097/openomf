@@ -7,6 +7,7 @@
 #include "resources/resource_files.h"
 #include "utils/log.h"
 #include "utils/path.h"
+#include "utils/random.h"
 
 #include <assert.h>
 
@@ -51,7 +52,9 @@ bool music_source_pick(music_source *src, const resource_id id, const unsigned c
     path music = get_resource_filename(get_resource_file(id));
     // check the modmanager here for a music mod
     path_stem(&music, &fn);
-    if(modmanager_get_music(&fn, &buf, &len)) {
+    int music_count = modmanager_count_music(&fn);
+    int rand = rand_int(music_count + 1);
+    if(rand && modmanager_get_music(&fn, rand - 1, &buf, &len)) {
         log_debug("found replacement music file for %s.PSM", str_c(&fn));
         return opus_load_memory(src, (int)channels, (int)sample_rate, buf, len);
     }
