@@ -2,6 +2,7 @@
 #include "audio/backends/audio_backend.h"
 #include "audio/sources/opus_source.h"
 #include "audio/sources/psm_source.h"
+#include "game/utils/settings.h"
 #include "resources/modmanager.h"
 #include "resources/resource_files.h"
 #include "resources/sounds_loader.h"
@@ -9,7 +10,6 @@
 #include "utils/log.h"
 #include "utils/path.h"
 #include "utils/random.h"
-#include "game/utils/settings.h"
 
 #include <assert.h>
 

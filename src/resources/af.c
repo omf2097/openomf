@@ -1,5 +1,6 @@
 #include "formats/af.h"
 #include "resources/af.h"
+#include "resources/modmanager.h"
 #include "resources/sprite.h"
 #include <string.h>
 
@@ -35,6 +36,8 @@ void af_create(af *a, void *src) {
             array_set(&a->moves, i, move);
         }
     }
+
+    modmanager_get_fighter_header(a->id, a);
 }
 
 af_move *af_get_move(const af *a, int id) {
