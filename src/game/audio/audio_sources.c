@@ -3,6 +3,7 @@
 #include "audio/music_sources/psm_source.h"
 #include "audio/sound_sources/dat_source.h"
 #include "resources/ids.h"
+#include "resources/modmanager.h"
 #include "resources/resource_files.h"
 #include "utils/log.h"
 #include "utils/path.h"
@@ -43,14 +44,17 @@ bool music_source_pick(music_source *src, const resource_id id, const unsigned c
     }
 #endif
 
-    path original_music, new_music;
-    original_music = new_music = get_resource_filename(get_resource_file(id));
-    path_set_ext(&new_music, ".ogg");
 
-    if(path_exists(&new_music)) {
-        log_debug("Found alternate music file %s", path_c(&new_music));
-        return opus_load(src, (int)channels, (int)sample_rate, path_c(&new_music));
+    str fn;
+    unsigned char *buf;
+    size_t len;
+    path music = get_resource_filename(get_resource_file(id));
+    // check the modmanager here for a music mod
+    path_stem(&music, &fn);
+    if(modmanager_get_music(&fn, &buf, &len)) {
+        log_debug("found replacement music file for %s.PSM", str_c(&fn));
+        return opus_load_memory(src, (int)channels, (int)sample_rate, buf, len);
     }
-    log_debug("Found original music file %s", path_c(&original_music));
-    return psm_load(src, channels, sample_rate, resampler, path_c(&original_music));
+    log_debug("Found original music file %s", path_c(&music));
+    return psm_load(src, channels, sample_rate, resampler, path_c(&music));
 }
