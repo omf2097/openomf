@@ -40,7 +40,7 @@ int scene_create(scene *scene, game_state *gs, int scene_id) {
             bk_filename = get_resource_filename(get_resource_file(BK_INTRO + (scene_id - 1)));
             break;
         case SCENE_SCOREBOARD:
-            bk_filename = get_resource_filename("MENU.BK");
+            bk_filename = get_resource_filename("MAIN.BK");
             break;
         case SCENE_LOBBY:
             bk_filename = get_resource_filename("NETARENA.PCX");
