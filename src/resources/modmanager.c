@@ -10,6 +10,10 @@
 #include <stdio.h>
 #include <string.h>
 
+#ifdef OPUSFILE_FOUND
+#include <opusfile.h>
+#endif
+
 hashmap mod_resources;
 
 int mod_find(list *mod_list) {
@@ -53,7 +57,7 @@ bool modmanager_init(void) {
                     str filename;
                     str_create(&filename);
                     str_from_c(&filename, zip_entry_name(zip));
-                    // str_tolower(&filename);
+                    str_tolower(&filename);
                     unsigned long long entry_size = zip_entry_uncomp_size(zip);
                     void *entry_buf = omf_calloc(entry_size, 1);
                     if(zip_entry_noallocread(zip, entry_buf, entry_size) < 0) {
@@ -93,6 +97,15 @@ bool modmanager_init(void) {
                                 log_warn("failed to load sprite %s", str_c(&filename));
                             }
                         }
+#ifdef OPUSFILE_FOUND
+                    } else if(strcmp(".ogg", str_c(&ext)) == 0) {
+                        if(op_test(NULL, entry_buf, entry_size) == 0) {
+                            log_info("got OPUS file %s", str_c(&filename));
+                            hashmap_put_str(&mod_resources, str_c(&filename), entry_buf, entry_size);
+                        } else {
+                            log_warn("Failed to parse OPUS file %s", str_c(&filename));
+                        }
+#endif
                     }
 
                     // TODO each filename should be a list
@@ -182,4 +195,19 @@ bool modmanager_get_sprite(animation_source source, int file_id, int animation, 
 
     return false;
 
+}
+
+bool modmanager_get_music(str *name, unsigned char **buf, size_t *buflen) {
+    str filename;
+
+    str_from_format(&filename, "audio/common/music/%s.ogg", str_c(name));
+    str_tolower(&filename);
+
+    if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)buf, (unsigned int*)buflen)) {
+        return true;
+    }
+
+    log_warn("MISS for %s", str_c(&filename));
+
+    return false;
 }

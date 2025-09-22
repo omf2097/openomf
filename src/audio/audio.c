@@ -4,6 +4,7 @@
 #include "audio/sources/psm_source.h"
 #include "resources/resource_files.h"
 #include "resources/sounds_loader.h"
+#include "resources/modmanager.h"
 #include "utils/c_array_util.h"
 #include "utils/log.h"
 #include "utils/path.h"
@@ -205,12 +206,12 @@ static void load_xmp_music(const char *src) {
     }
 }
 
-static void load_opus_music(const char *src) {
+static void load_opus_music(unsigned char *buf, size_t len) {
     music_source music;
     unsigned channels;
     unsigned sample_rate;
     current_backend.get_info(current_backend.ctx, &sample_rate, &channels, NULL);
-    if(opus_load(&music, channels, sample_rate, src)) {
+    if(opus_load_memory(&music, channels, sample_rate, buf, len)) {
         current_backend.play_music(current_backend.ctx, &music);
     }
 }
@@ -219,17 +220,8 @@ static path get_music_path(music_file_type *type, unsigned int resource_id) {
     assert(is_music(resource_id));
     path original_music, new_music;
     original_music = new_music = get_resource_filename(get_resource_file(resource_id));
-    path_set_ext(&new_music, ".ogg");
-
-    if(path_exists(&new_music)) {
-        log_debug("Found alternate music file %s", path_c(&new_music));
-        *type = MUSIC_FILE_TYPE_OGG;
-        return new_music;
-    } else {
-        log_debug("Found original music file %s", path_c(&original_music));
-        *type = MUSIC_FILE_TYPE_PSM;
-        return original_music;
-    }
+    *type = MUSIC_FILE_TYPE_PSM;
+    return original_music;
 }
 
 void audio_play_music(resource_id id) {
@@ -239,11 +231,21 @@ void audio_play_music(resource_id id) {
 
         switch(file_type) {
             case MUSIC_FILE_TYPE_PSM:
-                load_xmp_music(path_c(&music));
-                break;
-            case MUSIC_FILE_TYPE_OGG:
-                load_opus_music(path_c(&music));
-                break;
+                {
+                    str fn;
+                    unsigned char *buf;
+                    size_t len;
+                    // check the modmanager here for a music mod
+                    path_stem(&music, &fn);
+                    if(modmanager_get_music(&fn, &buf, &len)) {
+                        log_debug("found replacement music file for %s.PSM", str_c(&fn));
+                        load_opus_music(buf, len);
+                    } else {
+                        log_debug("Found original music file %s", path_c(&music));
+                        load_xmp_music(path_c(&music));
+                    }
+                    break;
+                    }
             default:
                 log_error("Unable to load music file %s due to unsupported audio format", path_c(&music));
                 break;
