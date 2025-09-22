@@ -1,5 +1,6 @@
 #include "resources/bk_info.h"
 #include "formats/bkanim.h"
+#include "resources/modmanager.h"
 
 void bk_info_create(int file_id, bk_info *info, array *sprites, void *src, int id) {
     sd_bk_anim *sdinfo = (sd_bk_anim *)src;
@@ -11,6 +12,7 @@ void bk_info_create(int file_id, bk_info *info, array *sprites, void *src, int i
     info->probability = sdinfo->probability;
     info->hazard_damage = sdinfo->hazard_damage;
     str_from_c(&info->footer_string, sdinfo->footer_string);
+    modmanager_get_bk_animation(file_id, id, info);
 }
 
 void bk_info_free(bk_info *info) {

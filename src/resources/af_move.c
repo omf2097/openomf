@@ -1,5 +1,6 @@
 #include "resources/af_move.h"
 #include "formats/move.h"
+#include "resources/modmanager.h"
 
 void af_move_create(int file_id, af_move *move, array *sprites, void *src, int id) {
     sd_move *sdmv = (sd_move *)src;
@@ -18,6 +19,7 @@ void af_move_create(int file_id, af_move *move, array *sprites, void *src, int i
     move->throw_duration = sdmv->throw_duration;
     move->extra_string_selector = sdmv->extra_string_selector;
     animation_create(AF_ANIMATION, file_id, &move->ani, sprites, sdmv->animation, id);
+    modmanager_get_af_move(file_id, id, move);
     if(id == ANIM_JUMPING) {
         // fixup the jump coordinates
         animation_fixup_coordinates(&move->ani, 0, JUMP_COORD_ADJUSTMENT * -1);
