@@ -16,6 +16,11 @@
 
 hashmap mod_resources;
 
+typedef struct {
+    size_t size;
+    unsigned char *buf;
+} opus_buffer;
+
 int mod_find(list *mod_list) {
     size_t size = 0;
     path scan = get_system_mod_directory();
@@ -101,7 +106,20 @@ bool modmanager_init(void) {
                     } else if(strcmp(".ogg", str_c(&ext)) == 0) {
                         if(op_test(NULL, entry_buf, entry_size) == 0) {
                             log_info("got OPUS file %s", str_c(&filename));
-                            hashmap_put_str(&mod_resources, str_c(&filename), entry_buf, entry_size);
+                            // TODO definitely make this a list
+                            list *l;
+                            unsigned int len;
+                            opus_buffer *buf = omf_calloc(1, sizeof(opus_buffer));
+                            buf->size = entry_size;
+                            buf->buf = entry_buf;
+                            if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&l, &len)) {
+                                list_append(l, buf, sizeof(opus_buffer));
+                            } else {
+                                l = omf_calloc(1, sizeof(list));
+                                list_create(l);
+                                list_append(l, buf, sizeof(opus_buffer));
+                                hashmap_put_str(&mod_resources, str_c(&filename), l, sizeof(list));
+                            }
                         } else {
                             log_warn("Failed to parse OPUS file %s", str_c(&filename));
                         }
@@ -153,33 +171,38 @@ bool modmanager_get_bk_background(int file_id, sd_vga_image **img) {
 
 bool modmanager_get_sprite(animation_source source, int file_id, int animation, int frame, sd_sprite **spr) {
     str filename;
+    // TODO for arenas, check for 'common' for animations 6 (round), 7 (number), 8 (you lose), 9 (you win), 10 (fight),
+    // 11 (ready), 24 (dust 1), 25 (dust 2), 26 (dust 3), 27 (match counters)
+    // TODO for fighters, check for 'common' for animations 12 (scrap), 13 (bolt), 14 (screw), 55 (blast), 56 (blast 2),
+    // 57 (blast 3)
+    //
+    // Common replacements should replace default assets, but not modded ones
     switch(source) {
         case AF_ANIMATION:
             str_from_format(&filename, "fighters/fighter%d/%d/%d_%d.png", file_id, animation, animation, frame);
             break;
-        case BK_ANIMATION:
-            {
-                switch(file_id) {
-                    case 8:
-                        str_from_format(&filename, "arenas/arena0/%d/%d_%d.png", animation, animation, frame);
-                        break;
-                    case 16:
-                        str_from_format(&filename, "arenas/arena1/%d/%d_%d.png", animation, animation, frame);
-                        break;
-                    case 32:
-                        str_from_format(&filename, "arenas/arena2/%d/%d_%d.png", animation, animation, frame);
-                        break;
-                    case 64:
-                        str_from_format(&filename, "arenas/arena3/%d/%d_%d.png", animation, animation, frame);
-                        break;
-                    case 128:
-                        str_from_format(&filename, "arenas/arena4/%d/%d_%d.png", animation, animation, frame);
-                        break;
-                    default:
-                        return false;
-                }
-                break;
+        case BK_ANIMATION: {
+            switch(file_id) {
+                case 8:
+                    str_from_format(&filename, "arenas/arena0/%d/%d_%d.png", animation, animation, frame);
+                    break;
+                case 16:
+                    str_from_format(&filename, "arenas/arena1/%d/%d_%d.png", animation, animation, frame);
+                    break;
+                case 32:
+                    str_from_format(&filename, "arenas/arena2/%d/%d_%d.png", animation, animation, frame);
+                    break;
+                case 64:
+                    str_from_format(&filename, "arenas/arena3/%d/%d_%d.png", animation, animation, frame);
+                    break;
+                case 128:
+                    str_from_format(&filename, "arenas/arena4/%d/%d_%d.png", animation, animation, frame);
+                    break;
+                default:
+                    return false;
             }
+            break;
+        }
         default:
             return false;
     }
@@ -190,20 +213,47 @@ bool modmanager_get_sprite(animation_source source, int file_id, int animation, 
         return true;
     }
 
-
-    //log_warn("MISS for sprite %s", str_c(&filename));
+    // log_warn("MISS for sprite %s", str_c(&filename));
 
     return false;
-
 }
 
-bool modmanager_get_music(str *name, unsigned char **buf, size_t *buflen) {
+unsigned int modmanager_count_music(str *name) {
     str filename;
 
     str_from_format(&filename, "audio/common/music/%s.ogg", str_c(name));
     str_tolower(&filename);
 
-    if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)buf, (unsigned int*)buflen)) {
+    list *l;
+    unsigned int len = 0;
+
+    if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&l, &len)) {
+        return list_size(l);
+    }
+
+    return 0;
+}
+
+bool modmanager_get_music(str *name, unsigned int index, unsigned char **buf, size_t *buflen) {
+    str filename;
+
+    str_from_format(&filename, "audio/common/music/%s.ogg", str_c(name));
+    str_tolower(&filename);
+
+    list *l;
+    unsigned int len = 0;
+
+    if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&l, &len)) {
+        unsigned int count = list_size(l);
+        log_info("found %d music files for %s", count, name);
+        if(index >= count) {
+            log_warn("requested index %s into list of %d members", index, count);
+            return false;
+        }
+        opus_buffer *obuf = list_get(l, index);
+        assert(obuf != NULL);
+        *buf = obuf->buf;
+        *buflen = obuf->size;
         return true;
     }
 

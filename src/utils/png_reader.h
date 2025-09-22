@@ -5,6 +5,7 @@
 #include <stdbool.h>
 
 bool read_paletted_png(const path *filename, unsigned char *dst);
-bool read_paletted_png_from_memory(const unsigned char *buf, size_t len, unsigned char *dst, int *w, int *h, bool allow_transparency);
+bool read_paletted_png_from_memory(const unsigned char *buf, size_t len, unsigned char *dst, int *w, int *h,
+                                   bool allow_transparency);
 
 #endif // PNG_READER_H

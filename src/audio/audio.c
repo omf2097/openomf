@@ -2,12 +2,13 @@
 #include "audio/backends/audio_backend.h"
 #include "audio/sources/opus_source.h"
 #include "audio/sources/psm_source.h"
+#include "resources/modmanager.h"
 #include "resources/resource_files.h"
 #include "resources/sounds_loader.h"
-#include "resources/modmanager.h"
 #include "utils/c_array_util.h"
 #include "utils/log.h"
 #include "utils/path.h"
+#include "utils/random.h"
 
 #include <assert.h>
 
@@ -230,22 +231,23 @@ void audio_play_music(resource_id id) {
         const path music = get_music_path(&file_type, id);
 
         switch(file_type) {
-            case MUSIC_FILE_TYPE_PSM:
-                {
-                    str fn;
-                    unsigned char *buf;
-                    size_t len;
-                    // check the modmanager here for a music mod
-                    path_stem(&music, &fn);
-                    if(modmanager_get_music(&fn, &buf, &len)) {
-                        log_debug("found replacement music file for %s.PSM", str_c(&fn));
-                        load_opus_music(buf, len);
-                    } else {
-                        log_debug("Found original music file %s", path_c(&music));
-                        load_xmp_music(path_c(&music));
-                    }
-                    break;
-                    }
+            case MUSIC_FILE_TYPE_PSM: {
+                str fn;
+                unsigned char *buf;
+                size_t len;
+                // check the modmanager here for a music mod
+                path_stem(&music, &fn);
+                int music_count = modmanager_count_music(&fn);
+                int rand = rand_int(music_count + 1);
+                if(rand && modmanager_get_music(&fn, rand - 1, &buf, &len)) {
+                    log_debug("found replacement music file for %s.PSM", str_c(&fn));
+                    load_opus_music(buf, len);
+                } else {
+                    log_debug("Found original music file %s", path_c(&music));
+                    load_xmp_music(path_c(&music));
+                }
+                break;
+            }
             default:
                 log_error("Unable to load music file %s due to unsupported audio format", path_c(&music));
                 break;
