@@ -58,6 +58,8 @@ bool modmanager_init(void) {
         ssize_t entries = zip_entries_total(zip);
         if(entries > 0) {
             // TODO check the mod has a manifest
+            // and then insert it into a secondary list in 'load order'
+            // TODO also check a configured list of enabled/disabled mods, with an ordering
             log_info("mod %s has %d files", path_c(p), entries);
             for(size_t i = 0; i < (size_t)entries; i++) {
                 if(zip_entry_openbyindex(zip, i) == 0 && zip_entry_isdir(zip) == 0) {
@@ -152,27 +154,11 @@ bool modmanager_init(void) {
     return true;
 }
 
-bool modmanager_get_bk_background(int file_id, sd_vga_image **img) {
+bool modmanager_get_bk_background(str *name, sd_vga_image **img) {
     str filename;
-    switch(file_id) {
-        case 8:
-            str_from_c(&filename, "scenes/arena0/background.png");
-            break;
-        case 16:
-            str_from_c(&filename, "scenes/arena1/background.png");
-            break;
-        case 32:
-            str_from_c(&filename, "scenes/arena2/background.png");
-            break;
-        case 64:
-            str_from_c(&filename, "scenes/arena3/background.png");
-            break;
-        case 128:
-            str_from_c(&filename, "scenes/arena4/background.png");
-            break;
-        default:
-            return false;
-    }
+    str_from_format(&filename, "scenes/%s/background.png", str_c(name));
+
+    str_tolower(&filename);
 
     unsigned int len;
     if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)img, &len)) {
@@ -182,42 +168,27 @@ bool modmanager_get_bk_background(int file_id, sd_vga_image **img) {
     return false;
 }
 
-bool modmanager_get_sprite(animation_source source, int file_id, int animation, int frame, sd_sprite **spr) {
+bool modmanager_get_sprite(animation_source source, str *name, int animation, int frame, sd_sprite **spr) {
     str filename;
     switch(source) {
         case AF_ANIMATION:
-            str_from_format(&filename, "fighters/fighter%d/%d/%d.png", file_id, animation, frame);
+            str_from_format(&filename, "fighters/%s/%d/%d.png", str_c(name), animation, frame);
             break;
-        case BK_ANIMATION: {
-            switch(file_id) {
-                case 8:
-                    str_from_format(&filename, "scenes/arena0/%d/%d.png", animation, frame);
-                    break;
-                case 16:
-                    str_from_format(&filename, "scenes/arena1/%d/%d.png", animation, frame);
-                    break;
-                case 32:
-                    str_from_format(&filename, "scenes/arena2/%d/%d.png", animation, frame);
-                    break;
-                case 64:
-                    str_from_format(&filename, "scenes/arena3/%d/%d.png", animation, frame);
-                    break;
-                case 128:
-                    str_from_format(&filename, "scenes/arena4/%d/%d.png", animation, frame);
-                    break;
-                default:
-                    return false;
-            }
+        case BK_ANIMATION:
+            str_from_format(&filename, "scenes/%s/%d/%d.png", str_c(name), animation, frame);
             break;
-        }
         default:
             return false;
     }
+
+    str_tolower(&filename);
 
     unsigned int len;
     if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)spr, &len)) {
         log_info("got sprite %dx%d with size %d", (*spr)->width, (*spr)->height, len);
         return true;
+    } else {
+        log_warn("MISS %s", str_c(name));
     }
 
     str_free(&filename);
@@ -250,7 +221,7 @@ bool modmanager_get_sprite(animation_source source, int file_id, int animation, 
 unsigned int modmanager_count_music(str *name) {
     str filename;
 
-    str_from_format(&filename, "audio/common/music/%s.ogg", str_c(name));
+    str_from_format(&filename, "audio/music/%s.ogg", str_c(name));
     str_tolower(&filename);
 
     list *l;
@@ -270,7 +241,7 @@ unsigned int modmanager_count_music(str *name) {
 bool modmanager_get_music(str *name, unsigned int index, unsigned char **buf, size_t *buflen) {
     str filename;
 
-    str_from_format(&filename, "audio/common/music/%s.ogg", str_c(name));
+    str_from_format(&filename, "audio/music/%s.ogg", str_c(name));
     str_tolower(&filename);
 
     list *l;
@@ -500,12 +471,12 @@ bool modmanager_parse_bk_info_mod(const char *buf, bk_info *current_info) {
 }
 
 // Helper function to generate mod filename for AF moves
-bool modmanager_get_af_move(int fighter_id, int move_id, af_move *move_data) {
+bool modmanager_get_af_move(str *name, int move_id, af_move *move_data) {
     if(!move_data)
         return false;
 
     str filename;
-    str_from_format(&filename, "fighters/fighter%d/%d/animdata.ini", fighter_id, move_id);
+    str_from_format(&filename, "fighters/%s/%d/animdata.ini", name, move_id);
 
     list *l;
     unsigned int len;
@@ -544,35 +515,13 @@ bool modmanager_get_af_move(int fighter_id, int move_id, af_move *move_data) {
 }
 
 // Helper function to generate mod filename for BK animations
-bool modmanager_get_bk_animation(int arena_id, int anim_id, bk_info *bk_data) {
+bool modmanager_get_bk_animation(str *name, int anim_id, bk_info *bk_data) {
     if(!bk_data)
         return false;
 
     str filename;
 
-    // Map arena ID to index
-    int arena_index = -1;
-    switch(arena_id) {
-        case 8:
-            arena_index = 0;
-            break;
-        case 16:
-            arena_index = 1;
-            break;
-        case 32:
-            arena_index = 2;
-            break;
-        case 64:
-            arena_index = 3;
-            break;
-        case 128:
-            arena_index = 4;
-            break;
-        default:
-            return false;
-    }
-
-    str_from_format(&filename, "scenes/arena%d/%d/animdata.ini", arena_index, anim_id);
+    str_from_format(&filename, "scenes/%s/%d/animdata.ini", str_c(name), anim_id);
 
     list *l;
     unsigned int len = 0;
@@ -589,7 +538,8 @@ bool modmanager_get_bk_animation(int arena_id, int anim_id, bk_info *bk_data) {
 
     str_free(&filename);
 
-    if(!result && ((anim_id >= 6 && anim_id <= 11) || (anim_id >= 24 && anim_id <= 27))) {
+    if(!result && strncmp("arena", str_c(name), 5) == 0 &&
+       ((anim_id >= 6 && anim_id <= 11) || (anim_id >= 24 && anim_id <= 27))) {
         // TODO make sure this is an arena
         // For arenas, check for 'common' for anim_ids 6 (round), 7 (number), 8 (you lose), 9 (you win), 10 (fight),
         // 11 (ready), 24 (dust 1), 25 (dust 2), 26 (dust 3), 27 (match counters)
@@ -661,10 +611,10 @@ bool modmanager_parse_fighter_header_mod(const char *buf, af *fighter) {
 }
 
 // Helper function to load fighter header mod
-bool modmanager_get_fighter_header(int fighter_id, af *fighter) {
+bool modmanager_get_fighter_header(str *name, af *fighter) {
 
     str filename;
-    str_from_format(&filename, "fighters/fighter%d/header.ini", fighter_id);
+    str_from_format(&filename, "fighters/%s/header.ini", str_c(name));
 
     list *l;
     unsigned int len = 0;
