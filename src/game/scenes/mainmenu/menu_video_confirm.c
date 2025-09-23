@@ -30,9 +30,10 @@ void video_confirm_cancel_clicked(component *c, void *userdata) {
     *v = *local->old_video_settings;
     if(render_plugin_changed) {
         video_close();
-        video_init(v->renderer, v->screen_w, v->screen_h, v->fullscreen, v->vsync, v->aspect, v->framerate_limit, 1);
+        video_init(v->renderer, v->screen_w, v->screen_h, v->fullscreen, v->vsync, v->aspect, v->framerate_limit,
+                   v->fb_scale);
     } else {
-        video_reinit(v->screen_w, v->screen_h, v->fullscreen, v->vsync, v->aspect, v->framerate_limit, 1);
+        video_reinit(v->screen_w, v->screen_h, v->fullscreen, v->vsync, v->aspect, v->framerate_limit, v->fb_scale);
     }
 
     // Finish the menu
