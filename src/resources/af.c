@@ -4,7 +4,7 @@
 #include "resources/sprite.h"
 #include <string.h>
 
-void af_create(af *a, void *src) {
+void af_create(af *a, void *src, str *name) {
     sd_af_file *sdaf = (sd_af_file *)src;
 
     // Trivial stuff
@@ -32,12 +32,12 @@ void af_create(af *a, void *src) {
     for(int i = 0; i < 70; i++) {
         if(sdaf->moves[i] != NULL) {
             af_move *move = omf_calloc(1, sizeof(af_move));
-            af_move_create(a->id, move, &a->sprites, (void *)sdaf->moves[i], i);
+            af_move_create(name, move, &a->sprites, (void *)sdaf->moves[i], i);
             array_set(&a->moves, i, move);
         }
     }
 
-    modmanager_get_fighter_header(a->id, a);
+    modmanager_get_fighter_header(name, a);
 }
 
 af_move *af_get_move(const af *a, int id) {
