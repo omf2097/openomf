@@ -4968,6 +4968,7 @@ extern "C" {
 
 #if defined(_MSC_VER) || defined(__MINGW64__) || defined(__MINGW32__)
 
+#if 0 // let's not use anything from windows.h if we can help it.
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
@@ -4978,25 +4979,15 @@ extern "C" {
 #define NOMINMAX
 #endif
 #include <windows.h>
-
-static WCHAR *mz_utf8z_to_widechar(const char *str) {
-  int reqChars = MultiByteToWideChar(CP_UTF8, 0, str, -1, NULL, 0);
-  WCHAR *wStr = (WCHAR *)malloc(reqChars * sizeof(WCHAR));
-  MultiByteToWideChar(CP_UTF8, 0, str, -1, wStr, reqChars);
-  return wStr;
-}
+#endif // 0
 
 static FILE *mz_fopen(const char *pFilename, const char *pMode) {
-  WCHAR *wFilename = mz_utf8z_to_widechar(pFilename);
-  WCHAR *wMode = mz_utf8z_to_widechar(pMode);
   FILE *pFile = NULL;
 #ifdef ZIP_ENABLE_SHARABLE_FILE_OPEN
-  pFile = _wfopen(wFilename, wMode);
+  pFile = fopen(pFilename, pMode);
 #else
-  errno_t err = _wfopen_s(&pFile, wFilename, wMode);
+  errno_t err = fopen_s(&pFile, pFilename, pMode);
 #endif
-  free(wFilename);
-  free(wMode);
 #ifdef ZIP_ENABLE_SHARABLE_FILE_OPEN
   return pFile;
 #else
@@ -5005,16 +4996,12 @@ static FILE *mz_fopen(const char *pFilename, const char *pMode) {
 }
 
 static FILE *mz_freopen(const char *pPath, const char *pMode, FILE *pStream) {
-  WCHAR *wPath = mz_utf8z_to_widechar(pPath);
-  WCHAR *wMode = mz_utf8z_to_widechar(pMode);
   FILE *pFile = NULL;
 #ifdef ZIP_ENABLE_SHARABLE_FILE_OPEN
-  pFile = _wfreopen(wPath, wMode, pStream);
+  pFile = _wfreopen(pPath, pMode, pStream);
 #else
-  errno_t err = _wfreopen_s(&pFile, wPath, wMode, pStream);
+  errno_t err = freopen_s(&pFile, pPath, pMode, pStream);
 #endif
-  free(wPath);
-  free(wMode);
 #ifdef ZIP_ENABLE_SHARABLE_FILE_OPEN
   return pFile;
 #else
@@ -5024,24 +5011,18 @@ static FILE *mz_freopen(const char *pPath, const char *pMode, FILE *pStream) {
 
 #if defined(__MINGW32__)
 static int mz_stat(const char *path, struct _stat *buffer) {
-  WCHAR *wPath = mz_utf8z_to_widechar(path);
-  int res = _wstat(wPath, buffer);
-  free(wPath);
+  int res = stat(path, buffer);
   return res;
 }
 #else
 static int mz_stat64(const char *path, struct __stat64 *buffer) {
-  WCHAR *wPath = mz_utf8z_to_widechar(path);
-  int res = _wstat64(wPath, buffer);
-  free(wPath);
+  int res = _stat64(path, buffer);
   return res;
 }
 #endif
 
 static int mz_mkdir(const char *pDirname) {
-  WCHAR *wDirname = mz_utf8z_to_widechar(pDirname);
-  int res = _wmkdir(wDirname);
-  free(wDirname);
+  int res = mkdir(pDirname);
   return res;
 }
 
@@ -6608,6 +6589,11 @@ mz_bool mz_zip_reader_locate_file_v2(mz_zip_archive *pZip, const char *pName,
   return mz_zip_set_error(pZip, MZ_ZIP_FILE_NOT_FOUND);
 }
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4127) /* conditional expression is constant */
+#endif
+
 static mz_bool mz_zip_reader_extract_to_mem_no_alloc1(
     mz_zip_archive *pZip, mz_uint file_index, void *pBuf, size_t buf_size,
     mz_uint flags, void *pUser_read_buf, size_t user_read_buf_size,
@@ -7903,6 +7889,10 @@ static size_t mz_zip_heap_write_func(void *pOpaque, mz_uint64 file_ofs,
   pState->m_mem_size = (size_t)new_size;
   return n;
 }
+
+#ifdef _MSC_VER
+#pragma warning(pop) /* conditional expression is constant */
+#endif
 
 static mz_bool mz_zip_writer_end_internal(mz_zip_archive *pZip,
                                           mz_bool set_last_error) {
