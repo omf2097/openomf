@@ -35,6 +35,7 @@ typedef struct gl3_context {
     int viewport_h;
     int screen_w;
     int screen_h;
+    int fb_scale;
     bool fullscreen;
     bool vsync;
     int aspect;
@@ -74,12 +75,13 @@ static void set_framerate_limit(gl3_context *ctx, int framerate_limit) {
 }
 
 static bool setup_context(void *userdata, int window_w, int window_h, bool fullscreen, bool vsync, int aspect,
-                          int framerate_limit) {
+                          int framerate_limit, int fb_scale) {
     gl3_context *ctx = userdata;
     ctx->screen_w = window_w;
     ctx->screen_h = window_h;
     ctx->fullscreen = fullscreen;
     ctx->framerate_limit = framerate_limit;
+    ctx->fb_scale = fb_scale;
     ctx->vsync = vsync;
     ctx->aspect = aspect;
     ctx->target_move_x = 0;
@@ -114,11 +116,15 @@ static bool setup_context(void *userdata, int window_w, int window_h, bool fulls
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glPixelStorei(GL_PACK_ALIGNMENT, 1);
 
+    // This is the intermediate framebuffer size.
+    const int fb_w = NATIVE_W * ctx->fb_scale;
+    const int fb_h = NATIVE_H * ctx->fb_scale;
+
     // Create the rest of the graphics objects
     ctx->atlas = atlas_create(TEX_UNIT_ATLAS, 2048, 2048);
     ctx->objects = object_array_create(2048.0f, 2048.0f);
     ctx->shared = shared_create();
-    ctx->target = render_target_create(TEX_UNIT_FBO, NATIVE_W, NATIVE_H, GL_RGBA8, GL_RGBA);
+    ctx->target = render_target_create(TEX_UNIT_FBO, fb_w, fb_h, GL_RGBA8, GL_RGBA);
     ctx->remaps = remaps_create(TEX_UNIT_REMAPS);
 
     vga_state_mark_dirty();
@@ -157,8 +163,8 @@ error_0:
     return false;
 }
 
-static void get_context_state(void *userdata, int *window_w, int *window_h, bool *fullscreen, bool *vsync,
-                              int *aspect) {
+static void get_context_state(void *userdata, int *window_w, int *window_h, bool *fullscreen, bool *vsync, int *aspect,
+                              int *fb_scale) {
     gl3_context *ctx = userdata;
     if(window_w != NULL)
         *window_w = ctx->screen_w;
@@ -170,19 +176,30 @@ static void get_context_state(void *userdata, int *window_w, int *window_h, bool
         *vsync = ctx->vsync;
     if(aspect != NULL)
         *aspect = ctx->aspect;
+    if(fb_scale != NULL)
+        *fb_scale = ctx->fb_scale;
 }
 
 static bool reset_context_with(void *userdata, int window_w, int window_h, bool fullscreen, bool vsync, int aspect,
-                               int framerate_limit) {
+                               int framerate_limit, int fb_scale) {
     gl3_context *ctx = userdata;
     ctx->screen_w = window_w;
     ctx->screen_h = window_h;
     ctx->fullscreen = fullscreen;
     ctx->vsync = vsync;
     ctx->aspect = aspect;
+
     set_framerate_limit(ctx, framerate_limit);
     bool success = resize_window(ctx->window, window_w, window_h, fullscreen);
     success = set_vsync(ctx->vsync) && success;
+
+    if(ctx->fb_scale != fb_scale) {
+        ctx->fb_scale = fb_scale;
+        const int fb_w = NATIVE_W * ctx->fb_scale;
+        const int fb_h = NATIVE_H * ctx->fb_scale;
+        render_target_free(&ctx->target);
+        ctx->target = render_target_create(TEX_UNIT_FBO, fb_w, fb_h, GL_RGBA8, GL_RGBA);
+    }
 
     // Fetch viewport size which may be different from window size.
     SDL_GL_GetDrawableSize(ctx->window, &ctx->viewport_w, &ctx->viewport_h);
@@ -321,7 +338,9 @@ static inline void finish_offscreen(gl3_context *ctx) {
     object_array_finish(ctx->objects);
 
     // Set to VGA emulation state, and render to an indexed surface
-    glViewport(0, 0, NATIVE_W, NATIVE_H);
+    const int fb_w = NATIVE_W * ctx->fb_scale;
+    const int fb_h = NATIVE_H * ctx->fb_scale;
+    glViewport(0, 0, fb_w, fb_h);
     object_array_batch batch;
     object_array_begin(ctx->objects, &batch);
     activate_program(ctx->palette_prog_id);

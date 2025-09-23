@@ -50,6 +50,7 @@ typedef struct {
     int scaling;
     int instant_console;
     int crossfade_on;
+    int fb_scale;
 } settings_video;
 
 typedef struct {
