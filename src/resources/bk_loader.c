@@ -13,8 +13,11 @@ int load_bk_file(bk *b, const path *filename) {
         return 1;
     }
 
+    str fn;
+    path_stem(filename, &fn);
+
     // Convert
-    bk_create(b, &tmp);
+    bk_create(b, &tmp, &fn);
     sd_bk_free(&tmp);
     return 0;
 }
