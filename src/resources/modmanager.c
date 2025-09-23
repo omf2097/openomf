@@ -243,11 +243,15 @@ unsigned int modmanager_count_music(str *name) {
     list *l;
     unsigned int len = 0;
 
+    int result = 0;
+
     if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&l, &len)) {
-        return list_size(l);
+        result = list_size(l);
     }
 
-    return 0;
+    str_free(&filename);
+
+    return result;
 }
 
 bool modmanager_get_music(str *name, unsigned int index, unsigned char **buf, size_t *buflen) {
