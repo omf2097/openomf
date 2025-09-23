@@ -521,6 +521,25 @@ bool modmanager_get_af_move(int fighter_id, int move_id, af_move *move_data) {
     }
 
     str_free(&filename);
+
+    if(!result &&
+       (move_id == 7 || move_id == 8 || (move_id >= 12 && move_id <= 14) || (move_id >= 55 && move_id <= 57))) {
+        // For fighters, check for 'common' for move_ids 7 (burning oil/stun), 8 (blocking scrape), 12 (scrap), 13
+        // (bolt), 14 (screw), 55 (blast), 56 (blast 2), 57 (blast 3)
+
+        str_from_format(&filename, "fighters/common/%d/animdata.ini", move_id);
+
+        if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&l, &len)) {
+            log_info("HIT %s", str_c(&filename));
+            iterator it;
+            list_iter_begin(l, &it);
+            char *buf;
+            foreach(it, buf) {
+                result |= modmanager_parse_af_move_mod(buf, move_data);
+            }
+        }
+    }
+
     return result;
 }
 
@@ -569,6 +588,23 @@ bool modmanager_get_bk_animation(int arena_id, int anim_id, bk_info *bk_data) {
     }
 
     str_free(&filename);
+
+    if(!result && ((anim_id >= 6 && anim_id <= 11) || (anim_id >= 24 && anim_id <= 27))) {
+        // TODO make sure this is an arena
+        // For arenas, check for 'common' for anim_ids 6 (round), 7 (number), 8 (you lose), 9 (you win), 10 (fight),
+        // 11 (ready), 24 (dust 1), 25 (dust 2), 26 (dust 3), 27 (match counters)
+
+        str_from_format(&filename, "scenes/common/%d/animdata.ini", anim_id);
+        if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&l, &len)) {
+            iterator it;
+            list_iter_begin(l, &it);
+            char *buf;
+            foreach(it, buf) {
+                result |= modmanager_parse_bk_info_mod(buf, bk_data);
+            }
+        }
+    }
+
     return result;
 }
 
