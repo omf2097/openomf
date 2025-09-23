@@ -220,8 +220,8 @@ static void load_opus_music(unsigned char *buf, size_t len) {
 
 static path get_music_path(music_file_type *type, unsigned int resource_id) {
     assert(is_music(resource_id));
-    path original_music, new_music;
-    original_music = new_music = get_resource_filename(get_resource_file(resource_id));
+    path original_music;
+    original_music = get_resource_filename(get_resource_file(resource_id));
     *type = MUSIC_FILE_TYPE_PSM;
     return original_music;
 }
