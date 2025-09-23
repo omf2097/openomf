@@ -6601,7 +6601,7 @@ static mz_bool mz_zip_reader_extract_to_mem_no_alloc1(
   int status = TINFL_STATUS_DONE;
   mz_uint64 needed_size, cur_file_ofs, comp_remaining,
       out_buf_ofs = 0, read_buf_size, read_buf_ofs = 0, read_buf_avail;
-  mz_zip_archive_file_stat file_stat;
+  mz_zip_archive_file_stat file_stat = {0};
   void *pRead_buf;
   mz_uint32
       local_header_u32[(MZ_ZIP_LOCAL_DIR_HEADER_SIZE + sizeof(mz_uint32) - 1) /
@@ -6791,7 +6791,7 @@ mz_bool mz_zip_reader_extract_file_to_mem(mz_zip_archive *pZip,
 
 void *mz_zip_reader_extract_to_heap(mz_zip_archive *pZip, mz_uint file_index,
                                     size_t *pSize, mz_uint flags) {
-  mz_zip_archive_file_stat file_stat;
+  mz_zip_archive_file_stat file_stat = {0};
   mz_uint64 alloc_size;
   void *pBuf;
 
@@ -6849,7 +6849,7 @@ mz_bool mz_zip_reader_extract_to_callback(mz_zip_archive *pZip,
 #endif
   mz_uint64 read_buf_size, read_buf_ofs = 0, read_buf_avail, comp_remaining,
                            out_buf_ofs = 0, cur_file_ofs;
-  mz_zip_archive_file_stat file_stat;
+  mz_zip_archive_file_stat file_stat = {0};
   void *pRead_buf = NULL;
   void *pWrite_buf = NULL;
   mz_uint32
@@ -7392,7 +7392,7 @@ mz_bool mz_zip_reader_extract_to_file(mz_zip_archive *pZip, mz_uint file_index,
                                       const char *pDst_filename,
                                       mz_uint flags) {
   mz_bool status;
-  mz_zip_archive_file_stat file_stat;
+  mz_zip_archive_file_stat file_stat = {0};
   MZ_FILE *pFile;
 
   if (!mz_zip_reader_file_stat(pZip, file_index, &file_stat))
@@ -7437,7 +7437,7 @@ mz_bool mz_zip_reader_extract_file_to_file(mz_zip_archive *pZip,
 
 mz_bool mz_zip_reader_extract_to_cfile(mz_zip_archive *pZip, mz_uint file_index,
                                        MZ_FILE *pFile, mz_uint flags) {
-  mz_zip_archive_file_stat file_stat;
+  mz_zip_archive_file_stat file_stat = {0};
 
   if (!mz_zip_reader_file_stat(pZip, file_index, &file_stat))
     return MZ_FALSE;
@@ -7471,7 +7471,7 @@ static size_t mz_zip_compute_crc32_callback(void *pOpaque, mz_uint64 file_ofs,
 
 mz_bool mz_zip_validate_file(mz_zip_archive *pZip, mz_uint file_index,
                              mz_uint flags) {
-  mz_zip_archive_file_stat file_stat;
+  mz_zip_archive_file_stat file_stat = {0};
   mz_zip_internal_state *pState;
   const mz_uint8 *pCentral_dir_header;
   mz_bool found_zip64_ext_data_in_cdir = MZ_FALSE;
