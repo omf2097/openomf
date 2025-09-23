@@ -389,6 +389,11 @@ int har_is_blocking(object *obj, af_move *move) {
         return 0;
     }
 
+    har *h = object_get_userdata(obj);
+    if(h->in_stasis_ticks) {
+        return 0;
+    }
+
     char last_input = get_last_input(obj);
     if(obj->crossup_protection) {
         if(last_input == '6') {
