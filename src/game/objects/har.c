@@ -692,41 +692,13 @@ void har_move(object *obj) {
                 object_set_vel(obj, vec2f_create(0, 0));
                 object_set_stride(obj, h->stride);
                 har_event_walk(h, -1, ctrl);
-            } else if(last_input == '7' || last_input == '8' || last_input == '9') {
-                har_set_ani(obj, ANIM_JUMPING, 0);
-                h->state = STATE_JUMPING;
-                float vx = 0.0f;
-                float vy = h->jump_speed;
-                int jump_dir = 0;
-                int direction = object_get_direction(obj);
-                if(last_input == '9') {
-                    vx = (h->fwd_speed * direction);
-                    object_set_tick_pos(obj, 110);
-                    object_set_stride(obj, 7); // Pass 7 frames per tick
-                    jump_dir = 1;
-                } else if(last_input == '7') {
-                    // If we are jumping backwards, start animation from end
-                    // at -100 frames (seems to be about right)
-                    object_set_playback_direction(obj, PLAY_BACKWARDS);
-                    object_set_tick_pos(obj, -110);
-                    vx = (h->back_speed * direction * -1);
-                    object_set_stride(obj, 7); // Pass 7 frames per tick
-                    jump_dir = -1;
-                } else {
-                    // we are jumping upwards
-                    object_set_tick_pos(obj, 110);
-                    if(h->id == HAR_GARGOYLE) {
-                        object_set_stride(obj, 7);
-                    }
-                }
-                object_set_vel(obj, vec2f_create(vx, vy));
-                har_event_jump(h, jump_dir, ctrl);
             } else {
                 object_set_vel(obj, vec2f_create(0, 0));
                 h->state = STATE_STANDING;
                 har_set_ani(obj, ANIM_IDLE, 1);
                 object_set_stride(obj, h->stride);
             }
+            h->jump_delay = 3; // Prevent re-jump for this many ticks
             har_event_land(h, ctrl);
             har_floor_landing_effects(obj, true);
         } else if(h->state == STATE_RECOIL) {
@@ -2209,7 +2181,7 @@ af_move *scrap_destruction_cheat(object *obj, char input) {
     return NULL;
 }
 
-int maybe_har_change_state(int oldstate, int direction, char act_type) {
+int maybe_har_change_state(int oldstate, bool can_jump, char act_type) {
     int state = 0;
     switch(act_type) {
         case '1':
@@ -2230,14 +2202,12 @@ int maybe_har_change_state(int oldstate, int direction, char act_type) {
         case '6':
             state = STATE_WALKTO;
             break;
-        case '8':
-            state = STATE_JUMPING;
-            break;
         case '7':
-            state = STATE_JUMPING;
-            break;
+        case '8':
         case '9':
-            state = STATE_JUMPING;
+            if(can_jump) {
+                state = STATE_JUMPING;
+            }
             break;
         default:
             // if the input buffer is empty, assume standing
@@ -2276,6 +2246,12 @@ int har_act(object *obj, int act_type) {
 
     uint32_t input_staleness = obj->gs->tick - h->input_change_tick;
     if(input_changed) {
+        h->input_change_tick = obj->gs->tick;
+    }
+
+    if(h->jump_delay) {
+        h->jump_delay--;
+        // Extend the superjump timeframe, will rework so it doesn't mess with overall input buffer later
         h->input_change_tick = obj->gs->tick;
     }
 
@@ -2420,7 +2396,7 @@ int har_act(object *obj, int act_type) {
     float vx, vy;
     // no moves matched, do player movement
     int newstate;
-    if((newstate = maybe_har_change_state(h->state, direction, last_input))) {
+    if((newstate = maybe_har_change_state(h->state, !h->jump_delay, last_input))) {
         h->state = newstate;
         switch(newstate) {
             case STATE_CROUCHBLOCK:
@@ -2921,6 +2897,7 @@ void har_reset(object *obj) {
     h->air_attacked = 0;
     h->is_wallhugging = 0;
     h->is_grabbed = 0;
+    h->jump_delay = 0;
     h->inputs[10] = '\0';
     h->health = h->health_max;
     h->endurance = 0;
