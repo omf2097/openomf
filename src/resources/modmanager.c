@@ -57,6 +57,7 @@ bool modmanager_init(void) {
         struct zip_t *zip = zip_open(path_c(p), 0, 'r');
         ssize_t entries = zip_entries_total(zip);
         if(entries > 0) {
+            // TODO check the mod has a manifest
             log_info("mod %s has %d files", path_c(p), entries);
             for(size_t i = 0; i < (size_t)entries; i++) {
                 if(zip_entry_openbyindex(zip, i) == 0 && zip_entry_isdir(zip) == 0) {
@@ -122,7 +123,6 @@ bool modmanager_init(void) {
                     } else if(strcmp(".ogg", str_c(&ext)) == 0) {
                         if(op_test(NULL, entry_buf, entry_size) == 0) {
                             log_info("got OPUS file %s", str_c(&filename));
-                            // TODO definitely make this a list
                             list *l;
                             unsigned int len;
                             opus_buffer *buf = omf_calloc(1, sizeof(opus_buffer));
@@ -141,9 +141,6 @@ bool modmanager_init(void) {
                         }
 #endif
                     }
-
-                    // TODO each filename should be a list
-                    // TODO each filetype should be parsed (eg png to sprite, etc)
                 }
             }
         } else {
@@ -159,19 +156,19 @@ bool modmanager_get_bk_background(int file_id, sd_vga_image **img) {
     str filename;
     switch(file_id) {
         case 8:
-            str_from_c(&filename, "arenas/arena0/background.png");
+            str_from_c(&filename, "scenes/arena0/background.png");
             break;
         case 16:
-            str_from_c(&filename, "arenas/arena1/background.png");
+            str_from_c(&filename, "scenes/arena1/background.png");
             break;
         case 32:
-            str_from_c(&filename, "arenas/arena2/background.png");
+            str_from_c(&filename, "scenes/arena2/background.png");
             break;
         case 64:
-            str_from_c(&filename, "arenas/arena3/background.png");
+            str_from_c(&filename, "scenes/arena3/background.png");
             break;
         case 128:
-            str_from_c(&filename, "arenas/arena4/background.png");
+            str_from_c(&filename, "scenes/arena4/background.png");
             break;
         default:
             return false;
@@ -187,32 +184,26 @@ bool modmanager_get_bk_background(int file_id, sd_vga_image **img) {
 
 bool modmanager_get_sprite(animation_source source, int file_id, int animation, int frame, sd_sprite **spr) {
     str filename;
-    // TODO for arenas, check for 'common' for animations 6 (round), 7 (number), 8 (you lose), 9 (you win), 10 (fight),
-    // 11 (ready), 24 (dust 1), 25 (dust 2), 26 (dust 3), 27 (match counters)
-    // TODO for fighters, check for 'common' for animations 12 (scrap), 13 (bolt), 14 (screw), 55 (blast), 56 (blast 2),
-    // 57 (blast 3)
-    //
-    // Common replacements should replace default assets, but not modded ones
     switch(source) {
         case AF_ANIMATION:
-            str_from_format(&filename, "fighters/fighter%d/%d/%d_%d.png", file_id, animation, animation, frame);
+            str_from_format(&filename, "fighters/fighter%d/%d/%d.png", file_id, animation, frame);
             break;
         case BK_ANIMATION: {
             switch(file_id) {
                 case 8:
-                    str_from_format(&filename, "arenas/arena0/%d/%d_%d.png", animation, animation, frame);
+                    str_from_format(&filename, "scenes/arena0/%d/%d.png", animation, frame);
                     break;
                 case 16:
-                    str_from_format(&filename, "arenas/arena1/%d/%d_%d.png", animation, animation, frame);
+                    str_from_format(&filename, "scenes/arena1/%d/%d.png", animation, frame);
                     break;
                 case 32:
-                    str_from_format(&filename, "arenas/arena2/%d/%d_%d.png", animation, animation, frame);
+                    str_from_format(&filename, "scenes/arena2/%d/%d.png", animation, frame);
                     break;
                 case 64:
-                    str_from_format(&filename, "arenas/arena3/%d/%d_%d.png", animation, animation, frame);
+                    str_from_format(&filename, "scenes/arena3/%d/%d.png", animation, frame);
                     break;
                 case 128:
-                    str_from_format(&filename, "arenas/arena4/%d/%d_%d.png", animation, animation, frame);
+                    str_from_format(&filename, "scenes/arena4/%d/%d.png", animation, frame);
                     break;
                 default:
                     return false;
@@ -229,7 +220,29 @@ bool modmanager_get_sprite(animation_source source, int file_id, int animation, 
         return true;
     }
 
-    // log_warn("MISS for sprite %s", str_c(&filename));
+    str_free(&filename);
+
+    // Common replacements should replace default assets, but not modded ones
+    if(source == BK_ANIMATION && ((animation >= 6 && animation <= 11) || (animation >= 24 && animation <= 27))) {
+        // TODO make sure this is an arena
+        // For arenas, check for 'common' for animations 6 (round), 7 (number), 8 (you lose), 9 (you win), 10 (fight),
+        // 11 (ready), 24 (dust 1), 25 (dust 2), 26 (dust 3), 27 (match counters)
+
+        str_from_format(&filename, "scenes/common/%d/%d.png", animation, frame);
+    } else if(source == AF_ANIMATION && (animation == 7 || animation == 8 || (animation >= 12 && animation <= 14) ||
+                                         (animation >= 55 && animation <= 57))) {
+        // For fighters, check for 'common' for animations 7 (burning oil/stun), 8 (blocking scrape), 12 (scrap), 13
+        // (bolt), 14 (screw), 55 (blast), 56 (blast 2), 57 (blast 3)
+
+        str_from_format(&filename, "fighters/common/%d/%d.png", animation, frame);
+    } else {
+        return false;
+    }
+
+    if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)spr, &len)) {
+        log_info("got sprite %dx%d with size %d", (*spr)->width, (*spr)->height, len);
+        return true;
+    }
 
     return false;
 }
@@ -540,7 +553,7 @@ bool modmanager_get_bk_animation(int arena_id, int anim_id, bk_info *bk_data) {
             return false;
     }
 
-    str_from_format(&filename, "arenas/arena%d/%d/animdata.ini", arena_index, anim_id);
+    str_from_format(&filename, "scenes/arena%d/%d/animdata.ini", arena_index, anim_id);
 
     list *l;
     unsigned int len = 0;
