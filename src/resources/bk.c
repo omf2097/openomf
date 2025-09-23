@@ -5,7 +5,7 @@
 #include "utils/log.h"
 #include <string.h>
 
-void bk_create(bk *b, void *src) {
+void bk_create(bk *b, void *src, str *name) {
     sd_bk_file *sdbk = (sd_bk_file *)src;
 
     // File ID
@@ -13,7 +13,7 @@ void bk_create(bk *b, void *src) {
 
     // Copy VGA image
     sd_vga_image *img;
-    if(modmanager_get_bk_background(b->file_id, &img)) {
+    if(modmanager_get_bk_background(name, &img)) {
         log_info("using modified BK background");
         surface_create_from_vga(&b->background, img);
         b->background.render_w = 320;
@@ -41,7 +41,7 @@ void bk_create(bk *b, void *src) {
     bk_info tmp_bk_info;
     for(int i = 0; i < 50; i++) {
         if(sdbk->anims[i] != NULL) {
-            bk_info_create(b->file_id, &tmp_bk_info, &b->sprites, (void *)sdbk->anims[i], i);
+            bk_info_create(name, &tmp_bk_info, &b->sprites, (void *)sdbk->anims[i], i);
             hashmap_put_int(&b->infos, i, &tmp_bk_info, sizeof(bk_info));
         }
     }

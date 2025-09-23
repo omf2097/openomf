@@ -38,11 +38,10 @@ error:
 
 static void read_png_data(unsigned char *dst, png_structp png_ptr, png_infop info_ptr, int w, int h) {
     png_uint_32 row_bytes = png_get_rowbytes(png_ptr, info_ptr);
-    png_bytep *row_pointers = png_malloc(png_ptr, h * row_bytes);
-    log_info("allocated %dx%d bytes for row pointers", h, row_bytes);
+    png_bytep *row_pointers = png_malloc(png_ptr, h * sizeof(png_bytep));
 
     for(int y = 0; y < h; y++) {
-        row_pointers[y] = dst + (y * row_bytes);
+        row_pointers[y] = dst + (y * w);
     }
 
     png_read_image(png_ptr, row_pointers);
