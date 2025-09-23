@@ -37,7 +37,6 @@ error:
 }
 
 static void read_png_data(unsigned char *dst, png_structp png_ptr, png_infop info_ptr, int w, int h) {
-    png_uint_32 row_bytes = png_get_rowbytes(png_ptr, info_ptr);
     png_bytep *row_pointers = png_malloc(png_ptr, h * sizeof(png_bytep));
 
     for(int y = 0; y < h; y++) {
