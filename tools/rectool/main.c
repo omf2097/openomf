@@ -342,10 +342,11 @@ int main(int argc, char *argv[]) {
                  "Assertion operand 1; har 1 or 2 or literal");
     struct arg_int *delete = arg_intn("d", "delete", "<number>", 0, 10, "Delete an existing element");
     struct arg_int *truncate = arg_int0(NULL, "truncate", "<tick>", "Delete moves after specified tick");
+    struct arg_str *fixup = arg_str0(NULL, "fixup", "<kind>", "Apply one-off fixup");
     struct arg_end *end = arg_end(20);
     void *argtable[] = {help,       vers,        file,       output,      inplace, pilot,       key,
                         value,      delete,      truncate,   insert,      assert,  assert_tick, assert_op,
-                        assert_op1, assert_val1, assert_op2, assert_val2, end};
+                        assert_op1, assert_val1, assert_op2, assert_val2, fixup,   end};
     const char *progname = "rectool";
 
     // Make sure everything got allocated
@@ -405,6 +406,22 @@ int main(int argc, char *argv[]) {
         int ret = sd_rec_load(&rec, &input_filename);
         if(ret != SD_SUCCESS) {
             printf("Unable to load REC file! [%d] %s.\n", ret, sd_get_error(ret));
+            goto exit_1;
+        }
+    }
+
+    if(fixup->count == 1) {
+        if(omf_strcasecmp(fixup->sval[0], "pr1097") == 0) {
+            // pull request 1097: Offsets rec ticks to the new start tick
+            // not needed for rectests that were recorded in DOS.
+            //   old  openomf  start tick: 70
+            //   new (OMF.EXE) start tick: 92
+            int const offset = 92 - 70;
+            for(unsigned i = 0; i < rec.move_count; i++) {
+                rec.moves[i].tick += offset;
+            }
+        } else {
+            printf("Unknown fixup '%s'.\n", fixup->sval[0]);
             goto exit_1;
         }
     }
