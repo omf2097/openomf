@@ -52,6 +52,10 @@ int omf_strncasecmp(char const *s1, char const *s2, size_t n) {
     }
 }
 
+int omf_strcasecmp(char const *s1, char const *s2) {
+    return omf_strncasecmp(s1, s2, SIZE_MAX);
+}
+
 size_t omf_strnlen_s(char const *str, size_t strsz) {
     assert(!(!str && strsz));
     if(!str) {

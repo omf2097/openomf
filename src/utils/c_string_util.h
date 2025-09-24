@@ -20,6 +20,9 @@ char *omf_strndup_real(char const *s, size_t n, char const *file, int line);
 // strncasecmp() for Windows too
 int omf_strncasecmp(char const *s1, char const *s2, size_t n);
 
+// strcasecmp, but always available
+int omf_strcasecmp(char const *s1, char const *s2);
+
 // Reads up to strsz bytes of str, returning the position of the
 // first null character or strsz if it was not found.
 size_t omf_strnlen_s(char const *str, size_t strsz);
