@@ -58,6 +58,7 @@ int main(int argc, char *argv[]) {
     char *lobbyaddr = NULL;
     char *oldlobbyaddr = NULL;
     char *trace_file = NULL;
+    int retval = 1;
     unsigned short connect_port = 0;
     unsigned short listen_port = 0;
     engine_init_flags init_flags;
@@ -285,6 +286,7 @@ int main(int argc, char *argv[]) {
 
     // Run
     engine_run(&init_flags);
+    retval = 0;
 
     // Close everything
     engine_close();
@@ -313,5 +315,5 @@ exit_0:
         omf_free(trace_file);
     }
     arg_freetable(argtable, N_ELEMENTS(argtable));
-    return 0;
+    return retval;
 }
