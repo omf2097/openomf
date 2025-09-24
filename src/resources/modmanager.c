@@ -143,11 +143,14 @@ bool modmanager_init(void) {
                         }
 #endif
                     }
+                    str_free(&filename);
                 }
+                zip_entry_close(zip);
             }
         } else {
             log_warn("mod %s has no contents", path_c(p));
         }
+        zip_close(zip);
     }
 
     list_free(&dir_list);
@@ -161,11 +164,13 @@ bool modmanager_get_bk_background(str *name, sd_vga_image **img) {
     str_tolower(&filename);
 
     unsigned int len;
+    bool found = false;
     if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)img, &len)) {
         log_info("got vga image %dx%d with size %d", (*img)->w, (*img)->h, len);
-        return true;
+        found = true;
     }
-    return false;
+    str_free(&filename);
+    return found;
 }
 
 bool modmanager_get_sprite(animation_source source, str *name, int animation, int frame, sd_sprite **spr) {
@@ -186,9 +191,8 @@ bool modmanager_get_sprite(animation_source source, str *name, int animation, in
     unsigned int len;
     if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)spr, &len)) {
         log_info("got sprite %dx%d with size %d", (*spr)->width, (*spr)->height, len);
+        str_free(&filename);
         return true;
-    } else {
-        log_warn("MISS %s", str_c(name));
     }
 
     str_free(&filename);
@@ -210,12 +214,15 @@ bool modmanager_get_sprite(animation_source source, str *name, int animation, in
         return false;
     }
 
+    bool found = false;
     if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)spr, &len)) {
         log_info("got sprite %dx%d with size %d", (*spr)->width, (*spr)->height, len);
-        return true;
+        found = true;
     }
 
-    return false;
+    str_free(&filename);
+
+    return found;
 }
 
 unsigned int modmanager_count_music(str *name) {
@@ -247,6 +254,8 @@ bool modmanager_get_music(str *name, unsigned int index, unsigned char **buf, si
     list *l;
     unsigned int len = 0;
 
+    bool found = false;
+
     if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&l, &len)) {
         unsigned int count = list_size(l);
         log_info("found %d music files for %s", count, name);
@@ -258,12 +267,12 @@ bool modmanager_get_music(str *name, unsigned int index, unsigned char **buf, si
         assert(obuf != NULL);
         *buf = obuf->buf;
         *buflen = obuf->size;
-        return true;
+        found = true;
     }
 
-    log_warn("MISS for %s", str_c(&filename));
+    str_free(&filename);
 
-    return false;
+    return found;
 }
 
 bool modmanager_parse_af_move_mod(const char *buf, af_move *current_move) {
