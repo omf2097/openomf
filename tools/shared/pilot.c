@@ -82,7 +82,7 @@ void print_pilot_info(sd_pilot *pilot) {
         printf("  - TRN Desc:        %s\n", pilot->trn_desc);
         printf("  - TRN Image:       %s\n", pilot->trn_image);
         printf("  - Unk. Float C:    %f\n", pilot->unk_f_c);
-        printf("  - Unk. Float D:    %f\n", pilot->unk_f_d);
+        printf("  - TRN Win Mult:    %f\n", pilot->trn_winnings_mult);
         printf("  - Pilot ID:        %d\n", pilot->pilot_id);
         printf("  - Unknown K:       %d\n", pilot->unknown_k);
         printf("  - Force arena:     %d\n", pilot->force_arena);
