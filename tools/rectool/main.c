@@ -8,6 +8,7 @@
 #include "formats/rec.h"
 #include "formats/rec_assertion.h"
 #include "utils/c_array_util.h"
+#include "utils/c_string_util.h"
 #include <argtable3.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -266,7 +267,7 @@ void rec_set_key(sd_rec_file *rec, const char **key, int kcount, const char *val
             }
         } break;
         case 1:
-            rec->rehit_mode = strcasecmp(value, "on") == 0 ? 1 : 0;
+            rec->rehit_mode = omf_strcasecmp(value, "on") == 0 ? 1 : 0;
             break;
         default:
             printf("Unknown key %s!\n", key[0]);
