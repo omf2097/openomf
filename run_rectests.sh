@@ -96,6 +96,7 @@ RUNDIR=$(pwd)
 
 cd $BUILD_DIR
 
+export OPENOMF_RESOURCE_PATH="."
 export LSAN_OPTIONS="suppressions=../lsan.supp"
 
 output_file="$temp_dir/output_shouldfail.log"
