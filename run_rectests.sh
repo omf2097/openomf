@@ -75,6 +75,7 @@ tests=(
     "Nova can combo a stunned HAR from belly flop and enemy continues to be stunned:NOVA_FLOP_STUN_COMBO.REC"
     "Rehit juggles are not allowed against stunned opponents:NO_STUN_JUGGLE.REC"
     "Katana enters winpose after landing from heel stomp:KATANA_WINPOSE.REC"
+    "Round one starts on tick 92:ROUNDONE.REC"
 )
 
 # Setup temp directory for outputs
