@@ -97,6 +97,14 @@ RUNDIR=$(pwd)
 cd $BUILD_DIR
 
 export LSAN_OPTIONS="suppressions=../lsan.supp"
+
+output_file="$temp_dir/output_shouldfail.log"
+if $OPENOMF_BIN --force-audio-backend=NULL --force-renderer=NULL --speed=10 -P "$RUNDIR/rectests/SHOULDFAIL.REC" >"$output_file" 2>&1; then
+    cat "$output_file"
+    echo "CRITICAL ERROR: SHOULDFAIL.REC succeeded."
+    exit 1
+fi
+
 i=0
 for test in "${tests[@]}"; do
     IFS=':' read -r desc filename <<< "$test"
