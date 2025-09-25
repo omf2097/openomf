@@ -404,6 +404,8 @@ int game_state_create(game_state *gs, engine_init_flags *init_flags) {
     // Initialize scene
     scene_init(gs->sc);
 
+    str_create(&gs->rectest_failures);
+
     // All done
     return 0;
 
@@ -1037,6 +1039,9 @@ void game_state_static_tick(game_state *gs, bool replay) {
         if(gs->next_id == SCENE_NONE) {
             log_debug("Next ID is SCENE_NONE! bailing.");
             gs->run = 0;
+            if(str_size(&gs->rectest_failures) > 0) {
+                crash_with_args("RECTEST(s) FAILED:\n%s", str_c(&gs->rectest_failures));
+            }
             return;
         }
 
@@ -1345,6 +1350,7 @@ void game_state_clone_free(game_state *gs) {
         game_player_clone_free(gs->players[i]);
         omf_free(gs->players[i]);
     }
+    str_free(&gs->rectest_failures);
     // omf_free(gs);
 }
 
@@ -1418,6 +1424,7 @@ void game_state_free(game_state **_gs) {
         omf_free(gs->players[i]);
     }
     omf_free(gs->menu_ctrl);
+    str_free(&gs->rectest_failures);
     omf_free(gs);
 }
 
@@ -1550,6 +1557,8 @@ int game_state_clone(game_state *src, game_state *dst) {
     dst->sc = omf_calloc(1, sizeof(scene));
     scene_clone(src->sc, dst->sc, dst);
 
+    str_from(&dst->rectest_failures, &src->rectest_failures);
+
     dst->new_state = NULL;
 
     dst->clone = true;
@@ -1586,6 +1595,10 @@ void game_state_rec_finished(game_state *gs) {
         game_state_set_next(gs, SCENE_NONE);
         return;
     }
+
+    str_free(&new_gs->rectest_failures);
+    memcpy(&new_gs->rectest_failures, &gs->rectest_failures, sizeof(str));
+    str_create(&gs->rectest_failures);
 
     gs->new_state = new_gs;
 }
