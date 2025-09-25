@@ -215,6 +215,7 @@ void engine_run(engine_init_flags *init_flags) {
                                 game_state *old_gs = gs;
                                 game_state *new_gs = gs->new_state;
                                 gs = new_gs;
+                                game_state_swap_cloneness(old_gs, new_gs);
                                 game_state_clone_free(old_gs);
                                 omf_free(old_gs);
                             }
@@ -334,6 +335,7 @@ void engine_run(engine_init_flags *init_flags) {
                     game_state *new_gs = gs->new_state;
                     gs = new_gs;
                     // gs->new_state = NULL;
+                    game_state_swap_cloneness(old_gs, new_gs);
                     game_state_clone_free(old_gs);
                     omf_free(old_gs);
                 }

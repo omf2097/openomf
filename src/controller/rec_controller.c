@@ -169,7 +169,6 @@ void rec_controller_step_back(controller *ctrl) {
 
     game_state *gs_new = omf_calloc(1, sizeof(game_state));
     game_state_clone(gs_bak, gs_new);
-    gs_new->clone = false;
     ctrl->gs->new_state = gs_new;
 
     data->last_tick = ctrl->gs->tick;

@@ -55,6 +55,7 @@ void game_state_play_sound(game_state *gs, int id, float volume, float panning, 
 
 int game_state_clone(game_state *src, game_state *dst);
 void game_state_clone_free(game_state *gs);
+void game_state_swap_cloneness(game_state *gs1, game_state *gs2);
 
 void _setup_keyboard(game_state *gs, int player_id, int control_id);
 void _setup_ai(game_state *gs, int player_id);

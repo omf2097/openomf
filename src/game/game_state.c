@@ -1061,8 +1061,6 @@ void game_state_static_tick(game_state *gs, bool replay) {
         // merge the sounds
         game_state_merge_sounds(gs, gs->new_state);
         gs = gs->new_state;
-        // remove the cloned flag
-        gs->clone = false;
     }
 
     // Call static ticks for scene
@@ -1316,6 +1314,7 @@ void game_state_menu_poll(game_state *gs, ctrl_event **ev) {
 }
 
 void game_state_clone_free(game_state *gs) {
+    assert(gs->clone);
     // Free objects
     render_obj *robj;
     iterator it;
@@ -1349,9 +1348,24 @@ void game_state_clone_free(game_state *gs) {
     // omf_free(gs);
 }
 
+void game_state_swap_cloneness(game_state *gs1, game_state *gs2) {
+    assert(gs1 != gs2);
+    // only one of gs1 / gs2 can be a clone.
+    assert((gs1->clone && !gs2->clone) || (!gs1->clone && gs2->clone));
+    // these pointers are not deep-cloned.
+    assert(gs1->rec == gs2->rec);
+    assert(gs1->menu_ctrl == gs2->menu_ctrl);
+
+    bool tmp = gs1->clone;
+    gs1->clone = gs2->clone;
+    gs2->clone = tmp;
+}
+
 void game_state_free(game_state **_gs) {
     game_state *gs = *_gs;
     *_gs = NULL;
+
+    assert(!gs->clone);
 
     // Free objects
     render_obj *robj;
