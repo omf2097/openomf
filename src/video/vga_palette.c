@@ -35,6 +35,15 @@ void vga_palette_mix_range(vga_palette *pal, vga_index ref_index, vga_index star
     }
 }
 
+void vga_palette_darken(vga_palette *pal, uint8_t step) {
+    uint32_t inv = 255 - step;
+    for(int i = 0; i < 256; i++) {
+        pal->colors[i].r = (pal->colors[i].r * inv) >> 8;
+        pal->colors[i].g = (pal->colors[i].g * inv) >> 8;
+        pal->colors[i].b = (pal->colors[i].b * inv) >> 8;
+    }
+}
+
 void vga_palette_light_range(vga_palette *pal, uint8_t gray, vga_index start, vga_index end, int32_t blend_factor) {
     assert(end + (vga_index)255 >= start);
     int32_t gr = gray; // widen to prevent underflow

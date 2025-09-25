@@ -44,6 +44,14 @@ void vga_palette_tint_range(vga_palette *pal, vga_index ref_index, vga_index sta
 void vga_palette_mix_range(vga_palette *pal, vga_index ref_index, vga_index start, vga_index end, uint8_t step);
 
 /**
+ * Darken each palette color.
+ *
+ * @param pal Palette to operate on
+ * @param step How much to darken (0 - 255).
+ */
+void vga_palette_darken(vga_palette *pal, uint8_t step);
+
+/**
  * Mix palette with a target shade of gray.
  * Can be used for under and overmixing by setting blend_factor to
  * extreme values-- output will be clamped (saturate to 0 or 255).

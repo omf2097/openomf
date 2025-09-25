@@ -1202,14 +1202,9 @@ static void arena_crossfade_transform(damage_tracker *damage, vga_palette *pal, 
     arena_local *local = scene_get_userdata(scene);
     int const target_tick = local->state == ARENA_STATE_STARTING ? 0 : (80 + ARENA_CROSSFADE_TICKS);
     int progress = abs(local->state_ticks - target_tick);
-    float fraction = progress / (float)ARENA_CROSSFADE_TICKS;
+    int darken = 255 - progress * 255 / ARENA_CROSSFADE_TICKS;
 
-    // Set palette darkness value.
-    for(int i = 0; i < 256; i++) {
-        pal->colors[i].r *= fraction;
-        pal->colors[i].g *= fraction;
-        pal->colors[i].b *= fraction;
-    }
+    vga_palette_darken(pal, darken);
 
     damage_set_all(damage);
 }
