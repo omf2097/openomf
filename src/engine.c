@@ -116,6 +116,28 @@ exit_0:
     return 1;
 }
 
+static void engine_check_for_new_game_state(game_state **_gs) {
+    game_state *gs = *_gs;
+    if(gs->new_state) {
+        // somebody wants to replace the game state
+        game_state *old_gs = gs;
+        game_state *new_gs = gs->new_state;
+        *_gs = new_gs;
+        if(new_gs->clone) {
+            game_state_swap_cloneness(old_gs, new_gs);
+            game_state_clone_free(old_gs);
+            omf_free(old_gs);
+        } else {
+            game_state_free(&old_gs);
+        }
+
+        // apply palette transforms
+        game_state_palette_transform(gs);
+        vga_state_render();
+    }
+}
+
+
 void save_screenshot(const SDL_Rect *r, unsigned char *data, bool flip) {
     char *time = format_time();
     path filename = get_screenshot_filename(time);
@@ -234,19 +256,8 @@ void engine_run(const engine_init_flags *init_flags) {
                         if(game_state_get_player(gs, 0)->ctrl->type == CTRL_TYPE_REC) {
                             controller_rewind(game_state_get_player(gs, 0)->ctrl);
                             controller_rewind(game_state_get_player(gs, 1)->ctrl);
-                            if(gs->new_state) {
-                                // one of the controllers wants to replace the game state
-                                game_state *old_gs = gs;
-                                game_state *new_gs = gs->new_state;
-                                gs = new_gs;
-                                game_state_swap_cloneness(old_gs, new_gs);
-                                game_state_clone_free(old_gs);
-                                omf_free(old_gs);
-
-                                // apply palette transforms
-                                game_state_palette_transform(gs);
-                                vga_state_render();
-                            }
+                            // check if we need to replace the game state
+                            engine_check_for_new_game_state(&gs);
                             visual_debugger = 1;
                         }
                     }
@@ -357,16 +368,7 @@ void engine_run(const engine_init_flags *init_flags) {
             if(has_static) {
                 game_state_static_tick(gs, false);
                 // check if we need to replace the game state
-                if(gs->new_state) {
-                    // one of the controllers wants to replace the game state
-                    game_state *old_gs = gs;
-                    game_state *new_gs = gs->new_state;
-                    gs = new_gs;
-                    // gs->new_state = NULL;
-                    game_state_swap_cloneness(old_gs, new_gs);
-                    game_state_clone_free(old_gs);
-                    omf_free(old_gs);
-                }
+                engine_check_for_new_game_state(&gs);
                 console_tick(gs);
                 osd_tick();
                 static_wait -= STATIC_TICKS;
