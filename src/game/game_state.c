@@ -319,17 +319,19 @@ int game_state_create(game_state *gs, engine_init_flags *init_flags) {
 
     reconfigure_controller(gs);
     int nscene;
-    if(path_is_set(&init_flags->rec_file) > 0 && init_flags->playback == 1) {
+    if(init_flags->playback > 0 && gs->rec_playback_id < gs->init_flags->playback &&
+       path_is_set(&init_flags->rec_files[gs->rec_playback_id])) {
+        path const *rec = &init_flags->rec_files[gs->rec_playback_id];
         gs->rec = omf_malloc(sizeof(sd_rec_file));
         sd_rec_create(gs->rec);
-        int ret = sd_rec_load(gs->rec, &init_flags->rec_file);
+        int ret = sd_rec_load(gs->rec, rec);
         if(ret != SD_SUCCESS) {
-            log_error("Unable to load recording %s.", path_c(&init_flags->rec_file));
+            log_error("Unable to load recording %s.", path_c(rec));
             goto error_0;
         }
 
         nscene = SCENE_ARENA0 + gs->rec->arena_id;
-        log_debug("playing recording file %s", path_c(&init_flags->rec_file));
+        log_debug("playing recording file %s", path_c(rec));
         gs->this_id = nscene;
         gs->next_id = nscene;
 
@@ -1564,5 +1566,6 @@ bool is_twoplayer(const game_state *gs) {
 }
 
 bool is_rec_playback(const game_state *gs) {
-    return path_is_set(&gs->init_flags->rec_file) && gs->init_flags->playback == 1;
+    return gs->init_flags->playback > 0 && gs->rec_playback_id < gs->init_flags->playback &&
+           path_is_set(&gs->init_flags->rec_files[gs->rec_playback_id]);
 }

@@ -1610,7 +1610,7 @@ static void arena_free(scene *scene) {
 
         if(scene->gs->init_flags->record == 1) {
             // we're supposed to save it
-            sd_rec_save(scene->gs->rec, &scene->gs->init_flags->rec_file);
+            sd_rec_save(scene->gs->rec, &scene->gs->init_flags->rec_files[0]);
         }
     }
 
