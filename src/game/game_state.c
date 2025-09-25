@@ -996,6 +996,8 @@ void game_state_static_tick(game_state *gs, bool replay) {
         gs->clone = false;
     }
 
+    assert(!gs->clone);
+
     // Call static ticks for scene
     scene_static_tick(gs->sc, game_state_is_paused(gs));
 
@@ -1261,6 +1263,14 @@ void game_state_clone_free(game_state *gs) {
     scene_clone_free(gs->sc);
     // omf_free(gs->sc);
 
+    if(gs->rec) {
+        for(int i = 0; i < 2; i++) {
+            if(gs->players[i]->pilot == &gs->rec->pilots[i].info) {
+                gs->players[i]->pilot = NULL;
+            }
+        }
+    }
+
     // Free players
     for(int i = 0; i < 2; i++) {
         // game_player_set_ctrl(gs->players[i], NULL);
@@ -1293,13 +1303,13 @@ void game_state_free(game_state **_gs) {
     }
 
     if(gs->rec) {
+        for(int i = 0; i < 2; i++) {
+            if(gs->players[i]->pilot == &gs->rec->pilots[i].info) {
+                gs->players[i]->pilot = NULL;
+            }
+        }
         sd_rec_free(gs->rec);
         omf_free(gs->rec);
-    }
-
-    if(gs->init_flags->playback == 1) {
-        gs->players[0]->pilot = NULL;
-        gs->players[1]->pilot = NULL;
     }
 
     // Free players
