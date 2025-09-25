@@ -1318,15 +1318,9 @@ void arena_dynamic_tick(scene *scene, int paused) {
                 if(local->state_ticks == target_end_ticks) {
                     arena_screengrab_winner(scene);
                 }
-                // one HAR must be in victory pose and one must be in defeat or damage from scrap/destruction
-                assert(((obj_har[0]->cur_animation->id == ANIM_VICTORY ||
-                         af_get_move(hars[0]->af_data, obj_har[0]->cur_animation->id)->category == CAT_SCRAP ||
-                         af_get_move(hars[0]->af_data, obj_har[0]->cur_animation->id)->category == CAT_DESTRUCTION) &&
-                        (har_in_defeat_animation(obj_har[1]) || obj_har[1]->cur_animation->id == ANIM_DAMAGE)) ||
-                       ((obj_har[1]->cur_animation->id == ANIM_VICTORY ||
-                         af_get_move(hars[1]->af_data, obj_har[1]->cur_animation->id)->category == CAT_SCRAP ||
-                         af_get_move(hars[1]->af_data, obj_har[1]->cur_animation->id)->category == CAT_DESTRUCTION) &&
-                        (har_in_defeat_animation(obj_har[0]) || obj_har[0]->cur_animation->id == ANIM_DAMAGE)));
+                // NOTE: HARs can still be playing normal move animations when the round ends.
+                // This happens in times like THROW_KO.REC, where flail is too busy spinning the
+                //    opponent for either of them to perform victory/defeat anims.
                 int progress = local->state_ticks - target_end_ticks;
                 if(progress >= ARENA_CROSSFADE_TICKS) {
                     if(local->over) {
