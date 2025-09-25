@@ -335,9 +335,8 @@ static void arena_end(scene *sc) {
     }
 
     // Switch scene
-    if(scene->gs->init_flags->playback == 1) {
-        // exit after REC playback
-        game_state_set_next(scene->gs, SCENE_NONE);
+    if(is_rec_playback(gs)) {
+        game_state_rec_finished(gs);
     } else if(is_singleplayer(gs) || is_tournament(gs) || is_demoplay(gs)) {
         game_player *p1 = game_state_get_player(gs, 0);
         game_player *p2 = game_state_get_player(gs, 1);
@@ -1000,7 +999,7 @@ int arena_handle_events(scene *scene, game_player *player, ctrl_event *i) {
                 }
             } else if(i->type == EVENT_TYPE_CLOSE) {
                 if(player->ctrl->type == CTRL_TYPE_REC) {
-                    game_state_set_next(scene->gs, SCENE_NONE);
+                    game_state_rec_finished(scene->gs);
                 } else {
                     if(scene->gs->net_mode == NET_MODE_LOBBY) {
                         arena_local *local = scene_get_userdata(scene);

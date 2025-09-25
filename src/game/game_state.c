@@ -1563,6 +1563,33 @@ bool game_state_hars_are_alive(game_state *gs) {
     return (h1->health > 0) && (h2->health > 0);
 }
 
+void game_state_rec_finished(game_state *gs) {
+    assert(is_rec_playback(gs));
+
+    unsigned int const next_rec_id = gs->rec_playback_id + 1;
+    if(next_rec_id >= gs->init_flags->playback) {
+        if(gs->next_wait_ticks <= 0) {
+            log_warn("Finished playing %d RECs.", gs->init_flags->playback);
+        }
+        game_state_set_next(gs, SCENE_NONE);
+        return;
+    }
+
+    if(gs->new_state != NULL)
+        return;
+
+    game_state *new_gs = omf_calloc(1, sizeof(game_state));
+    new_gs->rec_playback_id = next_rec_id;
+    if(game_state_create(new_gs, gs->init_flags) != 0) {
+        game_state_free(&new_gs);
+        log_warn("Failed to create game_state for %dth (nth) rec\n", next_rec_id + 1);
+        game_state_set_next(gs, SCENE_NONE);
+        return;
+    }
+
+    gs->new_state = new_gs;
+}
+
 bool is_netplay(const game_state *gs) {
     return game_state_get_player(gs, 0)->ctrl->type == CTRL_TYPE_NETWORK ||
            game_state_get_player(gs, 1)->ctrl->type == CTRL_TYPE_NETWORK;
@@ -1596,6 +1623,6 @@ bool is_twoplayer(const game_state *gs) {
 }
 
 bool is_rec_playback(const game_state *gs) {
-    return gs->init_flags->playback > 0 && gs->rec_playback_id < gs->init_flags->playback &&
+    return gs->rec_playback_id < gs->init_flags->playback &&
            path_is_set(&gs->init_flags->rec_files[gs->rec_playback_id]);
 }
