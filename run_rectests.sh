@@ -100,7 +100,7 @@ export OPENOMF_RESOURCE_PATH="."
 export LSAN_OPTIONS="suppressions=../lsan.supp"
 
 output_file="$temp_dir/output_shouldfail.log"
-if $OPENOMF_BIN --force-audio-backend=NULL --force-renderer=NULL --speed=10 -P "$RUNDIR/rectests/SHOULDFAIL.REC" >"$output_file" 2>&1; then
+if $OPENOMF_BIN --force-audio-backend=NULL --force-renderer=NULL --warp -P "$RUNDIR/rectests/SHOULDFAIL.REC" >"$output_file" 2>&1; then
     cat "$output_file"
     echo "CRITICAL ERROR: SHOULDFAIL.REC succeeded."
     exit 1
@@ -115,7 +115,7 @@ for test in "${tests[@]}"; do
     output_file="$temp_dir/output_$i.log"
 
     echo -n "${desc} :"
-    if $OPENOMF_BIN --force-audio-backend=NULL --force-renderer=NULL --speed=10 -P "$RUNDIR/rectests/${filename}" >"$output_file"  2>&1; then
+    if $OPENOMF_BIN --force-audio-backend=NULL --force-renderer=NULL --warp -P "$RUNDIR/rectests/${filename}" >"$output_file"  2>&1; then
         echo " PASS"
     else
         echo " FAILED (${filename})"
