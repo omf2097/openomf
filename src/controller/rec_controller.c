@@ -98,16 +98,25 @@ int rec_controller_poll(controller *ctrl, ctrl_event **ev) {
                 if(parse_assertion((uint8_t const *)sd_rec_get_extra_data(move), &ass)) {
                     log_assertion(&ass);
                     if(!game_state_check_assertion_is_met(&ass, ctrl->gs)) {
-                        if(ctrl->gs->init_flags->playback <= 1) {
+                        engine_init_flags const *init_flags = ctrl->gs->init_flags;
+                        char const *description = "<no rectest description>";
+                        if(init_flags->rec_file_descriptions){
+                            description = str_c(&init_flags->rec_file_descriptions[ctrl->gs->rec_playback_id]);
+                        }
+
+                        if(init_flags->playback <= 1) {
                             // no need to continue, we're only playing a single rec.
-                            crash("RECTEST Failed.");
+                            crash_with_args("RECTEST Failed: %s", description);
                         }
                         // batch rectest
                         str ass_str;
                         rec_assertion_to_str(&ass_str, &ass);
-                        char const *rec_filename = path_c(&ctrl->gs->init_flags->rec_files[ctrl->gs->rec_playback_id]);
+                        char const *rec_filename = path_c(&init_flags->rec_files[ctrl->gs->rec_playback_id]);
                         str_append_format(&ctrl->gs->rectest_failures,
-                                          "REC Assertion Failed!\n  File: %s\n  %s (tick %d)\n", rec_filename,
+                                          "REC Assertion Failed!\n"
+                                          "  File: %s\n"
+                                          "  Description: %s\n"
+                                          "  %s (tick %d)\n", rec_filename, description,
                                           str_c(&ass_str), ticks);
                         controller_close(ctrl, ev);
                         return 0;
