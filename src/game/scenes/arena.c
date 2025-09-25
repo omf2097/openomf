@@ -124,7 +124,7 @@ void game_menu_quit(component *c, void *userdata) {
     chr_score_reset(game_player_get_score(game_state_get_player((s)->gs, 1)), 1);
 
     game_player *player1 = game_state_get_player(((scene *)userdata)->gs, 0);
-    if(s->gs->init_flags->playback == 1) {
+    if(s->gs->init_flags->playback) {
         // 'quit' button exits during REC playback
         game_state_set_next(s->gs, SCENE_NONE);
     } else if(player1->chr) {
@@ -335,9 +335,8 @@ static void arena_end(scene *sc) {
     }
 
     // Switch scene
-    if(scene->gs->init_flags->playback == 1) {
-        // exit after REC playback
-        game_state_set_next(scene->gs, SCENE_NONE);
+    if(is_rec_playback(gs)) {
+        game_state_rec_finished(gs);
     } else if(is_singleplayer(gs) || is_tournament(gs) || is_demoplay(gs)) {
         game_player *p1 = game_state_get_player(gs, 0);
         game_player *p2 = game_state_get_player(gs, 1);
@@ -1000,7 +999,7 @@ int arena_handle_events(scene *scene, game_player *player, ctrl_event *i) {
                 }
             } else if(i->type == EVENT_TYPE_CLOSE) {
                 if(player->ctrl->type == CTRL_TYPE_REC) {
-                    game_state_set_next(scene->gs, SCENE_NONE);
+                    game_state_rec_finished(scene->gs);
                 } else {
                     if(scene->gs->net_mode == NET_MODE_LOBBY) {
                         arena_local *local = scene_get_userdata(scene);
@@ -1610,7 +1609,7 @@ static void arena_free(scene *scene) {
 
         if(scene->gs->init_flags->record == 1) {
             // we're supposed to save it
-            sd_rec_save(scene->gs->rec, &scene->gs->init_flags->rec_file);
+            sd_rec_save(scene->gs->rec, &scene->gs->init_flags->rec_files[0]);
         }
     }
 
@@ -1712,7 +1711,7 @@ int arena_create(scene *scene) {
 
     // TODO: Fire & Ice will need to set the arena palette
     unsigned pal_index = 0;
-    if(scene->gs->init_flags->playback == 1) {
+    if(is_rec_playback(scene->gs)) {
         // use palette index from rec
         pal_index = scene->gs->rec->arena_palette;
     } else if(scene->bk_data->file_id == 128 && is_tournament(scene->gs)) {

@@ -88,7 +88,19 @@ int rec_controller_poll(controller *ctrl, ctrl_event **ev) {
                 if(parse_assertion(buf, &ass)) {
                     log_assertion(&ass);
                     if(!game_state_check_assertion_is_met(&ass, ctrl->gs)) {
-                        crash("REC file assert failed!");
+                        if(ctrl->gs->init_flags->playback <= 1) {
+                            // no need to continue, we're only playing a single rec.
+                            crash("RECTEST Failed.");
+                        }
+                        // batch rectest
+                        str ass_str;
+                        rec_assertion_to_str(&ass_str, &ass);
+                        char const *rec_filename = path_c(&ctrl->gs->init_flags->rec_files[ctrl->gs->rec_playback_id]);
+                        str_append_format(&ctrl->gs->rectest_failures,
+                                          "REC Assertion Failed!\n  File: %s\n  %s (tick %d)\n", rec_filename,
+                                          str_c(&ass_str), ticks);
+                        controller_close(ctrl, ev);
+                        return 0;
                     }
                 }
             } else if(move->lookup_id == 96) {
@@ -169,7 +181,6 @@ void rec_controller_step_back(controller *ctrl) {
 
     game_state *gs_new = omf_calloc(1, sizeof(game_state));
     game_state_clone(gs_bak, gs_new);
-    gs_new->clone = false;
     ctrl->gs->new_state = gs_new;
 
     data->last_tick = ctrl->gs->tick;

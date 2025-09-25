@@ -45,6 +45,7 @@ void game_state_init_demo(game_state *gs);
 int game_state_ms_per_dyntick(game_state *gs);
 ticktimer *game_state_get_ticktimer(game_state *gs);
 bool game_state_hars_are_alive(game_state *gs);
+void game_state_rec_finished(game_state *gs);
 
 object *game_state_find_object(game_state *gs, uint32_t object_id);
 int game_state_find_objects(game_state *gs, vector *out, bool (*predicate)(const object *obj, void *user_data),
@@ -55,6 +56,8 @@ void game_state_play_sound(game_state *gs, int id, float volume, float panning, 
 
 int game_state_clone(game_state *src, game_state *dst);
 void game_state_clone_free(game_state *gs);
+void game_state_swap_cloneness(game_state *gs1, game_state *gs2);
+void game_state_check_for_new(game_state **gs);
 
 void _setup_keyboard(game_state *gs, int player_id, int control_id);
 void _setup_ai(game_state *gs, int player_id);

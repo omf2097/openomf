@@ -210,14 +210,8 @@ void engine_run(engine_init_flags *init_flags) {
                         if(game_state_get_player(gs, 0)->ctrl->type == CTRL_TYPE_REC) {
                             controller_rewind(game_state_get_player(gs, 0)->ctrl);
                             controller_rewind(game_state_get_player(gs, 1)->ctrl);
-                            if(gs->new_state) {
-                                // one of the controllers wants to replace the game state
-                                game_state *old_gs = gs;
-                                game_state *new_gs = gs->new_state;
-                                gs = new_gs;
-                                game_state_clone_free(old_gs);
-                                omf_free(old_gs);
-                            }
+                            // check if we need to replace the game state
+                            game_state_check_for_new(&gs);
                             visual_debugger = 1;
                         }
                     }
@@ -328,15 +322,7 @@ void engine_run(engine_init_flags *init_flags) {
             if(has_static) {
                 game_state_static_tick(gs, false);
                 // check if we need to replace the game state
-                if(gs->new_state) {
-                    // one of the controllers wants to replace the game state
-                    game_state *old_gs = gs;
-                    game_state *new_gs = gs->new_state;
-                    gs = new_gs;
-                    // gs->new_state = NULL;
-                    game_state_clone_free(old_gs);
-                    omf_free(old_gs);
-                }
+                game_state_check_for_new(&gs);
                 console_tick(gs);
                 static_wait -= STATIC_TICKS;
             }
@@ -347,6 +333,8 @@ void engine_run(engine_init_flags *init_flags) {
             has_dynamic = dynamic_wait > dyntick_ms;
             if(has_dynamic) {
                 game_state_dynamic_tick(gs, false);
+                // check if we need to replace the game state
+                game_state_check_for_new(&gs);
                 dynamic_wait -= dyntick_ms;
                 if(gs->delay > 0) {
                     log_debug("applying delay %d", gs->delay);

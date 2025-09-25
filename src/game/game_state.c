@@ -319,17 +319,19 @@ int game_state_create(game_state *gs, engine_init_flags *init_flags) {
 
     reconfigure_controller(gs);
     int nscene;
-    if(path_is_set(&init_flags->rec_file) > 0 && init_flags->playback == 1) {
+    if(init_flags->playback > 0 && gs->rec_playback_id < gs->init_flags->playback &&
+       path_is_set(&init_flags->rec_files[gs->rec_playback_id])) {
+        path const *rec = &init_flags->rec_files[gs->rec_playback_id];
         gs->rec = omf_malloc(sizeof(sd_rec_file));
         sd_rec_create(gs->rec);
-        int ret = sd_rec_load(gs->rec, &init_flags->rec_file);
+        int ret = sd_rec_load(gs->rec, rec);
         if(ret != SD_SUCCESS) {
-            log_error("Unable to load recording %s.", path_c(&init_flags->rec_file));
+            log_error("Unable to load recording %s.", path_c(rec));
             goto error_0;
         }
 
         nscene = SCENE_ARENA0 + gs->rec->arena_id;
-        log_debug("playing recording file %s", path_c(&init_flags->rec_file));
+        log_debug("playing recording file %s", path_c(rec));
         gs->this_id = nscene;
         gs->next_id = nscene;
 
@@ -401,6 +403,8 @@ int game_state_create(game_state *gs, engine_init_flags *init_flags) {
 
     // Initialize scene
     scene_init(gs->sc);
+
+    str_create(&gs->rectest_failures);
 
     // All done
     return 0;
@@ -1035,6 +1039,9 @@ void game_state_static_tick(game_state *gs, bool replay) {
         if(gs->next_id == SCENE_NONE) {
             log_debug("Next ID is SCENE_NONE! bailing.");
             gs->run = 0;
+            if(str_size(&gs->rectest_failures) > 0) {
+                crash_with_args("RECTEST(s) FAILED:\n%s", str_c(&gs->rectest_failures));
+            }
             return;
         }
 
@@ -1059,8 +1066,6 @@ void game_state_static_tick(game_state *gs, bool replay) {
         // merge the sounds
         game_state_merge_sounds(gs, gs->new_state);
         gs = gs->new_state;
-        // remove the cloned flag
-        gs->clone = false;
     }
 
     // Call static ticks for scene
@@ -1314,6 +1319,7 @@ void game_state_menu_poll(game_state *gs, ctrl_event **ev) {
 }
 
 void game_state_clone_free(game_state *gs) {
+    assert(gs->clone);
     // Free objects
     render_obj *robj;
     iterator it;
@@ -1330,18 +1336,58 @@ void game_state_clone_free(game_state *gs) {
     scene_clone_free(gs->sc);
     // omf_free(gs->sc);
 
+    if(gs->rec) {
+        for(int i = 0; i < 2; i++) {
+            if(gs->players[i]->pilot == &gs->rec->pilots[i].info) {
+                gs->players[i]->pilot = NULL;
+            }
+        }
+    }
+
     // Free players
     for(int i = 0; i < 2; i++) {
         // game_player_set_ctrl(gs->players[i], NULL);
         game_player_clone_free(gs->players[i]);
         omf_free(gs->players[i]);
     }
+    str_free(&gs->rectest_failures);
     // omf_free(gs);
 }
 
+void game_state_swap_cloneness(game_state *gs1, game_state *gs2) {
+    assert(gs1 != gs2);
+    // only one of gs1 / gs2 can be a clone.
+    assert((gs1->clone && !gs2->clone) || (!gs1->clone && gs2->clone));
+    // these pointers are not deep-cloned.
+    assert(gs1->rec == gs2->rec);
+    assert(gs1->menu_ctrl == gs2->menu_ctrl);
+
+    bool tmp = gs1->clone;
+    gs1->clone = gs2->clone;
+    gs2->clone = tmp;
+}
+
+void game_state_check_for_new(game_state **_gs) {
+    game_state *gs = *_gs;
+    if(gs->new_state) {
+        // somebody wants to replace the game state
+        game_state *old_gs = gs;
+        game_state *new_gs = gs->new_state;
+        *_gs = new_gs;
+        if(new_gs->clone) {
+            game_state_swap_cloneness(old_gs, new_gs);
+            game_state_clone_free(old_gs);
+            omf_free(old_gs);
+        } else {
+            game_state_free(&old_gs);
+        }
+    }
+}
 void game_state_free(game_state **_gs) {
     game_state *gs = *_gs;
     *_gs = NULL;
+
+    assert(!gs->clone);
 
     // Free objects
     render_obj *robj;
@@ -1362,13 +1408,13 @@ void game_state_free(game_state **_gs) {
     }
 
     if(gs->rec) {
+        for(int i = 0; i < 2; i++) {
+            if(gs->players[i]->pilot == &gs->rec->pilots[i].info) {
+                gs->players[i]->pilot = NULL;
+            }
+        }
         sd_rec_free(gs->rec);
         omf_free(gs->rec);
-    }
-
-    if(gs->init_flags->playback == 1) {
-        gs->players[0]->pilot = NULL;
-        gs->players[1]->pilot = NULL;
     }
 
     // Free players
@@ -1378,6 +1424,7 @@ void game_state_free(game_state **_gs) {
         omf_free(gs->players[i]);
     }
     omf_free(gs->menu_ctrl);
+    str_free(&gs->rectest_failures);
     omf_free(gs);
 }
 
@@ -1510,6 +1557,8 @@ int game_state_clone(game_state *src, game_state *dst) {
     dst->sc = omf_calloc(1, sizeof(scene));
     scene_clone(src->sc, dst->sc, dst);
 
+    str_from(&dst->rectest_failures, &src->rectest_failures);
+
     dst->new_state = NULL;
 
     dst->clone = true;
@@ -1523,13 +1572,44 @@ bool game_state_hars_are_alive(game_state *gs) {
     return (h1->health > 0) && (h2->health > 0);
 }
 
+void game_state_rec_finished(game_state *gs) {
+    assert(is_rec_playback(gs));
+
+    unsigned int const next_rec_id = gs->rec_playback_id + 1;
+    if(next_rec_id >= gs->init_flags->playback) {
+        if(gs->next_wait_ticks <= 0) {
+            log_warn("Finished playing %d RECs.", gs->init_flags->playback);
+        }
+        game_state_set_next(gs, SCENE_NONE);
+        return;
+    }
+
+    if(gs->new_state != NULL)
+        return;
+
+    game_state *new_gs = omf_calloc(1, sizeof(game_state));
+    new_gs->rec_playback_id = next_rec_id;
+    if(game_state_create(new_gs, gs->init_flags) != 0) {
+        game_state_free(&new_gs);
+        log_warn("Failed to create game_state for %dth (nth) rec\n", next_rec_id + 1);
+        game_state_set_next(gs, SCENE_NONE);
+        return;
+    }
+
+    str_free(&new_gs->rectest_failures);
+    memcpy(&new_gs->rectest_failures, &gs->rectest_failures, sizeof(str));
+    str_create(&gs->rectest_failures);
+
+    gs->new_state = new_gs;
+}
+
 bool is_netplay(const game_state *gs) {
     return game_state_get_player(gs, 0)->ctrl->type == CTRL_TYPE_NETWORK ||
            game_state_get_player(gs, 1)->ctrl->type == CTRL_TYPE_NETWORK;
 }
 
 bool is_singleplayer(const game_state *gs) {
-    if(gs->rec && gs->init_flags->playback == 1 && gs->rec->p2_controller == REC_CONTROLLER_AI) {
+    if(gs->rec && is_rec_playback(gs) && gs->rec->p2_controller == REC_CONTROLLER_AI) {
         return true;
     }
     return game_state_get_player(gs, 1)->ctrl->type == CTRL_TYPE_AI;
@@ -1556,5 +1636,6 @@ bool is_twoplayer(const game_state *gs) {
 }
 
 bool is_rec_playback(const game_state *gs) {
-    return path_is_set(&gs->init_flags->rec_file) && gs->init_flags->playback == 1;
+    return gs->rec_playback_id < gs->init_flags->playback &&
+           path_is_set(&gs->init_flags->rec_files[gs->rec_playback_id]);
 }
