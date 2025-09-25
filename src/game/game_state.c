@@ -1361,6 +1361,22 @@ void game_state_swap_cloneness(game_state *gs1, game_state *gs2) {
     gs2->clone = tmp;
 }
 
+void game_state_check_for_new(game_state **_gs) {
+    game_state *gs = *_gs;
+    if(gs->new_state) {
+        // somebody wants to replace the game state
+        game_state *old_gs = gs;
+        game_state *new_gs = gs->new_state;
+        *_gs = new_gs;
+        if(new_gs->clone) {
+            game_state_swap_cloneness(old_gs, new_gs);
+            game_state_clone_free(old_gs);
+            omf_free(old_gs);
+        } else {
+            game_state_free(&old_gs);
+        }
+    }
+}
 void game_state_free(game_state **_gs) {
     game_state *gs = *_gs;
     *_gs = NULL;
