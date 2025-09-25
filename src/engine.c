@@ -380,6 +380,8 @@ void engine_run(const engine_init_flags *init_flags) {
             has_dynamic = dynamic_wait > dyntick_ms;
             if(has_dynamic) {
                 game_state_dynamic_tick(gs, false);
+                // check if we need to replace the game state
+                engine_check_for_new_game_state(&gs);
                 dynamic_wait -= dyntick_ms;
                 if(gs->delay > 0) {
                     log_debug("applying delay %d", gs->delay);
