@@ -124,7 +124,7 @@ void game_menu_quit(component *c, void *userdata) {
     chr_score_reset(game_player_get_score(game_state_get_player((s)->gs, 1)), 1);
 
     game_player *player1 = game_state_get_player(((scene *)userdata)->gs, 0);
-    if(s->gs->init_flags->playback == 1) {
+    if(s->gs->init_flags->playback) {
         // 'quit' button exits during REC playback
         game_state_set_next(s->gs, SCENE_NONE);
     } else if(player1->chr) {
@@ -1711,7 +1711,7 @@ int arena_create(scene *scene) {
 
     // TODO: Fire & Ice will need to set the arena palette
     unsigned pal_index = 0;
-    if(scene->gs->init_flags->playback == 1) {
+    if(is_rec_playback(scene->gs)) {
         // use palette index from rec
         pal_index = scene->gs->rec->arena_palette;
     } else if(scene->bk_data->file_id == 128 && is_tournament(scene->gs)) {

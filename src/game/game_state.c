@@ -1596,7 +1596,7 @@ bool is_netplay(const game_state *gs) {
 }
 
 bool is_singleplayer(const game_state *gs) {
-    if(gs->rec && gs->init_flags->playback == 1 && gs->rec->p2_controller == REC_CONTROLLER_AI) {
+    if(gs->rec && is_rec_playback(gs) && gs->rec->p2_controller == REC_CONTROLLER_AI) {
         return true;
     }
     return game_state_get_player(gs, 1)->ctrl->type == CTRL_TYPE_AI;
