@@ -40,7 +40,7 @@ runs:
         if-no-files-found: error
 
     - name: Generate DEB package
-      uses: jiro4989/build-deb-action@v3
+      uses: jiro4989/build-deb-action@v4
       with:
         package: openomf
         package_root: build-release/release
