@@ -594,21 +594,17 @@ int game_state_handle_event(game_state *gs, SDL_Event *event) {
 
 void cross_fade_transform(damage_tracker *damage, vga_palette *pal, void *userdata) {
     game_state *gs = userdata;
-    float value = 1.0f;
+    int darkness = 0;
 
     if(gs->this_wait_ticks > 0) {
-        value = 1.0f - gs->this_wait_ticks / (float)FRAME_WAIT_TICKS;
+        darkness = gs->this_wait_ticks * 255 / FRAME_WAIT_TICKS;
     }
     if(gs->next_wait_ticks > 0) {
-        value = gs->next_wait_ticks / (float)FRAME_WAIT_TICKS;
+        darkness = 255 - gs->next_wait_ticks * 255 / FRAME_WAIT_TICKS;
     }
 
     // Set palette darkness value.
-    for(int i = 0; i < 256; i++) {
-        pal->colors[i].r *= value;
-        pal->colors[i].g *= value;
-        pal->colors[i].b *= value;
-    }
+    vga_palette_darken(pal, darkness);
 
     damage_set_all(damage);
 }
