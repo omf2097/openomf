@@ -107,6 +107,8 @@ typedef struct game_state_t {
     sd_rec_file *rec;
 
     controller *menu_ctrl;
+
+    str rectest_failures;
 } game_state;
 
 #endif // GAME_STATE_TYPE_H
