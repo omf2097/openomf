@@ -12,7 +12,7 @@ typedef struct engine_init_flags {
     unsigned int playback;
     char force_renderer[16];
     char force_audio_backend[16];
-    path rec_file;
+    path *rec_files;
     int warpspeed;
     int speed;
 } engine_init_flags;
