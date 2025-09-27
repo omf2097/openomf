@@ -347,8 +347,8 @@ void object_render(object *obj) {
     // Position
     int x;
     int y;
-    int w = obj->cur_surface->w * obj->x_percent;
-    int h = obj->cur_surface->h * obj->y_percent;
+    int w = obj->cur_surface->render_w * obj->x_percent;
+    int h = obj->cur_surface->render_h * obj->y_percent;
 
     // Set Y coord, take into account sprite flipping
     if(rstate->flipmode & FLIP_VERTICAL) {
@@ -428,8 +428,8 @@ void object_render_shadow(object *obj) {
 
     int x = obj->pos.x;
     int y = ARENA_FLOOR;
-    int w = cur_sprite->data->w * obj->x_percent;
-    int h = (cur_sprite->data->h * obj->y_percent) / 4;
+    int w = cur_sprite->data->render_w * obj->x_percent;
+    int h = (cur_sprite->data->render_h * obj->y_percent) / 4;
 
     // Determine X
     int flip_mode = obj->sprite_state.flipmode;
