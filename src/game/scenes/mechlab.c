@@ -530,60 +530,59 @@ void mechlab_input_tick(scene *scene) {
     if(i == NULL) {
         return;
     }
-    do {
-        if(i->type == EVENT_TYPE_ACTION) {
-            if(local->popup) {
-                if(i->event_data.action != ACT_STOP) {
-                    text_free(&local->popup);
-                }
-                continue;
-            }
-            // If view is new dashboard view, pass all input to it
-            else if(local->dashtype == DASHBOARD_NEW_PLAYER) {
-                // If inputting text for new player name is done, switch to next view.
-                // If ESC, exit view.
-                // Otherwise handle text input
-                if(i->event_data.action == ACT_ESC) {
-                    bool found = mechlab_find_last_player(scene);
-                    mechlab_select_dashboard(scene, DASHBOARD_STATS);
-                    gui_frame_set_root(local->frame, lab_menu_main_create(scene, found));
-                    gui_frame_layout(local->frame);
-                } else if(i->event_data.action == ACT_PUNCH) {
-                    if(strlen(textinput_value(local->nw.input)) > 0) {
-                        strncpy(player1->pilot->name, textinput_value(local->nw.input), 17);
-                        trnmenu_finish(
-                            gui_frame_get_root(local->frame)); // This will trigger exception case in mechlab_tick
-                    }
-                } else {
-                    log_debug("sending input %d to new player dash", i->event_data.action);
-                    gui_frame_action(local->dashboard, i->event_data.action);
-                }
-
-            } else if(local->dashtype == DASHBOARD_SELECT_NEW_PIC && i->event_data.action == ACT_ESC) {
-                bool found = mechlab_find_last_player(scene);
-                mechlab_select_dashboard(scene, DASHBOARD_STATS);
-                gui_frame_set_root(local->frame, lab_menu_main_create(scene, found));
-                gui_frame_layout(local->frame);
-            } else if(local->dashtype == DASHBOARD_SELECT_DIFFICULTY && i->event_data.action == ACT_ESC) {
-                bool found = mechlab_find_last_player(scene);
-                mechlab_select_dashboard(scene, DASHBOARD_STATS);
-                gui_frame_set_root(local->frame, lab_menu_main_create(scene, found));
-                gui_frame_layout(local->frame);
-            } else if(local->dashtype == DASHBOARD_SELECT_TOURNAMENT && i->event_data.action == ACT_ESC) {
-                bool found = mechlab_find_last_player(scene);
-                mechlab_select_dashboard(scene, DASHBOARD_STATS);
-                gui_frame_set_root(local->frame, lab_menu_main_create(scene, found));
-                gui_frame_layout(local->frame);
-            } else if(local->dashtype == DASHBOARD_SIM && i->event_data.action == ACT_ESC) {
-                bool found = mechlab_find_last_player(scene);
-                mechlab_select_dashboard(scene, DASHBOARD_STATS);
-                gui_frame_set_root(local->frame, lab_menu_main_create(scene, found));
-                gui_frame_layout(local->frame);
-            } else {
-                gui_frame_action(local->frame, i->event_data.action);
+    // i contains a linked list of inputs but in order to prevent a duplicate input crash we only look at the first
+    // event. If the menu feels unresponsive we could revisit this.
+    if(i->type == EVENT_TYPE_ACTION) {
+        if(local->popup) {
+            if(i->event_data.action != ACT_STOP) {
+                text_free(&local->popup);
             }
         }
-    } while((i = i->next) != NULL);
+        // If view is new dashboard view, pass all input to it
+        else if(local->dashtype == DASHBOARD_NEW_PLAYER) {
+            // If inputting text for new player name is done, switch to next view.
+            // If ESC, exit view.
+            // Otherwise handle text input
+            if(i->event_data.action == ACT_ESC) {
+                bool found = mechlab_find_last_player(scene);
+                mechlab_select_dashboard(scene, DASHBOARD_STATS);
+                gui_frame_set_root(local->frame, lab_menu_main_create(scene, found));
+                gui_frame_layout(local->frame);
+            } else if(i->event_data.action == ACT_PUNCH) {
+                if(strlen(textinput_value(local->nw.input)) > 0) {
+                    strncpy(player1->pilot->name, textinput_value(local->nw.input), 17);
+                    trnmenu_finish(
+                        gui_frame_get_root(local->frame)); // This will trigger exception case in mechlab_tick
+                }
+            } else {
+                log_debug("sending input %d to new player dash", i->event_data.action);
+                gui_frame_action(local->dashboard, i->event_data.action);
+            }
+
+        } else if(local->dashtype == DASHBOARD_SELECT_NEW_PIC && i->event_data.action == ACT_ESC) {
+            bool found = mechlab_find_last_player(scene);
+            mechlab_select_dashboard(scene, DASHBOARD_STATS);
+            gui_frame_set_root(local->frame, lab_menu_main_create(scene, found));
+            gui_frame_layout(local->frame);
+        } else if(local->dashtype == DASHBOARD_SELECT_DIFFICULTY && i->event_data.action == ACT_ESC) {
+            bool found = mechlab_find_last_player(scene);
+            mechlab_select_dashboard(scene, DASHBOARD_STATS);
+            gui_frame_set_root(local->frame, lab_menu_main_create(scene, found));
+            gui_frame_layout(local->frame);
+        } else if(local->dashtype == DASHBOARD_SELECT_TOURNAMENT && i->event_data.action == ACT_ESC) {
+            bool found = mechlab_find_last_player(scene);
+            mechlab_select_dashboard(scene, DASHBOARD_STATS);
+            gui_frame_set_root(local->frame, lab_menu_main_create(scene, found));
+            gui_frame_layout(local->frame);
+        } else if(local->dashtype == DASHBOARD_SIM && i->event_data.action == ACT_ESC) {
+            bool found = mechlab_find_last_player(scene);
+            mechlab_select_dashboard(scene, DASHBOARD_STATS);
+            gui_frame_set_root(local->frame, lab_menu_main_create(scene, found));
+            gui_frame_layout(local->frame);
+        } else {
+            gui_frame_action(local->frame, i->event_data.action);
+        }
+    }
     controller_free_chain(p1);
 }
 
