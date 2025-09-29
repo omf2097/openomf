@@ -8,19 +8,40 @@
 #include "utils/allocator.h"
 
 int sd_rec_extra_len(int key) {
+    assert(0 <= key && key < 192);
+    // Do not edit these values, these must match the original
+    // game's lookup table.
+    if(key == 96) {
+        // FIXME: 96 is supposed to be 10 bytes long, but we defined it as 8 last september
+        return 8;
+    }
     switch(key) {
-        case 2:
-        case 3:
-        case 5:
-            return 1;
-        case 6:
-            return 60;
+
+        case 0:
+        case 11:
+        case 12:
+        case 16:
+        case 17:
+        case 19:
+            return 0;
+        case 14:
+            return 2;
+        case 21:
+            return 3;
+        case 7:
+            return 4;
+        case 4:
         case 10:
         case 18:
-        case 96:
             return 8;
+        case 15:
+            return 20;
+        case 6:
+            return 60;
+        case 20:
+            return 144;
     }
-    return 0;
+    return key < 0x60 ? 1 : 10;
 }
 
 char *sd_rec_get_extra_data(sd_rec_move *move) {
