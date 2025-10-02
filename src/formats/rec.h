@@ -21,12 +21,11 @@
  * Essentially a record of keys pressed at a given tick.
  */
 typedef struct {
-    uint32_t tick;      ///< Game tick at the moment of this event
-    uint8_t lookup_id;  ///< Extra content id. Valid values 2,3,5,6,10,18.
-    uint8_t player_id;  ///< Player ID. 0 or 1.
-    sd_action action;   ///< Player actions at this tick. A Combination of sd_rec_action enums.
-    uint8_t raw_action; ///< Raw action data from the file.
-    char *extra_data;   ///< Extra data. Check length using sd_rec_extra_len(). NULL if does not exist.
+    uint32_t tick;     ///< Game tick at the moment of this event
+    uint8_t lookup_id; ///< Extra content id. Valid values 2,3,5,6,10,18.
+    uint8_t player_id; ///< Player ID. 0 or 1.
+    uint8_t action;    ///< Player actions at this tick. See sd_action enum
+    char *extra_data;  ///< Extra data. Check length using sd_rec_extra_len(). NULL if does not exist.
 } sd_rec_move;
 
 /*! \brief REC pilot container

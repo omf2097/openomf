@@ -52,7 +52,7 @@ int insert_assertion(rec_assertion *op, game_state *gs) {
     sd_rec_move mv;
     memset(&mv, 0, sizeof(sd_rec_move));
     mv.lookup_id = 10;
-    mv.raw_action = buf[0];
+    mv.action = buf[0];
     mv.extra_data = malloc(7);
     mv.tick = gs->tick;
     memcpy(mv.extra_data, buf + 1, 7);

@@ -35,23 +35,35 @@ void rec_controller_free(controller *ctrl) {
 }
 
 static int unpack_sd_action(sd_action move_action) {
-    assert((move_action & ~SD_ACT_VALID_BITS) == 0);
-
     if(move_action == SD_ACT_NONE)
         return ACT_STOP;
 
     int action = 0;
-    if(move_action & SD_ACT_UP) {
-        action |= ACT_UP;
-    }
-    if(move_action & SD_ACT_DOWN) {
-        action |= ACT_DOWN;
-    }
-    if(move_action & SD_ACT_LEFT) {
-        action |= ACT_LEFT;
-    }
-    if(move_action & SD_ACT_RIGHT) {
-        action |= ACT_RIGHT;
+    switch(move_action & 0xF0) {
+        case SD_ACT_UPUP:
+            action |= ACT_UP;
+            break;
+        case SD_ACT_UPRIGHT:
+            action |= ACT_UP | ACT_RIGHT;
+            break;
+        case SD_ACT_RIGHTRIGHT:
+            action |= ACT_RIGHT;
+            break;
+        case SD_ACT_DOWNRIGHT:
+            action |= ACT_DOWN | ACT_RIGHT;
+            break;
+        case SD_ACT_DOWNDOWN:
+            action |= ACT_DOWN;
+            break;
+        case SD_ACT_DOWNLEFT:
+            action |= ACT_DOWN | ACT_LEFT;
+            break;
+        case SD_ACT_LEFTLEFT:
+            action |= ACT_LEFT;
+            break;
+        case SD_ACT_UPLEFT:
+            action |= ACT_UP | ACT_LEFT;
+            break;
     }
     if(move_action & SD_ACT_PUNCH) {
         action |= ACT_PUNCH;
@@ -82,7 +94,7 @@ int rec_controller_poll(controller *ctrl, ctrl_event **ev) {
         int j = 0;
         while(hashmap_get_int(&data->tick_lookup, (ticks * 10) + j, (void **)(&move), &len) == 0) {
             if(move->lookup_id == 10) {
-                buf[0] = move->raw_action;
+                buf[0] = move->action;
                 memcpy(buf + 1, move->extra_data, 7);
                 rec_assertion ass;
                 if(parse_assertion(buf, &ass)) {

@@ -945,20 +945,31 @@ void write_rec_move(scene *scene, game_player *player, int action) {
         move.action |= SD_ACT_KICK;
     }
 
-    if(action & ACT_UP) {
-        move.action |= SD_ACT_UP;
-    }
-
-    if(action & ACT_DOWN) {
-        move.action |= SD_ACT_DOWN;
-    }
-
-    if(action & ACT_LEFT) {
-        move.action |= SD_ACT_LEFT;
-    }
-
-    if(action & ACT_RIGHT) {
-        move.action |= SD_ACT_RIGHT;
+    switch(action & ACT_Mask_Dirs) {
+        case ACT_UP:
+            move.action |= SD_ACT_UPUP;
+            break;
+        case ACT_UP | ACT_RIGHT:
+            move.action |= SD_ACT_UPRIGHT;
+            break;
+        case ACT_RIGHT:
+            move.action |= SD_ACT_RIGHTRIGHT;
+            break;
+        case ACT_DOWN | ACT_RIGHT:
+            move.action |= SD_ACT_DOWNRIGHT;
+            break;
+        case ACT_DOWN:
+            move.action |= SD_ACT_DOWNDOWN;
+            break;
+        case ACT_DOWN | ACT_LEFT:
+            move.action |= SD_ACT_DOWNLEFT;
+            break;
+        case ACT_LEFT:
+            move.action |= SD_ACT_LEFTLEFT;
+            break;
+        case ACT_UP | ACT_LEFT:
+            move.action |= SD_ACT_UPLEFT;
+            break;
     }
 
     if(local->rec_last[move.player_id] == move.action) {
@@ -2091,7 +2102,7 @@ int arena_create(scene *scene) {
         sd_rec_move mv;
         memset(&mv, 0, sizeof(sd_rec_move));
         mv.lookup_id = 96;
-        mv.raw_action = 0;
+        mv.action = 0;
         mv.extra_data = malloc(7);
         mv.tick = 1;
         uint32_t seed = random_get_seed(&scene->gs->rand);
