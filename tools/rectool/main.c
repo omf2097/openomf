@@ -140,14 +140,28 @@ void print_rec_root_info(sd_rec_file *rec) {
             printf("%6u %10u %5u %6u %6u %22s", i, rec->moves[i].tick, rec->moves[i].lookup_id, rec->moves[i].player_id,
                    extra_len, tmp);
 
-            if(rec->moves[i].lookup_id == 10) {
+            if(rec->moves[i].lookup_id == 10 && extra_data[0] == 'A') {
                 rec_assertion ass;
                 if(parse_assertion((uint8_t const *)extra_data, &ass)) {
                     str s;
                     rec_assertion_to_str(&s, &ass);
                     printf("%s", str_c(&s));
                     str_free(&s);
+                } else {
+                    printf("Failed to parse assertion!!!");
                 }
+            } else if(rec->moves[i].lookup_id == 10 && extra_data[0] == 1) {
+                printf("DOS \"opponent has left the game\" net msg");
+            } else if(rec->moves[i].lookup_id == 10 && (extra_data[0] == 2 || extra_data[0] == 3)) {
+                uint32_t value;
+                memcpy(&value, extra_data, sizeof value);
+                printf("DOS set unknown value 0x%08x, kind %d", value, extra_data[0]);
+            } else if(rec->moves[i].lookup_id == 10 && extra_data[0] == 4) {
+                uint32_t seed;
+                memcpy(&seed, extra_data + 4, sizeof(seed));
+                printf("Set random seed to 0x%08x (DOS ver.)", seed);
+            } else if(rec->moves[i].lookup_id == 10) {
+                printf("Unknown packet 10 subtype 0x%02x!!", extra_data[0]);
             } else if(rec->moves[i].lookup_id == 96) {
                 uint32_t seed;
                 memcpy(&seed, 1 + extra_data, sizeof(seed));
@@ -411,6 +425,22 @@ int main(int argc, char *argv[]) {
             int const offset = 92 - 70;
             for(unsigned i = 0; i < rec.move_count; i++) {
                 rec.moves[i].tick += offset;
+            }
+        } else if(omf_strcasecmp(fixup->sval[0], "pr1319_asserts") == 0) {
+            // pull request 1319: To ensure DOS ignores our assertion packets
+            // prepend the extra_data with an 'A' byte. DOS only implements
+            // '\x01' through '\x04', so will ignore our 'A' packet.
+            for(unsigned i = 0; i < rec.move_count; i++) {
+                sd_rec_move *mv = &rec.moves[i];
+                if(mv->lookup_id != 10)
+                    continue;
+                char *extra_data = sd_rec_get_extra_data(mv);
+                if(extra_data[0] == 'A') {
+                    printf("asserts fixup already applied..\n");
+                    continue;
+                }
+                memmove(extra_data + 1, extra_data, sd_rec_extra_len(10) - 1);
+                extra_data[0] = 'A';
             }
         } else {
             printf("Unknown fixup '%s'.\n", fixup->sval[0]);
