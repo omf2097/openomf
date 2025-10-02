@@ -2104,10 +2104,11 @@ int arena_create(scene *scene) {
         // insert the random seed into the REC
         sd_rec_move mv;
         memset(&mv, 0, sizeof(sd_rec_move));
-        char *extra_data = sd_rec_set_lookup_id(&mv, 96);
+        char *extra_data = sd_rec_set_lookup_id(&mv, 10);
         mv.tick = 1;
         uint32_t seed = random_get_seed(&scene->gs->rand);
-        memcpy(extra_data + 1, &seed, sizeof(seed));
+        extra_data[0] = 4;
+        memcpy(extra_data + 4, &seed, sizeof(seed));
         sd_rec_insert_action_at_tick(scene->gs->rec, &mv);
     }
 
