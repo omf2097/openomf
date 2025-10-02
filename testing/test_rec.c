@@ -22,9 +22,9 @@ void test_sd_rec_create(void) {
     for(int i = 0; i < 10; i++) {
         sd_rec_move mv;
         fill((char *)&mv, sizeof(sd_rec_move));
-        mv.lookup_id = 2;
-        mv.action = SD_ACT_KICK | SD_ACT_PUNCH | SD_ACT_DOWNLEFT;
-        mv.extra_data = NULL;
+        mv.extra_data2 = NULL;
+        char *extra_data = sd_rec_set_lookup_id(&mv, 2);
+        extra_data[0] = SD_ACT_KICK | SD_ACT_PUNCH | SD_ACT_DOWNLEFT;
         sd_rec_insert_action(&rec, i, &mv);
     }
 }
@@ -51,11 +51,9 @@ void test_rec_roundtrip(void) {
         CU_ASSERT(rec.moves[i].lookup_id == loaded.moves[i].lookup_id);
         CU_ASSERT(rec.moves[i].player_id == loaded.moves[i].player_id);
 
-        if(sd_rec_extra_len(rec.moves[i].lookup_id) > 1) {
-            CU_ASSERT(rec.moves[i].action == loaded.moves[i].action);
-            CU_ASSERT_NSTRING_EQUAL(rec.moves[i].extra_data, loaded.moves[i].extra_data, 7);
-        } else {
-            CU_ASSERT(rec.moves[i].action == loaded.moves[i].action);
+        int len = sd_rec_extra_len(rec.moves[i].lookup_id);
+        if(len) {
+            CU_ASSERT(memcmp(sd_rec_get_extra_data(&rec.moves[i]), sd_rec_get_extra_data(&loaded.moves[i]), len) == 0);
         }
     }
 

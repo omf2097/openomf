@@ -929,53 +929,56 @@ void write_rec_move(scene *scene, game_player *player, int action) {
 
     memset(&move, 0, sizeof(move));
     move.tick = scene->gs->tick;
-    move.lookup_id = 2;
+    char *extra_data = sd_rec_set_lookup_id(&move, 2);
     move.player_id = 0;
-    move.action = 0;
 
     if(player == game_state_get_player(scene->gs, 1)) {
         move.player_id = 1;
     }
 
+    sd_action sda = 0;
     if(action & ACT_PUNCH) {
-        move.action |= SD_ACT_PUNCH;
+        sda |= SD_ACT_PUNCH;
     }
 
     if(action & ACT_KICK) {
-        move.action |= SD_ACT_KICK;
+        sda |= SD_ACT_KICK;
     }
 
     switch(action & ACT_Mask_Dirs) {
         case ACT_UP:
-            move.action |= SD_ACT_UPUP;
+            sda |= SD_ACT_UPUP;
             break;
         case ACT_UP | ACT_RIGHT:
-            move.action |= SD_ACT_UPRIGHT;
+            sda |= SD_ACT_UPRIGHT;
             break;
         case ACT_RIGHT:
-            move.action |= SD_ACT_RIGHTRIGHT;
+            sda |= SD_ACT_RIGHTRIGHT;
             break;
         case ACT_DOWN | ACT_RIGHT:
-            move.action |= SD_ACT_DOWNRIGHT;
+            sda |= SD_ACT_DOWNRIGHT;
             break;
         case ACT_DOWN:
-            move.action |= SD_ACT_DOWNDOWN;
+            sda |= SD_ACT_DOWNDOWN;
             break;
         case ACT_DOWN | ACT_LEFT:
-            move.action |= SD_ACT_DOWNLEFT;
+            sda |= SD_ACT_DOWNLEFT;
             break;
         case ACT_LEFT:
-            move.action |= SD_ACT_LEFTLEFT;
+            sda |= SD_ACT_LEFTLEFT;
             break;
         case ACT_UP | ACT_LEFT:
-            move.action |= SD_ACT_UPLEFT;
+            sda |= SD_ACT_UPLEFT;
             break;
     }
 
-    if(local->rec_last[move.player_id] == move.action) {
+    extra_data[0] = sda;
+
+    if(local->rec_last[move.player_id] == sda) {
+        sd_rec_move_free(&move);
         return;
     }
-    local->rec_last[move.player_id] = move.action;
+    local->rec_last[move.player_id] = sda;
 
     int ret;
 
@@ -2101,12 +2104,10 @@ int arena_create(scene *scene) {
         // insert the random seed into the REC
         sd_rec_move mv;
         memset(&mv, 0, sizeof(sd_rec_move));
-        mv.lookup_id = 96;
-        mv.action = 0;
-        mv.extra_data = malloc(7);
+        char *extra_data = sd_rec_set_lookup_id(&mv, 96);
         mv.tick = 1;
         uint32_t seed = random_get_seed(&scene->gs->rand);
-        memcpy(mv.extra_data, &seed, sizeof(seed));
+        memcpy(extra_data + 1, &seed, sizeof(seed));
         sd_rec_insert_action_at_tick(scene->gs->rec, &mv);
     }
 

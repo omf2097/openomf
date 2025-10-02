@@ -23,6 +23,33 @@ int sd_rec_extra_len(int key) {
     return 0;
 }
 
+char *sd_rec_get_extra_data(sd_rec_move *move) {
+    return move->extra_data2;
+}
+
+char *sd_rec_set_lookup_id(sd_rec_move *move, int key) {
+    if(key == move->lookup_id) {
+        return move->extra_data2;
+    }
+    if(move->extra_data2) {
+        omf_free(move->extra_data2);
+    }
+    size_t len = sd_rec_extra_len(key);
+    if(len != 0) {
+        move->extra_data2 = omf_malloc(len);
+        memset(move->extra_data2, 0, len);
+    }
+    move->lookup_id = key;
+    return move->extra_data2;
+}
+
+void sd_rec_move_free(sd_rec_move *move) {
+    if(move->extra_data2) {
+        omf_free(move->extra_data2);
+        move->lookup_id = 0;
+    }
+}
+
 int sd_rec_create(sd_rec_file *rec) {
     if(rec == NULL) {
         return SD_INVALID_INPUT;
@@ -38,7 +65,7 @@ void sd_rec_free(sd_rec_file *rec) {
         return;
     if(rec->moves) {
         for(unsigned i = 0; i < rec->move_count; i++) {
-            omf_free(rec->moves[i].extra_data);
+            sd_rec_move_free(&rec->moves[i]);
         }
         omf_free(rec->moves);
     }
@@ -124,21 +151,15 @@ int sd_rec_load(sd_rec_file *rec, const path *file) {
 
     // Read blocks
     unsigned i = 0;
-    for(; i < max_movecount && sd_reader_ok(r); i++) {
+    while(i < max_movecount && sd_reader_pos(r) < sd_reader_filesize(r)) {
         rec->moves[i].tick = sd_read_udword(r);
-        rec->moves[i].lookup_id = sd_read_ubyte(r);
+        char *extra_data = sd_rec_set_lookup_id(&rec->moves[i], sd_read_ubyte(r));
         rec->moves[i].player_id = sd_read_ubyte(r);
         int extra_length = sd_rec_extra_len(rec->moves[i].lookup_id);
         if(extra_length > 0) {
-            rec->moves[i].action = sd_read_ubyte(r);
-
-            // We already read the action key, so minus one.
-            int unknown_len = extra_length - 1;
-            if(unknown_len > 0) {
-                rec->moves[i].extra_data = omf_calloc(unknown_len, 1);
-                sd_read_buf(r, rec->moves[i].extra_data, unknown_len);
-            }
+            sd_read_buf(r, extra_data, extra_length);
         }
+        i++;
     }
 
     rec->move_count = i;
@@ -214,14 +235,7 @@ int sd_rec_save(sd_rec_file *rec, const path *file) {
         sd_write_udword(w, rec->moves[i].tick);
         sd_write_ubyte(w, rec->moves[i].lookup_id);
         sd_write_ubyte(w, rec->moves[i].player_id);
-
-        int extra_length = sd_rec_extra_len(rec->moves[i].lookup_id);
-        sd_write_ubyte(w, rec->moves[i].action);
-        // If there is more extra data, write it
-        int unknown_len = extra_length - 1;
-        if(unknown_len > 0) {
-            sd_write_buf(w, rec->moves[i].extra_data, unknown_len);
-        }
+        sd_write_buf(w, rec->moves[i].extra_data2, sd_rec_extra_len(rec->moves[i].lookup_id));
     }
 
     sd_writer_close(w);
@@ -244,7 +258,7 @@ int sd_rec_delete_action(sd_rec_file *rec, unsigned int number) {
     return SD_SUCCESS;
 }
 
-int sd_rec_insert_action_at_tick(sd_rec_file *rec, const sd_rec_move *move) {
+int sd_rec_insert_action_at_tick(sd_rec_file *rec, sd_rec_move *move) {
 
     unsigned int i = 0;
     for(i = 0; i < rec->move_count; i++) {
@@ -255,7 +269,7 @@ int sd_rec_insert_action_at_tick(sd_rec_file *rec, const sd_rec_move *move) {
     return sd_rec_insert_action(rec, i, move);
 }
 
-int sd_rec_insert_action(sd_rec_file *rec, unsigned int number, const sd_rec_move *move) {
+int sd_rec_insert_action(sd_rec_file *rec, unsigned int number, sd_rec_move *move) {
     if(rec == NULL) {
         return SD_INVALID_INPUT;
     }
@@ -274,6 +288,9 @@ int sd_rec_insert_action(sd_rec_file *rec, unsigned int number, const sd_rec_mov
     }
     memcpy(rec->moves + number, move, sizeof(sd_rec_move));
 
+    move->lookup_id = 0;
+    move->extra_data2 = NULL;
+
     rec->move_count++;
     return SD_SUCCESS;
 }
@@ -283,9 +300,9 @@ void sd_rec_finish(sd_rec_file *rec, unsigned int ticks) {
 
     memset(&move, 0, sizeof(move));
     move.tick = ticks;
-    move.lookup_id = 2;
     move.player_id = 0;
-    move.action = 0;
+    char *extra_data = sd_rec_set_lookup_id(&move, 2);
+    extra_data[0] = SD_ACT_NONE;
 
     sd_rec_insert_action(rec, rec->move_count, &move);
 }
