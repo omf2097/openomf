@@ -19,6 +19,7 @@ int text_markup_suite_init(void);
 int text_markup_suite_free(void);
 void cp437_test_suite(CU_pSuite suite);
 void path_test_suite(CU_pSuite suite);
+void smallbuffer_test_suite(CU_pSuite suite);
 
 int main(int argc, char **argv) {
     CU_pSuite suite = NULL;
@@ -58,6 +59,11 @@ int main(int argc, char **argv) {
     if(path_suite == NULL)
         goto end;
     path_test_suite(path_suite);
+
+    CU_pSuite smallbuffer_suite = CU_add_suite("Smallbuffer", NULL, NULL);
+    if(smallbuffer_suite == NULL)
+        goto end;
+    smallbuffer_test_suite(smallbuffer_suite);
 
     suite = CU_add_suite("Common renderer utils", NULL, NULL);
     if(suite == NULL)
