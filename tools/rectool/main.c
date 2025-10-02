@@ -159,13 +159,9 @@ void print_rec_root_info(sd_rec_file *rec) {
             } else if(rec->moves[i].lookup_id == 10 && extra_data[0] == 4) {
                 uint32_t seed;
                 memcpy(&seed, extra_data + 4, sizeof(seed));
-                printf("Set random seed to 0x%08x (DOS ver.)", seed);
+                printf("Set random seed to 0x%08x", seed);
             } else if(rec->moves[i].lookup_id == 10) {
                 printf("Unknown packet 10 subtype 0x%02x!!", extra_data[0]);
-            } else if(rec->moves[i].lookup_id == 96) {
-                uint32_t seed;
-                memcpy(&seed, 1 + extra_data, sizeof(seed));
-                printf("Set random seed to %d", seed);
             } else if(extra_len > 0) {
                 print_bytes(extra_data, extra_len, 8, 2);
             }
@@ -441,6 +437,19 @@ int main(int argc, char *argv[]) {
                 }
                 memmove(extra_data + 1, extra_data, sd_rec_extra_len(10) - 1);
                 extra_data[0] = 'A';
+            }
+        } else if(omf_strcasecmp(fixup->sval[0], "pr1319_rand") == 0) {
+            // pull request 1319: Replace our nonstandard & problematic
+            // lookup_id 96 setrandom packets with DOS' setrandom packets.
+            for(unsigned i = 0; i < rec.move_count; i++) {
+                sd_rec_move *mv = &rec.moves[i];
+                if(mv->lookup_id != 96)
+                    continue;
+                uint32_t seed;
+                memcpy(&seed, sd_rec_get_extra_data(mv) + 1, sizeof(seed));
+                char *extra_data = sd_rec_set_lookup_id(mv, 10);
+                extra_data[0] = 4;
+                memcpy(extra_data + 4, &seed, sizeof(seed));
             }
         } else {
             printf("Unknown fixup '%s'.\n", fixup->sval[0]);
