@@ -108,7 +108,7 @@ void print_rec_root_info(sd_rec_file *rec) {
         printf("\n");
 
         printf("## Parsed data:\n");
-        printf("Number       Tick Extra Player Action Length            Action enum Extra data\n");
+        printf("Number       Tick Extra Player Length             Extra data\n");
         for(unsigned i = 0; i < rec->move_count; i++) {
             char tmp[100];
             tmp[0] = 0;
@@ -143,7 +143,10 @@ void print_rec_root_info(sd_rec_file *rec) {
             if(rec->moves[i].lookup_id == 10) {
                 rec_assertion ass;
                 if(parse_assertion((uint8_t const *)extra_data, &ass)) {
-                    print_assertion(&ass);
+                    str s;
+                    rec_assertion_to_str(&s, &ass);
+                    printf("%s", str_c(&s));
+                    str_free(&s);
                 }
             } else if(rec->moves[i].lookup_id == 96) {
                 uint32_t seed;
