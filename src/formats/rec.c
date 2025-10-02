@@ -119,11 +119,12 @@ int sd_rec_load(sd_rec_file *rec, const path *file) {
     // Allocate enough space for the record blocks
     // This will be reduced later when we know the ACTUAL count
     size_t rsize = sd_reader_filesize(r) - sd_reader_pos(r);
-    rec->move_count = rsize / 7;
-    rec->moves = omf_calloc(rec->move_count, sizeof(sd_rec_move));
+    unsigned max_movecount = rsize / 6; // minimum on-disk size is 6 bytes.
+    rec->moves = omf_calloc(max_movecount, sizeof(sd_rec_move));
 
     // Read blocks
-    for(unsigned i = 0; i < rec->move_count; i++) {
+    unsigned i = 0;
+    for(; i < max_movecount && sd_reader_ok(r); i++) {
         rec->moves[i].tick = sd_read_udword(r);
         rec->moves[i].lookup_id = sd_read_ubyte(r);
         rec->moves[i].player_id = sd_read_ubyte(r);
@@ -172,10 +173,11 @@ int sd_rec_load(sd_rec_file *rec, const path *file) {
             if(unknown_len > 0) {
                 rec->moves[i].extra_data = omf_calloc(unknown_len, 1);
                 sd_read_buf(r, rec->moves[i].extra_data, unknown_len);
-                rec->move_count--;
             }
         }
     }
+
+    rec->move_count = i;
 
     // Okay, now reduce the allocated memory to match what we actually need
     // Realloc should keep our old data intact
