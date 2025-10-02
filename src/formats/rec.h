@@ -24,8 +24,7 @@ typedef struct {
     uint32_t tick;     ///< Game tick at the moment of this event
     uint8_t lookup_id; ///< Extra content id. Valid values 2,3,5,6,10,18.
     uint8_t player_id; ///< Player ID. 0 or 1.
-    uint8_t action;    ///< Player actions at this tick. See sd_action enum
-    char *extra_data;  ///< Extra data. Check length using sd_rec_extra_len(). NULL if does not exist.
+    char *extra_data2; ///< Extra data. Check length using sd_rec_extra_len(). NULL if does not exist.
 } sd_rec_move;
 
 /*! \brief REC pilot container
@@ -163,6 +162,26 @@ int sd_rec_delete_action(sd_rec_file *rec, unsigned int number);
 
 int sd_rec_extra_len(int key);
 
+char *sd_rec_get_extra_data(sd_rec_move *move);
+
+/*! \brief Sets the lookup_id of the rec move, prepares extra_data, and returns a pointer to its contents.
+ *
+ * \retval a pointer where the extra data can be written, the size of which is known by sd_rec_extra_len(key).
+ *
+ * \param move Move to modify
+ * \param key the lookup id to use
+ */
+char *sd_rec_set_lookup_id(sd_rec_move *move, int key);
+
+/*! \brief Free all memory contained within the rec move
+ *
+ * the sd_rec_move struct's allocation is managed by the caller,
+ * as it is often used on the stack.
+ *
+ * \param move to free
+ */
+void sd_rec_move_free(sd_rec_move *move);
+
 /*! \brief Inserts a REC event record
  *
  * Inserts a new event record to a given position. All contents starting from the given
@@ -170,7 +189,7 @@ int sd_rec_extra_len(int key);
  *
  * You can push new entries to the end of the list by pointing to the last+1 entry.
  *
- * Event record data will be copied. Make sure to free your local copy yourself.
+ * Allocations within the rec_move will be stolen by this call on success, and nulled in caller's copy.
  *
  * \retval SD_INVALID_INPUT Slot you tried to insert to does not exist, or rec was NULL.
  * \retval SD_SUCCESS Success.
@@ -179,11 +198,11 @@ int sd_rec_extra_len(int key);
  * \param number Record number
  * \param move Move to insert
  */
-int sd_rec_insert_action(sd_rec_file *rec, unsigned int number, const sd_rec_move *move);
+int sd_rec_insert_action(sd_rec_file *rec, unsigned int number, sd_rec_move *move);
 
 /*! \brief like sd_rec_insert_action but uses the tick in the move to find the right insertion point
  */
-int sd_rec_insert_action_at_tick(sd_rec_file *rec, const sd_rec_move *move);
+int sd_rec_insert_action_at_tick(sd_rec_file *rec, sd_rec_move *move);
 
 /*! \brief Insert a closing ACT_NONE on a rec at `ticks`
  */

@@ -43,19 +43,16 @@ int console_cmd_history(game_state *gs, int argc, char **argv) {
 }
 
 int insert_assertion(rec_assertion *op, game_state *gs) {
-    uint8_t buf[8];
-    if(!encode_assertion(op, buf)) {
+    sd_rec_move mv;
+    memset(&mv, 0, sizeof(sd_rec_move));
+    char *extra_data = sd_rec_set_lookup_id(&mv, 10);
+    if(!encode_assertion(op, (uint8_t *)extra_data)) {
         console_output_addline("failed to encode assertion\n");
+        sd_rec_move_free(&mv);
         return 1;
     }
 
-    sd_rec_move mv;
-    memset(&mv, 0, sizeof(sd_rec_move));
-    mv.lookup_id = 10;
-    mv.action = buf[0];
-    mv.extra_data = malloc(7);
     mv.tick = gs->tick;
-    memcpy(mv.extra_data, buf + 1, 7);
     if(sd_rec_insert_action_at_tick(gs->rec, &mv) != SD_SUCCESS) {
         console_output_addline("Inserting assertion failed.");
         return 1;

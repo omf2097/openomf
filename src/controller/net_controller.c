@@ -413,55 +413,56 @@ int rewind_and_replay(wtf *data, controller *ctrl) {
                 for(int j = 0; j < 2; j++) {
                     memset(&move, 0, sizeof(move));
                     move.tick = ev->tick;
-                    move.lookup_id = 2;
                     move.player_id = j;
-                    move.action = 0;
 
                     int k = 0;
                     while(ev->events[j][k] && k < MAX_EVENTS_PER_TICK) {
-                        move.action = 0;
+                        char *extra_data = sd_rec_set_lookup_id(&move, 2);
+                        int action = 0;
                         if(ev->events[j][k] & ACT_PUNCH) {
-                            move.action |= SD_ACT_PUNCH;
+                            action |= SD_ACT_PUNCH;
                         }
 
                         if(ev->events[j][k] & ACT_KICK) {
-                            move.action |= SD_ACT_KICK;
+                            action |= SD_ACT_KICK;
                         }
 
                         switch(ev->events[j][k] & ACT_Mask_Dirs) {
                             case ACT_UP:
-                                move.action |= SD_ACT_UPUP;
+                                action |= SD_ACT_UPUP;
                                 break;
                             case ACT_UP | ACT_RIGHT:
-                                move.action |= SD_ACT_UPRIGHT;
+                                action |= SD_ACT_UPRIGHT;
                                 break;
                             case ACT_RIGHT:
-                                move.action |= SD_ACT_RIGHTRIGHT;
+                                action |= SD_ACT_RIGHTRIGHT;
                                 break;
                             case ACT_RIGHT | ACT_DOWN:
-                                move.action |= SD_ACT_DOWNRIGHT;
+                                action |= SD_ACT_DOWNRIGHT;
                                 break;
                             case ACT_DOWN:
-                                move.action |= SD_ACT_DOWNDOWN;
+                                action |= SD_ACT_DOWNDOWN;
                                 break;
                             case ACT_DOWN | ACT_LEFT:
-                                move.action |= SD_ACT_DOWNLEFT;
+                                action |= SD_ACT_DOWNLEFT;
                                 break;
                             case ACT_LEFT:
-                                move.action |= SD_ACT_LEFTLEFT;
+                                action |= SD_ACT_LEFTLEFT;
                                 break;
                             case ACT_UP | ACT_LEFT:
-                                move.action |= SD_ACT_UPLEFT;
+                                action |= SD_ACT_UPLEFT;
                                 break;
                         }
 
                         if(ev->events[j][k] == ACT_STOP) {
-                            move.action = SD_ACT_NONE;
-                        } else if(!move.action) {
+                            action = SD_ACT_NONE;
+                        } else if(!action) {
                             log_warn("saw no action in %d", ev->events[j][k]);
                             // skip any ACT_NONEs
                             continue;
                         }
+
+                        extra_data[0] = action;
 
                         sd_rec_insert_action(gs->rec, gs->rec->move_count, &move);
                         k++;
