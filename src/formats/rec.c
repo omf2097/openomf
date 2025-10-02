@@ -24,30 +24,25 @@ int sd_rec_extra_len(int key) {
 }
 
 char *sd_rec_get_extra_data(sd_rec_move *move) {
-    return move->extra_data2;
+    return smallbuffer_data(&move->extra_data);
 }
 
 char *sd_rec_set_lookup_id(sd_rec_move *move, int key) {
     if(key == move->lookup_id) {
-        return move->extra_data2;
-    }
-    if(move->extra_data2) {
-        omf_free(move->extra_data2);
-    }
-    size_t len = sd_rec_extra_len(key);
-    if(len != 0) {
-        move->extra_data2 = omf_malloc(len);
-        memset(move->extra_data2, 0, len);
+        return smallbuffer_data(&move->extra_data);
     }
     move->lookup_id = key;
-    return move->extra_data2;
+    size_t len = sd_rec_extra_len(key);
+    smallbuffer_resize(&move->extra_data, len);
+    if(len != 0) {
+        memset(smallbuffer_data(&move->extra_data), 0, len);
+    }
+    return smallbuffer_data(&move->extra_data);
 }
 
 void sd_rec_move_free(sd_rec_move *move) {
-    if(move->extra_data2) {
-        omf_free(move->extra_data2);
-        move->lookup_id = 0;
-    }
+    smallbuffer_free(&move->extra_data);
+    move->lookup_id = 0;
 }
 
 int sd_rec_create(sd_rec_file *rec) {
@@ -235,7 +230,7 @@ int sd_rec_save(sd_rec_file *rec, const path *file) {
         sd_write_udword(w, rec->moves[i].tick);
         sd_write_ubyte(w, rec->moves[i].lookup_id);
         sd_write_ubyte(w, rec->moves[i].player_id);
-        sd_write_buf(w, rec->moves[i].extra_data2, sd_rec_extra_len(rec->moves[i].lookup_id));
+        sd_write_buf(w, sd_rec_get_extra_data(&rec->moves[i]), sd_rec_extra_len(rec->moves[i].lookup_id));
     }
 
     sd_writer_close(w);
@@ -289,7 +284,7 @@ int sd_rec_insert_action(sd_rec_file *rec, unsigned int number, sd_rec_move *mov
     memcpy(rec->moves + number, move, sizeof(sd_rec_move));
 
     move->lookup_id = 0;
-    move->extra_data2 = NULL;
+    memset(&move->extra_data, 0, sizeof(smallbuffer));
 
     rec->move_count++;
     return SD_SUCCESS;

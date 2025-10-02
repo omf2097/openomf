@@ -22,7 +22,7 @@ void test_sd_rec_create(void) {
     for(int i = 0; i < 10; i++) {
         sd_rec_move mv;
         fill((char *)&mv, sizeof(sd_rec_move));
-        mv.extra_data2 = NULL;
+        smallbuffer_create(&mv.extra_data);
         char *extra_data = sd_rec_set_lookup_id(&mv, 2);
         extra_data[0] = SD_ACT_KICK | SD_ACT_PUNCH | SD_ACT_DOWNLEFT;
         sd_rec_insert_action(&rec, i, &mv);
