@@ -33,7 +33,8 @@ char *sd_rec_set_lookup_id(sd_rec_move *move, int key) {
     }
     move->lookup_id = key;
     size_t len = sd_rec_extra_len(key);
-    smallbuffer_resize(&move->extra_data, len);
+    smallbuffer_resize_with_custom_selfsize(&move->extra_data, len,
+                                            sizeof(move->extra_data) + sizeof(move->extra_data_padding));
     if(len != 0) {
         memset(smallbuffer_data(&move->extra_data), 0, len);
     }

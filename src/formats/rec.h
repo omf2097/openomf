@@ -22,10 +22,11 @@
  * Essentially a record of keys pressed at a given tick.
  */
 typedef struct {
-    uint32_t tick;          ///< Game tick at the moment of this event
-    uint8_t lookup_id;      ///< Extra content id. Valid values 2,3,5,6,10,18.
-    uint8_t player_id;      ///< Player ID. 0 or 1.
-    smallbuffer extra_data; ///< Extra data. Check length using sd_rec_extra_len(). NULL if does not exist.
+    smallbuffer extra_data;      ///< Extra data. Check length using sd_rec_extra_len(). NULL if does not exist.
+    uint16_t extra_data_padding; // an extra 2 bytes for the smallbuffer. do not access this field.
+    uint8_t lookup_id;           ///< Extra content id. Valid values 2,3,5,6,10,18.
+    uint8_t player_id;           ///< Player ID. 0 or 1.
+    uint32_t tick;               ///< Game tick at the moment of this event
 } sd_rec_move;
 
 /*! \brief REC pilot container
