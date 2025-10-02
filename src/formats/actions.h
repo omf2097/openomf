@@ -13,16 +13,19 @@
  */
 typedef enum
 {
-    SD_ACT_NONE = 0x0,   ///< No action
-    SD_ACT_PUNCH = 0x1,  ///< Punch/select
-    SD_ACT_KICK = 0x2,   ///< Kick/select
-    SD_ACT_UP = 0x4,     ///< Move up (jump)
-    SD_ACT_DOWN = 0x8,   ///< Move down (crouch)
-    SD_ACT_LEFT = 0x10,  ///< Move left (walk)
-    SD_ACT_RIGHT = 0x20, ///< Move right (walk)
-} sd_action;
+    SD_ACT_NONE = 0x00, ///< No action
 
-#define SD_MOVE_MASK (SD_ACT_UP | SD_ACT_DOWN | SD_ACT_LEFT | SD_ACT_RIGHT) ///< Mask of all movement keys
-#define SD_ACT_VALID_BITS 0x3Fu                                             ///< Mask of all valid bits of an sd_action
+    SD_ACT_PUNCH = 0x01, ///< Punch/select
+    SD_ACT_KICK = 0x02,  ///< Kick/select
+
+    SD_ACT_UPUP = 0x10,
+    SD_ACT_UPRIGHT = 0x20,
+    SD_ACT_RIGHTRIGHT = 0x30,
+    SD_ACT_DOWNRIGHT = 0x40,
+    SD_ACT_DOWNDOWN = 0x50,
+    SD_ACT_DOWNLEFT = 0x60,
+    SD_ACT_LEFTLEFT = 0x70,
+    SD_ACT_UPLEFT = 0x80,
+} sd_action;
 
 #endif // SD_ACTIONS_H

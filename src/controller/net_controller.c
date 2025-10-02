@@ -428,20 +428,31 @@ int rewind_and_replay(wtf *data, controller *ctrl) {
                             move.action |= SD_ACT_KICK;
                         }
 
-                        if(ev->events[j][k] & ACT_UP) {
-                            move.action |= SD_ACT_UP;
-                        }
-
-                        if(ev->events[j][k] & ACT_DOWN) {
-                            move.action |= SD_ACT_DOWN;
-                        }
-
-                        if(ev->events[j][k] & ACT_LEFT) {
-                            move.action |= SD_ACT_LEFT;
-                        }
-
-                        if(ev->events[j][k] & ACT_RIGHT) {
-                            move.action |= SD_ACT_RIGHT;
+                        switch(ev->events[j][k] & ACT_Mask_Dirs) {
+                            case ACT_UP:
+                                move.action |= SD_ACT_UPUP;
+                                break;
+                            case ACT_UP | ACT_RIGHT:
+                                move.action |= SD_ACT_UPRIGHT;
+                                break;
+                            case ACT_RIGHT:
+                                move.action |= SD_ACT_RIGHTRIGHT;
+                                break;
+                            case ACT_RIGHT | ACT_DOWN:
+                                move.action |= SD_ACT_DOWNRIGHT;
+                                break;
+                            case ACT_DOWN:
+                                move.action |= SD_ACT_DOWNDOWN;
+                                break;
+                            case ACT_DOWN | ACT_LEFT:
+                                move.action |= SD_ACT_DOWNLEFT;
+                                break;
+                            case ACT_LEFT:
+                                move.action |= SD_ACT_LEFTLEFT;
+                                break;
+                            case ACT_UP | ACT_LEFT:
+                                move.action |= SD_ACT_UPLEFT;
+                                break;
                         }
 
                         if(ev->events[j][k] == ACT_STOP) {

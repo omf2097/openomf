@@ -105,18 +105,18 @@ void print_rec_root_info(sd_rec_file *rec) {
                         snprintf(tmp, sizeof(tmp), "arena check");
                         break;
                     case 4: {
-                        snprintf(tmp, sizeof(tmp), "ptr check 0x%02x%02x%02x%02x", (uint8_t)rec->moves[i].raw_action,
+                        snprintf(tmp, sizeof(tmp), "ptr check 0x%02x%02x%02x%02x", (uint8_t)rec->moves[i].action,
                                  (uint8_t)rec->moves[i].extra_data[0], (uint8_t)rec->moves[i].extra_data[1],
                                  (uint8_t)rec->moves[i].extra_data[2]);
                     } break;
                 }
             }
             printf("%6u %10u %5u %6u %6u %6u %22s", i, rec->moves[i].tick, rec->moves[i].lookup_id,
-                   rec->moves[i].player_id, rec->moves[i].raw_action, sd_rec_extra_len(rec->moves[i].lookup_id), tmp);
+                   rec->moves[i].player_id, rec->moves[i].action, sd_rec_extra_len(rec->moves[i].lookup_id), tmp);
 
             if(rec->moves[i].lookup_id == 10) {
                 uint8_t buf[8];
-                buf[0] = rec->moves[i].raw_action;
+                buf[0] = rec->moves[i].action;
                 memcpy(buf + 1, rec->moves[i].extra_data, 7);
                 rec_assertion ass;
                 if(parse_assertion(buf, &ass)) {
@@ -127,7 +127,7 @@ void print_rec_root_info(sd_rec_file *rec) {
                 memcpy(&seed, rec->moves[i].extra_data, sizeof(seed));
                 printf("Set random seed to %d", seed);
             } else if(rec->moves[i].lookup_id > 2) {
-                tmp[0] = rec->moves[i].raw_action;
+                tmp[0] = rec->moves[i].action;
                 memcpy(tmp + 1, rec->moves[i].extra_data, sd_rec_extra_len(rec->moves[i].lookup_id) - 1);
                 print_bytes(tmp, sd_rec_extra_len(rec->moves[i].lookup_id), 8, 2);
             }
@@ -167,48 +167,16 @@ void rec_entry_set_key(sd_rec_file *rec, int entry_id, const char *key, const ch
     unsigned int action = atoi(value);
     switch(rec_entry_key_get_id(key)) {
         case 0:
-            rec->moves[entry_id].tick = atoi(value);
+            rec->moves[entry_id].tick = action;
             break;
         case 1:
-            rec->moves[entry_id].lookup_id = atoi(value);
+            rec->moves[entry_id].lookup_id = action;
             break;
         case 2:
-            rec->moves[entry_id].player_id = atoi(value);
+            rec->moves[entry_id].player_id = action;
             break;
         case 3:
-            rec->moves[entry_id].action = SD_ACT_NONE;
-            if(action & SD_ACT_PUNCH) {
-                rec->moves[entry_id].action |= SD_ACT_PUNCH;
-            }
-            if(action & SD_ACT_KICK) {
-                rec->moves[entry_id].action |= SD_ACT_KICK;
-            }
-            switch(action & 0xF0) {
-                case 16:
-                    rec->moves[entry_id].action |= SD_ACT_UP;
-                    break;
-                case 32:
-                    rec->moves[entry_id].action |= (SD_ACT_UP | SD_ACT_RIGHT);
-                    break;
-                case 48:
-                    rec->moves[entry_id].action |= SD_ACT_RIGHT;
-                    break;
-                case 64:
-                    rec->moves[entry_id].action |= (SD_ACT_DOWN | SD_ACT_RIGHT);
-                    break;
-                case 80:
-                    rec->moves[entry_id].action |= SD_ACT_DOWN;
-                    break;
-                case 96:
-                    rec->moves[entry_id].action |= (SD_ACT_DOWN | SD_ACT_LEFT);
-                    break;
-                case 112:
-                    rec->moves[entry_id].action |= SD_ACT_LEFT;
-                    break;
-                case 128:
-                    rec->moves[entry_id].action |= (SD_ACT_UP | SD_ACT_LEFT);
-                    break;
-            }
+            rec->moves[entry_id].action = action;
             break;
         default:
             printf("Invalid record entry key!\n");
@@ -502,7 +470,7 @@ int main(int argc, char *argv[]) {
             sd_rec_move mv;
             memset(&mv, 0, sizeof(sd_rec_move));
             mv.lookup_id = 10;
-            mv.raw_action = buf[0];
+            mv.action = buf[0];
             mv.extra_data = malloc(7);
             if(assert_tick->count > 0) {
                 mv.tick = assert_tick->ival[0];
