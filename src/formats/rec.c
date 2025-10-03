@@ -11,12 +11,7 @@ int sd_rec_extra_len(int key) {
     assert(0 <= key && key < 192);
     // Do not edit these values, these must match the original
     // game's lookup table.
-    if(key == 96) {
-        // FIXME: 96 is supposed to be 10 bytes long, but we defined it as 8 last september
-        return 8;
-    }
     switch(key) {
-
         case 0:
         case 11:
         case 12:

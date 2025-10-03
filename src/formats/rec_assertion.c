@@ -50,6 +50,12 @@ static void write_bits(bit_writer *writer, uint32_t value, uint8_t num_bits) {
 bool parse_assertion(const uint8_t *data, rec_assertion *out) {
     bit_reader reader = {data, 0};
 
+    // packet 10 is differentiated by its first byte.
+    // openomf defines 'A' as an Assert.
+    if(read_bits(&reader, 8) != 'A') {
+        return false;
+    }
+
     // Read header
     uint8_t op_code = read_bits(&reader, 3);
     uint8_t op1_type = read_bits(&reader, 1);
@@ -119,6 +125,9 @@ bool encode_assertion(const rec_assertion *assertion, uint8_t *buffer) {
     // Initialize buffer to zeros
     memset(buffer, 0, 8);
     bit_writer writer = {buffer, 0};
+
+    // write packet sub-type 'A' for an Assert.
+    write_bits(&writer, 'A', 8);
 
     // Write header (3b op + 1b types)
     write_bits(&writer, assertion->op, 3);

@@ -91,7 +91,8 @@ int rec_controller_poll(controller *ctrl, ctrl_event **ev) {
     if(data->last_tick != ticks) {
         int j = 0;
         while(hashmap_get_int(&data->tick_lookup, (ticks * 10) + j, (void **)(&move), &len) == 0) {
-            if(move->lookup_id == 10) {
+            char *extra_data = sd_rec_get_extra_data(move);
+            if(move->lookup_id == 10 && extra_data[0] == 'A') {
                 rec_assertion ass;
                 if(parse_assertion((uint8_t const *)sd_rec_get_extra_data(move), &ass)) {
                     log_assertion(&ass);
@@ -99,13 +100,13 @@ int rec_controller_poll(controller *ctrl, ctrl_event **ev) {
                         crash("REC file assert failed!");
                     }
                 }
-            } else if(move->lookup_id == 96) {
+            } else if(move->lookup_id == 10 && extra_data[0] == 4) {
                 uint32_t seed;
-                memcpy(&seed, sd_rec_get_extra_data(move) + 1, sizeof(seed));
+                memcpy(&seed, extra_data + 4, sizeof(seed));
                 log_debug("setting random seed to %d from REC file", seed);
                 random_seed(&ctrl->gs->rand, seed);
             } else if(move->lookup_id == 2) {
-                int action = unpack_sd_action(sd_rec_get_extra_data(move)[0]);
+                int action = unpack_sd_action(extra_data[0]);
                 controller_cmd(ctrl, action, ev);
                 ctrl->last = action;
                 found_action = true;
@@ -207,8 +208,7 @@ void rec_controller_create(controller *ctrl, int player, sd_rec_file *rec) {
     int j = 0;
     data->max_tick = 0;
     for(unsigned int i = 0; i < rec->move_count; i++) {
-        if(rec->moves[i].player_id == player &&
-           (rec->moves[i].lookup_id == 2 || rec->moves[i].lookup_id == 10 || rec->moves[i].lookup_id == 96)) {
+        if(rec->moves[i].player_id == player && (rec->moves[i].lookup_id == 2 || rec->moves[i].lookup_id == 10)) {
             if(last_tick == rec->moves[i].tick) {
                 j++;
             } else {
