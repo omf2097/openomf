@@ -10,7 +10,7 @@
  * SBO = small buffer optimization.
  *
  * priv_cap is signed. negative values indicate SBO!
- * This is important for smallbuffer_resize_with_custom_selfsize.
+ * This is important for smallbuffer_realloc_with_custom_selfsize.
  */
 
 inline static bool is_sb_allocated(smallbuffer *sb) {
@@ -24,11 +24,11 @@ void smallbuffer_free(smallbuffer *sb) {
     sb->priv_cap = 0;
 }
 
-void smallbuffer_resize(smallbuffer *sb, size_t capacity) {
-    smallbuffer_resize_with_custom_selfsize(sb, capacity, sizeof(smallbuffer));
+void smallbuffer_realloc(smallbuffer *sb, size_t capacity) {
+    smallbuffer_realloc_with_custom_selfsize(sb, capacity, sizeof(smallbuffer));
 }
 
-void smallbuffer_resize_with_custom_selfsize(smallbuffer *sb, size_t capacity, size_t sizeof_smallbuffer) {
+void smallbuffer_realloc_with_custom_selfsize(smallbuffer *sb, size_t capacity, size_t sizeof_smallbuffer) {
     assert(capacity < PTRDIFF_MAX);
     assert(sizeof_smallbuffer >= sizeof(smallbuffer));
 

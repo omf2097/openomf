@@ -38,22 +38,22 @@ inline static void smallbuffer_create(smallbuffer *sb) {
 void smallbuffer_free(smallbuffer *);
 
 /**
- * @brief Resizes a smallbuffer.
+ * @brief Changes the capacity of a smallbuffer.
  * @details Existing buffer contents will be preserved insofar as they fit,
  *    and padded with trailing nul bytes as required.
  * @param capacity desired capacity (can be zero).
  */
-void smallbuffer_resize(smallbuffer *, size_t capacity);
+void smallbuffer_realloc(smallbuffer *, size_t capacity);
 
 /**
- * @brief Resizes a smallbuffer.
+ * @brief Changes the capacity of a smallbuffer.
  * @details Existing buffer contents will be preserved insofar as they fit,
  *    and padded with trailing nul bytes as required.
  * @param capacity desired capacity
  * @param sizeof_smallbuffer The amount of bytes allocated for the smallbuffer.
  *     Must be greater than the real sizeof(smallbuffer).
  */
-void smallbuffer_resize_with_custom_selfsize(smallbuffer *, size_t capacity, size_t sizeof_smallbuffer);
+void smallbuffer_realloc_with_custom_selfsize(smallbuffer *, size_t capacity, size_t sizeof_smallbuffer);
 
 /**
  * @brief Access the contents (data pointer) of the smallbuffer.
@@ -61,7 +61,7 @@ void smallbuffer_resize_with_custom_selfsize(smallbuffer *, size_t capacity, siz
 char *smallbuffer_data(smallbuffer *);
 
 /**
- * @brief Returns the capacity of the smallbuffer, as set by smallbuffer_resize.
+ * @brief Returns the capacity of the smallbuffer, as set by smallbuffer_realloc.
  */
 size_t smallbuffer_capacity(smallbuffer *);
 
