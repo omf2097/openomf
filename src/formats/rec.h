@@ -102,6 +102,16 @@ typedef struct {
     sd_rec_move *moves;      ///< REC event records list
 } sd_rec_file;
 
+// Moves with lookup ID 10 are differentiated further by their first byte
+enum
+{
+    REC_LOOKUP10_UNK1_BYTE = 1,
+    REC_LOOKUP10_UNK2_BYTE = 2,
+    REC_LOOKUP10_UNK3_BYTE = 3,
+    REC_LOOKUP10_SETRANDOM_BYTE = 4,
+    REC_LOOKUP10_ASSERT_BYTE = 'A',
+};
+
 /*! \brief Initialize REC file structure
  *
  * Initializes the REC file structure with empty values.

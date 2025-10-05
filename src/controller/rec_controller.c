@@ -92,7 +92,7 @@ int rec_controller_poll(controller *ctrl, ctrl_event **ev) {
         int j = 0;
         while(hashmap_get_int(&data->tick_lookup, (ticks * 10) + j, (void **)(&move), &len) == 0) {
             char *extra_data = sd_rec_get_extra_data(move);
-            if(move->lookup_id == 10 && extra_data[0] == 'A') {
+            if(move->lookup_id == 10 && extra_data[0] == REC_LOOKUP10_ASSERT_BYTE) {
                 rec_assertion ass;
                 if(parse_assertion((uint8_t const *)sd_rec_get_extra_data(move), &ass)) {
                     log_assertion(&ass);
@@ -100,7 +100,7 @@ int rec_controller_poll(controller *ctrl, ctrl_event **ev) {
                         crash("REC file assert failed!");
                     }
                 }
-            } else if(move->lookup_id == 10 && extra_data[0] == 4) {
+            } else if(move->lookup_id == 10 && extra_data[0] == REC_LOOKUP10_SETRANDOM_BYTE) {
                 uint32_t seed;
                 memcpy(&seed, extra_data + 4, sizeof(seed));
                 log_debug("setting random seed to %d from REC file", seed);

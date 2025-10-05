@@ -1,6 +1,7 @@
 
 
 #include "formats/rec_assertion.h"
+#include "formats/rec.h"
 #include "utils/log.h"
 #include "utils/str.h"
 
@@ -51,8 +52,7 @@ bool parse_assertion(const uint8_t *data, rec_assertion *out) {
     bit_reader reader = {data, 0};
 
     // packet 10 is differentiated by its first byte.
-    // openomf defines 'A' as an Assert.
-    if(read_bits(&reader, 8) != 'A') {
+    if(read_bits(&reader, 8) != REC_LOOKUP10_ASSERT_BYTE) {
         return false;
     }
 
@@ -126,8 +126,8 @@ bool encode_assertion(const rec_assertion *assertion, uint8_t *buffer) {
     memset(buffer, 0, 8);
     bit_writer writer = {buffer, 0};
 
-    // write packet sub-type 'A' for an Assert.
-    write_bits(&writer, 'A', 8);
+    // write packet sub-type for an Assert.
+    write_bits(&writer, REC_LOOKUP10_ASSERT_BYTE, 8);
 
     // Write header (3b op + 1b types)
     write_bits(&writer, assertion->op, 3);
