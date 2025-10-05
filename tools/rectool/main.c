@@ -140,7 +140,7 @@ void print_rec_root_info(sd_rec_file *rec) {
             printf("%6u %10u %5u %6u %6u %22s", i, rec->moves[i].tick, rec->moves[i].lookup_id, rec->moves[i].player_id,
                    extra_len, tmp);
 
-            if(rec->moves[i].lookup_id == 10 && extra_data[0] == 'A') {
+            if(rec->moves[i].lookup_id == 10 && extra_data[0] == REC_LOOKUP10_ASSERT_BYTE) {
                 rec_assertion ass;
                 if(parse_assertion((uint8_t const *)extra_data, &ass)) {
                     str s;
@@ -150,13 +150,14 @@ void print_rec_root_info(sd_rec_file *rec) {
                 } else {
                     printf("Failed to parse assertion!!!");
                 }
-            } else if(rec->moves[i].lookup_id == 10 && extra_data[0] == 1) {
+            } else if(rec->moves[i].lookup_id == 10 && extra_data[0] == REC_LOOKUP10_UNK1_BYTE) {
                 printf("DOS \"opponent has left the game\" net msg");
-            } else if(rec->moves[i].lookup_id == 10 && (extra_data[0] == 2 || extra_data[0] == 3)) {
+            } else if(rec->moves[i].lookup_id == 10 &&
+                      (extra_data[0] == REC_LOOKUP10_UNK2_BYTE || extra_data[0] == REC_LOOKUP10_UNK3_BYTE)) {
                 uint32_t value;
                 memcpy(&value, extra_data, sizeof value);
                 printf("DOS set unknown value 0x%08x, kind %d", value, extra_data[0]);
-            } else if(rec->moves[i].lookup_id == 10 && extra_data[0] == 4) {
+            } else if(rec->moves[i].lookup_id == 10 && extra_data[0] == REC_LOOKUP10_SETRANDOM_BYTE) {
                 uint32_t seed;
                 memcpy(&seed, extra_data + 4, sizeof(seed));
                 printf("Set random seed to 0x%08x", seed);
@@ -431,12 +432,12 @@ int main(int argc, char *argv[]) {
                 if(mv->lookup_id != 10)
                     continue;
                 char *extra_data = sd_rec_get_extra_data(mv);
-                if(extra_data[0] == 'A') {
+                if(extra_data[0] == REC_LOOKUP10_ASSERT_BYTE) {
                     printf("asserts fixup already applied..\n");
                     continue;
                 }
                 memmove(extra_data + 1, extra_data, sd_rec_extra_len(10) - 1);
-                extra_data[0] = 'A';
+                extra_data[0] = REC_LOOKUP10_ASSERT_BYTE;
             }
         } else if(omf_strcasecmp(fixup->sval[0], "pr1319_rand") == 0) {
             // pull request 1319: Replace our nonstandard & problematic
@@ -448,7 +449,7 @@ int main(int argc, char *argv[]) {
                 uint32_t seed;
                 memcpy(&seed, sd_rec_get_extra_data(mv) + 1, sizeof(seed));
                 char *extra_data = sd_rec_set_lookup_id(mv, 10);
-                extra_data[0] = 4;
+                extra_data[0] = REC_LOOKUP10_SETRANDOM_BYTE;
                 memcpy(extra_data + 4, &seed, sizeof(seed));
             }
         } else {
