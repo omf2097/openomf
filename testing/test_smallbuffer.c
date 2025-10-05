@@ -15,10 +15,10 @@ void test_smallbuffer(void) {
     smallbuffer_create(&sb);
     CU_ASSERT_EQUAL(smallbuffer_capacity(&sb), 0);
 
-    smallbuffer_resize(&sb, 4);
+    smallbuffer_realloc(&sb, 4);
     CU_ASSERT_EQUAL(smallbuffer_capacity(&sb), 4);
     memcpy(smallbuffer_data(&sb), random_data, 4);
-    smallbuffer_resize(&sb, 60);
+    smallbuffer_realloc(&sb, 60);
     CU_ASSERT_EQUAL(smallbuffer_capacity(&sb), 60);
     CU_ASSERT(memcmp(smallbuffer_data(&sb), random_data, 4) == 0);
     CU_ASSERT(memcmp(smallbuffer_data(&sb) + 4, oops_all_nul_bytes, 60 - 4) == 0);
@@ -38,10 +38,10 @@ void test_largebuffer(void) {
     largebuffer lb;
     smallbuffer_create(&lb.sb);
 
-    smallbuffer_resize_with_custom_selfsize(&lb.sb, 32, sizeof(lb));
+    smallbuffer_realloc_with_custom_selfsize(&lb.sb, 32, sizeof(lb));
     CU_ASSERT_EQUAL(smallbuffer_capacity(&lb.sb), 32);
     memcpy(smallbuffer_data(&lb.sb), random_data, 32);
-    smallbuffer_resize_with_custom_selfsize(&lb.sb, 400, sizeof(lb));
+    smallbuffer_realloc_with_custom_selfsize(&lb.sb, 400, sizeof(lb));
     CU_ASSERT_EQUAL(smallbuffer_capacity(&lb.sb), 400);
     CU_ASSERT(memcmp(smallbuffer_data(&lb.sb), random_data, 32) == 0);
     CU_ASSERT(memcmp(smallbuffer_data(&lb.sb) + 32, oops_all_nul_bytes, 400 - 32) == 0);
