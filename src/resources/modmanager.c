@@ -19,11 +19,32 @@
 hashmap mod_resources;
 
 // types of mod asset storage, buffer is for things like ini files or opus files
-typedef enum {
+typedef enum
+{
     MOD_VGA_IMAGE,
     MOD_SPRITE,
     MOD_BUFFER
 } asset_type;
+
+// Manifest structure to track mod information
+typedef struct {
+    char *name;     /* Unique name of the mod */
+    char *mod_api;  /* API version, should be "1.0" for now */
+    char *version;  /* Semver version string */
+    int load_order; /* Load order (lower numbers load first) */
+    path *filepath; /* Path to the mod file */
+} mod_manifest;
+
+// Free a manifest structure's internal fields (used as hashmap callback)
+static void free_manifest_fields(void *data) {
+    mod_manifest *manifest = (mod_manifest *)data;
+    if(manifest) {
+        omf_free(manifest->name);
+        omf_free(manifest->mod_api);
+        omf_free(manifest->version);
+        // Don't free filepath as it's owned by mod_list
+    }
+}
 
 // union type to cover all the mod asset types
 typedef struct {
@@ -56,6 +77,214 @@ int mod_find(list *mod_list) {
     return size;
 }
 
+static int compare_versions(const char *a, const char *b) {
+    long a_parts[3] = {0, 0, 0};
+    long b_parts[3] = {0, 0, 0};
+
+    // Parse version strings, scanf will not populate unmatched fields
+    sscanf(a, "%ld.%ld.%ld", &a_parts[0], &a_parts[1], &a_parts[2]);
+    sscanf(b, "%ld.%ld.%ld", &b_parts[0], &b_parts[1], &b_parts[2]);
+
+    // Compare components
+    for(int i = 0; i < 3; i++) {
+        if(a_parts[i] < b_parts[i])
+            return -1;
+        if(a_parts[i] > b_parts[i])
+            return 1;
+    }
+
+    return 0;
+}
+
+// Parse manifest.ini content and determine if this mod should be used
+// Adds valid mods to the mod_registry
+static bool parse_manifest_and_add_to_modlist(const char *buf, path *mod_path, hashmap *mod_registry) {
+    assert(buf != NULL);
+    assert(mod_path != NULL);
+    assert(mod_registry != NULL);
+
+    cfg_opt_t manifest_opts[] = {CFG_STR("name", "", CFGF_NONE), CFG_STR("mod_api", "", CFGF_NONE),
+                                 CFG_STR("version", "", CFGF_NONE), CFG_INT("load_order", 0, CFGF_NONE), CFG_END()};
+
+    cfg_t *cfg = cfg_init(manifest_opts, CFGF_IGNORE_UNKNOWN);
+
+    if(cfg_parse_buf(cfg, buf) == CFG_PARSE_ERROR) {
+        log_error("Failed to parse manifest.ini");
+        cfg_free(cfg);
+        return false;
+    }
+
+    // Get required fields
+    char *name = cfg_getstr(cfg, "name");
+    char *mod_api = cfg_getstr(cfg, "mod_api");
+    char *version = cfg_getstr(cfg, "version");
+    int load_order = cfg_getint(cfg, "load_order");
+
+    // Validate required fields individually
+    if(strlen(name) == 0) {
+        log_error("Manifest is missing required 'name' field");
+        cfg_free(cfg);
+        return false;
+    }
+
+    if(strlen(mod_api) == 0) {
+        log_error("Manifest is missing required 'mod_api' field");
+        cfg_free(cfg);
+        return false;
+    }
+
+    if(strlen(version) == 0) {
+        log_error("Manifest is missing required 'version' field");
+        cfg_free(cfg);
+        return false;
+    }
+
+    // Check if mod API version is supported
+    // For now, we only support 1.0
+    if(strcmp(mod_api, "1.0") != 0) {
+        log_warn("Mod %s has unsupported API version %s, ignoring", name, mod_api);
+        cfg_free(cfg);
+        return false;
+    }
+
+    // Check for existing mod with same name
+    mod_manifest *existing;
+    unsigned int len;
+    if(hashmap_get_str(mod_registry, name, (void **)&existing, &len) == 0) {
+        // Found a mod with the same name, compare versions
+        int compare = compare_versions(version, existing->version);
+        if( compare > 0) {
+            // New mod has a higher version, update the existing entry
+            log_info("Replacing mod %s v%s with v%s", name, existing->version, version);
+
+            // Update the existing entry with new information
+            existing->load_order = load_order;
+
+            cfg_free(cfg);
+            return true;
+        } else if (compare == 0) {
+            log_warn("Mod %s v%s already exists in %s, ignoring %s!", name, version, path_c(existing->path), path_c(mod_path));
+            cfg_free(cfg);
+            return false;
+        } else {
+            // Existing mod has higher version
+            log_info("Ignoring mod %s v%s in favor of existing v%s", name, version, existing->version);
+            cfg_free(cfg);
+            return false;
+        }
+    }
+
+    // Create manifest entry
+    mod_manifest manifest;
+    memset(&manifest, 0, sizeof(mod_manifest));
+    manifest.name = strdup(name);
+    manifest.mod_api = strdup(mod_api);
+    manifest.version = strdup(version);
+    manifest.load_order = load_order;
+    manifest.filepath = omf_calloc(1, sizeof(path));
+    path_from_c(manifest.filepath, path_c(mod_path));
+
+    // Add to registry for conflict resolution
+    hashmap_put_str(mod_registry, name, &manifest, sizeof(mod_manifest));
+
+    cfg_free(cfg);
+    return true;
+}
+
+// Build registry of mods from directory list
+static void build_mod_registry(list *dir_list, hashmap *mod_registry) {
+    iterator it;
+    path *p;
+
+    // Parse all manifests and create a list of valid mods
+    list_iter_begin(dir_list, &it);
+    foreach(it, p) {
+        struct zip_t *zip = zip_open(path_c(p), 0, 'r');
+        if(zip_entry_opencasesensitive(zip, "manifest.ini") == 0) {
+            // Read the manifest.ini content
+            unsigned long long entry_size = zip_entry_uncomp_size(zip);
+            void *entry_buf = omf_calloc(entry_size + 1, 1); // +1 for null terminator
+
+            if(zip_entry_noallocread(zip, entry_buf, entry_size) < 0) {
+                log_warn("Failed to read manifest.ini from %s", path_c(p));
+                omf_free(entry_buf);
+                zip_entry_close(zip);
+                zip_close(zip);
+                continue;
+            }
+
+            // Ensure null termination for the buffer
+            ((char *)entry_buf)[entry_size] = '\0';
+
+            // Parse the manifest and add/replace in registry
+            parse_manifest_and_add_to_modlist(entry_buf, p, mod_registry);
+            omf_free(entry_buf);
+            zip_entry_close(zip);
+        } else {
+            log_warn("Mod %s is lacking a manifest.ini, ignoring", path_c(p));
+        }
+        zip_close(zip);
+    }
+}
+
+// Sort mods from registry into a list ordered by load_order
+static void mod_sort(hashmap *mod_registry, list *sorted_list) {
+
+    // Extract mods from registry and sort them by load_order
+    iterator iter;
+    hashmap_iter_begin(mod_registry, &iter);
+    hashmap_pair *pair;
+
+    // First count the number of manifests by iterating
+    int manifest_count = 0;
+    foreach(iter, pair) {
+        manifest_count++;
+    }
+
+    // Reset iterator to beginning
+    hashmap_iter_begin(mod_registry, &iter);
+
+    // Create array of the right size for sorting
+    mod_manifest **manifests = NULL;
+    if(manifest_count > 0) {
+        manifests = omf_calloc(manifest_count, sizeof(mod_manifest *));
+        int i = 0;
+        foreach(iter, pair) {
+            mod_manifest *manifest = (mod_manifest *)pair->value;
+            manifests[i++] = manifest;
+        }
+    }
+
+    log_info("loaded %d valid manifests", manifest_count);
+
+    // Simple bubble sort by load_order - only if we have mods to sort
+    if(manifest_count > 1 && manifests != NULL) {
+        for(int j = 0; j < manifest_count; j++) {
+            for(int k = 0; k < manifest_count - j - 1; k++) {
+                if(manifests[k]->load_order > manifests[k + 1]->load_order) {
+                    mod_manifest *temp = manifests[k];
+                    manifests[k] = manifests[k + 1];
+                    manifests[k + 1] = temp;
+                }
+            }
+        }
+    }
+
+    // Add sorted paths to new list
+    for(int i = 0; i < manifest_count && manifests != NULL; i++) {
+        list_append(sorted_list, manifests[i]->filepath, sizeof(path));
+        log_info("Adding mod %s v%s (load order: %d)", manifests[i]->name, manifests[i]->version,
+                 manifests[i]->load_order);
+    }
+
+    // Free only the array we created for sorting
+    // Don't free the manifests themselves or their filepaths
+    // as those are owned by the mod_registry and used by mod_list
+    if(manifests != NULL) {
+        omf_free(manifests);
+    }
+}
+
 bool modmanager_init(void) {
 
     hashmap_create(&mod_resources);
@@ -66,31 +295,19 @@ bool modmanager_init(void) {
     list mod_list;
     list_create(&mod_list);
 
+    // Create and populate mod registry with valid mods from the directories
+    hashmap mod_registry;
+    hashmap_create_cb(&mod_registry, free_manifest_fields);
+    build_mod_registry(&dir_list, &mod_registry);
+
+    // Sort the mods by load_order and create a properly ordered list
+    mod_sort(&mod_registry, &mod_list);
+
+    // Free registry and its contents - the free callback will handle the internal fields
+    hashmap_free(&mod_registry);
+
     iterator it;
     path *p;
-
-    // we need to iterate over the list of mods and then check if they should be disabled, and put them in the right load order
-    // TODO check the mod has a manifest
-    // and then insert it into a secondary list in 'load order'
-    // TODO also check a configured list of enabled/disabled mods, with an ordering
-    list_iter_begin(&dir_list, &it);
-    foreach(it, p) {
-        struct zip_t *zip = zip_open(path_c(p), 0, 'r');
-        if(zip_entry_opencasesensitive(zip, "manifest.ini") == 0) {
-            // TODO parse the manifest.ini
-            // it MUST include the following fields:
-            // name :: string -- should be unique per mod, conflicts are resolved via version
-            // mod_api :: string -- should always be 1.0 for now, semver
-            // version :: string -- semver
-            // Optional fields:
-            // load_order :: integer -- default is 0, affects insertion order into mod list
-            list_append(&mod_list, p, sizeof(path));
-        } else {
-            log_warn("Mod %s is lacking a manifest.ini, ignoring", path_c(p));
-        }
-    }
-
-
     list_iter_begin(&mod_list, &it);
     foreach(it, p) {
         struct zip_t *zip = zip_open(path_c(p), 0, 'r');
@@ -104,6 +321,14 @@ bool modmanager_init(void) {
                     str_create(&filename);
                     str_from_c(&filename, zip_entry_name(zip));
                     str_tolower(&filename);
+
+                    if(strcmp("manifest.ini", str_c(&filename)) == 0) {
+                        // this was loaded before
+                        str_free(&filename);
+                        zip_entry_close(zip);
+                        continue;
+                    }
+
                     unsigned long long entry_size = zip_entry_uncomp_size(zip);
                     void *entry_buf = omf_calloc(entry_size, 1);
                     if(zip_entry_noallocread(zip, entry_buf, entry_size) < 0) {
@@ -113,12 +338,6 @@ bool modmanager_init(void) {
                     path path;
                     str fn, ext;
                     path_from_str(&path, &filename);
-                    if(strcmp("manifest.ini", str_c(&filename)) == 0) {
-                        // this was loaded before
-                        str_free(&filename);
-                        zip_entry_close(zip);
-                        continue;
-                    }
 
                     path_filename(&path, &fn);
                     path_ext(&path, &ext);
@@ -161,7 +380,7 @@ bool modmanager_init(void) {
                         // XXX the file buffer is NOT null terminated
                         strncpy(ini_buf, entry_buf, entry_size);
 
-                        buf->buf = (unsigned char*) ini_buf;
+                        buf->buf = (unsigned char *)ini_buf;
 
                         omf_free(entry_buf);
 
