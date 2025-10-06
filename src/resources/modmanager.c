@@ -18,10 +18,23 @@
 
 hashmap mod_resources;
 
+// types of mod asset storage, buffer is for things like ini files or opus files
+typedef enum {
+    MOD_VGA_IMAGE,
+    MOD_SPRITE,
+    MOD_BUFFER
+} asset_type;
+
+// union type to cover all the mod asset types
 typedef struct {
+    asset_type type;
     size_t size;
-    unsigned char *buf;
-} opus_buffer;
+    union {
+        unsigned char *buf;
+        sd_vga_image img;
+        sd_sprite spr;
+    };
+} mod_asset;
 
 int mod_find(list *mod_list) {
     size_t size = 0;
@@ -50,16 +63,39 @@ bool modmanager_init(void) {
     list_create(&dir_list);
     mod_find(&dir_list);
 
+    list mod_list;
+    list_create(&mod_list);
+
     iterator it;
-    list_iter_begin(&dir_list, &it);
     path *p;
+
+    // we need to iterate over the list of mods and then check if they should be disabled, and put them in the right load order
+    // TODO check the mod has a manifest
+    // and then insert it into a secondary list in 'load order'
+    // TODO also check a configured list of enabled/disabled mods, with an ordering
+    list_iter_begin(&dir_list, &it);
+    foreach(it, p) {
+        struct zip_t *zip = zip_open(path_c(p), 0, 'r');
+        if(zip_entry_opencasesensitive(zip, "manifest.ini") == 0) {
+            // TODO parse the manifest.ini
+            // it MUST include the following fields:
+            // name :: string -- should be unique per mod, conflicts are resolved via version
+            // mod_api :: string -- should always be 1.0 for now, semver
+            // version :: string -- semver
+            // Optional fields:
+            // load_order :: integer -- default is 0, affects insertion order into mod list
+            list_append(&mod_list, p, sizeof(path));
+        } else {
+            log_warn("Mod %s is lacking a manifest.ini, ignoring", path_c(p));
+        }
+    }
+
+
+    list_iter_begin(&mod_list, &it);
     foreach(it, p) {
         struct zip_t *zip = zip_open(path_c(p), 0, 'r');
         ssize_t entries = zip_entries_total(zip);
         if(entries > 0) {
-            // TODO check the mod has a manifest
-            // and then insert it into a secondary list in 'load order'
-            // TODO also check a configured list of enabled/disabled mods, with an ordering
             log_info("mod %s has %d files", path_c(p), entries);
             for(size_t i = 0; i < (size_t)entries; i++) {
                 if(zip_entry_openbyindex(zip, i) == 0 && zip_entry_isdir(zip) == 0) {
@@ -77,6 +113,13 @@ bool modmanager_init(void) {
                     path path;
                     str fn, ext;
                     path_from_str(&path, &filename);
+                    if(strcmp("manifest.ini", str_c(&filename)) == 0) {
+                        // this was loaded before
+                        str_free(&filename);
+                        zip_entry_close(zip);
+                        continue;
+                    }
+
                     path_filename(&path, &fn);
                     path_ext(&path, &ext);
 
@@ -84,12 +127,14 @@ bool modmanager_init(void) {
 
                     if(strcmp("background.png", str_c(&fn)) == 0) {
                         // parse as background image
-                        sd_vga_image img;
-                        if(sd_vga_image_from_png_in_memory(&img, entry_buf, entry_size, false) == SD_SUCCESS) {
+                        mod_asset *buf = omf_calloc(1, sizeof(mod_asset));
+                        buf->type = MOD_VGA_IMAGE;
 
-                            log_info("got vga image %dx%d with size %d", img.w, img.h, sizeof(img));
+                        if(sd_vga_image_from_png_in_memory(&buf->img, entry_buf, entry_size, false) == SD_SUCCESS) {
 
-                            hashmap_put_str(&mod_resources, str_c(&filename), &img, sizeof(img));
+                            log_info("got vga image %dx%d", buf->img.w, buf->img.h);
+
+                            hashmap_put_str(&mod_resources, str_c(&filename), buf, sizeof(mod_asset));
                         } else {
                             log_warn("failed to load background image %s", str_c(&filename));
                         }
@@ -97,12 +142,10 @@ bool modmanager_init(void) {
                         // parse as sprite
                         sd_vga_image img;
                         if(sd_vga_image_from_png_in_memory(&img, entry_buf, entry_size, true) == SD_SUCCESS) {
-                            sd_sprite s;
-                            if(strcmp("7_0.png", str_c(&fn)) == 0) {
-                                log_warn("pixel 0 has pallete %d", img.data[0]);
-                            }
-                            if(sd_sprite_vga_encode(&s, &img) == SD_SUCCESS) {
-                                hashmap_put_str(&mod_resources, str_c(&filename), &s, sizeof(s));
+                            mod_asset *buf = omf_calloc(1, sizeof(mod_asset));
+                            buf->type = MOD_SPRITE;
+                            if(sd_sprite_vga_encode(&buf->spr, &img) == SD_SUCCESS) {
+                                hashmap_put_str(&mod_resources, str_c(&filename), buf, sizeof(mod_asset));
                             } else {
                                 log_warn("failed to load sprite %s", str_c(&filename));
                             }
@@ -110,15 +153,24 @@ bool modmanager_init(void) {
                     } else if(strcmp(".ini", str_c(&ext)) == 0) {
                         list *l;
                         unsigned int len;
+                        char *ini_buf = omf_calloc(1, entry_size + 1);
+                        mod_asset *buf = omf_calloc(1, sizeof(mod_asset));
+                        buf->size = entry_size + 1;
+                        buf->type = MOD_BUFFER;
+
+                        // XXX the file buffer is NOT null terminated
+                        strncpy(ini_buf, entry_buf, entry_size);
+
+                        buf->buf = (unsigned char*) ini_buf;
+
+                        omf_free(entry_buf);
+
                         if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&l, &len)) {
-                            list_append(l, entry_buf, entry_size);
+                            list_append(l, buf, sizeof(mod_asset));
                         } else {
                             l = omf_calloc(1, sizeof(list));
-                            char *ini_buf = omf_calloc(1, entry_size + 1);
-                            // XXX the file buffer is NOT null terminated
-                            strncpy(ini_buf, entry_buf, entry_size);
                             list_create(l);
-                            list_append(l, ini_buf, entry_size + 1);
+                            list_append(l, buf, sizeof(mod_asset));
                             hashmap_put_str(&mod_resources, str_c(&filename), l, sizeof(list));
                         }
 #ifdef OPUSFILE_FOUND
@@ -127,15 +179,16 @@ bool modmanager_init(void) {
                             log_info("got OPUS file %s", str_c(&filename));
                             list *l;
                             unsigned int len;
-                            opus_buffer *buf = omf_calloc(1, sizeof(opus_buffer));
+                            mod_asset *buf = omf_calloc(1, sizeof(mod_asset));
                             buf->size = entry_size;
+                            buf->type = MOD_BUFFER;
                             buf->buf = entry_buf;
                             if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&l, &len)) {
-                                list_append(l, buf, sizeof(opus_buffer));
+                                list_append(l, buf, sizeof(mod_asset));
                             } else {
                                 l = omf_calloc(1, sizeof(list));
                                 list_create(l);
-                                list_append(l, buf, sizeof(opus_buffer));
+                                list_append(l, buf, sizeof(mod_asset));
                                 hashmap_put_str(&mod_resources, str_c(&filename), l, sizeof(list));
                             }
                         } else {
@@ -165,7 +218,10 @@ bool modmanager_get_bk_background(str *name, sd_vga_image **img) {
 
     unsigned int len;
     bool found = false;
-    if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)img, &len)) {
+    mod_asset *obuf;
+    if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&obuf, &len)) {
+        assert(obuf->type == MOD_VGA_IMAGE);
+        *img = &obuf->img;
         log_info("got vga image %dx%d with size %d", (*img)->w, (*img)->h, len);
         found = true;
     }
@@ -175,6 +231,8 @@ bool modmanager_get_bk_background(str *name, sd_vga_image **img) {
 
 bool modmanager_get_sprite(animation_source source, str *name, int animation, int frame, sd_sprite **spr) {
     str filename;
+
+    mod_asset *obuf;
     switch(source) {
         case AF_ANIMATION:
             str_from_format(&filename, "fighters/%s/%d/%d.png", str_c(name), animation, frame);
@@ -189,7 +247,9 @@ bool modmanager_get_sprite(animation_source source, str *name, int animation, in
     str_tolower(&filename);
 
     unsigned int len;
-    if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)spr, &len)) {
+    if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&obuf, &len)) {
+        assert(obuf->type == MOD_SPRITE);
+        *spr = &obuf->spr;
         log_info("got sprite %dx%d with size %d", (*spr)->width, (*spr)->height, len);
         str_free(&filename);
         return true;
@@ -215,7 +275,9 @@ bool modmanager_get_sprite(animation_source source, str *name, int animation, in
     }
 
     bool found = false;
-    if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)spr, &len)) {
+    if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&obuf, &len)) {
+        assert(obuf->type == MOD_SPRITE);
+        *spr = &obuf->spr;
         log_info("got sprite %dx%d with size %d", (*spr)->width, (*spr)->height, len);
         found = true;
     }
@@ -263,7 +325,7 @@ bool modmanager_get_music(str *name, unsigned int index, unsigned char **buf, si
             log_warn("requested index %s into list of %d members", index, count);
             return false;
         }
-        opus_buffer *obuf = list_get(l, index);
+        mod_asset *obuf = list_get(l, index);
         assert(obuf != NULL);
         *buf = obuf->buf;
         *buflen = obuf->size;
