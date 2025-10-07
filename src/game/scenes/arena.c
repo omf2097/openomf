@@ -727,7 +727,7 @@ void arena_har_defeat_hook(int loser_player_id, scene *scene) {
     }
     score->rounds++;
     if(player_winner->ctrl->type != CTRL_TYPE_AI && player_loser->ctrl->type == CTRL_TYPE_AI) {
-        chr_score_victory(score, har_health_percent(winner_har));
+        // chr_score_victory(score, har_health_percent(winner_har));
     }
     if(score->rounds >= ceilf(local->rounds / 2.0f)) {
         winner_har->state = STATE_VICTORY;
