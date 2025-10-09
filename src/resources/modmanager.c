@@ -16,6 +16,18 @@
 
 #include <confuse.h>
 
+#define UPDATE_FIELD_INT(field_name, struct_field, new_value)                                                          \
+    if(new_value != 0 && struct_field != new_value) {                                                                  \
+        log_info("setting " #field_name " from %d to %d", struct_field, new_value);                                    \
+        struct_field = new_value;                                                                                      \
+    }
+
+#define UPDATE_FIELD_FLOAT(field_name, struct_field, new_value)                                                        \
+    if(new_value != 0.0 && struct_field != new_value) {                                                                \
+        log_info("setting " #field_name " from %f to %f", struct_field, new_value);                                    \
+        struct_field = new_value;                                                                                      \
+    }
+
 hashmap mod_resources;
 
 // types of mod asset storage, buffer is for things like ini files or opus files
@@ -153,7 +165,7 @@ static bool parse_manifest_and_add_to_modlist(const char *buf, path *mod_path, h
     if(hashmap_get_str(mod_registry, name, (void **)&existing, &len) == 0) {
         // Found a mod with the same name, compare versions
         int compare = compare_versions(version, existing->version);
-        if( compare > 0) {
+        if(compare > 0) {
             // New mod has a higher version, update the existing entry
             log_info("Replacing mod %s v%s with v%s", name, existing->version, version);
 
@@ -162,8 +174,9 @@ static bool parse_manifest_and_add_to_modlist(const char *buf, path *mod_path, h
 
             cfg_free(cfg);
             return true;
-        } else if (compare == 0) {
-            log_warn("Mod %s v%s already exists in %s, ignoring %s!", name, version, path_c(existing->path), path_c(mod_path));
+        } else if(compare == 0) {
+            log_warn("Mod %s v%s already exists in %s, ignoring %s!", name, version, path_c(existing->filepath),
+                     path_c(mod_path));
             cfg_free(cfg);
             return false;
         } else {
@@ -917,6 +930,486 @@ bool modmanager_get_fighter_header(str *name, af *fighter) {
         foreach(it, buf) {
             result |= modmanager_parse_fighter_header_mod(buf, fighter);
         }
+    }
+
+    str_free(&filename);
+    return result;
+}
+
+// Function to parse pilot mods from memory buffer
+bool modmanager_parse_pilot_mod(const char *buf, sd_pilot *pilot) {
+    if(!buf || !pilot)
+        return false;
+
+    // Store original values for comparison
+    char original_name[18];
+    strncpy(original_name, pilot->name, sizeof(original_name));
+    original_name[17] = '\0';
+
+    /*int original_wins = pilot->wins;
+    int original_losses = pilot->losses;
+    int original_arm_speed = pilot->arm_speed;
+    int original_arm_power = pilot->arm_power;
+    int original_leg_speed = pilot->leg_speed;
+    int original_leg_power = pilot->leg_power;
+    int original_armor = pilot->armor;
+    int original_stun_resistance = pilot->stun_resistance;
+    int original_power = pilot->power;
+    int original_agility = pilot->agility;
+    int original_endurance = pilot->endurance;
+    int original_offense = pilot->offense;
+    int original_defense = pilot->defense;
+    int original_money = pilot->money;
+    int original_color_1 = pilot->color_1;
+    int original_color_2 = pilot->color_2;
+    int original_color_3 = pilot->color_3;
+    int original_movement = pilot->movement;
+    int original_winnings = pilot->winnings;
+    float original_learning = pilot->learning;
+    float original_forget = pilot->forget;*/
+
+    // Options for colors section
+    cfg_opt_t colors_opts[] = {CFG_INT("primary", 255, CFGF_NONE), CFG_INT("secondary", 255, CFGF_NONE),
+                               CFG_INT("tertiary", 255, CFGF_NONE), CFG_END()};
+
+    // Options for preferences section
+    cfg_opt_t preferences_opts[] = {CFG_INT("jump", 0, CFGF_NONE), CFG_INT("forward", 0, CFGF_NONE),
+                                    CFG_INT("back", 0, CFGF_NONE), CFG_END()};
+
+    // Options for attacks section
+    cfg_opt_t attacks_opts[] = {CFG_INT("throw", 0, CFGF_NONE),
+                                CFG_INT("special", 0, CFGF_NONE),
+                                CFG_INT("jump", 0, CFGF_NONE),
+                                CFG_INT("low", 0, CFGF_NONE),
+                                CFG_INT("middle", 0, CFGF_NONE),
+                                CFG_INT("high", 0, CFGF_NONE),
+                                CFG_END()};
+
+    // Options for attitude section
+    cfg_opt_t attitude_opts[] = {CFG_INT("normal", 0, CFGF_NONE), CFG_INT("hyper", 0, CFGF_NONE),
+                                 CFG_INT("jump", 0, CFGF_NONE),   CFG_INT("defense", 0, CFGF_NONE),
+                                 CFG_INT("sniper", 0, CFGF_NONE), CFG_END()};
+
+    // Options for language sections
+    cfg_opt_t language_opts[] = {CFG_STR("quote", NULL, CFGF_NONE), CFG_END()};
+
+    // Main pilot options
+    cfg_opt_t pilot_opts[] = {CFG_STR("name", NULL, CFGF_NONE),
+                              CFG_STR("gender", NULL, CFGF_NONE),
+                              CFG_STR("robot", NULL, CFGF_NONE),
+                              CFG_INT("wins", 0, CFGF_NONE),
+                              CFG_INT("losses", 0, CFGF_NONE),
+                              CFG_INT("arm_speed", 0, CFGF_NONE),
+                              CFG_INT("arm_power", 0, CFGF_NONE),
+                              CFG_INT("leg_speed", 0, CFGF_NONE),
+                              CFG_INT("leg_power", 0, CFGF_NONE),
+                              CFG_INT("armor", 0, CFGF_NONE),
+                              CFG_INT("stun_resistance", 0, CFGF_NONE),
+                              CFG_INT("speed", 0, CFGF_NONE), // maps to agility
+                              CFG_INT("power", 0, CFGF_NONE),
+                              CFG_INT("endurance", 0, CFGF_NONE),
+                              CFG_INT("offense", 0, CFGF_NONE),
+                              CFG_INT("defense", 0, CFGF_NONE),
+                              CFG_FLOAT("learning", 0.0, CFGF_NONE),
+                              CFG_FLOAT("forget", 0.0, CFGF_NONE),
+                              CFG_INT("money", 0, CFGF_NONE),
+                              CFG_INT("winnings", 0, CFGF_NONE),
+                              CFG_BOOL("movement", true, CFGF_NONE),
+                              CFG_SEC("attitude", attitude_opts, CFGF_NONE),
+                              CFG_SEC("attacks", attacks_opts, CFGF_NONE),
+                              CFG_SEC("preferences", preferences_opts, CFGF_NONE),
+                              CFG_SEC("colors", colors_opts, CFGF_NONE),
+                              CFG_SEC("language", language_opts, CFGF_MULTI | CFGF_TITLE),
+                              CFG_END()};
+
+    cfg_t *cfg = cfg_init(pilot_opts, CFGF_NONE);
+
+    if(cfg_parse_buf(cfg, buf) == CFG_PARSE_ERROR) {
+        log_error("Failed to parse pilot mod");
+        cfg_free(cfg);
+        return false;
+    }
+
+    // Update top-level string fields
+    char *name = cfg_getstr(cfg, "name");
+    if(name) {
+        strncpy(pilot->name, name, sizeof(pilot->name) - 1);
+        pilot->name[sizeof(pilot->name) - 1] = '\0';
+        log_info("setting name from '%s' to '%s'", original_name, pilot->name);
+    }
+
+    char *gender = cfg_getstr(cfg, "gender");
+    if(gender) {
+        if(strcmp(gender, "male") == 0)
+            pilot->sex = 0;
+        else if(strcmp(gender, "female") == 0)
+            pilot->sex = 1;
+        log_info("setting gender to %s", gender);
+    }
+
+    char *robot = cfg_getstr(cfg, "robot");
+    if(robot) {
+        // Map robot name to HAR ID (you'll need to implement this mapping)
+        // For now, just log it
+        log_info("setting robot to %s", robot);
+        // pilot->har_id = get_har_id_from_name(robot); // You'd implement this
+    }
+
+    // Update integer fields
+    UPDATE_FIELD_INT(wins, pilot->wins, cfg_getint(cfg, "wins"));
+    UPDATE_FIELD_INT(losses, pilot->losses, cfg_getint(cfg, "losses"));
+    UPDATE_FIELD_INT(arm_speed, pilot->arm_speed, cfg_getint(cfg, "arm_speed"));
+    UPDATE_FIELD_INT(arm_power, pilot->arm_power, cfg_getint(cfg, "arm_power"));
+    UPDATE_FIELD_INT(leg_speed, pilot->leg_speed, cfg_getint(cfg, "leg_speed"));
+    UPDATE_FIELD_INT(leg_power, pilot->leg_power, cfg_getint(cfg, "leg_power"));
+    UPDATE_FIELD_INT(armor, pilot->armor, cfg_getint(cfg, "armor"));
+    UPDATE_FIELD_INT(stun_resistance, pilot->stun_resistance, cfg_getint(cfg, "stun_resistance"));
+    UPDATE_FIELD_INT(power, pilot->power, cfg_getint(cfg, "power"));
+    UPDATE_FIELD_INT(agility, pilot->agility, cfg_getint(cfg, "speed")); // Note: "speed" maps to agility
+    UPDATE_FIELD_INT(endurance, pilot->endurance, cfg_getint(cfg, "endurance"));
+    UPDATE_FIELD_INT(offense, pilot->offense, cfg_getint(cfg, "offense"));
+    UPDATE_FIELD_INT(defense, pilot->defense, cfg_getint(cfg, "defense"));
+    UPDATE_FIELD_INT(money, pilot->money, cfg_getint(cfg, "money"));
+    UPDATE_FIELD_INT(winnings, pilot->winnings, cfg_getint(cfg, "winnings"));
+
+    // Update float fields
+    UPDATE_FIELD_FLOAT(learning, pilot->learning, cfg_getfloat(cfg, "learning"));
+    UPDATE_FIELD_FLOAT(forget, pilot->forget, cfg_getfloat(cfg, "forget"));
+
+    // Update boolean field
+    bool movement = cfg_getbool(cfg, "movement");
+    if(pilot->movement != movement) {
+        log_info("setting movement from %d to %d", pilot->movement, movement);
+        pilot->movement = movement;
+    }
+
+    // Process attitude section
+    cfg_t *attitude = cfg_getsec(cfg, "attitude");
+    if(attitude) {
+        UPDATE_FIELD_INT(att_normal, pilot->att_normal, cfg_getint(attitude, "normal"));
+        UPDATE_FIELD_INT(att_hyper, pilot->att_hyper, cfg_getint(attitude, "hyper"));
+        UPDATE_FIELD_INT(att_jump, pilot->att_jump, cfg_getint(attitude, "jump"));
+        UPDATE_FIELD_INT(att_def, pilot->att_def, cfg_getint(attitude, "defense"));
+        UPDATE_FIELD_INT(att_sniper, pilot->att_sniper, cfg_getint(attitude, "sniper"));
+    }
+
+    // Process attacks section
+    cfg_t *attacks = cfg_getsec(cfg, "attacks");
+    if(attacks) {
+        UPDATE_FIELD_INT(ap_throw, pilot->ap_throw, cfg_getint(attacks, "throw"));
+        UPDATE_FIELD_INT(ap_special, pilot->ap_special, cfg_getint(attacks, "special"));
+        UPDATE_FIELD_INT(ap_jump, pilot->ap_jump, cfg_getint(attacks, "jump"));
+        UPDATE_FIELD_INT(ap_low, pilot->ap_low, cfg_getint(attacks, "low"));
+        UPDATE_FIELD_INT(ap_middle, pilot->ap_middle, cfg_getint(attacks, "middle"));
+        UPDATE_FIELD_INT(ap_high, pilot->ap_high, cfg_getint(attacks, "high"));
+    }
+
+    // Process preferences section
+    cfg_t *preferences = cfg_getsec(cfg, "preferences");
+    if(preferences) {
+        UPDATE_FIELD_INT(pref_jump, pilot->pref_jump, cfg_getint(preferences, "jump"));
+        UPDATE_FIELD_INT(pref_fwd, pilot->pref_fwd, cfg_getint(preferences, "forward"));
+        UPDATE_FIELD_INT(pref_back, pilot->pref_back, cfg_getint(preferences, "back"));
+    }
+
+    // Process colors section
+    cfg_t *colors = cfg_getsec(cfg, "colors");
+    if(colors) {
+        UPDATE_FIELD_INT(color_1, pilot->color_1, cfg_getint(colors, "primary"));
+        UPDATE_FIELD_INT(color_2, pilot->color_2, cfg_getint(colors, "secondary"));
+        UPDATE_FIELD_INT(color_3, pilot->color_3, cfg_getint(colors, "tertiary"));
+    }
+
+    // Process language sections
+    int num_languages = cfg_size(cfg, "language");
+    for(int i = 0; i < num_languages; i++) {
+        cfg_t *lang = cfg_getnsec(cfg, "language", i);
+        const char *lang_name = cfg_title(lang);
+
+        int lang_index = -1;
+        if(strcmp(lang_name, "english") == 0)
+            lang_index = 0;
+        else if(strcmp(lang_name, "german") == 0)
+            lang_index = 1;
+        // Add more languages as needed
+
+        if(lang_index == -1 || lang_index >= 10) {
+            log_warn("Unknown language '%s' or index out of bounds", lang_name);
+            continue;
+        }
+
+        char *quote = cfg_getstr(lang, "quote");
+        if(quote) {
+            if(pilot->quotes[lang_index])
+                free(pilot->quotes[lang_index]);
+            pilot->quotes[lang_index] = strdup(quote);
+            log_info("setting %s quote to '%s'", lang_name, quote);
+        }
+    }
+
+    cfg_free(cfg);
+    return true;
+}
+
+// Helper function to load pilot mod
+bool modmanager_get_pilot_mod(const char *trn_name, uint8_t pilot_id, sd_pilot *pilot_data) {
+    if(!trn_name || !pilot_data)
+        return false;
+
+    str filename;
+    str_from_format(&filename, "tournaments/%s/pilots/%d/pilot.ini", trn_name, pilot_id);
+    str_tolower(&filename);
+
+    list *l;
+    unsigned int len = 0;
+
+    bool result = false;
+    if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&l, &len)) {
+        iterator it;
+        list_iter_begin(l, &it);
+        mod_asset *obuf;
+        foreach(it, obuf) {
+            assert(obuf->type == MOD_BUFFER);
+            result |= modmanager_parse_pilot_mod((char *)obuf->buf, pilot_data);
+        }
+    }
+
+    str_free(&filename);
+
+    str_from_format(&filename, "tournaments/%s/pilots/%d/pilot.png", trn_name, pilot_id);
+    str_tolower(&filename);
+    mod_asset *obuf;
+    if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&obuf, &len)) {
+        assert(obuf->type == MOD_SPRITE);
+        log_info("found portrait for pilot %d in %s", pilot_id, trn_name);
+        // omf_free(pilot_data->photo);
+        pilot_data->photo = omf_calloc(1, sizeof(sd_sprite));
+        sd_sprite_create(pilot_data->photo);
+        if(sd_sprite_copy(pilot_data->photo, &obuf->spr) != SD_SUCCESS) {
+            log_warn("failed to copy photo");
+        }
+        // pilot_data->photo->data->render_w = 59;
+        // pilot_data->photo->data->render_h = 51;
+    }
+    return result;
+}
+
+// Function to parse tournament mods from memory buffer
+bool modmanager_parse_tournament_mod(const char *buf, sd_tournament_file *tourn) {
+    if(!buf || !tourn)
+        return false;
+
+    // Store original values for comparison
+    char original_tournament_end[14];
+    strncpy(original_tournament_end, tourn->bk_name, sizeof(original_tournament_end));
+    original_tournament_end[13] = '\0'; // Ensure null termination
+
+    int original_registration_fee = tourn->registration_fee;
+    float original_winnings_multiplier = tourn->winnings_multiplier;
+
+    // Options for ending sections
+    cfg_opt_t ending_opts[] = {CFG_STR("page1", NULL, CFGF_NONE),
+                               CFG_STR("page2", NULL, CFGF_NONE),
+                               CFG_STR("page3", NULL, CFGF_NONE),
+                               CFG_STR("page4", NULL, CFGF_NONE),
+                               CFG_STR("page5", NULL, CFGF_NONE),
+                               CFG_STR("page6", NULL, CFGF_NONE),
+                               CFG_STR("page7", NULL, CFGF_NONE),
+                               CFG_STR("page8", NULL, CFGF_NONE),
+                               CFG_STR("page9", NULL, CFGF_NONE),
+                               CFG_STR("page10", NULL, CFGF_NONE),
+                               CFG_END()};
+
+    // Options for language sections
+    cfg_opt_t language_opts[] = {CFG_STR("name", NULL, CFGF_NONE), CFG_STR("description", NULL, CFGF_NONE),
+                                 CFG_SEC("ending", ending_opts, CFGF_MULTI | CFGF_TITLE), CFG_END()};
+
+    // Main tournament options
+    cfg_opt_t tournament_opts[] = {CFG_STR("tournament_end", NULL, CFGF_NONE),
+                                   CFG_INT("registration_fee", 0, CFGF_NONE),
+                                   CFG_FLOAT("winnings_multiplier", 0.0, CFGF_NONE),
+                                   CFG_INT("offense_addition", 0, CFGF_NONE),
+                                   CFG_INT("defense_addition", 0, CFGF_NONE),
+                                   CFG_SEC("language", language_opts, CFGF_MULTI | CFGF_TITLE),
+                                   CFG_END()};
+
+    cfg_t *cfg = cfg_init(tournament_opts, CFGF_NONE);
+
+    // Add debugging to see what's being parsed
+    log_info("Parsing tournament mod buffer: %s", buf);
+
+    if(cfg_parse_buf(cfg, buf) == CFG_PARSE_ERROR) {
+        log_error("Failed to parse tournament mod");
+        cfg_free(cfg);
+        return false;
+    }
+
+    // Update top-level fields
+    char *tournament_end = cfg_getstr(cfg, "tournament_end");
+    if(tournament_end) {
+        // Copy to fixed-size bk_name field with bounds checking
+        strncpy(tourn->bk_name, tournament_end, sizeof(tourn->bk_name) - 1);
+        tourn->bk_name[sizeof(tourn->bk_name) - 1] = '\0'; // Ensure null termination
+        log_info("setting tournament_end from '%s' to '%s'", original_tournament_end, tourn->bk_name);
+    }
+
+    int new_registration_fee = cfg_getint(cfg, "registration_fee");
+    if(new_registration_fee != 0 && new_registration_fee != original_registration_fee) {
+        log_info("setting registration_fee from %d to %d", original_registration_fee, new_registration_fee);
+        tourn->registration_fee = new_registration_fee;
+    }
+
+    float new_winnings_multiplier = cfg_getfloat(cfg, "winnings_multiplier");
+    if(new_winnings_multiplier != 0.0 && new_winnings_multiplier != original_winnings_multiplier) {
+        log_info("setting winnings_multiplier from %f to %f", original_winnings_multiplier, new_winnings_multiplier);
+        tourn->winnings_multiplier = new_winnings_multiplier;
+    }
+
+    // Process language sections
+    int num_languages = cfg_size(cfg, "language");
+    log_info("Found %d language sections", num_languages);
+
+    for(int i = 0; i < num_languages; i++) {
+        cfg_t *lang = cfg_getnsec(cfg, "language", i);
+        const char *lang_name = cfg_title(lang);
+        log_info("Processing language: %s", lang_name);
+
+        int locale_index = -1;
+        if(strcmp(lang_name, "english") == 0)
+            locale_index = 0;
+        else if(strcmp(lang_name, "german") == 0)
+            locale_index = 1;
+        else {
+            log_warn("Unknown language '%s', skipping", lang_name);
+            continue;
+        }
+
+        if(locale_index >= MAX_TRN_LOCALES) {
+            log_warn("Locale index %d out of bounds for language '%s'", locale_index, lang_name);
+            continue;
+        }
+
+        // Get or create the locale
+        sd_tournament_locale *locale = tourn->locales[locale_index];
+        if(!locale) {
+            // Allocate new locale if it doesn't exist
+            locale = calloc(1, sizeof(sd_tournament_locale));
+            tourn->locales[locale_index] = locale;
+            log_info("Created new locale for %s at index %d", lang_name, locale_index);
+        }
+
+        // Update name
+        char *name = cfg_getstr(lang, "name");
+        if(name) {
+            log_info("previous title was %s", locale->title);
+            if(locale->title)
+                free(locale->title);
+            locale->title = strdup(name);
+            log_info("setting %s name to '%s'", lang_name, name);
+        }
+
+        // Update description
+        char *description = cfg_getstr(lang, "description");
+        if(description) {
+            if(locale->description)
+                free(locale->description);
+            locale->description = strdup(description);
+            log_info("setting %s description to %s", lang_name, locale->description);
+
+            // Parse the description to extract metadata
+            parse_tournament_description(locale);
+        }
+
+        // Process ending sections
+        int num_endings = cfg_size(lang, "ending");
+        log_info("Found %d ending sections for language %s", num_endings, lang_name);
+
+        for(int j = 0; j < num_endings; j++) {
+            cfg_t *ending = cfg_getnsec(lang, "ending", j);
+            const char *ending_type = cfg_title(ending);
+            log_info("Processing ending: %s", ending_type);
+
+            // Map ending type to index (you might need to adjust this mapping)
+            int ending_index = -1;
+            if(strcmp(ending_type, "all") == 0)
+                ending_index = 0;
+            else if(strcmp(ending_type, "jaguar") == 0)
+                ending_index = 1;
+            else if(strcmp(ending_type, "pyros") == 0)
+                ending_index = 2;
+            // Add more mappings as needed
+
+            if(ending_index == -1) {
+                log_warn("Unknown ending type '%s', skipping", ending_type);
+                continue;
+            }
+
+            if(ending_index >= 11) {
+                log_warn("Ending index %d out of bounds for type '%s'", ending_index, ending_type);
+                continue;
+            }
+
+            // Update ending pages
+            for(int page = 0; page < 10; page++) {
+                char page_key[10];
+                snprintf(page_key, sizeof(page_key), "page%d", page + 1);
+
+                char *page_text = cfg_getstr(ending, page_key);
+                if(page_text) {
+                    if(locale->end_texts[ending_index][page]) {
+                        free(locale->end_texts[ending_index][page]);
+                    }
+                    locale->end_texts[ending_index][page] = strdup(page_text);
+                    log_info("setting %s %s page%d text", lang_name, ending_type, page + 1);
+                }
+            }
+        }
+    }
+
+    cfg_free(cfg);
+    return true;
+}
+// Helper function to load tournament mod
+bool modmanager_get_tournament_mod(const char *tournament_name, sd_tournament_file *tourn_data) {
+    if(!tournament_name || !tourn_data)
+        return false;
+
+    str filename;
+    str_from_format(&filename, "tournaments/%s/tournament.ini", tournament_name);
+    str_tolower(&filename);
+
+    log_info("looking for mods for %s in %s", tournament_name, str_c(&filename));
+
+    list *l;
+    unsigned int len = 0;
+
+    bool result = false;
+    if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&l, &len)) {
+        iterator it;
+        list_iter_begin(l, &it);
+        mod_asset *obuf;
+        foreach(it, obuf) {
+            assert(obuf->type == MOD_BUFFER);
+            log_debug("modding tournament %s", str_c(&filename));
+            result |= modmanager_parse_tournament_mod((char *)obuf->buf, tourn_data);
+        }
+    }
+
+    // check for a logo
+    str_from_format(&filename, "tournaments/%s/logos/logo.png", tournament_name);
+    str_tolower(&filename);
+    mod_asset *obuf;
+    if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&obuf, &len)) {
+        assert(obuf->type == MOD_SPRITE);
+        if(sd_sprite_copy(tourn_data->locales[0]->logo, &obuf->spr) != SD_SUCCESS) {
+            log_warn("failed to copy tournament logo");
+        }
+    }
+
+    // now apply any pilot mods
+
+    for(int i = 0; i < tourn_data->enemy_count; i++) {
+        modmanager_get_pilot_mod(tournament_name, i, tourn_data->enemies[i]);
     }
 
     str_free(&filename);
