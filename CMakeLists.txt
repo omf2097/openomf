@@ -181,6 +181,9 @@ list(APPEND OPENOMF_SRC
 list(APPEND VIDEO_C_DEFINES "$<$<CONFIG:Debug>:ENABLE_NULL_RENDERER>")
 # and enable select render plugins
 set(ENABLED_RENDER_PLUGINS opengl3)
+if(Vulkan_FOUND)
+    list(APPEND ENABLED_RENDER_PLUGINS vulkan)
+endif()
 foreach(PLUGIN ${ENABLED_RENDER_PLUGINS})
     # add render plugin sources
     file(GLOB_RECURSE PLUGIN_SRC
@@ -236,6 +239,10 @@ endif()
 
 if(USE_NATPMP)
     target_link_libraries(openomf_core PUBLIC openomf::natpmp)
+endif()
+
+if(Vulkan_FOUND)
+    target_link_libraries(openomf_core PRIVATE openomf::vulkan)
 endif()
 
 list(APPEND CORELIBS openomf_core)
