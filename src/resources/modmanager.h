@@ -21,4 +21,6 @@ bool modmanager_get_bk_animation(str *name, int anim_id, bk_info *bk_data);
 
 bool modmanager_get_fighter_header(str *name, af *fighter);
 
+bool modmanager_get_tournament_mod(const char *tournament_name, sd_tournament_file *tourn_data);
+
 #endif // MODMANAGER_H
