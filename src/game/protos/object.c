@@ -352,7 +352,7 @@ void object_render(object *obj) {
 
     // Set Y coord, take into account sprite flipping
     if(rstate->flipmode & FLIP_VERTICAL) {
-        y = obj->pos.y - ((cur_sprite->pos.y - rstate->o_correction.y) * obj->y_percent) - object_get_size(obj).y;
+        y = obj->pos.y - ((cur_sprite->pos.y - rstate->o_correction.y) * obj->y_percent) - h;
 
         if(obj->cur_animation->id == ANIM_JUMPING) {
             y -= JUMP_COORD_ADJUSTMENT * 2;
@@ -374,7 +374,7 @@ void object_render(object *obj) {
     //   0    |     1     |   1
     //   1    |     1     |   0
     if(flip_mode & FLIP_HORIZONTAL) {
-        x = obj->pos.x - ((cur_sprite->pos.x + rstate->o_correction.x) * obj->x_percent) - object_get_size(obj).x;
+        x = obj->pos.x - ((cur_sprite->pos.x + rstate->o_correction.x) * obj->x_percent) - w;
     } else {
         x = obj->pos.x + ((cur_sprite->pos.x + rstate->o_correction.x) * obj->x_percent);
     }
@@ -438,7 +438,7 @@ void object_render_shadow(object *obj) {
     }
 
     if(flip_mode & FLIP_HORIZONTAL) {
-        x += -((cur_sprite->pos.x + obj->sprite_state.o_correction.x) * obj->x_percent) - object_get_size(obj).x;
+        x += -((cur_sprite->pos.x + obj->sprite_state.o_correction.x) * obj->x_percent) - w;
     } else {
         x += ((cur_sprite->pos.x + obj->sprite_state.o_correction.x) * obj->x_percent);
     }
