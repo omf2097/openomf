@@ -117,6 +117,14 @@ set_target_properties(openomf::epoxy PROPERTIES
     IMPORTED_LOCATION "${EPOXY_LIBRARY}"
     INTERFACE_INCLUDE_DIRECTORIES "${EPOXY_INCLUDE_DIR}")
 
+# Vulkan
+find_package(Vulkan)
+if(Vulkan_FOUND)
+    add_library(openomf::vulkan INTERFACE IMPORTED)
+    target_link_libraries(openomf::vulkan INTERFACE Vulkan::Vulkan)
+    target_compile_definitions(openomf::vulkan INTERFACE VULKAN_FOUND)
+endif()
+
 if(USE_TESTS)
     find_package(CUnit REQUIRED)
     add_library(openomf::cunit INTERFACE IMPORTED)

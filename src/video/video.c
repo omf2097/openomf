@@ -9,6 +9,9 @@
 #ifdef ENABLE_OPENGL3_RENDERER
 #include "video/renderers/opengl3/gl3_renderer.h"
 #endif
+#ifdef ENABLE_VULKAN_RENDERER
+#include "video/renderers/vulkan/vk_renderer.h"
+#endif
 #ifdef ENABLE_NULL_RENDERER
 #include "video/renderers/null/null_renderer.h"
 #endif
@@ -22,6 +25,9 @@ typedef void (*renderer_init)(renderer *renderer);
 static renderer_init all_renderers[] = {
 #ifdef ENABLE_OPENGL3_RENDERER
     gl3_renderer_set_callbacks,
+#endif
+#ifdef ENABLE_VULKAN_RENDERER
+    vk_renderer_set_callbacks,
 #endif
 #ifdef ENABLE_NULL_RENDERER
     null_renderer_set_callbacks,
