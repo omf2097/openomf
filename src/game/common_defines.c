@@ -1,6 +1,7 @@
 #include "game/common_defines.h"
 #include "resources/ids.h"
 #include "utils/c_array_util.h"
+#include "utils/c_string_util.h"
 #include "utils/random.h"
 #include "utils/str.h"
 #include <stddef.h>
@@ -55,7 +56,7 @@ int har_get_id(const char *name) {
     int num_hars = sizeof(har_type_names) / sizeof(har_type_names[0]);
 
     for(int id = 0; id < num_hars; id++) {
-        if(strcasecmp(name, har_type_names[id]) == 0) {
+        if(omf_strncasecmp(name, har_type_names[id], strlen(har_type_names[id])) == 0) {
             return id;
         }
     }
