@@ -275,7 +275,7 @@ static void mod_sort(hashmap *mod_registry, list *sorted_list) {
     if(manifest_count > 1 && manifests != NULL) {
         for(int j = 0; j < manifest_count; j++) {
             for(int k = 0; k < manifest_count - j - 1; k++) {
-                if(manifests[k] && manifests[k]->load_order > manifests[k + 1]->load_order) {
+                if(manifests[k] && manifests[k + 1] && manifests[k]->load_order > manifests[k + 1]->load_order) {
                     mod_manifest *temp = manifests[k];
                     manifests[k] = manifests[k + 1];
                     manifests[k + 1] = temp;
