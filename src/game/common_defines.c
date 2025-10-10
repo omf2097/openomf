@@ -48,6 +48,21 @@ const char *har_get_name(unsigned int id) {
     return har_type_names[id];
 }
 
+int har_get_id(const char *name) {
+    if(!name)
+        return -1;
+
+    int num_hars = sizeof(har_type_names) / sizeof(har_type_names[0]);
+
+    for(int id = 0; id < num_hars; id++) {
+        if(strcasecmp(name, har_type_names[id]) == 0) {
+            return id;
+        }
+    }
+
+    return -1;
+}
+
 const char *pilot_get_name(unsigned int id) {
     if(id >= NUMBER_OF_PILOT_TYPES) {
         return NULL;

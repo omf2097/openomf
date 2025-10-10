@@ -1,6 +1,7 @@
 #include "resources/modmanager.h"
 
 #include "formats/error.h"
+#include "game/common_defines.h"
 #include "game/utils/settings.h"
 #include "utils/allocator.h"
 #include "utils/c_string_util.h"
@@ -274,7 +275,7 @@ static void mod_sort(hashmap *mod_registry, list *sorted_list) {
     if(manifest_count > 1 && manifests != NULL) {
         for(int j = 0; j < manifest_count; j++) {
             for(int k = 0; k < manifest_count - j - 1; k++) {
-                if(manifests[k]->load_order > manifests[k + 1]->load_order) {
+                if(manifests[k] && manifests[k]->load_order > manifests[k + 1]->load_order) {
                     mod_manifest *temp = manifests[k];
                     manifests[k] = manifests[k + 1];
                     manifests[k + 1] = temp;
@@ -284,7 +285,7 @@ static void mod_sort(hashmap *mod_registry, list *sorted_list) {
     }
 
     // Add sorted paths to new list
-    for(int i = 0; i < manifest_count && manifests != NULL; i++) {
+    for(int i = 0; i < manifest_count && manifests != NULL && manifests[i] != NULL; i++) {
         list_append(sorted_list, manifests[i]->filepath, sizeof(path));
         log_info("Adding mod %s v%s (load order: %d)", manifests[i]->name, manifests[i]->version,
                  manifests[i]->load_order);
@@ -1049,10 +1050,13 @@ bool modmanager_parse_pilot_mod(const char *buf, sd_pilot *pilot) {
 
     char *robot = cfg_getstr(cfg, "robot");
     if(robot) {
-        // Map robot name to HAR ID (you'll need to implement this mapping)
-        // For now, just log it
-        log_info("setting robot to %s", robot);
-        // pilot->har_id = get_har_id_from_name(robot); // You'd implement this
+        int har_id = har_get_id(robot);
+        if(har_id != -1) {
+            pilot->har_id = har_id;
+            log_info("setting robot to %s", robot);
+        } else {
+            log_warn("invalid pilot har %s", robot);
+        }
     }
 
     // Update integer fields
@@ -1331,13 +1335,11 @@ bool modmanager_parse_tournament_mod(const char *buf, sd_tournament_file *tourn)
 
             // Map ending type to index (you might need to adjust this mapping)
             int ending_index = -1;
-            if(strcmp(ending_type, "all") == 0)
+            if(strcmp(ending_type, "all") == 0) {
                 ending_index = 0;
-            else if(strcmp(ending_type, "jaguar") == 0)
-                ending_index = 1;
-            else if(strcmp(ending_type, "pyros") == 0)
-                ending_index = 2;
-            // Add more mappings as needed
+            } else {
+                ending_index = har_get_id(ending_type);
+            }
 
             if(ending_index == -1) {
                 log_warn("Unknown ending type '%s', skipping", ending_type);
