@@ -813,6 +813,7 @@ bool modmanager_get_af_move(str *name, int move_id, af_move *move_data) {
                 result |= modmanager_parse_af_move_mod(buf, move_data);
             }
         }
+        str_free(&filename);
     }
 
     return result;
