@@ -14,7 +14,6 @@ typedef struct portrait {
     sprite *img;
     int max;
     int selected;
-    int pic_id;
 } portrait;
 
 static void portrait_render(component *c) {
@@ -31,8 +30,8 @@ static void portrait_free(component *c) {
     omf_free(g);
 }
 
-int portrait_load(sd_sprite *s, vga_palette *pal, int pic_id, int pilot_id) {
-    const path filename = get_resource_filename(get_resource_file(pic_id));
+int portrait_load(sd_sprite *s, vga_palette *pal, int pilot_id) {
+    const path filename = get_resource_filename(get_resource_file(PIC_PLAYERS));
 
     // Load PIC file and make a surface
     sd_pic_file pics;
@@ -56,7 +55,7 @@ int portrait_load(sd_sprite *s, vga_palette *pal, int pic_id, int pilot_id) {
     return SD_SUCCESS;
 }
 
-void portrait_select(component *c, int pic_id, int pilot_id) {
+void portrait_select(component *c, int pilot_id) {
     portrait *local = widget_get_obj(c);
 
     // Free old image
@@ -69,7 +68,7 @@ void portrait_select(component *c, int pic_id, int pilot_id) {
     sd_sprite spr;
     sd_sprite_create(&spr);
     vga_palette pal;
-    portrait_load(&spr, &pal, pic_id, pilot_id);
+    portrait_load(&spr, &pal, pilot_id);
 
     sprite_create(local->img, &spr, -1);
     sd_sprite_free(&spr);
@@ -81,7 +80,6 @@ void portrait_select(component *c, int pic_id, int pilot_id) {
     // Save some information
     local->selected = pilot_id;
     local->max = 4; // TODO pics.photo_count;
-    local->pic_id = pic_id;
 }
 
 void portrait_next(component *c) {
@@ -90,7 +88,7 @@ void portrait_next(component *c) {
     if(select >= local->max) {
         select = 0;
     }
-    portrait_select(c, local->pic_id, select);
+    portrait_select(c, select);
 }
 
 void portrait_prev(component *c) {
@@ -99,7 +97,7 @@ void portrait_prev(component *c) {
     if(select < 0) {
         select = local->max - 1;
     }
-    portrait_select(c, local->pic_id, select);
+    portrait_select(c, select);
 }
 
 int portrait_selected(component *c) {
@@ -121,7 +119,7 @@ void portrait_set_from_sprite(component *c, sd_sprite *spr) {
     component_set_size_hints(c, local->img->data->w, local->img->data->h);
 }
 
-component *portrait_create(int pic_id, int pilot_id) {
+component *portrait_create(int pilot_id) {
     component *c = widget_create();
     c->supports_disable = 0;
     c->supports_select = 0;
@@ -131,7 +129,6 @@ component *portrait_create(int pic_id, int pilot_id) {
     portrait *local = omf_calloc(1, sizeof(portrait));
     local->max = 0;
     local->selected = 0;
-    local->pic_id = -1;
 
     // Set callbacks
     widget_set_obj(c, local);
@@ -139,6 +136,6 @@ component *portrait_create(int pic_id, int pilot_id) {
     widget_set_free_cb(c, portrait_free);
 
     // Update graphics
-    portrait_select(c, pic_id, pilot_id);
+    portrait_select(c, pilot_id);
     return c;
 }
