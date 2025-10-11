@@ -56,7 +56,7 @@ int har_get_id(const char *name) {
     int num_hars = sizeof(har_type_names) / sizeof(har_type_names[0]);
 
     for(int id = 0; id < num_hars; id++) {
-        if(omf_strncasecmp(name, har_type_names[id], strlen(har_type_names[id])) == 0) {
+        if(omf_strcasecmp(name, har_type_names[id]) == 0) {
             return id;
         }
     }
