@@ -347,12 +347,12 @@ void object_render(object *obj) {
     // Position
     int x;
     int y;
-    int w = obj->cur_surface->w * obj->x_percent;
-    int h = obj->cur_surface->h * obj->y_percent;
+    int w = obj->cur_surface->render_w * obj->x_percent;
+    int h = obj->cur_surface->render_h * obj->y_percent;
 
     // Set Y coord, take into account sprite flipping
     if(rstate->flipmode & FLIP_VERTICAL) {
-        y = obj->pos.y - ((cur_sprite->pos.y - rstate->o_correction.y) * obj->y_percent) - object_get_size(obj).y;
+        y = obj->pos.y - ((cur_sprite->pos.y - rstate->o_correction.y) * obj->y_percent) - h;
 
         if(obj->cur_animation->id == ANIM_JUMPING) {
             y -= JUMP_COORD_ADJUSTMENT * 2;
@@ -374,7 +374,7 @@ void object_render(object *obj) {
     //   0    |     1     |   1
     //   1    |     1     |   0
     if(flip_mode & FLIP_HORIZONTAL) {
-        x = obj->pos.x - ((cur_sprite->pos.x + rstate->o_correction.x) * obj->x_percent) - object_get_size(obj).x;
+        x = obj->pos.x - ((cur_sprite->pos.x + rstate->o_correction.x) * obj->x_percent) - w;
     } else {
         x = obj->pos.x + ((cur_sprite->pos.x + rstate->o_correction.x) * obj->x_percent);
     }
@@ -428,8 +428,8 @@ void object_render_shadow(object *obj) {
 
     int x = obj->pos.x;
     int y = ARENA_FLOOR;
-    int w = cur_sprite->data->w * obj->x_percent;
-    int h = (cur_sprite->data->h * obj->y_percent) / 4;
+    int w = cur_sprite->data->render_w * obj->x_percent;
+    int h = (cur_sprite->data->render_h * obj->y_percent) / 4;
 
     // Determine X
     int flip_mode = obj->sprite_state.flipmode;
@@ -438,7 +438,7 @@ void object_render_shadow(object *obj) {
     }
 
     if(flip_mode & FLIP_HORIZONTAL) {
-        x += -((cur_sprite->pos.x + obj->sprite_state.o_correction.x) * obj->x_percent) - object_get_size(obj).x;
+        x += -((cur_sprite->pos.x + obj->sprite_state.o_correction.x) * obj->x_percent) - w;
     } else {
         x += ((cur_sprite->pos.x + obj->sprite_state.o_correction.x) * obj->x_percent);
     }
