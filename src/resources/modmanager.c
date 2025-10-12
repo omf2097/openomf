@@ -63,6 +63,7 @@ static void free_manifest_fields(void *data) {
 typedef struct {
     asset_type type;
     size_t size;
+    vga_palette *pal; // only used for sprites/images
     union {
         unsigned char *buf;
         sd_vga_image img;
@@ -1415,6 +1416,36 @@ bool modmanager_get_tournament_mod(const char *tournament_name, sd_tournament_fi
         modmanager_get_pilot_mod(tournament_name, i, tourn_data->enemies[i]);
     }
 
+    str_free(&filename);
+    return result;
+}
+
+
+bool modmanager_get_player_pics(sd_pic_file *players) {
+    // for all existant players in players.pic, check if we have a replacement
+    str filename;
+    mod_asset *obuf;
+    unsigned int len = 0;
+    bool result = false;
+    uint16_t h = 0;
+    uint16_t w = 0;
+    for(int i = 0; i < players->photo_count; i++) {
+        h = players->photos[i]->sprite->height;
+        w = players->photos[i]->sprite->width;
+        str_from_format(&filename, "players/%i/pilot.png", i);
+        str_tolower(&filename);
+        if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&obuf, &len)) {
+            assert(obuf->type == MOD_SPRITE);
+            if(sd_sprite_copy(players->photos[i]->sprite, &obuf->spr) != SD_SUCCESS) {
+                log_warn("failed to copy player portrait");
+            } else {
+                result |= true;
+                log_info("loaded portrait %i", i);
+                players->photos[i]->sprite->render_width = w;
+                players->photos[i]->sprite->render_height = h;
+            }
+        }
+    }
     str_free(&filename);
     return result;
 }

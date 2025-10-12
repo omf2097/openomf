@@ -13,6 +13,7 @@
 #include "formats/tournament.h"
 #include "resources/resource_files.h"
 #include "resources/trnmanager.h"
+#include "resources/modmanager.h"
 #include "utils/allocator.h"
 #include "utils/c_string_util.h"
 #include "utils/log.h"
@@ -85,6 +86,7 @@ int sd_chr_load(sd_chr_file *chr, const path *filename) {
     sd_pic_create(&players);
     const int ret = sd_pic_load(&players, &players_path);
     if(ret == SD_SUCCESS) {
+        modmanager_get_player_pics(&players);
         // Load player gender from PLAYERS.PIC
         const sd_pic_photo *photo = sd_pic_get(&players, chr->pilot.photo_id);
         chr->pilot.sex = photo->sex;
