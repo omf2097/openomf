@@ -26,6 +26,8 @@ void sprite_create(sprite *sp, void *src, int id) {
     sd_vga_image raw;
     sd_sprite_vga_decode(&raw, sdsprite);
     surface_create_from_data(sp->data, raw.w, raw.h, (unsigned char *)raw.data);
+    sp->data->render_w = sdsprite->render_width;
+    sp->data->render_h = sdsprite->render_height;
     sd_vga_image_free(&raw);
 }
 
