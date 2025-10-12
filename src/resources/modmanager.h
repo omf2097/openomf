@@ -2,6 +2,7 @@
 #define MODMANAGER_H
 
 #include "formats/chr.h"
+#include "formats/pic.h"
 #include "resource_files.h"
 #include "resources/af.h"
 #include "resources/af_move.h"
@@ -22,5 +23,7 @@ bool modmanager_get_bk_animation(str *name, int anim_id, bk_info *bk_data);
 bool modmanager_get_fighter_header(str *name, af *fighter);
 
 bool modmanager_get_tournament_mod(const char *tournament_name, sd_tournament_file *tourn_data);
+
+bool modmanager_get_player_pics(sd_pic_file *pic);
 
 #endif // MODMANAGER_H

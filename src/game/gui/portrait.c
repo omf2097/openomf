@@ -5,6 +5,7 @@
 #include "resources/ids.h"
 #include "resources/resource_files.h"
 #include "resources/sprite.h"
+#include "resources/modmanager.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
 #include "video/video.h"
@@ -43,6 +44,8 @@ int portrait_load(sd_sprite *s, vga_palette *pal, int pilot_id) {
     } else {
         log_debug("PIC file %s loaded, selecting picture %d.", path_c(&filename), pilot_id);
     }
+
+    modmanager_get_player_pics(&pics);
 
     sd_sprite_free(s);
     // Create new
