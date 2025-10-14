@@ -206,7 +206,7 @@ int sd_sprite_rgba_encode(sd_sprite *dst, const sd_rgba_image *src, const vga_pa
 int sd_sprite_rgba_decode(sd_rgba_image *dst, const sd_sprite *src, const vga_palette *pal) {
     uint16_t x = 0;
     uint16_t y = 0;
-    int i = 0;
+    uint32_t i = 0;
     uint16_t c = 0;
     uint16_t data = 0;
     char op = 0;
@@ -273,7 +273,7 @@ int sd_sprite_rgba_decode(sd_rgba_image *dst, const sd_sprite *src, const vga_pa
 int sd_sprite_vga_decode(sd_vga_image *dst, const sd_sprite *src) {
     uint16_t x = 0;
     uint16_t y = 0;
-    int i = 0;
+    uint32_t i = 0;
     uint16_t c = 0;
     uint16_t data = 0;
     char op = 0;

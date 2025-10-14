@@ -1420,7 +1420,6 @@ bool modmanager_get_tournament_mod(const char *tournament_name, sd_tournament_fi
     return result;
 }
 
-
 bool modmanager_get_player_pics(sd_pic_file *players) {
     // for all existant players in players.pic, check if we have a replacement
     str filename;
