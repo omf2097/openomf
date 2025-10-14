@@ -33,8 +33,8 @@ typedef struct {
     uint16_t height; ///< Pixel height of the sprite
     uint16_t render_width;
     uint16_t render_height;
-    uint16_t len;    ///< Byte length of the packed sprite data
-    char *data;      ///< Packed sprite data
+    uint32_t len; ///< Byte length of the packed sprite data
+    char *data;   ///< Packed sprite data
 } sd_sprite;
 
 /*! \brief Initialize sprite structure
