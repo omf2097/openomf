@@ -11,6 +11,7 @@
 #include "utils/hashmap.h"
 
 bool modmanager_init(void);
+void modmanager_shutdown(void);
 
 bool modmanager_get_bk_background(str *name, sd_vga_image **img);
 bool modmanager_get_sprite(animation_source source, str *name, int animation, int frame, sd_sprite **spr);
@@ -24,6 +25,7 @@ bool modmanager_get_fighter_header(str *name, af *fighter);
 
 bool modmanager_get_tournament_mod(const char *tournament_name, sd_tournament_file *tourn_data);
 
+bool modmanager_parse_photo_mod(const char *buf, sd_pic_photo *photo);
 bool modmanager_get_player_pics(sd_pic_file *pic);
 
 #endif // MODMANAGER_H

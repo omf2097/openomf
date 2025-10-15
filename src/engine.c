@@ -404,5 +404,6 @@ void engine_close(void) {
     audio_close();
     video_close();
     vga_state_close();
+    modmanager_shutdown();
     log_info("Engine deinit successful.");
 }

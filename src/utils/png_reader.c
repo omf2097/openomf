@@ -102,7 +102,7 @@ static void read_memory_data(png_structp png_ptr, png_bytep out, png_size_t leng
 }
 
 bool read_paletted_png_from_memory(const unsigned char *buffer, size_t size, unsigned char *dst, int *w, int *h,
-                                   bool allow_transparency) {
+                                   bool allow_transparency, vga_palette *pal) {
     assert(buffer != NULL);
 
     // Check signature
@@ -149,6 +149,21 @@ bool read_paletted_png_from_memory(const unsigned char *buffer, size_t size, uns
 
     bool valid = color_type == PNG_COLOR_TYPE_PALETTE && bit_depth == 8;
     if(valid) {
+        // Extract palette if requested
+        if(pal != NULL) {
+            png_colorp png_palette;
+            int num_palette;
+
+            if(png_get_PLTE(png_ptr, info_ptr, &png_palette, &num_palette)) {
+                // Copy palette colors
+                for(int i = 0; i < num_palette && i < 256; i++) {
+                    pal->colors[i].r = png_palette[i].red;
+                    pal->colors[i].g = png_palette[i].green;
+                    pal->colors[i].b = png_palette[i].blue;
+                }
+            }
+        }
+
         if(dst) {
             // if DST is null, we're probably trying to get the size
             read_png_data(dst, png_ptr, info_ptr, *w, *h);
@@ -183,7 +198,8 @@ bool read_paletted_png(const path *filename, unsigned char *dst) {
     return false;
 }
 
-bool read_paletted_png_from_memory(const char *filename, unsigned char *dst, int *w, int *h) {
+bool read_paletted_png_from_memory(const char *filename, unsigned char *dst, int *w, int *h, bool allow_transparency,
+                                   vga_palette *pal) {
     PERROR("PNG reading is not supported in current build!");
     return false;
 }

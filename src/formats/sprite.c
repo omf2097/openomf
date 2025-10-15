@@ -426,6 +426,9 @@ int sd_sprite_vga_encode(sd_sprite *dst, const sd_vga_image *src) {
     // Copy data
     dst->width = src->w;
     dst->height = src->h;
+    dst->render_width = src->w;
+    dst->render_height = src->h;
+
     dst->len = i;
     dst->missing = 0;
     dst->data = omf_calloc(i, 1);
