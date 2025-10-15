@@ -13,6 +13,7 @@
 
 #include "formats/palette.h"
 #include "formats/rgba_image.h"
+#include "video/vga_palette.h"
 
 /*! \brief VGA image structure
  *
@@ -123,7 +124,8 @@ int sd_vga_image_from_png(sd_vga_image *img, const path *filename);
  * \param len Source memory buffer length
  */
 
-int sd_vga_image_from_png_in_memory(sd_vga_image *img, const unsigned char *buf, size_t len, bool allow_transparency);
+int sd_vga_image_from_png_in_memory(sd_vga_image *img, const unsigned char *buf, size_t len, bool allow_transparency,
+                                    vga_palette *pal);
 
 /*! \brief Save an indexed image from a PNG file.
  *

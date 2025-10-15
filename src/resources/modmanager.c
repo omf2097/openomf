@@ -7,6 +7,7 @@
 #include "utils/c_string_util.h"
 #include "utils/log.h"
 #include "vendored/zip/zip.h"
+#include "video/vga_palette.h"
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
@@ -30,6 +31,9 @@
     }
 
 hashmap mod_resources;
+
+// Forward declaration
+static void free_mod_asset(void *data);
 
 // types of mod asset storage, buffer is for things like ini files or opus files
 typedef enum
@@ -363,26 +367,35 @@ bool modmanager_init(void) {
                         // parse as background image
                         mod_asset *buf = omf_calloc(1, sizeof(mod_asset));
                         buf->type = MOD_VGA_IMAGE;
+                        buf->pal = omf_calloc(1, sizeof(vga_palette)); // Allocate memory for palette
 
-                        if(sd_vga_image_from_png_in_memory(&buf->img, entry_buf, entry_size, false) == SD_SUCCESS) {
+                        if(sd_vga_image_from_png_in_memory(&buf->img, entry_buf, entry_size, false, buf->pal) ==
+                           SD_SUCCESS) {
 
                             log_info("got vga image %dx%d", buf->img.w, buf->img.h);
 
                             hashmap_put_str(&mod_resources, str_c(&filename), buf, sizeof(mod_asset));
                         } else {
                             log_warn("failed to load background image %s", str_c(&filename));
+                            omf_free(buf->pal);
+                            omf_free(buf);
                         }
                     } else if(strcmp(".png", str_c(&ext)) == 0) {
                         // parse as sprite
                         sd_vga_image img;
-                        if(sd_vga_image_from_png_in_memory(&img, entry_buf, entry_size, true) == SD_SUCCESS) {
-                            mod_asset *buf = omf_calloc(1, sizeof(mod_asset));
-                            buf->type = MOD_SPRITE;
+                        mod_asset *buf = omf_calloc(1, sizeof(mod_asset));
+                        buf->type = MOD_SPRITE;
+                        buf->pal = omf_calloc(1, sizeof(vga_palette)); // Allocate memory for palette
+
+                        if(sd_vga_image_from_png_in_memory(&img, entry_buf, entry_size, true, buf->pal) == SD_SUCCESS) {
                             if(sd_sprite_vga_encode(&buf->spr, &img) == SD_SUCCESS) {
                                 hashmap_put_str(&mod_resources, str_c(&filename), buf, sizeof(mod_asset));
                             } else {
                                 log_warn("failed to load sprite %s", str_c(&filename));
+                                omf_free(buf->pal);
+                                omf_free(buf);
                             }
+                            sd_vga_image_free(&img);
                         }
                     } else if(strcmp(".ini", str_c(&ext)) == 0) {
                         list *l;
@@ -396,8 +409,6 @@ bool modmanager_init(void) {
                         strncpy(ini_buf, entry_buf, entry_size);
 
                         buf->buf = (unsigned char *)ini_buf;
-
-                        omf_free(entry_buf);
 
                         if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&l, &len)) {
                             list_append(l, buf, sizeof(mod_asset));
@@ -417,6 +428,7 @@ bool modmanager_init(void) {
                             buf->size = entry_size;
                             buf->type = MOD_BUFFER;
                             buf->buf = entry_buf;
+                            entry_buf = NULL;
                             if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&l, &len)) {
                                 list_append(l, buf, sizeof(mod_asset));
                             } else {
@@ -430,6 +442,8 @@ bool modmanager_init(void) {
                         }
 #endif
                     }
+
+                    omf_free(entry_buf);
                     str_free(&filename);
                 }
                 zip_entry_close(zip);
@@ -949,28 +963,6 @@ bool modmanager_parse_pilot_mod(const char *buf, sd_pilot *pilot) {
     strncpy(original_name, pilot->name, sizeof(original_name));
     original_name[17] = '\0';
 
-    /*int original_wins = pilot->wins;
-    int original_losses = pilot->losses;
-    int original_arm_speed = pilot->arm_speed;
-    int original_arm_power = pilot->arm_power;
-    int original_leg_speed = pilot->leg_speed;
-    int original_leg_power = pilot->leg_power;
-    int original_armor = pilot->armor;
-    int original_stun_resistance = pilot->stun_resistance;
-    int original_power = pilot->power;
-    int original_agility = pilot->agility;
-    int original_endurance = pilot->endurance;
-    int original_offense = pilot->offense;
-    int original_defense = pilot->defense;
-    int original_money = pilot->money;
-    int original_color_1 = pilot->color_1;
-    int original_color_2 = pilot->color_2;
-    int original_color_3 = pilot->color_3;
-    int original_movement = pilot->movement;
-    int original_winnings = pilot->winnings;
-    float original_learning = pilot->learning;
-    float original_forget = pilot->forget;*/
-
     // Options for colors section
     cfg_opt_t colors_opts[] = {CFG_INT("primary", 255, CFGF_NONE), CFG_INT("secondary", 255, CFGF_NONE),
                                CFG_INT("tertiary", 255, CFGF_NONE), CFG_END()};
@@ -1000,6 +992,8 @@ bool modmanager_parse_pilot_mod(const char *buf, sd_pilot *pilot) {
     cfg_opt_t pilot_opts[] = {CFG_STR("name", NULL, CFGF_NONE),
                               CFG_STR("gender", NULL, CFGF_NONE),
                               CFG_STR("robot", NULL, CFGF_NONE),
+                              CFG_INT("width", pilot->photo->width, CFGF_NONE),
+                              CFG_INT("height", pilot->photo->height, CFGF_NONE),
                               CFG_INT("wins", 0, CFGF_NONE),
                               CFG_INT("losses", 0, CFGF_NONE),
                               CFG_INT("arm_speed", 0, CFGF_NONE),
@@ -1062,6 +1056,8 @@ bool modmanager_parse_pilot_mod(const char *buf, sd_pilot *pilot) {
     }
 
     // Update integer fields
+    UPDATE_FIELD_INT(wins, pilot->photo->render_width, cfg_getint(cfg, "width"));
+    UPDATE_FIELD_INT(wins, pilot->photo->render_height, cfg_getint(cfg, "height"));
     UPDATE_FIELD_INT(wins, pilot->wins, cfg_getint(cfg, "wins"));
     UPDATE_FIELD_INT(losses, pilot->losses, cfg_getint(cfg, "losses"));
     UPDATE_FIELD_INT(arm_speed, pilot->arm_speed, cfg_getint(cfg, "arm_speed"));
@@ -1163,11 +1159,37 @@ bool modmanager_get_pilot_mod(const char *trn_name, uint8_t pilot_id, sd_pilot *
         return false;
 
     str filename;
+    unsigned int len = 0;
+
+    str_from_format(&filename, "tournaments/%s/pilots/%d/pilot.png", trn_name, pilot_id);
+    str_tolower(&filename);
+    mod_asset *obuf;
+    if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&obuf, &len)) {
+        assert(obuf->type == MOD_SPRITE);
+        log_info("found portrait for pilot %d in %s", pilot_id, trn_name);
+        // omf_free(pilot_data->photo);
+        pilot_data->photo = omf_calloc(1, sizeof(sd_sprite));
+        sd_sprite_create(pilot_data->photo);
+        if(sd_sprite_copy(pilot_data->photo, &obuf->spr) != SD_SUCCESS) {
+            log_warn("failed to copy photo");
+        }
+    }
+
+    str_free(&filename);
+
+    str_from_format(&filename, "tournaments/%s/pilots/%d/har_color.png", trn_name, pilot_id);
+
+    // copy HAR color palette, if exists
+    if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&obuf, &len)) {
+        assert(obuf->type == MOD_SPRITE);
+        palette_copy(&pilot_data->palette, obuf->pal, 0, 48);
+    }
+    str_free(&filename);
+
     str_from_format(&filename, "tournaments/%s/pilots/%d/pilot.ini", trn_name, pilot_id);
     str_tolower(&filename);
 
     list *l;
-    unsigned int len = 0;
 
     bool result = false;
     if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&l, &len)) {
@@ -1182,21 +1204,6 @@ bool modmanager_get_pilot_mod(const char *trn_name, uint8_t pilot_id, sd_pilot *
 
     str_free(&filename);
 
-    str_from_format(&filename, "tournaments/%s/pilots/%d/pilot.png", trn_name, pilot_id);
-    str_tolower(&filename);
-    mod_asset *obuf;
-    if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&obuf, &len)) {
-        assert(obuf->type == MOD_SPRITE);
-        log_info("found portrait for pilot %d in %s", pilot_id, trn_name);
-        // omf_free(pilot_data->photo);
-        pilot_data->photo = omf_calloc(1, sizeof(sd_sprite));
-        sd_sprite_create(pilot_data->photo);
-        if(sd_sprite_copy(pilot_data->photo, &obuf->spr) != SD_SUCCESS) {
-            log_warn("failed to copy photo");
-        }
-        // pilot_data->photo->data->render_w = 59;
-        // pilot_data->photo->data->render_h = 51;
-    }
     return result;
 }
 
@@ -1420,19 +1427,112 @@ bool modmanager_get_tournament_mod(const char *tournament_name, sd_tournament_fi
     return result;
 }
 
+static void free_mod_asset(void *data) {
+    mod_asset *asset = (mod_asset *)data;
+    if(asset) {
+        // Free palette memory if it exists
+        if(asset->pal) {
+            omf_free(asset->pal);
+            asset->pal = NULL;
+        }
+
+        // Free other resources based on type
+        switch(asset->type) {
+            case MOD_VGA_IMAGE:
+                sd_vga_image_free(&asset->img);
+                break;
+            case MOD_SPRITE:
+                sd_sprite_free(&asset->spr);
+                break;
+            case MOD_BUFFER:
+                if(asset->buf) {
+                    omf_free(asset->buf);
+                    asset->buf = NULL;
+                }
+                break;
+        }
+        omf_free(asset);
+    }
+}
+
+bool modmanager_parse_photo_mod(const char *buf, sd_pic_photo *photo) {
+    if(!buf || !photo)
+        return false;
+
+    // Options for main photo settings
+    cfg_opt_t photo_opts[] = {CFG_STR("gender", NULL, CFGF_NONE), CFG_INT("width", photo->sprite->width, CFGF_NONE),
+                              CFG_INT("height", photo->sprite->width, CFGF_NONE), CFG_END()};
+
+    cfg_t *cfg = cfg_init(photo_opts, CFGF_NONE);
+
+    if(cfg_parse_buf(cfg, buf) == CFG_PARSE_ERROR) {
+        log_error("Failed to parse photo mod");
+        cfg_free(cfg);
+        return false;
+    }
+
+    // Update gender field
+    char *gender = cfg_getstr(cfg, "gender");
+    if(gender) {
+        if(strcmp(gender, "male") == 0) {
+            photo->sex = 0;
+            log_info("setting photo gender to male");
+        } else if(strcmp(gender, "female") == 0) {
+            photo->sex = 1;
+            log_info("setting photo gender to female");
+        }
+    }
+
+    // Update dimensions
+    int width = cfg_getint(cfg, "width");
+    if(width > 0) {
+        photo->sprite->render_width = width;
+        log_info("setting photo width to %d", width);
+    }
+
+    int height = cfg_getint(cfg, "height");
+    if(height > 0) {
+        photo->sprite->render_height = height;
+        log_info("setting photo height to %d", height);
+    }
+
+    cfg_free(cfg);
+    return true;
+}
+
+void modmanager_shutdown(void) {
+    // Free all mod resources using the iterator approach
+    if(hashmap_size(&mod_resources) > 0) {
+        iterator it;
+        hashmap_iter_begin(&mod_resources, &it);
+
+        const char *key;
+        void *data;
+        unsigned int len;
+
+        while((key = iter_next(&it)) != NULL) {
+            if(hashmap_get(&mod_resources, key, strlen(key), &data, &len)) {
+                free_mod_asset(data);
+            }
+        }
+    }
+
+    // Free the hashmap structure itself
+    hashmap_free(&mod_resources);
+}
+
 bool modmanager_get_player_pics(sd_pic_file *players) {
     // for all existant players in players.pic, check if we have a replacement
     str filename;
-    mod_asset *obuf;
     unsigned int len = 0;
     bool result = false;
-    uint16_t h = 0;
-    uint16_t w = 0;
+
     for(int i = 0; i < players->photo_count; i++) {
-        h = players->photos[i]->sprite->height;
-        w = players->photos[i]->sprite->width;
+
+        // Check for png replacement
         str_from_format(&filename, "players/%i/pilot.png", i);
         str_tolower(&filename);
+        mod_asset *obuf;
         if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&obuf, &len)) {
             assert(obuf->type == MOD_SPRITE);
             if(sd_sprite_copy(players->photos[i]->sprite, &obuf->spr) != SD_SUCCESS) {
@@ -1440,11 +1540,35 @@ bool modmanager_get_player_pics(sd_pic_file *players) {
             } else {
                 result |= true;
                 log_info("loaded portrait %i", i);
-                players->photos[i]->sprite->render_width = w;
-                players->photos[i]->sprite->render_height = h;
             }
         }
+        str_free(&filename);
+
+        str_from_format(&filename, "players/%i/har_color.png", i);
+
+        // copy HAR color palette, if exists
+        if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&obuf, &len)) {
+            assert(obuf->type == MOD_SPRITE);
+            palette_copy(&players->photos[i]->pal, obuf->pal, 0, 48);
+        }
+        str_free(&filename);
+
+        // Check for ini file to parse width/height/gender
+        str_from_format(&filename, "players/%i/pilot.ini", i);
+        str_tolower(&filename);
+        list *l;
+        if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&l, &len)) {
+            iterator it;
+            list_iter_begin(l, &it);
+            mod_asset *obuf;
+            foreach(it, obuf) {
+                assert(obuf->type == MOD_BUFFER);
+                result |= modmanager_parse_photo_mod((char *)obuf->buf, players->photos[i]);
+            }
+        }
+
+        str_free(&filename);
     }
-    str_free(&filename);
+
     return result;
 }
