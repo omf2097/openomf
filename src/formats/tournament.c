@@ -73,7 +73,7 @@ int sd_tournament_set_pic_name(sd_tournament_file *trn, const char *pic_name) {
     return SD_SUCCESS;
 }
 
-static void parse_tournament_description(sd_tournament_locale *locale) {
+void parse_tournament_description(sd_tournament_locale *locale) {
     int width = 320, center = 0, vmove = 0, size = -1, color = -1;
     const char *desc = locale->description;
     const char *end = desc;

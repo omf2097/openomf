@@ -29,6 +29,9 @@ int sd_sprite_copy(sd_sprite *dst, const sd_sprite *src) {
     dst->missing = src->missing;
     dst->width = src->width;
     dst->height = src->height;
+    dst->render_width = src->render_width;
+    dst->render_height = src->render_height;
+
     dst->len = src->len;
 
     if(src->data != NULL) {
@@ -56,6 +59,8 @@ int sd_sprite_load(sd_reader *r, sd_sprite *sprite) {
     sprite->pos_y = sd_read_word(r);
     sprite->width = sd_read_uword(r);
     sprite->height = sd_read_uword(r);
+    sprite->render_height = sprite->height;
+    sprite->render_width = sprite->width;
     sprite->index = sd_read_ubyte(r);
     sprite->missing = sd_read_ubyte(r);
 
@@ -201,7 +206,7 @@ int sd_sprite_rgba_encode(sd_sprite *dst, const sd_rgba_image *src, const vga_pa
 int sd_sprite_rgba_decode(sd_rgba_image *dst, const sd_sprite *src, const vga_palette *pal) {
     uint16_t x = 0;
     uint16_t y = 0;
-    int i = 0;
+    uint32_t i = 0;
     uint16_t c = 0;
     uint16_t data = 0;
     char op = 0;
@@ -268,7 +273,7 @@ int sd_sprite_rgba_decode(sd_rgba_image *dst, const sd_sprite *src, const vga_pa
 int sd_sprite_vga_decode(sd_vga_image *dst, const sd_sprite *src) {
     uint16_t x = 0;
     uint16_t y = 0;
-    int i = 0;
+    uint32_t i = 0;
     uint16_t c = 0;
     uint16_t data = 0;
     char op = 0;
@@ -310,7 +315,7 @@ int sd_sprite_vga_decode(sd_vga_image *dst, const sd_sprite *src) {
                 y = data;
                 break;
             case 1:
-                while(data > 0) {
+                while(data > 0 && i < src->len) {
                     uint8_t b = src->data[i];
                     unsigned int pos = ((y * src->width) + x);
                     // if we're about to overflow the `dst` buffer, don't.
@@ -421,6 +426,9 @@ int sd_sprite_vga_encode(sd_sprite *dst, const sd_vga_image *src) {
     // Copy data
     dst->width = src->w;
     dst->height = src->h;
+    dst->render_width = src->w;
+    dst->render_height = src->h;
+
     dst->len = i;
     dst->missing = 0;
     dst->data = omf_calloc(i, 1);

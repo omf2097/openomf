@@ -4,6 +4,7 @@
 #include "formats/error.h"
 #include "formats/pic.h"
 #include "formats/pilot.h"
+#include "resources/modmanager.h"
 #include "resources/resource_files.h"
 #include "utils/allocator.h"
 #include "utils/c_string_util.h"
@@ -347,6 +348,7 @@ void sd_pilot_set_player_color(sd_pilot *pilot, player_color index, uint8_t colo
         sd_pic_create(&players);
         int ret = sd_pic_load(&players, &players_filename);
         if(ret == SD_SUCCESS) {
+            modmanager_get_player_pics(&players);
             // Load player palette from PLAYERS.PIC
             const sd_pic_photo *photo = sd_pic_get(&players, pilot->photo_id);
             if(photo) {

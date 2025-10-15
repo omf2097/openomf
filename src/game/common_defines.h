@@ -3,6 +3,7 @@
 
 const char *ai_difficulty_get_name(unsigned int id);
 const char *har_get_name(unsigned int id);
+int har_get_id(const char *name);
 const char *pilot_get_name(unsigned int id);
 const char *round_get_name(unsigned int id);
 const char *scene_get_name(unsigned int id);
