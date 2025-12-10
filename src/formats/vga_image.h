@@ -13,6 +13,7 @@
 
 #include "formats/palette.h"
 #include "formats/rgba_image.h"
+#include "video/vga_palette.h"
 
 /*! \brief VGA image structure
  *
@@ -104,6 +105,27 @@ int sd_vga_image_decode(sd_rgba_image *dst, const sd_vga_image *src, const vga_p
  * \param filename Source filename
  */
 int sd_vga_image_from_png(sd_vga_image *img, const path *filename);
+
+/*! \brief Load an indexed image from a PNG file in memory.
+ *
+ * Loads an indexed (paletted) image from a PNG file.
+ *
+ * Note! The output vga image will be created here. If the image had been
+ * already created by using sd_vga_image_create() previously, there may
+ * potentially be a memory leak, since the old image internals will not be freed.
+ *
+ * \retval SD_INVALID_INPUT Image or filename was NULL
+ * \retval SD_FILE_INVALID_TYPE Input image was of invalid type.
+ * \retval SD_FORMAT_NOT_SUPPORTED File format (PNG) is not supported.
+ * \retval SD_SUCCESS Success.
+ *
+ * \param img Destination image pointer
+ * \param buf Source memory buffer
+ * \param len Source memory buffer length
+ */
+
+int sd_vga_image_from_png_in_memory(sd_vga_image *img, const unsigned char *buf, size_t len, bool allow_transparency,
+                                    vga_palette *pal);
 
 /*! \brief Save an indexed image from a PNG file.
  *
