@@ -37,6 +37,7 @@ component *lab_menu_confirm_create(scene *s, lab_menu_select_cb yes, void *yesda
     sprite *bsprite = animation_get_sprite(main_buttons, 0);
     component *button_yes = spritebutton_create(lang_get(229), bsprite->data, false, lab_menu_confirm_yes, yesgo);
     spritebutton_set_font(button_yes, FONT_SMALL);
+    spritebutton_set_free_userdata(button_yes, true);
     component_set_pos_hints(button_yes, bsprite->pos.x, bsprite->pos.y);
     trnmenu_attach(menu, button_yes);
 
@@ -47,6 +48,7 @@ component *lab_menu_confirm_create(scene *s, lab_menu_select_cb yes, void *yesda
     bsprite = animation_get_sprite(main_buttons, 1);
     component *button_no = spritebutton_create(lang_get(228), bsprite->data, false, lab_menu_confirm_no, nogo);
     spritebutton_set_font(button_no, FONT_SMALL);
+    spritebutton_set_free_userdata(button_no, true);
     component_set_pos_hints(button_no, bsprite->pos.x, bsprite->pos.y);
     trnmenu_attach(menu, button_no);
 
