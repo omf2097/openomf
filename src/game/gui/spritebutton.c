@@ -162,6 +162,16 @@ void spritebutton_set_font(component *c, font_size font) {
     b->font = font;
 }
 
+const surface *spritebutton_get_img(const component *c) {
+    spritebutton *b = widget_get_obj(c);
+    return b->img;
+}
+
+void spritebutton_set_img(component *c, const surface *img) {
+    spritebutton *b = widget_get_obj(c);
+    b->img = img;
+}
+
 void spritebutton_set_text_color(component *c, vga_index color) {
     spritebutton *b = widget_get_obj(c);
     b->override_color = color;

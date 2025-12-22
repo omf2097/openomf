@@ -19,6 +19,9 @@ void spritebutton_set_text_margin(component *c, text_margin margins);
 void spritebutton_set_text_color(component *c, vga_index color);
 void spritebutton_set_font(component *c, font_size font);
 
+const surface *spritebutton_get_img(const component *c);
+void spritebutton_set_img(component *c, const surface *img);
+
 void spritebutton_set_tick_cb(component *c, spritebutton_tick_cb);
 void spritebutton_set_focus_cb(component *c, spritebutton_focus_cb);
 
