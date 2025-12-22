@@ -727,6 +727,19 @@ static const spritebutton_focus_cb focus_cbs[] = {
     lab_menu_focus_trade,     lab_menu_focus_done,
 };
 
+static void lab_menu_har_picture_tick(component *current_picture, void *userdata) {
+    if(trnmenu_is_fading(current_picture->parent))
+        return;
+    scene *s = userdata;
+    game_player *p1 = game_state_get_player(s->gs, 0);
+    animation *correct_picture = &bk_get_info(s->bk_data, 5)->ani;
+    const sprite *correct_sprite = animation_get_sprite(correct_picture, p1->pilot->har_id);
+    if(spritebutton_get_img(current_picture)->guid != correct_sprite->data->guid) {
+        spritebutton_set_img(current_picture, correct_sprite->data);
+        component_set_pos_hints(current_picture, correct_sprite->pos.x, correct_sprite->pos.y);
+    }
+}
+
 component *lab_menu_customize_create(scene *s) {
     animation *main_sheets = &bk_get_info(s->bk_data, 1)->ani;
     animation *main_buttons = &bk_get_info(s->bk_data, 3)->ani;
@@ -751,11 +764,12 @@ component *lab_menu_customize_create(scene *s) {
     }
 
     game_player *p1 = game_state_get_player(s->gs, 0);
-    sprite *bsprite = animation_get_sprite(har_picture, p1->pilot->har_id);
-    component *button = spritebutton_create(NULL, bsprite->data, false, NULL, NULL);
+    const sprite *bsprite = animation_get_sprite(har_picture, p1->pilot->har_id);
+    component *button = spritebutton_create(NULL, bsprite->data, false, NULL, s);
     component_set_pos_hints(button, bsprite->pos.x, bsprite->pos.y);
     button->supports_select = false;
     spritebutton_set_always_display(button);
+    spritebutton_set_tick_cb(button, lab_menu_har_picture_tick);
     trnmenu_attach(menu, button);
 
     header_label = label_create("");
