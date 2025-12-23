@@ -29,9 +29,8 @@ endif()
 project(OpenOMF C)
 
 set(USE_PCH ON)
-# clang-tidy only works with clang when PCH is enabled
-if(USE_PCH AND USE_TIDY AND NOT CMAKE_C_COMPILER_ID MATCHES ".*Clang")
-    message(WARNING "clang-tidy cannot consume precompiled headers from non-clang compiler. Disabling PCH at the cost of higher build times.")
+if(USE_PCH AND USE_TIDY)
+    message(WARNING "clang-tidy is broken with PCH. Disabling PCH.")
     set(USE_PCH OFF)
 endif()
 
