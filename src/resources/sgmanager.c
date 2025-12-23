@@ -74,9 +74,21 @@ int sg_load_pilot(sd_chr_file *chr, const char *pilot_name) {
     return sg_load(chr, &save);
 }
 
+static void sanitize_pilot_name(char *dst, const char *src, size_t buf_len) {
+    memset(dst, 0, buf_len);
+    strncpy_or_abort(dst, src, buf_len);
+    size_t src_len = strlen(src);
+    for(size_t i = 0; i < src_len; ++i) {
+        const char c = src[i];
+        dst[i] = isalnum(c) ? toupper(c) : '_';
+    }
+}
+
 int sg_save(sd_chr_file *chr) {
+    char sanitized_pilot[sizeof(chr->pilot.name)];
+    sanitize_pilot_name(sanitized_pilot, chr->pilot.name, sizeof(sanitized_pilot));
     path save = get_save_directory();
-    path_append(&save, chr->pilot.name);
+    path_append(&save, sanitized_pilot);
     path_set_ext(&save, ".CHR");
     path_dossify_filename(&save);
 
@@ -96,8 +108,10 @@ int sg_save(sd_chr_file *chr) {
 }
 
 int sg_delete(const char *pilot_name) {
+    char sanitized_pilot[sizeof(((sd_pilot *)0)->name)];
+    sanitize_pilot_name(sanitized_pilot, pilot_name, sizeof(sanitized_pilot));
     path save = get_save_directory();
-    path_append(&save, pilot_name);
+    path_append(&save, sanitized_pilot);
     path_set_ext(&save, ".CHR");
     path_dossify_filename(&save);
 
