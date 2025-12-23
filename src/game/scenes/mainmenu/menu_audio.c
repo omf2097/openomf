@@ -15,6 +15,8 @@ typedef struct {
 
 static const char *mono_opts[] = {"OFF", "ON"};
 
+const char *music_type_names[] = {"ORIGINALS", "REMIXES", "BOTH"};
+
 void menu_audio_music_slide(component *c, void *userdata, int pos) {
     audio_set_music_volume(pos / 10.0f);
 }
@@ -116,6 +118,12 @@ component *menu_audio_create(scene *s) {
     local->resampler_selector = textselector_create("RESAMPLE:", NULL, menu_audio_resampler_toggled, local);
     menu_audio_reset_resamplers(local, 1);
     menu_attach(menu, local->resampler_selector);
+
+    menu_attach(menu, textselector_create_bind_opts(
+                          "MUSIC:",
+                          "Which type of game music to use."
+                          "Whenever more than one track is available for a given scene a random one will be chosen.",
+                          NULL, NULL, &settings_get()->sound.music_type, music_type_names, 3));
 
     menu_attach(menu, button_create("DONE", "Exit from this menu.", false, false, menu_audio_done, local));
 

@@ -1,6 +1,7 @@
 #include "game/common_defines.h"
 #include "resources/ids.h"
 #include "utils/c_array_util.h"
+#include "utils/c_string_util.h"
 #include "utils/random.h"
 #include "utils/str.h"
 #include <stddef.h>
@@ -46,6 +47,21 @@ const char *har_get_name(unsigned int id) {
         return NULL;
     }
     return har_type_names[id];
+}
+
+int har_get_id(const char *name) {
+    if(!name)
+        return -1;
+
+    int num_hars = sizeof(har_type_names) / sizeof(har_type_names[0]);
+
+    for(int id = 0; id < num_hars; id++) {
+        if(omf_strcasecmp(name, har_type_names[id]) == 0) {
+            return id;
+        }
+    }
+
+    return -1;
 }
 
 const char *pilot_get_name(unsigned int id) {

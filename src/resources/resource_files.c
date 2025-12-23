@@ -86,3 +86,24 @@ bool scan_resource_path(list *results, const char *pattern) {
     path_append(&scan, "resources");
     return path_glob(&scan, results, pattern);
 }
+
+// There are 2 mod paths, a "system" one and a user one
+// the system one allows us to bundle mods with the distribution
+// eg. the donated song remixes.
+path get_system_mod_directory(void) {
+    path name = get_resource_dir();
+    path_append(&name, "mods");
+    if(!path_exists(&name)) {
+        path_mkdir(&name);
+    }
+    return name;
+}
+
+path get_user_mod_directory(void) {
+    path name = get_state_dir();
+    path_append(&name, "mods");
+    if(!path_exists(&name)) {
+        path_mkdir(&name);
+    }
+    return name;
+}

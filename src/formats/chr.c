@@ -11,6 +11,7 @@
 #include "formats/internal/writer.h"
 #include "formats/pic.h"
 #include "formats/tournament.h"
+#include "resources/modmanager.h"
 #include "resources/resource_files.h"
 #include "resources/trnmanager.h"
 #include "utils/allocator.h"
@@ -80,17 +81,6 @@ int sd_chr_load(sd_chr_file *chr, const path *filename) {
         log_error("failed to load tournament image from %s", path_c(&image_path));
     }
 
-    // Load PIC file and make a surface
-    const path players_path = get_resource_filename("PLAYERS.PIC");
-    sd_pic_create(&players);
-    const int ret = sd_pic_load(&players, &players_path);
-    if(ret == SD_SUCCESS) {
-        // Load player gender from PLAYERS.PIC
-        const sd_pic_photo *photo = sd_pic_get(&players, chr->pilot.photo_id);
-        chr->pilot.sex = photo->sex;
-        sd_pic_free(&players);
-    }
-
     if(*chr->pilot.trn_name != '\0') {
         trn_loaded = trn_load(&trn, chr->pilot.trn_name) == 0;
     }
@@ -124,7 +114,12 @@ int sd_chr_load(sd_chr_file *chr, const path *filename) {
         if(trn_loaded) {
             memcpy(&chr->enemies[i]->pilot.palette, &pic.photos[trn.enemies[i]->photo_id]->pal, sizeof(vga_palette));
             chr->enemies[i]->pilot.photo = omf_calloc(1, sizeof(sd_sprite));
-            sd_sprite_copy(chr->enemies[i]->pilot.photo, pic.photos[trn.enemies[i]->photo_id]->sprite);
+            if(trn.enemies[i]->photo) {
+                log_info("using pilot photo %d from tournament", i);
+                sd_sprite_copy(chr->enemies[i]->pilot.photo, trn.enemies[i]->photo);
+            } else {
+                sd_sprite_copy(chr->enemies[i]->pilot.photo, pic.photos[trn.enemies[i]->photo_id]->sprite);
+            }
             //  copy all the "pilot" fields (eg. winnings) over from the tournament file
             chr->enemies[i]->pilot.unk_f_c = trn.enemies[i]->unk_f_c;
             chr->enemies[i]->pilot.trn_winnings_mult = trn.enemies[i]->trn_winnings_mult;
@@ -209,6 +204,20 @@ int sd_chr_load(sd_chr_file *chr, const path *filename) {
     chr->photo->height++;
 
     chr->pilot.photo = chr->photo;
+
+    // Load PIC file and make a surface
+    const path players_path = get_resource_filename("PLAYERS.PIC");
+    sd_pic_create(&players);
+    const int ret = sd_pic_load(&players, &players_path);
+    if(ret == SD_SUCCESS) {
+        modmanager_get_player_pics(&players);
+        // Load player gender from PLAYERS.PIC
+        const sd_pic_photo *photo = sd_pic_get(&players, chr->pilot.photo_id);
+        chr->pilot.sex = photo->sex;
+        chr->pilot.photo->render_width = photo->sprite->render_width;
+        chr->pilot.photo->render_height = photo->sprite->render_height;
+        sd_pic_free(&players);
+    }
 
     // Load colors from other files
     sd_pilot_set_player_color(&chr->pilot, PRIMARY, chr->pilot.color_1);

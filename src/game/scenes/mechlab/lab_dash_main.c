@@ -29,7 +29,7 @@ bool lab_dash_main_photo_left(component *c, void *userdata) {
     dashboard_widgets *dw = userdata;
     portrait_prev(dw->photo[0]);
     dw->pilot->photo_id = portrait_selected(dw->photo[0]);
-    portrait_load(dw->pilot->photo, &dw->pilot->palette, PIC_PLAYERS, dw->pilot->photo_id);
+    portrait_load(dw->pilot->photo, &dw->pilot->palette, dw->pilot->photo_id);
     palette_load_player_colors(&dw->pilot->palette, 0);
     return true;
 }
@@ -38,7 +38,7 @@ bool lab_dash_main_photo_right(component *c, void *userdata) {
     dashboard_widgets *dw = userdata;
     portrait_next(dw->photo[0]);
     dw->pilot->photo_id = portrait_selected(dw->photo[0]);
-    portrait_load(dw->pilot->photo, &dw->pilot->palette, PIC_PLAYERS, dw->pilot->photo_id);
+    portrait_load(dw->pilot->photo, &dw->pilot->palette, dw->pilot->photo_id);
     palette_load_player_colors(&dw->pilot->palette, 0);
     return true;
 }
@@ -355,7 +355,7 @@ component *lab_dash_main_create(scene *s, dashboard_widgets *dw) {
     dw->index = 0;
 
     // Pilot image
-    dw->photo[0] = portrait_create(PIC_PLAYERS, 0);
+    dw->photo[0] = portrait_create(0);
     if(p1->pilot->photo) {
         log_debug("loading pilot photo from pilot");
         portrait_set_from_sprite(dw->photo[0], dw->pilot->photo);
@@ -364,7 +364,7 @@ component *lab_dash_main_create(scene *s, dashboard_widgets *dw) {
         sd_sprite_create(dw->pilot->photo);
         log_debug("selecting default pilot photo");
         dw->pilot->photo_id = portrait_selected(dw->photo[0]);
-        portrait_load(dw->pilot->photo, &dw->pilot->palette, PIC_PLAYERS, 0);
+        portrait_load(dw->pilot->photo, &dw->pilot->palette, 0);
     }
 
     palette_load_player_colors(&dw->pilot->palette, 0);
@@ -441,7 +441,7 @@ component *lab_dash_sim_create(scene *s, dashboard_widgets *dw) {
     xysizer_attach(xy, dw->photo_highlight, 6 + (2 * 60), -1, -1, -1);
 
     for(int i = 0; i < 5; i++) {
-        dw->photo[i] = portrait_create(PIC_PLAYERS, 0);
+        dw->photo[i] = portrait_create(0);
         xysizer_attach(xy, dw->photo[i], 6 + (i * 60), -1, -1, -1);
         dw->ranks[i] = label_create("NO RANK");
         label_set_font(dw->ranks[i], FONT_SMALL);
@@ -565,7 +565,7 @@ void lab_dash_main_update(scene *s, dashboard_widgets *dw) {
     } else {
         log_debug("seletng default pilot photo");
         // Select pilot picture
-        portrait_select(dw->photo[0], PIC_PLAYERS, 0);
+        portrait_select(dw->photo[0], 0);
     }
 
     // Palette
