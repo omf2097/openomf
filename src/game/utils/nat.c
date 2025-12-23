@@ -1,6 +1,11 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
+
+#if !defined(WIN32) && !defined(_WIN32)
+#include <arpa/inet.h>
+#endif
 
 #include "game/utils/settings.h"
 #include "nat.h"

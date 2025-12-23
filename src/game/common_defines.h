@@ -1,6 +1,8 @@
 #ifndef COMMON_DEFINES_H
 #define COMMON_DEFINES_H
 
+#include <stdbool.h>
+
 const char *ai_difficulty_get_name(unsigned int id);
 const char *har_get_name(unsigned int id);
 const char *pilot_get_name(unsigned int id);

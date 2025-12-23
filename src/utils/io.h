@@ -1,6 +1,7 @@
 #ifndef UTILS_IO_H
 #define UTILS_IO_H
 
+#include <stdbool.h>
 #include <stdio.h>
 
 FILE *file_open(const char *file_name, const char *mode);

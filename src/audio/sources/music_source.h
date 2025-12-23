@@ -1,6 +1,9 @@
 #ifndef MUSIC_SOURCE_H
 #define MUSIC_SOURCE_H
 
+#include <stdbool.h>
+#include <stddef.h>
+
 typedef void (*music_render)(void *ctx, char *data, int len);
 typedef void (*music_set_volume)(void *ctx, float volume);
 typedef void (*music_close)(void *ctx);

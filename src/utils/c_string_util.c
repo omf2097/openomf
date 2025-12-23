@@ -3,6 +3,8 @@
 #include "utils/crash.h"
 #include "utils/miscmath.h"
 #include <assert.h>
+#include <ctype.h>
+#include <stdint.h>
 #include <string.h>
 
 char *strncpy_or_truncate(char *dest, const char *src, size_t n) {

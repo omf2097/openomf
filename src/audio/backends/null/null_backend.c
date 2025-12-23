@@ -4,6 +4,7 @@
 #include "utils/log.h"
 
 #include <assert.h>
+#include <string.h>
 
 #define CHANNEL_MAX 8
 

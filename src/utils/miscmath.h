@@ -3,6 +3,7 @@
 
 #include <limits.h>
 #include <math.h>
+#include <stddef.h>
 
 #define MATH_PI 3.14159265f
 
