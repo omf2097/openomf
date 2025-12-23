@@ -145,6 +145,7 @@ void log_msg(log_level level, const char *fmt, ...) {
         return;
     }
 
+    va_start(args, fmt);
     format_timestamp(dt, 16);
     for(int i = 0; i < state->target_count; i++) {
         target = &state->targets[i];
@@ -159,13 +160,14 @@ void log_msg(log_level level, const char *fmt, ...) {
         } else {
             fprintf(target->fp, "%s %-5s ", dt, name);
         }
-        va_start(args, fmt);
-        vfprintf(target->fp, fmt, args);
-        va_end(args);
+        va_list args_copy;
+        va_copy(args_copy, args);
+        vfprintf(target->fp, fmt, args_copy);
+        va_end(args_copy);
         if(level == LOG_ERROR) {
-            va_start(args, fmt);
-            vsnprintf(last_error, sizeof(last_error), fmt, args);
-            va_end(args);
+            va_copy(args_copy, args);
+            vsnprintf(last_error, sizeof(last_error), fmt, args_copy);
+            va_end(args_copy);
         }
         if(state->colors && target->colors) {
             fprintf(target->fp, "\x1b[0m\n");
@@ -175,6 +177,7 @@ void log_msg(log_level level, const char *fmt, ...) {
         fflush(target->fp);
         SDL_UnlockMutex(target->lock);
     }
+    va_end(args);
 }
 
 const char *log_last_error(void) {
