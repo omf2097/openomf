@@ -3,6 +3,7 @@
 #include "utils/allocator.h"
 #include <limits.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 /*
  * smallbuffer implementation notes!

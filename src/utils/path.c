@@ -3,6 +3,7 @@
 #include "utils/log.h"
 
 #include <assert.h>
+#include <ctype.h>
 #include <stdarg.h>
 #include <string.h>
 

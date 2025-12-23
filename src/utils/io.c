@@ -7,6 +7,8 @@
 
 #if defined(_WIN32) || defined(WIN32)
 #include <shlwapi.h> // PathFileExistsA
+#else
+#include <unistd.h> // access
 #endif
 
 // Anything above this seems to die on MSYS2 + mingw to EINVAL (22). Not sure why.

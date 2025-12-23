@@ -4,6 +4,7 @@
 #ifdef OPUSFILE_FOUND
 #include "utils/allocator.h"
 #include "utils/ringbuffer.h"
+#include <SDL.h>
 #include <opusfile.h>
 
 #define BUF_SIZE 32768

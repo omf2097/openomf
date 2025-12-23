@@ -2,6 +2,7 @@
 #define VGA_PALETTE_H
 
 #include <assert.h>
+#include <stdint.h>
 
 typedef unsigned char vga_index;
 

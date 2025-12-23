@@ -1,6 +1,7 @@
 #include "formats/error.h"
 
 #include <assert.h>
+#include <stdbool.h>
 
 const char *sd_get_error(enum SD_ERRORCODE error_code) {
     switch(error_code) {

@@ -1,6 +1,8 @@
 #ifndef PILOTS_H
 #define PILOTS_H
 
+#include <stdint.h>
+
 typedef struct pilot_t {
     int power, agility, endurance;
     uint8_t color_3; ///< HAR Tertiary Color.
