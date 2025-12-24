@@ -33,6 +33,7 @@ typedef struct textinput {
     bool was_focused;
     str buf;
 
+    textinput_filter_cb filter_cb;
     textinput_done_cb done_cb;
     void *userdata;
 } textinput;
@@ -179,7 +180,8 @@ static bool is_valid_input(char c) {
 static int textinput_event(component *c, SDL_Event *e) {
     // Handle selection
     textinput *ti = widget_get_obj(c);
-    if(e->type == SDL_TEXTINPUT && is_valid_input(e->text.text[0])) {
+    if(e->type == SDL_TEXTINPUT && is_valid_input(e->text.text[0]) &&
+       (ti->filter_cb != NULL && ti->filter_cb(e->text.text[0]))) {
         str_insert_at(&ti->buf, ti->pos, e->text.text[0]);
         str_truncate(&ti->buf, ti->max_chars);
         ti->pos = min2(ti->max_chars - 1, ti->pos + 1);
@@ -240,6 +242,11 @@ static void textinput_free(component *c) {
 void textinput_enable_background(component *c, int enabled) {
     textinput *ti = widget_get_obj(c);
     ti->bg_enabled = enabled;
+}
+
+void textinput_set_filter_cb(component *c, textinput_filter_cb filter_cb) {
+    textinput *ti = widget_get_obj(c);
+    ti->filter_cb = filter_cb;
 }
 
 void textinput_set_done_cb(component *c, textinput_done_cb done_cb, void *userdata) {
