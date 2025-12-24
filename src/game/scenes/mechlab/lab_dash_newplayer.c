@@ -6,6 +6,10 @@
 #include "resources/bk.h"
 #include "resources/languages.h"
 
+static bool lab_dash_newplayer_textinput_filter(char c) {
+    return c != '.';
+}
+
 component *lab_dash_newplayer_create(scene *s, newplayer_widgets *nw) {
     component *xy = xysizer_create();
 
@@ -23,6 +27,7 @@ component *lab_dash_newplayer_create(scene *s, newplayer_widgets *nw) {
     nw->input = textinput_create(16, "Name", "");
     textinput_set_font(nw->input, FONT_SMALL);
     textinput_set_horizontal_align(nw->input, TEXT_ALIGN_LEFT);
+    textinput_set_filter_cb(nw->input, lab_dash_newplayer_textinput_filter);
     component_select(nw->input, true);
     textinput_enable_background(nw->input, false);
     xysizer_attach(xy, nw->input, 114, 62, 120, 8);
