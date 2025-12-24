@@ -171,9 +171,9 @@ static int textinput_action(component *c, int action) {
     return 1;
 }
 
-// '@' is not printable in this game
+// '@' and '~' are not printable in this game
 static bool is_valid_input(char c) {
-    return isprint(c) && c != '@';
+    return isprint(c) && c != '@' && c != '~';
 }
 
 static int textinput_event(component *c, SDL_Event *e) {
