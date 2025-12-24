@@ -5,11 +5,13 @@
 #include "game/gui/text/enums.h"
 
 typedef void (*textinput_done_cb)(component *c, void *userdata);
+typedef bool (*textinput_filter_cb)(char c);
 
 component *textinput_create(int max_chars, const char *help, const char *initial_value);
 const char *textinput_value(const component *c);
 void textinput_clear(component *c);
 void textinput_enable_background(component *c, int enabled);
+void textinput_set_filter_cb(component *c, textinput_filter_cb filter_cb);
 void textinput_set_done_cb(component *c, textinput_done_cb done_cb, void *userdata);
 void textinput_set_text(component *c, char const *value);
 
