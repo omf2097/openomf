@@ -6,7 +6,7 @@
 #include "game/gui/trn_menu.h"
 #include "game/scenes/mechlab.h"
 #include "game/scenes/mechlab/button_details.h"
-#include "game/scenes/mechlab/lab_har_constants.h"
+#include "game/scenes/mechlab/har_economy.h"
 #include "game/scenes/mechlab/lab_menu_customize.h"
 #include "game/scenes/mechlab/lab_menu_trade.h"
 #include "game/utils/formatting.h"
