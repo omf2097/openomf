@@ -123,6 +123,7 @@ int sd_chr_load(sd_chr_file *chr, const path *filename) {
             // pick a random HAR
             purchase_random_har(&chr->enemies[i]->pilot);
         }
+        purchase_random_har_upgrades(&chr->enemies[i]->pilot);
         if(trn_loaded) {
             memcpy(&chr->enemies[i]->pilot.palette, &pic.photos[trn.enemies[i]->photo_id]->pal, sizeof(vga_palette));
             chr->enemies[i]->pilot.photo = omf_calloc(1, sizeof(sd_sprite));
