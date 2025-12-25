@@ -24,18 +24,24 @@ static bool setup_context(void *userdata, int window_w, int window_h, bool fulls
 
 static void get_context_state(void *userdata, int *window_w, int *window_h, bool *fullscreen, bool *vsync, int *aspect,
                               int *fb_scale) {
-    if(window_w != NULL)
+    if(window_w != NULL) {
         *window_w = 0;
-    if(window_h != NULL)
+    }
+    if(window_h != NULL) {
         *window_h = 0;
-    if(fullscreen != NULL)
+    }
+    if(fullscreen != NULL) {
         *fullscreen = false;
-    if(vsync != NULL)
+    }
+    if(vsync != NULL) {
         *vsync = false;
-    if(aspect != NULL)
+    }
+    if(aspect != NULL) {
         *aspect = 0;
-    if(fb_scale != NULL)
+    }
+    if(fb_scale != NULL) {
         *fb_scale = 1;
+    }
 }
 
 static bool reset_context_with(void *userdata, int window_w, int window_h, bool fullscreen, bool vsync, int aspect,

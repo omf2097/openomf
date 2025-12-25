@@ -164,13 +164,15 @@ int pcx_font_decode(const pcx_font *font, sd_vga_image *o, uint8_t ch, int8_t pa
 }
 
 void pcx_free(pcx_file *pcx) {
-    if(pcx == NULL)
+    if(pcx == NULL) {
         return;
+    }
     sd_vga_image_free(&pcx->image);
 }
 
 void pcx_font_free(pcx_font *font) {
-    if(font == NULL)
+    if(font == NULL) {
         return;
+    }
     sd_vga_image_free(&font->pcx.image);
 }

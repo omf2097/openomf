@@ -309,10 +309,12 @@ void str_from_slice(str *dst, const str *src, size_t start, size_t end) {
     assert(dst != src);
     assert(start < end);
     size_t src_len = str_size(src);
-    if(end > src_len)
+    if(end > src_len) {
         end = src_len;
-    if(start > end)
+    }
+    if(start > end) {
         start = end;
+    }
     size_t len = end - start;
     str_from_buf(dst, str_c(src) + start, len);
 }
@@ -408,8 +410,9 @@ bool str_find_next(const str *string, char find, size_t *pos) {
 
 void str_cut(str *dst, size_t len) {
     size_t dst_len = str_size(dst);
-    if(len > dst_len)
+    if(len > dst_len) {
         len = dst_len;
+    }
     dst_len -= len;
     str_resize_and_copy_buffer(dst, dst_len);
     str_zero(dst);
@@ -417,8 +420,9 @@ void str_cut(str *dst, size_t len) {
 
 void str_cut_left(str *dst, size_t len) {
     size_t dst_len = str_size(dst);
-    if(len > dst_len)
+    if(len > dst_len) {
         len = dst_len;
+    }
     char *ptr = str_ptr(dst);
     dst_len -= len;
     memmove(ptr, &ptr[len], dst_len);
@@ -644,8 +648,9 @@ bool str_to_int(const str *string, int *result) {
 
 bool str_starts_with(const str *src, const char *prefix) {
     const size_t prefix_len = strlen(prefix);
-    if(str_size(src) < prefix_len)
+    if(str_size(src) < prefix_len) {
         return false;
+    }
     const char *ptr = str_c(src);
     return memcmp(ptr, prefix, prefix_len) == 0;
 }
@@ -653,8 +658,9 @@ bool str_starts_with(const str *src, const char *prefix) {
 bool str_ends_with(const str *src, const char *suffix) {
     const size_t suffix_len = strlen(suffix);
     const size_t src_len = str_size(src);
-    if(src_len < suffix_len)
+    if(src_len < suffix_len) {
         return false;
+    }
     const char *ptr = str_c(src);
     return memcmp(ptr + (src_len - suffix_len), suffix, suffix_len) == 0;
 }
@@ -668,8 +674,9 @@ bool str_match(const str *test, const char *pattern) {
             continue;
         }
         if(*pattern == '*') {
-            if(*(pattern + 1) == '\0')
+            if(*(pattern + 1) == '\0') {
                 return true;
+            }
             if(strcmp(string, pattern + 1) == 0) {
                 pattern++;
             } else {
@@ -679,8 +686,9 @@ bool str_match(const str *test, const char *pattern) {
         }
         return false;
     }
-    if(*pattern == '*')
+    if(*pattern == '*') {
         pattern++;
+    }
     return *string == '\0' && *pattern == '\0';
 }
 
@@ -701,8 +709,9 @@ bool str_imatch(const str *test, const char *pattern) {
             continue;
         }
         if(*pattern == '*') {
-            if(*(pattern + 1) == '\0')
+            if(*(pattern + 1) == '\0') {
                 return true;
+            }
             if(strcmp_i(string, pattern + 1) == 0) {
                 pattern++;
             } else {
@@ -712,7 +721,8 @@ bool str_imatch(const str *test, const char *pattern) {
         }
         return false;
     }
-    if(*pattern == '*')
+    if(*pattern == '*') {
         pattern++;
+    }
     return *string == '\0' && *pattern == '\0';
 }

@@ -201,10 +201,12 @@ static bool check_pilot_stat_cheat(scene *scene, int player_id) {
 
     // if we haven't enabled the cheat yet, check the rules
     if(local->cheat_pilot_stats[player_id] != 0xFF) {
-        if(local->cheat_pilot_stats[player_id] != 3)
+        if(local->cheat_pilot_stats[player_id] != 3) {
             return false; // haven't wrapped around both rows
-        if(memchr(local->cheat_selected[player_id], 0, sizeof(local->cheat_selected[player_id])) != NULL)
+        }
+        if(memchr(local->cheat_selected[player_id], 0, sizeof(local->cheat_selected[player_id])) != NULL) {
             return false; // not all pilots have been selected
+        }
 
         // mark cheat as enabled
         local->cheat_pilot_stats[player_id] = 0xFF;
@@ -438,8 +440,9 @@ void handle_action(scene *scene, int player, int action) {
                 // reallocate points to other stats from selected stat
                 for(int other = 0; other < STAT_COUNT; other++) {
                     uint8_t *other_val = get_pilot_stat(pilot, other);
-                    if(other == stat || *other_val >= MAX_STAT || *stat_val <= 0)
+                    if(other == stat || *other_val >= MAX_STAT || *stat_val <= 0) {
                         continue;
+                    }
                     (*other_val)++;
                     (*stat_val)--;
                 }
@@ -454,8 +457,9 @@ void handle_action(scene *scene, int player, int action) {
                 // reallocate points from other stats into selected stat
                 for(int other = 0; other < STAT_COUNT; other++) {
                     uint8_t *other_val = get_pilot_stat(pilot, other);
-                    if(other == stat || *other_val <= 0 || *stat_val >= MAX_STAT)
+                    if(other == stat || *other_val <= 0 || *stat_val >= MAX_STAT) {
                         continue;
+                    }
                     (*other_val)--;
                     (*stat_val)++;
                 }

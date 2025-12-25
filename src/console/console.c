@@ -210,8 +210,9 @@ void console_output_addline(const char *text) {
 }
 
 bool console_init(void) {
-    if(con != NULL)
+    if(con != NULL) {
         return false;
+    }
     con = omf_calloc(1, sizeof(console));
     con->is_open = false;
     con->owns_input = false;

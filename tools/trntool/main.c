@@ -19,8 +19,9 @@ const char *language_names[] = {"English", "German", "French",  "Spanish", "Mexi
 
 void print_locale(sd_tournament_locale *locale, int lang_id) {
     // Make sure the locale is valid
-    if(locale->title[0] == 0)
+    if(locale->title[0] == 0) {
         return;
+    }
 
     // Print locale information
     printf("\n[%d] Locale '%s':\n", lang_id, language_names[lang_id]);
@@ -142,8 +143,9 @@ int main(int argc, char *argv[]) {
         printf("ID Language   Title\n");
         for(int i = 0; i < MAX_TRN_LOCALES; i++) {
             sd_tournament_locale *locale = trn.locales[i];
-            if(locale->title[0] == 0)
+            if(locale->title[0] == 0) {
                 continue;
+            }
             printf("%2d %-10s %-25s\n", i, language_names[i], locale->title);
         }
 

@@ -247,10 +247,11 @@ int main(int argc, char *argv[]) {
         if(scale->count > 0) {
             _sc = scale->ival[0];
         }
-        if(_sc > 4)
+        if(_sc > 4) {
             _sc = 4;
-        if(_sc < 1)
+        } else if(_sc < 1) {
             _sc = 1;
+        }
 
         display(&font, _sc, text->sval[0]);
     }

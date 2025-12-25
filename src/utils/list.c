@@ -11,8 +11,9 @@ void list_create(list *list) {
 }
 
 void list_free(list *list) {
-    if(list->size == 0)
+    if(list->size == 0) {
         return;
+    }
     list_node *next, *now;
     now = list->first;
     while(now != NULL) {
@@ -67,8 +68,9 @@ void list_delete(list *list, iterator *iter) {
     if(node == NULL && iter->next == NULL) {
         node = list->last;
     }
-    if(node == NULL)
+    if(node == NULL) {
         return;
+    }
     if(node->prev != NULL) {
         node->prev->next = node->next;
     }
@@ -158,8 +160,9 @@ void list_iter_append(iterator *iter, const void *ptr, size_t size) {
 }
 
 void *list_get(const list *list, unsigned int i) {
-    if(i >= list_size(list))
+    if(i >= list_size(list)) {
         return NULL;
+    }
     iterator it;
     list_iter_begin(list, &it);
     list_node *node;

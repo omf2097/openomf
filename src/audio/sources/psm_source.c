@@ -63,8 +63,9 @@ bool psm_load(music_source *src, int channels, int sample_rate, int resampler, c
 
     // Start the player
     int flags = 0;
-    if(channels == 1)
+    if(channels == 1) {
         flags |= XMP_FORMAT_MONO;
+    }
     if(xmp_start_player(context, sample_rate, flags) != 0) {
         log_error("Unable to start module playback");
         goto exit_1;

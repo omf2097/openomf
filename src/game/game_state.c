@@ -625,8 +625,9 @@ void game_state_render(game_state *gs) {
     vector_iter_begin(&gs->objects, &it);
     foreach(it, robj) {
         if(robj->layer == RENDER_LAYER_BOTTOM) {
-            if(robj->obj == har[0] || robj->obj == har[1])
+            if(robj->obj == har[0] || robj->obj == har[1]) {
                 continue;
+            }
             object_render(robj->obj);
         }
     }
@@ -648,8 +649,9 @@ void game_state_render(game_state *gs) {
     vector_iter_begin(&gs->objects, &it);
     foreach(it, robj) {
         if(robj->layer == RENDER_LAYER_MIDDLE) {
-            if(robj->obj == har[0] || robj->obj == har[1])
+            if(robj->obj == har[0] || robj->obj == har[1]) {
                 continue;
+            }
             object_render(robj->obj);
         }
     }
@@ -665,8 +667,9 @@ void game_state_render(game_state *gs) {
     vector_iter_begin(&gs->objects, &it);
     foreach(it, robj) {
         if(robj->layer == RENDER_LAYER_TOP) {
-            if(robj->obj == har[0] || robj->obj == har[1])
+            if(robj->obj == har[0] || robj->obj == har[1]) {
                 continue;
+            }
             object_render(robj->obj);
         }
     }
@@ -676,8 +679,9 @@ void game_state_render(game_state *gs) {
 }
 
 unsigned game_state_get_framebuffer_options(game_state *gs) {
-    if(gs->this_id == SCENE_CREDITS)
+    if(gs->this_id == SCENE_CREDITS) {
         return FBUFOPT_CREDITS;
+    }
 
     return 0;
 }
@@ -1436,8 +1440,9 @@ int game_state_find_objects(game_state *gs, vector *out, bool (*predicate)(const
 }
 
 void game_state_play_sound(game_state *gs, int id, float volume, float panning, int pitch) {
-    if(id < 0 || id > 299)
+    if(id < 0 || id > 299) {
         return;
+    }
 
     // Load sample (8000Hz, mono, 8bit)
     char *src_buf;

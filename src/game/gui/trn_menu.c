@@ -54,8 +54,9 @@ static void trnmenu_hand_finished(object *hand_obj) {
 static int trnmenu_hand_deselect(component *c) {
     trnmenu *m = sizer_get_obj(c);
     component *sel = sizer_get(c, m->selected);
-    if(sel == NULL)
+    if(sel == NULL) {
         return 0;
+    }
 
     component_focus(sel, 0);
     return 1;
@@ -64,8 +65,9 @@ static int trnmenu_hand_deselect(component *c) {
 static int trnmenu_hand_select(component *c) {
     trnmenu *m = sizer_get_obj(c);
     component *sel = sizer_get(c, m->selected);
-    if(sel == NULL)
+    if(sel == NULL) {
         return 0;
+    }
 
     component_focus(sel, 1);
     m->hand.move = 1;
@@ -341,8 +343,9 @@ static void trnmenu_tick(component *c) {
         m->opacity_step = OPACITY_STEP;
         sizer_set_opacity(c, 0.0f);
         component *sel = sizer_get(c, m->selected);
-        if(sel != NULL)
+        if(sel != NULL) {
             component_focus(sel, 1);
+        }
 
         if(m->submenu_done) {
             m->submenu_done(c, m->submenu);

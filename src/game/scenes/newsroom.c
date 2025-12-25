@@ -53,8 +53,9 @@ char const *pronoun_strip(char const *pronoun, char *buf, size_t buf_size) {
     while(pronoun_len && pronoun[pronoun_len - 1] == '\n') {
         pronoun_len--;
     }
-    if(pronoun_len >= buf_size)
+    if(pronoun_len >= buf_size) {
         pronoun_len = buf_size - 1;
+    }
     memcpy(buf, pronoun, pronoun_len);
     buf[pronoun_len] = '\0';
     return buf;
@@ -66,14 +67,16 @@ static void newsroom_fixup_capitalization(str *tmp) {
     while(it && *it) {
         unsigned char c = *it;
         // XXX undone: capitalization outside of ASCII range
-        if(c < 0x7F)
+        if(c < 0x7F) {
             // capitalize the letter
             *it = toupper(c);
+        }
 
         // find next char that has two spaces in front
         it = strstr(it + 1, "  ");
-        if(it == NULL)
+        if(it == NULL) {
             return;
+        }
         it += 2;
     }
 }
@@ -170,11 +173,13 @@ void newsroom_overlay_render(scene *scene) {
         // Render screen capture
         har_screencaps *caps = &(game_state_get_player(scene->gs, (local->won ? 0 : 1))->screencaps);
         if(local->screen == 0) {
-            if(caps->ok[SCREENCAP_POSE])
+            if(caps->ok[SCREENCAP_POSE]) {
                 video_draw_size(&caps->cap[SCREENCAP_POSE], 165, 15, SCREENCAP_W, SCREENCAP_H);
+            }
         } else {
-            if(caps->ok[SCREENCAP_BLOW])
+            if(caps->ok[SCREENCAP_BLOW]) {
                 video_draw_size(&caps->cap[SCREENCAP_BLOW], 165, 15, SCREENCAP_W, SCREENCAP_H);
+            }
         }
     }
 
@@ -349,8 +354,9 @@ void newsroom_startup(scene *scene, int id, int *m_load, int *m_repeat) {
 // Make a bitset of the challenger requirements in order to create
 // a weighted score to compare with other challengers.
 static int32_t challenger_score(sd_pilot *p, game_player *p1, game_player *p2, fight_stats *fight_stats) {
-    if(p == NULL)
+    if(p == NULL) {
         return -1;
+    }
 
     int32_t ret = 0;
     int health = game_player_get_score(p1)->health;
@@ -433,8 +439,9 @@ int newsroom_create(scene *scene) {
                                          (p->req_enemy && &p1->chr->enemies[p->req_enemy - 1]->pilot == p2->pilot))) {
                             log_debug("found a challenger!");
                             if(challenger_score(p, p1, p2, fight_stats) >
-                               challenger_score(fight_stats->challenger, p1, p2, fight_stats))
+                               challenger_score(fight_stats->challenger, p1, p2, fight_stats)) {
                                 fight_stats->challenger = p;
+                            }
                         }
                     }
                 }

@@ -160,22 +160,30 @@ void player_describe_object(object *obj) {
 void player_describe_mp_flags(const sd_script_frame *frame, int mp) {
     if(mp != 0) {
         log_debug("mp flags set for new animation %d:", sd_script_get(frame, "m"));
-        if(mp & 0x1)
+        if(mp & 0x1) {
             log_debug(" * 0x01: NON-HAR Sprite");
-        if(mp & 0x2)
+        }
+        if(mp & 0x2) {
             log_debug(" * 0x02: Unknown");
-        if(mp & 0x4)
+        }
+        if(mp & 0x4) {
             log_debug(" * 0x04: HAR 1 related");
-        if(mp & 0x8)
+        }
+        if(mp & 0x8) {
             log_debug(" * 0x08: Something timer related is skipped ?");
-        if(mp & 0x10)
+        }
+        if(mp & 0x10) {
             log_debug(" * 0x10: HAR 2 related");
-        if(mp & 0x20)
+        }
+        if(mp & 0x20) {
             log_debug(" * 0x20: Flip x operations");
-        if(mp & 0x40)
+        }
+        if(mp & 0x40) {
             log_debug(" * 0x40: Something about wall collisions ?");
-        if(mp & 0x80)
+        }
+        if(mp & 0x80) {
             log_debug(" * 0x80: Sprite timer related ?");
+        }
     }
 }
 #endif /* DEBUGMODE */
@@ -186,8 +194,9 @@ void player_run(object *obj) {
     player_sprite_state *rstate = &obj->sprite_state;
     object *enemy = game_state_find_object(obj->gs, state->enemy_obj_id);
     // log_debug("i am %d, enemy is %d", obj->id, state->enemy_obj_id);
-    if(state->finished)
+    if(state->finished) {
         return;
+    }
 
     const sd_script_frame *frame = sd_script_get_frame_at(&state->parser, state->current_tick);
 
@@ -736,14 +745,18 @@ void player_run(object *obj) {
 
         // Set video effects now.
         int effects = EFFECT_NONE;
-        if(player_frame_isset(obj, "bt"))
+        if(player_frame_isset(obj, "bt")) {
             effects |= EFFECT_DARK_TINT;
-        if(player_frame_isset(obj, "br"))
+        }
+        if(player_frame_isset(obj, "br")) {
             effects |= EFFECT_GLOW;
-        if(player_frame_isset(obj, "ub"))
+        }
+        if(player_frame_isset(obj, "ub")) {
             effects |= EFFECT_TRAIL;
-        if(player_frame_isset(obj, "bg"))
+        }
+        if(player_frame_isset(obj, "bg")) {
             effects |= EFFECT_ADD;
+        }
         object_set_frame_effects(obj, effects);
 
         // Set render settings

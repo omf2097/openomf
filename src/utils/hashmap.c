@@ -51,8 +51,9 @@ void hashmap_create_cb(hashmap *hm, hashmap_free_cb free_cb) {
  * All existing key-value pairs are rehashed, so this has some CPU impact.
  */
 static void hashmap_resize(hashmap *hm, unsigned int new_size) {
-    if(new_size <= hm->capacity)
+    if(new_size <= hm->capacity) {
         return;
+    }
 
     // Allocate and zero out a new memory blocks for the resized bucket list
     size_t new_bytes = new_size * sizeof(hashmap_node *);
@@ -83,8 +84,9 @@ static void hashmap_resize(hashmap *hm, unsigned int new_size) {
  * Check if hashmap pressure is high enough for automatic resize, and resize if yes.
  */
 static void hashmap_enlarge_check(hashmap *hm) {
-    if(hm->capacity >= ENLARGE_LIMIT)
+    if(hm->capacity >= ENLARGE_LIMIT) {
         return;
+    }
     unsigned int q = hm->capacity - (hm->capacity >> 2);
     if(hm->reserved > q) {
         hashmap_resize(hm, hm->capacity << 1);
@@ -205,8 +207,9 @@ int hashmap_del(hashmap *hm, const void *key, unsigned int key_len) {
     // Get node
     hashmap_node *node = hm->buckets[index];
     hashmap_node *prev = NULL;
-    if(node == NULL)
+    if(node == NULL) {
         return 1;
+    }
 
     // Find the node we want to delete
     int found = 0;
@@ -254,20 +257,23 @@ int hashmap_get(hashmap *hm, const void *key, unsigned int key_len, void **value
 
     // Set defaults for error cases
     *value = NULL;
-    if(value_len != NULL)
+    if(value_len != NULL) {
         *value_len = 0;
+    }
 
     // Get node
     hashmap_node *node = hm->buckets[index];
-    if(node == NULL)
+    if(node == NULL) {
         return 1;
+    }
 
     // Find the node we want
     while(node) {
         if(node->pair.key_len == key_len && memcmp(node->pair.key, key, key_len) == 0) {
             *value = node->pair.value;
-            if(value_len != NULL)
+            if(value_len != NULL) {
                 *value_len = node->pair.value_len;
+            }
             return 0;
         }
         node = node->next;
@@ -297,8 +303,9 @@ int hashmap_delete(hashmap *hm, iterator *iter) {
     hashmap_node *node = hm->buckets[index];
     hashmap_node *prev = NULL;
     hashmap_node *seek = iter->vnow;
-    if(node == NULL || seek == NULL)
+    if(node == NULL || seek == NULL) {
         return 1;
+    }
 
     // Find the node we want to delete
     int found = 0;

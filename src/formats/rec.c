@@ -73,8 +73,9 @@ int sd_rec_create(sd_rec_file *rec) {
 }
 
 void sd_rec_free(sd_rec_file *rec) {
-    if(rec == NULL)
+    if(rec == NULL) {
         return;
+    }
     if(rec->moves) {
         for(unsigned i = 0; i < rec->move_count; i++) {
             sd_rec_move_free(&rec->moves[i]);
@@ -127,8 +128,9 @@ int sd_rec_load(sd_rec_file *rec, const path *file) {
     }
 
     // Scores
-    for(int i = 0; i < 2; i++)
+    for(int i = 0; i < 2; i++) {
         rec->scores[i] = sd_read_udword(r);
+    }
 
     // Other flags
     rec->unknown_a = sd_read_byte(r);
@@ -213,8 +215,9 @@ int sd_rec_save(sd_rec_file *rec, const path *file) {
     }
 
     // Scores
-    for(int i = 0; i < 2; i++)
+    for(int i = 0; i < 2; i++) {
         sd_write_udword(w, rec->scores[i]);
+    }
 
     // Other header data
     sd_write_byte(w, rec->unknown_a);

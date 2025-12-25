@@ -1228,19 +1228,22 @@ static void arena_palette_transform(scene *scene) {
     arena_local *local = scene_get_userdata(scene);
 
     int target_tick;
-    if(local->state == ARENA_STATE_STARTING)
+    if(local->state == ARENA_STATE_STARTING) {
         target_tick = 0;
-    else if(local->state == ARENA_STATE_ENDING)
+    } else if(local->state == ARENA_STATE_ENDING) {
         target_tick = (80 + ARENA_CROSSFADE_TICKS);
-    else
+    } else {
         return;
+    }
 
-    if(!settings_get()->video.crossfade_on)
+    if(!settings_get()->video.crossfade_on) {
         return;
+    }
 
     int progress = abs(local->state_ticks - target_tick);
-    if(progress >= ARENA_CROSSFADE_TICKS)
+    if(progress >= ARENA_CROSSFADE_TICKS) {
         return;
+    }
 
     vga_state_enable_palette_transform(arena_crossfade_transform, scene);
 }
@@ -1356,8 +1359,9 @@ void arena_dynamic_tick(scene *scene, int paused) {
 
                     // Make sure scrap has somekind of velocity
                     // (to prevent floating scrap objects)
-                    if(vely < 0.1f && vely > -0.1f)
+                    if(vely < 0.1f && vely > -0.1f) {
                         vely += 0.21f;
+                    }
 
                     // Create the object
                     object *scrap = omf_calloc(1, sizeof(object));
@@ -1943,10 +1947,11 @@ int arena_create(scene *scene) {
                                     "may need a detailed and thorough explanation.",
                                     false, false, NULL, NULL));
     component *quit_button;
-    if(is_tournament(scene->gs) && !scene->gs->match_settings.sim)
+    if(is_tournament(scene->gs) && !scene->gs->match_settings.sim) {
         quit_button = button_create("FORFEIT", lang_get(323), false, false, game_menu_quit, scene);
-    else
+    } else {
         quit_button = button_create("QUIT", lang_get(322), false, false, game_menu_quit, scene);
+    }
     widget_set_id(quit_button, GAME_MENU_QUIT_ID);
     menu_attach(menu, quit_button);
 

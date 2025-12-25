@@ -40,8 +40,9 @@ int check_move(sd_af_file *af, int move) {
 // Sprite stuff --------------------------------------
 
 void sprite_play(sd_af_file *af, sd_bk_file *bk, int scale, int anim, int sprite) {
-    if(!check_move_sprite(af, anim, sprite))
+    if(!check_move_sprite(af, anim, sprite)) {
         return;
+    }
     SDL_Surface *surface;
     SDL_Texture *texture;
     SDL_Texture *rendertarget;
@@ -220,49 +221,49 @@ void sprite_play(sd_af_file *af, sd_bk_file *bk, int scale, int anim, int sprite
 // Move stuff --------------------------------------------------
 
 int move_key_get_id(const char *key) {
-    if(strcmp(key, "unknown_0") == 0)
+    if(strcmp(key, "unknown_0") == 0) {
         return 30;
-    if(strcmp(key, "unknown_2") == 0)
+    } else if(strcmp(key, "unknown_2") == 0) {
         return 31;
-    if(strcmp(key, "unknown_4") == 0)
+    } else if(strcmp(key, "unknown_4") == 0) {
         return 33;
-    if(strcmp(key, "unknown_5") == 0)
+    } else if(strcmp(key, "unknown_5") == 0) {
         return 34;
-    if(strcmp(key, "unknown_6") == 0)
+    } else if(strcmp(key, "unknown_6") == 0) {
         return 35;
-    if(strcmp(key, "unknown_7") == 0)
+    } else if(strcmp(key, "unknown_7") == 0) {
         return 36;
-    if(strcmp(key, "unknown_8") == 0)
+    } else if(strcmp(key, "unknown_8") == 0) {
         return 37;
-    if(strcmp(key, "unknown_9") == 0)
+    } else if(strcmp(key, "unknown_9") == 0) {
         return 38;
-    if(strcmp(key, "unknown_10") == 0)
+    } else if(strcmp(key, "unknown_10") == 0) {
         return 39;
-    if(strcmp(key, "unknown_11") == 0)
+    } else if(strcmp(key, "unknown_11") == 0) {
         return 40;
-    if(strcmp(key, "next_anim_id") == 0)
+    } else if(strcmp(key, "next_anim_id") == 0) {
         return 41;
-    if(strcmp(key, "category") == 0)
+    } else if(strcmp(key, "category") == 0) {
         return 42;
-    if(strcmp(key, "block_damage") == 0)
+    } else if(strcmp(key, "block_damage") == 0) {
         return 43;
-    if(strcmp(key, "block_stun") == 0)
+    } else if(strcmp(key, "block_stun") == 0) {
         return 44;
-    if(strcmp(key, "successor_id") == 0)
+    } else if(strcmp(key, "successor_id") == 0) {
         return 45;
-    if(strcmp(key, "damage_amount") == 0)
+    } else if(strcmp(key, "damage_amount") == 0) {
         return 46;
-    if(strcmp(key, "unknown_18") == 0)
+    } else if(strcmp(key, "unknown_18") == 0) {
         return 47;
-    if(strcmp(key, "unknown_19") == 0)
+    } else if(strcmp(key, "unknown_19") == 0) {
         return 48;
-    if(strcmp(key, "points") == 0)
+    } else if(strcmp(key, "points") == 0) {
         return 49;
-
-    if(strcmp(key, "move_string") == 0)
+    } else if(strcmp(key, "move_string") == 0) {
         return 15;
-    if(strcmp(key, "footer_string") == 0)
+    } else if(strcmp(key, "footer_string") == 0) {
         return 16;
+    }
     return anim_key_get_id(key);
 }
 
@@ -483,28 +484,29 @@ void move_info(sd_move *move, sd_animation *ani, int move_id) {
 // AF Specific stuff -----------------------------------------------
 
 int af_key_get_id(const char *key) {
-    if(strcmp(key, "fileid") == 0)
+    if(strcmp(key, "fileid") == 0) {
         return 0;
-    if(strcmp(key, "exec_window") == 0)
+    } else if(strcmp(key, "exec_window") == 0) {
         return 1;
-    if(strcmp(key, "endurance") == 0)
+    } else if(strcmp(key, "endurance") == 0) {
         return 2;
-    if(strcmp(key, "unknown_b") == 0)
+    } else if(strcmp(key, "unknown_b") == 0) {
         return 3;
-    if(strcmp(key, "health") == 0)
+    } else if(strcmp(key, "health") == 0) {
         return 4;
-    if(strcmp(key, "forward_speed") == 0)
+    } else if(strcmp(key, "forward_speed") == 0) {
         return 5;
-    if(strcmp(key, "reverse_speed") == 0)
+    } else if(strcmp(key, "reverse_speed") == 0) {
         return 6;
-    if(strcmp(key, "jump_speed") == 0)
+    } else if(strcmp(key, "jump_speed") == 0) {
         return 7;
-    if(strcmp(key, "fall_speed") == 0)
+    } else if(strcmp(key, "fall_speed") == 0) {
         return 8;
-    if(strcmp(key, "unknown_c") == 0)
+    } else if(strcmp(key, "unknown_c") == 0) {
         return 9;
-    if(strcmp(key, "soundtable") == 0)
+    } else if(strcmp(key, "soundtable") == 0) {
         return 10;
+    }
     return -1;
 }
 
@@ -840,10 +842,11 @@ int main(int argc, char *argv[]) {
     int _sc = 1;
     if(scale->count > 0) {
         _sc = scale->ival[0];
-        if(_sc > 4)
+        if(_sc > 4) {
             _sc = 4;
-        if(_sc < 1)
+        } else if(_sc < 1) {
             _sc = 1;
+        }
     }
 
     // Check args

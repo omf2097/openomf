@@ -40,8 +40,9 @@ int sd_sprite_copy(sd_sprite *dst, const sd_sprite *src) {
 }
 
 void sd_sprite_free(sd_sprite *sprite) {
-    if(sprite == NULL)
+    if(sprite == NULL) {
         return;
+    }
 
     // Only attempt to free if there IS something to free
     // AND sprite data belongs to this sprite

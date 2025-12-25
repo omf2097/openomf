@@ -59,8 +59,9 @@ vec2i sprite_get_size(sprite *sp) {
 }
 
 sprite *sprite_copy(sprite *src) {
-    if(src == NULL)
+    if(src == NULL) {
         return NULL;
+    }
 
     sprite *new = omf_calloc(1, sizeof(sprite));
     new->pos = src->pos;

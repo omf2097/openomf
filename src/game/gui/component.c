@@ -48,20 +48,23 @@ void component_layout(component *c, int x, int y, int w, int h) {
 }
 
 void component_disable(component *c, bool disabled) {
-    if(!c->supports_disable)
+    if(!c->supports_disable) {
         return;
+    }
     c->is_disabled = (disabled != 0) ? 1 : 0;
 }
 
 void component_select(component *c, bool selected) {
-    if(!c->supports_select)
+    if(!c->supports_select) {
         return;
+    }
     c->is_selected = (selected != 0) ? 1 : 0;
 }
 
 void component_focus(component *c, bool focused) {
-    if(!c->supports_focus)
+    if(!c->supports_focus) {
         return;
+    }
     c->is_focused = (focused != 0) ? 1 : 0;
     if(c->focus) {
         c->focus(c, c->is_focused == 1);
@@ -69,14 +72,16 @@ void component_focus(component *c, bool focused) {
 }
 
 bool component_is_disabled(const component *c) {
-    if(!c->supports_disable)
+    if(!c->supports_disable) {
         return 0;
+    }
     return c->is_disabled;
 }
 
 bool component_is_selected(const component *c) {
-    if(!c->supports_select)
+    if(!c->supports_select) {
         return 0;
+    }
     return c->is_selected;
 }
 
@@ -88,8 +93,9 @@ bool component_is_selectable(component *c) {
 }
 
 bool component_is_focused(const component *c) {
-    if(!c->supports_focus)
+    if(!c->supports_focus) {
         return 0;
+    }
     return c->is_focused;
 }
 

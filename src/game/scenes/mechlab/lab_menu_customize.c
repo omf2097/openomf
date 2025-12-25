@@ -728,8 +728,9 @@ static const spritebutton_focus_cb focus_cbs[] = {
 };
 
 static void lab_menu_har_picture_tick(component *current_picture, void *userdata) {
-    if(trnmenu_is_fading(current_picture->parent))
+    if(trnmenu_is_fading(current_picture->parent)) {
         return;
+    }
     scene *s = userdata;
     game_player *p1 = game_state_get_player(s->gs, 0);
     animation *correct_picture = &bk_get_info(s->bk_data, 5)->ani;

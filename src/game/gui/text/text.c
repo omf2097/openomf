@@ -256,10 +256,12 @@ font_size text_get_font(const text *t) {
 }
 
 void text_get_bounding_box(const text *t, uint16_t *w, uint16_t *h) {
-    if(w != NULL)
+    if(w != NULL) {
         *w = t->w;
-    if(h != NULL)
+    }
+    if(h != NULL) {
         *h = t->h;
+    }
 }
 
 vga_index text_get_color(const text *t) {
@@ -279,14 +281,18 @@ text_horizontal_align text_get_horizontal_align(const text *t) {
 }
 
 void text_get_margin(const text *t, uint8_t *left, uint8_t *right, uint8_t *top, uint8_t *bottom) {
-    if(left != NULL)
+    if(left != NULL) {
         *left = t->margin.left;
-    if(right != NULL)
+    }
+    if(right != NULL) {
         *right = t->margin.right;
-    if(top != NULL)
+    }
+    if(top != NULL) {
         *top = t->margin.top;
-    if(bottom != NULL)
+    }
+    if(bottom != NULL) {
         *bottom = t->margin.bottom;
+    }
 }
 
 text_row_direction text_get_direction(const text *t) {
@@ -535,14 +541,18 @@ static inline void draw_shadow(const text_layout_item *item, int16_t offset_x, i
     int palette_offset = (int)color - 1;
     int x = item->x + offset_x;
     int y = item->y + offset_y;
-    if(shadow & GLYPH_SHADOW_RIGHT)
+    if(shadow & GLYPH_SHADOW_RIGHT) {
         video_draw_offset(item->glyph, x + 1, y, palette_offset, 255);
-    if(shadow & GLYPH_SHADOW_LEFT)
+    }
+    if(shadow & GLYPH_SHADOW_LEFT) {
         video_draw_offset(item->glyph, x - 1, y, palette_offset, 255);
-    if(shadow & GLYPH_SHADOW_BOTTOM)
+    }
+    if(shadow & GLYPH_SHADOW_BOTTOM) {
         video_draw_offset(item->glyph, x, y + 1, palette_offset, 255);
-    if(shadow & GLYPH_SHADOW_TOP)
+    }
+    if(shadow & GLYPH_SHADOW_TOP) {
         video_draw_offset(item->glyph, x, y - 1, palette_offset, 255);
+    }
 }
 
 static inline void draw_foreground(const text_layout_item *item, int16_t offset_x, int16_t offset_y, vga_index color) {

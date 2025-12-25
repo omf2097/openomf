@@ -182,8 +182,9 @@ void projectile_debug(object *obj) {
     vector_iter_begin(&obj->cur_animation->collision_coords, &it);
 
     foreach(it, cc) {
-        if(cc->frame_index != obj->cur_sprite_id)
+        if(cc->frame_index != obj->cur_sprite_id) {
             continue;
+        }
         video_draw(&h->hit_pixel, pos_a.x + (cc->pos.x * flip), pos_a.y + cc->pos.y);
     }
 }

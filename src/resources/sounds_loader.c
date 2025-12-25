@@ -33,8 +33,9 @@ error_0:
 
 bool sounds_loader_get(int id, char **buffer, int *len, int *freq) {
     // Make sure the data is ok and sound exists
-    if(sound_data == NULL)
+    if(sound_data == NULL) {
         return false;
+    }
 
     const sd_sound *sample = sd_sounds_get(sound_data, id);
     if(sample == NULL) {

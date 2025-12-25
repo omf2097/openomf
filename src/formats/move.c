@@ -64,8 +64,9 @@ int sd_move_copy(sd_move *dst, const sd_move *src) {
 }
 
 void sd_move_free(sd_move *move) {
-    if(move == NULL)
+    if(move == NULL) {
         return;
+    }
     if(move->animation != NULL) {
         sd_animation_free(move->animation);
         omf_free(move->animation);

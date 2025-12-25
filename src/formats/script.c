@@ -46,8 +46,9 @@ int sd_script_clone(sd_script *src, sd_script *dst) {
 }
 
 void sd_script_frame_free(sd_script_frame *frame) {
-    if(frame == NULL)
+    if(frame == NULL) {
         return;
+    }
     vector_free(&frame->tags);
 }
 
@@ -69,8 +70,9 @@ bool sd_script_frame_add_tag(sd_script_frame *frame, const char *key, int value)
 }
 
 void sd_script_free(sd_script *script) {
-    if(script == NULL)
+    if(script == NULL) {
         return;
+    }
     iterator it;
     sd_script_frame *frame;
     vector_iter_begin(&script->frames, &it);
@@ -320,8 +322,9 @@ static bool decode_next_frame(sd_script_frame *frame, str *src, int *now) {
 }
 
 int sd_script_decode(sd_script *script, const char *input, int *invalid_pos) {
-    if(script == NULL || input == NULL)
+    if(script == NULL || input == NULL) {
         return SD_INVALID_INPUT;
+    }
 
     str src;
     str_from_c(&src, input);
@@ -352,8 +355,9 @@ fail:
 }
 
 int sd_script_encode(const sd_script *script, str *output) {
-    if(script == NULL || output == NULL)
+    if(script == NULL || output == NULL) {
         return SD_INVALID_INPUT;
+    }
 
     // If there are no frames, then we just stop.
     if(vector_size(&script->frames) <= 0) {
@@ -374,8 +378,9 @@ int sd_script_encode(const sd_script *script, str *output) {
 }
 
 int sd_script_encode_frame(const sd_script_frame *frame, str *dst) {
-    if(frame == NULL || dst == NULL)
+    if(frame == NULL || dst == NULL) {
         return SD_INVALID_INPUT;
+    }
 
     str tmp;
     iterator tag_it;
@@ -396,10 +401,9 @@ int sd_script_encode_frame(const sd_script_frame *frame, str *dst) {
 }
 
 const sd_script_frame *sd_script_get_frame_at(const sd_script *script, int ticks) {
-    if(script == NULL)
+    if(script == NULL || ticks < 0) {
         return NULL;
-    if(ticks < 0)
-        return NULL;
+    }
 
     iterator it;
     sd_script_frame *frame;
@@ -424,18 +428,18 @@ const sd_script_frame *sd_script_get_frame(const sd_script *script, int frame_nu
 }
 
 int sd_script_frame_changed(const sd_script *script, int tick_start, int tick_stop) {
-    if(script == NULL)
+    if(script == NULL || tick_start == tick_stop) {
         return 0;
-    if(tick_start == tick_stop)
-        return 0;
+    }
     const sd_script_frame *frame_a = sd_script_get_frame_at(script, tick_start);
     const sd_script_frame *frame_b = sd_script_get_frame_at(script, tick_stop);
     return frame_a != frame_b;
 }
 
 int sd_script_get_frame_index(const sd_script *script, const sd_script_frame *frame) {
-    if(script == NULL || frame == NULL)
+    if(script == NULL || frame == NULL) {
         return -1;
+    }
     for(unsigned i = 0; i < vector_size(&script->frames); i++) {
         if(vector_get(&script->frames, i) == frame) {
             return i;
@@ -445,8 +449,9 @@ int sd_script_get_frame_index(const sd_script *script, const sd_script_frame *fr
 }
 
 int sd_script_get_frame_index_at(const sd_script *script, unsigned ticks) {
-    if(script == NULL)
+    if(script == NULL) {
         return -1;
+    }
 
     unsigned next, pos = 0;
     for(unsigned i = 0; i < vector_size(&script->frames); i++) {
@@ -461,8 +466,9 @@ int sd_script_get_frame_index_at(const sd_script *script, unsigned ticks) {
 }
 
 int sd_script_is_last_frame(const sd_script *script, const sd_script_frame *frame) {
-    if(script == NULL)
+    if(script == NULL) {
         return 0;
+    }
     return frame == vector_get(&script->frames, vector_size(&script->frames) - 1);
 }
 
@@ -472,8 +478,9 @@ int sd_script_is_last_frame_at(const sd_script *script, int ticks) {
 }
 
 int sd_script_is_first_frame(const sd_script *script, const sd_script_frame *frame) {
-    if(script == NULL)
+    if(script == NULL) {
         return 0;
+    }
     return sd_script_get_frame_index(script, frame) == 0;
 }
 
@@ -510,12 +517,15 @@ int sd_script_get(const sd_script_frame *frame, const char *tag) {
 }
 
 int sd_script_next_frame_with_sprite(const sd_script *script, int sprite_id, unsigned current_tick) {
-    if(script == NULL)
+    if(script == NULL) {
         return -1;
-    if(sprite_id < 0)
+    }
+    if(sprite_id < 0) {
         return -1;
-    if(current_tick > sd_script_get_total_ticks(script))
+    }
+    if(current_tick > sd_script_get_total_ticks(script)) {
         return -1;
+    }
 
     unsigned next, pos = 0;
     sd_script_frame *frame;
@@ -532,10 +542,12 @@ int sd_script_next_frame_with_sprite(const sd_script *script, int sprite_id, uns
 }
 
 int sd_script_next_frame_with_tag(const sd_script *script, const char *tag, uint32_t current_tick) {
-    if(script == NULL || tag == NULL)
+    if(script == NULL || tag == NULL) {
         return -1;
-    if(current_tick > sd_script_get_total_ticks(script))
+    }
+    if(current_tick > sd_script_get_total_ticks(script)) {
         return -1;
+    }
 
     unsigned next, pos = 0;
     sd_script_frame *frame;
@@ -552,8 +564,9 @@ int sd_script_next_frame_with_tag(const sd_script *script, const char *tag, uint
 }
 
 int sd_script_delete_tag(sd_script *script, int frame_id, const char *tag) {
-    if(script == NULL || tag == NULL || frame_id < 0)
+    if(script == NULL || tag == NULL || frame_id < 0) {
         return SD_INVALID_INPUT;
+    }
 
     sd_script_frame *frame = vector_get(&script->frames, frame_id);
     if(frame == NULL) {
@@ -573,8 +586,9 @@ int sd_script_delete_tag(sd_script *script, int frame_id, const char *tag) {
 }
 
 int sd_script_set_tag(sd_script *script, int frame_id, const char *tag, int value) {
-    if(script == NULL || tag == NULL || frame_id < 0)
+    if(script == NULL || tag == NULL || frame_id < 0) {
         return SD_INVALID_INPUT;
+    }
 
     // Get frame
     sd_script_frame *frame = vector_get(&script->frames, frame_id);

@@ -182,10 +182,12 @@ static int menu_action(component *mc, int action) {
                 m->selected--;
             }
             // wrap around
-            if(m->selected < 0)
+            if(m->selected < 0) {
                 m->selected = sizer_size(mc) - 1;
-            if(m->selected >= sizer_size(mc))
+            }
+            if(m->selected >= sizer_size(mc)) {
                 m->selected = 0;
+            }
 
             // Update selected component
             c = sizer_get(mc, m->selected);
