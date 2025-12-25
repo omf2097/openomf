@@ -36,8 +36,9 @@ void image_line(image *img, int x0, int y0, int x1, int y1, uint8_t c) {
 
     while(1) {
         image_set_pixel(img, x0, y0, c);
-        if(x0 == x1 && y0 == y1)
+        if(x0 == x1 && y0 == y1) {
             break;
+        }
         e2 = err;
         if(e2 > -dx) {
             err -= dy;

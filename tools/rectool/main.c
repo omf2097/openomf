@@ -172,28 +172,30 @@ void print_rec_root_info(sd_rec_file *rec) {
 }
 
 int rec_entry_key_get_id(const char *key) {
-    if(strcmp(key, "tick") == 0)
+    if(strcmp(key, "tick") == 0) {
         return 0;
-    if(strcmp(key, "lookup_id") == 0)
+    } else if(strcmp(key, "lookup_id") == 0) {
         return 1;
-    if(strcmp(key, "player_id") == 0)
+    } else if(strcmp(key, "player_id") == 0) {
         return 2;
-    if(strcmp(key, "action") == 0)
+    } else if(strcmp(key, "action") == 0) {
         return 3;
-    if(strcmp(key, "extra_data") == 0)
+    } else if(strcmp(key, "extra_data") == 0) {
         return 4;
+    }
     return -1;
 }
 
 rec_assertion_operator rec_assertion_get_operator(const char *key) {
-    if(strcmp(key, "gt") == 0)
+    if(strcmp(key, "gt") == 0) {
         return OP_GT;
-    if(strcmp(key, "lt") == 0)
+    } else if(strcmp(key, "lt") == 0) {
         return OP_LT;
-    if(strcmp(key, "eq") == 0)
+    } else if(strcmp(key, "eq") == 0) {
         return OP_EQ;
-    if(strcmp(key, "set") == 0)
+    } else if(strcmp(key, "set") == 0) {
         return OP_SET;
+    }
 
     return OP_INVALID;
 }
@@ -246,10 +248,12 @@ void rec_entry_get_key(sd_rec_file *rec, int entry_id, const char *key) {
 }
 
 int rec_key_get_id(const char *key) {
-    if(strcmp(key, "entry") == 0)
+    if(strcmp(key, "entry") == 0) {
         return 0;
-    if(strcmp(key, "rehit") == 0)
+    }
+    if(strcmp(key, "rehit") == 0) {
         return 1;
+    }
     return -1;
 }
 
@@ -429,8 +433,9 @@ int main(int argc, char *argv[]) {
             // '\x01' through '\x04', so will ignore our 'A' packet.
             for(unsigned i = 0; i < rec.move_count; i++) {
                 sd_rec_move *mv = &rec.moves[i];
-                if(mv->lookup_id != 10)
+                if(mv->lookup_id != 10) {
                     continue;
+                }
                 char *extra_data = sd_rec_get_extra_data(mv);
                 if(extra_data[0] == REC_LOOKUP10_ASSERT_BYTE) {
                     printf("asserts fixup already applied..\n");
@@ -444,8 +449,9 @@ int main(int argc, char *argv[]) {
             // lookup_id 96 setrandom packets with DOS' setrandom packets.
             for(unsigned i = 0; i < rec.move_count; i++) {
                 sd_rec_move *mv = &rec.moves[i];
-                if(mv->lookup_id != 96)
+                if(mv->lookup_id != 96) {
                     continue;
+                }
                 uint32_t seed;
                 memcpy(&seed, sd_rec_get_extra_data(mv) + 1, sizeof(seed));
                 char *extra_data = sd_rec_set_lookup_id(mv, 10);

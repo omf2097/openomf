@@ -52,14 +52,18 @@ component *gui_frame_get_root(const gui_frame *frame) {
 }
 
 void gui_frame_get_measurements(const gui_frame *frame, int *x, int *y, int *w, int *h) {
-    if(x != NULL)
+    if(x != NULL) {
         *x = frame->x;
-    if(y != NULL)
+    }
+    if(y != NULL) {
         *y = frame->y;
-    if(w != NULL)
+    }
+    if(w != NULL) {
         *w = frame->w;
-    if(h != NULL)
+    }
+    if(h != NULL) {
         *h = frame->h;
+    }
 }
 
 void gui_frame_tick(gui_frame *frame) {

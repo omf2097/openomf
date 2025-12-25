@@ -40,8 +40,9 @@ int check_anim(sd_bk_file *bk, int anim) {
 // Sprites -------------------------------------------------------
 
 void sprite_play(sd_bk_file *bk, int scale, int anim, int sprite) {
-    if(!check_anim_sprite(bk, anim, sprite))
+    if(!check_anim_sprite(bk, anim, sprite)) {
         return;
+    }
     SDL_Surface *surface;
     SDL_Texture *texture;
     SDL_Texture *background;
@@ -235,20 +236,21 @@ void sprite_play(sd_bk_file *bk, int scale, int anim, int sprite) {
 // Animations --------------------------------------------------------------
 
 int bkanim_key_get_id(const char *key) {
-    if(strcmp(key, "null") == 0)
+    if(strcmp(key, "null") == 0) {
         return 0;
-    if(strcmp(key, "chain_hit") == 0)
+    } else if(strcmp(key, "chain_hit") == 0) {
         return 1;
-    if(strcmp(key, "chain_no_hit") == 0)
+    } else if(strcmp(key, "chain_no_hit") == 0) {
         return 2;
-    if(strcmp(key, "load_on_start") == 0)
+    } else if(strcmp(key, "load_on_start") == 0) {
         return 3;
-    if(strcmp(key, "probability") == 0)
+    } else if(strcmp(key, "probability") == 0) {
         return 4;
-    if(strcmp(key, "hazard_damage") == 0)
+    } else if(strcmp(key, "hazard_damage") == 0) {
         return 5;
-    if(strcmp(key, "bk_str") == 0)
+    } else if(strcmp(key, "bk_str") == 0) {
         return 6;
+    }
     return anim_key_get_id(key);
 }
 
@@ -314,8 +316,9 @@ void bkanim_get_key(sd_bk_anim *bka, sd_animation *ani, const char **key, int kc
 }
 
 void anim_play(sd_bk_file *bk, int scale, int anim) {
-    if(!check_anim(bk, anim))
+    if(!check_anim(bk, anim)) {
         return;
+    }
     sprite_play(bk, scale, anim, 0);
 }
 
@@ -369,16 +372,17 @@ void bkanim_info(sd_bk_anim *bka, sd_animation *ani, int anim) {
 // BK Root  --------------------------------------------------------------
 
 int bk_key_get_id(const char *key) {
-    if(strcmp(key, "fileid") == 0)
+    if(strcmp(key, "fileid") == 0) {
         return 0;
-    if(strcmp(key, "palette") == 0)
+    } else if(strcmp(key, "palette") == 0) {
         return 1;
-    if(strcmp(key, "unknown") == 0)
+    } else if(strcmp(key, "unknown") == 0) {
         return 2;
-    if(strcmp(key, "footer") == 0)
+    } else if(strcmp(key, "footer") == 0) {
         return 3;
-    if(strcmp(key, "background") == 0)
+    } else if(strcmp(key, "background") == 0) {
         return 4;
+    }
     return -1;
 }
 
@@ -763,10 +767,11 @@ int main(int argc, char *argv[]) {
     int _sc = 1;
     if(scale->count > 0) {
         _sc = scale->ival[0];
-        if(_sc > 4)
+        if(_sc > 4) {
             _sc = 4;
-        if(_sc < 1)
+        } else if(_sc < 1) {
             _sc = 1;
+        }
     }
 
     // Handle args

@@ -42,8 +42,9 @@ bool file_read(FILE *handle, char *buffer, long size) {
             return false;
         }
         read_size = min2(size - ptr, READ_BLOCK_SIZE);
-        if(read_size <= 0)
+        if(read_size <= 0) {
             break;
+        }
         ptr += fread(buffer + ptr, 1, read_size, handle);
     }
     return true;

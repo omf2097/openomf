@@ -35,8 +35,9 @@ void rec_controller_free(controller *ctrl) {
 }
 
 static int unpack_sd_action(sd_action move_action) {
-    if(move_action == SD_ACT_NONE)
+    if(move_action == SD_ACT_NONE) {
         return ACT_STOP;
+    }
 
     int action = 0;
     switch(move_action & 0xF0) {

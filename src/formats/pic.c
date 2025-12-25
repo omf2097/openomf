@@ -17,8 +17,9 @@ int sd_pic_create(sd_pic_file *pic) {
 }
 
 void free_photos(sd_pic_file *pic) {
-    if(pic == NULL)
+    if(pic == NULL) {
         return;
+    }
     for(int i = 0; i < MAX_PIC_PHOTOS; i++) {
         if(pic->photos[i]) {
             if(pic->photos[i]->sprite) {

@@ -1179,8 +1179,9 @@ int ai_har_event(controller *ctrl, har_event event) {
                 break;
             }
 
-            if(has_queued_tactic || !smart_usually(a))
+            if(has_queued_tactic || !smart_usually(a)) {
                 break;
+            }
 
             if(event.type == HAR_EVENT_LAND_HIT_PROJECTILE) {
                 // we hit with a projectile
@@ -1203,8 +1204,9 @@ int ai_har_event(controller *ctrl, har_event event) {
 
                 a->last_move_id = event.move->id;
 
-                if(has_queued_tactic || !smart_usually(a))
+                if(has_queued_tactic || !smart_usually(a)) {
                     break;
+                }
 
                 if(event.type == HAR_EVENT_ENEMY_BLOCK_PROJECTILE) {
                     // enemy blocked our projectile
@@ -1230,8 +1232,9 @@ int ai_har_event(controller *ctrl, har_event event) {
                 break;
             }
 
-            if(has_queued_tactic || !smart_usually(a))
+            if(has_queued_tactic || !smart_usually(a)) {
                 break;
+            }
 
             if(event.type == HAR_EVENT_BLOCK_PROJECTILE) {
                 // count this as being shot to respond to spam quicker
@@ -1273,8 +1276,9 @@ int ai_har_event(controller *ctrl, har_event event) {
             break;
 
         case HAR_EVENT_HIT_WALL: {
-            if(has_queued_tactic || !smart_usually(a))
+            if(has_queued_tactic || !smart_usually(a)) {
                 break;
+            }
 
             int tacs[] = {TACTIC_SHOOT, TACTIC_PUSH,   TACTIC_TURTLE,  TACTIC_TRIP,
                           TACTIC_FLY,   TACTIC_ESCAPE, TACTIC_COUNTER, TACTIC_CLOSE};
@@ -1290,22 +1294,28 @@ int ai_har_event(controller *ctrl, har_event event) {
                 if(learning_moment(a) && a->thrown >= MAX_TIMES_THROWN) {
                     log_debug("AI adjusting in response to repeated throws.");
                     // avoid defensive tactics
-                    if(pilot->att_def > 90)
+                    if(pilot->att_def > 90) {
                         pilot->att_def = 10;
+                    }
                     // favor sniper tactics
-                    if(pilot->att_sniper < 90)
+                    if(pilot->att_sniper < 90) {
                         pilot->att_sniper += 10;
+                    }
                     // favor jumping tactics
-                    if(pilot->att_jump < 90)
+                    if(pilot->att_jump < 90) {
                         pilot->att_jump += 10;
+                    }
                     // favor jumping movement
-                    if(pilot->pref_jump < 90)
+                    if(pilot->pref_jump < 90) {
                         pilot->pref_jump += 10;
+                    }
                     // favor backwards movement
-                    if(pilot->pref_back < 90)
+                    if(pilot->pref_back < 90) {
                         pilot->pref_back += 10;
-                    if(pilot->pref_fwd > 90)
+                    }
+                    if(pilot->pref_fwd > 90) {
                         pilot->pref_fwd -= 10;
+                    }
                 }
             } else if(event.type == HAR_EVENT_TAKE_HIT_PROJECTILE) {
                 // keep track of how many times we have been shot
@@ -1313,29 +1323,37 @@ int ai_har_event(controller *ctrl, har_event event) {
                 if(learning_moment(a) && a->shot >= MAX_TIMES_SHOT) {
                     log_debug("AI adjusting in response to repeated projectiles.");
                     // avoid defensive tactics
-                    if(pilot->att_def > 90)
+                    if(pilot->att_def > 90) {
                         pilot->att_def = 10;
+                    }
                     // favor shooting tactics
-                    if(pilot->att_sniper < 90)
+                    if(pilot->att_sniper < 90) {
                         pilot->att_sniper = 10;
+                    }
                     // favor aggressive tactics
-                    if(pilot->att_hyper < 90)
+                    if(pilot->att_hyper < 90) {
                         pilot->att_hyper = 10;
+                    }
                     // favor jumping tactics
-                    if(pilot->att_jump < 20)
+                    if(pilot->att_jump < 20) {
                         pilot->att_jump += 20;
-                    if(pilot->pref_jump < 90)
+                    }
+                    if(pilot->pref_jump < 90) {
                         pilot->pref_jump += 10;
+                    }
                     // favor forwards movement
-                    if(pilot->pref_fwd < 90)
+                    if(pilot->pref_fwd < 90) {
                         pilot->pref_fwd += 10;
-                    if(pilot->pref_back > 90)
+                    }
+                    if(pilot->pref_back > 90) {
                         pilot->pref_back -= 10;
+                    }
                 }
             }
 
-            if(has_queued_tactic || !smart_usually(a))
+            if(has_queued_tactic || !smart_usually(a)) {
                 break;
+            }
 
             if(event.move->category == CAT_CLOSE) {
                 // distance gaining tactics
@@ -1355,15 +1373,17 @@ int ai_har_event(controller *ctrl, har_event event) {
         } break;
         case HAR_EVENT_RECOVER: {
 
-            if(has_queued_tactic || !smart_usually(a))
+            if(has_queued_tactic || !smart_usually(a)) {
                 break;
+            }
 
             int tacs[] = {TACTIC_SHOOT, TACTIC_COUNTER, TACTIC_TURTLE, TACTIC_ESCAPE};
             chain_consider_tactics(ctrl, tacs, N_ELEMENTS(tacs));
         } break;
         case HAR_EVENT_ENEMY_HAZARD_HIT: {
-            if(has_queued_tactic || !smart_usually(a))
+            if(has_queued_tactic || !smart_usually(a)) {
                 break;
+            }
 
             log_debug("HAR capitalize on hazard: %d", h->id);
 
@@ -1371,8 +1391,9 @@ int ai_har_event(controller *ctrl, har_event event) {
             chain_consider_tactics(ctrl, tacs, N_ELEMENTS(tacs));
         } break;
         case HAR_EVENT_ENEMY_STUN: {
-            if(has_queued_tactic || !smart_usually(a))
+            if(has_queued_tactic || !smart_usually(a)) {
                 break;
+            }
 
             log_debug("HAR capitalize on stun: %d", h->id);
 
@@ -1441,8 +1462,9 @@ bool is_valid_move(const af_move *move, const har *h, bool force_allow_projectil
     for(int i = 0; i < move_str_len; i++) {
         tmp = str_at(&move->move_string, i);
         if(!((tmp >= '1' && tmp <= '9') || tmp == 'K' || tmp == 'P')) {
-            if(force_allow_projectile && move->category == CAT_PROJECTILE)
+            if(force_allow_projectile && move->category == CAT_PROJECTILE) {
                 return true; // projectile is always true
+            }
             return false;
         }
     }
@@ -1704,10 +1726,12 @@ void handle_movement(controller *ctrl, ctrl_event **ev) {
 
     // default mid-action jump chance
     int jump_chance = 100;
-    if(roll_pref(a->pilot->pref_jump))
+    if(roll_pref(a->pilot->pref_jump)) {
         jump_chance -= 10;
-    if(diff_scale(a))
+    }
+    if(diff_scale(a)) {
         jump_chance -= 10;
+    }
 
     // Change action after act_timer runs out
     if(a->act_timer <= 0 && (roll_chance(BASE_ACT_CHANCE) || diff_scale(a))) {
@@ -1733,15 +1757,17 @@ void handle_movement(controller *ctrl, ctrl_event **ev) {
                 // walk forward
                 a->cur_act = FORWARD;
                 jump_chance = BASE_FWD_JUMP_CHANCE;
-                if(diff_scale(a))
+                if(diff_scale(a)) {
                     jump_chance -= 2;
+                }
                 break;
             case MOVE_DIR_BACK:
                 // walk backward
                 a->cur_act = BACK;
                 jump_chance = BASE_BACK_JUMP_CHANCE;
-                if(diff_scale(a))
+                if(diff_scale(a)) {
                     jump_chance -= 2;
+                }
                 break;
             case MOVE_DIR_STILL:
             default:
@@ -1753,8 +1779,9 @@ void handle_movement(controller *ctrl, ctrl_event **ev) {
                     // do nothing
                     a->cur_act = ACT_STOP;
                     jump_chance = BASE_STILL_JUMP_CHANCE;
-                    if(diff_scale(a))
+                    if(diff_scale(a)) {
                         jump_chance -= 5;
+                    }
                 }
                 break;
         }
@@ -2376,8 +2403,9 @@ bool handle_queued_tactic(controller *ctrl, ctrl_event **ev) {
             int attack_cat = 0;
             switch(tactic->attack_type) {
                 case ATTACK_ID: {
-                    if(!in_attempt_range)
+                    if(!in_attempt_range) {
                         break;
+                    }
 
                     if(assign_move_by_id(ctrl, tactic->attack_id)) {
                         reset_tactic_state(a);
@@ -2391,13 +2419,15 @@ bool handle_queued_tactic(controller *ctrl, ctrl_event **ev) {
                         // chain another tactic
                         int tacs[] = {TACTIC_QUICK, TACTIC_GRAB, TACTIC_ESCAPE, TACTIC_SHOOT};
                         chain_consider_tactics(ctrl, tacs, N_ELEMENTS(tacs));
-                        if(a->tactic->tactic_type > 0)
+                        if(a->tactic->tactic_type > 0) {
                             a->tactic->chain_hit_on = CAT_LOW;
+                        }
                     }
                 } break;
                 case ATTACK_GRAB: {
-                    if(!enemy_close)
+                    if(!enemy_close) {
                         break;
+                    }
 
                     if(assign_move_by_cat(ctrl, CAT_CLOSE, true)) {
                         attack_cat = CAT_CLOSE;
@@ -2430,8 +2460,9 @@ bool handle_queued_tactic(controller *ctrl, ctrl_event **ev) {
                     }
                 } break;
                 case ATTACK_LIGHT: {
-                    if(!in_attempt_range)
+                    if(!in_attempt_range) {
                         break;
+                    }
 
                     int light_cat = roll_chance(2) ? CAT_BASIC : CAT_MEDIUM;
                     if(assign_move_by_cat(ctrl, light_cat, false)) {
@@ -2457,8 +2488,9 @@ bool handle_queued_tactic(controller *ctrl, ctrl_event **ev) {
                     }
                 } break;
                 case ATTACK_HEAVY: {
-                    if(!in_attempt_range)
+                    if(!in_attempt_range) {
                         break;
+                    }
 
                     int heavy_cat = roll_chance(2) ? CAT_MEDIUM : CAT_HIGH;
                     if(assign_move_by_cat(ctrl, heavy_cat, true)) {
@@ -2687,8 +2719,9 @@ int ai_controller_poll(controller *ctrl, ctrl_event **ev) {
             a->act_timer = 3;
         }
 
-        if(acted)
+        if(acted) {
             return 0; // wait for next poll
+        }
     }
 
     int enemy_range = get_enemy_range(ctrl);
@@ -2703,8 +2736,9 @@ int ai_controller_poll(controller *ctrl, ctrl_event **ev) {
     }
 
     // handle movement
-    if(can_move)
+    if(can_move) {
         handle_movement(ctrl, ev);
+    }
     // log_debug("=== POLL === handle_movement");
 
     // queue a random tactic for next poll

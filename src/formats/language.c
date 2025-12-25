@@ -20,8 +20,9 @@ int sd_language_create(sd_language *language) {
 }
 
 void sd_language_free(sd_language *language) {
-    if(language == NULL)
+    if(language == NULL) {
         return;
+    }
     if(language->strings != 0) {
         for(unsigned i = 0; i < language->count; i++) {
             omf_free(language->strings[i].data);
@@ -87,8 +88,9 @@ int sd_language_load(sd_language *language, const path *filename) {
         language->strings[i].data = omf_calloc(len + 1, 1);
         memset(language->strings[i].data, 0, len + 1);
 
-        if(len == 0)
+        if(len == 0) {
             continue;
+        }
 
         // Read string
         memreader *mr = memreader_open_from_reader(r, len);

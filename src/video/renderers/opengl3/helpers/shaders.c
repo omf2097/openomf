@@ -105,10 +105,12 @@ void delete_program(GLuint program_id) {
 
 bool create_program(GLuint *program_id, const char *vertex_shader, const char *fragment_shader) {
     GLuint id = glCreateProgram();
-    if(!load_shader(id, GL_VERTEX_SHADER, vertex_shader))
+    if(!load_shader(id, GL_VERTEX_SHADER, vertex_shader)) {
         goto error_0;
-    if(!load_shader(id, GL_FRAGMENT_SHADER, fragment_shader))
+    }
+    if(!load_shader(id, GL_FRAGMENT_SHADER, fragment_shader)) {
         goto error_0;
+    }
 
     glLinkProgram(id);
     GLint status = GL_TRUE;

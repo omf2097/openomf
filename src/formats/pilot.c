@@ -40,8 +40,9 @@ void sd_pilot_copy_shallow(sd_pilot *dest, const sd_pilot *src) {
 }
 
 void sd_pilot_free(sd_pilot *pilot) {
-    if(pilot == NULL)
+    if(pilot == NULL) {
         return;
+    }
     if(pilot->photo) {
         sd_sprite_free(pilot->photo);
         omf_free(pilot->photo);
@@ -240,10 +241,12 @@ void sd_pilot_save_to_mem(memwriter *w, const sd_pilot *pilot) {
     // Flags
     memwrite_ubyte(w, 0);
     uint8_t req_flags = 0;
-    if(pilot->secret)
+    if(pilot->secret) {
         req_flags |= 0x02;
-    if(pilot->only_fight_once)
+    }
+    if(pilot->only_fight_once) {
         req_flags |= 0x08;
+    }
     memwrite_ubyte(w, req_flags);
     memwrite_ubyte(w, 0);
 

@@ -31,8 +31,9 @@ void scrap_move(object *obj) {
         vel.y = -vel.y * dampen;
         vel.x = vel.x * dampen + (rand_float() - 0.5f) * 3.0;
     }
-    if(IS_ZERO(vel.x))
+    if(IS_ZERO(vel.x)) {
         vel.x = 0;
+    }
     object_set_pos(obj, pos);
     object_set_vel(obj, vel);
 

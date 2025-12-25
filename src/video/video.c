@@ -48,8 +48,9 @@ void video_scan_renderers(void) {
     renderer_count = 0;
     for(int i = 0; i < all_renderers_count; i++) {
         all_renderers[i](&tmp);
-        if(renderer_count >= MAX_AVAILABLE_RENDERERS)
+        if(renderer_count >= MAX_AVAILABLE_RENDERERS) {
             break;
+        }
         if(tmp.is_available()) {
             available_renderers[renderer_count].set_callbacks = all_renderers[i];
             available_renderers[renderer_count].name = tmp.get_name();
@@ -68,12 +69,15 @@ void video_scan_renderers(void) {
  * @return true if data was read, false if there was no renderer at this index.
  */
 bool video_get_renderer_info(int index, const char **name, const char **description) {
-    if(index < 0 && index >= renderer_count)
+    if(index < 0 && index >= renderer_count) {
         return false;
-    if(name != NULL)
+    }
+    if(name != NULL) {
         *name = available_renderers[index].name;
-    if(description != NULL)
+    }
+    if(description != NULL) {
         *description = available_renderers[index].description;
+    }
     return true;
 }
 
@@ -92,8 +96,9 @@ int video_get_renderer_count(void) {
  */
 static bool hunt_renderer_by_name(const char *try_name) {
     for(int i = 0; i < renderer_count; i++) {
-        if(strcmp(available_renderers[i].name, try_name) != 0)
+        if(strcmp(available_renderers[i].name, try_name) != 0) {
             continue;
+        }
         available_renderers[i].set_callbacks(&current_renderer);
         return true;
     }
@@ -132,8 +137,9 @@ static bool video_find_renderer(const char *try_name) {
 
 bool video_init(const char *try_name, int window_w, int window_h, bool fullscreen, bool vsync, int aspect,
                 int framerate_limit, int fb_scale) {
-    if(!video_find_renderer(try_name))
+    if(!video_find_renderer(try_name)) {
         goto exit_0;
+    }
     current_renderer.create(&current_renderer);
     if(!current_renderer.setup_context(current_renderer.ctx, window_w, window_h, fullscreen, vsync, aspect,
                                        framerate_limit, fb_scale)) {

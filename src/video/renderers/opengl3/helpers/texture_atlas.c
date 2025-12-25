@@ -77,10 +77,12 @@ static bool find_free_space(const texture_atlas *atlas, uint16_t w, uint16_t h, 
                 best_item = item;
             }
         }
-        if(best_index >= 0)
+        if(best_index >= 0) {
             seek_limit--;
-        if(!seek_limit)
+        }
+        if(!seek_limit) {
             break;
+        }
     }
     if(best_index == -1) {
         return false;

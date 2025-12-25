@@ -46,28 +46,37 @@ int engine_init(engine_init_flags *init_flags) {
     float sound_volume = setting->sound.sound_vol / 10.0;
     const char *player = setting->sound.player;
     const char *renderer = setting->video.renderer;
-    if(strlen(init_flags->force_audio_backend) > 0)
+    if(strlen(init_flags->force_audio_backend) > 0) {
         player = init_flags->force_audio_backend;
-    if(strlen(init_flags->force_renderer) > 0)
+    }
+    if(strlen(init_flags->force_renderer) > 0) {
         renderer = init_flags->force_renderer;
+    }
 
     // Initialize everything.
     video_scan_renderers();
     audio_scan_backends();
-    if(!video_init(renderer, w, h, fs, vsync, aspect, framerate_limit, fb_scale))
+    if(!video_init(renderer, w, h, fs, vsync, aspect, framerate_limit, fb_scale)) {
         goto exit_0;
-    if(!audio_init(player, frequency, mono, resampler, music_volume, sound_volume))
+    }
+    if(!audio_init(player, frequency, mono, resampler, music_volume, sound_volume)) {
         goto exit_1;
-    if(!sounds_loader_init())
+    }
+    if(!sounds_loader_init()) {
         goto exit_2;
-    if(!lang_init())
+    }
+    if(!lang_init()) {
         goto exit_3;
-    if(!fonts_init())
+    }
+    if(!fonts_init()) {
         goto exit_4;
-    if(altpals_init())
+    }
+    if(altpals_init()) {
         goto exit_5;
-    if(!console_init())
+    }
+    if(!console_init()) {
         goto exit_6;
+    }
     vga_state_init();
 
     // Return successfully

@@ -22,8 +22,9 @@ void rb_create(ring_buffer *rb, size_t size) {
  * @param rb Ringbuffer to be deleted.
  */
 void rb_free(ring_buffer *rb) {
-    if(rb == NULL)
+    if(rb == NULL) {
         return;
+    }
     omf_free(rb->data);
 }
 

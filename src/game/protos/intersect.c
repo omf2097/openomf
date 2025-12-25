@@ -13,8 +13,9 @@
  * \return 1 if collision detected, 0 if not.
  */
 int intersect_object_object(object *a, object *b) {
-    if(a->cur_sprite_id < 0 || b->cur_sprite_id < 0)
+    if(a->cur_sprite_id < 0 || b->cur_sprite_id < 0) {
         return 0;
+    }
     sprite *cur_sprite_a = animation_get_sprite(a->cur_animation, a->cur_sprite_id);
     sprite *cur_sprite_b = animation_get_sprite(b->cur_animation, b->cur_sprite_id);
     vec2i pos_a = vec2i_add(object_get_pos(a), cur_sprite_a->pos);
@@ -33,8 +34,9 @@ int intersect_object_object(object *a, object *b) {
  * \return 1 if collision detected, 0 if not.
  */
 int intersect_object_point(object *obj, vec2i point) {
-    if(obj->cur_sprite_id < 0)
+    if(obj->cur_sprite_id < 0) {
         return 0;
+    }
     sprite *cur_sprite = animation_get_sprite(obj->cur_animation, obj->cur_sprite_id);
     vec2i pos = vec2i_add(object_get_pos(obj), cur_sprite->pos);
     vec2i size = object_get_size(obj);
@@ -106,8 +108,9 @@ int intersect(object *obj, object *target, int level, vec2i *point, bool is_har)
     vector_iter_begin(&obj->cur_animation->collision_coords, &it);
     foreach(it, cc) {
         // Skip coords that don't belong to the frame we are checking
-        if(cc->frame_index != obj->cur_sprite_id)
+        if(cc->frame_index != obj->cur_sprite_id) {
             continue;
+        }
 
         // Convert coords to target sprite local space
         int t = (object_dir == OBJECT_FACE_RIGHT) ? (pos_a.x + cc->pos.x - cur_sprite->pos.x)
@@ -121,10 +124,11 @@ int intersect(object *obj, object *target, int level, vec2i *point, bool is_har)
         ycoord -= (cur_sprite->pos.y + size_a.y);
 
         // Make sure that the hitpixel is within the area of the target sprite
-        if(xcoord < 0 || xcoord >= size_b.x)
+        if(xcoord < 0 || xcoord >= size_b.x) {
             continue;
-        if(ycoord < 0 || ycoord >= size_b.y)
+        } else if(ycoord < 0 || ycoord >= size_b.y) {
             continue;
+        }
 
         // Get hitpixel
         surface *sfc = target_sprite->data;
@@ -133,8 +137,9 @@ int intersect(object *obj, object *target, int level, vec2i *point, bool is_har)
             hitpoint = (ycoord * sfc->w) + (sfc->w - xcoord);
         }
         // Data bounds check
-        if(hitpoint >= sfc->w * sfc->h)
+        if(hitpoint >= sfc->w * sfc->h) {
             continue;
+        }
         // Only main HAR colors count
         if(sfc->data[hitpoint] != sfc->transparent && (sfc->data[hitpoint] < 96 || !is_har)) {
             hcoords[found++] = vec2i_create(xcoord, ycoord);

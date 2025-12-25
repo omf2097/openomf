@@ -13,8 +13,9 @@ int sd_setup_create(sd_setup_file *setup) {
 }
 
 void sd_setup_free(sd_setup_file *setup) {
-    if(setup == NULL)
+    if(setup == NULL) {
         return;
+    }
 }
 
 int sd_setup_load(sd_setup_file *setup, const path *file) {

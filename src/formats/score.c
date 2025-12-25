@@ -74,8 +74,9 @@ int sd_score_save(const sd_score *score, const path *filename) {
 }
 
 const sd_score_entry *sd_score_get(const sd_score *score, int page, int entry_id) {
-    if(score == NULL)
+    if(score == NULL) {
         return NULL;
+    }
     if(page < 0 || page >= SD_SCORE_PAGES) {
         return NULL;
     }

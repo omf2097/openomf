@@ -78,8 +78,9 @@ void *vector_back(const vector *vec) {
 }
 
 int vector_set(vector *vec, unsigned int key, const void *value) {
-    if(key >= vec->blocks)
+    if(key >= vec->blocks) {
         return 1;
+    }
     void *dst = (char *)(vec->data + key * vec->block_size);
     memmove(dst, value, vec->block_size);
     return 0;
@@ -112,8 +113,9 @@ void vector_pop(vector *vec) {
 }
 
 int vector_delete_at(vector *vec, unsigned index) {
-    if(vec->blocks == 0)
+    if(vec->blocks == 0) {
         return 1;
+    }
 
     // If this is NOT the last entry, we need to do memmove.
     if(index + 1 < vec->blocks) {
@@ -131,8 +133,9 @@ int vector_delete_at(vector *vec, unsigned index) {
 }
 
 int vector_swapdelete_at(vector *vec, unsigned index) {
-    if(vec->blocks == 0)
+    if(vec->blocks == 0) {
         return 1;
+    }
 
     unsigned last = vec->blocks - 1;
     if(index != last) {
@@ -145,8 +148,9 @@ int vector_swapdelete_at(vector *vec, unsigned index) {
 }
 
 int vector_delete(vector *vec, iterator *iter) {
-    if(vec->blocks == 0)
+    if(vec->blocks == 0) {
         return 1;
+    }
 
     // Since last iteration already changed the "now" value, find the real "now" here.
     int real;

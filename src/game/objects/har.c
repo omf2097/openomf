@@ -1242,8 +1242,9 @@ void har_debug(object *obj) {
     vector_iter_begin(&obj->cur_animation->collision_coords, &it);
 
     foreach(it, cc) {
-        if(cc->frame_index != obj->cur_sprite_id)
+        if(cc->frame_index != obj->cur_sprite_id) {
             continue;
+        }
         video_draw(&h->hit_pixel, pos_a.x + (cc->pos.x * flip), pos_a.y + cc->pos.y);
     }
 }
@@ -1835,12 +1836,15 @@ void har_tick(object *obj) {
         object_set_palette_transform_cb(obj, NULL);
     }
 
-    if(h->p_fade_in_ticks_left > 0)
+    if(h->p_fade_in_ticks_left > 0) {
         h->p_fade_in_ticks_left--;
-    if(h->p_sustain_ticks_left > 0)
+    }
+    if(h->p_sustain_ticks_left > 0) {
         h->p_sustain_ticks_left--;
-    if(h->p_fade_out_ticks_left > 0)
+    }
+    if(h->p_fade_out_ticks_left > 0) {
         h->p_fade_out_ticks_left--;
+    }
 
     if(!h->in_stasis_ticks && !h->throw_duration) {
         har_handle_stun(obj);
@@ -2472,8 +2476,9 @@ int har_act(object *obj, int act_type) {
 void har_face_enemy(object *obj, object *obj_enemy) {
     har *h = object_get_userdata(obj);
 
-    if(h->in_stasis_ticks > 0)
+    if(h->in_stasis_ticks > 0) {
         return;
+    }
 
     vec2i pos = object_get_pos(obj);
     vec2i pos_enemy = object_get_pos(obj_enemy);

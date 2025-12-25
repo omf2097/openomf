@@ -199,8 +199,9 @@ int sd_af_save(const sd_af_file *af, const path *filename) {
 }
 
 void sd_af_free(sd_af_file *af) {
-    if(af == NULL)
+    if(af == NULL) {
         return;
+    }
     for(int i = 0; i < MAX_AF_MOVES; i++) {
         if(af->moves[i] != NULL) {
             sd_move_free(af->moves[i]);

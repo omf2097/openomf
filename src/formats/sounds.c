@@ -194,8 +194,9 @@ int sd_sound_to_au(const sd_sound_file *sf, int num, const path *filename) {
 }
 
 void sd_sounds_free(sd_sound_file *sf) {
-    if(sf == NULL)
+    if(sf == NULL) {
         return;
+    }
     for(int i = 0; i < SD_SOUNDS_MAX; i++) {
         omf_free(sf->sounds[i].data);
     }

@@ -60,8 +60,9 @@ void audio_scan_backends(void) {
     audio_backend_count = 0;
     for(int i = 0; i < all_backends_count; i++) {
         all_backends[i](&tmp);
-        if(audio_backend_count >= MAX_AVAILABLE_BACKENDS)
+        if(audio_backend_count >= MAX_AVAILABLE_BACKENDS) {
             break;
+        }
         if(tmp.is_available()) {
             available_backends[audio_backend_count].set_callbacks = all_backends[i];
             available_backends[audio_backend_count].name = tmp.get_name();
@@ -80,12 +81,15 @@ void audio_scan_backends(void) {
  * @return true if data was read, false if there was no backend at this index.
  */
 bool audio_get_backend_info(int index, const char **name, const char **description) {
-    if(index < 0 && index >= audio_backend_count)
+    if(index < 0 && index >= audio_backend_count) {
         return false;
-    if(name != NULL)
+    }
+    if(name != NULL) {
         *name = available_backends[index].name;
-    if(description != NULL)
+    }
+    if(description != NULL) {
         *description = available_backends[index].description;
+    }
     return true;
 }
 
@@ -104,8 +108,9 @@ int audio_get_backend_count(void) {
  */
 static bool hunt_backend_by_name(const char *try_name) {
     for(int i = 0; i < audio_backend_count; i++) {
-        if(strcmp(available_backends[i].name, try_name) != 0)
+        if(strcmp(available_backends[i].name, try_name) != 0) {
             continue;
+        }
         available_backends[i].set_callbacks(&current_backend);
         return true;
     }
@@ -144,8 +149,9 @@ static bool audio_find_backend(const char *try_name) {
 
 bool audio_init(const char *try_name, int sample_rate, bool mono, int resampler, float music_volume,
                 float sound_volume) {
-    if(!audio_find_backend(try_name))
+    if(!audio_find_backend(try_name)) {
         goto exit_0;
+    }
     current_backend.create(&current_backend);
     if(!current_backend.setup_context(current_backend.ctx, sample_rate, mono, resampler, music_volume, sound_volume)) {
         goto exit_1;
@@ -165,8 +171,9 @@ void audio_close(void) {
 }
 
 int audio_play_sound(int id, float volume, float panning, int pitch) {
-    if(id < 0 || id > 299)
+    if(id < 0 || id > 299) {
         return -1;
+    }
 
     // Load sample (8000Hz, mono, 8bit)
     char *src_buf;

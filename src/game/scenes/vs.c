@@ -144,8 +144,9 @@ void cb_vs_destroy_object(object *parent, int id, void *userdata) {
 }
 
 static void free_report_card(report_card *card) {
-    if(card == NULL)
+    if(card == NULL) {
         return;
+    }
     text_free(&card->plug_whine);
     text_free(&card->report_title);
     text_free(&card->report_left);

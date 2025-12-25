@@ -331,12 +331,14 @@ void object_apply_controllable_velocity(object *obj, bool is_projectile, char in
 
 void object_render(object *obj) {
     // Stop here if cur_sprite_id is not set
-    if(obj->cur_sprite_id < 0)
+    if(obj->cur_sprite_id < 0) {
         return;
+    }
 
     const sprite *cur_sprite = animation_get_sprite(obj->cur_animation, obj->cur_sprite_id);
-    if(cur_sprite == NULL)
+    if(cur_sprite == NULL) {
         return;
+    }
 
     // Set current surface
     obj->cur_surface = cur_sprite->data;
@@ -595,8 +597,9 @@ animation *object_get_animation(object *obj) {
  * \param id Sprite ID (starting from 0). Negative values will set sprite to nonexistent (NULL).
  */
 void object_select_sprite(object *obj, int id) {
-    if(obj == NULL)
+    if(obj == NULL) {
         return;
+    }
     if(!obj->sprite_override) {
         if(id < 0) {
             obj->cur_sprite_id = -1;

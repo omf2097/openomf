@@ -166,18 +166,24 @@ error_0:
 static void get_context_state(void *userdata, int *window_w, int *window_h, bool *fullscreen, bool *vsync, int *aspect,
                               int *fb_scale) {
     gl3_context *ctx = userdata;
-    if(window_w != NULL)
+    if(window_w != NULL) {
         *window_w = ctx->screen_w;
-    if(window_h != NULL)
+    }
+    if(window_h != NULL) {
         *window_h = ctx->screen_h;
-    if(fullscreen != NULL)
+    }
+    if(fullscreen != NULL) {
         *fullscreen = ctx->fullscreen;
-    if(vsync != NULL)
+    }
+    if(vsync != NULL) {
         *vsync = ctx->vsync;
-    if(aspect != NULL)
+    }
+    if(aspect != NULL) {
         *aspect = ctx->aspect;
-    if(fb_scale != NULL)
+    }
+    if(fb_scale != NULL) {
         *fb_scale = ctx->fb_scale;
+    }
 }
 
 static bool reset_context_with(void *userdata, int window_w, int window_h, bool fullscreen, bool vsync, int aspect,
@@ -252,8 +258,9 @@ static void render_prepare(void *userdata, unsigned framebuffer_options) {
 }
 
 static inline void video_set_blend_mode(gl3_context *ctx, object_array_blend_mode request_mode) {
-    if(ctx->current_blend_mode == request_mode)
+    if(ctx->current_blend_mode == request_mode) {
         return;
+    }
 
     if(request_mode == MODE_SET) {
         glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);

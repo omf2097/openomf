@@ -142,8 +142,9 @@ bool path_is_directory(const path *p) {
     return PathIsDirectoryA(p->buf) == FILE_ATTRIBUTE_DIRECTORY;
 #else
     struct stat sb;
-    if(stat(p->buf, &sb) != 0)
+    if(stat(p->buf, &sb) != 0) {
         return false;
+    }
     return (sb.st_mode & S_IFMT) == S_IFDIR;
 #endif
 }
@@ -154,8 +155,9 @@ bool path_is_file(const path *p) {
     return (attrib & FILE_ATTRIBUTE_DIRECTORY) == 0;
 #else
     struct stat sb;
-    if(stat(p->buf, &sb) != 0)
+    if(stat(p->buf, &sb) != 0) {
         return false;
+    }
     return (sb.st_mode & S_IFMT) == S_IFREG;
 #endif
 }

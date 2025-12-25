@@ -40,8 +40,9 @@ typedef struct textinput {
 
 static void set_cursor(component *c, bool focused) {
     textinput *ti = widget_get_obj(c);
-    if(focused == ti->was_focused)
+    if(focused == ti->was_focused) {
         return;
+    }
     if(focused) {
         str tmp;
         str_from(&tmp, &ti->buf);

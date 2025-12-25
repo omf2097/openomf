@@ -6,16 +6,17 @@
 #include <string.h>
 
 int sprite_key_get_id(const char *key) {
-    if(strcmp(key, "x") == 0)
+    if(strcmp(key, "x") == 0) {
         return 0;
-    if(strcmp(key, "y") == 0)
+    } else if(strcmp(key, "y") == 0) {
         return 1;
-    if(strcmp(key, "index") == 0)
+    } else if(strcmp(key, "index") == 0) {
         return 2;
-    if(strcmp(key, "missing") == 0)
+    } else if(strcmp(key, "missing") == 0) {
         return 3;
-    if(strcmp(key, "image") == 0)
+    } else if(strcmp(key, "image") == 0) {
         return 4;
+    }
     return -1;
 }
 
@@ -163,18 +164,19 @@ void anim_common_info(sd_animation *ani) {
 }
 
 int anim_key_get_id(const char *key) {
-    if(strcmp(key, "ani_header") == 0)
+    if(strcmp(key, "ani_header") == 0) {
         return 7;
-    if(strcmp(key, "collision") == 0)
+    } else if(strcmp(key, "collision") == 0) {
         return 8;
-    if(strcmp(key, "anim_str") == 0)
+    } else if(strcmp(key, "anim_str") == 0) {
         return 9;
-    if(strcmp(key, "extra_str") == 0)
+    } else if(strcmp(key, "extra_str") == 0) {
         return 11;
-    if(strcmp(key, "start_x") == 0)
+    } else if(strcmp(key, "start_x") == 0) {
         return 12;
-    if(strcmp(key, "start_y") == 0)
+    } else if(strcmp(key, "start_y") == 0) {
         return 13;
+    }
     return -1;
 }
 

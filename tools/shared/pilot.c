@@ -52,10 +52,11 @@ void print_pilot_player_info(sd_pilot *pilot) {
         printf("  - Wins:            %d\n", pilot->wins);
         printf("  - Losses:          %d\n", pilot->losses);
         printf("  - Rank:            %d\n", pilot->rank);
-        if(pilot->har_id == 255)
+        if(pilot->har_id == 255) {
             printf("  - Har:             Random\n");
-        else
+        } else {
             printf("  - Har:             %s\n", har_list[pilot->har_id]);
+        }
         printf("  - Arm Power:       %d\n", pilot->arm_power);
         printf("  - Leg Power:       %d\n", pilot->leg_power);
         printf("  - Arm Speed:       %d\n", pilot->arm_speed);

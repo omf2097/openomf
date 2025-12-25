@@ -150,8 +150,9 @@ void surface_flatten_to_mask(surface *sur, uint8_t value) {
     uint8_t idx;
     for(int i = 0; i < sur->w * sur->h; i++) {
         idx = sur->data[i];
-        if(idx == sur->transparent)
+        if(idx == sur->transparent) {
             continue;
+        }
         sur->data[i] = value;
     }
     sur->guid = guid++;
@@ -178,8 +179,9 @@ void surface_convert_to_grayscale(surface *sur, const vga_palette *pal, int rang
     // Convert the image using the mapping
     for(int i = 0; i < sur->w * sur->h; i++) {
         idx = sur->data[i];
-        if(idx == sur->transparent)
+        if(idx == sur->transparent) {
             continue;
+        }
         sur->data[i] = mapping[idx];
     }
     sur->guid = guid++;

@@ -9,15 +9,17 @@
 
 char *strncpy_or_truncate(char *dest, const char *src, size_t n) {
     char *ret = strncpy(dest, src, n);
-    if(n > 0)
+    if(n > 0) {
         dest[n - 1] = '\0';
+    }
     return ret;
 }
 
 char *strncpy_or_abort(char *dest, const char *src, size_t n) {
     size_t len = omf_strnlen_s(src, n);
-    if(len >= n)
+    if(len >= n) {
         crash("String length too long!");
+    }
     memcpy(dest, src, len + 1);
     return dest;
 }

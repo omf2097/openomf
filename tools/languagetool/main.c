@@ -176,8 +176,9 @@ static conversion_result sd_language_to_utf8(sd_language *language) {
         // convert data to utf-8
         size_t sizeof_utf8_data;
         result.error_code = cp437_to_utf8(NULL, 0, &sizeof_utf8_data, (uint8_t const *)old_data, sizeof_old_data);
-        if(result.error_code != CP437_SUCCESS)
+        if(result.error_code != CP437_SUCCESS) {
             return result;
+        }
         language->strings[idx].data = omf_malloc(sizeof_utf8_data);
         result.error_code = cp437_to_utf8((unsigned char *)language->strings[idx].data, sizeof_utf8_data, NULL,
                                           (uint8_t const *)old_data, sizeof_old_data);
@@ -221,8 +222,9 @@ static conversion_result sd_language_from_utf8(sd_language *language) {
         size_t sizeof_cp437_data;
         result.error_code =
             cp437_from_utf8(NULL, 0, &sizeof_cp437_data, (unsigned char const *)old_data, sizeof_old_data);
-        if(result.error_code != CP437_SUCCESS)
+        if(result.error_code != CP437_SUCCESS) {
             return result;
+        }
         language->strings[idx].data = omf_malloc(sizeof_cp437_data);
         result.error_code = cp437_from_utf8((uint8_t *)language->strings[idx].data, sizeof_cp437_data, NULL,
                                             (unsigned char const *)old_data, sizeof_old_data);

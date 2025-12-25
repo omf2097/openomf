@@ -174,15 +174,17 @@ cp437_result cp437_from_utf8(uint8_t *out_cp437, size_t sizeof_out_cp437, size_t
         char32_t utf32;
         cp437_result result = next_utf32(&utf32, &utf8, &utf8_len);
         if(result != CP437_SUCCESS) {
-            if(out_cp437_len)
+            if(out_cp437_len) {
                 *out_cp437_len = 0;
+            }
             return result;
         }
         uint8_t cp437;
         result = cp437_from_utf32(&cp437, utf32);
         if(result != CP437_SUCCESS) {
-            if(out_cp437_len)
+            if(out_cp437_len) {
                 *out_cp437_len = 0;
+            }
             return result;
         }
         if(out_cp437) {
@@ -190,8 +192,9 @@ cp437_result cp437_from_utf8(uint8_t *out_cp437, size_t sizeof_out_cp437, size_t
         }
         cp437_len++;
     }
-    if(out_cp437_len)
+    if(out_cp437_len) {
         *out_cp437_len = cp437_len;
+    }
     return CP437_SUCCESS;
 }
 

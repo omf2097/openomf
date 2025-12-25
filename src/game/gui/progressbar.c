@@ -57,8 +57,9 @@ typedef struct progressbar {
 void progressbar_set_progress(component *c, int percentage, bool animate) {
     progressbar *bar = widget_get_obj(c);
     int tmp = clamp(percentage, 0, 100);
-    if(!bar->refresh)
+    if(!bar->refresh) {
         bar->refresh = (tmp != bar->percentage);
+    }
     bar->percentage = tmp;
     if(!animate || bar->percentage > bar->display_percentage) {
         // refilling the meter is instant

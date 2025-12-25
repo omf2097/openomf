@@ -59,8 +59,9 @@ int joystick_nth_id(int n) {
 int joystick_offset(int id, const char *name) {
     int offset = 0;
     for(int i = 0; i < id; i++) {
-        if(i != id && !strcmp(name, SDL_JoystickNameForIndex(i)))
+        if(i != id && !strcmp(name, SDL_JoystickNameForIndex(i))) {
             offset++;
+        }
     }
     return offset;
 }
@@ -240,8 +241,9 @@ void joystick_close(void) {
 }
 
 void joystick_menu_poll_all(controller *menu_ctrl, ctrl_event **ev) {
-    if(vector_size(&every_gamepad) == 0)
+    if(vector_size(&every_gamepad) == 0) {
         return;
+    }
 
     joystick k;
     memset(&k, 0, sizeof(k));
@@ -260,8 +262,9 @@ void joystick_menu_poll_all(controller *menu_ctrl, ctrl_event **ev) {
 
 void joystick_deviceadded(int sdl_joystick_index) {
     SDL_GameController *gamepad = SDL_GameControllerOpen(sdl_joystick_index);
-    if(!gamepad)
+    if(!gamepad) {
         return;
+    }
     vector_append(&every_gamepad, &gamepad);
 }
 
