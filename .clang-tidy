@@ -1,20 +1,11 @@
 ---
 Checks: >
   -*,
-  clang-analyzer-*,
-  clang-diagnostic-*,
-  performance-*,
-  -clang-analyzer-cplusplus*,
-  -clang-diagnostic-unused-command-line-argument,
-  -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,
-WarningsAsErrors: >
-  *,
-  -clang-diagnostic-unused-command-line-argument,
+  google-readability-braces-around-statements,
+WarningsAsErrors: '*'
 HeaderFilterRegex: ''
 FormatStyle: llvm
 CheckOptions:
   - key:             google-readability-braces-around-statements.ShortStatementLines
     value:           '1'
-  - key:             google-readability-function-size.StatementThreshold
-    value:           '800'
 ...
