@@ -47,7 +47,7 @@ typedef struct {
     char trn_name[13];       ///< Tournament file
     char trn_desc[31];       ///< Tournament description
     char trn_image[13];      ///< Tournament image file
-    float unk_f_c;           ///< Unknown
+    float trn_rank_money;    ///< Tournament rank money gain
     float trn_winnings_mult; ///< Unknown
     uint8_t pilot_id;        ///< Pilot ID
     uint8_t unknown_k;       ///< Unknown
