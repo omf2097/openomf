@@ -136,13 +136,13 @@ static bool video_find_renderer(const char *try_name) {
 }
 
 bool video_init(const char *try_name, int window_w, int window_h, bool fullscreen, bool vsync, int aspect,
-                int framerate_limit, int fb_scale) {
+                int framerate_limit, int fb_scale, int scaling_mode) {
     if(!video_find_renderer(try_name)) {
         goto exit_0;
     }
     current_renderer.create(&current_renderer);
     if(!current_renderer.setup_context(current_renderer.ctx, window_w, window_h, fullscreen, vsync, aspect,
-                                       framerate_limit, fb_scale)) {
+                                       framerate_limit, fb_scale, scaling_mode)) {
         goto exit_1;
     }
     return true;
@@ -162,9 +162,9 @@ void video_reinit_renderer(void) {
 }
 
 bool video_reinit(int window_w, int window_h, bool fullscreen, bool vsync, int aspect, int framerate_limit,
-                  int fb_scale) {
+                  int fb_scale, int scaling_mode) {
     return current_renderer.reset_context_with(current_renderer.ctx, window_w, window_h, fullscreen, vsync, aspect,
-                                               framerate_limit, fb_scale);
+                                               framerate_limit, fb_scale, scaling_mode);
 }
 
 void video_signal_scene_change(void) {

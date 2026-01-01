@@ -7,17 +7,16 @@
 #include "video/renderers/opengl3/helpers/render_target.h"
 #include "video/renderers/opengl3/helpers/shaders.h"
 #include "video/renderers/opengl3/helpers/shared.h"
-#include "video/renderers/opengl3/helpers/texture.h"
 #include "video/renderers/opengl3/helpers/texture_atlas.h"
 
 #include "utils/allocator.h"
 #include "utils/log.h"
-#include "utils/miscmath.h"
 #include "video/vga_state.h"
 
 #define TEX_UNIT_ATLAS 0
 #define TEX_UNIT_FBO 1
-#define TEX_UNIT_REMAPS 2
+#define TEX_UNIT_FBO2 2
+#define TEX_UNIT_REMAPS 3
 #define PAL_BLOCK_BINDING 0
 #define NATIVE_W 320
 #define NATIVE_H 200
@@ -28,7 +27,8 @@ typedef struct gl3_context {
     texture_atlas *atlas;
     object_array *objects;
     shared *shared;
-    render_target *target;
+    render_target *paletted_target;
+    render_target *rgba_target;
     remaps *remaps;
 
     int viewport_w;
@@ -39,6 +39,7 @@ typedef struct gl3_context {
     bool fullscreen;
     bool vsync;
     int aspect;
+    int scaling_mode;
     int target_move_x;
     int target_move_y;
     bool draw_atlas;
@@ -50,6 +51,7 @@ typedef struct gl3_context {
     object_array_blend_mode current_blend_mode;
     GLuint palette_prog_id;
     GLuint rgba_prog_id;
+    GLuint scale_prog_id;
 
     video_screenshot_signal screenshot_cb;
 } gl3_context;
@@ -66,6 +68,23 @@ static const char *get_name(void) {
     return "OpenGL3";
 }
 
+static void get_scaling_shader_names(const int scaling_mode, const char **vert_shader, const char **frag_shader) {
+    switch(scaling_mode) {
+        case 1: // Bilinear
+            *vert_shader = "scalers/bilinear.vert";
+            *frag_shader = "scalers/bilinear.frag";
+            break;
+        case 2: // CRT
+            *vert_shader = "scalers/crt.vert";
+            *frag_shader = "scalers/crt.frag";
+            break;
+        default:
+            *vert_shader = "scalers/none.vert";
+            *frag_shader = "scalers/none.frag";
+            break;
+    }
+}
+
 static void set_framerate_limit(gl3_context *ctx, int framerate_limit) {
     if(framerate_limit == 0) {
         ctx->framerate_limit = 0;
@@ -74,8 +93,19 @@ static void set_framerate_limit(gl3_context *ctx, int framerate_limit) {
     }
 }
 
+static void reload_scaler_program(const gl3_context *ctx) {
+    GLfloat projection_matrix[16];
+    ortho2d(projection_matrix, 0.0f, NATIVE_W, NATIVE_H, 0.0f);
+    activate_program(ctx->scale_prog_id);
+    bind_uniform_4fv(ctx->scale_prog_id, "projection", projection_matrix);
+    bind_uniform_1i(ctx->scale_prog_id, "framebuffer", TEX_UNIT_FBO2);
+    const int fb_w = NATIVE_W * ctx->fb_scale;
+    const int fb_h = NATIVE_H * ctx->fb_scale;
+    bind_uniform_2f(ctx->scale_prog_id, "texture_size", (GLfloat)fb_w, (GLfloat)fb_h);
+}
+
 static bool setup_context(void *userdata, int window_w, int window_h, bool fullscreen, bool vsync, int aspect,
-                          int framerate_limit, int fb_scale) {
+                          int framerate_limit, int fb_scale, int scaling_mode) {
     gl3_context *ctx = userdata;
     ctx->screen_w = window_w;
     ctx->screen_h = window_h;
@@ -84,6 +114,7 @@ static bool setup_context(void *userdata, int window_w, int window_h, bool fulls
     ctx->fb_scale = fb_scale;
     ctx->vsync = vsync;
     ctx->aspect = aspect;
+    ctx->scaling_mode = scaling_mode;
     ctx->target_move_x = 0;
     ctx->target_move_y = 0;
     ctx->current_blend_mode = MODE_SET;
@@ -105,6 +136,11 @@ static bool setup_context(void *userdata, int window_w, int window_h, bool fulls
     if(!create_program(&ctx->rgba_prog_id, "rgba.vert", "rgba.frag")) {
         goto error_3;
     }
+    const char *scale_vert, *scale_frag;
+    get_scaling_shader_names(scaling_mode, &scale_vert, &scale_frag);
+    if(!create_program(&ctx->scale_prog_id, scale_vert, scale_frag)) {
+        goto error_4;
+    }
 
     // Fetch viewport size which may be different from window size.
     SDL_GL_GetDrawableSize(ctx->window, &ctx->viewport_w, &ctx->viewport_h);
@@ -124,7 +160,8 @@ static bool setup_context(void *userdata, int window_w, int window_h, bool fulls
     ctx->atlas = atlas_create(TEX_UNIT_ATLAS, 2048, 2048);
     ctx->objects = object_array_create(2048.0f, 2048.0f);
     ctx->shared = shared_create();
-    ctx->target = render_target_create(TEX_UNIT_FBO, fb_w, fb_h, GL_RGBA8, GL_RGBA);
+    ctx->paletted_target = render_target_create(TEX_UNIT_FBO, fb_w, fb_h, GL_RGBA8, GL_RGBA, GL_NEAREST);
+    ctx->rgba_target = render_target_create(TEX_UNIT_FBO2, fb_w, fb_h, GL_RGBA8, GL_RGBA, GL_NEAREST);
     ctx->remaps = remaps_create(TEX_UNIT_REMAPS);
 
     vga_state_mark_dirty();
@@ -133,13 +170,13 @@ static bool setup_context(void *userdata, int window_w, int window_h, bool fulls
     GLfloat projection_matrix[16];
     ortho2d(projection_matrix, 0.0f, NATIVE_W, NATIVE_H, 0.0f);
 
-    // Activate palette program, and bind its variables now
+    // Activate palette program and bind its variables now
     activate_program(ctx->palette_prog_id);
     bind_uniform_4fv(ctx->palette_prog_id, "projection", projection_matrix);
     bind_uniform_1i(ctx->palette_prog_id, "atlas", TEX_UNIT_ATLAS);
     bind_uniform_1i(ctx->palette_prog_id, "remaps", TEX_UNIT_REMAPS);
 
-    // Activate RGBA conversion program, and bind palette etc.
+    // Activate RGBA conversion program and bind palette etc.
     activate_program(ctx->rgba_prog_id);
     bind_uniform_4fv(ctx->rgba_prog_id, "projection", projection_matrix);
     GLuint pal_ubo_id = shared_get_block(ctx->shared);
@@ -147,8 +184,14 @@ static bool setup_context(void *userdata, int window_w, int window_h, bool fulls
     bind_uniform_1i(ctx->rgba_prog_id, "framebuffer", TEX_UNIT_FBO);
     bind_uniform_1i(ctx->rgba_prog_id, "remaps", TEX_UNIT_REMAPS);
 
+    // Activate scale program and bind uniforms
+    reload_scaler_program(ctx);
+
     log_info("OpenGL3 Renderer initialized!");
     return true;
+
+error_4:
+    delete_program(ctx->rgba_prog_id);
 
 error_3:
     delete_program(ctx->palette_prog_id);
@@ -187,7 +230,7 @@ static void get_context_state(void *userdata, int *window_w, int *window_h, bool
 }
 
 static bool reset_context_with(void *userdata, int window_w, int window_h, bool fullscreen, bool vsync, int aspect,
-                               int framerate_limit, int fb_scale) {
+                               int framerate_limit, int fb_scale, int scaling_mode) {
     gl3_context *ctx = userdata;
     ctx->screen_w = window_w;
     ctx->screen_h = window_h;
@@ -199,12 +242,36 @@ static bool reset_context_with(void *userdata, int window_w, int window_h, bool 
     bool success = resize_window(ctx->window, window_w, window_h, fullscreen);
     success = set_vsync(ctx->vsync) && success;
 
-    if(ctx->fb_scale != fb_scale) {
+    const bool fb_scale_changed = ctx->fb_scale != fb_scale;
+    const bool scaling_mode_changed = ctx->scaling_mode != scaling_mode;
+    const int fb_w = NATIVE_W * fb_scale;
+    const int fb_h = NATIVE_H * fb_scale;
+
+    if(fb_scale_changed) {
         ctx->fb_scale = fb_scale;
-        const int fb_w = NATIVE_W * ctx->fb_scale;
-        const int fb_h = NATIVE_H * ctx->fb_scale;
-        render_target_free(&ctx->target);
-        ctx->target = render_target_create(TEX_UNIT_FBO, fb_w, fb_h, GL_RGBA8, GL_RGBA);
+        render_target_free(&ctx->paletted_target);
+        render_target_free(&ctx->rgba_target);
+        ctx->paletted_target = render_target_create(TEX_UNIT_FBO, fb_w, fb_h, GL_RGBA8, GL_RGBA, GL_NEAREST);
+        ctx->rgba_target = render_target_create(TEX_UNIT_FBO2, fb_w, fb_h, GL_RGBA8, GL_RGBA, GL_NEAREST);
+    }
+
+    // Reload scaling shader if scaling mode changed
+    if(scaling_mode_changed) {
+        const char *scale_vert, *scale_frag;
+        get_scaling_shader_names(scaling_mode, &scale_vert, &scale_frag);
+        GLuint new_prog_id;
+        if(create_program(&new_prog_id, scale_vert, scale_frag)) {
+            delete_program(ctx->scale_prog_id);
+            ctx->scale_prog_id = new_prog_id;
+            reload_scaler_program(ctx);
+            ctx->scaling_mode = scaling_mode;
+        } else {
+            log_error("Failed to load scaling shader, reverting to previous.");
+            success = false;
+        }
+    } else if(fb_scale_changed) {
+        // If only fb_scale changed, update shader uniforms with new texture size
+        reload_scaler_program(ctx);
     }
 
     // Fetch viewport size which may be different from window size.
@@ -221,12 +288,14 @@ static void reset_context(void *userdata) {
 static void close_context(void *userdata) {
     gl3_context *ctx = userdata;
     remaps_free(&ctx->remaps);
-    render_target_free(&ctx->target);
+    render_target_free(&ctx->paletted_target);
+    render_target_free(&ctx->rgba_target);
     shared_free(&ctx->shared);
     object_array_free(&ctx->objects);
     atlas_free(&ctx->atlas);
     delete_program(ctx->palette_prog_id);
     delete_program(ctx->rgba_prog_id);
+    delete_program(ctx->scale_prog_id);
     SDL_GL_DeleteContext(ctx->gl_context);
     SDL_DestroyWindow(ctx->window);
     log_info("OpenGL3 renderer closed.");
@@ -235,7 +304,7 @@ static void close_context(void *userdata) {
 static void draw_surface(void *userdata, const surface *src_surface, SDL_Rect *dst, int remap_offset, int remap_rounds,
                          int palette_offset, int palette_limit, int opacity, unsigned int flip_mode,
                          unsigned int options) {
-    gl3_context *ctx = userdata;
+    const gl3_context *ctx = userdata;
     uint16_t tx, ty, tw, th;
     if(atlas_get(ctx->atlas, src_surface, &tx, &ty, &tw, &th)) {
         object_array_add(ctx->objects, dst->x, dst->y, dst->w, dst->h, tx, ty, tw, th, flip_mode,
@@ -251,7 +320,7 @@ static void move_target(void *userdata, int x, int y) {
 }
 
 static void render_prepare(void *userdata, unsigned framebuffer_options) {
-    gl3_context *ctx = userdata;
+    const gl3_context *ctx = userdata;
     object_array_prepare(ctx->objects);
 
     bind_uniform_1u(ctx->rgba_prog_id, "framebuffer_options", framebuffer_options);
@@ -351,7 +420,7 @@ static inline void finish_offscreen(gl3_context *ctx) {
     object_array_batch batch;
     object_array_begin(ctx->objects, &batch);
     activate_program(ctx->palette_prog_id);
-    render_target_activate(ctx->target);
+    render_target_activate(ctx->paletted_target);
 
     object_array_blend_mode mode;
     while(object_array_get_batch(ctx->objects, &batch, &mode)) {
@@ -361,18 +430,33 @@ static inline void finish_offscreen(gl3_context *ctx) {
 }
 
 /**
- * Disable render target, and dump its contents as RGBA to the screen.
+ * Convert paletted framebuffer to RGBA, then scale to screen.
  */
 static inline void finish_onscreen(gl3_context *ctx) {
-    render_target_deactivate();
-    set_screen_viewport(ctx);
     video_set_blend_mode(ctx, MODE_SET);
+
+    // Step 1: Render to RGB FBO at internal resolution
+    const int fb_w = NATIVE_W * ctx->fb_scale;
+    const int fb_h = NATIVE_H * ctx->fb_scale;
+    glViewport(0, 0, fb_w, fb_h);
+    render_target_activate(ctx->rgba_target);
+
     activate_program(ctx->rgba_prog_id);
     if(ctx->draw_atlas) {
         bind_uniform_1i(ctx->rgba_prog_id, "framebuffer", TEX_UNIT_ATLAS);
     } else {
         bind_uniform_1i(ctx->rgba_prog_id, "framebuffer", TEX_UNIT_FBO);
     }
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+    // Step 2: Scale and render onscreen
+    // Filtering is handled by the scaling shader, not OpenGL
+    render_target_deactivate();
+    set_screen_viewport(ctx);
+    activate_program(ctx->scale_prog_id);
+    bind_uniform_1i(ctx->scale_prog_id, "framebuffer", TEX_UNIT_FBO2);
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
