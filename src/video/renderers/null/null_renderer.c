@@ -2,7 +2,6 @@
 
 #include "utils/allocator.h"
 #include "utils/log.h"
-#include "video/vga_state.h"
 
 static bool is_available(void) {
     return true;
@@ -17,7 +16,7 @@ static const char *get_name(void) {
 }
 
 static bool setup_context(void *userdata, int window_w, int window_h, bool fullscreen, bool vsync, int aspect,
-                          int framerate_limit, int fb_scale) {
+                          int framerate_limit, int fb_scale, int scaling_mode) {
     log_info("NULL Renderer initialized!");
     return true;
 }
@@ -45,7 +44,7 @@ static void get_context_state(void *userdata, int *window_w, int *window_h, bool
 }
 
 static bool reset_context_with(void *userdata, int window_w, int window_h, bool fullscreen, bool vsync, int aspect,
-                               int framerate_limit, int fb_scale) {
+                               int framerate_limit, int fb_scale, int scaling_mode) {
     log_info("NULL renderer reset.");
     return true;
 }

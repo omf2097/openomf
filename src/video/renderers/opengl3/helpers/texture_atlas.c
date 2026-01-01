@@ -38,7 +38,7 @@ texture_atlas *atlas_create(GLuint tex_unit, uint16_t width, uint16_t height) {
     atlas->w = width;
     atlas->h = height;
     atlas->tex_unit = tex_unit;
-    atlas->texture_id = texture_create(tex_unit, width, height, GL_R8, GL_RED);
+    atlas->texture_id = texture_create(tex_unit, width, height, GL_R8, GL_RED, GL_NEAREST);
     zone item = {0, 0, width, height};
     vector_append(&atlas->free_space, &item);
     log_debug("Texture atlas %dx%d created", width, height);

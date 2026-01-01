@@ -48,6 +48,7 @@ typedef struct {
     int aspect;
     int fullscreen;
     int scaling;
+    int scaling_mode;
     int instant_console;
     int crossfade_on;
     int fb_scale;
