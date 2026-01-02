@@ -273,6 +273,23 @@ int console_cmd_god(game_state *gs, int argc, char **argv) {
     return 0;
 }
 
+int console_keypress(game_state *gs, int argc, char **argv) {
+    SDL_Event sdlevent;
+    memset(&sdlevent, 0, sizeof(sdlevent));
+    sdlevent.type = SDL_KEYDOWN;
+    sdlevent.key.keysym.sym = SDLK_DOWN;
+    sdlevent.key.keysym.scancode = SDL_SCANCODE_DOWN;
+    SDL_PushEvent(&sdlevent);
+
+    Uint8 *state = (Uint8 *)SDL_GetKeyboardState(NULL);
+    state[SDL_SCANCODE_DOWN] = 1;
+
+    con->keypress_time = 20;
+    con->keypress_scancode = SDL_SCANCODE_DOWN;
+
+    return 0;
+}
+
 int console_kreissack(game_state *gs, int argc, char **argv) {
     game_player *p1 = game_state_get_player(gs, 0);
     p1->sp_wins = (2046 ^ (2 << p1->pilot->pilot_id));
@@ -472,6 +489,7 @@ void console_init_cmd(void) {
     console_add_cmd("stun", &console_cmd_stun, "Stun the other player");
     console_add_cmd("rein", &console_cmd_rein, "R-E-I-N!");
     console_add_cmd("god", &console_cmd_god, "Enable god mode");
+    console_add_cmd("keypress", &console_keypress, "Push a keypress into the input queue");
     console_add_cmd("kreissack", &console_kreissack, "Fight Kreissack");
     console_add_cmd("ez-destruct", &console_cmd_ez_destruct, "Punch = destruction, kick = scrap");
     console_add_cmd("warp", &console_toggle_warp, "Toggle warp speed");

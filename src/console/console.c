@@ -359,6 +359,7 @@ void console_tick(game_state *gs) {
             con->y_pos = 0;
         }
     }
+    console_release_keypress();
 }
 
 void console_add_cmd(const char *name, command_func func, const char *doc) {
@@ -370,6 +371,20 @@ void console_add_cmd(const char *name, command_func func, const char *doc) {
 
 void console_remove_cmd(const char *name) {
     hashmap_del_str(&con->cmds, name);
+}
+
+void console_release_keypress(void) {
+    if(con->keypress_time > 0) {
+        con->keypress_time--;
+        return;
+    }
+    if(con->keypress_scancode != SDL_SCANCODE_UNKNOWN) {
+        Uint8 *state = (Uint8 *)SDL_GetKeyboardState(NULL);
+        state[con->keypress_scancode] = 0;
+
+        con->keypress_time = 0;
+        con->keypress_scancode = SDL_SCANCODE_UNKNOWN;
+    }
 }
 
 bool console_window_is_open(void) {
