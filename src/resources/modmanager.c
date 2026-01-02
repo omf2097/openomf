@@ -4,6 +4,7 @@
 #include "game/common_defines.h"
 #include "game/utils/settings.h"
 #include "utils/allocator.h"
+#include "utils/miscmath.h"
 #include "utils/c_string_util.h"
 #include "utils/log.h"
 #include "vendored/zip/zip.h"
@@ -29,6 +30,13 @@
         log_info("setting " #field_name " from %f to %f", struct_field, new_value);                                    \
         struct_field = new_value;                                                                                      \
     }
+
+// find the next lowest integer multiple of the original screen size
+// This is used to locate appropriate sprites
+int find_scale_factor() {
+    settings *setting = settings_get();
+    return setting->video.screen_w / 320;
+}
 
 hashmap mod_resources;
 
@@ -480,57 +488,80 @@ bool modmanager_get_bk_background(str *name, sd_vga_image **img) {
 bool modmanager_get_sprite(animation_source source, str *name, int animation, int frame, sd_sprite **spr) {
     str filename;
 
-    mod_asset *obuf;
-    switch(source) {
-        case AF_ANIMATION:
-            str_from_format(&filename, "fighters/%s/%d/%d.png", str_c(name), animation, frame);
-            break;
-        case BK_ANIMATION:
-            str_from_format(&filename, "scenes/%s/%d/%d.png", str_c(name), animation, frame);
-            break;
-        default:
-            return false;
-    }
 
-    str_tolower(&filename);
+    int scale = find_scale_factor();
 
-    unsigned int len;
-    if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&obuf, &len)) {
-        assert(obuf->type == MOD_SPRITE);
-        *spr = &obuf->spr;
-        log_info("got sprite %dx%d with size %d", (*spr)->width, (*spr)->height, len);
-        str_free(&filename);
-        return true;
-    }
-
-    str_free(&filename);
-
-    // Common replacements should replace default assets, but not modded ones
-    if(source == BK_ANIMATION && ((animation >= 6 && animation <= 11) || (animation >= 24 && animation <= 27))) {
-        // TODO make sure this is an arena
-        // For arenas, check for 'common' for animations 6 (round), 7 (number), 8 (you lose), 9 (you win), 10 (fight),
-        // 11 (ready), 24 (dust 1), 25 (dust 2), 26 (dust 3), 27 (match counters)
-
-        str_from_format(&filename, "scenes/common/%d/%d.png", animation, frame);
-    } else if(source == AF_ANIMATION && (animation == 7 || animation == 8 || (animation >= 12 && animation <= 14) ||
-                                         (animation >= 55 && animation <= 57))) {
-        // For fighters, check for 'common' for animations 7 (burning oil/stun), 8 (blocking scrape), 12 (scrap), 13
-        // (bolt), 14 (screw), 55 (blast), 56 (blast 2), 57 (blast 3)
-
-        str_from_format(&filename, "fighters/common/%d/%d.png", animation, frame);
-    } else {
-        return false;
-    }
+    log_info("screen scale is %dx", scale);
 
     bool found = false;
-    if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&obuf, &len)) {
-        assert(obuf->type == MOD_SPRITE);
-        *spr = &obuf->spr;
-        log_info("got sprite %dx%d with size %d", (*spr)->width, (*spr)->height, len);
-        found = true;
-    }
 
-    str_free(&filename);
+    for(int i = scale; i >= 0 && !found; i--) {
+
+        mod_asset *obuf;
+        switch(source) {
+            case AF_ANIMATION:
+                if(i > 0) {
+                    str_from_format(&filename, "fighters/%s/%d/%d-%dx.png", str_c(name), animation, frame, i);
+                } else {
+                    str_from_format(&filename, "fighters/%s/%d/%d.png", str_c(name), animation, frame);
+                }
+                break;
+            case BK_ANIMATION:
+                if(i > 0) {
+                    str_from_format(&filename, "scenes/%s/%d/%d-%dx.png", str_c(name), animation, frame, i);
+                } else {
+                    str_from_format(&filename, "scenes/%s/%d/%d.png", str_c(name), animation, frame);
+                }
+                break;
+            default:
+                return false;
+        }
+
+        str_tolower(&filename);
+
+        unsigned int len;
+        if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&obuf, &len)) {
+            assert(obuf->type == MOD_SPRITE);
+            *spr = &obuf->spr;
+            log_info("got sprite %s %dx%d with scale %d", str_c(&filename), (*spr)->width, (*spr)->height, i);
+            str_free(&filename);
+            return true;
+        }
+
+        str_free(&filename);
+
+        // Common replacements should replace default assets, but not modded ones
+        if(omf_strncasecmp("arena", str_c(name), min2(str_size(name), 5)) == 0 && source == BK_ANIMATION && ((animation >= 6 && animation <= 11) || (animation >= 24 && animation <= 27))) {
+            // TODO make sure this is an arena
+            // For arenas, check for 'common' for animations 6 (round), 7 (number), 8 (you lose), 9 (you win), 10 (fight),
+            // 11 (ready), 24 (dust 1), 25 (dust 2), 26 (dust 3), 27 (match counters)
+
+            if(i > 0) {
+                str_from_format(&filename, "scenes/common/%d/%d-%dx.png", animation, frame, i);
+            } else {
+                str_from_format(&filename, "scenes/common/%d/%d.png", animation, frame);
+            }
+        } else if(source == AF_ANIMATION && (animation == 7 || animation == 8 || (animation >= 12 && animation <= 14) ||
+                    (animation >= 55 && animation <= 57))) {
+            // For fighters, check for 'common' for animations 7 (burning oil/stun), 8 (blocking scrape), 12 (scrap), 13
+            // (bolt), 14 (screw), 55 (blast), 56 (blast 2), 57 (blast 3)
+
+            if(i > 0) {
+                str_from_format(&filename, "fighters/common/%d/%d-%dx.png", animation, frame, i);
+            } else {
+                str_from_format(&filename, "fighters/common/%d/%d.png", animation, frame);
+            }
+        }
+
+        if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&obuf, &len)) {
+            assert(obuf->type == MOD_SPRITE);
+            *spr = &obuf->spr;
+            log_info("got sprite %s %dx%d with scale %d", str_c(&filename), (*spr)->width, (*spr)->height, i);
+            found = true;
+        }
+
+        str_free(&filename);
+    }
 
     return found;
 }
@@ -1451,7 +1482,6 @@ static void free_mod_asset(void *data) {
                 }
                 break;
         }
-        omf_free(asset);
     }
 }
 
