@@ -6,6 +6,7 @@
 typedef void (*widget_render_cb)(component *c);
 typedef int (*widget_event_cb)(component *c, SDL_Event *event);
 typedef int (*widget_action_cb)(component *c, int action);
+typedef component *(*widget_find_text_cb)(component *c, const char *text);
 typedef void (*widget_focus_cb)(component *c, bool focused);
 typedef void (*widget_layout_cb)(component *c, int x, int y, int w, int h);
 typedef void (*widget_tick_cb)(component *c);
@@ -23,6 +24,7 @@ int widget_get_id(const component *c);
 void widget_set_render_cb(component *c, widget_render_cb cb);
 void widget_set_event_cb(component *c, widget_event_cb cb);
 void widget_set_action_cb(component *c, widget_action_cb cb);
+void widget_set_find_text_cb(component *c, widget_find_text_cb cb);
 void widget_set_focus_cb(component *c, widget_focus_cb cb);
 void widget_set_layout_cb(component *c, widget_layout_cb cb);
 void widget_set_tick_cb(component *c, widget_tick_cb cb);

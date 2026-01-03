@@ -116,6 +116,13 @@ component *component_find(component *c, int id) {
     return c->find(c, id);
 }
 
+component *component_find_text(component *c, const char *text) {
+    if(c->find_text != NULL) {
+        return c->find_text(c, text);
+    }
+    return NULL;
+}
+
 void component_set_obj(component *c, void *obj) {
     c->obj = obj;
 }

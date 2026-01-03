@@ -17,6 +17,7 @@ typedef struct sizer {
     sizer_tick_cb tick;
     sizer_free_cb free;
     sizer_find_cb find;
+    sizer_find_text_cb find_text;
     sizer_init_cb init;
 } sizer;
 
@@ -107,6 +108,12 @@ void sizer_set_find_cb(component *c, sizer_find_cb cb) {
     assert(c->header == SIZER_MAGIC);
     sizer *local = component_get_obj(c);
     local->find = cb;
+}
+
+void sizer_set_find_text_cb(component *c, sizer_find_text_cb cb) {
+    assert(c->header == SIZER_MAGIC);
+    sizer *local = component_get_obj(c);
+    local->find_text = cb;
 }
 
 void sizer_set_init_cb(component *c, sizer_init_cb cb) {
