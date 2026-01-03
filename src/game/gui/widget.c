@@ -12,6 +12,7 @@ typedef struct widget {
     widget_event_cb event;
     widget_action_cb action;
     widget_focus_cb focus;
+    widget_find_text_cb find_text;
     widget_layout_cb layout;
     widget_tick_cb tick;
     widget_init_cb init;
@@ -64,6 +65,12 @@ void widget_set_focus_cb(component *c, widget_focus_cb cb) {
     assert(c->header == WIDGET_MAGIC);
     widget *local = component_get_obj(c);
     local->focus = cb;
+}
+
+void widget_set_find_text_cb(component *c, widget_find_text_cb cb) {
+    assert(c->header == WIDGET_MAGIC);
+    widget *local = component_get_obj(c);
+    local->find_text = cb;
 }
 
 void widget_set_layout_cb(component *c, widget_layout_cb cb) {

@@ -8,6 +8,7 @@
 typedef void (*spritebutton_click_cb)(component *c, void *userdata);
 typedef void (*spritebutton_tick_cb)(component *c, void *userdata);
 typedef void (*spritebutton_focus_cb)(component *c, bool focused, void *userdata);
+typedef component *(*spritebutton_find_text_cb)(component *c, const char *text);
 
 component *spritebutton_create(const char *text, const surface *img, bool disabled, spritebutton_click_cb cb,
                                void *userdata);
