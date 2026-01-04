@@ -76,6 +76,9 @@ void trnselect_next(component *c) {
         local->selected = 0;
     }
     sd_tournament_file *trn = trnselect_selected(c);
+    if(trn == NULL || trn->locales[0] == NULL) {
+        return;
+    }
     sd_sprite *logo = trn->locales[0]->logo;
     vga_state_set_base_palette_from_range(&trn->pal, 128, 128, 40);
     load_description(&local->label, component_get_theme(c), trn->locales[0]);
@@ -90,6 +93,9 @@ void trnselect_prev(component *c) {
         local->selected = vector_size(&local->tournaments) - 1;
     }
     sd_tournament_file *trn = trnselect_selected(c);
+    if(trn == NULL || trn->locales[0] == NULL) {
+        return;
+    }
     sd_sprite *logo = trn->locales[0]->logo;
     vga_state_set_base_palette_from_range(&trn->pal, 128, 128, 40);
     load_description(&local->label, component_get_theme(c), trn->locales[0]);
@@ -111,6 +117,9 @@ static void trnselect_init(component *c, const gui_theme *theme) {
     vga_state_push_palette(); // Backup the current palette
 
     sd_tournament_file *trn = trnselect_selected(c);
+    if(trn == NULL || trn->locales[0] == NULL) {
+        return;
+    }
     sd_sprite *logo = trn->locales[0]->logo;
     vga_state_set_base_palette_from_range(&trn->pal, 128, 128, 40);
     load_description(&local->label, theme, trn->locales[0]);
