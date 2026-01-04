@@ -124,6 +124,6 @@ void component_set_init_cb(component *c, component_init_cb cb);
 void component_set_tick_cb(component *c, component_tick_cb cb);
 void component_set_free_cb(component *c, component_free_cb cb);
 void component_set_find_cb(component *c, component_find_cb cb);
-void component_set_find_text_cb(component *c, component_find_cb cb);
+void component_set_find_text_cb(component *c, component_find_text_cb cb);
 
 #endif // COMPONENT_H

@@ -169,6 +169,10 @@ void component_set_find_cb(component *c, component_find_cb cb) {
     c->find = cb;
 }
 
+void component_set_find_text_cb(component *c, component_find_text_cb cb) {
+    c->find_text = cb;
+}
+
 void component_set_init_cb(component *c, component_init_cb cb) {
     c->init = cb;
 }
