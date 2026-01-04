@@ -73,6 +73,7 @@ static void spritebutton_tick(component *c) {
 }
 
 static component *spritebutton_find_text(component *c, const char *text) {
+    log_debug("spritebutton_find_text");
     spritebutton *b = widget_get_obj(c);
     if(strcmp(text_c(b->text), text) == 0) {
         return c;
@@ -148,6 +149,7 @@ component *spritebutton_create(const char *text, const surface *img, bool disabl
     widget_set_tick_cb(c, spritebutton_tick);
     widget_set_free_cb(c, spritebutton_free);
     widget_set_layout_cb(c, spritebutton_layout);
+    log_debug("widget_set_find_text_cb(c, spritebutton_find_text): %s", text_c(b->text));
     widget_set_find_text_cb(c, spritebutton_find_text);
     return c;
 }
