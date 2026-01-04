@@ -1,5 +1,6 @@
 # Sphinx documentation dependencies for OpenOMF
 # Install with: pip install -r requirements.txt
 
-sphinx==9.0.4
+Sphinx==8.2.3
 sphinx-rtd-theme==3.0.2
+breathe>=4.35.0

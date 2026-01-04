@@ -1,0 +1,36 @@
+# Doxyfile for OpenOMF - generates XML for Breathe/Sphinx
+
+PROJECT_NAME           = "OpenOMF"
+PROJECT_BRIEF          = "Open Source One Must Fall 2097 Remake"
+
+# Input settings
+INPUT                  = ../src/game/gui
+RECURSIVE              = YES
+FILE_PATTERNS          = *.h *.c
+
+# Output settings - XML only for Breathe
+OUTPUT_DIRECTORY       = _build/doxygen
+GENERATE_XML           = YES
+XML_OUTPUT             = xml
+GENERATE_HTML          = NO
+GENERATE_LATEX         = NO
+CREATE_SUBDIRS         = NO
+
+# Extract settings
+EXTRACT_ALL            = NO
+EXTRACT_STATIC         = YES
+EXTRACT_LOCAL_CLASSES  = YES
+
+# Preprocessing
+ENABLE_PREPROCESSING   = YES
+MACRO_EXPANSION        = NO
+
+# Documentation style
+JAVADOC_AUTOBRIEF      = YES
+QT_AUTOBRIEF           = YES
+MULTILINE_CPP_IS_BRIEF = NO
+
+# Warnings
+QUIET                  = YES
+WARNINGS               = YES
+WARN_IF_UNDOCUMENTED   = NO

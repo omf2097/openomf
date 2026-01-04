@@ -1,24 +1,21 @@
 # Makefile for Sphinx documentation
 
 SPHINXOPTS    ?=
-SPHINXBUILD   ?= sphinx-build
+VENV          = venv
+SPHINXBUILD   = $(VENV)/bin/sphinx-build
+PYTHON        = $(VENV)/bin/python
 SOURCEDIR     = source
 BUILDDIR      = _build
 
-.PHONY: help clean html
+.PHONY: clean html venv activate
 
-help:
-	@echo "OpenOMF Documentation Build Targets:"
-	@echo ""
-	@echo "  make html   - Build HTML documentation"
-	@echo "  make clean  - Remove all built documentation"
-	@echo ""
-	@echo "See README.md for setup instructions."
+venv:
+	python3 -m venv $(VENV)
+	$(VENV)/bin/pip install --upgrade pip
+	$(VENV)/bin/pip install -r requirements.txt
 
 clean:
 	rm -rf $(BUILDDIR)
 
 html:
 	$(SPHINXBUILD) -b html $(SOURCEDIR) $(BUILDDIR)/html $(SPHINXOPTS)
-	@echo ""
-	@echo "Build finished. Open $(BUILDDIR)/html/index.html in a browser."
