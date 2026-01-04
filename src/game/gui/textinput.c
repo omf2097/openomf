@@ -182,7 +182,7 @@ static int textinput_event(component *c, SDL_Event *e) {
     // Handle selection
     textinput *ti = widget_get_obj(c);
     if(e->type == SDL_TEXTINPUT && is_valid_input(e->text.text[0]) &&
-       (ti->filter_cb != NULL && ti->filter_cb(e->text.text[0]))) {
+       (ti->filter_cb == NULL || ti->filter_cb(e->text.text[0]))) {
         str_insert_at(&ti->buf, ti->pos, e->text.text[0]);
         str_truncate(&ti->buf, ti->max_chars);
         ti->pos = min2(ti->max_chars - 1, ti->pos + 1);
