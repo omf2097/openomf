@@ -68,12 +68,40 @@ static const char *get_name(void) {
     return "OpenGL3";
 }
 
+static void get_scaling_shader_names(const int scaling_mode, const char **vert_shader, const char **frag_shader) {
+    switch(scaling_mode) {
+        case 1: // Bilinear
+            *vert_shader = "scalers/bilinear.vert";
+            *frag_shader = "scalers/bilinear.frag";
+            break;
+        case 2: // CRT
+            *vert_shader = "scalers/crt.vert";
+            *frag_shader = "scalers/crt.frag";
+            break;
+        default:
+            *vert_shader = "scalers/none.vert";
+            *frag_shader = "scalers/none.frag";
+            break;
+    }
+}
+
 static void set_framerate_limit(gl3_context *ctx, int framerate_limit) {
     if(framerate_limit == 0) {
         ctx->framerate_limit = 0;
     } else {
         ctx->framerate_limit = (1.0 / framerate_limit) * SDL_GetPerformanceFrequency();
     }
+}
+
+static void reload_scaler_program(const gl3_context *ctx) {
+    GLfloat projection_matrix[16];
+    ortho2d(projection_matrix, 0.0f, NATIVE_W, NATIVE_H, 0.0f);
+    activate_program(ctx->scale_prog_id);
+    bind_uniform_4fv(ctx->scale_prog_id, "projection", projection_matrix);
+    bind_uniform_1i(ctx->scale_prog_id, "framebuffer", TEX_UNIT_FBO2);
+    const int fb_w = NATIVE_W * ctx->fb_scale;
+    const int fb_h = NATIVE_H * ctx->fb_scale;
+    bind_uniform_2f(ctx->scale_prog_id, "texture_size", (GLfloat)fb_w, (GLfloat)fb_h);
 }
 
 static bool setup_context(void *userdata, int window_w, int window_h, bool fullscreen, bool vsync, int aspect,
@@ -108,7 +136,9 @@ static bool setup_context(void *userdata, int window_w, int window_h, bool fulls
     if(!create_program(&ctx->rgba_prog_id, "rgba.vert", "rgba.frag")) {
         goto error_3;
     }
-    if(!create_program(&ctx->scale_prog_id, "scale.vert", "scale.frag")) {
+    const char *scale_vert, *scale_frag;
+    get_scaling_shader_names(scaling_mode, &scale_vert, &scale_frag);
+    if(!create_program(&ctx->scale_prog_id, scale_vert, scale_frag)) {
         goto error_4;
     }
 
@@ -131,10 +161,7 @@ static bool setup_context(void *userdata, int window_w, int window_h, bool fulls
     ctx->objects = object_array_create(2048.0f, 2048.0f);
     ctx->shared = shared_create();
     ctx->paletted_target = render_target_create(TEX_UNIT_FBO, fb_w, fb_h, GL_RGBA8, GL_RGBA, GL_NEAREST);
-
-    // Set filtering on rgba_target based on scaling mode
-    GLenum rgba_filter = (ctx->scaling_mode == 1) ? GL_LINEAR : GL_NEAREST;
-    ctx->rgba_target = render_target_create(TEX_UNIT_FBO2, fb_w, fb_h, GL_RGBA8, GL_RGBA, rgba_filter);
+    ctx->rgba_target = render_target_create(TEX_UNIT_FBO2, fb_w, fb_h, GL_RGBA8, GL_RGBA, GL_NEAREST);
     ctx->remaps = remaps_create(TEX_UNIT_REMAPS);
 
     vga_state_mark_dirty();
@@ -158,9 +185,7 @@ static bool setup_context(void *userdata, int window_w, int window_h, bool fulls
     bind_uniform_1i(ctx->rgba_prog_id, "remaps", TEX_UNIT_REMAPS);
 
     // Activate scale program and bind uniforms
-    activate_program(ctx->scale_prog_id);
-    bind_uniform_4fv(ctx->scale_prog_id, "projection", projection_matrix);
-    bind_uniform_1i(ctx->scale_prog_id, "framebuffer", TEX_UNIT_FBO2);
+    reload_scaler_program(ctx);
 
     log_info("OpenGL3 Renderer initialized!");
     return true;
@@ -217,24 +242,35 @@ static bool reset_context_with(void *userdata, int window_w, int window_h, bool 
     bool success = resize_window(ctx->window, window_w, window_h, fullscreen);
     success = set_vsync(ctx->vsync) && success;
 
-    bool fb_scale_changed = ctx->fb_scale != fb_scale;
-    bool scaling_mode_changed = ctx->scaling_mode != scaling_mode;
-    const GLenum rgba_filter = (scaling_mode == 1) ? GL_LINEAR : GL_NEAREST;
+    const bool fb_scale_changed = ctx->fb_scale != fb_scale;
+    const bool scaling_mode_changed = ctx->scaling_mode != scaling_mode;
+    const int fb_w = NATIVE_W * fb_scale;
+    const int fb_h = NATIVE_H * fb_scale;
 
     if(fb_scale_changed) {
         ctx->fb_scale = fb_scale;
-        const int fb_w = NATIVE_W * ctx->fb_scale;
-        const int fb_h = NATIVE_H * ctx->fb_scale;
         render_target_free(&ctx->paletted_target);
         render_target_free(&ctx->rgba_target);
         ctx->paletted_target = render_target_create(TEX_UNIT_FBO, fb_w, fb_h, GL_RGBA8, GL_RGBA, GL_NEAREST);
-        ctx->rgba_target = render_target_create(TEX_UNIT_FBO2, fb_w, fb_h, GL_RGBA8, GL_RGBA, rgba_filter);
-    } else if(scaling_mode_changed) {
-        // Only scaling mode changed, update filtering on the old target
-        render_target_set_filtering(ctx->rgba_target, rgba_filter);
+        ctx->rgba_target = render_target_create(TEX_UNIT_FBO2, fb_w, fb_h, GL_RGBA8, GL_RGBA, GL_NEAREST);
     }
 
-    ctx->scaling_mode = scaling_mode;
+    // Reload scaling shader if scaling mode changed
+    if(scaling_mode_changed) {
+        delete_program(ctx->scale_prog_id);
+        const char *scale_vert, *scale_frag;
+        get_scaling_shader_names(scaling_mode, &scale_vert, &scale_frag);
+        if(create_program(&ctx->scale_prog_id, scale_vert, scale_frag)) {
+            reload_scaler_program(ctx);
+            ctx->scaling_mode = scaling_mode;
+        } else {
+            log_info("Failed to load scaling shader");
+            success = false;
+        }
+    } else if(fb_scale_changed) {
+        // If only fb_scale changed, update shader uniforms with new texture size
+        reload_scaler_program(ctx);
+    }
 
     // Fetch viewport size which may be different from window size.
     SDL_GL_GetDrawableSize(ctx->window, &ctx->viewport_w, &ctx->viewport_h);
@@ -413,7 +449,7 @@ static inline void finish_onscreen(gl3_context *ctx) {
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
     // Step 2: Scale and render onscreen
-    // Filtering is already set on rgba_target based on scaling_mode
+    // Filtering is handled by the scaling shader, not OpenGL
     render_target_deactivate();
     set_screen_viewport(ctx);
     activate_program(ctx->scale_prog_id);

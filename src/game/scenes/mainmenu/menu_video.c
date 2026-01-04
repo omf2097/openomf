@@ -203,7 +203,7 @@ component *menu_video_create(scene *s) {
     // Load settings etc.
     const char *offon_opts[] = {"OFF", "ON"};
     const char *aspect_opts[] = {"4:3", "NATIVE"};
-    const char *scaling_opts[] = {"NEAREST", "BILINEAR", "CUSTOM"};
+    const char *scaling_opts[] = {"NEAREST", "BILINEAR", "CRT"};
     settings *setting = settings_get();
 
     // Create menu and its header
@@ -294,7 +294,7 @@ component *menu_video_create(scene *s) {
 
     // scaling mode selector
     menu_attach(menu, textselector_create_bind_opts(
-                          "SCALING:", "Sets output scaling mode. Nearest=crisp, Bilinear=smooth, Custom=shader-based.",
+                          "SCALING:", "Sets output scaling mode. Nearest=crisp, Bilinear=smooth, CRT=CRT emulation with scanlines.",
                           NULL, NULL, &setting->video.scaling_mode, scaling_opts, 3));
 
     // vsync and fullscreen
