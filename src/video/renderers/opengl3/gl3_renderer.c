@@ -257,14 +257,16 @@ static bool reset_context_with(void *userdata, int window_w, int window_h, bool 
 
     // Reload scaling shader if scaling mode changed
     if(scaling_mode_changed) {
-        delete_program(ctx->scale_prog_id);
         const char *scale_vert, *scale_frag;
         get_scaling_shader_names(scaling_mode, &scale_vert, &scale_frag);
-        if(create_program(&ctx->scale_prog_id, scale_vert, scale_frag)) {
+        GLuint new_prog_id;
+        if(create_program(&new_prog_id, scale_vert, scale_frag)) {
+            delete_program(ctx->scale_prog_id);
+            ctx->scale_prog_id = new_prog_id;
             reload_scaler_program(ctx);
             ctx->scaling_mode = scaling_mode;
         } else {
-            log_info("Failed to load scaling shader");
+            log_error("Failed to load scaling shader, reverting to previous.");
             success = false;
         }
     } else if(fb_scale_changed) {
