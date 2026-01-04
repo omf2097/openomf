@@ -182,7 +182,7 @@ static int textinput_event(component *c, SDL_Event *e) {
     // Handle selection
     textinput *ti = widget_get_obj(c);
     // Only accept input if:
-    // - The global filter accepts that this is text supported by out ont (is_valid_input)
+    // - The global filter accepts that this is text supported by font (is_valid_input)
     // - there is no text filter callback set OR the filter callback function accepts the input.
     if(e->type == SDL_TEXTINPUT && is_valid_input(e->text.text[0]) &&
        (ti->filter_cb == NULL || ti->filter_cb(e->text.text[0]))) {
