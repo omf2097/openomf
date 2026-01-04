@@ -237,6 +237,7 @@ static void textinput_free(component *c) {
     textinput *ti = widget_get_obj(c);
     surface_free(&ti->bg_surface);
     text_free(&ti->text);
+    str_free(&ti->buf);
     omf_free(ti);
 }
 
