@@ -47,6 +47,13 @@ component *gui_frame_find(gui_frame *frame, int id) {
     return NULL;
 }
 
+component *gui_frame_find_text(gui_frame *frame, const char *text) {
+    if(frame->root_node) {
+        return component_find_text(frame->root_node, text);
+    }
+    return NULL;
+}
+
 component *gui_frame_get_root(const gui_frame *frame) {
     return frame->root_node;
 }

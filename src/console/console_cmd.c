@@ -4,6 +4,7 @@
 #include "formats/error.h"
 #include "formats/rec_assertion.h"
 #include "game/gui/component.h"
+#include "game/gui/sizer.h"
 #include "game/scenes/arena.h"
 #include "game/scenes/mechlab.h"
 #include "resources/ids.h"

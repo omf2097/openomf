@@ -117,9 +117,12 @@ component *component_find(component *c, int id) {
 }
 
 component *component_find_text(component *c, const char *text) {
+    log_debug("component_find_text");
     if(c->find_text != NULL) {
+        log_debug("component_find_text: callback found");
         return c->find_text(c, text);
     }
+    log_debug("component_find_text: NULL");
     return NULL;
 }
 
