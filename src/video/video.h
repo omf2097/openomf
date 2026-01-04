@@ -20,9 +20,9 @@ int video_get_renderer_count(void);
 bool video_get_renderer_info(int index, const char **name, const char **description);
 
 bool video_init(const char *try_name, int window_w, int window_h, bool fullscreen, bool vsync, int aspect,
-                int framerate_limit, int fb_scale);
+                int framerate_limit, int fb_scale, int scaling_mode);
 bool video_reinit(int window_w, int window_h, bool fullscreen, bool vsync, int aspect, int framerate_limit,
-                  int fb_scale);
+                  int fb_scale, int scaling_mode);
 void video_reinit_renderer(void);
 void video_get_state(int *w, int *h, bool *fs, bool *vsync, int *aspect, int *fb_scale);
 void video_move_target(int x, int y);

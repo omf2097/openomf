@@ -7,6 +7,7 @@ bool create_program(GLuint *program_id, const char *const vertex_shader, const c
 void delete_program(GLuint program_id);
 void activate_program(GLuint program_id);
 void bind_uniform_4fv(GLuint program_id, const char *name, GLfloat *data);
+void bind_uniform_2f(GLuint program_id, const char *name, GLfloat x, GLfloat y);
 void bind_uniform_1i(GLuint program_id, const char *name, GLint value);
 void bind_uniform_1u(GLuint program_id, const char *name, GLuint value);
 void bind_uniform_block(GLuint program_id, const char *name, GLuint binding_id, GLuint buffer);

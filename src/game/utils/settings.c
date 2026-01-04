@@ -75,6 +75,7 @@ const field f_video[] = {
     F_INT(settings_video, aspect, 0),
     F_BOOL(settings_video, fullscreen, 0),
     F_INT(settings_video, scaling, 0),
+    F_INT(settings_video, scaling_mode, 0),
     F_BOOL(settings_video, instant_console, 0),
     F_BOOL(settings_video, crossfade_on, 1),
     F_INT(settings_video, fb_scale, 1),
