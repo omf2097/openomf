@@ -108,8 +108,9 @@ void component_set_help_text(component *c, const char *text);
 void component_set_theme(component *c, const gui_theme *theme);
 const gui_theme *component_get_theme(component *c);
 
-// ID lookup stuff
+// lookup stuff
 component *component_find(component *c, int id);
+component *component_find_text(component *c, const char *text);
 
 // Basic component callbacks
 void component_set_obj(component *c, void *obj);

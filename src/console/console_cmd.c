@@ -3,6 +3,7 @@
 #include "console/console_type.h"
 #include "formats/error.h"
 #include "formats/rec_assertion.h"
+#include "game/gui/component.h"
 #include "game/scenes/arena.h"
 #include "game/scenes/mechlab.h"
 #include "resources/ids.h"
@@ -273,6 +274,18 @@ int console_cmd_god(game_state *gs, int argc, char **argv) {
     return 0;
 }
 
+int console_find_by_text(game_state *gs, int argc, char **argv) {
+    scene *sc = game_state_get_scene(gs);
+    if(sc->id != SCENE_MECHLAB) {
+        log_debug("Wrong scene for find_by_text");
+        return 1;
+    }
+    gui_frame *frame = mechlab_get_frame(game_state_get_scene(gs));
+    component_find_text(gui_frame_get_root(frame), "NEW");
+
+    return 0;
+}
+
 int console_keypress(game_state *gs, int argc, char **argv) {
     SDL_Event sdlevent;
     memset(&sdlevent, 0, sizeof(sdlevent));
@@ -490,6 +503,7 @@ void console_init_cmd(void) {
     console_add_cmd("rein", &console_cmd_rein, "R-E-I-N!");
     console_add_cmd("god", &console_cmd_god, "Enable god mode");
     console_add_cmd("keypress", &console_keypress, "Push a keypress into the input queue");
+    console_add_cmd("find_by_text", &console_find_by_text, "Move the hand to this button");
     console_add_cmd("kreissack", &console_kreissack, "Fight Kreissack");
     console_add_cmd("ez-destruct", &console_cmd_ez_destruct, "Punch = destruction, kick = scrap");
     console_add_cmd("warp", &console_toggle_warp, "Toggle warp speed");
