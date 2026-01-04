@@ -3,6 +3,7 @@
 
 #include "formats/chr.h"
 #include "game/gui/component.h"
+#include "game/gui/gui_frame.h"
 #include "game/protos/scene.h"
 
 #define MECHLAB_DARK_GREEN 165
@@ -40,5 +41,7 @@ void mechlab_set_hint(scene *scene, const char *hint);
 void mechlab_spin_har(scene *scene, bool to_spin_or_not_to_spin);
 
 sd_chr_enemy *mechlab_next_opponent(scene *scene);
+
+gui_frame *mechlab_get_frame(scene *scene);
 
 #endif // MECHLAB_H

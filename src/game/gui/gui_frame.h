@@ -12,6 +12,7 @@ component *gui_frame_get_root(const gui_frame *frame);
 void gui_frame_free(gui_frame *frame);
 
 component *gui_frame_find(gui_frame *frame, int id);
+component *gui_frame_find_text(gui_frame *frame, const char *text);
 
 void gui_frame_get_measurements(const gui_frame *frame, int *x, int *y, int *w, int *h);
 

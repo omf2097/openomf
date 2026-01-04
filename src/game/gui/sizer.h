@@ -12,6 +12,7 @@ typedef void (*sizer_tick_cb)(component *c);
 typedef void (*sizer_init_cb)(component *c, const gui_theme *theme);
 typedef void (*sizer_free_cb)(component *c);
 typedef component *(*sizer_find_cb)(component *c, int id);
+typedef component *(*sizer_find_text_cb)(component *c, const char *text);
 
 typedef struct sizer sizer;
 
@@ -36,6 +37,7 @@ void sizer_set_tick_cb(component *c, sizer_tick_cb cb);
 void sizer_set_free_cb(component *c, sizer_free_cb cb);
 void sizer_set_init_cb(component *c, sizer_init_cb cb);
 void sizer_set_find_cb(component *c, sizer_find_cb cb);
+void sizer_set_find_text_cb(component *c, sizer_find_text_cb cb);
 
 void sizer_attach(component *c, component *nc);
 

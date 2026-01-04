@@ -3,6 +3,8 @@
 #include "console/console_type.h"
 #include "formats/error.h"
 #include "formats/rec_assertion.h"
+#include "game/gui/component.h"
+#include "game/gui/sizer.h"
 #include "game/scenes/arena.h"
 #include "game/scenes/mechlab.h"
 #include "resources/ids.h"
@@ -273,6 +275,41 @@ int console_cmd_god(game_state *gs, int argc, char **argv) {
     return 0;
 }
 
+int console_find_by_text(game_state *gs, int argc, char **argv) {
+    scene *sc = game_state_get_scene(gs);
+    if(sc->id != SCENE_MECHLAB) {
+        log_debug("Wrong scene for find_by_text");
+        return 1;
+    }
+    gui_frame *frame = mechlab_get_frame(game_state_get_scene(gs));
+    // component *c = component_find_text(gui_frame_get_root(frame), "NEW");
+    component *c = gui_frame_find_text(frame, "NEW");
+    if(c == NULL) {
+        log_debug("Could not find the component");
+        return 1;
+    }
+    component_action(c, ACT_PUNCH);
+
+    return 0;
+}
+
+int console_keypress(game_state *gs, int argc, char **argv) {
+    SDL_Event sdlevent;
+    memset(&sdlevent, 0, sizeof(sdlevent));
+    sdlevent.type = SDL_KEYDOWN;
+    sdlevent.key.keysym.sym = SDLK_DOWN;
+    sdlevent.key.keysym.scancode = SDL_SCANCODE_DOWN;
+    SDL_PushEvent(&sdlevent);
+
+    Uint8 *state = (Uint8 *)SDL_GetKeyboardState(NULL);
+    state[SDL_SCANCODE_DOWN] = 1;
+
+    con->keypress_time = 20;
+    con->keypress_scancode = SDL_SCANCODE_DOWN;
+
+    return 0;
+}
+
 int console_kreissack(game_state *gs, int argc, char **argv) {
     game_player *p1 = game_state_get_player(gs, 0);
     p1->sp_wins = (2046 ^ (2 << p1->pilot->pilot_id));
@@ -472,6 +509,8 @@ void console_init_cmd(void) {
     console_add_cmd("stun", &console_cmd_stun, "Stun the other player");
     console_add_cmd("rein", &console_cmd_rein, "R-E-I-N!");
     console_add_cmd("god", &console_cmd_god, "Enable god mode");
+    console_add_cmd("keypress", &console_keypress, "Push a keypress into the input queue");
+    console_add_cmd("find_by_text", &console_find_by_text, "Move the hand to this button");
     console_add_cmd("kreissack", &console_kreissack, "Fight Kreissack");
     console_add_cmd("ez-destruct", &console_cmd_ez_destruct, "Punch = destruction, kick = scrap");
     console_add_cmd("warp", &console_toggle_warp, "Toggle warp speed");

@@ -16,6 +16,9 @@ void console_tick(game_state *gs);
 void console_add_cmd(const char *name, command_func func, const char *doc);
 void console_remove_cmd(const char *name);
 
+// Potentially release a key that has been pressed by the keypress command.
+void console_release_keypress(void);
+
 void console_output_add(const char *text);
 void console_output_addline(const char *text);
 

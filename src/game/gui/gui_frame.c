@@ -1,5 +1,6 @@
 #include "game/gui/gui_frame.h"
 #include "utils/allocator.h"
+#include "utils/log.h"
 
 typedef struct gui_frame {
     int x;
@@ -43,6 +44,14 @@ void gui_frame_free(gui_frame *frame) {
 component *gui_frame_find(gui_frame *frame, int id) {
     if(frame->root_node) {
         return component_find(frame->root_node, id);
+    }
+    return NULL;
+}
+
+component *gui_frame_find_text(gui_frame *frame, const char *text) {
+    log_debug("gui_frame_find_text");
+    if(frame->root_node) {
+        return component_find_text(frame->root_node, text);
     }
     return NULL;
 }
