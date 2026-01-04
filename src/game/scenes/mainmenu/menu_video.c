@@ -166,14 +166,16 @@ void menu_video_done(component *c, void *u) {
     if(render_plugin_changed) {
         video_close();
         video_init(v->renderer, v->screen_w, v->screen_h, v->fullscreen, v->vsync, v->aspect, v->framerate_limit,
-                   v->fb_scale);
+                   v->fb_scale, v->scaling_mode);
         menu_set_submenu(c->parent, menu_video_confirm_create(s, &local->old_video_settings));
     } else if(local->old_video_settings.screen_w != v->screen_w || local->old_video_settings.screen_h != v->screen_h ||
               local->old_video_settings.fullscreen != v->fullscreen || local->old_video_settings.vsync != v->vsync ||
               local->old_video_settings.aspect != v->aspect ||
               local->old_video_settings.framerate_limit != v->framerate_limit ||
-              local->old_video_settings.fb_scale != v->fb_scale) {
-        video_reinit(v->screen_w, v->screen_h, v->fullscreen, v->vsync, v->aspect, v->framerate_limit, v->fb_scale);
+              local->old_video_settings.fb_scale != v->fb_scale ||
+              local->old_video_settings.scaling_mode != v->scaling_mode) {
+        video_reinit(v->screen_w, v->screen_h, v->fullscreen, v->vsync, v->aspect, v->framerate_limit, v->fb_scale,
+                     v->scaling_mode);
 
         menu_set_submenu(c->parent, menu_video_confirm_create(s, &local->old_video_settings));
     } else {
@@ -201,6 +203,7 @@ component *menu_video_create(scene *s) {
     // Load settings etc.
     const char *offon_opts[] = {"OFF", "ON"};
     const char *aspect_opts[] = {"4:3", "NATIVE"};
+    const char *scaling_opts[] = {"NEAREST", "BILINEAR", "CRT"};
     settings *setting = settings_get();
 
     // Create menu and its header
@@ -288,6 +291,12 @@ component *menu_video_create(scene *s) {
             textselector_set_pos(fb_scaling, i);
         }
     }
+
+    // scaling mode selector
+    menu_attach(menu, textselector_create_bind_opts(
+                          "SCALING:",
+                          "Sets output scaling mode. Nearest=crisp, Bilinear=smooth, CRT=CRT emulation with scanlines.",
+                          NULL, NULL, &setting->video.scaling_mode, scaling_opts, 3));
 
     // vsync and fullscreen
     menu_attach(menu, textselector_create_bind_opts("VSYNC", "Toggle vertical sync on or off.", NULL, NULL,

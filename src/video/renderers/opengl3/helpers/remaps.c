@@ -15,7 +15,7 @@ typedef struct remaps {
 remaps *remaps_create(GLuint tex_unit) {
     remaps *maps = omf_calloc(1, sizeof(remaps));
     maps->tex_unit = tex_unit;
-    maps->texture_id = texture_create(tex_unit, REMAPS_WIDTH, REMAPS_HEIGHT, GL_R8, GL_RED);
+    maps->texture_id = texture_create(tex_unit, REMAPS_WIDTH, REMAPS_HEIGHT, GL_R8, GL_RED, GL_NEAREST);
     return maps;
 }
 

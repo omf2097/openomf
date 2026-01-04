@@ -19,11 +19,11 @@ typedef void (*close_renderer_fn)(renderer *renderer);
 
 // Renderer initialization and de-initialization, these must be implemented.
 typedef bool (*setup_context_fn)(void *ctx, int window_w, int window_h, bool fullscreen, bool vsync, int aspect,
-                                 int framerate_limit, int fb_scale);
+                                 int framerate_limit, int fb_scale, int scaling_mode);
 typedef void (*get_context_state_fn)(void *ctx, int *window_w, int *window_h, bool *fullscreen, bool *vsync,
                                      int *aspect, int *fb_scale);
 typedef bool (*reset_context_with_fn)(void *ctx, int window_w, int window_h, bool fullscreen, bool vsync, int aspect,
-                                      int framerate_limit, int fb_scale);
+                                      int framerate_limit, int fb_scale, int scaling_mode);
 typedef void (*reset_context_fn)(void *ctx);
 typedef void (*close_context_fn)(void *ctx);
 
