@@ -21,6 +21,8 @@ void *widget_get_obj(const component *c);
 void widget_set_id(component *c, int id);
 int widget_get_id(const component *c);
 
+component *widget_find_text(component *c, const char *text);
+
 void widget_set_render_cb(component *c, widget_render_cb cb);
 void widget_set_event_cb(component *c, widget_event_cb cb);
 void widget_set_action_cb(component *c, widget_action_cb cb);

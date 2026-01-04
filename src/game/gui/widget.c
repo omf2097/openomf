@@ -68,6 +68,7 @@ void widget_set_focus_cb(component *c, widget_focus_cb cb) {
 }
 
 void widget_set_find_text_cb(component *c, widget_find_text_cb cb) {
+    log_debug("widget_set_find_text_cb %p", c);
     assert(c->header == WIDGET_MAGIC);
     widget *local = component_get_obj(c);
     local->find_text = cb;
@@ -170,6 +171,16 @@ static component *widget_find(component *c, int id) {
         return c;
     }
     return NULL;
+}
+
+component *widget_find_text(component *c, const char *text) {
+    widget *w = component_get_obj(c);
+    log_debug("widget_find_text(%p): %p", c, w);
+    component *ret = NULL;
+    if(w->find_text != NULL) {
+        ret = w->find_text(c, text);
+    }
+    return ret;
 }
 
 component *widget_create(void) {

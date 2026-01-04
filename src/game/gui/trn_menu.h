@@ -11,6 +11,7 @@ typedef void (*trnmenu_tick_cb)(component *c);
 typedef void (*trnmenu_free_cb)(component *c);
 typedef void (*trnmenu_submenu_init_cb)(component *menu, component *submenu);
 typedef void (*trnmenu_submenu_done_cb)(component *menu, component *submenu);
+typedef component *(*trnmenu_find_text_cb)(component *menu, const char *text);
 
 component *trnmenu_create(surface *button_sheet, int sheet_x, int sheet_y, bool return_hand);
 void trnmenu_attach(component *menu, component *c);

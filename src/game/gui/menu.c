@@ -431,10 +431,13 @@ static component *menu_find(component *c, int id) {
 }
 
 static component *menu_find_text(component *c, const char *text) {
+    log_debug("menu_find_text");
     menu *m = sizer_get_obj(c);
     if(m->submenu) {
+        log_debug("menu_find_text: calling for submenu");
         return component_find_text(m->submenu, text);
     }
+    log_debug("menu_find_text: returning NULL");
     return NULL;
 }
 
