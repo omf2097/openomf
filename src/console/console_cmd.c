@@ -281,7 +281,12 @@ int console_find_by_text(game_state *gs, int argc, char **argv) {
         return 1;
     }
     gui_frame *frame = mechlab_get_frame(game_state_get_scene(gs));
-    component_find_text(gui_frame_get_root(frame), "NEW");
+    component *c = component_find_text(gui_frame_get_root(frame), "NEW");
+    if(c == NULL) {
+        log_debug("Could not find the component");
+        return 1;
+    }
+    component_action(c, ACT_PUNCH);
 
     return 0;
 }
