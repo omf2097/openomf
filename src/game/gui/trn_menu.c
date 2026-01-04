@@ -162,7 +162,9 @@ static void trnmenu_layout(component *c, int x, int y, int w, int h) {
 
     // Set initial hand position
     component *sel = sizer_get(c, m->selected);
-    object_set_pos(m->hand.obj, vec2i_create(sel->x + sel->w / 2, sel->y + sel->h / 2));
+    if(sel != NULL) {
+        object_set_pos(m->hand.obj, vec2i_create(sel->x + sel->w / 2, sel->y + sel->h / 2));
+    }
 }
 
 static vec2f center(component *c) {
