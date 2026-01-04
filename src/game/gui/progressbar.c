@@ -160,6 +160,20 @@ static void progressbar_layout(component *c, int x, int y, int w, int h) {
     image tmp;
     progressbar *bar = widget_get_obj(c);
 
+    // Free previous allocations if they exist (in case of re-layout)
+    if(bar->background != NULL) {
+        surface_free(bar->background);
+        omf_free(bar->background);
+    }
+    if(bar->background_alt != NULL) {
+        surface_free(bar->background_alt);
+        omf_free(bar->background_alt);
+    }
+    if(bar->block != NULL) {
+        surface_free(bar->block);
+        omf_free(bar->block);
+    }
+
     // Allocate everything
     bar->background = omf_calloc(1, sizeof(surface));
     bar->background_alt = omf_calloc(1, sizeof(surface));

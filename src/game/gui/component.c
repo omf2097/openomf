@@ -110,6 +110,9 @@ void component_set_pos_hints(component *c, int x, int y) {
 }
 
 component *component_find(component *c, int id) {
+    if(c == NULL || c->find == NULL) {
+        return NULL;
+    }
     return c->find(c, id);
 }
 

@@ -181,8 +181,11 @@ static bool is_valid_input(char c) {
 static int textinput_event(component *c, SDL_Event *e) {
     // Handle selection
     textinput *ti = widget_get_obj(c);
+    // Only accept input if:
+    // - The global filter accepts that this is text supported by out ont (is_valid_input)
+    // - there is no text filter callback set OR the filter callback function accepts the input.
     if(e->type == SDL_TEXTINPUT && is_valid_input(e->text.text[0]) &&
-       (ti->filter_cb != NULL && ti->filter_cb(e->text.text[0]))) {
+       (ti->filter_cb == NULL || ti->filter_cb(e->text.text[0]))) {
         str_insert_at(&ti->buf, ti->pos, e->text.text[0]);
         str_truncate(&ti->buf, ti->max_chars);
         ti->pos = min2(ti->max_chars - 1, ti->pos + 1);
@@ -237,6 +240,7 @@ static void textinput_free(component *c) {
     textinput *ti = widget_get_obj(c);
     surface_free(&ti->bg_surface);
     text_free(&ti->text);
+    str_free(&ti->buf);
     omf_free(ti);
 }
 

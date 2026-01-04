@@ -344,7 +344,7 @@ void text_generate_document(text_document *td, str *buf0, font_size font_sz, uin
     const char *buf = str_c(buf0);
 
     uint16_t current_width = w;
-    uint16_t current_height = w;
+    uint16_t current_height = h;
     text_vertical_align current_vertical_align = vertical_align;
     text_horizontal_align current_horizontal_align = horizontal_align;
     font_size current_font_size = font_sz;
