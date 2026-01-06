@@ -116,6 +116,16 @@ component *component_find(component *c, int id) {
     return c->find(c, id);
 }
 
+component *component_find_text(component *c, const char *text) {
+    log_debug("component_find_text");
+    if(c->find_text != NULL) {
+        log_debug("component_find_text: callback found");
+        return c->find_text(c, text);
+    }
+    log_debug("component_find_text: NULL");
+    return NULL;
+}
+
 void component_set_obj(component *c, void *obj) {
     c->obj = obj;
 }
@@ -160,6 +170,10 @@ void component_set_free_cb(component *c, component_free_cb cb) {
 
 void component_set_find_cb(component *c, component_find_cb cb) {
     c->find = cb;
+}
+
+void component_set_find_text_cb(component *c, component_find_text_cb cb) {
+    c->find_text = cb;
 }
 
 void component_set_init_cb(component *c, component_init_cb cb) {

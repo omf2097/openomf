@@ -25,6 +25,7 @@ typedef void (*component_tick_cb)(component *c);
 typedef void (*component_free_cb)(component *c);
 typedef void (*component_init_cb)(component *c, const gui_theme *theme);
 typedef component *(*component_find_cb)(component *c, int id);
+typedef component *(*component_find_text_cb)(component *c, const char *text);
 
 /*! \brief Basic GUI object
  *
@@ -70,8 +71,9 @@ struct component {
     component_tick_cb tick;     ///< Tick function callback. This is called periodically.
     component_free_cb free;     ///< Free function callback. Any component callbacks should be done here.
     component_find_cb find;     ///< Should only be set by widget and sizer. Used to look up widgets by ID.
-    component_init_cb init;     ///< Initialization function callback. This is called right before layout function. This
-                                ///< should be used to prerender elements, decide size hints, etc.
+    component_find_text_cb find_text; ///< ...
+    component_init_cb init; ///< Initialization function callback. This is called right before layout function. This
+                            ///< should be used to prerender elements, decide size hints, etc.
 
     component *parent; ///< Parent component. For widgets, usually a sizer. NULL for root component.
 };
@@ -106,8 +108,9 @@ void component_set_help_text(component *c, const char *text);
 void component_set_theme(component *c, const gui_theme *theme);
 const gui_theme *component_get_theme(component *c);
 
-// ID lookup stuff
+// lookup stuff
 component *component_find(component *c, int id);
+component *component_find_text(component *c, const char *text);
 
 // Basic component callbacks
 void component_set_obj(component *c, void *obj);
@@ -121,5 +124,6 @@ void component_set_init_cb(component *c, component_init_cb cb);
 void component_set_tick_cb(component *c, component_tick_cb cb);
 void component_set_free_cb(component *c, component_free_cb cb);
 void component_set_find_cb(component *c, component_find_cb cb);
+void component_set_find_text_cb(component *c, component_find_text_cb cb);
 
 #endif // COMPONENT_H

@@ -24,6 +24,8 @@ typedef struct console {
     int y_pos;
     hashmap cmds; // string -> command
     text *text;
+    int keypress_time;
+    int keypress_scancode;
 } console;
 
 typedef struct command {

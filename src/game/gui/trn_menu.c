@@ -1,5 +1,6 @@
 #include "game/gui/trn_menu.h"
 #include "game/gui/sizer.h"
+#include "game/gui/widget.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
 #include "utils/vector.h"
@@ -420,6 +421,46 @@ int trnmenu_is_finished(const component *c) {
     return m->finished;
 }
 
+static component *trnmenu_find_text(component *c, const char *text) {
+    log_debug("trnmenu_find_text");
+
+    iterator it;
+    component **tmp;
+    sizer_begin_iterator(c, &it);
+
+    foreach(it, tmp) {
+        component *t = *tmp;
+        // log_debug("trnmenu_find_text: iterating %p", t);
+
+        // if(!component_is_selectable(t)) {
+        // continue;
+        //}
+        // widget *w = component_get_obj(t);
+        // component_get_obj(t);
+
+        component *found = widget_find_text(t, text);
+        if(found != NULL) {
+            log_debug("trnmenu_find_text: found %p", t);
+            return found;
+        } else {
+            log_debug("trnmenu_find_text: found was NULL on %p", t);
+        }
+    }
+    log_debug("trnmenu_find_text: checking submenu");
+
+    trnmenu *m = sizer_get_obj(c);
+    if(m->submenu != NULL) {
+        log_debug("trnmenu_find_text: submenu is non-NULL");
+        component *found = component_find_text(m->submenu, text);
+        if(found != NULL) {
+            return found;
+        }
+    } else {
+        log_debug("trnmenu_find_text: submenu is NULL");
+    }
+    return NULL;
+}
+
 void trnmenu_set_submenu(component *c, component *submenu) {
     trnmenu *m = sizer_get_obj(c);
     if(m->submenu) {
@@ -480,6 +521,7 @@ component *trnmenu_create(surface *button_sheet, int sheet_x, int sheet_y, bool 
     sizer_set_event_cb(c, trnmenu_event);
     sizer_set_tick_cb(c, trnmenu_tick);
     sizer_set_free_cb(c, trnmenu_free);
+    sizer_set_find_text_cb(c, trnmenu_find_text);
 
     return c;
 }

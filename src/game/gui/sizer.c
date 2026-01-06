@@ -17,6 +17,7 @@ typedef struct sizer {
     sizer_tick_cb tick;
     sizer_free_cb free;
     sizer_find_cb find;
+    sizer_find_text_cb find_text;
     sizer_init_cb init;
 } sizer;
 
@@ -107,6 +108,12 @@ void sizer_set_find_cb(component *c, sizer_find_cb cb) {
     assert(c->header == SIZER_MAGIC);
     sizer *local = component_get_obj(c);
     local->find = cb;
+}
+
+void sizer_set_find_text_cb(component *c, sizer_find_text_cb cb) {
+    assert(c->header == SIZER_MAGIC);
+    sizer *local = component_get_obj(c);
+    local->find_text = cb;
 }
 
 void sizer_set_init_cb(component *c, sizer_init_cb cb) {
@@ -243,6 +250,31 @@ static component *sizer_find(component *c, int id) {
     return NULL;
 }
 
+static component *sizer_find_text(component *c, const char *text) {
+    assert(c->header == SIZER_MAGIC);
+    sizer *local = component_get_obj(c);
+
+    iterator it;
+    component **tmp;
+    vector_iter_begin(&local->objs, &it);
+    foreach(it, tmp) {
+        // Find out if the component is what we're looking for.
+        // If it is, return pointer.
+        component *out = component_find_text(*tmp, text);
+        if(out != NULL) {
+            return out;
+        }
+    }
+
+    // If find callback is set, try to use it.
+    if(local->find_text) {
+        return local->find_text(c, text);
+    }
+
+    // If requested ID was not found in any of the internal components/widgets, return NULL.
+    return NULL;
+}
+
 component *sizer_create(void) {
     component *c = component_create(SIZER_MAGIC);
 
@@ -257,6 +289,7 @@ component *sizer_create(void) {
     component_set_layout_cb(c, sizer_layout);
     component_set_free_cb(c, sizer_free);
     component_set_find_cb(c, sizer_find);
+    component_set_find_text_cb(c, sizer_find_text);
     component_set_init_cb(c, sizer_init);
 
     return c;
