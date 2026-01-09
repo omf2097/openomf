@@ -1,5 +1,5 @@
 /*! \file
- * \brief Gui base component
+ * \brief GUI base component
  * \details Base component for GUI elements. Sizers, widgets etc. are based on this.
  * \copyright MIT license.
  * \date 2014
@@ -16,14 +16,31 @@
 
 typedef struct component component;
 
+/** @brief Render callback type. */
 typedef void (*component_render_cb)(component *c);
+
+/** @brief SDL event callback type. Returns 0 if handled, 1 otherwise. */
 typedef int (*component_event_cb)(component *c, SDL_Event *event);
+
+/** @brief Action callback type. Returns 0 if handled, 1 otherwise. */
 typedef int (*component_action_cb)(component *c, int action);
+
+/** @brief Focus change callback type. */
 typedef void (*component_focus_cb)(component *c, bool focused);
+
+/** @brief Layout callback type. Sets component position and size. */
 typedef void (*component_layout_cb)(component *c, int x, int y, int w, int h);
+
+/** @brief Per-frame tick callback type. */
 typedef void (*component_tick_cb)(component *c);
+
+/** @brief Cleanup callback type. */
 typedef void (*component_free_cb)(component *c);
+
+/** @brief Initialization callback type. Called before layout. */
 typedef void (*component_init_cb)(component *c, const gui_theme *theme);
+
+/** @brief Widget lookup callback type. Returns component if ID matches, NULL otherwise. */
 typedef component *(*component_find_cb)(component *c, int id);
 
 /*! \brief Basic GUI object
@@ -76,50 +93,206 @@ struct component {
     component *parent; ///< Parent component. For widgets, usually a sizer. NULL for root component.
 };
 
-// Create & free
+/**
+ * @brief Create a new component with the specified header.
+ * @param header Magic number identifying the component type (SIZER_MAGIC or WIDGET_MAGIC).
+ * @return New component, or NULL on failure.
+ */
 component *component_create(uint32_t header);
+
+/**
+ * @brief Free a component and its resources.
+ * @param c Component to free.
+ */
 void component_free(component *c);
 
-// Internal callbacks
+/**
+ * @brief Process one frame tick for the component.
+ * @param c Component to tick.
+ */
 void component_tick(component *c);
+
+/**
+ * @brief Render the component.
+ * @param c Component to render.
+ */
 void component_render(component *c);
+
+/**
+ * @brief Handle an SDL event.
+ * @param c Component to receive the event.
+ * @param event SDL event to handle.
+ * @return 0 if handled, 1 otherwise.
+ */
 int component_event(component *c, SDL_Event *event);
+
+/**
+ * @brief Handle a game action.
+ * @param c Component to receive the action.
+ * @param action Action code to handle.
+ * @return 0 if handled, 1 otherwise.
+ */
 int component_action(component *c, int action);
+
+/**
+ * @brief Initialize the component with the theme.
+ * @param c Component to initialize.
+ * @param theme Theme to apply.
+ */
 void component_init(component *c, const gui_theme *theme);
+
+/**
+ * @brief Set the component's position and size.
+ * @param c Component to layout.
+ * @param x X position in pixels.
+ * @param y Y position in pixels.
+ * @param w Width in pixels.
+ * @param h Height in pixels.
+ */
 void component_layout(component *c, int x, int y, int w, int h);
 
+/**
+ * @brief Set the component's disabled state.
+ * @param c Component to modify.
+ * @param disabled True to disable, false to enable.
+ */
 void component_disable(component *c, bool disabled);
+
+/**
+ * @brief Set the component's selected state.
+ * @param c Component to modify.
+ * @param selected True to select, false to deselect.
+ */
 void component_select(component *c, bool selected);
+
+/**
+ * @brief Set the component's focus state.
+ * @param c Component to modify.
+ * @param focused True to focus, false to unfocus.
+ */
 void component_focus(component *c, bool focused);
+
+/**
+ * @brief Check if the component is disabled.
+ * @param c Component to check.
+ * @return True if disabled and supports_disable is set.
+ */
 bool component_is_disabled(const component *c);
+
+/**
+ * @brief Check if the component is selected.
+ * @param c Component to check.
+ * @return True if selected and supports_select is set.
+ */
 bool component_is_selected(const component *c);
+
+/**
+ * @brief Check if the component is focused.
+ * @param c Component to check.
+ * @return True if focused and supports_focus is set.
+ */
 bool component_is_focused(const component *c);
 
+/**
+ * @brief Check if the component can be selected.
+ * @param c Component to check.
+ * @return True if supports_select is set.
+ */
 bool component_is_selectable(component *c);
 
+/**
+ * @brief Set size hints for the component.
+ * @param c Component to modify.
+ * @param w Width hint (-1 for unset).
+ * @param h Height hint (-1 for unset).
+ */
 void component_set_size_hints(component *c, int w, int h);
+
+/**
+ * @brief Set position hints for the component.
+ * @param c Component to modify.
+ * @param x X position hint (-1 for unset).
+ * @param y Y position hint (-1 for unset).
+ */
 void component_set_pos_hints(component *c, int x, int y);
+
+/**
+ * @brief Set which states the component supports.
+ * @param c Component to modify.
+ * @param allow_disable Whether disable state is supported.
+ * @param allow_select Whether select state is supported.
+ * @param allow_focus Whether focus state is supported.
+ */
 void component_set_supports(component *c, bool allow_disable, bool allow_select, bool allow_focus);
 
+/**
+ * @brief Set the help text displayed when component is selected.
+ * @param c Component to modify.
+ * @param text Help text string.
+ */
 void component_set_help_text(component *c, const char *text);
 
+/**
+ * @brief Set the theme for the component.
+ * @param c Component to modify.
+ * @param theme Theme to set.
+ */
 void component_set_theme(component *c, const gui_theme *theme);
+
+/**
+ * @brief Get the component's theme.
+ * @param c Component to query.
+ * @return Theme pointer, or NULL if not set.
+ */
 const gui_theme *component_get_theme(component *c);
 
-// ID lookup stuff
+/**
+ * @brief Find a component by ID in the tree.
+ * @param c Root component to search from.
+ * @param id ID to search for.
+ * @return Component with matching ID, or NULL if not found.
+ */
 component *component_find(component *c, int id);
 
-// Basic component callbacks
+/**
+ * @brief Set the specialization object pointer.
+ * @param c Component to modify.
+ * @param obj Object pointer to set.
+ */
 void component_set_obj(component *c, void *obj);
+
+/**
+ * @brief Get the specialization object pointer.
+ * @param c Component to query.
+ * @return Object pointer.
+ */
 void *component_get_obj(const component *c);
+
+/** @brief Set the render callback. */
 void component_set_render_cb(component *c, component_render_cb cb);
+
+/** @brief Set the SDL event callback. */
 void component_set_event_cb(component *c, component_event_cb cb);
+
+/** @brief Set the action callback. */
 void component_set_action_cb(component *c, component_action_cb cb);
+
+/** @brief Set the focus change callback. */
 void component_set_focus_cb(component *c, component_focus_cb cb);
+
+/** @brief Set the layout callback. */
 void component_set_layout_cb(component *c, component_layout_cb cb);
+
+/** @brief Set the initialization callback. */
 void component_set_init_cb(component *c, component_init_cb cb);
+
+/** @brief Set the tick callback. */
 void component_set_tick_cb(component *c, component_tick_cb cb);
+
+/** @brief Set the cleanup callback. */
 void component_set_free_cb(component *c, component_free_cb cb);
+
+/** @brief Set the find callback. */
 void component_set_find_cb(component *c, component_find_cb cb);
 
 #endif // COMPONENT_H

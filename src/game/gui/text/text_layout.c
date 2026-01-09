@@ -178,22 +178,6 @@ static uint16_t halign_offset(text_horizontal_align align, uint16_t bbox_w, uint
     return 0; // Should never come here.
 }
 
-/**
- * Figure out a layout for text block.
- *
- * @param layout This will be filled after text_layout_compute is called.
- * @param buf Text to render
- * @param font Font to use when rendering
- * @param bbox_w Bounding box width for the output block. This will affect word wrapping!
- * @param bbox_h Bounding box width for the output block. This will affect word wrapping!
- * @param vertical_align Text vertical alignment within the bounding box
- * @param horizontal_align Text horizontal alignment within the bounding box
- * @param margin Bounding box margins
- * @param direction Text rendering direction (left to right or top ot bottom)
- * @param line_spacing Spacing between lines (in pixels)
- * @param letter_spacing Spacing between letters (in pixels)
- * @param word_wrap Enable word wrapping
- */
 void text_layout_compute(text_layout *layout, const str *buf, const font *font, uint16_t bbox_w, uint16_t bbox_h,
                          text_vertical_align vertical_align, text_horizontal_align horizontal_align, text_margin margin,
                          text_row_direction direction, uint8_t line_spacing, uint8_t letter_spacing, bool word_wrap) {

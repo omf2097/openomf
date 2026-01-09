@@ -1,3 +1,13 @@
+/*! @file
+ * @brief Convenience header that includes all GUI components.
+ *
+ * Include this header to get access to all GUI functionality:
+ * - Core: component, gui_frame, theme
+ * - Containers: sizer, menu
+ * - Widgets: button, label, filler, textinput, textselector, textslider
+ * - Utilities: dialog, menu_background
+ */
+
 #ifndef GUI_H
 #define GUI_H
 
