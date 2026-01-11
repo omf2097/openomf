@@ -1,3 +1,12 @@
+/**
+ * @file allocator.h
+ * @brief Memory allocation wrappers with error handling.
+ * @details Provides memory allocation functions that crash on failure instead of returning NULL.
+ *          This simplifies error handling throughout the codebase since allocation failures
+ *          are treated as fatal errors. The actual allocation is performed by platform-specific
+ *          backends (see allocator_default.h).
+ */
+
 #ifndef ALLOCATOR_H
 #define ALLOCATOR_H
 

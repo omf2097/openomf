@@ -1,3 +1,11 @@
+/**
+ * @file str.h
+ * @brief Dynamic string manipulation.
+ * @details A dynamic string type with small string optimization.
+ *          Short strings are stored inline, while longer strings are heap-allocated.
+ *          Supports common operations like concatenation, slicing, searching, and formatting.
+ */
+
 #ifndef STR_H
 #define STR_H
 
