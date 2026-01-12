@@ -1,9 +1,10 @@
-/*! \file
- * \brief A container for arbitrary bytes.
- * \details Tracks capacity, supports small buffer optimization.
- * \copyright MIT license.
- * \date 2025
- * \author Magnus Larsen
+/**
+ * @file smallbuffer.h
+ * @brief A container for arbitrary bytes.
+ * @details Tracks capacity, supports small buffer optimization.
+ * @copyright MIT license.
+ * @date 2025
+ * @author Magnus Larsen
  */
 
 #ifndef SMALLBUFFER_H

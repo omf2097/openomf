@@ -1,3 +1,11 @@
+/**
+ * @file path.h
+ * @brief File system path manipulation utilities.
+ * @details Provides functions for constructing, manipulating, and querying file paths.
+ *          Includes operations for path resolution, extension handling, directory listing,
+ *          and file system queries. All paths are stored in fixed-size buffers.
+ */
+
 #ifndef PATH_H
 #define PATH_H
 
