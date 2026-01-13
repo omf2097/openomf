@@ -202,4 +202,21 @@ void _path_append(path *path, int nargs, ...);
  */
 FILE *path_fopen(const path *file, const char *mode);
 
+/**
+ * Get the size of a file.
+ * @param file File path to query
+ * @param size Output parameter for file size in bytes
+ * @return true on success, false if not a file or on failure.
+ */
+bool path_filesize(const path *file, size_t *size);
+
+/**
+ * Read contents from a file into a buffer.
+ * @param file File path to read from
+ * @param buffer Buffer to read data into
+ * @param size Number of bytes to read
+ * @return true if all bytes were read successfully, false on failure.
+ */
+bool path_read_file(const path *file, char *buffer, size_t size);
+
 #endif // PATH_H
