@@ -165,11 +165,11 @@ void *list_get(const list *list, unsigned int i) {
     }
     iterator it;
     list_iter_begin(list, &it);
-    list_node *node;
+    void *data;
     unsigned n = 0;
-    foreach(it, node) {
+    foreach(it, data) {
         if(i == n) {
-            return node;
+            return data;
         }
         n++;
     }
