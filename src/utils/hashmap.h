@@ -17,8 +17,11 @@ typedef struct hashmap_node hashmap_node;
 typedef struct hashmap hashmap;
 
 /**
- * @brief Callback function type for freeing values.
+ * @brief Callback function type for cleaning up values.
  * @details Called when a value is removed from the hashmap (during delete, clear, or free).
+ *          This callback should clean up any resources owned by the value (e.g. nested
+ *          pointers, file handles), but must NOT free the value pointer itself - the
+ *          hashmap will free the value storage after the callback returns.
  */
 typedef void (*hashmap_free_cb)(void *);
 
@@ -57,10 +60,12 @@ struct hashmap {
 void hashmap_create(hashmap *hm);
 
 /**
- * @brief Create a new hashmap with a value free callback.
- * @details The free callback is called when an object is removed (during delete, clear, or free).
+ * @brief Create a new hashmap with a value cleanup callback.
+ * @details The callback is invoked when values are removed (during delete, clear, or free).
+ *          It should release any resources owned by the value (e.g. nested pointers),
+ *          but must NOT free the value pointer itself - the hashmap handles that.
  * @param hm Hashmap structure to initialize
- * @param free_cb Callback function to free removed values
+ * @param free_cb Callback function to clean up removed values
  */
 void hashmap_create_cb(hashmap *hm, hashmap_free_cb free_cb);
 
