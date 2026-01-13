@@ -67,6 +67,21 @@ void test_array_iter_prev(void) {
     array_free(&test_array);
 }
 
+void test_array_iter_last_element(void) {
+    array test_array;
+    array_create(&test_array);
+    array_set(&test_array, test_array.allocated_size - 2, test_data1);
+    array_set(&test_array, test_array.allocated_size - 1, test_data2);
+
+    iterator it;
+    array_iter_begin(&test_array, &it);
+    CU_ASSERT_STRING_EQUAL(iter_next(&it), test_data1);
+    CU_ASSERT_STRING_EQUAL(iter_next(&it), test_data2);
+    CU_ASSERT_PTR_NULL(iter_next(&it));
+
+    array_free(&test_array);
+}
+
 void array_test_suite(CU_pSuite suite) {
     if(CU_add_test(suite, "Test for array create", test_array_create) == NULL) {
         return;
@@ -81,6 +96,9 @@ void array_test_suite(CU_pSuite suite) {
         return;
     }
     if(CU_add_test(suite, "Test for array iter_prev", test_array_iter_prev) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for array iter last element", test_array_iter_last_element) == NULL) {
         return;
     }
 }
