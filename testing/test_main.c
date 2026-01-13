@@ -20,6 +20,8 @@ int text_markup_suite_free(void);
 void cp437_test_suite(CU_pSuite suite);
 void path_test_suite(CU_pSuite suite);
 void smallbuffer_test_suite(CU_pSuite suite);
+void ringbuffer_test_suite(CU_pSuite suite);
+void c_string_util_test_suite(CU_pSuite suite);
 
 int main(int argc, char **argv) {
     CU_pSuite suite = NULL;
@@ -131,6 +133,18 @@ int main(int argc, char **argv) {
         goto end;
     }
     script_test_suite(suite);
+
+    CU_pSuite ringbuffer_suite = CU_add_suite("Ringbuffer", NULL, NULL);
+    if(ringbuffer_suite == NULL) {
+        goto end;
+    }
+    ringbuffer_test_suite(ringbuffer_suite);
+
+    CU_pSuite c_string_util_suite = CU_add_suite("C String Util", NULL, NULL);
+    if(c_string_util_suite == NULL) {
+        goto end;
+    }
+    c_string_util_test_suite(c_string_util_suite);
 
     // Run tests
     CU_basic_set_mode(CU_BRM_VERBOSE);
