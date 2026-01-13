@@ -20,11 +20,6 @@ uint32_t fnv_32a_buf(const void *buf, unsigned int len, unsigned int max_size) {
     return val % max_size;
 }
 
-/** \brief Creates a new hashmap
- *
- * \param hm Allocated hashmap pointer
- * \param initial_capacity Size of the hashmap.
- */
 void hashmap_create(hashmap *hm) {
     hm->buckets = omf_calloc(INITIAL_SIZE, sizeof(hashmap_node *));
     hm->reserved = 0;
@@ -32,14 +27,6 @@ void hashmap_create(hashmap *hm) {
     hm->free_cb = NULL;
 }
 
-/** \brief Creates a new hashmap with an object free callback.
- *
- * The free callback is called when object is removed, in e.g. hashmap deinit, clear, delete, etc. operations.
- *
- * \param hm Allocated hashmap pointer
- * \param initial_capacity Size of the hashmap.
- * \param free_cb Callback function to free a removed object
- */
 void hashmap_create_cb(hashmap *hm, hashmap_free_cb free_cb) {
     hashmap_create(hm);
     hm->free_cb = free_cb;
@@ -93,13 +80,6 @@ static void hashmap_enlarge_check(hashmap *hm) {
     }
 }
 
-/** \brief Clears hashmap entries
- *
- * This clears the hashmap of all entries. All contents will be freed.
- * After this, the hashmap size will be 0.
- *
- * \param hm Hashmap to clear
- */
 void hashmap_clear(hashmap *hm) {
     hashmap_node *node = NULL;
     hashmap_node *tmp = NULL;
@@ -120,13 +100,6 @@ void hashmap_clear(hashmap *hm) {
     }
 }
 
-/** \brief Free hashmap
- *
- * Frees the hashmap. All contents will be freed and hashmap will be deallocated.
- * Any use of this hashmap after this will lead to undefined behaviour.
- *
- * \param hm Hashmap to free
- */
 void hashmap_free(hashmap *hm) {
     hashmap_clear(hm);
     omf_free(hm->buckets);
@@ -134,19 +107,6 @@ void hashmap_free(hashmap *hm) {
     hm->reserved = 0;
 }
 
-/** \brief Puts an item to the hashmap
- *
- * Puts a new item to the hashmap. Note that the
- * contents of the value memory block will be copied. However,
- * any memory _pointed to_ by it will NOT be copied. So be careful!
- *
- * \param hm Hashmap
- * \param key Pointer to key memory block
- * \param key_len Length of the key memory block
- * \param val Pointer to value memory block
- * \param value_len Length of the value memory block
- * \return Returns a pointer to the newly reserved hashmap pair.
- */
 void *hashmap_put(hashmap *hm, const void *key, unsigned int key_len, const void *val, unsigned int value_len) {
     unsigned int index = fnv_32a_buf(key, key_len, hm->capacity);
     hashmap_node *root = hm->buckets[index];
@@ -190,17 +150,6 @@ void *hashmap_put(hashmap *hm, const void *key, unsigned int key_len, const void
     }
 }
 
-/** \brief Deletes an item from the hashmap
- *
- * Deletes an item from the hashmap. Note: Using this function inside an
- * iterator may lead to weird behavior. If you wish to delete inside an
- * iterator, please use hashmap_delete.
- *
- * \param hm Hashmap
- * \param key Pointer to key memory block
- * \param key_len Length of the key memory block
- * \return Returns 0 on success, 1 on error (not found).
- */
 int hashmap_del(hashmap *hm, const void *key, unsigned int key_len) {
     unsigned int index = fnv_32a_buf(key, key_len, hm->capacity);
 
@@ -243,15 +192,6 @@ int hashmap_del(hashmap *hm, const void *key, unsigned int key_len) {
     return 1;
 }
 
-/** \brief Gets an item from the hashmap
- *
- * \param hm Hashmap
- * \param key Pointer to key memory block
- * \param key_len Length of the key memory block
- * \param value Pointer to value hashmap memory block
- * \param value_len Length of the hashmap value memory block
- * \return Returns 0 on success, 1 on error (not found).
- */
 int hashmap_get(hashmap *hm, const void *key, unsigned int key_len, void **value, unsigned int *value_len) {
     unsigned int index = fnv_32a_buf(key, key_len, hm->capacity);
 
@@ -282,16 +222,6 @@ int hashmap_get(hashmap *hm, const void *key, unsigned int key_len, void **value
     return 1;
 }
 
-/** \brief Deletes an item from the hashmap by iterator key
- *
- * Deletes an item from the hashmap by a matching iterator key.
- * This function is iterator safe. In theory, this function
- * should not fail, as the iterable value should exist.
- *
- * \param hm Hashmap
- * \param iter Iterator
- * \return Returns 0 on success, 1 on error (not found).
- */
 int hashmap_delete(hashmap *hm, iterator *iter) {
     int index = iter->inow - 1;
 
