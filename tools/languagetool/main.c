@@ -310,11 +310,9 @@ int main(int argc, char *argv[]) {
 
     // Get strings
     int ret;
-
-    path input_filename;
-    path_from_c(&input_filename, file->filename[0]);
-
     if(file->count > 0) {
+        path input_filename;
+        path_from_c(&input_filename, file->filename[0]);
         ret = sd_language_load(&language, &input_filename);
         language_is_utf8 = false;
         if(ret != SD_SUCCESS) {
@@ -339,6 +337,7 @@ int main(int argc, char *argv[]) {
         language_is_utf8 = true;
         while(read_entry(file, &language, &line)) {
         }
+        fclose(file);
     } else {
         fprintf(stderr, "Please supply -f or -i\n");
         goto exit_0;
