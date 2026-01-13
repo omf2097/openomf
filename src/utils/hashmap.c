@@ -91,7 +91,6 @@ void hashmap_clear(hashmap *hm) {
             if(hm->free_cb != NULL) {
                 hm->free_cb(tmp->pair.value);
             }
-            omf_free(tmp->pair.key);
             omf_free(tmp->pair.value);
             omf_free(tmp);
         }
@@ -131,10 +130,10 @@ void *hashmap_put(hashmap *hm, const void *key, unsigned int key_len, const void
     } else {
         // Key is not yet in the hashmap, so create a new node and set it
         // as the first entry in the buckets list.
-        hashmap_node *node = omf_calloc(1, sizeof(hashmap_node));
+        hashmap_node *node = omf_calloc(1, sizeof(hashmap_node) + key_len);
         node->pair.key_len = key_len;
         node->pair.value_len = value_len;
-        node->pair.key = omf_calloc(1, key_len);
+        node->pair.key = (char *)node + sizeof(hashmap_node);  // ptr to preallocated space after node
         node->pair.value = omf_calloc(1, value_len);
         memcpy(node->pair.key, key, key_len);
         memcpy(node->pair.value, val, value_len);
@@ -181,7 +180,6 @@ int hashmap_del(hashmap *hm, const void *key, unsigned int key_len) {
         if(hm->free_cb != NULL) {
             hm->free_cb(node->pair.value);
         }
-        omf_free(node->pair.key);
         omf_free(node->pair.value);
         omf_free(node);
         hm->reserved--;
@@ -263,7 +261,6 @@ int hashmap_delete(hashmap *hm, iterator *iter) {
         if(hm->free_cb != NULL) {
             hm->free_cb(node->pair.value);
         }
-        omf_free(node->pair.key);
         omf_free(node->pair.value);
         omf_free(node);
         hm->reserved--;
