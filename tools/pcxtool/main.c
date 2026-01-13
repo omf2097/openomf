@@ -2,7 +2,7 @@
 #include "formats/pcx.h"
 #include "utils/allocator.h"
 #include "utils/c_array_util.h"
-#include "utils/io.h"
+#include "utils/path.h"
 #include <SDL.h>
 #include <argtable3.h>
 #include <errno.h>
@@ -107,7 +107,11 @@ int main(int argc, char *argv[]) {
     if(file->count == 0) {
         printf("The --file argument is required\n");
         goto exit_0;
-    } else if(!file_exists(file->filename[0])) {
+    }
+
+    path input_filename;
+    path_from_c(&input_filename, file->filename[0]);
+    if(!path_exists(&input_filename)) {
         printf("File %s cannot be accessed\n", file->filename[0]);
         goto exit_0;
     }
@@ -117,9 +121,6 @@ int main(int argc, char *argv[]) {
         printf("Try '%s --help' for more information.\n", progname);
         goto exit_0;
     }
-
-    path input_filename;
-    path_from_c(&input_filename, file->filename[0]);
 
     if(font->count) {
         pcx_font *pcx_font = omf_calloc(1, sizeof(*pcx_font));

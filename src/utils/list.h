@@ -15,8 +15,11 @@ typedef struct list_node list_node;
 typedef struct list list;
 
 /**
- * @brief Callback function type for freeing node data.
- * @details Called when a node is removed from the list.
+ * @brief Callback function type for cleaning up node data.
+ * @details Called when a node is removed from the list (during delete, free, etc.).
+ *          This callback should clean up any resources owned by the data (e.g. nested
+ *          pointers, file handles), but must NOT free the data pointer itself - the
+ *          list will free the data storage after the callback returns.
  */
 typedef void (*list_node_free_cb)(void *data);
 
@@ -113,9 +116,12 @@ void list_iter_append(iterator *iter, const void *ptr, size_t size);
 void *list_get(const list *list, unsigned int i);
 
 /**
- * @brief Set the callback function for freeing node data.
+ * @brief Set the callback function for cleaning up node data.
+ * @details The callback is invoked when nodes are removed (during delete, free, etc.).
+ *          It should release any resources owned by the data (e.g. nested pointers),
+ *          but must NOT free the data pointer itself - the list handles that.
  * @param list List to modify
- * @param cb Callback function to call when nodes are freed
+ * @param cb Callback function to call when nodes are removed
  */
 void list_set_node_free_cb(list *list, list_node_free_cb cb);
 

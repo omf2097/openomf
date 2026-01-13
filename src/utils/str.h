@@ -14,6 +14,8 @@
 #include <stddef.h>
 #include <string.h>
 
+typedef struct path path;
+
 struct internal_str_normal {
     char *data;
     size_t size;
@@ -66,11 +68,11 @@ static inline void str_from_c(str *dst, const char *src) {
  * Create a string object from file contents
  * @details Full source file content will be read, whether it contains null characters or not.
  * @param dst Target string buffer
- * @param file_name Filename to read
+ * @param file_path Path to file to read
  * @return true If success
  * @return false If failure (result value is invalid)
  */
-bool str_from_file(str *dst, const char *file_name);
+bool str_from_file(str *dst, const path *file_path);
 
 /**
  * @brief Create a string object by format string

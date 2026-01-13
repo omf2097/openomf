@@ -61,7 +61,7 @@ static bool load_shader(GLuint program_id, GLenum shader_type, const char *shade
     str shader_source;
 
     const path shader_path = get_shader_filename(shader_file);
-    if(!str_from_file(&shader_source, path_c(&shader_path))) {
+    if(!str_from_file(&shader_source, &shader_path)) {
         log_error("Failed to load shader from %s", path_c(&shader_path));
         return false;
     }

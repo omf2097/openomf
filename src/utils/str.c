@@ -1,9 +1,9 @@
 #include "utils/str.h"
 #include "utils/allocator.h"
 #include "utils/compat.h"
-#include "utils/io.h"
 #include "utils/log.h"
 #include "utils/miscmath.h"
+#include "utils/path.h"
 
 #include <assert.h>
 #include <ctype.h>
@@ -214,19 +214,18 @@ void str_from_buf(str *dst, const char *buf, size_t len) {
     str_zero(dst);
 }
 
-bool str_from_file(str *dst, const char *file_name) {
-    FILE *handle = file_open(file_name, "rb");
-    if(!handle) {
+bool str_from_file(str *dst, const path *file_path) {
+    size_t size;
+    if(!path_filesize(file_path, &size)) {
+        log_error("Unable to get size of file '%s'", path_c(file_path));
         return false;
     }
-    long size = file_size(handle);
     str_create(dst);
-    if(!file_read(handle, str_resize_buffer(dst, size), size)) {
-        file_close(handle);
+    if(!path_read_file(file_path, str_resize_buffer(dst, size), size)) {
+        log_error("Unable to read file '%s'", path_c(file_path));
         str_free(dst);
         return false;
     }
-    file_close(handle);
     str_zero(dst);
     return true;
 }

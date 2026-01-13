@@ -56,7 +56,7 @@ void *array_iter_next(iterator *iter) {
         }
         iter->inow++;
     }
-    if(iter->inow + 1 >= (int)arr->allocated_size) {
+    if(iter->inow >= (int)arr->allocated_size) {
         iter->ended = 1;
     }
     return out;

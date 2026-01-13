@@ -38,11 +38,10 @@ void rb_free(ring_buffer *rb) {
  * @return Amount of data that was actually written.
  */
 size_t rb_write(ring_buffer *rb, const char *data, size_t len) {
-    int k;
     len = (len > (rb->size - rb->len)) ? (rb->size - rb->len) : len;
     if(rb->len < rb->size) {
         if(len + rb->w_pos > rb->size) {
-            k = (len + rb->w_pos) % rb->size;
+            const size_t k = (len + rb->w_pos) % rb->size;
             memcpy((rb->data + rb->w_pos), data, len - k);
             memcpy(rb->data, data + (len - k), k);
         } else {
@@ -59,9 +58,8 @@ size_t rb_write(ring_buffer *rb, const char *data, size_t len) {
 }
 
 static void rb_read_data(const ring_buffer *rb, char *data, const size_t len) {
-    int k;
     if(len + rb->r_pos > rb->size) {
-        k = (len + rb->r_pos) % rb->size;
+        const size_t k = (len + rb->r_pos) % rb->size;
         memcpy(data, rb->data + rb->r_pos, len - k);
         memcpy(data + (len - k), rb->data, k);
     } else {

@@ -6,6 +6,7 @@
 #include <ctype.h>
 #include <stdarg.h>
 #include <string.h>
+#include <sys/stat.h>
 
 #if defined(_WIN32) || defined(WIN32)
 #include <shlobj.h>
@@ -13,7 +14,6 @@
 #include <windows.h>
 #else
 #include <dirent.h>
-#include <sys/stat.h>
 #include <unistd.h>
 #endif
 
@@ -376,4 +376,26 @@ bool path_glob(const path *dir, list *results, const char *pattern) {
 
 FILE *path_fopen(const path *file, const char *mode) {
     return fopen(file->buf, mode);
+}
+
+bool path_filesize(const path *file, size_t *size) {
+    struct stat info;
+    if(stat(file->buf, &info) != 0) {
+        return false;
+    }
+    if((info.st_mode & S_IFMT) != S_IFREG) {
+        return false;
+    }
+    *size = (size_t)info.st_size;
+    return true;
+}
+
+bool path_read_file(const path *file, char *buffer, size_t size) {
+    FILE *handle = fopen(file->buf, "rb");
+    if(handle == NULL) {
+        return false;
+    }
+    bool success = (fread(buffer, 1, size, handle) == size);
+    fclose(handle);
+    return success;
 }
