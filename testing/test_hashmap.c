@@ -116,6 +116,96 @@ void hashmap_test_autoresize(void) {
     hashmap_free(&test_map);
 }
 
+void test_hashmap_update_value(void) {
+    hashmap test_map;
+    hashmap_create(&test_map);
+
+    unsigned int val1 = 100;
+    hashmap_put_int(&test_map, 42, &val1, sizeof(unsigned int));
+    CU_ASSERT_EQUAL(hashmap_reserved(&test_map), 1);
+
+    // Overwrite with a new value
+    unsigned int val2 = 200;
+    hashmap_put_int(&test_map, 42, &val2, sizeof(unsigned int));
+    CU_ASSERT_EQUAL(hashmap_reserved(&test_map), 1);
+
+    // verify
+    unsigned int *result;
+    CU_ASSERT_EQUAL(hashmap_get_int(&test_map, 42, (void **)&result, NULL), 0);
+    CU_ASSERT_EQUAL(*result, 200);
+
+    hashmap_free(&test_map);
+}
+
+void test_hashmap_resize_integrity(void) {
+    hashmap test_map;
+    hashmap_create(&test_map);
+
+    // Insert enough stuff to trigger multiple resizes (4, 8, 16, ...)
+    for(unsigned int i = 0; i < 100; i++) {
+        unsigned int value = i * 10;
+        hashmap_put_int(&test_map, i, &value, sizeof(unsigned int));
+    }
+
+    CU_ASSERT_EQUAL(hashmap_reserved(&test_map), 100);
+    CU_ASSERT(test_map.capacity >= 100);
+
+    // Verify all entries are still there with correct values
+    for(unsigned int i = 0; i < 100; i++) {
+        unsigned int *result;
+        CU_ASSERT_EQUAL(hashmap_get_int(&test_map, i, (void **)&result, NULL), 0);
+        CU_ASSERT_EQUAL(*result, i * 10);
+    }
+
+    hashmap_free(&test_map);
+}
+
+// Just make sure everythign works together
+void test_hashmap_stuff(void) {
+    hashmap test_map;
+    hashmap_create(&test_map);
+
+    for(unsigned int i = 0; i < 500; i++) {
+        unsigned int value = i;
+        hashmap_put_int(&test_map, i, &value, sizeof(unsigned int));
+    }
+    CU_ASSERT_EQUAL(hashmap_reserved(&test_map), 500);
+
+    // Delete every other entry
+    for(unsigned int i = 0; i < 500; i += 2) {
+        hashmap_del_int(&test_map, i);
+    }
+    CU_ASSERT_EQUAL(hashmap_reserved(&test_map), 250);
+
+    // Verify
+    for(unsigned int i = 0; i < 500; i++) {
+        unsigned int *result;
+        const int ret = hashmap_get_int(&test_map, i, (void **)&result, NULL);
+        if(i % 2 == 0) {
+            CU_ASSERT_EQUAL(ret, 1);
+        } else {
+            CU_ASSERT_EQUAL(ret, 0);
+            CU_ASSERT_EQUAL(*result, i);
+        }
+    }
+
+    // Overwrite existing
+    for(unsigned int i = 1; i < 500; i += 2) {
+        unsigned int value = i + 1000;
+        hashmap_put_int(&test_map, i, &value, sizeof(unsigned int));
+    }
+    CU_ASSERT_EQUAL(hashmap_reserved(&test_map), 250);
+
+    // Verify
+    for(unsigned int i = 1; i < 500; i += 2) {
+        unsigned int *result;
+        CU_ASSERT_EQUAL(hashmap_get_int(&test_map, i, (void **)&result, NULL), 0);
+        CU_ASSERT_EQUAL(*result, i + 1000);
+    }
+
+    hashmap_free(&test_map);
+}
+
 void hashmap_test_suite(CU_pSuite suite) {
     // Add tests
     if(CU_add_test(suite, "Test for hashmap create", test_hashmap_create) == NULL) {
@@ -134,6 +224,15 @@ void hashmap_test_suite(CU_pSuite suite) {
         return;
     }
     if(CU_add_test(suite, "Test for hashmap auto resize", hashmap_test_autoresize) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for hashmap value update", test_hashmap_update_value) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for hashmap resize integrity", test_hashmap_resize_integrity) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for hashmap with lots of ops", test_hashmap_stuff) == NULL) {
         return;
     }
 }
