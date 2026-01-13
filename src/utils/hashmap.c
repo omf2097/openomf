@@ -94,10 +94,10 @@ void hashmap_clear(hashmap *hm) {
             omf_free(tmp->pair.key);
             omf_free(tmp->pair.value);
             omf_free(tmp);
-            hm->reserved--;
         }
         hm->buckets[i] = NULL;
     }
+    hm->reserved = 0;
 }
 
 void hashmap_free(hashmap *hm) {
@@ -127,8 +127,6 @@ void *hashmap_put(hashmap *hm, const void *key, unsigned int key_len, const void
         seek->pair.value = omf_realloc(seek->pair.value, value_len);
         memcpy(seek->pair.value, val, value_len);
         seek->pair.value_len = value_len;
-
-        hashmap_enlarge_check(hm);
         return seek->pair.value;
     } else {
         // Key is not yet in the hashmap, so create a new node and set it
