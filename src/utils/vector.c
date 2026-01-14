@@ -8,7 +8,7 @@ void vector_init(vector *vec) {
     vec->blocks = 0;
     vec->free_cb = NULL;
     if(vec->reserved) {
-        vec->data = (char *)omf_malloc(vec->reserved * vec->block_size);
+        vec->data = omf_malloc(vec->reserved * vec->block_size);
     } else {
         vec->data = NULL;
     }
@@ -45,7 +45,7 @@ void vector_clone(vector *dst, const vector *src) {
     if(src->blocks > 0) {
         // Only copy what is actually used.
         const size_t len = src->blocks * src->block_size;
-        dst->data = (char *)omf_malloc(len);
+        dst->data = omf_malloc(len);
         memcpy(dst->data, src->data, len);
     } else {
         dst->data = NULL;
@@ -72,21 +72,21 @@ void *vector_get(const vector *vec, unsigned int key) {
     if(key >= vec->blocks) {
         return NULL;
     }
-    return (char *)(vec->data + vec->block_size * key);
+    return vec->data + vec->block_size * key;
 }
 
 void *vector_back(const vector *vec) {
     if(vec->blocks == 0) {
         return NULL;
     }
-    return (char *)(vec->data + vec->block_size * (vec->blocks - 1));
+    return vec->data + vec->block_size * (vec->blocks - 1);
 }
 
 int vector_set(vector *vec, unsigned int key, const void *value) {
     if(key >= vec->blocks) {
         return 1;
     }
-    void *dst = (char *)(vec->data + key * vec->block_size);
+    void *dst = vec->data + key * vec->block_size;
     memcpy(dst, value, vec->block_size);
     return 0;
 }
@@ -102,7 +102,7 @@ void *vector_append_ptr(vector *vec) {
     if(vec->blocks >= vec->reserved) {
         vector_grow(vec);
     }
-    void *dst = (char *)(vec->data + vec->blocks * vec->block_size);
+    void *dst = vec->data + vec->blocks * vec->block_size;
     vec->blocks++;
     return dst;
 }
@@ -212,7 +212,7 @@ void *vector_iter_next(iterator *iter) {
     if(iter->inow + 1 >= (int)vec->blocks) {
         iter->ended = 1;
     }
-    void *addr = (void *)(vec->data + iter->inow * vec->block_size);
+    void *addr = vec->data + iter->inow * vec->block_size;
     iter->inow++;
     return addr;
 }
@@ -222,7 +222,7 @@ void *vector_iter_prev(iterator *iter) {
     if(iter->inow == 0) {
         iter->ended = 1;
     }
-    void *addr = (void *)(vec->data + iter->inow * vec->block_size);
+    void *addr = vec->data + iter->inow * vec->block_size;
     iter->inow--;
     return addr;
 }
