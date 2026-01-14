@@ -71,7 +71,7 @@ void *vector_get(const vector *vec, unsigned int key) {
 }
 
 void *vector_back(const vector *vec) {
-    if(vec->blocks <= 0) {
+    if(vec->blocks == 0) {
         return NULL;
     }
     return (char *)(vec->data + vec->block_size * (vec->blocks - 1));
