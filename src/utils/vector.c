@@ -40,11 +40,16 @@ void vector_create_with_size_cb(vector *vector, unsigned int block_size, unsigne
 void vector_clone(vector *dst, const vector *src) {
     dst->block_size = src->block_size;
     dst->blocks = src->blocks;
-    dst->reserved = src->reserved;
+    dst->reserved = src->blocks;
     dst->free_cb = src->free_cb;
-    size_t len = dst->reserved * dst->block_size;
-    dst->data = (char *)omf_malloc(len);
-    memcpy(dst->data, src->data, len);
+    if(src->blocks > 0) {
+        // Only copy what is actually used.
+        const size_t len = src->blocks * src->block_size;
+        dst->data = (char *)omf_malloc(len);
+        memcpy(dst->data, src->data, len);
+    } else {
+        dst->data = NULL;
+    }
 }
 
 void vector_clear(vector *vec) {
