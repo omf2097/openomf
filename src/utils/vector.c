@@ -108,6 +108,9 @@ void vector_append(vector *vec, const void *value) {
 
 void vector_pop(vector *vec) {
     if(vec->blocks > 0) {
+        if(vec->free_cb != NULL) {
+            vec->free_cb(vec->data + (vec->blocks - 1) * vec->block_size);
+        }
         vec->blocks--;
     }
 }
@@ -117,11 +120,15 @@ int vector_delete_at(vector *vec, unsigned index) {
         return 1;
     }
 
+    void *dst = vec->data + index * vec->block_size;
+    if(vec->free_cb != NULL) {
+        vec->free_cb(dst);
+    }
+
     // If this is NOT the last entry, we need to do memmove.
     if(index + 1 < vec->blocks) {
-        void *dst = vec->data + index * vec->block_size;
-        void *src = vec->data + (index + 1) * vec->block_size;
-        unsigned int size = (vec->blocks - 1 - index) * vec->block_size;
+        const void *src = vec->data + (index + 1) * vec->block_size;
+        const unsigned int size = (vec->blocks - 1 - index) * vec->block_size;
         memmove(dst, src, size);
     }
 
@@ -135,6 +142,10 @@ int vector_delete_at(vector *vec, unsigned index) {
 int vector_swapdelete_at(vector *vec, unsigned index) {
     if(vec->blocks == 0) {
         return 1;
+    }
+
+    if(vec->free_cb != NULL) {
+        vec->free_cb(vec->data + index * vec->block_size);
     }
 
     unsigned last = vec->blocks - 1;
@@ -160,11 +171,15 @@ int vector_delete(vector *vec, iterator *iter) {
         real = iter->inow - 1;
     }
 
+    void *dst = vec->data + real * vec->block_size;
+    if(vec->free_cb != NULL) {
+        vec->free_cb(dst);
+    }
+
     // If this is NOT the last entry, we need to do memmove.
     if(real + 1 < (int)vec->blocks) {
-        void *dst = vec->data + real * vec->block_size;
-        void *src = vec->data + (real + 1) * vec->block_size;
-        unsigned int size = (vec->blocks - 1 - real) * vec->block_size;
+        const void *src = vec->data + (real + 1) * vec->block_size;
+        const unsigned int size = (vec->blocks - 1 - real) * vec->block_size;
         memmove(dst, src, size);
 
         // If we are iterating forwards, moving an entry will hop iterator forwards by two.
