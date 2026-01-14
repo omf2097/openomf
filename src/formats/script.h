@@ -57,7 +57,7 @@ typedef struct sd_script {
  */
 int sd_script_create(sd_script *script);
 
-int sd_script_clone(sd_script *src, sd_script *dst);
+int sd_script_clone(const sd_script *src, sd_script *dst);
 
 /*! \brief Free script parser
  *

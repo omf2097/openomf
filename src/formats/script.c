@@ -21,7 +21,7 @@ void sd_script_frame_create(sd_script_frame *frame, int tick_len, int sprite) {
     frame->sprite = sprite;
 }
 
-int sd_script_frame_clone(sd_script_frame *src, sd_script_frame *dst) {
+int sd_script_frame_clone(const sd_script_frame *src, sd_script_frame *dst) {
     iterator it;
     sd_script_tag *tag;
     vector_iter_begin(&src->tags, &it);
@@ -31,7 +31,7 @@ int sd_script_frame_clone(sd_script_frame *src, sd_script_frame *dst) {
     return SD_SUCCESS;
 }
 
-int sd_script_clone(sd_script *src, sd_script *dst) {
+int sd_script_clone(const sd_script *src, sd_script *dst) {
     sd_script_create(dst);
     iterator it;
     sd_script_frame *frame;
