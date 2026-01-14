@@ -116,7 +116,7 @@ void vector_pop(vector *vec) {
 }
 
 int vector_delete_at(vector *vec, unsigned index) {
-    if(vec->blocks == 0) {
+    if(index >= vec->blocks) {
         return 1;
     }
 
@@ -140,7 +140,7 @@ int vector_delete_at(vector *vec, unsigned index) {
 }
 
 int vector_swapdelete_at(vector *vec, unsigned index) {
-    if(vec->blocks == 0) {
+    if(index >= vec->blocks) {
         return 1;
     }
 
