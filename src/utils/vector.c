@@ -87,8 +87,8 @@ int vector_set(vector *vec, unsigned int key, const void *value) {
 }
 
 static void vector_grow(vector *vec) {
-    int current_size = max2(1, vec->reserved);
-    int new_size = current_size + max2(1, (current_size >> 2));
+    const unsigned int current_size = umax2(1, vec->reserved);
+    const unsigned int new_size = current_size + umax2(1, (current_size >> 2));
     vec->data = omf_realloc(vec->data, new_size * vec->block_size);
     vec->reserved = new_size;
 }
