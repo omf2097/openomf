@@ -10,10 +10,8 @@
 #ifndef SD_SCRIPT_H
 #define SD_SCRIPT_H
 
-#include "formats/taglist.h"
 #include "utils/str.h"
 #include "utils/vector.h"
-#include <stddef.h>
 #include <stdint.h>
 
 /*! \brief Animation tag
