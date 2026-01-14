@@ -226,7 +226,8 @@ static bool test_tag_slice(const str *test, sd_script_tag *new, str *src, int *n
     const int jmp = *now + len;
     if(sd_tag_info(str_c(test), &new->has_param, &new->key, &new->desc) == 0) {
         // Ensure that tag has no value, if value is not desired.
-        if(!new->has_param && find_numeric_span(src, jmp) > jmp) {
+        // Note -- the unneeded parenthesis are here so that clang-format stops misformatting this line.
+        if(!new->has_param && (find_numeric_span(src, jmp) > jmp)) {
             return false;
         }
 
