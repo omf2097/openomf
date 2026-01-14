@@ -82,7 +82,7 @@ int vector_set(vector *vec, unsigned int key, const void *value) {
         return 1;
     }
     void *dst = (char *)(vec->data + key * vec->block_size);
-    memmove(dst, value, vec->block_size);
+    memcpy(dst, value, vec->block_size);
     return 0;
 }
 
@@ -103,7 +103,7 @@ void *vector_append_ptr(vector *vec) {
 }
 
 void vector_append(vector *vec, const void *value) {
-    memmove(vector_append_ptr(vec), value, vec->block_size);
+    memcpy(vector_append_ptr(vec), value, vec->block_size);
 }
 
 void vector_pop(vector *vec) {
