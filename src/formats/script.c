@@ -350,7 +350,10 @@ int sd_script_decode(sd_script *script, const char *input, int *invalid_pos) {
     return SD_SUCCESS;
 
 fail:
-    *invalid_pos = now;
+    if(invalid_pos != NULL) {
+        *invalid_pos = now;
+    }
+    str_free(&src);
     return SD_ANIM_INVALID_STRING;
 }
 
