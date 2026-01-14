@@ -21,8 +21,8 @@ In bug tickets, include at least the following:
   important!
 
 For feature tickets, we are currently interested only in certain things (more
-detailed list below or in milestones view). Before contributing features, make sure to pop in
-to #omf channel on freenode and check if the feature is not yet being developed by someone!
+detailed list below or in milestones view). Before contributing features, make sure to check
+on discord if the feature is not yet being developed by someone!
 
 For current status, please see discussion page at https://github.com/omf2097/openomf/discussions/413
 and our milestone pages for more details.
