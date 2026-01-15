@@ -10,10 +10,8 @@
 #ifndef SD_SCRIPT_H
 #define SD_SCRIPT_H
 
-#include "formats/taglist.h"
 #include "utils/str.h"
 #include "utils/vector.h"
-#include <stddef.h>
 #include <stdint.h>
 
 /*! \brief Animation tag
@@ -57,7 +55,7 @@ typedef struct sd_script {
  */
 int sd_script_create(sd_script *script);
 
-int sd_script_clone(sd_script *src, sd_script *dst);
+int sd_script_clone(const sd_script *src, sd_script *dst);
 
 /*! \brief Free script parser
  *

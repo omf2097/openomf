@@ -59,7 +59,7 @@ OpenOMF's network lobby provides several features:
 
 Planned features include:
 
-* Specator mode, to allow other users to watch an ongoing or previous Fight
+* Spectator mode, to allow other users to watch an ongoing or previous Fight
 * Persistent user accounts to track long term wins/losses, etc
 * Tournament bracket mode, where a group of players systematically play to find
   a single winner
@@ -82,7 +82,7 @@ Starting a match
 
 Regardless of whether the lobby or a peer to peer connection is used to
 establish a connection between 2 OpenOMF instances, the games will now proceed
-to connect to each other, check compatability, and align the in-game 'clock'.
+to connect to each other, check compatibility, and align the in-game 'clock'.
 
 Aligning the clocks
 -------------------
@@ -157,7 +157,7 @@ currently available in the menus.
 Command line switches
 ---------------------
 
-It can be convienent to start the game and jump straight into a match, so the
+It can be convenient to start the game and jump straight into a match, so the
 following command line switches are provided
 
 * `--connect <IP or Host>` Connect directly to the given peer
