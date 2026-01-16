@@ -21,7 +21,7 @@ typedef struct list list;
  *          pointers, file handles), but must NOT free the data pointer itself - the
  *          list will free the data storage after the callback returns.
  */
-typedef void (*list_node_free_cb)(void *data);
+typedef void (*list_free_cb)(void *data);
 
 /**
  * @brief A node in the doubly-linked list.
@@ -36,10 +36,10 @@ struct list_node {
  * @brief List container structure.
  */
 struct list {
-    list_node *first;       ///< First node in the list
-    list_node *last;        ///< Last node in the list
-    unsigned int size;      ///< Number of nodes in the list
-    list_node_free_cb free; ///< Optional callback to free node data
+    list_node *first;     ///< First node in the list
+    list_node *last;      ///< Last node in the list
+    unsigned int size;    ///< Number of nodes in the list
+    list_free_cb free_cb; ///< Optional callback to free node data
 };
 
 /**
@@ -47,6 +47,16 @@ struct list {
  * @param list List structure to initialize
  */
 void list_create(list *list);
+
+/**
+ * @brief Initialize an empty list with a data cleanup callback.
+ * @details The callback is invoked when nodes are removed (during delete, free, etc.).
+ *          It should release any resources owned by the data (e.g. nested pointers),
+ *          but must NOT free the data pointer itself - the list handles that.
+ * @param list List structure to initialize
+ * @param free_cb Callback function to clean up removed node data
+ */
+void list_create_cb(list *list, list_free_cb free_cb);
 
 /**
  * @brief Free all nodes in the list.
@@ -134,16 +144,6 @@ void *list_pop_front(list *list);
  * @return Pointer to the element data, or NULL if list was empty
  */
 void *list_pop_back(list *list);
-
-/**
- * @brief Set the callback function for cleaning up node data.
- * @details The callback is invoked when nodes are removed (during delete, free, etc.).
- *          It should release any resources owned by the data (e.g. nested pointers),
- *          but must NOT free the data pointer itself - the list handles that.
- * @param list List to modify
- * @param cb Callback function to call when nodes are removed
- */
-void list_set_node_free_cb(list *list, list_node_free_cb cb);
 
 /**
  * @brief Get the number of elements in the list.

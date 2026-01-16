@@ -7,7 +7,12 @@ void list_create(list *list) {
     list->first = NULL;
     list->last = NULL;
     list->size = 0;
-    list->free = NULL;
+    list->free_cb = NULL;
+}
+
+void list_create_cb(list *list, list_free_cb free_cb) {
+    list_create(list);
+    list->free_cb = free_cb;
 }
 
 void list_free(list *list) {
@@ -17,8 +22,8 @@ void list_free(list *list) {
     list_node *now = list->first;
     while(now != NULL) {
         list_node *next = now->next;
-        if(list->free) {
-            list->free(now->data);
+        if(list->free_cb) {
+            list->free_cb(now->data);
         }
         omf_free(now->data);
         omf_free(now);
@@ -97,8 +102,8 @@ void list_delete(list *list, iterator *iter) {
         iter->vnow = node->next;
     }
 
-    if(list->free) {
-        list->free(node->data);
+    if(list->free_cb) {
+        list->free_cb(node->data);
     }
     omf_free(node->data);
     omf_free(node);
@@ -241,8 +246,4 @@ void *list_pop_back(list *list) {
     omf_free(node);
     list->size--;
     return data;
-}
-
-void list_set_node_free_cb(list *list, list_node_free_cb cb) {
-    list->free = cb;
 }
