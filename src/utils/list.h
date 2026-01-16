@@ -134,4 +134,22 @@ static inline unsigned int list_size(const list *list) {
     return list->size;
 }
 
+/**
+ * @brief Get the first element in the list.
+ * @param list List to query
+ * @return Pointer to the first element's data, or NULL if list is empty
+ */
+static inline void *list_first(const list *list) {
+    return list->first ? list->first->data : NULL;
+}
+
+/**
+ * @brief Get the last element in the list.
+ * @param list List to query
+ * @return Pointer to the last element's data, or NULL if list is empty
+ */
+static inline void *list_last(const list *list) {
+    return list->last ? list->last->data : NULL;
+}
+
 #endif // LIST_H

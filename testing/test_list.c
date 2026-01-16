@@ -136,6 +136,29 @@ void test_list_get(void) {
     list_free(&test_list);
 }
 
+void test_list_first_last(void) {
+    list test_list;
+    list_create(&test_list);
+
+    // empty list
+    CU_ASSERT(list_first(&test_list) == NULL);
+    CU_ASSERT(list_last(&test_list) == NULL);
+
+    // one element
+    list_append(&test_list, test_str, strlen(test_str) + 1);
+    CU_ASSERT_STRING_EQUAL(list_first(&test_list), test_str);
+    CU_ASSERT_STRING_EQUAL(list_last(&test_list), test_str);
+    CU_ASSERT(list_first(&test_list) == list_last(&test_list)); // same memory ptr
+
+    // many elements
+    list_append(&test_list, test_str_b, strlen(test_str_b) + 1);
+    CU_ASSERT_STRING_EQUAL(list_first(&test_list), test_str);
+    CU_ASSERT_STRING_EQUAL(list_last(&test_list), test_str_b);
+    CU_ASSERT(list_first(&test_list) != list_last(&test_list)); // different memory ptr
+
+    list_free(&test_list);
+}
+
 void list_test_suite(CU_pSuite suite) {
     // Add tests
     if(CU_add_test(suite, "Test for list create", test_list_create) == NULL) {
@@ -163,6 +186,9 @@ void list_test_suite(CU_pSuite suite) {
         return;
     }
     if(CU_add_test(suite, "Test for list iter_append", test_list_iter_append) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for list first and last", test_list_first_last) == NULL) {
         return;
     }
 }
