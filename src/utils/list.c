@@ -146,8 +146,6 @@ void list_iter_append(iterator *iter, const void *ptr, size_t size) {
         } else {
             list_node *node = (list_node *)omf_calloc(1, sizeof(list_node));
             list *l = (list *)iter->data;
-            node->next = NULL;
-            node->prev = l->last;
             node->data = omf_calloc(size, 1);
             memcpy(node->data, (const char *)ptr, size);
             vnow->next = node;
