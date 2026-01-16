@@ -1,5 +1,6 @@
 #include <CUnit/Basic.h>
 #include <CUnit/CUnit.h>
+#include <utils/allocator.h>
 #include <utils/iterator.h>
 #include <utils/list.h>
 
@@ -159,6 +160,58 @@ void test_list_first_last(void) {
     list_free(&test_list);
 }
 
+void test_list_pop_front(void) {
+    list test_list;
+    list_create(&test_list);
+
+    // pop from empty list
+    CU_ASSERT(list_pop_front(&test_list) == NULL);
+
+    // pop one element
+    list_append(&test_list, test_str, strlen(test_str) + 1);
+    char *data = list_pop_front(&test_list);
+    CU_ASSERT(data != NULL);
+    CU_ASSERT_STRING_EQUAL(data, test_str);
+    CU_ASSERT(list_size(&test_list) == 0);
+    omf_free(data);
+
+    // pop with multiple elements
+    list_append(&test_list, test_str, strlen(test_str) + 1);
+    list_append(&test_list, test_str_b, strlen(test_str_b) + 1);
+    data = list_pop_front(&test_list);
+    CU_ASSERT_STRING_EQUAL(data, test_str);
+    CU_ASSERT(list_size(&test_list) == 1);
+    omf_free(data);
+
+    list_free(&test_list);
+}
+
+void test_list_pop_back(void) {
+    list test_list;
+    list_create(&test_list);
+
+    // pop from empty list
+    CU_ASSERT(list_pop_back(&test_list) == NULL);
+
+    // pop single element
+    list_append(&test_list, test_str, strlen(test_str) + 1);
+    char *data = list_pop_back(&test_list);
+    CU_ASSERT(data != NULL);
+    CU_ASSERT_STRING_EQUAL(data, test_str);
+    CU_ASSERT(list_size(&test_list) == 0);
+    omf_free(data);
+
+    // pop with multiple elements
+    list_append(&test_list, test_str, strlen(test_str) + 1);
+    list_append(&test_list, test_str_b, strlen(test_str_b) + 1);
+    data = list_pop_back(&test_list);
+    CU_ASSERT_STRING_EQUAL(data, test_str_b);
+    CU_ASSERT(list_size(&test_list) == 1);
+    omf_free(data);
+
+    list_free(&test_list);
+}
+
 void list_test_suite(CU_pSuite suite) {
     // Add tests
     if(CU_add_test(suite, "Test for list create", test_list_create) == NULL) {
@@ -189,6 +242,12 @@ void list_test_suite(CU_pSuite suite) {
         return;
     }
     if(CU_add_test(suite, "Test for list first and last", test_list_first_last) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for list pop_front", test_list_pop_front) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for list pop_back", test_list_pop_back) == NULL) {
         return;
     }
 }

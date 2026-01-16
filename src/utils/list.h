@@ -116,6 +116,26 @@ void list_iter_append(iterator *iter, const void *ptr, size_t size);
 void *list_get(const list *list, unsigned int i);
 
 /**
+ * @brief Remove and return the first element.
+ * @details Removes the first element from the list and returns the data.
+ *          The caller is responsible for freeing the returned pointer with
+ *          omf_free().
+ * @param list List to modify
+ * @return Pointer to the element data, or NULL if list was empty
+ */
+void *list_pop_front(list *list);
+
+/**
+ * @brief Remove and return the last element.
+ * @details Removes the last element from the list and returns the data.
+ *          The caller is responsible for freeing the returned pointer with
+ *          omf_free().
+ * @param list List to modify
+ * @return Pointer to the element data, or NULL if list was empty
+ */
+void *list_pop_back(list *list);
+
+/**
  * @brief Set the callback function for cleaning up node data.
  * @details The callback is invoked when nodes are removed (during delete, free, etc.).
  *          It should release any resources owned by the data (e.g. nested pointers),

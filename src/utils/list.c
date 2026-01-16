@@ -208,6 +208,40 @@ void list_iter_end(const list *list, iterator *iter) {
     iter->ended = (list->first == NULL);
 }
 
+void *list_pop_front(list *list) {
+    list_node *node = list->first;
+    if(node == NULL) {
+        return NULL;
+    }
+    void *data = node->data;
+    list->first = node->next;
+    if(list->first != NULL) {
+        list->first->prev = NULL;
+    } else {
+        list->last = NULL;
+    }
+    omf_free(node);
+    list->size--;
+    return data;
+}
+
+void *list_pop_back(list *list) {
+    list_node *node = list->last;
+    if(node == NULL) {
+        return NULL;
+    }
+    void *data = node->data;
+    list->last = node->prev;
+    if(list->last != NULL) {
+        list->last->next = NULL;
+    } else {
+        list->first = NULL;
+    }
+    omf_free(node);
+    list->size--;
+    return data;
+}
+
 void list_set_node_free_cb(list *list, list_node_free_cb cb) {
     list->free = cb;
 }
