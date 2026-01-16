@@ -158,18 +158,32 @@ void list_iter_append(iterator *iter, const void *ptr, size_t size) {
 }
 
 void *list_get(const list *list, unsigned int i) {
-    if(i >= list_size(list)) {
+    unsigned int size = list_size(list);
+    if(i >= size) {
         return NULL;
     }
     iterator it;
-    list_iter_begin(list, &it);
     void *data;
-    unsigned n = 0;
-    foreach(it, data) {
-        if(i == n) {
-            return data;
+
+    // Small optimization -- if index is closer to the end, iterate backwards.
+    if(i < size / 2) {
+        list_iter_begin(list, &it);
+        unsigned int n = 0;
+        foreach(it, data) {
+            if(i == n) {
+                return data;
+            }
+            n++;
         }
-        n++;
+    } else {
+        list_iter_end(list, &it);
+        unsigned int n = size - 1;
+        foreach_reverse(it, data) {
+            if(i == n) {
+                return data;
+            }
+            n--;
+        }
     }
     return NULL;
 }
