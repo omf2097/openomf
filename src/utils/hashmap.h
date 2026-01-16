@@ -41,6 +41,7 @@ struct hashmap_pair {
 struct hashmap_node {
     hashmap_pair pair;  ///< The key-value pair
     hashmap_node *next; ///< Next node in the chain
+    unsigned int hash;  ///< Cached hash for fast comparison and resize
 };
 
 /**
