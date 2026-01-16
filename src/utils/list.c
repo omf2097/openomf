@@ -14,10 +14,9 @@ void list_free(list *list) {
     if(list->size == 0) {
         return;
     }
-    list_node *next, *now;
-    now = list->first;
+    list_node *now = list->first;
     while(now != NULL) {
-        next = now->next;
+        list_node *next = now->next;
         if(list->free) {
             list->free(now->data);
         }
@@ -29,11 +28,11 @@ void list_free(list *list) {
 }
 
 void list_prepend(list *list, const void *ptr, size_t size) {
-    list_node *node = (list_node *)omf_calloc(1, sizeof(list_node));
+    list_node *node = omf_calloc(1, sizeof(list_node));
     node->next = list->first;
     node->prev = NULL;
     node->data = omf_calloc(size, 1);
-    memcpy(node->data, (const char *)ptr, size);
+    memcpy(node->data, ptr, size);
     if(list->first) {
         list->first->prev = node;
     }
@@ -45,11 +44,11 @@ void list_prepend(list *list, const void *ptr, size_t size) {
 }
 
 void list_append(list *list, const void *ptr, size_t size) {
-    list_node *node = (list_node *)omf_calloc(1, sizeof(list_node));
+    list_node *node = omf_calloc(1, sizeof(list_node));
     node->next = NULL;
     node->prev = list->last;
     node->data = omf_calloc(size, 1);
-    memcpy(node->data, (const char *)ptr, size);
+    memcpy(node->data, ptr, size);
     if(list->last) {
         list->last->next = node;
     }
@@ -133,31 +132,23 @@ void *list_iter_prev(iterator *iter) {
 }
 
 void *list_iter_peek_next(iterator *iter) {
-    void *now = NULL;
-    if(iter->vnow == NULL) {
-        now = ((list *)iter->data)->first;
-    } else {
-        now = ((list_node *)iter->vnow)->next;
-    }
-    if(now == NULL) {
-        return NULL;
-    }
-    return ((list_node *)now)->data;
+    const list_node *now = (iter->vnow == NULL) ? ((list *)iter->data)->first : ((list_node *)iter->vnow)->next;
+    return now ? now->data : NULL;
 }
 
 void list_iter_append(iterator *iter, const void *ptr, size_t size) {
     if(iter->vnow == NULL) {
         list_prepend((list *)iter->data, ptr, size);
     } else {
-        list_node *vnow = ((list_node *)iter->vnow);
+        list_node *vnow = iter->vnow;
         list_node *vnext = vnow->next;
         if(vnext == NULL) {
             list_append((list *)iter->data, ptr, size);
         } else {
-            list_node *node = (list_node *)omf_calloc(1, sizeof(list_node));
+            list_node *node = omf_calloc(1, sizeof(list_node));
             list *l = (list *)iter->data;
             node->data = omf_calloc(size, 1);
-            memcpy(node->data, (const char *)ptr, size);
+            memcpy(node->data, ptr, size);
             vnow->next = node;
             node->prev = vnow;
             vnext->prev = node;
@@ -168,14 +159,14 @@ void list_iter_append(iterator *iter, const void *ptr, size_t size) {
 }
 
 void *list_get(const list *list, unsigned int i) {
-    unsigned int size = list_size(list);
+    const unsigned int size = list_size(list);
     if(i >= size) {
         return NULL;
     }
-    iterator it;
-    void *data;
 
     // Small optimization -- if index is closer to the end, iterate backwards.
+    iterator it;
+    void *data;
     if(i < size / 2) {
         list_iter_begin(list, &it);
         unsigned int n = 0;
