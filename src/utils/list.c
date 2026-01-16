@@ -62,32 +62,42 @@ void list_append(list *list, const void *ptr, size_t size) {
 
 void list_delete(list *list, iterator *iter) {
     list_node *node = (list_node *)iter->vnow;
-    if(node == NULL && iter->prev == NULL) {
-        node = list->first;
-    }
-    if(node == NULL && iter->next == NULL) {
-        node = list->last;
-    }
+
+    // If iterator hasn't advanced yet, determine the starting point
+    // Forward iterators (list_iter_begin) have prev == NULL
+    // Reverse iterators (list_iter_end) have next == NULL
     if(node == NULL) {
-        return;
+        node = (iter->prev == NULL) ? list->first : list->last;
+        if(node == NULL) {
+            return;
+        }
     }
+
+    // Unlink node from its neighbors
     if(node->prev != NULL) {
         node->prev->next = node->next;
     }
     if(node->next != NULL) {
         node->next->prev = node->prev;
     }
+
+    // Set list start and end pointers
     if(node == list->first) {
         list->first = node->next;
     }
     if(node == list->last) {
         list->last = node->prev;
     }
-    if(iter->next == NULL) {
-        iter->vnow = node->next;
-    } else {
+
+    // Update iterator so the next iteration step steps into the correct element
+    // Forward: set to prev, so iter_next() advances to what was node->next
+    // Reverse: set to next, so iter_prev() advances to what was node->prev
+    if(iter->prev == NULL) {
         iter->vnow = node->prev;
+    } else {
+        iter->vnow = node->next;
     }
+
     if(list->free) {
         list->free(node->data);
     }
