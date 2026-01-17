@@ -702,7 +702,7 @@ bool str_match(const str *test, const char *pattern) {
     return *string == '\0' && *pattern == '\0';
 }
 
-int strcmp_i(char const *s1, char const *s2) {
+static int strcmp_i(char const *s1, char const *s2) {
     while(*s1 != '\0' && *s2 != '\0' && tolower(*s1) == tolower(*s2)) {
         s1++;
         s2++;
