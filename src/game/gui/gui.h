@@ -1,3 +1,12 @@
+/**
+ * @file gui.h
+ * @brief Main GUI header
+ * @details Convenience header that includes all GUI-related headers.
+ * @copyright MIT License
+ * @date 2026
+ * @author OpenOMF Project
+ */
+
 #ifndef GUI_H
 #define GUI_H
 
