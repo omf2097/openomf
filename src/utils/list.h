@@ -21,7 +21,7 @@ typedef struct list list;
  *          pointers, file handles), but must NOT free the data pointer itself - the
  *          list will free the data storage after the callback returns.
  */
-typedef void (*list_node_free_cb)(void *data);
+typedef void (*list_free_cb)(void *data);
 
 /**
  * @brief A node in the doubly-linked list.
@@ -36,10 +36,10 @@ struct list_node {
  * @brief List container structure.
  */
 struct list {
-    list_node *first;       ///< First node in the list
-    list_node *last;        ///< Last node in the list
-    unsigned int size;      ///< Number of nodes in the list
-    list_node_free_cb free; ///< Optional callback to free node data
+    list_node *first;     ///< First node in the list
+    list_node *last;      ///< Last node in the list
+    unsigned int size;    ///< Number of nodes in the list
+    list_free_cb free_cb; ///< Optional callback to free node data
 };
 
 /**
@@ -47,6 +47,16 @@ struct list {
  * @param list List structure to initialize
  */
 void list_create(list *list);
+
+/**
+ * @brief Initialize an empty list with a data cleanup callback.
+ * @details The callback is invoked when nodes are removed (during delete, free, etc.).
+ *          It should release any resources owned by the data (e.g. nested pointers),
+ *          but must NOT free the data pointer itself - the list handles that.
+ * @param list List structure to initialize
+ * @param free_cb Callback function to clean up removed node data
+ */
+void list_create_cb(list *list, list_free_cb free_cb);
 
 /**
  * @brief Free all nodes in the list.
@@ -116,14 +126,24 @@ void list_iter_append(iterator *iter, const void *ptr, size_t size);
 void *list_get(const list *list, unsigned int i);
 
 /**
- * @brief Set the callback function for cleaning up node data.
- * @details The callback is invoked when nodes are removed (during delete, free, etc.).
- *          It should release any resources owned by the data (e.g. nested pointers),
- *          but must NOT free the data pointer itself - the list handles that.
+ * @brief Remove and return the first element.
+ * @details Removes the first element from the list and returns the data.
+ *          The caller is responsible for freeing the returned pointer with
+ *          omf_free().
  * @param list List to modify
- * @param cb Callback function to call when nodes are removed
+ * @return Pointer to the element data, or NULL if list was empty
  */
-void list_set_node_free_cb(list *list, list_node_free_cb cb);
+void *list_pop_front(list *list);
+
+/**
+ * @brief Remove and return the last element.
+ * @details Removes the last element from the list and returns the data.
+ *          The caller is responsible for freeing the returned pointer with
+ *          omf_free().
+ * @param list List to modify
+ * @return Pointer to the element data, or NULL if list was empty
+ */
+void *list_pop_back(list *list);
 
 /**
  * @brief Get the number of elements in the list.
@@ -132,6 +152,24 @@ void list_set_node_free_cb(list *list, list_node_free_cb cb);
  */
 static inline unsigned int list_size(const list *list) {
     return list->size;
+}
+
+/**
+ * @brief Get the first element in the list.
+ * @param list List to query
+ * @return Pointer to the first element's data, or NULL if list is empty
+ */
+static inline void *list_first(const list *list) {
+    return list->first ? list->first->data : NULL;
+}
+
+/**
+ * @brief Get the last element in the list.
+ * @param list List to query
+ * @return Pointer to the last element's data, or NULL if list is empty
+ */
+static inline void *list_last(const list *list) {
+    return list->last ? list->last->data : NULL;
 }
 
 #endif // LIST_H
