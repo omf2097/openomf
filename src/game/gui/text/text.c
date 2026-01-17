@@ -460,8 +460,8 @@ void text_generate_document(text_document *td, str *buf0, font_size font_sz, uin
             start = end;
         } else {
             if(start == len) {
+                str_create(&t->buf); // Initialize with empty, free_cb() will delete it.
                 // empty trailing string
-                text_layout_free(&t->layout);
                 vector_delete_at(&td->text_objects, count);
                 continue;
             }
@@ -484,7 +484,6 @@ void text_generate_document(text_document *td, str *buf0, font_size font_sz, uin
         }
 
         if(str_size(&t->buf) == 0 || (count == 0 && !found)) {
-            text_layout_free(&t->layout);
             vector_delete_at(&td->text_objects, count);
             continue;
         }

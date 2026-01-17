@@ -8,7 +8,7 @@ void vector_init(vector *vec) {
     vec->blocks = 0;
     vec->free_cb = NULL;
     if(vec->reserved) {
-        vec->data = (char *)omf_malloc(vec->reserved * vec->block_size);
+        vec->data = omf_malloc(vec->reserved * vec->block_size);
     } else {
         vec->data = NULL;
     }
@@ -40,11 +40,16 @@ void vector_create_with_size_cb(vector *vector, unsigned int block_size, unsigne
 void vector_clone(vector *dst, const vector *src) {
     dst->block_size = src->block_size;
     dst->blocks = src->blocks;
-    dst->reserved = src->reserved;
+    dst->reserved = src->blocks;
     dst->free_cb = src->free_cb;
-    size_t len = dst->reserved * dst->block_size;
-    dst->data = (char *)omf_malloc(len);
-    memcpy(dst->data, src->data, len);
+    if(src->blocks > 0) {
+        // Only copy what is actually used.
+        const size_t len = src->blocks * src->block_size;
+        dst->data = omf_malloc(len);
+        memcpy(dst->data, src->data, len);
+    } else {
+        dst->data = NULL;
+    }
 }
 
 void vector_clear(vector *vec) {
@@ -67,28 +72,28 @@ void *vector_get(const vector *vec, unsigned int key) {
     if(key >= vec->blocks) {
         return NULL;
     }
-    return (char *)(vec->data + vec->block_size * key);
+    return vec->data + vec->block_size * key;
 }
 
 void *vector_back(const vector *vec) {
-    if(vec->blocks <= 0) {
+    if(vec->blocks == 0) {
         return NULL;
     }
-    return (char *)(vec->data + vec->block_size * (vec->blocks - 1));
+    return vec->data + vec->block_size * (vec->blocks - 1);
 }
 
 int vector_set(vector *vec, unsigned int key, const void *value) {
     if(key >= vec->blocks) {
         return 1;
     }
-    void *dst = (char *)(vec->data + key * vec->block_size);
-    memmove(dst, value, vec->block_size);
+    void *dst = vec->data + key * vec->block_size;
+    memcpy(dst, value, vec->block_size);
     return 0;
 }
 
 static void vector_grow(vector *vec) {
-    int current_size = max2(1, vec->reserved);
-    int new_size = current_size + max2(1, (current_size >> 2));
+    const unsigned int current_size = umax2(1, vec->reserved);
+    const unsigned int new_size = current_size + umax2(1, (current_size >> 2));
     vec->data = omf_realloc(vec->data, new_size * vec->block_size);
     vec->reserved = new_size;
 }
@@ -97,31 +102,38 @@ void *vector_append_ptr(vector *vec) {
     if(vec->blocks >= vec->reserved) {
         vector_grow(vec);
     }
-    void *dst = (char *)(vec->data + vec->blocks * vec->block_size);
+    void *dst = vec->data + vec->blocks * vec->block_size;
     vec->blocks++;
     return dst;
 }
 
 void vector_append(vector *vec, const void *value) {
-    memmove(vector_append_ptr(vec), value, vec->block_size);
+    memcpy(vector_append_ptr(vec), value, vec->block_size);
 }
 
 void vector_pop(vector *vec) {
     if(vec->blocks > 0) {
+        if(vec->free_cb != NULL) {
+            vec->free_cb(vec->data + (vec->blocks - 1) * vec->block_size);
+        }
         vec->blocks--;
     }
 }
 
 int vector_delete_at(vector *vec, unsigned index) {
-    if(vec->blocks == 0) {
+    if(index >= vec->blocks) {
         return 1;
+    }
+
+    void *dst = vec->data + index * vec->block_size;
+    if(vec->free_cb != NULL) {
+        vec->free_cb(dst);
     }
 
     // If this is NOT the last entry, we need to do memmove.
     if(index + 1 < vec->blocks) {
-        void *dst = vec->data + index * vec->block_size;
-        void *src = vec->data + (index + 1) * vec->block_size;
-        unsigned int size = (vec->blocks - 1 - index) * vec->block_size;
+        const void *src = vec->data + (index + 1) * vec->block_size;
+        const unsigned int size = (vec->blocks - 1 - index) * vec->block_size;
         memmove(dst, src, size);
     }
 
@@ -133,8 +145,12 @@ int vector_delete_at(vector *vec, unsigned index) {
 }
 
 int vector_swapdelete_at(vector *vec, unsigned index) {
-    if(vec->blocks == 0) {
+    if(index >= vec->blocks) {
         return 1;
+    }
+
+    if(vec->free_cb != NULL) {
+        vec->free_cb(vec->data + index * vec->block_size);
     }
 
     unsigned last = vec->blocks - 1;
@@ -160,11 +176,15 @@ int vector_delete(vector *vec, iterator *iter) {
         real = iter->inow - 1;
     }
 
+    void *dst = vec->data + real * vec->block_size;
+    if(vec->free_cb != NULL) {
+        vec->free_cb(dst);
+    }
+
     // If this is NOT the last entry, we need to do memmove.
     if(real + 1 < (int)vec->blocks) {
-        void *dst = vec->data + real * vec->block_size;
-        void *src = vec->data + (real + 1) * vec->block_size;
-        unsigned int size = (vec->blocks - 1 - real) * vec->block_size;
+        const void *src = vec->data + (real + 1) * vec->block_size;
+        const unsigned int size = (vec->blocks - 1 - real) * vec->block_size;
         memmove(dst, src, size);
 
         // If we are iterating forwards, moving an entry will hop iterator forwards by two.
@@ -192,7 +212,7 @@ void *vector_iter_next(iterator *iter) {
     if(iter->inow + 1 >= (int)vec->blocks) {
         iter->ended = 1;
     }
-    void *addr = (void *)(vec->data + iter->inow * vec->block_size);
+    void *addr = vec->data + iter->inow * vec->block_size;
     iter->inow++;
     return addr;
 }
@@ -202,7 +222,7 @@ void *vector_iter_prev(iterator *iter) {
     if(iter->inow == 0) {
         iter->ended = 1;
     }
-    void *addr = (void *)(vec->data + iter->inow * vec->block_size);
+    void *addr = vec->data + iter->inow * vec->block_size;
     iter->inow--;
     return addr;
 }
