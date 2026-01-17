@@ -11,7 +11,6 @@
 #define SIZER_H
 
 #include "game/gui/component.h"
-#include "utils/vector.h"
 
 typedef void (*sizer_render_cb)(component *c);                             ///< Sizer render callback
 typedef int (*sizer_event_cb)(component *c, SDL_Event *event);             ///< Sizer SDL event callback

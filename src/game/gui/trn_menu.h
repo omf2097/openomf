@@ -14,7 +14,6 @@
 #include "game/gui/component.h"
 #include "game/protos/object.h"
 #include "resources/animation.h"
-#include "utils/vec.h"
 
 typedef void (*trnmenu_tick_cb)(component *c);                                ///< Menu tick callback
 typedef void (*trnmenu_free_cb)(component *c);                                ///< Menu free callback

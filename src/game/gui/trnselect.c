@@ -1,6 +1,6 @@
 #include <stdio.h>
-#include <string.h>
 
+#include "controller/controller.h"
 #include "formats/tournament.h"
 #include "game/gui/label.h"
 #include "game/gui/trnselect.h"

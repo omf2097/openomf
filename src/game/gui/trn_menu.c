@@ -1,8 +1,8 @@
 #include "game/gui/trn_menu.h"
+#include "controller/controller.h"
 #include "game/gui/sizer.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
-#include "utils/vector.h"
 #include "video/surface.h"
 #include "video/video.h"
 

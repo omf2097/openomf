@@ -1,11 +1,10 @@
 #include "game/gui/dialog.h"
+#include "controller/controller.h"
 #include "game/gui/button.h"
 #include "game/gui/filler.h"
 #include "game/gui/label.h"
 #include "game/gui/menu.h"
-#include "game/gui/menu_background.h"
 #include "video/video.h"
-#include <string.h>
 
 void dialog_cancel(component *c, void *userdata) {
     dialog *dlg = userdata;

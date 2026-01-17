@@ -12,8 +12,6 @@
 
 #include "game/gui/component.h"
 #include "game/gui/gui_frame.h"
-#include "utils/vector.h"
-#include "video/surface.h"
 
 /**
  * @brief Dialog button styles

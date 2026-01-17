@@ -1,12 +1,10 @@
 #include <stdlib.h>
-#include <string.h>
 
-#include "game/gui/sizer.h"
+#include "controller/controller.h"
 #include "game/gui/spritebutton.h"
 #include "game/gui/text/text.h"
 #include "game/gui/widget.h"
 #include "utils/allocator.h"
-#include "utils/c_string_util.h"
 #include "utils/log.h"
 #include "video/video.h"
 

@@ -10,7 +10,6 @@
 #ifndef COMPONENT_H
 #define COMPONENT_H
 
-#include "controller/controller.h"
 #include "game/gui/text/text.h"
 #include "game/gui/theme.h"
 #include <SDL.h>

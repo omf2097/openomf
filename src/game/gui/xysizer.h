@@ -11,7 +11,6 @@
 #define XYSIZER_H
 
 #include "game/gui/component.h"
-#include "video/surface.h"
 
 /**
  * @brief Create an XY sizer

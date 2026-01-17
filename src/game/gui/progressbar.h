@@ -11,7 +11,6 @@
 #define PROGRESSBAR_H
 
 #include "game/gui/component.h"
-#include "video/color.h"
 
 /**
  * @brief Progress bar color theme

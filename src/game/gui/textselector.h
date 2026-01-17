@@ -12,7 +12,6 @@
 
 #include "game/gui/component.h"
 #include "game/gui/text/enums.h"
-#include "utils/vector.h"
 
 typedef void (*textselector_toggle_cb)(component *c, void *userdata, int pos); ///< Callback when selection changes
 

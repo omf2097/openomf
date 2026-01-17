@@ -1,15 +1,13 @@
 #include <stdbool.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include "audio/audio.h"
+#include "controller/controller.h"
 #include "game/gui/button.h"
 #include "game/gui/menu_background.h"
 #include "game/gui/text/text.h"
 #include "game/gui/widget.h"
 #include "utils/allocator.h"
-#include "utils/c_string_util.h"
-#include "utils/log.h"
 #include "video/video.h"
 
 typedef struct button {
