@@ -9,14 +9,13 @@
 #include "game/objects/projectile.h"
 #include "game/protos/object.h"
 #include "game/protos/player.h"
-#include "game/utils/settings.h"
 #include "resources/ids.h"
 #include "utils/log.h"
 #include "utils/miscmath.h"
 #include "utils/random.h"
 #include "utils/str.h"
 #include "utils/vec.h"
-#include "video/video.h"
+#include "video/enums.h"
 
 #define COLOR_6TO8(color) ((color << 2) | ((color & 0x30) >> 4))
 

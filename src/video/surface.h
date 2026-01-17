@@ -4,7 +4,6 @@
 #include "formats/vga_image.h"
 #include "video/image.h"
 #include "video/vga_palette.h"
-#include <SDL.h>
 
 typedef struct surface {
     unsigned int guid;

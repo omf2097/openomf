@@ -1,30 +1,41 @@
+/**
+ * @file vga_state.c
+ * @brief VGA palette state management implementation
+ */
+
 #include "video/vga_state.h"
 
 #include "game/game_state.h"
 #include "utils/png_writer.h"
 #include <assert.h>
 
-#define MAX_TRANSFORMER_COUNT 8
+#define MAX_TRANSFORMER_COUNT 8 ///< Maximum number of palette transformers per frame
 
+/**
+ * @brief Palette transformer entry
+ */
 typedef struct palette_transformer {
-    vga_palette_transform callback;
-    void *userdata;
+    vga_palette_transform callback; ///< Transform callback function
+    void *userdata;                 ///< User-provided context data
 } palette_transformer;
 
+/**
+ * @brief VGA state container
+ */
 typedef struct vga_state {
-    vga_palette pushed;
-    vga_palette base;
-    vga_palette current;
-    damage_tracker dmg_base;
-    damage_tracker dmg_previous;
-    damage_tracker dmg_current;
-    vga_remap_tables remaps;
-    bool dirty_remaps;
-    palette_transformer transformers[MAX_TRANSFORMER_COUNT];
-    unsigned int transformer_count;
+    vga_palette pushed;                                      ///< Stashed palette for push/pop
+    vga_palette base;                                        ///< Base palette before transforms
+    vga_palette current;                                     ///< Current palette after transforms
+    damage_tracker dmg_base;                                 ///< Damage tracker for base palette
+    damage_tracker dmg_previous;                             ///< Previous frame's damage state
+    damage_tracker dmg_current;                              ///< Current frame's damage state
+    vga_remap_tables remaps;                                 ///< Palette remap tables
+    bool dirty_remaps;                                       ///< Whether remaps need updating
+    palette_transformer transformers[MAX_TRANSFORMER_COUNT]; ///< Registered transformers
+    unsigned int transformer_count;                          ///< Number of active transformers
 } vga_state;
 
-static vga_state state;
+static vga_state state; ///< Global VGA state instance
 
 void vga_state_init(void) {
     memset(&state, 0, sizeof(vga_state));
@@ -172,7 +183,8 @@ void vga_state_enable_palette_transform(vga_palette_transform transform_callback
 }
 
 /**
- * For debug use only!
+ * @brief Write a debug screenshot of the current palette
+ * @param filename Output file path
  */
 void vga_state_debug_screenshot(const path *filename) {
     unsigned char img[256];

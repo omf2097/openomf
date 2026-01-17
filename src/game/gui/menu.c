@@ -6,6 +6,7 @@
 #include "utils/allocator.h"
 #include "utils/log.h"
 #include "utils/miscmath.h"
+#include "video/color.h"
 #include "video/surface.h"
 #include "video/video.h"
 

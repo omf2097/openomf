@@ -1,9 +1,6 @@
 #ifndef IMAGE_H
 #define IMAGE_H
 
-#include "formats/rgba_image.h"
-#include "video/color.h"
-
 typedef struct image_t {
     unsigned int w, h;
     unsigned char *data;

@@ -13,6 +13,7 @@
 #include "utils/log.h"
 #include "utils/miscmath.h"
 #include "utils/random.h"
+#include "video/color.h"
 #include "video/video.h"
 #include <stdio.h>
 #include <stdlib.h>

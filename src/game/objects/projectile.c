@@ -4,6 +4,7 @@
 #include "game/objects/arena_constraints.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
+#include "video/enums.h"
 #include "video/video.h"
 #include <stdlib.h>
 

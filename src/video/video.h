@@ -6,12 +6,9 @@
 #ifndef VIDEO_H
 #define VIDEO_H
 
+#include <SDL_rect.h>
 #include <stdbool.h>
 
-#include "formats/palette.h"
-#include "video/color.h"
-#include "video/enums.h"
-#include "video/image.h"
 #include "video/surface.h"
 
 #define NATIVE_W 320 ///< Native game resolution width
