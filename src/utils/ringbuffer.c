@@ -14,6 +14,7 @@ void rb_free(ring_buffer *rb) {
         return;
     }
     omf_free(rb->data);
+    memset(rb, 0, sizeof(ring_buffer));
 }
 
 // Advance write position by len bytes, wrapping if necessary.
