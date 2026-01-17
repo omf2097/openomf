@@ -479,8 +479,9 @@ void text_generate_document(text_document *td, str *buf0, font_size font_sz, uin
             }
         }
 
-        if(!found) {
-            str_rstrip(&t->buf);
+        // If its all whitespace, keep just a char for spacing.
+        if(!found && str_size(&t->buf) > 1) {
+            str_truncate(&t->buf, 1);
         }
 
         if(str_size(&t->buf) == 0 || (count == 0 && !found)) {

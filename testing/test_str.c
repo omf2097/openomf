@@ -201,8 +201,9 @@ void test_str_toupper(void) {
     str_from_c(&d, "test");
     str_toupper(&d);
 
-    CU_ASSERT_NSTRING_EQUAL(str_c(&d), "TEST", 5);
-    CU_ASSERT(str_c(&d)[5] == 0);
+    CU_ASSERT(str_size(&d) == 4);
+    CU_ASSERT_STRING_EQUAL(str_c(&d), "TEST");
+    CU_ASSERT(str_c(&d)[4] == 0);
 
     str_free(&d);
 }
@@ -212,8 +213,9 @@ void test_str_tolower(void) {
     str_from_c(&d, "TEST");
     str_tolower(&d);
 
-    CU_ASSERT_NSTRING_EQUAL(str_c(&d), "test", 5);
-    CU_ASSERT(str_c(&d)[5] == 0);
+    CU_ASSERT(str_size(&d) == 4);
+    CU_ASSERT_STRING_EQUAL(str_c(&d), "test");
+    CU_ASSERT(str_c(&d)[4] == 0);
 
     str_free(&d);
 }
@@ -247,6 +249,94 @@ void test_str_strip(void) {
 
     CU_ASSERT_NSTRING_EQUAL(str_c(&d), "test", 4);
     CU_ASSERT(str_c(&d)[str_size(&d)] == 0);
+
+    str_free(&d);
+}
+
+void test_str_rstrip_empty(void) {
+    str d;
+    str_create(&d);
+    str_rstrip(&d);
+
+    CU_ASSERT(str_size(&d) == 0);
+    CU_ASSERT_STRING_EQUAL(str_c(&d), "");
+
+    str_free(&d);
+}
+
+void test_str_lstrip_empty(void) {
+    str d;
+    str_create(&d);
+    str_lstrip(&d);
+
+    CU_ASSERT(str_size(&d) == 0);
+    CU_ASSERT_STRING_EQUAL(str_c(&d), "");
+
+    str_free(&d);
+}
+
+void test_str_strip_empty(void) {
+    str d;
+    str_create(&d);
+    str_strip(&d);
+
+    CU_ASSERT(str_size(&d) == 0);
+    CU_ASSERT_STRING_EQUAL(str_c(&d), "");
+
+    str_free(&d);
+}
+
+void test_str_rstrip_all_whitespace(void) {
+    str d;
+    str_from_c(&d, "   ");
+    str_rstrip(&d);
+
+    CU_ASSERT(str_size(&d) == 0);
+    CU_ASSERT_STRING_EQUAL(str_c(&d), "");
+
+    str_free(&d);
+}
+
+void test_str_lstrip_all_whitespace(void) {
+    str d;
+    str_from_c(&d, "   ");
+    str_lstrip(&d);
+
+    CU_ASSERT(str_size(&d) == 0);
+    CU_ASSERT_STRING_EQUAL(str_c(&d), "");
+
+    str_free(&d);
+}
+
+void test_str_strip_all_whitespace(void) {
+    str d;
+    str_from_c(&d, "   ");
+    str_strip(&d);
+
+    CU_ASSERT(str_size(&d) == 0);
+    CU_ASSERT_STRING_EQUAL(str_c(&d), "");
+
+    str_free(&d);
+}
+
+void test_str_rstrip_no_whitespace(void) {
+    str d;
+    str_from_c(&d, "test");
+    str_rstrip(&d);
+
+    CU_ASSERT(str_size(&d) == 4);
+    CU_ASSERT_STRING_EQUAL(str_c(&d), "test");
+
+    str_free(&d);
+}
+
+void test_str_lstrip_no_whitespace(void) {
+    str d;
+    str_from_c(&d, "test");
+    str_lstrip(&d);
+
+    CU_ASSERT(str_size(&d) == 4);
+    CU_ASSERT_STRING_EQUAL(str_c(&d), "test");
 
     str_free(&d);
 }
@@ -694,6 +784,7 @@ void test_str_starts_with(void) {
     CU_ASSERT_FATAL(str_starts_with(&d, "test1-test2-test3") == true);
     CU_ASSERT_FATAL(str_starts_with(&d, "test1-test2-test3-") == false);
     CU_ASSERT_FATAL(str_starts_with(&d, "test1-test2-test3-test4") == false);
+    str_free(&d);
 }
 
 void test_str_ends_with(void) {
@@ -704,6 +795,7 @@ void test_str_ends_with(void) {
     CU_ASSERT_FATAL(str_ends_with(&d, "test1-test2-test3") == true);
     CU_ASSERT_FATAL(str_ends_with(&d, "-test1-test2-test3") == false);
     CU_ASSERT_FATAL(str_ends_with(&d, "test0-test1-test2-test3") == false);
+    str_free(&d);
 }
 
 void test_str_match(void) {
@@ -719,6 +811,7 @@ void test_str_match(void) {
     CU_ASSERT_FATAL(str_match(&d, "test1-test2-test3") == true);
     CU_ASSERT_FATAL(str_match(&d, "test1-test2-test4") == false);
     CU_ASSERT_FATAL(str_match(&d, "test1-test2-test44") == false);
+    str_free(&d);
 }
 
 void test_str_imatch(void) {
@@ -744,6 +837,180 @@ void test_str_imatch(void) {
     CU_ASSERT_FATAL(str_imatch(&d, "TEST1-TEST2-TEST3") == true);
     CU_ASSERT_FATAL(str_imatch(&d, "TEST1-TEST2-TEST4") == false);
     CU_ASSERT_FATAL(str_imatch(&d, "TEST1-TEST2-TEST44") == false);
+    str_free(&d);
+}
+
+void test_str_cut(void) {
+    str d;
+    str_from_c(&d, "ABCDEFGHIJ");
+
+    CU_ASSERT(str_size(&d) == 10);
+    str_cut(&d, 0);
+    CU_ASSERT(str_size(&d) == 10);
+    CU_ASSERT_STRING_EQUAL(str_c(&d), "ABCDEFGHIJ");
+
+    str_cut(&d, 3);
+    CU_ASSERT(str_size(&d) == 7);
+    CU_ASSERT_STRING_EQUAL(str_c(&d), "ABCDEFG");
+
+    str_cut(&d, 100); // More than string length
+    CU_ASSERT(str_size(&d) == 0);
+    CU_ASSERT_STRING_EQUAL(str_c(&d), "");
+
+    str_free(&d);
+}
+
+void test_str_at(void) {
+    str d;
+    str_from_c(&d, "ABCD");
+
+    CU_ASSERT(str_at(&d, 0) == 'A');
+    CU_ASSERT(str_at(&d, 1) == 'B');
+    CU_ASSERT(str_at(&d, 2) == 'C');
+    CU_ASSERT(str_at(&d, 3) == 'D');
+    CU_ASSERT(str_at(&d, 4) == '\0'); // Out of bounds returns '\0'
+    CU_ASSERT(str_at(&d, 100) == '\0');
+
+    str_free(&d);
+}
+
+void test_str_at_empty(void) {
+    str d;
+    str_create(&d);
+
+    CU_ASSERT(str_at(&d, 0) == '\0');
+
+    str_free(&d);
+}
+
+void test_str_find_next(void) {
+    str d;
+    str_from_c(&d, "a-b-c-d");
+    size_t pos = 0;
+
+    CU_ASSERT(str_find_next(&d, '-', &pos) == true);
+    CU_ASSERT(pos == 1);
+
+    pos++; // Move past the found char
+    CU_ASSERT(str_find_next(&d, '-', &pos) == true);
+    CU_ASSERT(pos == 3);
+
+    pos++;
+    CU_ASSERT(str_find_next(&d, '-', &pos) == true);
+    CU_ASSERT(pos == 5);
+
+    pos++;
+    CU_ASSERT(str_find_next(&d, '-', &pos) == false);
+
+    // Search for non-existent char
+    pos = 0;
+    CU_ASSERT(str_find_next(&d, 'x', &pos) == false);
+
+    str_free(&d);
+}
+
+void test_str_to_int(void) {
+    str d;
+    int result;
+
+    str_from_c(&d, "123");
+    CU_ASSERT(str_to_int(&d, &result) == true);
+    CU_ASSERT(result == 123);
+    str_free(&d);
+
+    str_from_c(&d, "-456");
+    CU_ASSERT(str_to_int(&d, &result) == true);
+    CU_ASSERT(result == -456);
+    str_free(&d);
+
+    str_from_c(&d, "0");
+    CU_ASSERT(str_to_int(&d, &result) == true);
+    CU_ASSERT(result == 0);
+    str_free(&d);
+
+    str_from_c(&d, "abc");
+    CU_ASSERT(str_to_int(&d, &result) == false);
+    str_free(&d);
+
+    str_from_c(&d, "");
+    CU_ASSERT(str_to_int(&d, &result) == false);
+    str_free(&d);
+
+    str_from_c(&d, "123abc");
+    CU_ASSERT(str_to_int(&d, &result) == true); // Partial parse succeeds
+    CU_ASSERT(result == 123);
+    str_free(&d);
+}
+
+void test_str_to_long(void) {
+    str d;
+    long result;
+
+    str_from_c(&d, "123456789");
+    CU_ASSERT(str_to_long(&d, &result) == true);
+    CU_ASSERT(result == 123456789L);
+    str_free(&d);
+
+    str_from_c(&d, "-987654321");
+    CU_ASSERT(str_to_long(&d, &result) == true);
+    CU_ASSERT(result == -987654321L);
+    str_free(&d);
+
+    str_from_c(&d, "notanumber");
+    CU_ASSERT(str_to_long(&d, &result) == false);
+    str_free(&d);
+}
+
+void test_str_to_float(void) {
+    str d;
+    float result;
+
+    str_from_c(&d, "3.14");
+    CU_ASSERT(str_to_float(&d, &result) == true);
+    CU_ASSERT(result > 3.13f && result < 3.15f);
+    str_free(&d);
+
+    str_from_c(&d, "-2.5");
+    CU_ASSERT(str_to_float(&d, &result) == true);
+    CU_ASSERT(result > -2.51f && result < -2.49f);
+    str_free(&d);
+
+    str_from_c(&d, "0.0");
+    CU_ASSERT(str_to_float(&d, &result) == true);
+    CU_ASSERT(result == 0.0f);
+    str_free(&d);
+
+    str_from_c(&d, "notafloat");
+    CU_ASSERT(str_to_float(&d, &result) == false);
+    str_free(&d);
+}
+
+void test_str_append_format(void) {
+    str d;
+    str_from_c(&d, "Hello");
+
+    str_append_format(&d, " %s", "World");
+    CU_ASSERT_STRING_EQUAL(str_c(&d), "Hello World");
+
+    str_append_format(&d, " %d", 42);
+    CU_ASSERT_STRING_EQUAL(str_c(&d), "Hello World 42");
+
+    str_append_format(&d, "!");
+    CU_ASSERT_STRING_EQUAL(str_c(&d), "Hello World 42!");
+
+    str_free(&d);
+}
+
+void test_str_append_format_long(void) {
+    str d;
+    str_from_c(&d, "Start: ");
+
+    // Append enough to exceed small string optimization
+    str_append_format(&d, "%s", "This is a long string that will exceed the small buffer size");
+    CU_ASSERT(!is_small(&d));
+    CU_ASSERT(str_starts_with(&d, "Start: This is"));
+
+    str_free(&d);
 }
 
 void str_test_suite(CU_pSuite suite) {
@@ -803,6 +1070,30 @@ void str_test_suite(CU_pSuite suite) {
         return;
     }
     if(CU_add_test(suite, "Test for str_strip", test_str_strip) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_rstrip (empty)", test_str_rstrip_empty) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_lstrip (empty)", test_str_lstrip_empty) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_strip (empty)", test_str_strip_empty) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_rstrip (all whitespace)", test_str_rstrip_all_whitespace) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_lstrip (all whitespace)", test_str_lstrip_all_whitespace) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_strip (all whitespace)", test_str_strip_all_whitespace) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_rstrip (no whitespace)", test_str_rstrip_no_whitespace) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_lstrip (no whitespace)", test_str_lstrip_no_whitespace) == NULL) {
         return;
     }
     if(CU_add_test(suite, "Test for str_append", test_str_append) == NULL) {
@@ -879,6 +1170,9 @@ void str_test_suite(CU_pSuite suite) {
     if(CU_add_test(suite, "Test for str_cut_left", test_str_cut_left) == NULL) {
         return;
     }
+    if(CU_add_test(suite, "Test for str_cut", test_str_cut) == NULL) {
+        return;
+    }
     if(CU_add_test(suite, "Test for str_truncate", test_str_truncate) == NULL) {
         return;
     }
@@ -921,6 +1215,30 @@ void str_test_suite(CU_pSuite suite) {
         return;
     }
     if(CU_add_test(suite, "Test for str_imatch", test_str_imatch) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_at", test_str_at) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_at (empty)", test_str_at_empty) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_find_next", test_str_find_next) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_to_int", test_str_to_int) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_to_long", test_str_to_long) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_to_float", test_str_to_float) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_append_format", test_str_append_format) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for str_append_format (long)", test_str_append_format_long) == NULL) {
         return;
     }
 }

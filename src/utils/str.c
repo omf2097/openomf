@@ -346,35 +346,46 @@ void str_tolower(str *dst) {
     }
 }
 
-static size_t _strip_size(const str *src, bool left) {
+// Returns the new length after stripping trailing whitespace
+static size_t _rstrip_len(const str *src) {
     size_t len = str_size(src);
-    if(len == 0) {
-        return 0;
-    }
     const char *ptr = str_c(src);
-    for(size_t i = 0; i < len; i++) {
-        size_t pos = left ? i : len - i - 1;
-        if(!isspace(ptr[pos])) {
-            return pos;
-        }
+    while(len > 0 && isspace(ptr[len - 1])) {
+        len--;
     }
-    return 0;
+    return len;
 }
 
 void str_rstrip(str *dst) {
     // This is simple, just reduce size and set ending 0.
-    size_t skip = _strip_size(dst, false);
-    str_resize_and_copy_buffer(dst, skip + 1);
+    const size_t new_len = _rstrip_len(dst);
+    str_resize_and_copy_buffer(dst, new_len);
     str_zero(dst);
 }
 
+// Returns the number of leading whitespace characters to skip
+static size_t _lstrip_len(const str *src) {
+    const size_t len = str_size(src);
+    const char *ptr = str_c(src);
+    for(size_t i = 0; i < len; i++) {
+        if(!isspace(ptr[i])) {
+            return i;
+        }
+    }
+    return len;
+}
+
 void str_lstrip(str *dst) {
-    // More complex. Move data first (memmmove!), then reduce size.
-    size_t skip = _strip_size(dst, true);
+    // More complex. Move data first (memmove!), then reduce size.
+    const size_t skip = _lstrip_len(dst);
+    if(skip == 0) {
+        return; // Nothing to strip
+    }
     char *ptr = str_ptr(dst);
-    size_t len = str_size(dst);
-    memmove(ptr, ptr + skip, len - skip);
-    str_resize_and_copy_buffer(dst, len - skip);
+    const size_t len = str_size(dst);
+    const size_t new_len = len - skip;
+    memmove(ptr, ptr + skip, new_len);
+    str_resize_and_copy_buffer(dst, new_len);
     str_zero(dst);
 }
 
@@ -430,7 +441,7 @@ void str_cut_left(str *dst, size_t len) {
 }
 
 void str_truncate(str *dst, size_t max_len) {
-    size_t old_len = str_size(dst);
+    const size_t old_len = str_size(dst);
     if(old_len > max_len) {
         str_resize_and_copy_buffer(dst, max_len);
         str_zero(dst);
