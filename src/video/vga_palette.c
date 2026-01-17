@@ -6,6 +6,7 @@
 void vga_palette_init(vga_palette *palette) {
     assert(palette != NULL);
     memset(palette, 0, sizeof(vga_palette));
+    palette->type = VGA_PALETTE_VGA256;
 }
 
 void vga_palette_tint_range(vga_palette *pal, vga_index ref_index, vga_index start, vga_index end, uint8_t step) {
