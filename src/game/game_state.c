@@ -23,7 +23,6 @@
 #include "game/scenes/vs.h"
 #include "game/utils/serial.h"
 #include "game/utils/settings.h"
-#include "game/utils/ticktimer.h"
 #include "resources/languages.h"
 #include "resources/pilots.h"
 #include "resources/sounds_loader.h"
@@ -33,6 +32,7 @@
 #include "utils/crash.h"
 #include "utils/log.h"
 #include "utils/miscmath.h"
+#include "video/enums.h"
 #include "video/vga_state.h"
 #include "video/video.h"
 #include <SDL.h>

@@ -1,6 +1,9 @@
 #ifndef RENDERER_H
 #define RENDERER_H
 
+#include <SDL_rect.h>
+#include <stdbool.h>
+
 #include "video/surface.h"
 
 typedef struct renderer renderer;

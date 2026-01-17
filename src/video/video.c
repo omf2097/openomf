@@ -5,7 +5,6 @@
 #include "video/renderers/renderer.h"
 #include "video/video.h"
 
-// If-def the includes here
 #ifdef ENABLE_OPENGL3_RENDERER
 #include "video/renderers/opengl3/gl3_renderer.h"
 #endif
@@ -13,12 +12,17 @@
 #include "video/renderers/null/null_renderer.h"
 #endif
 
-#define MAX_AVAILABLE_RENDERERS 8
+#define MAX_AVAILABLE_RENDERERS 8 ///< Maximum number of renderers that can be registered
 
+/**
+ * @brief Callback type for initializing a renderer
+ * @param renderer Renderer structure to initialize with callbacks
+ */
 typedef void (*renderer_init)(renderer *renderer);
 
-// This is the list of all built-in renderers.
-// If-def the renderers here. Most preferred renderers at the top.
+/**
+ * List of all built-in renderers. Most preferred renderers at the top.
+ */
 static renderer_init all_renderers[] = {
 #ifdef ENABLE_OPENGL3_RENDERER
     gl3_renderer_set_callbacks,
@@ -27,21 +31,24 @@ static renderer_init all_renderers[] = {
     null_renderer_set_callbacks,
 #endif
 };
-static int all_renderers_count = N_ELEMENTS(all_renderers);
-
-// All renderers that are available. This is filled by video_scan_renderers().
-static struct available_renderer {
-    renderer_init set_callbacks;
-    const char *name;
-    const char *description;
-} available_renderers[MAX_AVAILABLE_RENDERERS];
-static int renderer_count = 0;
-
-// Currently selected renderer
-static renderer current_renderer;
+static int all_renderers_count = N_ELEMENTS(all_renderers); ///< Count of built-in renderers
 
 /**
- * This is run at start to hunt the available renderers.
+ * @brief Information about an available renderer
+ */
+static struct available_renderer {
+    renderer_init set_callbacks; ///< Callback to set up renderer function pointers
+    const char *name;            ///< Renderer name
+    const char *description;     ///< Renderer description
+} available_renderers[MAX_AVAILABLE_RENDERERS];
+static int renderer_count = 0; ///< Number of available renderers
+
+static renderer current_renderer; ///< Currently active renderer
+
+/**
+ * @brief Scan for available renderers
+ *
+ * This is run at start to detect which renderers are available on the system.
  */
 void video_scan_renderers(void) {
     renderer tmp;
@@ -62,11 +69,11 @@ void video_scan_renderers(void) {
 }
 
 /**
- * Get information about a renderer by its index.
+ * @brief Get information about a renderer by its index
  * @param index Renderer index
- * @param name Renderer name
- * @param description Renderer description
- * @return true if data was read, false if there was no renderer at this index.
+ * @param name Output for renderer name (can be NULL)
+ * @param description Output for renderer description (can be NULL)
+ * @return true if data was read, false if index is out of range
  */
 bool video_get_renderer_info(int index, const char **name, const char **description) {
     if(index < 0 && index >= renderer_count) {
@@ -82,7 +89,7 @@ bool video_get_renderer_info(int index, const char **name, const char **descript
 }
 
 /**
- * Get the number of currently available renderers.
+ * @brief Get the number of currently available renderers
  * @return Number of available renderers
  */
 int video_get_renderer_count(void) {
@@ -90,9 +97,9 @@ int video_get_renderer_count(void) {
 }
 
 /**
- * Attempt to find the renderer by name
- * @param try_name Renderer name
- * @return true if renderer was found, false if not.
+ * @brief Attempt to find a renderer by name
+ * @param try_name Renderer name to search for
+ * @return true if renderer was found and set as current, false otherwise
  */
 static bool hunt_renderer_by_name(const char *try_name) {
     for(int i = 0; i < renderer_count; i++) {
@@ -106,9 +113,11 @@ static bool hunt_renderer_by_name(const char *try_name) {
 }
 
 /**
- * Attempt to find the best renderer to use, if one is not selected.
- * We just assume the first available renderer is the best one :)
- * @return true if renderer was found, false if not.
+ * @brief Find the best available renderer
+ *
+ * Selects the first available renderer as the best option.
+ *
+ * @return true if a renderer was found and set as current, false otherwise
  */
 static bool find_best_renderer(void) {
     if(renderer_count > 0) {
@@ -118,6 +127,15 @@ static bool find_best_renderer(void) {
     return false;
 }
 
+/**
+ * @brief Find and select a renderer
+ *
+ * Tries to find the specified renderer by name, falling back to the best
+ * available renderer if not found or if no name is specified.
+ *
+ * @param try_name Preferred renderer name (NULL to use best available)
+ * @return true if a renderer was found, false if no renderer is available
+ */
 static bool video_find_renderer(const char *try_name) {
     if(try_name != NULL && strlen(try_name) > 0) {
         if(hunt_renderer_by_name(try_name)) {
@@ -204,6 +222,18 @@ void video_schedule_screenshot(video_screenshot_signal callback) {
     current_renderer.capture_screen(current_renderer.ctx, callback);
 }
 
+/**
+ * @brief Internal helper to invoke the renderer's draw_surface function
+ * @param sur Source surface to draw
+ * @param dst Destination rectangle
+ * @param remap_offset Palette remapping offset
+ * @param remap_rounds Number of remapping iterations
+ * @param palette_offset Palette offset
+ * @param palette_limit Maximum palette index
+ * @param opacity Opacity value (0-255)
+ * @param flip_mode Flip mode flags
+ * @param options Rendering options
+ */
 static inline void draw_args(const surface *sur, SDL_Rect *dst, int remap_offset, int remap_rounds, int palette_offset,
                              int palette_limit, int opacity, unsigned int flip_mode, unsigned int options) {
     current_renderer.draw_surface(current_renderer.ctx, sur, dst, remap_offset, remap_rounds, palette_offset,

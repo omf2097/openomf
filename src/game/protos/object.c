@@ -1,15 +1,13 @@
 #include "game/protos/object.h"
-#include "formats/sprite.h"
 #include "game/game_state.h"
 #include "game/objects/arena_constraints.h"
 #include "resources/af_move.h"
 #include "utils/allocator.h"
-#include "utils/c_string_util.h"
 #include "utils/log.h"
 #include "utils/miscmath.h"
+#include "video/enums.h"
 #include "video/vga_state.h"
 #include "video/video.h"
-#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
