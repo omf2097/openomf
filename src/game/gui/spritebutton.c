@@ -25,6 +25,7 @@ typedef struct spritebutton {
     spritebutton_click_cb click_cb;
     spritebutton_tick_cb tick_cb;
     spritebutton_focus_cb focus_cb;
+    spritebutton_find_text_cb find_text_cb;
     bool free_userdata;
     void *userdata;
 } spritebutton;
@@ -69,6 +70,15 @@ static void spritebutton_tick(component *c) {
     if(b->tick_cb) {
         b->tick_cb(c, b->userdata);
     }
+}
+
+static component *spritebutton_find_text(component *c, const char *text) {
+    log_debug("spritebutton_find_text");
+    spritebutton *b = widget_get_obj(c);
+    if(strcmp(text_c(b->text), text) == 0) {
+        return c;
+    }
+    return NULL;
 }
 
 static void spritebutton_focus(component *c, bool focused) {
@@ -139,6 +149,8 @@ component *spritebutton_create(const char *text, const surface *img, bool disabl
     widget_set_tick_cb(c, spritebutton_tick);
     widget_set_free_cb(c, spritebutton_free);
     widget_set_layout_cb(c, spritebutton_layout);
+    log_debug("widget_set_find_text_cb(c, spritebutton_find_text): %s", text_c(b->text));
+    widget_set_find_text_cb(c, spritebutton_find_text);
     return c;
 }
 

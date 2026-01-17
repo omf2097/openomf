@@ -430,6 +430,17 @@ static component *menu_find(component *c, int id) {
     return NULL;
 }
 
+static component *menu_find_text(component *c, const char *text) {
+    log_debug("menu_find_text");
+    menu *m = sizer_get_obj(c);
+    if(m->submenu) {
+        log_debug("menu_find_text: calling for submenu");
+        return component_find_text(m->submenu, text);
+    }
+    log_debug("menu_find_text: returning NULL");
+    return NULL;
+}
+
 void menu_set_margin_top(component *c, int margin) {
     menu *m = sizer_get_obj(c);
     m->margin_top = margin;
@@ -467,6 +478,7 @@ component *menu_create(void) {
     sizer_set_layout_cb(c, menu_layout);
     sizer_set_free_cb(c, menu_free);
     sizer_set_find_cb(c, menu_find);
+    sizer_set_find_text_cb(c, menu_find_text);
 
     return c;
 }

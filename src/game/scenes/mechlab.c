@@ -587,6 +587,11 @@ void mechlab_input_tick(scene *scene) {
     controller_free_chain(p1);
 }
 
+gui_frame *mechlab_get_frame(scene *scene) {
+    mechlab_local *local = scene_get_userdata(scene);
+    return local->frame;
+}
+
 // Init mechlab
 int mechlab_create(scene *scene) {
     // Alloc
