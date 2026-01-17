@@ -11,7 +11,9 @@ author = 'OpenOMF Project Team'
 
 # -- General configuration ---------------------------------------------------
 
-extensions = []
+extensions = [
+    'sphinx.ext.graphviz',
+]
 
 templates_path = ['_templates']
 exclude_patterns = []

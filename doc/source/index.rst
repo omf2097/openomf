@@ -8,6 +8,9 @@ fighting game One Must Fall 2097.
    :maxdepth: 2
    :caption: Contents:
 
+   architecture/gui
+   architecture/text
+
 Indices and tables
 ==================
 
