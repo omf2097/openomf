@@ -430,6 +430,18 @@ static inline void finish_offscreen(gl3_context *ctx) {
 }
 
 /**
+ * Render atlas directly to screen for debugging purposes
+ */
+static void finish_debug_atlas(gl3_context *ctx) {
+    render_target_deactivate();
+    set_screen_viewport(ctx);
+    activate_program(ctx->rgba_prog_id);
+    bind_uniform_1i(ctx->rgba_prog_id, "framebuffer", TEX_UNIT_ATLAS);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+}
+
+/**
  * Convert paletted framebuffer to RGBA, then scale to screen.
  */
 static inline void finish_onscreen(gl3_context *ctx) {
@@ -440,13 +452,8 @@ static inline void finish_onscreen(gl3_context *ctx) {
     const int fb_h = NATIVE_H * ctx->fb_scale;
     glViewport(0, 0, fb_w, fb_h);
     render_target_activate(ctx->rgba_target);
-
     activate_program(ctx->rgba_prog_id);
-    if(ctx->draw_atlas) {
-        bind_uniform_1i(ctx->rgba_prog_id, "framebuffer", TEX_UNIT_ATLAS);
-    } else {
-        bind_uniform_1i(ctx->rgba_prog_id, "framebuffer", TEX_UNIT_FBO);
-    }
+    bind_uniform_1i(ctx->rgba_prog_id, "framebuffer", TEX_UNIT_FBO);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
@@ -465,8 +472,12 @@ static void render_finish(void *userdata) {
     gl3_context *ctx = userdata;
     flush_palettes(ctx);
     flush_remaps(ctx);
-    finish_offscreen(ctx);
-    finish_onscreen(ctx);
+    if(ctx->draw_atlas) {
+        finish_debug_atlas(ctx);
+    } else {
+        finish_offscreen(ctx);
+        finish_onscreen(ctx);
+    }
 
     // Snap screenshot from the freshly rendered state.
     if(ctx->screenshot_cb) {
