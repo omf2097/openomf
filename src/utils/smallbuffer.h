@@ -2,7 +2,7 @@
  * @file smallbuffer.h
  * @brief A container for arbitrary bytes.
  * @details Tracks capacity, supports small buffer optimization.
- * @copyright MIT license.
+ * @copyright MIT License
  * @date 2025
  * @author Magnus Larsen
  */

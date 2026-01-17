@@ -4,6 +4,9 @@
  * @details Provides functions for constructing, manipulating, and querying file paths.
  *          Includes operations for path resolution, extension handling, directory listing,
  *          and file system queries. All paths are stored in fixed-size buffers.
+ * @copyright MIT License
+ * @date 2026
+ * @author OpenOMF Project
  */
 
 #ifndef PATH_H

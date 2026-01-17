@@ -14,7 +14,7 @@
  *          This header does not require your strings to contain NUL terminators, instead
  *          all functions expect you to supply a length.
  *
- * @copyright MIT license.
+ * @copyright MIT License
  * @date 2024
  * @author Magnus Larsen
  */

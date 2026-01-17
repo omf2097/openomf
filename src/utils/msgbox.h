@@ -3,6 +3,9 @@
  * @brief Error message box display.
  * @details Provides a platform-independent way to display error messages
  *          in a graphical dialog box (using SDL).
+ * @copyright MIT License
+ * @date 2026
+ * @author OpenOMF Project
  */
 
 #ifndef MSGBOX_H

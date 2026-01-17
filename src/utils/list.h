@@ -3,6 +3,9 @@
  * @brief Doubly-linked list implementation.
  * @details A generic doubly-linked list that stores copies of data.
  *          Supports forward and backward iteration, and insertion/deletion at any position.
+ * @copyright MIT License
+ * @date 2026
+ * @author OpenOMF Project
  */
 
 #ifndef LIST_H

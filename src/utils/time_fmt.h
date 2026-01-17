@@ -2,6 +2,9 @@
  * @file time_fmt.h
  * @brief Time formatting utilities.
  * @details Provides functions for formatting timestamps for display.
+ * @copyright MIT License
+ * @date 2026
+ * @author OpenOMF Project
  */
 
 #ifndef TIME_FMT_H

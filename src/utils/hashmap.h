@@ -4,6 +4,9 @@
  * @details A hash table that maps arbitrary binary keys to arbitrary binary values.
  *          Uses FNV-1a hashing and separate chaining for collision resolution.
  *          The hashmap automatically resizes when load becomes high.
+ * @copyright MIT License
+ * @date 2026
+ * @author OpenOMF Project
  */
 
 #ifndef HASHMAP_H

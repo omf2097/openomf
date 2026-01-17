@@ -3,6 +3,9 @@
  * @brief Fatal error handling and crash reporting.
  * @details Provides macros for terminating the program with a diagnostic message.
  *          Used throughout the codebase to handle unrecoverable errors.
+ * @copyright MIT License
+ * @date 2026
+ * @author OpenOMF Project
  */
 
 #ifndef CRASH_H

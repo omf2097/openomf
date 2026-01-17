@@ -2,6 +2,9 @@
  * @file random.h
  * @brief Pseudo-random number generation.
  * @details Provides both instanced and global random number generators.
+ * @copyright MIT License
+ * @date 2026
+ * @author OpenOMF Project
  */
 
 #ifndef RANDOM_H

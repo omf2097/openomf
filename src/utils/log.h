@@ -3,6 +3,9 @@
  * @brief Logging system with multiple outputs and severity levels.
  * @details Provides a flexible logging system that supports multiple output destinations
  *          (stderr, files) with independent log levels. Supports colored output for terminals.
+ * @copyright MIT License
+ * @date 2026
+ * @author OpenOMF Project
  */
 
 #ifndef LOG_H

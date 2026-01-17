@@ -4,6 +4,9 @@
  * @details Provides 2D vector types and operations for both integer and
  *          floating-point coordinates. Used throughout the engine for
  *          positions, velocities, and other 2D quantities.
+ * @copyright MIT License
+ * @date 2026
+ * @author OpenOMF Project
  */
 
 #ifndef VEC_H

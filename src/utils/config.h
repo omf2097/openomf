@@ -4,6 +4,9 @@
  * @details Provides functions to read, write, and manipulate configuration values
  *          stored in an INI-style configuration file. Supports integer, boolean,
  *          float, and string value types.
+ * @copyright MIT License
+ * @date 2026
+ * @author OpenOMF Project
  */
 
 #ifndef CONFIG_H

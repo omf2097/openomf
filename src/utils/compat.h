@@ -3,6 +3,9 @@
  * @brief Platform compatibility definitions.
  * @details Provides type definitions and includes that may vary across platforms.
  *          Ensures consistent availability of char16_t and char32_t types.
+ * @copyright MIT License
+ * @date 2026
+ * @author OpenOMF Project
  */
 
 #ifndef COMPAT_H

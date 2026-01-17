@@ -1,6 +1,9 @@
 /**
  * @file c_array_util.h
  * @brief Utility macros for working with C arrays.
+ * @copyright MIT License
+ * @date 2026
+ * @author OpenOMF Project
  */
 
 #ifndef C_ARRAY_UTIL_H
