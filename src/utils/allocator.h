@@ -5,6 +5,9 @@
  *          This simplifies error handling throughout the codebase since allocation failures
  *          are treated as fatal errors. The actual allocation is performed by platform-specific
  *          backends (see allocator_default.h).
+ * @copyright MIT License
+ * @date 2026
+ * @author OpenOMF Project
  */
 
 #ifndef ALLOCATOR_H

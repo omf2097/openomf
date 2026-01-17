@@ -4,6 +4,9 @@
  * @details Provides a unified iterator interface used by various container types
  *          (array, hashmap, list, vector). The iterator stores function pointers
  *          for navigation, allowing each container to define its own traversal logic.
+ * @copyright MIT License
+ * @date 2026
+ * @author OpenOMF Project
  */
 
 #ifndef ITERATOR_H

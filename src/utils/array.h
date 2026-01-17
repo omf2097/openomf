@@ -4,6 +4,9 @@
  * @details Implements a dynamically growing sparse array that stores void pointers.
  *          Elements can be set at arbitrary indices, and the array automatically
  *          grows to accommodate them. NULL entries are skipped during iteration.
+ * @copyright MIT License
+ * @date 2026
+ * @author OpenOMF Project
  */
 
 #ifndef ARRAY_H

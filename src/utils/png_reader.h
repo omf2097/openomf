@@ -2,6 +2,9 @@
  * @file png_reader.h
  * @brief PNG image file reading.
  * @details Functions for reading paletted PNG image data.
+ * @copyright MIT License
+ * @date 2026
+ * @author OpenOMF Project
  */
 
 #ifndef PNG_READER_H

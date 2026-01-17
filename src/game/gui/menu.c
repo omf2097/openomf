@@ -1,11 +1,11 @@
 #include "game/gui/menu.h"
 #include "audio/audio.h"
+#include "controller/controller.h"
 #include "game/gui/menu_background.h"
 #include "game/gui/sizer.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
 #include "utils/miscmath.h"
-#include "utils/vector.h"
 #include "video/surface.h"
 #include "video/video.h"
 

@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include "audio/audio.h"
+#include "controller/controller.h"
 #include "game/gui/text/text.h"
 #include "game/gui/textselector.h"
 #include "game/gui/widget.h"

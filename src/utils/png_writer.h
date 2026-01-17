@@ -3,6 +3,9 @@
  * @brief PNG image file writing.
  * @details Functions for writing image data to PNG files.
  *          Supports both RGB/RGBA and paletted image formats.
+ * @copyright MIT License
+ * @date 2026
+ * @author OpenOMF Project
  */
 
 #ifndef PNG_WRITER_H

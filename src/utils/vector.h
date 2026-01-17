@@ -5,6 +5,9 @@
  *          Elements are stored contiguously in memory and the array grows
  *          automatically when capacity is exceeded. Supports forward and
  *          backward iteration.
+ * @copyright MIT License
+ * @date 2026
+ * @author OpenOMF Project
  */
 
 #ifndef VECTOR_H

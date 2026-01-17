@@ -4,6 +4,9 @@
  * @details A dynamic string type with small string optimization.
  *          Short strings are stored inline, while longer strings are heap-allocated.
  *          Supports common operations like concatenation, slicing, searching, and formatting.
+ * @copyright MIT License
+ * @date 2026
+ * @author OpenOMF Project
  */
 
 #ifndef STR_H

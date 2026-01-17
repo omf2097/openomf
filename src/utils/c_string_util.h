@@ -4,6 +4,9 @@
  * @details Provides safer string operations and cross-platform compatibility wrappers
  *          for common string functions. These complement the standard library functions
  *          with safer alternatives that handle edge cases.
+ * @copyright MIT License
+ * @date 2026
+ * @author OpenOMF Project
  */
 
 #ifndef C_STRING_UTIL_H

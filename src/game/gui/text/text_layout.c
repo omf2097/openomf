@@ -20,10 +20,6 @@ void text_layout_clone(text_layout *dst, const text_layout *src) {
     vector_clone(&dst->items, &src->items);
 }
 
-/**
- * Jumps over a line of text, and finds the starting index of the next line. If no text could not be fit into
- * the given space, start_index is returned.
- */
 size_t find_next_line_end(const str *buf, const font *font, text_row_direction direction, size_t start_index,
                           uint8_t letter_spacing, uint16_t max_width, bool word_wrap) {
     assert(buf != NULL);
@@ -178,22 +174,6 @@ static uint16_t halign_offset(text_horizontal_align align, uint16_t bbox_w, uint
     return 0; // Should never come here.
 }
 
-/**
- * Figure out a layout for text block.
- *
- * @param layout This will be filled after text_layout_compute is called.
- * @param buf Text to render
- * @param font Font to use when rendering
- * @param bbox_w Bounding box width for the output block. This will affect word wrapping!
- * @param bbox_h Bounding box width for the output block. This will affect word wrapping!
- * @param vertical_align Text vertical alignment within the bounding box
- * @param horizontal_align Text horizontal alignment within the bounding box
- * @param margin Bounding box margins
- * @param direction Text rendering direction (left to right or top ot bottom)
- * @param line_spacing Spacing between lines (in pixels)
- * @param letter_spacing Spacing between letters (in pixels)
- * @param word_wrap Enable word wrapping
- */
 void text_layout_compute(text_layout *layout, const str *buf, const font *font, uint16_t bbox_w, uint16_t bbox_h,
                          text_vertical_align vertical_align, text_horizontal_align horizontal_align, text_margin margin,
                          text_row_direction direction, uint8_t line_spacing, uint8_t letter_spacing, bool word_wrap) {

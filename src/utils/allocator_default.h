@@ -4,6 +4,9 @@
  * @details This is the default allocator backend that wraps standard malloc/calloc/realloc/free.
  *          On allocation failure, these functions crash with an error message instead of
  *          returning NULL.
+ * @copyright MIT License
+ * @date 2026
+ * @author OpenOMF Project
  */
 
 #ifndef ALLOCATOR_DEFAULT_H

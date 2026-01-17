@@ -3,6 +3,9 @@
  * @brief Miscellaneous mathematical utilities.
  * @details Provides common math operations not available in the standard library,
  *          including clamping, min/max functions, and other numeric utilities.
+ * @copyright MIT License
+ * @date 2026
+ * @author OpenOMF Project
  */
 
 #ifndef MISCMATH_H

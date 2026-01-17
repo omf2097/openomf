@@ -3,6 +3,9 @@
  * @brief Ring buffer implementation.
  * @details A fixed-size ring buffer for byte data. When the buffer is full, writes will fail (no automatic
  * overwriting).
+ * @copyright MIT License
+ * @date 2026
+ * @author OpenOMF Project
  */
 
 #ifndef RINGBUFFER_H
