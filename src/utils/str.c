@@ -142,9 +142,9 @@ static inline size_t str_roundupcapacity(size_t capacity) {
 // destructively resizes str to size
 // returns a char * which the caller must write size non-null bytes to, followed by a null byte.
 static char *str_resize_buffer(str *s, size_t size) {
-    size_t size_with_zero = size + 1;
-    bool become_small = size_with_zero <= STR_STACK_SIZE;
-    bool is_small = str_issmall(s);
+    const size_t size_with_zero = size + 1;
+    const bool become_small = size_with_zero <= STR_STACK_SIZE;
+    const bool is_small = str_issmall(s);
     if(become_small && is_small) {
         str_smallsetsize(s, size);
         return s->ssmall;
@@ -153,14 +153,14 @@ static char *str_resize_buffer(str *s, size_t size) {
         str_smallsetsize(s, size);
         return s->ssmall;
     } else if(!become_small && is_small) {
-        size_t capacity = str_roundupcapacity(size_with_zero);
+        const size_t capacity = str_roundupcapacity(size_with_zero);
         str_normalsetcapacity(s, capacity);
         s->normal.data = omf_malloc(capacity);
         s->normal.size = size;
         return s->normal.data;
     } else /* if(!become_small && !is_small) */ {
         if(size_with_zero > str_normalcapacity(s)) {
-            size_t capacity = str_roundupcapacity(size_with_zero);
+            const size_t capacity = str_roundupcapacity(size_with_zero);
             str_normalsetcapacity(s, capacity);
             s->normal.data = omf_realloc(s->normal.data, capacity);
         }
@@ -171,9 +171,9 @@ static char *str_resize_buffer(str *s, size_t size) {
 
 // resizes str to size while preserving the contents (or as much will fit)
 static void str_resize_and_copy_buffer(str *s, size_t size) {
-    size_t size_with_zero = size + 1;
-    bool become_small = size_with_zero <= STR_STACK_SIZE;
-    bool is_small = str_issmall(s);
+    const size_t size_with_zero = size + 1;
+    const bool become_small = size_with_zero <= STR_STACK_SIZE;
+    const bool is_small = str_issmall(s);
     if(become_small && is_small) {
         str_smallsetsize(s, size);
     } else if(become_small && !is_small) {
@@ -183,15 +183,15 @@ static void str_resize_and_copy_buffer(str *s, size_t size) {
         omf_free(old_data);
     } else if(!become_small && is_small) {
         // can't write to s until we've copied s->small to the heap
-        size_t capacity = str_roundupcapacity(size_with_zero);
-        char *data = omf_malloc(capacity);
+        const size_t capacity = str_roundupcapacity(size_with_zero);
+        char *const data = omf_malloc(capacity);
         memcpy(data, s->ssmall, STR_STACK_SIZE);
         s->normal.data = data;
         str_normalsetcapacity(s, capacity);
         s->normal.size = size;
     } else /* if (!become_small && !is_small) */ {
         if(size_with_zero > str_normalcapacity(s)) {
-            size_t capacity = str_roundupcapacity(size_with_zero);
+            const size_t capacity = str_roundupcapacity(size_with_zero);
             str_normalsetcapacity(s, capacity);
             s->normal.data = omf_realloc(s->normal.data, capacity);
         }
@@ -296,7 +296,7 @@ void str_append_format(str *dst, const char *format, ...) {
         abort();
     }
 
-    size_t offset = str_size(dst);
+    const size_t offset = str_size(dst);
 
     // Make sure there is enough room for existing contents + vsnprintf call + ending NULL
     str_resize_and_copy_buffer(dst, offset + size);
@@ -331,50 +331,61 @@ void str_free(str *dst) {
 // ------------------------ Modification ------------------------
 
 void str_toupper(str *dst) {
-    char *ptr = str_ptr(dst);
-    size_t len = str_size(dst);
+    char *const ptr = str_ptr(dst);
+    const size_t len = str_size(dst);
     for(size_t i = 0; i < len; i++) {
         ptr[i] = toupper(ptr[i]);
     }
 }
 
 void str_tolower(str *dst) {
-    char *ptr = str_ptr(dst);
-    size_t len = str_size(dst);
+    char *const ptr = str_ptr(dst);
+    const size_t len = str_size(dst);
     for(size_t i = 0; i < len; i++) {
         ptr[i] = tolower(ptr[i]);
     }
 }
 
-static size_t _strip_size(const str *src, bool left) {
+// Returns the new length after stripping trailing whitespace
+static size_t _rstrip_len(const str *src) {
     size_t len = str_size(src);
-    if(len == 0) {
-        return 0;
-    }
     const char *ptr = str_c(src);
-    for(size_t i = 0; i < len; i++) {
-        size_t pos = left ? i : len - i - 1;
-        if(!isspace(ptr[pos])) {
-            return pos;
-        }
+    while(len > 0 && isspace(ptr[len - 1])) {
+        len--;
     }
-    return 0;
+    return len;
 }
 
 void str_rstrip(str *dst) {
     // This is simple, just reduce size and set ending 0.
-    size_t skip = _strip_size(dst, false);
-    str_resize_and_copy_buffer(dst, skip + 1);
+    const size_t new_len = _rstrip_len(dst);
+    str_resize_and_copy_buffer(dst, new_len);
     str_zero(dst);
 }
 
+// Returns the number of leading whitespace characters to skip
+static size_t _lstrip_len(const str *src) {
+    const size_t len = str_size(src);
+    const char *ptr = str_c(src);
+    for(size_t i = 0; i < len; i++) {
+        if(!isspace(ptr[i])) {
+            return i;
+        }
+    }
+    return len;
+}
+
 void str_lstrip(str *dst) {
-    // More complex. Move data first (memmmove!), then reduce size.
-    size_t skip = _strip_size(dst, true);
+    // More complex. Move data first (memmove!), then reduce size.
+    const size_t skip = _lstrip_len(dst);
+    if(skip == 0) {
+        return; // Nothing to strip
+    }
     char *ptr = str_ptr(dst);
-    size_t len = str_size(dst);
-    memmove(ptr, ptr + skip, len - skip);
-    str_resize_and_copy_buffer(dst, len - skip);
+    const size_t len = str_size(dst);
+    const size_t new_len = len - skip;
+    memmove(ptr, ptr + skip, new_len);
+    str_resize_and_copy_buffer(dst, new_len);
     str_zero(dst);
 }
 
@@ -389,15 +400,15 @@ void str_append(str *dst, const str *src) {
 }
 
 void str_append_buf(str *dst, const char *buf, size_t len) {
-    size_t offset = str_size(dst);
+    const size_t offset = str_size(dst);
     str_resize_and_copy_buffer(dst, offset + len);
     memcpy(str_ptr(dst) + offset, buf, len);
     str_zero(dst);
 }
 
 bool str_find_next(const str *string, char find, size_t *pos) {
-    const char *ptr = str_c(string);
-    size_t len = str_size(string);
+    const char *const ptr = str_c(string);
+    const size_t len = str_size(string);
     for(size_t i = *pos; i < len; i++) {
         if(ptr[i] == find) {
             *pos = i;
@@ -430,7 +441,7 @@ void str_cut_left(str *dst, size_t len) {
 }
 
 void str_truncate(str *dst, size_t max_len) {
-    size_t old_len = str_size(dst);
+    const size_t old_len = str_size(dst);
     if(old_len > max_len) {
         str_resize_and_copy_buffer(dst, max_len);
         str_zero(dst);
@@ -438,8 +449,8 @@ void str_truncate(str *dst, size_t max_len) {
 }
 
 void str_replace(str *dst, const char *seek, const char *replacement, int limit) {
-    size_t seek_len = strlen(seek);
-    size_t replacement_len = strlen(replacement);
+    const size_t seek_len = strlen(seek);
+    const size_t replacement_len = strlen(replacement);
     assert(seek_len > 0);
     int found = 0;
     ptrdiff_t diff = replacement_len - (ptrdiff_t)seek_len;
@@ -474,8 +485,8 @@ void str_replace(str *dst, const char *seek, const char *replacement, int limit)
 // ------------------------ Getters ------------------------
 
 bool str_first_of(const str *string, char find, size_t *pos) {
-    const char *ptr = str_c(string);
-    size_t len = str_size(string);
+    const char *const ptr = str_c(string);
+    const size_t len = str_size(string);
     for(size_t i = 0; i < len; i++) {
         if(ptr[i] == find) {
             *pos = i;
@@ -486,10 +497,10 @@ bool str_first_of(const str *string, char find, size_t *pos) {
 }
 
 bool str_last_of(const str *string, char find, size_t *pos) {
-    const char *ptr = str_c(string);
-    size_t len = str_size(string);
+    const char *const ptr = str_c(string);
+    const size_t len = str_size(string);
     for(size_t i = 0; i < len; i++) {
-        size_t tmp = len - i - 1;
+        const size_t tmp = len - i - 1;
         if(ptr[tmp] == find) {
             *pos = tmp;
             return true;
@@ -499,12 +510,12 @@ bool str_last_of(const str *string, char find, size_t *pos) {
 }
 
 bool str_equal(const str *a, const str *b) {
-    size_t len = str_size(a);
+    const size_t len = str_size(a);
     if(len != str_size(b)) {
         return false;
     }
-    const char *ptr_a = str_c(a);
-    const char *ptr_b = str_c(b);
+    const char *const ptr_a = str_c(a);
+    const char *const ptr_b = str_c(b);
     if(memcmp(ptr_a, ptr_b, len) != 0) {
         return false;
     }
@@ -515,7 +526,7 @@ bool str_equal_buf(const str *a, const char *buf, size_t len) {
     if(str_size(a) != len) {
         return false;
     }
-    const char *ptr = str_c(a);
+    const char *const ptr = str_c(a);
     if(memcmp(ptr, buf, len) != 0) {
         return false;
     }
@@ -526,7 +537,7 @@ char str_at(const str *string, size_t pos) {
     if(pos >= str_size(string)) {
         return '\0';
     }
-    const char *ptr = str_c(string);
+    const char *const ptr = str_c(string);
     return ptr[pos];
 }
 
@@ -535,8 +546,8 @@ bool str_delete_at(str *string, size_t pos) {
     if(pos >= len) {
         return false;
     }
-    char *buf = str_ptr(string);
-    size_t n = len - pos - 1;
+    char *const buf = str_ptr(string);
+    const size_t n = len - pos - 1;
     memmove(&buf[pos], &buf[pos + 1], n);
     len--;
     str_resize_and_copy_buffer(string, len);
@@ -554,40 +565,40 @@ bool str_set_at(str *string, size_t pos, char value) {
 }
 
 void str_set_c(str *string, const char *value) {
-    size_t size = strlen(value);
+    const size_t size = strlen(value);
     memcpy(str_resize_buffer(string, size), value, size);
     str_zero(string);
 }
 
 void str_set(str *string, const str *value) {
-    size_t size = str_size(value);
+    const size_t size = str_size(value);
     memcpy(str_resize_buffer(string, size), str_c(value), size);
     str_zero(string);
 }
 
 bool str_insert_at(str *string, size_t pos, char value) {
-    size_t len = str_size(string);
+    const size_t len = str_size(string);
     if(pos > len) {
         return false;
     }
     str_resize_and_copy_buffer(string, len + 1);
     str_zero(string);
-    char *buf = str_ptr(string);
-    size_t n = len - pos;
+    char *const buf = str_ptr(string);
+    const size_t n = len - pos;
     memmove(&buf[pos + 1], &buf[pos], n);
     buf[pos] = value;
     return true;
 }
 
 bool str_insert_buf_at(str *dst, size_t pos, const char *src, size_t src_len) {
-    size_t len = str_size(dst);
+    const size_t len = str_size(dst);
     if(pos > len) {
         return false;
     }
-    size_t n = len - pos;
+    const size_t n = len - pos;
     str_resize_and_copy_buffer(dst, len + src_len);
     str_zero(dst);
-    char *buf = str_ptr(dst);
+    char *const buf = str_ptr(dst);
     memmove(&buf[pos + src_len], &buf[pos], n);
     memcpy(&buf[pos], src, src_len);
     return true;
@@ -624,14 +635,14 @@ void str_split_c(vector *dst, const char *src, char ch) {
 
 bool str_to_float(const str *string, float *result) {
     char *end;
-    const char *ptr = str_c(string);
+    const char *const ptr = str_c(string);
     *result = strtof(ptr, &end);
     return (ptr != end);
 }
 
 bool str_to_long(const str *string, long *result) {
     char *end;
-    const char *ptr = str_c(string);
+    const char *const ptr = str_c(string);
     *result = strtol(ptr, &end, 10);
     return (ptr != end);
 }
@@ -650,7 +661,7 @@ bool str_starts_with(const str *src, const char *prefix) {
     if(str_size(src) < prefix_len) {
         return false;
     }
-    const char *ptr = str_c(src);
+    const char *const ptr = str_c(src);
     return memcmp(ptr, prefix, prefix_len) == 0;
 }
 
@@ -660,7 +671,7 @@ bool str_ends_with(const str *src, const char *suffix) {
     if(src_len < suffix_len) {
         return false;
     }
-    const char *ptr = str_c(src);
+    const char *const ptr = str_c(src);
     return memcmp(ptr + (src_len - suffix_len), suffix, suffix_len) == 0;
 }
 
@@ -691,7 +702,7 @@ bool str_match(const str *test, const char *pattern) {
     return *string == '\0' && *pattern == '\0';
 }
 
-int strcmp_i(char const *s1, char const *s2) {
+static int strcmp_i(char const *s1, char const *s2) {
     while(*s1 != '\0' && *s2 != '\0' && tolower(*s1) == tolower(*s2)) {
         s1++;
         s2++;
