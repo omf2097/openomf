@@ -3,6 +3,8 @@
 This directory contains the Sphinx documentation project for OpenOMF. This project
 is automatically built by readthedocs.org!
 
+See built docs @ https://openomf.readthedocs.io/main/
+
 ## Prerequisites
 
 Graphviz is required for rendering architecture diagrams:
