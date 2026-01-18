@@ -7,16 +7,17 @@
 #define VGA_REMAP_COUNT 19
 
 typedef struct vga_remap_table {
-    vga_index data[256];
+    vga_index data[1024];
+    vga_palette_type type;
 } vga_remap_table;
 
-static_assert(256 == sizeof(vga_remap_table), "vga_palette should pack into 256 bytes");
+static_assert(1028 == sizeof(vga_remap_table), "vga_remap_table should pack into 1028 bytes");
 
 typedef struct vga_remap_tables {
     vga_remap_table tables[VGA_REMAP_COUNT];
 } vga_remap_tables;
 
-static_assert(4864 == sizeof(vga_remap_tables), "vga_remap_tables should pack into 4864 bytes");
+static_assert(19532 == sizeof(vga_remap_tables), "vga_remap_tables should pack into 19532 bytes");
 
 void vga_remaps_init(vga_remap_tables *remaps);
 void vga_remap_init(vga_remap_table *remap);
