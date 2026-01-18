@@ -10,6 +10,7 @@ fighting game One Must Fall 2097.
 
    architecture/gui
    architecture/text
+   architecture/sprite_packer
 
 Indices and tables
 ==================
