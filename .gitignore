@@ -19,3 +19,8 @@ cmake-build-release/
 compile_commands.json
 __pycache__
 *.pyc
+test.af
+test.bk
+test.trn
+test.rec
+

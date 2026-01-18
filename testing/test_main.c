@@ -22,6 +22,7 @@ void path_test_suite(CU_pSuite suite);
 void smallbuffer_test_suite(CU_pSuite suite);
 void ringbuffer_test_suite(CU_pSuite suite);
 void c_string_util_test_suite(CU_pSuite suite);
+void sprite_packer_test_suite(CU_pSuite suite);
 
 int main(int argc, char **argv) {
     CU_pSuite suite = NULL;
@@ -145,6 +146,12 @@ int main(int argc, char **argv) {
         goto end;
     }
     c_string_util_test_suite(c_string_util_suite);
+
+    CU_pSuite sprite_packer_suite = CU_add_suite("Sprite Packer", NULL, NULL);
+    if(sprite_packer_suite == NULL) {
+        goto end;
+    }
+    sprite_packer_test_suite(sprite_packer_suite);
 
     // Run tests
     CU_basic_set_mode(CU_BRM_VERBOSE);
