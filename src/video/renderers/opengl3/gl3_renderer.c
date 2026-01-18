@@ -472,10 +472,10 @@ static void render_finish(void *userdata) {
     gl3_context *ctx = userdata;
     flush_palettes(ctx);
     flush_remaps(ctx);
+    finish_offscreen(ctx);
     if(ctx->draw_atlas) {
         finish_debug_atlas(ctx);
     } else {
-        finish_offscreen(ctx);
         finish_onscreen(ctx);
     }
 
