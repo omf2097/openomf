@@ -70,14 +70,4 @@ OpenOMF loads the original data files from the original OMF:2097 game.
 Since One Must Fall 2097 is freeware, the files are obtainable for free from
 [www.omf2097.com](https://www.omf2097.com/pub/files/omf/openomf-assets.zip).
 
-On Linux in debug mode, the OMF resource files should be put in resources/ subdirectory.
-
-On Linux in release mode, the resources should be located in ../share/games/openomf/,
-relative to the openomf binary. So if your binary is in /usr/local/bin, the resources should
-be put in /usr/local/share/games/openomf/. With release or testing packages,
-the resources should be extracted to /usr/share/games/openomf/.
-
-On MacOS and Windows, the resources should be put into the resources/ subdirectory.
-
-You can override these default paths by setting the OPENOMF_RESOURCE_DIR environment
-variable to an absolute directory.
+For resource directory structure, see [PATHS.md](PATHS.md).
