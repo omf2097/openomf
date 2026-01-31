@@ -26,7 +26,7 @@ runs:
 
     - name: Extract openomf assets
       shell: bash
-      run: unzip -j openomf-assets.zip -d build-release/release/usr/share/games/openomf
+      run: unzip -j openomf-assets.zip -d build-release/release/usr/share/games/openomf/resources
 
     - name: Generate TGZ package
       shell: bash

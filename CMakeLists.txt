@@ -477,7 +477,7 @@ else()
     # On unixy systems, follow standard.
     install(TARGETS openomf RUNTIME DESTINATION bin COMPONENT Binaries)
     install(FILES ${DOC_FILES} resources/openomf.bk resources/gamecontrollerdb/gamecontrollerdb.txt resources/icons/openomf.png
-        DESTINATION share/games/openomf/
+        DESTINATION share/games/openomf/resources/
         COMPONENT Data
     )
     install(DIRECTORY shaders/ DESTINATION share/games/openomf/shaders COMPONENT Data)
