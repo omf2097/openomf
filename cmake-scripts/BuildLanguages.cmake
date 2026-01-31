@@ -12,7 +12,7 @@ set(OPENOMF_LANGS DANISH)
 if(WIN32)
     set(LANGUAGE_INSTALL_PATH "openomf/resources/")
 else()
-    set(LANGUAGE_INSTALL_PATH "share/games/openomf/")
+    set(LANGUAGE_INSTALL_PATH "share/games/openomf/resources/")
 endif()
 
 # generate custom target info
