@@ -83,7 +83,6 @@ void main() {
         return;
     }
 
-
     vec4 texel = texture(atlas, tex_coord);
 
     // Don't render if it's transparent pixel
@@ -99,12 +98,10 @@ void main() {
         texel.r = clamp(texel.r + offset, 0, limit);
     }
 
-    bool NO_REMAP = SPRITE_HAR_QUIRKS && index > 0x30;
-
     // If remapping is on, do it now.
+    bool NO_REMAP = SPRITE_HAR_QUIRKS && index > 0x30;
+    vec4 remap = texture(remaps, vec2(texel.r, remap_offset / 18.0));
     if (SPRITE_REMAP && !NO_REMAP) {
-        vec4 remap = texture(remaps, vec2(texel.r, remap_offset / 18.0));
-
         texel = remap;
     }
 
