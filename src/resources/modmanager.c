@@ -35,7 +35,26 @@
 // This is used to locate appropriate sprites
 int find_scale_factor() {
     settings *setting = settings_get();
-    return setting->video.screen_w / 320;
+    int resolution_scale = 1;
+    switch ((int)(floor(setting->video.screen_w / 320.0))) {
+        case 1:
+            resolution_scale = 1;
+            break;
+        case 2:
+        case 3:
+            resolution_scale = 2;
+            break;
+        case 4:
+        case 5:
+        case 6:
+        case 7:
+            resolution_scale = 4;
+            break;
+        default:
+            resolution_scale = 8;
+            break;
+    }
+    return min2(resolution_scale, setting->video.fb_scale);
 }
 
 hashmap mod_resources;
@@ -491,7 +510,7 @@ bool modmanager_get_sprite(animation_source source, str *name, int animation, in
 
     int scale = find_scale_factor();
 
-    log_info("screen scale is %dx", scale);
+    //log_info("screen scale is %dx", scale);
 
     bool found = false;
 
