@@ -50,8 +50,9 @@ const char *har_get_name(unsigned int id) {
 }
 
 int har_get_id(const char *name) {
-    if(!name)
+    if(!name) {
         return -1;
+    }
 
     int num_hars = sizeof(har_type_names) / sizeof(har_type_names[0]);
 
