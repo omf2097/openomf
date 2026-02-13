@@ -746,6 +746,8 @@ int game_load_new(game_state *gs, int scene_id) {
     if(scene_id >= SCENE_ARENA0 && scene_id <= SCENE_ARENA4) {
         modmanager_set_allowed(game_state_get_player(gs, 0)->ctrl->type != CTRL_TYPE_NETWORK &&
                                game_state_get_player(gs, 1)->ctrl->type != CTRL_TYPE_NETWORK);
+    } else {
+        modmanager_set_allowed(true);
     }
 
     // Initialize new scene with BK data etc.
