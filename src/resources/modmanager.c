@@ -60,6 +60,11 @@ int find_scale_factor(void) {
 }
 
 hashmap mod_resources;
+static bool mods_allowed = true;
+
+void modmanager_set_allowed(bool allowed) {
+    mods_allowed = allowed;
+}
 
 // Forward declaration
 static void free_mod_asset(void *data);
@@ -519,6 +524,9 @@ bool modmanager_get_bk_background(str *name, sd_vga_image **img) {
 }
 
 bool modmanager_get_sprite(animation_source source, str *name, int animation, int frame, sd_sprite **spr) {
+    if(!mods_allowed) {
+        return false;
+    }
     str filename;
 
     int scale = find_scale_factor();
@@ -857,6 +865,9 @@ bool modmanager_parse_bk_info_mod(const char *buf, bk_info *current_info) {
 
 // Helper function to generate mod filename for AF moves
 bool modmanager_get_af_move(str *name, int move_id, af_move *move_data) {
+    if(!mods_allowed) {
+        return false;
+    }
     if(!move_data) {
         return false;
     }
@@ -903,6 +914,9 @@ bool modmanager_get_af_move(str *name, int move_id, af_move *move_data) {
 
 // Helper function to generate mod filename for BK animations
 bool modmanager_get_bk_animation(str *name, int anim_id, bk_info *bk_data) {
+    if(!mods_allowed) {
+        return false;
+    }
     if(!bk_data) {
         return false;
     }
@@ -1000,6 +1014,9 @@ bool modmanager_parse_fighter_header_mod(const char *buf, af *fighter) {
 
 // Helper function to load fighter header mod
 bool modmanager_get_fighter_header(str *name, af *fighter) {
+    if(!mods_allowed) {
+        return false;
+    }
 
     str filename;
     str_from_format(&filename, "fighters/%s/header.ini", str_c(name));
@@ -1227,6 +1244,9 @@ bool modmanager_parse_pilot_mod(const char *buf, sd_pilot *pilot) {
 
 // Helper function to load pilot mod
 bool modmanager_get_pilot_mod(const char *trn_name, uint8_t pilot_id, sd_pilot *pilot_data) {
+    if(!mods_allowed) {
+        return false;
+    }
     if(!trn_name || !pilot_data) {
         return false;
     }
@@ -1458,6 +1478,9 @@ bool modmanager_parse_tournament_mod(const char *buf, sd_tournament_file *tourn)
 }
 // Helper function to load tournament mod
 bool modmanager_get_tournament_mod(const char *tournament_name, sd_tournament_file *tourn_data) {
+    if(!mods_allowed) {
+        return false;
+    }
     if(!tournament_name || !tourn_data) {
         return false;
     }
@@ -1596,6 +1619,9 @@ void modmanager_shutdown(void) {
 }
 
 bool modmanager_get_player_pics(sd_pic_file *players) {
+    if(!mods_allowed) {
+        return false;
+    }
     // for all existant players in players.pic, check if we have a replacement
     str filename;
     unsigned int len = 0;
