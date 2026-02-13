@@ -368,7 +368,7 @@ bool modmanager_init(void) {
                     str_from_c(&filename, zip_entry_name(zip));
                     str_tolower(&filename);
 
-                    if(strcmp("manifest.ini", str_c(&filename)) == 0) {
+                    if(str_equal_c(&filename, "manifest.ini")) {
                         // this was loaded before
                         str_free(&filename);
                         zip_entry_close(zip);
@@ -390,7 +390,7 @@ bool modmanager_init(void) {
 
                     log_info("path %s has filename %s and extension %s", str_c(&filename), str_c(&fn), str_c(&ext));
 
-                    if(strcmp("background.png", str_c(&fn)) == 0) {
+                    if(str_equal_c(&fn, "background.png")) {
                         // parse as background image
                         mod_asset *buf = omf_calloc(1, sizeof(mod_asset));
                         buf->type = MOD_VGA_IMAGE;
@@ -408,7 +408,7 @@ bool modmanager_init(void) {
                             omf_free(buf->pal);
                             omf_free(buf);
                         }
-                    } else if(strcmp(".png", str_c(&ext)) == 0) {
+                    } else if(str_equal_c(&ext, ".png")) {
                         // parse as sprite
                         sd_vga_image img;
                         mod_asset *buf = omf_calloc(1, sizeof(mod_asset));
@@ -429,7 +429,7 @@ bool modmanager_init(void) {
                             omf_free(buf->pal);
                             omf_free(buf);
                         }
-                    } else if(strcmp(".ini", str_c(&ext)) == 0) {
+                    } else if(str_equal_c(&ext, ".ini")) {
                         list *l;
                         unsigned int len;
                         char *ini_buf = omf_calloc(1, entry_size + 1);
@@ -453,7 +453,7 @@ bool modmanager_init(void) {
                         }
                         omf_free(buf);
 #ifdef OPUSFILE_FOUND
-                    } else if(strcmp(".ogg", str_c(&ext)) == 0) {
+                    } else if(str_equal_c(&ext, ".ogg")) {
                         if(op_test(NULL, entry_buf, entry_size) == 0) {
                             log_info("got OPUS file %s", str_c(&filename));
                             list *l;
