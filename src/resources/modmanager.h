@@ -1,14 +1,12 @@
 #ifndef MODMANAGER_H
 #define MODMANAGER_H
 
-#include "formats/chr.h"
 #include "formats/pic.h"
-#include "resource_files.h"
+#include "formats/tournament.h"
 #include "resources/af.h"
 #include "resources/af_move.h"
 #include "resources/animation.h"
 #include "resources/bk_info.h"
-#include "utils/hashmap.h"
 
 bool modmanager_init(void);
 void modmanager_shutdown(void);

@@ -3,8 +3,10 @@
 #include "formats/error.h"
 #include "game/common_defines.h"
 #include "game/utils/settings.h"
+#include "resource_files.h"
 #include "utils/allocator.h"
 #include "utils/c_string_util.h"
+#include "utils/hashmap.h"
 #include "utils/log.h"
 #include "utils/miscmath.h"
 #include "vendored/zip/zip.h"
@@ -132,10 +134,12 @@ static int compare_versions(const char *a, const char *b) {
 
     // Compare components
     for(int i = 0; i < 3; i++) {
-        if(a_parts[i] < b_parts[i])
+        if(a_parts[i] < b_parts[i]) {
             return -1;
-        if(a_parts[i] > b_parts[i])
+        }
+        if(a_parts[i] > b_parts[i]) {
             return 1;
+        }
     }
 
     return 0;
@@ -646,8 +650,9 @@ bool modmanager_get_music(str *name, unsigned int index, unsigned char **buf, si
 }
 
 bool modmanager_parse_af_move_mod(const char *buf, af_move *current_move) {
-    if(!buf || !current_move)
+    if(!buf || !current_move) {
         return false;
+    }
 
     cfg_opt_t af_opts[] = {
         CFG_INT("pos_constraints", current_move->pos_constraints, CFGF_NONE),
@@ -771,8 +776,9 @@ bool modmanager_parse_af_move_mod(const char *buf, af_move *current_move) {
 }
 
 bool modmanager_parse_bk_info_mod(const char *buf, bk_info *current_info) {
-    if(!buf || !current_info)
+    if(!buf || !current_info) {
         return false;
+    }
 
     cfg_opt_t bk_opts[] = {CFG_INT("chain_hit", current_info->chain_hit, CFGF_NONE),
                            CFG_INT("chain_no_hit", current_info->chain_no_hit, CFGF_NONE),
@@ -851,8 +857,9 @@ bool modmanager_parse_bk_info_mod(const char *buf, bk_info *current_info) {
 
 // Helper function to generate mod filename for AF moves
 bool modmanager_get_af_move(str *name, int move_id, af_move *move_data) {
-    if(!move_data)
+    if(!move_data) {
         return false;
+    }
 
     str filename;
     str_from_format(&filename, "fighters/%s/%d/animdata.ini", name, move_id);
@@ -896,8 +903,9 @@ bool modmanager_get_af_move(str *name, int move_id, af_move *move_data) {
 
 // Helper function to generate mod filename for BK animations
 bool modmanager_get_bk_animation(str *name, int anim_id, bk_info *bk_data) {
-    if(!bk_data)
+    if(!bk_data) {
         return false;
+    }
 
     str filename;
 
@@ -1015,8 +1023,9 @@ bool modmanager_get_fighter_header(str *name, af *fighter) {
 
 // Function to parse pilot mods from memory buffer
 bool modmanager_parse_pilot_mod(const char *buf, sd_pilot *pilot) {
-    if(!buf || !pilot)
+    if(!buf || !pilot) {
         return false;
+    }
 
     // Store original values for comparison
     char original_name[18];
@@ -1097,10 +1106,11 @@ bool modmanager_parse_pilot_mod(const char *buf, sd_pilot *pilot) {
 
     char *gender = cfg_getstr(cfg, "gender");
     if(gender) {
-        if(strcmp(gender, "male") == 0)
+        if(strcmp(gender, "male") == 0) {
             pilot->sex = 0;
-        else if(strcmp(gender, "female") == 0)
+        } else if(strcmp(gender, "female") == 0) {
             pilot->sex = 1;
+        }
         log_info("setting gender to %s", gender);
     }
 
@@ -1189,11 +1199,12 @@ bool modmanager_parse_pilot_mod(const char *buf, sd_pilot *pilot) {
         const char *lang_name = cfg_title(lang);
 
         int lang_index = -1;
-        if(strcmp(lang_name, "english") == 0)
+        if(strcmp(lang_name, "english") == 0) {
             lang_index = 0;
-        else if(strcmp(lang_name, "german") == 0)
+        } else if(strcmp(lang_name, "german") == 0) {
             lang_index = 1;
-        // Add more languages as needed
+        }
+        // TODO Add more languages as needed
 
         if(lang_index == -1 || lang_index >= 10) {
             log_warn("Unknown language '%s' or index out of bounds", lang_name);
@@ -1202,8 +1213,9 @@ bool modmanager_parse_pilot_mod(const char *buf, sd_pilot *pilot) {
 
         char *quote = cfg_getstr(lang, "quote");
         if(quote) {
-            if(pilot->quotes[lang_index])
+            if(pilot->quotes[lang_index]) {
                 free(pilot->quotes[lang_index]);
+            }
             pilot->quotes[lang_index] = strdup(quote);
             log_info("setting %s quote to '%s'", lang_name, quote);
         }
@@ -1215,8 +1227,9 @@ bool modmanager_parse_pilot_mod(const char *buf, sd_pilot *pilot) {
 
 // Helper function to load pilot mod
 bool modmanager_get_pilot_mod(const char *trn_name, uint8_t pilot_id, sd_pilot *pilot_data) {
-    if(!trn_name || !pilot_data)
+    if(!trn_name || !pilot_data) {
         return false;
+    }
 
     str filename;
     unsigned int len = 0;
@@ -1269,8 +1282,9 @@ bool modmanager_get_pilot_mod(const char *trn_name, uint8_t pilot_id, sd_pilot *
 
 // Function to parse tournament mods from memory buffer
 bool modmanager_parse_tournament_mod(const char *buf, sd_tournament_file *tourn) {
-    if(!buf || !tourn)
+    if(!buf || !tourn) {
         return false;
+    }
 
     // Store original values for comparison
     char original_tournament_end[14];
@@ -1348,11 +1362,11 @@ bool modmanager_parse_tournament_mod(const char *buf, sd_tournament_file *tourn)
         log_info("Processing language: %s", lang_name);
 
         int locale_index = -1;
-        if(strcmp(lang_name, "english") == 0)
+        if(strcmp(lang_name, "english") == 0) {
             locale_index = 0;
-        else if(strcmp(lang_name, "german") == 0)
+        } else if(strcmp(lang_name, "german") == 0) {
             locale_index = 1;
-        else {
+        } else {
             log_warn("Unknown language '%s', skipping", lang_name);
             continue;
         }
@@ -1375,8 +1389,9 @@ bool modmanager_parse_tournament_mod(const char *buf, sd_tournament_file *tourn)
         char *name = cfg_getstr(lang, "name");
         if(name) {
             log_info("previous title was %s", locale->title);
-            if(locale->title)
+            if(locale->title) {
                 free(locale->title);
+            }
             locale->title = strdup(name);
             log_info("setting %s name to '%s'", lang_name, name);
         }
@@ -1384,8 +1399,9 @@ bool modmanager_parse_tournament_mod(const char *buf, sd_tournament_file *tourn)
         // Update description
         char *description = cfg_getstr(lang, "description");
         if(description) {
-            if(locale->description)
+            if(locale->description) {
                 free(locale->description);
+            }
             locale->description = strdup(description);
             log_info("setting %s description to %s", lang_name, locale->description);
 
@@ -1442,8 +1458,9 @@ bool modmanager_parse_tournament_mod(const char *buf, sd_tournament_file *tourn)
 }
 // Helper function to load tournament mod
 bool modmanager_get_tournament_mod(const char *tournament_name, sd_tournament_file *tourn_data) {
-    if(!tournament_name || !tourn_data)
+    if(!tournament_name || !tourn_data) {
         return false;
+    }
 
     str filename;
     str_from_format(&filename, "tournaments/%s/tournament.ini", tournament_name);
@@ -1515,8 +1532,9 @@ static void free_mod_asset(void *data) {
 }
 
 bool modmanager_parse_photo_mod(const char *buf, sd_pic_photo *photo) {
-    if(!buf || !photo)
+    if(!buf || !photo) {
         return false;
+    }
 
     // Options for main photo settings
     cfg_opt_t photo_opts[] = {CFG_STR("gender", NULL, CFGF_NONE), CFG_INT("width", photo->sprite->width, CFGF_NONE),
