@@ -33,7 +33,7 @@
 
 // find the next lowest integer multiple of the original screen size
 // This is used to locate appropriate sprites
-int find_scale_factor() {
+int find_scale_factor(void) {
     settings *setting = settings_get();
     int resolution_scale = 1;
     switch ((int)(floor(setting->video.screen_w / 320.0))) {
@@ -86,7 +86,7 @@ static void free_manifest_fields(void *data) {
         omf_free(manifest->name);
         omf_free(manifest->mod_api);
         omf_free(manifest->version);
-        // Don't free filepath as it's owned by mod_list
+        omf_free(manifest->filepath);
     }
 }
 
@@ -402,6 +402,7 @@ bool modmanager_init(void) {
                             log_info("got vga image %dx%d", buf->img.w, buf->img.h);
 
                             hashmap_put_str(&mod_resources, str_c(&filename), buf, sizeof(mod_asset));
+                            omf_free(buf);
                         } else {
                             log_warn("failed to load background image %s", str_c(&filename));
                             omf_free(buf->pal);
@@ -417,12 +418,16 @@ bool modmanager_init(void) {
                         if(sd_vga_image_from_png_in_memory(&img, entry_buf, entry_size, true, buf->pal) == SD_SUCCESS) {
                             if(sd_sprite_vga_encode(&buf->spr, &img) == SD_SUCCESS) {
                                 hashmap_put_str(&mod_resources, str_c(&filename), buf, sizeof(mod_asset));
+                                omf_free(buf);
                             } else {
                                 log_warn("failed to load sprite %s", str_c(&filename));
                                 omf_free(buf->pal);
                                 omf_free(buf);
                             }
                             sd_vga_image_free(&img);
+                        } else {
+                            omf_free(buf->pal);
+                            omf_free(buf);
                         }
                     } else if(strcmp(".ini", str_c(&ext)) == 0) {
                         list *l;
@@ -441,10 +446,12 @@ bool modmanager_init(void) {
                             list_append(l, buf, sizeof(mod_asset));
                         } else {
                             l = omf_calloc(1, sizeof(list));
-                            list_create(l);
+                            list_create_cb(l, free_mod_asset);
                             list_append(l, buf, sizeof(mod_asset));
                             hashmap_put_str(&mod_resources, str_c(&filename), l, sizeof(list));
+                            omf_free(l);
                         }
+                        omf_free(buf);
 #ifdef OPUSFILE_FOUND
                     } else if(strcmp(".ogg", str_c(&ext)) == 0) {
                         if(op_test(NULL, entry_buf, entry_size) == 0) {
@@ -460,10 +467,12 @@ bool modmanager_init(void) {
                                 list_append(l, buf, sizeof(mod_asset));
                             } else {
                                 l = omf_calloc(1, sizeof(list));
-                                list_create(l);
+                                list_create_cb(l, free_mod_asset);
                                 list_append(l, buf, sizeof(mod_asset));
                                 hashmap_put_str(&mod_resources, str_c(&filename), l, sizeof(list));
+                                omf_free(l);
                             }
+                            omf_free(buf);
                         } else {
                             log_warn("Failed to parse OPUS file %s", str_c(&filename));
                         }
@@ -481,6 +490,7 @@ bool modmanager_init(void) {
         zip_close(zip);
     }
 
+    list_free(&mod_list);
     list_free(&dir_list);
     return true;
 }
@@ -1550,23 +1560,20 @@ bool modmanager_parse_photo_mod(const char *buf, sd_pic_photo *photo) {
 }
 
 void modmanager_shutdown(void) {
-    // Free all mod resources using the iterator approach
-    if(hashmap_size(&mod_resources) > 0) {
-        iterator it;
-        hashmap_iter_begin(&mod_resources, &it);
-
-        const char *key;
-        void *data;
-        unsigned int len;
-
-        while((key = iter_next(&it)) != NULL) {
-            if(hashmap_get(&mod_resources, key, strlen(key), &data, &len)) {
-                free_mod_asset(data);
-            }
+    iterator it;
+    hashmap_iter_begin(&mod_resources, &it);
+    hashmap_pair *pair;
+    foreach(it, pair) {
+        str key;
+        str_from_c(&key, (const char *)pair->key);
+        if(str_ends_with(&key, ".png")) {
+            free_mod_asset(pair->value);
+        } else {
+            list *l = (list *)pair->value;
+            list_free(l);
         }
+        str_free(&key);
     }
-
-    // Free the hashmap structure itself
     hashmap_free(&mod_resources);
 }
 
