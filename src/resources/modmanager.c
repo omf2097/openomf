@@ -59,7 +59,7 @@ int find_scale_factor(void) {
     return min2(resolution_scale, setting->video.fb_scale);
 }
 
-hashmap mod_resources;
+static hashmap mod_resources;
 static bool mods_allowed = true;
 
 void modmanager_set_allowed(bool allowed) {
@@ -232,9 +232,9 @@ static bool parse_manifest_and_add_to_modlist(const char *buf, path *mod_path, h
     // Create manifest entry
     mod_manifest manifest;
     memset(&manifest, 0, sizeof(mod_manifest));
-    manifest.name = strdup(name);
-    manifest.mod_api = strdup(mod_api);
-    manifest.version = strdup(version);
+    manifest.name = omf_strdup(name);
+    manifest.mod_api = omf_strdup(mod_api);
+    manifest.version = omf_strdup(version);
     manifest.load_order = load_order;
     manifest.filepath = omf_calloc(1, sizeof(path));
     path_from_c(manifest.filepath, path_c(mod_path));
@@ -642,7 +642,7 @@ bool modmanager_get_music(str *name, unsigned int index, unsigned char **buf, si
         unsigned int count = list_size(l);
         log_info("found %d music files for %s", count, name);
         if(index >= count) {
-            log_warn("requested index %s into list of %d members", index, count);
+            log_warn("requested index %i into list of %d members", index, count);
             return false;
         }
         mod_asset *obuf = list_get(l, index);
@@ -955,6 +955,7 @@ bool modmanager_get_bk_animation(str *name, int anim_id, bk_info *bk_data) {
                 result |= modmanager_parse_bk_info_mod(buf, bk_data);
             }
         }
+        str_free(&filename);
     }
 
     return result;
@@ -1233,7 +1234,7 @@ bool modmanager_parse_pilot_mod(const char *buf, sd_pilot *pilot) {
             if(pilot->quotes[lang_index]) {
                 free(pilot->quotes[lang_index]);
             }
-            pilot->quotes[lang_index] = strdup(quote);
+            pilot->quotes[lang_index] = omf_strdup(quote);
             log_info("setting %s quote to '%s'", lang_name, quote);
         }
     }
@@ -1260,7 +1261,10 @@ bool modmanager_get_pilot_mod(const char *trn_name, uint8_t pilot_id, sd_pilot *
     if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&obuf, &len)) {
         assert(obuf->type == MOD_SPRITE);
         log_info("found portrait for pilot %d in %s", pilot_id, trn_name);
-        // omf_free(pilot_data->photo);
+        if(pilot_data->photo) {
+            sd_sprite_free(pilot_data->photo);
+            omf_free(pilot_data->photo);
+        }
         pilot_data->photo = omf_calloc(1, sizeof(sd_sprite));
         sd_sprite_create(pilot_data->photo);
         if(sd_sprite_copy(pilot_data->photo, &obuf->spr) != SD_SUCCESS) {
@@ -1400,7 +1404,7 @@ bool modmanager_parse_tournament_mod(const char *buf, sd_tournament_file *tourn)
         sd_tournament_locale *locale = tourn->locales[locale_index];
         if(!locale) {
             // Allocate new locale if it doesn't exist
-            locale = calloc(1, sizeof(sd_tournament_locale));
+            locale = omf_calloc(1, sizeof(sd_tournament_locale));
             tourn->locales[locale_index] = locale;
             log_info("Created new locale for %s at index %d", lang_name, locale_index);
         }
@@ -1412,7 +1416,7 @@ bool modmanager_parse_tournament_mod(const char *buf, sd_tournament_file *tourn)
             if(locale->title) {
                 free(locale->title);
             }
-            locale->title = strdup(name);
+            locale->title = omf_strdup(name);
             log_info("setting %s name to '%s'", lang_name, name);
         }
 
@@ -1422,7 +1426,7 @@ bool modmanager_parse_tournament_mod(const char *buf, sd_tournament_file *tourn)
             if(locale->description) {
                 free(locale->description);
             }
-            locale->description = strdup(description);
+            locale->description = omf_strdup(description);
             log_info("setting %s description to %s", lang_name, locale->description);
 
             // Parse the description to extract metadata
@@ -1466,7 +1470,7 @@ bool modmanager_parse_tournament_mod(const char *buf, sd_tournament_file *tourn)
                     if(locale->end_texts[ending_index][page]) {
                         free(locale->end_texts[ending_index][page]);
                     }
-                    locale->end_texts[ending_index][page] = strdup(page_text);
+                    locale->end_texts[ending_index][page] = omf_strdup(page_text);
                     log_info("setting %s %s page%d text", lang_name, ending_type, page + 1);
                 }
             }
@@ -1506,6 +1510,7 @@ bool modmanager_get_tournament_mod(const char *tournament_name, sd_tournament_fi
         }
     }
 
+    str_free(&filename);
     // check for a logo
     str_from_format(&filename, "tournaments/%s/logos/logo.png", tournament_name);
     str_tolower(&filename);
@@ -1561,7 +1566,7 @@ bool modmanager_parse_photo_mod(const char *buf, sd_pic_photo *photo) {
 
     // Options for main photo settings
     cfg_opt_t photo_opts[] = {CFG_STR("gender", NULL, CFGF_NONE), CFG_INT("width", photo->sprite->width, CFGF_NONE),
-                              CFG_INT("height", photo->sprite->width, CFGF_NONE), CFG_END()};
+                              CFG_INT("height", photo->sprite->height, CFGF_NONE), CFG_END()};
 
     cfg_t *cfg = cfg_init(photo_opts, CFGF_NONE);
 

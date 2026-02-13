@@ -63,8 +63,10 @@ bool music_source_pick(music_source *src, const resource_id id, const unsigned c
     }
     if(music_type != 0 && rand && modmanager_get_music(&fn, rand - 1, &buf, &len)) {
         log_debug("found replacement music file for %s.PSM", str_c(&fn));
+        str_free(&fn);
         return opus_load_memory(src, (int)channels, (int)sample_rate, buf, len);
     }
+    str_free(&fn);
     log_debug("Found original music file %s", path_c(&music));
     return psm_load(src, channels, sample_rate, resampler, path_c(&music));
 }
