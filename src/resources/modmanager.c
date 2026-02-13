@@ -642,7 +642,7 @@ bool modmanager_get_music(str *name, unsigned int index, unsigned char **buf, si
         unsigned int count = list_size(l);
         log_info("found %d music files for %s", count, name);
         if(index >= count) {
-            log_warn("requested index %s into list of %d members", index, count);
+            log_warn("requested index %i into list of %d members", index, count);
             return false;
         }
         mod_asset *obuf = list_get(l, index);
@@ -955,6 +955,7 @@ bool modmanager_get_bk_animation(str *name, int anim_id, bk_info *bk_data) {
                 result |= modmanager_parse_bk_info_mod(buf, bk_data);
             }
         }
+        str_free(&filename);
     }
 
     return result;
@@ -1506,6 +1507,7 @@ bool modmanager_get_tournament_mod(const char *tournament_name, sd_tournament_fi
         }
     }
 
+    str_free(&filename);
     // check for a logo
     str_from_format(&filename, "tournaments/%s/logos/logo.png", tournament_name);
     str_tolower(&filename);
