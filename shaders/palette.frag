@@ -69,7 +69,7 @@ void main() {
         int coverage = 0;
         for(int y = 0; y < 4; y++) {
             float offset = float(y - 1) / ATLAS_H;
-            vec4 texel = texture(atlas, tex_coord + vec2(0, offset));
+            vec4 texel = textureLod(atlas, tex_coord + vec2(0, offset), 0);
             int index = int(texel.r * 255.0);
             coverage += int(index != transparency_index);
         }
@@ -83,7 +83,7 @@ void main() {
         return;
     }
 
-    vec4 texel = texture(atlas, tex_coord);
+    vec4 texel = textureLod(atlas, tex_coord, 0);
 
     // Don't render if it's transparent pixel
     int index = int(texel.r * 255.0);
@@ -100,7 +100,7 @@ void main() {
 
     // If remapping is on, do it now.
     bool NO_REMAP = SPRITE_HAR_QUIRKS && index > 0x30;
-    vec4 remap = texture(remaps, vec2(texel.r, remap_offset / 18.0));
+    vec4 remap = textureLod(remaps, vec2(texel.r, remap_offset / 18.0), 0);
     if (SPRITE_REMAP && !NO_REMAP) {
         texel = remap;
     }
