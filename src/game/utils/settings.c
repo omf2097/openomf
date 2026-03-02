@@ -120,6 +120,8 @@ const field f_keyboard[] = {
     F_INT(settings_keyboard, ctrl_type1, CTRL_TYPE_KEYBOARD),
     F_STRING(settings_keyboard, joy_name1, "None"),
     F_INT(settings_keyboard, joy_offset1, -1),
+    // NEW: stable joystick instance ID for player 1 (-1 = unset/unknown)
+    F_INT(settings_keyboard, joy_iid1, -1),
     F_STRING(settings_keyboard, key1_jump_up, "Up"),
     F_STRING(settings_keyboard, key1_jump_right, "PageUp"),
     F_STRING(settings_keyboard, key1_walk_right, "Right"),
@@ -136,6 +138,8 @@ const field f_keyboard[] = {
     F_INT(settings_keyboard, ctrl_type2, CTRL_TYPE_KEYBOARD),
     F_STRING(settings_keyboard, joy_name2, "None"),
     F_INT(settings_keyboard, joy_offset2, -1),
+    // NEW: stable joystick instance ID for player 2 (-1 = unset/unknown)
+    F_INT(settings_keyboard, joy_iid2, -1),
     F_STRING(settings_keyboard, key2_jump_up, "W"),
     F_STRING(settings_keyboard, key2_jump_right, "E"),
     F_STRING(settings_keyboard, key2_walk_right, "D"),

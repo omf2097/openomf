@@ -127,16 +127,24 @@ void menu_set_left_keyboard(component *c, void *userdata) {
 void menu_set_joystick1(component *c, void *userdata) {
     menu_input_local *local = menu_get_userdata(c->parent);
     settings_keyboard *k = &settings_get()->keys;
+    int device_index = joystick_nth_id(1);
+    if(device_index < 0) {
+        return;
+    }
+    const char *joy_name = SDL_JoystickNameForIndex(device_index);
+    SDL_JoystickID iid = SDL_JoystickGetDeviceInstanceID(device_index);
     if(local->selected_player == 1) {
         k->ctrl_type1 = CTRL_TYPE_GAMEPAD;
         omf_free(k->joy_name1);
-        k->joy_name1 = omf_strdup(SDL_JoystickNameForIndex(joystick_nth_id(1)));
-        k->joy_offset1 = joystick_offset(joystick_nth_id(1), k->joy_name1);
+        k->joy_name1 = omf_strdup(joy_name ? joy_name : "Unknown");
+        k->joy_offset1 = joystick_offset(device_index, k->joy_name1);
+        k->joy_iid1 = (int)iid;
     } else {
         k->ctrl_type2 = CTRL_TYPE_GAMEPAD;
         omf_free(k->joy_name2);
-        k->joy_name2 = omf_strdup(SDL_JoystickNameForIndex(joystick_nth_id(1)));
-        k->joy_offset2 = joystick_offset(joystick_nth_id(1), k->joy_name2);
+        k->joy_name2 = omf_strdup(joy_name ? joy_name : "Unknown");
+        k->joy_offset2 = joystick_offset(device_index, k->joy_name2);
+        k->joy_iid2 = (int)iid;
     }
     reconfigure_controller(((scene *)userdata)->gs);
 }
@@ -144,16 +152,24 @@ void menu_set_joystick1(component *c, void *userdata) {
 void menu_set_joystick2(component *c, void *userdata) {
     menu_input_local *local = menu_get_userdata(c->parent);
     settings_keyboard *k = &settings_get()->keys;
+    int device_index = joystick_nth_id(2);
+    if(device_index < 0) {
+        return;
+    }
+    const char *joy_name = SDL_JoystickNameForIndex(device_index);
+    SDL_JoystickID iid = SDL_JoystickGetDeviceInstanceID(device_index);
     if(local->selected_player == 1) {
         k->ctrl_type1 = CTRL_TYPE_GAMEPAD;
         omf_free(k->joy_name1);
-        k->joy_name1 = omf_strdup(SDL_GameControllerNameForIndex(joystick_nth_id(2)));
-        k->joy_offset1 = joystick_offset(joystick_nth_id(2), k->joy_name1);
+        k->joy_name1 = omf_strdup(joy_name ? joy_name : "Unknown");
+        k->joy_offset1 = joystick_offset(device_index, k->joy_name1);
+        k->joy_iid1 = (int)iid;
     } else {
         k->ctrl_type2 = CTRL_TYPE_GAMEPAD;
         omf_free(k->joy_name2);
-        k->joy_name2 = omf_strdup(SDL_GameControllerNameForIndex(joystick_nth_id(2)));
-        k->joy_offset2 = joystick_offset(joystick_nth_id(2), k->joy_name2);
+        k->joy_name2 = omf_strdup(joy_name ? joy_name : "Unknown");
+        k->joy_offset2 = joystick_offset(device_index, k->joy_name2);
+        k->joy_iid2 = (int)iid;
     }
     reconfigure_controller(((scene *)userdata)->gs);
 }

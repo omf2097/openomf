@@ -84,6 +84,8 @@ typedef struct {
     int ctrl_type1;
     char *joy_name1;
     int joy_offset1;
+    /* NEW: Stable SDL instance ID for player 1 (-1 = unknown/not set) */
+    int joy_iid1;
     char *key1_jump_up;
     char *key1_jump_right;
     char *key1_walk_right;
@@ -100,6 +102,8 @@ typedef struct {
     int ctrl_type2;
     char *joy_name2;
     int joy_offset2;
+    /* NEW: Stable SDL instance ID for player 2 (-1 = unknown/not set) */
+    int joy_iid2;
     char *key2_jump_up;
     char *key2_jump_right;
     char *key2_walk_right;

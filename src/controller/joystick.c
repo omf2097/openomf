@@ -11,10 +11,15 @@
 
 void joystick_free(controller *ctrl) {
     joystick *k = ctrl->data;
+    if(!k) {
+        return;
+    }
     if(k->haptic) {
         SDL_HapticClose(k->haptic);
     }
-    SDL_GameControllerClose(k->joy);
+    if(k->joy) {
+        SDL_GameControllerClose(k->joy);
+    }
     omf_free(k->keys);
     omf_free(k);
 }
@@ -184,39 +189,46 @@ static inline void internal_joystick_default_keys(joystick_keys *keys) {
 }
 
 int joystick_create(controller *ctrl, int joystick_id) {
+    if(joystick_id < 0) {
+        log_error("Invalid joystick id %d", joystick_id);
+        return 0;
+    }
+
+    SDL_GameController *joy = SDL_GameControllerOpen(joystick_id);
+    if(!joy) {
+        log_error("Failed to open game controller: %s", SDL_GetError());
+        return 0;
+    }
+
     joystick *k = omf_calloc(1, sizeof(joystick));
     k->keys = omf_calloc(1, sizeof(joystick_keys));
     internal_joystick_default_keys(k->keys);
     k->rumble = 0;
+    k->joy = joy;
+
     ctrl->data = k;
     ctrl->type = CTRL_TYPE_GAMEPAD;
     ctrl->poll_fun = &joystick_poll;
     ctrl->free_fun = &joystick_free;
     ctrl->supports_delay = true;
 
-    k->joy = SDL_GameControllerOpen(joystick_id);
-    if(k->joy) {
-        k->haptic = SDL_HapticOpenFromJoystick(SDL_GameControllerGetJoystick(k->joy));
-        if(k->haptic) {
-            if(SDL_HapticRumbleSupported(k->haptic)) {
-                if(SDL_HapticRumbleInit(k->haptic) == 0) {
-                    k->rumble = 1;
-                    ctrl->rumble_fun = joystick_rumble;
-                } else {
-                    log_error("Failed to initialize rumble: %s", SDL_GetError());
-                }
+    k->haptic = SDL_HapticOpenFromJoystick(SDL_GameControllerGetJoystick(k->joy));
+    if(k->haptic) {
+        if(SDL_HapticRumbleSupported(k->haptic)) {
+            if(SDL_HapticRumbleInit(k->haptic) == 0) {
+                k->rumble = 1;
+                ctrl->rumble_fun = joystick_rumble;
             } else {
-                log_debug("Rumble not supported");
+                log_error("Failed to initialize rumble: %s", SDL_GetError());
             }
         } else {
-            log_debug("Haptic not supported");
+            log_debug("Rumble not supported");
         }
-        log_debug("Game controller initialized");
-        return 1;
+    } else {
+        log_debug("Haptic not supported");
     }
-
-    log_error("Failed to open game controller: %s", SDL_GetError());
-    return 0;
+    log_debug("Game controller initialized");
+    return 1;
 }
 
 static vector every_gamepad;
