@@ -567,6 +567,8 @@ int rewind_and_replay(wtf *data, controller *ctrl) {
                     c->gs = gs_current;
                 }
             }
+            game_state_clone_free(gs_old);
+            omf_free(gs_old);
             return 1;
         } else if(gs->tick - data->local_proposal == data->peer_last_hash_tick) {
             log_debug("arena hashes agree!");
@@ -1084,6 +1086,10 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                     // so force the game to playback ALL events to try to update the trace/rec files
                     data->last_received_tick = ctrl->gs->tick - data->local_proposal;
                     rewind_and_replay(data, ctrl);
+                }
+                if(ctrl->gs->new_state) {
+                    game_state_clone_free(ctrl->gs->new_state);
+                    omf_free(ctrl->gs->new_state);
                 }
                 if(data->gs_bak) {
                     game_state_clone_free(data->gs_bak);
