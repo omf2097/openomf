@@ -83,7 +83,7 @@ typedef struct {
 float stddev(float average, int data[], int n) {
     float variance = 0.0f;
     for(int i = 0; i < n; i++) {
-        variance = (data[i] - average) * (data[i] - average);
+        variance += (data[i] - average) * (data[i] - average);
     }
     return sqrtf(variance / n);
 }
@@ -226,7 +226,7 @@ void event_names(char *buf, uint8_t *actions) {
         } else if(action & ACT_LEFT) {
             *buf++ = '4';
         } else if(action & ACT_RIGHT) {
-            *buf++ = '4';
+            *buf++ = '6';
         } else if(action & ACT_DOWN || action & ACT_LEFT || action & ACT_RIGHT || action & ACT_LEFT) {
             // invalid combination of arrow keys
             assert(false);
