@@ -29,7 +29,7 @@
 
 void har_finished(object *obj);
 int har_act(object *obj, int act_type);
-void har_spawn_scrap(object *obj, vec2i pos, int amount);
+void har_spawn_scrap(const object *obj, vec2i pos, int amount);
 
 void har_free(object *obj) {
     har *h = object_get_userdata(obj);
@@ -1043,7 +1043,7 @@ void har_take_damage(object *obj, af_move *move) {
 }
 
 // for scrap, nuts, bolts, and sparks (aka burning oil)
-static vec2f har_debris_random_vel(object *har_obj, bool is_destruction) {
+static vec2f har_debris_random_vel(const object *har_obj, bool is_destruction) {
     vec2f vel;
     vel.x = (rand_float() * 4.0f) - 2.0f;
     vel.y = (rand_float() * 4.0f) - 2.0f;
@@ -1076,7 +1076,7 @@ static vec2f har_debris_random_vel(object *har_obj, bool is_destruction) {
 }
 
 // gravity for sparks. scrap, nuts, and bolts seem to have different gravity
-static inline float har_sparks_random_gravity(object *har_obj) {
+static inline float har_sparks_random_gravity(const object *har_obj) {
     return (float)(rand_int(30) + 40) / 100.0;
 }
 
@@ -1089,7 +1089,7 @@ int is_destruction(game_state *gs) {
     return (har_a->state == STATE_DESTRUCTION || har_b->state == STATE_DESTRUCTION);
 }
 
-static void har_spawn_oil(object *obj, vec2i pos, int amount, int layer) {
+static void har_spawn_oil(const object *obj, vec2i pos, int amount, int layer) {
     har *h = object_get_userdata(obj);
 
     // burning oil
@@ -1108,7 +1108,7 @@ static void har_spawn_oil(object *obj, vec2i pos, int amount, int layer) {
     }
 }
 
-void har_spawn_scrap(object *obj, vec2i pos, int amount) {
+void har_spawn_scrap(const object *obj, vec2i pos, int amount) {
     // wild ass guess
     int oil_amount = amount / 3;
     har *h = object_get_userdata(obj);
@@ -1133,7 +1133,7 @@ void har_spawn_scrap(object *obj, vec2i pos, int amount) {
         object_set_stl(scrap, object_get_stl(obj));
         object_set_gravity(scrap, 1.0f);
         object_set_pal_offset(scrap, object_get_pal_offset(obj));
-        object_set_pal_limit(obj, object_get_pal_limit(obj));
+        object_set_pal_limit(scrap, object_get_pal_limit(obj));
         object_set_layers(scrap, LAYER_SCRAP);
         object_set_group(scrap, GROUP_SCRAP);
         object_dynamic_tick(scrap);
