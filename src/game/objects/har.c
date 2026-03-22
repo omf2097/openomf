@@ -119,7 +119,6 @@ void har_event_enemy_block(har *h, af_move *move, bool projectile, controller *c
     har_event event;
     memset(&event, 0, sizeof(event));
     event.type = projectile ? HAR_EVENT_ENEMY_BLOCK_PROJECTILE : HAR_EVENT_ENEMY_BLOCK;
-    event.type = HAR_EVENT_ENEMY_BLOCK;
     event.player_id = h->player_id;
     event.move = move;
 
