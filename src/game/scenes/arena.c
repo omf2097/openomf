@@ -842,6 +842,7 @@ uint32_t arena_state_hash(game_state *gs) {
         uint32_t y = (uint32_t)pos.y;
         uint32_t health = (uint32_t)har->health;
         uint32_t endurance = (uint32_t)har->endurance;
+        uint32_t vx_bits, vy_bits;
         hash = ((hash << 5) + hash) + har->id;
         hash = ((hash << 5) + hash) + player->pilot->power;
         hash = ((hash << 5) + hash) + player->pilot->agility;
@@ -850,9 +851,11 @@ uint32_t arena_state_hash(game_state *gs) {
         hash = ((hash << 5) + hash) + y;
         hash = ((hash << 5) + hash) + health;
         hash = ((hash << 5) + hash) + endurance;
-        hash = ((hash << 5) + hash) + (uint32_t)vel.x;
-        // we are inconsistent on applying gravity
-        // hash = ((hash << 5) + hash) + (uint32_t)vel.y;
+        // memcpy to avoid UB on negative floats
+        memcpy(&vx_bits, &vel.x, sizeof(vx_bits));
+        memcpy(&vy_bits, &vel.y, sizeof(vy_bits));
+        hash = ((hash << 5) + hash) + vx_bits;
+        hash = ((hash << 5) + hash) + vy_bits;
         hash = ((hash << 5) + hash) + har->state;
         hash = ((hash << 5) + hash) + har->executing_move;
         hash = ((hash << 5) + hash) + obj_har->cur_animation->id;
