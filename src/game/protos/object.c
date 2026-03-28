@@ -714,6 +714,10 @@ int object_finished(object *obj) {
     return obj->animation_state.finished;
 }
 
+void object_set_finished(object *obj) {
+    obj->animation_state.finished = 1;
+}
+
 void object_set_direction(object *obj, int dir) {
     obj->direction = dir;
 }

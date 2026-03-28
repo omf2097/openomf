@@ -568,7 +568,7 @@ void cb_har_destroy_object(object *parent, int animation_id, void *userdata) {
     vector_iter_begin(&vec, &it);
     foreach(it, p) {
         if(projectile_get_owner(*p) == h->player_id && object_get_animation(*p)->id == animation_id) {
-            (*p)->animation_state.finished = 1;
+            object_set_finished(*p);
         }
     }
     vector_free(&vec);
@@ -1504,7 +1504,7 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
         controller *ctrl_other = game_player_get_ctrl(game_state_get_player(o_pjt->gs, other->player_id));
         if(har_is_blocking(o_har, move) && !player_frame_isset(o_pjt, "bn")) {
             projectile_mark_hit(o_pjt); // prevent this projectile from hitting again
-            o_pjt->animation_state.finished = 1;
+            object_set_finished(o_pjt);
             if(move->successor_id && move->category != CAT_CLOSE) {
                 af_move *next_move = af_get_move(prog_owner_af_data, move->successor_id);
                 object_set_animation(o_pjt, &next_move->ani);
