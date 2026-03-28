@@ -568,7 +568,7 @@ void cb_har_destroy_object(object *parent, int animation_id, void *userdata) {
     vector_iter_begin(&vec, &it);
     foreach(it, p) {
         if(projectile_get_owner(*p) == h->player_id && object_get_animation(*p)->id == animation_id) {
-            game_state_del_object(parent->gs, *p);
+            (*p)->animation_state.finished = 1;
         }
     }
     vector_free(&vec);
