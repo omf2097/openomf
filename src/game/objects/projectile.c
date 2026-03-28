@@ -87,12 +87,12 @@ void projectile_move(object *obj) {
     } else if(!local->invincible && !player_frame_isset(obj, "bh") && !IS_ZERO(obj->vel.x)) {
         if(obj->pos.x < ARENA_LEFT_WALL) {
             obj->pos.x = ARENA_LEFT_WALL;
-            obj->animation_state.finished = 1;
+            object_set_finished(obj);
             projectile_finished(obj);
         }
         if(obj->pos.x > ARENA_RIGHT_WALL) {
             obj->pos.x = ARENA_RIGHT_WALL;
-            obj->animation_state.finished = 1;
+            object_set_finished(obj);
             projectile_finished(obj);
         }
     }
@@ -102,7 +102,7 @@ void projectile_move(object *obj) {
         obj->vel.x = obj->vel.x * dampen;
     } else if(obj->pos.y > ARENA_FLOOR) {
         obj->pos.y = ARENA_FLOOR;
-        obj->animation_state.finished = 1;
+        object_set_finished(obj);
         projectile_finished(obj);
     }
     if(obj->pos.y >= (ARENA_FLOOR - 5) && IS_ZERO(obj->vel.x) && obj->vel.y < obj->gravity * 1.1 &&

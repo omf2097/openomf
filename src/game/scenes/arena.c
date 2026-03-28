@@ -191,13 +191,13 @@ void scene_ready_anim_done(object *parent) {
 
     // Custom object finisher callback requires that we
     // mark object as finished manually, if necessary.
-    parent->animation_state.finished = 1;
+    object_set_finished(parent);
 }
 
 void scene_youwin_anim_done(object *parent) {
     // Custom object finisher callback requires that we
     // mark object as finished manually, if necessary.
-    parent->animation_state.finished = 1;
+    object_set_finished(parent);
     arena_local *local = scene_get_userdata(parent->gs->sc);
     local->win_state = DONE;
 }
@@ -218,7 +218,7 @@ void scene_youwin_anim_start(void *userdata) {
 void scene_youlose_anim_done(object *parent) {
     // Custom object finisher callback requires that we
     // mark object as finished manually, if necessary.
-    parent->animation_state.finished = 1;
+    object_set_finished(parent);
     arena_local *local = scene_get_userdata(parent->gs->sc);
     local->win_state = DONE;
 }
