@@ -33,7 +33,7 @@ texture_atlas *atlas_create(GLuint tex_unit, uint16_t width, uint16_t height) {
     atlas->w = width;
     atlas->h = height;
     atlas->tex_unit = tex_unit;
-    atlas->texture_id = texture_create(tex_unit, width, height, GL_R8, GL_RED, GL_NEAREST);
+    atlas->texture_id = texture_create(tex_unit, width, height, GL_R8, GL_RED, GL_UNSIGNED_BYTE, GL_NEAREST);
     log_debug("Texture atlas %dx%d created", width, height);
     return atlas;
 }
@@ -57,7 +57,7 @@ bool atlas_insert(texture_atlas *atlas, const char *bytes, uint16_t w, uint16_t 
         return false;
     }
 
-    texture_update(atlas->tex_unit, atlas->texture_id, region.x, region.y, w, h, GL_RED, bytes);
+    texture_update(atlas->tex_unit, atlas->texture_id, region.x, region.y, w, h, GL_RED, GL_UNSIGNED_BYTE, bytes);
     *nx = region.x;
     *ny = region.y;
     return true;

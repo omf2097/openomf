@@ -15,7 +15,7 @@ typedef struct render_target {
 render_target *render_target_create(GLuint tex_unit, int w, int h, GLint internal_format, GLenum format,
                                     GLenum filtering) {
     render_target *target = omf_calloc(1, sizeof(render_target));
-    target->texture_id = texture_create(tex_unit, w, h, internal_format, format, filtering);
+    target->texture_id = texture_create(tex_unit, w, h, internal_format, format, GL_UNSIGNED_BYTE, filtering);
     target->fbo_id = fbo_create(target->texture_id);
     target->tex_unit = tex_unit;
     return target;
