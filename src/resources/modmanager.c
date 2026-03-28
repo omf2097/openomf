@@ -1261,7 +1261,10 @@ bool modmanager_get_pilot_mod(const char *trn_name, uint8_t pilot_id, sd_pilot *
     if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&obuf, &len)) {
         assert(obuf->type == MOD_SPRITE);
         log_info("found portrait for pilot %d in %s", pilot_id, trn_name);
-        // omf_free(pilot_data->photo);
+        if(pilot_data->photo) {
+            sd_sprite_free(pilot_data->photo);
+            omf_free(pilot_data->photo);
+        }
         pilot_data->photo = omf_calloc(1, sizeof(sd_sprite));
         sd_sprite_create(pilot_data->photo);
         if(sd_sprite_copy(pilot_data->photo, &obuf->spr) != SD_SUCCESS) {

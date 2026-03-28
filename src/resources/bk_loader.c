@@ -19,5 +19,6 @@ int load_bk_file(bk *b, const path *filename) {
     // Convert
     bk_create(b, &tmp, &fn);
     sd_bk_free(&tmp);
+    str_free(&fn);
     return 0;
 }

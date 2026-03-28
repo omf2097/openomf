@@ -259,6 +259,7 @@ void audio_play_music(resource_id id) {
                     log_debug("Found original music file %s", path_c(&music));
                     load_xmp_music(path_c(&music));
                 }
+                str_free(&fn);
                 break;
             }
             default:

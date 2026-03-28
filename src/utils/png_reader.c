@@ -144,6 +144,7 @@ bool read_paletted_png_from_memory(const unsigned char *buffer, size_t size, uns
 
     if(!allow_transparency && trans) {
         log_error("PNG contained transparent pixels");
+        png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
         return false;
     }
 
