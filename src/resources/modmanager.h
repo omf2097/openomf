@@ -17,6 +17,8 @@ bool modmanager_get_sprite(animation_source source, str *name, int animation, in
 unsigned int modmanager_count_music(str *name);
 bool modmanager_get_music(str *name, unsigned int index, unsigned char **buf, size_t *buflen);
 
+bool modmanager_get_hitcoords(animation_source source, str *name, int animation, int frame, vector *coords,
+                              vec2i *origin, vec2i *sprite_offset);
 bool modmanager_get_af_move(str *name, int move_id, af_move *move_data);
 bool modmanager_get_bk_animation(str *name, int anim_id, bk_info *bk_data);
 

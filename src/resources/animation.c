@@ -2,6 +2,7 @@
 #include "formats/animation.h"
 #include "resources/modmanager.h"
 #include "utils/allocator.h"
+#include "utils/log.h"
 #include <stdlib.h>
 
 typedef struct sprite_reference_t {
@@ -69,6 +70,42 @@ void animation_create(animation_source type, str *name, animation *ani, array *s
             }
             vector_append(&ani->sprites, &spr);
         }
+    }
+
+    // Apply hit coordinate and origin overlays from mods. Done after sprites are
+    // loaded so we can update both collision coords and sprite pos
+    for(int i = 0; i < sdani->sprite_count; i++) {
+        vector new_coords;
+        vec2i origin;
+        vec2i sprite_offset = vec2i_create(sdani->sprites[i]->pos_x, sdani->sprites[i]->pos_y);
+        vector_create_with_size(&new_coords, sizeof(collision_coord), 0);
+        if(modmanager_get_hitcoords(type, name, id, i, &new_coords, &origin, &sprite_offset)) {
+            if(vector_size(&new_coords) > 0) {
+                iterator it;
+                int to_add = vector_size(&new_coords);
+                // Remove all original coords for this frame.
+                vector_clear(&ani->collision_coords);
+                // Append replacement coords to the now empty vec
+
+                vector_iter_begin(&new_coords, &it);
+                collision_coord *tmp_coord = NULL;
+                foreach(it, tmp_coord) {
+                    vector_append(&ani->collision_coords, tmp_coord);
+                }
+
+                log_info("anim %d frame %d: replaced hit coords with %d from mod", id, i, to_add);
+            }
+
+            // Update sprite position from overlay, if present
+            sprite_reference *sref = vector_get(&ani->sprites, i);
+            if(sref->sprite->pos.x != sprite_offset.x || sref->sprite->pos.y != sprite_offset.y) {
+                log_info("anim %d frame %d: pos (%d,%d) -> (%d,%d)", id, i, sref->sprite->pos.x, sref->sprite->pos.y,
+                         sprite_offset.x, sprite_offset.y);
+                sref->sprite->pos.x = sprite_offset.x;
+                sref->sprite->pos.y = sprite_offset.y;
+            }
+        }
+        vector_free(&new_coords);
     }
 }
 
