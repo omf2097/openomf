@@ -399,7 +399,22 @@ bool modmanager_init(void) {
 
                     log_info("path %s has filename %s and extension %s", str_c(&filename), str_c(&fn), str_c(&ext));
 
-                    if(str_equal_c(&fn, "background.png")) {
+                    if(str_ends_with(&filename, "-hitcoords.png")) {
+                        // parse as hitcoord overlay (raw VGA image with 3 layers)
+                        mod_asset *buf = omf_calloc(1, sizeof(mod_asset));
+                        buf->type = MOD_VGA_IMAGE;
+                        buf->pal = NULL;
+
+                        if(sd_vga_image_from_png_in_memory(&buf->img, entry_buf, entry_size, true, NULL) ==
+                           SD_SUCCESS) {
+                            log_info("got hitcoord overlay %dx%d", buf->img.w, buf->img.h);
+                            hashmap_put_str(&mod_resources, str_c(&filename), buf, sizeof(mod_asset));
+                            omf_free(buf);
+                        } else {
+                            log_warn("failed to load hitcoord overlay %s", str_c(&filename));
+                            omf_free(buf);
+                        }
+                    } else if(str_equal_c(&fn, "background.png")) {
                         // parse as background image
                         mod_asset *buf = omf_calloc(1, sizeof(mod_asset));
                         buf->type = MOD_VGA_IMAGE;
@@ -605,6 +620,106 @@ bool modmanager_get_sprite(animation_source source, str *name, int animation, in
     }
 
     return found;
+}
+
+bool modmanager_get_hitcoords(animation_source source, str *name, int animation, int frame, vector *coords,
+                              vec2i *origin, vec2i *sprite_offset) {
+    if(!mods_allowed) {
+        return false;
+    }
+
+    str filename;
+    switch(source) {
+        case AF_ANIMATION:
+            str_from_format(&filename, "fighters/%s/%d/%d-hitcoords.png", str_c(name), animation, frame);
+            break;
+        case BK_ANIMATION:
+            str_from_format(&filename, "scenes/%s/%d/%d-hitcoords.png", str_c(name), animation, frame);
+            break;
+        default:
+            return false;
+    }
+    str_tolower(&filename);
+
+    unsigned int len;
+    mod_asset *obuf;
+    if(hashmap_get_str(&mod_resources, str_c(&filename), (void **)&obuf, &len)) {
+        str_free(&filename);
+        return false;
+    }
+    str_free(&filename);
+
+    assert(obuf->type == MOD_VGA_IMAGE);
+    sd_vga_image *img = &obuf->img;
+
+    // First pass: find origin (index 2) and top-left corner (index 3).
+    // The top-left corner is the first index-3 pixel in scan order
+    // (top-to-bottom, left-to-right).
+    int origin_count = 0;
+    int origin_x = -1, origin_y = -1;
+    int corner_x = -1, corner_y = -1;
+
+    for(int y = 0; y < (int)img->h; y++) {
+        for(int x = 0; x < (int)img->w; x++) {
+            uint8_t pixel = (uint8_t)img->data[y * img->w + x];
+            if(pixel == 2) {
+                origin_count++;
+                if(origin_count > 1) {
+                    log_error("hitcoord overlay has multiple origin pixels, skipping");
+                    return false;
+                }
+                origin_x = x;
+                origin_y = y;
+            } else if(pixel == 3) {
+                if(corner_x == -1 || x < corner_x) {
+                    corner_x = x;
+                }
+                if(corner_y == -1 || y < corner_y) {
+                    corner_y = y;
+                }
+            }
+        }
+    }
+
+    if(corner_y < 0 || corner_x < 0) {
+        log_error("hitcoord overlay missing sprite corner, skipping");
+        return false;
+    }
+
+    // TODO we should probably check the sprite dimensions line up
+
+    if(origin_count == 0) {
+        log_error("hitcoord overlay missing origin pixel, skipping");
+        return false;
+    } else if(origin_count != 1) {
+        log_error("hitcoord overlay multiple origin pixels, skipping");
+        return false;
+    }
+
+    // Compute sprite offset: pos = corner - origin (in obj->pos space)
+    if(corner_x >= 0) {
+        sprite_offset->x = corner_x - origin_x;
+        sprite_offset->y = corner_y - origin_y;
+    }
+
+    origin->x = 0;
+    origin->y = 0;
+
+    // Second pass: extract hit coordinates (index 1) relative to origin.
+    for(unsigned int y = 0; y < img->h; y++) {
+        for(unsigned int x = 0; x < img->w; x++) {
+            uint8_t pixel = (uint8_t)img->data[y * img->w + x];
+            if(pixel == 1) {
+                collision_coord cc;
+                cc.pos = vec2i_create(x - origin_x, y - origin_y);
+                cc.frame_index = frame;
+                vector_append(coords, &cc);
+            }
+        }
+    }
+
+    // origin may have changed, so return true as long as all the sanity checks pass
+    return true;
 }
 
 unsigned int modmanager_count_music(str *name) {
