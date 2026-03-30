@@ -143,6 +143,7 @@ exit_1:
     op_free(context->handle);
 exit_0:
     omf_free(context);
+    rb_free(&context->buffer);
     return false;
 }
 
