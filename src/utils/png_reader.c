@@ -199,8 +199,8 @@ bool read_paletted_png(const path *filename, unsigned char *dst) {
     return false;
 }
 
-bool read_paletted_png_from_memory(const char *filename, unsigned char *dst, int *w, int *h, bool allow_transparency,
-                                   vga_palette *pal) {
+bool read_paletted_png_from_memory(const char *buffer, size_t size, unsigned char *dst, int *w, int *h,
+                                   bool allow_transparency, vga_palette *pal) {
     PERROR("PNG reading is not supported in current build!");
     return false;
 }
