@@ -1347,7 +1347,7 @@ bool modmanager_parse_pilot_mod(const char *buf, sd_pilot *pilot) {
         char *quote = cfg_getstr(lang, "quote");
         if(quote) {
             if(pilot->quotes[lang_index]) {
-                free(pilot->quotes[lang_index]);
+                omf_free(pilot->quotes[lang_index]);
             }
             pilot->quotes[lang_index] = omf_strdup(quote);
             log_info("setting %s quote to '%s'", lang_name, quote);
@@ -1529,7 +1529,7 @@ bool modmanager_parse_tournament_mod(const char *buf, sd_tournament_file *tourn)
         if(name) {
             log_info("previous title was %s", locale->title);
             if(locale->title) {
-                free(locale->title);
+                omf_free(locale->title);
             }
             locale->title = omf_strdup(name);
             log_info("setting %s name to '%s'", lang_name, name);
@@ -1539,7 +1539,7 @@ bool modmanager_parse_tournament_mod(const char *buf, sd_tournament_file *tourn)
         char *description = cfg_getstr(lang, "description");
         if(description) {
             if(locale->description) {
-                free(locale->description);
+                omf_free(locale->description);
             }
             locale->description = omf_strdup(description);
             log_info("setting %s description to %s", lang_name, locale->description);
@@ -1583,7 +1583,7 @@ bool modmanager_parse_tournament_mod(const char *buf, sd_tournament_file *tourn)
                 char *page_text = cfg_getstr(ending, page_key);
                 if(page_text) {
                     if(locale->end_texts[ending_index][page]) {
-                        free(locale->end_texts[ending_index][page]);
+                        omf_free(locale->end_texts[ending_index][page]);
                     }
                     locale->end_texts[ending_index][page] = omf_strdup(page_text);
                     log_info("setting %s %s page%d text", lang_name, ending_type, page + 1);
