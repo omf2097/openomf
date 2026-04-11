@@ -51,6 +51,12 @@ It is not allowed to use autonomous tools to submit contributions, interact
 with issues, or post review comments without explicit human oversight.
 Do not wire up review bots or similar automated tools against the project.
 
+Contributors must ensure that the terms and conditions of their AI tool do
+not place any restrictions on how the output can be used, and that they are
+compatible with the project's MIT license. If the AI tool output contains
+code authored by third parties, the contributor should verify that it is
+compatible with the MIT license before submitting.
+
 Disclosure is required when AI was involved in the creative process of writing
 the code!
 
