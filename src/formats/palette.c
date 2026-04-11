@@ -3,6 +3,7 @@
 #include "formats/error.h"
 #include "utils/allocator.h"
 #include "utils/miscmath.h"
+#include "video/vga_remap.h"
 #include "video/vga_state.h"
 #include <stdlib.h>
 #include <string.h>
@@ -140,7 +141,7 @@ void palette_pulse_menu_colors(int tick) {
 }
 
 int palette_load_range(sd_reader *reader, vga_palette *pal, int index_start, int index_count) {
-    assert(index_start + index_count <= 256);
+    assert(index_start + index_count <= VGA_PALETTE_SIZE);
     vga_color d;
     for(int i = index_start; i < index_start + index_count; i++) {
         sd_read_buf(reader, (char *)&d, 3);
@@ -152,7 +153,7 @@ int palette_load_range(sd_reader *reader, vga_palette *pal, int index_start, int
 }
 
 int palette_mload_range(memreader *reader, vga_palette *pal, int index_start, int index_count) {
-    assert(index_start + index_count <= 256);
+    assert(index_start + index_count <= VGA_PALETTE_SIZE);
     vga_color d;
     for(int i = index_start; i < index_start + index_count; i++) {
         memread_buf(reader, (char *)&d, 3);
@@ -169,7 +170,14 @@ int palette_load(sd_reader *reader, vga_palette *pal) {
 }
 
 int palette_remaps_load(sd_reader *reader, vga_remap_tables *remaps) {
-    sd_read_buf(reader, (char *)remaps, sizeof(vga_remap_tables));
+    vga_remaps_init(remaps);
+    for(int t = 0; t < VGA_REMAP_COUNT; t++) {
+        uint8_t buf[256];
+        sd_read_buf(reader, (char *)buf, 256);
+        for(int i = 0; i < 256; i++) {
+            remaps->tables[t].data[i] = buf[i];
+        }
+    }
     return SD_SUCCESS;
 }
 
@@ -197,7 +205,15 @@ void palette_save(sd_writer *writer, const vga_palette *pal) {
 
 void palette_remaps_save(sd_writer *writer, const vga_remap_tables *remaps) {
     if(remaps) {
-        sd_write_buf(writer, (char *)remaps, sizeof(vga_remap_tables));
+        for(int t = 0; t < VGA_REMAP_COUNT; t++) {
+            // Note! We only save the ORIGINAL remaps here, so we can assume they are convertable
+            // to uint8_t directly.
+            uint8_t buf[256];
+            for(int i = 0; i < 256; i++) {
+                buf[i] = (uint8_t)remaps->tables[t].data[i];
+            }
+            sd_write_buf(writer, (char *)buf, 256);
+        }
     }
 }
 

@@ -15,13 +15,14 @@ typedef struct remaps {
 remaps *remaps_create(GLuint tex_unit) {
     remaps *maps = omf_calloc(1, sizeof(remaps));
     maps->tex_unit = tex_unit;
-    maps->texture_id = texture_create(tex_unit, REMAPS_WIDTH, REMAPS_HEIGHT, GL_R16, GL_RED, GL_UNSIGNED_SHORT, GL_NEAREST);
+    maps->texture_id =
+        texture_create(tex_unit, REMAPS_WIDTH, REMAPS_HEIGHT, GL_R16UI, GL_RED_INTEGER, GL_UNSIGNED_SHORT, GL_NEAREST);
     return maps;
 }
 
 void remaps_update(const remaps *remaps, vga_remap_tables *data) {
-    texture_update(remaps->tex_unit, remaps->texture_id, 0, 0, REMAPS_WIDTH, REMAPS_HEIGHT, GL_RED, GL_UNSIGNED_SHORT,
-                   (char *)data);
+    texture_update(remaps->tex_unit, remaps->texture_id, 0, 0, REMAPS_WIDTH, REMAPS_HEIGHT, GL_RED_INTEGER,
+                   GL_UNSIGNED_SHORT, (char *)data);
 }
 
 void remaps_free(remaps **maps) {

@@ -6,7 +6,7 @@
 #include "video/renderers/opengl3/helpers/ubo.h"
 
 typedef struct data_buffer {
-    alignas(16) GLfloat palette[1024]; // 256 * sizeof(vec4f)
+    alignas(16) GLfloat palette[4096]; // 1024 * sizeof(vec4f)
 } data_buffer;
 
 typedef struct shared {
@@ -17,7 +17,7 @@ typedef struct shared {
 shared *shared_create(void) {
     shared *obj = omf_calloc(1, sizeof(shared));
     obj->ubo_id = ubo_create(sizeof(data_buffer));
-    for(int i = 0; i < 1024; i++) {
+    for(int i = 0; i < 4096; i++) {
         obj->data.palette[i] = 1.0f;
     }
     return obj;

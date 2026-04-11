@@ -52,6 +52,7 @@ typedef struct gl3_context {
     GLuint palette_prog_id;
     GLuint rgba_prog_id;
     GLuint scale_prog_id;
+    GLuint debug_atlas_prog_id;
 
     video_screenshot_signal screenshot_cb;
 } gl3_context;
@@ -136,10 +137,13 @@ static bool setup_context(void *userdata, int window_w, int window_h, bool fulls
     if(!create_program(&ctx->rgba_prog_id, "rgba.vert", "rgba.frag")) {
         goto error_3;
     }
+    if(!create_program(&ctx->debug_atlas_prog_id, "rgba.vert", "debug_atlas.frag")) {
+        goto error_4;
+    }
     const char *scale_vert, *scale_frag;
     get_scaling_shader_names(scaling_mode, &scale_vert, &scale_frag);
     if(!create_program(&ctx->scale_prog_id, scale_vert, scale_frag)) {
-        goto error_4;
+        goto error_5;
     }
 
     // Fetch viewport size which may be different from window size.
@@ -160,7 +164,7 @@ static bool setup_context(void *userdata, int window_w, int window_h, bool fulls
     ctx->atlas = atlas_create(TEX_UNIT_ATLAS, 2048, 2048);
     ctx->objects = object_array_create(2048.0f, 2048.0f);
     ctx->shared = shared_create();
-    ctx->paletted_target = render_target_create(TEX_UNIT_FBO, fb_w, fb_h, GL_RGBA8, GL_RGBA, GL_NEAREST);
+    ctx->paletted_target = render_target_create(TEX_UNIT_FBO, fb_w, fb_h, GL_RGBA16, GL_RGBA, GL_NEAREST);
     ctx->rgba_target = render_target_create(TEX_UNIT_FBO2, fb_w, fb_h, GL_RGBA8, GL_RGBA, GL_NEAREST);
     ctx->remaps = remaps_create(TEX_UNIT_REMAPS);
 
@@ -184,11 +188,20 @@ static bool setup_context(void *userdata, int window_w, int window_h, bool fulls
     bind_uniform_1i(ctx->rgba_prog_id, "framebuffer", TEX_UNIT_FBO);
     bind_uniform_1i(ctx->rgba_prog_id, "remaps", TEX_UNIT_REMAPS);
 
+    // Activate debug atlas program and bind its variables
+    activate_program(ctx->debug_atlas_prog_id);
+    bind_uniform_4fv(ctx->debug_atlas_prog_id, "projection", projection_matrix);
+    bind_uniform_block(ctx->debug_atlas_prog_id, "palette", PAL_BLOCK_BINDING, pal_ubo_id);
+    bind_uniform_1i(ctx->debug_atlas_prog_id, "atlas", TEX_UNIT_ATLAS);
+
     // Activate scale program and bind uniforms
     reload_scaler_program(ctx);
 
     log_info("OpenGL3 Renderer initialized!");
     return true;
+
+error_5:
+    delete_program(ctx->debug_atlas_prog_id);
 
 error_4:
     delete_program(ctx->rgba_prog_id);
@@ -251,7 +264,7 @@ static bool reset_context_with(void *userdata, int window_w, int window_h, bool 
         ctx->fb_scale = fb_scale;
         render_target_free(&ctx->paletted_target);
         render_target_free(&ctx->rgba_target);
-        ctx->paletted_target = render_target_create(TEX_UNIT_FBO, fb_w, fb_h, GL_RGBA8, GL_RGBA, GL_NEAREST);
+        ctx->paletted_target = render_target_create(TEX_UNIT_FBO, fb_w, fb_h, GL_RGBA16, GL_RGBA, GL_NEAREST);
         ctx->rgba_target = render_target_create(TEX_UNIT_FBO2, fb_w, fb_h, GL_RGBA8, GL_RGBA, GL_NEAREST);
     }
 
@@ -295,6 +308,7 @@ static void close_context(void *userdata) {
     atlas_free(&ctx->atlas);
     delete_program(ctx->palette_prog_id);
     delete_program(ctx->rgba_prog_id);
+    delete_program(ctx->debug_atlas_prog_id);
     delete_program(ctx->scale_prog_id);
     SDL_GL_DeleteContext(ctx->gl_context);
     SDL_DestroyWindow(ctx->window);
@@ -435,8 +449,7 @@ static inline void finish_offscreen(gl3_context *ctx) {
 static void finish_debug_atlas(gl3_context *ctx) {
     render_target_deactivate();
     set_screen_viewport(ctx);
-    activate_program(ctx->rgba_prog_id);
-    bind_uniform_1i(ctx->rgba_prog_id, "framebuffer", TEX_UNIT_ATLAS);
+    activate_program(ctx->debug_atlas_prog_id);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
@@ -491,10 +504,10 @@ static void render_finish(void *userdata) {
 
     // Limit framerate if requested.
     if(ctx->framerate_limit != 0) {
-        uint64_t frame_time = SDL_GetPerformanceCounter() - ctx->last_tick;
+        const uint64_t frame_time = SDL_GetPerformanceCounter() - ctx->last_tick;
         if(frame_time < ctx->framerate_limit) {
-            double wait = ctx->framerate_limit - frame_time;
-            double ms_conv = SDL_GetPerformanceFrequency() / 1000;
+            const double wait = ctx->framerate_limit - frame_time;
+            const double ms_conv = SDL_GetPerformanceFrequency() / 1000;
             SDL_Delay(wait / ms_conv); // TODO: SDL_DelayNS() or alternative.
         }
         ctx->last_tick = SDL_GetPerformanceCounter();
@@ -511,8 +524,14 @@ static void render_area_finish(void *userdata, surface *dst) {
     gl3_context *ctx = userdata;
     finish_offscreen(ctx);
     SDL_Rect *r = &ctx->culling_area;
+    // FIXME
+    uint16_t *temp_buffer = omf_malloc(r->w * r->h * sizeof(uint16_t));
+    glReadPixels(r->x, r->y, r->w, r->h, GL_RED, GL_UNSIGNED_SHORT, temp_buffer);
     unsigned char *buffer = omf_malloc(r->w * r->h);
-    glReadPixels(r->x, r->y, r->w, r->h, GL_RED, GL_UNSIGNED_BYTE, buffer);
+    for(int i = 0; i < r->w * r->h; i++) {
+        buffer[i] = (unsigned char)(temp_buffer[i] * 1023.0f / 65535.0f + 0.5f);
+    }
+    omf_free(temp_buffer);
     surface_create_from_data_flip(dst, r->w, r->h, buffer);
     surface_set_transparency(dst, -1);
     omf_free(buffer);
