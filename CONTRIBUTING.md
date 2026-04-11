@@ -40,12 +40,14 @@ expectations for quality. The submitter of the PR is responsible for understandi
 what the code does, verifying that it works correctly, and being able to justify
 the changes during review.
 
-We welcome AI-assisted contributions for bugfixes and smaller, well-scoped
+We accept AI-assisted contributions for bugfixes and smaller, well-scoped
 tickets where the result is easy to validate and review. Large or complex
 PRs that appear to be bulk-generated without actual understanding will be
 rejected. If you cannot explain your changes or respond to review feedback
-meaningfully, the PR will be closed. If you are aiming to make a large
-change, talk with us on discord first!
+meaningfully, the PR will be closed. Simply pasting review comments into the
+LLM and pasting the response back into the PR is not acceptable, if you cannot
+engage with the generated material as a contributor, please do not submit pull
+requests. If you are aiming to make a large change, talk with us on discord first!
 
 It is not allowed to use autonomous tools to submit contributions, interact
 with issues, or post review comments without explicit human oversight.
@@ -58,7 +60,8 @@ code authored by third parties, the contributor should verify that it is
 compatible with the MIT license before submitting.
 
 Disclosure is required when AI was involved in the creative process of writing
-the code!
+the code! Failure to disclose may lead to being banned from contributing to the
+project.
 
 We suggest the following tags in commit messages to disclose AI involvement:
 
