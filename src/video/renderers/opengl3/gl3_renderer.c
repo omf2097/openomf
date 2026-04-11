@@ -520,20 +520,13 @@ static void render_area_prepare(void *userdata, const SDL_Rect *area) {
     ctx->culling_area = *area;
 }
 
-static void render_area_finish(void *userdata, surface *dst) {
+static void render_area_finish(void *userdata, screen_surface *dst) {
     gl3_context *ctx = userdata;
     finish_offscreen(ctx);
     SDL_Rect *r = &ctx->culling_area;
-    // FIXME
-    uint16_t *temp_buffer = omf_malloc(r->w * r->h * sizeof(uint16_t));
-    glReadPixels(r->x, r->y, r->w, r->h, GL_RED, GL_UNSIGNED_SHORT, temp_buffer);
-    unsigned char *buffer = omf_malloc(r->w * r->h);
-    for(int i = 0; i < r->w * r->h; i++) {
-        buffer[i] = (unsigned char)(temp_buffer[i] * 1023.0f / 65535.0f + 0.5f);
-    }
-    omf_free(temp_buffer);
-    surface_create_from_data_flip(dst, r->w, r->h, buffer);
-    surface_set_transparency(dst, -1);
+    uint16_t *buffer = omf_malloc(r->w * r->h * sizeof(uint16_t));
+    glReadPixels(r->x, r->y, r->w, r->h, GL_RED, GL_UNSIGNED_SHORT, buffer);
+    screen_surface_create_from_u16_flip(dst, r->w, r->h, buffer, 1023.0f / 65535.0f);
     omf_free(buffer);
 }
 

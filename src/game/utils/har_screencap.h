@@ -2,6 +2,7 @@
 #define HAR_SCREENCAP_H
 
 #include "game/protos/object.h"
+#include "video/screen_surface.h"
 #include "video/surface.h"
 
 #define SCREENCAP_W 140
@@ -12,6 +13,7 @@
 
 // There should be screencaps for each HAR/player
 typedef struct har_screencaps {
+    screen_surface raw[2];
     surface cap[2];
     bool ok[2];
 } har_screencaps;

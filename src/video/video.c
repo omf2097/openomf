@@ -201,7 +201,7 @@ void video_render_area_prepare(const SDL_Rect *area) {
     current_renderer.render_area_prepare(current_renderer.ctx, area);
 }
 
-void video_render_area_finish(surface *dst) {
+void video_render_area_finish(screen_surface *dst) {
     current_renderer.render_area_finish(current_renderer.ctx, dst);
 }
 

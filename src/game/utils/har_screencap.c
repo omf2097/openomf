@@ -12,7 +12,12 @@ void har_screencaps_create(har_screencaps *caps) {
 void har_screencaps_free(har_screencaps *caps) {
     for(int i = 0; i < 2; i++) {
         if(caps->ok[i]) {
-            surface_free(&caps->cap[i]);
+            if(caps->raw[i].data) {
+                screen_surface_free(&caps->raw[i]);
+            }
+            if(caps->cap[i].data) {
+                surface_free(&caps->cap[i]);
+            }
             caps->ok[i] = false;
         }
     }
@@ -24,8 +29,13 @@ void har_screencaps_reset(har_screencaps *caps) {
 
 int har_screencaps_clone(har_screencaps *src, har_screencaps *dst) {
     for(int i = 0; i < 2; i++) {
-        if(src->ok[i] && src->cap[i].data) {
-            surface_create_from(&dst->cap[i], &src->cap[i]);
+        if(src->ok[i]) {
+            if(src->raw[i].data) {
+                screen_surface_create_from(&dst->raw[i], &src->raw[i]);
+            }
+            if(src->cap[i].data) {
+                surface_create_from(&dst->cap[i], &src->cap[i]);
+            }
         }
     }
     return 1;
@@ -48,7 +58,12 @@ static vec2i camera_position_for(object *obj) {
 void har_screencaps_capture(har_screencaps *caps, object *obj, object *obj2, int id) {
     game_state *gs = obj->gs;
     if(caps->ok[id]) {
-        surface_free(&caps->cap[id]);
+        if(caps->raw[id].data) {
+            screen_surface_free(&caps->raw[id]);
+        }
+        if(caps->cap[id].data) {
+            surface_free(&caps->cap[id]);
+        }
         caps->ok[id] = false;
     }
 
@@ -70,12 +85,14 @@ void har_screencaps_capture(har_screencaps *caps, object *obj, object *obj2, int
     gs->hide_ui = true;
     game_state_render(gs);
     gs->hide_ui = false;
-    video_render_area_finish(&caps->cap[id]);
+    video_render_area_finish(&caps->raw[id]);
     caps->ok[id] = true;
 }
 
 void har_screencaps_compress(har_screencaps *caps, const vga_palette *pal, int id) {
-    if(caps->ok[id]) {
-        surface_convert_to_grayscale(&caps->cap[id], pal, 0xD0, 0xDF, 0x60);
+    if(caps->ok[id] && caps->raw[id].data) {
+        screen_surface_to_grayscale(&caps->raw[id], &caps->cap[id], pal, 0xD0, 0xDF, 0x60);
+        screen_surface_free(&caps->raw[id]);
+        caps->raw[id].data = NULL;
     }
 }

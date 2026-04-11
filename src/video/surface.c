@@ -123,29 +123,6 @@ void surface_sub(surface *dst, const surface *src, int dst_x, int dst_y, int src
     dst->guid = guid++;
 }
 
-static uint8_t find_closest_gray(const vga_palette *pal, int range_start, int range_end, int ref) {
-    uint8_t closest = 0, current;
-    int closest_dist = 256, dist;
-
-    for(int i = range_start; i <= range_end; i++) {
-        current = pal->colors[i].r; // Grayscale, r = g = b so pick any.
-        dist = current - ref;
-        if(dist < 0) {
-            dist = -dist;
-        }
-        if(dist > closest_dist) {
-            // We passed the optimum point, stop.
-            break;
-        }
-        if(dist < closest_dist) {
-            closest_dist = dist;
-            closest = i;
-        }
-    }
-
-    return closest;
-}
-
 void surface_flatten_to_mask(surface *sur, uint8_t value) {
     uint8_t idx;
     for(int i = 0; i < sur->w * sur->h; i++) {
@@ -154,35 +131,6 @@ void surface_flatten_to_mask(surface *sur, uint8_t value) {
             continue;
         }
         sur->data[i] = value;
-    }
-    sur->guid = guid++;
-}
-
-void surface_convert_to_grayscale(surface *sur, const vga_palette *pal, int range_start, int range_end,
-                                  int ignore_below) {
-    float r, g, b;
-    uint8_t idx;
-    unsigned char mapping[256];
-
-    // Make a mapping for fast search.
-    for(int i = 0; i < 256; i++) {
-        if(i < ignore_below) {
-            mapping[i] = i;
-            continue;
-        }
-        r = pal->colors[i].r * 0.3;
-        g = pal->colors[i].g * 0.59;
-        b = pal->colors[i].b * 0.11;
-        mapping[i] = find_closest_gray(pal, range_start, range_end, r + g + b);
-    }
-
-    // Convert the image using the mapping
-    for(int i = 0; i < sur->w * sur->h; i++) {
-        idx = sur->data[i];
-        if(idx == sur->transparent) {
-            continue;
-        }
-        sur->data[i] = mapping[idx];
     }
     sur->guid = guid++;
 }
