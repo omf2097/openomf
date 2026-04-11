@@ -1,5 +1,6 @@
 #include "video/vga_remap.h"
 #include <assert.h>
+#include <stddef.h>
 
 void vga_remaps_init(vga_remap_tables *remaps) {
     assert(remaps != NULL);
