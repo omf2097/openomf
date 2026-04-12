@@ -18,7 +18,7 @@ void damage_combine(damage_tracker *dst, const damage_tracker *src) {
 }
 
 void damage_add_range(damage_tracker *tracker, vga_index start, vga_index end) {
-    assert(start >= 0 && end < VGA_PALETTE_SIZE && end >= start);
+    assert(start >= 0 && end <= VGA_PALETTE_SIZE && end >= start);
     if(end == start) {
         return;
     }
