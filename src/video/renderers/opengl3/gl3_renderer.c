@@ -3,10 +3,10 @@
 #include "video/renderers/opengl3/sdl_window.h"
 
 #include "video/renderers/opengl3/helpers/object_array.h"
+#include "video/renderers/opengl3/helpers/palette.h"
 #include "video/renderers/opengl3/helpers/remaps.h"
 #include "video/renderers/opengl3/helpers/render_target.h"
 #include "video/renderers/opengl3/helpers/shaders.h"
-#include "video/renderers/opengl3/helpers/shared.h"
 #include "video/renderers/opengl3/helpers/texture_atlas.h"
 
 #include "utils/allocator.h"
@@ -17,7 +17,7 @@
 #define TEX_UNIT_FBO 1
 #define TEX_UNIT_FBO2 2
 #define TEX_UNIT_REMAPS 3
-#define PAL_BLOCK_BINDING 0
+#define TEX_UNIT_PALETTE 4
 #define NATIVE_W 320
 #define NATIVE_H 200
 
@@ -26,7 +26,7 @@ typedef struct gl3_context {
     SDL_GLContext *gl_context;
     texture_atlas *atlas;
     object_array *objects;
-    shared *shared;
+    gl_palette *palette;
     render_target *paletted_target;
     render_target *rgba_target;
     remaps *remaps;
@@ -163,7 +163,7 @@ static bool setup_context(void *userdata, int window_w, int window_h, bool fulls
     // Create the rest of the graphics objects
     ctx->atlas = atlas_create(TEX_UNIT_ATLAS, 2048, 2048);
     ctx->objects = object_array_create(2048.0f, 2048.0f);
-    ctx->shared = shared_create();
+    ctx->palette = gl_palette_create(TEX_UNIT_PALETTE);
     ctx->paletted_target = render_target_create(TEX_UNIT_FBO, fb_w, fb_h, GL_RGBA16, GL_RGBA, GL_NEAREST);
     ctx->rgba_target = render_target_create(TEX_UNIT_FBO2, fb_w, fb_h, GL_RGBA8, GL_RGBA, GL_NEAREST);
     ctx->remaps = remaps_create(TEX_UNIT_REMAPS);
@@ -183,15 +183,14 @@ static bool setup_context(void *userdata, int window_w, int window_h, bool fulls
     // Activate RGBA conversion program and bind palette etc.
     activate_program(ctx->rgba_prog_id);
     bind_uniform_4fv(ctx->rgba_prog_id, "projection", projection_matrix);
-    GLuint pal_ubo_id = shared_get_block(ctx->shared);
-    bind_uniform_block(ctx->rgba_prog_id, "palette", PAL_BLOCK_BINDING, pal_ubo_id);
+    bind_uniform_1i(ctx->rgba_prog_id, "palette", TEX_UNIT_PALETTE);
     bind_uniform_1i(ctx->rgba_prog_id, "framebuffer", TEX_UNIT_FBO);
     bind_uniform_1i(ctx->rgba_prog_id, "remaps", TEX_UNIT_REMAPS);
 
     // Activate debug atlas program and bind its variables
     activate_program(ctx->debug_atlas_prog_id);
     bind_uniform_4fv(ctx->debug_atlas_prog_id, "projection", projection_matrix);
-    bind_uniform_block(ctx->debug_atlas_prog_id, "palette", PAL_BLOCK_BINDING, pal_ubo_id);
+    bind_uniform_1i(ctx->debug_atlas_prog_id, "palette", TEX_UNIT_PALETTE);
     bind_uniform_1i(ctx->debug_atlas_prog_id, "atlas", TEX_UNIT_ATLAS);
 
     // Activate scale program and bind uniforms
@@ -303,7 +302,7 @@ static void close_context(void *userdata) {
     remaps_free(&ctx->remaps);
     render_target_free(&ctx->paletted_target);
     render_target_free(&ctx->rgba_target);
-    shared_free(&ctx->shared);
+    gl_palette_free(&ctx->palette);
     object_array_free(&ctx->objects);
     atlas_free(&ctx->atlas);
     delete_program(ctx->palette_prog_id);
@@ -406,9 +405,9 @@ static inline void set_screen_viewport(const gl3_context *ctx) {
  */
 static inline void flush_palettes(gl3_context *ctx) {
     vga_index first, last;
-    vga_palette *palette;
-    if(vga_state_is_palette_dirty(&palette, &first, &last)) {
-        shared_set_palette(ctx->shared, palette, first, last);
+    vga_palette *pal;
+    if(vga_state_is_palette_dirty(&pal, &first, &last)) {
+        gl_palette_update(ctx->palette, pal, first, last);
         vga_state_mark_palette_flushed();
     }
 }

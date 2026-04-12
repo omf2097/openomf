@@ -166,16 +166,6 @@ void bind_uniform_1u(GLuint program_id, const char *name, GLuint value) {
     glUniform1ui(ref, value);
 }
 
-void bind_uniform_block(GLuint program_id, const char *name, GLuint binding_id, GLuint buffer) {
-    GLuint ref = glGetUniformBlockIndex(program_id, name);
-    if(ref == GL_INVALID_INDEX) {
-        log_error("Unable to find ubo '%s'; glGetUniformBlockIndex() returned GL_INVALID_INDEX", name);
-        return;
-    }
-    glUniformBlockBinding(program_id, ref, binding_id);
-    glBindBufferBase(GL_UNIFORM_BUFFER, binding_id, buffer);
-}
-
 void activate_program(GLuint program_id) {
     glUseProgram(program_id);
 }

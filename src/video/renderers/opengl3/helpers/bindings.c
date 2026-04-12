@@ -2,7 +2,6 @@
 
 #include "video/renderers/opengl3/helpers/bindings.h"
 
-static GLuint bound_ubo = 0;
 static GLuint bound_vbo = 0;
 static GLuint bound_vao = 0;
 static GLuint bound_tex[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -41,20 +40,6 @@ void bindings_unbind_vbo(GLuint id) {
     if(bound_vbo == id) {
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         bound_vbo = 0;
-    }
-}
-
-void bindings_bind_ubo(GLuint id) {
-    if(bound_ubo != id) {
-        glBindBuffer(GL_UNIFORM_BUFFER, id);
-        bound_ubo = id;
-    }
-}
-
-void bindings_unbind_ubo(GLuint id) {
-    if(bound_ubo == id) {
-        glBindBuffer(GL_UNIFORM_BUFFER, 0);
-        bound_ubo = 0;
     }
 }
 

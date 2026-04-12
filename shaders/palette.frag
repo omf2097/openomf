@@ -115,7 +115,7 @@ void main() {
 
     // If remapping is on, do it now.
     if (SPRITE_REMAP && !NO_REMAP) {
-        uvec4 remap = textureLod(remaps, vec2((float(index) + 0.5) / 1024.0, remap_offset / 18.0), 0);
+        uvec4 remap = texelFetch(remaps, ivec2(index, remap_offset), 0);
         index = int(remap.r);
     }
 

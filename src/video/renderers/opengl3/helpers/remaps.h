@@ -6,8 +6,28 @@
 
 typedef struct remaps remaps;
 
-remaps *remaps_create(GLuint unit_id);
-void remaps_update(const remaps *remaps, vga_remap_tables *data);
+/**
+ * Create a 1024x19 R16UI texture for palette remap tables.
+ * Each row is a remap table mapping source palette index to destination index.
+ *
+ * @param texture_unit_id OpenGL texture unit to bind the remap texture to
+ * @return Allocated remaps object, must be freed with remaps_free()
+ */
+remaps *remaps_create(GLuint texture_unit_id);
+
+/**
+ * Upload all remap tables to the texture.
+ *
+ * @param remaps Remaps object
+ * @param data Source remap table data (1024x19 uint16 entries)
+ */
+void remaps_update(const remaps *remaps, const vga_remap_tables *data);
+
+/**
+ * Free the remap texture and object. Sets the pointer to NULL.
+ *
+ * @param maps Pointer to remaps object pointer
+ */
 void remaps_free(remaps **maps);
 
 #endif // REMAPS_H

@@ -2,9 +2,7 @@
 
 // In
 in vec2 tex_coord;
-layout (std140) uniform palette {
-    vec4 colors[1024];
-};
+uniform sampler2D palette;
 
 // Paletted framebuffer (GL_RGBA16), written by palette.frag.
 // Channels are built up by multiple draw passes with different blend modes:
@@ -29,6 +27,11 @@ const int MAGIC_REMAP_ROUNDS = 12;
 // Out
 layout (location = 0) out vec4 color;
 
+void set_color(int index) {
+    ivec2 pal_index = ivec2(index, 0);
+    color = texelFetch(palette, pal_index, 0);
+}
+
 void main() {
     vec4 texel = textureLod(framebuffer, tex_coord, 0);
     int idx = int(texel.r * 1023.0 + 0.5);
@@ -38,11 +41,11 @@ void main() {
 
     if(FBUFOPT_CREDITS) {
         // SPRITE_INDEX_ADD
-        color = colors[idx + idx_add];
+        set_color(idx + idx_add);
         return;
     }
 
-    float remap_index = float(remap_enc % 19) / 18.0;
+    int remap_row = remap_enc % 19;
     int remap_rounds = remap_enc / 19;
 
     // SPRITE_INDEX_ADD
@@ -59,7 +62,7 @@ void main() {
         remap_rounds = 0;
     } else if(darktint > 0) {
         // lookup color we're drawing ontop in fifth remap to get brightness
-        uvec4 remap_val = texture(remaps, vec2((float(idx) + 0.5) / 1024.0, 4.0 / 18.0));
+        uvec4 remap_val = texelFetch(remaps, ivec2(idx, 4), 0);
         int behind = 1 + clamp(int(remap_val.r) - 0xA8, 0, 7) * 2;
 
         // this indexed blending is not exactly correct, but i am
@@ -70,9 +73,9 @@ void main() {
 
     // TODO: precalculate palette to 2d texture for required remappings later.
     for (int i = 0; i < remap_rounds; i++) {
-        uvec4 remap_texel = textureLod(remaps, vec2((float(idx) + 0.5) / 1024.0, remap_index), 0);
+        uvec4 remap_texel = texelFetch(remaps, ivec2(idx, remap_row), 0);
         idx = int(remap_texel.r);
     }
 
-    color = colors[idx];
+    set_color(idx);
 }
