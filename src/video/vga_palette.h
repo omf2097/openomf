@@ -4,11 +4,17 @@
 #include <assert.h>
 #include <stdint.h>
 
-// This should be 256 at minimum (required palette size for original images)
-// and 1024 colors at maximum(UBO size limit for OpenGL 3.3).
+// Standard palette is 256 colors (original vga palette).
+// Extended palette is 1024 colors (needed for modding).
 #define VGA_STANDARD_PALETTE_SIZE 256
 #define VGA_EXTENDED_PALETTE_SIZE 1024
+
+// USE_EXTENDED_PALETTE is set by cmake
+#ifdef USE_EXTENDED_PALETTE
 #define VGA_PALETTE_SIZE VGA_EXTENDED_PALETTE_SIZE
+#else
+#define VGA_PALETTE_SIZE VGA_STANDARD_PALETTE_SIZE
+#endif
 
 typedef int16_t vga_index;
 
