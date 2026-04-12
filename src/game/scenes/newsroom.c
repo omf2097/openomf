@@ -172,14 +172,9 @@ void newsroom_overlay_render(scene *scene) {
     if(!local->challenger) {
         // Render screen capture
         har_screencaps *caps = &(game_state_get_player(scene->gs, (local->won ? 0 : 1))->screencaps);
-        if(local->screen == 0) {
-            if(caps->ok[SCREENCAP_POSE]) {
-                video_draw_size(&caps->cap[SCREENCAP_POSE], 165, 15, SCREENCAP_W, SCREENCAP_H);
-            }
-        } else {
-            if(caps->ok[SCREENCAP_BLOW]) {
-                video_draw_size(&caps->cap[SCREENCAP_BLOW], 165, 15, SCREENCAP_W, SCREENCAP_H);
-            }
+        int cap_id = (local->screen == 0) ? SCREENCAP_POSE : SCREENCAP_BLOW;
+        if(caps->ok[cap_id]) {
+            video_draw_size(&caps->cap[cap_id], 165, 15, SCREENCAP_W, SCREENCAP_H);
         }
     }
 

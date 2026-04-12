@@ -4,7 +4,19 @@
 #include <assert.h>
 #include <stdint.h>
 
-typedef unsigned char vga_index;
+// Standard palette is 256 colors (original vga palette).
+// Extended palette is 1024 colors (needed for modding).
+#define VGA_STANDARD_PALETTE_SIZE 256
+#define VGA_EXTENDED_PALETTE_SIZE 1024
+
+// USE_EXTENDED_PALETTE is set by cmake
+#ifdef USE_EXTENDED_PALETTE
+#define VGA_PALETTE_SIZE VGA_EXTENDED_PALETTE_SIZE
+#else
+#define VGA_PALETTE_SIZE VGA_STANDARD_PALETTE_SIZE
+#endif
+
+typedef int16_t vga_index;
 
 typedef struct vga_color {
     unsigned char r;
@@ -15,10 +27,10 @@ typedef struct vga_color {
 static_assert(3 == sizeof(vga_color), "vga_color should pack into 3 bytes");
 
 typedef struct vga_palette {
-    vga_color colors[256];
+    vga_color colors[VGA_PALETTE_SIZE];
 } vga_palette;
 
-static_assert(768 == sizeof(vga_palette), "vga_palette should pack into 768 bytes");
+static_assert((3 * VGA_PALETTE_SIZE) == sizeof(vga_palette), "vga_palette should pack properly");
 
 void vga_palette_init(vga_palette *palette);
 

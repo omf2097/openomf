@@ -407,12 +407,12 @@ void text_generate_document(text_document *td, str *buf0, font_size font_sz, uin
             } else if(sscanf(buf + start, "{CENTER %hu}%n", &center, &bytes_used) == 1 && bytes_used > 0) {
                 start += bytes_used;
                 // TODO we need to handle this properly, it will likely update the x offset
-            } else if(sscanf(buf + start, "{COLOR %hhu}%n", &current_text_color, &bytes_used) == 1 && bytes_used > 0) {
+            } else if(sscanf(buf + start, "{COLOR %hi}%n", &current_text_color, &bytes_used) == 1 && bytes_used > 0) {
                 start += bytes_used;
             } else if(sscanf(buf + start, "{SPACING %hu}%n", &current_line_spacing, &bytes_used) == 1 &&
                       bytes_used > 0) {
                 start += bytes_used;
-            } else if(sscanf(buf + start, "{SPACINGG %hu}%n", &current_line_spacing, &bytes_used) == 1 &&
+            } else if(sscanf(buf + start, "{SPACING %hu}%n", &current_line_spacing, &bytes_used) == 1 &&
                       bytes_used > 0) {
                 // handle known typo in page 2 of help menu. We assume the original parser is just looking at the string
                 // prefixes

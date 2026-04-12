@@ -142,27 +142,31 @@ void vga_state_set_base_palette_from(const vga_palette *src) {
 void vga_state_set_base_palette_from_range(const vga_palette *src, vga_index dst_start, vga_index src_start,
                                            vga_index count) {
     assert(src != NULL);
-    assert(dst_start + count <= 256);
-    assert(src_start + count <= 256);
+    assert(dst_start >= 0 && dst_start + count <= VGA_PALETTE_SIZE);
+    assert(src_start >= 0 && src_start + count <= VGA_PALETTE_SIZE);
+    assert(count > 0);
     memcpy(&state.base.colors[dst_start], &src->colors[src_start], count * 3);
     damage_add_range(&state.dmg_base, dst_start, dst_start + count);
 }
 
 void vga_state_set_base_palette_index(vga_index index, const vga_color *color) {
     assert(color != NULL);
+    assert(index >= 0 && index < VGA_PALETTE_SIZE);
     state.base.colors[index] = *color;
     damage_add_range(&state.dmg_base, index, index + 1);
 }
 
 void vga_state_set_base_palette_range(vga_index start, vga_index count, vga_color *src_colors) {
-    assert(start + count <= 256);
+    assert(start >= 0 && start + count <= VGA_PALETTE_SIZE);
+    assert(count > 0);
     memcpy(&state.base.colors[start], src_colors, count * 3);
     damage_add_range(&state.dmg_base, start, start + count);
 }
 
 void vga_state_copy_base_palette_range(vga_index dst, vga_index src, vga_index count) {
-    assert(dst + count <= 256);
-    assert(src + count <= 256);
+    assert(dst >= 0 && dst + count <= VGA_PALETTE_SIZE);
+    assert(src >= 0 && src + count <= VGA_PALETTE_SIZE);
+    assert(count > 0);
     memmove(&state.base.colors[dst], &state.base.colors[src], count * 3);
     damage_add_range(&state.dmg_base, dst, dst + count);
 }

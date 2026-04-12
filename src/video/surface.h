@@ -68,19 +68,6 @@ void surface_compress_index_blocks(surface *sur, int range_start, int range_end,
 void surface_compress_remap(surface *sur, int range_start, int range_end, int remap_to, int amount);
 
 /**
- * Convert surface to grayscale using colors in palette from range-start to range-end (inclusive).
- * Conversion is done by luminosity.
- *
- * @param sur Surface to convert
- * @param pal Palette to use.
- * @param range_start First grey palette color
- * @param range_end Last gray palette color
- * @param ignore_below Leave indexes below this range alone
- */
-void surface_convert_to_grayscale(surface *sur, const vga_palette *pal, int range_start, int range_end,
-                                  int ignore_below);
-
-/**
  * Convert surface's har colors to grayscale.
  * Remaps blocks of 16 colors in the range 0x00..0x5F to 0xD0..=0xDF.
  * Leaves other colors, and the transparent color alone.

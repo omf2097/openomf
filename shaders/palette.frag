@@ -11,8 +11,12 @@ flat in int palette_limit;
 flat in int opacity;
 flat in uint options;
 
-uniform sampler2D atlas;
-uniform sampler2D remaps;
+// Atlas texture (GL_R8UI): uint8 palette index (0-255) per texel.
+uniform usampler2D atlas;
+
+// Remap texture (GL_R16UI, 1024x19): uint16 palette index (0-1023) per texel.
+// X axis is the source palette index, Y axis selects one of 19 remap tables.
+uniform usampler2D remaps;
 
 in vec4 gl_FragCoord;
 
@@ -23,10 +27,10 @@ bool SPRITE_INDEX_ADD = (options & 4u) != 0u;
 bool SPRITE_HAR_QUIRKS = (options & 8u) != 0u;
 bool SPRITE_DARK_TINT = (options & 0x10u) != 0u;
 
-
-float PHI = 1.61803398874989484820459;
-float ATLAS_H = 2048.0;
-vec2 NATIVE_SIZE = vec2(320.0, 200.0);
+const int MAGIC_REMAP_ROUNDS = 12;
+const float PHI = 1.61803398874989484820459;
+const float ATLAS_H = 2048.0;
+const vec2 NATIVE_SIZE = vec2(320.0, 200.0);
 
 float noise(in vec2 v) {
     // OMF had a fairly random offset for each row, because
@@ -35,25 +39,35 @@ float noise(in vec2 v) {
     return fract(tan(10 * PHI * v.y) + (float(0x6b) * v.x) / 256.0);
 }
 
-vec4 handle(float index) {
+// Encode a palette index into the paletted framebuffer (GL_RGBA16).
+// Channels are written selectively via glColorMask depending on blend mode:
+//   MODE_SET:            RGBA  (base sprite)
+//   MODE_DARK_TINT:      _GBA  (tint overlay)
+//   MODE_REMAP:          _G__  (remap overlay, on top of existing R from MODE_SET)
+//   MODE_SPRITE_SHADOW:  _G__  (shadow overlay, GL_MAX blended)
+//   MODE_ADD:            ___A  (additive index overlay)
+//
+// Output channels:
+//   R: palette index / 1023.0
+//   G: (remap_offset + remap_rounds * 19 [+ index]) / 255.0 -- decoded by rgba.frag
+//   B: dark tint palette index / 1023.0
+//   A: additive index (index * 60) / 1023.0
+vec4 handle(int index) {
     if (SPRITE_DARK_TINT) {
-        float remap_index = float(remap_offset) / 255.0;
         // use magic rounds to detect if dark_tint's remap has been
         // overwritten by the pause menu's background
-        int magic_remap_rounds = 12;
-        float remap = remap_index + float(magic_remap_rounds) * 19.0 / 255.0;
-        return vec4(0.0, remap, index, 0.0);
+        float remap = float(remap_offset + MAGIC_REMAP_ROUNDS * 19) / 255.0;
+        return vec4(0.0, remap, float(index) / 1023.0, 0.0);
     }
     if (remap_rounds > 0) {
-        float remap_index = float(remap_offset) / 255.0 + index;
-        float remap = remap_index + float(remap_rounds) * 19.0 / 255.0;
+        float remap = float(remap_offset + remap_rounds * 19 + index) / 255.0;
         return vec4(0.0, remap, 0.0, 0.0);
     }
     if (SPRITE_INDEX_ADD) {
-        float add = (index * 255.0 * 60) / 255.0;
+        float add = float(index * 60) / 1023.0;
         return vec4(0.0, 0.0, 0.0, add);
     }
-    return vec4(index, 0.0, 0.0, 0.0);
+    return vec4(float(index) / 1023.0, 0.0, 0.0, 0.0);
 }
 
 void main() {
@@ -69,8 +83,8 @@ void main() {
         int coverage = 0;
         for(int y = 0; y < 4; y++) {
             float offset = float(y - 1) / ATLAS_H;
-            vec4 texel = texture(atlas, tex_coord + vec2(0, offset));
-            int index = int(texel.r * 255.0);
+            uvec4 texel = textureLod(atlas, tex_coord + vec2(0, offset), 0);
+            int index = int(texel.r);
             coverage += int(index != transparency_index);
         }
 
@@ -79,34 +93,31 @@ void main() {
             discard;
         }
 
-        color = handle(float(coverage) / 256.0);
+        color = handle(coverage);
         return;
     }
 
 
-    vec4 texel = texture(atlas, tex_coord);
+    uvec4 texel = textureLod(atlas, tex_coord, 0);
 
     // Don't render if it's transparent pixel
-    int index = int(texel.r * 255.0);
+    int index = int(texel.r);
     if (index == transparency_index) {
         discard;
     }
 
     // Palette offset and limit (for e.g. fonts)
-    float limit = palette_limit / 255.0;
-    float offset = palette_offset / 255.0;
-    if (texel.r <= limit) {
-        texel.r = clamp(texel.r + offset, 0, limit);
+    if (index <= palette_limit) {
+        index = clamp(index + palette_offset, 0, palette_limit);
     }
 
     bool NO_REMAP = SPRITE_HAR_QUIRKS && index > 0x30;
 
     // If remapping is on, do it now.
     if (SPRITE_REMAP && !NO_REMAP) {
-        vec4 remap = texture(remaps, vec2(texel.r, remap_offset / 18.0));
-
-        texel = remap;
+        uvec4 remap = texelFetch(remaps, ivec2(index, remap_offset), 0);
+        index = int(remap.r);
     }
 
-    color = handle(texel.r);
+    color = handle(index);
 }
