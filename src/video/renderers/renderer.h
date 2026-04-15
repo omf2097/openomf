@@ -4,7 +4,6 @@
 #include <SDL_rect.h>
 #include <stdbool.h>
 
-#include "video/screen_surface.h"
 #include "video/surface.h"
 
 typedef struct renderer renderer;
@@ -43,7 +42,7 @@ typedef void (*render_finish_fn)(void *ctx);
 
 // Offscreen rendering state management, these must be implemented
 typedef void (*render_area_prepare_fn)(void *ctx, const SDL_Rect *area);
-typedef void (*render_area_finish_fn)(void *ctx, screen_surface *dst);
+typedef void (*render_area_finish_fn)(void *ctx, surface *dst);
 
 // Screenshotting, this /should/ be implemented (but is not required).
 typedef void (*capture_screen_fn)(void *ctx, video_screenshot_signal screenshot_cb);

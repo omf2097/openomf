@@ -10,7 +10,7 @@ typedef struct surface {
     int w;
     int h;
     int transparent;
-    unsigned char *data;
+    vga_index *data;
 } surface;
 
 enum
@@ -25,11 +25,12 @@ void surface_create_from_vga(surface *sur, const sd_vga_image *src);
 void surface_create_from_image(surface *sur, image *img);
 void surface_create_from_data(surface *sur, int w, int h, const unsigned char *src);
 void surface_create_from_data_flip(surface *sur, int w, int h, const unsigned char *src);
+void surface_create_from_flip_scale(surface *sur, int w, int h, const uint16_t *src, float scale);
 void surface_multiply_decal(surface *src, const surface *decal, int dst_x, int dst_y);
 void surface_create_from_surface(surface *sur, int w, int h, int src_x, int src_y, const surface *src);
-int surface_to_image(const surface *sur, image *img);
 void surface_free(surface *sur);
 void surface_clear(surface *sur);
+void surface_set_pixel(surface *sur, int x, int y, vga_index color);
 void surface_sub(surface *dst, const surface *src, int dst_x, int dst_y, int src_x, int src_y, int w, int h,
                  int method);
 void surface_set_transparency(surface *dst, int index);
@@ -78,13 +79,18 @@ void surface_compress_remap(surface *sur, int range_start, int range_end, int re
 void surface_convert_har_to_grayscale(surface *sur, uint8_t brightness);
 
 /**
- * Write surface to a PNG file.
+ * Convert surface to a grayscale surface.
+ * Uses the full palette for lookup, and maps each pixel to the closest
+ * gray in the range [range_start, range_end]. Indices below ignore_below are passed through.
  *
- * @param sur Source surface
- * @param pal Palette to use (only applied if surface is paletted)
- * @param filename Target filename to write
- * @return True on success, false on any failure.
+ * @param src Source surface
+ * @param dst Destination surface to initialize
+ * @param pal Palette to use for luminosity calculation
+ * @param range_start First gray palette index
+ * @param range_end Last gray palette index
+ * @param ignore_below Leave indices below this value alone
  */
-bool surface_write_png(const surface *sur, const vga_palette *pal, const path *filename);
+void surface_to_grayscale(const surface *src, surface *dst, const vga_palette *pal, vga_index range_start,
+                          vga_index range_end, int ignore_below);
 
 #endif // SURFACE_H
