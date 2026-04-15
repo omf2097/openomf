@@ -12,11 +12,15 @@
 // USE_EXTENDED_PALETTE is set by cmake
 #ifdef USE_EXTENDED_PALETTE
 #define VGA_PALETTE_SIZE VGA_EXTENDED_PALETTE_SIZE
+typedef uint16_t vga_pixel;
 #else
 #define VGA_PALETTE_SIZE VGA_STANDARD_PALETTE_SIZE
+typedef uint8_t vga_pixel;
 #endif
 
-typedef int16_t vga_index;
+// This is what we use for iterating and assigning values. It covers the uint16_t and uint8_t vga_pixel regions.
+// Assert should be used in handlers to ensure we stay withing the [0 ... n ... VGA_PALETTE_SIZE] region.
+typedef int32_t vga_index;
 
 typedef struct vga_color {
     unsigned char r;
