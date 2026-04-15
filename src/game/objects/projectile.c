@@ -194,19 +194,16 @@ void debug_surfaces_create(object *obj) {
     projectile_local *local = object_get_userdata(obj);
     surface_create(&local->hit_pixel, 1, 1);
     surface_clear(&local->hit_pixel);
-    image img;
-    surface_to_image(&local->hit_pixel, &img);
-    image_set_pixel(&img, 0, 0, 0xf3);
+    surface_set_pixel(&local->hit_pixel, 0, 0, 0xf3);
     surface_create(&local->proj_origin, 4, 4);
     surface_clear(&local->proj_origin);
-    surface_to_image(&local->proj_origin, &img);
-    image_set_pixel(&img, 0, 0, 0xf6);
-    image_set_pixel(&img, 0, 1, 0xf6);
-    image_set_pixel(&img, 0, 2, 0xf6);
-    image_set_pixel(&img, 0, 3, 0xf6);
-    image_set_pixel(&img, 1, 3, 0xf6);
-    image_set_pixel(&img, 2, 3, 0xf6);
-    image_set_pixel(&img, 3, 3, 0xf6);
+    surface_set_pixel(&local->proj_origin, 0, 0, 0xf6);
+    surface_set_pixel(&local->proj_origin, 0, 1, 0xf6);
+    surface_set_pixel(&local->proj_origin, 0, 2, 0xf6);
+    surface_set_pixel(&local->proj_origin, 0, 3, 0xf6);
+    surface_set_pixel(&local->proj_origin, 1, 3, 0xf6);
+    surface_set_pixel(&local->proj_origin, 2, 3, 0xf6);
+    surface_set_pixel(&local->proj_origin, 3, 3, 0xf6);
 }
 
 #endif
