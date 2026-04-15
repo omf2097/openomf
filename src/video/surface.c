@@ -8,7 +8,7 @@
 static unsigned int guid = 0;
 
 void surface_create(surface *sur, int w, int h) {
-    sur->data = omf_calloc(w * h, sizeof(vga_index));
+    sur->data = omf_calloc(w * h, sizeof(vga_pixel));
     sur->guid = guid++;
     sur->w = w;
     sur->h = h;
@@ -26,7 +26,7 @@ void surface_create_from_data_flip(surface *sur, int w, int h, const unsigned ch
     surface_create(sur, w, h);
     for(int y = 0; y < h; y++) {
         const unsigned char *src_row = src + y * w;
-        vga_index *dst_row = sur->data + (h - y - 1) * w;
+        vga_pixel *dst_row = sur->data + (h - y - 1) * w;
         for(int x = 0; x < w; x++) {
             dst_row[x] = src_row[x];
         }
@@ -56,9 +56,9 @@ void surface_create_from_flip_scale(surface *sur, const int w, const int h, cons
     surface_create(sur, w, h);
     for(int y = 0; y < h; y++) {
         const uint16_t *src_row = src + y * w;
-        vga_index *dst_row = sur->data + (h - y - 1) * w;
+        vga_pixel *dst_row = sur->data + (h - y - 1) * w;
         for(int x = 0; x < w; x++) {
-            dst_row[x] = (vga_index)(src_row[x] * scale + 0.5f);
+            dst_row[x] = (vga_pixel)(src_row[x] * scale + 0.5f);
         }
     }
     sur->transparent = -1;
@@ -78,13 +78,13 @@ void surface_free(surface *sur) {
 }
 
 void surface_clear(surface *sur) {
-    memset(sur->data, 0, sur->w * sur->h * sizeof(vga_index));
+    memset(sur->data, 0, sur->w * sur->h * sizeof(vga_pixel));
     sur->guid = guid++;
 }
 
 void surface_create_from(surface *dst, const surface *src) {
     surface_create(dst, src->w, src->h);
-    memcpy(dst->data, src->data, src->w * src->h * sizeof(vga_index));
+    memcpy(dst->data, src->data, src->w * src->h * sizeof(vga_pixel));
     dst->transparent = src->transparent;
 }
 

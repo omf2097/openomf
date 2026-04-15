@@ -10,7 +10,7 @@ typedef struct surface {
     int w;
     int h;
     int transparent;
-    vga_index *data;
+    vga_pixel *data;
 } surface;
 
 enum
