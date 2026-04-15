@@ -11,7 +11,7 @@ flat in int palette_limit;
 flat in int opacity;
 flat in uint options;
 
-// Atlas texture (GL_R8UI): uint8 palette index (0-255) per texel.
+// Atlas texture (GL_R16UI): uint16 palette index (0-1023) per texel.
 uniform usampler2D atlas;
 
 // Remap texture (GL_R16UI, 1024x19): uint16 palette index (0-1023) per texel.
