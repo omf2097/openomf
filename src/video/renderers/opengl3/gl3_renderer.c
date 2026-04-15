@@ -519,13 +519,13 @@ static void render_area_prepare(void *userdata, const SDL_Rect *area) {
     ctx->culling_area = *area;
 }
 
-static void render_area_finish(void *userdata, screen_surface *dst) {
+static void render_area_finish(void *userdata, surface *dst) {
     gl3_context *ctx = userdata;
     finish_offscreen(ctx);
     SDL_Rect *r = &ctx->culling_area;
     uint16_t *buffer = omf_malloc(r->w * r->h * sizeof(uint16_t));
     glReadPixels(r->x, r->y, r->w, r->h, GL_RED, GL_UNSIGNED_SHORT, buffer);
-    screen_surface_create_from_u16_flip(dst, r->w, r->h, buffer, 1023.0f / 65535.0f);
+    surface_create_from_flip_scale(dst, r->w, r->h, buffer, 1023.0f / 65535.0f);
     omf_free(buffer);
 }
 

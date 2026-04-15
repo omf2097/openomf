@@ -9,7 +9,6 @@
 #include <SDL_rect.h>
 #include <stdbool.h>
 
-#include "video/screen_surface.h"
 #include "video/surface.h"
 
 #define NATIVE_W 320 ///< Native game resolution width
@@ -197,7 +196,7 @@ void video_render_area_prepare(const SDL_Rect *area);
  * @brief Finish rendering to an area and copy result to surface
  * @param dst Destination surface to receive the rendered content
  */
-void video_render_area_finish(screen_surface *dst);
+void video_render_area_finish(surface *dst);
 
 /**
  * @brief Close the video subsystem and release all resources

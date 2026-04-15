@@ -13,7 +13,7 @@ void har_screencaps_free(har_screencaps *caps) {
     for(int i = 0; i < 2; i++) {
         if(caps->ok[i]) {
             if(caps->raw[i].data) {
-                screen_surface_free(&caps->raw[i]);
+                surface_free(&caps->raw[i]);
             }
             if(caps->cap[i].data) {
                 surface_free(&caps->cap[i]);
@@ -31,7 +31,7 @@ int har_screencaps_clone(har_screencaps *src, har_screencaps *dst) {
     for(int i = 0; i < 2; i++) {
         if(src->ok[i]) {
             if(src->raw[i].data) {
-                screen_surface_create_from(&dst->raw[i], &src->raw[i]);
+                surface_create_from(&dst->raw[i], &src->raw[i]);
             }
             if(src->cap[i].data) {
                 surface_create_from(&dst->cap[i], &src->cap[i]);
@@ -59,7 +59,7 @@ void har_screencaps_capture(har_screencaps *caps, object *obj, object *obj2, int
     game_state *gs = obj->gs;
     if(caps->ok[id]) {
         if(caps->raw[id].data) {
-            screen_surface_free(&caps->raw[id]);
+            surface_free(&caps->raw[id]);
         }
         if(caps->cap[id].data) {
             surface_free(&caps->cap[id]);
@@ -91,8 +91,8 @@ void har_screencaps_capture(har_screencaps *caps, object *obj, object *obj2, int
 
 void har_screencaps_compress(har_screencaps *caps, const vga_palette *pal, int id) {
     if(caps->ok[id] && caps->raw[id].data) {
-        screen_surface_to_grayscale(&caps->raw[id], &caps->cap[id], pal, 0xD0, 0xDF, 0x60);
-        screen_surface_free(&caps->raw[id]);
+        surface_to_grayscale(&caps->raw[id], &caps->cap[id], pal, 0xD0, 0xDF, 0x60);
+        surface_free(&caps->raw[id]);
         caps->raw[id].data = NULL;
     }
 }

@@ -17,9 +17,9 @@ GLuint texture_create(GLuint tex_unit, GLsizei w, GLsizei h, GLint internal_form
 }
 
 void texture_update(GLuint tex_unit, GLuint id, int x, int y, int w, int h, GLenum format, GLenum type,
-                    const char *bytes) {
+                    const void *data) {
     bindings_bind_tex(tex_unit, id);
-    glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, w, h, format, type, bytes);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, w, h, format, type, data);
 }
 
 void texture_set_filtering(GLuint tex_unit, GLuint id, GLenum filtering) {

@@ -67,7 +67,7 @@ static void render_finish(void *userdata) {
 }
 static void render_area_prepare(void *userdata, const SDL_Rect *area) {
 }
-static void render_area_finish(void *userdata, screen_surface *dst) {
+static void render_area_finish(void *userdata, surface *dst) {
 }
 
 static void capture_screen(void *userdata, video_screenshot_signal screenshot_cb) {

@@ -33,7 +33,8 @@ texture_atlas *atlas_create(GLuint tex_unit, uint16_t width, uint16_t height) {
     atlas->w = width;
     atlas->h = height;
     atlas->tex_unit = tex_unit;
-    atlas->texture_id = texture_create(tex_unit, width, height, GL_R8UI, GL_RED_INTEGER, GL_UNSIGNED_BYTE, GL_NEAREST);
+    atlas->texture_id =
+        texture_create(tex_unit, width, height, GL_R16UI, GL_RED_INTEGER, GL_UNSIGNED_SHORT, GL_NEAREST);
     log_debug("Texture atlas %dx%d created", width, height);
     return atlas;
 }
@@ -50,15 +51,15 @@ void atlas_free(texture_atlas **atlas) {
     }
 }
 
-bool atlas_insert(texture_atlas *atlas, const char *bytes, uint16_t w, uint16_t h, uint16_t *nx, uint16_t *ny) {
+bool atlas_insert(texture_atlas *atlas, const vga_index *data, uint16_t w, uint16_t h, uint16_t *nx, uint16_t *ny) {
     sprite_region region;
     if(!sprite_packer_alloc(atlas->packer, w, h, &region)) {
         log_error("Texture atlas has no room for %dx%d area", w, h);
         return false;
     }
 
-    texture_update(atlas->tex_unit, atlas->texture_id, region.x, region.y, w, h, GL_RED_INTEGER, GL_UNSIGNED_BYTE,
-                   bytes);
+    texture_update(atlas->tex_unit, atlas->texture_id, region.x, region.y, w, h, GL_RED_INTEGER, GL_UNSIGNED_SHORT,
+                   data);
     *nx = region.x;
     *ny = region.y;
     return true;
@@ -77,7 +78,7 @@ bool atlas_get(texture_atlas *atlas, const surface *surface, uint16_t *x, uint16
 
     // If item is NOT in the texture atlas, add it now.
     uint16_t nx, ny;
-    if(atlas_insert(atlas, (const char *)surface->data, surface->w, surface->h, &nx, &ny)) {
+    if(atlas_insert(atlas, surface->data, surface->w, surface->h, &nx, &ny)) {
         *x = nx;
         *y = ny;
         *w = surface->w;
