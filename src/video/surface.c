@@ -36,7 +36,7 @@ void surface_create_from_data_flip(surface *sur, int w, int h, const unsigned ch
 void surface_create_from_vga(surface *sur, const sd_vga_image *src) {
     surface_create(sur, src->w, src->h);
     for(unsigned int i = 0; i < src->w * src->h; i++) {
-        sur->data[i] = src->data[i];
+        sur->data[i] = (unsigned char)src->data[i];
     }
     sur->transparent = -1;
 }
