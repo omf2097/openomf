@@ -3,6 +3,13 @@
 
 typedef enum
 {
+    WINDOW_MODE_WINDOWED,
+    WINDOW_MODE_BORDERLESS,
+    WINDOW_MODE_FULLSCREEN
+} window_mode;
+
+typedef enum
+{
     FIGHT_MODE_NORMAL,
     FIGHT_MODE_HYPER
 } fight_mode;
@@ -46,7 +53,7 @@ typedef struct {
     int framerate_limit;
     int vsync;
     int aspect;
-    int fullscreen;
+    int window_mode;
     int scaling;
     int scaling_mode;
     int instant_console;

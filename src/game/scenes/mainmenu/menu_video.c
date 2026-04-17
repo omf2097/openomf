@@ -165,16 +165,17 @@ void menu_video_done(component *c, void *u) {
     bool render_plugin_changed = strcmp(v->renderer, local->old_video_settings.renderer) != 0;
     if(render_plugin_changed) {
         video_close();
-        video_init(v->renderer, v->screen_w, v->screen_h, v->fullscreen, v->vsync, v->aspect, v->framerate_limit,
+        video_init(v->renderer, v->screen_w, v->screen_h, v->window_mode, v->vsync, v->aspect, v->framerate_limit,
                    v->fb_scale, v->scaling_mode);
         menu_set_submenu(c->parent, menu_video_confirm_create(s, &local->old_video_settings));
     } else if(local->old_video_settings.screen_w != v->screen_w || local->old_video_settings.screen_h != v->screen_h ||
-              local->old_video_settings.fullscreen != v->fullscreen || local->old_video_settings.vsync != v->vsync ||
+              local->old_video_settings.window_mode != v->window_mode ||
+              local->old_video_settings.vsync != v->vsync ||
               local->old_video_settings.aspect != v->aspect ||
               local->old_video_settings.framerate_limit != v->framerate_limit ||
               local->old_video_settings.fb_scale != v->fb_scale ||
               local->old_video_settings.scaling_mode != v->scaling_mode) {
-        video_reinit(v->screen_w, v->screen_h, v->fullscreen, v->vsync, v->aspect, v->framerate_limit, v->fb_scale,
+        video_reinit(v->screen_w, v->screen_h, v->window_mode, v->vsync, v->aspect, v->framerate_limit, v->fb_scale,
                      v->scaling_mode);
 
         menu_set_submenu(c->parent, menu_video_confirm_create(s, &local->old_video_settings));
@@ -303,8 +304,11 @@ component *menu_video_create(scene *s) {
                                                     &setting->video.vsync, offon_opts, 2));
     menu_attach(menu, textselector_create_bind_opts("ASPECT", "Video aspect ratio. Original game is 4:3.", NULL, NULL,
                                                     &setting->video.aspect, aspect_opts, 2));
-    menu_attach(menu, textselector_create_bind_opts("FULLSCREEN", "Run the game in a fullscreen window.", NULL, NULL,
-                                                    &setting->video.fullscreen, offon_opts, 2));
+    const char *window_mode_opts[] = {"OFF", "WINDOWED", "EXCLUSIVE"};
+    menu_attach(menu,
+                textselector_create_bind_opts("FS",
+                                              "OFF=windowed, WINDOWED=borderless fullscreen, EXCLUSIVE=true fullscreen.",
+                                              NULL, NULL, &setting->video.window_mode, window_mode_opts, 3));
 
     // Done button
     menu_attach(menu, button_create("DONE", "Return to the main menu.", false, false, menu_video_done, s));
