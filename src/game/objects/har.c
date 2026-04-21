@@ -1282,7 +1282,7 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
             return 0;
         }
 
-        if(b->rehit_combo) {
+        if(b->rehit_combo && !b->in_stasis_ticks) {
             // rehit mode is off
             if(!obj_b->gs->match_settings.rehit) {
                 return 0;
