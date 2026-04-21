@@ -76,6 +76,7 @@ tests=(
     "Rehit juggles are not allowed against stunned opponents:NO_STUN_JUGGLE.REC"
     "Katana enters winpose after landing from heel stomp:KATANA_WINPOSE.REC"
     "Round one starts on tick 92:ROUNDONE.REC"
+    "Chronos can attack opponent when in stasis in the air and rehit mode is disabled:CHRONOS_AIR_STASIS.REC"
 )
 
 # Setup temp directory for outputs
