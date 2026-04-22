@@ -1417,11 +1417,14 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
 
         if(b->rehit_combo) {
             obj_b->vel.y -= 3;
-            disable_rehit(b, move);
         }
 
         if((hit_coord.x != 0 || hit_coord.y != 0) && move->damage != 0) {
             har_spawn_scrap(obj_b, hit_coord, move->block_stun);
+        }
+
+        if(air_hit) {
+            disable_rehit(b, move);
         }
 
         b->rehit_combo = air_hit;
