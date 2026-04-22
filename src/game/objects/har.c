@@ -1417,6 +1417,7 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
 
         if(b->rehit_combo) {
             obj_b->vel.y -= 3;
+            disable_rehit(b, move);
         }
 
         if((hit_coord.x != 0 || hit_coord.y != 0) && move->damage != 0) {
@@ -1424,7 +1425,6 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
         }
 
         b->rehit_combo = air_hit;
-        disable_rehit(b, move);
 
         if(move->next_move) {
             log_debug("HAR %s going to next move %d", har_get_name(a->id), move->next_move);
