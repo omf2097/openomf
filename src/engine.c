@@ -34,7 +34,7 @@ int engine_init(engine_init_flags *init_flags) {
 
     int w = setting->video.screen_w;
     int h = setting->video.screen_h;
-    int window_mode = setting->video.window_mode;
+    window_mode window_mode = setting->video.window_mode;
     int vsync = setting->video.vsync;
     int aspect = setting->video.aspect;
     int fb_scale = setting->video.fb_scale;
@@ -181,7 +181,7 @@ void engine_run(engine_init_flags *init_flags) {
     int static_wait = 0;
     while(run && game_state_is_running(gs)) {
         // Handle events
-        int check_wm;
+        window_mode check_wm;
         while(SDL_PollEvent(&e)) {
             // Handle other events
             switch(e.type) {

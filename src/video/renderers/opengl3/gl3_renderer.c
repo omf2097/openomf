@@ -36,7 +36,7 @@ typedef struct gl3_context {
     int screen_w;
     int screen_h;
     int fb_scale;
-    int window_mode;
+    window_mode window_mode;
     bool vsync;
     int aspect;
     int scaling_mode;
@@ -104,7 +104,7 @@ static void reload_scaler_program(const gl3_context *ctx) {
     bind_uniform_2f(ctx->scale_prog_id, "texture_size", (GLfloat)fb_w, (GLfloat)fb_h);
 }
 
-static bool setup_context(void *userdata, int window_w, int window_h, int window_mode, bool vsync, int aspect,
+static bool setup_context(void *userdata, int window_w, int window_h, window_mode window_mode, bool vsync, int aspect,
                           int framerate_limit, int fb_scale, int scaling_mode) {
     gl3_context *ctx = userdata;
     ctx->screen_w = window_w;
@@ -206,8 +206,8 @@ error_0:
     return false;
 }
 
-static void get_context_state(void *userdata, int *window_w, int *window_h, int *window_mode, bool *vsync, int *aspect,
-                              int *fb_scale) {
+static void get_context_state(void *userdata, int *window_w, int *window_h, window_mode *window_mode, bool *vsync,
+                              int *aspect, int *fb_scale) {
     gl3_context *ctx = userdata;
     if(window_w != NULL) {
         *window_w = ctx->screen_w;
@@ -229,8 +229,8 @@ static void get_context_state(void *userdata, int *window_w, int *window_h, int 
     }
 }
 
-static bool reset_context_with(void *userdata, int window_w, int window_h, int window_mode, bool vsync, int aspect,
-                               int framerate_limit, int fb_scale, int scaling_mode) {
+static bool reset_context_with(void *userdata, int window_w, int window_h, window_mode window_mode, bool vsync,
+                               int aspect, int framerate_limit, int fb_scale, int scaling_mode) {
     gl3_context *ctx = userdata;
     ctx->screen_w = window_w;
     ctx->screen_h = window_h;

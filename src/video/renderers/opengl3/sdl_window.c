@@ -74,7 +74,7 @@ exit_0:
     return ret;
 }
 
-bool create_window(SDL_Window **window, int width, int height, int window_mode) {
+bool create_window(SDL_Window **window, int width, int height, window_mode window_mode) {
     char title[32];
     snprintf(title, 32, "OpenOMF v%s", get_version_string());
 
@@ -117,7 +117,7 @@ bool create_window(SDL_Window **window, int width, int height, int window_mode) 
     return true;
 }
 
-bool resize_window(SDL_Window *window, int width, int height, int window_mode) {
+bool resize_window(SDL_Window *window, int width, int height, window_mode window_mode) {
     SDL_SetWindowSize(window, width, height);
     unsigned int fs_flag = 0;
     if(window_mode == WINDOW_MODE_FULLSCREEN) {

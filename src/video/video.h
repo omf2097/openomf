@@ -9,6 +9,7 @@
 #include <SDL_rect.h>
 #include <stdbool.h>
 
+#include "game/utils/settings.h"
 #include "video/surface.h"
 
 #define NATIVE_W 320 ///< Native game resolution width
@@ -55,7 +56,7 @@ bool video_get_renderer_info(int index, const char **name, const char **descript
  * @param scaling_mode Scaling algorithm mode
  * @return true on success, false on failure
  */
-bool video_init(const char *try_name, int window_w, int window_h, int window_mode, bool vsync, int aspect,
+bool video_init(const char *try_name, int window_w, int window_h, window_mode window_mode, bool vsync, int aspect,
                 int framerate_limit, int fb_scale, int scaling_mode);
 
 /**
@@ -70,7 +71,7 @@ bool video_init(const char *try_name, int window_w, int window_h, int window_mod
  * @param scaling_mode Scaling algorithm mode
  * @return true on success, false on failure
  */
-bool video_reinit(int window_w, int window_h, int window_mode, bool vsync, int aspect, int framerate_limit,
+bool video_reinit(int window_w, int window_h, window_mode window_mode, bool vsync, int aspect, int framerate_limit,
                   int fb_scale, int scaling_mode);
 
 /**
@@ -87,7 +88,7 @@ void video_reinit_renderer(void);
  * @param aspect Output for aspect ratio mode (can be NULL)
  * @param fb_scale Output for framebuffer scale (can be NULL)
  */
-void video_get_state(int *w, int *h, int *window_mode, bool *vsync, int *aspect, int *fb_scale);
+void video_get_state(int *w, int *h, window_mode *window_mode, bool *vsync, int *aspect, int *fb_scale);
 
 /**
  * @brief Move the rendering target position
