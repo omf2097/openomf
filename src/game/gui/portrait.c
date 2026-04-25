@@ -73,6 +73,8 @@ int portrait_load_with_slot(sd_sprite *s, vga_palette *pal, int pilot_id, int sl
     // Copy custom colors to output buffer for caller to persist (e.g. in chr->portrait_custom)
     if(portrait_custom_out) {
         memcpy(portrait_custom_out, photo->portrait_custom, 64 * sizeof(vga_color));
+        log_debug("portrait_load: copied custom colors to output (custom[0]=%d/%d/%d)",
+                  portrait_custom_out[0].r, portrait_custom_out[0].g, portrait_custom_out[0].b);
     }
 
     // Free pics
