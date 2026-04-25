@@ -354,17 +354,20 @@ void mechlab_tick(scene *scene, int paused) {
             }
 
             if(oldchr) {
+                // The memcpy at line 345 copied the photo pointer to the new chr.
+                // Null it in oldchr so sd_chr_free(oldchr) doesn't free the sprite
+                // — the new chr owns it now.
+                oldchr->pilot.photo = NULL;
+                oldchr->photo = NULL;
+
                 if(player1->pilot != &oldchr->pilot) {
-                    sd_sprite_free(player1->pilot->photo);
-                    omf_free(player1->pilot->photo);
-                } else {
-                    // The new chr's pilot.photo points to the same sprite as
-                    // oldchr->pilot.photo (copied by memcpy above). Null it in
-                    // oldchr so sd_chr_free doesn't double-free the sprite.
-                    oldchr->pilot.photo = NULL;
-                    oldchr->photo = NULL;
-                    player1->pilot = NULL;
+                    // player1->pilot is a separate allocation. Its photo points
+                    // to the same sprite the new chr now owns. Null it before
+                    // freeing the pilot struct so we don't double-free.
+                    player1->pilot->photo = NULL;
+                    omf_free(player1->pilot);
                 }
+                player1->pilot = NULL;
                 sd_chr_free(oldchr);
                 omf_free(oldchr);
             }
@@ -374,8 +377,12 @@ void mechlab_tick(scene *scene, int paused) {
             }
             // force the character to reload because its just easier
 
+            // Null out pilot before freeing chr — pilot points into chr's
+            // memory, so freeing chr invalidates the pilot pointer.
+            player1->pilot = NULL;
             sd_chr_free(player1->chr);
             omf_free(player1->chr);
+            player1->chr = NULL;
 
             bool found = mechlab_find_last_player(scene);
             mechlab_select_dashboard(scene, DASHBOARD_STATS);
