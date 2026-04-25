@@ -1839,6 +1839,9 @@ int arena_create(scene *scene) {
                 sprite_create(sp, player->pilot->photo, -1, vga_extended_palette_get_sprite_remap(SPRITE_REMAP_PORTRAIT_1 + i));
 #ifdef USE_EXTENDED_PALETTE
                 if(player->chr) {
+                    log_debug("ARENA: loading portrait custom colors for player %d (custom[0]=%d/%d/%d)",
+                              i, player->chr->portrait_custom[0].r, player->chr->portrait_custom[0].g,
+                              player->chr->portrait_custom[0].b);
                     for(int c = 0; c < 64; c++) {
                         vga_state_set_base_palette_index(0x2ac + (i * 64) + c, &player->chr->portrait_custom[c]);
                     }
@@ -1857,6 +1860,9 @@ int arena_create(scene *scene) {
                 sprite_create(sp, player->pilot->photo, -1, vga_extended_palette_get_sprite_remap(SPRITE_REMAP_PORTRAIT_1 + i));
 #ifdef USE_EXTENDED_PALETTE
                 if(player->chr) {
+                    log_debug("ARENA: loading portrait custom colors for player %d (custom[0]=%d/%d/%d)",
+                              i, player->chr->portrait_custom[0].r, player->chr->portrait_custom[0].g,
+                              player->chr->portrait_custom[0].b);
                     for(int c = 0; c < 64; c++) {
                         vga_state_set_base_palette_index(0x2ac + (i * 64) + c, &player->chr->portrait_custom[c]);
                     }
