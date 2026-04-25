@@ -19,6 +19,7 @@
 #include "game/scenes/mechlab/lab_dash_trnselect.h"
 #include "game/scenes/mechlab/lab_menu_difficultyselect.h"
 #include "game/scenes/mechlab/lab_menu_main.h"
+#include "game/gui/portrait.h"
 #include "game/scenes/mechlab/lab_menu_select.h"
 #include "game/utils/settings.h"
 #include "resources/languages.h"
@@ -351,6 +352,13 @@ void mechlab_tick(scene *scene, int paused) {
             // overrides the PIC data on reload.
             if(oldchr) {
                 memcpy(player1->chr->portrait_custom, oldchr->portrait_custom, sizeof(player1->chr->portrait_custom));
+            } else {
+                // New pilot — no old CHR. The portrait was loaded into
+                // player1->pilot during mechlab navigation, but portrait_custom
+                // was never stored because p1->chr was NULL. Load it now from
+                // the PIC file so it gets saved into the CHR.
+                portrait_load_with_slot(player1->chr->pilot.photo, &player1->chr->pilot.palette,
+                    player1->chr->pilot.photo_id, 0, player1->chr->portrait_custom);
             }
 
             if(oldchr) {
