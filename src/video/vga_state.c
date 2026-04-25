@@ -151,13 +151,18 @@ void vga_state_set_remaps_from(const vga_remap_tables *src) {
 void vga_state_set_base_palette_from(const vga_palette *src) {
     assert(src != NULL);
 #ifdef USE_EXTENDED_PALETTE
-    // Only copy base palette range (0-255). Preserve extended range (256-1023)
-    // which was set during vga_state_init and may have been updated by
-    // vga_extended_palette_load_mod_colors etc.
+    // Copy base palette range (0-255). 
     memcpy(&state.base.colors[0], &src->colors[0], 256 * sizeof(vga_color));
-    // Re-populate extended/expanded common colors on every scene change.
-    // These are static and never change, but other code paths may overwrite
-    // the extended range, so we refresh them here.
+
+    // Re-init entire extended range: fill with magenta, then re-populate
+    // static zones. Dynamic zones (HAR, portrait) will be re-set by
+    // scene init code (palette_load_player_colors, portrait remaps, etc).
+    static const vga_color magenta = {255, 0, 255};
+    for(int i = 256; i < VGA_PALETTE_SIZE; i++) {
+        state.base.colors[i] = magenta;
+    }
+
+    // Static extended zones
     memcpy(&state.base.colors[VGA_EXT_COMMON_START], vga_ext_common, sizeof(vga_ext_common));
     memcpy(&state.base.colors[VGA_EXT_EXPANDED_COMMON_START], vga_ext_expanded_common, sizeof(vga_ext_expanded_common));
 #else

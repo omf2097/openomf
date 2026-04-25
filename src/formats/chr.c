@@ -367,7 +367,13 @@ int sd_chr_save(sd_chr_file *chr, const path *filename) {
     // Save this, whatever this is.
     sd_write_udword(w, chr->unknown_b);
 
-    // Save photo. Hacky size fix.
+    // Save photo. Sync chr->photo with pilot.photo in case the mechlab
+    // reassigned pilot.photo to a new sprite (e.g. after portrait_load).
+    if(chr->pilot.photo != chr->photo) {
+        sd_sprite_free(chr->photo);
+        omf_free(chr->photo);
+        chr->photo = chr->pilot.photo;
+    }
     chr->photo->width--;
     chr->photo->height--;
 
