@@ -12,8 +12,10 @@
 #include "resources/sprite.h"
 #include "utils/array.h"
 #include "utils/miscmath.h"
+#include "utils/oklab.h"
 #include "video/surface.h"
 #include "video/vga_state.h"
+#include "video/vga_common_colors.h"
 #include <string.h>
 
 /* ===== Public functions ===== */
@@ -21,73 +23,75 @@
 void vga_extended_palette_generate_detail(vga_palette *palette, vga_index detail_start,
                                           const vga_color channels[VGA_HAR_CHANNELS][VGA_HAR_BASE_HUES]) {
     /* 16 detail colors: 6 for channel 0, 5 for channel 1, 5 for channel 2.
-     * Per channel: desaturated, heat, cold, accent from each other channel,
-     * plus one extra for channel 0 (dark accent). */
+     * All blending done in oklab space for perceptual uniformity. */
     int idx = 0;
 
     for(int ch = 0; ch < VGA_HAR_CHANNELS; ch++) {
-        /* Midtone: average of hues 6-10 */
-        vga_color mid = {0, 0, 0};
+        /* Midtone in oklab: average of hues 6-10 */
+        oklab_color mid = {0, 0, 0};
         for(int i = 6; i < 11; i++) {
-            mid.r += channels[ch][i].r;
-            mid.g += channels[ch][i].g;
-            mid.b += channels[ch][i].b;
+            oklab_color c = rgb_to_oklab(channels[ch][i].r, channels[ch][i].g, channels[ch][i].b);
+            mid.L += c.L; mid.a += c.a; mid.b += c.b;
         }
-        mid.r /= 5;
-        mid.g /= 5;
-        mid.b /= 5;
+        mid.L /= 5; mid.a /= 5; mid.b /= 5;
 
-        /* Desaturated: blend toward gray */
+        /* Desaturated: move toward L axis (a=0, b=0) at 50% */
         {
-            unsigned char gray = (unsigned char)((mid.r + mid.g + mid.b) / 3);
-            vga_color gray_c = {gray, gray, gray};
-            palette->colors[detail_start + idx].r = (uint8_t)((mid.r + gray_c.r) / 2);
-            palette->colors[detail_start + idx].g = (uint8_t)((mid.g + gray_c.g) / 2);
-            palette->colors[detail_start + idx].b = (uint8_t)((mid.b + gray_c.b) / 2);
+            oklab_color desat = {mid.L, mid.a * 0.5, mid.b * 0.5};
+            uint8_t r, g, b;
+            oklab_to_rgb(desat, &r, &g, &b);
+            palette->colors[detail_start + idx] = (vga_color){r, g, b};
             idx++;
         }
 
-        /* Heat: blend toward red/orange */
+        /* Heat: blend toward warm orange in oklab */
         {
-            vga_color heat = {255, 140, 0};
-            palette->colors[detail_start + idx].r = (uint8_t)(mid.r * 0.7f + heat.r * 0.3f);
-            palette->colors[detail_start + idx].g = (uint8_t)(mid.g * 0.7f + heat.g * 0.3f);
-            palette->colors[detail_start + idx].b = (uint8_t)(mid.b * 0.7f + heat.b * 0.3f);
+            oklab_color heat = rgb_to_oklab(255, 140, 0);
+            oklab_color blend = {mid.L * 0.7 + heat.L * 0.3,
+                                 mid.a * 0.7 + heat.a * 0.3,
+                                 mid.b * 0.7 + heat.b * 0.3};
+            uint8_t r, g, b;
+            oklab_to_rgb(blend, &r, &g, &b);
+            palette->colors[detail_start + idx] = (vga_color){r, g, b};
             idx++;
         }
 
-        /* Cold: blend toward blue */
+        /* Cold: blend toward blue in oklab */
         {
-            vga_color cold = {40, 80, 200};
-            palette->colors[detail_start + idx].r = (uint8_t)(mid.r * 0.7f + cold.r * 0.3f);
-            palette->colors[detail_start + idx].g = (uint8_t)(mid.g * 0.7f + cold.g * 0.3f);
-            palette->colors[detail_start + idx].b = (uint8_t)(mid.b * 0.7f + cold.b * 0.3f);
+            oklab_color cold = rgb_to_oklab(40, 80, 200);
+            oklab_color blend = {mid.L * 0.7 + cold.L * 0.3,
+                                 mid.a * 0.7 + cold.a * 0.3,
+                                 mid.b * 0.7 + cold.b * 0.3};
+            uint8_t r, g, b;
+            oklab_to_rgb(blend, &r, &g, &b);
+            palette->colors[detail_start + idx] = (vga_color){r, g, b};
             idx++;
         }
 
-        /* Accent from other channels */
+        /* Accent from other channels (oklab midpoint) */
         for(int other_offset = 1; other_offset <= 2; other_offset++) {
             int other = (ch + other_offset) % VGA_HAR_CHANNELS;
-            vga_color other_mid = {0, 0, 0};
+            oklab_color other_mid = {0, 0, 0};
             for(int i = 6; i < 11; i++) {
-                other_mid.r += channels[other][i].r;
-                other_mid.g += channels[other][i].g;
-                other_mid.b += channels[other][i].b;
+                oklab_color c = rgb_to_oklab(channels[other][i].r, channels[other][i].g, channels[other][i].b);
+                other_mid.L += c.L; other_mid.a += c.a; other_mid.b += c.b;
             }
-            other_mid.r /= 5;
-            other_mid.g /= 5;
-            other_mid.b /= 5;
-            palette->colors[detail_start + idx].r = (uint8_t)((mid.r + other_mid.r) / 2);
-            palette->colors[detail_start + idx].g = (uint8_t)((mid.g + other_mid.g) / 2);
-            palette->colors[detail_start + idx].b = (uint8_t)((mid.b + other_mid.b) / 2);
+            other_mid.L /= 5; other_mid.a /= 5; other_mid.b /= 5;
+            oklab_color blend = {(mid.L + other_mid.L) * 0.5,
+                                 (mid.a + other_mid.a) * 0.5,
+                                 (mid.b + other_mid.b) * 0.5};
+            uint8_t r, g, b;
+            oklab_to_rgb(blend, &r, &g, &b);
+            palette->colors[detail_start + idx] = (vga_color){r, g, b};
             idx++;
         }
 
-        /* Channel 0 gets one extra: dark accent */
+        /* Channel 0 gets one extra: dark accent (reduce L by 40%) */
         if(ch == 0) {
-            palette->colors[detail_start + idx].r = (uint8_t)(mid.r * 0.6f);
-            palette->colors[detail_start + idx].g = (uint8_t)(mid.g * 0.6f);
-            palette->colors[detail_start + idx].b = (uint8_t)(mid.b * 0.6f);
+            oklab_color dark = {mid.L * 0.6, mid.a * 0.6, mid.b * 0.6};
+            uint8_t r, g, b;
+            oklab_to_rgb(dark, &r, &g, &b);
+            palette->colors[detail_start + idx] = (vga_color){r, g, b};
             idx++;
         }
     }

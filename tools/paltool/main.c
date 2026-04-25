@@ -9,7 +9,8 @@
  * 5. Output: 256-entry palette = 96 expanded_common + 64 custom + 84 BK common + 12 ext_common.
  */
 
-#include "oklab.h"
+#include "video/vga_common_colors.h"
+#include "utils/oklab.h"
 #include "formats/bk.h"
 #include "formats/error.h"
 #include "utils/path.h"
@@ -132,39 +133,9 @@ int main(int argc, char *argv[]) {
         vga_pal.colors[i].b = 255;
     }
 
-    // Extended common colors (static, same as vga_state_init)
-    static const vga_color ext_common[12] = {
-        {40, 28, 16}, {72, 48, 28}, {105, 72, 44}, {140, 97, 60},
-        {93, 0, 48}, {157, 24, 85}, {214, 60, 133}, {255, 121, 186},
-        {8, 40, 16}, {24, 76, 32}, {48, 113, 56}, {80, 153, 85},
-    };
-    memcpy(&vga_pal.colors[VGA_EXT_COMMON_START], ext_common, sizeof(ext_common));
-
-    // Expanded common colors (static, same as vga_state_init)
-    static const vga_color ext_expanded_common[96] = {
-        {0, 93, 0}, {0, 125, 0}, {0, 157, 0}, {0, 190, 0}, {0, 222, 0}, {0, 239, 0}, {0, 206, 0},
-        {0, 0, 93}, {0, 0, 125}, {0, 0, 157}, {0, 0, 190}, {0, 0, 222}, {0, 0, 239}, {0, 0, 206},
-        {93, 0, 0}, {125, 0, 0}, {157, 0, 0}, {190, 0, 0}, {222, 0, 0}, {239, 0, 0}, {206, 0, 0},
-        {75, 0, 93}, {101, 0, 125}, {125, 0, 157}, {147, 0, 190}, {168, 0, 222}, {186, 0, 239}, {157, 0, 206},
-        {107, 121, 125}, {129, 145, 149}, {151, 168, 172}, {172, 190, 194}, {192, 214, 218}, {212, 238, 243}, {168, 186, 190},
-        {77, 75, 4}, {109, 103, 12}, {141, 129, 24}, {174, 156, 42}, {206, 182, 62}, {239, 208, 87}, {168, 151, 39},
-        {16, 105, 125}, {36, 131, 149}, {60, 160, 172}, {89, 186, 194}, {123, 212, 218}, {164, 241, 243}, {83, 182, 190},
-        {115, 87, 56}, {143, 107, 70}, {172, 127, 85}, {200, 147, 101}, {220, 172, 125}, {238, 210, 166}, {195, 144, 98},
-        {206, 89, 12}, {224, 121, 34}, {242, 153, 56},
-        {255, 220, 0}, {255, 235, 0}, {255, 245, 0},
-        {255, 250, 32}, {255, 255, 80}, {255, 255, 133},
-        {178, 125, 80}, {210, 157, 105}, {235, 190, 140}, {252, 226, 182},
-        {255, 153, 202}, {255, 182, 218}, {255, 210, 232}, {255, 234, 246},
-        {113, 190, 117}, {153, 222, 153}, {190, 240, 190}, {222, 250, 222},
-        {157, 157, 0}, {198, 198, 0}, {238, 238, 0}, {255, 255, 60},
-        {206, 89, 12}, {242, 153, 56},
-        {48, 85, 190}, {105, 150, 232},
-        {16, 113, 32}, {36, 157, 52}, {64, 198, 80}, {105, 230, 117},
-        {72, 105, 68}, {117, 153, 109},
-        {133, 190, 16}, {182, 230, 60},
-        {56, 72, 28}, {80, 97, 40}, {109, 125, 56},
-    };
-    memcpy(&vga_pal.colors[VGA_EXT_EXPANDED_COMMON_START], ext_expanded_common, sizeof(ext_expanded_common));
+    // Extended and expanded common colors from shared definition
+    memcpy(&vga_pal.colors[VGA_EXT_COMMON_START], vga_ext_common, sizeof(vga_ext_common));
+    memcpy(&vga_pal.colors[VGA_EXT_EXPANDED_COMMON_START], vga_ext_expanded_common, sizeof(vga_ext_expanded_common));
 
     // ========================================================================
     // Step 1: Build fixed reference set (192 colors, never merge)
@@ -182,11 +153,11 @@ int main(int argc, char *argv[]) {
     }
     // Ext common (12)
     for(int i = 0; i < 12; i++) {
-        ref[ref_count++] = rgb_to_oklab(ext_common[i].r, ext_common[i].g, ext_common[i].b);
+        ref[ref_count++] = rgb_to_oklab(vga_ext_common[i].r, vga_ext_common[i].g, vga_ext_common[i].b);
     }
     // Expanded common (96)
     for(int i = 0; i < 96; i++) {
-        ref[ref_count++] = rgb_to_oklab(ext_expanded_common[i].r, ext_expanded_common[i].g, ext_expanded_common[i].b);
+        ref[ref_count++] = rgb_to_oklab(vga_ext_expanded_common[i].r, vga_ext_expanded_common[i].g, vga_ext_expanded_common[i].b);
     }
     if(vflag) fprintf(stderr, "Fixed reference: %d colors (84 BK common + 12 ext + 96 expanded)\n", ref_count);
 
@@ -324,7 +295,7 @@ int main(int argc, char *argv[]) {
 
     // Expanded common (96)
     for(int i = 0; i < 96; i++) {
-        out_pal[oi++] = ext_expanded_common[i];
+        out_pal[oi++] = vga_ext_expanded_common[i];
     }
     // Custom slot (64)
     for(int i = 0; i < custom_count && i < SLOT_SIZE; i++) {
@@ -341,7 +312,7 @@ int main(int argc, char *argv[]) {
     }
     // Ext common (12)
     for(int i = 0; i < 12; i++) {
-        out_pal[oi++] = ext_common[i];
+        out_pal[oi++] = vga_ext_common[i];
     }
     // Fill remaining with black
     while(oi < 256) {
