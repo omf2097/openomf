@@ -27,18 +27,22 @@ bool lab_dash_main_photo_select(component *c, void *userdata) {
 
 bool lab_dash_main_photo_left(component *c, void *userdata) {
     dashboard_widgets *dw = userdata;
+    game_player *p1 = game_state_get_player(dw->scene->gs, 0);
     portrait_prev(dw->photo[0]);
     dw->pilot->photo_id = portrait_selected(dw->photo[0]);
-    portrait_load(dw->pilot->photo, &dw->pilot->palette, dw->pilot->photo_id);
+    portrait_load_with_slot(dw->pilot->photo, &dw->pilot->palette, dw->pilot->photo_id, 0,
+        p1->chr ? p1->chr->portrait_custom : NULL);
     palette_load_player_colors(&dw->pilot->palette, 0);
     return true;
 }
 
 bool lab_dash_main_photo_right(component *c, void *userdata) {
     dashboard_widgets *dw = userdata;
+    game_player *p1 = game_state_get_player(dw->scene->gs, 0);
     portrait_next(dw->photo[0]);
     dw->pilot->photo_id = portrait_selected(dw->photo[0]);
-    portrait_load(dw->pilot->photo, &dw->pilot->palette, dw->pilot->photo_id);
+    portrait_load_with_slot(dw->pilot->photo, &dw->pilot->palette, dw->pilot->photo_id, 0,
+        p1->chr ? p1->chr->portrait_custom : NULL);
     palette_load_player_colors(&dw->pilot->palette, 0);
     return true;
 }
@@ -364,7 +368,8 @@ component *lab_dash_main_create(scene *s, dashboard_widgets *dw) {
         sd_sprite_create(dw->pilot->photo);
         log_debug("selecting default pilot photo");
         dw->pilot->photo_id = portrait_selected(dw->photo[0]);
-        portrait_load(dw->pilot->photo, &dw->pilot->palette, 0);
+        portrait_load_with_slot(dw->pilot->photo, &dw->pilot->palette, 0, 0,
+            p1->chr ? p1->chr->portrait_custom : NULL);
     }
 
     palette_load_player_colors(&dw->pilot->palette, 0);

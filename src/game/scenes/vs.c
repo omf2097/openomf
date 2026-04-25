@@ -589,6 +589,7 @@ int vs_create(scene *scene) {
             sprite *sp = omf_calloc(1, sizeof(sprite));
             sprite_create(sp, player1->pilot->photo, -1, vga_extended_palette_get_sprite_remap(SPRITE_REMAP_PORTRAIT_1));
 #ifdef USE_EXTENDED_PALETTE
+            log_debug("VS: loading portrait custom colors from chr (photo_id=%d)", player1->chr->pilot.photo_id);
             for(int c = 0; c < 64; c++) {
                 vga_state_set_base_palette_index(0x2ac + c, &player1->chr->portrait_custom[c]);
             }

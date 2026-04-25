@@ -60,7 +60,7 @@ int portrait_load(sd_sprite *s, vga_palette *pal, int pilot_id);
  * @param slot_index Portrait slot (0-4) for extended palette remapping
  * @return Zero on success, non-zero on failure
  */
-int portrait_load_with_slot(sd_sprite *s, vga_palette *pal, int pilot_id, int slot_index);
+int portrait_load_with_slot(sd_sprite *s, vga_palette *pal, int pilot_id, int slot_index, vga_color portrait_custom_out[64]);
 
 /**
  * @brief Select the next portrait

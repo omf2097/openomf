@@ -34,10 +34,10 @@ static void portrait_free(component *c) {
 }
 
 int portrait_load(sd_sprite *s, vga_palette *pal, int pilot_id) {
-    return portrait_load_with_slot(s, pal, pilot_id, 0);
+    return portrait_load_with_slot(s, pal, pilot_id, 0, NULL);
 }
 
-int portrait_load_with_slot(sd_sprite *s, vga_palette *pal, int pilot_id, int slot_index) {
+int portrait_load_with_slot(sd_sprite *s, vga_palette *pal, int pilot_id, int slot_index, vga_color portrait_custom_out[64]) {
     const path filename = get_resource_filename(get_resource_file(PIC_PLAYERS));
 
     // Load PIC file and make a surface
@@ -70,6 +70,11 @@ int portrait_load_with_slot(sd_sprite *s, vga_palette *pal, int pilot_id, int sl
         vga_state_set_base_palette_index(0x2ac + (slot_index * 64) + c, &photo->portrait_custom[c]);
     }
 
+    // Copy custom colors to output buffer for caller to persist (e.g. in chr->portrait_custom)
+    if(portrait_custom_out) {
+        memcpy(portrait_custom_out, photo->portrait_custom, 64 * sizeof(vga_color));
+    }
+
     // Free pics
     sd_pic_free(&pics);
 
@@ -93,7 +98,7 @@ void portrait_select_with_slot(component *c, int pilot_id, int slot_index) {
     sd_sprite spr;
     sd_sprite_create(&spr);
     vga_palette pal;
-    portrait_load_with_slot(&spr, &pal, pilot_id, slot_index);
+    portrait_load_with_slot(&spr, &pal, pilot_id, slot_index, NULL);
 
     int sprite_remap_type = SPRITE_REMAP_PORTRAIT_1 + slot_index;
     const vga_remap_table *remap = vga_extended_palette_get_sprite_remap(sprite_remap_type);
