@@ -22,6 +22,69 @@
 #include "utils/log.h"
 #include "utils/random.h"
 
+// CHR photo sprite format extension:
+// Original DOS format: len(u16) + pos_x(i16) + ...
+// Extended format:    len_lo(u16, bit15=1) + len_hi(u16) + pos_x(i16) + ...
+// The high bit of the first uword signals that a second uword follows,
+// giving 31 bits of length (15 + 16). Original DOS sprites always have
+// len < 32768, so bit 15 is 0 and they read as before.
+
+#define CHR_SPRITE_LEN_EXTENDED 0x8000
+
+static int chr_sprite_load(sd_reader *r, sd_sprite *sprite) {
+    uint16_t len_lo = sd_read_uword(r);
+    if(len_lo & CHR_SPRITE_LEN_EXTENDED) {
+        sprite->len = (len_lo & 0x7FFF) | ((uint32_t)sd_read_uword(r) << 15);
+    } else {
+        sprite->len = len_lo;
+    }
+    sprite->pos_x = sd_read_word(r);
+    sprite->pos_y = sd_read_word(r);
+    sprite->width = sd_read_uword(r);
+    sprite->height = sd_read_uword(r);
+    sprite->render_height = sprite->height;
+    sprite->render_width = sprite->width;
+    sprite->index = sd_read_ubyte(r);
+    sprite->missing = sd_read_ubyte(r);
+
+    // Copy sprite data, if there is any.
+    if(sprite->missing == 0 && sprite->len != 0) {
+        sprite->data = omf_calloc(1, sprite->len);
+        sd_read_buf(r, sprite->data, sprite->len);
+    } else {
+        sprite->data = NULL;
+    }
+
+    if(!sd_reader_ok(r)) {
+        return SD_FILE_PARSE_ERROR;
+    }
+    return SD_SUCCESS;
+}
+
+static int chr_sprite_save(sd_writer *w, const sd_sprite *sprite) {
+    if(w == NULL || sprite == NULL) {
+        return SD_INVALID_INPUT;
+    }
+    if(sprite->len >= 0x8000) {
+        // Extended format: split 32-bit len across two uwords
+        sd_write_uword(w, (sprite->len & 0x7FFF) | CHR_SPRITE_LEN_EXTENDED);
+        sd_write_uword(w, (uint16_t)(sprite->len >> 15));
+    } else {
+        // Standard format: single uword (backward compatible)
+        sd_write_uword(w, (uint16_t)sprite->len);
+    }
+    sd_write_word(w, sprite->pos_x);
+    sd_write_word(w, sprite->pos_y);
+    sd_write_uword(w, sprite->width);
+    sd_write_uword(w, sprite->height);
+    sd_write_ubyte(w, sprite->index);
+    sd_write_ubyte(w, sprite->missing);
+    if(!sprite->missing) {
+        sd_write_buf(w, sprite->data, sprite->len);
+    }
+    return SD_SUCCESS;
+}
+
 int sd_chr_create(sd_chr_file *chr) {
     if(chr == NULL) {
         return SD_INVALID_INPUT;
@@ -210,7 +273,7 @@ int sd_chr_load(sd_chr_file *chr, const path *filename) {
     // Load sprite
     chr->photo = omf_calloc(1, sizeof(sd_sprite));
     sd_sprite_create(chr->photo);
-    if(sd_sprite_load(r, chr->photo) != SD_SUCCESS) {
+    if(chr_sprite_load(r, chr->photo) != SD_SUCCESS) {
         goto error_1;
     }
 
@@ -296,7 +359,7 @@ int sd_chr_save(sd_chr_file *chr, const path *filename) {
     chr->photo->width--;
     chr->photo->height--;
 
-    if(SD_SUCCESS != sd_sprite_save(w, chr->photo)) {
+    if(SD_SUCCESS != chr_sprite_save(w, chr->photo)) {
         return SD_FILE_WRITE_ERROR;
     }
     chr->photo->width++;
