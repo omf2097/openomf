@@ -30,6 +30,8 @@ bool lab_dash_main_photo_left(component *c, void *userdata) {
     game_player *p1 = game_state_get_player(dw->scene->gs, 0);
     portrait_prev(dw->photo[0]);
     dw->pilot->photo_id = portrait_selected(dw->photo[0]);
+    log_debug("photo_left: p1->chr=%p, portrait_custom output=%p", (void*)p1->chr,
+              p1->chr ? (void*)p1->chr->portrait_custom : NULL);
     portrait_load_with_slot(dw->pilot->photo, &dw->pilot->palette, dw->pilot->photo_id, 0,
         p1->chr ? p1->chr->portrait_custom : NULL);
     palette_load_player_colors(&dw->pilot->palette, 0);
@@ -41,6 +43,8 @@ bool lab_dash_main_photo_right(component *c, void *userdata) {
     game_player *p1 = game_state_get_player(dw->scene->gs, 0);
     portrait_next(dw->photo[0]);
     dw->pilot->photo_id = portrait_selected(dw->photo[0]);
+    log_debug("photo_right: p1->chr=%p, portrait_custom output=%p", (void*)p1->chr,
+              p1->chr ? (void*)p1->chr->portrait_custom : NULL);
     portrait_load_with_slot(dw->pilot->photo, &dw->pilot->palette, dw->pilot->photo_id, 0,
         p1->chr ? p1->chr->portrait_custom : NULL);
     palette_load_player_colors(&dw->pilot->palette, 0);

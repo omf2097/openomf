@@ -38,6 +38,7 @@ int portrait_load(sd_sprite *s, vga_palette *pal, int pilot_id) {
 }
 
 int portrait_load_with_slot(sd_sprite *s, vga_palette *pal, int pilot_id, int slot_index, vga_color portrait_custom_out[64]) {
+    log_debug("portrait_load_with_slot: pilot_id=%d slot=%d output=%p", pilot_id, slot_index, (void*)portrait_custom_out);
     const path filename = get_resource_filename(get_resource_file(PIC_PLAYERS));
 
     // Load PIC file and make a surface
