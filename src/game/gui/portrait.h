@@ -85,6 +85,6 @@ int portrait_selected(component *c);
  * @param c Portrait component to modify
  * @param spr Sprite to display
  */
-void portrait_set_from_sprite(component *c, sd_sprite *spr);
+void portrait_set_from_sprite(component *c, sd_sprite *spr, int slot_index);
 
 #endif // PORTRAIT_H

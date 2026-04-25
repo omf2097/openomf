@@ -98,8 +98,8 @@ void portrait_select_with_slot(component *c, int pilot_id, int slot_index) {
     sprite_create(local->img, &spr, -1);
     sd_sprite_free(&spr);
 
-    // Set the portrait remap on the surface so the atlas remaps
-    // indexes 0x60-0x9F to the correct slot zone at upload time
+    // Remap portrait pixel indices into extended palette zones.
+    // Must happen before first render to avoid showing un-remapped indices.
     int sprite_remap_type = SPRITE_REMAP_PORTRAIT_1 + slot_index;
     const vga_remap_table *remap = vga_extended_palette_get_sprite_remap(sprite_remap_type);
     if(remap && local->img->data) {
@@ -138,7 +138,7 @@ int portrait_selected(component *c) {
     return local->selected;
 }
 
-void portrait_set_from_sprite(component *c, sd_sprite *spr) {
+void portrait_set_from_sprite(component *c, sd_sprite *spr, int slot_index) {
     portrait *local = widget_get_obj(c);
     // Free old image
     if(local->img != NULL) {
@@ -149,6 +149,16 @@ void portrait_set_from_sprite(component *c, sd_sprite *spr) {
     local->img = omf_calloc(1, sizeof(sprite));
 
     sprite_create(local->img, spr, -1);
+
+#ifdef USE_EXTENDED_PALETTE
+    // Remap portrait pixel indices into extended palette zones.
+    int sprite_remap_type = SPRITE_REMAP_PORTRAIT_1 + slot_index;
+    const vga_remap_table *remap = vga_extended_palette_get_sprite_remap(sprite_remap_type);
+    if(remap && local->img->data) {
+        surface_set_remap(local->img->data, remap);
+    }
+#endif
+
     component_set_size_hints(c, local->img->data->w, local->img->data->h);
 }
 
