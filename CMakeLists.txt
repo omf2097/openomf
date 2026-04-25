@@ -333,6 +333,7 @@ if (USE_TOOLS)
     add_executable(fonttool tools/fonttool/main.c)
     add_executable(setuptool tools/setuptool/main.c tools/shared/pilot.c)
     add_executable(stringparser tools/stringparser/main.c)
+    add_executable(paltool tools/paltool/main.c)
 
     list(APPEND TOOL_TARGET_NAMES
         bktool
@@ -349,6 +350,7 @@ if (USE_TOOLS)
         chrtool
         setuptool
         stringparser
+        paltool
     )
     message(STATUS "Development: CLI tools enabled")
 else()

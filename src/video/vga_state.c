@@ -7,6 +7,7 @@
 
 #include "game/game_state.h"
 #include "utils/png_writer.h"
+#include "video/vga_extended_palette.h"
 #include <assert.h>
 
 #define MAX_TRANSFORMER_COUNT 8 ///< Maximum number of palette transformers per frame
@@ -42,6 +43,71 @@ void vga_state_init(void) {
     damage_reset(&state.dmg_base);
     damage_reset(&state.dmg_previous);
     damage_reset(&state.dmg_current);
+
+#ifdef USE_EXTENDED_PALETTE
+    // Fill extended palette zones with magenta so uninitialized indices
+    // are immediately visible instead of invisible black.
+    static const vga_color magenta = {255, 0, 255};
+    for(int i = VGA_EXT_COMMON_START; i < VGA_PALETTE_SIZE; i++) {
+        state.base.colors[i] = magenta;
+    }
+
+    // Extended common colors: static, same for all scenes.
+    // Written once at init; never changes.
+    static const vga_color ext_common[12] = {
+        {40, 28, 16}, {72, 48, 28}, {105, 72, 44}, {140, 97, 60},
+        {93, 0, 48}, {157, 24, 85}, {214, 60, 133}, {255, 121, 186},
+        {8, 40, 16}, {24, 76, 32}, {48, 113, 56}, {80, 153, 85},
+    };
+    memcpy(&state.base.colors[VGA_EXT_COMMON_START], ext_common, sizeof(ext_common));
+
+    // Expanded common colors: static, same for all scenes.
+    // 56 slide midpoints + 40 new color families = 96 total.
+    static const vga_color ext_expanded_common[96] = {
+        /* Green midpoints (0x24C-0x252) */
+        {0, 93, 0}, {0, 125, 0}, {0, 157, 0}, {0, 190, 0}, {0, 222, 0}, {0, 239, 0}, {0, 206, 0},
+        /* Royal Blue midpoints (0x253-0x259) */
+        {0, 0, 93}, {0, 0, 125}, {0, 0, 157}, {0, 0, 190}, {0, 0, 222}, {0, 0, 239}, {0, 0, 206},
+        /* Red midpoints (0x25A-0x260) */
+        {93, 0, 0}, {125, 0, 0}, {157, 0, 0}, {190, 0, 0}, {222, 0, 0}, {239, 0, 0}, {206, 0, 0},
+        /* Purple midpoints (0x261-0x267) */
+        {75, 0, 93}, {101, 0, 125}, {125, 0, 157}, {147, 0, 190}, {168, 0, 222}, {186, 0, 239}, {157, 0, 206},
+        /* Steel Blue midpoints (0x268-0x26E) */
+        {107, 121, 125}, {129, 145, 149}, {151, 168, 172}, {172, 190, 194}, {192, 214, 218}, {212, 238, 243}, {168, 186, 190},
+        /* Gold midpoints (0x26F-0x275) */
+        {77, 75, 4}, {109, 103, 12}, {141, 129, 24}, {174, 156, 42}, {206, 182, 62}, {239, 208, 87}, {168, 151, 39},
+        /* Light Blue midpoints (0x276-0x27C) */
+        {16, 105, 125}, {36, 131, 149}, {60, 160, 172}, {89, 186, 194}, {123, 212, 218}, {164, 241, 243}, {83, 182, 190},
+        /* Skin Tones midpoints (0x27D-0x283) */
+        {115, 87, 56}, {143, 107, 70}, {172, 127, 85}, {200, 147, 101}, {220, 172, 125}, {238, 210, 166}, {195, 144, 98},
+        /* Orange-Yellow midpoints (3) */
+        {206, 89, 12}, {224, 121, 34}, {242, 153, 56},
+        /* Yellow extension (6) */
+        {255, 220, 0}, {255, 235, 0}, {255, 245, 0},
+        {255, 250, 32}, {255, 255, 80}, {255, 255, 133},
+        /* Brown lighter (4) */
+        {178, 125, 80}, {210, 157, 105}, {235, 190, 140}, {252, 226, 182},
+        /* Pink lighter (4) */
+        {255, 153, 202}, {255, 182, 218}, {255, 210, 232}, {255, 234, 246},
+        /* Forest Green lighter (4) */
+        {113, 190, 117}, {153, 222, 153}, {190, 240, 190}, {222, 250, 222},
+        /* Proper Yellow (4) */
+        {157, 157, 0}, {198, 198, 0}, {238, 238, 0}, {255, 255, 60},
+        /* Orange (2) */
+        {206, 89, 12}, {242, 153, 56},
+        /* Mid/Sky Blue (2) */
+        {48, 85, 190}, {105, 150, 232},
+        /* Emerald/Grass Green (4) */
+        {16, 113, 32}, {36, 157, 52}, {64, 198, 80}, {105, 230, 117},
+        /* Sage/Muted Green (2) */
+        {72, 105, 68}, {117, 153, 109},
+        /* Lime/Chartreuse (2) */
+        {133, 190, 16}, {182, 230, 60},
+        /* Olive (3) */
+        {56, 72, 28}, {80, 97, 40}, {109, 125, 56},
+    };
+    memcpy(&state.base.colors[VGA_EXT_EXPANDED_COMMON_START], ext_expanded_common, sizeof(ext_expanded_common));
+#endif
 }
 
 void vga_state_close(void) {
@@ -135,7 +201,14 @@ void vga_state_set_remaps_from(const vga_remap_tables *src) {
 
 void vga_state_set_base_palette_from(const vga_palette *src) {
     assert(src != NULL);
+#ifdef USE_EXTENDED_PALETTE
+    // Only copy base palette range (0-255). Preserve extended range (256-1023)
+    // which was set during vga_state_init and may have been updated by
+    // vga_extended_palette_load_mod_colors etc.
+    memcpy(&state.base.colors[0], &src->colors[0], 256 * sizeof(vga_color));
+#else
     memcpy(&state.base, src, sizeof(vga_palette));
+#endif
     damage_set_all(&state.dmg_base);
 }
 
@@ -154,6 +227,11 @@ void vga_state_set_base_palette_index(vga_index index, const vga_color *color) {
     assert(index >= 0 && index < VGA_PALETTE_SIZE);
     state.base.colors[index] = *color;
     damage_add_range(&state.dmg_base, index, index + 1);
+}
+
+const vga_color *vga_state_get_base_palette_color(vga_index index) {
+    assert(index >= 0 && index < VGA_PALETTE_SIZE);
+    return &state.base.colors[index];
 }
 
 void vga_state_set_base_palette_range(vga_index start, vga_index count, vga_color *src_colors) {
@@ -191,9 +269,22 @@ void vga_state_enable_palette_transform(vga_palette_transform transform_callback
  * @param filename Output file path
  */
 void vga_state_debug_screenshot(const path *filename) {
+#ifdef USE_EXTENDED_PALETTE
+    // Dump all 1024 palette entries as a 32x32 RGB grid
+    // Each pixel shows the actual color at that palette index
+    unsigned char rgb[32 * 32 * 3];
+    // Dump state.base instead of state.current to check if base is correct
+    for(int i = 0; i < 1024; i++) {
+        rgb[i * 3 + 0] = state.base.colors[i].r;
+        rgb[i * 3 + 1] = state.base.colors[i].g;
+        rgb[i * 3 + 2] = state.base.colors[i].b;
+    }
+    write_rgb_png(filename, 32, 32, rgb, false, false);
+#else
     unsigned char img[256];
     for(int i = 0; i < 256; i++) {
         img[i] = i;
     }
     write_paletted_png(filename, 16, 16, &state.current, img);
+#endif
 }

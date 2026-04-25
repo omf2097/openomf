@@ -23,6 +23,9 @@
 #include "game/objects/har.h"
 #include "game/objects/hazard.h"
 #include "game/objects/scrap.h"
+#ifdef USE_EXTENDED_PALETTE
+#include "video/vga_extended_palette.h"
+#endif
 #include "game/protos/object.h"
 #include "game/scenes/arena.h"
 #include "game/scenes/mechlab/har_economy.h"
@@ -1800,6 +1803,13 @@ int arena_create(scene *scene) {
             omf_free(obj);
             return 1;
         }
+
+#ifdef USE_EXTENDED_PALETTE
+        // Update HAR sprite remaps for this player slot.
+        // animation_create defaults HAR sprites to P1 remap;
+        // this corrects P2 sprites after slot assignment.
+        vga_extended_palette_set_har_sprite_remaps(scene->af_data[i], i);
+#endif
 
         object_create(obj, scene->gs, pos[i], vec2f_create(0, 0));
         if(har_create(obj, scene->af_data[i], dir[i], player->pilot->har_id, player->pilot->pilot_id, i)) {

@@ -10,6 +10,9 @@
 #include "utils/path.h"
 #include "utils/vec.h"
 #include "video/vga_state.h"
+#ifdef USE_EXTENDED_PALETTE
+#include "video/vga_extended_palette.h"
+#endif
 #include "video/video.h"
 #include <stdlib.h>
 
@@ -75,6 +78,12 @@ int scene_create(scene *scene, game_state *gs, int scene_id) {
     // Set base palette
     vga_state_set_base_palette_from(bk_get_palette(scene->bk_data, 0));
     vga_state_set_remaps_from(bk_get_remaps(scene->bk_data, 0));
+
+#ifdef USE_EXTENDED_PALETTE
+    // Build sprite-type remap tables for extended palette.
+    // These are used when uploading mod sprites to the atlas.
+    vga_extended_palette_init_sprite_remaps();
+#endif
 
     // Set menu colors to the correct position
     palette_set_menu_colors();

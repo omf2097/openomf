@@ -9,6 +9,8 @@
 #include "utils/allocator.h"
 #include "utils/log.h"
 #include "video/video.h"
+#include "video/vga_extended_palette.h"
+#include "video/vga_state.h"
 
 // Local small gauge type
 typedef struct portrait {
@@ -32,6 +34,10 @@ static void portrait_free(component *c) {
 }
 
 int portrait_load(sd_sprite *s, vga_palette *pal, int pilot_id) {
+    return portrait_load_with_slot(s, pal, pilot_id, 0);
+}
+
+int portrait_load_with_slot(sd_sprite *s, vga_palette *pal, int pilot_id, int slot_index) {
     const path filename = get_resource_filename(get_resource_file(PIC_PLAYERS));
 
     // Load PIC file and make a surface
@@ -51,7 +57,19 @@ int portrait_load(sd_sprite *s, vga_palette *pal, int pilot_id) {
     // Create new
     const sd_pic_photo *photo = sd_pic_get(&pics, pilot_id);
     sd_sprite_copy(s, photo->sprite);
+
+    // For mod portraits, overwrite the first 48 expanded common entries
+    // with the portrait's own base colors from the PIC file. This way
+    // the remap sends 0x00-0x2F to 0x24C+ where the portrait's colors are.
+    // For original portraits, the sprite doesn't reference 0x00-0x2F
+    // (illegal indices), so the hardcoded expanded common colors are fine.
     palette_copy(pal, &photo->pal, 0, 48);
+
+    // Copy custom portrait colors into extended palette at the selected slot
+    for(int c = 0; c < 64; c++) {
+        vga_state_set_base_palette_index(0x2ac + (slot_index * 64) + c, &photo->portrait_custom[c]);
+    }
+
     // Free pics
     sd_pic_free(&pics);
 
@@ -59,6 +77,10 @@ int portrait_load(sd_sprite *s, vga_palette *pal, int pilot_id) {
 }
 
 void portrait_select(component *c, int pilot_id) {
+    portrait_select_with_slot(c, pilot_id, 0);
+}
+
+void portrait_select_with_slot(component *c, int pilot_id, int slot_index) {
     portrait *local = widget_get_obj(c);
 
     // Free old image
@@ -71,10 +93,18 @@ void portrait_select(component *c, int pilot_id) {
     sd_sprite spr;
     sd_sprite_create(&spr);
     vga_palette pal;
-    portrait_load(&spr, &pal, pilot_id);
+    portrait_load_with_slot(&spr, &pal, pilot_id, slot_index);
 
     sprite_create(local->img, &spr, -1);
     sd_sprite_free(&spr);
+
+    // Set the portrait remap on the surface so the atlas remaps
+    // indexes 0x60-0x9F to the correct slot zone at upload time
+    int sprite_remap_type = SPRITE_REMAP_PORTRAIT_1 + slot_index;
+    const vga_remap_table *remap = vga_extended_palette_get_sprite_remap(sprite_remap_type);
+    if(remap && local->img->data) {
+        surface_set_remap(local->img->data, remap);
+    }
 
     // Position and size hints for the gui component
     // These are set on layout function call

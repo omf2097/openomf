@@ -78,8 +78,34 @@ bool atlas_get(texture_atlas *atlas, const surface *surface, uint16_t *x, uint16
     }
 
     // If item is NOT in the texture atlas, add it now.
+#ifdef USE_EXTENDED_PALETTE
+    // When the surface has a remap table, apply it to redirect palette indices
+    // into extended zones (256-1023) for mod sprites.
+    const vga_remap_table *remap = surface->remap;
+    const vga_pixel *data;
+    vga_pixel *buf = NULL;
+    if(remap != NULL) {
+        int pixels = surface->w * surface->h;
+        buf = omf_malloc(pixels * sizeof(vga_pixel));
+        for(int i = 0; i < pixels; i++) {
+            buf[i] = remap->data[surface->data[i]];
+        }
+        data = buf;
+        fprintf(stderr, "ATLAS REMAP: surface guid=%u, %d pixels, first pixel: %d -> %d\n",
+                surface->guid, pixels, surface->data[0], buf[0]);
+    } else {
+        data = surface->data;
+    }
+#else
+    const vga_pixel *data = surface->data;
+#endif
+
     uint16_t nx, ny;
-    if(atlas_insert(atlas, surface->data, surface->w, surface->h, &nx, &ny)) {
+    bool ok = atlas_insert(atlas, data, surface->w, surface->h, &nx, &ny);
+#ifdef USE_EXTENDED_PALETTE
+    omf_free(buf);
+#endif
+    if(ok) {
         *x = nx;
         *y = ny;
         *w = surface->w;
