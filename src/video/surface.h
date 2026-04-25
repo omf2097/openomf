@@ -14,7 +14,6 @@ typedef struct surface {
     int render_h;
     int transparent;
 vga_pixel *data;
-    const vga_remap_table *remap; ///< Optional remap for extended palette (NULL for original sprites)
 } surface;
 
 enum

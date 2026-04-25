@@ -15,9 +15,6 @@ void surface_create(surface *sur, int w, int h) {
     sur->render_w = w;
     sur->render_h = h;
     sur->transparent = 0;
-#ifdef USE_EXTENDED_PALETTE
-    sur->remap = NULL;
-#endif
 }
 
 void surface_create_from_data(surface *sur, int w, int h, const unsigned char *src) {
@@ -80,17 +77,15 @@ void surface_set_transparency(surface *sur, int index) {
 
 void surface_set_remap(surface *sur, const vga_remap_table *remap) {
 #ifdef USE_EXTENDED_PALETTE
-    if(sur->remap != remap) {
-        int pixels = sur->w * sur->h;
-        for(int i = 0; i < pixels; i++) {
-            if(remap->data[sur->data[i]] != sur->data[i]) {
-                printf("remapping %d to %d\n", sur->data[i], remap->data[sur->data[i]]);
-                sur->data[i] = remap->data[sur->data[i]];
-            }
+    int pixels = sur->w * sur->h;
+    for(int i = 0; i < pixels; i++) {
+        vga_pixel src = sur->data[i];
+        vga_pixel dst = remap->data[src];
+        if(dst != src) {
+            sur->data[i] = dst;
         }
-        sur->remap = remap;
-        sur->guid = guid++; // Invalidate atlas cache
     }
+    sur->guid = guid++; // Invalidate atlas cache
 #endif
 }
 
