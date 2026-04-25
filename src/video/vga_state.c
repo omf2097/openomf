@@ -155,6 +155,11 @@ void vga_state_set_base_palette_from(const vga_palette *src) {
     // which was set during vga_state_init and may have been updated by
     // vga_extended_palette_load_mod_colors etc.
     memcpy(&state.base.colors[0], &src->colors[0], 256 * sizeof(vga_color));
+    // Re-populate extended/expanded common colors on every scene change.
+    // These are static and never change, but other code paths may overwrite
+    // the extended range, so we refresh them here.
+    memcpy(&state.base.colors[VGA_EXT_COMMON_START], vga_ext_common, sizeof(vga_ext_common));
+    memcpy(&state.base.colors[VGA_EXT_EXPANDED_COMMON_START], vga_ext_expanded_common, sizeof(vga_ext_expanded_common));
 #else
     memcpy(&state.base, src, sizeof(vga_palette));
 #endif
