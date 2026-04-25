@@ -138,7 +138,7 @@ int portrait_selected(component *c) {
     return local->selected;
 }
 
-void portrait_set_from_sprite(component *c, sd_sprite *spr, int slot_index) {
+void portrait_set_from_sprite(component *c, sd_sprite *spr, int slot_index, const vga_color *portrait_custom) {
     portrait *local = widget_get_obj(c);
     // Free old image
     if(local->img != NULL) {
@@ -156,6 +156,12 @@ void portrait_set_from_sprite(component *c, sd_sprite *spr, int slot_index) {
     const vga_remap_table *remap = vga_extended_palette_get_sprite_remap(sprite_remap_type);
     if(remap && local->img->data) {
         surface_set_remap(local->img->data, remap);
+    }
+    // Copy custom portrait colors into extended palette at the selected slot
+    if(portrait_custom) {
+        for(int c = 0; c < 64; c++) {
+            vga_state_set_base_palette_index(0x2ac + (slot_index * 64) + c, &portrait_custom[c]);
+        }
     }
 #endif
 

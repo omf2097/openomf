@@ -294,7 +294,19 @@ int sd_chr_load(sd_chr_file *chr, const path *filename) {
         chr->pilot.sex = photo->sex;
         chr->pilot.photo->render_width = photo->sprite->render_width;
         chr->pilot.photo->render_height = photo->sprite->render_height;
+        memcpy(chr->portrait_custom, photo->portrait_custom, sizeof(chr->portrait_custom));
         sd_pic_free(&players);
+    }
+
+    // Load portrait custom colors from CHR file if present (appended after sprite).
+    // These override the PIC file defaults when the mod isn't active.
+    long remaining = sd_reader_filesize(r) - sd_reader_pos(r);
+    if(remaining >= 64 * 3) {
+        for(int c = 0; c < 64; c++) {
+            chr->portrait_custom[c].r = sd_read_ubyte(r);
+            chr->portrait_custom[c].g = sd_read_ubyte(r);
+            chr->portrait_custom[c].b = sd_read_ubyte(r);
+        }
     }
 
     // Load colors from other files
@@ -364,6 +376,15 @@ int sd_chr_save(sd_chr_file *chr, const path *filename) {
     }
     chr->photo->width++;
     chr->photo->height++;
+
+    // Save portrait custom colors (64 entries for 0x60-0x9F range)
+    // These are needed to correctly display mod portraits when the mod
+    // isn't active. Written as 64 * 3 bytes (RGB, no padding).
+    for(int c = 0; c < 64; c++) {
+        sd_write_ubyte(w, chr->portrait_custom[c].r);
+        sd_write_ubyte(w, chr->portrait_custom[c].g);
+        sd_write_ubyte(w, chr->portrait_custom[c].b);
+    }
 
     // Close & return
     sd_writer_close(w);

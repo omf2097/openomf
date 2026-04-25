@@ -10,6 +10,7 @@
 #ifndef PORTRAIT_H
 #define PORTRAIT_H
 
+#include "formats/palette.h"
 #include "formats/sprite.h"
 #include "game/gui/component.h"
 
@@ -85,6 +86,6 @@ int portrait_selected(component *c);
  * @param c Portrait component to modify
  * @param spr Sprite to display
  */
-void portrait_set_from_sprite(component *c, sd_sprite *spr, int slot_index);
+void portrait_set_from_sprite(component *c, sd_sprite *spr, int slot_index, const vga_color *portrait_custom);
 
 #endif // PORTRAIT_H
