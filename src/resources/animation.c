@@ -58,7 +58,7 @@ void animation_create(animation_source type, str *name, animation *ani, array *s
             vga_palette *mod_pal = NULL;
             int sprite_remap_type = 0;
             if(modmanager_get_sprite_with_palette(type, name, ani->id, i, &sp, &mod_pal, &sprite_remap, &sprite_remap_type)) {
-                sprite_create(tmp_sprite, (void *)sp, i);
+                sprite_create(tmp_sprite, (void *)sp, i, NULL);
                 tmp_sprite->data->render_w = sdani->sprites[i]->width;
                 tmp_sprite->data->render_h = sdani->sprites[i]->height;
                 tmp_sprite->pos.x = sdani->sprites[i]->pos_x;
@@ -71,7 +71,7 @@ void animation_create(animation_source type, str *name, animation *ani, array *s
                 }
 #endif
             } else {
-                sprite_create(tmp_sprite, (void *)sdani->sprites[i], i);
+                sprite_create(tmp_sprite, (void *)sdani->sprites[i], i, NULL);
             }
             sprite_reference spr;
             spr.sprite = tmp_sprite;

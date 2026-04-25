@@ -3,6 +3,9 @@
 #include "game/game_state.h"
 #include "game/gui/dialog.h"
 #include "game/gui/menu_background.h"
+#include "game/gui/portrait.h"
+#include "video/vga_extended_palette.h"
+#include "video/vga_state.h"
 #include "game/gui/text/text.h"
 #include "game/protos/scene.h"
 #include "game/scenes/mechlab/lab_menu_customize.h"
@@ -584,7 +587,12 @@ int vs_create(scene *scene) {
         if(player1->chr) {
             object_set_sprite_override(player1_portrait, 1);
             sprite *sp = omf_calloc(1, sizeof(sprite));
-            sprite_create(sp, player1->chr->photo, -1);
+            sprite_create(sp, player1->chr->photo, -1, vga_extended_palette_get_sprite_remap(SPRITE_REMAP_PORTRAIT_1));
+#ifdef USE_EXTENDED_PALETTE
+            for(int c = 0; c < 64; c++) {
+                vga_state_set_base_palette_index(0x2ac + c, &player1->chr->portrait_custom[c]);
+            }
+#endif
             object_set_animation(player1_portrait, create_animation_from_single(sp, vec2i_create(0, 0)));
             object_set_animation_owner(player1_portrait, OWNER_OBJECT);
             player1_portrait->cur_sprite_id = 0;
@@ -600,7 +608,7 @@ int vs_create(scene *scene) {
         if(player1->chr) {
             object_set_sprite_override(player2_portrait, 1);
             sprite *sp = omf_calloc(1, sizeof(sprite));
-            sprite_create(sp, player2->pilot->photo, -1);
+            sprite_create(sp, player2->pilot->photo, -1, vga_extended_palette_get_sprite_remap(SPRITE_REMAP_PORTRAIT_2));
             object_set_animation(player2_portrait, create_animation_from_single(sp, vec2i_create(0, 0)));
             object_set_animation_owner(player2_portrait, OWNER_OBJECT);
             player2_portrait->cur_sprite_id = 0;

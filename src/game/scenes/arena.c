@@ -16,6 +16,7 @@
 #include "game/gui/gui_frame.h"
 #include "game/gui/label.h"
 #include "game/gui/menu.h"
+#include "game/gui/portrait.h"
 #include "game/gui/progressbar.h"
 #include "game/gui/textslider.h"
 #include "game/gui/widget.h"
@@ -25,6 +26,7 @@
 #include "game/objects/scrap.h"
 #ifdef USE_EXTENDED_PALETTE
 #include "video/vga_extended_palette.h"
+#include "video/vga_state.h"
 #endif
 #include "game/protos/object.h"
 #include "game/scenes/arena.h"
@@ -1834,7 +1836,14 @@ int arena_create(scene *scene) {
             if(i == 0) {
                 object_create(portrait, scene->gs, vec2i_create(107, 5), vec2f_create(0, 0));
                 sprite *sp = omf_calloc(1, sizeof(sprite));
-                sprite_create(sp, player->pilot->photo, -1);
+                sprite_create(sp, player->pilot->photo, -1, vga_extended_palette_get_sprite_remap(SPRITE_REMAP_PORTRAIT_1 + i));
+#ifdef USE_EXTENDED_PALETTE
+                if(player->chr) {
+                    for(int c = 0; c < 64; c++) {
+                        vga_state_set_base_palette_index(0x2ac + (i * 64) + c, &player->chr->portrait_custom[c]);
+                    }
+                }
+#endif
                 portrait->x_percent = 0.70f;
                 portrait->y_percent = 0.70f;
                 object_set_sprite_override(portrait, 1);
@@ -1845,7 +1854,14 @@ int arena_create(scene *scene) {
             } else {
                 object_create(portrait, scene->gs, vec2i_create(235, 5), vec2f_create(0, 0));
                 sprite *sp = omf_calloc(1, sizeof(sprite));
-                sprite_create(sp, player->pilot->photo, -1);
+                sprite_create(sp, player->pilot->photo, -1, vga_extended_palette_get_sprite_remap(SPRITE_REMAP_PORTRAIT_1 + i));
+#ifdef USE_EXTENDED_PALETTE
+                if(player->chr) {
+                    for(int c = 0; c < 64; c++) {
+                        vga_state_set_base_palette_index(0x2ac + (i * 64) + c, &player->chr->portrait_custom[c]);
+                    }
+                }
+#endif
                 portrait->x_percent = 0.70f;
                 portrait->y_percent = 0.70f;
                 object_set_sprite_override(portrait, 1);

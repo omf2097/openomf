@@ -95,16 +95,10 @@ void portrait_select_with_slot(component *c, int pilot_id, int slot_index) {
     vga_palette pal;
     portrait_load_with_slot(&spr, &pal, pilot_id, slot_index);
 
-    sprite_create(local->img, &spr, -1);
-    sd_sprite_free(&spr);
-
-    // Remap portrait pixel indices into extended palette zones.
-    // Must happen before first render to avoid showing un-remapped indices.
     int sprite_remap_type = SPRITE_REMAP_PORTRAIT_1 + slot_index;
     const vga_remap_table *remap = vga_extended_palette_get_sprite_remap(sprite_remap_type);
-    if(remap && local->img->data) {
-        surface_set_remap(local->img->data, remap);
-    }
+    sprite_create(local->img, &spr, -1, remap);
+    sd_sprite_free(&spr);
 
     // Position and size hints for the gui component
     // These are set on layout function call
@@ -148,15 +142,11 @@ void portrait_set_from_sprite(component *c, sd_sprite *spr, int slot_index, cons
 
     local->img = omf_calloc(1, sizeof(sprite));
 
-    sprite_create(local->img, spr, -1);
-
-#ifdef USE_EXTENDED_PALETTE
-    // Remap portrait pixel indices into extended palette zones.
     int sprite_remap_type = SPRITE_REMAP_PORTRAIT_1 + slot_index;
     const vga_remap_table *remap = vga_extended_palette_get_sprite_remap(sprite_remap_type);
-    if(remap && local->img->data) {
-        surface_set_remap(local->img->data, remap);
-    }
+    sprite_create(local->img, spr, -1, remap);
+
+#ifdef USE_EXTENDED_PALETTE
     // Copy custom portrait colors into extended palette at the selected slot
     if(portrait_custom) {
         for(int c = 0; c < 64; c++) {
@@ -164,7 +154,6 @@ void portrait_set_from_sprite(component *c, sd_sprite *spr, int slot_index, cons
         }
     }
 #endif
-
     component_set_size_hints(c, local->img->data->w, local->img->data->h);
 }
 

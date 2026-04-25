@@ -9,7 +9,7 @@ void sprite_create_custom(sprite *sp, vec2i pos, surface *data) {
     sp->data = data;
 }
 
-void sprite_create(sprite *sp, void *src, int id) {
+void sprite_create(sprite *sp, void *src, int id, const vga_remap_table *remap) {
     sd_sprite *sdsprite = (sd_sprite *)src;
     sp->id = id;
     sp->pos = vec2i_create(sdsprite->pos_x, sdsprite->pos_y);
@@ -29,6 +29,14 @@ void sprite_create(sprite *sp, void *src, int id) {
     sp->data->render_w = sdsprite->render_width;
     sp->data->render_h = sdsprite->render_height;
     sd_vga_image_free(&raw);
+
+#ifdef USE_EXTENDED_PALETTE
+    if(remap && sp->data) {
+        surface_set_remap(sp->data, remap);
+    }
+#else
+    (void)remap;
+#endif
 }
 
 void sprite_create_reference(sprite *sp, void *src, int id, void *data) {

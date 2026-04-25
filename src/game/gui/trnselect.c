@@ -83,7 +83,7 @@ void trnselect_next(component *c) {
     vga_state_set_base_palette_from_range(&trn->pal, 128, 128, 40);
     load_description(&local->label, component_get_theme(c), trn->locales[0]);
     sprite_free(local->img);
-    sprite_create(local->img, logo, -1);
+    sprite_create(local->img, logo, -1, NULL);
 }
 
 void trnselect_prev(component *c) {
@@ -100,7 +100,7 @@ void trnselect_prev(component *c) {
     vga_state_set_base_palette_from_range(&trn->pal, 128, 128, 40);
     load_description(&local->label, component_get_theme(c), trn->locales[0]);
     sprite_free(local->img);
-    sprite_create(local->img, logo, -1);
+    sprite_create(local->img, logo, -1, NULL);
 }
 
 sd_tournament_file *trnselect_selected(component *c) {
@@ -124,7 +124,7 @@ static void trnselect_init(component *c, const gui_theme *theme) {
     vga_state_set_base_palette_from_range(&trn->pal, 128, 128, 40);
     load_description(&local->label, theme, trn->locales[0]);
 
-    sprite_create(local->img, logo, -1);
+    sprite_create(local->img, logo, -1, NULL);
 }
 
 component *trnselect_create(void) {
