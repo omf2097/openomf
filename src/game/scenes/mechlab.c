@@ -345,11 +345,24 @@ void mechlab_tick(scene *scene, int paused) {
             memcpy(&player1->chr->pilot, player1->pilot, sizeof(sd_pilot));
             sd_chr_from_trn(player1->chr, trn, player1->pilot);
 
+            // Preserve portrait custom colors from the old CHR (populated by
+            // portrait_load_with_slot during mechlab navigation). Without this,
+            // the new CHR has zeroed portrait_custom which gets saved and then
+            // overrides the PIC data on reload.
+            if(oldchr) {
+                memcpy(player1->chr->portrait_custom, oldchr->portrait_custom, sizeof(player1->chr->portrait_custom));
+            }
+
             if(oldchr) {
                 if(player1->pilot != &oldchr->pilot) {
                     sd_sprite_free(player1->pilot->photo);
                     omf_free(player1->pilot->photo);
                 } else {
+                    // The new chr's pilot.photo points to the same sprite as
+                    // oldchr->pilot.photo (copied by memcpy above). Null it in
+                    // oldchr so sd_chr_free doesn't double-free the sprite.
+                    oldchr->pilot.photo = NULL;
+                    oldchr->photo = NULL;
                     player1->pilot = NULL;
                 }
                 sd_chr_free(oldchr);

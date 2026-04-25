@@ -301,16 +301,28 @@ int sd_chr_load(sd_chr_file *chr, const path *filename) {
     }
 
     // Load portrait custom colors from CHR file if present (appended after sprite).
-    // These override the PIC file defaults when the mod isn't active.
+    // Only override the PIC defaults if the file data is non-zero.
+    // Zero data means the CHR was saved before portrait_custom support,
+    // or the portrait has no custom colors — the PIC data is authoritative.
     long remaining = sd_reader_filesize(r) - sd_reader_pos(r);
     if(remaining >= 64 * 3) {
+        vga_color file_custom[64];
+        bool has_custom = false;
         for(int c = 0; c < 64; c++) {
-            chr->portrait_custom[c].r = sd_read_ubyte(r);
-            chr->portrait_custom[c].g = sd_read_ubyte(r);
-            chr->portrait_custom[c].b = sd_read_ubyte(r);
+            file_custom[c].r = sd_read_ubyte(r);
+            file_custom[c].g = sd_read_ubyte(r);
+            file_custom[c].b = sd_read_ubyte(r);
+            if(file_custom[c].r || file_custom[c].g || file_custom[c].b) {
+                has_custom = true;
+            }
         }
-        log_debug("CHR load from file: portrait_custom[0]=%d/%d/%d (overrode PIC)",
-                  chr->portrait_custom[0].r, chr->portrait_custom[0].g, chr->portrait_custom[0].b);
+        if(has_custom) {
+            memcpy(chr->portrait_custom, file_custom, sizeof(file_custom));
+            log_debug("CHR load from file: portrait_custom[0]=%d/%d/%d (overrode PIC)",
+                      chr->portrait_custom[0].r, chr->portrait_custom[0].g, chr->portrait_custom[0].b);
+        } else {
+            log_debug("CHR load from file: portrait_custom all zero, keeping PIC data");
+        }
     }
 
     // Load colors from other files
