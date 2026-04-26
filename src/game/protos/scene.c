@@ -83,6 +83,15 @@ int scene_create(scene *scene, game_state *gs, int scene_id) {
     // Build sprite-type remap tables for extended palette.
     // These are used when uploading mod sprites to the atlas.
     vga_extended_palette_init_sprite_remaps();
+
+    // Load mod background colors into extended palette.
+    // Must happen AFTER vga_state_set_base_palette_from, which
+    // initializes the extended range. The BK palette patching
+    // (base palette 0x60-0x9F) was done in bk_create.
+    if(scene->bk_data->mod_pal) {
+        vga_extended_palette_load_mod_colors(scene->bk_data->mod_pal,
+                                             scene->bk_data->mod_sprite_type);
+    }
 #endif
 
     // Set menu colors to the correct position

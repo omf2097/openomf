@@ -19,35 +19,12 @@ void bk_create(bk *b, void *src, str *name) {
     vga_palette *mod_pal = NULL;
     const vga_remap_table *mod_remap = NULL;
     int mod_sprite_type = 0;
-    if(modmanager_get_bk_background(name, &img, &mod_pal, &mod_remap, &mod_sprite_type)) {
+    bool has_mod_background = modmanager_get_bk_background(name, &img, &mod_pal, &mod_remap, &mod_sprite_type);
+    if(has_mod_background) {
         log_info("using modified BK background");
         surface_create_from_vga(&b->background, img);
         b->background.render_w = 320;
         b->background.render_h = 200;
-#ifdef USE_EXTENDED_PALETTE
-        // Patch the BK palette with mod background colors.
-        // HAR indices (0x01-0x5F) remap to scene extended (0x1EC-0x24B) in 1024 palette.
-        // Background colors (0x60-0x9F) stay at identity in the base palette.
-        // Locked zones: 0x00 (transparent), 0xA0-0xF3 (portrait common), 0xF4-0xFF (ext common).
-        if(mod_pal) {
-            vga_palette *bk_pal = (vga_palette *)vector_get(&b->palettes, 0);
-            if(bk_pal) {
-                // Copy 0x60-0x9F at identity (background colors stay in base palette)
-                for(int i = 0x60; i <= 0x9F; i++) {
-                    bk_pal->colors[i] = mod_pal->colors[i];
-                }
-                // Copy 0xF4-0xF9 if not locked by scene type
-                for(int i = 0xF4; i <= 0xF9; i++) {
-                    bk_pal->colors[i] = mod_pal->colors[i];
-                }
-            }
-            // Load mod colors into extended palette zones.
-            // vga_extended_palette_load_mod_colors walks the scene remap table:
-            // 0x01-0x5F → 0x1EC-0x24B (scene extended), 0xF4-0xFF → 0x100-0x10B (ext common).
-            // Static zones (ext common, expanded common) are skipped.
-            vga_extended_palette_load_mod_colors(mod_pal, mod_sprite_type);
-        }
-#endif
     } else {
         surface_create_from_vga(&b->background, sdbk->background);
     }
@@ -62,6 +39,27 @@ void bk_create(bk *b, void *src, str *name) {
         vector_append(&b->palettes, (vga_palette *)sdbk->palettes[i]);
         vector_append(&b->remaps, (vga_remap_tables *)sdbk->remaps[i]);
     }
+
+#ifdef USE_EXTENDED_PALETTE
+    // Store mod palette for later loading in scene_create,
+    // after vga_state_set_base_palette_from has initialized the extended range.
+    // Patch base palette with background colors (0x60-0x9F at identity).
+    // Must happen AFTER palettes are copied from BK file above.
+    if(has_mod_background && mod_pal) {
+        b->mod_pal = mod_pal;
+        b->mod_sprite_type = mod_sprite_type;
+
+        vga_palette *bk_pal = (vga_palette *)vector_get(&b->palettes, 0);
+        if(bk_pal) {
+            for(int i = 0x60; i <= 0x9F; i++) {
+                bk_pal->colors[i] = mod_pal->colors[i];
+            }
+            for(int i = 0xF4; i <= 0xF9; i++) {
+                bk_pal->colors[i] = mod_pal->colors[i];
+            }
+        }
+    }
+#endif
 
     // Array for sprites, since we know we will fill most slots.
     array_create(&b->sprites);
