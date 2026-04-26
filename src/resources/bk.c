@@ -25,6 +25,13 @@ void bk_create(bk *b, void *src, str *name) {
         surface_create_from_vga(&b->background, img);
         b->background.render_w = 320;
         b->background.render_h = 200;
+#ifdef USE_EXTENDED_PALETTE
+        // Apply scene remap to rewrite HAR indices (0x01-0x5F) in pixel data
+        // to their 1024-space targets (0x1EC-0x24B).
+        if(mod_remap) {
+            surface_set_remap(&b->background, mod_remap);
+        }
+#endif
     } else {
         surface_create_from_vga(&b->background, sdbk->background);
     }
