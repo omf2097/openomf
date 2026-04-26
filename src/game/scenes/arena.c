@@ -27,7 +27,6 @@
 #ifdef USE_EXTENDED_PALETTE
 #include "video/vga_extended_palette.h"
 #include "video/vga_state.h"
-#include "video/surface.h"
 #endif
 #include "game/protos/object.h"
 #include "game/scenes/arena.h"
@@ -1839,80 +1838,10 @@ int arena_create(scene *scene) {
                 sprite *sp = omf_calloc(1, sizeof(sprite));
                 sprite_create(sp, player->pilot->photo, -1, vga_extended_palette_get_sprite_remap(SPRITE_REMAP_PORTRAIT_1 + i));
 #ifdef USE_EXTENDED_PALETTE
-                // Dump pixel index histogram for portrait sprite
-                if(sp->data) {
-                    int hist[1024] = {0};
-                    int total = sp->data->w * sp->data->h;
-                    for(int p = 0; p < total; p++) {
-                        uint16_t val = ((uint16_t*)sp->data->data)[p];
-                        if(val < 1024) hist[val]++;
-                    }
-                    log_debug("ARENA: portrait %d pixel histogram (non-zero indices):", i);
-                    for(int idx = 0; idx < 1024; idx++) {
-                        if(hist[idx] > 0) {
-                            log_debug("  idx 0x%x: %d pixels", idx, hist[idx]);
-                        }
-                    }
-                }
-                // Test card: 16x16 surface with all 256 indices, apply portrait remap, dump results
-                {
-                    surface testcard;
-                    unsigned char src_data[256];
-                    for(int idx = 0; idx < 256; idx++) src_data[idx] = idx;
-                    surface_create_from_data(&testcard, 16, 16, src_data);
-                    const vga_remap_table *r = vga_extended_palette_get_sprite_remap(SPRITE_REMAP_PORTRAIT_1 + i);
-                    if(r) surface_set_remap(&testcard, r);
-                    log_debug("ARENA: TEST CARD portrait %d remap results:", i);
-                    for(int row = 0; row < 16; row++) {
-                        log_debug("  row %2d: %3d %3d %3d %3d %3d %3d %3d %3d %3d %3d %3d %3d %3d %3d %3d %3d",
-                                  row,
-                                  testcard.data[row*16+0], testcard.data[row*16+1],
-                                  testcard.data[row*16+2], testcard.data[row*16+3],
-                                  testcard.data[row*16+4], testcard.data[row*16+5],
-                                  testcard.data[row*16+6], testcard.data[row*16+7],
-                                  testcard.data[row*16+8], testcard.data[row*16+9],
-                                  testcard.data[row*16+10], testcard.data[row*16+11],
-                                  testcard.data[row*16+12], testcard.data[row*16+13],
-                                  testcard.data[row*16+14], testcard.data[row*16+15]);
-                    }
-                    surface_free(&testcard);
-                }
                 if(player->chr) {
-                    log_debug("ARENA: loading portrait custom colors for player %d (custom[0]=%d/%d/%d)",
-                              i, player->chr->portrait_custom[0].r, player->chr->portrait_custom[0].g,
-                              player->chr->portrait_custom[0].b);
                     for(int c = 0; c < 64; c++) {
                         vga_state_set_base_palette_index(0x2ac + (i * 64) + c, &player->chr->portrait_custom[c]);
                     }
-                    // Verify palette was written
-                    const vga_color *verify = vga_state_get_base_palette_color(0x2ac + (i * 64));
-                    log_debug("ARENA: verify palette at 0x%x=%d/%d/%d", 0x2ac + (i * 64),
-                              verify->r, verify->g, verify->b);
-                    // Dump remap table for portrait type
-                    {
-                        const vga_remap_table *r = vga_extended_palette_get_sprite_remap(SPRITE_REMAP_PORTRAIT_1 + i);
-                        if(r) {
-                            log_debug("ARENA: portrait %d remap 0xF4-0xFF: %d/%d/%d/%d/%d/%d/%d/%d/%d/%d/%d/%d",
-                                      i, r->data[0xF4], r->data[0xF5], r->data[0xF6], r->data[0xF7],
-                                      r->data[0xF8], r->data[0xF9], r->data[0xFA], r->data[0xFB],
-                                      r->data[0xFC], r->data[0xFD], r->data[0xFE], r->data[0xFF]);
-                            log_debug("ARENA: portrait %d remap key indices: 0x01=%d 0x5F=%d 0x60=%d 0x80=%d 0x90=%d 0x9F=%d 0xA0=%d 0xF3=%d",
-                                      i, r->data[0x01], r->data[0x5F], r->data[0x60], r->data[0x80],
-                                      r->data[0x90], r->data[0x9F], r->data[0xA0], r->data[0xF3]);
-                        }
-                        // Dump expanded common zone (first 4 entries)
-                        for(int z = 0; z < 4; z++) {
-                            const vga_color *c = vga_state_get_base_palette_color(0x24C + z);
-                            log_debug("ARENA: expanded_common[%d]@0x%x=%d/%d/%d", z, 0x24C+z, c->r, c->g, c->b);
-                        }
-                        // Dump extended common zone (first 4 entries)
-                        for(int z = 0; z < 4; z++) {
-                            const vga_color *c = vga_state_get_base_palette_color(0x100 + z);
-                            log_debug("ARENA: ext_common[%d]@0x%x=%d/%d/%d", z, 0x100+z, c->r, c->g, c->b);
-                        }
-                    }
-                } else {
-                    log_debug("ARENA: player %d has no chr, skipping portrait custom colors", i);
                 }
 #endif
                 portrait->x_percent = 0.70f;
@@ -1928,18 +1857,9 @@ int arena_create(scene *scene) {
                 sprite_create(sp, player->pilot->photo, -1, vga_extended_palette_get_sprite_remap(SPRITE_REMAP_PORTRAIT_1 + i));
 #ifdef USE_EXTENDED_PALETTE
                 if(player->chr) {
-                    log_debug("ARENA: loading portrait custom colors for player %d (custom[0]=%d/%d/%d)",
-                              i, player->chr->portrait_custom[0].r, player->chr->portrait_custom[0].g,
-                              player->chr->portrait_custom[0].b);
                     for(int c = 0; c < 64; c++) {
                         vga_state_set_base_palette_index(0x2ac + (i * 64) + c, &player->chr->portrait_custom[c]);
                     }
-                    // Verify palette was written
-                    const vga_color *verify = vga_state_get_base_palette_color(0x2ac + (i * 64));
-                    log_debug("ARENA: verify palette at 0x%x=%d/%d/%d", 0x2ac + (i * 64),
-                              verify->r, verify->g, verify->b);
-                } else {
-                    log_debug("ARENA: player %d has no chr, skipping portrait custom colors", i);
                 }
 #endif
                 portrait->x_percent = 0.70f;
