@@ -634,6 +634,53 @@ void bk_getinfo(sd_bk_file *bk) {
     printf("|\n");
 }
 
+// Palette dump and histogram --------------------------------------------
+
+void bk_palette_dump(sd_bk_file *bk) {
+    printf("Palettes: %d\n", bk->palette_count);
+    for(int p = 0; p < bk->palette_count; p++) {
+        vga_palette *pal = sd_bk_get_palette(bk, p);
+        if(!pal) continue;
+        printf("=== Palette %d ===\n", p);
+        for(int i = 0; i < 256; i++) {
+            printf("%3d (0x%02X): %3u %3u %3u\n", i, i, pal->colors[i].r, pal->colors[i].g, pal->colors[i].b);
+        }
+    }
+}
+
+void bk_histogram(sd_bk_file *bk) {
+    int hist[256] = {0};
+    int total_pixels = 0;
+    int sprite_count = 0;
+
+    for(int a = 0; a < 50; a++) {
+        if(!bk->anims[a]) continue;
+        sd_animation *ani = bk->anims[a]->animation;
+        for(int s = 0; s < ani->sprite_count; s++) {
+            if(!ani->sprites[s]) continue;
+            sd_sprite *sp = ani->sprites[s];
+            if(sp->width == 0 || sp->height == 0) continue;
+            sd_vga_image img;
+            if(sd_sprite_vga_decode(&img, sp) == SD_SUCCESS) {
+                sprite_count++;
+                for(int p = 0; p < (int)(img.w * img.h); p++) {
+                    unsigned char idx = (unsigned char)img.data[p];
+                    hist[idx]++;
+                    total_pixels++;
+                }
+                sd_vga_image_free(&img);
+            }
+        }
+    }
+
+    printf("Palette index usage histogram (%d sprites, %d total pixels):\n", sprite_count, total_pixels);
+    for(int i = 0; i < 256; i++) {
+        if(hist[i] > 0) {
+            printf("  %3d (0x%02X): %8d pixels\n", i, i, hist[i]);
+        }
+    }
+}
+
 // Main --------------------------------------------------------------
 
 int main(int argc, char *argv[]) {
@@ -656,9 +703,12 @@ int main(int argc, char *argv[]) {
     struct arg_file *import = arg_file0(NULL, "import", "<file>", "Imports data from a file (requires --key)");
     struct arg_int *scale = arg_int0(NULL, "scale", "<factor>", "Scales sprites (requires --play)");
     struct arg_lit *parse = arg_lit0(NULL, "parse", "Parse value (requires --key)");
+    struct arg_lit *palette_dump = arg_lit0(NULL, "palette-dump", "Dump all palettes in human-readable format");
+    struct arg_lit *palette_histogram = arg_lit0(NULL, "palette-histogram", "Show palette index usage histogram for all sprites");
     struct arg_end *end = arg_end(30);
     void *argtable[] = {help,  vers, file, new,    output, anim, all_anims, sprite, keylist, key,
-                        value, push, pop,  export, import, play, scale,     parse,  end};
+                        value, push, pop,  export, import, play, scale,     parse,
+                        palette_dump, palette_histogram, end};
     const char *progname = "bktool";
 
     // Make sure everything got allocated
@@ -870,6 +920,10 @@ int main(int argc, char *argv[]) {
                 }
             }
         }
+    } else if(palette_dump->count > 0) {
+        bk_palette_dump(&bk);
+    } else if(palette_histogram->count > 0) {
+        bk_histogram(&bk);
     } else if(new->count > 0) {
         printf("Creating a new BK structure.\n");
     } else {
