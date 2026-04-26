@@ -163,8 +163,14 @@ void vga_state_set_base_palette_from(const vga_palette *src) {
     }
 
     // Static extended zones
-    memcpy(&state.base.colors[VGA_EXT_COMMON_START], vga_ext_common, sizeof(vga_ext_common));
     memcpy(&state.base.colors[VGA_EXT_EXPANDED_COMMON_START], vga_ext_expanded_common, sizeof(vga_ext_expanded_common));
+
+    // Copy original 0xF4-0xFF palette values into extended common zone.
+    // The scene remap redirects 0xF4-0xFF to 0x100-0x10B, so the colors
+    // at those destinations must match the original palette. Without this,
+    // VS/MELEE sprites that use 0xF6, 0xFB, 0xFC render with wrong colors.
+    memcpy(&state.base.colors[VGA_EXT_COMMON_START], &src->colors[0xF4],
+           (0xFF - 0xF4 + 1) * sizeof(vga_color));
 #else
     memcpy(&state.base, src, sizeof(vga_palette));
 #endif

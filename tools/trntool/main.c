@@ -6,13 +6,44 @@
 
 #include "../shared/pilot.h"
 #include "formats/error.h"
+#include "formats/sprite.h"
 #include "formats/tournament.h"
+#include "formats/vga_image.h"
 #include "utils/c_array_util.h"
 #include <argtable3.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+void trn_histogram(sd_tournament_file *trn) {
+    int hist[256] = {0};
+    int total_pixels = 0;
+    int sprite_count = 0;
+
+    for(int i = 0; i < MAX_TRN_LOCALES; i++) {
+        if(!trn->locales[i] || !trn->locales[i]->logo) continue;
+        sd_sprite *sp = trn->locales[i]->logo;
+        if(sp->width == 0 || sp->height == 0) continue;
+        sd_vga_image img;
+        if(sd_sprite_vga_decode(&img, sp) == SD_SUCCESS) {
+            sprite_count++;
+            for(int p = 0; p < (int)(img.w * img.h); p++) {
+                unsigned char idx = (unsigned char)img.data[p];
+                hist[idx]++;
+                total_pixels++;
+            }
+            sd_vga_image_free(&img);
+        }
+    }
+
+    printf("Palette index usage histogram (%d sprites, %d total pixels):\n", sprite_count, total_pixels);
+    for(int i = 0; i < 256; i++) {
+        if(hist[i] > 0) {
+            printf("  %3d (0x%02X): %8d pixels\n", i, i, hist[i]);
+        }
+    }
+}
 
 const char *language_names[] = {"English", "German", "French",  "Spanish", "Mexican",
                                 "Italian", "Polish", "Russian", "Undef",   "Undef"};
@@ -64,8 +95,9 @@ int main(int argc, char *argv[]) {
     struct arg_int *pilot = arg_int0(NULL, "pilot", "<int>", "Only print pilot");
     struct arg_lit *info = arg_lit0(NULL, "info", "Only print tournament information");
     struct arg_file *output = arg_file0("o", "output", "<file>", "TRN output file");
+    struct arg_lit *palette_histogram = arg_lit0(NULL, "palette-histogram", "Show palette index usage histogram for all sprites");
     struct arg_end *end = arg_end(20);
-    void *argtable[] = {help, vers, file, output, locale, pilot, info, end};
+    void *argtable[] = {help, vers, file, output, locale, pilot, info, palette_histogram, end};
     const char *progname = "trntool";
 
     // Make sure everything got allocated
@@ -114,7 +146,9 @@ int main(int argc, char *argv[]) {
     }
 
     // Print requested stuff
-    if(locale->count > 0) {
+    if(palette_histogram->count > 0) {
+        trn_histogram(&trn);
+    } else if(locale->count > 0) {
         int locale_id = locale->ival[0];
         if(locale_id < 0 || locale_id >= MAX_TRN_LOCALES) {
             printf("Locale ID out of bounds!\n");
