@@ -235,7 +235,9 @@ const vga_remap_table *vga_extended_palette_get_sprite_remap(int sprite_type) {
 void vga_extended_palette_load_mod_colors(const vga_palette *mod_pal, int sprite_type) {
     /* Walk the sprite-type remap table. For each index that remaps
      * to an extended palette target (>255), copy the mod palette
-     * color at that index to the target position in the active palette. */
+     * color at that index to the target position in the active palette.
+     * Skip static zones (extended common, expanded common) — those
+     * are hardcoded and must not be overwritten by mod palettes. */
     const vga_remap_table *remap = vga_extended_palette_get_sprite_remap(sprite_type);
     if(remap == NULL || mod_pal == NULL) {
         return;
@@ -244,6 +246,13 @@ void vga_extended_palette_load_mod_colors(const vga_palette *mod_pal, int sprite
     for(int i = 0; i < 256; i++) {
         vga_index target = remap->data[i];
         if(target >= 256) {
+            // Skip static zones — these are set at init/scene-change and must not be clobbered
+            if(target >= VGA_EXT_COMMON_START && target <= VGA_EXT_COMMON_END) {
+                continue;
+            }
+            if(target >= VGA_EXT_EXPANDED_COMMON_START && target <= VGA_EXT_EXPANDED_COMMON_END) {
+                continue;
+            }
             vga_state_set_base_palette_index(target, &mod_pal->colors[i]);
         }
     }
