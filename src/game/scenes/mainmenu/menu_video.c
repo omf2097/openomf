@@ -169,8 +169,7 @@ void menu_video_done(component *c, void *u) {
                    v->fb_scale, v->scaling_mode);
         menu_set_submenu(c->parent, menu_video_confirm_create(s, &local->old_video_settings));
     } else if(local->old_video_settings.screen_w != v->screen_w || local->old_video_settings.screen_h != v->screen_h ||
-              local->old_video_settings.window_mode != v->window_mode ||
-              local->old_video_settings.vsync != v->vsync ||
+              local->old_video_settings.window_mode != v->window_mode || local->old_video_settings.vsync != v->vsync ||
               local->old_video_settings.aspect != v->aspect ||
               local->old_video_settings.framerate_limit != v->framerate_limit ||
               local->old_video_settings.fb_scale != v->fb_scale ||
@@ -305,10 +304,9 @@ component *menu_video_create(scene *s) {
     menu_attach(menu, textselector_create_bind_opts("ASPECT", "Video aspect ratio. Original game is 4:3.", NULL, NULL,
                                                     &setting->video.aspect, aspect_opts, 2));
     const char *window_mode_opts[] = {"OFF", "WINDOWED", "EXCLUSIVE"};
-    menu_attach(menu,
-                textselector_create_bind_opts("FS",
-                                              "OFF=windowed, WINDOWED=borderless fullscreen, EXCLUSIVE=true fullscreen.",
-                                              NULL, NULL, &setting->video.window_mode, window_mode_opts, 3));
+    menu_attach(menu, textselector_create_bind_opts(
+                          "FS", "OFF=windowed, WINDOWED=borderless fullscreen, EXCLUSIVE=true fullscreen.", NULL, NULL,
+                          &setting->video.window_mode, window_mode_opts, 3));
 
     // Done button
     menu_attach(menu, button_create("DONE", "Return to the main menu.", false, false, menu_video_done, s));
