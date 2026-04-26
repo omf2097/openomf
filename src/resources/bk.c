@@ -61,9 +61,6 @@ void bk_create(bk *b, void *src, str *name) {
             for(int i = 0x60; i <= 0x9F; i++) {
                 bk_pal->colors[i] = mod_pal->colors[i];
             }
-            for(int i = 0xF4; i <= 0xF9; i++) {
-                bk_pal->colors[i] = mod_pal->colors[i];
-            }
         }
     }
 #endif
