@@ -3,6 +3,9 @@
 #include "resources/modmanager.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
+#ifdef USE_EXTENDED_PALETTE
+#include "video/vga_extended_palette.h"
+#endif
 #include <string.h>
 
 void bk_create(bk *b, void *src, str *name) {
@@ -13,11 +16,35 @@ void bk_create(bk *b, void *src, str *name) {
 
     // Copy VGA image
     sd_vga_image *img;
-    if(modmanager_get_bk_background(name, &img)) {
+    vga_palette *mod_pal = NULL;
+    const vga_remap_table *mod_remap = NULL;
+    int mod_sprite_type = 0;
+    if(modmanager_get_bk_background(name, &img, &mod_pal, &mod_remap, &mod_sprite_type)) {
         log_info("using modified BK background");
         surface_create_from_vga(&b->background, img);
         b->background.render_w = 320;
         b->background.render_h = 200;
+#ifdef USE_EXTENDED_PALETTE
+        // Patch the BK palette with mod background colors.
+        // The mod background palette provides scene content colors (0x01-0x9F)
+        // and the BK file provides locked zones (0xA0-0xF3 portrait common, 0xF4-0xFF ext common).
+        // Copy mod palette colors into the base palette, respecting locked zones.
+        if(mod_pal) {
+            for(int i = 0; i < 256; i++) {
+                // Skip locked zones: 0x00 (transparent), 0xA0-0xF3 (portrait common), 0xF4-0xFF (ext common)
+                if(i == 0x00) continue;
+                if(i >= 0xA0 && i <= 0xF3) continue;
+                if(i >= 0xF4 && i <= 0xFF) continue;
+                // Copy mod color into BK palette
+                vga_palette *bk_pal = (vga_palette *)vector_get(&b->palettes, 0);
+                if(bk_pal) {
+                    bk_pal->colors[i] = mod_pal->colors[i];
+                }
+            }
+            // Load mod colors into extended palette zones
+            vga_extended_palette_load_mod_colors(mod_pal, mod_sprite_type);
+        }
+#endif
     } else {
         surface_create_from_vga(&b->background, sdbk->background);
     }

@@ -12,7 +12,8 @@ bool modmanager_init(void);
 void modmanager_shutdown(void);
 void modmanager_set_allowed(bool enabled);
 
-bool modmanager_get_bk_background(str *name, sd_vga_image **img);
+bool modmanager_get_bk_background(str *name, sd_vga_image **img, vga_palette **pal, const vga_remap_table **remap,
+                                   int *sprite_remap_type);
 bool modmanager_get_sprite(animation_source source, str *name, int animation, int frame, sd_sprite **spr);
 bool modmanager_get_sprite_with_palette(animation_source source, str *name, int animation, int frame, sd_sprite **spr,
                                          vga_palette **pal, const vga_remap_table **remap, int *sprite_remap_type);

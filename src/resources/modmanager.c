@@ -522,7 +522,11 @@ bool modmanager_init(void) {
     return true;
 }
 
-bool modmanager_get_bk_background(str *name, sd_vga_image **img) {
+bool modmanager_get_bk_background(str *name, sd_vga_image **img, vga_palette **pal,
+                                   const vga_remap_table **remap, int *sprite_remap_type) {
+    *remap = NULL;
+    *sprite_remap_type = 0;
+    *pal = NULL;
     str filename;
     str_from_format(&filename, "scenes/%s/background.png", str_c(name));
 
@@ -534,6 +538,14 @@ bool modmanager_get_bk_background(str *name, sd_vga_image **img) {
     if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&obuf, &len)) {
         assert(obuf->type == MOD_VGA_IMAGE);
         *img = &obuf->img;
+        *pal = obuf->pal;
+#ifdef USE_EXTENDED_PALETTE
+        // Backgrounds always use SPRITE_REMAP_SCENE.
+        // The scene remap redirects HAR zone (0x01-0x5F) to scene extended (0x1EC-0x24B)
+        // and UI zone (0xF4-0xFF) to extended common (0x100-0x10B).
+        *remap = vga_extended_palette_get_sprite_remap(SPRITE_REMAP_SCENE);
+        *sprite_remap_type = SPRITE_REMAP_SCENE;
+#endif
         log_info("got vga image %dx%d with size %d", (*img)->w, (*img)->h, len);
         found = true;
     }
