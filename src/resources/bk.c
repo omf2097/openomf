@@ -26,22 +26,25 @@ void bk_create(bk *b, void *src, str *name) {
         b->background.render_h = 200;
 #ifdef USE_EXTENDED_PALETTE
         // Patch the BK palette with mod background colors.
-        // The mod background palette provides scene content colors (0x01-0x9F)
-        // and the BK file provides locked zones (0xA0-0xF3 portrait common, 0xF4-0xFF ext common).
-        // Copy mod palette colors into the base palette, respecting locked zones.
+        // HAR indices (0x01-0x5F) remap to scene extended (0x1EC-0x24B) in 1024 palette.
+        // Background colors (0x60-0x9F) stay at identity in the base palette.
+        // Locked zones: 0x00 (transparent), 0xA0-0xF3 (portrait common), 0xF4-0xFF (ext common).
         if(mod_pal) {
-            for(int i = 0; i < 256; i++) {
-                // Skip locked zones: 0x00 (transparent), 0xA0-0xF3 (portrait common), 0xF4-0xFF (ext common)
-                if(i == 0x00) continue;
-                if(i >= 0xA0 && i <= 0xF3) continue;
-                if(i >= 0xF4 && i <= 0xFF) continue;
-                // Copy mod color into BK palette
-                vga_palette *bk_pal = (vga_palette *)vector_get(&b->palettes, 0);
-                if(bk_pal) {
+            vga_palette *bk_pal = (vga_palette *)vector_get(&b->palettes, 0);
+            if(bk_pal) {
+                // Copy 0x60-0x9F at identity (background colors stay in base palette)
+                for(int i = 0x60; i <= 0x9F; i++) {
+                    bk_pal->colors[i] = mod_pal->colors[i];
+                }
+                // Copy 0xF4-0xF9 if not locked by scene type
+                for(int i = 0xF4; i <= 0xF9; i++) {
                     bk_pal->colors[i] = mod_pal->colors[i];
                 }
             }
-            // Load mod colors into extended palette zones
+            // Load mod colors into extended palette zones.
+            // vga_extended_palette_load_mod_colors walks the scene remap table:
+            // 0x01-0x5F → 0x1EC-0x24B (scene extended), 0xF4-0xFF → 0x100-0x10B (ext common).
+            // Static zones (ext common, expanded common) are skipped.
             vga_extended_palette_load_mod_colors(mod_pal, mod_sprite_type);
         }
 #endif
