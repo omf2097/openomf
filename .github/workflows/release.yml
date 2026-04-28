@@ -25,8 +25,8 @@ jobs:
         build_languages: ${{ matrix.config.build_languages }}
 
   build_ubuntu:
-    name: Build ubuntu-latest
-    runs-on: ubuntu-latest
+    name: Build ubuntu-26.04
+    runs-on: ubuntu-26.04
     steps:
     - uses: actions/checkout@v6
     - name: Build Ubuntu binary
@@ -43,7 +43,7 @@ jobs:
   make_release:
     needs: [build_macos-arm, build_ubuntu, build_msvc]
     name: Roll a release
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
     - uses: actions/checkout@v6
 
