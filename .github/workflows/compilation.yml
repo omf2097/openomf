@@ -15,9 +15,9 @@ jobs:
   # -----------------------------------------------------------------------------------------------
   unittest:
     name: Run formatting Check, linux unittests
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     env:
-      clang-version: '18'
+      clang-version: '21'
 
     steps:
       - uses: actions/checkout@v4
