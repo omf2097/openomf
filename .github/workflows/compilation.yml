@@ -15,9 +15,9 @@ jobs:
   # -----------------------------------------------------------------------------------------------
   unittest:
     name: Run formatting Check, linux unittests
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     env:
-      clang-version: '18'
+      clang-version: '22'
 
     steps:
       - uses: actions/checkout@v6
@@ -112,8 +112,8 @@ jobs:
   # -----------------------------------------------------------------------------------------------
   build_ubuntu:
     needs: [unittest, windows_units]
-    name: Build ubuntu-latest
-    runs-on: ubuntu-latest
+    name: Build ubuntu-26.04
+    runs-on: ubuntu-26.04
     steps:
     - uses: actions/checkout@v6
     - name: Build Ubuntu binary
@@ -135,7 +135,7 @@ jobs:
   check_mingw:
     needs: [unittest, windows_units]
     name: Check MinGW-w64 cross
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
     - uses: actions/checkout@v6
     - name: Build Mingw-w64 binary
@@ -148,7 +148,7 @@ jobs:
     if: github.ref == 'refs/heads/master'
 
     name: Make "latest" release
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
 
     steps:
     - uses: actions/checkout@v6
