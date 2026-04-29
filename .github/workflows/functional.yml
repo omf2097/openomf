@@ -19,7 +19,7 @@ jobs:
     env:
       clang-version: '18'
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     - name: Install dependencies
       uses: Eeems-Org/apt-cache-action@v1.3

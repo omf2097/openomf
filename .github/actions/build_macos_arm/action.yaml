@@ -34,7 +34,7 @@ runs:
         zip -r ${GITHUB_WORKSPACE}/openomf_${{ env.OPENOMF_VERSION }}_macos14_arm.zip .
 
     - name: Upload artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: openomf_${{ env.OPENOMF_VERSION }}_macos14_arm
         path: openomf_${{ env.OPENOMF_VERSION }}_macos14_arm.zip

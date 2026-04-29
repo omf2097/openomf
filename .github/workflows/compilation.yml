@@ -20,7 +20,7 @@ jobs:
       clang-version: '18'
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Install dependencies
         uses: Eeems-Org/apt-cache-action@v1.3
@@ -59,7 +59,7 @@ jobs:
     name: Run windows unit-tests
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Prepare VCPKG
         # must be done *after* openomf has been checked out
@@ -101,7 +101,7 @@ jobs:
         - { arch: "x64", build_languages: "ON" }
         - { arch: "arm64", build_languages: "OFF" }
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: Build MSVC binary
       uses: ./.github/actions/build_msvc
       with:
@@ -115,7 +115,7 @@ jobs:
     name: Build ubuntu-latest
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: Build Ubuntu binary
       uses: ./.github/actions/build_ubuntu
 
@@ -126,7 +126,7 @@ jobs:
     name: Build macos-14
     runs-on: macos-14
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: Build MacOS ARM binary
       uses: ./.github/actions/build_macos_arm
 
@@ -137,7 +137,7 @@ jobs:
     name: Check MinGW-w64 cross
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: Build Mingw-w64 binary
       uses: ./.github/actions/build_mingw
 
@@ -151,7 +151,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     - name: Get OpenOMF Version
       uses: ./.github/actions/version
