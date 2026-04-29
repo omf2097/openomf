@@ -60,7 +60,7 @@ runs:
         Compress-Archive -Path openomf -DestinationPath openomf_${{ env.OPENOMF_VERSION }}_windows_msvc_${{ inputs.arch }}.zip -PassThru
 
     - name: Upload ZIP artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: openomf_${{ env.OPENOMF_VERSION }}_windows_msvc_${{ inputs.arch }}
         path: install/openomf_${{ env.OPENOMF_VERSION }}_windows_msvc_${{ inputs.arch }}.zip
