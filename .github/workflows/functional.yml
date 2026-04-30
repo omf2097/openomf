@@ -22,7 +22,7 @@ jobs:
     - uses: actions/checkout@v6
 
     - name: Install dependencies
-      uses: Eeems-Org/apt-cache-action@v1.3
+      uses: Eeems-Org/apt-cache-action@v1.5
       with:
         packages: cmake cmake-data ninja-build libcunit1-dev
           libsdl2-mixer-dev libconfuse-dev libenet-dev libsdl2-dev libxmp-dev
