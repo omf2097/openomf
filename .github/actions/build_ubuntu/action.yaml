@@ -7,7 +7,7 @@ runs:
       uses: ./.github/actions/version
 
     - name: Install Ubuntu Dependencies
-      uses: Eeems-Org/apt-cache-action@v1.3
+      uses: Eeems-Org/apt-cache-action@v1.5
       with:
         packages: cmake libcunit1-dev libsdl2-mixer-dev
           libconfuse-dev libenet-dev libsdl2-dev libxmp-dev libpng-dev libepoxy-dev

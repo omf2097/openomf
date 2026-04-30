@@ -47,7 +47,7 @@ jobs:
     steps:
     - uses: actions/checkout@v6
 
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@v8
       with:
         path: artifacts/
 
@@ -85,7 +85,7 @@ jobs:
           fi
         done
 
-    - uses: ncipollo/release-action@v1
+    - uses: ncipollo/release-action@v1.21.0
       with:
         artifacts: "upload/*"
         body: "Release ${{ github.event.inputs.version }}"
