@@ -92,6 +92,12 @@ if(USE_NATPMP)
 endif()
 
 if(USE_LIBPNG)
+    # HACK: alias ZLIB::ZLIBSTATIC for PNGConfig.cmake on x64-windows-static triplet
+    find_package(ZLIB REQUIRED)
+    if(NOT TARGET ZLIB::ZLIB)
+        add_library(ZLIB::ZLIB ALIAS ZLIB::ZLIBSTATIC)
+    endif()
+
     find_package(PNG REQUIRED)
     add_library(openomf::png INTERFACE IMPORTED)
     target_link_libraries(openomf::png INTERFACE PNG::PNG)
