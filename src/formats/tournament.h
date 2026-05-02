@@ -127,4 +127,13 @@ int sd_tournament_set_pic_name(sd_tournament_file *trn, const char *pic_name);
  */
 void sd_tournament_free(sd_tournament_file *trn);
 
+/*! \brief Parse the tournament description
+ *
+ * Parses the tournament description tags into the locale struct
+ *
+ * \param trn TRN locale pointer.
+ */
+
+void parse_tournament_description(sd_tournament_locale *locale);
+
 #endif // SD_TOURNAMENT_H

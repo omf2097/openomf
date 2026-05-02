@@ -8,6 +8,7 @@
 #include "game/game_state.h"
 #include "game/utils/settings.h"
 #include "resources/languages.h"
+#include "resources/modmanager.h"
 #include "resources/resource_files.h"
 #include "resources/resource_paths.h"
 #include "resources/sounds_loader.h"
@@ -78,6 +79,9 @@ int engine_init(engine_init_flags *init_flags) {
     if(!console_init()) {
         goto exit_6;
     }
+    if(!modmanager_init()) {
+        goto exit_7;
+    }
     vga_state_init();
 
     // Return successfully
@@ -86,6 +90,8 @@ int engine_init(engine_init_flags *init_flags) {
     return 0;
 
     // If something failed, close in correct order
+exit_7:
+    console_close();
 exit_6:
     altpals_close();
 exit_5:
@@ -409,5 +415,6 @@ void engine_close(void) {
     audio_close();
     video_close();
     vga_state_close();
+    modmanager_shutdown();
     log_info("Engine deinit successful.");
 }
