@@ -1,4 +1,5 @@
 #include "video/renderers/opengl3/sdl_window.h"
+#include "game/utils/settings.h"
 #include "game/utils/version.h"
 #include "utils/log.h"
 
@@ -73,7 +74,7 @@ exit_0:
     return ret;
 }
 
-bool create_window(SDL_Window **window, int width, int height, bool fullscreen) {
+bool create_window(SDL_Window **window, int width, int height, window_mode window_mode) {
     char title[32];
     snprintf(title, 32, "OpenOMF v%s", get_version_string());
 
@@ -95,11 +96,17 @@ bool create_window(SDL_Window **window, int width, int height, bool fullscreen) 
         return false;
     }
 
-    if(fullscreen) {
+    if(window_mode == WINDOW_MODE_FULLSCREEN) {
         if(SDL_SetWindowFullscreen(w, SDL_WINDOW_FULLSCREEN) != 0) {
             log_error("Could not set fullscreen mode: %s", SDL_GetError());
         } else {
-            log_info("Fullscreen mode enabled!");
+            log_info("Fullscreen mode enabled (exclusive)!");
+        }
+    } else if(window_mode == WINDOW_MODE_BORDERLESS) {
+        if(SDL_SetWindowFullscreen(w, SDL_WINDOW_FULLSCREEN_DESKTOP) != 0) {
+            log_error("Could not set fullscreen mode: %s", SDL_GetError());
+        } else {
+            log_info("Fullscreen mode enabled (borderless)!");
         }
     } else {
         SDL_SetWindowFullscreen(w, 0);
@@ -110,9 +117,15 @@ bool create_window(SDL_Window **window, int width, int height, bool fullscreen) 
     return true;
 }
 
-bool resize_window(SDL_Window *window, int width, int height, bool fullscreen) {
+bool resize_window(SDL_Window *window, int width, int height, window_mode window_mode) {
     SDL_SetWindowSize(window, width, height);
-    if(SDL_SetWindowFullscreen(window, fullscreen ? SDL_WINDOW_FULLSCREEN : 0) < 0) {
+    unsigned int fs_flag = 0;
+    if(window_mode == WINDOW_MODE_FULLSCREEN) {
+        fs_flag = SDL_WINDOW_FULLSCREEN;
+    } else if(window_mode == WINDOW_MODE_BORDERLESS) {
+        fs_flag = SDL_WINDOW_FULLSCREEN_DESKTOP;
+    }
+    if(SDL_SetWindowFullscreen(window, fs_flag) < 0) {
         log_error("Could not set fullscreen mode: %s", SDL_GetError());
         return false;
     }

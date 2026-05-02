@@ -36,7 +36,7 @@ typedef struct gl3_context {
     int screen_w;
     int screen_h;
     int fb_scale;
-    bool fullscreen;
+    window_mode window_mode;
     bool vsync;
     int aspect;
     int scaling_mode;
@@ -105,12 +105,12 @@ static void reload_scaler_program(const gl3_context *ctx) {
     bind_uniform_2f(ctx->scale_prog_id, "texture_size", (GLfloat)fb_w, (GLfloat)fb_h);
 }
 
-static bool setup_context(void *userdata, int window_w, int window_h, bool fullscreen, bool vsync, int aspect,
+static bool setup_context(void *userdata, int window_w, int window_h, window_mode window_mode, bool vsync, int aspect,
                           int framerate_limit, int fb_scale, int scaling_mode) {
     gl3_context *ctx = userdata;
     ctx->screen_w = window_w;
     ctx->screen_h = window_h;
-    ctx->fullscreen = fullscreen;
+    ctx->window_mode = window_mode;
     ctx->framerate_limit = framerate_limit;
     ctx->fb_scale = fb_scale;
     ctx->vsync = vsync;
@@ -122,7 +122,7 @@ static bool setup_context(void *userdata, int window_w, int window_h, bool fulls
     ctx->last_tick = SDL_GetPerformanceCounter();
     set_framerate_limit(ctx, framerate_limit);
 
-    if(!create_window(&ctx->window, window_w, window_h, fullscreen)) {
+    if(!create_window(&ctx->window, window_w, window_h, window_mode)) {
         goto error_0;
     }
     if(!create_gl_context(&ctx->gl_context, ctx->window)) {
@@ -218,8 +218,8 @@ error_0:
     return false;
 }
 
-static void get_context_state(void *userdata, int *window_w, int *window_h, bool *fullscreen, bool *vsync, int *aspect,
-                              int *fb_scale) {
+static void get_context_state(void *userdata, int *window_w, int *window_h, window_mode *window_mode, bool *vsync,
+                              int *aspect, int *fb_scale) {
     gl3_context *ctx = userdata;
     if(window_w != NULL) {
         *window_w = ctx->screen_w;
@@ -227,8 +227,8 @@ static void get_context_state(void *userdata, int *window_w, int *window_h, bool
     if(window_h != NULL) {
         *window_h = ctx->screen_h;
     }
-    if(fullscreen != NULL) {
-        *fullscreen = ctx->fullscreen;
+    if(window_mode != NULL) {
+        *window_mode = ctx->window_mode;
     }
     if(vsync != NULL) {
         *vsync = ctx->vsync;
@@ -241,17 +241,17 @@ static void get_context_state(void *userdata, int *window_w, int *window_h, bool
     }
 }
 
-static bool reset_context_with(void *userdata, int window_w, int window_h, bool fullscreen, bool vsync, int aspect,
-                               int framerate_limit, int fb_scale, int scaling_mode) {
+static bool reset_context_with(void *userdata, int window_w, int window_h, window_mode window_mode, bool vsync,
+                               int aspect, int framerate_limit, int fb_scale, int scaling_mode) {
     gl3_context *ctx = userdata;
     ctx->screen_w = window_w;
     ctx->screen_h = window_h;
-    ctx->fullscreen = fullscreen;
+    ctx->window_mode = window_mode;
     ctx->vsync = vsync;
     ctx->aspect = aspect;
 
     set_framerate_limit(ctx, framerate_limit);
-    bool success = resize_window(ctx->window, window_w, window_h, fullscreen);
+    bool success = resize_window(ctx->window, window_w, window_h, window_mode);
     success = set_vsync(ctx->vsync) && success;
 
     const bool fb_scale_changed = ctx->fb_scale != fb_scale;

@@ -4,10 +4,12 @@
 #include <SDL.h>
 #include <stdbool.h>
 
+#include "game/utils/settings.h"
+
 bool has_gl_available(int major_version, int minor_version);
 bool create_gl_context(SDL_GLContext **context, SDL_Window *window);
-bool create_window(SDL_Window **window, int width, int height, bool fullscreen);
-bool resize_window(SDL_Window *window, int width, int height, bool fullscreen);
+bool create_window(SDL_Window **window, int width, int height, window_mode window_mode);
+bool resize_window(SDL_Window *window, int width, int height, window_mode window_mode);
 bool set_vsync(bool enable);
 void ortho2d(float *matrix, float left, float right, float bottom, float top);
 
