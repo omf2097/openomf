@@ -29,24 +29,25 @@ static int start_timeout = 30;
 static int enable_screen_updates = 1;
 static int debug_palette_number = 0;
 
-int engine_init(engine_init_flags *init_flags) {
-    settings *setting = settings_get();
+int engine_init(const engine_init_flags *init_flags) {
+    const settings *setting = settings_get();
 
-    int w = setting->video.screen_w;
-    int h = setting->video.screen_h;
-    int fs = setting->video.fullscreen;
-    int vsync = setting->video.vsync;
-    int aspect = setting->video.aspect;
-    int fb_scale = setting->video.fb_scale;
-    int scaling_mode = setting->video.scaling_mode;
-    int framerate_limit = setting->video.framerate_limit;
-    int frequency = setting->sound.sample_rate;
-    int resampler = setting->sound.music_resampler;
-    bool mono = setting->sound.music_mono;
-    float music_volume = setting->sound.music_vol / 10.0;
-    float sound_volume = setting->sound.sound_vol / 10.0;
+    const int w = setting->video.screen_w;
+    const int h = setting->video.screen_h;
+    const int fs = setting->video.fullscreen;
+    const int vsync = setting->video.vsync;
+    const int aspect = setting->video.aspect;
+    const int fb_scale = setting->video.fb_scale;
+    const int scaling_mode = setting->video.scaling_mode;
+    const int framerate_limit = setting->video.framerate_limit;
+    const int frequency = setting->sound.sample_rate;
+    const int resampler = setting->sound.music_resampler;
+    const bool mono = setting->sound.music_mono;
+    const float music_volume = setting->sound.music_vol / 10.0;
+    const float sound_volume = setting->sound.sound_vol / 10.0;
     const char *player = setting->sound.player;
     const char *renderer = setting->video.renderer;
+
     if(strlen(init_flags->force_audio_backend) > 0) {
         player = init_flags->force_audio_backend;
     }
@@ -134,7 +135,7 @@ void save_rec(game_state *gs) {
     omf_free(time);
 }
 
-void engine_run(engine_init_flags *init_flags) {
+void engine_run(const engine_init_flags *init_flags) {
     SDL_Event e;
     int visual_debugger = 0;
     int debugger_proceed = 0;

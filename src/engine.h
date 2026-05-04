@@ -17,8 +17,8 @@ typedef struct engine_init_flags {
     int speed;
 } engine_init_flags;
 
-int engine_init(engine_init_flags *init_flags); // Init window, audiodevice, etc.
-void engine_run(engine_init_flags *init_flags); // Run game
+int engine_init(const engine_init_flags *init_flags); // Init window, audiodevice, etc.
+void engine_run(const engine_init_flags *init_flags); // Run game
 void engine_close(void);                        // Kill window, audiodev
 
 #endif // ENGINE_H
