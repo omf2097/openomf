@@ -398,4 +398,13 @@ void text_document_draw(text_document *d, int16_t offset_x, int16_t offset_y);
  */
 void text_draw(text *t, int16_t x, int16_t y);
 
+/**
+ * @brief Render the text block at the given coordinates with a pixel dissolve effect
+ * @param t Text object to render
+ * @param x X coordinate for rendering
+ * @param y Y coordinate for rendering
+ * @param opacity Dissolve amount
+ */
+void text_draw_opacity(text *t, int16_t x, int16_t y, uint8_t opacity);
+
 #endif // TEXT_ENGINE_H

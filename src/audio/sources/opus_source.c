@@ -2,6 +2,7 @@
 #include "utils/log.h"
 
 #ifdef OPUSFILE_FOUND
+#include "game/gui/osd/osd.h"
 #include "utils/allocator.h"
 #include "utils/ringbuffer.h"
 #include <SDL.h>
@@ -61,6 +62,22 @@ static void opus_read_loop_tags(opus_source *context) {
         log_debug("Opus loop tags: start = %lld, end = %lld", context->loop_start, context->loop_end);
     } else {
         log_debug("No loop tags found for opus file!");
+    }
+}
+
+static void opus_announce_track(const opus_source *context) {
+    const OpusTags *tags = op_tags(context->handle, -1);
+    if(tags == NULL) {
+        return;
+    }
+    const char *artist = opus_tags_query(tags, "ARTIST", 0);
+    const char *title = opus_tags_query(tags, "TITLE", 0);
+    if(artist != NULL && title != NULL) {
+        osd_print("playing: %s - %s", artist, title);
+    } else if(title != NULL) {
+        osd_print("playing: %s", title);
+    } else if(artist != NULL) {
+        osd_print("playing: %s", artist);
     }
 }
 
@@ -128,6 +145,7 @@ bool opus_load(music_source *src, int channels, int sample_rate, const char *fil
     context->loop_start = 0; // Default loop point, if no tags are set.
     context->loop_end = 0;
     opus_read_loop_tags(context);
+    opus_announce_track(context);
     if(SDL_BuildAudioCVT(&context->cvt, AUDIO_S16, 2, 48000, AUDIO_S16, channels, sample_rate) < 0) {
         log_error("Audio converter creation failed: %s", SDL_GetError());
         goto exit_1;

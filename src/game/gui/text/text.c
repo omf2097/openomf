@@ -537,34 +537,40 @@ void text_generate_layout(text *t) {
     }
 }
 
-static inline void draw_shadow(const text_layout_item *item, int16_t offset_x, int16_t offset_y, uint8_t shadow,
-                               vga_index color) {
-    int palette_offset = (int)color - 1;
-    int x = item->x + offset_x;
-    int y = item->y + offset_y;
+static inline void draw_glyph(const surface *glyph, const int x, const int y, const vga_index color,
+                              const uint8_t opacity) {
+    const int palette_offset = (int)color - 1;
+    video_draw_full(glyph, x, y, glyph->w, glyph->h, 0, 0, palette_offset, 255, opacity, 0, 0);
+}
+
+static inline void draw_shadow(const text_layout_item *item, const int16_t offset_x, const int16_t offset_y,
+                               const uint8_t shadow, const vga_index color, const uint8_t opacity) {
+    const int x = item->x + offset_x;
+    const int y = item->y + offset_y;
     if(shadow & GLYPH_SHADOW_RIGHT) {
-        video_draw_offset(item->glyph, x + 1, y, palette_offset, 255);
+        draw_glyph(item->glyph, x + 1, y, color, opacity);
     }
     if(shadow & GLYPH_SHADOW_LEFT) {
-        video_draw_offset(item->glyph, x - 1, y, palette_offset, 255);
+        draw_glyph(item->glyph, x - 1, y, color, opacity);
     }
     if(shadow & GLYPH_SHADOW_BOTTOM) {
-        video_draw_offset(item->glyph, x, y + 1, palette_offset, 255);
+        draw_glyph(item->glyph, x, y + 1, color, opacity);
     }
     if(shadow & GLYPH_SHADOW_TOP) {
-        video_draw_offset(item->glyph, x, y - 1, palette_offset, 255);
+        draw_glyph(item->glyph, x, y - 1, color, opacity);
     }
 }
 
-static inline void draw_foreground(const text_layout_item *item, int16_t offset_x, int16_t offset_y, vga_index color) {
-    int palette_offset = (int)color - 1;
-    int x = item->x + offset_x;
-    int y = item->y + offset_y;
-    video_draw_offset(item->glyph, x, y, palette_offset, 255);
+static inline void draw_foreground(const text_layout_item *item, const int16_t offset_x, const int16_t offset_y,
+                                   const vga_index color, const uint8_t opacity) {
+    draw_glyph(item->glyph, item->x + offset_x, item->y + offset_y, color, opacity);
 }
 
-void text_draw(text *t, int16_t offset_x, int16_t offset_y) {
+void text_draw_opacity(text *t, int16_t offset_x, int16_t offset_y, uint8_t opacity) {
     assert(t != NULL);
+    if(opacity == 0) {
+        return;
+    }
     text_layout_item *item;
     iterator it;
     text_generate_layout(t); // Ensure we have a layout
@@ -572,12 +578,16 @@ void text_draw(text *t, int16_t offset_x, int16_t offset_y) {
     // First the shadows for all letters.
     vector_iter_begin(&t->layout.items, &it);
     foreach(it, item) {
-        draw_shadow(item, offset_x, offset_y, t->shadow, t->shadow_color);
+        draw_shadow(item, offset_x, offset_y, t->shadow, t->shadow_color, opacity);
     }
 
     // Then the actual letter foregrounds.
     vector_iter_begin(&t->layout.items, &it);
     foreach(it, item) {
-        draw_foreground(item, offset_x, offset_y, t->text_color);
+        draw_foreground(item, offset_x, offset_y, t->text_color, opacity);
     }
+}
+
+void text_draw(text *t, int16_t offset_x, int16_t offset_y) {
+    text_draw_opacity(t, offset_x, offset_y, 255);
 }

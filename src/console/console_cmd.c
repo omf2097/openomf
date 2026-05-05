@@ -3,11 +3,13 @@
 #include "console/console_type.h"
 #include "formats/error.h"
 #include "formats/rec_assertion.h"
+#include "game/gui/osd/osd.h"
 #include "game/scenes/arena.h"
 #include "game/scenes/mechlab.h"
 #include "resources/ids.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
+#include "utils/str.h"
 #include <stdio.h>
 
 // utils
@@ -362,6 +364,25 @@ int console_cmd_score(game_state *gs, int argc, char **argv) {
     return 1;
 }
 
+int console_cmd_osd(game_state *gs, int argc, char **argv) {
+    if(argc < 2) {
+        console_output_addline("Usage: osd <text>");
+        return 1;
+    }
+
+    str msg;
+    str_create(&msg);
+    for(int i = 1; i < argc; i++) {
+        if(i > 1) {
+            str_append_char(&msg, ' ');
+        }
+        str_append_c(&msg, argv[i]);
+    }
+    osd_print("%s", str_c(&msg));
+    str_free(&msg);
+    return 0;
+}
+
 int console_cmd_assert(game_state *gs, int argc, char **argv) {
     if(argc != 4) {
         console_output_addline("Usage: assert harX.attr OP value");
@@ -479,4 +500,5 @@ void console_init_cmd(void) {
     console_add_cmd("rank", &console_cmd_rank, "Set tournament mode rank");
     console_add_cmd("assert", &console_cmd_assert, "Insert an assertion into the current REC file");
     console_add_cmd("score", &console_cmd_score, "Set current score");
+    console_add_cmd("osd", &console_cmd_osd, "Push a text blob to the on-screen display");
 }

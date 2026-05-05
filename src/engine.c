@@ -6,6 +6,7 @@
 #include "formats/rec.h"
 #include "game/game_player.h"
 #include "game/game_state.h"
+#include "game/gui/osd/osd.h"
 #include "game/utils/settings.h"
 #include "resources/languages.h"
 #include "resources/resource_files.h"
@@ -79,6 +80,9 @@ int engine_init(const engine_init_flags *init_flags) {
     if(!console_init()) {
         goto exit_6;
     }
+    if(!osd_init()) {
+        goto exit_7;
+    }
     vga_state_init();
 
     // Return successfully
@@ -87,6 +91,8 @@ int engine_init(const engine_init_flags *init_flags) {
     return 0;
 
     // If something failed, close in correct order
+exit_7:
+    console_close();
 exit_6:
     altpals_close();
 exit_5:
@@ -353,6 +359,7 @@ void engine_run(const engine_init_flags *init_flags) {
                     omf_free(old_gs);
                 }
                 console_tick(gs);
+                osd_tick();
                 static_wait -= STATIC_TICKS;
             }
 
@@ -385,6 +392,7 @@ void engine_run(const engine_init_flags *init_flags) {
             if(debugger_render) {
                 game_state_debug(gs);
             }
+            osd_render();
             console_render();
             video_render_finish();
         } else {
@@ -402,6 +410,7 @@ void engine_run(const engine_init_flags *init_flags) {
 }
 
 void engine_close(void) {
+    osd_close();
     console_close();
     altpals_close();
     fonts_close();
