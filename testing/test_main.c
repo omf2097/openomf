@@ -23,6 +23,7 @@ void smallbuffer_test_suite(CU_pSuite suite);
 void ringbuffer_test_suite(CU_pSuite suite);
 void c_string_util_test_suite(CU_pSuite suite);
 void sprite_packer_test_suite(CU_pSuite suite);
+void oklab_test_suite(CU_pSuite suite);
 
 int main(int argc, char **argv) {
     CU_pSuite suite = NULL;
@@ -152,6 +153,12 @@ int main(int argc, char **argv) {
         goto end;
     }
     sprite_packer_test_suite(sprite_packer_suite);
+
+    CU_pSuite oklab_suite = CU_add_suite("OKLab", NULL, NULL);
+    if(oklab_suite == NULL) {
+        goto end;
+    }
+    oklab_test_suite(oklab_suite);
 
     // Run tests
     CU_basic_set_mode(CU_BRM_VERBOSE);
