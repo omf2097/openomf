@@ -13,8 +13,8 @@
 
 #include "formats/bk.h"
 #include "formats/error.h"
-#include "vendored/oklab/oklab.h"
 #include "utils/path.h"
+#include "vendored/oklab/oklab.h"
 #include "video/vga_common_colors.h"
 #include "video/vga_extended_palette.h"
 #include "video/vga_palette.h"
@@ -50,24 +50,29 @@ static int read_png(const char *path, uint8_t **out_rgba, int *out_w, int *out_h
     int color_type = png_get_color_type(png, info);
     int bit_depth = png_get_bit_depth(png, info);
 
-    if(bit_depth == 16)
+    if(bit_depth == 16) {
         png_set_strip_16(png);
-    if(color_type == PNG_COLOR_TYPE_PALETTE)
+    }
+    if(color_type == PNG_COLOR_TYPE_PALETTE) {
         png_set_palette_to_rgb(png);
-    if(color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8)
+    } else if(color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8) {
         png_set_expand_gray_1_2_4_to_8(png);
-    if(png_get_valid(png, info, PNG_INFO_tRNS))
+    }
+    if(png_get_valid(png, info, PNG_INFO_tRNS)) {
         png_set_tRNS_to_alpha(png);
-    if(color_type == PNG_COLOR_TYPE_GRAY || color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
+    }
+    if(color_type == PNG_COLOR_TYPE_GRAY || color_type == PNG_COLOR_TYPE_GRAY_ALPHA) {
         png_set_gray_to_rgb(png);
+    }
     png_set_add_alpha(png, 0xff, PNG_FILLER_AFTER);
 
     png_read_update_info(png, info);
     int rowbytes = png_get_rowbytes(png, info);
     uint8_t *buf = malloc((*out_h) * rowbytes);
     png_bytep *rows = malloc((*out_h) * sizeof(png_bytep));
-    for(int y = 0; y < *out_h; y++)
+    for(int y = 0; y < *out_h; y++) {
         rows[y] = buf + y * rowbytes;
+    }
     png_read_image(png, rows);
     png_read_end(png, NULL);
 
@@ -240,8 +245,9 @@ int main(int argc, char *argv[]) {
         if(strcmp(stype, "arena") == 0 || strcmp(stype, "vs") == 0) {
             // Arena/VS: 2 HARs + 2 portraits. Lock portrait common + ext common.
             // Free: 0x01-0x9F. ~159 indices.
-            for(int i = 0x01; i <= 0x9F; i++)
+            for(int i = 0x01; i <= 0x9F; i++) {
                 locked[i] = 0;
+            }
             if(strcmp(stype, "vs") == 0) {
                 locked[0xF6] = 1;
                 locked[0xFB] = 1;
@@ -250,25 +256,29 @@ int main(int argc, char *argv[]) {
         } else if(strcmp(stype, "melee") == 0) {
             // MELEE: 2 HARs, no portraits. Lock ext common only.
             // Free: 0x01-0xF3. ~243 indices.
-            for(int i = 0x01; i <= 0xF3; i++)
+            for(int i = 0x01; i <= 0xF3; i++) {
                 locked[i] = 0;
+            }
             locked[0xF6] = 1;
             locked[0xFB] = 1;
         } else if(strcmp(stype, "mechlab") == 0) {
             // MECHLAB: 1 HAR + portraits. Lock portrait common + ext common.
             // Free: 0x01-0x9F. ~159 indices.
-            for(int i = 0x01; i <= 0x9F; i++)
+            for(int i = 0x01; i <= 0x9F; i++) {
                 locked[i] = 0;
+            }
         } else if(strcmp(stype, "tournament") == 0) {
             // Tournament cutscenes: 1 HAR double. Lock ext common only.
             // Free: 0x01-0xF3. ~243 indices.
-            for(int i = 0x01; i <= 0xF3; i++)
+            for(int i = 0x01; i <= 0xF3; i++) {
                 locked[i] = 0;
+            }
         } else if(strcmp(stype, "other") == 0) {
             // Other scenes: no HARs, no portraits. Lock ext common only.
             // Free: 0x01-0xF3. ~243 indices.
-            for(int i = 0x01; i <= 0xF3; i++)
+            for(int i = 0x01; i <= 0xF3; i++) {
                 locked[i] = 0;
+            }
         } else {
             fprintf(stderr, "Unknown scene type: %s (valid: arena, vs, melee, mechlab, tournament, other)\n", stype);
             res = 1;
@@ -380,13 +390,15 @@ int main(int argc, char *argv[]) {
                 int total_count = custom[i].count + custom[j].count;
                 double avg_L = (custom[i].lab.L * custom[i].count + custom[j].lab.L * custom[j].count) / total_count;
                 double midtone = 4.0 * avg_L * (1.0 - avg_L);
-                if(midtone < 0.01)
+                if(midtone < 0.01) {
                     midtone = 0.01;
+                }
                 double avg_a = (custom[i].lab.a * custom[i].count + custom[j].lab.a * custom[j].count) / total_count;
                 double avg_b = (custom[i].lab.b * custom[i].count + custom[j].lab.b * custom[j].count) / total_count;
                 double chroma = sqrt(avg_a * avg_a + avg_b * avg_b);
-                if(chroma < 0.3)
+                if(chroma < 0.3) {
                     chroma = 0.3;
+                }
                 double cost = (d * midtone * chroma) * sqrt((double)total_count);
                 if(cost < best_merge_cost) {
                     best_merge_cost = cost;
@@ -397,8 +409,9 @@ int main(int argc, char *argv[]) {
             }
         }
 
-        if(best_cast_i < 0 && best_merge_i < 0)
+        if(best_cast_i < 0 && best_merge_i < 0) {
             break;
+        }
 
         if(best_cast_cost <= best_merge_cost) {
             if(vflag /*&& (round < 10 || custom_count <= target_count + 5)*/) {
