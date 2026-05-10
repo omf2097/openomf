@@ -13,8 +13,8 @@
 
 #include "formats/bk.h"
 #include "formats/error.h"
-#include "vendored/oklab/oklab.h"
 #include "utils/path.h"
+#include "vendored/oklab/oklab.h"
 #include "video/vga_common_colors.h"
 #include "video/vga_extended_palette.h"
 #include "video/vga_palette.h"
