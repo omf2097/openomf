@@ -269,7 +269,7 @@ void game_state_match_settings_defaults(game_state *gs) {
     gs->match_settings.sim = false;
 }
 
-int game_state_create(game_state *gs, engine_init_flags *init_flags) {
+int game_state_create(game_state *gs, const engine_init_flags *init_flags) {
     gs->run = 1;
     gs->paused = 0;
     gs->tick = 0;

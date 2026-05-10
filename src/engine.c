@@ -6,6 +6,7 @@
 #include "formats/rec.h"
 #include "game/game_player.h"
 #include "game/game_state.h"
+#include "game/gui/osd/osd.h"
 #include "game/utils/settings.h"
 #include "resources/languages.h"
 #include "resources/resource_files.h"
@@ -29,24 +30,25 @@ static int start_timeout = 30;
 static int enable_screen_updates = 1;
 static int debug_palette_number = 0;
 
-int engine_init(engine_init_flags *init_flags) {
-    settings *setting = settings_get();
+int engine_init(const engine_init_flags *init_flags) {
+    const settings *setting = settings_get();
 
-    int w = setting->video.screen_w;
-    int h = setting->video.screen_h;
-    int fs = setting->video.fullscreen;
-    int vsync = setting->video.vsync;
-    int aspect = setting->video.aspect;
-    int fb_scale = setting->video.fb_scale;
-    int scaling_mode = setting->video.scaling_mode;
-    int framerate_limit = setting->video.framerate_limit;
-    int frequency = setting->sound.sample_rate;
-    int resampler = setting->sound.music_resampler;
-    bool mono = setting->sound.music_mono;
-    float music_volume = setting->sound.music_vol / 10.0;
-    float sound_volume = setting->sound.sound_vol / 10.0;
+    const int w = setting->video.screen_w;
+    const int h = setting->video.screen_h;
+    const int fs = setting->video.fullscreen;
+    const int vsync = setting->video.vsync;
+    const int aspect = setting->video.aspect;
+    const int fb_scale = setting->video.fb_scale;
+    const int scaling_mode = setting->video.scaling_mode;
+    const int framerate_limit = setting->video.framerate_limit;
+    const int frequency = setting->sound.sample_rate;
+    const int resampler = setting->sound.music_resampler;
+    const bool mono = setting->sound.music_mono;
+    const float music_volume = setting->sound.music_vol / 10.0;
+    const float sound_volume = setting->sound.sound_vol / 10.0;
     const char *player = setting->sound.player;
     const char *renderer = setting->video.renderer;
+
     if(strlen(init_flags->force_audio_backend) > 0) {
         player = init_flags->force_audio_backend;
     }
@@ -78,6 +80,9 @@ int engine_init(engine_init_flags *init_flags) {
     if(!console_init()) {
         goto exit_6;
     }
+    if(!osd_init()) {
+        goto exit_7;
+    }
     vga_state_init();
 
     // Return successfully
@@ -86,6 +91,8 @@ int engine_init(engine_init_flags *init_flags) {
     return 0;
 
     // If something failed, close in correct order
+exit_7:
+    console_close();
 exit_6:
     altpals_close();
 exit_5:
@@ -134,7 +141,7 @@ void save_rec(game_state *gs) {
     omf_free(time);
 }
 
-void engine_run(engine_init_flags *init_flags) {
+void engine_run(const engine_init_flags *init_flags) {
     SDL_Event e;
     int visual_debugger = 0;
     int debugger_proceed = 0;
@@ -352,6 +359,7 @@ void engine_run(engine_init_flags *init_flags) {
                     omf_free(old_gs);
                 }
                 console_tick(gs);
+                osd_tick();
                 static_wait -= STATIC_TICKS;
             }
 
@@ -384,6 +392,7 @@ void engine_run(engine_init_flags *init_flags) {
             if(debugger_render) {
                 game_state_debug(gs);
             }
+            osd_render();
             console_render();
             video_render_finish();
         } else {
@@ -401,6 +410,7 @@ void engine_run(engine_init_flags *init_flags) {
 }
 
 void engine_close(void) {
+    osd_close();
     console_close();
     altpals_close();
     fonts_close();
