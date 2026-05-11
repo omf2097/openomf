@@ -56,7 +56,7 @@ void log_init(void) {
 
 log_level log_level_text_to_enum(const char *level, log_level default_value) {
     for(int i = 0; i < LOG_LEVELS; i++) {
-        if(strncmp(level_names[i], level, strlen(level_names[i])) == 0) {
+        if(strcmp(level_names[i], level) == 0) {
             return i;
         }
     }
@@ -74,9 +74,8 @@ bool is_log_level(const char *level) {
 
 static void close_targets(void) {
     assert(state != NULL);
-    log_target *target;
     for(int i = 0; i < state->target_count; i++) {
-        target = &state->targets[i];
+        const log_target *target = &state->targets[i];
         if(target->close) {
             fclose(target->fp);
         }
@@ -137,7 +136,6 @@ void log_msg(log_level level, const char *fmt, ...) {
     assert(state != NULL);
     char dt[16];
     va_list args;
-    log_target *target;
     const char *color = level_colors[level];
     const char *name = level_names[level];
 
@@ -148,7 +146,7 @@ void log_msg(log_level level, const char *fmt, ...) {
     va_start(args, fmt);
     format_timestamp(dt, 16);
     for(int i = 0; i < state->target_count; i++) {
-        target = &state->targets[i];
+        const log_target *target = &state->targets[i];
         if(level < target->level) {
             continue;
         }
