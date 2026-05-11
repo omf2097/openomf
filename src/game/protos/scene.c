@@ -51,6 +51,7 @@ int scene_create(scene *scene, game_state *gs, int scene_id) {
     scene->bk_data = omf_calloc(1, sizeof(bk));
     if(load_bk_file(scene->bk_data, &bk_filename)) {
         log_error("Unable to load scene %s (%s)!", scene_get_name(scene_id), path_c(&bk_filename));
+        omf_free(scene->bk_data);
         return 1;
     }
     scene->id = scene_id;
