@@ -98,7 +98,7 @@ int sd_animation_pop_coord(sd_animation *ani) {
 }
 
 sd_coord *sd_animation_get_coord(sd_animation *ani, int num) {
-    if(num <= 0 || num >= SD_COLCOORD_COUNT_MAX) {
+    if(num < 0 || num >= ani->coord_count) {
         return NULL;
     }
     return &ani->coord_table[num];
@@ -188,7 +188,7 @@ int sd_animation_pop_sprite(sd_animation *anim) {
 }
 
 sd_sprite *sd_animation_get_sprite(sd_animation *anim, int num) {
-    if(num < 0 || num >= SD_EXTRASTR_COUNT_MAX) {
+    if(num < 0 || num >= SD_SPRITE_COUNT_MAX) {
         return NULL;
     }
     return anim->sprites[num];
