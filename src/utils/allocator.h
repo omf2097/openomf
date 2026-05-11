@@ -60,7 +60,7 @@ extern const char *_text_realloc_error;
  * @param size the number of bytes to allocate
  * @return the new allocation, a non-null pointer.
  */
-#define omf_realloc(ptr, size) omf_realloc_real((ptr), (size), __FILE__, __LINE__);
+#define omf_realloc(ptr, size) omf_realloc_real((ptr), (size), __FILE__, __LINE__)
 
 /**
  * @brief Free an allocation by pointer, and reassigns the pointer to NULL.
