@@ -345,14 +345,14 @@ bool path_glob(const path *dir, list *results, const char *pattern) {
         return false;
     }
     str_free(&glob);
-    while(FindNextFileA(hFind, &entry) != FALSE) {
+    do {
         path_from_parts(&test, dir->buf, entry.cFileName);
         path_filename(&test, &name);
         if(str_imatch(&name, pattern)) {
             list_append(results, &test, sizeof(path));
         }
         str_free(&name);
-    }
+    } while(FindNextFileA(hFind, &entry) != FALSE);
     FindClose(hFind);
     return true;
 #else
