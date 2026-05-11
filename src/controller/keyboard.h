@@ -10,16 +10,16 @@ typedef struct keyboard_keys_t keyboard_keys;
 typedef struct keyboard_t keyboard;
 
 struct keyboard_keys_t {
-    unsigned jump_up;
-    unsigned jump_right;
-    unsigned walk_right;
-    unsigned duck_forward;
-    unsigned duck;
-    unsigned duck_back;
-    unsigned walk_back;
-    unsigned jump_left;
-    unsigned punch;
-    unsigned kick;
+    SDL_Scancode jump_up;
+    SDL_Scancode jump_right;
+    SDL_Scancode walk_right;
+    SDL_Scancode duck_forward;
+    SDL_Scancode duck;
+    SDL_Scancode duck_back;
+    SDL_Scancode walk_back;
+    SDL_Scancode jump_left;
+    SDL_Scancode punch;
+    SDL_Scancode kick;
 };
 
 struct keyboard_t {
