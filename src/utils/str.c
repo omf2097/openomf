@@ -248,10 +248,7 @@ void str_format(str *dst, const char *format, ...) {
 
     // Make sure there is enough room for our vsnprintf call plus ending NULL,
     // then render the output to our new buffer.
-    if((int)str_size(dst) < size) {
-        str_resize_buffer(dst, size);
-    }
-    vsnprintf(str_ptr(dst), size + 1, format, args2);
+    vsnprintf(str_resize_buffer(dst, size), size + 1, format, args2);
     va_end(args2);
 }
 
