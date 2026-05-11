@@ -53,14 +53,10 @@ if(MSVC)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4100")
     # C4456: declaration hides previous local declaration
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4456")
-    # C4459: declaration hides previous global declaration
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4459")
     # C4244: implicit conversion, possible loss of data
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4244")
     # C4267: implicit conversion from size_t, possible loss of data
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4267")
-    # C4389: 'equality-operator' : signed/unsigned mismatch
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4389")
     # _CRT_SECURE_NO_WARNINGS: disable warnings when calling functions like strncpy or sscanf
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /D_CRT_SECURE_NO_WARNINGS")
     # _CRT_NONSTDC_NO_WARNINGS: disable warnings when calling POSIX functions like fileno
