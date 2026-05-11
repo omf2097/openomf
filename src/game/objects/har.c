@@ -1956,17 +1956,15 @@ void har_tick(object *obj) {
     }
 
     // tick down disabled moves
-    if(hashmap_size(&h->disabled_animations)) {
-        iterator it;
-        hashmap_iter_begin(&h->disabled_animations, &it);
-        hashmap_pair *pair = NULL;
-        foreach(it, pair) {
-            uint16_t *value = pair->value;
-            if(*value <= 1) {
-                hashmap_delete(&h->disabled_animations, &it);
-            } else {
-                (*value)--;
-            }
+    iterator it;
+    hashmap_iter_begin(&h->disabled_animations, &it);
+    const hashmap_pair *pair = NULL;
+    foreach(it, pair) {
+        uint16_t *value = pair->value;
+        if(*value <= 1) {
+            hashmap_delete(&h->disabled_animations, &it);
+        } else {
+            (*value)--;
         }
     }
 
