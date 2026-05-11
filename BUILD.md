@@ -2,7 +2,7 @@
 
 ### Dependencies
 
-Use at least GCC 9 or Clang 10. MSVC is not supported.
+Use at least GCC 9 or Clang 10. MSVC is also supported, namely the version that ships with VS2022's (or higher) Build Tools.
 
 Required:
 * SDL2 (>=2.0.16): http://www.libsdl.org/download-2.0.php
@@ -14,6 +14,14 @@ Required:
 * libxmp: https://github.com/cmatsuoka/libxmp
 * opusfile: https://github.com/xiph/opusfile
 
+
+On Windows, a `vcpkg` installation is required. In turn, `vcpkg` can be used in Manifest mode to pull the required dependencies.
+Replace `C:\vcpkg` with a directory of your choice, if needed.
+
+```
+git clone https://github.com/microsoft/vcpkg.git C:\vcpkg
+C:\vcpkg\bootstrap-vcpkg.bat
+```
 
 On Ubuntu, it is possible to pull the libraries using apt-get.
 ```
@@ -39,7 +47,14 @@ project in GitHub.
 
 ### Compiling
 
-To compile (change install prefix if necessary):
+To compile on Windows, use the "x64 Native Tools Command Prompt for VS", located on your Start Menu:
+
+```
+cmake -B build -S . --toolchain C:\vcpkg\scripts\buildsystems\vcpkg.cmake
+cmake --build build
+```
+
+To compile on other operating systems (change install prefix if necessary):
 
 ```
 $ mkdir -p build
