@@ -47,9 +47,10 @@ project in GitHub.
 
 ### Compiling
 
-To compile on Windows, use the "x64 Native Tools Command Prompt for VS", located on your Start Menu:
+To compile on Windows, use the "x64 Native Tools Command Prompt for VS":
 
 ```
+cd C:\path\to\openomf
 cmake -B build -S . --toolchain C:\vcpkg\scripts\buildsystems\vcpkg.cmake
 cmake --build build
 ```
