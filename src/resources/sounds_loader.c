@@ -44,7 +44,7 @@ bool sounds_loader_get(int id, char **buffer, int *len, int *freq) {
     }
     *buffer = sample->data;
     *len = sample->len;
-    *freq = 1000000 / (256 - sample->unknown);
+    *freq = 1000000 / (256 - sample->freq_key);
     return true;
 }
 

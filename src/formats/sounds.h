@@ -23,9 +23,9 @@
  * - Mono
  */
 typedef struct {
-    uint16_t len; ///< Sound length in bytes
-    char *data;   ///< Sound data
-    uint8_t unknown;
+    uint16_t len;     ///< Sound length in bytes
+    char *data;       ///< Sound data
+    uint8_t freq_key; ///< Frequency-encoding byte.
 } sd_sound;
 
 /*! \brief Sounds list
