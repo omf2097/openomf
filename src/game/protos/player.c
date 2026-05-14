@@ -564,8 +564,8 @@ void player_run(object *obj) {
                 log_debug("object in group %d sound freq adjustment is %d", obj->group, pitch);
             }
             if(sd_script_isset(frame, "l")) {
-                int v = clamp(sd_script_get(frame, "l"), 0, 100);
-                volume = (v / 100.0f);
+                int v = clamp(sd_script_get(frame, "l") * 2, 0, 127);
+                volume = v / 127.0f;
             }
             if(sd_script_isset(frame, "sb")) {
                 panning = clamp(sd_script_get(frame, "sb"), -100, 100) / 100.0f;
