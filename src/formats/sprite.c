@@ -99,8 +99,6 @@ int sd_sprite_rgba_encode(sd_sprite *dst, const sd_rgba_image *src, const vga_pa
     uint16_t c = 0;
     int rowstart = 0;
     int ret = SD_SUCCESS;
-    size_t rgb_size;
-    char *buf;
 
     // Make sure we aren't being fed BS
     if(dst == NULL || src == NULL || pal == NULL) {
@@ -108,8 +106,8 @@ int sd_sprite_rgba_encode(sd_sprite *dst, const sd_rgba_image *src, const vga_pa
     }
 
     // allocate a buffer plenty big enough, we will trim it later
-    rgb_size = src->w * src->h * 4;
-    buf = omf_calloc(rgb_size, 1);
+    const size_t rgb_size = src->w * src->h * 4;
+    char *buf = omf_calloc(rgb_size, 1);
 
     // always initialize Y to 0
     buf[i++] = 2;
@@ -117,16 +115,16 @@ int sd_sprite_rgba_encode(sd_sprite *dst, const sd_rgba_image *src, const vga_pa
     rowstart = i;
 
     // Walk through the RGBA data
-    for(size_t pos = 0; pos <= rgb_size; pos += 4) {
-        uint8_t r = src->data[pos];
-        uint8_t g = src->data[pos + 1];
-        uint8_t b = src->data[pos + 2];
-        uint8_t a = src->data[pos + 3];
+    for(size_t pos = 0; pos < rgb_size; pos += 4) {
+        const uint8_t r = src->data[pos];
+        const uint8_t g = src->data[pos + 1];
+        const uint8_t b = src->data[pos + 2];
+        const uint8_t a = src->data[pos + 3];
 
         // ignore anything but fully opaque pixels
         if(a == 255) {
-            int16_t x = (pos / 4) % src->w;
-            int16_t y = (pos / 4) / src->w;
+            const int16_t x = (pos / 4) % src->w;
+            const int16_t y = (pos / 4) / src->w;
             if(y != lasty) {
                 // new row
                 c = (y * 4) + 2;
