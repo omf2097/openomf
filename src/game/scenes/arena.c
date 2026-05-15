@@ -651,9 +651,10 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
 
             // Wallhit sound
             // 36, 37, and 38 all sound alike, unsure which is the right one
-            float d = ((float)o_har->pos.x) / 640.0f;
-            float pos_pan = d - 0.25f;
-            game_state_play_sound(o_har->gs, 36, 1.0f, pos_pan, 0);
+            sound_opts opts;
+            sound_opts_init(&opts);
+            opts.panning = clamp(o_har->pos.x * 100 / 640 - 25, -100, 100);
+            game_state_play_sound(o_har->gs, 36, &opts);
 
             // Set hit animation
             object_set_animation(o_har, &af_get_move(h->af_data, ANIM_DAMAGE)->ani);

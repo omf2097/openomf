@@ -44,7 +44,7 @@ int sd_sounds_load(sd_sound_file *sf, const path *filename) {
     for(int i = 0; i <= data_block_count; i++) {
         sf->sounds[i].len = sd_read_uword(r);
         if(sf->sounds[i].len > 0) {
-            sf->sounds[i].unknown = sd_read_ubyte(r);
+            sf->sounds[i].freq_key = sd_read_ubyte(r);
             sf->sounds[i].data = omf_calloc(sf->sounds[i].len, 1);
             sd_read_buf(r, sf->sounds[i].data, sf->sounds[i].len);
         }
@@ -79,7 +79,7 @@ int sd_sounds_save(const sd_sound_file *sf, const path *filename) {
     for(int i = 0; i < SD_SOUNDS_MAX; i++) {
         sd_write_uword(w, sf->sounds[i].len);
         if(sf->sounds[i].len > 0) {
-            sd_write_ubyte(w, sf->sounds[i].unknown);
+            sd_write_ubyte(w, sf->sounds[i].freq_key);
             sd_write_buf(w, sf->sounds[i].data, sf->sounds[i].len);
         }
     }

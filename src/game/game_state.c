@@ -1,5 +1,6 @@
 #include "game/game_state.h"
 #include "audio/audio.h"
+#include "audio/sound_sources/dat_source.h"
 #include "console/console.h"
 #include "controller/joystick.h"
 #include "controller/keyboard.h"
@@ -25,7 +26,6 @@
 #include "game/utils/settings.h"
 #include "resources/languages.h"
 #include "resources/pilots.h"
-#include "resources/sounds_loader.h"
 #include "utils/allocator.h"
 #include "utils/c_array_util.h"
 #include "utils/c_string_util.h"
@@ -64,12 +64,11 @@ typedef struct {
 
 typedef struct {
     int tick;
-    int id;
+    int sound_id;
     int length;
     int duration;
-    int freq;
-    float volume;
-    float panning;
+    int volume;
+    int panning;
     int pitch;
     int playback_id;
 } playing_sound;
@@ -954,7 +953,7 @@ void game_state_merge_sounds(game_state *old, game_state *new) {
         bool found = false;
         vector_iter_begin(&new->sounds, &it2);
         while((s2 = iter_next(&it2)) != NULL) {
-            if(s->id == s2->id && s->tick == s2->tick) {
+            if(s->sound_id == s2->sound_id && s->tick == s2->tick) {
                 // same sound, same frame
                 found = true;
                 break;
@@ -963,7 +962,7 @@ void game_state_merge_sounds(game_state *old, game_state *new) {
 
         if(!found) {
             // this sound no longer exists after a rollback, so we need to fade it out
-            audio_fade_out(s->id, 500);
+            audio_fade_out(s->playback_id, 500);
             // don't bother adding it to the new sound vector though
         }
     }
@@ -973,7 +972,7 @@ void game_state_merge_sounds(game_state *old, game_state *new) {
         bool found = false;
         vector_iter_begin(&old->sounds, &it2);
         while((s2 = iter_next(&it2)) != NULL) {
-            if(s->id == s2->id && s->tick == s2->tick) {
+            if(s->sound_id == s2->sound_id && s->tick == s2->tick) {
                 // same sound, same frame
                 found = true;
                 break;
@@ -987,36 +986,36 @@ void game_state_merge_sounds(game_state *old, game_state *new) {
             // this sound should NOT have been played already!
             assert(s->playback_id == -1);
 
-            // calculate the offset into the buffer we need
-            int adjusted_samplerate = pitched_samplerate(s->freq, s->pitch);
-            int total_duration = (int)(s->length / (adjusted_samplerate * 1000));
-            int elapsed_ms = total_duration - s->duration;
-            int offset = elapsed_ms * adjusted_samplerate / 1000;
+            sound_source src;
+            if(!dat_source_load(&src, s->sound_id)) {
+                log_error("Requested sound sample %d not found or empty", s->sound_id);
+                return;
+            }
 
-            // Load sample (8000Hz, mono, 8bit)
-            char *src_buf;
-            int src_len;
-            int src_freq;
-            if(!sounds_loader_get(s->id, &src_buf, &src_len, &src_freq)) {
-                log_error("Requested sound sample %d not found", s->id);
-                return;
-            }
-            if(src_len == 0) {
-                log_debug("Requested sound sample %d has nothing to play", s->id);
-                return;
-            }
+            // calculate the offset into the buffer we need
+            int effective_freq = pitched_samplerate(src.freq, s->pitch);
+            int total_duration = (int)(s->length / (effective_freq * 1000));
+            int elapsed_ms = total_duration - s->duration;
+            int offset = elapsed_ms * effective_freq / 1000;
 
             log_debug(
-                "playing sound %d with pitch %f added after rollback at tick %d otf length %d at offset %d (duration "
+                "playing sound %d with pitch %d added after rollback at tick %d otf length %zu at offset %d (duration "
                 "total %d, remaining %d)",
-                s->id, s->pitch, s->tick, src_len, offset, total_duration, s->duration);
+                s->sound_id, s->pitch, s->tick, src.len, offset, total_duration, s->duration);
 
             // guard against playing beyond the end of the buffer
-            if(offset < src_len) {
-                // TODO decide on a fade in time
-                s->playback_id = audio_play_sound_buf(src_buf + offset, src_len - offset, s->freq, s->volume,
-                                                      s->panning, s->pitch, 500);
+            if((size_t)offset < src.len) {
+                src.buf += offset;
+                src.len -= offset;
+                sound_opts opts;
+                sound_opts_init(&opts);
+                opts.volume = s->volume;
+                opts.panning = s->panning;
+                opts.pitch = s->pitch;
+                opts.fade_in_ms = 500; // TODO decide on a fade in time
+                s->playback_id = audio_play_source(&src, &opts);
             }
+            sound_source_close(&src);
         }
     }
 }
@@ -1439,45 +1438,46 @@ int game_state_find_objects(game_state *gs, vector *out, bool (*predicate)(const
     return r;
 }
 
-void game_state_play_sound(game_state *gs, int id, float volume, float panning, int pitch) {
-    if(id < 0 || id > 299) {
+void game_state_play_sound(game_state *gs, int sound_id, const sound_opts *opts) {
+    if(sound_id < 0 || sound_id > 299) {
         return;
     }
 
-    // Load sample (8000Hz, mono, 8bit)
-    char *src_buf;
-    int src_len;
-    int src_freq;
-    if(!sounds_loader_get(id, &src_buf, &src_len, &src_freq)) {
-        log_error("Requested sound sample %d not found", id);
+    sound_source src;
+    if(!dat_source_load(&src, sound_id)) {
+        log_error("Requested sound sample %d not found or empty", sound_id);
         return;
     }
-    if(src_len == 0) {
-        log_debug("Requested sound sample %d has nothing to play", id);
-        return;
+
+    sound_opts defaults;
+    if(opts == NULL) {
+        sound_opts_init(&defaults);
+        opts = &defaults;
     }
+    int effective_freq = pitched_samplerate(src.freq, opts->pitch);
 
     playing_sound s;
     s.tick = gs->tick;
-    s.id = id;
-    s.length = src_len;
-    s.duration = src_len / (pitched_samplerate(src_freq, pitch) * 1000);
-    s.freq = src_freq;
-    s.volume = volume;
-    s.panning = panning;
-    s.pitch = pitch;
+    s.sound_id = sound_id;
+    s.length = (int)src.len;
+    s.duration = (int)(src.len / (effective_freq * 1000));
+    s.volume = opts->volume;
+    s.panning = opts->panning;
+    s.pitch = opts->pitch;
     s.playback_id = -1;
 
     if(!gs->clone) {
         // do not actually begin playback if this is a cloned game state
         // cloned game states that are promoted to the active game state
         // will have this flag removed
-        s.playback_id = audio_play_sound_buf(src_buf, src_len, src_freq, volume, panning, pitch, 0);
+        s.playback_id = audio_play_source(&src, opts);
         if(s.playback_id == -1) {
             // don't track sounds that failed to play
+            sound_source_close(&src);
             return;
         }
     }
+    sound_source_close(&src);
 
     vector_append(&gs->sounds, &s);
 }

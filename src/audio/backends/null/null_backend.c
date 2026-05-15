@@ -6,15 +6,13 @@
 #include <assert.h>
 #include <string.h>
 
-#define CHANNEL_MAX 8
-
 static const audio_sample_rate supported_sample_rates[] = {
     {48000, 1, "48000Hz"},
 };
 static const int supported_sample_rate_count = N_ELEMENTS(supported_sample_rates);
 
 static bool is_available(void) {
-    return true; // This is always available if compiled in.
+    return true;
 }
 
 static const char *get_description(void) {
@@ -42,15 +40,22 @@ static void set_backend_sound_volume(void *userdata, float volume) {
 static void set_backend_music_volume(void *userdata, float volume) {
 }
 
-static int play_sound(void *userdata, const char *src_buf, size_t src_len, int src_freq, float volume, float panning,
-                      int pitch, int fade) {
-    return -1;
+static bool play_pcm_sound(void *userdata, int channel, const sound_source *src, int volume, int panning,
+                           int fade_in_ms) {
+    return false;
 }
 
-static void fade_out(int playback_id, int ms) {
+static bool is_channel_playing(void *userdata, int channel) {
+    return false;
 }
 
-static void stop_music(void *ctx) {
+static void stop_channel(void *userdata, int channel) {
+}
+
+static void fade_out_channel(void *userdata, int channel, int ms) {
+}
+
+static void stop_music(void *userdata) {
 }
 
 static void play_music(void *userdata, const music_source *src) {
@@ -93,8 +98,10 @@ void null_audio_backend_set_callbacks(audio_backend *null_backend) {
     null_backend->set_sound_volume = set_backend_sound_volume;
     null_backend->setup_context = setup_backend_context;
     null_backend->close_context = close_backend_context;
+    null_backend->play_pcm_sound = play_pcm_sound;
+    null_backend->is_channel_playing = is_channel_playing;
+    null_backend->stop_channel = stop_channel;
+    null_backend->fade_out_channel = fade_out_channel;
     null_backend->play_music = play_music;
-    null_backend->play_sound = play_sound;
     null_backend->stop_music = stop_music;
-    null_backend->fade_out = fade_out;
 }

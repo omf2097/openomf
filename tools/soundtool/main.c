@@ -110,7 +110,7 @@ int main(int argc, char *argv[]) {
         if(sampleprint->count > 0) {
             int count = (sampleprint->ival[0] > sound->len) ? sound->len : sampleprint->ival[0];
             printf("Sample size = %d\n", sound->len);
-            printf("Unknown = %d\n", sound->unknown);
+            printf("Freq key = %d (= %d Hz)\n", sound->freq_key, 1000000 / (256 - sound->freq_key));
             printf("Attempting to print %d first bytes.\n", count);
             for(int i = 0; i < count; i++) {
                 unsigned int s = sound->data[i] & 0xFF;
@@ -175,7 +175,7 @@ int main(int argc, char *argv[]) {
             }
         } else {
             printf("Selected sample %d\n", sound_id);
-            printf("Unknown = %d\n", sound->unknown);
+            printf("Freq key = %d (= %d Hz)\n", sound->freq_key, 1000000 / (256 - sound->freq_key));
             printf("Length = %d\n", sound->len);
         }
     } else {

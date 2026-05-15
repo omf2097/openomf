@@ -1,20 +1,25 @@
+/**
+ * @file audio_backend.h
+ * @brief Audio backend vtable
+ * @copyright MIT License
+ * @date 2026
+ * @author OpenOMF Project
+ */
+
 #ifndef AUDIO_BACKEND_H
 #define AUDIO_BACKEND_H
 
-#include "audio/sources/music_source.h"
+#include "audio/music_sources/music_source.h"
+#include "audio/sound_sources/sound_source.h"
 
 #include <stdbool.h>
 #include <stddef.h>
 
-#define VOLUME_DEFAULT 1.0f
-#define PANNING_DEFAULT 0.0f
+#define SOUND_CHANNEL_COUNT 8
 
-#define VOLUME_MAX 1.0f
-#define PANNING_MAX 1.0f
-
-#define VOLUME_MIN 0.0f
-#define PANNING_MIN -1.0f
-
+/**
+ * @brief One entry in a backend's supported sample-rate list.
+ */
 typedef struct audio_sample_rate {
     unsigned int sample_rate;
     bool is_default;
@@ -23,37 +28,37 @@ typedef struct audio_sample_rate {
 
 typedef struct audio_backend audio_backend;
 
-// Metadata functions, all must be implemented. These must NOT require context or renderer state to be initialized!
+// Metadata ops — must be callable before setup_context.
 typedef bool (*is_backend_available_fn)(void);
 typedef const char *(*get_backend_description_fn)(void);
 typedef const char *(*get_backend_name_fn)(void);
-
-// Player available settings getters
 typedef unsigned int (*get_backend_sample_rates_fn)(const audio_sample_rate **sample_rates);
 
-// Backend current status information
-typedef void (*get_backend_info)(void *ctx, unsigned *sample_rate, unsigned *channels, unsigned *resampler);
+/// Read current context settings (any out-param may be NULL).
+typedef void (*get_backend_info_fn)(void *ctx, unsigned *sample_rate, unsigned *channels, unsigned *resampler);
 
-// These initialize the player itself; they should be used to reserve and free internal context objects.
-typedef void (*create_backend_fn)(audio_backend *renderer);
-typedef void (*destroy_backend_fn)(audio_backend *renderer);
-
-// Volume setters
-typedef void (*set_backend_sound_volume_fn)(void *ctx, float volume);
-typedef void (*set_backend_music_volume_fn)(void *ctx, float volume);
-
-// Renderer initialization and de-initialization, these must be implemented.
+// Lifecycle.
+typedef void (*create_backend_fn)(audio_backend *backend);
+typedef void (*destroy_backend_fn)(audio_backend *backend);
 typedef bool (*setup_backend_context_fn)(void *ctx, unsigned sample_rate, bool mono, int resampler, float music_volume,
                                          float sound_volume);
 typedef void (*close_backend_context_fn)(void *ctx);
 
-// Playback handling.
-typedef int (*play_sound_fn)(void *ctx, const char *buf, size_t len, int freq, float volume, float panning, int pitch,
-                             int fade);
+// Master volume setters (0.0..1.0).
+typedef void (*set_backend_sound_volume_fn)(void *ctx, float volume);
+typedef void (*set_backend_music_volume_fn)(void *ctx, float volume);
+
+// Primitive per-channel ops. audio.c picks the channel and bounds-checks the values;
+// `src->freq` is already pitch-adjusted, `volume` is 0..127, `panning` is -100..100.
+typedef bool (*play_pcm_sound_fn)(void *ctx, int channel, const sound_source *src, int volume, int panning,
+                                  int fade_in_ms);
+typedef bool (*is_channel_playing_fn)(void *ctx, int channel);
+typedef void (*stop_channel_fn)(void *ctx, int channel);
+typedef void (*fade_out_channel_fn)(void *ctx, int channel, int ms);
+
+// Music. Backend takes ownership of `src`.
 typedef void (*play_music_fn)(void *ctx, const music_source *src);
 typedef void (*stop_music_fn)(void *ctx);
-
-typedef void (*fade_out_fn)(int playback_id, int ms);
 
 struct audio_backend {
     is_backend_available_fn is_available;
@@ -61,7 +66,7 @@ struct audio_backend {
     get_backend_name_fn get_name;
 
     get_backend_sample_rates_fn get_sample_rates;
-    get_backend_info get_info;
+    get_backend_info_fn get_info;
 
     set_backend_sound_volume_fn set_sound_volume;
     set_backend_music_volume_fn set_music_volume;
@@ -72,11 +77,13 @@ struct audio_backend {
     setup_backend_context_fn setup_context;
     close_backend_context_fn close_context;
 
-    play_sound_fn play_sound;
+    play_pcm_sound_fn play_pcm_sound;
+    is_channel_playing_fn is_channel_playing;
+    stop_channel_fn stop_channel;
+    fade_out_channel_fn fade_out_channel;
+
     play_music_fn play_music;
     stop_music_fn stop_music;
-
-    fade_out_fn fade_out;
 
     void *ctx;
 };

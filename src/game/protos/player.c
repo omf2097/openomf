@@ -554,28 +554,25 @@ void player_run(object *obj) {
         }
 
         // Sound playback
-        if(sd_script_isset(frame, "s")) {
-            int pitch = 0;
-            float volume = VOLUME_DEFAULT;
-            float panning = PANNING_DEFAULT;
-            if(sd_script_isset(frame, "sf")) {
-                pitch = sd_script_get(frame, "sf");
-                assert(pitch >= -128 && pitch <= 128);
-                log_debug("object in group %d sound freq adjustment is %d", obj->group, pitch);
-            }
+        if(sd_script_isset(frame, "s") && obj->sound_translation_table) {
+            int sound_id = obj->sound_translation_table[sd_script_get(frame, "s")] - 1;
+
+            sound_opts opts;
+            sound_opts_init(&opts);
             if(sd_script_isset(frame, "l")) {
-                int v = clamp(sd_script_get(frame, "l"), 0, 100);
-                volume = (v / 100.0f);
+                // Original game: `l` is 0..63 and the driver volume is loudness*2 clamped to 127.
+                opts.volume = clamp(sd_script_get(frame, "l") * 2, 0, 127);
             }
             if(sd_script_isset(frame, "sb")) {
-                panning = clamp(sd_script_get(frame, "sb"), -100, 100) / 100.0f;
+                opts.panning = clamp(sd_script_get(frame, "sb"), -100, 100);
             } else {
-                panning = (obj->pos.x - 160) / 160.0f;
+                opts.panning = clamp((obj->pos.x - 160) * 100 / 160, -100, 100);
             }
-            if(obj->sound_translation_table) {
-                int sound_id = obj->sound_translation_table[sd_script_get(frame, "s")] - 1;
-                game_state_play_sound(obj->gs, sound_id, volume, panning, pitch);
+            if(sd_script_isset(frame, "sf")) {
+                opts.pitch = sd_script_get(frame, "sf");
+                assert(opts.pitch >= -128 && opts.pitch <= 128);
             }
+            game_state_play_sound(obj->gs, sound_id, &opts);
         }
 
         // Blend mode stuff
