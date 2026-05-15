@@ -1,6 +1,7 @@
 #ifndef GAME_STATE_H
 #define GAME_STATE_H
 
+#include "audio/sound_opts.h"
 #include "formats/rec_assertion.h"
 #include "game/game_state_type.h"
 #include "game/utils/serial.h"
@@ -50,8 +51,9 @@ object *game_state_find_object(game_state *gs, uint32_t object_id);
 int game_state_find_objects(game_state *gs, vector *out, bool (*predicate)(const object *obj, void *user_data),
                             void *ud);
 
-// used to play sounds that may be subject to rollback (eg sounds from player.c, HAR and arena)
-void game_state_play_sound(game_state *gs, int id, float volume, float panning, int pitch);
+// used to play sounds that may be subject to rollback (eg sounds from player.c, HAR and arena).
+// NULL opts means defaults.
+void game_state_play_sound(game_state *gs, int sound_id, const sound_opts *opts);
 
 int game_state_clone(game_state *src, game_state *dst);
 void game_state_clone_free(game_state *gs);

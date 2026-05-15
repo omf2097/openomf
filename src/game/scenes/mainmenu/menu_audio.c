@@ -1,6 +1,6 @@
 #include "game/scenes/mainmenu/menu_audio.h"
 #include "audio/audio.h"
-#include "audio/sources/psm_source.h"
+#include "audio/music_sources/psm_source.h"
 #include "game/gui/gui.h"
 #include "game/utils/settings.h"
 #include "utils/allocator.h"

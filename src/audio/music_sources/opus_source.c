@@ -1,4 +1,4 @@
-#include "audio/sources/opus_source.h"
+#include "audio/music_sources/opus_source.h"
 #include "utils/log.h"
 
 #ifdef OPUSFILE_FOUND
@@ -66,12 +66,12 @@ static void opus_read_loop_tags(opus_source *context) {
 }
 
 static void opus_announce_track(const opus_source *context) {
-    const OpusTags *tags = op_tags(context->handle, -1);
+    const OpusTags *const tags = op_tags(context->handle, -1);
     if(tags == NULL) {
         return;
     }
-    const char *artist = opus_tags_query(tags, "ARTIST", 0);
-    const char *title = opus_tags_query(tags, "TITLE", 0);
+    const char *const artist = opus_tags_query(tags, "ARTIST", 0);
+    const char *const title = opus_tags_query(tags, "TITLE", 0);
     if(artist != NULL && title != NULL) {
         osd_print("playing: %s - %s", artist, title);
     } else if(title != NULL) {
@@ -82,7 +82,7 @@ static void opus_announce_track(const opus_source *context) {
 }
 
 static void opus_render(void *userdata, char *stream, int len) {
-    opus_source *context = userdata;
+    opus_source *const context = userdata;
     if(context) {
         // Opus will return us small buffers of data. Read enough to make sure we can cover the requested
         // length in all cases.
@@ -129,7 +129,7 @@ static void opus_close(void *userdata) {
 }
 
 static void opus_set_volume(void *userdata, float volume) {
-    opus_source *context = userdata;
+    opus_source *const context = userdata;
     if(context != NULL) {
         context->volume = volume;
     }
@@ -167,7 +167,6 @@ exit_0:
 #else
 
 bool opus_load(music_source *src, int channels, int sample_rate, const char *file) {
-    // Just fail if there is no opus support.
     log_error("No opusfile support!");
     return false;
 }

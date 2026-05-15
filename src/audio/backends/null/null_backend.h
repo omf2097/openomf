@@ -1,3 +1,11 @@
+/**
+ * @file null_backend.h
+ * @brief No-op audio backend for headless / test builds
+ * @copyright MIT License
+ * @date 2026
+ * @author OpenOMF Project
+ */
+
 #ifndef NULL_BACKEND_H
 #define NULL_BACKEND_H
 

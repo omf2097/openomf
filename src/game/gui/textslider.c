@@ -62,7 +62,7 @@ static void textslider_render(component *c) {
 static int textslider_action(component *c, int action) {
     text_slider *t = widget_get_obj(c);
     int old_pos = *t->pos;
-    float panning = t->disable_panning ? 0.0f : 0.5f;
+    int panning = t->disable_panning ? 0 : 50;
     if(action == ACT_KICK || action == ACT_PUNCH || action == ACT_RIGHT) {
         (*t->pos)++;
         if(*t->pos > t->positions) {
@@ -78,7 +78,11 @@ static int textslider_action(component *c, int action) {
     if(old_pos != *t->pos) {
         // Play menu sound
         refresh(c);
-        audio_play_sound(20, 0.5f, panning, 0);
+        sound_opts opts;
+        sound_opts_init(&opts);
+        opts.volume = 64;
+        opts.panning = panning;
+        audio_play_sound(20, &opts);
         if(t->slide) {
             t->slide(c, t->userdata, *t->pos);
         }

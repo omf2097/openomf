@@ -92,15 +92,15 @@ static int textselector_action(component *c, int action) {
         return 0;
     }
     int old_pos = *tb->pos;
-    float panning = 0.0f;
+    int panning = 0;
     if(action == ACT_KICK || action == ACT_PUNCH || action == ACT_RIGHT) {
-        panning = 0.5f;
+        panning = 50;
         (*tb->pos)++;
         if(*tb->pos >= (int)vector_size(&tb->options)) {
             *tb->pos = 0;
         }
     } else if(action == ACT_LEFT) {
-        panning = -0.5f;
+        panning = -50;
         (*tb->pos)--;
         if(*tb->pos < 0) {
             *tb->pos = vector_size(&tb->options) - 1;
@@ -111,7 +111,11 @@ static int textselector_action(component *c, int action) {
         if(tb->toggle) {
             tb->toggle(c, tb->userdata, *tb->pos);
         }
-        audio_play_sound(20, 0.5f, panning, 0);
+        sound_opts opts;
+        sound_opts_init(&opts);
+        opts.volume = 64;
+        opts.panning = panning;
+        audio_play_sound(20, &opts);
         // reset ticks so text is bright
         tb->ticks = 0;
         return 0;

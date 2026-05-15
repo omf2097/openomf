@@ -587,8 +587,11 @@ void har_floor_landing_effects(object *obj, bool play_sound) {
 
     // Landing sound
     if(play_sound) {
-        float pos_pan = ((float)obj->pos.x - 160.0f) / 160.0f;
-        game_state_play_sound(obj->gs, 56, 0.3f, pos_pan, 0);
+        sound_opts opts;
+        sound_opts_init(&opts);
+        opts.volume = 38;
+        opts.panning = clamp((obj->pos.x - 160) * 100 / 160, -100, 100);
+        game_state_play_sound(obj->gs, 56, &opts);
     }
 }
 
@@ -1169,7 +1172,13 @@ void har_block(object *obj, vec2i hit_coord, uint8_t block_stun) {
     object_set_layers(scrape, LAYER_SCRAP);
     object_dynamic_tick(scrape);
     object_dynamic_tick(scrape);
-    game_state_play_sound(obj->gs, 3, 0.7f, 0.5f, 0);
+    {
+        sound_opts opts;
+        sound_opts_init(&opts);
+        opts.volume = 89;
+        opts.panning = 50;
+        game_state_play_sound(obj->gs, 3, &opts);
+    }
     game_state_add_object(obj->gs, scrape, RENDER_LAYER_MIDDLE, 0, 0);
     h->damage_received = 1;
 }
