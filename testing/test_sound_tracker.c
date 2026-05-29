@@ -247,7 +247,7 @@ void test_lower_priority_cannot_evict(void) {
     sound_opts lo;
     sound_opts_init(&lo);
     lo.priority = 5;
-    const int entries_before = vector_size(&t.entries);
+    const unsigned int entries_before = vector_size(&t.entries);
     sound_tracker_play(&t, 99, false, 4, &lo);
     CU_ASSERT_EQUAL(vector_size(&t.entries), entries_before); // no new entry recorded
     for(int ch = 0; ch < 3; ch++) {
