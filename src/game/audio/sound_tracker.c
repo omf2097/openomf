@@ -52,7 +52,7 @@ static void sound_tracker_update_pans(sound_tracker *t, sound_pan_lookup lookup,
             continue;
         }
 
-        // set tyhe new panning value if there was a change.
+        // set the new panning value if there was a change.
         new_pan = clamp(new_pan, -100, 100);
         if(new_pan != s->panning) {
             s->panning = new_pan;
