@@ -23,6 +23,9 @@ void smallbuffer_test_suite(CU_pSuite suite);
 void ringbuffer_test_suite(CU_pSuite suite);
 void c_string_util_test_suite(CU_pSuite suite);
 void sprite_packer_test_suite(CU_pSuite suite);
+void sound_tracker_test_suite(CU_pSuite suite);
+int sound_tracker_suite_init(void);
+int sound_tracker_suite_free(void);
 
 int main(int argc, char **argv) {
     CU_pSuite suite = NULL;
@@ -152,6 +155,12 @@ int main(int argc, char **argv) {
         goto end;
     }
     sprite_packer_test_suite(sprite_packer_suite);
+
+    CU_pSuite sound_tracker_suite = CU_add_suite("Sound Tracker", sound_tracker_suite_init, sound_tracker_suite_free);
+    if(sound_tracker_suite == NULL) {
+        goto end;
+    }
+    sound_tracker_test_suite(sound_tracker_suite);
 
     // Run tests
     CU_basic_set_mode(CU_BRM_VERBOSE);
