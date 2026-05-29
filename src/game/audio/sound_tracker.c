@@ -90,12 +90,15 @@ void sound_tracker_merge(sound_tracker *old, sound_tracker *new) {
         vector_iter_begin(&new->entries, &it2);
         foreach(it2, s2) {
             if(s->sound_id == s2->sound_id && s->tick == s2->tick) {
+                // same sound, same frame
                 found = true;
                 break;
             }
         }
         if(!found) {
+            // this sound no longer exists after a rollback, so we need to fade it out
             audio_fade_out(s->playback_id, 500);
+            // don't bother adding it to the new sound vector though
         }
     }
 
@@ -112,7 +115,10 @@ void sound_tracker_merge(sound_tracker *old, sound_tracker *new) {
         }
 
         if(!found) {
-            // this sound should NOT have been played already
+            // this sound was added during the rollback, so we need to start playing it,
+            // but we need to determine the playback offset AND fade it in
+            //
+            // this sound should NOT have been played already!
             assert(s->playback_id == -1);
 
             sound_source src;
@@ -132,6 +138,7 @@ void sound_tracker_merge(sound_tracker *old, sound_tracker *new) {
                 "total %d, remaining %d)",
                 s->sound_id, s->pitch, s->tick, src.len, offset, total_duration, s->duration);
 
+            // guard against playing beyond the end of the buffer
             if((size_t)offset < src.len) {
                 src.buf += offset;
                 src.len -= offset;
