@@ -75,6 +75,11 @@ void sound_tracker_tick(sound_tracker *t, const int ms_elapsed, sound_pan_lookup
 }
 
 void sound_tracker_merge(sound_tracker *old, sound_tracker *new) {
+    // We need to do several things here:
+    // * Leave any sounds that are playing in both states alone
+    // * Fade out any sounds only playing in the old state
+    // * Fade in any new sounds, and start playing them at the appropriate offset
+
     iterator it, it2;
     playing_sound *s, *s2;
 
