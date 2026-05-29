@@ -15,7 +15,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#define SOUND_CHANNEL_COUNT 8
+#define SOUND_CHANNEL_COUNT 3
 
 /**
  * @brief One entry in a backend's supported sample-rate list.
@@ -28,7 +28,6 @@ typedef struct audio_sample_rate {
 
 typedef struct audio_backend audio_backend;
 
-// Metadata ops — must be callable before setup_context.
 typedef bool (*is_backend_available_fn)(void);
 typedef const char *(*get_backend_description_fn)(void);
 typedef const char *(*get_backend_name_fn)(void);
@@ -44,17 +43,17 @@ typedef bool (*setup_backend_context_fn)(void *ctx, unsigned sample_rate, bool m
                                          float sound_volume);
 typedef void (*close_backend_context_fn)(void *ctx);
 
-// Master volume setters (0.0..1.0).
+// Master volume setters (0.0 ... 1.0).
 typedef void (*set_backend_sound_volume_fn)(void *ctx, float volume);
 typedef void (*set_backend_music_volume_fn)(void *ctx, float volume);
 
 // Primitive per-channel ops. audio.c picks the channel and bounds-checks the values;
-// `src->freq` is already pitch-adjusted, `volume` is 0..127, `panning` is -100..100.
 typedef bool (*play_pcm_sound_fn)(void *ctx, int channel, const sound_source *src, int volume, int panning,
                                   int fade_in_ms);
 typedef bool (*is_channel_playing_fn)(void *ctx, int channel);
 typedef void (*stop_channel_fn)(void *ctx, int channel);
 typedef void (*fade_out_channel_fn)(void *ctx, int channel, int ms);
+typedef void (*set_channel_panning_fn)(void *ctx, int channel, int panning);
 
 // Music. Backend takes ownership of `src`.
 typedef void (*play_music_fn)(void *ctx, const music_source *src);
@@ -81,6 +80,7 @@ struct audio_backend {
     is_channel_playing_fn is_channel_playing;
     stop_channel_fn stop_channel;
     fade_out_channel_fn fade_out_channel;
+    set_channel_panning_fn set_channel_panning;
 
     play_music_fn play_music;
     stop_music_fn stop_music;

@@ -1,5 +1,5 @@
 #include "game/scenes/mainmenu.h"
-#include "audio/audio.h"
+#include "game/audio/music_tracker.h"
 #include "game/gui/gui_frame.h"
 #include "game/scenes/mainmenu/menu_main.h"
 #include "game/scenes/mainmenu/menu_widget_ids.h"
@@ -163,7 +163,7 @@ int mainmenu_create(scene *scene) {
     scene->gs->net_mode = NET_MODE_NONE;
 
     // Music and renderer
-    audio_play_music(PSM_MENU);
+    music_tracker_play(PSM_MENU);
 
     // All done
     return 0;

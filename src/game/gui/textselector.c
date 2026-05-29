@@ -111,11 +111,7 @@ static int textselector_action(component *c, int action) {
         if(tb->toggle) {
             tb->toggle(c, tb->userdata, *tb->pos);
         }
-        sound_opts opts;
-        sound_opts_init(&opts);
-        opts.volume = 64;
-        opts.panning = panning;
-        audio_play_sound(20, &opts);
+        audio_play_sound_simple(20, panning);
         // reset ticks so text is bright
         tb->ticks = 0;
         return 0;

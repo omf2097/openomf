@@ -14,7 +14,9 @@
 #include <stdbool.h>
 
 /**
- * @brief Load a sample from the SOUNDS.DAT
+ * @brief Load a sample from the SOUNDS.DAT.
+ * @param src Sound source to populate.
+ * @param sound_id SOUNDS.DAT sample id.
  * @return true on success, false if sound_id is out of range or the slot is empty.
  */
 bool dat_source_load(sound_source *src, int sound_id);

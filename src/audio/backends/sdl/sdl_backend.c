@@ -83,7 +83,7 @@ static const char *get_sdl_audio_format_string(SDL_AudioFormat format) {
     return "UNKNOWN";
 }
 
-static inline void free_chunk(sdl_audio_context *ctx, int i) {
+static inline void free_chunk(sdl_audio_context *ctx, const int i) {
     Mix_Chunk *chunk = &ctx->chunks[i];
     if(chunk->allocated) {
         SDL_free(chunk->abuf);
@@ -91,9 +91,8 @@ static inline void free_chunk(sdl_audio_context *ctx, int i) {
     }
 }
 
-static bool audio_get_chunk(const sdl_audio_context *ctx, Mix_Chunk *chunk, const char *src_buf, size_t src_len,
-                            int src_freq, int volume) {
-    Uint8 *dst_buf;
+static bool audio_get_chunk(const sdl_audio_context *ctx, Mix_Chunk *chunk, const char *src_buf, const size_t src_len,
+                            const int src_freq, const int volume) {
     SDL_AudioCVT cvt;
 
     if(SDL_BuildAudioCVT(&cvt, AUDIO_U8, 1, src_freq, ctx->format, ctx->channels, ctx->sample_rate) < 0) {
@@ -102,7 +101,8 @@ static bool audio_get_chunk(const sdl_audio_context *ctx, Mix_Chunk *chunk, cons
     }
 
     // Buffer must hold both the source bytes (copied below) and the converted output.
-    if((dst_buf = SDL_malloc(src_len * cvt.len_mult + 1)) == NULL) {
+    Uint8 *dst_buf = SDL_malloc(src_len * cvt.len_mult + 1);
+    if(dst_buf == NULL) {
         log_error("Unable to allocate memory for sound buffer");
         goto exit_0;
     }
@@ -133,7 +133,7 @@ static void set_backend_sound_volume(void *userdata, float volume) {
     Mix_Volume(-1, volume * MIX_MAX_VOLUME);
 }
 
-static void set_backend_music_volume(void *userdata, float volume) {
+static void set_backend_music_volume(void *userdata, const float volume) {
     assert(userdata);
     sdl_audio_context *const ctx = userdata;
     ctx->volume = clampf(volume, 0.0f, 1.0f);
@@ -154,8 +154,8 @@ static void get_info(void *userdata, unsigned *sample_rate, unsigned *channels, 
     }
 }
 
-static bool play_pcm_sound(void *userdata, int channel, const sound_source *src, int volume, int panning,
-                           int fade_in_ms) {
+static bool play_pcm_sound(void *userdata, const int channel, const sound_source *src, const int volume,
+                           const int panning, const int fade_in_ms) {
     assert(userdata);
     assert(src);
     sdl_audio_context *const ctx = userdata;
@@ -180,7 +180,7 @@ static bool play_pcm_sound(void *userdata, int channel, const sound_source *src,
     return true;
 }
 
-static bool is_channel_playing(void *userdata, int channel) {
+static bool is_channel_playing(void *userdata, const int channel) {
     assert(userdata);
     (void)userdata;
     if(channel < 0 || channel >= SOUND_CHANNEL_COUNT) {
@@ -189,7 +189,7 @@ static bool is_channel_playing(void *userdata, int channel) {
     return Mix_Playing(channel) != 0;
 }
 
-static void stop_channel(void *userdata, int channel) {
+static void stop_channel(void *userdata, const int channel) {
     assert(userdata);
     sdl_audio_context *const ctx = userdata;
     if(channel < 0 || channel >= SOUND_CHANNEL_COUNT) {
@@ -199,13 +199,24 @@ static void stop_channel(void *userdata, int channel) {
     free_chunk(ctx, channel);
 }
 
-static void fade_out_channel(void *userdata, int channel, int ms) {
+static void fade_out_channel(void *userdata, const int channel, const int ms) {
     assert(userdata);
     (void)userdata;
     if(channel < 0 || channel >= SOUND_CHANNEL_COUNT) {
         return;
     }
     Mix_FadeOutChannel(channel, ms);
+}
+
+static void set_channel_panning(void *userdata, const int channel, const int panning) {
+    assert(userdata);
+    (void)userdata;
+    if(channel < 0 || channel >= SOUND_CHANNEL_COUNT) {
+        return;
+    }
+    const int pan_left = (panning > 0) ? (100 - panning) * 255 / 100 : 255;
+    const int pan_right = (panning < 0) ? (100 + panning) * 255 / 100 : 255;
+    Mix_SetPanning(channel, pan_left, pan_right);
 }
 
 static void stop_music(void *userdata) {
@@ -216,7 +227,7 @@ static void stop_music(void *userdata) {
     Mix_HookMusic(NULL, NULL);
 }
 
-static void sdl_hook(void *userdata, Uint8 *stream, int len) {
+static void sdl_hook(void *userdata, Uint8 *stream, const int len) {
     sdl_audio_context *const ctx = userdata;
     music_source_render(&ctx->music, (char *)stream, len);
 }
@@ -230,8 +241,8 @@ static void play_music(void *userdata, const music_source *src) {
     Mix_HookMusic(sdl_hook, ctx);
 }
 
-static bool setup_backend_context(void *userdata, unsigned sample_rate, bool mono, int resampler, float music_volume,
-                                  float sound_volume) {
+static bool setup_backend_context(void *userdata, const unsigned sample_rate, const bool mono, const int resampler,
+                                  const float music_volume, const float sound_volume) {
     assert(userdata);
     sdl_audio_context *const ctx = userdata;
     memset(ctx, 0, sizeof(sdl_audio_context));
@@ -250,7 +261,7 @@ static bool setup_backend_context(void *userdata, unsigned sample_rate, bool mon
     log_info(" * Channels: %d", mono ? 1 : 2);
     log_info(" * Format: %s", get_sdl_audio_format_string(AUDIO_S16SYS));
 
-    // Request a device — the actual configuration we get back may differ.
+    // Request a device -- the actual configuration we get back may differ.
     if(Mix_OpenAudioDevice(sample_rate, AUDIO_S16SYS, mono ? 1 : 2, 2048, NULL, 0) != 0) {
         log_error("Unable to initialize audio device: %s", SDL_GetError());
         goto error_2;
@@ -308,6 +319,7 @@ void sdl_audio_backend_set_callbacks(audio_backend *sdl_backend) {
     sdl_backend->is_channel_playing = is_channel_playing;
     sdl_backend->stop_channel = stop_channel;
     sdl_backend->fade_out_channel = fade_out_channel;
+    sdl_backend->set_channel_panning = set_channel_panning;
     sdl_backend->play_music = play_music;
     sdl_backend->stop_music = stop_music;
 }

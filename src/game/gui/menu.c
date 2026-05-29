@@ -196,10 +196,7 @@ static int menu_action(component *mc, int action) {
         } while(component_is_disabled(c));
         if(c != old_c) {
             // Play menu sound
-            sound_opts opts;
-            sound_opts_init(&opts);
-            opts.volume = 64;
-            audio_play_sound(19, &opts);
+            audio_play_sound_simple(19, 0);
             component_select(c, 1);
         }
         return 0;

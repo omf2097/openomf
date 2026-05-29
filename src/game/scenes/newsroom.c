@@ -1,5 +1,5 @@
 #include "game/scenes/newsroom.h"
-#include "audio/audio.h"
+#include "game/audio/music_tracker.h"
 #include "game/gui/dialog.h"
 #include "game/gui/menu_background.h"
 #include "game/utils/settings.h"
@@ -514,7 +514,7 @@ int newsroom_create(scene *scene) {
     scene_set_startup_cb(scene, newsroom_startup);
 
     // Start correct music
-    audio_play_music(PSM_MENU);
+    music_tracker_play(PSM_MENU);
 
     return 0;
 }

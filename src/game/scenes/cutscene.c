@@ -1,13 +1,12 @@
 #include <stdlib.h>
 
-#include "audio/audio.h"
+#include "game/audio/music_tracker.h"
 #include "game/game_state.h"
 #include "game/gui/text/text.h"
 #include "game/scenes/cutscene.h"
 #include "resources/ids.h"
 #include "resources/languages.h"
 #include "utils/allocator.h"
-#include "utils/c_string_util.h"
 #include "utils/str.h"
 #include "utils/vector.h"
 
@@ -132,7 +131,7 @@ int cutscene_create(scene *scene) {
     const char *text = "";
     switch(scene->id) {
         case SCENE_END:
-            audio_play_music(PSM_END);
+            music_tracker_play(PSM_END);
             text = lang_get(END_TEXT);
             local->text_x = 10;
             local->text_y = 5;
@@ -176,7 +175,7 @@ int cutscene_create(scene *scene) {
                 palette_set_player_expanded_color(&p1->chr->pilot.palette);
             }
 
-            audio_play_music(PSM_END);
+            music_tracker_play(PSM_END);
 
             // load all the animations, in order
             // including the one for our HAR

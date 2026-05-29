@@ -81,7 +81,7 @@ static void opus_announce_track(const opus_source *context) {
     }
 }
 
-static void opus_render(void *userdata, char *stream, int len) {
+static void opus_render(void *userdata, char *stream, const int len) {
     opus_source *const context = userdata;
     if(context) {
         // Opus will return us small buffers of data. Read enough to make sure we can cover the requested
@@ -128,14 +128,14 @@ static void opus_close(void *userdata) {
     }
 }
 
-static void opus_set_volume(void *userdata, float volume) {
+static void opus_set_volume(void *userdata, const float volume) {
     opus_source *const context = userdata;
     if(context != NULL) {
         context->volume = volume;
     }
 }
 
-bool opus_load(music_source *src, int channels, int sample_rate, const char *file) {
+bool opus_load(music_source *src, const int channels, const int sample_rate, const char *file) {
     opus_source *context = omf_calloc(1, sizeof(opus_source));
     rb_create(&context->buffer, RING_SIZE);
     if((context->handle = op_open_file(file, NULL)) == NULL) {
@@ -166,7 +166,7 @@ exit_0:
 
 #else
 
-bool opus_load(music_source *src, int channels, int sample_rate, const char *file) {
+bool opus_load(music_source *src, const int channels, const int sample_rate, const char *file) {
     log_error("No opusfile support!");
     return false;
 }

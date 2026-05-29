@@ -3,6 +3,7 @@
 
 #include "audio/audio.h"
 #include "formats/pilot.h"
+#include "game/audio/music_tracker.h"
 #include "game/game_state.h"
 #include "game/gui/menu_background.h"
 #include "game/gui/progressbar.h"
@@ -474,12 +475,7 @@ void handle_action(scene *scene, int player, int action) {
             // [[fallthrough]]
         case ACT_PUNCH:
             *done = 1;
-            {
-                sound_opts opts;
-                sound_opts_init(&opts);
-                opts.volume = 64;
-                audio_play_sound(20, &opts);
-            }
+            audio_play_sound_simple(20, 0);
             if(CURSOR_A_DONE(local) && (CURSOR_B_DONE(local) || !player2->selectable)) {
                 local->cursor[0].done = 0;
                 local->cursor[1].done = 0;
@@ -566,11 +562,7 @@ void handle_action(scene *scene, int player, int action) {
     if(old_row != *row || old_column != *column) {
         // column 0..5 → panning -50..+50
         int panning = (*column) * 100 / 5 - 50;
-        sound_opts opts;
-        sound_opts_init(&opts);
-        opts.volume = 64;
-        opts.panning = panning;
-        audio_play_sound(19, &opts);
+        audio_play_sound_simple(19, panning);
         if(local->page == PILOT_SELECT) {
             if(player == 0) {
                 local->pilot_id_a = CURSOR_INDEX(local, player);
@@ -647,12 +639,7 @@ void melee_input_tick(scene *scene) {
 
     for(i = menu_ev; i; i = i->next) {
         if(i->type == EVENT_TYPE_ACTION && i->event_data.action == ACT_ESC) {
-            {
-                sound_opts opts;
-                sound_opts_init(&opts);
-                opts.volume = 64;
-                audio_play_sound(20, &opts);
-            }
+            audio_play_sound_simple(20, 0);
             if(local->page == HAR_SELECT) {
                 // restore the player selection
                 restore_cursors_to(local, local->pilot_id_a, local->pilot_id_b);
@@ -1048,7 +1035,7 @@ int melee_create(scene *scene) {
     scene_set_dynamic_tick_cb(scene, melee_tick);
 
     // Play correct music
-    audio_play_music(PSM_MENU);
+    music_tracker_play(PSM_MENU);
 
     // All done
     return 0;

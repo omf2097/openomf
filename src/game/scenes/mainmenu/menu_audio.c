@@ -1,6 +1,7 @@
 #include "game/scenes/mainmenu/menu_audio.h"
 #include "audio/audio.h"
 #include "audio/music_sources/psm_source.h"
+#include "game/audio/music_tracker.h"
 #include "game/gui/gui.h"
 #include "game/utils/settings.h"
 #include "utils/allocator.h"
@@ -38,7 +39,7 @@ void menu_audio_done(component *c, void *userdata) {
         audio_close();
         if(audio_init(s->player, s->sample_rate, s->music_mono, s->music_resampler, s->music_vol / 10.0f,
                       s->sound_vol / 10.0f)) {
-            audio_play_music(PSM_MENU);
+            music_tracker_play(PSM_MENU);
         }
     }
 }
