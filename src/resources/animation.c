@@ -83,17 +83,25 @@ void animation_create(animation_source type, str *name, animation *ani, array *s
             if(vector_size(&new_coords) > 0) {
                 iterator it;
                 int to_add = vector_size(&new_coords);
+                int dropped = 0;
                 // Remove all original coords for this frame.
-                vector_clear(&ani->collision_coords);
+                collision_coord *cc;
+                vector_iter_begin(&ani->collision_coords, &it);
+                foreach(it, cc) {
+                    // Drop existing coordinates for this frame
+                    if(cc->frame_index == i) {
+                        vector_delete(&ani->collision_coords, &it);
+                        dropped++;
+                    }
+                }
                 // Append replacement coords to the now empty vec
-
                 vector_iter_begin(&new_coords, &it);
                 collision_coord *tmp_coord = NULL;
                 foreach(it, tmp_coord) {
                     vector_append(&ani->collision_coords, tmp_coord);
                 }
 
-                log_info("anim %d frame %d: replaced hit coords with %d from mod", id, i, to_add);
+                log_info("anim %d frame %d: replaced %d hit coords with %d from mod", id, i, dropped, to_add);
             }
 
             // Update sprite position from overlay, if present
