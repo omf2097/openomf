@@ -186,6 +186,7 @@ bool opus_load_memory(music_source *src, int channels, int sample_rate, const un
 exit_1:
     op_free(context->handle);
 exit_0:
+    rb_free(&context->buffer);
     omf_free(context);
     return false;
 }

@@ -213,6 +213,11 @@ static bool parse_manifest_and_add_to_modlist(const char *buf, path *mod_path, h
 
             // Update the existing entry with new information
             existing->load_order = load_order;
+            omf_free(existing->mod_api);
+            existing->mod_api = omf_strdup(mod_api);
+            omf_free(existing->version);
+            existing->version = omf_strdup(version);
+            path_from_c(existing->filepath, path_c(mod_path));
 
             cfg_free(cfg);
             return true;
@@ -388,6 +393,7 @@ bool modmanager_init(void) {
                     void *entry_buf = omf_calloc(entry_size, 1);
                     if(zip_entry_noallocread(zip, entry_buf, entry_size) < 0) {
                         log_warn("failed to load %s into memory", zip_entry_name(zip));
+                        continue;
                     }
 
                     path path;
