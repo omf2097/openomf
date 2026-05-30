@@ -613,6 +613,8 @@ bool modmanager_get_sprite(animation_source source, str *name, int animation, in
             } else {
                 str_from_format(&filename, "fighters/common/%d/%d.png", animation, frame);
             }
+        } else {
+            return false;
         }
 
         if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&obuf, &len)) {
@@ -696,9 +698,6 @@ bool modmanager_get_hitcoords(animation_source source, str *name, int animation,
 
     if(origin_count == 0) {
         log_error("hitcoord overlay missing origin pixel, skipping");
-        return false;
-    } else if(origin_count != 1) {
-        log_error("hitcoord overlay multiple origin pixels, skipping");
         return false;
     }
 
@@ -994,7 +993,7 @@ bool modmanager_get_af_move(str *name, int move_id, af_move *move_data) {
     }
 
     str filename;
-    str_from_format(&filename, "fighters/%s/%d/animdata.ini", name, move_id);
+    str_from_format(&filename, "fighters/%s/%d/animdata.ini", str_c(name), move_id);
 
     list *l;
     unsigned int len;
