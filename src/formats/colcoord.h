@@ -1,10 +1,11 @@
-/*! \file
- * \brief Collision coordinate struct.
- * \details Struct for holding collision coordinate data for OMF:2097 animation structures.
- * \copyright MIT license.
- * \date 2013-2014
- * \author Andrew Thompson
- * \author Tuomas Virtanen
+/**
+ * @file colcoord.h
+ * @brief Collision coordinate struct.
+ * @details Struct for holding collision coordinate data for OMF:2097 animation structures.
+ * @copyright MIT License
+ * @date 2026
+ * @author Andrew Thompson
+ * @author Tuomas Virtanen
  */
 
 #ifndef COLCOORD_H
@@ -12,7 +13,7 @@
 
 #include <stdint.h>
 
-/*! \brief Collision coordinate container
+/** @brief Collision coordinate container
  *
  * Contains a single collision coordinate for animation frames. Collision coordinate
  * is a single point in 2D space, which is used to check for collisions between it

@@ -1,17 +1,18 @@
-/*! \file
- * \brief Format handler error handling.
- * \details Functions for dealing with format handler errors.
- * \copyright MIT license.
- * \date 2013-2014
- * \author animehunter
- * \author Andrew Thompson
- * \author Tuomas Virtanen
+/**
+ * @file error.h
+ * @brief Format handler error handling.
+ * @details Functions for dealing with format handler errors.
+ * @copyright MIT License
+ * @date 2026
+ * @author animehunter
+ * @author Andrew Thompson
+ * @author Tuomas Virtanen
  */
 
 #ifndef SD_ERROR_H
 #define SD_ERROR_H
 
-/*! \brief Errorcode list.
+/** @brief Errorcode list.
  */
 enum SD_ERRORCODE
 {
@@ -29,13 +30,13 @@ enum SD_ERRORCODE
     SD_FAILURE,              ///< General failure
 };
 
-/*! \brief Get text error for error ID
+/** @brief Get text error for error ID
  *
  * Returns a clear text error message for the given error ID.
  *
- * \sa SD_ERRORCODE
- * \param error_code Errorcode
- * \return Error message
+ * @sa SD_ERRORCODE
+ * @param error_code Errorcode
+ * @return Error message
  */
 const char *sd_get_error(enum SD_ERRORCODE error_code);
 

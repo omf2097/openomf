@@ -1,3 +1,12 @@
+/**
+ * @file reader.h
+ * @brief Binary file reader.
+ * @details Buffered reader for binary file data.
+ * @copyright MIT License
+ * @date 2026
+ * @author OpenOMF Project
+ */
+
 #ifndef SD_READER_H
 #define SD_READER_H
 

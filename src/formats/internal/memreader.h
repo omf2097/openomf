@@ -1,3 +1,12 @@
+/**
+ * @file memreader.h
+ * @brief In-memory binary reader.
+ * @details A reader that operates on a memory buffer, mirroring the file reader API.
+ * @copyright MIT License
+ * @date 2026
+ * @author OpenOMF Project
+ */
+
 #ifndef MEMREADER_H
 #define MEMREADER_H
 

@@ -1,10 +1,11 @@
-/*! \file
- * \brief Match record file handling.
- * \details Functions and structs for reading, writing and modifying OMF:2097 match record (REC) files.
- * \copyright MIT license.
- * \date 2013-2014
- * \author Andrew Thompson
- * \author Tuomas Virtanen
+/**
+ * @file rec.h
+ * @brief Match record file handling.
+ * @details Functions and structs for reading, writing and modifying OMF:2097 match record (REC) files.
+ * @copyright MIT License
+ * @date 2026
+ * @author Andrew Thompson
+ * @author Tuomas Virtanen
  */
 
 #ifndef SD_REC_H
@@ -16,7 +17,7 @@
 #include "utils/smallbuffer.h"
 #include <stdint.h>
 
-/*! \brief REC action record
+/** @brief REC action record
  *
  * AA record of a single action during the match.
  * Essentially a record of keys pressed at a given tick.
@@ -29,15 +30,15 @@ typedef struct {
     uint32_t tick;               ///< Game tick at the moment of this event
 } sd_rec_move;
 
-/*! \brief REC pilot container
+/** @brief REC pilot container
  *
  * Information about a single pilot in the match.
- * \todo Find out about the unknowns here
+ * @todo Find out about the unknowns here
  */
 typedef struct {
     sd_pilot info;      ///< Pilot information
-    uint8_t unknown_a;  ///< Unknown value \todo: Find this out
-    uint16_t unknown_b; ///< Unknown value \todo: Find this out
+    uint8_t unknown_a;  ///< Unknown value @todo: Find this out
+    uint16_t unknown_b; ///< Unknown value @todo: Find this out
 } sd_rec_pilot;
 
 enum
@@ -61,12 +62,12 @@ enum
     REC_GAMEMODE_ARCADE = 2,
 };
 
-/*! \brief REC recording
+/** @brief REC recording
  *
  * Contains a record of a single OMF:2097 match. This may be
  * a network match, tournament match, singleplayer match ...
  * The data varies slightly depending on the type.
- * \todo Find out about the unknowns. Possibly hyper mode, etc.
+ * @todo Find out about the unknowns. Possibly hyper mode, etc.
  */
 typedef struct {
     sd_rec_pilot pilots[2]; ///< Information about the pilots
@@ -93,10 +94,10 @@ typedef struct {
     uint8_t power[2];   ///< Power 1,2 (0-7?)
     uint8_t hazards;    ///< Hazards (On/Off)
     uint8_t round_type; ///< Round type (0=1, 1=2/3, 2=3/5, 3=4/7)
-    uint8_t unknown_l;  ///< Currently unknown \todo Find out what this does
+    uint8_t unknown_l;  ///< Currently unknown @todo Find out what this does
     uint8_t hyper_mode; ///< Hyper mode (On/Off)
 
-    int8_t unknown_m; ///< Unknown \todo: Find out
+    int8_t unknown_m; ///< Unknown @todo: Find out
 
     unsigned int move_count; ///< How many REC event records
     sd_rec_move *moves;      ///< REC event records list
@@ -112,63 +113,63 @@ enum
     REC_LOOKUP10_ASSERT_BYTE = 'A',
 };
 
-/*! \brief Initialize REC file structure
+/** @brief Initialize REC file structure
  *
  * Initializes the REC file structure with empty values.
  *
- * \retval SD_INVALID_INPUT REC struct pointer was NULL
- * \retval SD_SUCCESS Success.
+ * @retval SD_INVALID_INPUT REC struct pointer was NULL
+ * @retval SD_SUCCESS Success.
  *
- * \param rec Allocated REC struct pointer.
+ * @param rec Allocated REC struct pointer.
  */
 int sd_rec_create(sd_rec_file *rec);
 
-/*! \brief Free REC file structure
+/** @brief Free REC file structure
  *
  * Frees up all memory reserved by the REC structure.
  * All contents will be freed, all pointers to contents will be invalid.
  *
- * \param rec REC file struct pointer.
+ * @param rec REC file struct pointer.
  */
 void sd_rec_free(sd_rec_file *rec);
 
-/*! \brief Load .REC file
+/** @brief Load .REC file
  *
  * Loads the given REC file to memory. The structure must be initialized with sd_rec_create()
  * before using this function. Loading to a previously loaded or filled sd_rec_file structure
  * will result in old data and pointers getting lost. This is very likely to cause a memory leak.
  *
- * \retval SD_FILE_OPEN_ERROR File could not be opened.
- * \retval SD_FILE_PARSE_ERROR File does not contain valid data or has syntax problems.
- * \retval SD_SUCCESS Success.
+ * @retval SD_FILE_OPEN_ERROR File could not be opened.
+ * @retval SD_FILE_PARSE_ERROR File does not contain valid data or has syntax problems.
+ * @retval SD_SUCCESS Success.
  *
- * \param rec BK struct pointer.
- * \param filename Name of the BK file to load from.
+ * @param rec BK struct pointer.
+ * @param filename Name of the BK file to load from.
  */
 int sd_rec_load(sd_rec_file *rec, const path *filename);
 
-/*! \brief Save .REC file
+/** @brief Save .REC file
  *
  * Saves the given REC file from memory to a file on disk. The structure must be at
  * least initialized by using sd_rec_create() before running this.
  *
- * \retval SD_FILE_OPEN_ERROR File could not be opened for writing.
- * \retval SD_SUCCESS Success.
+ * @retval SD_FILE_OPEN_ERROR File could not be opened for writing.
+ * @retval SD_SUCCESS Success.
  *
- * \param rec REC struct pointer.
- * \param filename Name of the REC file to save into.
+ * @param rec REC struct pointer.
+ * @param filename Name of the REC file to save into.
  */
 int sd_rec_save(const sd_rec_file *rec, const path *filename);
 
-/*! \brief Deletes a REC event record
+/** @brief Deletes a REC event record
  *
  * Deletes a REC event record at given position.
  *
- * \retval SD_INVALID_INPUT Number you tried to remove does not exist, or rec was NULL.
- * \retval SD_SUCCESS Success.
+ * @retval SD_INVALID_INPUT Number you tried to remove does not exist, or rec was NULL.
+ * @retval SD_SUCCESS Success.
  *
- * \param rec BK struct pointer.
- * \param number Record number
+ * @param rec BK struct pointer.
+ * @param number Record number
  */
 int sd_rec_delete_action(sd_rec_file *rec, unsigned int number);
 
@@ -176,25 +177,25 @@ int sd_rec_extra_len(int key);
 
 char *sd_rec_get_extra_data(sd_rec_move *move);
 
-/*! \brief Sets the lookup_id of the rec move, prepares extra_data, and returns a pointer to its contents.
+/** @brief Sets the lookup_id of the rec move, prepares extra_data, and returns a pointer to its contents.
  *
- * \retval a pointer where the extra data can be written, the size of which is known by sd_rec_extra_len(key).
+ * @retval a pointer where the extra data can be written, the size of which is known by sd_rec_extra_len(key).
  *
- * \param move Move to modify
- * \param key the lookup id to use
+ * @param move Move to modify
+ * @param key the lookup id to use
  */
 char *sd_rec_set_lookup_id(sd_rec_move *move, int key);
 
-/*! \brief Free all memory contained within the rec move
+/** @brief Free all memory contained within the rec move
  *
  * the sd_rec_move struct's allocation is managed by the caller,
  * as it is often used on the stack.
  *
- * \param move to free
+ * @param move to free
  */
 void sd_rec_move_free(sd_rec_move *move);
 
-/*! \brief Inserts a REC event record
+/** @brief Inserts a REC event record
  *
  * Inserts a new event record to a given position. All contents starting from the given
  * position will be moved forwards by one entry.
@@ -203,20 +204,20 @@ void sd_rec_move_free(sd_rec_move *move);
  *
  * Allocations within the rec_move will be stolen by this call on success, and nulled in caller's copy.
  *
- * \retval SD_INVALID_INPUT Slot you tried to insert to does not exist, or rec was NULL.
- * \retval SD_SUCCESS Success.
+ * @retval SD_INVALID_INPUT Slot you tried to insert to does not exist, or rec was NULL.
+ * @retval SD_SUCCESS Success.
  *
- * \param rec BK struct pointer.
- * \param number Record number
- * \param move Move to insert
+ * @param rec BK struct pointer.
+ * @param number Record number
+ * @param move Move to insert
  */
 int sd_rec_insert_action(sd_rec_file *rec, unsigned int number, sd_rec_move *move);
 
-/*! \brief like sd_rec_insert_action but uses the tick in the move to find the right insertion point
+/** @brief like sd_rec_insert_action but uses the tick in the move to find the right insertion point
  */
 int sd_rec_insert_action_at_tick(sd_rec_file *rec, sd_rec_move *move);
 
-/*! \brief Insert a closing ACT_NONE on a rec at `ticks`
+/** @brief Insert a closing ACT_NONE on a rec at `ticks`
  */
 void sd_rec_finish(sd_rec_file *rec, unsigned int ticks);
 

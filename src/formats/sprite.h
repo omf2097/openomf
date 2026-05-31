@@ -1,11 +1,12 @@
-/*! \file
- * \brief Sprite data handling.
- * \details Functions and structs for reading, writing and modifying OMF:2097 sprite data.
- * \copyright MIT license.
- * \date 2013-2014
- * \author huntercool
- * \author Andrew Thompson
- * \author Tuomas Virtanen
+/**
+ * @file sprite.h
+ * @brief Sprite data handling.
+ * @details Functions and structs for reading, writing and modifying OMF:2097 sprite data.
+ * @copyright MIT License
+ * @date 2026
+ * @author huntercool
+ * @author Andrew Thompson
+ * @author Tuomas Virtanen
  */
 
 #ifndef SD_SPRITE_H
@@ -17,7 +18,7 @@
 #include "formats/vga_image.h"
 #include <stdint.h>
 
-/*! \brief Sprite image
+/** @brief Sprite image
  *
  * An encoded sprite image. The image is paletted, and encoded with
  * a type of RLE encoding. Decoding can be done to an RGBA image with
@@ -35,18 +36,18 @@ typedef struct {
     char *data;      ///< Packed sprite data
 } sd_sprite;
 
-/*! \brief Initialize sprite structure
+/** @brief Initialize sprite structure
  *
  * Initializes the sprite structure with empty values.
  *
- * \retval SD_INVALID_INPUT Sprite struct pointer was NULL
- * \retval SD_SUCCESS Success.
+ * @retval SD_INVALID_INPUT Sprite struct pointer was NULL
+ * @retval SD_SUCCESS Success.
  *
- * \param sprite Allocated sprite struct pointer.
+ * @param sprite Allocated sprite struct pointer.
  */
 int sd_sprite_create(sd_sprite *sprite);
 
-/*! \brief Copy sprite structure
+/** @brief Copy sprite structure
  *
  * Copies the contents of an sprite structure. _ALL_ internals will be copied.
  * The copied structure must be freed using sd_sprite_free().
@@ -54,38 +55,38 @@ int sd_sprite_create(sd_sprite *sprite);
  * Destination buffer does not need to be cleared. Source buffer must be a valid
  * sprite structure, or problems are likely to appear.
  *
- * \retval SD_INVALID_INPUT Either input value was NULL.
- * \retval SD_SUCCESS Success.
+ * @retval SD_INVALID_INPUT Either input value was NULL.
+ * @retval SD_SUCCESS Success.
  *
- * \param dst Destination sprite struct pointer.
- * \param src Source sprite struct pointer.
+ * @param dst Destination sprite struct pointer.
+ * @param src Source sprite struct pointer.
  */
 int sd_sprite_copy(sd_sprite *dst, const sd_sprite *src);
 
-/*! \brief Free sprite structure
+/** @brief Free sprite structure
  *
  * Frees up all memory reserved by the sprite structure.
  * All contents will be freed, all pointers to contents will be invalid.
  *
- * \param sprite Sprite struct to free.
+ * @param sprite Sprite struct to free.
  */
 void sd_sprite_free(sd_sprite *sprite);
 
-/*! \brief Encode RGBA data to sprite data
+/** @brief Encode RGBA data to sprite data
  *
  * Encodes RGBA image data to sprite image data. Color values will be matched to exact values in
  * the palette. If no matching value is found for the pixel, the pixel color will be black.
  *
- * \retval SD_INVALID_INPUT Dst, src or palette was NULL.
- * \retval SD_SUCCESS Success.
+ * @retval SD_INVALID_INPUT Dst, src or palette was NULL.
+ * @retval SD_SUCCESS Success.
  *
- * \param dst Destination sprite struct pointer.
- * \param src Source RGBA image pointer
- * \param pal Palette that should be used for the conversion
+ * @param dst Destination sprite struct pointer.
+ * @param src Source RGBA image pointer
+ * @param pal Palette that should be used for the conversion
  */
 int sd_sprite_rgba_encode(sd_sprite *dst, const sd_rgba_image *src, const vga_palette *pal);
 
-/*! \brief Decode sprite data to RGBA format
+/** @brief Decode sprite data to RGBA format
  *
  * Decodes the sprite image to RGBA image format.
  *
@@ -93,16 +94,16 @@ int sd_sprite_rgba_encode(sd_sprite *dst, const sd_rgba_image *src, const vga_pa
  * already created by using sd_rgba_image_create() previously, there may
  * potentially be a memory leak, since the old image internals will not be freed.
  *
- * \retval SD_INVALID_INPUT Dst, src or palette was NULL.
- * \retval SD_SUCCESS Success.
+ * @retval SD_INVALID_INPUT Dst, src or palette was NULL.
+ * @retval SD_SUCCESS Success.
  *
- * \param dst Destination RGBA image struct pointer.
- * \param src Source Sprite image pointer
- * \param pal Palette that should be used for the conversion
+ * @param dst Destination RGBA image struct pointer.
+ * @param src Source Sprite image pointer
+ * @param pal Palette that should be used for the conversion
  */
 int sd_sprite_rgba_decode(sd_rgba_image *dst, const sd_sprite *src, const vga_palette *pal);
 
-/*! \brief Decode sprite to VGA image format.
+/** @brief Decode sprite to VGA image format.
  *
  * Decodes the sprite image to VGA image format.
  *
@@ -110,23 +111,23 @@ int sd_sprite_rgba_decode(sd_rgba_image *dst, const sd_sprite *src, const vga_pa
  * already created by using sd_vga_image_create() previously, there may
  * potentially be a memory leak, since the old image internals will not be freed.
  *
- * \retval SD_INVALID_INPUT Dst or src was NULL.
- * \retval SD_SUCCESS Success.
+ * @retval SD_INVALID_INPUT Dst or src was NULL.
+ * @retval SD_SUCCESS Success.
  *
- * \param dst Destination VGA image struct pointer.
- * \param src Source sprite image pointer
+ * @param dst Destination VGA image struct pointer.
+ * @param src Source sprite image pointer
  */
 int sd_sprite_vga_decode(sd_vga_image *dst, const sd_sprite *src);
 
-/*! \brief Encode sprite from VGA image format.
+/** @brief Encode sprite from VGA image format.
  *
  * Encodes a VGA image to sprite format
  *
- * \retval SD_INVALID_INPUT Dst or src was NULL.
- * \retval SD_SUCCESS Success.
+ * @retval SD_INVALID_INPUT Dst or src was NULL.
+ * @retval SD_SUCCESS Success.
  *
- * \param dst Destination Sprite image struct pointer.
- * \param src Source VGA image pointer
+ * @param dst Destination Sprite image struct pointer.
+ * @param src Source VGA image pointer
  */
 int sd_sprite_vga_encode(sd_sprite *dst, const sd_vga_image *src);
 

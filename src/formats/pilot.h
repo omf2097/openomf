@@ -1,10 +1,11 @@
-/*! \file
- * \brief Pilot structure handling.
- * \details Functions and structs for reading, writing and modifying OMF:2097 pilot data structures.
- * \copyright MIT license.
- * \date 2013-2014
- * \author Andrew Thompson
- * \author Tuomas Virtanen
+/**
+ * @file pilot.h
+ * @brief Pilot structure handling.
+ * @details Functions and structs for reading, writing and modifying OMF:2097 pilot data structures.
+ * @copyright MIT License
+ * @date 2026
+ * @author Andrew Thompson
+ * @author Tuomas Virtanen
  */
 
 #ifndef SD_PILOT_H
@@ -18,7 +19,7 @@
 #include "formats/sprite.h"
 #include <stdint.h>
 
-/*! \brief PIC pilot information
+/** @brief PIC pilot information
  *
  * Contains a pilot information. Current upgrades, powers, tournament, etc.
  */
@@ -120,28 +121,28 @@ typedef enum
     PRIMARY,
 } player_color;
 
-/*! \brief Initialize pilot struct
+/** @brief Initialize pilot struct
  *
  * Initializes the pilot structure with empty values.
  *
- * \retval SD_INVALID_INPUT Pilot struct pointer was NULL
- * \retval SD_SUCCESS Success.
+ * @retval SD_INVALID_INPUT Pilot struct pointer was NULL
+ * @retval SD_SUCCESS Success.
  *
- * \param pilot Allocated pilot struct pointer.
+ * @param pilot Allocated pilot struct pointer.
  */
 int sd_pilot_create(sd_pilot *pilot);
 
 void sd_pilot_clone(sd_pilot *dest, const sd_pilot *src);
-/*! \brief Copies an sd_pilot, but not any child allocations (quotes, photo surface, etc..)
+/** @brief Copies an sd_pilot, but not any child allocations (quotes, photo surface, etc..)
  */
 void sd_pilot_copy_shallow(sd_pilot *dest, const sd_pilot *src);
 
-/*! \brief Free pilot structure
+/** @brief Free pilot structure
  *
  * Frees up all memory reserved by the pilot structure.
  * All contents will be freed, all pointers to contents will be invalid.
  *
- * \param pilot Pilot struct pointer.
+ * @param pilot Pilot struct pointer.
  */
 void sd_pilot_free(sd_pilot *pilot);
 

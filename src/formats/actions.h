@@ -1,15 +1,16 @@
-/*! \file
- * \brief HAR Actions list
- * \details HAR action types list
- * \copyright MIT license.
- * \date 2013-2014
- * \author Tuomas Virtanen
+/**
+ * @file actions.h
+ * @brief HAR Actions list
+ * @details HAR action types list
+ * @copyright MIT License
+ * @date 2026
+ * @author Tuomas Virtanen
  */
 
 #ifndef SD_ACTIONS_H
 #define SD_ACTIONS_H
 
-/*! \brief Contains all actions a HAR can do during a match
+/** @brief Contains all actions a HAR can do during a match
  */
 typedef enum
 {

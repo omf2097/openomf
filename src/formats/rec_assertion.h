@@ -1,3 +1,12 @@
+/**
+ * @file rec_assertion.h
+ * @brief Match record assertion handling.
+ * @details Functions and structs for parsing and formatting match record (REC) assertions.
+ * @copyright MIT License
+ * @date 2026
+ * @author OpenOMF Project
+ */
+
 #ifndef REC_ASSERTION_H
 #define REC_ASSERTION_H
 
