@@ -65,7 +65,7 @@ int sd_chr_create(sd_chr_file *chr);
  */
 void sd_chr_free(sd_chr_file *chr);
 
-int sd_chr_from_trn(sd_chr_file *chr, sd_tournament_file *trn, sd_pilot *pilot);
+int sd_chr_from_trn(sd_chr_file *chr, const sd_tournament_file *trn, const sd_pilot *pilot);
 
 /*! \brief Load .CHR file
  *
@@ -93,7 +93,7 @@ int sd_chr_load(sd_chr_file *chr, const path *filename);
  * \param chr CHR struct pointer.
  * \param filename Name of the CHR file to save into.
  */
-int sd_chr_save(sd_chr_file *chr, const path *filename);
+int sd_chr_save(const sd_chr_file *chr, const path *filename);
 
 /*! \brief Get the sanitized CHR filename out of pilot name.
  *
@@ -128,6 +128,6 @@ void sd_chr_append_unsanitized_filename(str *dst, const char *pilot_name);
  * \param chr CHR struct pointer.
  * \param enemy_num Enemy number to find
  */
-const sd_chr_enemy *sd_chr_get_enemy(sd_chr_file *chr, int enemy_num);
+const sd_chr_enemy *sd_chr_get_enemy(const sd_chr_file *chr, int enemy_num);
 
 #endif // SD_CHR_H

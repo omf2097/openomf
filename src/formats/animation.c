@@ -67,7 +67,7 @@ int sd_animation_set_anim_string(sd_animation *ani, const char *str) {
     return SD_SUCCESS;
 }
 
-int sd_animation_get_coord_count(sd_animation *ani) {
+int sd_animation_get_coord_count(const sd_animation *ani) {
     return ani->coord_count;
 }
 
@@ -102,7 +102,7 @@ sd_coord *sd_animation_get_coord(sd_animation *ani, int num) {
     return &ani->coord_table[num];
 }
 
-int sd_animation_get_extra_string_count(sd_animation *anim) {
+int sd_animation_get_extra_string_count(const sd_animation *anim) {
     return anim->extra_string_count;
 }
 
@@ -140,7 +140,7 @@ char *sd_animation_get_extra_string(sd_animation *anim, int num) {
     return anim->extra_strings[num];
 }
 
-int sd_animation_get_sprite_count(sd_animation *anim) {
+int sd_animation_get_sprite_count(const sd_animation *anim) {
     return anim->sprite_count;
 }
 

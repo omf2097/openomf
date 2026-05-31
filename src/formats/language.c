@@ -118,7 +118,7 @@ void sd_language_append(sd_language *language, const char *description, const ch
     language->strings[language->count - 1].data = omf_strdup(data);
 }
 
-int sd_language_save(sd_language *language, const path *filename) {
+int sd_language_save(const sd_language *language, const path *filename) {
     assert(language != NULL);
     assert(filename != NULL);
 

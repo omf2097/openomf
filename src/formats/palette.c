@@ -216,7 +216,7 @@ void palette_remaps_save(sd_writer *writer, const vga_remap_tables *remaps) {
     }
 }
 
-void palette_load_player_colors(vga_palette *src, int player) {
+void palette_load_player_colors(const vga_palette *src, int player) {
     // only load 47 palette colors, skipping the first one
     // because that seems to be ignored by the original
     int dst_offset = (player * 48) + 1;

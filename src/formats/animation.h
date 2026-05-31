@@ -96,7 +96,7 @@ void sd_animation_free(sd_animation *animation);
  * \param animation Animation struct to modify.
  * \return Coordinate element count
  */
-int sd_animation_get_coord_count(sd_animation *animation);
+int sd_animation_get_coord_count(const sd_animation *animation);
 
 /*! \brief Sets coordinate at index
  *
@@ -169,7 +169,7 @@ int sd_animation_set_anim_string(sd_animation *animation, const char *str);
  * \param animation Animation struct to modify.
  * \return Extra string count
  */
-int sd_animation_get_extra_string_count(sd_animation *animation);
+int sd_animation_get_extra_string_count(const sd_animation *animation);
 
 /*! \brief Sets extra string at index
  *
@@ -232,7 +232,7 @@ char *sd_animation_get_extra_string(sd_animation *animation, int num);
  * \param animation Animation struct to modify.
  * \return Extra string count
  */
-int sd_animation_get_sprite_count(sd_animation *animation);
+int sd_animation_get_sprite_count(const sd_animation *animation);
 
 /*! \brief Sets sprite at index
  *

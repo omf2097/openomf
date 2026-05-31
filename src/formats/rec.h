@@ -158,7 +158,7 @@ int sd_rec_load(sd_rec_file *rec, const path *filename);
  * \param rec REC struct pointer.
  * \param filename Name of the REC file to save into.
  */
-int sd_rec_save(sd_rec_file *rec, const path *filename);
+int sd_rec_save(const sd_rec_file *rec, const path *filename);
 
 /*! \brief Deletes a REC event record
  *

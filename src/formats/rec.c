@@ -189,7 +189,7 @@ error_0:
     return ret;
 }
 
-int sd_rec_save(sd_rec_file *rec, const path *file) {
+int sd_rec_save(const sd_rec_file *rec, const path *file) {
     sd_writer *w;
 
     assert(rec != NULL);

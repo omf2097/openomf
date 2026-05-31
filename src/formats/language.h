@@ -76,7 +76,7 @@ int sd_language_load(sd_language *language, const path *filename);
  * \param language Language struct pointer.
  * \param filename Name of the language file to save into.
  */
-int sd_language_save(sd_language *language, const path *filename);
+int sd_language_save(const sd_language *language, const path *filename);
 
 /*! \brief Returns a language string entry.
  *

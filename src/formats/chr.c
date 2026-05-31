@@ -28,7 +28,7 @@ int sd_chr_create(sd_chr_file *chr) {
     return SD_SUCCESS;
 }
 
-int sd_chr_from_trn(sd_chr_file *chr, sd_tournament_file *trn, sd_pilot *pilot) {
+int sd_chr_from_trn(sd_chr_file *chr, const sd_tournament_file *trn, const sd_pilot *pilot) {
     int ranked = 0;
     for(uint32_t i = 0; i < trn->enemy_count; i++) {
         chr->enemies[i] = omf_calloc(1, sizeof(sd_chr_enemy));
@@ -244,7 +244,7 @@ error_1:
     return SD_FILE_PARSE_ERROR;
 }
 
-int sd_chr_save(sd_chr_file *chr, const path *filename) {
+int sd_chr_save(const sd_chr_file *chr, const path *filename) {
     assert(chr != NULL);
     assert(filename != NULL);
 
@@ -333,7 +333,7 @@ void sd_chr_free(sd_chr_file *chr) {
     omf_free(chr->photo);
 }
 
-const sd_chr_enemy *sd_chr_get_enemy(sd_chr_file *chr, int enemy_num) {
+const sd_chr_enemy *sd_chr_get_enemy(const sd_chr_file *chr, int enemy_num) {
     if(chr == NULL || enemy_num < 0 || enemy_num >= chr->pilot.enemies_inc_unranked) {
         return NULL;
     }
