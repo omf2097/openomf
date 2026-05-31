@@ -12,12 +12,12 @@
 struct sd_reader {
     FILE *handle;
     long filesize;
-    int sd_errno;
+    int std_errno;
 };
 
 sd_reader *sd_reader_open(const path *filename) {
     sd_reader *reader = omf_calloc(1, sizeof(sd_reader));
-    reader->sd_errno = 0;
+    reader->std_errno = 0;
     // Attempt to open file (note: Binary mode!)
     reader->handle = path_fopen(filename, "rb");
     if(!reader->handle) {
@@ -51,7 +51,7 @@ long sd_reader_filesize(const sd_reader *reader) {
 }
 
 int sd_reader_errno(const sd_reader *reader) {
-    return reader->sd_errno;
+    return reader->std_errno;
 }
 
 void sd_reader_close(sd_reader *reader) {
@@ -61,7 +61,7 @@ void sd_reader_close(sd_reader *reader) {
 
 int sd_reader_set(sd_reader *reader, long offset) {
     if(fseek(reader->handle, offset, SEEK_SET) != 0) {
-        reader->sd_errno = errno;
+        reader->std_errno = errno;
         return 0;
     }
     return 1;
@@ -77,14 +77,14 @@ int sd_reader_ok(const sd_reader *reader) {
 long sd_reader_pos(sd_reader *reader) {
     long res = ftell(reader->handle);
     if(res == -1) {
-        reader->sd_errno = errno;
+        reader->std_errno = errno;
     }
     return res;
 }
 
 int sd_read_buf(sd_reader *reader, char *buf, size_t len) {
     if(fread(buf, 1, len, reader->handle) != len) {
-        reader->sd_errno = ferror(reader->handle);
+        reader->std_errno = ferror(reader->handle);
         return 0;
     }
     return 1;
@@ -95,7 +95,7 @@ int sd_peek_buf(sd_reader *reader, char *buf, int len) {
         return 0;
     }
     if(fseek(reader->handle, ftell(reader->handle) - len, SEEK_SET) == -1) {
-        reader->sd_errno = errno;
+        reader->std_errno = errno;
     }
     return 1;
 }
@@ -196,7 +196,7 @@ int sd_match(sd_reader *reader, const char *buf, unsigned int nbytes) {
 
 void sd_skip(sd_reader *reader, unsigned int nbytes) {
     if(fseek(reader->handle, nbytes, SEEK_CUR) == -1) {
-        reader->sd_errno = errno;
+        reader->std_errno = errno;
     }
 }
 

@@ -10,14 +10,14 @@
 
 struct sd_writer {
     FILE *handle;
-    int sd_errno;
+    int std_errno;
 };
 
 sd_writer *sd_writer_open(const path *filename) {
     sd_writer *writer = omf_calloc(1, sizeof(sd_writer));
 
     writer->handle = path_fopen(filename, "wb");
-    writer->sd_errno = 0;
+    writer->std_errno = 0;
     if(!writer->handle) {
         omf_free(writer);
         return 0;
@@ -27,7 +27,7 @@ sd_writer *sd_writer_open(const path *filename) {
 }
 
 int sd_writer_errno(const sd_writer *writer) {
-    return writer->sd_errno;
+    return writer->std_errno;
 }
 
 void sd_writer_close(sd_writer *writer) {
@@ -38,7 +38,7 @@ void sd_writer_close(sd_writer *writer) {
 long sd_writer_pos(sd_writer *writer) {
     long res = ftell(writer->handle);
     if(res == -1) {
-        writer->sd_errno = errno;
+        writer->std_errno = errno;
     }
     return res;
 }
@@ -60,12 +60,12 @@ int sd_write_buf(sd_writer *writer, const char *buf, size_t len) {
         if(len == 0) {
             return 1;
         } else {
-            writer->sd_errno = EINVAL;
+            writer->std_errno = EINVAL;
             return 0;
         }
     }
     if(fwrite(buf, 1, len, writer->handle) != len) {
-        writer->sd_errno = ferror(writer->handle);
+        writer->std_errno = ferror(writer->handle);
         return 0;
     }
     return 1;
@@ -116,7 +116,7 @@ void sd_write_fill(sd_writer *writer, char content, size_t len) {
     while(left > 0) {
         now = (left > 1024) ? 1024 : left;
         if(fwrite(buffer, 1, now, writer->handle) != now) {
-            writer->sd_errno = ferror(writer->handle);
+            writer->std_errno = ferror(writer->handle);
             return;
         }
         left -= now;
