@@ -23,8 +23,6 @@ void test_palette_create(void) {
 void test_palette_gimp_save(void) {
     path test_file = tmp_dir;
     path_append(&test_file, TESTFILE);
-    CU_ASSERT(palette_to_gimp_palette(&pal, NULL) == SD_INVALID_INPUT);
-    CU_ASSERT(palette_to_gimp_palette(NULL, &test_file) == SD_INVALID_INPUT);
     CU_ASSERT(palette_to_gimp_palette(&pal, &test_file) == SD_SUCCESS);
 }
 
@@ -33,9 +31,6 @@ void test_palette_gimp_load(void) {
     test_file = test_file2 = tmp_dir;
     path_append(&test_file, TESTFILE);
     path_append(&test_file2, TESTFILE2);
-
-    CU_ASSERT(palette_from_gimp_palette(&pal, NULL) == SD_INVALID_INPUT);
-    CU_ASSERT(palette_from_gimp_palette(NULL, &test_file) == SD_INVALID_INPUT);
 
     path nonexistent;
     path_from_c(&nonexistent, "nonesuchfile.gpl");

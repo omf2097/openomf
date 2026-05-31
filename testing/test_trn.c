@@ -10,7 +10,6 @@ sd_tournament_file trn;
 
 void test_sd_trn_create(void) {
     CU_ASSERT(sd_tournament_create(&trn) == SD_SUCCESS);
-    CU_ASSERT(sd_tournament_create(NULL) == SD_INVALID_INPUT);
 }
 
 void test_sd_trn_roundtripping(void) {

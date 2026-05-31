@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -10,9 +11,7 @@
 #include "utils/allocator.h"
 
 int sd_af_create(sd_af_file *af) {
-    if(af == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(af != NULL);
 
     // Clear everything
     memset(af, 0, sizeof(sd_af_file));
@@ -21,9 +20,8 @@ int sd_af_create(sd_af_file *af) {
 
 int sd_af_copy(sd_af_file *dst, const sd_af_file *src) {
     int ret;
-    if(dst == NULL || src == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(dst != NULL);
+    assert(src != NULL);
 
     // Clear destination
     memset(dst, 0, sizeof(sd_af_file));
@@ -59,9 +57,11 @@ int sd_af_copy(sd_af_file *dst, const sd_af_file *src) {
 
 int sd_af_set_move(sd_af_file *af, int index, const sd_move *move) {
     int ret;
-    if(af == NULL || index < 0 || index >= MAX_AF_MOVES) {
+    assert(af != NULL);
+    if(index < 0 || index >= MAX_AF_MOVES) {
         return SD_INVALID_INPUT;
     }
+
     if(af->moves[index] != NULL) {
         sd_move_free(af->moves[index]);
         omf_free(af->moves[index]);

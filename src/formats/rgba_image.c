@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,9 +12,7 @@
 #define STRIDE 4
 
 int sd_rgba_image_create(sd_rgba_image *img, unsigned int w, unsigned int h) {
-    if(img == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(img != NULL);
     img->w = w;
     img->h = h;
     img->len = w * h * STRIDE;
@@ -22,9 +21,8 @@ int sd_rgba_image_create(sd_rgba_image *img, unsigned int w, unsigned int h) {
 }
 
 int sd_rgba_image_copy(sd_rgba_image *dst, const sd_rgba_image *src) {
-    if(dst == NULL || src == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(dst != NULL);
+    assert(src != NULL);
 
     dst->w = src->w;
     dst->h = src->h;
@@ -35,9 +33,8 @@ int sd_rgba_image_copy(sd_rgba_image *dst, const sd_rgba_image *src) {
 }
 
 int sd_rgba_image_blit(sd_rgba_image *dst, const sd_rgba_image *src, int x, int y) {
-    if(dst == NULL || src == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(dst != NULL);
+    assert(src != NULL);
     if(x < 0 || y < 0) {
         return SD_INVALID_INPUT;
     }
@@ -82,9 +79,7 @@ int sd_rgba_image_to_ppm(const sd_rgba_image *img, const char *filename) {
 }
 
 int sd_rgba_image_clear(sd_rgba_image *img, char r, char g, char b, char a) {
-    if(img == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(img != NULL);
     for(unsigned y = 0; y < img->h; y++) {
         for(unsigned x = 0; x < img->w; x++) {
             img->data[(y * img->w + x) * 4 + 0] = r;

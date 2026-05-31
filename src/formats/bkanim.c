@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -9,9 +10,7 @@
 #include "utils/log.h"
 
 int sd_bk_anim_create(sd_bk_anim *bka) {
-    if(bka == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(bka != NULL);
     // clear everything
     memset(bka, 0, sizeof(sd_bk_anim));
     return SD_SUCCESS;
@@ -19,9 +18,8 @@ int sd_bk_anim_create(sd_bk_anim *bka) {
 
 int sd_bk_anim_copy(sd_bk_anim *dst, const sd_bk_anim *src) {
     int ret;
-    if(dst == NULL || src == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(dst != NULL);
+    assert(src != NULL);
 
     // Clear destination
     memset(dst, 0, sizeof(sd_bk_anim));
@@ -98,9 +96,8 @@ int sd_bk_anim_save(sd_writer *w, const sd_bk_anim *bka) {
     int ret;
     uint16_t size;
 
-    if(w == NULL || bka == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(w != NULL);
+    assert(bka != NULL);
 
     // Write BK specific header
     sd_write_ubyte(w, bka->null);
@@ -129,9 +126,7 @@ int sd_bk_anim_save(sd_writer *w, const sd_bk_anim *bka) {
 
 int sd_bk_anim_set_animation(sd_bk_anim *bka, const sd_animation *animation) {
     int ret;
-    if(bka == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(bka != NULL);
     if(bka->animation != NULL) {
         sd_animation_free(bka->animation);
         omf_free(bka->animation);

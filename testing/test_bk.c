@@ -6,11 +6,7 @@
 sd_bk_file bk;
 
 void test_sd_bk_create(void) {
-    int ret;
-    ret = sd_bk_create(&bk);
-    CU_ASSERT(ret == SD_SUCCESS);
-    ret = sd_bk_create(NULL);
-    CU_ASSERT(ret == SD_INVALID_INPUT);
+    CU_ASSERT(sd_bk_create(&bk) == SD_SUCCESS);
 }
 
 void test_sd_bk_free(void) {

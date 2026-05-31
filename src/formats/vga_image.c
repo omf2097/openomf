@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <png.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -11,9 +12,7 @@
 #include "utils/png_writer.h"
 
 int sd_vga_image_create(sd_vga_image *img, unsigned int w, unsigned int h) {
-    if(img == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(img != NULL);
     img->w = w;
     img->h = h;
     img->len = w * h;
@@ -22,9 +21,8 @@ int sd_vga_image_create(sd_vga_image *img, unsigned int w, unsigned int h) {
 }
 
 int sd_vga_image_copy(sd_vga_image *dst, const sd_vga_image *src) {
-    if(dst == NULL || src == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(dst != NULL);
+    assert(src != NULL);
     dst->w = src->w;
     dst->h = src->h;
     dst->len = src->len;
@@ -42,9 +40,9 @@ void sd_vga_image_free(sd_vga_image *img) {
 
 int sd_vga_image_decode(sd_rgba_image *dst, const sd_vga_image *src, const vga_palette *pal) {
     int ret;
-    if(dst == NULL || src == NULL || pal == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(dst != NULL);
+    assert(src != NULL);
+    assert(pal != NULL);
     if((ret = sd_rgba_image_create(dst, src->w, src->h)) != SD_SUCCESS) {
         return ret;
     }
@@ -73,9 +71,8 @@ int sd_vga_image_from_png(sd_vga_image *img, const path *filename) {
 }
 
 int sd_vga_image_to_png(const sd_vga_image *img, const vga_palette *pal, const path *filename) {
-    if(img == NULL || filename == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(img != NULL);
+    assert(filename != NULL);
     if(!write_paletted_png(filename, img->w, img->h, pal, (unsigned char *)img->data)) {
         return SD_FILE_OPEN_ERROR;
     }

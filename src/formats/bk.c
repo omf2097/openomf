@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -14,9 +15,7 @@
 #include "utils/allocator.h"
 
 int sd_bk_create(sd_bk_file *bk) {
-    if(bk == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(bk != NULL);
 
     // Clear everything
     memset(bk, 0, sizeof(sd_bk_file));
@@ -25,9 +24,8 @@ int sd_bk_create(sd_bk_file *bk) {
 
 int sd_bk_copy(sd_bk_file *dst, const sd_bk_file *src) {
     int ret;
-    if(dst == NULL || src == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(dst != NULL);
+    assert(src != NULL);
 
     // Clear everything
     memset(dst, 0, sizeof(sd_bk_file));
@@ -272,9 +270,7 @@ error:
 
 int sd_bk_set_background(sd_bk_file *bk, const sd_vga_image *img) {
     int ret;
-    if(bk == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(bk != NULL);
     if(bk->background != NULL) {
         sd_vga_image_free(bk->background);
         omf_free(bk->background);
@@ -295,7 +291,8 @@ sd_vga_image *sd_bk_get_background(const sd_bk_file *bk) {
 
 int sd_bk_set_anim(sd_bk_file *bk, int index, const sd_bk_anim *anim) {
     int ret;
-    if(index < 0 || index >= MAX_BK_ANIMS || bk == NULL) {
+    assert(bk != NULL);
+    if(index < 0 || index >= MAX_BK_ANIMS) {
         return SD_INVALID_INPUT;
     }
     if(bk->anims[index] != NULL) {
@@ -321,9 +318,12 @@ sd_bk_anim *sd_bk_get_anim(const sd_bk_file *bk, int index) {
 }
 
 int sd_bk_set_palette(sd_bk_file *bk, int index, const vga_palette *pal) {
-    if(index < 0 || bk == NULL || index >= bk->palette_count || pal == NULL) {
+    assert(bk != NULL);
+    assert(pal != NULL);
+    if(index < 0 || index >= bk->palette_count) {
         return SD_INVALID_INPUT;
     }
+
     if(bk->palettes[index] == NULL) {
         bk->palettes[index] = omf_malloc(sizeof(vga_palette));
     }
@@ -332,20 +332,22 @@ int sd_bk_set_palette(sd_bk_file *bk, int index, const vga_palette *pal) {
 }
 
 int sd_bk_pop_palette(sd_bk_file *bk) {
-    if(bk == NULL || bk->palette_count <= 0) {
-        return SD_INVALID_INPUT;
+    assert(bk != NULL);
+
+    if(bk->palette_count > 0) {
+        bk->palette_count--;
+        omf_free(bk->palettes[bk->palette_count]);
     }
-
-    bk->palette_count--;
-    omf_free(bk->palettes[bk->palette_count]);
-
     return SD_SUCCESS;
 }
 
 int sd_bk_push_palette(sd_bk_file *bk, const vga_palette *pal) {
-    if(bk == NULL || pal == NULL || bk->palette_count >= MAX_BK_PALETTES) {
+    assert(bk != NULL);
+    assert(pal != NULL);
+    if(bk->palette_count >= MAX_BK_PALETTES) {
         return SD_INVALID_INPUT;
     }
+
     if(bk->palettes[bk->palette_count] != NULL) {
         omf_free(bk->palettes[bk->palette_count]);
     }

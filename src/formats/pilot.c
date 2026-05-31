@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -12,9 +13,7 @@
 #define PILOT_BLOCK_LENGTH 428
 
 int sd_pilot_create(sd_pilot *pilot) {
-    if(pilot == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(pilot != NULL);
     memset(pilot, 0, sizeof(sd_pilot));
     return SD_SUCCESS;
 }
@@ -167,9 +166,8 @@ void sd_pilot_load_from_mem(memreader *mr, sd_pilot *pilot) {
 }
 
 int sd_pilot_load(sd_reader *reader, sd_pilot *pilot) {
-    if(reader == NULL || pilot == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(reader != NULL);
+    assert(pilot != NULL);
 
     // Read block, XOR, Read to pilot, free memory
     memreader *mr = memreader_open_from_reader(reader, PILOT_BLOCK_LENGTH);
@@ -307,9 +305,8 @@ void sd_pilot_save_to_mem(memwriter *w, const sd_pilot *pilot) {
 }
 
 int sd_pilot_save(sd_writer *fw, const sd_pilot *pilot) {
-    if(fw == NULL || pilot == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(fw != NULL);
+    assert(pilot != NULL);
 
     // Copy, XOR, save and close
     memwriter *w = memwriter_open();

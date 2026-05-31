@@ -3,13 +3,12 @@
 #include "formats/taglist.h"
 #include "utils/allocator.h"
 #include "utils/str.h"
+#include <assert.h>
 
 static const char *INVALID_TAGS[] = {"c", "p", "o", "z", NULL}; // NULL guarded
 
 int sd_script_create(sd_script *script) {
-    if(script == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(script != NULL);
     memset(script, 0, sizeof(sd_script));
     vector_create(&script->frames, sizeof(sd_script_frame));
     return SD_SUCCESS;
@@ -83,9 +82,7 @@ void sd_script_free(sd_script *script) {
 }
 
 int sd_script_append_frame(sd_script *script, int tick_len, int sprite_id) {
-    if(script == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(script != NULL);
 
     sd_script_frame frame;
     sd_script_frame_create(&frame, tick_len, sprite_id);
@@ -94,7 +91,8 @@ int sd_script_append_frame(sd_script *script, int tick_len, int sprite_id) {
 }
 
 int sd_script_clear_tags(sd_script *script, int frame_id) {
-    if(script == NULL || frame_id < 0) {
+    assert(script != NULL);
+    if(frame_id < 0) {
         return SD_INVALID_INPUT;
     }
 
@@ -108,7 +106,8 @@ int sd_script_clear_tags(sd_script *script, int frame_id) {
 }
 
 int sd_script_set_tick_len_at_frame(sd_script *script, int frame_id, int duration) {
-    if(script == NULL || frame_id < 0) {
+    assert(script != NULL);
+    if(frame_id < 0) {
         return SD_INVALID_INPUT;
     }
 
@@ -122,7 +121,8 @@ int sd_script_set_tick_len_at_frame(sd_script *script, int frame_id, int duratio
 }
 
 int sd_script_set_sprite_at_frame(sd_script *script, int frame_id, int sprite_id) {
-    if(script == NULL || frame_id < 0 || sprite_id < 0 || sprite_id > 25) {
+    assert(script != NULL);
+    if(frame_id < 0 || sprite_id < 0 || sprite_id > 25) {
         return SD_INVALID_INPUT;
     }
 
@@ -323,9 +323,8 @@ static bool decode_next_frame(sd_script_frame *frame, str *src, int *now) {
 }
 
 int sd_script_decode(sd_script *script, const char *input, int *invalid_pos) {
-    if(script == NULL || input == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(script != NULL);
+    assert(input != NULL);
 
     str src;
     str_from_c(&src, input);
@@ -359,9 +358,8 @@ fail:
 }
 
 int sd_script_encode(const sd_script *script, str *output) {
-    if(script == NULL || output == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(script != NULL);
+    assert(output != NULL);
 
     // If there are no frames, then we just stop.
     if(vector_size(&script->frames) <= 0) {
@@ -382,9 +380,8 @@ int sd_script_encode(const sd_script *script, str *output) {
 }
 
 int sd_script_encode_frame(const sd_script_frame *frame, str *dst) {
-    if(frame == NULL || dst == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(frame != NULL);
+    assert(dst != NULL);
 
     str tmp;
     iterator tag_it;
@@ -568,7 +565,9 @@ int sd_script_next_frame_with_tag(const sd_script *script, const char *tag, uint
 }
 
 int sd_script_delete_tag(sd_script *script, int frame_id, const char *tag) {
-    if(script == NULL || tag == NULL || frame_id < 0) {
+    assert(script != NULL);
+    assert(tag != NULL);
+    if(frame_id < 0) {
         return SD_INVALID_INPUT;
     }
 
@@ -590,7 +589,9 @@ int sd_script_delete_tag(sd_script *script, int frame_id, const char *tag) {
 }
 
 int sd_script_set_tag(sd_script *script, int frame_id, const char *tag, int value) {
-    if(script == NULL || tag == NULL || frame_id < 0) {
+    assert(script != NULL);
+    assert(tag != NULL);
+    if(frame_id < 0) {
         return SD_INVALID_INPUT;
     }
 

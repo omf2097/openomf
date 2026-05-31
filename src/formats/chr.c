@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <ctype.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -22,9 +23,7 @@
 #include "utils/random.h"
 
 int sd_chr_create(sd_chr_file *chr) {
-    if(chr == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(chr != NULL);
     memset(chr, 0, sizeof(sd_chr_file));
     return SD_SUCCESS;
 }
@@ -65,9 +64,8 @@ int sd_chr_from_trn(sd_chr_file *chr, sd_tournament_file *trn, sd_pilot *pilot) 
 }
 
 int sd_chr_load(sd_chr_file *chr, const path *filename) {
-    if(chr == NULL || filename == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(chr != NULL);
+    assert(filename != NULL);
 
     sd_reader *r = sd_reader_open(filename);
 
@@ -247,9 +245,8 @@ error_1:
 }
 
 int sd_chr_save(sd_chr_file *chr, const path *filename) {
-    if(chr == NULL || filename == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(chr != NULL);
+    assert(filename != NULL);
 
     sd_writer *w = sd_writer_open(filename);
     if(!w) {
