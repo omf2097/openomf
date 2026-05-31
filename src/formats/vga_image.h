@@ -110,7 +110,6 @@ int sd_vga_image_from_png(sd_vga_image *img, const path *filename);
  * Saves an indexed (paletted) image to a PNG file. Maximum allowed image
  * size is 320x200, and the smallest allowed size is 1x1.
  *
- * \retval SD_OUT_OF_MEMORY Memory ran out. Any output should be considered invalid and freed.
  * \retval SD_INVALID_INPUT Image or filename was NULL
  * \retval SD_FILE_OPEN_ERROR File could not be opened for writing.
  * \retval SD_FORMAT_NOT_SUPPORTED File format (PNG) is not supported.

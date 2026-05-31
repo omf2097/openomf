@@ -20,7 +20,6 @@ enum SD_ERRORCODE
     SD_FILE_INVALID_TYPE,    ///< File was of invalid type
     SD_FILE_PARSE_ERROR,     ///< File had a syntax error
     SD_ANIM_INVALID_STRING,  ///< Invalid animation string
-    SD_OUT_OF_MEMORY,        ///< Out of memory error
     SD_INVALID_INPUT,        ///< Function encountered unexpected/invalid arguments
     SD_FORMAT_NOT_SUPPORTED, ///< File format is not supported
     SD_INVALID_TAG,          ///< Invalid tag in animation string
