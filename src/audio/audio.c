@@ -1,14 +1,11 @@
 #include "audio/audio.h"
 #include "audio/backends/audio_backend.h"
-#include "audio/music_sources/opus_source.h"
-#include "audio/music_sources/psm_source.h"
 #include "audio/sound_sources/dat_source.h"
-#include "resources/resource_files.h"
 #include "utils/c_array_util.h"
 #include "utils/log.h"
-#include "utils/path.h"
 
 #include <assert.h>
+#include <string.h>
 
 #ifdef ENABLE_SDL_AUDIO_BACKEND
 #include "audio/backends/sdl/sdl_backend.h"
@@ -19,11 +16,18 @@
 
 #define MAX_AVAILABLE_BACKENDS 8
 
-typedef enum music_file_type
-{
-    MUSIC_FILE_TYPE_PSM,
-    MUSIC_FILE_TYPE_OGG,
-} music_file_type;
+// Playback handles are opaque: the low bits hold the channel, the rest a guid that
+// is unique per play. This is used to validate the handle.
+typedef union {
+    struct {
+        uint32_t channel : 2;
+        uint32_t guid : 30;
+    } fields;
+    uint32_t bits;
+} sound_handle;
+
+static_assert(sizeof(sound_handle) == 4, "sound_handle must be 4 bytes");
+static_assert(SOUND_CHANNEL_COUNT <= 4, "channel index must fit in sound_handle.channel (2 bits)");
 
 typedef void (*audio_backend_init)(audio_backend *backend);
 
@@ -38,7 +42,7 @@ static audio_backend_init all_backends[] = {
 };
 static int all_backends_count = N_ELEMENTS(all_backends);
 
-// Backends present on this platform — filled by audio_scan_backends.
+// Backends present on this platform -- filled by audio_scan_backends.
 static struct available_backend {
     audio_backend_init set_callbacks;
     const char *name;
@@ -47,7 +51,28 @@ static struct available_backend {
 static int audio_backend_count = 0;
 
 static audio_backend current_backend;
-static resource_id current_music = NUMBER_OF_RESOURCES;
+
+static struct channel_state {
+    int priority;
+    int sound_id;
+    uint32_t guid;
+} channel_state[SOUND_CHANNEL_COUNT];
+
+static uint32_t next_guid = 1;
+
+static void reset_channel_state(void) {
+    memset(channel_state, 0, sizeof(channel_state));
+}
+
+static int resolve_handle(const uint32_t handle) {
+    const sound_handle decoded = {.bits = handle};
+    const int ch = decoded.fields.channel;
+    const uint32_t guid = decoded.fields.guid;
+    if(ch >= SOUND_CHANNEL_COUNT || channel_state[ch].guid != guid) {
+        return -1;
+    }
+    return ch;
+}
 
 void audio_scan_backends(void) {
     audio_backend tmp;
@@ -67,7 +92,7 @@ void audio_scan_backends(void) {
     }
 }
 
-bool audio_get_backend_info(int index, const char **name, const char **description) {
+bool audio_get_backend_info(const int index, const char **name, const char **description) {
     if(index < 0 || index >= audio_backend_count) {
         return false;
     }
@@ -120,8 +145,8 @@ static bool audio_find_backend(const char *try_name) {
     return false;
 }
 
-bool audio_init(const char *try_name, int sample_rate, bool mono, int resampler, float music_volume,
-                float sound_volume) {
+bool audio_init(const char *try_name, const int sample_rate, const bool mono, const int resampler,
+                const float music_volume, const float sound_volume) {
     if(!audio_find_backend(try_name)) {
         goto exit_0;
     }
@@ -129,6 +154,7 @@ bool audio_init(const char *try_name, int sample_rate, bool mono, int resampler,
     if(!current_backend.setup_context(current_backend.ctx, sample_rate, mono, resampler, music_volume, sound_volume)) {
         goto exit_1;
     }
+    reset_channel_state();
     return true;
 
 exit_1:
@@ -140,23 +166,77 @@ exit_0:
 void audio_close(void) {
     current_backend.close_context(current_backend.ctx);
     current_backend.destroy(&current_backend);
-    current_music = NUMBER_OF_RESOURCES;
+    reset_channel_state();
 }
 
-int audio_play_sound(int sound_id, const sound_opts *opts) {
+uint32_t audio_play_sound_simple(const int sound_id, const int panning) {
     sound_source src;
     if(!dat_source_load(&src, sound_id)) {
         log_error("Requested sound sample %d not found or empty", sound_id);
-        return -1;
+        return AUDIO_INVALID_HANDLE;
     }
-    const int result = audio_play_source(&src, opts);
+    sound_opts opts;
+    sound_opts_init(&opts);
+    opts.volume = 64;
+    opts.panning = panning;
+    const uint32_t result = audio_play_source(&src, &opts);
     sound_source_close(&src);
     return result;
 }
 
-int audio_play_source(const sound_source *src, const sound_opts *custom_opts) {
+static int pick_channel(const sound_opts *opts, const int identity) {
+    // If channel is forced, just handle that.
+    if(opts->channel >= 0) {
+        if(current_backend.is_channel_playing(current_backend.ctx, opts->channel)) {
+            log_debug("ch=%d: forced replace (was id=%d prio=%d)", opts->channel, channel_state[opts->channel].sound_id,
+                      channel_state[opts->channel].priority);
+            current_backend.stop_channel(current_backend.ctx, opts->channel);
+        }
+        return opts->channel;
+    }
+
+    // Duplicate handling only applies on the auto path and only when the
+    // source has an identity. We scan and act on the first matching channel.
+    if(identity != 0 && (opts->skip_duplicate || opts->stop_duplicate)) {
+        for(int ch = 0; ch < SOUND_CHANNEL_COUNT; ch++) {
+            if(!current_backend.is_channel_playing(current_backend.ctx, ch)) {
+                continue;
+            }
+            if(channel_state[ch].sound_id != identity) {
+                continue;
+            }
+            if(opts->skip_duplicate) {
+                log_debug("Dropping sound id=%d: already playing on ch=%d (skip_dup)", identity, ch);
+                return -1;
+            }
+            log_debug("ch=%d: stop_dup replace (id=%d)", ch, identity);
+            current_backend.stop_channel(current_backend.ctx, ch);
+            return ch;
+        }
+    }
+
+    // Prefer a free channel.
+    for(int ch = 0; ch < SOUND_CHANNEL_COUNT; ch++) {
+        if(!current_backend.is_channel_playing(current_backend.ctx, ch)) {
+            return ch;
+        }
+    }
+
+    for(int ch = 0; ch < SOUND_CHANNEL_COUNT; ch++) {
+        if(channel_state[ch].priority <= opts->priority) {
+            log_debug("ch=%d: evicting id=%d prio=%d for id=%d prio=%d", ch, channel_state[ch].sound_id,
+                      channel_state[ch].priority, identity, opts->priority);
+            current_backend.stop_channel(current_backend.ctx, ch);
+            return ch;
+        }
+    }
+    log_debug("Dropping sound id=%d prio=%d: no free channel and none evictable", identity, opts->priority);
+    return -1;
+}
+
+uint32_t audio_play_source(const sound_source *src, const sound_opts *custom_opts) {
     if(src == NULL || src->buf == NULL || src->len == 0) {
-        return -1;
+        return AUDIO_INVALID_HANDLE;
     }
     sound_opts opts;
     if(custom_opts == NULL) {
@@ -168,100 +248,64 @@ int audio_play_source(const sound_source *src, const sound_opts *custom_opts) {
     assert(opts.volume >= 0 && opts.volume <= 127);
     assert(opts.panning >= -100 && opts.panning <= 100);
     assert(opts.fade_in_ms >= 0);
+    assert(opts.channel < SOUND_CHANNEL_COUNT);
+
+    const int ch = pick_channel(&opts, src->sound_id);
+    if(ch < 0) {
+        return AUDIO_INVALID_HANDLE;
+    }
 
     sound_source effective = *src;
     effective.freq = pitched_samplerate(src->freq, opts.pitch);
-    for(int ch = 0; ch < SOUND_CHANNEL_COUNT; ch++) {
-        if(current_backend.is_channel_playing(current_backend.ctx, ch)) {
-            continue;
-        }
-        if(!current_backend.play_pcm_sound(current_backend.ctx, ch, &effective, opts.volume, opts.panning,
-                                           opts.fade_in_ms)) {
-            return -1;
-        }
-        return ch;
+    log_debug("Playing sound id=%d on ch=%d: vol=%d pan=%d pitch=%d (freq %d->%d) prio=%d fade=%dms%s%s", src->sound_id,
+              ch, opts.volume, opts.panning, opts.pitch, src->freq, effective.freq, opts.priority, opts.fade_in_ms,
+              opts.skip_duplicate ? " skip_dup" : "", opts.stop_duplicate ? " stop_dup" : "");
+    if(!current_backend.play_pcm_sound(current_backend.ctx, ch, &effective, opts.volume, opts.panning,
+                                       opts.fade_in_ms)) {
+        return AUDIO_INVALID_HANDLE;
     }
-    return -1;
+    const sound_handle handle = {
+        {ch, next_guid++}
+    };
+    channel_state[ch].priority = opts.priority;
+    channel_state[ch].sound_id = src->sound_id;
+    channel_state[ch].guid = handle.fields.guid;
+    return handle.bits;
 }
 
-void audio_fade_out(int playback_id, int ms) {
-    if(playback_id < 0 || playback_id >= SOUND_CHANNEL_COUNT) {
+void audio_fade_out(const uint32_t playback_id, const int ms) {
+    const int ch = resolve_handle(playback_id);
+    if(ch < 0) {
         return;
     }
-    current_backend.fade_out_channel(current_backend.ctx, playback_id, ms);
+    current_backend.fade_out_channel(current_backend.ctx, ch, ms);
 }
 
-static void load_xmp_music(const char *src) {
-    music_source music;
-    unsigned channels;
-    unsigned sample_rate;
-    unsigned resampler;
-    current_backend.get_info(current_backend.ctx, &sample_rate, &channels, &resampler);
-    if(psm_load(&music, channels, sample_rate, resampler, src)) {
-        current_backend.play_music(current_backend.ctx, &music);
+void audio_set_pan(const uint32_t playback_id, const int panning) {
+    int ch = resolve_handle(playback_id);
+    if(ch < 0) {
+        return;
     }
+    current_backend.set_channel_panning(current_backend.ctx, ch, panning);
 }
 
-static void load_opus_music(const char *src) {
-    music_source music;
-    unsigned channels;
-    unsigned sample_rate;
-    current_backend.get_info(current_backend.ctx, &sample_rate, &channels, NULL);
-    if(opus_load(&music, channels, sample_rate, src)) {
-        current_backend.play_music(current_backend.ctx, &music);
-    }
-}
-
-static path get_music_path(music_file_type *type, unsigned int resource_id) {
-    assert(is_music(resource_id));
-    path original_music, new_music;
-    original_music = new_music = get_resource_filename(get_resource_file(resource_id));
-    path_set_ext(&new_music, ".ogg");
-
-    if(path_exists(&new_music)) {
-        log_debug("Found alternate music file %s", path_c(&new_music));
-        *type = MUSIC_FILE_TYPE_OGG;
-        return new_music;
-    } else {
-        log_debug("Found original music file %s", path_c(&original_music));
-        *type = MUSIC_FILE_TYPE_PSM;
-        return original_music;
-    }
-}
-
-void audio_play_music(resource_id id) {
-    if(current_music != id) {
-        music_file_type file_type;
-        const path music = get_music_path(&file_type, id);
-
-        switch(file_type) {
-            case MUSIC_FILE_TYPE_PSM:
-                load_xmp_music(path_c(&music));
-                break;
-            case MUSIC_FILE_TYPE_OGG:
-                load_opus_music(path_c(&music));
-                break;
-            default:
-                log_error("Unable to load music file %s due to unsupported audio format", path_c(&music));
-                break;
-        }
-
-        current_music = id;
-    }
+void audio_play_music(const music_source *src) {
+    current_backend.play_music(current_backend.ctx, src);
 }
 
 void audio_stop_music(void) {
-    if(current_music != NUMBER_OF_RESOURCES) {
-        current_backend.stop_music(current_backend.ctx);
-        current_music = NUMBER_OF_RESOURCES;
-    }
+    current_backend.stop_music(current_backend.ctx);
 }
 
-void audio_set_music_volume(float volume) {
+void audio_get_music_info(unsigned *sample_rate, unsigned *channels, unsigned *resampler) {
+    current_backend.get_info(current_backend.ctx, sample_rate, channels, resampler);
+}
+
+void audio_set_music_volume(const float volume) {
     current_backend.set_music_volume(current_backend.ctx, volume);
 }
 
-void audio_set_sound_volume(float volume) {
+void audio_set_sound_volume(const float volume) {
     current_backend.set_sound_volume(current_backend.ctx, volume);
 }
 
@@ -269,7 +313,7 @@ unsigned audio_get_sample_rates(const audio_sample_rate **sample_rates) {
     return current_backend.get_sample_rates(sample_rates);
 }
 
-int pitched_samplerate(int src_freq, int pitch) {
+int pitched_samplerate(const int src_freq, int pitch) {
     if(pitch < -20) {
         pitch = -20;
     }

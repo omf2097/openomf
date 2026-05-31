@@ -10,6 +10,7 @@
 #include "controller/net_controller.h"
 #include "formats/error.h"
 #include "formats/rec.h"
+#include "game/audio/music_tracker.h"
 #include "game/game_player.h"
 #include "game/game_state.h"
 #include "game/gui/button.h"
@@ -1674,7 +1675,7 @@ static void arena_free(scene *scene) {
 
     gui_frame_free(local->game_menu);
 
-    audio_stop_music();
+    music_tracker_stop();
 
     // Free bar components
     for(int i = 0; i < 2; i++) {
@@ -1713,19 +1714,19 @@ int arena_create(scene *scene) {
     // Handle music playback
     switch(scene->bk_data->file_id) {
         case 8:
-            audio_play_music(PSM_ARENA0);
+            music_tracker_play(PSM_ARENA0);
             break;
         case 16:
-            audio_play_music(PSM_ARENA1);
+            music_tracker_play(PSM_ARENA1);
             break;
         case 32:
-            audio_play_music(PSM_ARENA2);
+            music_tracker_play(PSM_ARENA2);
             break;
         case 64:
-            audio_play_music(PSM_ARENA3);
+            music_tracker_play(PSM_ARENA3);
             break;
         case 128:
-            audio_play_music(PSM_ARENA4);
+            music_tracker_play(PSM_ARENA4);
             break;
     }
 

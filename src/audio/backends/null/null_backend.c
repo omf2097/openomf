@@ -11,6 +11,54 @@ static const audio_sample_rate supported_sample_rates[] = {
 };
 static const int supported_sample_rate_count = N_ELEMENTS(supported_sample_rates);
 
+// Used by tests
+static struct {
+    bool playing;
+    int last_sound_id;
+    int last_pan;
+    int play_count;
+    int stop_count;
+    int fade_count;
+    int pan_update_count;
+} channel_spy[SOUND_CHANNEL_COUNT];
+
+void null_audio_backend_reset_state(void) {
+    memset(channel_spy, 0, sizeof(channel_spy));
+    for(int i = 0; i < SOUND_CHANNEL_COUNT; i++) {
+        channel_spy[i].last_sound_id = -1;
+    }
+}
+
+int null_audio_backend_get_play_count(const int channel) {
+    assert(channel >= 0 && channel < SOUND_CHANNEL_COUNT);
+    return channel_spy[channel].play_count;
+}
+
+int null_audio_backend_get_fade_count(const int channel) {
+    assert(channel >= 0 && channel < SOUND_CHANNEL_COUNT);
+    return channel_spy[channel].fade_count;
+}
+
+int null_audio_backend_get_stop_count(const int channel) {
+    assert(channel >= 0 && channel < SOUND_CHANNEL_COUNT);
+    return channel_spy[channel].stop_count;
+}
+
+int null_audio_backend_get_last_sound_id(const int channel) {
+    assert(channel >= 0 && channel < SOUND_CHANNEL_COUNT);
+    return channel_spy[channel].last_sound_id;
+}
+
+int null_audio_backend_get_last_pan(const int channel) {
+    assert(channel >= 0 && channel < SOUND_CHANNEL_COUNT);
+    return channel_spy[channel].last_pan;
+}
+
+int null_audio_backend_get_pan_update_count(const int channel) {
+    assert(channel >= 0 && channel < SOUND_CHANNEL_COUNT);
+    return channel_spy[channel].pan_update_count;
+}
+
 static bool is_available(void) {
     return true;
 }
@@ -34,25 +82,45 @@ static void create_backend(audio_backend *player) {
 static void destroy_backend(audio_backend *player) {
 }
 
-static void set_backend_sound_volume(void *userdata, float volume) {
+static void set_backend_sound_volume(void *userdata, const float volume) {
 }
 
-static void set_backend_music_volume(void *userdata, float volume) {
+static void set_backend_music_volume(void *userdata, const float volume) {
 }
 
-static bool play_pcm_sound(void *userdata, int channel, const sound_source *src, int volume, int panning,
-                           int fade_in_ms) {
-    return false;
+static bool play_pcm_sound(void *userdata, const int channel, const sound_source *src, const int volume,
+                           const int panning, const int fade_in_ms) {
+    assert(channel >= 0 && channel < SOUND_CHANNEL_COUNT);
+    channel_spy[channel].playing = true;
+    channel_spy[channel].last_sound_id = src->sound_id;
+    channel_spy[channel].last_pan = panning;
+    channel_spy[channel].play_count++;
+    return true;
 }
 
-static bool is_channel_playing(void *userdata, int channel) {
-    return false;
+static void set_channel_panning(void *userdata, const int channel, const int panning) {
+    assert(channel >= 0 && channel < SOUND_CHANNEL_COUNT);
+    channel_spy[channel].last_pan = panning;
+    channel_spy[channel].pan_update_count++;
 }
 
-static void stop_channel(void *userdata, int channel) {
+static bool is_channel_playing(void *userdata, const int channel) {
+    assert(channel >= 0 && channel < SOUND_CHANNEL_COUNT);
+    return channel_spy[channel].playing;
 }
 
-static void fade_out_channel(void *userdata, int channel, int ms) {
+static void stop_channel(void *userdata, const int channel) {
+    assert(channel >= 0 && channel < SOUND_CHANNEL_COUNT);
+    if(channel_spy[channel].playing) {
+        channel_spy[channel].stop_count++;
+    }
+    channel_spy[channel].playing = false;
+}
+
+static void fade_out_channel(void *userdata, const int channel, const int ms) {
+    assert(channel >= 0 && channel < SOUND_CHANNEL_COUNT);
+    channel_spy[channel].fade_count++;
+    channel_spy[channel].playing = false;
 }
 
 static void stop_music(void *userdata) {
@@ -76,8 +144,9 @@ static void get_info(void *ctx, unsigned *sample_rate, unsigned *channels, unsig
     }
 }
 
-static bool setup_backend_context(void *userdata, unsigned sample_rate, bool mono, int resampler, float music_volume,
-                                  float sound_volume) {
+static bool setup_backend_context(void *userdata, const unsigned sample_rate, const bool mono, const int resampler,
+                                  const float music_volume, const float sound_volume) {
+    null_audio_backend_reset_state();
     log_info("NULL Player initialized!");
     return true;
 }
@@ -102,6 +171,7 @@ void null_audio_backend_set_callbacks(audio_backend *null_backend) {
     null_backend->is_channel_playing = is_channel_playing;
     null_backend->stop_channel = stop_channel;
     null_backend->fade_out_channel = fade_out_channel;
+    null_backend->set_channel_panning = set_channel_panning;
     null_backend->play_music = play_music;
     null_backend->stop_music = stop_music;
 }

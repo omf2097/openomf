@@ -17,6 +17,7 @@ struct sound_source {
     const char *buf;
     size_t len;
     int freq;
+    int sound_id;
 
     void *context; ///< per-loader state or NULL
     void (*close)(sound_source *self);

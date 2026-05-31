@@ -59,10 +59,7 @@ static int button_action(component *c, int action) {
         if(b->click_cb) {
             b->click_cb(c, b->userdata);
         }
-        sound_opts opts;
-        sound_opts_init(&opts);
-        opts.volume = 64;
-        audio_play_sound(20, &opts);
+        audio_play_sound_simple(20, 0);
         return 0;
     }
     return 1;

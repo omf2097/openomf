@@ -4,6 +4,7 @@
 #include "audio/audio.h"
 #include "formats/error.h"
 #include "formats/script.h"
+#include "game/audio/music_tracker.h"
 #include "game/game_player.h"
 #include "game/game_state.h"
 #include "game/objects/projectile.h"
@@ -544,18 +545,28 @@ void player_run(object *obj) {
         // Music playback
         if(sd_script_isset(frame, "smo")) {
             if(sd_script_get(frame, "smo") == 0) {
-                audio_stop_music();
+                music_tracker_stop();
                 return;
             }
-            audio_play_music(PSM_END + (sd_script_get(frame, "smo") - 1));
+            music_tracker_play(PSM_END + (sd_script_get(frame, "smo") - 1));
         }
         if(sd_script_isset(frame, "smf")) {
-            audio_stop_music();
+            music_tracker_stop();
         }
 
         // Sound playback
         if(sd_script_isset(frame, "s") && obj->sound_translation_table) {
             int sound_id = obj->sound_translation_table[sd_script_get(frame, "s")] - 1;
+
+            bool allow_sound_playback = true;
+            if(sd_script_isset(frame, "t")) {
+                const int enemy_anim = (enemy != NULL && enemy->cur_animation != NULL) ? enemy->cur_animation->id : -1;
+                allow_sound_playback = (enemy_anim == ANIM_DAMAGE || enemy_anim == ANIM_STANDING_BLOCK ||
+                                        enemy_anim == ANIM_CROUCHING_BLOCK || obj->gs->hit_pause > 0);
+                if(!allow_sound_playback) {
+                    log_warn("Sound playback blocked!");
+                }
+            }
 
             sound_opts opts;
             sound_opts_init(&opts);
@@ -572,7 +583,33 @@ void player_run(object *obj) {
                 opts.pitch = sd_script_get(frame, "sf");
                 assert(opts.pitch >= -128 && opts.pitch <= 128);
             }
-            game_state_play_sound(obj->gs, sound_id, &opts);
+            if(sd_script_isset(frame, "sp")) {
+                opts.priority = sd_script_get(frame, "sp");
+            }
+            if(sd_script_isset(frame, "sc")) {
+                const int sc = sd_script_get(frame, "sc");
+                if(sc == 0) {
+                    opts.stop_duplicate = true;
+                } else {
+                    opts.channel = clamp(sc - 1, 0, SOUND_CHANNEL_COUNT - 1);
+                }
+            }
+            if(sd_script_isset(frame, "sd")) {
+                opts.skip_duplicate = true;
+            }
+            if(sd_script_isset(frame, "sa") || (sound_id >= 0 && sound_id < 10)) {
+                opts.follow_object_id = obj->id;
+            }
+            if(sd_script_isset(frame, "sl")) {
+                opts.panning_end = clamp(sd_script_get(frame, "sl"), -100, 100);
+                opts.has_panning_sweep = true;
+            } else if(sd_script_isset(frame, "se")) {
+                opts.panning_end = clamp(sd_script_get(frame, "se"), -100, 100);
+                opts.has_panning_sweep = true;
+            }
+            if(allow_sound_playback) {
+                game_state_play_sound(obj->gs, sound_id, &opts);
+            }
         }
 
         // Blend mode stuff

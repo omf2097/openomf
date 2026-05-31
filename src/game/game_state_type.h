@@ -5,6 +5,7 @@
 
 #include "engine.h"
 #include "formats/rec.h"
+#include "game/audio/sound_tracker.h"
 #include "game/protos/fight_stats.h"
 #include "game/utils/settings.h"
 #include "utils/random.h"
@@ -93,7 +94,7 @@ typedef struct game_state_t {
     int net_mode; // NET_MODE_NONE, NET_MODE_CLIENT, NET_MODE_SERVER
     scene *sc;
     vector objects;
-    vector sounds;
+    sound_tracker tracker;
     game_player *players[2];
 
     fight_stats fight_stats;

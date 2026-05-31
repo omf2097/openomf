@@ -1,14 +1,17 @@
-#include "audio/audio.h"
+#include "audio/sound_opts.h"
 #include "console/console.h"
 #include "console/console_type.h"
 #include "formats/error.h"
 #include "formats/rec_assertion.h"
+#include "game/audio/music_tracker.h"
+#include "game/game_state.h"
 #include "game/gui/osd/osd.h"
 #include "game/scenes/arena.h"
 #include "game/scenes/mechlab.h"
 #include "resources/ids.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
+#include "utils/miscmath.h"
 #include "utils/str.h"
 #include <stdio.h>
 
@@ -299,9 +302,75 @@ int console_cmd_music(game_state *gs, int argc, char **argv) {
     if(argc == 2) {
         int i;
         if(strtoint(argv[1], &i)) {
-            audio_play_music(PSM_END + i);
+            music_tracker_play(PSM_END + i);
         }
     }
+    return 0;
+}
+
+int console_cmd_sound(game_state *gs, int argc, char **argv) {
+    static const char *usage = "Usage: sound <id> [vol=N] [pan=N] [end=N] [pitch=M]";
+    if(argc < 2) {
+        console_output_addline(usage);
+        return 1;
+    }
+
+    // second arg is always the sound ID
+    int sound_id;
+    if(!strtoint(argv[1], &sound_id)) {
+        console_output_addline(usage);
+        return 1;
+    }
+
+    sound_opts opts;
+    sound_opts_init(&opts);
+
+    str arg, key, val_str;
+    str_create(&arg);
+    str_create(&key);
+    str_create(&val_str);
+
+    // walk through the args. all of them should be "key=value" fmt.
+    bool ok = true;
+    for(int i = 2; i < argc; i++) {
+        size_t eq;
+        str_from_c(&arg, argv[i]);
+        if(!str_first_of(&arg, '=', &eq)) {
+            ok = false;
+            break;
+        }
+        str_from_slice(&key, &arg, 0, eq);
+        str_from_slice(&val_str, &arg, eq + 1, str_size(&arg));
+
+        int val;
+        if(!str_to_int(&val_str, &val)) {
+            ok = false;
+            break;
+        }
+        if(str_equal_buf(&key, "vol", 3)) {
+            opts.volume = clamp(val, 0, 127);
+        } else if(str_equal_buf(&key, "pan", 3)) {
+            opts.panning = clamp(val, -100, 100);
+        } else if(str_equal_buf(&key, "end", 3)) {
+            opts.panning_end = clamp(val, -100, 100);
+            opts.has_panning_sweep = true;
+        } else if(str_equal_buf(&key, "pitch", 5)) {
+            opts.pitch = clamp(val, -128, 128);
+        } else {
+            ok = false;
+            break;
+        }
+    }
+
+    str_free(&val_str);
+    str_free(&key);
+    str_free(&arg);
+
+    if(!ok) {
+        console_output_addline(usage);
+        return 1;
+    }
+    game_state_play_sound(gs, sound_id, &opts);
     return 0;
 }
 
@@ -487,6 +556,7 @@ void console_init_cmd(void) {
     console_add_cmd("help", &console_cmd_help, "show all commands");
     console_add_cmd("scene", &console_cmd_scene, "change scene. usage: scene 1, scene 2, etc");
     console_add_cmd("music", &console_cmd_music, "Play specified song (0-6)");
+    console_add_cmd("sound", &console_cmd_sound, "Play a sound");
     console_add_cmd("har", &console_cmd_har, "change har. usage: har 1, har 2, etc");
     console_add_cmd("win", &console_cmd_win, "Set the other player's health to 0");
     console_add_cmd("lose", &console_cmd_lose, "Set your health to 0");

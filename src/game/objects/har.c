@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "audio/audio.h"
 #include "controller/controller.h"
 #include "formats/af.h"
 #include "game/common_defines.h"

@@ -20,7 +20,7 @@ unsigned psm_get_resamplers(const music_resampler **resamplers) {
     return supported_resamplers_count;
 }
 
-static void psm_render(void *userdata, char *stream, int len) {
+static void psm_render(void *userdata, char *stream, const int len) {
     const xmp_context context = userdata;
     assert(context);
     xmp_play_buffer(context, stream, len, 0);
@@ -35,7 +35,7 @@ static void psm_close(void *userdata) {
     }
 }
 
-static void psm_set_volume(void *userdata, float volume) {
+static void psm_set_volume(void *userdata, const float volume) {
     const xmp_context context = userdata;
     const int clamped = clamp(volume * 100, 0, 100);
     if(xmp_set_player(context, XMP_PLAYER_VOLUME, clamped) != 0) {
@@ -43,7 +43,7 @@ static void psm_set_volume(void *userdata, float volume) {
     }
 }
 
-bool psm_load(music_source *src, int channels, int sample_rate, int resampler, const char *file) {
+bool psm_load(music_source *src, const int channels, const int sample_rate, const int resampler, const char *file) {
     xmp_context context;
     if((context = xmp_create_context()) == NULL) {
         log_error("Unable to initialize XMP context.");

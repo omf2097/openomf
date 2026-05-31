@@ -167,6 +167,18 @@ foreach (PLUGIN ${ENABLED_AUDIO_BACKEND_PLUGINS})
 endforeach ()
 set_source_files_properties("src/audio/audio.c" PROPERTIES COMPILE_DEFINITIONS "${AUDIO_C_DEFINES}")
 
+# Remove all null-source code from OPENOMF_SRC
+list(FILTER OPENOMF_SRC EXCLUDE REGEX "(sound|music)_sources/null_")
+# Enable null sources in debug builds, for automated testing
+list(APPEND OPENOMF_SRC
+    "$<$<CONFIG:Debug>:src/audio/sound_sources/null_sound_source.c>"
+    "$<$<CONFIG:Debug>:src/audio/sound_sources/null_sound_source.h>"
+    "$<$<CONFIG:Debug>:src/audio/music_sources/null_music_source.c>"
+    "$<$<CONFIG:Debug>:src/audio/music_sources/null_music_source.h>"
+)
+set_source_files_properties("src/game/audio/audio_sources.c"
+    PROPERTIES COMPILE_DEFINITIONS "$<$<CONFIG:Debug>:ENABLE_NULL_AUDIO_SOURCES>")
+
 # Remove all render plugin source code from OPENOMF_SRC
 list(FILTER OPENOMF_SRC EXCLUDE REGEX "^src/video/renderers/.*/")
 # Enable "NULL" renderer in debug builds, for automated testing

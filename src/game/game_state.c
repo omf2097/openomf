@@ -1,12 +1,11 @@
 #include "game/game_state.h"
-#include "audio/audio.h"
-#include "audio/sound_sources/dat_source.h"
 #include "console/console.h"
 #include "controller/joystick.h"
 #include "controller/keyboard.h"
 #include "controller/rec_controller.h"
 #include "formats/error.h"
 #include "formats/pilot.h"
+#include "game/audio/sound_tracker.h"
 #include "game/common_defines.h"
 #include "game/protos/object.h"
 #include "game/protos/scene.h"
@@ -36,6 +35,7 @@
 #include "video/vga_state.h"
 #include "video/video.h"
 #include <SDL.h>
+#include <limits.h>
 #include <math.h>
 #include <stdlib.h>
 #include <time.h>
@@ -61,17 +61,6 @@ typedef struct {
     int singleton;  ///< 1 if object should be the only representative of its animation ID
     object *obj;
 } render_obj;
-
-typedef struct {
-    int tick;
-    int sound_id;
-    int length;
-    int duration;
-    int volume;
-    int panning;
-    int pitch;
-    int playback_id;
-} playing_sound;
 
 // 14 bytes of match settings
 void game_state_encode_match_settings(serial *ser, match_settings *ms) {
@@ -287,7 +276,7 @@ int game_state_create(game_state *gs, const engine_init_flags *init_flags) {
     gs->hit_pause = 0;
     game_state_match_settings_reset(gs);
     vector_create(&gs->objects, sizeof(render_obj));
-    vector_create(&gs->sounds, sizeof(playing_sound));
+    sound_tracker_create(&gs->tracker);
 
     // For screen shake
     gs->screen_shake_horizontal = 0;
@@ -409,7 +398,7 @@ error_1:
 error_0:
     omf_free(gs->sc);
     vector_free(&gs->objects);
-    vector_free(&gs->sounds);
+    sound_tracker_free(&gs->tracker);
     return 1;
 }
 
@@ -913,8 +902,18 @@ void game_state_ctrl_events_free(game_state *gs) {
     }
 }
 
+static int sound_pan_lookup_object(void *ctx, uint32_t object_id) {
+    game_state *gs = ctx;
+    const object *obj = game_state_find_object(gs, object_id);
+    if(obj == NULL) {
+        return INT_MIN;
+    }
+    const vec2i pos = object_get_pos(obj);
+    return clamp((pos.x - 160) * 100 / 160, -100, 100);
+}
+
 // This function is called with changing interval, depending on the value of game speed
-void game_state_call_tick(game_state *gs, int mode) {
+void game_state_call_tick(game_state *gs, const int mode) {
     render_obj *robj;
     iterator it;
     vector_iter_begin(&gs->objects, &it);
@@ -926,98 +925,14 @@ void game_state_call_tick(game_state *gs, int mode) {
         }
     }
 
-    playing_sound *s;
-    vector_iter_begin(&gs->sounds, &it);
-    while((s = iter_next(&it)) != NULL) {
-        if(mode == TICK_DYNAMIC) {
-            s->duration -= game_state_ms_per_dyntick(gs);
-        } else {
-            s->duration -= STATIC_TICKS; // static ticks are 10ms
-        }
-        if(s->duration <= 0) {
-            vector_delete(&gs->sounds, &it);
-        }
+    if(mode == TICK_DYNAMIC) {
+        const int delta = game_state_ms_per_dyntick(gs);
+        sound_tracker_tick(&gs->tracker, delta, sound_pan_lookup_object, gs);
     }
 }
 
 void game_state_merge_sounds(game_state *old, game_state *new) {
-    // We need to do several things here:
-    // * Leave any sounds that are playing in both states alone
-    // * Fade out any sounds only playing in the old state
-    // * Fade in any new sounds, and start playing them at the appropriate offset
-
-    playing_sound *s, *s2;
-    iterator it, it2;
-    vector_iter_begin(&old->sounds, &it);
-    while((s = iter_next(&it)) != NULL) {
-        bool found = false;
-        vector_iter_begin(&new->sounds, &it2);
-        while((s2 = iter_next(&it2)) != NULL) {
-            if(s->sound_id == s2->sound_id && s->tick == s2->tick) {
-                // same sound, same frame
-                found = true;
-                break;
-            }
-        }
-
-        if(!found) {
-            // this sound no longer exists after a rollback, so we need to fade it out
-            audio_fade_out(s->playback_id, 500);
-            // don't bother adding it to the new sound vector though
-        }
-    }
-
-    vector_iter_begin(&new->sounds, &it);
-    while((s = iter_next(&it)) != NULL) {
-        bool found = false;
-        vector_iter_begin(&old->sounds, &it2);
-        while((s2 = iter_next(&it2)) != NULL) {
-            if(s->sound_id == s2->sound_id && s->tick == s2->tick) {
-                // same sound, same frame
-                found = true;
-                break;
-            }
-        }
-
-        if(!found) {
-            // this sound was added during the rollback, so we need to start playing it
-            // but we need to determine the playback offset AND fade it in
-            //
-            // this sound should NOT have been played already!
-            assert(s->playback_id == -1);
-
-            sound_source src;
-            if(!dat_source_load(&src, s->sound_id)) {
-                log_error("Requested sound sample %d not found or empty", s->sound_id);
-                return;
-            }
-
-            // calculate the offset into the buffer we need
-            int effective_freq = pitched_samplerate(src.freq, s->pitch);
-            int total_duration = (int)(s->length / (effective_freq * 1000));
-            int elapsed_ms = total_duration - s->duration;
-            int offset = elapsed_ms * effective_freq / 1000;
-
-            log_debug(
-                "playing sound %d with pitch %d added after rollback at tick %d otf length %zu at offset %d (duration "
-                "total %d, remaining %d)",
-                s->sound_id, s->pitch, s->tick, src.len, offset, total_duration, s->duration);
-
-            // guard against playing beyond the end of the buffer
-            if((size_t)offset < src.len) {
-                src.buf += offset;
-                src.len -= offset;
-                sound_opts opts;
-                sound_opts_init(&opts);
-                opts.volume = s->volume;
-                opts.panning = s->panning;
-                opts.pitch = s->pitch;
-                opts.fade_in_ms = 500; // TODO decide on a fade in time
-                s->playback_id = audio_play_source(&src, &opts);
-            }
-            sound_source_close(&src);
-        }
-    }
+    sound_tracker_merge(&old->tracker, &new->tracker);
 }
 
 // This function is always called with the same interval, and game speed does not affect it
@@ -1329,7 +1244,7 @@ void game_state_clone_free(game_state *gs) {
         vector_delete(&gs->objects, &it);
     }
     vector_free(&gs->objects);
-    vector_free(&gs->sounds);
+    sound_tracker_free(&gs->tracker);
 
     // Free scene
     scene_clone_free(gs->sc);
@@ -1358,7 +1273,7 @@ void game_state_free(game_state **_gs) {
         vector_delete(&gs->objects, &it);
     }
     vector_free(&gs->objects);
-    vector_free(&gs->sounds);
+    sound_tracker_free(&gs->tracker);
 
     // Free scene
     if(gs->sc) {
@@ -1439,47 +1354,7 @@ int game_state_find_objects(game_state *gs, vector *out, bool (*predicate)(const
 }
 
 void game_state_play_sound(game_state *gs, int sound_id, const sound_opts *opts) {
-    if(sound_id < 0 || sound_id > 299) {
-        return;
-    }
-
-    sound_source src;
-    if(!dat_source_load(&src, sound_id)) {
-        log_error("Requested sound sample %d not found or empty", sound_id);
-        return;
-    }
-
-    sound_opts defaults;
-    if(opts == NULL) {
-        sound_opts_init(&defaults);
-        opts = &defaults;
-    }
-    int effective_freq = pitched_samplerate(src.freq, opts->pitch);
-
-    playing_sound s;
-    s.tick = gs->tick;
-    s.sound_id = sound_id;
-    s.length = (int)src.len;
-    s.duration = (int)(src.len / (effective_freq * 1000));
-    s.volume = opts->volume;
-    s.panning = opts->panning;
-    s.pitch = opts->pitch;
-    s.playback_id = -1;
-
-    if(!gs->clone) {
-        // do not actually begin playback if this is a cloned game state
-        // cloned game states that are promoted to the active game state
-        // will have this flag removed
-        s.playback_id = audio_play_source(&src, opts);
-        if(s.playback_id == -1) {
-            // don't track sounds that failed to play
-            sound_source_close(&src);
-            return;
-        }
-    }
-    sound_source_close(&src);
-
-    vector_append(&gs->sounds, &s);
+    sound_tracker_play(&gs->tracker, gs->tick, gs->clone, sound_id, opts);
 }
 
 int game_state_clone(game_state *src, game_state *dst) {
@@ -1487,7 +1362,7 @@ int game_state_clone(game_state *src, game_state *dst) {
     memcpy(dst, src, sizeof(game_state));
     // fix any pointers to volatile data
     vector_create(&dst->objects, sizeof(render_obj));
-    vector_create(&dst->sounds, sizeof(playing_sound));
+    sound_tracker_create(&dst->tracker);
 
     dst->next_wait_ticks = 0;
     dst->this_wait_ticks = 0;
@@ -1501,11 +1376,7 @@ int game_state_clone(game_state *src, game_state *dst) {
         vector_append(&dst->objects, &d);
     }
 
-    vector_iter_begin(&src->sounds, &it);
-    playing_sound *s;
-    while((s = iter_next(&it)) != NULL) {
-        vector_append(&dst->sounds, s);
-    }
+    sound_tracker_clone(&dst->tracker, &src->tracker);
 
     for(int i = 0; i < 2; i++) {
         dst->players[i] = omf_calloc(1, sizeof(game_player));
