@@ -8,10 +8,10 @@
  * @author Tuomas Virtanen
  */
 
-#include "formats/palette.h"
-
 #ifndef ALTPAL_H
 #define ALTPAL_H
+
+#include "formats/palette.h"
 
 #define ALTPALS_PALETTES 11 ///< Maximum amount of alternate palettes (technical limitation)
 
