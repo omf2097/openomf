@@ -16,6 +16,19 @@
 
 #define MAX_AVAILABLE_BACKENDS 8
 
+// Playback handles are opaque: the low bits hold the channel, the rest a guid that
+// is unique per play. This is used to validate the handle.
+typedef union {
+    struct {
+        uint32_t channel : 2;
+        uint32_t guid : 30;
+    } fields;
+    uint32_t bits;
+} sound_handle;
+
+static_assert(sizeof(sound_handle) == 4, "sound_handle must be 4 bytes");
+static_assert(SOUND_CHANNEL_COUNT <= 4, "channel index must fit in sound_handle.channel (2 bits)");
+
 typedef void (*audio_backend_init)(audio_backend *backend);
 
 // All built-in backends, most preferred first.
@@ -42,10 +55,23 @@ static audio_backend current_backend;
 static struct channel_state {
     int priority;
     int sound_id;
+    uint32_t guid;
 } channel_state[SOUND_CHANNEL_COUNT];
+
+static uint32_t next_guid = 1;
 
 static void reset_channel_state(void) {
     memset(channel_state, 0, sizeof(channel_state));
+}
+
+static int resolve_handle(const uint32_t handle) {
+    const sound_handle decoded = {.bits = handle};
+    const int ch = decoded.fields.channel;
+    const uint32_t guid = decoded.fields.guid;
+    if(ch >= SOUND_CHANNEL_COUNT || channel_state[ch].guid != guid) {
+        return -1;
+    }
+    return ch;
 }
 
 void audio_scan_backends(void) {
@@ -143,17 +169,17 @@ void audio_close(void) {
     reset_channel_state();
 }
 
-int audio_play_sound_simple(const int sound_id, const int panning) {
+uint32_t audio_play_sound_simple(const int sound_id, const int panning) {
     sound_source src;
     if(!dat_source_load(&src, sound_id)) {
         log_error("Requested sound sample %d not found or empty", sound_id);
-        return -1;
+        return AUDIO_INVALID_HANDLE;
     }
     sound_opts opts;
     sound_opts_init(&opts);
     opts.volume = 64;
     opts.panning = panning;
-    const int result = audio_play_source(&src, &opts);
+    const uint32_t result = audio_play_source(&src, &opts);
     sound_source_close(&src);
     return result;
 }
@@ -208,9 +234,9 @@ static int pick_channel(const sound_opts *opts, const int identity) {
     return -1;
 }
 
-int audio_play_source(const sound_source *src, const sound_opts *custom_opts) {
+uint32_t audio_play_source(const sound_source *src, const sound_opts *custom_opts) {
     if(src == NULL || src->buf == NULL || src->len == 0) {
-        return -1;
+        return AUDIO_INVALID_HANDLE;
     }
     sound_opts opts;
     if(custom_opts == NULL) {
@@ -226,7 +252,7 @@ int audio_play_source(const sound_source *src, const sound_opts *custom_opts) {
 
     const int ch = pick_channel(&opts, src->sound_id);
     if(ch < 0) {
-        return -1;
+        return AUDIO_INVALID_HANDLE;
     }
 
     sound_source effective = *src;
@@ -236,25 +262,31 @@ int audio_play_source(const sound_source *src, const sound_opts *custom_opts) {
               opts.skip_duplicate ? " skip_dup" : "", opts.stop_duplicate ? " stop_dup" : "");
     if(!current_backend.play_pcm_sound(current_backend.ctx, ch, &effective, opts.volume, opts.panning,
                                        opts.fade_in_ms)) {
-        return -1;
+        return AUDIO_INVALID_HANDLE;
     }
+    const sound_handle handle = {
+        {ch, next_guid++}
+    };
     channel_state[ch].priority = opts.priority;
     channel_state[ch].sound_id = src->sound_id;
-    return ch;
+    channel_state[ch].guid = handle.fields.guid;
+    return handle.bits;
 }
 
-void audio_fade_out(const int playback_id, const int ms) {
-    if(playback_id < 0 || playback_id >= SOUND_CHANNEL_COUNT) {
+void audio_fade_out(const uint32_t playback_id, const int ms) {
+    const int ch = resolve_handle(playback_id);
+    if(ch < 0) {
         return;
     }
-    current_backend.fade_out_channel(current_backend.ctx, playback_id, ms);
+    current_backend.fade_out_channel(current_backend.ctx, ch, ms);
 }
 
-void audio_set_pan(const int playback_id, const int panning) {
-    if(playback_id < 0 || playback_id >= SOUND_CHANNEL_COUNT) {
+void audio_set_pan(const uint32_t playback_id, const int panning) {
+    int ch = resolve_handle(playback_id);
+    if(ch < 0) {
         return;
     }
-    current_backend.set_channel_panning(current_backend.ctx, playback_id, panning);
+    current_backend.set_channel_panning(current_backend.ctx, ch, panning);
 }
 
 void audio_play_music(const music_source *src) {

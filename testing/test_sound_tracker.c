@@ -1,6 +1,7 @@
 #include "audio/audio.h"
 #include "audio/backends/null/null_backend.h"
 #include "audio/sound_opts.h"
+#include "audio/sound_sources/null_sound_source.h"
 #include "common.h"
 #include "game/audio/audio_sources.h"
 #include "game/audio/playing_sound.h"
@@ -41,7 +42,7 @@ void test_play_records_entry(void) {
     CU_ASSERT_EQUAL(s->sound_id, 5);
     CU_ASSERT_EQUAL(s->length, (5 + 1) * 1000);
     CU_ASSERT_EQUAL(s->duration, (5 + 1) * 125);
-    CU_ASSERT_TRUE(s->playback_id >= 0);
+    CU_ASSERT_TRUE(s->playback_id != AUDIO_INVALID_HANDLE);
 
     CU_ASSERT_EQUAL(null_audio_backend_get_play_count(0), 1);
     CU_ASSERT_EQUAL(null_audio_backend_get_last_sound_id(0), 5);
@@ -93,7 +94,7 @@ void test_clone_skips_actual_playback(void) {
 
     CU_ASSERT_EQUAL(vector_size(&t.entries), 1);
     const playing_sound *s = vector_get(&t.entries, 0);
-    CU_ASSERT_EQUAL(s->playback_id, -1);
+    CU_ASSERT_EQUAL(s->playback_id, AUDIO_INVALID_HANDLE);
     CU_ASSERT_EQUAL(null_audio_backend_get_play_count(0), 0);
 
     sound_tracker_free(&t);
@@ -196,7 +197,7 @@ void test_merge_new_only_starts_playback(void) {
     sound_tracker_create(&old_t);
     sound_tracker_create(&new_t);
 
-    // Record an unplayed entry on the new side (clone=true means playback_id=-1).
+    // Record an unplayed entry on the new side (clone=true means no playback handle).
     sound_tracker_play(&new_t, 7, true, 0, NULL);
     CU_ASSERT_EQUAL(null_audio_backend_get_play_count(0), 0);
 
@@ -347,6 +348,31 @@ void test_stop_duplicate_replaces_first_play(void) {
     sound_tracker_free(&t);
 }
 
+void test_stale_handle_is_ignored(void) {
+    null_audio_backend_reset_state();
+    sound_source a, b;
+    null_sound_source_load(&a, 1);
+    null_sound_source_load(&b, 2);
+
+    sound_opts opts;
+    sound_opts_init(&opts);
+    opts.channel = 0;
+
+    const uint32_t h_old = audio_play_source(&a, &opts); // ch0, first guid
+    const uint32_t h_new = audio_play_source(&b, &opts); // forced replace: ch0, next guid
+    CU_ASSERT_TRUE(h_old != h_new);
+
+    // stale handle should not affect anything
+    audio_set_pan(h_old, 50);
+    CU_ASSERT_EQUAL(null_audio_backend_get_pan_update_count(0), 0);
+    audio_fade_out(h_old, 500);
+    CU_ASSERT_EQUAL(null_audio_backend_get_fade_count(0), 0);
+
+    // Current handle should still work
+    audio_set_pan(h_new, 50);
+    CU_ASSERT_EQUAL(null_audio_backend_get_pan_update_count(0), 1);
+}
+
 void sound_tracker_test_suite(CU_pSuite suite) {
     ADD_TEST("Test play records entry", test_play_records_entry);
     ADD_TEST("Test play stores opts vol/pan/pitch", test_play_stores_opts_fields);
@@ -364,4 +390,5 @@ void sound_tracker_test_suite(CU_pSuite suite) {
     ADD_TEST("Test stop_duplicate replaces first play", test_stop_duplicate_replaces_first_play);
     ADD_TEST("Test pan sweep interpolation", test_pan_sweep_interpolation);
     ADD_TEST("Test follow calls lookup", test_follow_calls_lookup);
+    ADD_TEST("Test stale handle is ignored", test_stale_handle_is_ignored);
 }

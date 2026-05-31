@@ -30,7 +30,7 @@ typedef struct {
     bool has_pan_sweep;        ///< True if pan-sweep is enabled.
     uint32_t follow_object_id; ///< Object ID to track (0 = no tracking)
     int pitch;                 ///< Per-play pitch adjustment (see pitched_samplerate).
-    int playback_id;           ///< Backend channel id, or -1 if not yet handed to the backend.
+    uint32_t playback_id;      ///< Opaque playback handle, or AUDIO_INVALID_HANDLE if not handed to the backend.
 } playing_sound;
 
 #endif // PLAYING_SOUND_H

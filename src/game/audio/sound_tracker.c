@@ -32,7 +32,7 @@ static void sound_tracker_update_pans(sound_tracker *t, sound_pan_lookup lookup,
     vector_iter_begin(&t->entries, &it);
     playing_sound *s;
     foreach(it, s) {
-        if(s->playback_id < 0) {
+        if(s->playback_id == AUDIO_INVALID_HANDLE) {
             continue;
         }
         int new_pan;
@@ -119,7 +119,7 @@ void sound_tracker_merge(sound_tracker *old, sound_tracker *new) {
             // but we need to determine the playback offset AND fade it in
             //
             // this sound should NOT have been played already!
-            assert(s->playback_id == -1);
+            assert(s->playback_id == AUDIO_INVALID_HANDLE);
 
             sound_source src;
             if(!sound_source_pick(&src, s->sound_id)) {
@@ -187,12 +187,12 @@ void sound_tracker_play(sound_tracker *t, const int tick, const bool clone, cons
     s.has_pan_sweep = opts->has_panning_sweep;
     s.follow_object_id = opts->follow_object_id;
     s.pitch = opts->pitch;
-    s.playback_id = -1;
+    s.playback_id = AUDIO_INVALID_HANDLE;
 
     if(!clone) {
         // cloned game states reach here only to record the entry -- never actually play.
         s.playback_id = audio_play_source(&src, opts);
-        if(s.playback_id == -1) {
+        if(s.playback_id == AUDIO_INVALID_HANDLE) {
             sound_source_close(&src);
             return;
         }
