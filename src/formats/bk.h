@@ -40,7 +40,6 @@ typedef struct {
  *
  * Initializes the BK file structure with empty values.
  *
- * @retval SD_INVALID_INPUT BK struct pointer was NULL
  * @retval SD_SUCCESS Success.
  *
  * @param bk Allocated BK struct pointer.
@@ -55,7 +54,6 @@ int sd_bk_create(sd_bk_file *bk);
  * Destination buffer does not need to be cleared. Source buffer must be a valid
  * BK file structure, or problems are likely to appear.
  *
- * @retval SD_INVALID_INPUT Either of the input pointers was NULL.
  * @retval SD_SUCCESS Success.
  *
  * @param dst Destination BK struct pointer.
@@ -72,7 +70,6 @@ int sd_bk_copy(sd_bk_file *dst, const sd_bk_file *src);
  *
  * A NULL value for image data means that background will be removed.
  *
- * @retval SD_INVALID_INPUT BK struct was NULL.
  * @retval SD_SUCCESS Success.
  *
  * @param bk BK struct pointer.
@@ -101,7 +98,7 @@ sd_vga_image *sd_bk_get_background(const sd_bk_file *bk);
  *
  * Animation input value of NULL will mean that data at index will be freed!
  *
- * @retval SD_INVALID_INPUT index value was invalid or bk struct was NULL.
+ * @retval SD_INVALID_INPUT Index was out of range.
  * @retval SD_SUCCESS Success.
  *
  * @param bk BK struct pointer.
@@ -132,7 +129,7 @@ sd_bk_anim *sd_bk_get_anim(const sd_bk_file *bk, int index);
  * Palette data will be copied. Make sure to free your local copy yourself.
  * Old data in index will be freed automatically.
  *
- * @retval SD_INVALID_INPUT Index was invalid or some input pointer was NULL.
+ * @retval SD_INVALID_INPUT Index was out of range.
  * @retval SD_SUCCESS Success.
  *
  * @param bk BK struct pointer.
@@ -198,6 +195,16 @@ vga_palette *sd_bk_get_palette(const sd_bk_file *bk, int index);
  * @param filename Name of the BK file to load from.
  */
 int sd_bk_load(sd_bk_file *bk, const path *filename);
+
+/** @brief Load a .BK file from a PCX image
+ *
+ * @retval SD_FILE_OPEN_ERROR File could not be opened.
+ * @retval SD_FILE_PARSE_ERROR File does not contain valid data.
+ * @retval SD_SUCCESS Success.
+ *
+ * @param bk BK struct pointer.
+ * @param filename Name of the PCX file to load from.
+ */
 int sd_bk_load_from_pcx(sd_bk_file *bk, const path *filename);
 
 /** @brief Save .BK file

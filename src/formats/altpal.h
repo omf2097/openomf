@@ -26,14 +26,22 @@ typedef struct {
 // globals, yay
 extern altpal_file *altpals;
 
+/** @brief Load the global alternate palette list
+ *
+ * Loads ALTPALS.DAT into the global altpals list.
+ *
+ * @retval 0 Success.
+ * @retval 1 Loading failed.
+ */
 int altpals_init(void);
+
+/** @brief Free the global alternate palette list. */
 void altpals_close(void);
 
 /** @brief Initialize the alternate palette list structure
  *
  * Initializes the alternate palette list structure with empty values.
  *
- * @retval SD_INVALID_INPUT Alternate palette struct pointer was NULL
  * @retval SD_SUCCESS Success.
  *
  * @param ap Altpal struct pointer

@@ -19,7 +19,7 @@
 
 /** @brief REC action record
  *
- * AA record of a single action during the match.
+ * A record of a single action during the match.
  * Essentially a record of keys pressed at a given tick.
  */
 typedef struct {
@@ -117,7 +117,6 @@ enum
  *
  * Initializes the REC file structure with empty values.
  *
- * @retval SD_INVALID_INPUT REC struct pointer was NULL
  * @retval SD_SUCCESS Success.
  *
  * @param rec Allocated REC struct pointer.
@@ -143,8 +142,8 @@ void sd_rec_free(sd_rec_file *rec);
  * @retval SD_FILE_PARSE_ERROR File does not contain valid data or has syntax problems.
  * @retval SD_SUCCESS Success.
  *
- * @param rec BK struct pointer.
- * @param filename Name of the BK file to load from.
+ * @param rec REC struct pointer.
+ * @param filename Name of the REC file to load from.
  */
 int sd_rec_load(sd_rec_file *rec, const path *filename);
 
@@ -165,24 +164,37 @@ int sd_rec_save(const sd_rec_file *rec, const path *filename);
  *
  * Deletes a REC event record at given position.
  *
- * @retval SD_INVALID_INPUT Number you tried to remove does not exist, or rec was NULL.
+ * @retval SD_INVALID_INPUT Number you tried to remove does not exist.
  * @retval SD_SUCCESS Success.
  *
- * @param rec BK struct pointer.
+ * @param rec REC struct pointer.
  * @param number Record number
  */
 int sd_rec_delete_action(sd_rec_file *rec, unsigned int number);
 
+/** @brief Get the extra data length for a lookup id
+ *
+ * Returns the size in bytes of the extra data block associated with a given move lookup id.
+ *
+ * @param key Move lookup id.
+ * @return Extra data length in bytes.
+ */
 int sd_rec_extra_len(int key);
 
+/** @brief Get a pointer to a move's extra data
+ *
+ * Returns a pointer to the extra data buffer of the given move.
+ *
+ * @param move Move to read from.
+ * @return Pointer to the extra data, or NULL if there is none.
+ */
 char *sd_rec_get_extra_data(sd_rec_move *move);
 
 /** @brief Sets the lookup_id of the rec move, prepares extra_data, and returns a pointer to its contents.
  *
- * @retval a pointer where the extra data can be written, the size of which is known by sd_rec_extra_len(key).
- *
  * @param move Move to modify
  * @param key the lookup id to use
+ * @return Pointer where the extra data can be written. The size is known by sd_rec_extra_len(key).
  */
 char *sd_rec_set_lookup_id(sd_rec_move *move, int key);
 
@@ -204,20 +216,28 @@ void sd_rec_move_free(sd_rec_move *move);
  *
  * Allocations within the rec_move will be stolen by this call on success, and nulled in caller's copy.
  *
- * @retval SD_INVALID_INPUT Slot you tried to insert to does not exist, or rec was NULL.
+ * @retval SD_INVALID_INPUT Slot you tried to insert to does not exist.
  * @retval SD_SUCCESS Success.
  *
- * @param rec BK struct pointer.
+ * @param rec REC struct pointer.
  * @param number Record number
  * @param move Move to insert
  */
 int sd_rec_insert_action(sd_rec_file *rec, unsigned int number, sd_rec_move *move);
 
 /** @brief like sd_rec_insert_action but uses the tick in the move to find the right insertion point
+ *
+ * @retval SD_SUCCESS Success.
+ *
+ * @param rec REC struct pointer.
+ * @param move Move to insert.
  */
 int sd_rec_insert_action_at_tick(sd_rec_file *rec, sd_rec_move *move);
 
 /** @brief Insert a closing ACT_NONE on a rec at `ticks`
+ *
+ * @param rec REC struct pointer.
+ * @param ticks Tick at which to insert the closing record.
  */
 void sd_rec_finish(sd_rec_file *rec, unsigned int ticks);
 

@@ -37,7 +37,6 @@ typedef struct {
  *
  * Initializes the font structure with empty values.
  *
- * @retval SD_INVALID_INPUT Font struct pointer was NULL
  * @retval SD_SUCCESS Success.
  *
  * @param font Allocated font struct pointer.
@@ -60,6 +59,7 @@ void sd_font_free(sd_font *font);
  * will result in old data and pointers getting lost. This is very likely to cause a memory leak.
  *
  * @retval SD_FILE_OPEN_ERROR File could not be opened.
+ * @retval SD_FILE_PARSE_ERROR File does not contain valid data.
  * @retval SD_SUCCESS Success.
  *
  * @param font Font struct pointer.
@@ -86,18 +86,30 @@ int sd_font_save(const sd_font *font, const path *filename);
  * Decodes a character to an RGBA8888 Image. Opacity will automatically be
  * set to 100%. Note! Image surface MUST be allocated and right size before using this!
  *
- * @retval SD_INVALID_INPUT Font or image struct was NULL, or character index was >= 224.
+ * @retval SD_INVALID_INPUT Character index was >= 224.
  * @retval SD_SUCCESS Success.
  *
  * @param font Font struct pointer.
  * @param surface Image surface to save to. Must be pre-allocated!
- * @param ch Character to load. Must be 0 <= ch <= 224.
+ * @param ch Character to load. Must be 0 <= ch < 224.
  * @param color Color palette index (0 - 0xFF)
  */
 int sd_font_decode(const sd_font *font, sd_vga_image *surface, uint8_t ch, uint8_t color);
 
-/**
- * Same as sd_font_decode, but decodes to an RGBA surface.
+/** @brief Decode a character to an RGBA image
+ *
+ * Same as sd_font_decode(), but decodes to an RGBA surface with an explicit color.
+ * Note! Image surface MUST be allocated and the right size before using this.
+ *
+ * @retval SD_INVALID_INPUT Character index was >= 224.
+ * @retval SD_SUCCESS Success.
+ *
+ * @param font Font struct pointer.
+ * @param o Image surface to save to. Must be pre-allocated.
+ * @param ch Character to load. Must be 0 <= ch < 224.
+ * @param r Red channel value (0 - 0xFF)
+ * @param g Green channel value (0 - 0xFF)
+ * @param b Blue channel value (0 - 0xFF)
  */
 int sd_font_decode_rgb(const sd_font *font, sd_rgba_image *o, uint8_t ch, uint8_t r, uint8_t g, uint8_t b);
 

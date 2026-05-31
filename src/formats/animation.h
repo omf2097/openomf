@@ -58,7 +58,6 @@ typedef struct {
  *
  * Initializes the animation structure with empty values.
  *
- * @retval SD_INVALID_INPUT Animation struct pointer was NULL
  * @retval SD_SUCCESS Success.
  *
  * @param animation Allocated animation struct pointer.
@@ -73,7 +72,6 @@ int sd_animation_create(sd_animation *animation);
  * Destination buffer does not need to be cleared. Source buffer must be a valid
  * animation structure, or problems are likely to appear.
  *
- * @retval SD_INVALID_INPUT Either input value was NULL.
  * @retval SD_SUCCESS Success.
  *
  * @param dst Destination animation struct pointer.
@@ -226,12 +224,12 @@ int sd_animation_pop_extra_string(sd_animation *animation);
  */
 char *sd_animation_get_extra_string(sd_animation *animation, int num);
 
-/** @brief Get extra string count
+/** @brief Get sprite count
  *
- * Returns the extra string count in the animation.
+ * Returns the sprite count in the animation.
  *
  * @param animation Animation struct to modify.
- * @return Extra string count
+ * @return Sprite count
  */
 int sd_animation_get_sprite_count(const sd_animation *animation);
 
@@ -243,7 +241,7 @@ int sd_animation_get_sprite_count(const sd_animation *animation);
  *
  * Any old data at given index will be automatically freed.
  *
- * @retval SD_INVALID_INPUT Invalid sprite index or sprite was NULL.
+ * @retval SD_INVALID_INPUT Invalid sprite index.
  * @retval SD_SUCCESS Success.
  *
  * @param animation Animation struct to modify
@@ -257,7 +255,7 @@ int sd_animation_set_sprite(sd_animation *animation, int num, const sd_sprite *s
  * Pushes a sprite to the end of the sprite list.
  * Sprite_count variable will be increased by 1.
  *
- * @retval SD_INVALID_INPUT Coordinate list is already full
+ * @retval SD_INVALID_INPUT Sprite list is already full
  * @retval SD_SUCCESS Success.
  *
  * @param animation Animation struct to modify
@@ -290,7 +288,23 @@ int sd_animation_pop_sprite(sd_animation *animation);
  */
 sd_sprite *sd_animation_get_sprite(sd_animation *animation, int num);
 
+/** @brief Load animation from an open reader
+ *
+ * @retval SD_FILE_PARSE_ERROR File does not contain valid data.
+ * @retval SD_SUCCESS Success.
+ *
+ * @param reader Open reader to read from.
+ * @param animation Animation struct to fill.
+ */
 int sd_animation_load(sd_reader *reader, sd_animation *animation);
+
+/** @brief Save animation to an open writer
+ *
+ * @retval SD_SUCCESS Success.
+ *
+ * @param writer Open writer to write to.
+ * @param animation Animation struct to save.
+ */
 int sd_animation_save(sd_writer *writer, const sd_animation *animation);
 
 #endif // SD_ANIMATION_H

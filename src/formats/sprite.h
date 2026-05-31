@@ -40,7 +40,6 @@ typedef struct {
  *
  * Initializes the sprite structure with empty values.
  *
- * @retval SD_INVALID_INPUT Sprite struct pointer was NULL
  * @retval SD_SUCCESS Success.
  *
  * @param sprite Allocated sprite struct pointer.
@@ -55,7 +54,6 @@ int sd_sprite_create(sd_sprite *sprite);
  * Destination buffer does not need to be cleared. Source buffer must be a valid
  * sprite structure, or problems are likely to appear.
  *
- * @retval SD_INVALID_INPUT Either input value was NULL.
  * @retval SD_SUCCESS Success.
  *
  * @param dst Destination sprite struct pointer.
@@ -77,7 +75,6 @@ void sd_sprite_free(sd_sprite *sprite);
  * Encodes RGBA image data to sprite image data. Color values will be matched to exact values in
  * the palette. If no matching value is found for the pixel, the pixel color will be black.
  *
- * @retval SD_INVALID_INPUT Dst, src or palette was NULL.
  * @retval SD_SUCCESS Success.
  *
  * @param dst Destination sprite struct pointer.
@@ -94,7 +91,7 @@ int sd_sprite_rgba_encode(sd_sprite *dst, const sd_rgba_image *src, const vga_pa
  * already created by using sd_rgba_image_create() previously, there may
  * potentially be a memory leak, since the old image internals will not be freed.
  *
- * @retval SD_INVALID_INPUT Dst, src or palette was NULL.
+ * @retval SD_INVALID_INPUT Sprite data is malformed.
  * @retval SD_SUCCESS Success.
  *
  * @param dst Destination RGBA image struct pointer.
@@ -111,7 +108,7 @@ int sd_sprite_rgba_decode(sd_rgba_image *dst, const sd_sprite *src, const vga_pa
  * already created by using sd_vga_image_create() previously, there may
  * potentially be a memory leak, since the old image internals will not be freed.
  *
- * @retval SD_INVALID_INPUT Dst or src was NULL.
+ * @retval SD_INVALID_INPUT Sprite data is malformed.
  * @retval SD_SUCCESS Success.
  *
  * @param dst Destination VGA image struct pointer.
@@ -123,7 +120,6 @@ int sd_sprite_vga_decode(sd_vga_image *dst, const sd_sprite *src);
  *
  * Encodes a VGA image to sprite format
  *
- * @retval SD_INVALID_INPUT Dst or src was NULL.
  * @retval SD_SUCCESS Success.
  *
  * @param dst Destination Sprite image struct pointer.
@@ -131,7 +127,23 @@ int sd_sprite_vga_decode(sd_vga_image *dst, const sd_sprite *src);
  */
 int sd_sprite_vga_encode(sd_sprite *dst, const sd_vga_image *src);
 
+/** @brief Load sprite from an open reader
+ *
+ * @retval SD_FILE_PARSE_ERROR File does not contain valid data.
+ * @retval SD_SUCCESS Success.
+ *
+ * @param reader Open reader to read from.
+ * @param sprite Sprite struct to fill.
+ */
 int sd_sprite_load(sd_reader *reader, sd_sprite *sprite);
+
+/** @brief Save sprite to an open writer
+ *
+ * @retval SD_SUCCESS Success.
+ *
+ * @param writer Open writer to write to.
+ * @param sprite Sprite struct to save.
+ */
 int sd_sprite_save(sd_writer *writer, const sd_sprite *sprite);
 
 #endif // SD_SPRITE_H

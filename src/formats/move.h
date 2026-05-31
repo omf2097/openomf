@@ -55,7 +55,6 @@ typedef struct {
  *
  * Initializes the move structure with empty values.
  *
- * @retval SD_INVALID_INPUT BK struct pointer was NULL
  * @retval SD_SUCCESS Success.
  *
  * @param move Allocated move struct pointer.
@@ -70,7 +69,6 @@ int sd_move_create(sd_move *move);
  * Destination buffer does not need to be cleared. Source buffer must be a valid
  * move structure, or problems are likely to appear.
  *
- * @retval SD_INVALID_INPUT Either input value was NULL.
  * @retval SD_SUCCESS Success.
  *
  * @param dst Destination move struct pointer.
@@ -96,8 +94,7 @@ void sd_move_free(sd_move *move);
  *
  * A NULL value for animation field will result in move->animation field getting freed.
  *
- * @retval SD_INVALID_INPUT Move struct pointer was NULL.
- * @retval SD_SUCCESS on success.
+ * @retval SD_SUCCESS Success.
  *
  * @param move Move struct to modify.
  * @param animation Animation to set. This will be copied.
@@ -142,7 +139,23 @@ int sd_move_set_footer_string(sd_move *move, const char *str);
  */
 int sd_move_set_move_string(sd_move *move, const char *str);
 
+/** @brief Load Move from an open reader
+ *
+ * @retval SD_FILE_PARSE_ERROR File does not contain valid data.
+ * @retval SD_SUCCESS Success.
+ *
+ * @param reader Open reader to read from.
+ * @param move Move struct to fill.
+ */
 int sd_move_load(sd_reader *reader, sd_move *move);
+
+/** @brief Save Move to an open writer
+ *
+ * @retval SD_SUCCESS Success.
+ *
+ * @param writer Open writer to write to.
+ * @param move Move struct to save.
+ */
 int sd_move_save(sd_writer *writer, const sd_move *move);
 
 #endif // SD_MOVE_H

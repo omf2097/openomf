@@ -37,7 +37,6 @@ typedef struct {
  *
  * Initializes the BK animation info structure with empty values.
  *
- * @retval SD_INVALID_INPUT BK struct pointer was NULL
  * @retval SD_SUCCESS Success.
  *
  * @param bka Allocated BK animation info struct pointer.
@@ -52,7 +51,6 @@ int sd_bk_anim_create(sd_bk_anim *bka);
  * Destination buffer does not need to be cleared. Source buffer must be a valid
  * move structure, or problems are likely to appear.
  *
- * @retval SD_INVALID_INPUT Either input value was NULL.
  * @retval SD_SUCCESS Success.
  *
  * @param dst Destination BK animation info struct pointer.
@@ -78,7 +76,6 @@ void sd_bk_anim_free(sd_bk_anim *bka);
  *
  * A NULL value for animation field will result in bka->animation field getting freed.
  *
- * @retval SD_INVALID_INPUT Move struct pointer was NULL.
  * @retval SD_SUCCESS Success.
  *
  * @param bka BK animation info struct to modify.
@@ -111,7 +108,23 @@ sd_animation *sd_bk_anim_get_animation(const sd_bk_anim *bka);
  */
 int sd_bk_set_anim_string(sd_bk_anim *bka, const char *data);
 
+/** @brief Load BK animation info from an open reader
+ *
+ * @retval SD_FILE_PARSE_ERROR File does not contain valid data.
+ * @retval SD_SUCCESS Success.
+ *
+ * @param reader Open reader to read from.
+ * @param bka BK animation info struct to fill.
+ */
 int sd_bk_anim_load(sd_reader *reader, sd_bk_anim *bka);
+
+/** @brief Save BK animation info to an open writer
+ *
+ * @retval SD_SUCCESS Success.
+ *
+ * @param writer Open writer to write to.
+ * @param bka BK animation info struct to save.
+ */
 int sd_bk_anim_save(sd_writer *writer, const sd_bk_anim *bka);
 
 #endif // SD_BKANIM_H

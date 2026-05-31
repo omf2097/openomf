@@ -125,15 +125,23 @@ typedef enum
  *
  * Initializes the pilot structure with empty values.
  *
- * @retval SD_INVALID_INPUT Pilot struct pointer was NULL
  * @retval SD_SUCCESS Success.
  *
  * @param pilot Allocated pilot struct pointer.
  */
 int sd_pilot_create(sd_pilot *pilot);
 
+/** @brief Deep-copy a pilot
+ *
+ * @param dest Destination pilot.
+ * @param src Source pilot.
+ */
 void sd_pilot_clone(sd_pilot *dest, const sd_pilot *src);
+
 /** @brief Copies an sd_pilot, but not any child allocations (quotes, photo surface, etc..)
+ *
+ * @param dest Destination pilot.
+ * @param src Source pilot.
  */
 void sd_pilot_copy_shallow(sd_pilot *dest, const sd_pilot *src);
 
@@ -146,15 +154,72 @@ void sd_pilot_copy_shallow(sd_pilot *dest, const sd_pilot *src);
  */
 void sd_pilot_free(sd_pilot *pilot);
 
+/** @brief Read the player pilot block from a memory reader.
+ *
+ * @param mreader Open memory reader to read from.
+ * @param pilot Pilot struct to fill.
+ */
 void sd_pilot_load_player_from_mem(memreader *mreader, sd_pilot *pilot);
+
+/** @brief Read a full pilot block from a memory reader.
+ *
+ * @param mreader Open memory reader to read from.
+ * @param pilot Pilot struct to fill.
+ */
 void sd_pilot_load_from_mem(memreader *mreader, sd_pilot *pilot);
+
+/** @brief Read a full pilot block from an open reader.
+ *
+ * @retval SD_SUCCESS Success.
+ *
+ * @param reader Open reader to read from.
+ * @param pilot Pilot struct to fill.
+ */
 int sd_pilot_load(sd_reader *reader, sd_pilot *pilot);
+
+/** @brief Write the player pilot block to a memory writer.
+ *
+ * @param mwriter Open memory writer to write to.
+ * @param pilot Pilot struct to save.
+ */
 void sd_pilot_save_player_to_mem(memwriter *mwriter, const sd_pilot *pilot);
+
+/** @brief Write a full pilot block to a memory writer.
+ *
+ * @param mwriter Open memory writer to write to.
+ * @param pilot Pilot struct to save.
+ */
 void sd_pilot_save_to_mem(memwriter *mwriter, const sd_pilot *pilot);
+
+/** @brief Write a full pilot block to an open writer.
+ *
+ * @retval SD_SUCCESS Success.
+ *
+ * @param writer Open writer to write to.
+ * @param pilot Pilot struct to save.
+ */
 int sd_pilot_save(sd_writer *writer, const sd_pilot *pilot);
 
+/** @brief Set one of the pilot's HAR player colors.
+ *
+ * @param pilot Pilot struct to modify.
+ * @param index Which color slot to set.
+ * @param color Color value to set.
+ */
 void sd_pilot_set_player_color(sd_pilot *pilot, player_color index, uint8_t color);
+
+/** @brief Get one of the pilot's HAR player colors.
+ *
+ * @param pilot Pilot struct to read from.
+ * @param index Which color slot to read.
+ * @return The color value.
+ */
 uint8_t sd_pilot_get_player_color(sd_pilot const *pilot, player_color index);
+
+/** @brief Reset the pilot's tournament-specific state.
+ *
+ * @param pilot Pilot struct to modify.
+ */
 void sd_pilot_exit_tournament(sd_pilot *pilot);
 
 #endif // SD_PILOT_H

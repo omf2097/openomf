@@ -41,7 +41,6 @@ typedef struct {
  *
  * Initializes the AF file structure with empty values.
  *
- * @retval SD_INVALID_INPUT AF struct value was NULL.
  * @retval SD_SUCCESS Success.
  *
  * @param af Allocated AF struct pointer.
@@ -56,7 +55,6 @@ int sd_af_create(sd_af_file *af);
  * Destination buffer does not need to be cleared. Source buffer must be a valid
  * AF file structure, or problems are likely to appear.
  *
- * @retval SD_INVALID_INPUT Either input value was NULL.
  * @retval SD_SUCCESS Success.
  *
  * @param dst Destination AF struct pointer.
@@ -73,7 +71,7 @@ int sd_af_copy(sd_af_file *dst, const sd_af_file *src);
  *
  * A NULL value for move will result in the old move at index getting freed.
  *
- * @retval SD_INVALID_INPUT Index was invalid or a pointer was NULL.
+ * @retval SD_INVALID_INPUT Index was out of range.
  * @retval SD_SUCCESS Success.
  *
  * @param af AF struct pointer.

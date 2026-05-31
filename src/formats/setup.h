@@ -78,8 +78,30 @@ typedef struct {
 } sd_setup_file;
 static_assert(296 == sizeof(sd_setup_file), "sd_setup_file should pack into 296 bytes");
 
+/** @brief Initialize setup structure
+ *
+ * @retval SD_SUCCESS Success.
+ *
+ * @param setup Allocated setup struct pointer.
+ */
 int sd_setup_create(sd_setup_file *setup);
+
+/** @brief Free setup structure
+ *
+ * @param setup Setup struct to free.
+ */
 void sd_setup_free(sd_setup_file *setup);
+
+/** @brief Load a setup (SETUP.CFG) file
+ *
+ * @retval SD_FILE_OPEN_ERROR File could not be opened.
+ * @retval SD_FILE_INVALID_TYPE File is not a valid setup file.
+ * @retval SD_FILE_PARSE_ERROR File does not contain valid data.
+ * @retval SD_SUCCESS Success.
+ *
+ * @param setup Setup struct to fill.
+ * @param file Name of the setup file to load from.
+ */
 int sd_setup_load(sd_setup_file *setup, const path *file);
 
 #endif // SD_SETUP_H

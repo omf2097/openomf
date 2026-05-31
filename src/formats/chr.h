@@ -50,7 +50,6 @@ typedef struct {
  *
  * Initializes the CHR structure with empty values.
  *
- * @retval SD_INVALID_INPUT CHR struct pointer was NULL
  * @retval SD_SUCCESS Success.
  *
  * @param chr Allocated CHR struct pointer.
@@ -66,6 +65,14 @@ int sd_chr_create(sd_chr_file *chr);
  */
 void sd_chr_free(sd_chr_file *chr);
 
+/** @brief Build a CHR savegame from a tournament
+ *
+ * @retval SD_SUCCESS Success.
+ *
+ * @param chr CHR struct pointer to fill.
+ * @param trn Source tournament file.
+ * @param pilot Starting pilot.
+ */
 int sd_chr_from_trn(sd_chr_file *chr, const sd_tournament_file *trn, const sd_pilot *pilot);
 
 /** @brief Load .CHR file

@@ -36,7 +36,6 @@ typedef struct {
  *
  * Initializes the language structure with empty values.
  *
- * @retval SD_INVALID_INPUT Language struct pointer was NULL
  * @retval SD_SUCCESS Success.
  *
  * @param language Allocated language struct pointer.
@@ -86,7 +85,7 @@ int sd_language_save(const sd_language *language, const path *filename);
  * The structure memory will be owned by the library; do not attempt to
  * free it.
  *
- * @retval NULL If language ptr was NULL or string entry does not exist.
+ * @retval NULL Entry number is out of range.
  * @retval sd_lang_string* Language string struct pointer on success.
  *
  * @param language Language struct pointer.
@@ -94,6 +93,12 @@ int sd_language_save(const sd_language *language, const path *filename);
  */
 const sd_lang_string *sd_language_get(const sd_language *language, unsigned num);
 
+/** @brief Append a language string
+ *
+ * @param language Language struct pointer.
+ * @param description Short description for the string.
+ * @param data Language string contents.
+ */
 void sd_language_append(sd_language *language, const char *description, const char *data);
 
 #endif // SD_LANGUAGE_H

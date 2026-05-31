@@ -49,13 +49,19 @@ typedef struct sd_script {
  *
  * Initializes the script parser with empty values.
  *
- * @retval SD_INVALID_INPUT Script struct pointer was NULL
  * @retval SD_SUCCESS Success.
  *
  * @param script Allocated script struct pointer.
  */
 int sd_script_create(sd_script *script);
 
+/** @brief Clone a script
+ *
+ * @retval SD_SUCCESS Success.
+ *
+ * @param src Source script.
+ * @param dst Destination script.
+ */
 int sd_script_clone(const sd_script *src, sd_script *dst);
 
 /** @brief Free script parser
@@ -90,7 +96,6 @@ int sd_script_decode(sd_script *script, const char *str, int *invalid_pos);
  * front of numbers, those will be automatically fixed. Therefore the output
  * string may not be exactly like the input string.
  *
- * @retval SD_INVALID_INPUT Script or str parameter was NULL
  * @retval SD_SUCCESS Successful operation
  *
  * @param script Script structure to encode
@@ -102,7 +107,6 @@ int sd_script_encode(const sd_script *script, str *dst);
  *
  * Encodes the animation frame structure to an animation string.
  *
- * @retval SD_INVALID_INPUT Script or str parameter was NULL
  * @retval SD_SUCCESS Successful operation
  *
  * @param frame Script frame to encode
@@ -347,7 +351,7 @@ int sd_script_next_frame_with_tag(const sd_script *script, const char *tag, uint
  * parameters, a new parameter will be set for the tag. Otherwise this function does nothing.
  *
  * @retval SD_SUCCESS On succesful tag set operation
- * @retval SD_INVALID_INPUT if script or tag is NULL, tag does not exist or frame does not exist.
+ * @retval SD_INVALID_INPUT if the tag is invalid or the frame does not exist.
  *
  * @param script Script to modify
  * @param frame_id Frame ID to modify
@@ -361,7 +365,7 @@ int sd_script_set_tag(sd_script *script, int frame_id, const char *tag, int valu
  * Deletes the tag from the given frame. If the tag does not exist, does nothing.
  *
  * @retval SD_SUCCESS On succesful tag set operation
- * @retval SD_INVALID_INPUT if script or tag is NULL or the frame does not exist.
+ * @retval SD_INVALID_INPUT if the frame does not exist.
  *
  * @param script Script to modify
  * @param frame_id Frame ID to modify
@@ -375,7 +379,6 @@ int sd_script_delete_tag(sd_script *script, int frame_id, const char *tag);
  * Tag list will be empty after creation.
  *
  * @retval SD_SUCCESS on successful frame creation
- * @retval SD_INVALID_INPUT if script is NULL
  *
  * @param script Script to modify
  * @param tick_len Tick length of the new frame
@@ -388,7 +391,7 @@ int sd_script_append_frame(sd_script *script, int tick_len, int sprite_id);
  * Clears all tags from the given frame.
  *
  * @retval SD_SUCCESS on successful removal
- * @retval SD_INVALID_INPUT if script is NULL or if frame_id is nonexistent
+ * @retval SD_INVALID_INPUT if frame_id is nonexistent
  *
  * @param script Script to modify
  * @param frame_id Valid frame ID with tags to clear
@@ -400,7 +403,7 @@ int sd_script_clear_tags(sd_script *script, int frame_id);
  * Sets a new tick length for the given frame.
  *
  * @retval SD_SUCCESS on successful operation
- * @retval SD_INVALID_INPUT if script is NULL or frame_id is nonexistent
+ * @retval SD_INVALID_INPUT if frame_id is nonexistent
  *
  * @param script Script to modify
  * @param frame_id Frame ID to set tick length to
@@ -413,7 +416,7 @@ int sd_script_set_tick_len_at_frame(sd_script *script, int frame_id, int duratio
  * Sets the sprite ID of the given frame.
  *
  * @retval SD_SUCCESS on successful operation
- * @retval SD_INVALID_INPUT if script is NULL, frame_id is invalid or sprite_id is invalid.
+ * @retval SD_INVALID_INPUT if frame_id is invalid or sprite_id is invalid.
  *
  * @param script Script to modify
  * @param frame_id Frame ID to set sprite ID to

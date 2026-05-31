@@ -41,7 +41,6 @@ typedef struct {
  *
  * Initializes the PIC file structure with empty values.
  *
- * @retval SD_INVALID_INPUT PIC struct pointer was NULL
  * @retval SD_SUCCESS Success.
  *
  * @param pic Allocated PIC struct pointer.
@@ -91,7 +90,7 @@ int sd_pic_save(const sd_pic_file *pic, const path *filename);
  * The structure memory will be owned by the library; do not attempt to
  * free it.
  *
- * @retval NULL If PIC ptr was NULL or image entry does not exist.
+ * @retval NULL Entry id is out of range or the image does not exist.
  * @retval sd_pic_photo* Photo image struct pointer on success.
  *
  * @param pic PIC file struct pointer.

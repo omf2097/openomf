@@ -35,7 +35,6 @@ typedef struct {
  * Initializes the VGA image structure with empty values. By default, all pixels are
  * set as visible (opacity 100%).
  *
- * @retval SD_INVALID_INPUT VGA image struct pointer was NULL
  * @retval SD_SUCCESS Success.
  *
  * @param img Allocated VGA image struct pointer.
@@ -52,7 +51,6 @@ int sd_vga_image_create(sd_vga_image *img, unsigned int w, unsigned int h);
  * Destination buffer does not need to be cleared. Source buffer must be a valid
  * VGA image structure, or problems are likely to appear.
  *
- * @retval SD_INVALID_INPUT Either input value was NULL.
  * @retval SD_SUCCESS Success.
  *
  * @param dst Destination VGA image struct pointer.
@@ -77,7 +75,6 @@ void sd_vga_image_free(sd_vga_image *img);
  * already created by using sd_rgba_image_create() previously, there may
  * potentially be a memory leak, since the old image internals will not be freed.
  *
- * @retval SD_INVALID_INPUT Dst, src or palette was NULL.
  * @retval SD_SUCCESS Success.
  *
  * @param dst Destination RGBA image struct pointer.
@@ -95,10 +92,7 @@ int sd_vga_image_decode(sd_rgba_image *dst, const sd_vga_image *src, const vga_p
  * already created by using sd_vga_image_create() previously, there may
  * potentially be a memory leak, since the old image internals will not be freed.
  *
- * @retval SD_INVALID_INPUT Image or filename was NULL
- * @retval SD_FILE_INVALID_TYPE Input image was of invalid type.
- * @retval SD_FILE_OPEN_ERROR File could not be opened for reading.
- * @retval SD_FORMAT_NOT_SUPPORTED File format (PNG) is not supported.
+ * @retval SD_FAILURE Image could not be loaded.
  * @retval SD_SUCCESS Success.
  *
  * @param img Destination image pointer
@@ -111,9 +105,7 @@ int sd_vga_image_from_png(sd_vga_image *img, const path *filename);
  * Saves an indexed (paletted) image to a PNG file. Maximum allowed image
  * size is 320x200, and the smallest allowed size is 1x1.
  *
- * @retval SD_INVALID_INPUT Image or filename was NULL
  * @retval SD_FILE_OPEN_ERROR File could not be opened for writing.
- * @retval SD_FORMAT_NOT_SUPPORTED File format (PNG) is not supported.
  * @retval SD_SUCCESS Success.
  *
  * @param img Source image pointer

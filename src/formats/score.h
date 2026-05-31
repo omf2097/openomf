@@ -48,7 +48,6 @@ typedef struct {
  *
  * Initializes the score structure with empty values.
  *
- * @retval SD_INVALID_INPUT Score struct pointer was NULL
  * @retval SD_SUCCESS Success.
  *
  * @param score Allocated score struct pointer.
@@ -99,7 +98,7 @@ int sd_score_save(const sd_score *score, const path *filename);
  * The structure memory will be owned by the library; do not attempt to
  * free it.
  *
- * @retval NULL If score ptr was NULL or score information entry does not exist.
+ * @retval NULL Page or entry id is out of range.
  * @retval sd_score_entry* Score information struct pointer on success.
  *
  * @param score Score information struct pointer.

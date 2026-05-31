@@ -41,7 +41,6 @@ typedef struct {
  *
  * Initializes the sounds structure with empty values.
  *
- * @retval SD_INVALID_INPUT Score struct pointer was NULL
  * @retval SD_SUCCESS Success.
  *
  * @param sf Allocated sounds struct pointer.
@@ -64,7 +63,7 @@ void sd_sounds_free(sd_sound_file *sf);
  * The structure memory will be owned by the library; do not attempt to
  * free it.
  *
- * @retval NULL If sd_sound_file ptr was NULL or sound does not exist.
+ * @retval NULL Sound id is out of range or the sound does not exist.
  * @retval sd_sound* Sound entry pointer on success.
  *
  * @param sf Sound information struct pointer.
@@ -76,7 +75,7 @@ const sd_sound *sd_sounds_get(const sd_sound_file *sf, int id);
  *
  * Saves a 8bit, mono, unsigned, 8000Hz PCM sample to an AU file.
  *
- * @retval SD_INVALID_INPUT Image or filename was NULL
+ * @retval SD_INVALID_INPUT Sound number is out of range.
  * @retval SD_FILE_OPEN_ERROR File could not be opened for writing.
  * @retval SD_SUCCESS Success.
  *
@@ -91,8 +90,8 @@ int sd_sound_to_au(const sd_sound_file *sf, int num, const path *filename);
  * Loads a 8bit, mono, unsigned, 8000Hz PCM sample from an AU file.
  * If given sound number already has a sound, it will be freed.
  *
- * @retval SD_INVALID_INPUT Image or filename was NULL
- * @retval SD_FILE_INVALID_TYPE Input image was of invalid type.
+ * @retval SD_INVALID_INPUT Sound number is out of range.
+ * @retval SD_FILE_INVALID_TYPE Input file was of invalid type.
  * @retval SD_FILE_OPEN_ERROR File could not be opened for reading.
  * @retval SD_SUCCESS Success.
  *
