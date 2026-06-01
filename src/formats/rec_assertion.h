@@ -3,7 +3,7 @@
  * @brief Match record assertion handling.
  * @details Functions and structs for parsing and formatting match record (REC) assertions.
  * @copyright MIT License
- * @date 2026
+ * @date 2013-2026
  * @author OpenOMF Project
  */
 

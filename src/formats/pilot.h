@@ -3,7 +3,7 @@
  * @brief Pilot structure handling.
  * @details Functions and structs for reading, writing and modifying OMF:2097 pilot data structures.
  * @copyright MIT License
- * @date 2026
+ * @date 2013-2026
  * @author Andrew Thompson
  * @author Tuomas Virtanen
  */

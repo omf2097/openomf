@@ -3,7 +3,7 @@
  * @brief Animation tag list handling.
  * @details Animation tag information fetching.
  * @copyright MIT License
- * @date 2026
+ * @date 2013-2026
  * @author animehunter
  * @author Tuomas Virtanen
  */

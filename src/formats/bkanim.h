@@ -3,7 +3,7 @@
  * @brief BK animation data handling.
  * @details Functions and structs for reading, writing and modifying OMF:2097 BK specific animation structures.
  * @copyright MIT License
- * @date 2026
+ * @date 2013-2026
  * @author Andrew Thompson
  * @author Tuomas Virtanen
  */

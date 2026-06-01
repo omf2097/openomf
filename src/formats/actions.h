@@ -3,7 +3,7 @@
  * @brief HAR Actions list
  * @details HAR action types list
  * @copyright MIT License
- * @date 2026
+ * @date 2013-2026
  * @author Tuomas Virtanen
  */
 

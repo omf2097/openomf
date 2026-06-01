@@ -3,7 +3,7 @@
  * @brief Collision coordinate struct.
  * @details Struct for holding collision coordinate data for OMF:2097 animation structures.
  * @copyright MIT License
- * @date 2026
+ * @date 2013-2026
  * @author Andrew Thompson
  * @author Tuomas Virtanen
  */

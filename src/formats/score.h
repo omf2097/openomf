@@ -3,7 +3,7 @@
  * @brief Scoreboard data handling.
  * @details Functions and structs for reading, writing and modifying OMF:2097 Scoreboard files (SCORES.DAT).
  * @copyright MIT License
- * @date 2026
+ * @date 2013-2026
  * @author animehunter
  * @author Andrew Thompson
  * @author Tuomas Virtanen

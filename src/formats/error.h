@@ -3,7 +3,7 @@
  * @brief Format handler error handling.
  * @details Functions for dealing with format handler errors.
  * @copyright MIT License
- * @date 2026
+ * @date 2013-2026
  * @author animehunter
  * @author Andrew Thompson
  * @author Tuomas Virtanen

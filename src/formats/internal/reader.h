@@ -3,7 +3,7 @@
  * @brief Binary file reader.
  * @details Buffered reader for binary file data.
  * @copyright MIT License
- * @date 2026
+ * @date 2013-2026
  * @author OpenOMF Project
  */
 

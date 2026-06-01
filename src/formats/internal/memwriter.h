@@ -3,7 +3,7 @@
  * @brief In-memory binary writer.
  * @details A writer that operates on a memory buffer, mirroring the file writer API.
  * @copyright MIT License
- * @date 2026
+ * @date 2013-2026
  * @author OpenOMF Project
  */
 

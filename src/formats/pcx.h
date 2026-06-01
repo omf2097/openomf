@@ -3,7 +3,7 @@
  * @brief PCX image file handling.
  * @details Functions and structs for reading PCX images and PCX-based font sheets.
  * @copyright MIT License
- * @date 2026
+ * @date 2013-2026
  * @author OpenOMF Project
  */
 

@@ -3,7 +3,7 @@
  * @brief VGA image data handling.
  * @details Functions and structs for reading, writing and modifying OMF:2097 VGA image data.
  * @copyright MIT License
- * @date 2026
+ * @date 2013-2026
  * @author huntercool
  * @author Andrew Thompson
  * @author Tuomas Virtanen
