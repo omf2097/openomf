@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -63,9 +64,7 @@ void sd_rec_move_free(sd_rec_move *move) {
 }
 
 int sd_rec_create(sd_rec_file *rec) {
-    if(rec == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(rec != NULL);
     memset(rec, 0, sizeof(sd_rec_file));
     sd_pilot_create(&rec->pilots[0].info);
     sd_pilot_create(&rec->pilots[1].info);
@@ -92,9 +91,8 @@ void sd_rec_free(sd_rec_file *rec) {
 
 int sd_rec_load(sd_rec_file *rec, const path *file) {
     int ret = SD_FILE_PARSE_ERROR;
-    if(rec == NULL || file == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(rec != NULL);
+    assert(file != NULL);
 
     sd_reader *r = sd_reader_open(file);
     if(!r) {
@@ -191,12 +189,11 @@ error_0:
     return ret;
 }
 
-int sd_rec_save(sd_rec_file *rec, const path *file) {
+int sd_rec_save(const sd_rec_file *rec, const path *file) {
     sd_writer *w;
 
-    if(rec == NULL || file == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(rec != NULL);
+    assert(file != NULL);
 
     if(!(w = sd_writer_open(file))) {
         return SD_FILE_OPEN_ERROR;
@@ -258,7 +255,8 @@ int sd_rec_save(sd_rec_file *rec, const path *file) {
 }
 
 int sd_rec_delete_action(sd_rec_file *rec, unsigned int number) {
-    if(rec == NULL || number >= rec->move_count) {
+    assert(rec != NULL);
+    if(number >= rec->move_count) {
         return SD_INVALID_INPUT;
     }
 
@@ -285,9 +283,7 @@ int sd_rec_insert_action_at_tick(sd_rec_file *rec, sd_rec_move *move) {
 }
 
 int sd_rec_insert_action(sd_rec_file *rec, unsigned int number, sd_rec_move *move) {
-    if(rec == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(rec != NULL);
     if(number > rec->move_count) {
         return SD_INVALID_INPUT;
     }

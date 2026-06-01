@@ -16,13 +16,10 @@ static int get_tag_count(const sd_script *scr, int frame_id) {
 
 void test_script_create(void) {
     CU_ASSERT(sd_script_create(&script) == SD_SUCCESS);
-    CU_ASSERT(sd_script_create(NULL) == SD_INVALID_INPUT);
     CU_ASSERT(vector_size(&script.frames) == 0);
 }
 
 void test_script_decode(void) {
-    CU_ASSERT(sd_script_decode(&script, NULL, NULL) == SD_INVALID_INPUT);
-    CU_ASSERT(sd_script_decode(NULL, OK_STR, NULL) == SD_INVALID_INPUT);
     CU_ASSERT(sd_script_decode(&script, OK_STR, NULL) == SD_SUCCESS);
     CU_ASSERT(vector_size(&script.frames) == 3);
     CU_ASSERT(get_tag_count(&script, 0) == 4);
@@ -252,7 +249,6 @@ void test_set_tag(void) {
     CU_ASSERT_EQUAL(get_tag_count(&script, 1), 3);
 
     // Bad input values
-    CU_ASSERT(sd_script_set_tag(NULL, 1, "bpd", 50) == SD_INVALID_INPUT);
     CU_ASSERT(sd_script_set_tag(&script, -1, "bpd", 50) == SD_INVALID_INPUT);
     CU_ASSERT(sd_script_set_tag(&script, 1, "xxx", 50) == SD_INVALID_INPUT);
 }

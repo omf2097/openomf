@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -11,9 +12,7 @@
 #include "utils/path.h"
 
 int sd_tournament_create(sd_tournament_file *trn) {
-    if(trn == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(trn != NULL);
     memset(trn, 0, sizeof(sd_tournament_file));
     return SD_SUCCESS;
 }
@@ -56,17 +55,15 @@ static void free_locales(sd_tournament_file *trn) {
 }
 
 int sd_tournament_set_bk_name(sd_tournament_file *trn, const char *bk_name) {
-    if(trn == NULL || bk_name == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(trn != NULL);
+    assert(bk_name != NULL);
     snprintf(trn->bk_name, sizeof(trn->bk_name), "%s", bk_name);
     return SD_SUCCESS;
 }
 
 int sd_tournament_set_pic_name(sd_tournament_file *trn, const char *pic_name) {
-    if(trn == NULL || pic_name == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(trn != NULL);
+    assert(pic_name != NULL);
     size_t len = strlen(pic_name) + 1;
     trn->pic_file = omf_realloc(trn->pic_file, len);
     snprintf(trn->pic_file, len, "%s", pic_name);
@@ -135,9 +132,8 @@ static void parse_tournament_description(sd_tournament_locale *locale) {
 
 int sd_tournament_load(sd_tournament_file *trn, const path *filename) {
     int ret = SD_FILE_PARSE_ERROR;
-    if(trn == NULL || filename == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(trn != NULL);
+    assert(filename != NULL);
 
     sd_reader *r = sd_reader_open(filename);
     if(!r) {
@@ -261,9 +257,8 @@ error_0:
 }
 
 int sd_tournament_save(const sd_tournament_file *trn, const path *filename) {
-    if(trn == NULL || filename == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(trn != NULL);
+    assert(filename != NULL);
 
     sd_writer *w = sd_writer_open(filename);
     if(!w) {

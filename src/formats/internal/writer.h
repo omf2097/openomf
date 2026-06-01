@@ -1,3 +1,12 @@
+/**
+ * @file writer.h
+ * @brief Binary file writer.
+ * @details Buffered writer for binary file data.
+ * @copyright MIT License
+ * @date 2013-2026
+ * @author OpenOMF Project
+ */
+
 #ifndef SD_WRITER_H
 #define SD_WRITER_H
 

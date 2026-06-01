@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <string.h>
 
 #include "formats/error.h"
@@ -7,9 +8,7 @@
 #include "utils/c_array_util.h"
 
 int sd_score_create(sd_score *score) {
-    if(score == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(score != NULL);
     memset(score, 0, sizeof(sd_score));
     return SD_SUCCESS;
 }
@@ -18,9 +17,8 @@ void sd_score_free(sd_score *score) {
 }
 
 int sd_score_load(sd_score *score, const path *filename) {
-    if(score == NULL || filename == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(score != NULL);
+    assert(filename != NULL);
 
     sd_reader *r = sd_reader_open(filename);
     if(!r) {
@@ -51,9 +49,8 @@ read_error:
 }
 
 int sd_score_save(const sd_score *score, const path *filename) {
-    if(score == NULL || filename == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(score != NULL);
+    assert(filename != NULL);
 
     sd_writer *w = sd_writer_open(filename);
     if(!w) {

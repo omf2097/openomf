@@ -6,11 +6,7 @@
 sd_af_file af;
 
 void test_sd_af_create(void) {
-    int ret;
-    ret = sd_af_create(&af);
-    CU_ASSERT(ret == SD_SUCCESS);
-    ret = sd_af_create(NULL);
-    CU_ASSERT(ret == SD_INVALID_INPUT);
+    CU_ASSERT(sd_af_create(&af) == SD_SUCCESS);
 }
 
 void test_sd_af_free(void) {

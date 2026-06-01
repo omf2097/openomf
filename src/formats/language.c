@@ -12,9 +12,7 @@
 #include "utils/c_string_util.h"
 
 int sd_language_create(sd_language *language) {
-    if(language == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(language != NULL);
     memset(language, 0, sizeof(sd_language));
     return SD_SUCCESS;
 }
@@ -32,9 +30,8 @@ void sd_language_free(sd_language *language) {
 }
 
 int sd_language_load(sd_language *language, const path *filename) {
-    if(language == NULL || filename == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(language != NULL);
+    assert(filename != NULL);
 
     sd_reader *r = sd_reader_open(filename);
     if(!r) {
@@ -121,10 +118,9 @@ void sd_language_append(sd_language *language, const char *description, const ch
     language->strings[language->count - 1].data = omf_strdup(data);
 }
 
-int sd_language_save(sd_language *language, const path *filename) {
-    if(language == NULL || filename == NULL) {
-        return SD_INVALID_INPUT;
-    }
+int sd_language_save(const sd_language *language, const path *filename) {
+    assert(language != NULL);
+    assert(filename != NULL);
 
     sd_writer *w = sd_writer_open(filename);
     if(!w) {

@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <string.h>
 
 #include "formats/error.h"
@@ -6,9 +7,7 @@
 #include "formats/internal/writer.h"
 
 int sd_font_create(sd_font *font) {
-    if(font == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(font != NULL);
     memset(font, 0, sizeof(sd_font));
     return SD_SUCCESS;
 }
@@ -17,9 +16,8 @@ void sd_font_free(sd_font *font) {
 }
 
 int sd_font_load(sd_font *font, const path *file, unsigned int font_h) {
-    if(font == NULL || file == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(font != NULL);
+    assert(file != NULL);
 
     sd_reader *r = sd_reader_open(file);
     if(!r) {
@@ -40,9 +38,8 @@ int sd_font_load(sd_font *font, const path *file, unsigned int font_h) {
 }
 
 int sd_font_save(const sd_font *font, const path *file) {
-    if(font == NULL || file == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(font != NULL);
+    assert(file != NULL);
 
     sd_writer *w = sd_writer_open(file);
     if(!w) {
@@ -58,7 +55,9 @@ int sd_font_save(const sd_font *font, const path *file) {
 }
 
 int sd_font_decode(const sd_font *font, sd_vga_image *o, uint8_t ch, uint8_t color) {
-    if(font == NULL || o == NULL || ch >= 224) {
+    assert(font != NULL);
+    assert(o != NULL);
+    if(ch >= 224) {
         return SD_INVALID_INPUT;
     }
 
@@ -77,7 +76,9 @@ int sd_font_decode(const sd_font *font, sd_vga_image *o, uint8_t ch, uint8_t col
 }
 
 int sd_font_decode_rgb(const sd_font *font, sd_rgba_image *o, uint8_t ch, uint8_t r, uint8_t g, uint8_t b) {
-    if(font == NULL || o == NULL || ch >= 224) {
+    assert(font != NULL);
+    assert(o != NULL);
+    if(ch >= 224) {
         return SD_INVALID_INPUT;
     }
 

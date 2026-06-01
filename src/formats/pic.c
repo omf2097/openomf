@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -9,9 +10,7 @@
 #include "utils/allocator.h"
 
 int sd_pic_create(sd_pic_file *pic) {
-    if(pic == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(pic != NULL);
     memset(pic, 0, sizeof(sd_pic_file));
     return SD_SUCCESS;
 }
@@ -33,9 +32,8 @@ void free_photos(sd_pic_file *pic) {
 
 int sd_pic_load(sd_pic_file *pic, const path *filename) {
     int ret = SD_FILE_PARSE_ERROR;
-    if(pic == NULL || filename == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(pic != NULL);
+    assert(filename != NULL);
 
     sd_reader *r = sd_reader_open(filename);
     if(!r) {
@@ -110,9 +108,8 @@ error_0:
 }
 
 int sd_pic_save(const sd_pic_file *pic, const path *filename) {
-    if(pic == NULL || filename == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(pic != NULL);
+    assert(filename != NULL);
 
     sd_writer *w = sd_writer_open(filename);
     if(!w) {

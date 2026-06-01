@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -9,9 +10,7 @@
 #include "utils/log.h"
 
 int sd_move_create(sd_move *move) {
-    if(move == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(move != NULL);
 
     // Clear everything
     memset(move, 0, sizeof(sd_move));
@@ -20,9 +19,8 @@ int sd_move_create(sd_move *move) {
 
 int sd_move_copy(sd_move *dst, const sd_move *src) {
     int ret;
-    if(dst == NULL || src == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(dst != NULL);
+    assert(src != NULL);
 
     // Clear destination
     memset(dst, 0, sizeof(sd_move));
@@ -77,9 +75,8 @@ int sd_move_load(sd_reader *r, sd_move *move) {
     int ret;
     uint16_t size;
 
-    if(r == NULL || move == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(r != NULL);
+    assert(move != NULL);
 
     // Read animation
     move->animation = omf_calloc(1, sizeof(sd_animation));
@@ -138,9 +135,8 @@ int sd_move_save(sd_writer *w, const sd_move *move) {
     int ret;
     uint16_t size;
 
-    if(w == NULL || move == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(w != NULL);
+    assert(move != NULL);
 
     // Save animation
     if((ret = sd_animation_save(w, move->animation)) != SD_SUCCESS) {
@@ -185,9 +181,7 @@ int sd_move_save(sd_writer *w, const sd_move *move) {
 
 int sd_move_set_animation(sd_move *move, const sd_animation *animation) {
     int ret;
-    if(move == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(move != NULL);
     if(move->animation != NULL) {
         sd_animation_free(move->animation);
         omf_free(move->animation);

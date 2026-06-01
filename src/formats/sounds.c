@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -8,17 +9,14 @@
 #include "utils/allocator.h"
 
 int sd_sounds_create(sd_sound_file *sf) {
-    if(sf == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(sf != NULL);
     memset(sf, 0, sizeof(sd_sound_file));
     return SD_SUCCESS;
 }
 
 int sd_sounds_load(sd_sound_file *sf, const path *filename) {
-    if(sf == NULL || filename == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(sf != NULL);
+    assert(filename != NULL);
 
     sd_reader *r = sd_reader_open(filename);
     if(!r) {
@@ -55,9 +53,8 @@ int sd_sounds_load(sd_sound_file *sf, const path *filename) {
 }
 
 int sd_sounds_save(const sd_sound_file *sf, const path *filename) {
-    if(sf == NULL || filename == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(sf != NULL);
+    assert(filename != NULL);
 
     sd_writer *w = sd_writer_open(filename);
     if(!w) {
@@ -97,7 +94,9 @@ const sd_sound *sd_sounds_get(const sd_sound_file *sf, int id) {
 
 int sd_sound_from_au(sd_sound_file *sf, int num, const path *filename) {
     int ret = SD_SUCCESS;
-    if(sf == NULL || filename == NULL || num < 0 || num >= 299) {
+    assert(sf != NULL);
+    assert(filename != NULL);
+    if(num < 0 || num >= 299) {
         return SD_INVALID_INPUT;
     }
 
@@ -160,7 +159,9 @@ error_0:
 }
 
 int sd_sound_to_au(const sd_sound_file *sf, int num, const path *filename) {
-    if(sf == NULL || filename == NULL || num < 0 || num >= 299) {
+    assert(sf != NULL);
+    assert(filename != NULL);
+    if(num < 0 || num >= 299) {
         return SD_INVALID_INPUT;
     }
 

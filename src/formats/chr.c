@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <ctype.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -22,14 +23,12 @@
 #include "utils/random.h"
 
 int sd_chr_create(sd_chr_file *chr) {
-    if(chr == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(chr != NULL);
     memset(chr, 0, sizeof(sd_chr_file));
     return SD_SUCCESS;
 }
 
-int sd_chr_from_trn(sd_chr_file *chr, sd_tournament_file *trn, sd_pilot *pilot) {
+int sd_chr_from_trn(sd_chr_file *chr, const sd_tournament_file *trn, const sd_pilot *pilot) {
     int ranked = 0;
     for(uint32_t i = 0; i < trn->enemy_count; i++) {
         chr->enemies[i] = omf_calloc(1, sizeof(sd_chr_enemy));
@@ -65,9 +64,8 @@ int sd_chr_from_trn(sd_chr_file *chr, sd_tournament_file *trn, sd_pilot *pilot) 
 }
 
 int sd_chr_load(sd_chr_file *chr, const path *filename) {
-    if(chr == NULL || filename == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(chr != NULL);
+    assert(filename != NULL);
 
     sd_reader *r = sd_reader_open(filename);
 
@@ -246,10 +244,9 @@ error_1:
     return SD_FILE_PARSE_ERROR;
 }
 
-int sd_chr_save(sd_chr_file *chr, const path *filename) {
-    if(chr == NULL || filename == NULL) {
-        return SD_INVALID_INPUT;
-    }
+int sd_chr_save(const sd_chr_file *chr, const path *filename) {
+    assert(chr != NULL);
+    assert(filename != NULL);
 
     sd_writer *w = sd_writer_open(filename);
     if(!w) {
@@ -336,7 +333,7 @@ void sd_chr_free(sd_chr_file *chr) {
     omf_free(chr->photo);
 }
 
-const sd_chr_enemy *sd_chr_get_enemy(sd_chr_file *chr, int enemy_num) {
+const sd_chr_enemy *sd_chr_get_enemy(const sd_chr_file *chr, int enemy_num) {
     if(chr == NULL || enemy_num < 0 || enemy_num >= chr->pilot.enemies_inc_unranked) {
         return NULL;
     }

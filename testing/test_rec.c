@@ -16,7 +16,6 @@ void fill(char *buf, int len) {
 
 void test_sd_rec_create(void) {
     CU_ASSERT(sd_rec_create(&rec) == SD_SUCCESS);
-    CU_ASSERT(sd_rec_create(NULL) == SD_INVALID_INPUT);
 
     // Set some values
     for(int i = 0; i < 10; i++) {

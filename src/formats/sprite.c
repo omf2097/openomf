@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -8,17 +9,14 @@
 #include "utils/log.h"
 
 int sd_sprite_create(sd_sprite *sprite) {
-    if(sprite == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(sprite != NULL);
     memset(sprite, 0, sizeof(sd_sprite));
     return SD_SUCCESS;
 }
 
 int sd_sprite_copy(sd_sprite *dst, const sd_sprite *src) {
-    if(dst == NULL || src == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(dst != NULL);
+    assert(src != NULL);
 
     // Clear destination
     memset(dst, 0, sizeof(sd_sprite));
@@ -75,9 +73,8 @@ int sd_sprite_load(sd_reader *r, sd_sprite *sprite) {
 }
 
 int sd_sprite_save(sd_writer *w, const sd_sprite *sprite) {
-    if(w == NULL || sprite == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(w != NULL);
+    assert(sprite != NULL);
     sd_write_uword(w, sprite->len);
     sd_write_word(w, sprite->pos_x);
     sd_write_word(w, sprite->pos_y);
@@ -101,9 +98,9 @@ int sd_sprite_rgba_encode(sd_sprite *dst, const sd_rgba_image *src, const vga_pa
     int ret = SD_SUCCESS;
 
     // Make sure we aren't being fed BS
-    if(dst == NULL || src == NULL || pal == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(dst != NULL);
+    assert(src != NULL);
+    assert(pal != NULL);
 
     // allocate a buffer plenty big enough, we will trim it later
     const size_t rgb_size = src->w * src->h * 4;
@@ -206,9 +203,9 @@ int sd_sprite_rgba_decode(sd_rgba_image *dst, const sd_sprite *src, const vga_pa
     char op = 0;
 
     // Make sure we aren't being fed BS
-    if(src == NULL || dst == NULL || pal == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(src != NULL);
+    assert(dst != NULL);
+    assert(pal != NULL);
 
     // If image data length is 0, then size should be 1x1
     if(src->len > 0) {
@@ -273,9 +270,8 @@ int sd_sprite_vga_decode(sd_vga_image *dst, const sd_sprite *src) {
     char op = 0;
 
     // Make sure we aren't being fed BS
-    if(dst == NULL || src == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(dst != NULL);
+    assert(src != NULL);
 
     // If image data length is 0, then size should be 1x1
     if(src->len > 0) {
@@ -351,9 +347,8 @@ int sd_sprite_vga_encode(sd_sprite *dst, const sd_vga_image *src) {
     char *buf;
 
     // Make sure we aren't being fed BS
-    if(dst == NULL || src == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(dst != NULL);
+    assert(src != NULL);
 
     // allocate a buffer plenty big enough, we will trim it later
     vga_size = src->w * src->h;

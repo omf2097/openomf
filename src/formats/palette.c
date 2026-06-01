@@ -5,6 +5,7 @@
 #include "utils/miscmath.h"
 #include "video/vga_remap.h"
 #include "video/vga_state.h"
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -50,9 +51,8 @@ int palette_to_gimp_palette(const vga_palette *pal, const path *filename) {
     unsigned char r, g, b;
     int i;
 
-    if(pal == NULL || filename == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(pal != NULL);
+    assert(filename != NULL);
 
     if(!(w = sd_writer_open(filename))) {
         return SD_FILE_OPEN_ERROR;
@@ -77,9 +77,8 @@ int palette_from_gimp_palette(vga_palette *pal, const path *filename) {
     char tmp[128];
     int i;
 
-    if(pal == NULL || filename == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(pal != NULL);
+    assert(filename != NULL);
 
     if(!(rd = sd_reader_open(filename))) {
         return SD_FILE_OPEN_ERROR;
@@ -217,7 +216,7 @@ void palette_remaps_save(sd_writer *writer, const vga_remap_tables *remaps) {
     }
 }
 
-void palette_load_player_colors(vga_palette *src, int player) {
+void palette_load_player_colors(const vga_palette *src, int player) {
     // only load 47 palette colors, skipping the first one
     // because that seems to be ignored by the original
     int dst_offset = (player * 48) + 1;

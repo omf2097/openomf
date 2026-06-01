@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -10,18 +11,15 @@
 #include "utils/log.h"
 
 int sd_animation_create(sd_animation *ani) {
-    if(ani == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(ani != NULL);
     memset(ani, 0, sizeof(sd_animation));
     return SD_SUCCESS;
 }
 
 int sd_animation_copy(sd_animation *dst, const sd_animation *src) {
     int ret;
-    if(dst == NULL || src == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(dst != NULL);
+    assert(src != NULL);
 
     // Clear destination
     memset(dst, 0, sizeof(sd_animation));
@@ -69,7 +67,7 @@ int sd_animation_set_anim_string(sd_animation *ani, const char *str) {
     return SD_SUCCESS;
 }
 
-int sd_animation_get_coord_count(sd_animation *ani) {
+int sd_animation_get_coord_count(const sd_animation *ani) {
     return ani->coord_count;
 }
 
@@ -104,7 +102,7 @@ sd_coord *sd_animation_get_coord(sd_animation *ani, int num) {
     return &ani->coord_table[num];
 }
 
-int sd_animation_get_extra_string_count(sd_animation *anim) {
+int sd_animation_get_extra_string_count(const sd_animation *anim) {
     return anim->extra_string_count;
 }
 
@@ -142,15 +140,17 @@ char *sd_animation_get_extra_string(sd_animation *anim, int num) {
     return anim->extra_strings[num];
 }
 
-int sd_animation_get_sprite_count(sd_animation *anim) {
+int sd_animation_get_sprite_count(const sd_animation *anim) {
     return anim->sprite_count;
 }
 
 int sd_animation_set_sprite(sd_animation *anim, int num, const sd_sprite *sprite) {
     int ret;
-    if(num < 0 || num >= anim->sprite_count || sprite == NULL) {
+    assert(sprite != NULL);
+    if(num < 0 || num >= anim->sprite_count) {
         return SD_INVALID_INPUT;
     }
+
     if(anim->sprites[num] != NULL) {
         sd_sprite_free(anim->sprites[num]);
         omf_free(anim->sprites[num]);
@@ -278,9 +278,8 @@ int sd_animation_save(sd_writer *w, const sd_animation *ani) {
     uint32_t tmp;
     uint16_t size;
 
-    if(ani == NULL || w == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(ani != NULL);
+    assert(w != NULL);
 
     // Animation header
     sd_write_word(w, ani->start_x);

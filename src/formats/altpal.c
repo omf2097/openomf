@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -42,9 +43,7 @@ void altpals_close(void) {
 }
 
 int altpal_create(altpal_file *ap) {
-    if(ap == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(ap != NULL);
     memset(ap, 0, sizeof(altpal_file));
     return SD_SUCCESS;
 }
@@ -64,7 +63,7 @@ int altpals_load(altpal_file *ap, const path *filename) {
     return SD_SUCCESS;
 }
 
-int altpals_save(altpal_file *ap, const path *filename) {
+int altpals_save(const altpal_file *ap, const path *filename) {
     sd_writer *w = sd_writer_open(filename);
     if(!w) {
         return SD_FILE_OPEN_ERROR;

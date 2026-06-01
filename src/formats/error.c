@@ -15,8 +15,6 @@ const char *sd_get_error(enum SD_ERRORCODE error_code) {
             return "Parser error";
         case SD_ANIM_INVALID_STRING:
             return "Invalid animation string";
-        case SD_OUT_OF_MEMORY:
-            return "Out of memory";
         case SD_INVALID_INPUT:
             return "Invalid input/argument data";
         case SD_FORMAT_NOT_SUPPORTED:

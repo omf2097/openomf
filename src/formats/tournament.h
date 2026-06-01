@@ -1,10 +1,11 @@
-/*! \file
- * \brief Tournament handling
- * \details Functions and structs for reading, writing and modifying OMF:2097 tournament (TRN) files.
- * \copyright MIT license.
- * \date 2013-2014
- * \author Andrew Thompson
- * \author Tuomas Virtanen
+/**
+ * @file tournament.h
+ * @brief Tournament handling
+ * @details Functions and structs for reading, writing and modifying OMF:2097 tournament (TRN) files.
+ * @copyright MIT License
+ * @date 2013-2026
+ * @author Andrew Thompson
+ * @author Tuomas Virtanen
  */
 
 #ifndef SD_TOURNAMENT_H
@@ -18,7 +19,7 @@
 #define MAX_TRN_ENEMIES 256 ///< Maximum amount of tournament enemies
 #define MAX_TRN_LOCALES 10  ///< Maximum amount of tournament locales (some of these are unused)
 
-/*! \brief Locales
+/** @brief Locales
  *
  * List of tournament locales. Many of these are actually unused.
  */
@@ -36,7 +37,7 @@ enum
     TRN_LANG_UNDEF_2
 };
 
-/*! \brief Tournament locale
+/** @brief Tournament locale
  *
  * Translated resources for the tournament.
  */
@@ -53,7 +54,7 @@ typedef struct {
     char *end_texts[11][10];    ///< Tournament victory texts that are visible at the ending.
 } sd_tournament_locale;
 
-/*! \brief Tournament data
+/** @brief Tournament data
  *
  * Tournament enemies, locales, quotes, name, etc.
  */
@@ -63,7 +64,7 @@ typedef struct {
     uint16_t unknown_b;
     char bk_name[14];              ///< Tournament BK filename
     float winnings_multiplier;     ///< Match winnings multiplier
-    int32_t unknown_a;             ///< Unknown /todo find out
+    int32_t unknown_a;             ///< Unknown @todo find out
     int32_t registration_fee;      ///< Tournament registration fee
     int32_t assumed_initial_value; ///< Value the player is assumed to have reached, minus starting value, when entering
                                    ///< this tournament.
@@ -76,54 +77,68 @@ typedef struct {
     vga_palette pal; ///< Tournament palette
 } sd_tournament_file;
 
-/*! \brief Initialize TRN file structure
+/** @brief Initialize TRN file structure
  *
  * Initializes the TRN file structure with empty values.
  *
- * \retval SD_INVALID_INPUT TRN struct pointer was NULL
- * \retval SD_SUCCESS Success.
+ * @retval SD_SUCCESS Success.
  *
- * \param trn Allocated TRN struct pointer.
+ * @param trn Allocated TRN struct pointer.
  */
 int sd_tournament_create(sd_tournament_file *trn);
 
-/*! \brief Load a TRN file
+/** @brief Load a TRN file
  *
  * Loads the given TRN file to memory. The structure must be initialized with sd_trn_create()
  * before using this function. Loading to a previously loaded or filled sd_tournament_file structure
  * will result in old data and pointers getting lost. This is very likely to cause a memory leak.
  *
- * \retval SD_FILE_OPEN_ERROR File could not be opened.
- * \retval SD_FILE_PARSE_ERROR Syntax error in file.
- * \retval SD_SUCCESS Success.
+ * @retval SD_FILE_OPEN_ERROR File could not be opened.
+ * @retval SD_FILE_PARSE_ERROR Syntax error in file.
+ * @retval SD_SUCCESS Success.
  *
- * \param trn TRN file struct pointer.
- * \param filename Name of the TRN file to load from.
+ * @param trn TRN file struct pointer.
+ * @param filename Name of the TRN file to load from.
  */
 int sd_tournament_load(sd_tournament_file *trn, const path *filename);
 
-/*! \brief Save TRN file
+/** @brief Save TRN file
  *
  * Saves the given TRN file from memory to a file on disk. The structure must be at
  * least initialized by using sd_trn_create() before running this.
  *
- * \retval SD_FILE_OPEN_ERROR File could not be opened for writing.
- * \retval SD_SUCCESS Success.
+ * @retval SD_FILE_OPEN_ERROR File could not be opened for writing.
+ * @retval SD_SUCCESS Success.
  *
- * \param trn TRN file struct pointer.
- * \param filename Name of the TRN file to save into.
+ * @param trn TRN file struct pointer.
+ * @param filename Name of the TRN file to save into.
  */
 int sd_tournament_save(const sd_tournament_file *trn, const path *filename);
 
+/** @brief Set the tournament BK filename
+ *
+ * @retval SD_SUCCESS Success.
+ *
+ * @param trn TRN file struct pointer.
+ * @param bk_name BK filename to set.
+ */
 int sd_tournament_set_bk_name(sd_tournament_file *trn, const char *bk_name);
+
+/** @brief Set the tournament PIC filename
+ *
+ * @retval SD_SUCCESS Success.
+ *
+ * @param trn TRN file struct pointer.
+ * @param pic_name PIC filename to set.
+ */
 int sd_tournament_set_pic_name(sd_tournament_file *trn, const char *pic_name);
 
-/*! \brief Free TRN file structure
+/** @brief Free TRN file structure
  *
  * Frees up all memory reserved by the TRN structure.
  * All contents will be freed, all pointers to contents will be invalid.
  *
- * \param trn TRN file struct pointer.
+ * @param trn TRN file struct pointer.
  */
 void sd_tournament_free(sd_tournament_file *trn);
 
