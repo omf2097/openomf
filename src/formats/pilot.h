@@ -104,7 +104,7 @@ typedef struct {
     float unk_f_a;        ///< Unknown
     float unk_f_b;        ///< Unknown
     vga_palette palette;  ///< Photo palette, used as HAR colors when not using altpals.
-    uint16_t unk_block_i; ///< Unknown
+    uint16_t is_player;   ///< Photo is for a player
     uint16_t photo_id;    ///< Which face photo this pilot uses
 
     char *quotes[10]; ///< Pilot quotes for each supported language

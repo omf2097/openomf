@@ -920,7 +920,7 @@ bool modmanager_parse_bk_info_mod(const char *buf, bk_info *current_info) {
 
     cfg_opt_t bk_opts[] = {CFG_INT("chain_hit", current_info->chain_hit, CFGF_NONE),
                            CFG_INT("chain_no_hit", current_info->chain_no_hit, CFGF_NONE),
-                           CFG_INT("load_on_start", current_info->load_on_start, CFGF_NONE),
+                           CFG_INT("repeat", current_info->repeat, CFGF_NONE),
                            CFG_INT("probability", current_info->probability, CFGF_NONE),
                            CFG_INT("hazard_damage", current_info->hazard_damage, CFGF_NONE),
                            CFG_STR("footer_string", str_c(&current_info->footer_string), CFGF_NONE),
@@ -949,9 +949,9 @@ bool modmanager_parse_bk_info_mod(const char *buf, bk_info *current_info) {
         current_info->chain_no_hit = cfg_getint(cfg, "chain_no_hit");
     }
 
-    if(current_info->load_on_start != (unsigned int)cfg_getint(cfg, "load_on_start")) {
-        log_info("setting load_on_start from %u to %d", current_info->load_on_start, cfg_getint(cfg, "load_on_start"));
-        current_info->load_on_start = cfg_getint(cfg, "load_on_start");
+    if(current_info->repeat != (unsigned int)cfg_getint(cfg, "repeat")) {
+        log_info("setting repeat from %u to %d", current_info->repeat, cfg_getint(cfg, "repeat"));
+        current_info->repeat = cfg_getint(cfg, "repeat");
     }
 
     if(current_info->probability != (unsigned int)cfg_getint(cfg, "probability")) {

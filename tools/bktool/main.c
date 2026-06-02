@@ -242,7 +242,7 @@ int bkanim_key_get_id(const char *key) {
         return 1;
     } else if(strcmp(key, "chain_no_hit") == 0) {
         return 2;
-    } else if(strcmp(key, "load_on_start") == 0) {
+    } else if(strcmp(key, "repeat") == 0) {
         return 3;
     } else if(strcmp(key, "probability") == 0) {
         return 4;
@@ -267,7 +267,7 @@ void bkanim_set_key(sd_bk_anim *bka, sd_animation *ani, const char **key, int kc
             bka->chain_no_hit = conv_ubyte(value);
             break;
         case 3:
-            bka->load_on_start = conv_ubyte(value);
+            bka->repeat = conv_ubyte(value);
             break;
         case 4:
             bka->probability = conv_uword(value);
@@ -299,7 +299,7 @@ void bkanim_get_key(sd_bk_anim *bka, sd_animation *ani, const char **key, int kc
             printf("%d\n", bka->chain_no_hit);
             break;
         case 3:
-            printf("%d\n", bka->load_on_start);
+            printf("%d\n", bka->repeat);
             break;
         case 4:
             printf("%d\n", bka->probability);
@@ -346,7 +346,7 @@ void bkanim_keylist(void) {
     printf("* null\n");
     printf("* chain_hit\n");
     printf("* chain_no_hit\n");
-    printf("* load_on_start\n");
+    printf("* repeat\n");
     printf("* probability\n");
     printf("* hazard_damage\n");
     printf("* bk_str\n");
@@ -360,7 +360,7 @@ void bkanim_info(sd_bk_anim *bka, sd_animation *ani, int anim) {
     printf(" * Null:            %d\n", bka->null);
     printf(" * Chain # if hit:  %d\n", bka->chain_hit);
     printf(" * Chain # not hit: %d\n", bka->chain_no_hit);
-    printf(" * Load on start:   %d\n", bka->load_on_start);
+    printf(" * Repeat:          %d\n", bka->repeat);
     printf(" * Probability:     %d\n", bka->probability);
     printf(" * hazard damage:   %d\n", bka->hazard_damage);
     printf(" * String:          %s\n", bka->footer_string);

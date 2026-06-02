@@ -18,14 +18,13 @@
 /** @brief PIC pilot portrait
  *
  * Contains a pilot face portrait. There is still some unknown data here.
- * @todo find out what the unk_flag field is.
  */
 typedef struct {
     int is_player;     ///< Is a player ? 1 = yes, 0 = no.
     int sex;           ///< Sex of person in photo. 1 = Female, 0 = Male.
     vga_palette pal;   ///< Image palette.
     sd_sprite *sprite; ///< Photo sprite
-    uint8_t unk_flag;  ///< Unknown flag.
+    uint8_t has_photo; ///< Nonzero if photo sprite data follows.
 } sd_pic_photo;
 
 /** @brief PIC pilot portrait list

@@ -177,7 +177,7 @@ void print_pilot_info(sd_pilot *pilot) {
         // print_bytes((char *)pilot->palette.data, 144, 16, 4);
         printf("\n");
 
-        printf("  - Unknown i        %d\n", pilot->unk_block_i);
+        printf("  - Is player        %d\n", pilot->is_player);
         printf("  - Photo ID         %d\n", pilot->photo_id);
 
         printf("  - Quotes:\n");

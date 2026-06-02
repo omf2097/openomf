@@ -26,7 +26,7 @@ typedef struct {
     uint8_t null;                                ///< Always 0 ?
     uint8_t chain_hit;                           ///< Animation to chain to if collision/hit
     uint8_t chain_no_hit;                        ///< Animation to chain to on no collision/hit
-    uint8_t load_on_start;                       ///< Actually repeat flag
+    uint8_t repeat;                              ///< Repeat flag
     uint16_t probability;                        ///< Probability of animation
     uint8_t hazard_damage;                       ///< Hazard damage on hit
     char footer_string[SD_BK_FOOTER_STRING_MAX]; ///< Footer string
