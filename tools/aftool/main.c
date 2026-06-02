@@ -241,7 +241,7 @@ int move_key_get_id(const char *key) {
         return 39;
     } else if(strcmp(key, "unknown_11") == 0) {
         return 40;
-    } else if(strcmp(key, "next_anim_id") == 0) {
+    } else if(strcmp(key, "play_if_hit") == 0) {
         return 41;
     } else if(strcmp(key, "category") == 0) {
         return 42;
@@ -273,7 +273,7 @@ void move_set_key(sd_move *move, sd_animation *ani, const char **key, int kcount
     switch(kn) {
 
         case 30:
-            move->ai_opts = conv_uword(value);
+            move->ai_flags = conv_uword(value);
             break;
         case 31:
             move->pos_constraint = conv_uword(value);
@@ -303,7 +303,7 @@ void move_set_key(sd_move *move, sd_animation *ani, const char **key, int kcount
             move->unknown_11 = conv_ubyte(value);
             break;
         case 41:
-            move->next_anim_id = conv_ubyte(value);
+            move->play_if_hit = conv_ubyte(value);
             break;
         case 42:
             move->category = conv_ubyte(value);
@@ -353,7 +353,7 @@ void move_get_key(sd_move *move, sd_animation *ani, const char **key, int kcount
     int kn = move_key_get_id(key[0]);
     switch(kn) {
         case 30:
-            printf("%d\n", move->ai_opts);
+            printf("%d\n", move->ai_flags);
             break;
         case 31:
             printf("%d\n", move->pos_constraint);
@@ -383,7 +383,7 @@ void move_get_key(sd_move *move, sd_animation *ani, const char **key, int kcount
             printf("%d\n", move->unknown_11);
             break;
         case 41:
-            printf("%d\n", move->next_anim_id);
+            printf("%d\n", move->play_if_hit);
             break;
         case 42:
             printf("%d\n", move->category);
@@ -438,7 +438,7 @@ void move_keylist(void) {
     printf("* unknown_9\n");
     printf("* unknown_10\n");
     printf("* unknown_11\n");
-    printf("* next_anim_id\n");
+    printf("* play_if_hit\n");
     printf("* category\n");
     printf("* block_damage\n");
     printf("* block_stun\n");
@@ -457,7 +457,7 @@ void move_info(sd_move *move, sd_animation *ani, int move_id) {
     anim_common_info(ani);
 
     printf("\nAF specific footer:\n");
-    printf(" * ai_opts:         %d\n", move->ai_opts);
+    printf(" * ai_flags:        %d\n", move->ai_flags);
     printf(" * pos_constraint:  %d\n", move->pos_constraint);
     printf(" * unknown_4:       %d\n", move->unknown_4);
     printf(" * unknown_5:       %d\n", move->unknown_5);
@@ -467,7 +467,7 @@ void move_info(sd_move *move, sd_animation *ani, int move_id) {
     printf(" * unknown_9:       %d\n", move->unknown_9);
     printf(" * unknown_10:      %d\n", move->unknown_10);
     printf(" * unknown_11:      %d\n", move->unknown_11);
-    printf(" * next_anim_id:    %d\n", move->next_anim_id);
+    printf(" * play_if_hit:     %d\n", move->play_if_hit);
     printf(" * category:        %d\n", move->category);
     printf(" * block_damage:    %d\n", move->block_damage);
     printf(" * block_stun:      %d\n", move->block_stun);

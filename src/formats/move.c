@@ -38,7 +38,7 @@ int sd_move_copy(sd_move *dst, const sd_move *src) {
     strncpy(dst->footer_string, src->footer_string, sizeof(dst->footer_string));
 
     // Everything else
-    dst->ai_opts = src->ai_opts;
+    dst->ai_flags = src->ai_flags;
     dst->pos_constraint = src->pos_constraint;
     dst->unknown_4 = src->unknown_4;
     dst->unknown_5 = src->unknown_5;
@@ -48,7 +48,7 @@ int sd_move_copy(sd_move *dst, const sd_move *src) {
     dst->unknown_9 = src->unknown_9;
     dst->unknown_10 = src->unknown_10;
     dst->unknown_11 = src->unknown_11;
-    dst->next_anim_id = src->next_anim_id;
+    dst->play_if_hit = src->play_if_hit;
     dst->category = src->category;
     dst->block_damage = src->block_damage;
     dst->block_stun = src->block_stun;
@@ -88,7 +88,7 @@ int sd_move_load(sd_reader *r, sd_move *move) {
     }
 
     // Header
-    move->ai_opts = sd_read_uword(r);
+    move->ai_flags = sd_read_uword(r);
     move->pos_constraint = sd_read_uword(r);
     move->unknown_4 = sd_read_ubyte(r);
     move->unknown_5 = sd_read_ubyte(r);
@@ -98,7 +98,7 @@ int sd_move_load(sd_reader *r, sd_move *move) {
     move->unknown_9 = sd_read_ubyte(r);
     move->unknown_10 = sd_read_ubyte(r);
     move->unknown_11 = sd_read_ubyte(r);
-    move->next_anim_id = sd_read_ubyte(r);
+    move->play_if_hit = sd_read_ubyte(r);
     move->category = sd_read_ubyte(r);
     move->block_damage = sd_read_ubyte(r);
     move->block_stun = sd_read_ubyte(r);
@@ -144,7 +144,7 @@ int sd_move_save(sd_writer *w, const sd_move *move) {
     }
 
     // Move header
-    sd_write_uword(w, move->ai_opts);
+    sd_write_uword(w, move->ai_flags);
     sd_write_uword(w, move->pos_constraint);
     sd_write_ubyte(w, move->unknown_4);
     sd_write_ubyte(w, move->unknown_5);
@@ -154,7 +154,7 @@ int sd_move_save(sd_writer *w, const sd_move *move) {
     sd_write_ubyte(w, move->unknown_9);
     sd_write_ubyte(w, move->unknown_10);
     sd_write_ubyte(w, move->unknown_11);
-    sd_write_ubyte(w, move->next_anim_id);
+    sd_write_ubyte(w, move->play_if_hit);
     sd_write_ubyte(w, move->category);
     sd_write_ubyte(w, move->block_damage);
     sd_write_ubyte(w, move->block_stun);
