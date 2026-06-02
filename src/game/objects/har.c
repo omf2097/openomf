@@ -830,7 +830,7 @@ void calc_damage_and_stun(object *obj, af_move *move, int *damage, int *stun) {
     game_player *gp = game_state_get_player(obj->gs, h->player_id);
     sd_pilot *pilot = gp->pilot;
 
-    if(move->category == CAT_VICTORY) {
+    if(move->category == CAT_BK_HAZARD) {
         *damage = move->damage;
         *stun = *damage;
         return;
@@ -1655,7 +1655,7 @@ void har_collide_with_hazard(object *o_har, object *o_hzd) {
         af_move *move = omf_calloc(1, sizeof(af_move));
         move->damage = anim->hazard_damage;
         move->footer_string = anim->footer_string;
-        move->category = CAT_VICTORY;
+        move->category = CAT_BK_HAZARD;
         har_take_damage(o_har, move);
         omf_free(move);
         controller *ctrl = game_player_get_ctrl(game_state_get_player(o_har->gs, h->player_id));

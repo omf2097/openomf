@@ -36,8 +36,8 @@ enum
     CAT_JUMPING,
     CAT_PROJECTILE,
     CAT_BASIC,
+    CAT_BK_HAZARD,
     CAT_VICTORY, // or defeat
-    CAT_FIRE_ICE,
     CAT_SCRAP,
     CAT_DESTRUCTION
 };
