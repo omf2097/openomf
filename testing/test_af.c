@@ -24,18 +24,18 @@ void test_af_roundtrip(void) {
     CU_ASSERT(ret == SD_SUCCESS);
 
     // Set some values
-    new.file_id = 1;
+    new.fighter_id = 1;
     new.exec_window = 2;
     new.endurance = 3;
-    new.unknown_b = 4;
+    new.upwards_jump_frame_limit = 4;
     new.health = 5;
     new.forward_speed = 6;
     new.reverse_speed = 7;
     new.jump_speed = 8;
     new.fall_speed = 9;
-    new.unknown_c = 10;
-    new.unknown_d = 11;
-    memset(new.soundtable, 10, sizeof(new.soundtable));
+    new.version_1 = 10;
+    new.ai_projectile_y_threshold = 11;
+    memset(new.sound_table, 10, sizeof(new.sound_table));
 
     // Create a new move
     ret = sd_move_create(&move);
@@ -75,10 +75,10 @@ void test_af_roundtrip(void) {
     CU_ASSERT(ret == SD_SUCCESS);
 
     // Check some random samples from sd_af_file
-    CU_ASSERT_EQUAL(loaded.file_id, new.file_id);
-    CU_ASSERT_EQUAL(loaded.unknown_c, new.unknown_c);
-    CU_ASSERT_EQUAL(loaded.unknown_d, new.unknown_d);
-    CU_ASSERT_NSTRING_EQUAL(loaded.soundtable, new.soundtable, 30);
+    CU_ASSERT_EQUAL(loaded.fighter_id, new.fighter_id);
+    CU_ASSERT_EQUAL(loaded.version_1, new.version_1);
+    CU_ASSERT_EQUAL(loaded.ai_projectile_y_threshold, new.ai_projectile_y_threshold);
+    CU_ASSERT_NSTRING_EQUAL(loaded.sound_table, new.sound_table, 30);
 
     // Make sure ID 0 exists in moves
     CU_ASSERT_PTR_NOT_NULL(new.moves[0]);

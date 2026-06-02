@@ -8,7 +8,7 @@ void af_create(af *a, void *src, str *name) {
     sd_af_file *sdaf = (sd_af_file *)src;
 
     // Trivial stuff
-    a->id = sdaf->file_id;
+    a->id = sdaf->fighter_id;
     a->endurance = sdaf->endurance;
     a->health = sdaf->health;
     a->forward_speed = sdaf->forward_speed;
@@ -17,7 +17,7 @@ void af_create(af *a, void *src, str *name) {
     a->fall_speed = sdaf->fall_speed;
 
     // Sound translation table
-    memcpy(a->sound_translation_table, sdaf->soundtable, 30);
+    memcpy(a->sound_translation_table, sdaf->sound_table, 30);
 
     // Set defaults like master.dat
     // TODO: These may change according to pilot and HAR... Find out how.

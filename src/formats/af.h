@@ -21,20 +21,20 @@
  * Contains information about a single HAR (combat robot).
  */
 typedef struct {
-    uint16_t file_id;     ///< File ID
-    uint16_t exec_window; ///< Move execution window (?)
-    float endurance;      ///< HAR Endurance
-    uint8_t unknown_b;    ///< Unknown value
-    uint16_t health;      ///< HAR Health
-    float forward_speed;  ///< HAR fwd speed
-    float reverse_speed;  ///< HAR bwd speed
-    float jump_speed;     ///< HAR jump speed
-    float fall_speed;     ///< HAR fall speed
-    uint8_t unknown_c;    ///< Unknown value
-    uint8_t unknown_d;    ///< Unknown value
+    uint16_t fighter_id;               ///< Fighter ID
+    uint16_t exec_window;              ///< Move execution window (?)
+    float endurance;                   ///< HAR Endurance
+    uint8_t upwards_jump_frame_limit;  ///< Max number of ticks the HAR keeps rising during a jump.
+    uint16_t health;                   ///< HAR Health
+    float forward_speed;               ///< HAR fwd speed
+    float reverse_speed;               ///< HAR bwd speed
+    float jump_speed;                  ///< HAR jump speed
+    float fall_speed;                  ///< HAR fall speed
+    uint8_t version_1;                 ///< Version value
+    uint8_t ai_projectile_y_threshold; ///< AI projectile Y threshold for high/low classification.
 
     sd_move *moves[MAX_AF_MOVES]; ///< All HAR moves.
-    char soundtable[30];          ///< All sounds used by the animations in this HAR file.
+    char sound_table[30];         ///< All sounds used by the animations in this HAR file.
 } sd_af_file;
 
 /** @brief Initialize AF file structure

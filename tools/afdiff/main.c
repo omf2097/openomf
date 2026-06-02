@@ -49,17 +49,17 @@ int str_diff(const char *label, const char *a, const char *b) {
 int base_info_diff(sd_af_file *a, sd_af_file *b) {
     int d_found = 0;
     printf("Header:\n");
-    d_found |= int_diff(" * File ID", VNAME(file_id));
+    d_found |= int_diff(" * Fighter ID", VNAME(fighter_id));
     d_found |= int_diff(" * Exec window", VNAME(exec_window));
     d_found |= float_diff(" * Endurance", VNAME(endurance));
-    d_found |= int_diff(" * Unknown B", VNAME(unknown_b));
+    d_found |= int_diff(" * Jump frame limit", VNAME(upwards_jump_frame_limit));
     d_found |= int_diff(" * Health", VNAME(health));
     d_found |= float_diff(" * Fwd speed", VNAME(forward_speed));
     d_found |= float_diff(" * Rev speed", VNAME(reverse_speed));
     d_found |= float_diff(" * Jump speed", VNAME(jump_speed));
     d_found |= float_diff(" * Fall speed", VNAME(fall_speed));
-    d_found |= int_diff(" * Unknown C", VNAME(unknown_c));
-    d_found |= int_diff(" * Unknown D", VNAME(unknown_d));
+    d_found |= int_diff(" * Version 1", VNAME(version_1));
+    d_found |= int_diff(" * AI projectile Y threshold", VNAME(ai_projectile_y_threshold));
     if(!d_found) {
         printf(" * No differences in header information.\n");
     }
@@ -127,7 +127,7 @@ int soundtable_diff(sd_af_file *a, sd_af_file *b) {
     char v[10];
     for(int k = 0; k < 30; k++) {
         sprintf(v, " * %-2d", k);
-        d_found |= int_diff(v, a->soundtable[k], b->soundtable[k]);
+        d_found |= int_diff(v, a->sound_table[k], b->sound_table[k]);
     }
     if(!d_found) {
         printf(" * No differences in sound table.\n");
