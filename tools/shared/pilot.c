@@ -124,10 +124,11 @@ void print_pilot_info(sd_pilot *pilot) {
         printf("    * Sniper:        %d\n", pilot->att_sniper);
 
         printf("  - unk_block_d:\n");
-        for(int i = 0; i < 3; i++) {
+        for(int i = 0; i < 2; i++) {
             printf("     [%d] = %d\n", i, pilot->unk_block_d[i]);
         }
 
+        printf("  - AP Close:        %d\n", pilot->ap_close);
         printf("  - AP Throw:        %d\n", pilot->ap_throw);
         printf("  - AP Special:      %d\n", pilot->ap_special);
         printf("  - AP Jump:         %d\n", pilot->ap_jump);
@@ -143,6 +144,10 @@ void print_pilot_info(sd_pilot *pilot) {
         printf("  - Learning:        %f\n", pilot->learning);
         printf("  - Forget:          %f\n", pilot->forget);
 
+        printf("  - Sound 1:         %d\n", pilot->sound_1);
+        printf("  - Sound 2:         %d\n", pilot->sound_2);
+        printf("  - Sound 3:         %d\n", pilot->sound_3);
+
         printf("  - unk_block_f:     ");
         print_bytes(pilot->unk_block_f, sizeof(pilot->unk_block_f), 26, 0);
         printf("\n");
@@ -156,7 +161,8 @@ void print_pilot_info(sd_pilot *pilot) {
         printf("  - Winnings:        %d\n", pilot->winnings);
         printf("  - Total value:     %d\n", pilot->total_value);
 
-        printf("  - Unk. Float A:    %f\n", pilot->unk_f_a);
+        printf("  - Current health:  %d\n", pilot->current_health);
+        printf("  - Maximum health:  %d\n", pilot->maximum_health);
         printf("  - Unk. Float B:    %f\n", pilot->unk_f_b);
 
         printf("  - Palette:\n");

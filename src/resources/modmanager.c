@@ -1198,13 +1198,10 @@ bool modmanager_parse_pilot_mod(const char *buf, sd_pilot *pilot) {
                                     CFG_INT("back", 0, CFGF_NONE), CFG_END()};
 
     // Options for attacks section
-    cfg_opt_t attacks_opts[] = {CFG_INT("throw", 0, CFGF_NONE),
-                                CFG_INT("special", 0, CFGF_NONE),
-                                CFG_INT("jump", 0, CFGF_NONE),
-                                CFG_INT("low", 0, CFGF_NONE),
-                                CFG_INT("middle", 0, CFGF_NONE),
-                                CFG_INT("high", 0, CFGF_NONE),
-                                CFG_END()};
+    cfg_opt_t attacks_opts[] = {CFG_INT("close", 0, CFGF_NONE),   CFG_INT("throw", 0, CFGF_NONE),
+                                CFG_INT("special", 0, CFGF_NONE), CFG_INT("jump", 0, CFGF_NONE),
+                                CFG_INT("low", 0, CFGF_NONE),     CFG_INT("middle", 0, CFGF_NONE),
+                                CFG_INT("high", 0, CFGF_NONE),    CFG_END()};
 
     // Options for attitude section
     cfg_opt_t attitude_opts[] = {CFG_INT("normal", 0, CFGF_NONE), CFG_INT("hyper", 0, CFGF_NONE),
@@ -1325,6 +1322,7 @@ bool modmanager_parse_pilot_mod(const char *buf, sd_pilot *pilot) {
     // Process attacks section
     cfg_t *attacks = cfg_getsec(cfg, "attacks");
     if(attacks) {
+        UPDATE_FIELD_INT(ap_close, pilot->ap_close, cfg_getint(attacks, "close"));
         UPDATE_FIELD_INT(ap_throw, pilot->ap_throw, cfg_getint(attacks, "throw"));
         UPDATE_FIELD_INT(ap_special, pilot->ap_special, cfg_getint(attacks, "special"));
         UPDATE_FIELD_INT(ap_jump, pilot->ap_jump, cfg_getint(attacks, "jump"));
