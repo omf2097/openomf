@@ -14,6 +14,10 @@ typedef struct bk_t {
     vector remaps;
     array sprites;
     char sound_translation_table[30];
+#ifdef USE_EXTENDED_PALETTE
+    vga_palette *mod_pal;
+    int mod_sprite_type;
+#endif
 } bk;
 
 void bk_create(bk *b, void *src, str *name);

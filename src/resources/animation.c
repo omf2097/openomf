@@ -3,6 +3,8 @@
 #include "resources/modmanager.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
+#include "video/surface.h"
+#include "video/vga_extended_palette.h"
 #include <stdlib.h>
 
 typedef struct sprite_reference_t {
@@ -52,15 +54,25 @@ void animation_create(animation_source type, str *name, animation *ani, array *s
         } else {
             tmp_sprite = omf_calloc(1, sizeof(sprite));
             sd_sprite *sp;
-            // TODO check the mod overrides for a replacement sprite
-            if(modmanager_get_sprite(type, name, ani->id, i, &sp)) {
-                sprite_create(tmp_sprite, (void *)sp, i);
+            const vga_remap_table *sprite_remap = NULL;
+            vga_palette *mod_pal = NULL;
+            int sprite_remap_type = 0;
+            if(modmanager_get_sprite_with_palette(type, name, ani->id, i, &sp, &mod_pal, &sprite_remap,
+                                                  &sprite_remap_type)) {
+                sprite_create(tmp_sprite, (void *)sp, i, NULL);
                 tmp_sprite->data->render_w = sdani->sprites[i]->width;
                 tmp_sprite->data->render_h = sdani->sprites[i]->height;
                 tmp_sprite->pos.x = sdani->sprites[i]->pos_x;
                 tmp_sprite->pos.y = sdani->sprites[i]->pos_y;
+                surface_set_remap(tmp_sprite->data, sprite_remap);
+#ifdef USE_EXTENDED_PALETTE
+                // Load mod sprite palette colors into extended palette zones
+                if(mod_pal) {
+                    vga_extended_palette_load_mod_colors(mod_pal, sprite_remap_type);
+                }
+#endif
             } else {
-                sprite_create(tmp_sprite, (void *)sdani->sprites[i], i);
+                sprite_create(tmp_sprite, (void *)sdani->sprites[i], i, NULL);
             }
             sprite_reference spr;
             spr.sprite = tmp_sprite;

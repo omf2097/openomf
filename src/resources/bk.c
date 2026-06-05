@@ -3,6 +3,9 @@
 #include "resources/modmanager.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
+#ifdef USE_EXTENDED_PALETTE
+#include "video/vga_extended_palette.h"
+#endif
 #include <string.h>
 
 void bk_create(bk *b, void *src, str *name) {
@@ -13,11 +16,22 @@ void bk_create(bk *b, void *src, str *name) {
 
     // Copy VGA image
     sd_vga_image *img;
-    if(modmanager_get_bk_background(name, &img)) {
+    vga_palette *mod_pal = NULL;
+    const vga_remap_table *mod_remap = NULL;
+    int mod_sprite_type = 0;
+    bool has_mod_background = modmanager_get_bk_background(name, &img, &mod_pal, &mod_remap, &mod_sprite_type);
+    if(has_mod_background) {
         log_info("using modified BK background");
         surface_create_from_vga(&b->background, img);
         b->background.render_w = 320;
         b->background.render_h = 200;
+#ifdef USE_EXTENDED_PALETTE
+        // Apply scene remap to rewrite HAR indices (0x01-0x5F) in pixel data
+        // to their 1024-space targets (0x1EC-0x24B).
+        if(mod_remap) {
+            surface_set_remap(&b->background, mod_remap);
+        }
+#endif
     } else {
         surface_create_from_vga(&b->background, sdbk->background);
     }
@@ -32,6 +46,24 @@ void bk_create(bk *b, void *src, str *name) {
         vector_append(&b->palettes, (vga_palette *)sdbk->palettes[i]);
         vector_append(&b->remaps, (vga_remap_tables *)sdbk->remaps[i]);
     }
+
+#ifdef USE_EXTENDED_PALETTE
+    // Store mod palette for later loading in scene_create,
+    // after vga_state_set_base_palette_from has initialized the extended range.
+    // Patch base palette with background colors (0x60-0x9F at identity).
+    // Must happen AFTER palettes are copied from BK file above.
+    if(has_mod_background && mod_pal) {
+        b->mod_pal = mod_pal;
+        b->mod_sprite_type = mod_sprite_type;
+
+        vga_palette *bk_pal = (vga_palette *)vector_get(&b->palettes, 0);
+        if(bk_pal) {
+            for(int i = 0x60; i <= 0x9F; i++) {
+                bk_pal->colors[i] = mod_pal->colors[i];
+            }
+        }
+    }
+#endif
 
     // Array for sprites, since we know we will fill most slots.
     array_create(&b->sprites);

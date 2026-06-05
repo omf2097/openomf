@@ -75,6 +75,20 @@ void surface_set_transparency(surface *sur, int index) {
     sur->transparent = index;
 }
 
+void surface_set_remap(surface *sur, const vga_remap_table *remap) {
+#ifdef USE_EXTENDED_PALETTE
+    int pixels = sur->w * sur->h;
+    for(int i = 0; i < pixels; i++) {
+        vga_pixel src = sur->data[i];
+        vga_pixel dst = remap->data[src];
+        if(dst != src) {
+            sur->data[i] = dst;
+        }
+    }
+    sur->guid = guid++; // Invalidate atlas cache
+#endif
+}
+
 void surface_free(surface *sur) {
     omf_free(sur->data);
 }

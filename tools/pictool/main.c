@@ -7,8 +7,41 @@
 #include "formats/bk.h"
 #include "formats/error.h"
 #include "formats/pic.h"
+#include "formats/sprite.h"
+#include "formats/vga_image.h"
 #include "utils/c_array_util.h"
 #include <argtable3.h>
+
+void pic_histogram(sd_pic_file *pic) {
+    int hist[256] = {0};
+    int total_pixels = 0;
+    int sprite_count = 0;
+
+    for(int i = 0; i < MAX_PIC_PHOTOS; i++) {
+        if(!pic->photos[i])
+            continue;
+        sd_sprite *sp = pic->photos[i]->sprite;
+        if(!sp || sp->width == 0 || sp->height == 0)
+            continue;
+        sd_vga_image img;
+        if(sd_sprite_vga_decode(&img, sp) == SD_SUCCESS) {
+            sprite_count++;
+            for(int p = 0; p < (int)(img.w * img.h); p++) {
+                unsigned char idx = (unsigned char)img.data[p];
+                hist[idx]++;
+                total_pixels++;
+            }
+            sd_vga_image_free(&img);
+        }
+    }
+
+    printf("Palette index usage histogram (%d sprites, %d total pixels):\n", sprite_count, total_pixels);
+    for(int i = 0; i < 256; i++) {
+        if(hist[i] > 0) {
+            printf("  %3d (0x%02X): %8d pixels\n", i, i, hist[i]);
+        }
+    }
+}
 
 int main(int argc, char *argv[]) {
     // commandline argument parser options
@@ -19,8 +52,10 @@ int main(int argc, char *argv[]) {
     struct arg_file *export = arg_file0("e", "export", "<file>", "Export selected photo sprite to ppm file");
     struct arg_file *bkfile = arg_file0("b", "bk", "<file>", "BK file to load palette from");
     struct arg_file *output = arg_file0("o", "output", "<file>", "PIC output file");
+    struct arg_lit *palette_histogram =
+        arg_lit0(NULL, "palette-histogram", "Show palette index usage histogram for all sprites");
     struct arg_end *end = arg_end(20);
-    void *argtable[] = {help, vers, file, output, export, bkfile, entry, end};
+    void *argtable[] = {help, vers, file, output, export, bkfile, entry, palette_histogram, end};
     const char *progname = "pictool";
 
     // Make sure everything got allocated
@@ -90,7 +125,9 @@ int main(int argc, char *argv[]) {
 
     // Print
     const sd_pic_photo *photo;
-    if(entry->count > 0) {
+    if(palette_histogram->count > 0) {
+        pic_histogram(&pic);
+    } else if(entry->count > 0) {
         int entry_id = entry->ival[0];
         photo = sd_pic_get(&pic, entry_id);
         if(photo == NULL) {

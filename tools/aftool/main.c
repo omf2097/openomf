@@ -706,6 +706,42 @@ void move_strip_key(sd_move *move, sd_animation *ani, const char **key, int kcou
     printf("Tag stripped!\n");
 }
 
+void af_histogram(sd_af_file *af) {
+    int hist[256] = {0};
+    int total_pixels = 0;
+    int sprite_count = 0;
+
+    for(int m = 0; m < 70; m++) {
+        if(!af->moves[m])
+            continue;
+        sd_animation *ani = af->moves[m]->animation;
+        for(int s = 0; s < ani->sprite_count; s++) {
+            if(!ani->sprites[s])
+                continue;
+            sd_sprite *sp = ani->sprites[s];
+            if(sp->width == 0 || sp->height == 0)
+                continue;
+            sd_vga_image img;
+            if(sd_sprite_vga_decode(&img, sp) == SD_SUCCESS) {
+                sprite_count++;
+                for(int p = 0; p < (int)(img.w * img.h); p++) {
+                    unsigned char idx = (unsigned char)img.data[p];
+                    hist[idx]++;
+                    total_pixels++;
+                }
+                sd_vga_image_free(&img);
+            }
+        }
+    }
+
+    printf("Palette index usage histogram (%d sprites, %d total pixels):\n", sprite_count, total_pixels);
+    for(int i = 0; i < 256; i++) {
+        if(hist[i] > 0) {
+            printf("  %3d (0x%02X): %8d pixels\n", i, i, hist[i]);
+        }
+    }
+}
+
 int main(int argc, char *argv[]) {
     // commandline argument parser options
     struct arg_lit *help = arg_lit0("h", "help", "print this help and exit");
@@ -724,9 +760,11 @@ int main(int argc, char *argv[]) {
     struct arg_lit *play = arg_lit0(NULL, "play", "Play animation or sprite (requires --anim and --palette)");
     struct arg_int *scale = arg_int0(NULL, "scale", "<factor>", "Scales sprites (requires --play)");
     struct arg_lit *parse = arg_lit0(NULL, "parse", "Parse value (requires --key)");
+    struct arg_lit *palette_histogram =
+        arg_lit0(NULL, "palette-histogram", "Show palette index usage histogram for all sprites");
     struct arg_end *end = arg_end(20);
-    void *argtable[] = {help,  vers,  file,   new, move, all_moves, sprite, keylist, key,
-                        value, strip, output, pal, play, scale,     parse,  end};
+    void *argtable[] = {help,  vers,  file,   new, move, all_moves, sprite, keylist,           key,
+                        value, strip, output, pal, play, scale,     parse,  palette_histogram, end};
     const char *progname = "aftool";
 
     // Make sure everything got allocated
@@ -915,6 +953,8 @@ int main(int argc, char *argv[]) {
                 }
             }
         }
+    } else if(palette_histogram->count > 0) {
+        af_histogram(&af);
     } else {
         if(key->count > 0) {
             if(value->count > 0) {

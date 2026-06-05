@@ -78,8 +78,10 @@ bool atlas_get(texture_atlas *atlas, const surface *surface, uint16_t *x, uint16
     }
 
     // If item is NOT in the texture atlas, add it now.
+    // Pixel data is already remapped (surface_set_remap rewrites at load time).
     uint16_t nx, ny;
-    if(atlas_insert(atlas, surface->data, surface->w, surface->h, &nx, &ny)) {
+    bool ok = atlas_insert(atlas, surface->data, surface->w, surface->h, &nx, &ny);
+    if(ok) {
         *x = nx;
         *y = ny;
         *w = surface->w;

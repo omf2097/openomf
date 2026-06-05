@@ -11,6 +11,9 @@
 #include "utils/miscmath.h"
 #include "vendored/zip/zip.h"
 #include "video/vga_palette.h"
+#ifdef USE_EXTENDED_PALETTE
+#include "video/vga_extended_palette.h"
+#endif
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
@@ -538,7 +541,11 @@ bool modmanager_init(void) {
     return true;
 }
 
-bool modmanager_get_bk_background(str *name, sd_vga_image **img) {
+bool modmanager_get_bk_background(str *name, sd_vga_image **img, vga_palette **pal, const vga_remap_table **remap,
+                                  int *sprite_remap_type) {
+    *remap = NULL;
+    *sprite_remap_type = 0;
+    *pal = NULL;
     str filename;
     str_from_format(&filename, "scenes/%s/background.png", str_c(name));
     str_tolower(&filename);
@@ -549,6 +556,14 @@ bool modmanager_get_bk_background(str *name, sd_vga_image **img) {
     if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&obuf, &len)) {
         assert(obuf->type == MOD_VGA_IMAGE);
         *img = &obuf->img;
+        *pal = obuf->pal;
+#ifdef USE_EXTENDED_PALETTE
+        // Backgrounds always use SPRITE_REMAP_SCENE.
+        // The scene remap redirects HAR zone (0x01-0x5F) to scene extended (0x1EC-0x24B)
+        // and UI zone (0xF4-0xFF) to extended common (0x100-0x10B).
+        *remap = vga_extended_palette_get_sprite_remap(SPRITE_REMAP_SCENE);
+        *sprite_remap_type = SPRITE_REMAP_SCENE;
+#endif
         log_info("got vga image %dx%d with size %d", (*img)->w, (*img)->h, len);
         found = true;
     }
@@ -556,7 +571,10 @@ bool modmanager_get_bk_background(str *name, sd_vga_image **img) {
     return found;
 }
 
-bool modmanager_get_sprite(animation_source source, str *name, int animation, int frame, sd_sprite **spr) {
+bool modmanager_get_sprite_with_palette(animation_source source, str *name, int animation, int frame, sd_sprite **spr,
+                                        vga_palette **pal, const vga_remap_table **remap, int *sprite_remap_type) {
+    *remap = NULL;
+    *sprite_remap_type = 0;
     if(!mods_allowed) {
         return false;
     }
@@ -567,7 +585,6 @@ bool modmanager_get_sprite(animation_source source, str *name, int animation, in
     bool found = false;
 
     for(int i = scale; i >= 0 && !found; i--) {
-
         mod_asset *obuf;
         switch(source) {
             case AF_ANIMATION:
@@ -594,7 +611,22 @@ bool modmanager_get_sprite(animation_source source, str *name, int animation, in
         if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&obuf, &len)) {
             assert(obuf->type == MOD_SPRITE);
             *spr = &obuf->spr;
-            log_info("got sprite %s %dx%d with scale %d", str_c(&filename), (*spr)->width, (*spr)->height, i);
+            *pal = obuf->pal;
+#ifdef USE_EXTENDED_PALETTE
+            // Determine sprite-type remap based on source and animation ID
+            int sprite_type;
+            if(source == AF_ANIMATION) {
+                sprite_type = SPRITE_REMAP_HAR_P1; // arena.c updates to P2 later
+            } else if(omf_strncasecmp("arena", str_c(name), min2(str_size(name), 5)) == 0 &&
+                      ((animation >= 6 && animation <= 11) || (animation >= 24 && animation <= 27))) {
+                sprite_type = SPRITE_REMAP_SCENE_COMMON;
+            } else {
+                sprite_type = SPRITE_REMAP_SCENE;
+            }
+            *remap = vga_extended_palette_get_sprite_remap(sprite_type);
+            *sprite_remap_type = sprite_type;
+#endif
+            log_info("got sprite+palette %s %dx%d with scale %d", str_c(&filename), (*spr)->width, (*spr)->height, i);
             str_free(&filename);
             return true;
         }
@@ -630,14 +662,37 @@ bool modmanager_get_sprite(animation_source source, str *name, int animation, in
         if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&obuf, &len)) {
             assert(obuf->type == MOD_SPRITE);
             *spr = &obuf->spr;
-            log_info("got sprite %s %dx%d with scale %d", str_c(&filename), (*spr)->width, (*spr)->height, i);
-            found = true;
+            *pal = obuf->pal;
+#ifdef USE_EXTENDED_PALETTE
+            // Determine sprite-type remap for common replacements
+            int sprite_type;
+            if(source == AF_ANIMATION) {
+                sprite_type = SPRITE_REMAP_HAR_P1;
+            } else if(omf_strncasecmp("arena", str_c(name), min2(str_size(name), 5)) == 0 &&
+                      ((animation >= 6 && animation <= 11) || (animation >= 24 && animation <= 27))) {
+                sprite_type = SPRITE_REMAP_SCENE_COMMON;
+            } else {
+                sprite_type = SPRITE_REMAP_SCENE;
+            }
+            *remap = vga_extended_palette_get_sprite_remap(sprite_type);
+            *sprite_remap_type = sprite_type;
+#endif
+            log_info("got sprite+palette %s %dx%d with scale %d", str_c(&filename), (*spr)->width, (*spr)->height, i);
+            str_free(&filename);
+            return true;
         }
 
         str_free(&filename);
     }
 
-    return found;
+    return false;
+}
+
+bool modmanager_get_sprite(animation_source source, str *name, int animation, int frame, sd_sprite **spr) {
+    vga_palette *pal;
+    const vga_remap_table *remap;
+    int sprite_remap_type;
+    return modmanager_get_sprite_with_palette(source, name, animation, frame, spr, &pal, &remap, &sprite_remap_type);
 }
 
 bool modmanager_get_hitcoords(animation_source source, str *name, int animation, int frame, vector *coords,
@@ -1697,6 +1752,7 @@ static void free_mod_asset(void *data) {
                 }
                 break;
         }
+        omf_free(asset);
     }
 }
 
@@ -1757,6 +1813,12 @@ void modmanager_shutdown(void) {
             free_mod_asset(pair->value);
         } else {
             list *l = (list *)pair->value;
+            iterator lit;
+            list_iter_begin(l, &lit);
+            mod_asset *asset;
+            foreach(lit, asset) {
+                free_mod_asset(asset);
+            }
             list_free(l);
         }
         str_free(&key);
@@ -1786,6 +1848,12 @@ bool modmanager_get_player_pics(sd_pic_file *players) {
             } else {
                 result |= true;
                 log_info("loaded portrait %i", i);
+            }
+            // Copy custom portrait colors (0x60-0x9F) from PNG palette
+            if(obuf->pal) {
+                for(int c = 0; c < 64; c++) {
+                    players->photos[i]->portrait_custom[c] = obuf->pal->colors[0x60 + c];
+                }
             }
         }
         str_free(&filename);

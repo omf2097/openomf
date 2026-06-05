@@ -1,6 +1,6 @@
 #include "utils/allocator.h"
 #include <CUnit/CUnit.h>
-#include <utils/oklab.h>
+#include <vendored/oklab/oklab.h>
 
 void test_rgb_to_oklab(void) {
     oklab_color c;

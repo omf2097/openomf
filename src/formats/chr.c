@@ -23,6 +23,69 @@
 #include "utils/log.h"
 #include "utils/random.h"
 
+// CHR photo sprite format extension:
+// Original DOS format: len(u16) + pos_x(i16) + ...
+// Extended format:    len_lo(u16, bit15=1) + len_hi(u16) + pos_x(i16) + ...
+// The high bit of the first uword signals that a second uword follows,
+// giving 31 bits of length (15 + 16). Original DOS sprites always have
+// len < 32768, so bit 15 is 0 and they read as before.
+
+#define CHR_SPRITE_LEN_EXTENDED 0x8000
+
+static int chr_sprite_load(sd_reader *r, sd_sprite *sprite) {
+    uint16_t len_lo = sd_read_uword(r);
+    if(len_lo & CHR_SPRITE_LEN_EXTENDED) {
+        sprite->len = (len_lo & 0x7FFF) | ((uint32_t)sd_read_uword(r) << 15);
+    } else {
+        sprite->len = len_lo;
+    }
+    sprite->pos_x = sd_read_word(r);
+    sprite->pos_y = sd_read_word(r);
+    sprite->width = sd_read_uword(r);
+    sprite->height = sd_read_uword(r);
+    sprite->render_height = sprite->height;
+    sprite->render_width = sprite->width;
+    sprite->index = sd_read_ubyte(r);
+    sprite->missing = sd_read_ubyte(r);
+
+    // Copy sprite data, if there is any.
+    if(sprite->missing == 0 && sprite->len != 0) {
+        sprite->data = omf_calloc(1, sprite->len);
+        sd_read_buf(r, sprite->data, sprite->len);
+    } else {
+        sprite->data = NULL;
+    }
+
+    if(!sd_reader_ok(r)) {
+        return SD_FILE_PARSE_ERROR;
+    }
+    return SD_SUCCESS;
+}
+
+static int chr_sprite_save(sd_writer *w, const sd_sprite *sprite) {
+    if(w == NULL || sprite == NULL) {
+        return SD_INVALID_INPUT;
+    }
+    if(sprite->len >= 0x8000) {
+        // Extended format: split 32-bit len across two uwords
+        sd_write_uword(w, (sprite->len & 0x7FFF) | CHR_SPRITE_LEN_EXTENDED);
+        sd_write_uword(w, (uint16_t)(sprite->len >> 15));
+    } else {
+        // Standard format: single uword (backward compatible)
+        sd_write_uword(w, (uint16_t)sprite->len);
+    }
+    sd_write_word(w, sprite->pos_x);
+    sd_write_word(w, sprite->pos_y);
+    sd_write_uword(w, sprite->width);
+    sd_write_uword(w, sprite->height);
+    sd_write_ubyte(w, sprite->index);
+    sd_write_ubyte(w, sprite->missing);
+    if(!sprite->missing) {
+        sd_write_buf(w, sprite->data, sprite->len);
+    }
+    return SD_SUCCESS;
+}
+
 int sd_chr_create(sd_chr_file *chr) {
     assert(chr != NULL);
     memset(chr, 0, sizeof(sd_chr_file));
@@ -208,7 +271,7 @@ int sd_chr_load(sd_chr_file *chr, const path *filename) {
     // Load sprite
     chr->photo = omf_calloc(1, sizeof(sd_sprite));
     sd_sprite_create(chr->photo);
-    if(sd_sprite_load(r, chr->photo) != SD_SUCCESS) {
+    if(chr_sprite_load(r, chr->photo) != SD_SUCCESS) {
         goto error_1;
     }
 
@@ -229,7 +292,25 @@ int sd_chr_load(sd_chr_file *chr, const path *filename) {
         chr->pilot.sex = photo->sex;
         chr->pilot.photo->render_width = photo->sprite->render_width;
         chr->pilot.photo->render_height = photo->sprite->render_height;
+        memcpy(chr->portrait_custom, photo->portrait_custom, sizeof(chr->portrait_custom));
+        log_debug("CHR load from PIC: portrait_custom[0]=%d/%d/%d", chr->portrait_custom[0].r,
+                  chr->portrait_custom[0].g, chr->portrait_custom[0].b);
         sd_pic_free(&players);
+    }
+
+    // Load portrait custom colors from CHR file if present (appended after sprite).
+    // These are the authoritative custom colors — the CHR file is the source of
+    // truth for portrait_custom once a pilot has been saved. The PIC data is
+    // only used as initial values when the CHR file has no appended data.
+    long remaining = sd_reader_filesize(r) - sd_reader_pos(r);
+    if(remaining >= 64 * 3) {
+        for(int c = 0; c < 64; c++) {
+            chr->portrait_custom[c].r = sd_read_ubyte(r);
+            chr->portrait_custom[c].g = sd_read_ubyte(r);
+            chr->portrait_custom[c].b = sd_read_ubyte(r);
+        }
+        log_debug("CHR load from file: portrait_custom[0]=%d/%d/%d", chr->portrait_custom[0].r,
+                  chr->portrait_custom[0].g, chr->portrait_custom[0].b);
     }
 
     // Load colors from other files
@@ -289,15 +370,27 @@ int sd_chr_save(const sd_chr_file *chr, const path *filename) {
     // Save this, whatever this is.
     sd_write_udword(w, chr->unknown_b);
 
-    // Save photo. Hacky size fix.
-    chr->photo->width--;
-    chr->photo->height--;
+    // save chr->pilot.photo not chr->photo in case they're desynced
+    chr->pilot.photo->width--;
+    chr->pilot.photo->height--;
 
-    if(SD_SUCCESS != sd_sprite_save(w, chr->photo)) {
+    if(SD_SUCCESS != chr_sprite_save(w, chr->pilot.photo)) {
         return SD_FILE_WRITE_ERROR;
     }
-    chr->photo->width++;
-    chr->photo->height++;
+    chr->pilot.photo->width++;
+    chr->pilot.photo->height++;
+
+    // Save portrait custom colors (64 entries for 0x60-0x9F range)
+    // These are needed to correctly display mod portraits when the mod
+    // isn't active. Written as 64 * 3 bytes (RGB, no padding).
+    log_debug("CHR save: portrait_custom[0]=%d/%d/%d, [1]=%d/%d/%d", chr->portrait_custom[0].r,
+              chr->portrait_custom[0].g, chr->portrait_custom[0].b, chr->portrait_custom[1].r,
+              chr->portrait_custom[1].g, chr->portrait_custom[1].b);
+    for(int c = 0; c < 64; c++) {
+        sd_write_ubyte(w, chr->portrait_custom[c].r);
+        sd_write_ubyte(w, chr->portrait_custom[c].g);
+        sd_write_ubyte(w, chr->portrait_custom[c].b);
+    }
 
     // Close & return
     sd_writer_close(w);

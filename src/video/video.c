@@ -266,7 +266,7 @@ void video_draw_size(const surface *src_surface, int x, int y, int w, int h) {
     dst.h = h;
     dst.x = x;
     dst.y = y;
-    draw_args(src_surface, &dst, 0, 0, 0, 255, 255, 0, 0);
+    draw_args(src_surface, &dst, 0, 0, 0, VGA_PALETTE_SIZE - 1, 255, 0, 0);
 }
 
 void video_draw(const surface *src_surface, int x, int y) {
@@ -275,7 +275,7 @@ void video_draw(const surface *src_surface, int x, int y) {
     dst.h = src_surface->render_h;
     dst.x = x;
     dst.y = y;
-    draw_args(src_surface, &dst, 0, 0, 0, 255, 255, 0, 0);
+    draw_args(src_surface, &dst, 0, 0, 0, VGA_PALETTE_SIZE - 1, 255, 0, 0);
 }
 
 void video_draw_remap(const surface *src_surface, int x, int y, int remap_offset, int remap_rounds,
@@ -285,5 +285,5 @@ void video_draw_remap(const surface *src_surface, int x, int y, int remap_offset
     dst.h = src_surface->render_h;
     dst.x = x;
     dst.y = y;
-    draw_args(src_surface, &dst, remap_offset, remap_rounds, 0, 255, 255, 0, options);
+    draw_args(src_surface, &dst, remap_offset, remap_rounds, 0, VGA_PALETTE_SIZE - 1, 255, 0, options);
 }
