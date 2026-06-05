@@ -137,7 +137,6 @@ int main(int argc, char *argv[]) {
     int custom_count = 0;
     int file_count = input->count;
 
-
     for(int f = 0; f < file_count; f++) {
         if(read_png(input->filename[f], &rgba, &w, &h) != 0) {
             fprintf(stderr, "Failed to read %s\n", input->filename[f]);
