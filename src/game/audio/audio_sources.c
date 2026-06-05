@@ -1,8 +1,8 @@
 #include "game/audio/audio_sources.h"
-#include "game/utils/settings.h"
 #include "audio/music_sources/opus_source.h"
 #include "audio/music_sources/psm_source.h"
 #include "audio/sound_sources/dat_source.h"
+#include "game/utils/settings.h"
 #include "resources/ids.h"
 #include "resources/modmanager.h"
 #include "resources/resource_files.h"
@@ -45,7 +45,6 @@ bool music_source_pick(music_source *src, const resource_id id, const unsigned c
         return null_music_source_load(src);
     }
 #endif
-
 
     str fn;
     unsigned char *buf;

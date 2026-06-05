@@ -926,27 +926,27 @@ bool modmanager_parse_bk_info_mod(const char *buf, bk_info *current_info) {
     }
 
     // Update integer fields only if they changed
-    if(current_info->chain_hit != cfg_getint(cfg, "chain_hit")) {
+    if(current_info->chain_hit != (unsigned int)cfg_getint(cfg, "chain_hit")) {
         log_info("setting chain_hit from %u to %d", current_info->chain_hit, cfg_getint(cfg, "chain_hit"));
         current_info->chain_hit = cfg_getint(cfg, "chain_hit");
     }
 
-    if(current_info->chain_no_hit != cfg_getint(cfg, "chain_no_hit")) {
+    if(current_info->chain_no_hit != (unsigned int)cfg_getint(cfg, "chain_no_hit")) {
         log_info("setting chain_no_hit from %u to %d", current_info->chain_no_hit, cfg_getint(cfg, "chain_no_hit"));
         current_info->chain_no_hit = cfg_getint(cfg, "chain_no_hit");
     }
 
-    if(current_info->load_on_start != cfg_getint(cfg, "load_on_start")) {
+    if(current_info->load_on_start != (unsigned int)cfg_getint(cfg, "load_on_start")) {
         log_info("setting load_on_start from %u to %d", current_info->load_on_start, cfg_getint(cfg, "load_on_start"));
         current_info->load_on_start = cfg_getint(cfg, "load_on_start");
     }
 
-    if(current_info->probability != cfg_getint(cfg, "probability")) {
+    if(current_info->probability != (unsigned int)cfg_getint(cfg, "probability")) {
         log_info("setting probability from %u to %d", current_info->probability, cfg_getint(cfg, "probability"));
         current_info->probability = cfg_getint(cfg, "probability");
     }
 
-    if(current_info->hazard_damage != cfg_getint(cfg, "hazard_damage")) {
+    if(current_info->hazard_damage != (unsigned int)cfg_getint(cfg, "hazard_damage")) {
         log_info("setting hazard_damage from %u to %d", current_info->hazard_damage, cfg_getint(cfg, "hazard_damage"));
         current_info->hazard_damage = cfg_getint(cfg, "hazard_damage");
     }
@@ -992,7 +992,6 @@ bool modmanager_get_af_move(str *name, int move_id, af_move *move_data) {
     str filename;
     str_from_format(&filename, "fighters/%s/%d/animdata.ini", str_c(name), move_id);
     str_tolower(&filename);
-
 
     list *l;
     unsigned int len;
@@ -1109,7 +1108,7 @@ bool modmanager_parse_fighter_header_mod(const char *buf, af *fighter) {
         fighter->endurance = cfg_getfloat(cfg, "endurance");
     }
 
-    if(fighter->health != cfg_getint(cfg, "health")) {
+    if(fighter->health != (unsigned int)cfg_getint(cfg, "health")) {
         log_info("setting health from %u to %d", fighter->health, cfg_getint(cfg, "health"));
         fighter->health = cfg_getint(cfg, "health");
     }
