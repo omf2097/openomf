@@ -221,10 +221,10 @@ const vga_remap_table *vga_extended_palette_get_sprite_remap(int sprite_type) {
     if(!sprite_remaps_initialized) {
         vga_extended_palette_init_sprite_remaps();
     }
-    if(sprite_type < 0 || sprite_type >= SPRITE_REMAP_TYPE_COUNT) {
+    if(sprite_type < 1 || sprite_type >= SPRITE_REMAP_TYPE_COUNT) {
         return NULL;
     }
-    return &sprite_remaps[sprite_type];
+    return &sprite_remaps[sprite_type - 1];
 }
 
 void vga_extended_palette_load_mod_colors(const vga_palette *mod_pal, int sprite_type) {

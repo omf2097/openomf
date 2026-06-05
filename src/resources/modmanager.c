@@ -620,8 +620,13 @@ bool modmanager_get_sprite_with_palette(animation_source source, str *name, int 
             } else if(omf_strncasecmp("arena", str_c(name), min2(str_size(name), 5)) == 0 &&
                       ((animation >= 6 && animation <= 11) || (animation >= 24 && animation <= 27))) {
                 sprite_type = SPRITE_REMAP_SCENE_COMMON;
-            } else {
+            } else if(omf_strncasecmp("arena", str_c(name), min2(str_size(name), 5)) == 0 ||
+                      omf_strncasecmp("mechlab", str_c(name), min2(str_size(name), 8)) == 0 ||
+                      omf_strncasecmp("melee", str_c(name), min2(str_size(name), 5)) == 0 ||
+                      omf_strncasecmp("vs", str_c(name), min2(str_size(name), 2)) == 0) {
                 sprite_type = SPRITE_REMAP_SCENE;
+            } else {
+                sprite_type = SPRITE_REMAP_NONE;
             }
             *remap = vga_extended_palette_get_sprite_remap(sprite_type);
             *sprite_remap_type = sprite_type;
@@ -1752,7 +1757,6 @@ static void free_mod_asset(void *data) {
                 }
                 break;
         }
-        omf_free(asset);
     }
 }
 
@@ -1813,12 +1817,6 @@ void modmanager_shutdown(void) {
             free_mod_asset(pair->value);
         } else {
             list *l = (list *)pair->value;
-            iterator lit;
-            list_iter_begin(l, &lit);
-            mod_asset *asset;
-            foreach(lit, asset) {
-                free_mod_asset(asset);
-            }
             list_free(l);
         }
         str_free(&key);

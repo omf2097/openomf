@@ -478,7 +478,7 @@ set(DOC_FILES
     resources/gamecontrollerdb/LICENSE.gamecontrollerdb
     src/vendored/argtable/LICENSE.argtable3
     src/vendored/zip/LICENSE.zip
-    src/vendored/zip/LICENSE.oklab
+    src/vendored/oklab/LICENSE.oklab
 )
 
 # Installation

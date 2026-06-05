@@ -77,6 +77,9 @@ void surface_set_transparency(surface *sur, int index) {
 
 void surface_set_remap(surface *sur, const vga_remap_table *remap) {
 #ifdef USE_EXTENDED_PALETTE
+    if(!remap) {
+        return;
+    }
     int pixels = sur->w * sur->h;
     for(int i = 0; i < pixels; i++) {
         vga_pixel src = sur->data[i];
