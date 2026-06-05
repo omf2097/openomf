@@ -428,6 +428,12 @@ bool modmanager_init(void) {
 
                         if(sd_vga_image_from_png_in_memory(&buf->img, entry_buf, entry_size, false, buf->pal) ==
                            SD_SUCCESS) {
+                            mod_asset *existing;
+                            unsigned int existing_len;
+                            if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&existing, &existing_len)) {
+                                // free existing entry
+                                free_mod_asset(existing);
+                            }
 
                             log_info("got vga image %dx%d", buf->img.w, buf->img.h);
 
@@ -447,6 +453,13 @@ bool modmanager_init(void) {
 
                         if(sd_vga_image_from_png_in_memory(&img, entry_buf, entry_size, true, buf->pal) == SD_SUCCESS) {
                             if(sd_sprite_vga_encode(&buf->spr, &img) == SD_SUCCESS) {
+                                mod_asset *existing;
+                                unsigned int existing_len;
+                                if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&existing,
+                                                    &existing_len)) {
+                                    // free existing entry
+                                    free_mod_asset(existing);
+                                }
                                 hashmap_put_str(&mod_resources, str_c(&filename), buf, sizeof(mod_asset));
                                 omf_free(buf);
                             } else {
@@ -1644,6 +1657,7 @@ bool modmanager_get_tournament_mod(const char *tournament_name, sd_tournament_fi
     mod_asset *obuf;
     if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&obuf, &len)) {
         assert(obuf->type == MOD_SPRITE);
+        sd_sprite_free(tourn_data->locales[0]->logo);
         if(sd_sprite_copy(tourn_data->locales[0]->logo, &obuf->spr) != SD_SUCCESS) {
             log_warn("failed to copy tournament logo");
         }
@@ -1766,6 +1780,7 @@ bool modmanager_get_player_pics(sd_pic_file *players) {
         mod_asset *obuf;
         if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&obuf, &len)) {
             assert(obuf->type == MOD_SPRITE);
+            sd_sprite_free(players->photos[i]->sprite);
             if(sd_sprite_copy(players->photos[i]->sprite, &obuf->spr) != SD_SUCCESS) {
                 log_warn("failed to copy player portrait");
             } else {

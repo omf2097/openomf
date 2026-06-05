@@ -122,7 +122,7 @@ component *menu_audio_create(scene *s) {
 
     menu_attach(menu, textselector_create_bind_opts(
                           "MUSIC:",
-                          "Which type of game music to use."
+                          "Which type of game music to use. "
                           "Whenever more than one track is available for a given scene a random one will be chosen.",
                           NULL, NULL, &settings_get()->sound.music_type, music_type_names, 3));
 
