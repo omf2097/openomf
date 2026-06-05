@@ -640,8 +640,9 @@ void bk_palette_dump(sd_bk_file *bk) {
     printf("Palettes: %d\n", bk->palette_count);
     for(int p = 0; p < bk->palette_count; p++) {
         vga_palette *pal = sd_bk_get_palette(bk, p);
-        if(!pal)
+        if(!pal) {
             continue;
+        }
         printf("=== Palette %d ===\n", p);
         for(int i = 0; i < 256; i++) {
             printf("%3d (0x%02X): %3u %3u %3u\n", i, i, pal->colors[i].r, pal->colors[i].g, pal->colors[i].b);
@@ -655,15 +656,18 @@ void bk_histogram(sd_bk_file *bk) {
     int sprite_count = 0;
 
     for(int a = 0; a < 50; a++) {
-        if(!bk->anims[a])
+        if(!bk->anims[a]) {
             continue;
+        }
         sd_animation *ani = bk->anims[a]->animation;
         for(int s = 0; s < ani->sprite_count; s++) {
-            if(!ani->sprites[s])
+            if(!ani->sprites[s]) {
                 continue;
+            }
             sd_sprite *sp = ani->sprites[s];
-            if(sp->width == 0 || sp->height == 0)
+            if(sp->width == 0 || sp->height == 0) {
                 continue;
+            }
             sd_vga_image img;
             if(sd_sprite_vga_decode(&img, sp) == SD_SUCCESS) {
                 sprite_count++;
