@@ -712,15 +712,18 @@ void af_histogram(sd_af_file *af) {
     int sprite_count = 0;
 
     for(int m = 0; m < 70; m++) {
-        if(!af->moves[m])
+        if(!af->moves[m]) {
             continue;
+        }
         sd_animation *ani = af->moves[m]->animation;
         for(int s = 0; s < ani->sprite_count; s++) {
-            if(!ani->sprites[s])
+            if(!ani->sprites[s]) {
                 continue;
+            }
             sd_sprite *sp = ani->sprites[s];
-            if(sp->width == 0 || sp->height == 0)
+            if(sp->width == 0 || sp->height == 0) {
                 continue;
+            }
             sd_vga_image img;
             if(sd_sprite_vga_decode(&img, sp) == SD_SUCCESS) {
                 sprite_count++;

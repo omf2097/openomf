@@ -22,11 +22,13 @@ void trn_histogram(sd_tournament_file *trn) {
     int sprite_count = 0;
 
     for(int i = 0; i < MAX_TRN_LOCALES; i++) {
-        if(!trn->locales[i] || !trn->locales[i]->logo)
+        if(!trn->locales[i] || !trn->locales[i]->logo) {
             continue;
+        }
         sd_sprite *sp = trn->locales[i]->logo;
-        if(sp->width == 0 || sp->height == 0)
+        if(sp->width == 0 || sp->height == 0) {
             continue;
+        }
         sd_vga_image img;
         if(sd_sprite_vga_decode(&img, sp) == SD_SUCCESS) {
             sprite_count++;

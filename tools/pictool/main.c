@@ -18,11 +18,13 @@ void pic_histogram(sd_pic_file *pic) {
     int sprite_count = 0;
 
     for(int i = 0; i < MAX_PIC_PHOTOS; i++) {
-        if(!pic->photos[i])
+        if(!pic->photos[i]) {
             continue;
+        }
         sd_sprite *sp = pic->photos[i]->sprite;
-        if(!sp || sp->width == 0 || sp->height == 0)
+        if(!sp || sp->width == 0 || sp->height == 0) {
             continue;
+        }
         sd_vga_image img;
         if(sd_sprite_vga_decode(&img, sp) == SD_SUCCESS) {
             sprite_count++;
