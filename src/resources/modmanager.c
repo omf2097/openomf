@@ -528,7 +528,6 @@ bool modmanager_init(void) {
 bool modmanager_get_bk_background(str *name, sd_vga_image **img) {
     str filename;
     str_from_format(&filename, "scenes/%s/background.png", str_c(name));
-
     str_tolower(&filename);
 
     unsigned int len;
@@ -551,8 +550,6 @@ bool modmanager_get_sprite(animation_source source, str *name, int animation, in
     str filename;
 
     int scale = find_scale_factor();
-
-    // log_info("screen scale is %dx", scale);
 
     bool found = false;
 
@@ -614,7 +611,7 @@ bool modmanager_get_sprite(animation_source source, str *name, int animation, in
                 str_from_format(&filename, "fighters/common/%d/%d.png", animation, frame);
             }
         } else {
-            return false;
+            continue;
         }
 
         if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&obuf, &len)) {
@@ -994,6 +991,8 @@ bool modmanager_get_af_move(str *name, int move_id, af_move *move_data) {
 
     str filename;
     str_from_format(&filename, "fighters/%s/%d/animdata.ini", str_c(name), move_id);
+    str_tolower(&filename);
+
 
     list *l;
     unsigned int len;
@@ -1002,9 +1001,10 @@ bool modmanager_get_af_move(str *name, int move_id, af_move *move_data) {
         log_info("HIT %s", str_c(&filename));
         iterator it;
         list_iter_begin(l, &it);
-        char *buf;
-        foreach(it, buf) {
-            result |= modmanager_parse_af_move_mod(buf, move_data);
+        mod_asset *obuf;
+        foreach(it, obuf) {
+            assert(obuf->type == MOD_BUFFER);
+            result |= modmanager_parse_af_move_mod((char *)obuf->buf, move_data);
         }
     }
 
@@ -1016,14 +1016,16 @@ bool modmanager_get_af_move(str *name, int move_id, af_move *move_data) {
         // (bolt), 14 (screw), 55 (blast), 56 (blast 2), 57 (blast 3)
 
         str_from_format(&filename, "fighters/common/%d/animdata.ini", move_id);
+        str_tolower(&filename);
 
         if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&l, &len)) {
             log_info("HIT %s", str_c(&filename));
             iterator it;
             list_iter_begin(l, &it);
-            char *buf;
-            foreach(it, buf) {
-                result |= modmanager_parse_af_move_mod(buf, move_data);
+            mod_asset *obuf;
+            foreach(it, obuf) {
+                assert(obuf->type == MOD_BUFFER);
+                result |= modmanager_parse_af_move_mod((char *)obuf->buf, move_data);
             }
         }
         str_free(&filename);
@@ -1044,6 +1046,7 @@ bool modmanager_get_bk_animation(str *name, int anim_id, bk_info *bk_data) {
     str filename;
 
     str_from_format(&filename, "scenes/%s/%d/animdata.ini", str_c(name), anim_id);
+    str_tolower(&filename);
 
     list *l;
     unsigned int len = 0;
@@ -1052,9 +1055,10 @@ bool modmanager_get_bk_animation(str *name, int anim_id, bk_info *bk_data) {
     if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&l, &len)) {
         iterator it;
         list_iter_begin(l, &it);
-        char *buf;
-        foreach(it, buf) {
-            result |= modmanager_parse_bk_info_mod(buf, bk_data);
+        mod_asset *obuf;
+        foreach(it, obuf) {
+            assert(obuf->type == MOD_BUFFER);
+            result |= modmanager_parse_bk_info_mod((char *)obuf->buf, bk_data);
         }
     }
 
@@ -1070,9 +1074,10 @@ bool modmanager_get_bk_animation(str *name, int anim_id, bk_info *bk_data) {
         if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&l, &len)) {
             iterator it;
             list_iter_begin(l, &it);
-            char *buf;
-            foreach(it, buf) {
-                result |= modmanager_parse_bk_info_mod(buf, bk_data);
+            mod_asset *obuf;
+            foreach(it, obuf) {
+                assert(obuf->type == MOD_BUFFER);
+                result |= modmanager_parse_bk_info_mod((char *)obuf->buf, bk_data);
             }
         }
         str_free(&filename);
@@ -1141,6 +1146,7 @@ bool modmanager_get_fighter_header(str *name, af *fighter) {
 
     str filename;
     str_from_format(&filename, "fighters/%s/header.ini", str_c(name));
+    str_tolower(&filename);
 
     list *l;
     unsigned int len = 0;
@@ -1149,9 +1155,10 @@ bool modmanager_get_fighter_header(str *name, af *fighter) {
     if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&l, &len)) {
         iterator it;
         list_iter_begin(l, &it);
-        char *buf;
-        foreach(it, buf) {
-            result |= modmanager_parse_fighter_header_mod(buf, fighter);
+        mod_asset *obuf;
+        foreach(it, obuf) {
+            assert(obuf->type == MOD_BUFFER);
+            result |= modmanager_parse_fighter_header_mod((char *)obuf->buf, fighter);
         }
     }
 
@@ -1395,6 +1402,7 @@ bool modmanager_get_pilot_mod(const char *trn_name, uint8_t pilot_id, sd_pilot *
     str_free(&filename);
 
     str_from_format(&filename, "tournaments/%s/pilots/%d/har_color.png", trn_name, pilot_id);
+    str_tolower(&filename);
 
     // copy HAR color palette, if exists
     if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&obuf, &len)) {
@@ -1756,7 +1764,6 @@ bool modmanager_get_player_pics(sd_pic_file *players) {
 
         // Check for png replacement
         str_from_format(&filename, "players/%i/pilot.png", i);
-        str_tolower(&filename);
         mod_asset *obuf;
         if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&obuf, &len)) {
             assert(obuf->type == MOD_SPRITE);
@@ -1780,7 +1787,6 @@ bool modmanager_get_player_pics(sd_pic_file *players) {
 
         // Check for ini file to parse width/height/gender
         str_from_format(&filename, "players/%i/pilot.ini", i);
-        str_tolower(&filename);
         list *l;
         if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&l, &len)) {
             iterator it;

@@ -172,6 +172,10 @@ bool opus_load_memory(music_source *src, int channels, int sample_rate, const un
         log_error("Failed to open opus file");
         goto exit_0;
     }
+    context->loop_start = 0; // Default loop point, if no tags are set.
+    context->loop_end = 0;
+    opus_read_loop_tags(context);
+    opus_announce_track(context);
     if(SDL_BuildAudioCVT(&context->cvt, AUDIO_S16, 2, 48000, AUDIO_S16, channels, sample_rate) < 0) {
         log_error("Audio converter creation failed: %s", SDL_GetError());
         goto exit_1;
