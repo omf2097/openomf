@@ -9,6 +9,7 @@
 #include "game/gui/osd/osd.h"
 #include "game/utils/settings.h"
 #include "resources/languages.h"
+#include "resources/modmanager.h"
 #include "resources/resource_files.h"
 #include "resources/resource_paths.h"
 #include "resources/sounds_loader.h"
@@ -83,6 +84,9 @@ int engine_init(const engine_init_flags *init_flags) {
     if(!osd_init()) {
         goto exit_7;
     }
+    if(!modmanager_init()) {
+        goto exit_8;
+    }
     vga_state_init();
 
     // Return successfully
@@ -91,6 +95,8 @@ int engine_init(const engine_init_flags *init_flags) {
     return 0;
 
     // If something failed, close in correct order
+exit_8:
+    osd_close();
 exit_7:
     console_close();
 exit_6:
@@ -419,5 +425,6 @@ void engine_close(void) {
     audio_close();
     video_close();
     vga_state_close();
+    modmanager_shutdown();
     log_info("Engine deinit successful.");
 }

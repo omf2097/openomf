@@ -161,6 +161,37 @@ exit_1:
     op_free(context->handle);
 exit_0:
     omf_free(context);
+    rb_free(&context->buffer);
+    return false;
+}
+
+bool opus_load_memory(music_source *src, int channels, int sample_rate, const unsigned char *buffer, size_t buflen) {
+    opus_source *context = omf_calloc(1, sizeof(opus_source));
+    rb_create(&context->buffer, RING_SIZE);
+    if((context->handle = op_open_memory(buffer, buflen, NULL)) == NULL) {
+        log_error("Failed to open opus file");
+        goto exit_0;
+    }
+    context->loop_start = 0; // Default loop point, if no tags are set.
+    context->loop_end = 0;
+    opus_read_loop_tags(context);
+    opus_announce_track(context);
+    if(SDL_BuildAudioCVT(&context->cvt, AUDIO_S16, 2, 48000, AUDIO_S16, channels, sample_rate) < 0) {
+        log_error("Audio converter creation failed: %s", SDL_GetError());
+        goto exit_1;
+    }
+
+    src->context = context;
+    src->set_volume = opus_set_volume;
+    src->render = opus_render;
+    src->close = opus_close;
+    return true;
+
+exit_1:
+    op_free(context->handle);
+exit_0:
+    rb_free(&context->buffer);
+    omf_free(context);
     return false;
 }
 

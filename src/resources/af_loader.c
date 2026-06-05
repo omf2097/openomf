@@ -9,18 +9,24 @@ int load_af_file(af *a, int id) {
     // Get directory + filename
     const path filename = get_resource_filename(get_resource_file(id));
 
+    str fn;
+    path_stem(&filename, &fn);
+
     // Load up AF file from libSD
     sd_af_file tmp;
     if(sd_af_create(&tmp) != SD_SUCCESS) {
+        str_free(&fn);
         return 1;
     }
     if(sd_af_load(&tmp, &filename) != SD_SUCCESS) {
         sd_af_free(&tmp);
+        str_free(&fn);
         return 1;
     }
 
     // Convert
-    af_create(a, &tmp);
+    af_create(a, &tmp, &fn);
     sd_af_free(&tmp);
+    str_free(&fn);
     return 0;
 }

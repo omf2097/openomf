@@ -40,7 +40,11 @@ endif()
 
 # argtable
 add_library(openomf::argtable INTERFACE IMPORTED)
-target_include_directories(openomf::argtable INTERFACE "${CMAKE_SOURCE_DIR}/src/vendored")
+target_include_directories(openomf::argtable INTERFACE "${CMAKE_SOURCE_DIR}/src/vendored/argtable")
+
+# zip
+add_library(openomf::zip INTERFACE IMPORTED)
+target_include_directories(openomf::zip INTERFACE "${CMAKE_SOURCE_DIR}/src/vendored/zip")
 
 # enet
 add_library(openomf::enet INTERFACE IMPORTED)

@@ -423,10 +423,10 @@ endif()
 
 # Make sure libraries are linked
 target_link_libraries(openomf PRIVATE ${CORELIBS})
-target_link_libraries(openomf PRIVATE openomf::argtable openomf::SDL2main openomf::epoxy)
+target_link_libraries(openomf PRIVATE openomf::argtable openomf::zip openomf::SDL2main openomf::epoxy)
 foreach(TARGET ${TOOL_TARGET_NAMES})
     target_link_libraries(${TARGET} PRIVATE ${CORELIBS})
-    target_link_libraries(${TARGET} PRIVATE openomf::argtable openomf::SDL2main openomf::epoxy)
+    target_link_libraries(${TARGET} PRIVATE openomf::argtable openomf::zip openomf::SDL2main openomf::epoxy)
 endforeach()
 
 # Testing stuff
@@ -474,7 +474,8 @@ set(DOC_FILES
     README.md
     LICENSE
     resources/gamecontrollerdb/LICENSE.gamecontrollerdb
-    src/vendored/LICENSE.argtable3
+    src/vendored/argtable/LICENSE.argtable3
+    src/vendored/zip/LICENSE.zip
 )
 
 # Installation

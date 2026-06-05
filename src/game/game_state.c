@@ -24,6 +24,7 @@
 #include "game/utils/serial.h"
 #include "game/utils/settings.h"
 #include "resources/languages.h"
+#include "resources/modmanager.h"
 #include "resources/pilots.h"
 #include "utils/allocator.h"
 #include "utils/c_array_util.h"
@@ -728,6 +729,14 @@ int game_load_new(game_state *gs, int scene_id) {
 
     gs->this_id = scene_id;
     gs->next_id = scene_id;
+
+    // Disable gameplay mods during netplay arena to prevent desyncs
+    if(scene_id >= SCENE_ARENA0 && scene_id <= SCENE_ARENA4) {
+        modmanager_set_allowed(game_state_get_player(gs, 0)->ctrl->type != CTRL_TYPE_NETWORK &&
+                               game_state_get_player(gs, 1)->ctrl->type != CTRL_TYPE_NETWORK);
+    } else {
+        modmanager_set_allowed(true);
+    }
 
     // Initialize new scene with BK data etc.
     gs->sc = omf_calloc(1, sizeof(scene));
