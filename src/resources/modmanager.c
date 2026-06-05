@@ -396,12 +396,12 @@ bool modmanager_init(void) {
                         continue;
                     }
 
-                    path path;
+                    path p2;
                     str fn, ext;
-                    path_from_str(&path, &filename);
+                    path_from_str(&p2, &filename);
 
-                    path_filename(&path, &fn);
-                    path_ext(&path, &ext);
+                    path_filename(&p2, &fn);
+                    path_ext(&p2, &ext);
 
                     log_info("path %s has filename %s and extension %s", str_c(&filename), str_c(&fn), str_c(&ext));
 
@@ -1286,7 +1286,7 @@ bool modmanager_parse_pilot_mod(const char *buf, sd_pilot *pilot) {
     UPDATE_FIELD_INT(offense, pilot->offense, cfg_getint(cfg, "offense"));
     UPDATE_FIELD_INT(defense, pilot->defense, cfg_getint(cfg, "defense"));
     UPDATE_FIELD_INT(money, pilot->money, cfg_getint(cfg, "money"));
-    UPDATE_FIELD_INT(winnings, pilot->winnings, cfg_getint(cfg, "winnings"));
+    UPDATE_FIELD_INT(winnings, pilot->winnings, (unsigned int)cfg_getint(cfg, "winnings"));
 
     // Update float fields
     UPDATE_FIELD_FLOAT(learning, pilot->learning, cfg_getfloat(cfg, "learning"));
