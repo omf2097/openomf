@@ -160,9 +160,9 @@ void portrait_set_from_sprite(component *c, sd_sprite *spr, int slot_index, cons
 #ifdef USE_EXTENDED_PALETTE
     // Copy custom portrait colors into extended palette at the selected slot
     if(portrait_custom) {
-        for(int c = 0; c < 64; c++) {
-            vga_state_set_base_palette_index(VGA_EXT_SLOT1_START + (slot_index * VGA_EXT_SLOT_SIZE) + c,
-                                             &portrait_custom[c]);
+        for(int i = 0; i < 64; i++) {
+            vga_state_set_base_palette_index(VGA_EXT_SLOT1_START + (slot_index * VGA_EXT_SLOT_SIZE) + i,
+                                             &portrait_custom[i]);
         }
     }
 #endif
