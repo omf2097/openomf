@@ -100,9 +100,11 @@ int main(int argc, char *argv[]) {
     struct arg_lit *verbose = arg_lit0("v", "verbose", "Verbose mode");
     struct arg_end *end = arg_end(20);
     void *argtable[] = {help, input, bkfile, output, imgout, scene_type, sprite_out, verbose, end};
+    int res = 0;
 
     if(arg_nullcheck(argtable) != 0) {
         printf("Insufficient memory\n");
+        res = 1;
         goto exit;
     }
     int nerrors = arg_parse(argc, argv, argtable);
@@ -115,6 +117,7 @@ int main(int argc, char *argv[]) {
     if(nerrors > 0) {
         arg_print_errors(stdout, end, "paltool");
         printf("Try '--help' for more information.\n");
+        res = 1;
         goto exit;
     }
 
@@ -134,7 +137,6 @@ int main(int argc, char *argv[]) {
     int custom_count = 0;
     int file_count = input->count;
 
-    int res = 0;
 
     for(int f = 0; f < file_count; f++) {
         if(read_png(input->filename[f], &rgba, &w, &h) != 0) {
