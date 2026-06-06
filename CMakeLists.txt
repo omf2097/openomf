@@ -487,7 +487,8 @@ if(WIN32)
 else()
     # On unixy systems, follow standard.
     install(TARGETS openomf RUNTIME DESTINATION bin COMPONENT Binaries)
-    install(FILES ${DOC_FILES} resources/openomf.bk resources/gamecontrollerdb/gamecontrollerdb.txt resources/icons/openomf.png
+    install(FILES ${DOC_FILES} resources/openomf.bk resources/gamecontrollerdb/gamecontrollerdb.txt
+            resources/icons/openomf.png resources/flatpak/org.openomf.OpenOMF.desktop
         DESTINATION share/games/openomf/resources/
         COMPONENT Data
     )
