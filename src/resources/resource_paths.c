@@ -147,6 +147,14 @@ static bool find_resource_path(path *dst) {
         }
         str_free(&tmp);
     }
+    if(env_str(&tmp, "APPDIR")) {
+        str_append_c(&tmp, "/usr/share/games/openomf");
+        if(scan_potential_resource_dirs(dst, &tmp, "resources/openomf.bk", "/")) {
+            log_debug("Resources found in APPDIR: %s", path_c(dst));
+            goto ok;
+        }
+        str_free(&tmp);
+    }
     return false;
 
 ok:

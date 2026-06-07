@@ -22,7 +22,8 @@ OpenOMF uses these, in priority order:
     - On Windows, this is usually `%AppData%/OpenOMF/`
     - On linux, this should be `~/.local/share/OpenOMF`
     - On MacOSX, this should be `/Users/bob/Library/Application Support/OpenOMF/`
-4. If at this point we don't have state and config dir, crash! For resource dirs, default to:
+4. Check AppImage environment variable APPDIR for resources path
+5. If at this point we don't have state and config dir, crash! For resource dirs, default to:
     - Linux: /usr/local/share/openomf
     - MacOS: /usr/local/share/openomf
     - Windows: Use binary directory
