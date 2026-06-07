@@ -472,7 +472,7 @@ void handle_action(scene *scene, int player, int action) {
                 progressbar_set_highlight(local->bar_stat[player][local->cheat_pilot_stats_stat[player]], 1);
                 break;
             }
-            // [[fallthrough]]
+            // FALLTHRU
         case ACT_PUNCH:
             *done = 1;
             audio_play_sound_simple(20, 0);
