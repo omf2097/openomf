@@ -11,9 +11,9 @@
 OpenOMF uses these, in priority order:
 
 1. First, try OPENOMF variables:
-    - OPENOMF_STATE_DIR for state path
-    - OPENOMF_CONFIG_DIR for config path
-    - OPENOMF_RESOURCE_DIR for resources path
+    - OPENOMF_STATE_PATH for state path
+    - OPENOMF_CONFIG_PATH for config path
+    - OPENOMF_RESOURCE_PATH for resources path
 2. Fallback to XDG variables [1]:
     - XDG_STATE_HOME for state path
     - XDG_CONFIG_HOME for config path
