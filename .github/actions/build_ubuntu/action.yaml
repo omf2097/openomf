@@ -54,6 +54,36 @@ runs:
       shell: bash
       run: sudo apt install ./openomf_${{ env.OPENOMF_VERSION }}_amd64.deb
 
+    - name: Download LinuxDeploy and AppImage Plugin
+      shell: bash
+      run: |
+        wget -q https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+        chmod +x linuxdeploy-x86_64.AppImage
+
+    - name: Fix desktop icon path for AppImage
+      shell: bash
+      run: |
+        sed -i -e "s/Icon=.*/Icon=openomf/" \
+          build-release/release/usr/share/games/openomf/resources/org.openomf.OpenOMF.desktop
+
+    - name: Bundle OpenOMF into an AppImage
+      shell: bash
+      env:
+        OUTPUT: OpenOMF-${{ env.OPENOMF_VERSION }}-x86_64.AppImage
+      run: |
+        ./linuxdeploy-x86_64.AppImage \
+          --appdir build-release/release \
+          --desktop-file build-release/release/usr/share/games/openomf/resources/org.openomf.OpenOMF.desktop \
+          --icon-file build-release/release/usr/share/games/openomf/resources/openomf.png \
+          --output appimage
+
+    - name: Upload AppImage Artifact
+      uses: actions/upload-artifact@v7
+      with:
+        name: OpenOMF-${{ env.OPENOMF_VERSION }}-x86_64.AppImage
+        path: OpenOMF-${{ env.OPENOMF_VERSION }}-x86_64.AppImage
+        if-no-files-found: error
+
     - name: Upload DEB artifact
       uses: actions/upload-artifact@v7
       with:
