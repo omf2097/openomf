@@ -29,6 +29,9 @@ endif()
 
 project(OpenOMF C)
 
+# Generate compile_commands.json so editors can find the correct headers.
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 set(USE_PCH ON)
 if(USE_PCH AND USE_TIDY)
     message(WARNING "clang-tidy is broken with PCH. Disabling PCH.")
