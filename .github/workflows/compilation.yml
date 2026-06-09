@@ -73,7 +73,7 @@ jobs:
 
       - uses: lukka/get-cmake@latest
 
-      - uses: ilammy/msvc-dev-cmd@v1
+      - uses: step-security/msvc-dev-cmd@v1
 
       - name: Configure CMake
         run: >
