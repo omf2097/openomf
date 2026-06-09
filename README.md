@@ -18,6 +18,12 @@ For more detailed information about the project, please see
 Installation
 ------------
 
+### AppImage
+
+1. Download the latest .AppImage executable from https://github.com/omf2097/openomf/releases
+2. Run `chmod +x OpenOMF-<version>-x86_64.AppImage`
+3. Play the game with `./OpenOMF-<version>-x86_64.AppImage`
+
 ### Ubuntu
 
 1. Download the latest .deb package from https://github.com/omf2097/openomf/releases
