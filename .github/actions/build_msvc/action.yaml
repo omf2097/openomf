@@ -15,7 +15,7 @@ runs:
 
     - name: Prepare VCPKG
       # must be done *after* openomf has been checked out
-      uses: johnwason/vcpkg-action@v7.0.1
+      uses: johnwason/vcpkg-action@v8
       id: prepare-vcpkg
       with:
         manifest-dir: ${{ github.workspace }}
