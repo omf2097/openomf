@@ -125,7 +125,7 @@ int sd_chr_load(sd_chr_file *chr, const path *filename) {
         }
         purchase_random_har_upgrades(&chr->enemies[i]->pilot);
         if(trn_loaded) {
-            memcpy(&chr->enemies[i]->pilot.palette, &trn.enemies[i]->palette, sizeof(vga_palette));
+            memcpy(&chr->enemies[i]->pilot.palette, &pic.photos[trn.enemies[i]->photo_id]->pal, sizeof(vga_palette));
             chr->enemies[i]->pilot.photo = omf_calloc(1, sizeof(sd_sprite));
             if(trn.enemies[i]->photo) {
                 log_info("using pilot photo %d from tournament", i);
