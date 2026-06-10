@@ -10,6 +10,7 @@
 #ifndef PORTRAIT_H
 #define PORTRAIT_H
 
+#include "formats/palette.h"
 #include "formats/sprite.h"
 #include "game/gui/component.h"
 
@@ -28,6 +29,14 @@ component *portrait_create(int pilot_id);
 void portrait_select(component *c, int pilot_id);
 
 /**
+ * @brief Select a portrait by PIC and pilot ID with extended palette slot
+ * @param c Portrait component to modify
+ * @param pilot_id Pilot index within the PIC file
+ * @param slot_index Portrait slot (0-4) for extended palette remapping
+ */
+void portrait_select_with_slot(component *c, int pilot_id, int slot_index);
+
+/**
  * @brief Get the number of pilots in a PIC file
  * @param c Portrait component to query
  * @return Number of pilots available
@@ -42,6 +51,17 @@ int portrait_get_pilot_count(component *c);
  * @return Zero on success, non-zero on failure
  */
 int portrait_load(sd_sprite *s, vga_palette *pal, int pilot_id);
+
+/**
+ * @brief Load a portrait sprite and palette with extended palette slot assignment
+ * @param s Output sprite structure
+ * @param pal Output palette structure
+ * @param pilot_id Pilot index within the PIC file
+ * @param slot_index Portrait slot (0-4) for extended palette remapping
+ * @return Zero on success, non-zero on failure
+ */
+int portrait_load_with_slot(sd_sprite *s, vga_palette *pal, int pilot_id, int slot_index,
+                            vga_color portrait_custom_out[64]);
 
 /**
  * @brief Select the next portrait
@@ -67,6 +87,6 @@ int portrait_selected(component *c);
  * @param c Portrait component to modify
  * @param spr Sprite to display
  */
-void portrait_set_from_sprite(component *c, sd_sprite *spr);
+void portrait_set_from_sprite(component *c, sd_sprite *spr, int slot_index, const vga_color *portrait_custom);
 
 #endif // PORTRAIT_H

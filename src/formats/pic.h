@@ -21,11 +21,13 @@
  * @todo find out what the unk_flag field is.
  */
 typedef struct {
-    int is_player;     ///< Is a player ? 1 = yes, 0 = no.
-    int sex;           ///< Sex of person in photo. 1 = Female, 0 = Male.
-    vga_palette pal;   ///< Image palette.
-    sd_sprite *sprite; ///< Photo sprite
-    uint8_t unk_flag;  ///< Unknown flag.
+    int is_player;                 ///< Is a player ? 1 = yes, 0 = no.
+    int sex;                       ///< Sex of person in photo. 1 = Female, 0 = Male.
+    vga_palette pal;               ///< Image palette.
+    sd_sprite *sprite;             ///< Photo sprite
+    uint8_t unk_flag;              ///< Unknown flag.
+    vga_color portrait_custom[64]; ///< Custom portrait colors at 0x60-0x9F, remapped to slot zone at display time.
+                                   ///< Paltool packs 64 custom colors here.
 } sd_pic_photo;
 
 /** @brief PIC pilot portrait list

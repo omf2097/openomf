@@ -4,6 +4,7 @@
 #include "formats/vga_image.h"
 #include "video/image.h"
 #include "video/vga_palette.h"
+#include "video/vga_remap.h"
 
 typedef struct surface {
     unsigned int guid;
@@ -36,6 +37,7 @@ void surface_set_pixel(surface *sur, int x, int y, vga_index color);
 void surface_sub(surface *dst, const surface *src, int dst_x, int dst_y, int src_x, int src_y, int w, int h,
                  int method);
 void surface_set_transparency(surface *dst, int index);
+void surface_set_remap(surface *sur, const vga_remap_table *remap);
 
 /** Flatten surface to a mask
  *

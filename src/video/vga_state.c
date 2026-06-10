@@ -7,6 +7,8 @@
 
 #include "game/game_state.h"
 #include "utils/png_writer.h"
+#include "video/vga_common_colors.h"
+#include "video/vga_extended_palette.h"
 #include <assert.h>
 
 #define MAX_TRANSFORMER_COUNT 8 ///< Maximum number of palette transformers per frame
@@ -42,6 +44,19 @@ void vga_state_init(void) {
     damage_reset(&state.dmg_base);
     damage_reset(&state.dmg_previous);
     damage_reset(&state.dmg_current);
+
+#ifdef USE_EXTENDED_PALETTE
+    // Fill extended palette zones with magenta so uninitialized indices
+    // are immediately visible instead of invisible black.
+    static const vga_color magenta = {255, 0, 255};
+    for(int i = VGA_EXT_COMMON_START; i < VGA_PALETTE_SIZE; i++) {
+        state.base.colors[i] = magenta;
+    }
+
+    // Extended and expanded common colors from shared definition
+    memcpy(&state.base.colors[VGA_EXT_COMMON_START], vga_ext_common, sizeof(vga_ext_common));
+    memcpy(&state.base.colors[VGA_EXT_EXPANDED_COMMON_START], vga_ext_expanded_common, sizeof(vga_ext_expanded_common));
+#endif
 }
 
 void vga_state_close(void) {
@@ -135,7 +150,29 @@ void vga_state_set_remaps_from(const vga_remap_tables *src) {
 
 void vga_state_set_base_palette_from(const vga_palette *src) {
     assert(src != NULL);
+#ifdef USE_EXTENDED_PALETTE
+    // Copy base palette range (0-255).
+    memcpy(&state.base.colors[0], &src->colors[0], 256 * sizeof(vga_color));
+
+    // Re-init entire extended range: fill with magenta, then re-populate
+    // static zones. Dynamic zones (HAR, portrait) will be re-set by
+    // scene init code (palette_load_player_colors, portrait remaps, etc).
+    static const vga_color magenta = {255, 0, 255};
+    for(int i = 256; i < VGA_PALETTE_SIZE; i++) {
+        state.base.colors[i] = magenta;
+    }
+
+    // Static extended zones
+    memcpy(&state.base.colors[VGA_EXT_EXPANDED_COMMON_START], vga_ext_expanded_common, sizeof(vga_ext_expanded_common));
+
+    // Extended common zone: use static vga_ext_common values, not BK file colors.
+    // The scene remap redirects 0xF4-0xFF to 0x100-0x10B. The colors at those
+    // destinations must be the fixed extended common colors (brown, pink, forest green),
+    // not whatever the BK file has at 0xF4-0xFF.
+    memcpy(&state.base.colors[VGA_EXT_COMMON_START], vga_ext_common, sizeof(vga_ext_common));
+#else
     memcpy(&state.base, src, sizeof(vga_palette));
+#endif
     damage_set_all(&state.dmg_base);
 }
 
@@ -154,6 +191,11 @@ void vga_state_set_base_palette_index(vga_index index, const vga_color *color) {
     assert(index >= 0 && index < VGA_PALETTE_SIZE);
     state.base.colors[index] = *color;
     damage_add_range(&state.dmg_base, index, index + 1);
+}
+
+const vga_color *vga_state_get_base_palette_color(vga_index index) {
+    assert(index >= 0 && index < VGA_PALETTE_SIZE);
+    return &state.base.colors[index];
 }
 
 void vga_state_set_base_palette_range(vga_index start, vga_index count, vga_color *src_colors) {
@@ -191,9 +233,22 @@ void vga_state_enable_palette_transform(vga_palette_transform transform_callback
  * @param filename Output file path
  */
 void vga_state_debug_screenshot(const path *filename) {
+#ifdef USE_EXTENDED_PALETTE
+    // Dump all 1024 palette entries as a 32x32 RGB grid
+    // Each pixel shows the actual color at that palette index
+    unsigned char rgb[32 * 32 * 3];
+    // Dump state.base instead of state.current to check if base is correct
+    for(int i = 0; i < 1024; i++) {
+        rgb[i * 3 + 0] = state.base.colors[i].r;
+        rgb[i * 3 + 1] = state.base.colors[i].g;
+        rgb[i * 3 + 2] = state.base.colors[i].b;
+    }
+    write_rgb_png(filename, 32, 32, rgb, false, false);
+#else
     unsigned char img[256];
     for(int i = 0; i < 256; i++) {
         img[i] = i;
     }
     write_paletted_png(filename, 16, 16, &state.current, img);
+#endif
 }

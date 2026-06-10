@@ -47,6 +47,7 @@ OpenOMF contains pieces of other software, which have licenses of their own:
 - resources/gamecontrollerdb.txt is under [zlib license](resources/gamecontrollerdb/LICENSE.gamecontrollerdb)
 - src/vendored/argtable3 is under multiple licenses, please see [LICENSE](src/vendored/argtable/LICENSE.argtable3)
 - src/vendored/zip and miniz is under the MIT license, please see [LICENSE](src/vendored/zip/LICENSE.zip)
+- src/vendored/oklab is under the MIT license, please see [LICENSE](src/vendored/oklab/LICENSE.oklab)
 
 And finally, the icon resources in resources/icons fall under CC-BY 4.0 license; please see 
 [LICENSE](resources/icons/LICENSE) and https://creativecommons.org/licenses/by/4.0/ for details.

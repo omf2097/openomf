@@ -3,6 +3,7 @@
 
 #include "utils/vec.h"
 #include "video/surface.h"
+#include "video/vga_remap.h"
 
 typedef struct sprite_t {
     int id;
@@ -11,7 +12,7 @@ typedef struct sprite_t {
     bool owned; // if we own the `data` surface
 } sprite;
 
-void sprite_create(sprite *sp, void *src, int id);
+void sprite_create(sprite *sp, void *src, int id, const vga_remap_table *remap);
 void sprite_create_custom(sprite *sp, vec2i pos, surface *sur);
 void sprite_create_reference(sprite *sp, void *src, int id, void *data);
 int sprite_clone(sprite *src, sprite *dst);

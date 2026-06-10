@@ -117,6 +117,13 @@ void vga_state_set_base_palette_from_range(const vga_palette *src, vga_index dst
 void vga_state_set_base_palette_index(vga_index index, const vga_color *color);
 
 /**
+ * @brief Get a color from the base palette
+ * @param index Palette index (0-1023)
+ * @return Pointer to the color (valid until next palette modification)
+ */
+const vga_color *vga_state_get_base_palette_color(vga_index index);
+
+/**
  * @brief Set a range of colors in the base palette
  * @param start Starting palette index
  * @param count Number of colors to set

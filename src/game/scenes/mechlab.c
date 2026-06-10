@@ -8,6 +8,7 @@
 #include "game/gui/gui_frame.h"
 #include "game/gui/label.h"
 #include "game/gui/menu_background.h"
+#include "game/gui/portrait.h"
 #include "game/gui/text/text.h"
 #include "game/gui/textinput.h"
 #include "game/gui/trn_menu.h"
@@ -345,13 +346,36 @@ void mechlab_tick(scene *scene, int paused) {
             memcpy(&player1->chr->pilot, player1->pilot, sizeof(sd_pilot));
             sd_chr_from_trn(player1->chr, trn, player1->pilot);
 
+            // Preserve portrait custom colors from the old CHR (populated by
+            // portrait_load_with_slot during mechlab navigation). Without this,
+            // the new CHR has zeroed portrait_custom which gets saved and then
+            // overrides the PIC data on reload.
             if(oldchr) {
+                memcpy(player1->chr->portrait_custom, oldchr->portrait_custom, sizeof(player1->chr->portrait_custom));
+            } else {
+                // New pilot — no old CHR. The portrait was loaded into
+                // player1->pilot during mechlab navigation, but portrait_custom
+                // was never stored because p1->chr was NULL. Load it now from
+                // the PIC file so it gets saved into the CHR.
+                portrait_load_with_slot(player1->chr->pilot.photo, &player1->chr->pilot.palette,
+                                        player1->chr->pilot.photo_id, 0, player1->chr->portrait_custom);
+            }
+
+            if(oldchr) {
+                // The memcpy at line 345 copied the photo pointer to the new chr.
+                // Null it in oldchr so sd_chr_free(oldchr) doesn't free the sprite
+                // — the new chr owns it now.
+                oldchr->pilot.photo = NULL;
+                oldchr->photo = NULL;
+
                 if(player1->pilot != &oldchr->pilot) {
-                    sd_sprite_free(player1->pilot->photo);
-                    omf_free(player1->pilot->photo);
-                } else {
-                    player1->pilot = NULL;
+                    // player1->pilot is a separate allocation. Its photo points
+                    // to the same sprite the new chr now owns. Null it before
+                    // freeing the pilot struct so we don't double-free.
+                    player1->pilot->photo = NULL;
+                    omf_free(player1->pilot);
                 }
+                player1->pilot = NULL;
                 sd_chr_free(oldchr);
                 omf_free(oldchr);
             }
@@ -361,8 +385,12 @@ void mechlab_tick(scene *scene, int paused) {
             }
             // force the character to reload because its just easier
 
+            // Null out pilot before freeing chr — pilot points into chr's
+            // memory, so freeing chr invalidates the pilot pointer.
+            player1->pilot = NULL;
             sd_chr_free(player1->chr);
             omf_free(player1->chr);
+            player1->chr = NULL;
 
             bool found = mechlab_find_last_player(scene);
             mechlab_select_dashboard(scene, DASHBOARD_STATS);

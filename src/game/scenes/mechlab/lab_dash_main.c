@@ -27,18 +27,26 @@ bool lab_dash_main_photo_select(component *c, void *userdata) {
 
 bool lab_dash_main_photo_left(component *c, void *userdata) {
     dashboard_widgets *dw = userdata;
+    game_player *p1 = game_state_get_player(dw->scene->gs, 0);
     portrait_prev(dw->photo[0]);
     dw->pilot->photo_id = portrait_selected(dw->photo[0]);
-    portrait_load(dw->pilot->photo, &dw->pilot->palette, dw->pilot->photo_id);
+    log_debug("photo_left: p1->chr=%p, portrait_custom output=%p", (void *)p1->chr,
+              p1->chr ? (void *)p1->chr->portrait_custom : NULL);
+    portrait_load_with_slot(dw->pilot->photo, &dw->pilot->palette, dw->pilot->photo_id, 0,
+                            p1->chr ? p1->chr->portrait_custom : NULL);
     palette_load_player_colors(&dw->pilot->palette, 0);
     return true;
 }
 
 bool lab_dash_main_photo_right(component *c, void *userdata) {
     dashboard_widgets *dw = userdata;
+    game_player *p1 = game_state_get_player(dw->scene->gs, 0);
     portrait_next(dw->photo[0]);
     dw->pilot->photo_id = portrait_selected(dw->photo[0]);
-    portrait_load(dw->pilot->photo, &dw->pilot->palette, dw->pilot->photo_id);
+    log_debug("photo_right: p1->chr=%p, portrait_custom output=%p", (void *)p1->chr,
+              p1->chr ? (void *)p1->chr->portrait_custom : NULL);
+    portrait_load_with_slot(dw->pilot->photo, &dw->pilot->palette, dw->pilot->photo_id, 0,
+                            p1->chr ? p1->chr->portrait_custom : NULL);
     palette_load_player_colors(&dw->pilot->palette, 0);
     return true;
 }
@@ -170,13 +178,13 @@ void lab_dash_sim_update_portraits(dashboard_widgets *dw) {
         snprintf(buf, sizeof(buf), "Rank\n%d", i);
         label_set_text(dw->ranks[j], buf);
         if(i == p1->pilot->rank) {
-            portrait_set_from_sprite(dw->photo[j], p1->pilot->photo);
+            portrait_set_from_sprite(dw->photo[j], p1->pilot->photo, j, p1->chr ? p1->chr->portrait_custom : NULL);
             j++;
             continue;
         }
         for(int k = 0; k < p1->chr->pilot.enemies_ex_unranked; k++) {
             if(p1->chr->enemies[k]->pilot.rank == i) {
-                portrait_set_from_sprite(dw->photo[j], p1->chr->enemies[k]->pilot.photo);
+                portrait_set_from_sprite(dw->photo[j], p1->chr->enemies[k]->pilot.photo, j, NULL);
                 j++;
                 break;
             }
@@ -358,13 +366,13 @@ component *lab_dash_main_create(scene *s, dashboard_widgets *dw) {
     dw->photo[0] = portrait_create(0);
     if(p1->pilot->photo) {
         log_debug("loading pilot photo from pilot");
-        portrait_set_from_sprite(dw->photo[0], dw->pilot->photo);
+        portrait_set_from_sprite(dw->photo[0], dw->pilot->photo, 0, NULL);
     } else {
         dw->pilot->photo = omf_calloc(1, sizeof(sd_sprite));
         sd_sprite_create(dw->pilot->photo);
         log_debug("selecting default pilot photo");
         dw->pilot->photo_id = portrait_selected(dw->photo[0]);
-        portrait_load(dw->pilot->photo, &dw->pilot->palette, 0);
+        portrait_load_with_slot(dw->pilot->photo, &dw->pilot->palette, 0, 0, p1->chr ? p1->chr->portrait_custom : NULL);
     }
 
     palette_load_player_colors(&dw->pilot->palette, 0);
@@ -561,7 +569,7 @@ void lab_dash_main_update(scene *s, dashboard_widgets *dw) {
 
     if(p1->pilot->photo) {
         log_debug("loading pilot photo from pilot");
-        portrait_set_from_sprite(dw->photo[0], p1->pilot->photo);
+        portrait_set_from_sprite(dw->photo[0], p1->pilot->photo, 0, NULL);
     } else {
         log_debug("seletng default pilot photo");
         // Select pilot picture
