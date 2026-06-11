@@ -121,7 +121,7 @@ int main(int argc, char *argv[]) {
             photo = sd_pic_get(&pic, i);
             printf("%3d %8s %7d %7d %4d %4d %4d %4d %4d\n", i, (photo->sex ? "FEMALE" : "MALE"), photo->is_player,
                    photo->sprite->len, photo->sprite->width, photo->sprite->height, photo->sprite->pos_x,
-                   photo->sprite->pos_y, photo->unk_flag);
+                   photo->sprite->pos_y, photo->has_photo);
         }
     }
 

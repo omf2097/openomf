@@ -28,7 +28,7 @@ int sd_bk_anim_copy(sd_bk_anim *dst, const sd_bk_anim *src) {
     dst->null = src->null;
     dst->chain_hit = src->chain_hit;
     dst->chain_no_hit = src->chain_no_hit;
-    dst->load_on_start = src->load_on_start;
+    dst->repeat = src->repeat;
     dst->probability = src->probability;
     dst->hazard_damage = src->hazard_damage;
 
@@ -61,7 +61,7 @@ int sd_bk_anim_load(sd_reader *r, sd_bk_anim *bka) {
     bka->null = sd_read_ubyte(r);
     bka->chain_hit = sd_read_ubyte(r);
     bka->chain_no_hit = sd_read_ubyte(r);
-    bka->load_on_start = sd_read_ubyte(r);
+    bka->repeat = sd_read_ubyte(r);
     bka->probability = sd_read_uword(r);
     bka->hazard_damage = sd_read_ubyte(r);
 
@@ -103,7 +103,7 @@ int sd_bk_anim_save(sd_writer *w, const sd_bk_anim *bka) {
     sd_write_ubyte(w, bka->null);
     sd_write_ubyte(w, bka->chain_hit);
     sd_write_ubyte(w, bka->chain_no_hit);
-    sd_write_ubyte(w, bka->load_on_start);
+    sd_write_ubyte(w, bka->repeat);
     sd_write_uword(w, bka->probability);
     sd_write_ubyte(w, bka->hazard_damage);
 

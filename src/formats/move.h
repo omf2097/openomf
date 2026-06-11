@@ -19,6 +19,68 @@
 #define SD_MOVE_STRING_MAX 21         ///< Maximum allowed move string length
 #define SD_MOVE_FOOTER_STRING_MAX 512 ///< Maximum allowed footer string length
 
+/** @brief AI move trigger bits (the ai_flags field).
+ *
+ * Each bit marks the move as relevant for a given opponent state / AI stance.
+ */
+enum
+{
+    AI_NONE = 0x0000,
+    AI_GND_STATE_1 = 0x0001,        ///< Opponent grounded, AI stance slot 1
+    AI_VS_HIGH_OR_IDLE = 0x0002,    ///< Opponent high attack or idle
+    AI_VS_LOW_OR_CROUCH = 0x0004,   ///< Opponent low attack or crouching
+    AI_VS_MEDIUM = 0x0008,          ///< Opponent medium attack
+    AI_VS_PROJECTILE_HIGH = 0x0010, ///< Opponent projectile at or above the Y threshold
+    AI_GND_STATE_2 = 0x0020,        ///< Opponent grounded, AI stance slot 2
+    AI_GND_STATE_3 = 0x0040,        ///< Opponent grounded, AI stance slot 3
+    AI_GND_STATE_0 = 0x0080,        ///< Opponent grounded, AI stance slot 0
+    AI_AIR_STATE_0 = 0x0100,        ///< Opponent airborne, AI stance slot 0
+    AI_AIR_STATE_1 = 0x0200,        ///< Opponent airborne, AI stance slot 1
+    AI_AIR_STATE_2 = 0x0400,        ///< Opponent airborne, AI stance slot 2
+    AI_AIR_STATE_3 = 0x0800,        ///< Opponent airborne, AI stance slot 3
+    AI_FLAG_1000 = 0x1000,          ///< Unknown
+    AI_VS_PROJECTILE_LOW = 0x2000,  ///< Opponent projectile below the Y threshold
+    AI_FLAG_4000 = 0x4000,          ///< Reserved
+    AI_FLAG_8000 = 0x8000,          ///< Reserved
+};
+
+/** @brief Position and state requirement bits (the pos_constraint field).
+ *
+ * Every bit must be satisfied by the HAR's current state for the move to be
+ * allowed.
+ */
+enum
+{
+    POS_NONE = 0x0000,
+    POS_WALL = 0x0001,                  ///< HAR is near a wall
+    POS_NO_DIST_CHECK = 0x0002,         ///< Bypass distance and position gates
+    POS_JUMP_WALL_BOUNCE = 0x0004,      ///< Aerial hit triggers wall-bounce on the target
+    POS_IN_ARENA0 = 0x0008,             ///< Require arena 0
+    POS_IN_ARENA1 = 0x0010,             ///< Require arena 1
+    POS_IN_ARENA2 = 0x0020,             ///< Require arena 2
+    POS_IN_ARENA3 = 0x0040,             ///< Require arena 3 (Fire Pit)
+    POS_IN_ARENA4 = 0x0080,             ///< Require arena 4
+    POS_FLAG_100 = 0x0100,              ///< Reserved
+    POS_FLAG_200 = 0x0200,              ///< Reserved
+    POS_FLAG_400 = 0x0400,              ///< Reserved
+    POS_FLAG_800 = 0x0800,              ///< Reserved
+    POS_FLAG_1000 = 0x1000,             ///< Reserved
+    POS_FIRE_ICE_ALLOWED = 0x2000,      ///< Fire/ice move is currently allowed
+    POS_OPP_FIRE_ICE_DESTRUCT = 0x4000, ///< Opponent is a special destruct target
+    POS_FLAG_8000 = 0x8000,             ///< Reserved
+};
+
+/** @brief Extra string selector index. */
+enum
+{
+    ESS_NONE = 0,        ///< No stat scaling, mixed string
+    ESS_ARM_SPEED = 1,   ///< Arm stat
+    ESS_LEG_SPEED = 2,   ///< Leg stat
+    ESS_SPECIAL_ARM = 3, ///< Arm stat, string chosen by enhancement level
+    ESS_SPECIAL_LEG = 4, ///< Leg stat, string chosen by enhancement level
+    ESS_SPECIAL = 5,     ///< Both arm and leg stats
+};
+
 /** @brief HAR Move information
  *
  * Contains information about the HAR move. Wraps a generic animation.
@@ -27,8 +89,8 @@
 typedef struct {
     sd_animation *animation; ///< Animation field for Move. When saving AF file, this should be != NULL.
 
-    uint16_t ai_opts;        ///< Unknown value
-    uint16_t pos_constraint; ///< Unknown value
+    uint16_t ai_flags;       ///< AI move trigger bitmask (AI_* enum)
+    uint16_t pos_constraint; ///< Position and state requirement bitmask (PC_* enum)
     uint8_t unknown_4;       ///< Unknown value
     uint8_t unknown_5;       ///< Unknown value
     uint8_t unknown_6;       ///< Unknown value
@@ -37,14 +99,14 @@ typedef struct {
     uint8_t unknown_9;       ///< Unknown value
     uint8_t unknown_10;      ///< Unknown value
     uint8_t unknown_11;      ///< Unknown value
-    uint8_t next_anim_id;    ///< Next animation ID
+    uint8_t play_if_hit;     ///< Animation to chain into when this move connects
     uint8_t category;        ///< Move category ID
     uint8_t block_damage;    ///< Damage applied when blocking this mode
     uint8_t block_stun;   ///< How many frames to force the opponents block animation on hit, also used for scrap amount
     uint8_t successor_id; ///< Successor animation ID
     uint8_t damage_amount;         ///< Damage amount when this move connects
     uint8_t throw_duration;        ///< How many frames the HAR is locked into a throw
-    uint8_t extra_string_selector; ///< what upgrades change the animation string
+    uint8_t extra_string_selector; ///< Animation string variant selector (ESS_* enum)
     uint8_t points;                ///< Score gained for this hit
 
     char move_string[SD_MOVE_STRING_MAX];          ///< Move string

@@ -920,7 +920,7 @@ bool modmanager_parse_bk_info_mod(const char *buf, bk_info *current_info) {
 
     cfg_opt_t bk_opts[] = {CFG_INT("chain_hit", current_info->chain_hit, CFGF_NONE),
                            CFG_INT("chain_no_hit", current_info->chain_no_hit, CFGF_NONE),
-                           CFG_INT("load_on_start", current_info->load_on_start, CFGF_NONE),
+                           CFG_INT("repeat", current_info->repeat, CFGF_NONE),
                            CFG_INT("probability", current_info->probability, CFGF_NONE),
                            CFG_INT("hazard_damage", current_info->hazard_damage, CFGF_NONE),
                            CFG_STR("footer_string", str_c(&current_info->footer_string), CFGF_NONE),
@@ -949,9 +949,9 @@ bool modmanager_parse_bk_info_mod(const char *buf, bk_info *current_info) {
         current_info->chain_no_hit = cfg_getint(cfg, "chain_no_hit");
     }
 
-    if(current_info->load_on_start != (unsigned int)cfg_getint(cfg, "load_on_start")) {
-        log_info("setting load_on_start from %u to %d", current_info->load_on_start, cfg_getint(cfg, "load_on_start"));
-        current_info->load_on_start = cfg_getint(cfg, "load_on_start");
+    if(current_info->repeat != (unsigned int)cfg_getint(cfg, "repeat")) {
+        log_info("setting repeat from %u to %d", current_info->repeat, cfg_getint(cfg, "repeat"));
+        current_info->repeat = cfg_getint(cfg, "repeat");
     }
 
     if(current_info->probability != (unsigned int)cfg_getint(cfg, "probability")) {
@@ -1198,13 +1198,10 @@ bool modmanager_parse_pilot_mod(const char *buf, sd_pilot *pilot) {
                                     CFG_INT("back", 0, CFGF_NONE), CFG_END()};
 
     // Options for attacks section
-    cfg_opt_t attacks_opts[] = {CFG_INT("throw", 0, CFGF_NONE),
-                                CFG_INT("special", 0, CFGF_NONE),
-                                CFG_INT("jump", 0, CFGF_NONE),
-                                CFG_INT("low", 0, CFGF_NONE),
-                                CFG_INT("middle", 0, CFGF_NONE),
-                                CFG_INT("high", 0, CFGF_NONE),
-                                CFG_END()};
+    cfg_opt_t attacks_opts[] = {CFG_INT("close", 0, CFGF_NONE),   CFG_INT("throw", 0, CFGF_NONE),
+                                CFG_INT("special", 0, CFGF_NONE), CFG_INT("jump", 0, CFGF_NONE),
+                                CFG_INT("low", 0, CFGF_NONE),     CFG_INT("middle", 0, CFGF_NONE),
+                                CFG_INT("high", 0, CFGF_NONE),    CFG_END()};
 
     // Options for attitude section
     cfg_opt_t attitude_opts[] = {CFG_INT("normal", 0, CFGF_NONE), CFG_INT("hyper", 0, CFGF_NONE),
@@ -1325,6 +1322,7 @@ bool modmanager_parse_pilot_mod(const char *buf, sd_pilot *pilot) {
     // Process attacks section
     cfg_t *attacks = cfg_getsec(cfg, "attacks");
     if(attacks) {
+        UPDATE_FIELD_INT(ap_close, pilot->ap_close, cfg_getint(attacks, "close"));
         UPDATE_FIELD_INT(ap_throw, pilot->ap_throw, cfg_getint(attacks, "throw"));
         UPDATE_FIELD_INT(ap_special, pilot->ap_special, cfg_getint(attacks, "special"));
         UPDATE_FIELD_INT(ap_jump, pilot->ap_jump, cfg_getint(attacks, "jump"));

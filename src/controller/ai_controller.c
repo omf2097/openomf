@@ -1451,7 +1451,7 @@ bool is_valid_move(const af_move *move, const har *h, bool force_allow_projectil
     if(move->category == CAT_DESTRUCTION && h->state != STATE_SCRAP) {
         return false;
     }
-    if(move->category == CAT_FIRE_ICE) {
+    if(move->category == CAT_VICTORY) {
         return false;
     }
 

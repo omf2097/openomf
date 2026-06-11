@@ -27,20 +27,20 @@ int sd_af_copy(sd_af_file *dst, const sd_af_file *src) {
     memset(dst, 0, sizeof(sd_af_file));
 
     // Copy the basic stuff
-    dst->file_id = src->file_id;
+    dst->fighter_id = src->fighter_id;
     dst->exec_window = src->exec_window;
     dst->endurance = src->endurance;
-    dst->unknown_b = src->unknown_b;
+    dst->upwards_jump_frame_limit = src->upwards_jump_frame_limit;
     dst->health = src->health;
     dst->forward_speed = src->forward_speed;
     dst->reverse_speed = src->reverse_speed;
     dst->jump_speed = src->jump_speed;
     dst->fall_speed = src->fall_speed;
-    dst->unknown_c = src->unknown_c;
-    dst->unknown_d = src->unknown_d;
+    dst->version_1 = src->version_1;
+    dst->ai_projectile_y_threshold = src->ai_projectile_y_threshold;
 
-    // Copy soundtable
-    memcpy(dst->soundtable, src->soundtable, sizeof(src->soundtable));
+    // Copy sound_table
+    memcpy(dst->sound_table, src->sound_table, sizeof(src->sound_table));
 
     // Copy move animations
     for(int i = 0; i < MAX_AF_MOVES; i++) {
@@ -114,17 +114,17 @@ int sd_af_load(sd_af_file *af, const path *filename) {
     }
 
     // Header
-    af->file_id = sd_read_uword(r);
+    af->fighter_id = sd_read_uword(r);
     af->exec_window = sd_read_uword(r); // Always 10
     af->endurance = sd_read_udword(r) * 1.0f;
-    af->unknown_b = sd_read_ubyte(r); // Always 1 or 2
+    af->upwards_jump_frame_limit = sd_read_ubyte(r); // Always 1 or 2
     af->health = sd_read_uword(r);
     af->forward_speed = sd_read_dword(r) / 256.0f;
     af->reverse_speed = sd_read_dword(r) / 256.0f;
     af->jump_speed = sd_read_dword(r) / 256.0f;
     af->fall_speed = sd_read_dword(r) / 256.0f;
-    af->unknown_c = sd_read_ubyte(r); // Always 0x32 ?
-    af->unknown_d = sd_read_ubyte(r); // Always 0x14 ?
+    af->version_1 = sd_read_ubyte(r);                 // Always 0x32 ?
+    af->ai_projectile_y_threshold = sd_read_ubyte(r); // Always 0x14 ?
 
     // Read animations
     while(1) {
@@ -143,8 +143,7 @@ int sd_af_load(sd_af_file *af, const path *filename) {
         }
     }
 
-    // Read soundtable
-    sd_read_buf(r, af->soundtable, 30);
+    sd_read_buf(r, af->sound_table, 30);
 
     // Fix missing sprites
     sd_af_postprocess(af);
@@ -164,17 +163,17 @@ int sd_af_save(const sd_af_file *af, const path *filename) {
     }
 
     // Header
-    sd_write_uword(w, af->file_id);
+    sd_write_uword(w, af->fighter_id);
     sd_write_uword(w, af->exec_window);
     sd_write_udword(w, (int)(af->endurance * 256));
-    sd_write_ubyte(w, af->unknown_b);
+    sd_write_ubyte(w, af->upwards_jump_frame_limit);
     sd_write_uword(w, af->health);
     sd_write_dword(w, (int)(af->forward_speed * 256));
     sd_write_dword(w, (int)(af->reverse_speed * 256));
     sd_write_dword(w, (int)(af->jump_speed * 256));
     sd_write_dword(w, (int)(af->fall_speed * 256));
-    sd_write_ubyte(w, af->unknown_c);
-    sd_write_ubyte(w, af->unknown_d);
+    sd_write_ubyte(w, af->version_1);
+    sd_write_ubyte(w, af->ai_projectile_y_threshold);
 
     // Write animations
     for(uint8_t i = 0; i < MAX_AF_MOVES; i++) {
@@ -190,8 +189,7 @@ int sd_af_save(const sd_af_file *af, const path *filename) {
     // This marks the end of animations
     sd_write_ubyte(w, 250);
 
-    // Soundtable
-    sd_write_buf(w, af->soundtable, 30);
+    sd_write_buf(w, af->sound_table, 30);
 
     // All done!
     sd_writer_close(w);

@@ -7,7 +7,7 @@ void af_move_create(str *name, af_move *move, array *sprites, void *src, int id)
     str_from_c(&move->move_string, sdmv->move_string);
     str_from_c(&move->footer_string, sdmv->footer_string);
     move->id = id;
-    move->next_move = sdmv->next_anim_id;
+    move->next_move = sdmv->play_if_hit;
     move->successor_id = sdmv->successor_id;
     move->category = sdmv->category;
     move->damage = sdmv->damage_amount;

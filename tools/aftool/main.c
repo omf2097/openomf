@@ -241,7 +241,7 @@ int move_key_get_id(const char *key) {
         return 39;
     } else if(strcmp(key, "unknown_11") == 0) {
         return 40;
-    } else if(strcmp(key, "next_anim_id") == 0) {
+    } else if(strcmp(key, "play_if_hit") == 0) {
         return 41;
     } else if(strcmp(key, "category") == 0) {
         return 42;
@@ -273,7 +273,7 @@ void move_set_key(sd_move *move, sd_animation *ani, const char **key, int kcount
     switch(kn) {
 
         case 30:
-            move->ai_opts = conv_uword(value);
+            move->ai_flags = conv_uword(value);
             break;
         case 31:
             move->pos_constraint = conv_uword(value);
@@ -303,7 +303,7 @@ void move_set_key(sd_move *move, sd_animation *ani, const char **key, int kcount
             move->unknown_11 = conv_ubyte(value);
             break;
         case 41:
-            move->next_anim_id = conv_ubyte(value);
+            move->play_if_hit = conv_ubyte(value);
             break;
         case 42:
             move->category = conv_ubyte(value);
@@ -353,7 +353,7 @@ void move_get_key(sd_move *move, sd_animation *ani, const char **key, int kcount
     int kn = move_key_get_id(key[0]);
     switch(kn) {
         case 30:
-            printf("%d\n", move->ai_opts);
+            printf("%d\n", move->ai_flags);
             break;
         case 31:
             printf("%d\n", move->pos_constraint);
@@ -383,7 +383,7 @@ void move_get_key(sd_move *move, sd_animation *ani, const char **key, int kcount
             printf("%d\n", move->unknown_11);
             break;
         case 41:
-            printf("%d\n", move->next_anim_id);
+            printf("%d\n", move->play_if_hit);
             break;
         case 42:
             printf("%d\n", move->category);
@@ -438,7 +438,7 @@ void move_keylist(void) {
     printf("* unknown_9\n");
     printf("* unknown_10\n");
     printf("* unknown_11\n");
-    printf("* next_anim_id\n");
+    printf("* play_if_hit\n");
     printf("* category\n");
     printf("* block_damage\n");
     printf("* block_stun\n");
@@ -457,8 +457,8 @@ void move_info(sd_move *move, sd_animation *ani, int move_id) {
     anim_common_info(ani);
 
     printf("\nAF specific footer:\n");
-    printf(" * ai_opts:       %d\n", move->ai_opts);
-    printf(" * pos_constraint:       %d\n", move->pos_constraint);
+    printf(" * ai_flags:        %d\n", move->ai_flags);
+    printf(" * pos_constraint:  %d\n", move->pos_constraint);
     printf(" * unknown_4:       %d\n", move->unknown_4);
     printf(" * unknown_5:       %d\n", move->unknown_5);
     printf(" * unknown_6:       %d\n", move->unknown_6);
@@ -467,14 +467,14 @@ void move_info(sd_move *move, sd_animation *ani, int move_id) {
     printf(" * unknown_9:       %d\n", move->unknown_9);
     printf(" * unknown_10:      %d\n", move->unknown_10);
     printf(" * unknown_11:      %d\n", move->unknown_11);
-    printf(" * next_anim_id:    %d\n", move->next_anim_id);
+    printf(" * play_if_hit:     %d\n", move->play_if_hit);
     printf(" * category:        %d\n", move->category);
     printf(" * block_damage:    %d\n", move->block_damage);
     printf(" * block_stun:      %d\n", move->block_stun);
     printf(" * successor_id:    %d\n", move->successor_id);
     printf(" * damage_amount:   %d\n", move->damage_amount);
-    printf(" * throw_duration:      %d\n", move->throw_duration);
-    printf(" * extra_string_selector:      %d\n", move->extra_string_selector);
+    printf(" * throw_duration:  %d\n", move->throw_duration);
+    printf(" * extra_string_selector: %d\n", move->extra_string_selector);
     printf(" * points:          %d\n", move->points);
 
     printf(" * Move string:     %s\n", move->move_string);
@@ -484,13 +484,13 @@ void move_info(sd_move *move, sd_animation *ani, int move_id) {
 // AF Specific stuff -----------------------------------------------
 
 int af_key_get_id(const char *key) {
-    if(strcmp(key, "fileid") == 0) {
+    if(strcmp(key, "fighter_id") == 0) {
         return 0;
     } else if(strcmp(key, "exec_window") == 0) {
         return 1;
     } else if(strcmp(key, "endurance") == 0) {
         return 2;
-    } else if(strcmp(key, "unknown_b") == 0) {
+    } else if(strcmp(key, "upwards_jump_frame_limit") == 0) {
         return 3;
     } else if(strcmp(key, "health") == 0) {
         return 4;
@@ -502,9 +502,9 @@ int af_key_get_id(const char *key) {
         return 7;
     } else if(strcmp(key, "fall_speed") == 0) {
         return 8;
-    } else if(strcmp(key, "unknown_c") == 0) {
+    } else if(strcmp(key, "version_1") == 0) {
         return 9;
-    } else if(strcmp(key, "soundtable") == 0) {
+    } else if(strcmp(key, "sound_table") == 0) {
         return 10;
     }
     return -1;
@@ -514,7 +514,7 @@ void af_get_key(sd_af_file *af, const char **key, int kcount) {
     int tmp = 0;
     switch(af_key_get_id(key[0])) {
         case 0:
-            printf("%d\n", af->file_id);
+            printf("%d\n", af->fighter_id);
             break;
         case 1:
             printf("%d\n", af->exec_window);
@@ -523,7 +523,7 @@ void af_get_key(sd_af_file *af, const char **key, int kcount) {
             printf("%f\n", af->endurance);
             break;
         case 3:
-            printf("%d\n", af->unknown_b);
+            printf("%d\n", af->upwards_jump_frame_limit);
             break;
         case 4:
             printf("%d\n", af->health);
@@ -541,19 +541,19 @@ void af_get_key(sd_af_file *af, const char **key, int kcount) {
             printf("%f\n", af->fall_speed);
             break;
         case 9:
-            printf("%d\n", af->unknown_c);
+            printf("%d\n", af->version_1);
             break;
         case 10:
             if(kcount == 2) {
                 tmp = conv_ubyte(key[1]);
                 if(tmp < 30) {
-                    printf("%d\n", af->soundtable[tmp]);
+                    printf("%d\n", af->sound_table[tmp]);
                 } else {
                     printf("Soundtable index %d does not exist!\n", tmp);
                 }
             } else {
                 for(int i = 0; i < 30; i++) {
-                    printf("%d ", af->soundtable[i]);
+                    printf("%d ", af->sound_table[i]);
                 }
                 printf("\n");
             }
@@ -567,7 +567,7 @@ void af_set_key(sd_af_file *af, const char **key, int kcount, const char *value)
     int tmp = 0;
     switch(af_key_get_id(key[0])) {
         case 0:
-            af->file_id = conv_uword(value);
+            af->fighter_id = conv_uword(value);
             break;
         case 1:
             af->exec_window = conv_uword(value);
@@ -576,7 +576,7 @@ void af_set_key(sd_af_file *af, const char **key, int kcount, const char *value)
             af->endurance = conv_float(value);
             break;
         case 3:
-            af->unknown_b = conv_ubyte(value);
+            af->upwards_jump_frame_limit = conv_ubyte(value);
             break;
         case 4:
             af->health = conv_uword(value);
@@ -594,13 +594,13 @@ void af_set_key(sd_af_file *af, const char **key, int kcount, const char *value)
             af->fall_speed = conv_float(value);
             break;
         case 9:
-            af->unknown_c = conv_uword(value);
+            af->version_1 = conv_uword(value);
             break;
         case 10:
             if(kcount == 2) {
                 tmp = conv_ubyte(key[1]);
                 if(tmp < 30) {
-                    af->soundtable[tmp] = conv_ubyte(value);
+                    af->sound_table[tmp] = conv_ubyte(value);
                 } else {
                     printf("Soundtable index %d does not exist!\n", tmp);
                     return;
@@ -619,31 +619,31 @@ void af_set_key(sd_af_file *af, const char **key, int kcount, const char *value)
 
 void af_keylist(void) {
     printf("Valid field keys for AF file root:\n");
-    printf("* fileid\n");
+    printf("* fighter_id\n");
     printf("* exec_window\n");
     printf("* endurance\n");
-    printf("* unknown_b\n");
+    printf("* upwards_jump_frame_limit\n");
     printf("* health\n");
     printf("* forward_speed\n");
     printf("* reverse_speed\n");
     printf("* jump_speed\n");
     printf("* fall_speed\n");
-    printf("* unknown_c\n");
+    printf("* version_1\n");
     printf("* footer <byte #>\n");
 }
 
 void af_info(sd_af_file *af) {
     printf("AF File information:\n");
-    printf(" * File ID:     %d\n", af->file_id);
-    printf(" * Exec window: %d\n", af->exec_window);
-    printf(" * Endurance:   %f\n", af->endurance);
-    printf(" * Unknown B:   %d\n", af->unknown_b);
-    printf(" * Health:      %d\n", af->health);
-    printf(" * Fwd speed:   %f\n", af->forward_speed);
-    printf(" * Rev speed:   %f\n", af->reverse_speed);
-    printf(" * Jump speed:  %f\n", af->jump_speed);
-    printf(" * Fall speed:  %f\n", af->fall_speed);
-    printf(" * Unknown C:   %d\n", af->unknown_c);
+    printf(" * Fighter ID:       %d\n", af->fighter_id);
+    printf(" * Exec window:      %d\n", af->exec_window);
+    printf(" * Endurance:        %f\n", af->endurance);
+    printf(" * Jump frame limit: %d\n", af->upwards_jump_frame_limit);
+    printf(" * Health:           %d\n", af->health);
+    printf(" * Fwd speed:        %f\n", af->forward_speed);
+    printf(" * Rev speed:        %f\n", af->reverse_speed);
+    printf(" * Jump speed:       %f\n", af->jump_speed);
+    printf(" * Fall speed:       %f\n", af->fall_speed);
+    printf(" * Version 1:        %d\n", af->version_1);
 
     printf(" * Animations:  ");
     int start = -1, last = -1;
@@ -688,7 +688,7 @@ void af_info(sd_af_file *af) {
     printf("|\n");
     printf("   |");
     for(int k = 0; k < 30; k++) {
-        printf("%2d ", af->soundtable[k]);
+        printf("%2d ", af->sound_table[k]);
     }
     printf("|\n");
 }

@@ -80,9 +80,8 @@ int sd_pic_load(sd_pic_file *pic, const path *filename) {
         vga_palette_init(&pic->photos[i]->pal);
         palette_load_range(r, &pic->photos[i]->pal, 0, 48);
 
-        // This byte is probably an "is there image data" flag
-        // TODO: Find out what this does
-        pic->photos[i]->unk_flag = sd_read_ubyte(r);
+        // Nonzero if photo sprite data follows.
+        pic->photos[i]->has_photo = sd_read_ubyte(r);
 
         // Sprite
         pic->photos[i]->sprite = omf_calloc(1, sizeof(sd_sprite));
@@ -143,7 +142,7 @@ int sd_pic_save(const sd_pic_file *pic, const path *filename) {
         sd_write_ubyte(w, pic->photos[i]->is_player);
         sd_write_uword(w, pic->photos[i]->sex);
         palette_save_range(w, &pic->photos[i]->pal, 0, 48);
-        sd_write_ubyte(w, pic->photos[i]->unk_flag);
+        sd_write_ubyte(w, pic->photos[i]->has_photo);
 
         // Hackity hack. Sprite w and h should be n-1 for some reason.
         pic->photos[i]->sprite->height--;

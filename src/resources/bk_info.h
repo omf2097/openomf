@@ -6,7 +6,7 @@
 typedef struct bk_info_t {
     unsigned int chain_hit;
     unsigned int chain_no_hit;
-    unsigned int load_on_start;
+    unsigned int repeat;
     unsigned int probability;
     unsigned int hazard_damage;
     str footer_string;

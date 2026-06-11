@@ -830,7 +830,7 @@ void calc_damage_and_stun(object *obj, af_move *move, int *damage, int *stun) {
     game_player *gp = game_state_get_player(obj->gs, h->player_id);
     sd_pilot *pilot = gp->pilot;
 
-    if(move->category == CAT_VICTORY) {
+    if(move->category == CAT_BK_HAZARD) {
         *damage = move->damage;
         *stun = *damage;
         return;
@@ -865,19 +865,19 @@ void calc_damage_and_stun(object *obj, af_move *move, int *damage, int *stun) {
         float arm_power = (pilot->arm_power + 3) * 0.192f;
 
         switch(move->extra_string_selector) {
-            case 0:
+            case ESS_NONE:
                 break;
-            case 1:
-            case 3:
+            case ESS_ARM_SPEED:
+            case ESS_SPECIAL_ARM:
                 // apply arm power for damage
                 *damage = *damage * arm_power;
                 break;
-            case 2:
-            case 4:
+            case ESS_LEG_SPEED:
+            case ESS_SPECIAL_LEG:
                 // apply leg power for damage
                 *damage = *damage * leg_power;
                 break;
-            case 5:
+            case ESS_SPECIAL:
                 // apply leg and arm power for damage
                 *damage = *damage * arm_power * leg_power;
         }
@@ -1655,7 +1655,7 @@ void har_collide_with_hazard(object *o_har, object *o_hzd) {
         af_move *move = omf_calloc(1, sizeof(af_move));
         move->damage = anim->hazard_damage;
         move->footer_string = anim->footer_string;
-        move->category = CAT_VICTORY;
+        move->category = CAT_BK_HAZARD;
         har_take_damage(o_har, move);
         omf_free(move);
         controller *ctrl = game_player_get_ctrl(game_state_get_player(o_har->gs, h->player_id));
@@ -2818,8 +2818,8 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
             extra_index = fight_mode ? 1 : 0;
 
             // check for enhancements
-            if(move->ani.extra_string_count > 0 && move->extra_string_selector != 1 &&
-               move->extra_string_selector != 2) {
+            if(move->ani.extra_string_count > 0 && move->extra_string_selector != ESS_ARM_SPEED &&
+               move->extra_string_selector != ESS_LEG_SPEED) {
                 // if you have 1 enhancement choose extra string 2
                 // if you have 2 enhancements choose extra string 3
                 // if you have 3 enhancements choose extra string 4
@@ -2850,9 +2850,9 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
 
             if(is_tournament(obj->gs)) {
                 switch(move->extra_string_selector) {
-                    case 0:
+                    case ESS_NONE:
                         break;
-                    case 1:
+                    case ESS_ARM_SPEED:
                         // arm speed
                         if(move->ani.extra_string_count > 0) {
                             // sometimes there's not enough extra strings, so take the last available
@@ -2861,7 +2861,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
                                                min2(pilot->arm_speed, move->ani.extra_string_count - 1)));
                         }
                         break;
-                    case 2:
+                    case ESS_LEG_SPEED:
                         // leg speed
                         if(move->ani.extra_string_count > 0) {
                             // sometimes there's not enough extra strings, so take the last available
@@ -2870,9 +2870,9 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
                                                min2(pilot->leg_speed, move->ani.extra_string_count - 1)));
                         }
                         break;
-                    case 3:
-                    case 4:
-                    case 5:
+                    case ESS_SPECIAL_ARM:
+                    case ESS_SPECIAL_LEG:
+                    case ESS_SPECIAL:
                         break;
                 }
             }
@@ -2883,7 +2883,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
                           str_c(&move->ani.animation_string));
                 str_set_c(&move->move_string, "!");
             }
-            if(move->pos_constraints & 0x40) {
+            if(move->pos_constraints & POS_IN_ARENA3) {
                 // TODO: disable all fire/ice moves indiscriminately for now
                 str_set_c(&move->move_string, "!");
             }

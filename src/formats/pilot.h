@@ -79,7 +79,8 @@ typedef struct {
     uint8_t att_def;    ///< More defensive
     uint8_t att_sniper; ///< Tries to sneak in quick hits
 
-    uint16_t unk_block_d[3];       ///< Unknown
+    uint16_t unk_block_d[2];       ///< Unknown
+    int16_t ap_close;              ///< AI Preference for close moves. Accepted value range (-400, 400).
     int16_t ap_throw;              ///< AI Preference for throw moves. Accepted value range (-400, 400).
     int16_t ap_special;            ///< AI Preference for special moves. Accepted value range (-400, 400).
     int16_t ap_jump;               ///< AI Preference for jump moves. Accepted value range (-400, 400).
@@ -92,20 +93,24 @@ typedef struct {
     uint32_t unknown_e;            ///< Unknown
     float learning;                ///< How actively this pilot learns your combat tactics. Accepted value range (0-15).
     float forget;                  ///< How quickly this pilot forgets your combat tactics. Accepted value range (0-3).
-    char unk_block_f[14];          ///< Unknown. Probably pointers and scratch variables
+    int16_t sound_1;               ///< Pilot custom sound 1
+    int16_t sound_2;               ///< Pilot custom sound 2
+    int16_t sound_3;               ///< Pilot custom sound 3
+    char unk_block_f[8];           ///< Unknown. Probably pointers and scratch variables
     uint16_t enemies_inc_unranked; ///< Enemies in current tournament, including unranked opponents
     uint16_t enemies_ex_unranked;  ///< Same as above, excluding unranked opponents.
 
     uint16_t unk_d_a;    ///< Unknown.
     uint32_t har_trades; ///< Unknown. Possible a bitmask ?
 
-    uint32_t winnings;    ///< Money made by winning opponents
-    uint32_t total_value; ///< Total value for the pilot
-    float unk_f_a;        ///< Unknown
-    float unk_f_b;        ///< Unknown
-    vga_palette palette;  ///< Photo palette, used as HAR colors when not using altpals.
-    uint16_t unk_block_i; ///< Unknown
-    uint16_t photo_id;    ///< Which face photo this pilot uses
+    uint32_t winnings;      ///< Money made by winning opponents
+    uint32_t total_value;   ///< Total value for the pilot
+    int16_t current_health; ///< Pilot current health
+    int16_t maximum_health; ///< Pilot maximum health
+    float unk_f_b;          ///< Unknown
+    vga_palette palette;    ///< Photo palette, used as HAR colors when not using altpals.
+    uint16_t is_player;     ///< Photo is for a player
+    uint16_t photo_id;      ///< Which face photo this pilot uses
 
     char *quotes[10]; ///< Pilot quotes for each supported language
 
