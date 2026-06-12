@@ -18,11 +18,14 @@ void animation_create(animation_source type, str *name, animation *ani, array *s
     str_from_c(&ani->animation_string, sdani->anim_string);
 
     // Copy collision coordinates
-    vector_create_with_size(&ani->collision_coords, sizeof(collision_coord), sdani->coord_count);
+    iterator it;
+    sd_coord *coord;
+    vector_create_with_size(&ani->collision_coords, sizeof(collision_coord), vector_size(&sdani->coord_table));
     collision_coord tmp_coord;
-    for(int i = 0; i < sdani->coord_count; i++) {
-        tmp_coord.pos = vec2i_create(sdani->coord_table[i].x, sdani->coord_table[i].y);
-        tmp_coord.frame_index = sdani->coord_table[i].frame_id;
+    vector_iter_begin(&sdani->coord_table, &it);
+    foreach(it, coord) {
+        tmp_coord.pos = vec2i_create(coord->x, coord->y);
+        tmp_coord.frame_index = coord->frame_id;
         vector_append(&ani->collision_coords, &tmp_coord);
     }
 

@@ -211,12 +211,13 @@ void sprite_play(sd_bk_file *bk, int scale, int anim, int sprite) {
 
         // render the collision data
         SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-        for(int i = 0; i < bk->anims[anim]->animation->coord_count; i++) {
-            int x = bk->anims[anim]->animation->coord_table[i].x;
-            int y = bk->anims[anim]->animation->coord_table[i].y;
-            int frame_id = bk->anims[anim]->animation->coord_table[i].frame_id;
-            if(frame_id == sprite) {
-                SDL_RenderDrawPoint(renderer, x, y);
+        const sd_animation *animation = bk->anims[anim]->animation;
+        iterator it;
+        sd_coord *coord;
+        vector_iter_begin(&animation->coord_table, &it);
+        foreach(it, coord) {
+            if(coord->frame_id == sprite) {
+                SDL_RenderDrawPoint(renderer, coord->x, coord->y);
             }
         }
 

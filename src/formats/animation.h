@@ -15,6 +15,7 @@
 #include "formats/internal/reader.h"
 #include "formats/internal/writer.h"
 #include "formats/sprite.h"
+#include "utils/vector.h"
 #include <stdint.h>
 
 #define SD_ANIMATION_STRING_MAX 1024 ///< Maximum animation string size
@@ -41,13 +42,12 @@ typedef struct {
     int16_t start_x;            ///< Animation start position, X-axis
     int16_t start_y;            ///< Animation start position, Y-axis
     int32_t null;               ///< Probably filler data
-    uint16_t coord_count;       ///< Number of collision coordinates in animation frames
     uint8_t sprite_count;       ///< Number of sprites in animation
     uint8_t extra_string_count; ///< Number of extra strings in animation
 
     // Sprites and their collision coordinates
-    sd_coord coord_table[SD_COLCOORD_COUNT_MAX]; ///< Collision coordinates
-    sd_sprite *sprites[SD_SPRITE_COUNT_MAX];     ///< Sprites
+    vector coord_table;                      ///< Collision coordinates, holds sd_coord elements
+    sd_sprite *sprites[SD_SPRITE_COUNT_MAX]; ///< Sprites
 
     // String header & Extra strings
     char anim_string[SD_ANIMATION_STRING_MAX];                      ///< Animation string
@@ -87,66 +87,6 @@ int sd_animation_copy(sd_animation *dst, const sd_animation *src);
  * @param animation Animation struct to modify.
  */
 void sd_animation_free(sd_animation *animation);
-
-/** @brief Get coordinate count
- *
- * Returns the collision coordinate count in the animation.
- *
- * @param animation Animation struct to modify.
- * @return Coordinate element count
- */
-int sd_animation_get_coord_count(const sd_animation *animation);
-
-/** @brief Sets coordinate at index
- *
- * Sets the coordinate at given index. It is only possible to overwrite values that
- * are already in the animation. Adding new values should be done by using sd_animation_push_coord().
- *
- * @retval SD_INVALID_INPUT Invalid coordinate index
- * @retval SD_SUCCESS Success.
- *
- * @param animation Animation struct to modify
- * @param num Coordinate index
- * @param coord Coordinate information.
- */
-int sd_animation_set_coord(sd_animation *animation, int num, const sd_coord coord);
-
-/** @brief Pushes coordinate to the end of coordinate list.
- *
- * Pushes a coordinate to the end of the coordinate list.
- * Coord_count variable will be raised by 1.
- *
- * @retval SD_INVALID_INPUT Coordinate list is already full
- * @retval SD_SUCCESS Success.
- *
- * @param animation Animation struct to modify
- * @param coord Coordinate information.
- */
-int sd_animation_push_coord(sd_animation *animation, const sd_coord coord);
-
-/** @brief Pops a coordinate from the end of the coordinate list.
- *
- * Pops a coordinate off the end of the coordinate list.
- * Coord_count variable will be decreased by 1.
- *
- * @retval SD_INVALID_INPUT Coordinate list is already empty
- * @retval SD_SUCCESS Success.
- *
- * @param animation Animation struct to modify
- */
-int sd_animation_pop_coord(sd_animation *animation);
-
-/** @brief Gets a coordinate pointer at index
- *
- * Returns a pointer to the coordinate data at given index.
- *
- * @retval NULL There is no coordinate at the given index
- * @retval sd_coord* Success
- *
- * @param animation Animation struct to modify
- * @param num Coordinate index
- */
-sd_coord *sd_animation_get_coord(sd_animation *animation, int num);
 
 /** @brief Sets the animation string
  *

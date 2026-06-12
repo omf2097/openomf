@@ -150,10 +150,12 @@ void anim_common_info(sd_animation *ani) {
     printf(" * Start X:          %d\n", ani->start_x);
     printf(" * Start Y:          %d\n", ani->start_y);
     printf(" * Animation header: %d\n", ani->null);
-    printf(" * Collision coords: %d\n", ani->coord_count);
-    for(int i = 0; i < ani->coord_count; i++) {
-        printf("   - x,y = (%d,%d), null = %d, frame_id = %d\n", ani->coord_table[i].x, ani->coord_table[i].y,
-               ani->coord_table[i].null, ani->coord_table[i].frame_id);
+    printf(" * Collision coords: %u\n", vector_size(&ani->coord_table));
+    iterator it;
+    sd_coord *coord;
+    vector_iter_begin(&ani->coord_table, &it);
+    foreach(it, coord) {
+        printf("   - x,y = (%d,%d), null = %d, frame_id = %d\n", coord->x, coord->y, coord->null, coord->frame_id);
     }
     printf(" * Sprites:          %d\n", ani->sprite_count);
     printf(" * Animation str:    %s\n", ani->anim_string);
@@ -252,18 +254,6 @@ void anim_set_key(sd_animation *ani, int kn, const char **key, int kcount, const
             ani->null = conv_dword(value);
             break;
         case 8:
-            /*if(kcount == 2) {
-                tmp = conv_ubyte(key[1]);
-                if(tmp < ani->col_coord_count) {
-                    ani->col_coord_table[tmp] = conv_udword(value);
-                } else {
-                    printf("Overlay index %d does not exist!\n", tmp);
-                    return;
-                }
-            } else {
-                printf("Key overlay requires 1 parameter!\n");
-                return;
-            }*/
             printf("Coord value setting not supported yet!\n");
             break;
         case 9:
@@ -305,17 +295,21 @@ void anim_get_key(sd_animation *ani, int kn, const char **key, int kcount, int p
         case 8:
             if(kcount == 2) {
                 tmp = conv_ubyte(key[1]);
-                if(tmp < ani->coord_count) {
-                    printf("x,y = (%d,%d), null = %d, frame_id = %d\n", ani->coord_table[tmp].x,
-                           ani->coord_table[tmp].y, ani->coord_table[tmp].null, ani->coord_table[tmp].frame_id);
+                const sd_coord *coord = vector_get(&ani->coord_table, tmp);
+                if(coord != NULL) {
+                    printf("x,y = (%d,%d), null = %d, frame_id = %d\n", coord->x, coord->y, coord->null,
+                           coord->frame_id);
                 } else {
                     printf("Collision table index %d does not exist!\n", tmp);
                     return;
                 }
             } else {
-                for(int i = 0; i < ani->coord_count; i++) {
-                    printf("x,y = (%d,%d), null = %d, frame_id = %d\n", ani->coord_table[i].x, ani->coord_table[i].y,
-                           ani->coord_table[i].null, ani->coord_table[i].frame_id);
+                iterator it;
+                sd_coord *coord;
+                vector_iter_begin(&ani->coord_table, &it);
+                foreach(it, coord) {
+                    printf("x,y = (%d,%d), null = %d, frame_id = %d\n", coord->x, coord->y, coord->null,
+                           coord->frame_id);
                 }
                 printf("\n");
             }
