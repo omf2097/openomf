@@ -329,12 +329,14 @@ void bkanim_push(sd_bk_file *bk, int key) {
     sd_animation_create(&ani);
     sd_bk_anim_create(&bka);
     sd_bk_anim_set_animation(&bka, &ani);
-    int ret;
-    if((ret = sd_bk_set_anim(bk, key, &bka)) != SD_SUCCESS) {
+    int ret = sd_bk_set_anim(bk, key, &bka); // deep-copy!
+    if(ret != SD_SUCCESS) {
         printf("Could not push new animation: %s.\n", sd_get_error(ret));
-        return;
+    } else {
+        printf("Pushed empty animation to index %d\n", key);
     }
-    printf("Pushed empty animation to index %d\n", key);
+    sd_bk_anim_free(&bka);
+    sd_animation_free(&ani);
 }
 
 void bkanim_pop(sd_bk_file *bk, int key) {
