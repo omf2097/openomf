@@ -8,6 +8,7 @@
 #include "formats/chr.h"
 #include "formats/error.h"
 #include "utils/c_array_util.h"
+#include "utils/log.h"
 #include <argtable3.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -39,6 +40,8 @@ void print_enemy_info(sd_chr_file *chr, int i) {
 }
 
 int main(int argc, char *argv[]) {
+    log_init();
+
     // commandline argument parser options
     struct arg_lit *help = arg_lit0("h", "help", "print this help and exit");
     struct arg_lit *vers = arg_lit0("v", "version", "print version information and exit");
@@ -172,5 +175,6 @@ exit_1:
     sd_chr_free(&chr);
 exit_0:
     arg_freetable(argtable, N_ELEMENTS(argtable));
+    log_close();
     return 0;
 }
