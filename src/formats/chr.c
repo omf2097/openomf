@@ -21,11 +21,13 @@
 #include "utils/allocator.h"
 #include "utils/c_string_util.h"
 #include "utils/log.h"
-#include "utils/random.h"
 
 int sd_chr_create(sd_chr_file *chr) {
     assert(chr != NULL);
     memset(chr, 0, sizeof(sd_chr_file));
+    for(int i = 0; i < SD_CHR_CUTSCENE_TEXT_COUNT; i++) {
+        str_create(&chr->cutscene_text[i]);
+    }
     return SD_SUCCESS;
 }
 
@@ -98,9 +100,9 @@ int sd_chr_load(sd_chr_file *chr, const path *filename) {
     }
 
     if(trn_loaded) {
-        for(int i = 0; i < 10; i++) {
+        for(int i = 0; i < SD_CHR_CUTSCENE_TEXT_COUNT; i++) {
             if(trn.locales[0]->end_texts[0][i]) {
-                chr->cutscene_text[i] = omf_strdup(trn.locales[0]->end_texts[0][i]);
+                str_set_c(&chr->cutscene_text[i], trn.locales[0]->end_texts[0][i]);
             }
         }
         static_assert(sizeof(chr->bk_name) == sizeof(trn.bk_name), "must match");
@@ -325,10 +327,8 @@ void sd_chr_free(sd_chr_file *chr) {
             omf_free(chr->enemies[i]);
         }
     }
-    for(int i = 0; i < 10; i++) {
-        if(chr->cutscene_text[i]) {
-            omf_free(chr->cutscene_text[i]);
-        }
+    for(int i = 0; i < SD_CHR_CUTSCENE_TEXT_COUNT; i++) {
+        str_free(&chr->cutscene_text[i]);
     }
     sd_sprite_free(chr->photo);
     omf_free(chr->photo);
