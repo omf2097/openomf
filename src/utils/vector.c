@@ -111,6 +111,25 @@ void vector_append(vector *vec, const void *value) {
     memcpy(vector_append_ptr(vec), value, vec->block_size);
 }
 
+int vector_insert_at(vector *vec, const unsigned int index, const void *value) {
+    if(index > vec->blocks) {
+        return 1;
+    }
+    if(vec->blocks >= vec->reserved) {
+        vector_grow(vec);
+    }
+    void *at = vec->data + index * vec->block_size;
+    if(index < vec->blocks) {
+        // Move the data after at or after the index, if there is any.
+        void *dst = vec->data + (index + 1) * vec->block_size;
+        const size_t len = (vec->blocks - index) * vec->block_size;
+        memmove(dst, at, len);
+    }
+    memcpy(at, value, vec->block_size);
+    vec->blocks++;
+    return 0;
+}
+
 void vector_pop(vector *vec) {
     if(vec->blocks > 0) {
         if(vec->free_cb != NULL) {

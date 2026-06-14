@@ -122,6 +122,16 @@ void vector_append(vector *vector, const void *value);
 void *vector_append_ptr(vector *vec);
 
 /**
+ * @brief Insert an element at the given index.
+ * @details Elements at and after the index are shifted up by one.
+ * @param vec Vector to modify
+ * @param index Index to insert at
+ * @param value Pointer to the value to copy
+ * @return 0 on success, 1 if index is out of range
+ */
+int vector_insert_at(vector *vec, unsigned int index, const void *value);
+
+/**
  * @brief Sort the vector using the given comparison function.
  * @details Uses qsort internally.
  * @param vector Vector to sort

@@ -223,6 +223,42 @@ void test_vector_set(void) {
     vector_free(&test_vector);
 }
 
+void test_vector_insert_at(void) {
+    const int values[3] = {10, 20, 30};
+    vector test_vector;
+    vector_create(&test_vector, sizeof(int));
+    vector_append(&test_vector, &values[0]);
+    vector_append(&test_vector, &values[1]);
+    vector_append(&test_vector, &values[2]);
+
+    // Insert middle, elements shift
+    const int mid = 15;
+    CU_ASSERT(vector_insert_at(&test_vector, 1, &mid) == 0); // 10,15,20,30
+    CU_ASSERT(vector_size(&test_vector) == 4);
+    CU_ASSERT(*(int *)vector_get(&test_vector, 0) == 10);
+    CU_ASSERT(*(int *)vector_get(&test_vector, 1) == 15);
+    CU_ASSERT(*(int *)vector_get(&test_vector, 2) == 20);
+    CU_ASSERT(*(int *)vector_get(&test_vector, 3) == 30);
+
+    // Insert front
+    const int front = 5;
+    CU_ASSERT(vector_insert_at(&test_vector, 0, &front) == 0); // 5,10,15,20,30
+    CU_ASSERT(*(int *)vector_get(&test_vector, 0) == 5);
+    CU_ASSERT(*(int *)vector_get(&test_vector, 1) == 10);
+    CU_ASSERT(vector_size(&test_vector) == 5);
+
+    // Inserting at end is an append op
+    const int back = 99;
+    CU_ASSERT(vector_insert_at(&test_vector, vector_size(&test_vector), &back) == 0);
+    CU_ASSERT(vector_size(&test_vector) == 6);
+    CU_ASSERT(*(int *)vector_get(&test_vector, 5) == 99);
+
+    // Index past the end fails
+    CU_ASSERT(vector_insert_at(&test_vector, vector_size(&test_vector) + 1, &back) == 1);
+
+    vector_free(&test_vector);
+}
+
 void test_vector_delete_at(void) {
     int values[4] = {1, 2, 3, 4};
     vector test_vector;
@@ -467,6 +503,9 @@ void vector_test_suite(CU_pSuite suite) {
         return;
     }
     if(CU_add_test(suite, "Test for vector set", test_vector_set) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for vector insert_at", test_vector_insert_at) == NULL) {
         return;
     }
     if(CU_add_test(suite, "Test for vector delete_at", test_vector_delete_at) == NULL) {
