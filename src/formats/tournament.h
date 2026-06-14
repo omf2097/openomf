@@ -15,9 +15,12 @@
 #include "formats/pilot.h"
 #include "formats/sprite.h"
 #include "utils/path.h"
+#include "utils/str.h"
 
-#define MAX_TRN_ENEMIES 256 ///< Maximum amount of tournament enemies
-#define MAX_TRN_LOCALES 10  ///< Maximum amount of tournament locales (some of these are unused)
+#define MAX_TRN_ENEMIES 256     ///< Maximum amount of tournament enemies
+#define MAX_TRN_LOCALES 10      ///< Maximum amount of tournament locales (some of these are unused)
+#define MAX_TRN_ENDING_HARS 11  ///< Number of HARs that have ending texts
+#define MAX_TRN_ENDING_PAGES 10 ///< Number of ending text pages per HAR
 
 /** @brief Locales
  *
@@ -42,16 +45,16 @@ enum
  * Translated resources for the tournament.
  */
 typedef struct {
-    sd_sprite *logo;            ///< Tournament logo
-    char *title;                ///< Tournament title (eg. World Championship)
-    char *description;          ///< Tournament description; A short text about the tournament.
-    char *stripped_description; ///< Tournament description stripped of metadata.
-    int desc_width;             ///< Tournament description width.
-    int desc_center;            ///< Tournament description center.
-    int desc_vmove;             ///< Tournament description vmove.
-    int desc_size;              ///< Tournament description size.
-    int desc_color;             ///< Tournament description color.
-    char *end_texts[11][10];    ///< Tournament victory texts that are visible at the ending.
+    sd_sprite *logo;          ///< Tournament logo
+    str title;                ///< Tournament title (eg. World Championship)
+    str description;          ///< Tournament description; A short text about the tournament.
+    str stripped_description; ///< Tournament description stripped of metadata.
+    int desc_width;           ///< Tournament description width.
+    int desc_center;          ///< Tournament description center.
+    int desc_vmove;           ///< Tournament description vmove.
+    int desc_size;            ///< Tournament description size.
+    int desc_color;           ///< Tournament description color.
+    str end_texts[MAX_TRN_ENDING_HARS][MAX_TRN_ENDING_PAGES]; ///< Tournament victory texts visible at the ending.
 } sd_tournament_locale;
 
 /** @brief Tournament data
@@ -86,6 +89,15 @@ typedef struct {
  * @param trn Allocated TRN struct pointer.
  */
 int sd_tournament_create(sd_tournament_file *trn);
+
+/** @brief Initialize a tournament locale's string fields
+ *
+ * Puts all string members of a freshly allocated locale into a valid empty state.
+ * Must be called before any of the locale's strings are read or assigned.
+ *
+ * @param locale Allocated locale struct pointer.
+ */
+void sd_tournament_locale_create(sd_tournament_locale *locale);
 
 /** @brief Load a TRN file
  *

@@ -17,6 +17,18 @@ int sd_tournament_create(sd_tournament_file *trn) {
     return SD_SUCCESS;
 }
 
+void sd_tournament_locale_create(sd_tournament_locale *locale) {
+    assert(locale != NULL);
+    str_create(&locale->title);
+    str_create(&locale->description);
+    str_create(&locale->stripped_description);
+    for(int har = 0; har < MAX_TRN_ENDING_HARS; har++) {
+        for(int page = 0; page < MAX_TRN_ENDING_PAGES; page++) {
+            str_create(&locale->end_texts[har][page]);
+        }
+    }
+}
+
 static void free_enemies(sd_tournament_file *trn) {
     for(int i = 0; i < MAX_TRN_ENEMIES; i++) {
         if(trn->enemies[i]) {
@@ -33,20 +45,12 @@ static void free_locales(sd_tournament_file *trn) {
                 sd_sprite_free(trn->locales[i]->logo);
                 omf_free(trn->locales[i]->logo);
             }
-            if(trn->locales[i]->description) {
-                omf_free(trn->locales[i]->description);
-            }
-            if(trn->locales[i]->stripped_description) {
-                omf_free(trn->locales[i]->stripped_description);
-            }
-            if(trn->locales[i]->title) {
-                omf_free(trn->locales[i]->title);
-            }
-            for(int har = 0; har < 11; har++) {
-                for(int page = 0; page < 10; page++) {
-                    if(trn->locales[i]->end_texts[har][page]) {
-                        omf_free(trn->locales[i]->end_texts[har][page]);
-                    }
+            str_free(&trn->locales[i]->description);
+            str_free(&trn->locales[i]->stripped_description);
+            str_free(&trn->locales[i]->title);
+            for(int har = 0; har < MAX_TRN_ENDING_HARS; har++) {
+                for(int page = 0; page < MAX_TRN_ENDING_PAGES; page++) {
+                    str_free(&trn->locales[i]->end_texts[har][page]);
                 }
             }
             omf_free(trn->locales[i]);
@@ -72,7 +76,7 @@ int sd_tournament_set_pic_name(sd_tournament_file *trn, const char *pic_name) {
 
 void parse_tournament_description(sd_tournament_locale *locale) {
     int width = 320, center = 0, vmove = 0, size = -1, color = -1;
-    const char *desc = locale->description;
+    const char *desc = str_c(&locale->description);
     const char *end = desc;
     char *ptr = NULL;
     ptr = strstr(desc, "{WIDTH ");
@@ -123,10 +127,11 @@ void parse_tournament_description(sd_tournament_locale *locale) {
     locale->desc_color = color;
     // Ignore the rest of the possible metadata.
     ptr = strchr(start, '{');
+    str_free(&locale->stripped_description);
     if(ptr != NULL) {
-        locale->stripped_description = omf_strndup(start, ptr - start);
+        str_from_buf(&locale->stripped_description, start, ptr - start);
     } else {
-        locale->stripped_description = omf_strdup(start);
+        str_from_c(&locale->stripped_description, start);
     }
 }
 
@@ -200,6 +205,7 @@ int sd_tournament_load(sd_tournament_file *trn, const path *filename) {
     // Allocate locales
     for(int i = 0; i < MAX_TRN_LOCALES; i++) {
         trn->locales[i] = omf_calloc(1, sizeof(sd_tournament_locale));
+        sd_tournament_locale_create(trn->locales[i]);
     }
 
     // Load logos to locales
@@ -221,8 +227,8 @@ int sd_tournament_load(sd_tournament_file *trn, const path *filename) {
 
     // Read tournament descriptions
     for(int i = 0; i < MAX_TRN_LOCALES; i++) {
-        trn->locales[i]->title = sd_read_variable_str(r);
-        trn->locales[i]->description = sd_read_variable_str(r);
+        sd_read_padded_str(r, &trn->locales[i]->title, UINT16_MAX);
+        sd_read_padded_str(r, &trn->locales[i]->description, UINT16_MAX);
         parse_tournament_description(trn->locales[i]);
     }
 
@@ -234,9 +240,9 @@ int sd_tournament_load(sd_tournament_file *trn, const path *filename) {
 
     // Load texts
     for(int i = 0; i < MAX_TRN_LOCALES; i++) {
-        for(int har = 0; har < 11; har++) {
-            for(int page = 0; page < 10; page++) {
-                trn->locales[i]->end_texts[har][page] = sd_read_variable_str(r);
+        for(int har = 0; har < MAX_TRN_ENDING_HARS; har++) {
+            for(int page = 0; page < MAX_TRN_ENDING_PAGES; page++) {
+                sd_read_padded_str(r, &trn->locales[i]->end_texts[har][page], UINT16_MAX);
             }
         }
     }
@@ -328,8 +334,8 @@ int sd_tournament_save(const sd_tournament_file *trn, const path *filename) {
     // Write tournament descriptions
     for(int i = 0; i < MAX_TRN_LOCALES; i++) {
         if(trn->locales[i] != NULL) {
-            sd_write_variable_str(w, trn->locales[i]->title);
-            sd_write_variable_str(w, trn->locales[i]->description);
+            sd_write_padded_str(w, &trn->locales[i]->title);
+            sd_write_padded_str(w, &trn->locales[i]->description);
         } else {
             sd_write_variable_str(w, "");
             sd_write_variable_str(w, "");
@@ -351,10 +357,10 @@ int sd_tournament_save(const sd_tournament_file *trn, const path *filename) {
 
     // Write texts
     for(int i = 0; i < MAX_TRN_LOCALES; i++) {
-        for(int har = 0; har < 11; har++) {
-            for(int page = 0; page < 10; page++) {
+        for(int har = 0; har < MAX_TRN_ENDING_HARS; har++) {
+            for(int page = 0; page < MAX_TRN_ENDING_PAGES; page++) {
                 if(trn->locales[i] != NULL) {
-                    sd_write_variable_str(w, trn->locales[i]->end_texts[har][page]);
+                    sd_write_padded_str(w, &trn->locales[i]->end_texts[har][page]);
                 } else {
                     sd_write_variable_str(w, "");
                 }

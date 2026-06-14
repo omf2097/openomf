@@ -1540,6 +1540,7 @@ bool modmanager_parse_tournament_mod(const char *buf, sd_tournament_file *tourn)
         if(!locale) {
             // Allocate new locale if it doesn't exist
             locale = omf_calloc(1, sizeof(sd_tournament_locale));
+            sd_tournament_locale_create(locale);
             tourn->locales[locale_index] = locale;
             log_info("Created new locale for %s at index %d", lang_name, locale_index);
         }
@@ -1547,22 +1548,16 @@ bool modmanager_parse_tournament_mod(const char *buf, sd_tournament_file *tourn)
         // Update name
         char *name = cfg_getstr(lang, "name");
         if(name) {
-            log_info("previous title was %s", locale->title);
-            if(locale->title) {
-                omf_free(locale->title);
-            }
-            locale->title = omf_strdup(name);
+            log_info("previous title was %s", str_c(&locale->title));
+            str_set_c(&locale->title, name);
             log_info("setting %s name to '%s'", lang_name, name);
         }
 
         // Update description
         char *description = cfg_getstr(lang, "description");
         if(description) {
-            if(locale->description) {
-                omf_free(locale->description);
-            }
-            locale->description = omf_strdup(description);
-            log_info("setting %s description to %s", lang_name, locale->description);
+            str_set_c(&locale->description, description);
+            log_info("setting %s description to %s", lang_name, str_c(&locale->description));
 
             // Parse the description to extract metadata
             parse_tournament_description(locale);
@@ -1602,10 +1597,7 @@ bool modmanager_parse_tournament_mod(const char *buf, sd_tournament_file *tourn)
 
                 char *page_text = cfg_getstr(ending, page_key);
                 if(page_text) {
-                    if(locale->end_texts[ending_index][page]) {
-                        omf_free(locale->end_texts[ending_index][page]);
-                    }
-                    locale->end_texts[ending_index][page] = omf_strdup(page_text);
+                    str_set_c(&locale->end_texts[ending_index][page], page_text);
                     log_info("setting %s %s page%d text", lang_name, ending_type, page + 1);
                 }
             }

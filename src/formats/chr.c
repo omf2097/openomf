@@ -59,7 +59,7 @@ int sd_chr_from_trn(sd_chr_file *chr, const sd_tournament_file *trn, const sd_pi
     chr->pilot.trn_rank_money = (ranked + 10) * 0.5 + (extra / 15);
 
     strncpy_or_abort(chr->pilot.trn_name, trn->filename, sizeof(chr->pilot.trn_name));
-    strncpy_or_abort(chr->pilot.trn_desc, trn->locales[0]->title, sizeof(chr->pilot.trn_desc));
+    strncpy_or_abort(chr->pilot.trn_desc, str_c(&trn->locales[0]->title), sizeof(chr->pilot.trn_desc));
     strncpy_or_abort(chr->pilot.trn_image, trn->pic_file, sizeof(chr->pilot.trn_image));
     chr->photo = omf_calloc(1, sizeof(sd_sprite));
     sd_sprite_copy(chr->photo, pilot->photo);
@@ -101,8 +101,8 @@ int sd_chr_load(sd_chr_file *chr, const path *filename) {
 
     if(trn_loaded) {
         for(int i = 0; i < SD_CHR_CUTSCENE_TEXT_COUNT; i++) {
-            if(trn.locales[0]->end_texts[0][i]) {
-                str_set_c(&chr->cutscene_text[i], trn.locales[0]->end_texts[0][i]);
+            if(str_size(&trn.locales[0]->end_texts[0][i]) > 0) {
+                str_set(&chr->cutscene_text[i], &trn.locales[0]->end_texts[0][i]);
             }
         }
         static_assert(sizeof(chr->bk_name) == sizeof(trn.bk_name), "must match");
