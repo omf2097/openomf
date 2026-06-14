@@ -106,8 +106,6 @@ int sd_rec_load(sd_rec_file *rec, const path *file) {
 
     // Read pilot data
     for(int i = 0; i < 2; i++) {
-        // Read pilot data
-        sd_pilot_create(&rec->pilots[i].info);
         if((ret = sd_pilot_load(r, &rec->pilots[i].info)) != SD_SUCCESS) {
             goto error_0;
         }

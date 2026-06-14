@@ -8,23 +8,27 @@
 #include "resources/modmanager.h"
 #include "resources/resource_files.h"
 #include "utils/allocator.h"
-#include "utils/c_string_util.h"
-#include "utils/log.h"
 
 #define PILOT_BLOCK_LENGTH 428
+
+// Initialize all quote strings to empty.
+static void sd_pilot_quotes_init(str *quotes) {
+    for(int m = 0; m < SD_PILOT_QUOTE_COUNT; m++) {
+        str_create(&quotes[m]);
+    }
+}
 
 int sd_pilot_create(sd_pilot *pilot) {
     assert(pilot != NULL);
     memset(pilot, 0, sizeof(sd_pilot));
+    sd_pilot_quotes_init(pilot->quotes);
     return SD_SUCCESS;
 }
 
 void sd_pilot_clone(sd_pilot *dest, const sd_pilot *src) {
     sd_pilot_copy_shallow(dest, src);
-    for(int m = 0; m < 10; m++) {
-        if(src->quotes[m] != NULL) {
-            dest->quotes[m] = omf_strdup(src->quotes[m]);
-        }
+    for(int m = 0; m < SD_PILOT_QUOTE_COUNT; m++) {
+        str_set(&dest->quotes[m], &src->quotes[m]);
     }
     if(src->photo) {
         dest->photo = omf_calloc(1, sizeof(sd_sprite));
@@ -36,7 +40,7 @@ void sd_pilot_copy_shallow(sd_pilot *dest, const sd_pilot *src) {
     sd_pilot_free(dest);
     *dest = *src;
     dest->photo = NULL;
-    memset(dest->quotes, 0, sizeof dest->quotes);
+    sd_pilot_quotes_init(dest->quotes); // reset aliased strings
 }
 
 void sd_pilot_free(sd_pilot *pilot) {
@@ -47,8 +51,8 @@ void sd_pilot_free(sd_pilot *pilot) {
         sd_sprite_free(pilot->photo);
         omf_free(pilot->photo);
     }
-    for(int m = 0; m < 10; m++) {
-        omf_free(pilot->quotes[m]);
+    for(int m = 0; m < SD_PILOT_QUOTE_COUNT; m++) {
+        str_free(&pilot->quotes[m]);
     }
 }
 
@@ -182,8 +186,8 @@ int sd_pilot_load(sd_reader *reader, sd_pilot *pilot) {
     memreader_close(mr);
 
     // Quote block
-    for(int m = 0; m < 10; m++) {
-        pilot->quotes[m] = sd_read_variable_str(reader);
+    for(int m = 0; m < SD_PILOT_QUOTE_COUNT; m++) {
+        sd_read_padded_str(reader, &pilot->quotes[m], UINT16_MAX);
     }
     return SD_SUCCESS;
 }
@@ -327,8 +331,8 @@ int sd_pilot_save(sd_writer *fw, const sd_pilot *pilot) {
     memwriter_close(w);
 
     // Quote block
-    for(int m = 0; m < 10; m++) {
-        sd_write_variable_str(fw, pilot->quotes[m]);
+    for(int m = 0; m < SD_PILOT_QUOTE_COUNT; m++) {
+        sd_write_padded_str(fw, &pilot->quotes[m]);
     }
     return SD_SUCCESS;
 }

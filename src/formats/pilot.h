@@ -17,7 +17,10 @@
 #include "formats/internal/writer.h"
 #include "formats/palette.h"
 #include "formats/sprite.h"
+#include "utils/str.h"
 #include <stdint.h>
+
+#define SD_PILOT_QUOTE_COUNT 10 ///< Number of pilot quotes (one per supported language)
 
 /** @brief PIC pilot information
  *
@@ -112,7 +115,7 @@ typedef struct {
     uint16_t is_player;     ///< Photo is for a player
     uint16_t photo_id;      ///< Which face photo this pilot uses
 
-    char *quotes[10]; ///< Pilot quotes for each supported language
+    str quotes[SD_PILOT_QUOTE_COUNT]; ///< Pilot quotes, one per supported language
 
     int sex;
 

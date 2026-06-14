@@ -182,9 +182,9 @@ int sd_chr_load(sd_chr_file *chr, const path *filename) {
         chr->enemies[i]->trn_index = memread_ubyte(mr);
         memread_buf(mr, chr->enemies[i]->unknown_b, 15);
 
-        for(int m = 0; m < 10; m++) {
-            if(trn_loaded && trn.enemies[i]->quotes[m]) {
-                chr->enemies[i]->pilot.quotes[m] = omf_strdup(trn.enemies[i]->quotes[m]);
+        for(int m = 0; m < SD_PILOT_QUOTE_COUNT; m++) {
+            if(trn_loaded && str_size(&trn.enemies[i]->quotes[m]) > 0) {
+                str_set(&chr->enemies[i]->pilot.quotes[m], &trn.enemies[i]->quotes[m]);
             }
         }
     }
@@ -321,15 +321,7 @@ void sd_chr_append_unsanitized_filename(str *dst, const char *pilot_name) {
 void sd_chr_free(sd_chr_file *chr) {
     for(int i = 0; i < chr->pilot.enemies_inc_unranked; i++) {
         if(chr->enemies[i] != NULL) {
-            if(chr->enemies[i]->pilot.photo) {
-                sd_sprite_free(chr->enemies[i]->pilot.photo);
-                omf_free(chr->enemies[i]->pilot.photo);
-            }
-            for(int m = 0; m < 10; m++) {
-                if(chr->enemies[i]->pilot.quotes[m]) {
-                    omf_free(chr->enemies[i]->pilot.quotes[m]);
-                }
-            }
+            sd_pilot_free(&chr->enemies[i]->pilot);
             omf_free(chr->enemies[i]);
         }
     }

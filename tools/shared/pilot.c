@@ -187,10 +187,10 @@ void print_pilot_info(sd_pilot *pilot) {
         printf("  - Photo ID         %d\n", pilot->photo_id);
 
         printf("  - Quotes:\n");
-        for(int m = 0; m < 10; m++) {
-            char *quote = pilot->quotes[m];
-            if(quote != NULL) {
-                printf("    * %s\n", quote);
+        for(int m = 0; m < SD_PILOT_QUOTE_COUNT; m++) {
+            const str *quote = &pilot->quotes[m];
+            if(str_size(quote) > 0) {
+                printf("    * %s\n", str_c(quote));
             }
         }
     }

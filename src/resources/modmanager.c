@@ -1368,10 +1368,7 @@ bool modmanager_parse_pilot_mod(const char *buf, sd_pilot *pilot) {
 
         char *quote = cfg_getstr(lang, "quote");
         if(quote) {
-            if(pilot->quotes[lang_index]) {
-                omf_free(pilot->quotes[lang_index]);
-            }
-            pilot->quotes[lang_index] = omf_strdup(quote);
+            str_set_c(&pilot->quotes[lang_index], quote);
             log_info("setting %s quote to '%s'", lang_name, quote);
         }
     }
