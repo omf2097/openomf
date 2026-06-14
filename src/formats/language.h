@@ -11,7 +11,8 @@
 #ifndef SD_LANGUAGE_H
 #define SD_LANGUAGE_H
 
-#include "utils/path.h"
+#include "utils/str.h"
+#include "utils/vector.h"
 
 /** @brief Language string container
  *
@@ -19,17 +20,21 @@
  * may or may not be accurate.
  */
 typedef struct {
-    char description[32]; ///< Language string short description
-    char *data;           ///< Language string itself.
+    str description; ///< Language string short description
+    str data;        ///< Language string itself.
 } sd_lang_string;
+
+/**
+ * @brief Free callback for a sd_lang_string vector element.
+ */
+void sd_lang_string_free(void *ptr);
 
 /** @brief Language string list
  *
  * Contains a list of language string descriptors.
  */
 typedef struct {
-    unsigned int count;      ///< Amount of language strings in the file
-    sd_lang_string *strings; ///< Language string array
+    vector strings; ///< Language string entries, holds sd_lang_string elements
 } sd_language;
 
 /** @brief Initialize language structure
@@ -62,8 +67,10 @@ void sd_language_free(sd_language *language);
  *
  * @param language Language struct pointer.
  * @param filename Name of the language file to load from.
+ * @param load_descriptions If false, the per-entry descriptions are skipped and left empty. The
+ *                          game does not use them, so skipping saves memory.
  */
-int sd_language_load(sd_language *language, const path *filename);
+int sd_language_load(sd_language *language, const path *filename, bool load_descriptions);
 
 /** @brief Save language file
  *
