@@ -158,10 +158,12 @@ void anim_common_info(sd_animation *ani) {
         printf("   - x,y = (%d,%d), null = %d, frame_id = %d\n", coord->x, coord->y, coord->null, coord->frame_id);
     }
     printf(" * Sprites:          %d\n", ani->sprite_count);
-    printf(" * Animation str:    %s\n", ani->anim_string);
-    printf(" * Extra strings:    %d\n", ani->extra_string_count);
-    for(int i = 0; i < ani->extra_string_count; i++) {
-        printf("   - %s\n", ani->extra_strings[i]);
+    printf(" * Animation str:    %s\n", str_c(&ani->anim_string));
+    printf(" * Extra strings:    %u\n", vector_size(&ani->extra_strings));
+    str *extra_string;
+    vector_iter_begin(&ani->extra_strings, &it);
+    foreach(it, extra_string) {
+        printf("   - %s\n", str_c(extra_string));
     }
 }
 
@@ -203,10 +205,10 @@ void anim_pop(sd_animation *ani) {
     printf("Last sprite popped from animation. Animation now has %d sprites.\n", ani->sprite_count);
 }
 
-void string_strip(char *input, size_t len, const char *tag) {
+void string_strip(str *input, const char *tag) {
     sd_script s;
     sd_script_create(&s);
-    sd_script_decode(&s, input, NULL);
+    sd_script_decode_str(&s, input, NULL);
 
     for(unsigned i = 0; i < vector_size(&s.frames); i++) {
         sd_script_delete_tag(&s, i, tag);
@@ -215,7 +217,7 @@ void string_strip(char *input, size_t len, const char *tag) {
     str dst;
     str_create(&dst);
     sd_script_encode(&s, &dst);
-    strncpy(input, str_c(&dst), len);
+    str_set(input, &dst);
     str_free(&dst);
     sd_script_free(&s);
 }
@@ -224,13 +226,14 @@ void anim_strip_key(sd_animation *ani, int kn, const char **key, int kcount, con
     int tmp = 0;
     switch(kn) {
         case 9:
-            string_strip(ani->anim_string, sizeof(ani->anim_string), tag);
+            string_strip(&ani->anim_string, tag);
             break;
         case 11:
             if(kcount == 2) {
                 tmp = conv_ubyte(key[1]);
-                if(tmp < ani->extra_string_count) {
-                    string_strip(ani->extra_strings[tmp], SD_EXTRA_STRING_MAX, tag);
+                str *extra_string = vector_get(&ani->extra_strings, tmp);
+                if(extra_string != NULL) {
+                    string_strip(extra_string, tag);
                 } else {
                     printf("Extra string table index %d does not exist!\n", tmp);
                     return;
@@ -257,13 +260,14 @@ void anim_set_key(sd_animation *ani, int kn, const char **key, int kcount, const
             printf("Coord value setting not supported yet!\n");
             break;
         case 9:
-            sd_animation_set_anim_string(ani, value);
+            str_set_c(&ani->anim_string, value);
             break;
         case 11:
             if(kcount == 2) {
                 tmp = conv_ubyte(key[1]);
-                if(tmp < ani->extra_string_count) {
-                    sd_animation_set_extra_string(ani, tmp, value);
+                str *extra_string = vector_get(&ani->extra_strings, tmp);
+                if(extra_string != NULL) {
+                    str_set_c(extra_string, value);
                 } else {
                     printf("Extra string table index %d does not exist!\n", tmp);
                     return;
@@ -315,20 +319,24 @@ void anim_get_key(sd_animation *ani, int kn, const char **key, int kcount, int p
             }
             break;
         case 9:
-            printf("%s\n", ani->anim_string);
+            printf("%s\n", str_c(&ani->anim_string));
             break;
         case 11:
             if(kcount == 2) {
                 tmp = conv_ubyte(key[1]);
-                if(tmp < ani->extra_string_count) {
-                    printf("%s\n", ani->extra_strings[tmp]);
+                const str *extra_string = vector_get(&ani->extra_strings, tmp);
+                if(extra_string != NULL) {
+                    printf("%s\n", str_c(extra_string));
                 } else {
                     printf("Extra string table index %d does not exist!\n", tmp);
                     return;
                 }
             } else {
-                for(int i = 0; i < ani->extra_string_count; i++) {
-                    printf("%s ", ani->extra_strings[i]);
+                iterator it;
+                const str *extra_string;
+                vector_iter_begin(&ani->extra_strings, &it);
+                foreach(it, extra_string) {
+                    printf("%s ", str_c(extra_string));
                 }
                 printf("\n");
             }

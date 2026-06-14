@@ -89,6 +89,21 @@ void sd_script_free(sd_script *script);
  */
 int sd_script_decode(sd_script *script, const char *str, int *invalid_pos);
 
+/** @brief Decode animation string from a str object
+ *
+ * Like sd_script_decode(), but takes a str object directly.
+ *
+ * @retval SD_ANIM_INVALID_STRING String is invalid; eg. doesn't have enough complete frames.
+ * @retval SD_INVALID_TAG There was an invalid tag in string. invalid_pos will contain problematic position.
+ * @retval SD_SUCCESS Decoding was successful.
+ *
+ * @param script Script structure to fill. Must be formatted using sd_script_create().
+ * @param src Animation string to parse
+ * @param invalid_pos Will contain problematic position in string if SD_INVALID_TAG is returned. Will be ignored if set
+ * to NULL.
+ */
+int sd_script_decode_str(sd_script *script, const str *src, int *invalid_pos);
+
 /** @brief Encode animation string
  *
  * Encodes the animation script structure back to an animation string.

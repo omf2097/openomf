@@ -15,6 +15,7 @@
 #include "formats/internal/reader.h"
 #include "formats/internal/writer.h"
 #include "formats/sprite.h"
+#include "utils/str.h"
 #include "utils/vector.h"
 #include <stdint.h>
 
@@ -39,19 +40,16 @@
  */
 typedef struct {
     // Header
-    int16_t start_x;            ///< Animation start position, X-axis
-    int16_t start_y;            ///< Animation start position, Y-axis
-    int32_t null;               ///< Probably filler data
-    uint8_t sprite_count;       ///< Number of sprites in animation
-    uint8_t extra_string_count; ///< Number of extra strings in animation
+    int16_t start_x;      ///< Animation start position, X-axis
+    int16_t start_y;      ///< Animation start position, Y-axis
+    int32_t null;         ///< Probably filler data
+    uint8_t sprite_count; ///< Number of sprites in animation
 
     // Sprites and their collision coordinates
     vector coord_table;                      ///< Collision coordinates, holds sd_coord elements
+    vector extra_strings;                    ///< Extra animation strings, holds str elements
     sd_sprite *sprites[SD_SPRITE_COUNT_MAX]; ///< Sprites
-
-    // String header & Extra strings
-    char anim_string[SD_ANIMATION_STRING_MAX];                      ///< Animation string
-    char extra_strings[SD_EXTRASTR_COUNT_MAX][SD_EXTRA_STRING_MAX]; ///< Extra strings
+    str anim_string;                         ///< Animation string
 } sd_animation;
 
 /** @brief Initialize animation structure
@@ -87,82 +85,6 @@ int sd_animation_copy(sd_animation *dst, const sd_animation *src);
  * @param animation Animation struct to modify.
  */
 void sd_animation_free(sd_animation *animation);
-
-/** @brief Sets the animation string
- *
- * Sets the animation string for the given animation. String will be copied.
- * Maximum string length is 1024 bytes.
- *
- * @retval SD_INVALID_INPUT Given string was too big.
- * @retval SD_SUCCESS Success.
- *
- * @param animation Animation struct to modify
- * @param str New animation string
- */
-int sd_animation_set_anim_string(sd_animation *animation, const char *str);
-
-/** @brief Get extra string count
- *
- * Returns the extra string count in the animation.
- *
- * @param animation Animation struct to modify.
- * @return Extra string count
- */
-int sd_animation_get_extra_string_count(const sd_animation *animation);
-
-/** @brief Sets extra string at index
- *
- * Sets the extra string at given index. It is only possible to overwrite values that
- * are already in the animation. Adding new values should be done by using
- * sd_animation_push_extra_string().
- *
- * Maximum extra string length is 512 bytes.
- *
- * @retval SD_INVALID_INPUT Invalid extra string index or string too long.
- * @retval SD_SUCCESS Success.
- *
- * @param animation Animation struct to modify
- * @param num String index
- * @param str Extra string. This will be copied.
- */
-int sd_animation_set_extra_string(sd_animation *animation, int num, const char *str);
-
-/** @brief Pushes extra string to the end of string list.
- *
- * Pushes am extra string to the end of the extra string list.
- * Extra_string_count variable will be increased by 1.
- *
- * @retval SD_INVALID_INPUT Extra string list is full or string too long.
- * @retval SD_SUCCESS Success.
- *
- * @param animation Animation struct to modify
- * @param str Extra string. This will be copied.
- */
-int sd_animation_push_extra_string(sd_animation *animation, const char *str);
-
-/** @brief Pops an extra string off from the end of the extra string list.
- *
- * Pops a extra string off the end of the extra string list.
- * Extra_string_count variable will be decreased by 1.
- *
- * @retval SD_INVALID_INPUT Extra string list is already empty.
- * @retval SD_SUCCESS Success.
- *
- * @param animation Animation struct to modify
- */
-int sd_animation_pop_extra_string(sd_animation *animation);
-
-/** @brief Get extra string at given index
- *
- * Returns the extra string at given index.
- *
- * @retval NULL There is no extra string at given index.
- * @retval char* Pointer to the extra string at given index.
- *
- * @param animation Animation struct to modify.
- * @param num Extra string index
- */
-char *sd_animation_get_extra_string(sd_animation *animation, int num);
 
 /** @brief Get sprite count
  *

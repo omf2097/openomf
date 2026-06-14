@@ -15,29 +15,26 @@ void animation_create(animation_source type, str *name, animation *ani, array *s
     // Copy simple stuff
     ani->id = id;
     ani->start_pos = vec2i_create(sdani->start_x, sdani->start_y);
-    str_from_c(&ani->animation_string, sdani->anim_string);
+    str_from(&ani->animation_string, &sdani->anim_string);
 
     // Copy collision coordinates
     iterator it;
     sd_coord *coord;
     vector_create_with_size(&ani->collision_coords, sizeof(collision_coord), vector_size(&sdani->coord_table));
-    collision_coord tmp_coord;
     vector_iter_begin(&sdani->coord_table, &it);
     foreach(it, coord) {
-        tmp_coord.pos = vec2i_create(coord->x, coord->y);
-        tmp_coord.frame_index = coord->frame_id;
-        vector_append(&ani->collision_coords, &tmp_coord);
+        collision_coord *tmp_coord = vector_append_ptr(&ani->collision_coords);
+        tmp_coord->pos = vec2i_create(coord->x, coord->y);
+        tmp_coord->frame_index = coord->frame_id;
     }
 
-    ani->extra_string_count = sdani->extra_string_count;
     // Copy extra strings
-    vector_create_with_size(&ani->extra_strings, sizeof(str), sdani->extra_string_count);
-    str tmp_string;
-    for(int i = 0; i < sdani->extra_string_count; i++) {
-        str_from_c(&tmp_string, sdani->extra_strings[i]);
-        vector_append(&ani->extra_strings, &tmp_string);
-        // don't str_free tmp_str here because it will free the pointers
-        // inside it, which vector_append does not copy
+    ani->extra_string_count = vector_size(&sdani->extra_strings);
+    vector_create_with_size(&ani->extra_strings, sizeof(str), vector_size(&sdani->extra_strings));
+    str *src_extra;
+    vector_iter_begin(&sdani->extra_strings, &it);
+    foreach(it, src_extra) {
+        str_from(vector_append_ptr(&ani->extra_strings), src_extra);
     }
 
     // Handle sprites
@@ -148,10 +145,7 @@ int animation_clone(animation *src, animation *dst) {
     vector_create_with_size(&dst->extra_strings, sizeof(str), vector_size(&src->extra_strings));
     vector_iter_begin(&src->extra_strings, &it);
     foreach(it, tmp_str) {
-        str new_str;
-        str_create(&new_str);
-        str_from(&new_str, tmp_str);
-        vector_append(&dst->extra_strings, &new_str);
+        str_from(vector_append_ptr(&dst->extra_strings), tmp_str);
     }
     vector_create_with_size(&dst->sprites, sizeof(sprite_reference), vector_size(&src->sprites));
     vector_iter_begin(&src->sprites, &it);

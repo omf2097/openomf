@@ -334,14 +334,14 @@ void move_set_key(sd_move *move, sd_animation *ani, const char **key, int kcount
         case 15:
             tmp = strlen(value) + 1;
             if(tmp < 21) {
-                memcpy(move->move_string, value, tmp);
+                str_set_c(&move->move_string, value);
             } else {
                 printf("String is too long! (%u bytes) Maximum size for move_string is 21 characters!\n", tmp);
                 return;
             }
             break;
         case 16:
-            sd_move_set_footer_string(move, value);
+            str_set_c(&move->footer_string, value);
             break;
         default:
             anim_set_key(ani, kn, key, kcount, value);
@@ -411,10 +411,10 @@ void move_get_key(sd_move *move, sd_animation *ani, const char **key, int kcount
             printf("%d\n", move->points);
             break;
         case 15:
-            printf("%s\n", move->move_string);
+            printf("%s\n", str_c(&move->move_string));
             break;
         case 16:
-            printf("%s\n", move->footer_string);
+            printf("%s\n", str_c(&move->footer_string));
             break;
         default:
             anim_get_key(ani, kn, key, kcount, pcount);
@@ -478,8 +478,8 @@ void move_info(sd_move *move, sd_animation *ani, int move_id) {
     printf(" * extra_string_selector: %d\n", move->extra_string_selector);
     printf(" * points:          %d\n", move->points);
 
-    printf(" * Move string:     %s\n", move->move_string);
-    printf(" * Footer string:   %s\n", move->footer_string);
+    printf(" * Move string:     %s\n", str_c(&move->move_string));
+    printf(" * Footer string:   %s\n", str_c(&move->footer_string));
 }
 
 // AF Specific stuff -----------------------------------------------
@@ -698,7 +698,7 @@ void move_strip_key(sd_move *move, sd_animation *ani, const char **key, int kcou
     int kn = move_key_get_id(key[0]);
     switch(kn) {
         case 16:
-            string_strip(move->footer_string, sizeof(move->footer_string), tag);
+            string_strip(&move->footer_string, tag);
             break;
         default:
             anim_strip_key(ani, kn, key, kcount, tag);

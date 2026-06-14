@@ -14,6 +14,7 @@
 #include "formats/animation.h"
 #include "formats/internal/reader.h"
 #include "formats/internal/writer.h"
+#include "utils/str.h"
 #include <stdint.h>
 
 #define SD_MOVE_STRING_MAX 21         ///< Maximum allowed move string length
@@ -109,8 +110,8 @@ typedef struct {
     uint8_t extra_string_selector; ///< Animation string variant selector (ESS_* enum)
     uint8_t points;                ///< Score gained for this hit
 
-    char move_string[SD_MOVE_STRING_MAX];          ///< Move string
-    char footer_string[SD_MOVE_FOOTER_STRING_MAX]; ///< Footer string
+    str move_string;   ///< Move string
+    str footer_string; ///< Footer string
 } sd_move;
 
 /** @brief Initialize Move structure
@@ -174,32 +175,6 @@ int sd_move_set_animation(sd_move *move, const sd_animation *animation);
  * @param move Move struct to modify.
  */
 sd_animation *sd_move_get_animation(const sd_move *move);
-
-/** @brief Set move footer string for the Move struct.
- *
- * Sets the move footer string for the Move struct. Maximum length is
- * 512 bytes. Longer strings will result in error.
- *
- * @retval SD_INVALID_INPUT Input string was too long.
- * @retval SD_SUCCESS Success.
- *
- * @param move Move struct to modify.
- * @param str String to set.
- */
-int sd_move_set_footer_string(sd_move *move, const char *str);
-
-/** @brief Set move string for the Move struct.
- *
- * Sets the move string for the Move struct. Maximum length is
- * 21 bytes. Longer strings will result in error.
- *
- * @retval SD_INVALID_INPUT Input string was too long.
- * @retval SD_SUCCESS Success.
- *
- * @param move Move struct to modify.
- * @param str String to set.
- */
-int sd_move_set_move_string(sd_move *move, const char *str);
 
 /** @brief Load Move from an open reader
  *

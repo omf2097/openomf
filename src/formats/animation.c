@@ -7,13 +7,14 @@
 #include "formats/error.h"
 #include "formats/sprite.h"
 #include "utils/allocator.h"
-#include "utils/c_string_util.h"
 #include "utils/log.h"
 
 int sd_animation_create(sd_animation *ani) {
     assert(ani != NULL);
     memset(ani, 0, sizeof(sd_animation));
     vector_create(&ani->coord_table, sizeof(sd_coord));
+    vector_create_cb(&ani->extra_strings, sizeof(str), str_free_cb);
+    str_create(&ani->anim_string);
     return SD_SUCCESS;
 }
 
@@ -30,13 +31,21 @@ int sd_animation_copy(sd_animation *dst, const sd_animation *src) {
     dst->start_y = src->start_y;
     dst->null = src->null;
     dst->sprite_count = src->sprite_count;
-    dst->extra_string_count = src->extra_string_count;
 
-    // Copy extra strings
-    memcpy(dst->extra_strings, src->extra_strings, sizeof(src->extra_strings));
+    // Copy animation string
+    str_from(&dst->anim_string, &src->anim_string);
 
     // Copy col coordinates
     vector_clone(&dst->coord_table, &src->coord_table);
+
+    // Deep copy extra strings
+    vector_create_cb(&dst->extra_strings, sizeof(str), str_free_cb);
+    iterator it;
+    const str *src_str;
+    vector_iter_begin(&src->extra_strings, &it);
+    foreach(it, src_str) {
+        str_from(vector_append_ptr(&dst->extra_strings), src_str);
+    }
 
     // Copy sprites
     for(int i = 0; i < SD_SPRITE_COUNT_MAX; i++) {
@@ -58,52 +67,11 @@ void sd_animation_free(sd_animation *anim) {
         }
     }
     vector_free(&anim->coord_table);
-}
 
-int sd_animation_set_anim_string(sd_animation *ani, const char *str) {
-    if(strlen(str) >= SD_ANIMATION_STRING_MAX) {
-        return SD_INVALID_INPUT;
-    }
-    strncpy_or_abort(ani->anim_string, str, sizeof(ani->anim_string));
-    return SD_SUCCESS;
-}
+    // The vector's free callback frees each str element.
+    vector_free(&anim->extra_strings);
 
-int sd_animation_get_extra_string_count(const sd_animation *anim) {
-    return anim->extra_string_count;
-}
-
-int sd_animation_set_extra_string(sd_animation *ani, int num, const char *str) {
-    if(num < 0 || num >= ani->extra_string_count) {
-        return SD_INVALID_INPUT;
-    }
-    if(strlen(str) >= SD_EXTRA_STRING_MAX) {
-        return SD_INVALID_INPUT;
-    }
-    strncpy(ani->extra_strings[num], str, SD_EXTRA_STRING_MAX);
-    return SD_SUCCESS;
-}
-
-int sd_animation_push_extra_string(sd_animation *anim, const char *str) {
-    if(strlen(str) >= SD_EXTRA_STRING_MAX || anim->extra_string_count >= SD_EXTRASTR_COUNT_MAX) {
-        return SD_INVALID_INPUT;
-    }
-    strncpy(anim->extra_strings[anim->extra_string_count++], str, SD_EXTRA_STRING_MAX);
-    return SD_SUCCESS;
-}
-
-int sd_animation_pop_extra_string(sd_animation *anim) {
-    if(anim->extra_string_count <= 0) {
-        return SD_INVALID_INPUT;
-    }
-    anim->extra_string_count--;
-    return SD_SUCCESS;
-}
-
-char *sd_animation_get_extra_string(sd_animation *anim, int num) {
-    if(num < 0 || num >= anim->extra_string_count) {
-        return NULL;
-    }
-    return anim->extra_strings[num];
+    str_free(&anim->anim_string);
 }
 
 int sd_animation_get_sprite_count(const sd_animation *anim) {
@@ -183,46 +151,33 @@ int sd_animation_load(sd_reader *r, sd_animation *ani) {
         const uint16_t a = tmp & 0xffff;
         const uint16_t b = (tmp & 0xffff0000) >> 16;
         // Extract 10 bit signed integers to x and y
-        sd_coord coord;
-        coord.x = ((a & 0x3ff) ^ 0x200) - 0x200;
-        coord.null = (a >> 10);
-        coord.y = ((b & 0x3ff) ^ 0x200) - 0x200;
-        coord.frame_id = (b >> 10);
-        vector_append(&ani->coord_table, &coord);
+        sd_coord *coord = vector_append_ptr(&ani->coord_table);
+        coord->x = ((a & 0x3ff) ^ 0x200) - 0x200;
+        coord->null = (a >> 10);
+        coord->y = ((b & 0x3ff) ^ 0x200) - 0x200;
+        coord->frame_id = (b >> 10);
     }
 
     // Animation string header
-    uint16_t size = sd_read_uword(r);
-    if(size >= SD_ANIMATION_STRING_MAX) {
-        log_debug("Animation string header too big! Expected max %hu bytes, got %hu bytes.", SD_ANIMATION_STRING_MAX,
-                  size);
-        return SD_FILE_PARSE_ERROR;
-    }
-    sd_read_buf(r, ani->anim_string, size + 1);
-    if(ani->anim_string[size] != 0) {
-        log_debug("Animation string header did not end in null byte!");
+    if(!sd_read_terminated_str(r, &ani->anim_string, SD_ANIMATION_STRING_MAX)) {
+        log_debug("Animation string header too long or not null terminated!");
         return SD_FILE_PARSE_ERROR;
     }
 
     // Extra animation strings
-    ani->extra_string_count = sd_read_ubyte(r);
-    if(ani->extra_string_count > SD_EXTRASTR_COUNT_MAX) {
-        log_debug("Animation has too many extra strings! Expected max %hhu strings, got %hhu strings.",
-                  SD_EXTRASTR_COUNT_MAX, ani->extra_string_count);
+    const uint8_t extra_string_count = sd_read_ubyte(r);
+    if(extra_string_count > SD_EXTRASTR_COUNT_MAX) {
+        log_debug("Animation has too many extra strings! Expected max %d strings, got %hhu strings.",
+                  SD_EXTRASTR_COUNT_MAX, extra_string_count);
         return SD_FILE_PARSE_ERROR;
     }
-    for(int i = 0; i < ani->extra_string_count; i++) {
-        size = sd_read_uword(r);
-        if(size >= SD_EXTRA_STRING_MAX) {
-            log_debug("Animation extra string %d is too long! Expected max %hu bytes, got %hu bytes.", i,
-                      SD_EXTRA_STRING_MAX, size);
+    for(int i = 0; i < extra_string_count; i++) {
+        str extra_string;
+        if(!sd_read_terminated_str(r, &extra_string, SD_EXTRA_STRING_MAX)) {
+            log_debug("Animation extra string %d too long or not null terminated!", i);
             return SD_FILE_PARSE_ERROR;
         }
-        sd_read_buf(r, ani->extra_strings[i], size + 1);
-        if(ani->extra_strings[i][size] != 0) {
-            log_debug("Animation extra string %d did not end in null byte!", i);
-            return SD_FILE_PARSE_ERROR;
-        }
+        vector_append(&ani->extra_strings, &extra_string);
     }
 
     // Sprites
@@ -269,18 +224,14 @@ int sd_animation_save(sd_writer *w, const sd_animation *ani) {
     }
 
     // Animation string header
-    uint16_t size = strlen(ani->anim_string);
-    sd_write_uword(w, size);
-    sd_write_buf(w, ani->anim_string, size);
-    sd_write_ubyte(w, 0);
+    sd_write_terminated_str(w, &ani->anim_string);
 
     // Extra animation strings
-    sd_write_ubyte(w, ani->extra_string_count);
-    for(int i = 0; i < ani->extra_string_count; i++) {
-        size = strlen(ani->extra_strings[i]);
-        sd_write_uword(w, size);
-        sd_write_buf(w, ani->extra_strings[i], size);
-        sd_write_ubyte(w, 0);
+    sd_write_ubyte(w, vector_size(&ani->extra_strings));
+    const str *extra_string;
+    vector_iter_begin(&ani->extra_strings, &it);
+    foreach(it, extra_string) {
+        sd_write_terminated_str(w, extra_string);
     }
 
     // Sprites

@@ -72,19 +72,19 @@ int anim_header_diff(sd_animation *a, sd_animation *b) {
     d_found |= int_diff("     + Start X", VNAME(start_x));
     d_found |= int_diff("     + Start Y", VNAME(start_y));
     d_found |= int_diff("     + Sprite count:", VNAME(sprite_count));
-    d_found |= int_diff("     + Extra string count", VNAME(extra_string_count));
-    d_found |= str_diff("     + Animation string", VNAME(anim_string));
+    d_found |= int_diff("     + Extra string count", vector_size(&a->extra_strings), vector_size(&b->extra_strings));
+    d_found |= str_diff("     + Animation string", str_c(&a->anim_string), str_c(&b->anim_string));
     return d_found;
 }
 
 int anim_extrastrings_diff(sd_animation *a, sd_animation *b) {
     int d_found = 0;
     char k[20];
-    if(a->extra_string_count == b->extra_string_count) {
+    if(vector_size(&a->extra_strings) == vector_size(&b->extra_strings)) {
         printf("   * Extra strings:\n");
-        for(int i = 0; i < a->extra_string_count; i++) {
-            sprintf(k, "     + %d", i);
-            d_found |= str_diff(k, a->extra_strings[i], b->extra_strings[i]);
+        for(unsigned int i = 0; i < vector_size(&a->extra_strings); i++) {
+            sprintf(k, "     + %u", i);
+            d_found |= str_diff(k, str_c(vector_get(&a->extra_strings, i)), str_c(vector_get(&b->extra_strings, i)));
         }
     }
     return d_found;

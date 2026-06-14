@@ -277,7 +277,7 @@ void bkanim_set_key(sd_bk_anim *bka, sd_animation *ani, const char **key, int kc
             bka->hazard_damage = conv_ubyte(value);
             break;
         case 6:
-            sd_bk_set_anim_string(bka, value);
+            str_set_c(&bka->footer_string, value);
             break;
         default:
             anim_set_key(ani, kn, key, kcount, value);
@@ -309,7 +309,7 @@ void bkanim_get_key(sd_bk_anim *bka, sd_animation *ani, const char **key, int kc
             printf("%d\n", bka->hazard_damage);
             break;
         case 6:
-            printf("%s\n", bka->footer_string);
+            printf("%s\n", str_c(&bka->footer_string));
             break;
         default:
             anim_get_key(ani, kn, key, kcount, pcount);
@@ -366,7 +366,7 @@ void bkanim_info(sd_bk_anim *bka, sd_animation *ani, int anim) {
     printf(" * Repeat:          %d\n", bka->repeat);
     printf(" * Probability:     %d\n", bka->probability);
     printf(" * hazard damage:   %d\n", bka->hazard_damage);
-    printf(" * String:          %s\n", bka->footer_string);
+    printf(" * String:          %s\n", str_c(&bka->footer_string));
     printf("\n");
 
     anim_common_info(ani);

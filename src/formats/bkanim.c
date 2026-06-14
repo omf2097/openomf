@@ -6,13 +6,13 @@
 #include "formats/bkanim.h"
 #include "formats/error.h"
 #include "utils/allocator.h"
-#include "utils/c_string_util.h"
 #include "utils/log.h"
 
 int sd_bk_anim_create(sd_bk_anim *bka) {
     assert(bka != NULL);
     // clear everything
     memset(bka, 0, sizeof(sd_bk_anim));
+    str_create(&bka->footer_string);
     return SD_SUCCESS;
 }
 
@@ -33,7 +33,7 @@ int sd_bk_anim_copy(sd_bk_anim *dst, const sd_bk_anim *src) {
     dst->hazard_damage = src->hazard_damage;
 
     // Footer string
-    strncpy(dst->footer_string, src->footer_string, sizeof(dst->footer_string));
+    str_from(&dst->footer_string, &src->footer_string);
 
     // Copy animation (if exists)
     if(src->animation != NULL) {
@@ -51,11 +51,11 @@ void sd_bk_anim_free(sd_bk_anim *bka) {
         sd_animation_free(bka->animation);
         omf_free(bka->animation);
     }
+    str_free(&bka->footer_string);
 }
 
 int sd_bk_anim_load(sd_reader *r, sd_bk_anim *bka) {
     int ret;
-    uint16_t size;
 
     // BK Specific animation header
     bka->null = sd_read_ubyte(r);
@@ -66,17 +66,9 @@ int sd_bk_anim_load(sd_reader *r, sd_bk_anim *bka) {
     bka->hazard_damage = sd_read_ubyte(r);
 
     // Footer string
-    size = sd_read_uword(r);
-    if(size >= SD_BK_FOOTER_STRING_MAX) {
-        log_debug("BK specific animation footer too big! Expected max %d bytes, got %hu bytes.",
-                  SD_BK_FOOTER_STRING_MAX, size);
+    if(!sd_read_padded_str(r, &bka->footer_string, SD_BK_FOOTER_STRING_MAX)) {
+        log_debug("BK specific animation footer too big! Expected max %d bytes.", SD_BK_FOOTER_STRING_MAX);
         return SD_FILE_PARSE_ERROR;
-    }
-    if(size > 0) {
-        sd_read_buf(r, bka->footer_string, size);
-        if(bka->footer_string[size - 1] != 0) {
-            return SD_FILE_PARSE_ERROR;
-        }
     }
 
     // Initialize animation
@@ -94,7 +86,6 @@ int sd_bk_anim_load(sd_reader *r, sd_bk_anim *bka) {
 
 int sd_bk_anim_save(sd_writer *w, const sd_bk_anim *bka) {
     int ret;
-    uint16_t size;
 
     assert(w != NULL);
     assert(bka != NULL);
@@ -108,13 +99,7 @@ int sd_bk_anim_save(sd_writer *w, const sd_bk_anim *bka) {
     sd_write_ubyte(w, bka->hazard_damage);
 
     // Save footer string
-    size = strlen(bka->footer_string);
-    if(size > 0) {
-        sd_write_uword(w, size + 1);
-        sd_write_buf(w, bka->footer_string, size + 1);
-    } else {
-        sd_write_uword(w, 0);
-    }
+    sd_write_padded_str(w, &bka->footer_string);
 
     // Write animation
     if((ret = sd_animation_save(w, bka->animation)) != SD_SUCCESS) {
@@ -143,12 +128,4 @@ int sd_bk_anim_set_animation(sd_bk_anim *bka, const sd_animation *animation) {
 
 sd_animation *sd_bk_anim_get_animation(const sd_bk_anim *bka) {
     return bka->animation;
-}
-
-int sd_bk_set_anim_string(sd_bk_anim *bka, const char *data) {
-    if(strlen(data) >= SD_BK_FOOTER_STRING_MAX - 1) {
-        return SD_INVALID_INPUT;
-    }
-    strncpy_or_abort(bka->footer_string, data, sizeof(bka->footer_string));
-    return SD_SUCCESS;
 }
