@@ -179,8 +179,8 @@ void sprite_play(sd_bk_file *bk, int scale, int anim, int sprite) {
                 if(changed) {
                     s = bk->anims[anim]->animation->sprites[sprite];
                     sd_sprite_rgba_decode(&img, s, bk->palettes[0]);
-                    int x = s->pos.x + bk->anims[anim]->animation->start_x;
-                    int y = s->pos.y + bk->anims[anim]->animation->start_y;
+                    int x = s->pos.x + bk->anims[anim]->animation->start_pos.x;
+                    int y = s->pos.y + bk->anims[anim]->animation->start_pos.y;
                     printf("Sprite Info: pos=(%d,%d) size=(%d,%d) len=%d\n", x, y, s->width, s->height, s->len);
 
                     if(!(surface = SDL_CreateRGBSurfaceFrom((void *)img.data, img.w, img.h, 32, img.w * 4, rmask, gmask,

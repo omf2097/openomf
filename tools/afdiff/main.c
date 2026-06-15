@@ -69,8 +69,8 @@ int base_info_diff(sd_af_file *a, sd_af_file *b) {
 int anim_header_diff(sd_animation *a, sd_animation *b) {
     int d_found = 0;
     printf("   * Common animation header:\n");
-    d_found |= int_diff("     + Start X", VNAME(start_x));
-    d_found |= int_diff("     + Start Y", VNAME(start_y));
+    d_found |= int_diff("     + Start X", a->start_pos.x, b->start_pos.x);
+    d_found |= int_diff("     + Start Y", a->start_pos.y, b->start_pos.y);
     d_found |= int_diff("     + Sprite count:", VNAME(sprite_count));
     d_found |= int_diff("     + Extra string count", vector_size(&a->extra_strings), vector_size(&b->extra_strings));
     d_found |= str_diff("     + Animation string", str_c(&a->anim_string), str_c(&b->anim_string));

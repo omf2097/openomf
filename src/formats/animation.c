@@ -27,8 +27,7 @@ int sd_animation_copy(sd_animation *dst, const sd_animation *src) {
     memset(dst, 0, sizeof(sd_animation));
 
     // Copy source
-    dst->start_x = src->start_x;
-    dst->start_y = src->start_y;
+    dst->start_pos = src->start_pos;
     dst->null = src->null;
     dst->sprite_count = src->sprite_count;
 
@@ -132,8 +131,8 @@ int sd_animation_load(sd_reader *r, sd_animation *ani) {
     int ret;
 
     // Animation header
-    ani->start_x = sd_read_word(r);
-    ani->start_y = sd_read_word(r);
+    ani->start_pos.x = sd_read_word(r);
+    ani->start_pos.y = sd_read_word(r);
     ani->null = sd_read_udword(r);
     const uint16_t coord_count = sd_read_uword(r);
     ani->sprite_count = sd_read_ubyte(r);
@@ -202,8 +201,8 @@ int sd_animation_save(sd_writer *w, const sd_animation *ani) {
     assert(w != NULL);
 
     // Animation header
-    sd_write_word(w, ani->start_x);
-    sd_write_word(w, ani->start_y);
+    sd_write_word(w, ani->start_pos.x);
+    sd_write_word(w, ani->start_pos.y);
     sd_write_udword(w, ani->null);
     sd_write_uword(w, vector_size(&ani->coord_table));
     sd_write_ubyte(w, ani->sprite_count);

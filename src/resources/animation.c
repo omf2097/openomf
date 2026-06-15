@@ -14,7 +14,7 @@ void animation_create(animation_source type, str *name, animation *ani, array *s
 
     // Copy simple stuff
     ani->id = id;
-    ani->start_pos = vec2i_create(sdani->start_x, sdani->start_y);
+    ani->start_pos = sdani->start_pos;
     str_from(&ani->animation_string, &sdani->anim_string);
 
     // Copy collision coordinates

@@ -16,6 +16,7 @@
 #include "formats/internal/writer.h"
 #include "formats/sprite.h"
 #include "utils/str.h"
+#include "utils/vec.h"
 #include "utils/vector.h"
 #include <stdint.h>
 
@@ -29,7 +30,7 @@
 /** @brief Generic animation container
  *
  * When starting animation playback, it should be positioned to the location pointed to by the
- * start_x, start_y variables. Note that sprites may also have their own position offsets.
+ * start position. Note that sprites may also have their own position offsets.
  *
  * Animation always has some amount of sprites and an animation string.
  * The string is used as a scripting language to tell the animation on how to go about it's business.
@@ -40,8 +41,7 @@
  */
 typedef struct {
     // Header
-    int16_t start_x;      ///< Animation start position, X-axis
-    int16_t start_y;      ///< Animation start position, Y-axis
+    vec2i start_pos;      ///< Animation start position
     int32_t null;         ///< Probably filler data
     uint8_t sprite_count; ///< Number of sprites in animation
 

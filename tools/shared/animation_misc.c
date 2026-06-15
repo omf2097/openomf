@@ -147,8 +147,8 @@ void sprite_info(sd_sprite *s, int anim, int sprite) {
 
 void anim_common_info(sd_animation *ani) {
     printf("Common animation header:\n");
-    printf(" * Start X:          %d\n", ani->start_x);
-    printf(" * Start Y:          %d\n", ani->start_y);
+    printf(" * Start X:          %d\n", ani->start_pos.x);
+    printf(" * Start Y:          %d\n", ani->start_pos.y);
     printf(" * Animation header: %d\n", ani->null);
     printf(" * Collision coords: %u\n", vector_size(&ani->coord_table));
     iterator it;
@@ -279,10 +279,10 @@ void anim_set_key(sd_animation *ani, int kn, const char **key, int kcount, const
             }
             break;
         case 12:
-            ani->start_x = conv_word(value);
+            ani->start_pos.x = conv_word(value);
             break;
         case 13:
-            ani->start_y = conv_word(value);
+            ani->start_pos.y = conv_word(value);
             break;
         default:
             printf("Unknown key!\n");
@@ -343,10 +343,10 @@ void anim_get_key(sd_animation *ani, int kn, const char **key, int kcount, int p
             }
             break;
         case 12:
-            printf("%d\n", ani->start_x);
+            printf("%d\n", ani->start_pos.x);
             break;
         case 13:
-            printf("%d\n", ani->start_y);
+            printf("%d\n", ani->start_pos.y);
             break;
         default:
             printf("Unknown key!\n");
