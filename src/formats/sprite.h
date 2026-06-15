@@ -16,6 +16,7 @@
 #include "formats/internal/writer.h"
 #include "formats/rgba_image.h"
 #include "formats/vga_image.h"
+#include "utils/vec.h"
 #include <stdint.h>
 
 /** @brief Sprite image
@@ -26,8 +27,7 @@
  * "invisible" pixels it has.
  */
 typedef struct {
-    int16_t pos_x;   ///< Position of sprite, X-axis
-    int16_t pos_y;   ///< Position of sprite, Y-axis
+    vec2i pos;       ///< Position of sprite
     uint8_t index;   ///< Sprite index
     uint8_t missing; ///< Is sprite data missing? If this is 1, then data points to the data of another sprite.
     uint16_t width;  ///< Pixel width of the sprite

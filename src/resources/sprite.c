@@ -12,7 +12,7 @@ void sprite_create_custom(sprite *sp, vec2i pos, surface *data) {
 void sprite_create(sprite *sp, void *src, int id) {
     sd_sprite *sdsprite = (sd_sprite *)src;
     sp->id = id;
-    sp->pos = vec2i_create(sdsprite->pos_x, sdsprite->pos_y);
+    sp->pos = sdsprite->pos;
 
     if(sdsprite->width == 0 || sdsprite->height == 0) {
         sp->data = NULL;
@@ -34,7 +34,7 @@ void sprite_create(sprite *sp, void *src, int id) {
 void sprite_create_reference(sprite *sp, void *src, int id, void *data) {
     sd_sprite *sdsprite = (sd_sprite *)src;
     sp->id = id;
-    sp->pos = vec2i_create(sdsprite->pos_x, sdsprite->pos_y);
+    sp->pos = sdsprite->pos;
     sp->data = data;
     sp->owned = false;
 }

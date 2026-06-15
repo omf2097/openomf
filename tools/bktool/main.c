@@ -58,7 +58,7 @@ void sprite_play(sd_bk_file *bk, int scale, int anim, int sprite) {
         return;
     }
 
-    printf("Sprite Info: pos=(%d,%d) size=(%d,%d) len=%d\n", s->pos_x, s->pos_y, s->width, s->height, s->len);
+    printf("Sprite Info: pos=(%d,%d) size=(%d,%d) len=%d\n", s->pos.x, s->pos.y, s->width, s->height, s->len);
 
     SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
@@ -108,8 +108,8 @@ void sprite_play(sd_bk_file *bk, int scale, int anim, int sprite) {
     SDL_FreeSurface(surface);
     sd_rgba_image_free(&img);
 
-    rect.x = s->pos_x;
-    rect.y = s->pos_y;
+    rect.x = s->pos.x;
+    rect.y = s->pos.y;
     rect.w = s->width;
     rect.h = s->height;
 
@@ -179,8 +179,8 @@ void sprite_play(sd_bk_file *bk, int scale, int anim, int sprite) {
                 if(changed) {
                     s = bk->anims[anim]->animation->sprites[sprite];
                     sd_sprite_rgba_decode(&img, s, bk->palettes[0]);
-                    int x = s->pos_x + bk->anims[anim]->animation->start_x;
-                    int y = s->pos_y + bk->anims[anim]->animation->start_y;
+                    int x = s->pos.x + bk->anims[anim]->animation->start_x;
+                    int y = s->pos.y + bk->anims[anim]->animation->start_y;
                     printf("Sprite Info: pos=(%d,%d) size=(%d,%d) len=%d\n", x, y, s->width, s->height, s->len);
 
                     if(!(surface = SDL_CreateRGBSurfaceFrom((void *)img.data, img.w, img.h, 32, img.w * 4, rmask, gmask,

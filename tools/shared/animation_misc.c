@@ -23,10 +23,10 @@ int sprite_key_get_id(const char *key) {
 void sprite_set_key(sd_sprite *s, const char **key, int kcount, const char *value) {
     switch(sprite_key_get_id(key[0])) {
         case 0:
-            s->pos_x = conv_word(value);
+            s->pos.x = conv_word(value);
             break;
         case 1:
-            s->pos_y = conv_word(value);
+            s->pos.y = conv_word(value);
             break;
         case 2:
             s->index = conv_ubyte(value);
@@ -47,10 +47,10 @@ void sprite_set_key(sd_sprite *s, const char **key, int kcount, const char *valu
 void sprite_get_key(sd_sprite *s, const char **key, int kcount) {
     switch(sprite_key_get_id(key[0])) {
         case 0:
-            printf("%d\n", s->pos_x);
+            printf("%d\n", s->pos.x);
             break;
         case 1:
-            printf("%d\n", s->pos_y);
+            printf("%d\n", s->pos.y);
             break;
         case 2:
             printf("%d\n", s->index);
@@ -136,8 +136,8 @@ void sprite_import_key(sd_sprite *s, const char **key, int kcount, const path *f
 
 void sprite_info(sd_sprite *s, int anim, int sprite) {
     printf("Animation #%d, Sprite #%d information:\n", anim, sprite);
-    printf(" * X:        %d\n", s->pos_x);
-    printf(" * Y:        %d\n", s->pos_y);
+    printf(" * X:        %d\n", s->pos.x);
+    printf(" * Y:        %d\n", s->pos.y);
     printf(" * W:        %d\n", s->width);
     printf(" * H:        %d\n", s->height);
     printf(" * Index:    %d\n", s->index);

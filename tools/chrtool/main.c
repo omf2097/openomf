@@ -23,7 +23,7 @@ void print_chr_pilot_info(sd_chr_file *chr) {
     printf("\n");
     printf("Portrait:\n");
     printf("  - Size = (%d,%d)\n", chr->photo->width, chr->photo->height);
-    printf("  - Position = (%d,%d)\n", chr->photo->pos_x, chr->photo->pos_y);
+    printf("  - Position = (%d,%d)\n", chr->photo->pos.x, chr->photo->pos.y);
     printf("  - Length = %d\n", chr->photo->len);
     printf("  - I/M = %u/%u\n", chr->photo->index, chr->photo->missing);
 }

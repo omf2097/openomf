@@ -26,7 +26,7 @@ void print_locale(sd_tournament_locale *locale, int lang_id) {
     // Print locale information
     printf("\n[%d] Locale '%s':\n", lang_id, language_names[lang_id]);
     printf("  - Logo: length = %d, size = (%d,%d), pos = (%d,%d)\n", locale->logo->len, locale->logo->width,
-           locale->logo->height, locale->logo->pos_x, locale->logo->pos_y);
+           locale->logo->height, locale->logo->pos.x, locale->logo->pos.y);
     printf("  - Title: %s\n", str_c(&locale->title));
 
     // Print victory text pages

@@ -57,8 +57,7 @@ void animation_create(animation_source type, str *name, animation *ani, array *s
                 sprite_create(tmp_sprite, (void *)sp, i);
                 tmp_sprite->data->render_w = sdani->sprites[i]->width;
                 tmp_sprite->data->render_h = sdani->sprites[i]->height;
-                tmp_sprite->pos.x = sdani->sprites[i]->pos_x;
-                tmp_sprite->pos.y = sdani->sprites[i]->pos_y;
+                tmp_sprite->pos = sdani->sprites[i]->pos;
             } else {
                 sprite_create(tmp_sprite, (void *)sdani->sprites[i], i);
             }
@@ -77,7 +76,7 @@ void animation_create(animation_source type, str *name, animation *ani, array *s
     for(int i = 0; i < sdani->sprite_count; i++) {
         vector new_coords;
         vec2i origin;
-        vec2i sprite_offset = vec2i_create(sdani->sprites[i]->pos_x, sdani->sprites[i]->pos_y);
+        vec2i sprite_offset = sdani->sprites[i]->pos;
         vector_create_with_size(&new_coords, sizeof(collision_coord), 0);
         if(modmanager_get_hitcoords(type, name, id, i, &new_coords, &origin, &sprite_offset)) {
             if(vector_size(&new_coords) > 0) {

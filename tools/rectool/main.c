@@ -570,7 +570,7 @@ int main(int argc, char *argv[]) {
         if(rec.pilots[i].info.photo) {
             printf("  - Photo len  = %d\n", rec.pilots[i].info.photo->len);
             printf("  - Photo size = (%d,%d)\n", rec.pilots[i].info.photo->width, rec.pilots[i].info.photo->height);
-            printf("  - Photo pos  = (%d,%d)\n", rec.pilots[i].info.photo->pos_x, rec.pilots[i].info.photo->pos_y);
+            printf("  - Photo pos  = (%d,%d)\n", rec.pilots[i].info.photo->pos.x, rec.pilots[i].info.photo->pos.y);
             printf("  - Missing    = %d\n", rec.pilots[i].info.photo->missing);
             printf("  - Index      = %d\n", rec.pilots[i].info.photo->index);
         } else {
