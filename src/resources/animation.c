@@ -24,7 +24,7 @@ void animation_create(animation_source type, str *name, animation *ani, array *s
     vector_iter_begin(&sdani->coord_table, &it);
     foreach(it, coord) {
         collision_coord *tmp_coord = vector_append_ptr(&ani->collision_coords);
-        tmp_coord->pos = vec2i_create(coord->x, coord->y);
+        tmp_coord->pos = coord->pos;
         tmp_coord->frame_index = coord->frame_id;
     }
 

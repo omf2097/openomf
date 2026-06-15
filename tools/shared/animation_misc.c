@@ -155,7 +155,8 @@ void anim_common_info(sd_animation *ani) {
     sd_coord *coord;
     vector_iter_begin(&ani->coord_table, &it);
     foreach(it, coord) {
-        printf("   - x,y = (%d,%d), null = %d, frame_id = %d\n", coord->x, coord->y, coord->null, coord->frame_id);
+        printf("   - x,y = (%d,%d), null = %d, frame_id = %d\n", coord->pos.x, coord->pos.y, coord->null,
+               coord->frame_id);
     }
     printf(" * Sprites:          %d\n", ani->sprite_count);
     printf(" * Animation str:    %s\n", str_c(&ani->anim_string));
@@ -301,7 +302,7 @@ void anim_get_key(sd_animation *ani, int kn, const char **key, int kcount, int p
                 tmp = conv_ubyte(key[1]);
                 const sd_coord *coord = vector_get(&ani->coord_table, tmp);
                 if(coord != NULL) {
-                    printf("x,y = (%d,%d), null = %d, frame_id = %d\n", coord->x, coord->y, coord->null,
+                    printf("x,y = (%d,%d), null = %d, frame_id = %d\n", coord->pos.x, coord->pos.y, coord->null,
                            coord->frame_id);
                 } else {
                     printf("Collision table index %d does not exist!\n", tmp);
@@ -312,7 +313,7 @@ void anim_get_key(sd_animation *ani, int kn, const char **key, int kcount, int p
                 sd_coord *coord;
                 vector_iter_begin(&ani->coord_table, &it);
                 foreach(it, coord) {
-                    printf("x,y = (%d,%d), null = %d, frame_id = %d\n", coord->x, coord->y, coord->null,
+                    printf("x,y = (%d,%d), null = %d, frame_id = %d\n", coord->pos.x, coord->pos.y, coord->null,
                            coord->frame_id);
                 }
                 printf("\n");

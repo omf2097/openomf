@@ -217,7 +217,7 @@ void sprite_play(sd_bk_file *bk, int scale, int anim, int sprite) {
         vector_iter_begin(&animation->coord_table, &it);
         foreach(it, coord) {
             if(coord->frame_id == sprite) {
-                SDL_RenderDrawPoint(renderer, coord->x, coord->y);
+                SDL_RenderDrawPoint(renderer, coord->pos.x, coord->pos.y);
             }
         }
 

@@ -152,9 +152,9 @@ int sd_animation_load(sd_reader *r, sd_animation *ani) {
         const uint16_t b = (tmp & 0xffff0000) >> 16;
         // Extract 10 bit signed integers to x and y
         sd_coord *coord = vector_append_ptr(&ani->coord_table);
-        coord->x = ((a & 0x3ff) ^ 0x200) - 0x200;
+        coord->pos.x = ((a & 0x3ff) ^ 0x200) - 0x200;
         coord->null = (a >> 10);
-        coord->y = ((b & 0x3ff) ^ 0x200) - 0x200;
+        coord->pos.y = ((b & 0x3ff) ^ 0x200) - 0x200;
         coord->frame_id = (b >> 10);
     }
 
@@ -215,11 +215,11 @@ int sd_animation_save(sd_writer *w, const sd_animation *ani) {
     foreach(it, coord) {
         uint32_t tmp = (coord->frame_id & 0x3f);
         tmp = tmp << 10;
-        tmp = (tmp | (coord->y & 0x3ff));
+        tmp = (tmp | (coord->pos.y & 0x3ff));
         tmp = tmp << 6;
         tmp = (tmp | (coord->null & 0x3f));
         tmp = tmp << 10;
-        tmp = (tmp | (coord->x & 0x3ff));
+        tmp = (tmp | (coord->pos.x & 0x3ff));
         sd_write_udword(w, tmp);
     }
 
