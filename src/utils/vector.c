@@ -37,6 +37,14 @@ void vector_create_with_size_cb(vector *vector, unsigned int block_size, unsigne
     vector->free_cb = free_cb;
 }
 
+void vector_reserve(vector *vec, unsigned int reserved) {
+    if(reserved <= vec->reserved) {
+        return;
+    }
+    vec->data = omf_realloc(vec->data, reserved * vec->block_size);
+    vec->reserved = reserved;
+}
+
 void vector_clone(vector *dst, const vector *src) {
     dst->block_size = src->block_size;
     dst->blocks = src->blocks;

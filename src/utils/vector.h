@@ -73,6 +73,13 @@ void vector_create_with_size_cb(vector *vector, unsigned int block_size, unsigne
                                 vector_free_cb free_cb);
 
 /**
+ * @brief Ensure the vector has capacity for at least the given amount of elements.
+ * @param vec Vector to reserve capacity for
+ * @param reserved Number of elements the vector should be able to hold
+ */
+void vector_reserve(vector *vec, unsigned int reserved);
+
+/**
  * @brief Create a deep copy of a vector.
  * @details Copies all elements to a new vector. The free callback is also copied.
  * @param dst Destination vector (will be initialized)
