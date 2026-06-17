@@ -142,9 +142,12 @@ void menu_connect_tick(component *c) {
             p1->pilot->har_id = HAR_JAGUAR;
             p1->pilot->pilot_id = 0;
             p1->pilot->name[0] = '\0';
-            p2->pilot->har_id = HAR_JAGUAR;
-            p2->pilot->pilot_id = 0;
+            p2->pilot->har_id = HAR_PYROS;
+            p2->pilot->pilot_id = 9;
             p2->pilot->name[0] = '\0';
+
+
+            p1->sp_wins = 0;
 
             player1_ctrl = omf_calloc(1, sizeof(controller));
             controller_init(player1_ctrl, gs);
@@ -158,7 +161,7 @@ void menu_connect_tick(component *c) {
             game_player_set_ctrl(p1, player1_ctrl);
 
             // Player 2 controller -- Local
-            settings_keyboard *k = &settings_get()->keys;
+            /*settings_keyboard *k = &settings_get()->keys;
             if(k->ctrl_type1 == CTRL_TYPE_KEYBOARD) {
                 _setup_keyboard(gs, 1, 0);
             } else if(k->ctrl_type1 == CTRL_TYPE_GAMEPAD) {
@@ -166,8 +169,11 @@ void menu_connect_tick(component *c) {
             }
             if(!controller_set_delay(game_player_get_ctrl(game_state_get_player(gs, 1)), NET_INPUT_DELAY)) {
                 log_error("unable to set network controller delay");
-            }
-            game_player_set_selectable(p2, 1);
+            }*/
+            ai_controller_create(player2_ctrl, 4, p2->pilot, 9);
+            game_player_set_ctrl(p2, player2_ctrl);
+
+            game_player_set_selectable(p2, 0);
 
             chr_score_set_difficulty(game_player_get_score(game_state_get_player(gs, 0)), AI_DIFFICULTY_CHAMPION);
             chr_score_set_difficulty(game_player_get_score(game_state_get_player(gs, 1)), AI_DIFFICULTY_CHAMPION);
