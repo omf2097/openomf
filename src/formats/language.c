@@ -57,6 +57,7 @@ int sd_language_load(sd_language *language, const path *filename, bool load_desc
     // Some variables etc.
     unsigned int offset = 0;
     unsigned int *offsets = omf_calloc(string_count + 1, sizeof(unsigned int));
+    vector_reserve(&language->strings, string_count);
 
     // Read titles and offsets
     unsigned int pos = 0;

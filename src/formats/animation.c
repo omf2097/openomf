@@ -13,7 +13,7 @@ int sd_animation_create(sd_animation *ani) {
     assert(ani != NULL);
     memset(ani, 0, sizeof(sd_animation));
     vector_create(&ani->coord_table, sizeof(sd_coord));
-    vector_create_cb(&ani->extra_strings, sizeof(str), str_free_cb);
+    vector_create_with_size_cb(&ani->extra_strings, sizeof(str), SD_EXTRASTR_COUNT_MAX, str_free_cb);
     vector_create_cb(&ani->sprites, sizeof(sd_sprite), sd_sprite_free_cb);
     str_create(&ani->anim_string);
     return SD_SUCCESS;
@@ -38,7 +38,7 @@ int sd_animation_copy(sd_animation *dst, const sd_animation *src) {
     vector_clone(&dst->coord_table, &src->coord_table);
 
     // Deep copy extra strings
-    vector_create_cb(&dst->extra_strings, sizeof(str), str_free_cb);
+    vector_create_with_size_cb(&dst->extra_strings, sizeof(str), SD_EXTRASTR_COUNT_MAX, str_free_cb);
     iterator it;
     const str *src_str;
     vector_iter_begin(&src->extra_strings, &it);
@@ -118,6 +118,7 @@ int sd_animation_load(sd_reader *r, sd_animation *ani) {
     }
 
     // Read collision point data
+    vector_reserve(&ani->coord_table, coord_count);
     for(int i = 0; i < coord_count; i++) {
         const uint32_t tmp = sd_read_udword(r);
         const uint16_t a = tmp & 0xffff;
