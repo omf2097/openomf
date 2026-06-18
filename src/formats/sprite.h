@@ -42,11 +42,9 @@ typedef struct {
  *
  * Initializes the sprite structure with empty values.
  *
- * @retval SD_SUCCESS Success.
- *
  * @param sprite Allocated sprite struct pointer.
  */
-int sd_sprite_create(sd_sprite *sprite);
+void sd_sprite_create(sd_sprite *sprite);
 
 /** @brief Copy sprite structure
  *
@@ -56,12 +54,10 @@ int sd_sprite_create(sd_sprite *sprite);
  * Destination buffer does not need to be cleared. Source buffer must be a valid
  * sprite structure, or problems are likely to appear.
  *
- * @retval SD_SUCCESS Success.
- *
  * @param dst Destination sprite struct pointer.
  * @param src Source sprite struct pointer.
  */
-int sd_sprite_copy(sd_sprite *dst, const sd_sprite *src);
+void sd_sprite_copy(sd_sprite *dst, const sd_sprite *src);
 
 /** @brief Free sprite structure
  *

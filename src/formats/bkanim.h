@@ -38,11 +38,9 @@ typedef struct {
  *
  * Initializes the BK animation info structure with empty values.
  *
- * @retval SD_SUCCESS Success.
- *
  * @param bka Allocated BK animation info struct pointer.
  */
-int sd_bk_anim_create(sd_bk_anim *bka);
+void sd_bk_anim_create(sd_bk_anim *bka);
 
 /** @brief Copy BK animation info structure
  *
@@ -52,12 +50,10 @@ int sd_bk_anim_create(sd_bk_anim *bka);
  * Destination buffer does not need to be cleared. Source buffer must be a valid
  * move structure, or problems are likely to appear.
  *
- * @retval SD_SUCCESS Success.
- *
  * @param dst Destination BK animation info struct pointer.
  * @param src Source BK animation info struct pointer.
  */
-int sd_bk_anim_copy(sd_bk_anim *dst, const sd_bk_anim *src);
+void sd_bk_anim_copy(sd_bk_anim *dst, const sd_bk_anim *src);
 
 /** @brief Free BK animation info structure
  *
@@ -81,12 +77,10 @@ void sd_bk_anim_free_cb(void *ptr);
  *
  * A NULL value for animation field will result in bka->animation field getting freed.
  *
- * @retval SD_SUCCESS Success.
- *
  * @param bka BK animation info struct to modify.
  * @param animation Animation to set. This will be copied.
  */
-int sd_bk_anim_set_animation(sd_bk_anim *bka, const sd_animation *animation);
+void sd_bk_anim_set_animation(sd_bk_anim *bka, const sd_animation *animation);
 
 /** @brief Get the current animation
  *

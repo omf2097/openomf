@@ -10,17 +10,15 @@
 #include "formats/move.h"
 #include "utils/allocator.h"
 
-int sd_af_create(sd_af_file *af) {
+void sd_af_create(sd_af_file *af) {
     assert(af != NULL);
 
     // Clear everything
     memset(af, 0, sizeof(sd_af_file));
     array_create_with_size_cb(&af->moves, MAX_AF_MOVES, sd_move_free_cb);
-    return SD_SUCCESS;
 }
 
-int sd_af_copy(sd_af_file *dst, const sd_af_file *src) {
-    int ret;
+void sd_af_copy(sd_af_file *dst, const sd_af_file *src) {
     assert(dst != NULL);
     assert(src != NULL);
 
@@ -50,13 +48,9 @@ int sd_af_copy(sd_af_file *dst, const sd_af_file *src) {
         if(src_move != NULL) {
             sd_move *copy = omf_calloc(1, sizeof(sd_move));
             array_set(&dst->moves, i, copy);
-            if((ret = sd_move_copy(copy, src_move)) != SD_SUCCESS) {
-                return ret;
-            }
+            sd_move_copy(copy, src_move);
         }
     }
-
-    return SD_SUCCESS;
 }
 
 int sd_af_set_move(sd_af_file *af, int index, const sd_move *move) {
@@ -72,7 +66,8 @@ int sd_af_set_move(sd_af_file *af, int index, const sd_move *move) {
 
     sd_move *copy = omf_calloc(1, sizeof(sd_move));
     array_set(&af->moves, index, copy);
-    return sd_move_copy(copy, move);
+    sd_move_copy(copy, move);
+    return SD_SUCCESS;
 }
 
 sd_move *sd_af_get_move(sd_af_file *af, int index) {
@@ -106,7 +101,6 @@ void sd_af_postprocess(sd_af_file *af) {
 
 int sd_af_load(sd_af_file *af, const path *filename) {
     int ret = SD_SUCCESS;
-    uint8_t moveno = 0;
 
     // Initialize reader
     sd_reader *r = sd_reader_open(filename);
@@ -129,17 +123,15 @@ int sd_af_load(sd_af_file *af, const path *filename) {
 
     // Read animations
     while(1) {
-        moveno = sd_read_ubyte(r);
-        if(moveno >= MAX_AF_MOVES || !sd_reader_ok(r)) {
+        uint8_t move_no = sd_read_ubyte(r);
+        if(move_no >= MAX_AF_MOVES || !sd_reader_ok(r)) {
             break;
         }
 
         // Read move
         sd_move *move = omf_calloc(1, sizeof(sd_move));
-        array_set(&af->moves, moveno, move);
-        if((ret = sd_move_create(move)) != SD_SUCCESS) {
-            goto cleanup;
-        }
+        array_set(&af->moves, move_no, move);
+        sd_move_create(move);
         if((ret = sd_move_load(r, move)) != SD_SUCCESS) {
             goto cleanup;
         }

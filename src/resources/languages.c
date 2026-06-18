@@ -34,9 +34,7 @@ bool lang_init(void) {
 
     // Load up language file
     language = omf_calloc(1, sizeof(sd_language));
-    if(sd_language_create(language) != SD_SUCCESS) {
-        goto error_0;
-    }
+    sd_language_create(language);
     // Note: we don't load descriptions -- we don't use them.
     if(sd_language_load(language, &language_file1, false)) {
         log_error("Unable to load language file '%s'!", path_c(&language_file1));
@@ -83,9 +81,7 @@ bool lang_init(void) {
     str_free(&ext);
 
     language2 = omf_calloc(1, sizeof(sd_language));
-    if(sd_language_create(language2) != SD_SUCCESS) {
-        goto error_0;
-    }
+    sd_language_create(language2);
     // Note: we don't load descriptions -- we don't use them.
     if(sd_language_load(language2, &language_file2, false)) {
         log_error("Unable to load OpenOMF language file '%s'!", path_c(&language_file2));

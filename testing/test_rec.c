@@ -15,7 +15,7 @@ void fill(char *buf, int len) {
 }
 
 void test_sd_rec_create(void) {
-    CU_ASSERT(sd_rec_create(&rec) == SD_SUCCESS);
+    sd_rec_create(&rec);
 
     // Set some values
     for(int i = 0; i < 10; i++) {
@@ -39,7 +39,7 @@ void test_rec_roundtrip(void) {
     path_from_c(&test_file, "test.rec");
 
     // Roundtripping
-    CU_ASSERT(sd_rec_create(&loaded) == SD_SUCCESS);
+    sd_rec_create(&loaded);
     CU_ASSERT(sd_rec_save(&rec, &test_file) == SD_SUCCESS);
     CU_ASSERT(sd_rec_load(&loaded, &test_file) == SD_SUCCESS);
 
@@ -67,7 +67,7 @@ void test_rec_roundtrip(void) {
 void test_crystal_shirro_load(void) {
     path test_path;
     path_from_parts(&test_path, TESTS_ROOT_DIR, "recs", "crystal-shirro.rec");
-    CU_ASSERT(sd_rec_create(&rec) == SD_SUCCESS);
+    sd_rec_create(&rec);
     CU_ASSERT(sd_rec_load(&rec, &test_path) == SD_SUCCESS);
     sd_rec_free(&rec);
 }

@@ -52,11 +52,9 @@ typedef struct {
  *
  * Initializes the animation structure with empty values.
  *
- * @retval SD_SUCCESS Success.
- *
  * @param animation Allocated animation struct pointer.
  */
-int sd_animation_create(sd_animation *animation);
+void sd_animation_create(sd_animation *animation);
 
 /** @brief Copy animation structure
  *
@@ -66,12 +64,10 @@ int sd_animation_create(sd_animation *animation);
  * Destination buffer does not need to be cleared. Source buffer must be a valid
  * animation structure, or problems are likely to appear.
  *
- * @retval SD_SUCCESS Success.
- *
  * @param dst Destination animation struct pointer.
  * @param src Source animation struct pointer.
  */
-int sd_animation_copy(sd_animation *dst, const sd_animation *src);
+void sd_animation_copy(sd_animation *dst, const sd_animation *src);
 
 /** @brief Free animation structure
  *
@@ -128,11 +124,9 @@ int sd_animation_push_sprite(sd_animation *animation, const sd_sprite *sprite);
  * Popped data will be automatically freed.
  *
  * @retval SD_INVALID_INPUT Sprite list is already empty
- * @retval SD_SUCCESS Success.
- *
  * @param animation Animation struct to modify
  */
-int sd_animation_pop_sprite(sd_animation *animation);
+void sd_animation_pop_sprite(sd_animation *animation);
 
 /** @brief Get sprite at given index
  *

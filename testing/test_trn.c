@@ -9,15 +9,15 @@
 sd_tournament_file trn;
 
 void test_sd_trn_create(void) {
-    CU_ASSERT(sd_tournament_create(&trn) == SD_SUCCESS);
+    sd_tournament_create(&trn);
 }
 
 void test_sd_trn_roundtripping(void) {
     sd_tournament_file n_trn;
     sd_tournament_file l_trn;
 
-    CU_ASSERT(sd_tournament_create(&n_trn) == SD_SUCCESS);
-    CU_ASSERT(sd_tournament_create(&l_trn) == SD_SUCCESS);
+    sd_tournament_create(&n_trn);
+    sd_tournament_create(&l_trn);
 
     // Set values
     n_trn.enemy_count = 0;

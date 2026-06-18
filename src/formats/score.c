@@ -7,10 +7,9 @@
 #include "formats/score.h"
 #include "utils/c_array_util.h"
 
-int sd_score_create(sd_score *score) {
+void sd_score_create(sd_score *score) {
     assert(score != NULL);
     memset(score, 0, sizeof(sd_score));
-    return SD_SUCCESS;
 }
 
 void sd_score_free(sd_score *score) {

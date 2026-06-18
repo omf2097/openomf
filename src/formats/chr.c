@@ -22,16 +22,15 @@
 #include "utils/c_string_util.h"
 #include "utils/log.h"
 
-int sd_chr_create(sd_chr_file *chr) {
+void sd_chr_create(sd_chr_file *chr) {
     assert(chr != NULL);
     memset(chr, 0, sizeof(sd_chr_file));
     for(int i = 0; i < SD_CHR_CUTSCENE_TEXT_COUNT; i++) {
         str_create(&chr->cutscene_text[i]);
     }
-    return SD_SUCCESS;
 }
 
-int sd_chr_from_trn(sd_chr_file *chr, const sd_tournament_file *trn, const sd_pilot *pilot) {
+void sd_chr_from_trn(sd_chr_file *chr, const sd_tournament_file *trn, const sd_pilot *pilot) {
     int ranked = 0;
     for(uint32_t i = 0; i < trn->enemy_count; i++) {
         chr->enemies[i] = omf_calloc(1, sizeof(sd_chr_enemy));
@@ -63,7 +62,6 @@ int sd_chr_from_trn(sd_chr_file *chr, const sd_tournament_file *trn, const sd_pi
     strncpy_or_abort(chr->pilot.trn_image, trn->pic_file, sizeof(chr->pilot.trn_image));
     chr->photo = omf_calloc(1, sizeof(sd_sprite));
     sd_sprite_copy(chr->photo, pilot->photo);
-    return SD_SUCCESS;
 }
 
 int sd_chr_load(sd_chr_file *chr, const path *filename) {

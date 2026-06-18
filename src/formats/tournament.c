@@ -11,10 +11,9 @@
 #include "utils/c_string_util.h"
 #include "utils/path.h"
 
-int sd_tournament_create(sd_tournament_file *trn) {
+void sd_tournament_create(sd_tournament_file *trn) {
     assert(trn != NULL);
     memset(trn, 0, sizeof(sd_tournament_file));
-    return SD_SUCCESS;
 }
 
 void sd_tournament_locale_create(sd_tournament_locale *locale) {
@@ -58,20 +57,18 @@ static void free_locales(sd_tournament_file *trn) {
     }
 }
 
-int sd_tournament_set_bk_name(sd_tournament_file *trn, const char *bk_name) {
+void sd_tournament_set_bk_name(sd_tournament_file *trn, const char *bk_name) {
     assert(trn != NULL);
     assert(bk_name != NULL);
     snprintf(trn->bk_name, sizeof(trn->bk_name), "%s", bk_name);
-    return SD_SUCCESS;
 }
 
-int sd_tournament_set_pic_name(sd_tournament_file *trn, const char *pic_name) {
+void sd_tournament_set_pic_name(sd_tournament_file *trn, const char *pic_name) {
     assert(trn != NULL);
     assert(pic_name != NULL);
     size_t len = strlen(pic_name) + 1;
     trn->pic_file = omf_realloc(trn->pic_file, len);
     snprintf(trn->pic_file, len, "%s", pic_name);
-    return SD_SUCCESS;
 }
 
 void parse_tournament_description(sd_tournament_locale *locale) {

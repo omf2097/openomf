@@ -41,11 +41,9 @@ typedef struct {
  *
  * Initializes the BK file structure with empty values.
  *
- * @retval SD_SUCCESS Success.
- *
  * @param bk Allocated BK struct pointer.
  */
-int sd_bk_create(sd_bk_file *bk);
+void sd_bk_create(sd_bk_file *bk);
 
 /** @brief Copy BK structure
  *
@@ -55,12 +53,10 @@ int sd_bk_create(sd_bk_file *bk);
  * Destination buffer does not need to be cleared. Source buffer must be a valid
  * BK file structure, or problems are likely to appear.
  *
- * @retval SD_SUCCESS Success.
- *
  * @param dst Destination BK struct pointer.
  * @param src Source BK struct pointer.
  */
-int sd_bk_copy(sd_bk_file *dst, const sd_bk_file *src);
+void sd_bk_copy(sd_bk_file *dst, const sd_bk_file *src);
 
 /** @brief Set background image
  *
@@ -71,12 +67,10 @@ int sd_bk_copy(sd_bk_file *dst, const sd_bk_file *src);
  *
  * A NULL value for image data means that background will be removed.
  *
- * @retval SD_SUCCESS Success.
- *
  * @param bk BK struct pointer.
  * @param img VGA image data struct.
  */
-int sd_bk_set_background(sd_bk_file *bk, const sd_vga_image *img);
+void sd_bk_set_background(sd_bk_file *bk, const sd_vga_image *img);
 
 /** @brief Get background image
  *
@@ -162,11 +156,9 @@ int sd_bk_push_palette(sd_bk_file *bk, const vga_palette *pal);
  * Popped palette data will be freed automatically.
  *
  * @retval SD_INVALID_INPUT There was nothing to pop.
- * @retval SD_SUCCESS Success.
- *
  * @param bk BK struct pointer.
  */
-int sd_bk_pop_palette(sd_bk_file *bk);
+void sd_bk_pop_palette(sd_bk_file *bk);
 
 /** @brief Get palette
  *

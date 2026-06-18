@@ -8,16 +8,14 @@
 #include "utils/allocator.h"
 #include "utils/log.h"
 
-int sd_bk_anim_create(sd_bk_anim *bka) {
+void sd_bk_anim_create(sd_bk_anim *bka) {
     assert(bka != NULL);
     // clear everything
     memset(bka, 0, sizeof(sd_bk_anim));
     str_create(&bka->footer_string);
-    return SD_SUCCESS;
 }
 
-int sd_bk_anim_copy(sd_bk_anim *dst, const sd_bk_anim *src) {
-    int ret;
+void sd_bk_anim_copy(sd_bk_anim *dst, const sd_bk_anim *src) {
     assert(dst != NULL);
     assert(src != NULL);
 
@@ -38,12 +36,8 @@ int sd_bk_anim_copy(sd_bk_anim *dst, const sd_bk_anim *src) {
     // Copy animation (if exists)
     if(src->animation != NULL) {
         dst->animation = omf_calloc(1, sizeof(sd_animation));
-        if((ret = sd_animation_copy(dst->animation, src->animation)) != SD_SUCCESS) {
-            return ret;
-        }
+        sd_animation_copy(dst->animation, src->animation);
     }
-
-    return SD_SUCCESS;
 }
 
 void sd_bk_anim_free(sd_bk_anim *bka) {
@@ -78,9 +72,7 @@ int sd_bk_anim_load(sd_reader *r, sd_bk_anim *bka) {
 
     // Initialize animation
     bka->animation = omf_calloc(1, sizeof(sd_animation));
-    if((ret = sd_animation_create(bka->animation)) != SD_SUCCESS) {
-        return ret;
-    }
+    sd_animation_create(bka->animation);
     if((ret = sd_animation_load(r, bka->animation)) != SD_SUCCESS) {
         return ret;
     }
@@ -114,21 +106,17 @@ int sd_bk_anim_save(sd_writer *w, const sd_bk_anim *bka) {
     return SD_SUCCESS;
 }
 
-int sd_bk_anim_set_animation(sd_bk_anim *bka, const sd_animation *animation) {
-    int ret;
+void sd_bk_anim_set_animation(sd_bk_anim *bka, const sd_animation *animation) {
     assert(bka != NULL);
     if(bka->animation != NULL) {
         sd_animation_free(bka->animation);
         omf_free(bka->animation);
     }
     if(animation == NULL) {
-        return SD_SUCCESS;
+        return;
     }
     bka->animation = omf_calloc(1, sizeof(sd_animation));
-    if((ret = sd_animation_copy(bka->animation, animation)) != SD_SUCCESS) {
-        return ret;
-    }
-    return SD_SUCCESS;
+    sd_animation_copy(bka->animation, animation);
 }
 
 sd_animation *sd_bk_anim_get_animation(const sd_bk_anim *bka) {

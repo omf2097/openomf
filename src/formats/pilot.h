@@ -133,11 +133,9 @@ typedef enum
  *
  * Initializes the pilot structure with empty values.
  *
- * @retval SD_SUCCESS Success.
- *
  * @param pilot Allocated pilot struct pointer.
  */
-int sd_pilot_create(sd_pilot *pilot);
+void sd_pilot_create(sd_pilot *pilot);
 
 /** @brief Deep-copy a pilot
  *

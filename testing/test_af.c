@@ -6,7 +6,7 @@
 sd_af_file af;
 
 void test_sd_af_create(void) {
-    CU_ASSERT(sd_af_create(&af) == SD_SUCCESS);
+    sd_af_create(&af);
 }
 
 void test_sd_af_free(void) {
@@ -20,8 +20,7 @@ void test_af_roundtrip(void) {
     sd_animation ani;
     int ret;
 
-    ret = sd_af_create(&new);
-    CU_ASSERT(ret == SD_SUCCESS);
+    sd_af_create(&new);
 
     // Set some values
     new.fighter_id = 1;
@@ -38,14 +37,12 @@ void test_af_roundtrip(void) {
     memset(new.sound_table, 10, sizeof(new.sound_table));
 
     // Create a new move
-    ret = sd_move_create(&move);
-    CU_ASSERT(ret == SD_SUCCESS);
+    sd_move_create(&move);
     str_set_c(&move.footer_string, "A10-B10-C10");
     str_set_c(&move.move_string, "D10-E10");
 
     // Create a new animation for move
-    ret = sd_animation_create(&ani);
-    CU_ASSERT(ret == SD_SUCCESS);
+    sd_animation_create(&ani);
     str_set_c(&ani.anim_string, "F10-G10-H10");
     str extra_string;
     str_from_c(&extra_string, "s10A100");
@@ -54,8 +51,7 @@ void test_af_roundtrip(void) {
     vector_append(&ani.extra_strings, &extra_string);
 
     // Copy animation to move
-    ret = sd_move_set_animation(&move, &ani);
-    CU_ASSERT(ret == SD_SUCCESS);
+    sd_move_set_animation(&move, &ani);
 
     // Copy move to AF file
     ret = sd_af_set_move(&new, 0, &move);
@@ -65,8 +61,7 @@ void test_af_roundtrip(void) {
     path_from_c(&test_af_file, "test.af");
 
     // Roundtripping
-    ret = sd_af_create(&loaded);
-    CU_ASSERT(ret == SD_SUCCESS);
+    sd_af_create(&loaded);
     ret = sd_af_save(&new, &test_af_file);
     CU_ASSERT(ret == SD_SUCCESS);
     ret = sd_af_load(&loaded, &test_af_file);

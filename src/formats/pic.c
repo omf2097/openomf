@@ -9,10 +9,9 @@
 #include "formats/pic.h"
 #include "utils/allocator.h"
 
-int sd_pic_create(sd_pic_file *pic) {
+void sd_pic_create(sd_pic_file *pic) {
     assert(pic != NULL);
     memset(pic, 0, sizeof(sd_pic_file));
-    return SD_SUCCESS;
 }
 
 void free_photos(sd_pic_file *pic) {

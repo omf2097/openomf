@@ -18,11 +18,10 @@ static void sd_pilot_quotes_init(str *quotes) {
     }
 }
 
-int sd_pilot_create(sd_pilot *pilot) {
+void sd_pilot_create(sd_pilot *pilot) {
     assert(pilot != NULL);
     memset(pilot, 0, sizeof(sd_pilot));
     sd_pilot_quotes_init(pilot->quotes);
-    return SD_SUCCESS;
 }
 
 void sd_pilot_clone(sd_pilot *dest, const sd_pilot *src) {

@@ -63,12 +63,11 @@ void sd_rec_move_free(sd_rec_move *move) {
     move->lookup_id = 0;
 }
 
-int sd_rec_create(sd_rec_file *rec) {
+void sd_rec_create(sd_rec_file *rec) {
     assert(rec != NULL);
     memset(rec, 0, sizeof(sd_rec_file));
     sd_pilot_create(&rec->pilots[0].info);
     sd_pilot_create(&rec->pilots[1].info);
-    return SD_SUCCESS;
 }
 
 void sd_rec_free(sd_rec_file *rec) {

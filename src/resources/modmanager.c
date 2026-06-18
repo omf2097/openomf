@@ -1401,9 +1401,7 @@ bool modmanager_get_pilot_mod(const char *trn_name, uint8_t pilot_id, sd_pilot *
         }
         pilot_data->photo = omf_calloc(1, sizeof(sd_sprite));
         sd_sprite_create(pilot_data->photo);
-        if(sd_sprite_copy(pilot_data->photo, &obuf->spr) != SD_SUCCESS) {
-            log_warn("failed to copy photo");
-        }
+        sd_sprite_copy(pilot_data->photo, &obuf->spr);
     }
 
     str_free(&filename);
@@ -1645,9 +1643,7 @@ bool modmanager_get_tournament_mod(const char *tournament_name, sd_tournament_fi
     if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&obuf, &len)) {
         assert(obuf->type == MOD_SPRITE);
         sd_sprite_free(tourn_data->locales[0]->logo);
-        if(sd_sprite_copy(tourn_data->locales[0]->logo, &obuf->spr) != SD_SUCCESS) {
-            log_warn("failed to copy tournament logo");
-        }
+        sd_sprite_copy(tourn_data->locales[0]->logo, &obuf->spr);
     }
 
     // now apply any pilot mods
@@ -1768,12 +1764,9 @@ bool modmanager_get_player_pics(sd_pic_file *players) {
         if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&obuf, &len)) {
             assert(obuf->type == MOD_SPRITE);
             sd_sprite_free(players->photos[i]->sprite);
-            if(sd_sprite_copy(players->photos[i]->sprite, &obuf->spr) != SD_SUCCESS) {
-                log_warn("failed to copy player portrait");
-            } else {
-                result |= true;
-                log_info("loaded portrait %i", i);
-            }
+            sd_sprite_copy(players->photos[i]->sprite, &obuf->spr);
+            result |= true;
+            log_info("loaded portrait %i", i);
         }
         str_free(&filename);
 

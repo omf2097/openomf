@@ -18,9 +18,7 @@ int altpals_init(void) {
     const path filename = get_resource_filename("ALTPALS.DAT");
 
     altpals = omf_calloc(1, sizeof(altpal_file));
-    if(altpal_create(altpals) != SD_SUCCESS) {
-        goto error_0;
-    }
+    altpal_create(altpals);
     if(altpals_load(altpals, &filename) != SD_SUCCESS) {
         log_error("Unable to load altpals file '%s'!", path_c(&filename));
         goto error_1;
@@ -30,7 +28,6 @@ int altpals_init(void) {
 
 error_1:
     altpal_free(altpals);
-error_0:
     omf_free(altpals);
     return 1;
 }
@@ -42,10 +39,9 @@ void altpals_close(void) {
     }
 }
 
-int altpal_create(altpal_file *ap) {
+void altpal_create(altpal_file *ap) {
     assert(ap != NULL);
     memset(ap, 0, sizeof(altpal_file));
-    return SD_SUCCESS;
 }
 
 int altpals_load(altpal_file *ap, const path *filename) {

@@ -84,11 +84,9 @@ typedef struct {
  *
  * Initializes the TRN file structure with empty values.
  *
- * @retval SD_SUCCESS Success.
- *
  * @param trn Allocated TRN struct pointer.
  */
-int sd_tournament_create(sd_tournament_file *trn);
+void sd_tournament_create(sd_tournament_file *trn);
 
 /** @brief Initialize a tournament locale's string fields
  *
@@ -129,21 +127,17 @@ int sd_tournament_save(const sd_tournament_file *trn, const path *filename);
 
 /** @brief Set the tournament BK filename
  *
- * @retval SD_SUCCESS Success.
- *
  * @param trn TRN file struct pointer.
  * @param bk_name BK filename to set.
  */
-int sd_tournament_set_bk_name(sd_tournament_file *trn, const char *bk_name);
+void sd_tournament_set_bk_name(sd_tournament_file *trn, const char *bk_name);
 
 /** @brief Set the tournament PIC filename
- *
- * @retval SD_SUCCESS Success.
  *
  * @param trn TRN file struct pointer.
  * @param pic_name PIC filename to set.
  */
-int sd_tournament_set_pic_name(sd_tournament_file *trn, const char *pic_name);
+void sd_tournament_set_pic_name(sd_tournament_file *trn, const char *pic_name);
 
 /** @brief Free TRN file structure
  *

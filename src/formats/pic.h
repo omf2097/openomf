@@ -40,11 +40,9 @@ typedef struct {
  *
  * Initializes the PIC file structure with empty values.
  *
- * @retval SD_SUCCESS Success.
- *
  * @param pic Allocated PIC struct pointer.
  */
-int sd_pic_create(sd_pic_file *pic);
+void sd_pic_create(sd_pic_file *pic);
 
 /** @brief Free PIC file structure
  *

@@ -118,11 +118,9 @@ typedef struct {
  *
  * Initializes the move structure with empty values.
  *
- * @retval SD_SUCCESS Success.
- *
  * @param move Allocated move struct pointer.
  */
-int sd_move_create(sd_move *move);
+void sd_move_create(sd_move *move);
 
 /** @brief Copy Move structure
  *
@@ -132,12 +130,10 @@ int sd_move_create(sd_move *move);
  * Destination buffer does not need to be cleared. Source buffer must be a valid
  * move structure, or problems are likely to appear.
  *
- * @retval SD_SUCCESS Success.
- *
  * @param dst Destination move struct pointer.
  * @param src Source move struct pointer.
  */
-int sd_move_copy(sd_move *dst, const sd_move *src);
+void sd_move_copy(sd_move *dst, const sd_move *src);
 
 /** @brief Free move structure
  *
@@ -160,12 +156,10 @@ void sd_move_free_cb(void *ptr);
  *
  * A NULL value for animation field will result in move->animation field getting freed.
  *
- * @retval SD_SUCCESS Success.
- *
  * @param move Move struct to modify.
  * @param animation Animation to set. This will be copied.
  */
-int sd_move_set_animation(sd_move *move, const sd_animation *animation);
+void sd_move_set_animation(sd_move *move, const sd_animation *animation);
 
 /** @brief Get the current animation
  *

@@ -49,11 +49,9 @@ typedef struct sd_script {
  *
  * Initializes the script parser with empty values.
  *
- * @retval SD_SUCCESS Success.
- *
  * @param script Allocated script struct pointer.
  */
-int sd_script_create(sd_script *script);
+void sd_script_create(sd_script *script);
 
 /** @brief Clone a script
  *

@@ -8,18 +8,16 @@
 #include "utils/allocator.h"
 #include "utils/log.h"
 
-int sd_move_create(sd_move *move) {
+void sd_move_create(sd_move *move) {
     assert(move != NULL);
 
     // Clear everything
     memset(move, 0, sizeof(sd_move));
     str_create(&move->move_string);
     str_create(&move->footer_string);
-    return SD_SUCCESS;
 }
 
-int sd_move_copy(sd_move *dst, const sd_move *src) {
-    int ret;
+void sd_move_copy(sd_move *dst, const sd_move *src) {
     assert(dst != NULL);
     assert(src != NULL);
 
@@ -29,9 +27,7 @@ int sd_move_copy(sd_move *dst, const sd_move *src) {
     // Copy animation
     if(src->animation != NULL) {
         dst->animation = omf_calloc(1, sizeof(sd_animation));
-        if((ret = sd_animation_copy(dst->animation, src->animation)) != SD_SUCCESS) {
-            return ret;
-        }
+        sd_animation_copy(dst->animation, src->animation);
     }
 
     // Copy move and footer strings
@@ -58,8 +54,6 @@ int sd_move_copy(sd_move *dst, const sd_move *src) {
     dst->throw_duration = src->throw_duration;
     dst->extra_string_selector = src->extra_string_selector;
     dst->points = src->points;
-
-    return SD_SUCCESS;
 }
 
 void sd_move_free(sd_move *move) {
@@ -87,9 +81,7 @@ int sd_move_load(sd_reader *r, sd_move *move) {
 
     // Read animation
     move->animation = omf_calloc(1, sizeof(sd_animation));
-    if((ret = sd_animation_create(move->animation)) != SD_SUCCESS) {
-        return ret;
-    }
+    sd_animation_create(move->animation);
     if((ret = sd_animation_load(r, move->animation)) != SD_SUCCESS) {
         return ret;
     }
@@ -172,21 +164,17 @@ int sd_move_save(sd_writer *w, const sd_move *move) {
     return SD_SUCCESS;
 }
 
-int sd_move_set_animation(sd_move *move, const sd_animation *animation) {
-    int ret;
+void sd_move_set_animation(sd_move *move, const sd_animation *animation) {
     assert(move != NULL);
     if(move->animation != NULL) {
         sd_animation_free(move->animation);
         omf_free(move->animation);
     }
     if(animation == NULL) {
-        return SD_SUCCESS;
+        return;
     }
     move->animation = omf_calloc(1, sizeof(sd_animation));
-    if((ret = sd_animation_copy(move->animation, animation)) != SD_SUCCESS) {
-        return ret;
-    }
-    return SD_SUCCESS;
+    sd_animation_copy(move->animation, animation);
 }
 
 sd_animation *sd_move_get_animation(const sd_move *move) {

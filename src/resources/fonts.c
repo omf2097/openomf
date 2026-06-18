@@ -62,9 +62,7 @@ static int font_load(font *font, const path *filename, unsigned int size) {
     }
 
     // Open font file
-    if(sd_font_create(&sdfont) != SD_SUCCESS) {
-        return 1;
-    }
+    sd_font_create(&sdfont);
     if(sd_font_load(&sdfont, filename, pixsize)) {
         sd_font_free(&sdfont);
         return 2;

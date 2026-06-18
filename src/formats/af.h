@@ -42,11 +42,9 @@ typedef struct {
  *
  * Initializes the AF file structure with empty values.
  *
- * @retval SD_SUCCESS Success.
- *
  * @param af Allocated AF struct pointer.
  */
-int sd_af_create(sd_af_file *af);
+void sd_af_create(sd_af_file *af);
 
 /** @brief Copy AF structure
  *
@@ -56,12 +54,10 @@ int sd_af_create(sd_af_file *af);
  * Destination buffer does not need to be cleared. Source buffer must be a valid
  * AF file structure, or problems are likely to appear.
  *
- * @retval SD_SUCCESS Success.
- *
  * @param dst Destination AF struct pointer.
  * @param src Source AF struct pointer.
  */
-int sd_af_copy(sd_af_file *dst, const sd_af_file *src);
+void sd_af_copy(sd_af_file *dst, const sd_af_file *src);
 
 /** @brief Set move
  *

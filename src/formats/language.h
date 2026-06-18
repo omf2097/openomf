@@ -41,11 +41,9 @@ typedef struct {
  *
  * Initializes the language structure with empty values.
  *
- * @retval SD_SUCCESS Success.
- *
  * @param language Allocated language struct pointer.
  */
-int sd_language_create(sd_language *language);
+void sd_language_create(sd_language *language);
 
 /** @brief Free language structure
  *

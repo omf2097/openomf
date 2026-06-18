@@ -93,10 +93,7 @@ component *menu_language_create(scene *s) {
         str_free(&ext);
 
         sd_language lang2;
-        if(sd_language_create(&lang2) != SD_SUCCESS) {
-            str_free(&name);
-            continue;
-        }
+        sd_language_create(&lang2);
         if(sd_language_load(&lang2, language_file2, false)) {
             log_info("Warning: Unable to load OpenOMF language file '%s'!", path_c(language_file2));
             sd_language_free(&lang2);

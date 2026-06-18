@@ -9,18 +9,16 @@
 #include "utils/allocator.h"
 #include "utils/log.h"
 
-int sd_animation_create(sd_animation *ani) {
+void sd_animation_create(sd_animation *ani) {
     assert(ani != NULL);
     memset(ani, 0, sizeof(sd_animation));
     vector_create(&ani->coord_table, sizeof(sd_coord));
     vector_create_with_size_cb(&ani->extra_strings, sizeof(str), SD_EXTRASTR_COUNT_MAX, str_free_cb);
     vector_create_cb(&ani->sprites, sizeof(sd_sprite), sd_sprite_free_cb);
     str_create(&ani->anim_string);
-    return SD_SUCCESS;
 }
 
-int sd_animation_copy(sd_animation *dst, const sd_animation *src) {
-    int ret;
+void sd_animation_copy(sd_animation *dst, const sd_animation *src) {
     assert(dst != NULL);
     assert(src != NULL);
 
@@ -52,11 +50,8 @@ int sd_animation_copy(sd_animation *dst, const sd_animation *src) {
     const sd_sprite *src_sprite;
     vector_iter_begin(&src->sprites, &it);
     foreach(it, src_sprite) {
-        if((ret = sd_sprite_copy(vector_append_ptr(&dst->sprites), src_sprite)) != SD_SUCCESS) {
-            return ret;
-        }
+        sd_sprite_copy(vector_append_ptr(&dst->sprites), src_sprite);
     }
-    return SD_SUCCESS;
 }
 
 void sd_animation_free(sd_animation *anim) {
@@ -78,19 +73,20 @@ int sd_animation_set_sprite(sd_animation *anim, int num, const sd_sprite *sprite
     }
     sd_sprite *dst = vector_get(&anim->sprites, num);
     sd_sprite_free(dst);
-    return sd_sprite_copy(dst, sprite);
+    sd_sprite_copy(dst, sprite);
+    return SD_SUCCESS;
 }
 
 int sd_animation_push_sprite(sd_animation *anim, const sd_sprite *sprite) {
     if(vector_size(&anim->sprites) >= SD_SPRITE_COUNT_MAX) {
         return SD_INVALID_INPUT;
     }
-    return sd_sprite_copy(vector_append_ptr(&anim->sprites), sprite);
+    sd_sprite_copy(vector_append_ptr(&anim->sprites), sprite);
+    return SD_SUCCESS;
 }
 
-int sd_animation_pop_sprite(sd_animation *anim) {
+void sd_animation_pop_sprite(sd_animation *anim) {
     vector_pop(&anim->sprites);
-    return SD_SUCCESS;
 }
 
 sd_sprite *sd_animation_get_sprite(sd_animation *anim, int num) {
@@ -157,9 +153,7 @@ int sd_animation_load(sd_reader *r, sd_animation *ani) {
     vector_reserve(&ani->sprites, sprite_count);
     for(int i = 0; i < sprite_count; i++) {
         sd_sprite *sprite = vector_append_ptr(&ani->sprites);
-        if((ret = sd_sprite_create(sprite)) != SD_SUCCESS) {
-            return ret;
-        }
+        sd_sprite_create(sprite);
         if((ret = sd_sprite_load(r, sprite)) != SD_SUCCESS) {
             return ret;
         }

@@ -7,11 +7,10 @@
 
 static const char *INVALID_TAGS[] = {"c", "p", "o", "z", NULL}; // NULL guarded
 
-int sd_script_create(sd_script *script) {
+void sd_script_create(sd_script *script) {
     assert(script != NULL);
     memset(script, 0, sizeof(sd_script));
     vector_create(&script->frames, sizeof(sd_script_frame));
-    return SD_SUCCESS;
 }
 
 void sd_script_frame_create(sd_script_frame *frame, int tick_len, int sprite) {

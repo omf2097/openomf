@@ -80,11 +80,9 @@ static_assert(296 == sizeof(sd_setup_file), "sd_setup_file should pack into 296 
 
 /** @brief Initialize setup structure
  *
- * @retval SD_SUCCESS Success.
- *
  * @param setup Allocated setup struct pointer.
  */
-int sd_setup_create(sd_setup_file *setup);
+void sd_setup_create(sd_setup_file *setup);
 
 /** @brief Free setup structure
  *

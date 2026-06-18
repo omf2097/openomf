@@ -117,11 +117,9 @@ enum
  *
  * Initializes the REC file structure with empty values.
  *
- * @retval SD_SUCCESS Success.
- *
  * @param rec Allocated REC struct pointer.
  */
-int sd_rec_create(sd_rec_file *rec);
+void sd_rec_create(sd_rec_file *rec);
 
 /** @brief Free REC file structure
  *

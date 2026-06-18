@@ -14,17 +14,15 @@
 #include "formats/vga_image.h"
 #include "utils/allocator.h"
 
-int sd_bk_create(sd_bk_file *bk) {
+void sd_bk_create(sd_bk_file *bk) {
     assert(bk != NULL);
 
     // Clear everything
     memset(bk, 0, sizeof(sd_bk_file));
     array_create_with_size_cb(&bk->anims, MAX_BK_ANIMS, sd_bk_anim_free_cb);
-    return SD_SUCCESS;
 }
 
-int sd_bk_copy(sd_bk_file *dst, const sd_bk_file *src) {
-    int ret;
+void sd_bk_copy(sd_bk_file *dst, const sd_bk_file *src) {
     assert(dst != NULL);
     assert(src != NULL);
 
@@ -46,18 +44,14 @@ int sd_bk_copy(sd_bk_file *dst, const sd_bk_file *src) {
         if(src_anim != NULL) {
             sd_bk_anim *copy = omf_calloc(1, sizeof(sd_bk_anim));
             array_set(&dst->anims, i, copy);
-            if((ret = sd_bk_anim_copy(copy, src_anim)) != SD_SUCCESS) {
-                return ret;
-            }
+            sd_bk_anim_copy(copy, src_anim);
         }
     }
 
     // Copy background
     if(src->background != NULL) {
         dst->background = omf_calloc(1, sizeof(sd_vga_image));
-        if((ret = sd_vga_image_copy(dst->background, src->background)) != SD_SUCCESS) {
-            return ret;
-        }
+        sd_vga_image_copy(dst->background, src->background);
     }
 
     // Copy palettes
@@ -70,8 +64,6 @@ int sd_bk_copy(sd_bk_file *dst, const sd_bk_file *src) {
             memcpy(dst->remaps[i], src->remaps[i], sizeof(vga_remap_tables));
         }
     }
-
-    return SD_SUCCESS;
 }
 
 void sd_bk_postprocess(sd_bk_file *bk) {
@@ -130,9 +122,7 @@ int sd_bk_load(sd_bk_file *bk, const path *filename) {
         // Initialize animation
         sd_bk_anim *bka = omf_calloc(1, sizeof(sd_bk_anim));
         array_set(&bk->anims, anim_no, bka);
-        if((ret = sd_bk_anim_create(bka)) != SD_SUCCESS) {
-            goto exit_0;
-        }
+        sd_bk_anim_create(bka);
         if((ret = sd_bk_anim_load(r, bka)) != SD_SUCCESS) {
             goto exit_0;
         }
@@ -273,21 +263,17 @@ error:
     return SD_FILE_WRITE_ERROR;
 }
 
-int sd_bk_set_background(sd_bk_file *bk, const sd_vga_image *img) {
-    int ret;
+void sd_bk_set_background(sd_bk_file *bk, const sd_vga_image *img) {
     assert(bk != NULL);
     if(bk->background != NULL) {
         sd_vga_image_free(bk->background);
         omf_free(bk->background);
     }
     if(img == NULL) {
-        return SD_SUCCESS;
+        return;
     }
     bk->background = omf_calloc(1, sizeof(sd_vga_image));
-    if((ret = sd_vga_image_copy(bk->background, img)) != SD_SUCCESS) {
-        return ret;
-    }
-    return SD_SUCCESS;
+    sd_vga_image_copy(bk->background, img);
 }
 
 sd_vga_image *sd_bk_get_background(const sd_bk_file *bk) {
@@ -307,7 +293,8 @@ int sd_bk_set_anim(sd_bk_file *bk, int index, const sd_bk_anim *anim) {
 
     sd_bk_anim *copy = omf_calloc(1, sizeof(sd_bk_anim));
     array_set(&bk->anims, index, copy);
-    return sd_bk_anim_copy(copy, anim);
+    sd_bk_anim_copy(copy, anim);
+    return SD_SUCCESS;
 }
 
 sd_bk_anim *sd_bk_get_anim(const sd_bk_file *bk, int index) {
@@ -331,14 +318,13 @@ int sd_bk_set_palette(sd_bk_file *bk, int index, const vga_palette *pal) {
     return SD_SUCCESS;
 }
 
-int sd_bk_pop_palette(sd_bk_file *bk) {
+void sd_bk_pop_palette(sd_bk_file *bk) {
     assert(bk != NULL);
 
     if(bk->palette_count > 0) {
         bk->palette_count--;
         omf_free(bk->palettes[bk->palette_count]);
     }
-    return SD_SUCCESS;
 }
 
 int sd_bk_push_palette(sd_bk_file *bk, const vga_palette *pal) {

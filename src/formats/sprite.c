@@ -8,13 +8,12 @@
 #include "utils/allocator.h"
 #include "utils/log.h"
 
-int sd_sprite_create(sd_sprite *sprite) {
+void sd_sprite_create(sd_sprite *sprite) {
     assert(sprite != NULL);
     memset(sprite, 0, sizeof(sd_sprite));
-    return SD_SUCCESS;
 }
 
-int sd_sprite_copy(sd_sprite *dst, const sd_sprite *src) {
+void sd_sprite_copy(sd_sprite *dst, const sd_sprite *src) {
     assert(dst != NULL);
     assert(src != NULL);
 
@@ -35,8 +34,6 @@ int sd_sprite_copy(sd_sprite *dst, const sd_sprite *src) {
         dst->data = omf_calloc(src->len, 1);
         memcpy(dst->data, src->data, src->len);
     }
-
-    return SD_SUCCESS;
 }
 
 void sd_sprite_free(sd_sprite *sprite) {

@@ -19,9 +19,7 @@ void scores_clear(scoreboard *sb) {
 
 int scores_read(scoreboard *sb) {
     sd_score score_file;
-    if(sd_score_create(&score_file) != SD_SUCCESS) {
-        goto error_0;
-    }
+    sd_score_create(&score_file);
     const path score_filename = get_scores_filename();
     if(sd_score_load(&score_file, &score_filename) != SD_SUCCESS) {
         log_error("Failure while attempting to open scores file!");
@@ -45,15 +43,12 @@ int scores_read(scoreboard *sb) {
 
 error_1:
     sd_score_free(&score_file);
-error_0:
     return 1;
 }
 
 int scores_write(scoreboard *sb) {
     sd_score score_file;
-    if(sd_score_create(&score_file) != SD_SUCCESS) {
-        return 1;
-    }
+    sd_score_create(&score_file);
 
     // Convert data
     for(int i = 0; i < 4; i++) {

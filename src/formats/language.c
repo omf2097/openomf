@@ -16,11 +16,10 @@ void sd_lang_string_free(void *ptr) {
     str_free(&entry->data);
 }
 
-int sd_language_create(sd_language *language) {
+void sd_language_create(sd_language *language) {
     assert(language != NULL);
     memset(language, 0, sizeof(sd_language));
     vector_create_cb(&language->strings, sizeof(sd_lang_string), sd_lang_string_free);
-    return SD_SUCCESS;
 }
 
 void sd_language_free(sd_language *language) {
