@@ -158,7 +158,7 @@ void anim_common_info(sd_animation *ani) {
         printf("   - x,y = (%d,%d), null = %d, frame_id = %d\n", coord->pos.x, coord->pos.y, coord->null,
                coord->frame_id);
     }
-    printf(" * Sprites:          %d\n", ani->sprite_count);
+    printf(" * Sprites:          %d\n", sd_animation_get_sprite_count(ani));
     printf(" * Animation str:    %s\n", str_c(&ani->anim_string));
     printf(" * Extra strings:    %u\n", vector_size(&ani->extra_strings));
     str *extra_string;
@@ -198,12 +198,12 @@ void anim_push(sd_animation *ani) {
     sd_sprite sprite;
     sd_sprite_create(&sprite);
     sd_animation_push_sprite(ani, &sprite);
-    printf("New sprite pushed to animation. Animation now has %d sprites.\n", ani->sprite_count);
+    printf("New sprite pushed to animation. Animation now has %d sprites.\n", sd_animation_get_sprite_count(ani));
 }
 
 void anim_pop(sd_animation *ani) {
     sd_animation_pop_sprite(ani);
-    printf("Last sprite popped from animation. Animation now has %d sprites.\n", ani->sprite_count);
+    printf("Last sprite popped from animation. Animation now has %d sprites.\n", sd_animation_get_sprite_count(ani));
 }
 
 void string_strip(str *input, const char *tag) {

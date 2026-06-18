@@ -85,18 +85,19 @@ sd_move *sd_af_get_move(sd_af_file *af, int index) {
 
 void sd_af_postprocess(sd_af_file *af) {
     char *table[1000] = {0}; // temporary lookup table
-    sd_animation *anim;
     // fix NULL pointers for any 'missing' sprites
     for(int i = 0; i < 70; i++) {
         if(af->moves[i] != NULL) {
-            anim = af->moves[i]->animation;
-            for(int j = 0; j < anim->sprite_count; j++) {
-                if(anim->sprites[j]->missing > 0) {
-                    if(table[anim->sprites[j]->index]) {
-                        anim->sprites[j]->data = table[anim->sprites[j]->index];
+            sd_animation *anim = af->moves[i]->animation;
+            int sprite_count = sd_animation_get_sprite_count(anim);
+            for(int j = 0; j < sprite_count; j++) {
+                sd_sprite *sprite = sd_animation_get_sprite(anim, j);
+                if(sprite->missing > 0) {
+                    if(table[sprite->index]) {
+                        sprite->data = table[sprite->index];
                     }
                 } else {
-                    table[anim->sprites[j]->index] = anim->sprites[j]->data;
+                    table[sprite->index] = sprite->data;
                 }
             }
         }

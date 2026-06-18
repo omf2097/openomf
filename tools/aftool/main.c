@@ -21,8 +21,7 @@ int check_move_sprite(sd_af_file *af, int move, int sprite) {
         printf("animation #%d does not exist.\n", move);
         return 0;
     }
-    if(sprite < 0 || af->moves[move]->animation->sprites[sprite] == 0 ||
-       sprite >= af->moves[move]->animation->sprite_count) {
+    if(sprite < 0 || sprite >= sd_animation_get_sprite_count(af->moves[move]->animation)) {
         printf("Sprite #%d does not exist.\n", sprite);
         return 0;
     }
@@ -48,7 +47,7 @@ void sprite_play(sd_af_file *af, sd_bk_file *bk, int scale, int anim, int sprite
     SDL_Texture *rendertarget;
     SDL_Rect rect;
     SDL_Rect dstrect;
-    sd_sprite *s = af->moves[anim]->animation->sprites[sprite];
+    sd_sprite *s = sd_animation_get_sprite(af->moves[anim]->animation, sprite);
     SDL_Window *window = SDL_CreateWindow("OMF2097 Remake", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 320 * scale,
                                           200 * scale, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
 
@@ -61,12 +60,10 @@ void sprite_play(sd_af_file *af, sd_bk_file *bk, int scale, int anim, int sprite
 
     SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
-    uint32_t rmask, gmask, bmask, amask;
-
-    rmask = 0x000000ff;
-    gmask = 0x0000ff00;
-    bmask = 0x00ff0000;
-    amask = 0xff000000;
+    uint32_t rmask = 0x000000ff;
+    uint32_t gmask = 0x0000ff00;
+    uint32_t bmask = 0x00ff0000;
+    uint32_t amask = 0xff000000;
 
     if((rendertarget = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 320, 200)) ==
        0) {
@@ -111,14 +108,14 @@ void sprite_play(sd_af_file *af, sd_bk_file *bk, int scale, int anim, int sprite
                 int changed = 0;
                 switch(e.key.keysym.sym) {
                     case SDLK_RIGHT:
-                        sprite = (sprite + 1) % af->moves[anim]->animation->sprite_count;
+                        sprite = (sprite + 1) % sd_animation_get_sprite_count(af->moves[anim]->animation);
                         printf("sprite is now %d\n", sprite);
                         changed = 1;
                         break;
                     case SDLK_LEFT:
                         sprite--;
                         if(sprite < 0) {
-                            sprite = af->moves[anim]->animation->sprite_count - 1;
+                            sprite = sd_animation_get_sprite_count(af->moves[anim]->animation) - 1;
                         }
                         changed = 1;
                         break;
@@ -161,7 +158,7 @@ void sprite_play(sd_af_file *af, sd_bk_file *bk, int scale, int anim, int sprite
                         changed = 0;
                 }
                 if(changed) {
-                    s = af->moves[anim]->animation->sprites[sprite];
+                    s = sd_animation_get_sprite(af->moves[anim]->animation, sprite);
                     sd_sprite_rgba_decode(&img, s, bk->palettes[0]);
                     printf("Sprite Info: pos=(%d,%d) size=(%d,%d) len=%d\n", s->pos.x, s->pos.y, s->width, s->height,
                            s->len);
@@ -856,7 +853,7 @@ int main(int argc, char *argv[]) {
         if(!check_move_sprite(&af, move->ival[0], sprite->ival[0])) {
             goto exit_2;
         }
-        sd_sprite *sp = af.moves[move->ival[0]]->animation->sprites[sprite->ival[0]];
+        sd_sprite *sp = sd_animation_get_sprite(af.moves[move->ival[0]]->animation, sprite->ival[0]);
 
         // Handle arguments
         if(key->count > 0) {

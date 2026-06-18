@@ -40,16 +40,12 @@
  * A single sprite may have multiple collision coordinates assigned to it.
  */
 typedef struct {
-    // Header
     vec2i start_pos;      ///< Animation start position
     int32_t null;         ///< Probably filler data
-    uint8_t sprite_count; ///< Number of sprites in animation
-
-    // Sprites and their collision coordinates
-    vector coord_table;                      ///< Collision coordinates, holds sd_coord elements
-    vector extra_strings;                    ///< Extra animation strings, holds str elements
-    sd_sprite *sprites[SD_SPRITE_COUNT_MAX]; ///< Sprites
-    str anim_string;                         ///< Animation string
+    vector coord_table;   ///< Collision coordinates, holds sd_coord elements
+    vector extra_strings; ///< Extra animation strings, holds str elements
+    vector sprites;       ///< Sprites, holds sd_sprite elements
+    str anim_string;      ///< Animation string
 } sd_animation;
 
 /** @brief Initialize animation structure

@@ -38,14 +38,16 @@ void animation_create(animation_source type, str *name, animation *ani, array *s
     }
 
     // Handle sprites
-    vector_create_with_size(&ani->sprites, sizeof(sprite_reference), sdani->sprite_count);
+    int sprite_count = sd_animation_get_sprite_count(sdani);
+    vector_create_with_size(&ani->sprites, sizeof(sprite_reference), sprite_count);
     sprite *tmp_sprite;
-    for(int i = 0; i < sdani->sprite_count; i++) {
-        if(sdani->sprites[i]->missing) {
+    for(int i = 0; i < sprite_count; i++) {
+        sd_sprite *src_sprite = sd_animation_get_sprite(sdani, i);
+        if(src_sprite->missing) {
             // read the right index from the sprite table
             tmp_sprite = omf_calloc(1, sizeof(sprite));
-            sprite_create_reference(tmp_sprite, (void *)sdani->sprites[i], i,
-                                    ((sprite *)array_get(sprites, sdani->sprites[i]->index))->data);
+            sprite_create_reference(tmp_sprite, (void *)src_sprite, i,
+                                    ((sprite *)array_get(sprites, src_sprite->index))->data);
             sprite_reference spr;
             spr.sprite = tmp_sprite;
             vector_append(&ani->sprites, &spr);
@@ -55,17 +57,17 @@ void animation_create(animation_source type, str *name, animation *ani, array *s
             // TODO check the mod overrides for a replacement sprite
             if(modmanager_get_sprite(type, name, ani->id, i, &sp)) {
                 sprite_create(tmp_sprite, (void *)sp, i);
-                tmp_sprite->data->render_w = sdani->sprites[i]->width;
-                tmp_sprite->data->render_h = sdani->sprites[i]->height;
-                tmp_sprite->pos = sdani->sprites[i]->pos;
+                tmp_sprite->data->render_w = src_sprite->width;
+                tmp_sprite->data->render_h = src_sprite->height;
+                tmp_sprite->pos = src_sprite->pos;
             } else {
-                sprite_create(tmp_sprite, (void *)sdani->sprites[i], i);
+                sprite_create(tmp_sprite, (void *)src_sprite, i);
             }
             sprite_reference spr;
             spr.sprite = tmp_sprite;
-            if(sdani->sprites[i]->index) {
+            if(src_sprite->index) {
                 // insert into the global sprite table
-                array_set(sprites, sdani->sprites[i]->index, tmp_sprite);
+                array_set(sprites, src_sprite->index, tmp_sprite);
             }
             vector_append(&ani->sprites, &spr);
         }
@@ -73,10 +75,10 @@ void animation_create(animation_source type, str *name, animation *ani, array *s
 
     // Apply hit coordinate and origin overlays from mods. Done after sprites are
     // loaded so we can update both collision coords and sprite pos
-    for(int i = 0; i < sdani->sprite_count; i++) {
+    for(int i = 0; i < sprite_count; i++) {
         vector new_coords;
         vec2i origin;
-        vec2i sprite_offset = sdani->sprites[i]->pos;
+        vec2i sprite_offset = sd_animation_get_sprite(sdani, i)->pos;
         vector_create_with_size(&new_coords, sizeof(collision_coord), 0);
         if(modmanager_get_hitcoords(type, name, id, i, &new_coords, &origin, &sprite_offset)) {
             if(vector_size(&new_coords) > 0) {

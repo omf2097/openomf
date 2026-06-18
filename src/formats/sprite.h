@@ -72,6 +72,9 @@ int sd_sprite_copy(sd_sprite *dst, const sd_sprite *src);
  */
 void sd_sprite_free(sd_sprite *sprite);
 
+/** @brief Free callback helper for sprite elements stored in a container (e.g. vector) */
+void sd_sprite_free_cb(void *ptr);
+
 /** @brief Encode RGBA data to sprite data
  *
  * Encodes RGBA image data to sprite image data. Color values will be matched to exact values in

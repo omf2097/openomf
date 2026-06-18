@@ -77,13 +77,15 @@ void sd_bk_postprocess(sd_bk_file *bk) {
     for(int i = 0; i < MAX_BK_ANIMS; i++) {
         if(bk->anims[i] != NULL) {
             anim = bk->anims[i]->animation;
-            for(int j = 0; j < anim->sprite_count; j++) {
-                if(anim->sprites[j]->missing > 0) {
-                    if(table[anim->sprites[j]->index]) {
-                        anim->sprites[j]->data = table[anim->sprites[j]->index];
+            int sprite_count = sd_animation_get_sprite_count(anim);
+            for(int j = 0; j < sprite_count; j++) {
+                sd_sprite *sprite = sd_animation_get_sprite(anim, j);
+                if(sprite->missing > 0) {
+                    if(table[sprite->index]) {
+                        sprite->data = table[sprite->index];
                     }
                 } else {
-                    table[anim->sprites[j]->index] = anim->sprites[j]->data;
+                    table[sprite->index] = sprite->data;
                 }
             }
         }
