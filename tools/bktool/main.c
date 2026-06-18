@@ -17,11 +17,11 @@
 void bkanim_info(sd_bk_anim *bka, sd_animation *ani, int anim);
 
 int check_anim_sprite(sd_bk_file *bk, int anim, int sprite) {
-    if(anim > 50 || anim < 0 || bk->anims[anim] == 0) {
+    if(anim >= MAX_BK_ANIMS || anim < 0 || sd_bk_get_anim(bk, anim) == NULL) {
         printf("Animation #%d does not exist.\n", anim);
         return 0;
     }
-    if(sprite < 0 || sprite >= sd_animation_get_sprite_count(bk->anims[anim]->animation)) {
+    if(sprite < 0 || sprite >= sd_animation_get_sprite_count(sd_bk_get_anim(bk, anim)->animation)) {
         printf("Sprite #%d does not exist.\n", sprite);
         return 0;
     }
@@ -29,7 +29,7 @@ int check_anim_sprite(sd_bk_file *bk, int anim, int sprite) {
 }
 
 int check_anim(sd_bk_file *bk, int anim) {
-    if(bk->anims[anim] == 0 || anim > 50 || anim < 0) {
+    if(anim >= MAX_BK_ANIMS || anim < 0 || sd_bk_get_anim(bk, anim) == NULL) {
         printf("Animation #%d does not exist.\n", anim);
         return 0;
     }
@@ -48,7 +48,7 @@ void sprite_play(sd_bk_file *bk, int scale, int anim, int sprite) {
     SDL_Texture *rendertarget;
     SDL_Rect rect;
     SDL_Rect dstrect;
-    sd_sprite *s = sd_animation_get_sprite(bk->anims[anim]->animation, sprite);
+    sd_sprite *s = sd_animation_get_sprite(sd_bk_get_anim(bk, anim)->animation, sprite);
     SDL_Window *window = SDL_CreateWindow("OMF2097 Remake", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 320 * scale,
                                           200 * scale, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
 
@@ -127,28 +127,28 @@ void sprite_play(sd_bk_file *bk, int scale, int anim, int sprite) {
                 int changed = 0;
                 switch(e.key.keysym.sym) {
                     case SDLK_RIGHT:
-                        sprite = (sprite + 1) % sd_animation_get_sprite_count(bk->anims[anim]->animation);
+                        sprite = (sprite + 1) % sd_animation_get_sprite_count(sd_bk_get_anim(bk, anim)->animation);
                         printf("sprite is now %u\n", sprite);
                         changed = 1;
                         break;
                     case SDLK_LEFT:
                         sprite--;
                         if(sprite < 0) {
-                            sprite = sd_animation_get_sprite_count(bk->anims[anim]->animation) - 1;
+                            sprite = sd_animation_get_sprite_count(sd_bk_get_anim(bk, anim)->animation) - 1;
                         }
                         changed = 1;
                         break;
                     case SDLK_UP:
                         i++;
-                        while(!check_anim(bk, i) && i < 50) {
+                        while(!check_anim(bk, i) && i < MAX_BK_ANIMS) {
                             i++;
                         }
-                        if(i == 50) {
+                        if(i == MAX_BK_ANIMS) {
                             printf("no more animations\n");
                         } else {
                             anim = i;
                             printf("UP: animation is now %d\n", anim);
-                            sd_bk_anim *bka = bk->anims[anim];
+                            sd_bk_anim *bka = sd_bk_get_anim(bk, anim);
                             sd_animation *ani = bka->animation;
                             bkanim_info(bka, ani, anim);
                             sprite = 0;
@@ -165,7 +165,7 @@ void sprite_play(sd_bk_file *bk, int scale, int anim, int sprite) {
                         } else {
                             anim = i;
                             printf("DOWN: animation is now %d\n", anim);
-                            sd_bk_anim *bka = bk->anims[anim];
+                            sd_bk_anim *bka = sd_bk_get_anim(bk, anim);
                             sd_animation *ani = bka->animation;
                             bkanim_info(bka, ani, anim);
                             sprite = 0;
@@ -176,10 +176,10 @@ void sprite_play(sd_bk_file *bk, int scale, int anim, int sprite) {
                         changed = 0;
                 }
                 if(changed) {
-                    s = sd_animation_get_sprite(bk->anims[anim]->animation, sprite);
+                    s = sd_animation_get_sprite(sd_bk_get_anim(bk, anim)->animation, sprite);
                     sd_sprite_rgba_decode(&img, s, bk->palettes[0]);
-                    int x = s->pos.x + bk->anims[anim]->animation->start_pos.x;
-                    int y = s->pos.y + bk->anims[anim]->animation->start_pos.y;
+                    int x = s->pos.x + sd_bk_get_anim(bk, anim)->animation->start_pos.x;
+                    int y = s->pos.y + sd_bk_get_anim(bk, anim)->animation->start_pos.y;
                     printf("Sprite Info: pos=(%d,%d) size=(%d,%d) len=%d\n", x, y, s->width, s->height, s->len);
 
                     if(!(surface = SDL_CreateRGBSurfaceFrom((void *)img.data, img.w, img.h, 32, img.w * 4, rmask, gmask,
@@ -210,7 +210,7 @@ void sprite_play(sd_bk_file *bk, int scale, int anim, int sprite) {
 
         // render the collision data
         SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-        const sd_animation *animation = bk->anims[anim]->animation;
+        const sd_animation *animation = sd_bk_get_anim(bk, anim)->animation;
         iterator it;
         sd_coord *coord;
         vector_iter_begin(&animation->coord_table, &it);
@@ -587,8 +587,8 @@ void bk_getinfo(sd_bk_file *bk) {
     printf(" * Animations:  ");
     int start = -1, last = -1;
     int m;
-    for(m = 0; m < 50; m++) {
-        if(bk->anims[m]) {
+    for(m = 0; m < MAX_BK_ANIMS; m++) {
+        if(sd_bk_get_anim(bk, m)) {
             if(start == -1) {
                 start = m;
                 last = m;
@@ -787,7 +787,7 @@ int main(int argc, char *argv[]) {
         }
 
         // This doesn't need a sprite check
-        ani = bk.anims[anim->ival[0]]->animation;
+        ani = sd_bk_get_anim(&bk, anim->ival[0])->animation;
         if(push->count > 0) {
             anim_push(ani);
             goto done;
@@ -834,7 +834,7 @@ int main(int argc, char *argv[]) {
         if(!check_anim(&bk, anim->ival[0])) {
             goto exit_1;
         }
-        sd_bk_anim *bka = bk.anims[anim->ival[0]];
+        sd_bk_anim *bka = sd_bk_get_anim(&bk, anim->ival[0]);
         sd_animation *ani = bka->animation;
 
         if(key->count > 0) {
@@ -855,9 +855,9 @@ int main(int argc, char *argv[]) {
     } else if(all_anims->count > 0) {
         sd_bk_anim *bka;
         sd_animation *ani;
-        for(int i = 0; i < 50; i++) {
-            if(bk.anims[i]) {
-                bka = bk.anims[i];
+        for(int i = 0; i < MAX_BK_ANIMS; i++) {
+            if(sd_bk_get_anim(&bk, i)) {
+                bka = sd_bk_get_anim(&bk, i);
                 ani = bka->animation;
                 if(key->count > 0) {
                     if(value->count > 0) {

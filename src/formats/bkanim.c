@@ -54,6 +54,11 @@ void sd_bk_anim_free(sd_bk_anim *bka) {
     str_free(&bka->footer_string);
 }
 
+void sd_bk_anim_free_cb(void *ptr) {
+    sd_bk_anim_free(ptr);
+    omf_free(ptr);
+}
+
 int sd_bk_anim_load(sd_reader *r, sd_bk_anim *bka) {
     int ret;
 

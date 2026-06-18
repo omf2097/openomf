@@ -14,6 +14,7 @@
 #include "formats/bkanim.h"
 #include "formats/palette.h"
 #include "formats/vga_image.h"
+#include "utils/array.h"
 #include <stdint.h>
 
 #define MAX_BK_ANIMS 50   ///< Amount of animations in the BK file. This is fixed!
@@ -28,7 +29,7 @@ typedef struct {
     uint8_t unknown_a;     ///< Unknown value
     uint8_t palette_count; ///< Number of palettes in the BK file
 
-    sd_bk_anim *anims[MAX_BK_ANIMS];           ///< All animations contained by the BK file
+    array anims;                               ///< All animations, holds heap-allocated sd_bk_anim pointers
     sd_vga_image *background;                  ///< Background image. If NULL, a black background will be used.
     vga_palette *palettes[MAX_BK_PALETTES];    ///< All palettes in the BK file.
     vga_remap_tables *remaps[MAX_BK_PALETTES]; ///< Remappings for the palettes

@@ -19,6 +19,7 @@ int sd_bk_create(sd_bk_file *bk) {
 
     // Clear everything
     memset(bk, 0, sizeof(sd_bk_file));
+    array_create_with_size_cb(&bk->anims, MAX_BK_ANIMS, sd_bk_anim_free_cb);
     return SD_SUCCESS;
 }
 
@@ -39,10 +40,13 @@ int sd_bk_copy(sd_bk_file *dst, const sd_bk_file *src) {
     memcpy(dst->soundtable, src->soundtable, sizeof(src->soundtable));
 
     // Copy animations
+    array_create_with_size_cb(&dst->anims, MAX_BK_ANIMS, sd_bk_anim_free_cb);
     for(int i = 0; i < MAX_BK_ANIMS; i++) {
-        if(src->anims[i] != NULL) {
-            dst->anims[i] = omf_calloc(1, sizeof(sd_bk_anim));
-            if((ret = sd_bk_anim_copy(dst->anims[i], src->anims[i])) != SD_SUCCESS) {
+        const sd_bk_anim *src_anim = array_get(&src->anims, i);
+        if(src_anim != NULL) {
+            sd_bk_anim *copy = omf_calloc(1, sizeof(sd_bk_anim));
+            array_set(&dst->anims, i, copy);
+            if((ret = sd_bk_anim_copy(copy, src_anim)) != SD_SUCCESS) {
                 return ret;
             }
         }
@@ -72,30 +76,27 @@ int sd_bk_copy(sd_bk_file *dst, const sd_bk_file *src) {
 
 void sd_bk_postprocess(sd_bk_file *bk) {
     char *table[1000] = {0}; // temporary lookup table
-    sd_animation *anim;
     // fix NULL pointers for any 'missing' sprites
-    for(int i = 0; i < MAX_BK_ANIMS; i++) {
-        if(bk->anims[i] != NULL) {
-            anim = bk->anims[i]->animation;
-            int sprite_count = sd_animation_get_sprite_count(anim);
-            for(int j = 0; j < sprite_count; j++) {
-                sd_sprite *sprite = sd_animation_get_sprite(anim, j);
-                if(sprite->missing > 0) {
-                    if(table[sprite->index]) {
-                        sprite->data = table[sprite->index];
-                    }
-                } else {
-                    table[sprite->index] = sprite->data;
+    iterator it;
+    sd_bk_anim *bka;
+    array_iter_begin(&bk->anims, &it);
+    foreach(it, bka) {
+        sd_animation *anim = bka->animation;
+        int sprite_count = sd_animation_get_sprite_count(anim);
+        for(int j = 0; j < sprite_count; j++) {
+            sd_sprite *sprite = sd_animation_get_sprite(anim, j);
+            if(sprite->missing > 0) {
+                if(table[sprite->index]) {
+                    sprite->data = table[sprite->index];
                 }
+            } else {
+                table[sprite->index] = sprite->data;
             }
         }
     }
 }
 
 int sd_bk_load(sd_bk_file *bk, const path *filename) {
-    uint16_t img_w, img_h;
-    uint8_t animno = 0;
-    sd_reader *r;
     int ret = SD_SUCCESS;
 
     str ext;
@@ -107,30 +108,32 @@ int sd_bk_load(sd_bk_file *bk, const path *filename) {
     str_free(&ext);
 
     // Initialize reader
-    if(!(r = sd_reader_open(filename))) {
+    sd_reader *r = sd_reader_open(filename);
+    if(!r) {
         return SD_FILE_OPEN_ERROR;
     }
 
     // Header
     bk->file_id = sd_read_udword(r);
     bk->unknown_a = sd_read_ubyte(r);
-    img_w = sd_read_uword(r);
-    img_h = sd_read_uword(r);
+    const uint16_t img_w = sd_read_uword(r);
+    const uint16_t img_h = sd_read_uword(r);
 
     // Read animations
     while(1) {
         sd_skip(r, 4); // offset of next animation
-        animno = sd_read_ubyte(r);
-        if(animno >= MAX_BK_ANIMS || !sd_reader_ok(r)) {
+        const uint8_t anim_no = sd_read_ubyte(r);
+        if(anim_no >= MAX_BK_ANIMS || !sd_reader_ok(r)) {
             break;
         }
 
         // Initialize animation
-        bk->anims[animno] = omf_calloc(1, sizeof(sd_bk_anim));
-        if((ret = sd_bk_anim_create(bk->anims[animno])) != SD_SUCCESS) {
+        sd_bk_anim *bka = omf_calloc(1, sizeof(sd_bk_anim));
+        array_set(&bk->anims, anim_no, bka);
+        if((ret = sd_bk_anim_create(bka)) != SD_SUCCESS) {
             goto exit_0;
         }
-        if((ret = sd_bk_anim_load(r, bk->anims[animno])) != SD_SUCCESS) {
+        if((ret = sd_bk_anim_load(r, bka)) != SD_SUCCESS) {
             goto exit_0;
         }
     }
@@ -187,12 +190,10 @@ int sd_bk_load_from_pcx(sd_bk_file *bk, const path *filename) {
 }
 
 int sd_bk_save(const sd_bk_file *bk, const path *filename) {
-    long rpos = 0;
-    long opos = 0;
-    sd_writer *w;
     int ret;
 
-    if(!(w = sd_writer_open(filename))) {
+    sd_writer *w = sd_writer_open(filename);
+    if(!w) {
         return SD_FILE_OPEN_ERROR;
     }
 
@@ -211,15 +212,17 @@ int sd_bk_save(const sd_bk_file *bk, const path *filename) {
     }
 
     // Write animations
+    long rpos = 0;
     for(uint8_t i = 0; i < MAX_BK_ANIMS; i++) {
-        if(bk->anims[i] != NULL) {
-            opos = sd_writer_pos(w); // remember where we need to fill in the blank
+        const sd_bk_anim *bka = array_get(&bk->anims, i);
+        if(bka != NULL) {
+            const long opos = sd_writer_pos(w); // remember where we need to fill in the blank
             if(opos < 0) {
                 goto error;
             }
             sd_write_udword(w, 0); // write a 0 as a placeholder
             sd_write_ubyte(w, i);
-            if((ret = sd_bk_anim_save(w, bk->anims[i])) != SD_SUCCESS) {
+            if((ret = sd_bk_anim_save(w, bka)) != SD_SUCCESS) {
                 sd_writer_close(w);
                 return ret;
             }
@@ -292,31 +295,26 @@ sd_vga_image *sd_bk_get_background(const sd_bk_file *bk) {
 }
 
 int sd_bk_set_anim(sd_bk_file *bk, int index, const sd_bk_anim *anim) {
-    int ret;
     assert(bk != NULL);
     if(index < 0 || index >= MAX_BK_ANIMS) {
         return SD_INVALID_INPUT;
     }
-    if(bk->anims[index] != NULL) {
-        sd_bk_anim_free(bk->anims[index]);
-        omf_free(bk->anims[index]);
-    }
-    // If input was NULL, we want to stop here.
+
+    array_delete_at(&bk->anims, index);
     if(anim == NULL) {
         return SD_SUCCESS;
     }
-    bk->anims[index] = omf_calloc(1, sizeof(sd_bk_anim));
-    if((ret = sd_bk_anim_copy(bk->anims[index], anim)) != SD_SUCCESS) {
-        return ret;
-    }
-    return SD_SUCCESS;
+
+    sd_bk_anim *copy = omf_calloc(1, sizeof(sd_bk_anim));
+    array_set(&bk->anims, index, copy);
+    return sd_bk_anim_copy(copy, anim);
 }
 
 sd_bk_anim *sd_bk_get_anim(const sd_bk_file *bk, int index) {
     if(index < 0 || index >= MAX_BK_ANIMS || bk == NULL) {
         return NULL;
     }
-    return bk->anims[index];
+    return array_get(&bk->anims, index);
 }
 
 int sd_bk_set_palette(sd_bk_file *bk, int index, const vga_palette *pal) {
@@ -373,12 +371,7 @@ void sd_bk_free(sd_bk_file *bk) {
         sd_vga_image_free(bk->background);
         omf_free(bk->background);
     }
-    for(i = 0; i < MAX_BK_ANIMS; i++) {
-        if(bk->anims[i] != NULL) {
-            sd_bk_anim_free(bk->anims[i]);
-            omf_free(bk->anims[i]);
-        }
-    }
+    array_free(&bk->anims);
     for(i = 0; i < bk->palette_count; i++) {
         if(bk->palettes[i] != NULL) {
             omf_free(bk->palettes[i]);

@@ -68,6 +68,10 @@ int sd_bk_anim_copy(sd_bk_anim *dst, const sd_bk_anim *src);
  */
 void sd_bk_anim_free(sd_bk_anim *bka);
 
+/** @brief Free callback helper for omf_malloc()'d animation pointers stored in a container */
+
+void sd_bk_anim_free_cb(void *ptr);
+
 /** @brief Set animation struct for BK animation info struct
  *
  * Sets an animation for the BK animation info struct. Animation will be copied,
