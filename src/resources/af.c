@@ -29,10 +29,11 @@ void af_create(af *a, void *src, str *name) {
     array_create(&a->sprites);
 
     // Moves
-    for(int i = 0; i < 70; i++) {
-        if(sdaf->moves[i] != NULL) {
+    for(int i = 0; i < MAX_AF_MOVES; i++) {
+        sd_move *sd_move_ptr = sd_af_get_move(sdaf, i);
+        if(sd_move_ptr != NULL) {
             af_move *move = omf_calloc(1, sizeof(af_move));
-            af_move_create(name, move, &a->sprites, (void *)sdaf->moves[i], i);
+            af_move_create(name, move, &a->sprites, (void *)sd_move_ptr, i);
             array_set(&a->moves, i, move);
         }
     }

@@ -12,6 +12,7 @@
 #define SD_AF_H
 
 #include "formats/move.h"
+#include "utils/array.h"
 #include <stdint.h>
 
 #define MAX_AF_MOVES 70 ///< Maximum amount of moves for a HAR
@@ -33,8 +34,8 @@ typedef struct {
     uint8_t version_1;                 ///< Version value
     uint8_t ai_projectile_y_threshold; ///< AI projectile Y threshold for high/low classification.
 
-    sd_move *moves[MAX_AF_MOVES]; ///< All HAR moves.
-    char sound_table[30];         ///< All sounds used by the animations in this HAR file.
+    array moves;          ///< All HAR moves, holds heap-allocated sd_move pointers.
+    char sound_table[30]; ///< All sounds used by the animations in this HAR file.
 } sd_af_file;
 
 /** @brief Initialize AF file structure

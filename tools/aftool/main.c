@@ -17,11 +17,11 @@
 void move_info(sd_move *mv, sd_animation *ani, int move);
 
 int check_move_sprite(sd_af_file *af, int move, int sprite) {
-    if(move > 70 || move < 0 || af->moves[move] == 0) {
+    if(move >= MAX_AF_MOVES || move < 0 || sd_af_get_move(af, move) == 0) {
         printf("animation #%d does not exist.\n", move);
         return 0;
     }
-    if(sprite < 0 || sprite >= sd_animation_get_sprite_count(af->moves[move]->animation)) {
+    if(sprite < 0 || sprite >= sd_animation_get_sprite_count(sd_af_get_move(af, move)->animation)) {
         printf("Sprite #%d does not exist.\n", sprite);
         return 0;
     }
@@ -29,7 +29,7 @@ int check_move_sprite(sd_af_file *af, int move, int sprite) {
 }
 
 int check_move(sd_af_file *af, int move) {
-    if(af->moves[move] == 0 || move > 70 || move < 0) {
+    if(sd_af_get_move(af, move) == 0 || move >= MAX_AF_MOVES || move < 0) {
         printf("animation #%d does not exist.\n", move);
         return 0;
     }
@@ -47,7 +47,7 @@ void sprite_play(sd_af_file *af, sd_bk_file *bk, int scale, int anim, int sprite
     SDL_Texture *rendertarget;
     SDL_Rect rect;
     SDL_Rect dstrect;
-    sd_sprite *s = sd_animation_get_sprite(af->moves[anim]->animation, sprite);
+    sd_sprite *s = sd_animation_get_sprite(sd_af_get_move(af, anim)->animation, sprite);
     SDL_Window *window = SDL_CreateWindow("OMF2097 Remake", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 320 * scale,
                                           200 * scale, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
 
@@ -108,14 +108,14 @@ void sprite_play(sd_af_file *af, sd_bk_file *bk, int scale, int anim, int sprite
                 int changed = 0;
                 switch(e.key.keysym.sym) {
                     case SDLK_RIGHT:
-                        sprite = (sprite + 1) % sd_animation_get_sprite_count(af->moves[anim]->animation);
+                        sprite = (sprite + 1) % sd_animation_get_sprite_count(sd_af_get_move(af, anim)->animation);
                         printf("sprite is now %d\n", sprite);
                         changed = 1;
                         break;
                     case SDLK_LEFT:
                         sprite--;
                         if(sprite < 0) {
-                            sprite = sd_animation_get_sprite_count(af->moves[anim]->animation) - 1;
+                            sprite = sd_animation_get_sprite_count(sd_af_get_move(af, anim)->animation) - 1;
                         }
                         changed = 1;
                         break;
@@ -149,7 +149,7 @@ void sprite_play(sd_af_file *af, sd_bk_file *bk, int scale, int anim, int sprite
                         break;
                     case SDLK_p: {
                         // print the move info
-                        sd_move *mv = af->moves[i];
+                        sd_move *mv = sd_af_get_move(af, i);
                         sd_animation *ani = mv->animation;
                         move_info(mv, ani, i);
                         changed = 0;
@@ -158,7 +158,7 @@ void sprite_play(sd_af_file *af, sd_bk_file *bk, int scale, int anim, int sprite
                         changed = 0;
                 }
                 if(changed) {
-                    s = sd_animation_get_sprite(af->moves[anim]->animation, sprite);
+                    s = sd_animation_get_sprite(sd_af_get_move(af, anim)->animation, sprite);
                     sd_sprite_rgba_decode(&img, s, bk->palettes[0]);
                     printf("Sprite Info: pos=(%d,%d) size=(%d,%d) len=%d\n", s->pos.x, s->pos.y, s->width, s->height,
                            s->len);
@@ -192,7 +192,7 @@ void sprite_play(sd_af_file *af, sd_bk_file *bk, int scale, int anim, int sprite
 
         // render the collision data
         SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-        const sd_animation *animation = af->moves[anim]->animation;
+        const sd_animation *animation = sd_af_get_move(af, anim)->animation;
         iterator it;
         sd_coord *coord;
         vector_iter_begin(&animation->coord_table, &it);
@@ -646,8 +646,8 @@ void af_info(sd_af_file *af) {
     printf(" * Animations:  ");
     int start = -1, last = -1;
     int m;
-    for(m = 0; m < 70; m++) {
-        if(af->moves[m]) {
+    for(m = 0; m < MAX_AF_MOVES; m++) {
+        if(sd_af_get_move(af, m)) {
             if(start == -1) {
                 start = m;
                 last = m;
@@ -853,7 +853,7 @@ int main(int argc, char *argv[]) {
         if(!check_move_sprite(&af, move->ival[0], sprite->ival[0])) {
             goto exit_2;
         }
-        sd_sprite *sp = sd_animation_get_sprite(af.moves[move->ival[0]]->animation, sprite->ival[0]);
+        sd_sprite *sp = sd_animation_get_sprite(sd_af_get_move(&af, move->ival[0])->animation, sprite->ival[0]);
 
         // Handle arguments
         if(key->count > 0) {
@@ -874,7 +874,7 @@ int main(int argc, char *argv[]) {
         if(!check_move(&af, move->ival[0])) {
             goto exit_2;
         }
-        sd_move *mv = af.moves[move->ival[0]];
+        sd_move *mv = sd_af_get_move(&af, move->ival[0]);
         sd_animation *ani = mv->animation;
 
         // Handle arguments
@@ -896,9 +896,9 @@ int main(int argc, char *argv[]) {
     } else if(all_moves->count > 0) {
         sd_move *mv;
         sd_animation *ani;
-        for(int i = 0; i < 70; i++) {
-            if(af.moves[i]) {
-                mv = af.moves[i];
+        for(int i = 0; i < MAX_AF_MOVES; i++) {
+            if(sd_af_get_move(&af, i)) {
+                mv = sd_af_get_move(&af, i);
                 ani = mv->animation;
                 if(key->count > 0) {
                     if(value->count > 0) {

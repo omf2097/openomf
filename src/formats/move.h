@@ -148,6 +148,9 @@ int sd_move_copy(sd_move *dst, const sd_move *src);
  */
 void sd_move_free(sd_move *move);
 
+/** @brief Free callback helper for omf_malloc()'d move pointers stored in a container */
+void sd_move_free_cb(void *ptr);
+
 /** @brief Set animation struct for move
  *
  * Sets an animation for the move. Animation will be copied,

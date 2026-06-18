@@ -101,18 +101,16 @@ int animations_diff(sd_af_file *a, sd_af_file *b) {
     int d_found = 0;
     printf("Animations:\n");
     char f[20];
-    for(int m = 0; m < 70; m++) {
+    for(int m = 0; m < MAX_AF_MOVES; m++) {
         sprintf(f, " * %-2d", m);
-        d_found |= null_diff(f, a->moves[m], b->moves[m]);
-        if(a->moves[m] && b->moves[m]) {
-            sd_move *am = a->moves[m];
-            sd_move *bm = b->moves[m];
+        sd_move *am = sd_af_get_move(a, m);
+        sd_move *bm = sd_af_get_move(b, m);
+        d_found |= null_diff(f, am, bm);
+        if(am && bm) {
             sd_animation *aa = am->animation;
             sd_animation *ba = bm->animation;
             printf(" * %d:\n", m);
             d_found |= anim_common_diff(aa, ba);
-
-            (void)(a->moves[m]);
         }
     }
     if(!d_found) {

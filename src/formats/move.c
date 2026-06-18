@@ -74,6 +74,11 @@ void sd_move_free(sd_move *move) {
     str_free(&move->footer_string);
 }
 
+void sd_move_free_cb(void *ptr) {
+    sd_move_free(ptr);
+    omf_free(ptr);
+}
+
 int sd_move_load(sd_reader *r, sd_move *move) {
     int ret;
 

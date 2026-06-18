@@ -79,17 +79,18 @@ void test_af_roundtrip(void) {
     CU_ASSERT_NSTRING_EQUAL(loaded.sound_table, new.sound_table, 30);
 
     // Make sure ID 0 exists in moves
-    CU_ASSERT_PTR_NOT_NULL(new.moves[0]);
-    CU_ASSERT_PTR_NOT_NULL(loaded.moves[0]);
+    sd_move *new_move = sd_af_get_move(&new, 0);
+    sd_move *loaded_move = sd_af_get_move(&loaded, 0);
+    CU_ASSERT_PTR_NOT_NULL(new_move);
+    CU_ASSERT_PTR_NOT_NULL(loaded_move);
 
     // Check strings from move 0
-    CU_ASSERT_STRING_EQUAL(str_c(&new.moves[0]->move_string), str_c(&loaded.moves[0]->move_string));
-    CU_ASSERT_STRING_EQUAL(str_c(&new.moves[0]->footer_string), str_c(&loaded.moves[0]->footer_string));
+    CU_ASSERT_STRING_EQUAL(str_c(&new_move->move_string), str_c(&loaded_move->move_string));
+    CU_ASSERT_STRING_EQUAL(str_c(&new_move->footer_string), str_c(&loaded_move->footer_string));
 
     // Check that animation seems correct
-    CU_ASSERT_STRING_EQUAL(str_c(&new.moves[0]->animation->anim_string),
-                           str_c(&loaded.moves[0]->animation->anim_string));
-    CU_ASSERT(vector_size(&new.moves[0]->animation->extra_strings) == 2);
+    CU_ASSERT_STRING_EQUAL(str_c(&new_move->animation->anim_string), str_c(&loaded_move->animation->anim_string));
+    CU_ASSERT(vector_size(&new_move->animation->extra_strings) == 2);
 
     sd_animation_free(&ani);
     sd_move_free(&move);
