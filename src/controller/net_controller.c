@@ -464,7 +464,7 @@ int rewind_and_replay(wtf *data, controller *ctrl) {
 
                         extra_data[0] = action;
 
-                        sd_rec_insert_action(gs->rec, gs->rec->move_count, &move);
+                        sd_rec_insert_action(gs->rec, vector_size(&gs->rec->moves), &move);
                         k++;
                     }
                 }

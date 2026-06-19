@@ -44,15 +44,17 @@ void test_rec_roundtrip(void) {
     CU_ASSERT(sd_rec_load(&loaded, &test_file) == SD_SUCCESS);
 
     // Make sure the RECs seem the same
-    CU_ASSERT(rec.move_count == loaded.move_count);
-    for(unsigned i = 0; i < rec.move_count; i++) {
-        CU_ASSERT(rec.moves[i].tick == loaded.moves[i].tick);
-        CU_ASSERT(rec.moves[i].lookup_id == loaded.moves[i].lookup_id);
-        CU_ASSERT(rec.moves[i].player_id == loaded.moves[i].player_id);
+    CU_ASSERT(vector_size(&rec.moves) == vector_size(&loaded.moves));
+    for(unsigned i = 0; i < vector_size(&rec.moves); i++) {
+        sd_rec_move *rec_move = vector_get(&rec.moves, i);
+        sd_rec_move *loaded_move = vector_get(&loaded.moves, i);
+        CU_ASSERT(rec_move->tick == loaded_move->tick);
+        CU_ASSERT(rec_move->lookup_id == loaded_move->lookup_id);
+        CU_ASSERT(rec_move->player_id == loaded_move->player_id);
 
-        int len = sd_rec_extra_len(rec.moves[i].lookup_id);
+        int len = sd_rec_extra_len(rec_move->lookup_id);
         if(len) {
-            CU_ASSERT(memcmp(sd_rec_get_extra_data(&rec.moves[i]), sd_rec_get_extra_data(&loaded.moves[i]), len) == 0);
+            CU_ASSERT(memcmp(sd_rec_get_extra_data(rec_move), sd_rec_get_extra_data(loaded_move), len) == 0);
         }
     }
 

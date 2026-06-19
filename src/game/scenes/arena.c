@@ -987,7 +987,7 @@ void write_rec_move(scene *scene, game_player *player, int action) {
 
     int ret;
 
-    if((ret = sd_rec_insert_action(scene->gs->rec, scene->gs->rec->move_count, &move)) != SD_SUCCESS) {
+    if((ret = sd_rec_insert_action(scene->gs->rec, vector_size(&scene->gs->rec->moves), &move)) != SD_SUCCESS) {
         log_debug("recoding move failed %d", ret);
     }
 }
