@@ -139,6 +139,11 @@ void str_truncate(str *dst, size_t max_len);
  */
 void str_free(str *string);
 
+/**
+ * @brief Free callback helper for str elements stored in a container, e.g. vector_create_cb(..., str_free_cb);
+ */
+void str_free_cb(void *ptr);
+
 // String modification
 
 /**

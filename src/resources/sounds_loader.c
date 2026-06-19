@@ -14,9 +14,7 @@ bool sounds_loader_init(void) {
 
     // Load sounds
     sound_data = omf_calloc(1, sizeof(sd_sound_file));
-    if(sd_sounds_create(sound_data) != SD_SUCCESS) {
-        goto error_0;
-    }
+    sd_sounds_create(sound_data);
     if(sd_sounds_load(sound_data, &filename)) {
         log_error("Unable to load sounds file '%s'!", path_c(&filename));
         goto error_1;
@@ -26,7 +24,6 @@ bool sounds_loader_init(void) {
 
 error_1:
     sd_sounds_free(sound_data);
-error_0:
     omf_free(sound_data);
     return false;
 }

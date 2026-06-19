@@ -9,27 +9,27 @@
 #include "formats/internal/writer.h"
 #include "formats/language.h"
 #include "utils/allocator.h"
-#include "utils/c_string_util.h"
 
-int sd_language_create(sd_language *language) {
+void sd_lang_string_free(void *ptr) {
+    sd_lang_string *entry = ptr;
+    str_free(&entry->description);
+    str_free(&entry->data);
+}
+
+void sd_language_create(sd_language *language) {
     assert(language != NULL);
     memset(language, 0, sizeof(sd_language));
-    return SD_SUCCESS;
+    vector_create_cb(&language->strings, sizeof(sd_lang_string), sd_lang_string_free);
 }
 
 void sd_language_free(sd_language *language) {
     if(language == NULL) {
         return;
     }
-    if(language->strings != 0) {
-        for(unsigned i = 0; i < language->count; i++) {
-            omf_free(language->strings[i].data);
-        }
-        omf_free(language->strings);
-    }
+    vector_free(&language->strings);
 }
 
-int sd_language_load(sd_language *language, const path *filename) {
+int sd_language_load(sd_language *language, const path *filename, bool load_descriptions) {
     assert(language != NULL);
     assert(filename != NULL);
 
@@ -56,14 +56,19 @@ int sd_language_load(sd_language *language, const path *filename) {
     // Some variables etc.
     unsigned int offset = 0;
     unsigned int *offsets = omf_calloc(string_count + 1, sizeof(unsigned int));
-    language->strings = omf_calloc(string_count, sizeof(sd_lang_string));
-    language->count = string_count;
+    vector_reserve(&language->strings, string_count);
 
     // Read titles and offsets
     unsigned int pos = 0;
     while((offset = sd_read_udword(r)) < file_size && pos < string_count) {
-        sd_read_buf(r, language->strings[pos].description, 32);
-        language->strings[pos].description[31] = 0;
+        sd_lang_string *entry = vector_append_ptr(&language->strings);
+        if(load_descriptions) {
+            sd_read_fixed_str(r, &entry->description, 32);
+        } else {
+            sd_skip(r, 32); // skip over the description field, leave it empty
+            str_create(&entry->description);
+        }
+        str_create(&entry->data); // filled in below
         offsets[pos] = offset;
         pos++;
     }
@@ -80,20 +85,20 @@ int sd_language_load(sd_language *language, const path *filename) {
     // Read real titles
     for(unsigned i = 0; i < pos; i++) {
         sd_reader_set(r, offsets[i]);
-        unsigned int len = offsets[i + 1] - offsets[i];
-
-        language->strings[i].data = omf_calloc(len + 1, 1);
-        memset(language->strings[i].data, 0, len + 1);
-
+        const unsigned int len = offsets[i + 1] - offsets[i];
         if(len == 0) {
             continue;
         }
 
-        // Read string
+        // Read XOR-encoded string into a buffer, then into the str.
+        char *buf = omf_calloc(len + 1, 1);
         memreader *mr = memreader_open_from_reader(r, len);
         memreader_xor(mr, len & 0xFF);
-        memread_buf(mr, language->strings[i].data, len);
+        memread_buf(mr, buf, len);
         memreader_close(mr);
+        sd_lang_string *entry = vector_get(&language->strings, i);
+        str_set_c(&entry->data, buf);
+        omf_free(buf);
     }
 
     // All done.
@@ -103,19 +108,17 @@ int sd_language_load(sd_language *language, const path *filename) {
 }
 
 const sd_lang_string *sd_language_get(const sd_language *language, unsigned num) {
-    if(language == NULL || num >= language->count) {
+    if(language == NULL) {
         return NULL;
     }
-    return &language->strings[num];
+    return vector_get(&language->strings, num);
 }
 
 void sd_language_append(sd_language *language, const char *description, const char *data) {
     assert(strlen(description) < 32);
-    language->count++;
-
-    language->strings = omf_realloc(language->strings, language->count * sizeof(sd_lang_string));
-    strncpy_or_abort(language->strings[language->count - 1].description, description, 32);
-    language->strings[language->count - 1].data = omf_strdup(data);
+    sd_lang_string *entry = vector_append_ptr(&language->strings);
+    str_from_c(&entry->description, description);
+    str_from_c(&entry->data, data);
 }
 
 int sd_language_save(const sd_language *language, const path *filename) {
@@ -128,15 +131,16 @@ int sd_language_save(const sd_language *language, const path *filename) {
     }
 
     // Write descriptors
-    for(unsigned i = 0; i < language->count; i++) {
+    for(unsigned i = 0; i < vector_size(&language->strings); i++) {
+        const sd_lang_string *entry = vector_get(&language->strings, i);
         sd_write_dword(w, 0); // For now
-        sd_write_buf(w, language->strings[i].description, 32);
+        sd_write_fixed_str(w, &entry->description, 32);
     }
 
     // Write strings
-    for(unsigned i = 0; i < language->count; i++) {
+    for(unsigned i = 0; i < vector_size(&language->strings); i++) {
         // Write catalog offset
-        long offset = sd_writer_pos(w);
+        const long offset = sd_writer_pos(w);
         if(offset < 0) {
             goto error;
         }
@@ -149,9 +153,10 @@ int sd_language_save(const sd_language *language, const path *filename) {
         }
 
         // write string
+        const sd_lang_string *entry = vector_get(&language->strings, i);
         memwriter *mw = memwriter_open();
-        size_t str_len = strlen(language->strings[i].data);
-        memwrite_buf(mw, language->strings[i].data, str_len);
+        const size_t str_len = str_size(&entry->data);
+        memwrite_buf(mw, str_c(&entry->data), str_len);
         memwriter_xor(mw, str_len & 0xFF);
         memwriter_save(mw, w);
         memwriter_close(mw);

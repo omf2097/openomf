@@ -82,7 +82,7 @@ void portrait_select(component *c, int pilot_id) {
 
     // Save some information
     local->selected = pilot_id;
-    local->max = 4; // TODO pics.photo_count;
+    local->max = 4; // TODO vector_size(&pics.photos);
 }
 
 void portrait_next(component *c) {

@@ -35,7 +35,7 @@ static void load_description(component **c, const gui_theme *theme, const sd_tou
               locale->desc_vmove, locale->desc_size, locale->desc_color);
 
     component_free(*c);
-    *c = label_create(locale->stripped_description);
+    *c = label_create(str_c(&locale->stripped_description));
     label_set_text_horizontal_align(*c, TEXT_ALIGN_CENTER);
     label_set_text_vertical_align(*c, TEXT_ALIGN_MIDDLE);
     label_set_font(*c, FONT_SMALL);

@@ -109,15 +109,16 @@ void print_rec_root_info(sd_rec_file *rec) {
 
         printf("## Parsed data:\n");
         printf("Number       Tick Extra Player Length             Extra data\n");
-        for(unsigned i = 0; i < rec->move_count; i++) {
+        for(unsigned i = 0; i < vector_size(&rec->moves); i++) {
+            sd_rec_move *rec_move = vector_get(&rec->moves, i);
             char tmp[100];
             tmp[0] = 0;
-            char *extra_data = sd_rec_get_extra_data(&rec->moves[i]);
-            int extra_len = sd_rec_extra_len(rec->moves[i].lookup_id);
-            if(rec->moves[i].lookup_id < 3) {
+            char *extra_data = sd_rec_get_extra_data(rec_move);
+            int extra_len = sd_rec_extra_len(rec_move->lookup_id);
+            if(rec_move->lookup_id < 3) {
                 print_key(tmp, extra_data[0]);
             }
-            if(rec->moves[i].lookup_id == 18) {
+            if(rec_move->lookup_id == 18) {
                 uint32_t check_kind;
                 memcpy(&check_kind, 1 + (uint32_t *)extra_data, sizeof(uint32_t));
                 switch(extra_data[4]) {
@@ -137,10 +138,10 @@ void print_rec_root_info(sd_rec_file *rec) {
                     } break;
                 }
             }
-            printf("%6u %10u %5u %6u %6u %22s", i, rec->moves[i].tick, rec->moves[i].lookup_id, rec->moves[i].player_id,
-                   extra_len, tmp);
+            printf("%6u %10u %5u %6u %6u %22s", i, rec_move->tick, rec_move->lookup_id, rec_move->player_id, extra_len,
+                   tmp);
 
-            if(rec->moves[i].lookup_id == 10 && extra_data[0] == REC_LOOKUP10_ASSERT_BYTE) {
+            if(rec_move->lookup_id == 10 && extra_data[0] == REC_LOOKUP10_ASSERT_BYTE) {
                 rec_assertion ass;
                 if(parse_assertion((uint8_t const *)extra_data, &ass)) {
                     str s;
@@ -150,18 +151,18 @@ void print_rec_root_info(sd_rec_file *rec) {
                 } else {
                     printf("Failed to parse assertion!!!");
                 }
-            } else if(rec->moves[i].lookup_id == 10 && extra_data[0] == REC_LOOKUP10_UNK1_BYTE) {
+            } else if(rec_move->lookup_id == 10 && extra_data[0] == REC_LOOKUP10_UNK1_BYTE) {
                 printf("DOS \"opponent has left the game\" net msg");
-            } else if(rec->moves[i].lookup_id == 10 &&
+            } else if(rec_move->lookup_id == 10 &&
                       (extra_data[0] == REC_LOOKUP10_UNK2_BYTE || extra_data[0] == REC_LOOKUP10_UNK3_BYTE)) {
                 uint32_t value;
                 memcpy(&value, extra_data, sizeof value);
                 printf("DOS set unknown value 0x%08x, kind %d", value, extra_data[0]);
-            } else if(rec->moves[i].lookup_id == 10 && extra_data[0] == REC_LOOKUP10_SETRANDOM_BYTE) {
+            } else if(rec_move->lookup_id == 10 && extra_data[0] == REC_LOOKUP10_SETRANDOM_BYTE) {
                 uint32_t seed;
                 memcpy(&seed, extra_data + 4, sizeof(seed));
                 printf("Set random seed to 0x%08x", seed);
-            } else if(rec->moves[i].lookup_id == 10) {
+            } else if(rec_move->lookup_id == 10) {
                 printf("Unknown packet 10 subtype 0x%02x!!", extra_data[0]);
             } else if(extra_len > 0) {
                 print_bytes(extra_data, extra_len, 8, 2);
@@ -202,18 +203,19 @@ rec_assertion_operator rec_assertion_get_operator(const char *key) {
 
 void rec_entry_set_key(sd_rec_file *rec, int entry_id, const char *key, const char *value) {
     unsigned int action = atoi(value);
+    sd_rec_move *rec_move = vector_get(&rec->moves, entry_id);
     switch(rec_entry_key_get_id(key)) {
         case 0:
-            rec->moves[entry_id].tick = action;
+            rec_move->tick = action;
             break;
         case 1:
-            sd_rec_set_lookup_id(&rec->moves[entry_id], action);
+            sd_rec_set_lookup_id(rec_move, action);
             break;
         case 2:
-            rec->moves[entry_id].player_id = action;
+            rec_move->player_id = action;
             break;
         case 3:
-            sd_rec_get_extra_data(&rec->moves[entry_id])[0] = action;
+            sd_rec_get_extra_data(rec_move)[0] = action;
             break;
         default:
             printf("Invalid record entry key!\n");
@@ -222,24 +224,24 @@ void rec_entry_set_key(sd_rec_file *rec, int entry_id, const char *key, const ch
 }
 
 void rec_entry_get_key(sd_rec_file *rec, int entry_id, const char *key) {
+    sd_rec_move *rec_move = vector_get(&rec->moves, entry_id);
     switch(rec_entry_key_get_id(key)) {
         case 0:
-            printf("%d", rec->moves[entry_id].tick);
+            printf("%d", rec_move->tick);
             break;
         case 1:
-            printf("%d", rec->moves[entry_id].lookup_id);
+            printf("%d", rec_move->lookup_id);
             break;
         case 2:
-            printf("%d", rec->moves[entry_id].player_id);
+            printf("%d", rec_move->player_id);
             break;
         case 3: {
             char tmp[100];
-            print_key(tmp, sd_rec_get_extra_data(&rec->moves[entry_id])[0]);
+            print_key(tmp, sd_rec_get_extra_data(rec_move)[0]);
             printf("%s", tmp);
         } break;
         case 4:
-            print_bytes(sd_rec_get_extra_data(&rec->moves[entry_id]), sd_rec_extra_len(rec->moves[entry_id].lookup_id),
-                        8, 0);
+            print_bytes(sd_rec_get_extra_data(rec_move), sd_rec_extra_len(rec_move->lookup_id), 8, 0);
             break;
         default:
             printf("Invalid record entry key!\n");
@@ -291,21 +293,22 @@ void rec_get_key(sd_rec_file *rec, const char **key, int kcount) {
             }
             if(kcount == 2) {
                 int r = atoi(key[1]);
-                if(r >= (int)rec->move_count) {
+                if(r >= (int)vector_size(&rec->moves)) {
                     printf("Index does not exist.");
                     return;
                 }
-                char *extra_data = sd_rec_get_extra_data(&rec->moves[r]);
-                printf("Tick:       %d\n", rec->moves[r].tick);
-                printf("Extra:      %d\n", rec->moves[r].lookup_id);
-                printf("Player ID:  %d\n", rec->moves[r].player_id);
-                if(rec->moves[r].lookup_id < 3 && extra_data) {
+                sd_rec_move *rec_move = vector_get(&rec->moves, r);
+                char *extra_data = sd_rec_get_extra_data(rec_move);
+                printf("Tick:       %d\n", rec_move->tick);
+                printf("Extra:      %d\n", rec_move->lookup_id);
+                printf("Player ID:  %d\n", rec_move->player_id);
+                if(rec_move->lookup_id < 3 && extra_data) {
                     char tmp[100];
                     print_key(tmp, extra_data[0]);
                     printf("Action:     %s\n", tmp);
                 } else if(extra_data) {
                     printf("Extra data: ");
-                    print_bytes(extra_data, sd_rec_extra_len(rec->moves[r].lookup_id), 7, 0);
+                    print_bytes(extra_data, sd_rec_extra_len(rec_move->lookup_id), 7, 0);
                 }
                 return;
             }
@@ -424,15 +427,20 @@ int main(int argc, char *argv[]) {
             //   old  openomf  start tick: 70
             //   new (OMF.EXE) start tick: 92
             int const offset = 92 - 70;
-            for(unsigned i = 0; i < rec.move_count; i++) {
-                rec.moves[i].tick += offset;
+            iterator it;
+            sd_rec_move *mv;
+            vector_iter_begin(&rec.moves, &it);
+            foreach(it, mv) {
+                mv->tick += offset;
             }
         } else if(omf_strcasecmp(fixup->sval[0], "pr1319_asserts") == 0) {
             // pull request 1319: To ensure DOS ignores our assertion packets
             // prepend the extra_data with an 'A' byte. DOS only implements
             // '\x01' through '\x04', so will ignore our 'A' packet.
-            for(unsigned i = 0; i < rec.move_count; i++) {
-                sd_rec_move *mv = &rec.moves[i];
+            iterator it;
+            sd_rec_move *mv;
+            vector_iter_begin(&rec.moves, &it);
+            foreach(it, mv) {
                 if(mv->lookup_id != 10) {
                     continue;
                 }
@@ -447,8 +455,10 @@ int main(int argc, char *argv[]) {
         } else if(omf_strcasecmp(fixup->sval[0], "pr1319_rand") == 0) {
             // pull request 1319: Replace our nonstandard & problematic
             // lookup_id 96 setrandom packets with DOS' setrandom packets.
-            for(unsigned i = 0; i < rec.move_count; i++) {
-                sd_rec_move *mv = &rec.moves[i];
+            iterator it;
+            sd_rec_move *mv;
+            vector_iter_begin(&rec.moves, &it);
+            foreach(it, mv) {
                 if(mv->lookup_id != 96) {
                     continue;
                 }
@@ -486,18 +496,19 @@ int main(int argc, char *argv[]) {
             last = delete->ival[i];
             offset++;
         }
-        printf("Deleted %d moves, final move count %d\n", offset, rec.move_count);
+        printf("Deleted %d moves, final move count %d\n", offset, (int)vector_size(&rec.moves));
     } else if(truncate->count > 0) {
         unsigned truncate_tick = truncate->ival[0];
         int deleted = 0;
-        while(rec.move_count > 0 && rec.moves[rec.move_count - 1].tick > truncate_tick) {
-            if(sd_rec_delete_action(&rec, rec.move_count - 1) != SD_SUCCESS) {
-                printf("deleting move %d failed\n", rec.move_count - 1);
+        while(vector_size(&rec.moves) > 0 &&
+              ((sd_rec_move *)vector_get(&rec.moves, vector_size(&rec.moves) - 1))->tick > truncate_tick) {
+            if(sd_rec_delete_action(&rec, vector_size(&rec.moves) - 1) != SD_SUCCESS) {
+                printf("deleting move %d failed\n", (int)vector_size(&rec.moves) - 1);
                 abort();
             }
             deleted++;
         }
-        printf("Deleted %d moves, final move count %d\n", deleted, rec.move_count);
+        printf("Deleted %d moves, final move count %d\n", deleted, (int)vector_size(&rec.moves));
     } else if(insert->count > 0) {
         sd_rec_move mv;
         memset(&mv, 0, sizeof(sd_rec_move));
@@ -570,7 +581,7 @@ int main(int argc, char *argv[]) {
         if(rec.pilots[i].info.photo) {
             printf("  - Photo len  = %d\n", rec.pilots[i].info.photo->len);
             printf("  - Photo size = (%d,%d)\n", rec.pilots[i].info.photo->width, rec.pilots[i].info.photo->height);
-            printf("  - Photo pos  = (%d,%d)\n", rec.pilots[i].info.photo->pos_x, rec.pilots[i].info.photo->pos_y);
+            printf("  - Photo pos  = (%d,%d)\n", rec.pilots[i].info.photo->pos.x, rec.pilots[i].info.photo->pos.y);
             printf("  - Missing    = %d\n", rec.pilots[i].info.photo->missing);
             printf("  - Index      = %d\n", rec.pilots[i].info.photo->index);
         } else {

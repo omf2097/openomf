@@ -6,19 +6,18 @@
 #include "formats/error.h"
 #include "formats/move.h"
 #include "utils/allocator.h"
-#include "utils/c_string_util.h"
 #include "utils/log.h"
 
-int sd_move_create(sd_move *move) {
+void sd_move_create(sd_move *move) {
     assert(move != NULL);
 
     // Clear everything
     memset(move, 0, sizeof(sd_move));
-    return SD_SUCCESS;
+    str_create(&move->move_string);
+    str_create(&move->footer_string);
 }
 
-int sd_move_copy(sd_move *dst, const sd_move *src) {
-    int ret;
+void sd_move_copy(sd_move *dst, const sd_move *src) {
     assert(dst != NULL);
     assert(src != NULL);
 
@@ -28,14 +27,12 @@ int sd_move_copy(sd_move *dst, const sd_move *src) {
     // Copy animation
     if(src->animation != NULL) {
         dst->animation = omf_calloc(1, sizeof(sd_animation));
-        if((ret = sd_animation_copy(dst->animation, src->animation)) != SD_SUCCESS) {
-            return ret;
-        }
+        sd_animation_copy(dst->animation, src->animation);
     }
 
     // Copy move and footer strings
-    strncpy(dst->move_string, src->move_string, sizeof(dst->move_string));
-    strncpy(dst->footer_string, src->footer_string, sizeof(dst->footer_string));
+    str_from(&dst->move_string, &src->move_string);
+    str_from(&dst->footer_string, &src->footer_string);
 
     // Everything else
     dst->ai_flags = src->ai_flags;
@@ -57,8 +54,6 @@ int sd_move_copy(sd_move *dst, const sd_move *src) {
     dst->throw_duration = src->throw_duration;
     dst->extra_string_selector = src->extra_string_selector;
     dst->points = src->points;
-
-    return SD_SUCCESS;
 }
 
 void sd_move_free(sd_move *move) {
@@ -69,20 +64,24 @@ void sd_move_free(sd_move *move) {
         sd_animation_free(move->animation);
         omf_free(move->animation);
     }
+    str_free(&move->move_string);
+    str_free(&move->footer_string);
+}
+
+void sd_move_free_cb(void *ptr) {
+    sd_move_free(ptr);
+    omf_free(ptr);
 }
 
 int sd_move_load(sd_reader *r, sd_move *move) {
     int ret;
-    uint16_t size;
 
     assert(r != NULL);
     assert(move != NULL);
 
     // Read animation
     move->animation = omf_calloc(1, sizeof(sd_animation));
-    if((ret = sd_animation_create(move->animation)) != SD_SUCCESS) {
-        return ret;
-    }
+    sd_animation_create(move->animation);
     if((ret = sd_animation_load(r, move->animation)) != SD_SUCCESS) {
         return ret;
     }
@@ -108,20 +107,13 @@ int sd_move_load(sd_reader *r, sd_move *move) {
     move->extra_string_selector = sd_read_ubyte(r);
     move->points = sd_read_ubyte(r);
 
-    // move string
-    sd_read_buf(r, move->move_string, 21);
+    // move string (fixed 21-byte field, null-padded)
+    sd_read_fixed_str(r, &move->move_string, SD_MOVE_STRING_MAX);
 
     // Footer string
-    size = sd_read_uword(r);
-    if(size >= SD_MOVE_FOOTER_STRING_MAX) {
-        log_debug("Move footer too big! Expected max %d bytes, got %hu bytes.", SD_MOVE_FOOTER_STRING_MAX, size);
+    if(!sd_read_padded_str(r, &move->footer_string, SD_MOVE_FOOTER_STRING_MAX)) {
+        log_debug("Move footer too big! Expected max %d bytes.", SD_MOVE_FOOTER_STRING_MAX);
         return SD_FILE_PARSE_ERROR;
-    }
-    if(size > 0) {
-        sd_read_buf(r, move->footer_string, size);
-        if(move->footer_string[size - 1] != 0) {
-            return SD_FILE_PARSE_ERROR;
-        }
     }
 
     // Return success if reader is still ok
@@ -133,7 +125,6 @@ int sd_move_load(sd_reader *r, sd_move *move) {
 
 int sd_move_save(sd_writer *w, const sd_move *move) {
     int ret;
-    uint16_t size;
 
     assert(w != NULL);
     assert(move != NULL);
@@ -164,54 +155,28 @@ int sd_move_save(sd_writer *w, const sd_move *move) {
     sd_write_ubyte(w, move->extra_string_selector);
     sd_write_ubyte(w, move->points);
 
-    // move string
-    sd_write_buf(w, move->move_string, 21);
+    // move string (fixed 21-byte field, null-padded)
+    sd_write_fixed_str(w, &move->move_string, SD_MOVE_STRING_MAX);
 
     // Save footer string
-    size = strlen(move->footer_string);
-    if(size > 0) {
-        sd_write_uword(w, size + 1);
-        sd_write_buf(w, move->footer_string, size + 1);
-    } else {
-        sd_write_uword(w, 0);
-    }
+    sd_write_padded_str(w, &move->footer_string);
 
     return SD_SUCCESS;
 }
 
-int sd_move_set_animation(sd_move *move, const sd_animation *animation) {
-    int ret;
+void sd_move_set_animation(sd_move *move, const sd_animation *animation) {
     assert(move != NULL);
     if(move->animation != NULL) {
         sd_animation_free(move->animation);
         omf_free(move->animation);
     }
     if(animation == NULL) {
-        return SD_SUCCESS;
+        return;
     }
     move->animation = omf_calloc(1, sizeof(sd_animation));
-    if((ret = sd_animation_copy(move->animation, animation)) != SD_SUCCESS) {
-        return ret;
-    }
-    return SD_SUCCESS;
+    sd_animation_copy(move->animation, animation);
 }
 
 sd_animation *sd_move_get_animation(const sd_move *move) {
     return move->animation;
-}
-
-int sd_move_set_footer_string(sd_move *move, const char *str) {
-    if(strlen(str) >= SD_MOVE_FOOTER_STRING_MAX - 1) {
-        return SD_INVALID_INPUT;
-    }
-    strncpy_or_abort(move->footer_string, str, sizeof(move->footer_string));
-    return SD_SUCCESS;
-}
-
-int sd_move_set_move_string(sd_move *move, const char *str) {
-    if(strlen(str) >= SD_MOVE_STRING_MAX - 1) {
-        return SD_INVALID_INPUT;
-    }
-    strncpy_or_abort(move->move_string, str, sizeof(move->move_string));
-    return SD_SUCCESS;
 }

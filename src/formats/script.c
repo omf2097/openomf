@@ -7,11 +7,10 @@
 
 static const char *INVALID_TAGS[] = {"c", "p", "o", "z", NULL}; // NULL guarded
 
-int sd_script_create(sd_script *script) {
+void sd_script_create(sd_script *script) {
     assert(script != NULL);
     memset(script, 0, sizeof(sd_script));
     vector_create(&script->frames, sizeof(sd_script_frame));
-    return SD_SUCCESS;
 }
 
 void sd_script_frame_create(sd_script_frame *frame, int tick_len, int sprite) {
@@ -221,7 +220,7 @@ static int read_int(const str *src, int *original) {
     return value;
 }
 
-static bool test_tag_slice(const str *test, sd_script_tag *new, str *src, int *now) {
+static bool test_tag_slice(const str *test, sd_script_tag *new, const str *src, int *now) {
     const int len = str_size(test);
     const int jmp = *now + len;
     if(sd_tag_info(str_c(test), &new->has_param, &new->key, &new->desc) == 0) {
@@ -241,7 +240,7 @@ static bool test_tag_slice(const str *test, sd_script_tag *new, str *src, int *n
     return false;
 }
 
-static bool parse_tag(sd_script_tag *new, str *src, int *now) {
+static bool parse_tag(sd_script_tag *new, const str *src, int *now) {
     if(!is_tag_letter(str_at(src, *now))) {
         return false;
     }
@@ -258,7 +257,7 @@ static bool parse_tag(sd_script_tag *new, str *src, int *now) {
     return false;
 }
 
-static bool parse_invalid_tag(sd_script_tag *new, str *src, int *now) {
+static bool parse_invalid_tag(sd_script_tag *new, const str *src, int *now) {
     if(!is_tag_letter(str_at(src, *now))) {
         return false;
     }
@@ -279,7 +278,7 @@ static bool parse_invalid_tag(sd_script_tag *new, str *src, int *now) {
     return false;
 }
 
-static bool parse_frame(sd_script_frame *frame, str *src, int *now) {
+static bool parse_frame(sd_script_frame *frame, const str *src, int *now) {
     const char frame_id = str_at(src, *now);
     if(is_frame_id(frame_id)) {
         (*now)++; // Hop over the frame ID
@@ -291,14 +290,14 @@ static bool parse_frame(sd_script_frame *frame, str *src, int *now) {
     return false;
 }
 
-static void on_fail_seek_end(str *src, int *now) {
+static void on_fail_seek_end(const str *src, int *now) {
     while(str_at(src, *now) != '-' && *now < (int)str_size(src)) {
         (*now)++;
     }
     (*now)++;
 }
 
-static bool decode_next_frame(sd_script_frame *frame, str *src, int *now) {
+static bool decode_next_frame(sd_script_frame *frame, const str *src, int *now) {
     sd_script_tag tag;
     sd_script_tag_create(&tag);
     while(*now < (int)str_size(src)) {
@@ -322,39 +321,40 @@ static bool decode_next_frame(sd_script_frame *frame, str *src, int *now) {
     return false;
 }
 
-int sd_script_decode(sd_script *script, const char *input, int *invalid_pos) {
+int sd_script_decode_str(sd_script *script, const str *src, int *invalid_pos) {
     assert(script != NULL);
-    assert(input != NULL);
-
-    str src;
-    str_from_c(&src, input);
+    assert(src != NULL);
 
     int now = 0;
     int prev = 0;
-    while(now < (int)str_size(&src)) {
+    while(now < (int)str_size(src)) {
         sd_script_frame frame;
         sd_script_frame_create(&frame, 0, 0);
-        if(decode_next_frame(&frame, &src, &now)) {
+        if(decode_next_frame(&frame, src, &now)) {
             vector_append(&script->frames, &frame);
         } else {
             sd_script_frame_free(&frame);
         }
         if(prev == now) {
             // If we are not moving, then something crashed badly.
-            goto fail;
+            if(invalid_pos != NULL) {
+                *invalid_pos = now;
+            }
+            return SD_ANIM_INVALID_STRING;
         }
         prev = now;
     }
 
-    str_free(&src);
     return SD_SUCCESS;
+}
 
-fail:
-    if(invalid_pos != NULL) {
-        *invalid_pos = now;
-    }
+int sd_script_decode(sd_script *script, const char *input, int *invalid_pos) {
+    assert(input != NULL);
+    str src;
+    str_from_c(&src, input);
+    const int ret = sd_script_decode_str(script, &src, invalid_pos);
     str_free(&src);
-    return SD_ANIM_INVALID_STRING;
+    return ret;
 }
 
 int sd_script_encode(const sd_script *script, str *output) {

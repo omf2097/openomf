@@ -215,6 +215,29 @@ int sd_read_line(const sd_reader *reader, char *buffer, int maxlen) {
     return 0;
 }
 
+bool sd_read_terminated_str(sd_reader *r, str *dst, uint16_t max_len) {
+    const uint16_t len = sd_read_uword(r);
+    if(len >= max_len) {
+        return false;
+    }
+    // Read the string plus its trailing (uncounted) null byte.
+    char *buf = omf_calloc(1, len + 2);
+    sd_read_buf(r, buf, len + 1);
+    const bool terminated = (buf[len] == 0);
+    if(terminated) {
+        str_from_c(dst, buf);
+    }
+    omf_free(buf);
+    return terminated;
+}
+
+void sd_read_fixed_str(sd_reader *r, str *dst, size_t len) {
+    char *buf = omf_calloc(1, len + 1); // Guaranteed null term at buf[len]
+    sd_read_buf(r, buf, len);
+    str_from_c(dst, buf);
+    omf_free(buf);
+}
+
 char *sd_read_variable_str(sd_reader *r) {
     uint16_t len = sd_read_uword(r);
     char *str = NULL;
@@ -225,8 +248,11 @@ char *sd_read_variable_str(sd_reader *r) {
     return str;
 }
 
-void sd_read_str(sd_reader *r, str *dst) {
-    uint16_t len = sd_read_uword(r);
+bool sd_read_padded_str(sd_reader *r, str *dst, uint16_t max_len) {
+    const uint16_t len = sd_read_uword(r);
+    if(len >= max_len) {
+        return false;
+    }
     if(len > 0) {
         char *buf = omf_calloc(1, len + 1);
         sd_read_buf(r, buf, len);
@@ -235,4 +261,5 @@ void sd_read_str(sd_reader *r, str *dst) {
     } else {
         str_create(dst);
     }
+    return true;
 }

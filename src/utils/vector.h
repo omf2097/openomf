@@ -73,6 +73,13 @@ void vector_create_with_size_cb(vector *vector, unsigned int block_size, unsigne
                                 vector_free_cb free_cb);
 
 /**
+ * @brief Ensure the vector has capacity for at least the given amount of elements.
+ * @param vec Vector to reserve capacity for
+ * @param reserved Number of elements the vector should be able to hold
+ */
+void vector_reserve(vector *vec, unsigned int reserved);
+
+/**
  * @brief Create a deep copy of a vector.
  * @details Copies all elements to a new vector. The free callback is also copied.
  * @param dst Destination vector (will be initialized)
@@ -120,6 +127,16 @@ void vector_append(vector *vector, const void *value);
  * @return Pointer to the new (uninitialized) element
  */
 void *vector_append_ptr(vector *vec);
+
+/**
+ * @brief Insert an element at the given index.
+ * @details Elements at and after the index are shifted up by one.
+ * @param vec Vector to modify
+ * @param index Index to insert at
+ * @param value Pointer to the value to copy
+ * @return 0 on success, 1 if index is out of range
+ */
+int vector_insert_at(vector *vec, unsigned int index, const void *value);
 
 /**
  * @brief Sort the vector using the given comparison function.

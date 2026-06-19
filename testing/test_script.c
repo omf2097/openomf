@@ -15,7 +15,7 @@ static int get_tag_count(const sd_script *scr, int frame_id) {
 }
 
 void test_script_create(void) {
-    CU_ASSERT(sd_script_create(&script) == SD_SUCCESS);
+    sd_script_create(&script);
     CU_ASSERT(vector_size(&script.frames) == 0);
 }
 
@@ -197,7 +197,7 @@ void test_script_all(void) {
     for(int i = 0; i < TEST_STRING_COUNT; i++) {
         str_create(&dst);
         sd_script s;
-        CU_ASSERT_FATAL(sd_script_create(&s) == SD_SUCCESS);
+        sd_script_create(&s);
         int ret = sd_script_decode(&s, test_strings[i], &fail_at);
         if(ret == SD_SUCCESS) {
             CU_ASSERT(sd_script_encode(&s, &dst) == SD_SUCCESS);
@@ -255,7 +255,7 @@ void test_set_tag(void) {
 
 void test_append_frame(void) {
     sd_script s;
-    CU_ASSERT(sd_script_create(&s) == SD_SUCCESS);
+    sd_script_create(&s);
 
     CU_ASSERT(sd_script_append_frame(&s, 100, 0) == SD_SUCCESS);
     CU_ASSERT(sd_script_append_frame(&s, 1, 5) == SD_SUCCESS);
@@ -274,7 +274,7 @@ void test_clear_tags(void) {
     sd_script s;
 
     // Create a test case
-    CU_ASSERT(sd_script_create(&s) == SD_SUCCESS);
+    sd_script_create(&s);
     CU_ASSERT(sd_script_append_frame(&s, 100, 0) == SD_SUCCESS);
     CU_ASSERT(sd_script_set_tag(&s, 0, "bpd", 10) == SD_SUCCESS);
 
@@ -289,7 +289,7 @@ void test_delete_tag(void) {
     sd_script s;
 
     // Create a test case
-    CU_ASSERT(sd_script_create(&s) == SD_SUCCESS);
+    sd_script_create(&s);
     CU_ASSERT(sd_script_append_frame(&s, 100, 0) == SD_SUCCESS);
     CU_ASSERT(sd_script_set_tag(&s, 0, "bpn", 10) == SD_SUCCESS);
     CU_ASSERT(get_tag_count(&s, 0) == 1);
@@ -324,7 +324,7 @@ void test_set_tick_len_at_frame(void) {
     sd_script s;
 
     // Create a test case
-    CU_ASSERT(sd_script_create(&s) == SD_SUCCESS);
+    sd_script_create(&s);
     CU_ASSERT(sd_script_append_frame(&s, 100, 0) == SD_SUCCESS);
 
     // Real tests
@@ -338,7 +338,7 @@ void test_set_sprite_at_frame(void) {
     sd_script s;
 
     // Create a test case
-    CU_ASSERT(sd_script_create(&s) == SD_SUCCESS);
+    sd_script_create(&s);
     CU_ASSERT(sd_script_append_frame(&s, 100, 0) == SD_SUCCESS);
 
     // Real tests

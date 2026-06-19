@@ -550,7 +550,7 @@ void mechlab_input_tick(scene *scene) {
                     gui_frame_layout(local->frame);
                 } else if(i->event_data.action == ACT_PUNCH) {
                     if(strlen(textinput_value(local->nw.input)) > 0) {
-                        strncpy(player1->pilot->name, textinput_value(local->nw.input), 17);
+                        str_set_c(&player1->pilot->name, textinput_value(local->nw.input));
                         trnmenu_finish(
                             gui_frame_get_root(local->frame)); // This will trigger exception case in mechlab_tick
                     }

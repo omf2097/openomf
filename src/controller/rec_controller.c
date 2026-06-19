@@ -208,18 +208,21 @@ void rec_controller_create(controller *ctrl, int player, sd_rec_file *rec) {
     uint32_t last_tick = 0;
     int j = 0;
     data->max_tick = 0;
-    for(unsigned int i = 0; i < rec->move_count; i++) {
-        if(rec->moves[i].player_id == player && (rec->moves[i].lookup_id == 2 || rec->moves[i].lookup_id == 10)) {
-            if(last_tick == rec->moves[i].tick) {
+    iterator it;
+    sd_rec_move *rec_move;
+    vector_iter_begin(&rec->moves, &it);
+    foreach(it, rec_move) {
+        if(rec_move->player_id == player && (rec_move->lookup_id == 2 || rec_move->lookup_id == 10)) {
+            if(last_tick == rec_move->tick) {
                 j++;
             } else {
                 j = 0;
             }
-            hashmap_put_int(&data->tick_lookup, (rec->moves[i].tick * 10) + j, &rec->moves[i], sizeof(sd_rec_move));
-            last_tick = rec->moves[i].tick;
+            hashmap_put_int(&data->tick_lookup, (rec_move->tick * 10) + j, rec_move, sizeof(sd_rec_move));
+            last_tick = rec_move->tick;
         }
-        if((rec->moves[i].lookup_id == 2 || rec->moves[i].lookup_id == 10) && rec->moves[i].tick > data->max_tick) {
-            data->max_tick = rec->moves[i].tick;
+        if((rec_move->lookup_id == 2 || rec_move->lookup_id == 10) && rec_move->tick > data->max_tick) {
+            data->max_tick = rec_move->tick;
         }
     }
     log_debug("max tick is %" PRIu32, data->last_tick);

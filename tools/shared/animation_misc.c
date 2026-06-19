@@ -23,10 +23,10 @@ int sprite_key_get_id(const char *key) {
 void sprite_set_key(sd_sprite *s, const char **key, int kcount, const char *value) {
     switch(sprite_key_get_id(key[0])) {
         case 0:
-            s->pos_x = conv_word(value);
+            s->pos.x = conv_word(value);
             break;
         case 1:
-            s->pos_y = conv_word(value);
+            s->pos.y = conv_word(value);
             break;
         case 2:
             s->index = conv_ubyte(value);
@@ -47,10 +47,10 @@ void sprite_set_key(sd_sprite *s, const char **key, int kcount, const char *valu
 void sprite_get_key(sd_sprite *s, const char **key, int kcount) {
     switch(sprite_key_get_id(key[0])) {
         case 0:
-            printf("%d\n", s->pos_x);
+            printf("%d\n", s->pos.x);
             break;
         case 1:
-            printf("%d\n", s->pos_y);
+            printf("%d\n", s->pos.y);
             break;
         case 2:
             printf("%d\n", s->index);
@@ -136,8 +136,8 @@ void sprite_import_key(sd_sprite *s, const char **key, int kcount, const path *f
 
 void sprite_info(sd_sprite *s, int anim, int sprite) {
     printf("Animation #%d, Sprite #%d information:\n", anim, sprite);
-    printf(" * X:        %d\n", s->pos_x);
-    printf(" * Y:        %d\n", s->pos_y);
+    printf(" * X:        %d\n", s->pos.x);
+    printf(" * Y:        %d\n", s->pos.y);
     printf(" * W:        %d\n", s->width);
     printf(" * H:        %d\n", s->height);
     printf(" * Index:    %d\n", s->index);
@@ -147,19 +147,24 @@ void sprite_info(sd_sprite *s, int anim, int sprite) {
 
 void anim_common_info(sd_animation *ani) {
     printf("Common animation header:\n");
-    printf(" * Start X:          %d\n", ani->start_x);
-    printf(" * Start Y:          %d\n", ani->start_y);
+    printf(" * Start X:          %d\n", ani->start_pos.x);
+    printf(" * Start Y:          %d\n", ani->start_pos.y);
     printf(" * Animation header: %d\n", ani->null);
-    printf(" * Collision coords: %d\n", ani->coord_count);
-    for(int i = 0; i < ani->coord_count; i++) {
-        printf("   - x,y = (%d,%d), null = %d, frame_id = %d\n", ani->coord_table[i].x, ani->coord_table[i].y,
-               ani->coord_table[i].null, ani->coord_table[i].frame_id);
+    printf(" * Collision coords: %u\n", vector_size(&ani->coord_table));
+    iterator it;
+    sd_coord *coord;
+    vector_iter_begin(&ani->coord_table, &it);
+    foreach(it, coord) {
+        printf("   - x,y = (%d,%d), null = %d, frame_id = %d\n", coord->pos.x, coord->pos.y, coord->null,
+               coord->frame_id);
     }
-    printf(" * Sprites:          %d\n", ani->sprite_count);
-    printf(" * Animation str:    %s\n", ani->anim_string);
-    printf(" * Extra strings:    %d\n", ani->extra_string_count);
-    for(int i = 0; i < ani->extra_string_count; i++) {
-        printf("   - %s\n", ani->extra_strings[i]);
+    printf(" * Sprites:          %d\n", sd_animation_get_sprite_count(ani));
+    printf(" * Animation str:    %s\n", str_c(&ani->anim_string));
+    printf(" * Extra strings:    %u\n", vector_size(&ani->extra_strings));
+    str *extra_string;
+    vector_iter_begin(&ani->extra_strings, &it);
+    foreach(it, extra_string) {
+        printf("   - %s\n", str_c(extra_string));
     }
 }
 
@@ -193,18 +198,18 @@ void anim_push(sd_animation *ani) {
     sd_sprite sprite;
     sd_sprite_create(&sprite);
     sd_animation_push_sprite(ani, &sprite);
-    printf("New sprite pushed to animation. Animation now has %d sprites.\n", ani->sprite_count);
+    printf("New sprite pushed to animation. Animation now has %d sprites.\n", sd_animation_get_sprite_count(ani));
 }
 
 void anim_pop(sd_animation *ani) {
     sd_animation_pop_sprite(ani);
-    printf("Last sprite popped from animation. Animation now has %d sprites.\n", ani->sprite_count);
+    printf("Last sprite popped from animation. Animation now has %d sprites.\n", sd_animation_get_sprite_count(ani));
 }
 
-void string_strip(char *input, size_t len, const char *tag) {
+void string_strip(str *input, const char *tag) {
     sd_script s;
     sd_script_create(&s);
-    sd_script_decode(&s, input, NULL);
+    sd_script_decode_str(&s, input, NULL);
 
     for(unsigned i = 0; i < vector_size(&s.frames); i++) {
         sd_script_delete_tag(&s, i, tag);
@@ -213,7 +218,7 @@ void string_strip(char *input, size_t len, const char *tag) {
     str dst;
     str_create(&dst);
     sd_script_encode(&s, &dst);
-    strncpy(input, str_c(&dst), len);
+    str_set(input, &dst);
     str_free(&dst);
     sd_script_free(&s);
 }
@@ -222,13 +227,14 @@ void anim_strip_key(sd_animation *ani, int kn, const char **key, int kcount, con
     int tmp = 0;
     switch(kn) {
         case 9:
-            string_strip(ani->anim_string, sizeof(ani->anim_string), tag);
+            string_strip(&ani->anim_string, tag);
             break;
         case 11:
             if(kcount == 2) {
                 tmp = conv_ubyte(key[1]);
-                if(tmp < ani->extra_string_count) {
-                    string_strip(ani->extra_strings[tmp], SD_EXTRA_STRING_MAX, tag);
+                str *extra_string = vector_get(&ani->extra_strings, tmp);
+                if(extra_string != NULL) {
+                    string_strip(extra_string, tag);
                 } else {
                     printf("Extra string table index %d does not exist!\n", tmp);
                     return;
@@ -252,28 +258,17 @@ void anim_set_key(sd_animation *ani, int kn, const char **key, int kcount, const
             ani->null = conv_dword(value);
             break;
         case 8:
-            /*if(kcount == 2) {
-                tmp = conv_ubyte(key[1]);
-                if(tmp < ani->col_coord_count) {
-                    ani->col_coord_table[tmp] = conv_udword(value);
-                } else {
-                    printf("Overlay index %d does not exist!\n", tmp);
-                    return;
-                }
-            } else {
-                printf("Key overlay requires 1 parameter!\n");
-                return;
-            }*/
             printf("Coord value setting not supported yet!\n");
             break;
         case 9:
-            sd_animation_set_anim_string(ani, value);
+            str_set_c(&ani->anim_string, value);
             break;
         case 11:
             if(kcount == 2) {
                 tmp = conv_ubyte(key[1]);
-                if(tmp < ani->extra_string_count) {
-                    sd_animation_set_extra_string(ani, tmp, value);
+                str *extra_string = vector_get(&ani->extra_strings, tmp);
+                if(extra_string != NULL) {
+                    str_set_c(extra_string, value);
                 } else {
                     printf("Extra string table index %d does not exist!\n", tmp);
                     return;
@@ -284,10 +279,10 @@ void anim_set_key(sd_animation *ani, int kn, const char **key, int kcount, const
             }
             break;
         case 12:
-            ani->start_x = conv_word(value);
+            ani->start_pos.x = conv_word(value);
             break;
         case 13:
-            ani->start_y = conv_word(value);
+            ani->start_pos.y = conv_word(value);
             break;
         default:
             printf("Unknown key!\n");
@@ -305,45 +300,53 @@ void anim_get_key(sd_animation *ani, int kn, const char **key, int kcount, int p
         case 8:
             if(kcount == 2) {
                 tmp = conv_ubyte(key[1]);
-                if(tmp < ani->coord_count) {
-                    printf("x,y = (%d,%d), null = %d, frame_id = %d\n", ani->coord_table[tmp].x,
-                           ani->coord_table[tmp].y, ani->coord_table[tmp].null, ani->coord_table[tmp].frame_id);
+                const sd_coord *coord = vector_get(&ani->coord_table, tmp);
+                if(coord != NULL) {
+                    printf("x,y = (%d,%d), null = %d, frame_id = %d\n", coord->pos.x, coord->pos.y, coord->null,
+                           coord->frame_id);
                 } else {
                     printf("Collision table index %d does not exist!\n", tmp);
                     return;
                 }
             } else {
-                for(int i = 0; i < ani->coord_count; i++) {
-                    printf("x,y = (%d,%d), null = %d, frame_id = %d\n", ani->coord_table[i].x, ani->coord_table[i].y,
-                           ani->coord_table[i].null, ani->coord_table[i].frame_id);
+                iterator it;
+                sd_coord *coord;
+                vector_iter_begin(&ani->coord_table, &it);
+                foreach(it, coord) {
+                    printf("x,y = (%d,%d), null = %d, frame_id = %d\n", coord->pos.x, coord->pos.y, coord->null,
+                           coord->frame_id);
                 }
                 printf("\n");
             }
             break;
         case 9:
-            printf("%s\n", ani->anim_string);
+            printf("%s\n", str_c(&ani->anim_string));
             break;
         case 11:
             if(kcount == 2) {
                 tmp = conv_ubyte(key[1]);
-                if(tmp < ani->extra_string_count) {
-                    printf("%s\n", ani->extra_strings[tmp]);
+                const str *extra_string = vector_get(&ani->extra_strings, tmp);
+                if(extra_string != NULL) {
+                    printf("%s\n", str_c(extra_string));
                 } else {
                     printf("Extra string table index %d does not exist!\n", tmp);
                     return;
                 }
             } else {
-                for(int i = 0; i < ani->extra_string_count; i++) {
-                    printf("%s ", ani->extra_strings[i]);
+                iterator it;
+                const str *extra_string;
+                vector_iter_begin(&ani->extra_strings, &it);
+                foreach(it, extra_string) {
+                    printf("%s ", str_c(extra_string));
                 }
                 printf("\n");
             }
             break;
         case 12:
-            printf("%d\n", ani->start_x);
+            printf("%d\n", ani->start_pos.x);
             break;
         case 13:
-            printf("%d\n", ani->start_y);
+            printf("%d\n", ani->start_pos.y);
             break;
         default:
             printf("Unknown key!\n");

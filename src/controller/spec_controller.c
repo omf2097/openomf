@@ -69,9 +69,7 @@ int spec_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                         sd_pilot_set_player_color(p1->pilot, PRIMARY, serial_read_int8(&ser));
                         sd_pilot_set_player_color(p1->pilot, SECONDARY, serial_read_int8(&ser));
                         sd_pilot_set_player_color(p1->pilot, TERTIARY, serial_read_int8(&ser));
-                        uint8_t namelen = serial_read_int8(&ser);
-                        serial_read(&ser, p1->pilot->name, namelen);
-                        p1->pilot->name[namelen] = '\0';
+                        serial_read_str(&ser, &p1->pilot->name);
 
                         p2->pilot->har_id = serial_read_int8(&ser);
                         p2->pilot->pilot_id = serial_read_int8(&ser);
@@ -81,9 +79,7 @@ int spec_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                         sd_pilot_set_player_color(p2->pilot, PRIMARY, serial_read_int8(&ser));
                         sd_pilot_set_player_color(p2->pilot, SECONDARY, serial_read_int8(&ser));
                         sd_pilot_set_player_color(p2->pilot, TERTIARY, serial_read_int8(&ser));
-                        namelen = serial_read_int8(&ser);
-                        serial_read(&ser, p2->pilot->name, namelen);
-                        p2->pilot->name[namelen] = '\0';
+                        serial_read_str(&ser, &p2->pilot->name);
 
                         uint32_t seed = serial_read_uint32(&ser);
                         log_debug("spectator random seed set to %d", seed);

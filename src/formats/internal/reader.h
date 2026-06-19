@@ -10,6 +10,7 @@
 #ifndef SD_READER_H
 #define SD_READER_H
 
+#include <stdbool.h>
 #include <stdint.h>
 
 #include "utils/path.h"
@@ -64,15 +65,30 @@ int sd_match(sd_reader *reader, const char *buf, unsigned int nbytes);
 void sd_skip(sd_reader *reader, unsigned int nbytes);
 
 /**
- * @brief Read a string object
- * @details This will read a variable sized string object. Note that both
- *          types of variable strings will be handled (with trailing null or not).
+ * @brief Read a string where length field is strlen() plus trailing null.
  * @param reader Reader object
- * @param dst String object to create
- * @return true if something was copied
- * @return false if nothing was copied
+ * @param dst String object to fill (initialized on success)
+ * @param max_len Reject the string if the length field is this value or larger
+ * @return true on success, false if the string is too long
  */
-void sd_read_str(sd_reader *reader, str *dst);
+bool sd_read_padded_str(sd_reader *reader, str *dst, uint16_t max_len);
+
+/**
+ * @brief Read a string where length field is strlen() but does not include trailing null.
+ * @param reader Reader object
+ * @param dst String object to fill (initialized on success)
+ * @param max_len Reject the string if the length field is this value or larger
+ * @return true on success, false if the string is too long or not terminated
+ */
+bool sd_read_terminated_str(sd_reader *reader, str *dst, uint16_t max_len);
+
+/**
+ * @brief Read a fixed-size, null-padded string field.
+ * @param reader Reader object
+ * @param dst String object to fill (initialized)
+ * @param len Size of the fixed field in bytes
+ */
+void sd_read_fixed_str(sd_reader *reader, str *dst, size_t len);
 
 char *sd_read_variable_str(sd_reader *r);
 

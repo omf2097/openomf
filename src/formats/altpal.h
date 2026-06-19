@@ -42,11 +42,9 @@ void altpals_close(void);
  *
  * Initializes the alternate palette list structure with empty values.
  *
- * @retval SD_SUCCESS Success.
- *
  * @param ap Altpal struct pointer
  */
-int altpal_create(altpal_file *ap);
+void altpal_create(altpal_file *ap);
 
 /** @brief Load altpals structure from file.
  *

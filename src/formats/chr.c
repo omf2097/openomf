@@ -21,15 +21,16 @@
 #include "utils/allocator.h"
 #include "utils/c_string_util.h"
 #include "utils/log.h"
-#include "utils/random.h"
 
-int sd_chr_create(sd_chr_file *chr) {
+void sd_chr_create(sd_chr_file *chr) {
     assert(chr != NULL);
     memset(chr, 0, sizeof(sd_chr_file));
-    return SD_SUCCESS;
+    for(int i = 0; i < SD_CHR_CUTSCENE_TEXT_COUNT; i++) {
+        str_create(&chr->cutscene_text[i]);
+    }
 }
 
-int sd_chr_from_trn(sd_chr_file *chr, const sd_tournament_file *trn, const sd_pilot *pilot) {
+void sd_chr_from_trn(sd_chr_file *chr, const sd_tournament_file *trn, const sd_pilot *pilot) {
     int ranked = 0;
     for(uint32_t i = 0; i < trn->enemy_count; i++) {
         chr->enemies[i] = omf_calloc(1, sizeof(sd_chr_enemy));
@@ -57,11 +58,10 @@ int sd_chr_from_trn(sd_chr_file *chr, const sd_tournament_file *trn, const sd_pi
     chr->pilot.trn_rank_money = (ranked + 10) * 0.5 + (extra / 15);
 
     strncpy_or_abort(chr->pilot.trn_name, trn->filename, sizeof(chr->pilot.trn_name));
-    strncpy_or_abort(chr->pilot.trn_desc, trn->locales[0]->title, sizeof(chr->pilot.trn_desc));
+    str_set(&chr->pilot.trn_desc, &trn->locales[0]->title);
     strncpy_or_abort(chr->pilot.trn_image, trn->pic_file, sizeof(chr->pilot.trn_image));
     chr->photo = omf_calloc(1, sizeof(sd_sprite));
     sd_sprite_copy(chr->photo, pilot->photo);
-    return SD_SUCCESS;
 }
 
 int sd_chr_load(sd_chr_file *chr, const path *filename) {
@@ -98,9 +98,9 @@ int sd_chr_load(sd_chr_file *chr, const path *filename) {
     }
 
     if(trn_loaded) {
-        for(int i = 0; i < 10; i++) {
-            if(trn.locales[0]->end_texts[0][i]) {
-                chr->cutscene_text[i] = omf_strdup(trn.locales[0]->end_texts[0][i]);
+        for(int i = 0; i < SD_CHR_CUTSCENE_TEXT_COUNT; i++) {
+            if(str_size(&trn.locales[0]->end_texts[0][i]) > 0) {
+                str_set(&chr->cutscene_text[i], &trn.locales[0]->end_texts[0][i]);
             }
         }
         static_assert(sizeof(chr->bk_name) == sizeof(trn.bk_name), "must match");
@@ -125,13 +125,14 @@ int sd_chr_load(sd_chr_file *chr, const path *filename) {
         }
         purchase_random_har_upgrades(&chr->enemies[i]->pilot);
         if(trn_loaded) {
-            memcpy(&chr->enemies[i]->pilot.palette, &pic.photos[trn.enemies[i]->photo_id]->pal, sizeof(vga_palette));
+            memcpy(&chr->enemies[i]->pilot.palette, &sd_pic_get(&pic, trn.enemies[i]->photo_id)->pal,
+                   sizeof(vga_palette));
             chr->enemies[i]->pilot.photo = omf_calloc(1, sizeof(sd_sprite));
             if(trn.enemies[i]->photo) {
                 log_info("using pilot photo %d from tournament", i);
                 sd_sprite_copy(chr->enemies[i]->pilot.photo, trn.enemies[i]->photo);
             } else {
-                sd_sprite_copy(chr->enemies[i]->pilot.photo, pic.photos[trn.enemies[i]->photo_id]->sprite);
+                sd_sprite_copy(chr->enemies[i]->pilot.photo, sd_pic_get(&pic, trn.enemies[i]->photo_id)->sprite);
             }
             //  copy all the "pilot" fields (eg. winnings) over from the tournament file
             chr->enemies[i]->pilot.trn_rank_money = trn.enemies[i]->trn_rank_money;
@@ -176,15 +177,15 @@ int sd_chr_load(sd_chr_file *chr, const path *filename) {
             chr->enemies[i]->pilot.winnings = trn.enemies[i]->winnings;
             chr->enemies[i]->pilot.total_value = trn.enemies[i]->total_value;
             chr->enemies[i]->pilot.photo_id = trn.enemies[i]->photo_id;
-            chr->enemies[i]->pilot.sex = pic.photos[trn.enemies[i]->photo_id]->sex;
+            chr->enemies[i]->pilot.sex = sd_pic_get(&pic, trn.enemies[i]->photo_id)->sex;
         }
         memread_buf(mr, chr->enemies[i]->unknown_a, 9);
         chr->enemies[i]->trn_index = memread_ubyte(mr);
         memread_buf(mr, chr->enemies[i]->unknown_b, 15);
 
-        for(int m = 0; m < 10; m++) {
-            if(trn_loaded && trn.enemies[i]->quotes[m]) {
-                chr->enemies[i]->pilot.quotes[m] = omf_strdup(trn.enemies[i]->quotes[m]);
+        for(int m = 0; m < SD_PILOT_QUOTE_COUNT; m++) {
+            if(trn_loaded && str_size(&trn.enemies[i]->quotes[m]) > 0) {
+                str_set(&chr->enemies[i]->pilot.quotes[m], &trn.enemies[i]->quotes[m]);
             }
         }
     }
@@ -321,22 +322,12 @@ void sd_chr_append_unsanitized_filename(str *dst, const char *pilot_name) {
 void sd_chr_free(sd_chr_file *chr) {
     for(int i = 0; i < chr->pilot.enemies_inc_unranked; i++) {
         if(chr->enemies[i] != NULL) {
-            if(chr->enemies[i]->pilot.photo) {
-                sd_sprite_free(chr->enemies[i]->pilot.photo);
-                omf_free(chr->enemies[i]->pilot.photo);
-            }
-            for(int m = 0; m < 10; m++) {
-                if(chr->enemies[i]->pilot.quotes[m]) {
-                    omf_free(chr->enemies[i]->pilot.quotes[m]);
-                }
-            }
+            sd_pilot_free(&chr->enemies[i]->pilot);
             omf_free(chr->enemies[i]);
         }
     }
-    for(int i = 0; i < 10; i++) {
-        if(chr->cutscene_text[i]) {
-            omf_free(chr->cutscene_text[i]);
-        }
+    for(int i = 0; i < SD_CHR_CUTSCENE_TEXT_COUNT; i++) {
+        str_free(&chr->cutscene_text[i]);
     }
     sd_sprite_free(chr->photo);
     omf_free(chr->photo);

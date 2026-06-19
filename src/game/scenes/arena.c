@@ -401,8 +401,8 @@ static void arena_end(scene *sc) {
         }
         game_state_set_next(gs, SCENE_LOBBY);
     } else {
-        player_winner->pilot->name[0] = '\0';
-        player_loser->pilot->name[0] = '\0';
+        str_set_c(&player_winner->pilot->name, "");
+        str_set_c(&player_loser->pilot->name, "");
         game_state_set_next(gs, SCENE_MELEE);
     }
 
@@ -987,7 +987,7 @@ void write_rec_move(scene *scene, game_player *player, int action) {
 
     int ret;
 
-    if((ret = sd_rec_insert_action(scene->gs->rec, scene->gs->rec->move_count, &move)) != SD_SUCCESS) {
+    if((ret = sd_rec_insert_action(scene->gs->rec, vector_size(&scene->gs->rec->moves), &move)) != SD_SUCCESS) {
         log_debug("recoding move failed %d", ret);
     }
 }
@@ -1894,7 +1894,7 @@ int arena_create(scene *scene) {
 
     // Set the name and HAR here, as they will remain static during the match. Ping will be dynamically set.
     for(int i = 0; i < 2; i++) {
-        local->player_name[i] = create_text_object(_player[i]->pilot->name);
+        local->player_name[i] = create_text_object(str_c(&_player[i]->pilot->name));
         local->player_har[i] = create_text_object(lang_get(_player[i]->pilot->har_id + 31));
         local->player_ping[i] = create_text_object("0");
     }

@@ -6,10 +6,9 @@
 #include "formats/internal/reader.h"
 #include "formats/internal/writer.h"
 
-int sd_font_create(sd_font *font) {
+void sd_font_create(sd_font *font) {
     assert(font != NULL);
     memset(font, 0, sizeof(sd_font));
-    return SD_SUCCESS;
 }
 
 void sd_font_free(sd_font *font) {

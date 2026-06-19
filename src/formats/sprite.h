@@ -16,6 +16,7 @@
 #include "formats/internal/writer.h"
 #include "formats/rgba_image.h"
 #include "formats/vga_image.h"
+#include "utils/vec.h"
 #include <stdint.h>
 
 /** @brief Sprite image
@@ -26,8 +27,7 @@
  * "invisible" pixels it has.
  */
 typedef struct {
-    int16_t pos_x;   ///< Position of sprite, X-axis
-    int16_t pos_y;   ///< Position of sprite, Y-axis
+    vec2i pos;       ///< Position of sprite
     uint8_t index;   ///< Sprite index
     uint8_t missing; ///< Is sprite data missing? If this is 1, then data points to the data of another sprite.
     uint16_t width;  ///< Pixel width of the sprite
@@ -42,11 +42,9 @@ typedef struct {
  *
  * Initializes the sprite structure with empty values.
  *
- * @retval SD_SUCCESS Success.
- *
  * @param sprite Allocated sprite struct pointer.
  */
-int sd_sprite_create(sd_sprite *sprite);
+void sd_sprite_create(sd_sprite *sprite);
 
 /** @brief Copy sprite structure
  *
@@ -56,12 +54,10 @@ int sd_sprite_create(sd_sprite *sprite);
  * Destination buffer does not need to be cleared. Source buffer must be a valid
  * sprite structure, or problems are likely to appear.
  *
- * @retval SD_SUCCESS Success.
- *
  * @param dst Destination sprite struct pointer.
  * @param src Source sprite struct pointer.
  */
-int sd_sprite_copy(sd_sprite *dst, const sd_sprite *src);
+void sd_sprite_copy(sd_sprite *dst, const sd_sprite *src);
 
 /** @brief Free sprite structure
  *
@@ -71,6 +67,9 @@ int sd_sprite_copy(sd_sprite *dst, const sd_sprite *src);
  * @param sprite Sprite struct to free.
  */
 void sd_sprite_free(sd_sprite *sprite);
+
+/** @brief Free callback helper for sprite elements stored in a container (e.g. vector) */
+void sd_sprite_free_cb(void *ptr);
 
 /** @brief Encode RGBA data to sprite data
  *

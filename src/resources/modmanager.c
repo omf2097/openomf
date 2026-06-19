@@ -889,21 +889,21 @@ bool modmanager_parse_af_move_mod(const char *buf, af_move *current_move) {
 
     // Update string fields if they were modified
     char *move_str = cfg_getstr(cfg, "move_string");
-    if(move_str && strcmp(move_str, str_c(&current_move->move_string)) != 0) {
+    if(move_str && !str_equal_c(&current_move->move_string, move_str)) {
         log_info("setting move_string from '%s' to '%s'", str_c(&current_move->move_string), move_str);
         str_free(&current_move->move_string);
         str_from_c(&current_move->move_string, move_str);
     }
 
     char *footer_str = cfg_getstr(cfg, "footer_string");
-    if(footer_str && strcmp(footer_str, str_c(&current_move->footer_string)) != 0) {
+    if(footer_str && !str_equal_c(&current_move->footer_string, footer_str)) {
         log_info("setting footer_string from '%s' to '%s'", str_c(&current_move->footer_string), footer_str);
         str_free(&current_move->footer_string);
         str_from_c(&current_move->footer_string, footer_str);
     }
 
     char *anim_str = cfg_getstr(cfg, "animation_string");
-    if(anim_str && strcmp(anim_str, str_c(&current_move->ani.animation_string)) != 0) {
+    if(anim_str && !str_equal_c(&current_move->ani.animation_string, anim_str)) {
         log_info("setting animation_string from '%s' to '%s'", str_c(&current_move->ani.animation_string), anim_str);
         str_free(&current_move->ani.animation_string);
         str_from_c(&current_move->ani.animation_string, anim_str);
@@ -976,14 +976,14 @@ bool modmanager_parse_bk_info_mod(const char *buf, bk_info *current_info) {
 
     // Update string fields if they were modified
     char *footer_str = cfg_getstr(cfg, "footer_string");
-    if(footer_str && strcmp(footer_str, str_c(&current_info->footer_string)) != 0) {
+    if(footer_str && !str_equal_c(&current_info->footer_string, footer_str)) {
         log_info("setting footer_string from '%s' to '%s'", str_c(&current_info->footer_string), footer_str);
         str_free(&current_info->footer_string);
         str_from_c(&current_info->footer_string, footer_str);
     }
 
     char *anim_str = cfg_getstr(cfg, "animation_string");
-    if(anim_str && strcmp(anim_str, str_c(&current_info->ani.animation_string)) != 0) {
+    if(anim_str && !str_equal_c(&current_info->ani.animation_string, anim_str)) {
         log_info("setting animation_string from '%s' to '%s'", str_c(&current_info->ani.animation_string), anim_str);
         str_free(&current_info->ani.animation_string);
         str_from_c(&current_info->ani.animation_string, anim_str);
@@ -1076,7 +1076,7 @@ bool modmanager_get_bk_animation(str *name, int anim_id, bk_info *bk_data) {
 
     str_free(&filename);
 
-    if(!result && strncmp("arena", str_c(name), 5) == 0 &&
+    if(!result && str_starts_with(name, "arena") &&
        ((anim_id >= 6 && anim_id <= 11) || (anim_id >= 24 && anim_id <= 27))) {
         // TODO make sure this is an arena
         // For arenas, check for 'common' for anim_ids 6 (round), 7 (number), 8 (you lose), 9 (you win), 10 (fight),
@@ -1186,7 +1186,7 @@ bool modmanager_parse_pilot_mod(const char *buf, sd_pilot *pilot) {
 
     // Store original values for comparison
     char original_name[18];
-    strncpy(original_name, pilot->name, sizeof(original_name));
+    strncpy(original_name, str_c(&pilot->name), sizeof(original_name));
     original_name[17] = '\0';
 
     // Options for colors section
@@ -1253,9 +1253,8 @@ bool modmanager_parse_pilot_mod(const char *buf, sd_pilot *pilot) {
     // Update top-level string fields
     char *name = cfg_getstr(cfg, "name");
     if(name) {
-        strncpy(pilot->name, name, sizeof(pilot->name) - 1);
-        pilot->name[sizeof(pilot->name) - 1] = '\0';
-        log_info("setting name from '%s' to '%s'", original_name, pilot->name);
+        str_set_c(&pilot->name, name);
+        log_info("setting name from '%s' to '%s'", original_name, str_c(&pilot->name));
     }
 
     char *gender = cfg_getstr(cfg, "gender");
@@ -1368,10 +1367,7 @@ bool modmanager_parse_pilot_mod(const char *buf, sd_pilot *pilot) {
 
         char *quote = cfg_getstr(lang, "quote");
         if(quote) {
-            if(pilot->quotes[lang_index]) {
-                omf_free(pilot->quotes[lang_index]);
-            }
-            pilot->quotes[lang_index] = omf_strdup(quote);
+            str_set_c(&pilot->quotes[lang_index], quote);
             log_info("setting %s quote to '%s'", lang_name, quote);
         }
     }
@@ -1404,9 +1400,7 @@ bool modmanager_get_pilot_mod(const char *trn_name, uint8_t pilot_id, sd_pilot *
         }
         pilot_data->photo = omf_calloc(1, sizeof(sd_sprite));
         sd_sprite_create(pilot_data->photo);
-        if(sd_sprite_copy(pilot_data->photo, &obuf->spr) != SD_SUCCESS) {
-            log_warn("failed to copy photo");
-        }
+        sd_sprite_copy(pilot_data->photo, &obuf->spr);
     }
 
     str_free(&filename);
@@ -1543,6 +1537,7 @@ bool modmanager_parse_tournament_mod(const char *buf, sd_tournament_file *tourn)
         if(!locale) {
             // Allocate new locale if it doesn't exist
             locale = omf_calloc(1, sizeof(sd_tournament_locale));
+            sd_tournament_locale_create(locale);
             tourn->locales[locale_index] = locale;
             log_info("Created new locale for %s at index %d", lang_name, locale_index);
         }
@@ -1550,22 +1545,16 @@ bool modmanager_parse_tournament_mod(const char *buf, sd_tournament_file *tourn)
         // Update name
         char *name = cfg_getstr(lang, "name");
         if(name) {
-            log_info("previous title was %s", locale->title);
-            if(locale->title) {
-                omf_free(locale->title);
-            }
-            locale->title = omf_strdup(name);
+            log_info("previous title was %s", str_c(&locale->title));
+            str_set_c(&locale->title, name);
             log_info("setting %s name to '%s'", lang_name, name);
         }
 
         // Update description
         char *description = cfg_getstr(lang, "description");
         if(description) {
-            if(locale->description) {
-                omf_free(locale->description);
-            }
-            locale->description = omf_strdup(description);
-            log_info("setting %s description to %s", lang_name, locale->description);
+            str_set_c(&locale->description, description);
+            log_info("setting %s description to %s", lang_name, str_c(&locale->description));
 
             // Parse the description to extract metadata
             parse_tournament_description(locale);
@@ -1605,10 +1594,7 @@ bool modmanager_parse_tournament_mod(const char *buf, sd_tournament_file *tourn)
 
                 char *page_text = cfg_getstr(ending, page_key);
                 if(page_text) {
-                    if(locale->end_texts[ending_index][page]) {
-                        omf_free(locale->end_texts[ending_index][page]);
-                    }
-                    locale->end_texts[ending_index][page] = omf_strdup(page_text);
+                    str_set_c(&locale->end_texts[ending_index][page], page_text);
                     log_info("setting %s %s page%d text", lang_name, ending_type, page + 1);
                 }
             }
@@ -1656,9 +1642,7 @@ bool modmanager_get_tournament_mod(const char *tournament_name, sd_tournament_fi
     if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&obuf, &len)) {
         assert(obuf->type == MOD_SPRITE);
         sd_sprite_free(tourn_data->locales[0]->logo);
-        if(sd_sprite_copy(tourn_data->locales[0]->logo, &obuf->spr) != SD_SUCCESS) {
-            log_warn("failed to copy tournament logo");
-        }
+        sd_sprite_copy(tourn_data->locales[0]->logo, &obuf->spr);
     }
 
     // now apply any pilot mods
@@ -1771,20 +1755,18 @@ bool modmanager_get_player_pics(sd_pic_file *players) {
     unsigned int len = 0;
     bool result = false;
 
-    for(int i = 0; i < players->photo_count; i++) {
+    for(int i = 0; i < (int)vector_size(&players->photos); i++) {
+        sd_pic_photo *photo = vector_get(&players->photos, i);
 
         // Check for png replacement
         str_from_format(&filename, "players/%i/pilot.png", i);
         mod_asset *obuf;
         if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&obuf, &len)) {
             assert(obuf->type == MOD_SPRITE);
-            sd_sprite_free(players->photos[i]->sprite);
-            if(sd_sprite_copy(players->photos[i]->sprite, &obuf->spr) != SD_SUCCESS) {
-                log_warn("failed to copy player portrait");
-            } else {
-                result |= true;
-                log_info("loaded portrait %i", i);
-            }
+            sd_sprite_free(photo->sprite);
+            sd_sprite_copy(photo->sprite, &obuf->spr);
+            result |= true;
+            log_info("loaded portrait %i", i);
         }
         str_free(&filename);
 
@@ -1793,7 +1775,7 @@ bool modmanager_get_player_pics(sd_pic_file *players) {
         // copy HAR color palette, if exists
         if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&obuf, &len)) {
             assert(obuf->type == MOD_SPRITE);
-            palette_copy(&players->photos[i]->pal, obuf->pal, 0, 48);
+            palette_copy(&photo->pal, obuf->pal, 0, 48);
         }
         str_free(&filename);
 
@@ -1806,7 +1788,7 @@ bool modmanager_get_player_pics(sd_pic_file *players) {
             mod_asset *obuf;
             foreach(it, obuf) {
                 assert(obuf->type == MOD_BUFFER);
-                result |= modmanager_parse_photo_mod((char *)obuf->buf, players->photos[i]);
+                result |= modmanager_parse_photo_mod((char *)obuf->buf, photo);
             }
         }
 

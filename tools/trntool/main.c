@@ -19,28 +19,28 @@ const char *language_names[] = {"English", "German", "French",  "Spanish", "Mexi
 
 void print_locale(sd_tournament_locale *locale, int lang_id) {
     // Make sure the locale is valid
-    if(locale->title[0] == 0) {
+    if(str_size(&locale->title) == 0) {
         return;
     }
 
     // Print locale information
     printf("\n[%d] Locale '%s':\n", lang_id, language_names[lang_id]);
     printf("  - Logo: length = %d, size = (%d,%d), pos = (%d,%d)\n", locale->logo->len, locale->logo->width,
-           locale->logo->height, locale->logo->pos_x, locale->logo->pos_y);
-    printf("  - Title: %s\n", locale->title);
+           locale->logo->height, locale->logo->pos.x, locale->logo->pos.y);
+    printf("  - Title: %s\n", str_c(&locale->title));
 
     // Print victory text pages
     printf("  - Text pages:\n");
-    for(int har = 0; har < 11; har++) {
-        for(int page = 0; page < 10; page++) {
-            if(locale->end_texts[har][page] != NULL && locale->end_texts[har][page][0] != 0) {
-                printf("    * Page (%d,%d): %s\n", har, page, locale->end_texts[har][page]);
+    for(int har = 0; har < MAX_TRN_ENDING_HARS; har++) {
+        for(int page = 0; page < MAX_TRN_ENDING_PAGES; page++) {
+            if(str_size(&locale->end_texts[har][page]) > 0) {
+                printf("    * Page (%d,%d): %s\n", har, page, str_c(&locale->end_texts[har][page]));
             }
         }
     }
 
     // Description
-    printf("  - Description: %s\n", locale->description);
+    printf("  - Description: %s\n", str_c(&locale->description));
 }
 
 void print_info(sd_tournament_file *trn) {
@@ -143,10 +143,10 @@ int main(int argc, char *argv[]) {
         printf("ID Language   Title\n");
         for(int i = 0; i < MAX_TRN_LOCALES; i++) {
             sd_tournament_locale *locale = trn.locales[i];
-            if(locale->title[0] == 0) {
+            if(str_size(&locale->title) == 0) {
                 continue;
             }
-            printf("%2d %-10s %-25s\n", i, language_names[i], locale->title);
+            printf("%2d %-10s %-25s\n", i, language_names[i], str_c(&locale->title));
         }
 
         print_info(&trn);

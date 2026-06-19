@@ -9,6 +9,7 @@
 #include "utils/allocator.h"
 #include "utils/c_array_util.h"
 #include "utils/cp437.h"
+#include "utils/path.h"
 #include "utils/str.h"
 #include <argtable3.h>
 #include <assert.h>
@@ -81,9 +82,9 @@ int read_entry(FILE *file, sd_language *language, int *line_number) {
         str_free(&value);
     }
 
-    if(language->count != (unsigned int)id) {
+    if(vector_size(&language->strings) != (unsigned int)id) {
         char error[100];
-        snprintf(error, sizeof error, "Nonsequential ID. Expected %u, got %ld.", language->count, id);
+        snprintf(error, sizeof error, "Nonsequential ID. Expected %u, got %ld.", vector_size(&language->strings), id);
         error_exit(error, *line_number);
     }
 
@@ -145,8 +146,8 @@ int read_entry(FILE *file, sd_language *language, int *line_number) {
 
     size_t max_desc_len = 31;
     if(str_size(&desc) > max_desc_len) {
-        fprintf(stderr, "Warning: truncating overlong 'Title:' of entry id %d. Length is %zu, max length is %zu\n",
-                language->count, str_size(&desc), max_desc_len);
+        fprintf(stderr, "Warning: truncating overlong 'Title:' of entry id %u. Length is %zu, max length is %zu\n",
+                vector_size(&language->strings), str_size(&desc), max_desc_len);
         str trunc;
         str_from_buf(&trunc, str_c(&desc), max_desc_len);
         str_free(&desc);
@@ -163,46 +164,57 @@ typedef struct conversion_result {
     int string_index;
 } conversion_result;
 
+// Convert a single str from CP437 to UTF-8 in place. Left unchanged on failure.
+static cp437_result str_cp437_to_utf8(str *dst) {
+    const char *src = str_c(dst);
+    const size_t src_len = str_size(dst) + 1; // including null terminator
+    size_t out_len = 0;
+    cp437_result err = cp437_to_utf8(NULL, 0, &out_len, (uint8_t const *)src, src_len);
+    if(err != CP437_SUCCESS) {
+        return err;
+    }
+    char *buf = omf_malloc(out_len);
+    err = cp437_to_utf8((uint8_t *)buf, out_len, NULL, (uint8_t const *)src, src_len);
+    if(err == CP437_SUCCESS) {
+        str_set_c(dst, buf);
+    }
+    omf_free(buf);
+    return err;
+}
+
+// Convert a single str from UTF-8 to CP437 in place. Left unchanged on failure.
+static cp437_result str_cp437_from_utf8(str *dst) {
+    const char *src = str_c(dst);
+    const size_t src_len = str_size(dst) + 1; // including null terminator
+    size_t out_len = 0;
+    cp437_result err = cp437_from_utf8(NULL, 0, &out_len, (uint8_t const *)src, src_len);
+    if(err != CP437_SUCCESS) {
+        return err;
+    }
+    char *buf = omf_malloc(out_len);
+    err = cp437_from_utf8((uint8_t *)buf, out_len, NULL, (uint8_t const *)src, src_len);
+    if(err == CP437_SUCCESS) {
+        str_set_c(dst, buf);
+    }
+    omf_free(buf);
+    return err;
+}
+
 static conversion_result sd_language_to_utf8(sd_language *language) {
     assert(language);
     conversion_result result;
-    for(size_t idx = 0; idx < language->count; idx++) {
+    for(size_t idx = 0; idx < vector_size(&language->strings); idx++) {
         result.string_index = idx;
-        char *old_data = language->strings[idx].data;
-        size_t sizeof_old_data = strlen(old_data) + 1;
-        char old_description[sizeof language->strings[idx].description];
-        memcpy(old_description, language->strings[idx].description, sizeof old_description);
-
-        // convert data to utf-8
-        size_t sizeof_utf8_data;
-        result.error_code = cp437_to_utf8(NULL, 0, &sizeof_utf8_data, (uint8_t const *)old_data, sizeof_old_data);
+        sd_lang_string *entry = vector_get(&language->strings, idx);
+        result.error_code = str_cp437_to_utf8(&entry->data);
         if(result.error_code != CP437_SUCCESS) {
             return result;
         }
-        language->strings[idx].data = omf_malloc(sizeof_utf8_data);
-        result.error_code = cp437_to_utf8((unsigned char *)language->strings[idx].data, sizeof_utf8_data, NULL,
-                                          (uint8_t const *)old_data, sizeof_old_data);
+        result.error_code = str_cp437_to_utf8(&entry->description);
         if(result.error_code != CP437_SUCCESS) {
-            assert(!"cp437_to_utf8 should have failed the first time or not the second");
-            omf_free(language->strings[idx].data);
-            language->strings[idx].data = old_data;
-            return result;
-        }
-        omf_free(old_data);
-
-        // convert description
-        // TODO: Use strnlen_s here, check if description is missing its NUL terminator
-        size_t sizeof_old_description = strlen(old_description) + 1;
-        memset(language->strings[idx].description, '\0', sizeof language->strings[idx].description);
-        result.error_code = cp437_to_utf8((unsigned char *)language->strings[idx].description,
-                                          sizeof language->strings[idx].description, NULL,
-                                          (uint8_t const *)old_description, sizeof_old_description);
-        if(result.error_code != CP437_SUCCESS) {
-            memcpy(language->strings[idx].description, old_description, sizeof old_description);
             return result;
         }
     }
-
     result.error_code = CP437_SUCCESS;
     result.string_index = 0;
     return result;
@@ -211,44 +223,18 @@ static conversion_result sd_language_to_utf8(sd_language *language) {
 static conversion_result sd_language_from_utf8(sd_language *language) {
     assert(language);
     conversion_result result;
-    for(size_t idx = 0; idx < language->count; idx++) {
+    for(size_t idx = 0; idx < vector_size(&language->strings); idx++) {
         result.string_index = idx;
-        char *old_data = language->strings[idx].data;
-        size_t sizeof_old_data = strlen(old_data) + 1;
-        char old_description[sizeof language->strings[idx].description];
-        memcpy(old_description, language->strings[idx].description, sizeof old_description);
-
-        // convert data to DOS CP 437
-        size_t sizeof_cp437_data;
-        result.error_code =
-            cp437_from_utf8(NULL, 0, &sizeof_cp437_data, (unsigned char const *)old_data, sizeof_old_data);
+        sd_lang_string *entry = vector_get(&language->strings, idx);
+        result.error_code = str_cp437_from_utf8(&entry->data);
         if(result.error_code != CP437_SUCCESS) {
             return result;
         }
-        language->strings[idx].data = omf_malloc(sizeof_cp437_data);
-        result.error_code = cp437_from_utf8((uint8_t *)language->strings[idx].data, sizeof_cp437_data, NULL,
-                                            (unsigned char const *)old_data, sizeof_old_data);
+        result.error_code = str_cp437_from_utf8(&entry->description);
         if(result.error_code != CP437_SUCCESS) {
-            assert(!"cp437_from_utf8 should have failed the first time or not the second");
-            omf_free(language->strings[idx].data);
-            language->strings[idx].data = old_data;
-            return result;
-        }
-        omf_free(old_data);
-
-        // convert description
-        // TODO: Use strnlen_s here, check if description is missing its NUL terminator
-        size_t sizeof_old_description = strlen(old_description) + 1;
-        memset(language->strings[idx].description, '\0', sizeof language->strings[idx].description);
-        result.error_code =
-            cp437_from_utf8((uint8_t *)language->strings[idx].description, sizeof language->strings[idx].description,
-                            NULL, (unsigned char const *)old_description, sizeof_old_description);
-        if(result.error_code != CP437_SUCCESS) {
-            memcpy(language->strings[idx].description, old_description, sizeof old_description);
             return result;
         }
     }
-
     result.error_code = CP437_SUCCESS;
     result.string_index = 0;
     return result;
@@ -313,7 +299,7 @@ int main(int argc, char *argv[]) {
     if(file->count > 0) {
         path input_filename;
         path_from_c(&input_filename, file->filename[0]);
-        ret = sd_language_load(&language, &input_filename);
+        ret = sd_language_load(&language, &input_filename, true);
         language_is_utf8 = false;
         if(ret != SD_SUCCESS) {
             fprintf(stderr, "Language file could not be loaded! Error [%d] %s\n", ret, sd_get_error(ret));
@@ -343,8 +329,9 @@ int main(int argc, char *argv[]) {
         goto exit_0;
     }
 
-    if(check_count->count > 0 && (unsigned)check_count->ival[0] != language.count) {
-        fprintf(stderr, "Expected %u entries, got %d!\n", (unsigned)check_count->ival[0], language.count);
+    if(check_count->count > 0 && (unsigned)check_count->ival[0] != vector_size(&language.strings)) {
+        fprintf(stderr, "Expected %u entries, got %u!\n", (unsigned)check_count->ival[0],
+                vector_size(&language.strings));
         goto exit_0;
     }
 
@@ -367,8 +354,8 @@ int main(int argc, char *argv[]) {
             goto exit_0;
         }
 
-        printf("Title: %s\n", ds->description);
-        printf("Data: %s\n", ds->data);
+        printf("Title: %s\n", str_c(&ds->description));
+        printf("Data: %s\n", str_c(&ds->data));
     } else if(output->count == 0) {
         if(!language_is_utf8) {
             conversion_result result = sd_language_to_utf8(&language);
@@ -379,12 +366,12 @@ int main(int argc, char *argv[]) {
             }
             language_is_utf8 = true;
         }
-        for(unsigned i = 0; i < language.count; i++) {
+        for(unsigned i = 0; i < vector_size(&language.strings); i++) {
             ds = sd_language_get(&language, i);
             if(ds != NULL) {
                 printf("ID: %d\n", i);
-                printf("Title: %s\n", ds->description);
-                printf("Data: %s\n", ds->data);
+                printf("Title: %s\n", str_c(&ds->description));
+                printf("Data: %s\n", str_c(&ds->data));
             }
         }
     }

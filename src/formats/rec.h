@@ -15,6 +15,7 @@
 #include "formats/pilot.h"
 #include "utils/path.h"
 #include "utils/smallbuffer.h"
+#include "utils/vector.h"
 #include <stdint.h>
 
 /** @brief REC action record
@@ -99,8 +100,7 @@ typedef struct {
 
     int8_t unknown_m; ///< Unknown @todo: Find out
 
-    unsigned int move_count; ///< How many REC event records
-    sd_rec_move *moves;      ///< REC event records list
+    vector moves; ///< REC event records, holds sd_rec_move elements
 } sd_rec_file;
 
 // Moves with lookup ID 10 are differentiated further by their first byte
@@ -117,11 +117,9 @@ enum
  *
  * Initializes the REC file structure with empty values.
  *
- * @retval SD_SUCCESS Success.
- *
  * @param rec Allocated REC struct pointer.
  */
-int sd_rec_create(sd_rec_file *rec);
+void sd_rec_create(sd_rec_file *rec);
 
 /** @brief Free REC file structure
  *

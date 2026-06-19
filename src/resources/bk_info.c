@@ -10,7 +10,7 @@ void bk_info_create(str *name, bk_info *info, array *sprites, void *src, int id)
     info->repeat = sdinfo->repeat;
     info->probability = sdinfo->probability;
     info->hazard_damage = sdinfo->hazard_damage;
-    str_from_c(&info->footer_string, sdinfo->footer_string);
+    str_from(&info->footer_string, &sdinfo->footer_string);
     modmanager_get_bk_animation(name, id, info);
 }
 

@@ -12,6 +12,7 @@
 #define SD_PIC_H
 
 #include "formats/sprite.h"
+#include "utils/vector.h"
 
 #define MAX_PIC_PHOTOS 256 ///< Maximum amount of PIC photos that will fit the array
 
@@ -32,19 +33,16 @@ typedef struct {
  * Contains a list of pilot face portraits.
  */
 typedef struct {
-    int photo_count;                      ///< Photo count
-    sd_pic_photo *photos[MAX_PIC_PHOTOS]; ///< Photo array
+    vector photos; ///< Photo list, holds sd_pic_photo elements
 } sd_pic_file;
 
 /** @brief Initialize PIC file structure
  *
  * Initializes the PIC file structure with empty values.
  *
- * @retval SD_SUCCESS Success.
- *
  * @param pic Allocated PIC struct pointer.
  */
-int sd_pic_create(sd_pic_file *pic);
+void sd_pic_create(sd_pic_file *pic);
 
 /** @brief Free PIC file structure
  *

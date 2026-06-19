@@ -1,6 +1,7 @@
 #ifndef SERIAL_H
 #define SERIAL_H
 
+#include "utils/str.h"
 #include <stddef.h>
 #include <stdint.h>
 
@@ -15,15 +16,19 @@ void serial_create(serial *s);
 void serial_create_from(serial *s, const char *buf, size_t len);
 void serial_write(serial *s, const char *buf, size_t len);
 void serial_write_int8(serial *s, int8_t v);
+void serial_write_uint8(serial *s, uint8_t v);
 void serial_write_int16(serial *s, int16_t v);
 void serial_write_int32(serial *s, int32_t v);
 void serial_write_uint32(serial *s, uint32_t v);
 void serial_write_float(serial *s, float v);
 size_t serial_len(serial *s);
 void serial_read(serial *s, char *buf, size_t len);
+void serial_write_str(serial *s, const str *src);
+void serial_read_str(serial *s, str *dst);
 void serial_free(serial *s);
 void serial_read_reset(serial *s);
 int8_t serial_read_int8(serial *s);
+uint8_t serial_read_uint8(serial *s);
 int16_t serial_read_int16(serial *s);
 uint16_t serial_read_uint16(serial *s);
 int32_t serial_read_int32(serial *s);

@@ -546,7 +546,7 @@ int vs_create(scene *scene) {
         player1->pilot->har_trades = new_trades;
     } else {
         char title[128];
-        snprintf(title, 128, "%s VS. %s", player1->pilot->name, player2->pilot->name);
+        snprintf(title, 128, "%s VS. %s", str_c(&player1->pilot->name), str_c(&player2->pilot->name));
         local->vs_text = create_vs_text(title);
     }
 
@@ -681,7 +681,7 @@ int vs_create(scene *scene) {
     } else if(player1->chr && player2->pilot) {
         // tournament mode
         local->insults[0] = NULL;
-        local->insults[1] = create_insult_text(player2->pilot->quotes[0], 150, 60);
+        local->insults[1] = create_insult_text(str_c(&player2->pilot->quotes[0]), 150, 60);
     } else if(player2->pilot) {
         // 1 player
         local->insults[0] =

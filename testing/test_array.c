@@ -196,6 +196,27 @@ void test_array_dense(void) {
     array_free(&test_array);
 }
 
+void test_array_delete_at(void) {
+    array test_array;
+    array_create(&test_array);
+    array_set(&test_array, 0, test_data1);
+    array_set(&test_array, 5, test_data2);
+    CU_ASSERT_EQUAL(test_array.filled, 2);
+
+    // succeed when deleting an existing item
+    CU_ASSERT_EQUAL(array_delete_at(&test_array, 0), 0);
+    CU_ASSERT_PTR_NULL(array_get(&test_array, 0));
+    CU_ASSERT_EQUAL(test_array.filled, 1);
+    CU_ASSERT_PTR_EQUAL(array_get(&test_array, 5), test_data2); // untouched
+
+    // fail on deleting already deleted or out of bounds (=no change)
+    CU_ASSERT_EQUAL(array_delete_at(&test_array, 0), 1);
+    CU_ASSERT_EQUAL(array_delete_at(&test_array, 10000), 1);
+    CU_ASSERT_EQUAL(test_array.filled, 1);
+
+    array_free(&test_array);
+}
+
 void array_test_suite(CU_pSuite suite) {
     if(CU_add_test(suite, "Test for array create", test_array_create) == NULL) {
         return;
@@ -234,6 +255,9 @@ void array_test_suite(CU_pSuite suite) {
         return;
     }
     if(CU_add_test(suite, "Test for array dense", test_array_dense) == NULL) {
+        return;
+    }
+    if(CU_add_test(suite, "Test for array delete at", test_array_delete_at) == NULL) {
         return;
     }
 }

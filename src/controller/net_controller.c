@@ -327,8 +327,7 @@ void send_game_information(wtf *data) {
     serial_write_int8(&ser, sd_pilot_get_player_color(player->pilot, PRIMARY));
     serial_write_int8(&ser, sd_pilot_get_player_color(player->pilot, SECONDARY));
     serial_write_int8(&ser, sd_pilot_get_player_color(player->pilot, TERTIARY));
-    serial_write_int8(&ser, strlen(player->pilot->name));
-    serial_write(&ser, player->pilot->name, strlen(player->pilot->name));
+    serial_write_str(&ser, &player->pilot->name);
 
     packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
     enet_peer_send(peer, 2, packet);
@@ -464,7 +463,7 @@ int rewind_and_replay(wtf *data, controller *ctrl) {
 
                         extra_data[0] = action;
 
-                        sd_rec_insert_action(gs->rec, gs->rec->move_count, &move);
+                        sd_rec_insert_action(gs->rec, vector_size(&gs->rec->moves), &move);
                         k++;
                     }
                 }
@@ -1058,15 +1057,18 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                             return 1;
                         }
 
-                        val = serial_read_int8(&ser);
-                        char name_buf[20];
-                        serial_read(&ser, name_buf, min2(sizeof(name_buf) - 1, val));
-                        name_buf[19] = '\0';
-                        if(strncmp(player->pilot->name, name_buf, strlen(player->pilot->name)) != 0) {
-                            log_error("Pilot name mismatch, we had %s they had %s", player->pilot->name, name_buf);
+                        str their_name;
+                        str_create(&their_name);
+                        serial_read_str(&ser, &their_name);
+                        if(strncmp(str_c(&player->pilot->name), str_c(&their_name), str_size(&player->pilot->name)) !=
+                           0) {
+                            log_error("Pilot name mismatch, we had %s they had %s", str_c(&player->pilot->name),
+                                      str_c(&their_name));
+                            str_free(&their_name);
                             enet_peer_disconnect_later(data->peer, 0);
                             return 1;
                         }
+                        str_free(&their_name);
                     } break;
                     default:
                         // Event type is unknown or we don't care about it

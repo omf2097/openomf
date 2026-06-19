@@ -304,13 +304,7 @@ void newsroom_input_tick(scene *scene) {
                                     sd_pilot_set_player_color(p2->pilot, SECONDARY, p.color_2);
                                     sd_pilot_set_player_color(p2->pilot, TERTIARY, p.color_3);
 
-                                    strncpy_or_abort(p2->pilot->name, lang_get(p2->pilot->pilot_id + 20),
-                                                     sizeof(p2->pilot->name));
-                                    // TODO: lang: remove (the need for) newline stripping
-                                    // 1player name strings end in a newline...
-                                    if(p2->pilot->name[strlen(p2->pilot->name) - 1] == '\n') {
-                                        p2->pilot->name[strlen(p2->pilot->name) - 1] = 0;
-                                    }
+                                    str_set_c(&p2->pilot->name, lang_get(p2->pilot->pilot_id + 20));
 
                                     // make a new AI controller
                                     controller *ctrl = omf_calloc(1, sizeof(controller));
@@ -485,8 +479,8 @@ int newsroom_create(scene *scene) {
     // p2 pilot must be set by now
     assert(p2->pilot != NULL);
 
-    newsroom_set_names(local, p1->pilot->name, p2->pilot->name, p1->pilot->har_id, p2->pilot->har_id, p1->pilot->sex,
-                       p2->pilot->sex);
+    newsroom_set_names(local, str_c(&p1->pilot->name), str_c(&p2->pilot->name), p1->pilot->har_id, p2->pilot->har_id,
+                       p1->pilot->sex, p2->pilot->sex);
     newsroom_fixup_str(local);
 
     // Continue Dialog
