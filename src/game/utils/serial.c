@@ -7,7 +7,7 @@
 #endif
 #include "game/utils/serial.h"
 #include "utils/allocator.h"
-#include "utils/log.h"
+#include "utils/crash.h"
 #include <stdio.h>
 
 #define SERIAL_BUF_RESIZE_INC 64
@@ -71,6 +71,10 @@ void serial_write_int8(serial *s, int8_t v) {
     serial_write(s, (char *)&v, sizeof(v));
 }
 
+void serial_write_uint8(serial *s, uint8_t v) {
+    serial_write(s, (char *)&v, sizeof(v));
+}
+
 void serial_write_int16(serial *s, int16_t v) {
     int16_t t = htons(v);
     serial_write(s, (char *)&t, sizeof(t));
@@ -115,19 +119,16 @@ void serial_read(serial *s, char *buf, size_t len) {
 }
 
 void serial_write_str(serial *s, const str *src) {
-    if(str_size(src) > 127) {
-        crash("Invalid serial write -- string must be shorter than 128 bytes!");
+    if(str_size(src) > 255) {
+        crash("Invalid serial write -- string must be shorter than 256 bytes!");
     }
-    serial_write_int8(s, (int8_t)str_size(src));
+    serial_write_uint8(s, (uint8_t)str_size(src));
     serial_write(s, str_c(src), str_size(src));
 }
 
 void serial_read_str(serial *s, str *dst) {
-    const int8_t len = serial_read_int8(s);
-    if(len < 0) {
-        crash("Invalid serial read -- string must be longer than 0 bytes!");
-    }
-    char buf[128];
+    const uint8_t len = serial_read_uint8(s);
+    char buf[256 + 1];
     serial_read(s, buf, len);
     buf[len] = '\0';
     str_set_c(dst, buf);
@@ -135,6 +136,11 @@ void serial_read_str(serial *s, str *dst) {
 
 int8_t serial_read_int8(serial *s) {
     int8_t v;
+    serial_read(s, (char *)&v, sizeof(v));
+    return v;
+}
+uint8_t serial_read_uint8(serial *s) {
+    uint8_t v;
     serial_read(s, (char *)&v, sizeof(v));
     return v;
 }
