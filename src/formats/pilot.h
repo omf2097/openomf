@@ -28,7 +28,7 @@
  */
 typedef struct {
     uint32_t unknown_a;      ///< Unknown
-    char name[18];           ///< Pilot name
+    str name;                ///< Pilot name
     uint16_t wins;           ///< Matches won by this pilot
     uint16_t losses;         ///< Matches lost by this pilot
     uint8_t rank;            ///< Rank
@@ -49,7 +49,7 @@ typedef struct {
     uint8_t color_2;         ///< HAR Secondary Color. 0-15 are altpals, 16 means use 'palette' field, 255 means random.
     uint8_t color_1;         ///< HAR Primary Color.   0-15 are altpals, 16 means use 'palette' field, 255 means random.
     char trn_name[13];       ///< Tournament file
-    char trn_desc[31];       ///< Tournament description
+    str trn_desc;            ///< Tournament description
     char trn_image[13];      ///< Tournament image file
     float trn_rank_money;    ///< Tournament rank money gain
     float trn_winnings_mult; ///< Unknown

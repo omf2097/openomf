@@ -546,7 +546,7 @@ int vs_create(scene *scene) {
         player1->pilot->har_trades = new_trades;
     } else {
         char title[128];
-        snprintf(title, 128, "%s VS. %s", player1->pilot->name, player2->pilot->name);
+        snprintf(title, 128, "%s VS. %s", str_c(&player1->pilot->name), str_c(&player2->pilot->name));
         local->vs_text = create_vs_text(title);
     }
 

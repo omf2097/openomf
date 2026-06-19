@@ -76,7 +76,7 @@ int sg_load_pilot(sd_chr_file *chr, const char *pilot_name) {
 
 int sg_save(sd_chr_file *chr) {
     path save = get_save_directory();
-    path_append(&save, chr->pilot.name);
+    path_append(&save, str_c(&chr->pilot.name));
     path_set_ext(&save, ".CHR");
     path_dossify_filename(&save);
 

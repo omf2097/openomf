@@ -114,6 +114,25 @@ void serial_read(serial *s, char *buf, size_t len) {
     s->rpos += len;
 }
 
+void serial_write_str(serial *s, const str *src) {
+    if(str_size(src) > 127) {
+        crash("Invalid serial write -- string must be shorter than 128 bytes!");
+    }
+    serial_write_int8(s, (int8_t)str_size(src));
+    serial_write(s, str_c(src), str_size(src));
+}
+
+void serial_read_str(serial *s, str *dst) {
+    const int8_t len = serial_read_int8(s);
+    if(len < 0) {
+        crash("Invalid serial read -- string must be longer than 0 bytes!");
+    }
+    char buf[128];
+    serial_read(s, buf, len);
+    buf[len] = '\0';
+    str_set_c(dst, buf);
+}
+
 int8_t serial_read_int8(serial *s) {
     int8_t v;
     serial_read(s, (char *)&v, sizeof(v));

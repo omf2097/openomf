@@ -85,7 +85,7 @@ bool lab_dash_main_chr_load(component *c, void *userdata) {
 bool lab_dash_main_chr_delete(component *c, void *userdata) {
     dashboard_widgets *dw = userdata;
     game_player *p1 = game_state_get_player(dw->scene->gs, 0);
-    const char *pilot_name = p1->pilot->name;
+    const char *pilot_name = str_c(&p1->pilot->name);
     sg_delete(pilot_name);
     trnmenu_finish(c->parent);
     return true;
@@ -131,7 +131,7 @@ void lab_dash_main_chr_init(component *menu, component *submenu) {
 
     sd_chr_file *chr = NULL;
     foreach(it, chr) {
-        if(p1->chr && strcmp(p1->chr->pilot.name, chr->pilot.name) == 0) {
+        if(p1->chr && strcmp(str_c(&p1->chr->pilot.name), str_c(&chr->pilot.name)) == 0) {
             sd_chr_free(chr);
             list_delete(dw->savegames, &it);
         }
@@ -556,8 +556,8 @@ void lab_dash_main_update(scene *s, dashboard_widgets *dw) {
     label_set_text(dw->har_moves, lang_get(492 + p1->pilot->har_id));
 
     // Tournament and player name
-    label_set_text(dw->name, p1->pilot->name);
-    label_set_text(dw->tournament, p1->pilot->trn_desc);
+    label_set_text(dw->name, str_c(&p1->pilot->name));
+    label_set_text(dw->tournament, str_c(&p1->pilot->trn_desc));
 
     if(p1->pilot->photo) {
         log_debug("loading pilot photo from pilot");
@@ -583,7 +583,7 @@ void lab_dash_sim_update(scene *s, dashboard_widgets *dw, sd_pilot *pilot) {
     label_set_text(dw->losses, tmp);
     snprintf(tmp, sizeof(tmp), "MODEL: %s", lang_get(31 + pilot->har_id));
     label_set_text(dw->har_name, tmp);
-    snprintf(tmp, sizeof(tmp), "NAME: %s", pilot->name);
+    snprintf(tmp, sizeof(tmp), "NAME: %s", str_c(&pilot->name));
     label_set_text(dw->name, tmp);
 
     lab_dash_sim_update_portraits(dw);

@@ -34,7 +34,7 @@ void test_sd_trn_roundtripping(void) {
     n_trn.enemies[0] = omf_calloc(1, sizeof(sd_pilot));
     sd_pilot_create(n_trn.enemies[0]);
     n_trn.enemy_count = 1;
-    snprintf(n_trn.enemies[0]->name, 18, "test_pilot");
+    str_set_c(&n_trn.enemies[0]->name, "test_pilot");
 
     path filename;
     path_from_c(&filename, "test.trn");
@@ -51,7 +51,7 @@ void test_sd_trn_roundtripping(void) {
     CU_ASSERT_STRING_EQUAL(n_trn.bk_name, l_trn.bk_name);
     CU_ASSERT_STRING_EQUAL(n_trn.pic_file, l_trn.pic_file);
 
-    CU_ASSERT_STRING_EQUAL(n_trn.enemies[0]->name, l_trn.enemies[0]->name);
+    CU_ASSERT_STRING_EQUAL(str_c(&n_trn.enemies[0]->name), str_c(&l_trn.enemies[0]->name));
 
     sd_tournament_free(&n_trn);
     sd_tournament_free(&l_trn);

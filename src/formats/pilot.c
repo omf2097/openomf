@@ -21,11 +21,15 @@ static void sd_pilot_quotes_init(str *quotes) {
 void sd_pilot_create(sd_pilot *pilot) {
     assert(pilot != NULL);
     memset(pilot, 0, sizeof(sd_pilot));
+    str_create(&pilot->name);
+    str_create(&pilot->trn_desc);
     sd_pilot_quotes_init(pilot->quotes);
 }
 
 void sd_pilot_clone(sd_pilot *dest, const sd_pilot *src) {
     sd_pilot_copy_shallow(dest, src);
+    str_set(&dest->name, &src->name);
+    str_set(&dest->trn_desc, &src->trn_desc);
     for(int m = 0; m < SD_PILOT_QUOTE_COUNT; m++) {
         str_set(&dest->quotes[m], &src->quotes[m]);
     }
@@ -39,6 +43,8 @@ void sd_pilot_copy_shallow(sd_pilot *dest, const sd_pilot *src) {
     sd_pilot_free(dest);
     *dest = *src;
     dest->photo = NULL;
+    str_create(&dest->name);
+    str_create(&dest->trn_desc);
     sd_pilot_quotes_init(dest->quotes); // reset aliased strings
 }
 
@@ -53,11 +59,13 @@ void sd_pilot_free(sd_pilot *pilot) {
     for(int m = 0; m < SD_PILOT_QUOTE_COUNT; m++) {
         str_free(&pilot->quotes[m]);
     }
+    str_free(&pilot->name);
+    str_free(&pilot->trn_desc);
 }
 
 // Reads exactly 24 + 8 + 11 = 43 bytes
 void sd_pilot_load_player_from_mem(memreader *mr, sd_pilot *pilot) {
-    memread_buf(mr, pilot->name, 18);
+    memread_fixed_str(mr, &pilot->name, 18);
     pilot->wins = memread_uword(mr);
     pilot->losses = memread_uword(mr);
     pilot->rank = memread_ubyte(mr);
@@ -92,7 +100,7 @@ void sd_pilot_load_from_mem(memreader *mr, sd_pilot *pilot) {
     sd_pilot_load_player_from_mem(mr, pilot);
 
     memread_buf(mr, pilot->trn_name, 13);
-    memread_buf(mr, pilot->trn_desc, 31);
+    memread_fixed_str(mr, &pilot->trn_desc, 31);
     memread_buf(mr, pilot->trn_image, 13);
 
     pilot->trn_rank_money = memread_float(mr);
@@ -192,7 +200,7 @@ int sd_pilot_load(sd_reader *reader, sd_pilot *pilot) {
 }
 
 void sd_pilot_save_player_to_mem(memwriter *w, const sd_pilot *pilot) {
-    memwrite_buf(w, pilot->name, 18);
+    memwrite_fixed_str(w, &pilot->name, 18);
     memwrite_uword(w, pilot->wins);
     memwrite_uword(w, pilot->losses);
     memwrite_ubyte(w, pilot->rank);
@@ -230,7 +238,7 @@ void sd_pilot_save_to_mem(memwriter *w, const sd_pilot *pilot) {
     sd_pilot_save_player_to_mem(w, pilot);
 
     memwrite_buf(w, pilot->trn_name, 13);
-    memwrite_buf(w, pilot->trn_desc, 31);
+    memwrite_fixed_str(w, &pilot->trn_desc, 31);
     memwrite_buf(w, pilot->trn_image, 13);
 
     memwrite_float(w, pilot->trn_rank_money);
@@ -391,6 +399,6 @@ uint8_t sd_pilot_get_player_color(sd_pilot const *pilot, player_color index) {
 void sd_pilot_exit_tournament(sd_pilot *pilot) {
     pilot->rank = 0;
     pilot->trn_name[0] = '\0';
-    pilot->trn_desc[0] = '\0';
+    str_set_c(&pilot->trn_desc, "");
     pilot->trn_image[0] = '\0';
 }

@@ -102,7 +102,7 @@ void game_state_decode_match_settings(serial *ser, match_settings *ms) {
 }
 
 void game_state_set_pilot_name(game_state *gs, int pilot_id, const char *pilot_name) {
-    strncpy_or_truncate(gs->players[pilot_id]->pilot->name, pilot_name, sizeof(gs->players[pilot_id]->pilot->name));
+    str_set_c(&gs->players[pilot_id]->pilot->name, pilot_name);
 }
 
 int game_state_get_assertion_operand(const rec_assertion_operand *op, game_state *gs) {
@@ -1224,12 +1224,7 @@ void game_state_init_demo(game_state *gs) {
         sd_pilot_set_player_color(player->pilot, SECONDARY, pilot_info.color_2);
         sd_pilot_set_player_color(player->pilot, TERTIARY, pilot_info.color_3);
 
-        strncpy_or_abort(player->pilot->name, lang_get(player->pilot->pilot_id + 20), sizeof(player->pilot->name));
-        // TODO: lang: remove (the need for) newline stripping
-        // 1player name strings end in a newline...
-        if(player->pilot->name[strlen(player->pilot->name) - 1] == '\n') {
-            player->pilot->name[strlen(player->pilot->name) - 1] = 0;
-        }
+        str_set_c(&player->pilot->name, lang_get(player->pilot->pilot_id + 20));
     }
 }
 

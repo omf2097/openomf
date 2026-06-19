@@ -538,20 +538,8 @@ void handle_action(scene *scene, int player, int action) {
                         load_pilot_colors(scene, 1);
                     }
                     if(!local->network_game) {
-                        strncpy_or_truncate(player1->pilot->name, lang_get(player1->pilot->pilot_id + 20),
-                                            sizeof(player1->pilot->name));
-                        // TODO: lang: remove (the need for) newline stripping
-                        // 1player name strings end in a newline...
-                        if(player1->pilot->name[strlen(player1->pilot->name) - 1] == '\n') {
-                            player1->pilot->name[strlen(player1->pilot->name) - 1] = 0;
-                        }
-                        strncpy_or_truncate(player2->pilot->name, lang_get(player2->pilot->pilot_id + 20),
-                                            sizeof(player2->pilot->name));
-                        // TODO: lang: remove (the need for) newline stripping
-                        // 1player name strings end in a newline...
-                        if(player2->pilot->name[strlen(player2->pilot->name) - 1] == '\n') {
-                            player2->pilot->name[strlen(player2->pilot->name) - 1] = 0;
-                        }
+                        str_set_c(&player1->pilot->name, lang_get(player1->pilot->pilot_id + 20));
+                        str_set_c(&player2->pilot->name, lang_get(player2->pilot->pilot_id + 20));
                     }
                     game_state_set_next(scene->gs, SCENE_VS);
                 }
@@ -905,8 +893,8 @@ int melee_create(scene *scene) {
     }
 
     // if we already have a pilot name, we're coming back from VS.
-    if(!local->network_game && player1->pilot->name[0] != '\0' &&
-       (player2->pilot->name[0] != '\0' || !player2->selectable)) {
+    if(!local->network_game && str_size(&player1->pilot->name) > 0 &&
+       (str_size(&player2->pilot->name) > 0 || !player2->selectable)) {
         local->page = HAR_SELECT;
         local->pilot_id_a = player1->pilot->pilot_id;
         local->pilot_id_b = player2->pilot->pilot_id;

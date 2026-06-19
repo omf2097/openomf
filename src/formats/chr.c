@@ -58,7 +58,7 @@ void sd_chr_from_trn(sd_chr_file *chr, const sd_tournament_file *trn, const sd_p
     chr->pilot.trn_rank_money = (ranked + 10) * 0.5 + (extra / 15);
 
     strncpy_or_abort(chr->pilot.trn_name, trn->filename, sizeof(chr->pilot.trn_name));
-    strncpy_or_abort(chr->pilot.trn_desc, str_c(&trn->locales[0]->title), sizeof(chr->pilot.trn_desc));
+    str_set(&chr->pilot.trn_desc, &trn->locales[0]->title);
     strncpy_or_abort(chr->pilot.trn_image, trn->pic_file, sizeof(chr->pilot.trn_image));
     chr->photo = omf_calloc(1, sizeof(sd_sprite));
     sd_sprite_copy(chr->photo, pilot->photo);

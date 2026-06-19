@@ -1186,7 +1186,7 @@ bool modmanager_parse_pilot_mod(const char *buf, sd_pilot *pilot) {
 
     // Store original values for comparison
     char original_name[18];
-    strncpy(original_name, pilot->name, sizeof(original_name));
+    strncpy(original_name, str_c(&pilot->name), sizeof(original_name));
     original_name[17] = '\0';
 
     // Options for colors section
@@ -1253,9 +1253,8 @@ bool modmanager_parse_pilot_mod(const char *buf, sd_pilot *pilot) {
     // Update top-level string fields
     char *name = cfg_getstr(cfg, "name");
     if(name) {
-        strncpy(pilot->name, name, sizeof(pilot->name) - 1);
-        pilot->name[sizeof(pilot->name) - 1] = '\0';
-        log_info("setting name from '%s' to '%s'", original_name, pilot->name);
+        str_set_c(&pilot->name, name);
+        log_info("setting name from '%s' to '%s'", original_name, str_c(&pilot->name));
     }
 
     char *gender = cfg_getstr(cfg, "gender");
