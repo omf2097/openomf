@@ -138,8 +138,8 @@ void print_rec_root_info(sd_rec_file *rec) {
                     } break;
                 }
             }
-            printf("%6u %10u %5u %6u %6u %22s", i, rec_move->tick, rec_move->lookup_id, rec_move->player_id,
-                   extra_len, tmp);
+            printf("%6u %10u %5u %6u %6u %22s", i, rec_move->tick, rec_move->lookup_id, rec_move->player_id, extra_len,
+                   tmp);
 
             if(rec_move->lookup_id == 10 && extra_data[0] == REC_LOOKUP10_ASSERT_BYTE) {
                 rec_assertion ass;
@@ -241,8 +241,7 @@ void rec_entry_get_key(sd_rec_file *rec, int entry_id, const char *key) {
             printf("%s", tmp);
         } break;
         case 4:
-            print_bytes(sd_rec_get_extra_data(rec_move), sd_rec_extra_len(rec_move->lookup_id),
-                        8, 0);
+            print_bytes(sd_rec_get_extra_data(rec_move), sd_rec_extra_len(rec_move->lookup_id), 8, 0);
             break;
         default:
             printf("Invalid record entry key!\n");

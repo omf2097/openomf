@@ -1060,8 +1060,8 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                         str their_name;
                         str_create(&their_name);
                         serial_read_str(&ser, &their_name);
-                        if(strncmp(str_c(&player->pilot->name), str_c(&their_name),
-                                   str_size(&player->pilot->name)) != 0) {
+                        if(strncmp(str_c(&player->pilot->name), str_c(&their_name), str_size(&player->pilot->name)) !=
+                           0) {
                             log_error("Pilot name mismatch, we had %s they had %s", str_c(&player->pilot->name),
                                       str_c(&their_name));
                             str_free(&their_name);

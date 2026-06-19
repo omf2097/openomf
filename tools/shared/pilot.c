@@ -40,10 +40,10 @@ void print_pilot_array_row(sd_pilot *pilot, int i) {
     }
     printf("%2d %-13s %-4d %-4d %-8s %-7d %-2d %-2d %-2d %-2d %-2d %-2d %-2d %-2d %-2d %-5d %-5d %-3d %-3d %-3d %-6d "
            "%-5u %-7u\n",
-           i, str_c(&pilot->name), pilot->wins, pilot->losses, har_name, pilot->money, pilot->arm_power, pilot->leg_power,
-           pilot->arm_speed, pilot->leg_speed, pilot->armor, pilot->stun_resistance, pilot->power, pilot->agility,
-           pilot->endurance, pilot->offense, pilot->defense, pilot->color_1, pilot->color_2, pilot->color_3,
-           pilot->secret, pilot->photo_id, pilot->total_value);
+           i, str_c(&pilot->name), pilot->wins, pilot->losses, har_name, pilot->money, pilot->arm_power,
+           pilot->leg_power, pilot->arm_speed, pilot->leg_speed, pilot->armor, pilot->stun_resistance, pilot->power,
+           pilot->agility, pilot->endurance, pilot->offense, pilot->defense, pilot->color_1, pilot->color_2,
+           pilot->color_3, pilot->secret, pilot->photo_id, pilot->total_value);
 }
 
 void print_pilot_player_info(sd_pilot *pilot) {
