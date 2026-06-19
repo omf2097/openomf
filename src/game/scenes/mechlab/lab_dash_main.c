@@ -131,7 +131,7 @@ void lab_dash_main_chr_init(component *menu, component *submenu) {
 
     sd_chr_file *chr = NULL;
     foreach(it, chr) {
-        if(p1->chr && strcmp(str_c(&p1->chr->pilot.name), str_c(&chr->pilot.name)) == 0) {
+        if(p1->chr && str_equal(&p1->chr->pilot.name, &chr->pilot.name)) {
             sd_chr_free(chr);
             list_delete(dw->savegames, &it);
         }

@@ -889,21 +889,21 @@ bool modmanager_parse_af_move_mod(const char *buf, af_move *current_move) {
 
     // Update string fields if they were modified
     char *move_str = cfg_getstr(cfg, "move_string");
-    if(move_str && strcmp(move_str, str_c(&current_move->move_string)) != 0) {
+    if(move_str && !str_equal_c(&current_move->move_string, move_str)) {
         log_info("setting move_string from '%s' to '%s'", str_c(&current_move->move_string), move_str);
         str_free(&current_move->move_string);
         str_from_c(&current_move->move_string, move_str);
     }
 
     char *footer_str = cfg_getstr(cfg, "footer_string");
-    if(footer_str && strcmp(footer_str, str_c(&current_move->footer_string)) != 0) {
+    if(footer_str && !str_equal_c(&current_move->footer_string, footer_str)) {
         log_info("setting footer_string from '%s' to '%s'", str_c(&current_move->footer_string), footer_str);
         str_free(&current_move->footer_string);
         str_from_c(&current_move->footer_string, footer_str);
     }
 
     char *anim_str = cfg_getstr(cfg, "animation_string");
-    if(anim_str && strcmp(anim_str, str_c(&current_move->ani.animation_string)) != 0) {
+    if(anim_str && !str_equal_c(&current_move->ani.animation_string, anim_str)) {
         log_info("setting animation_string from '%s' to '%s'", str_c(&current_move->ani.animation_string), anim_str);
         str_free(&current_move->ani.animation_string);
         str_from_c(&current_move->ani.animation_string, anim_str);
@@ -976,14 +976,14 @@ bool modmanager_parse_bk_info_mod(const char *buf, bk_info *current_info) {
 
     // Update string fields if they were modified
     char *footer_str = cfg_getstr(cfg, "footer_string");
-    if(footer_str && strcmp(footer_str, str_c(&current_info->footer_string)) != 0) {
+    if(footer_str && !str_equal_c(&current_info->footer_string, footer_str)) {
         log_info("setting footer_string from '%s' to '%s'", str_c(&current_info->footer_string), footer_str);
         str_free(&current_info->footer_string);
         str_from_c(&current_info->footer_string, footer_str);
     }
 
     char *anim_str = cfg_getstr(cfg, "animation_string");
-    if(anim_str && strcmp(anim_str, str_c(&current_info->ani.animation_string)) != 0) {
+    if(anim_str && !str_equal_c(&current_info->ani.animation_string, anim_str)) {
         log_info("setting animation_string from '%s' to '%s'", str_c(&current_info->ani.animation_string), anim_str);
         str_free(&current_info->ani.animation_string);
         str_from_c(&current_info->ani.animation_string, anim_str);
@@ -1076,7 +1076,7 @@ bool modmanager_get_bk_animation(str *name, int anim_id, bk_info *bk_data) {
 
     str_free(&filename);
 
-    if(!result && strncmp("arena", str_c(name), 5) == 0 &&
+    if(!result && str_starts_with(name, "arena") &&
        ((anim_id >= 6 && anim_id <= 11) || (anim_id >= 24 && anim_id <= 27))) {
         // TODO make sure this is an arena
         // For arenas, check for 'common' for anim_ids 6 (round), 7 (number), 8 (you lose), 9 (you win), 10 (fight),
