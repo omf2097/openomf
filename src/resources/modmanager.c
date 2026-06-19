@@ -1756,15 +1756,16 @@ bool modmanager_get_player_pics(sd_pic_file *players) {
     unsigned int len = 0;
     bool result = false;
 
-    for(int i = 0; i < players->photo_count; i++) {
+    for(int i = 0; i < (int)vector_size(&players->photos); i++) {
+        sd_pic_photo *photo = vector_get(&players->photos, i);
 
         // Check for png replacement
         str_from_format(&filename, "players/%i/pilot.png", i);
         mod_asset *obuf;
         if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&obuf, &len)) {
             assert(obuf->type == MOD_SPRITE);
-            sd_sprite_free(players->photos[i]->sprite);
-            sd_sprite_copy(players->photos[i]->sprite, &obuf->spr);
+            sd_sprite_free(photo->sprite);
+            sd_sprite_copy(photo->sprite, &obuf->spr);
             result |= true;
             log_info("loaded portrait %i", i);
         }
@@ -1775,7 +1776,7 @@ bool modmanager_get_player_pics(sd_pic_file *players) {
         // copy HAR color palette, if exists
         if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&obuf, &len)) {
             assert(obuf->type == MOD_SPRITE);
-            palette_copy(&players->photos[i]->pal, obuf->pal, 0, 48);
+            palette_copy(&photo->pal, obuf->pal, 0, 48);
         }
         str_free(&filename);
 
@@ -1788,7 +1789,7 @@ bool modmanager_get_player_pics(sd_pic_file *players) {
             mod_asset *obuf;
             foreach(it, obuf) {
                 assert(obuf->type == MOD_BUFFER);
-                result |= modmanager_parse_photo_mod((char *)obuf->buf, players->photos[i]);
+                result |= modmanager_parse_photo_mod((char *)obuf->buf, photo);
             }
         }
 

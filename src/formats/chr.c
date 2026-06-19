@@ -125,13 +125,13 @@ int sd_chr_load(sd_chr_file *chr, const path *filename) {
         }
         purchase_random_har_upgrades(&chr->enemies[i]->pilot);
         if(trn_loaded) {
-            memcpy(&chr->enemies[i]->pilot.palette, &pic.photos[trn.enemies[i]->photo_id]->pal, sizeof(vga_palette));
+            memcpy(&chr->enemies[i]->pilot.palette, &sd_pic_get(&pic, trn.enemies[i]->photo_id)->pal, sizeof(vga_palette));
             chr->enemies[i]->pilot.photo = omf_calloc(1, sizeof(sd_sprite));
             if(trn.enemies[i]->photo) {
                 log_info("using pilot photo %d from tournament", i);
                 sd_sprite_copy(chr->enemies[i]->pilot.photo, trn.enemies[i]->photo);
             } else {
-                sd_sprite_copy(chr->enemies[i]->pilot.photo, pic.photos[trn.enemies[i]->photo_id]->sprite);
+                sd_sprite_copy(chr->enemies[i]->pilot.photo, sd_pic_get(&pic, trn.enemies[i]->photo_id)->sprite);
             }
             //  copy all the "pilot" fields (eg. winnings) over from the tournament file
             chr->enemies[i]->pilot.trn_rank_money = trn.enemies[i]->trn_rank_money;
@@ -176,7 +176,7 @@ int sd_chr_load(sd_chr_file *chr, const path *filename) {
             chr->enemies[i]->pilot.winnings = trn.enemies[i]->winnings;
             chr->enemies[i]->pilot.total_value = trn.enemies[i]->total_value;
             chr->enemies[i]->pilot.photo_id = trn.enemies[i]->photo_id;
-            chr->enemies[i]->pilot.sex = pic.photos[trn.enemies[i]->photo_id]->sex;
+            chr->enemies[i]->pilot.sex = sd_pic_get(&pic, trn.enemies[i]->photo_id)->sex;
         }
         memread_buf(mr, chr->enemies[i]->unknown_a, 9);
         chr->enemies[i]->trn_index = memread_ubyte(mr);

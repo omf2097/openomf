@@ -117,7 +117,7 @@ int main(int argc, char *argv[]) {
         }
     } else {
         printf("ID       Sex  Player  Length    W    H    X    Y  Unk\n");
-        for(int i = 0; i < pic.photo_count; i++) {
+        for(int i = 0; i < (int)vector_size(&pic.photos); i++) {
             photo = sd_pic_get(&pic, i);
             printf("%3d %8s %7d %7d %4d %4d %4d %4d %4d\n", i, (photo->sex ? "FEMALE" : "MALE"), photo->is_player,
                    photo->sprite->len, photo->sprite->width, photo->sprite->height, photo->sprite->pos.x,
