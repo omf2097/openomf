@@ -1,3 +1,4 @@
+#include "common.h"
 #include "game/gui/text/text.h"
 #include "resources/fonts.h"
 #include "utils/str.h"
@@ -308,31 +309,13 @@ int text_markup_suite_free(void) {
 
 void text_markup_test_suite(CU_pSuite suite) {
     // Add tests
-    if(CU_add_test(suite, "Test for text_generate_basic_document", test_text_generate_basic_document) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for text_generate_multiline_document", test_text_generate_multiline_document) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Empty/Pure Markup", test_empty_and_pure_markup) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Numeric Edge Cases", test_numeric_edge_cases) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Tag Overlap", test_tag_overlap) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Special Chars", test_special_characters) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Broken Markup", test_broken_markup) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Color Formats", test_color_formats) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Font Switching", test_font_family_switching) == NULL) {
-        return;
-    }
+    ADD_TEST("Test for text_generate_basic_document", test_text_generate_basic_document);
+    ADD_TEST("Test for text_generate_multiline_document", test_text_generate_multiline_document);
+    ADD_TEST("Empty/Pure Markup", test_empty_and_pure_markup);
+    ADD_TEST("Numeric Edge Cases", test_numeric_edge_cases);
+    ADD_TEST("Tag Overlap", test_tag_overlap);
+    ADD_TEST("Special Chars", test_special_characters);
+    ADD_TEST("Broken Markup", test_broken_markup);
+    ADD_TEST("Color Formats", test_color_formats);
+    ADD_TEST("Font Switching", test_font_family_switching);
 }

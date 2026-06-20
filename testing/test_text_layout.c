@@ -1,3 +1,4 @@
+#include "common.h"
 #include "game/gui/text/text_layout.h"
 #include "resources/fonts.h"
 #include "utils/allocator.h"
@@ -107,10 +108,6 @@ void test_text_layout_compute(void) {
 
 void text_layout_test_suite(CU_pSuite suite) {
     // Add tests
-    if(CU_add_test(suite, "Test for find_next_line_end", test_find_next_line_end) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for text_layout_compute", test_text_layout_compute) == NULL) {
-        return;
-    }
+    ADD_TEST("Test for find_next_line_end", test_find_next_line_end);
+    ADD_TEST("Test for text_layout_compute", test_text_layout_compute);
 }

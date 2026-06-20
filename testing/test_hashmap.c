@@ -1,3 +1,4 @@
+#include "common.h"
 #include <CUnit/CUnit.h>
 #include <utils/hashmap.h>
 #include <utils/iterator.h>
@@ -208,31 +209,13 @@ void test_hashmap_stuff(void) {
 
 void hashmap_test_suite(CU_pSuite suite) {
     // Add tests
-    if(CU_add_test(suite, "Test for hashmap create", test_hashmap_create) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for hashmap delete operation", test_hashmap_delete) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for hashmap iterator ", test_hashmap_iterator) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for hashmap iterator delete operation", test_hashmap_iter_del) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for hashmap clear operation", test_hashmap_clear) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for hashmap auto resize", hashmap_test_autoresize) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for hashmap value update", test_hashmap_update_value) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for hashmap resize integrity", test_hashmap_resize_integrity) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for hashmap with lots of ops", test_hashmap_stuff) == NULL) {
-        return;
-    }
+    ADD_TEST("Test for hashmap create", test_hashmap_create);
+    ADD_TEST("Test for hashmap delete operation", test_hashmap_delete);
+    ADD_TEST("Test for hashmap iterator ", test_hashmap_iterator);
+    ADD_TEST("Test for hashmap iterator delete operation", test_hashmap_iter_del);
+    ADD_TEST("Test for hashmap clear operation", test_hashmap_clear);
+    ADD_TEST("Test for hashmap auto resize", hashmap_test_autoresize);
+    ADD_TEST("Test for hashmap value update", test_hashmap_update_value);
+    ADD_TEST("Test for hashmap resize integrity", test_hashmap_resize_integrity);
+    ADD_TEST("Test for hashmap with lots of ops", test_hashmap_stuff);
 }

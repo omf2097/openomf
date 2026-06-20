@@ -1,3 +1,4 @@
+#include "common.h"
 #include "formats/error.h"
 #include "formats/rec.h"
 #include <CUnit/Basic.h>
@@ -75,16 +76,8 @@ void test_crystal_shirro_load(void) {
 }
 
 void rec_test_suite(CU_pSuite suite) {
-    if(CU_add_test(suite, "test of sd_rec_create", test_sd_rec_create) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "test of REC roundtripping", test_rec_roundtrip) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "test of sd_rec_free", test_sd_rec_free) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "test loading crystal-shirro.rec", test_crystal_shirro_load) == NULL) {
-        return;
-    }
+    ADD_TEST("test of sd_rec_create", test_sd_rec_create);
+    ADD_TEST("test of REC roundtripping", test_rec_roundtrip);
+    ADD_TEST("test of sd_rec_free", test_sd_rec_free);
+    ADD_TEST("test loading crystal-shirro.rec", test_crystal_shirro_load);
 }

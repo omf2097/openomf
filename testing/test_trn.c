@@ -1,3 +1,4 @@
+#include "common.h"
 #include "formats/error.h"
 #include "formats/tournament.h"
 #include "utils/allocator.h"
@@ -62,13 +63,7 @@ void test_sd_trn_free(void) {
 }
 
 void trn_test_suite(CU_pSuite suite) {
-    if(CU_add_test(suite, "test of sd_trn_create", test_sd_trn_create) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "test roundtripping", test_sd_trn_roundtripping) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "test of sd_trn_free", test_sd_trn_free) == NULL) {
-        return;
-    }
+    ADD_TEST("test of sd_trn_create", test_sd_trn_create);
+    ADD_TEST("test roundtripping", test_sd_trn_roundtripping);
+    ADD_TEST("test of sd_trn_free", test_sd_trn_free);
 }

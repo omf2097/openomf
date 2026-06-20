@@ -1,3 +1,4 @@
+#include "common.h"
 #include "utils/ringbuffer.h"
 #include <CUnit/CUnit.h>
 #include <string.h>
@@ -154,34 +155,14 @@ void test_rb_peek_empty(void) {
 }
 
 void ringbuffer_test_suite(CU_pSuite suite) {
-    if(CU_add_test(suite, "Test ringbuffer create", test_rb_create) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test ringbuffer write and read", test_rb_write_read_simple) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test ringbuffer partial write", test_rb_write_partial) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test ringbuffer write when full", test_rb_write_when_full) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test ringbuffer peek", test_rb_peek) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test ringbuffer skip", test_rb_skip) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test ringbuffer wraparound", test_rb_wraparound) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test ringbuffer read empty", test_rb_read_empty) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test ringbuffer skip empty", test_rb_skip_empty) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test ringbuffer peek empty", test_rb_peek_empty) == NULL) {
-        return;
-    }
+    ADD_TEST("Test ringbuffer create", test_rb_create);
+    ADD_TEST("Test ringbuffer write and read", test_rb_write_read_simple);
+    ADD_TEST("Test ringbuffer partial write", test_rb_write_partial);
+    ADD_TEST("Test ringbuffer write when full", test_rb_write_when_full);
+    ADD_TEST("Test ringbuffer peek", test_rb_peek);
+    ADD_TEST("Test ringbuffer skip", test_rb_skip);
+    ADD_TEST("Test ringbuffer wraparound", test_rb_wraparound);
+    ADD_TEST("Test ringbuffer read empty", test_rb_read_empty);
+    ADD_TEST("Test ringbuffer skip empty", test_rb_skip_empty);
+    ADD_TEST("Test ringbuffer peek empty", test_rb_peek_empty);
 }

@@ -1,3 +1,4 @@
+#include "common.h"
 #include "utils/allocator.h"
 #include <CUnit/CUnit.h>
 #include <utils/array.h>
@@ -218,46 +219,18 @@ void test_array_delete_at(void) {
 }
 
 void array_test_suite(CU_pSuite suite) {
-    if(CU_add_test(suite, "Test for array create", test_array_create) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for array set", test_array_set) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for array get", test_array_get) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for array iter_next", test_array_iter_next) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for array iter_prev", test_array_iter_prev) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for array sparse", test_array_sparse) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for array growth", test_array_growth) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for array get out of bounds", test_array_get_out_of_bounds) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for array iter empty", test_array_iter_empty) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for array iter skip nulls", test_array_iter_skip_nulls) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for array iter reverse skip nulls", test_array_iter_reverse_skip_nulls) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for array overwrite", test_array_overwrite) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for array dense", test_array_dense) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for array delete at", test_array_delete_at) == NULL) {
-        return;
-    }
+    ADD_TEST("Test for array create", test_array_create);
+    ADD_TEST("Test for array set", test_array_set);
+    ADD_TEST("Test for array get", test_array_get);
+    ADD_TEST("Test for array iter_next", test_array_iter_next);
+    ADD_TEST("Test for array iter_prev", test_array_iter_prev);
+    ADD_TEST("Test for array sparse", test_array_sparse);
+    ADD_TEST("Test for array growth", test_array_growth);
+    ADD_TEST("Test for array get out of bounds", test_array_get_out_of_bounds);
+    ADD_TEST("Test for array iter empty", test_array_iter_empty);
+    ADD_TEST("Test for array iter skip nulls", test_array_iter_skip_nulls);
+    ADD_TEST("Test for array iter reverse skip nulls", test_array_iter_reverse_skip_nulls);
+    ADD_TEST("Test for array overwrite", test_array_overwrite);
+    ADD_TEST("Test for array dense", test_array_dense);
+    ADD_TEST("Test for array delete at", test_array_delete_at);
 }

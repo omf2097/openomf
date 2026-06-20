@@ -1,3 +1,4 @@
+#include "common.h"
 #include "formats/bk.h"
 #include "formats/error.h"
 #include <CUnit/Basic.h>
@@ -47,13 +48,7 @@ void test_bk_roundtrip(void) {
 }
 
 void bk_test_suite(CU_pSuite suite) {
-    if(CU_add_test(suite, "test of sd_bk_create", test_sd_bk_create) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "test of BK empty roundtripping", test_bk_roundtrip) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "test of sd_bk_free", test_sd_bk_free) == NULL) {
-        return;
-    }
+    ADD_TEST("test of sd_bk_create", test_sd_bk_create);
+    ADD_TEST("test of BK empty roundtripping", test_bk_roundtrip);
+    ADD_TEST("test of sd_bk_free", test_sd_bk_free);
 }

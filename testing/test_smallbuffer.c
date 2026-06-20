@@ -1,3 +1,4 @@
+#include "common.h"
 #include "utils/smallbuffer.h"
 #include <CUnit/Basic.h>
 #include <CUnit/CUnit.h>
@@ -54,10 +55,6 @@ void test_largebuffer(void) {
 
 void smallbuffer_test_suite(CU_pSuite suite) {
     // Add tests
-    if(CU_add_test(suite, "Test for smallbuffer", test_smallbuffer) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for smallbuffer with extra inline capacity", test_largebuffer) == NULL) {
-        return;
-    }
+    ADD_TEST("Test for smallbuffer", test_smallbuffer);
+    ADD_TEST("Test for smallbuffer with extra inline capacity", test_largebuffer);
 }

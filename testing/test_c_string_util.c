@@ -1,3 +1,4 @@
+#include "common.h"
 #include "utils/allocator.h"
 #include "utils/c_string_util.h"
 #include <CUnit/CUnit.h>
@@ -93,37 +94,15 @@ void test_omf_strnlen_s(void) {
 }
 
 void c_string_util_test_suite(CU_pSuite suite) {
-    if(CU_add_test(suite, "Test strncpy_or_truncate normal", test_strncpy_or_truncate_normal) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test strncpy_or_truncate exact fit", test_strncpy_or_truncate_exact_fit) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test strncpy_or_truncate truncation", test_strncpy_or_truncate_truncation) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test strncpy_or_truncate empty", test_strncpy_or_truncate_empty) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test strncpy_or_truncate size one", test_strncpy_or_truncate_size_one) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test omf_strdup", test_omf_strdup) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test omf_strcasecmp equal", test_omf_strcasecmp_equal) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test omf_strcasecmp not equal", test_omf_strcasecmp_not_equal) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test omf_strncasecmp equal", test_omf_strncasecmp_equal) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test omf_strncasecmp not equal", test_omf_strncasecmp_not_equal) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test omf_strnlen_s", test_omf_strnlen_s) == NULL) {
-        return;
-    }
+    ADD_TEST("Test strncpy_or_truncate normal", test_strncpy_or_truncate_normal);
+    ADD_TEST("Test strncpy_or_truncate exact fit", test_strncpy_or_truncate_exact_fit);
+    ADD_TEST("Test strncpy_or_truncate truncation", test_strncpy_or_truncate_truncation);
+    ADD_TEST("Test strncpy_or_truncate empty", test_strncpy_or_truncate_empty);
+    ADD_TEST("Test strncpy_or_truncate size one", test_strncpy_or_truncate_size_one);
+    ADD_TEST("Test omf_strdup", test_omf_strdup);
+    ADD_TEST("Test omf_strcasecmp equal", test_omf_strcasecmp_equal);
+    ADD_TEST("Test omf_strcasecmp not equal", test_omf_strcasecmp_not_equal);
+    ADD_TEST("Test omf_strncasecmp equal", test_omf_strncasecmp_equal);
+    ADD_TEST("Test omf_strncasecmp not equal", test_omf_strncasecmp_not_equal);
+    ADD_TEST("Test omf_strnlen_s", test_omf_strnlen_s);
 }
