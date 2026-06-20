@@ -1,8 +1,6 @@
 #include "common.h"
 #include "formats/error.h"
 #include "formats/rec.h"
-#include <CUnit/Basic.h>
-#include <CUnit/CUnit.h>
 #include <stdio.h>
 #include <stdlib.h>
 

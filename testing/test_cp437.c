@@ -1,7 +1,5 @@
 #include "common.h"
 #include "utils/cp437.h"
-#include <CUnit/Basic.h>
-#include <CUnit/CUnit.h>
 #include <assert.h>
 #include <stdint.h>
 #include <stdlib.h>

@@ -1,7 +1,5 @@
 #include "common.h"
 #include "utils/smallbuffer.h"
-#include <CUnit/Basic.h>
-#include <CUnit/CUnit.h>
 #include <stdbool.h>
 
 static char const random_data[400] =

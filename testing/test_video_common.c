@@ -1,6 +1,5 @@
 #include "common.h"
 #include "video/renderers/common.h"
-#include <CUnit/CUnit.h>
 
 #define ASSERT_RECT(a, b)                                                                                              \
     CU_ASSERT(a.w == b.w);                                                                                             \

@@ -1,6 +1,4 @@
 #include "common.h"
-#include <CUnit/Basic.h>
-#include <CUnit/CUnit.h>
 #include <assert.h>
 #include <utils/str.h>
 

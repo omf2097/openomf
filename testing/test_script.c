@@ -2,7 +2,6 @@
 #include "formats/error.h"
 #include "formats/script.h"
 #include "misc/parser_test_strings.h"
-#include <CUnit/CUnit.h>
 
 sd_script script;
 

@@ -4,7 +4,6 @@
 #include "utils/allocator.h"
 #include "utils/str.h"
 #include "video/surface.h"
-#include <CUnit/CUnit.h>
 
 void create_fake_font(font *font) {
     font_create(font);

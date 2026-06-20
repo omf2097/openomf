@@ -1,8 +1,6 @@
 #include "common.h"
 #include "formats/af.h"
 #include "formats/error.h"
-#include <CUnit/Basic.h>
-#include <CUnit/CUnit.h>
 
 sd_af_file af;
 

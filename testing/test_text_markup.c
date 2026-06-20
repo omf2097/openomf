@@ -3,7 +3,6 @@
 #include "resources/fonts.h"
 #include "utils/str.h"
 #include "video/surface.h"
-#include <CUnit/CUnit.h>
 
 #define TEXT_SHADOW_GREEN 0xA2
 

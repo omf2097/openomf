@@ -1,6 +1,5 @@
 #include "common.h"
 #include "utils/allocator.h"
-#include <CUnit/CUnit.h>
 #include <utils/array.h>
 #include <utils/iterator.h>
 

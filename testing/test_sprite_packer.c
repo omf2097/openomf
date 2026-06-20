@@ -1,6 +1,4 @@
 #include "common.h"
-#include <CUnit/Basic.h>
-#include <CUnit/CUnit.h>
 #include <utils/sprite_packer.h>
 
 void test_sprite_packer_create(void) {

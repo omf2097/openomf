@@ -2,8 +2,6 @@
 #include "formats/error.h"
 #include "formats/tournament.h"
 #include "utils/allocator.h"
-#include <CUnit/Basic.h>
-#include <CUnit/CUnit.h>
 #include <stdio.h>
 #include <stdlib.h>
 

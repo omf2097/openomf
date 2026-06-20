@@ -1,8 +1,6 @@
 #include "common.h"
 #include "formats/error.h"
 #include "formats/palette.h"
-#include <CUnit/Basic.h>
-#include <CUnit/CUnit.h>
 #include <stdio.h>
 
 #define TESTFILE "test.gpl"

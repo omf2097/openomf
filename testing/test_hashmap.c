@@ -1,5 +1,4 @@
 #include "common.h"
-#include <CUnit/CUnit.h>
 #include <utils/hashmap.h>
 #include <utils/iterator.h>
 

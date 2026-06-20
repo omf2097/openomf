@@ -1,7 +1,6 @@
 #include "common.h"
 #include "utils/allocator.h"
 #include "utils/c_string_util.h"
-#include <CUnit/CUnit.h>
 #include <string.h>
 
 void test_strncpy_or_truncate_normal(void) {

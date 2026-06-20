@@ -1,6 +1,5 @@
 #include "common.h"
 #include "utils/ringbuffer.h"
-#include <CUnit/CUnit.h>
 #include <string.h>
 
 void test_rb_create(void) {
