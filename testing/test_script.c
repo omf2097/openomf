@@ -1,7 +1,7 @@
+#include "common.h"
 #include "formats/error.h"
 #include "formats/script.h"
 #include "misc/parser_test_strings.h"
-#include <CUnit/CUnit.h>
 
 sd_script script;
 
@@ -363,100 +363,36 @@ void test_frame_to_letter(void) {
 }
 
 void script_test_suite(CU_pSuite suite) {
-    if(CU_add_test(suite, "test of sd_script_create", test_script_create) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "test of sd_script_decode", test_script_decode) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "test of sd_script_get_total_ticks", test_total_ticks) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "test of sd_script_get_tick_pos_at_frame", test_tick_pos_at_frame) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "test of sd_script_get_tick_len_at_frame", test_tick_len_at_frame) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "test of sd_script_encode", test_script_encode) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "test of sd_script_get_frame", test_script_get_frame) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "test of sd_script_get_frame_at", test_script_get_frame_at) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "test of sd_script_get_tag", test_script_get_tag) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "test of sd_script_frame_changed", test_script_frame_changed) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "test of sd_script_get_frame_index", test_script_get_frame_index) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "test of sd_script_get_frame_index_at", test_script_get_frame_index_at) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "test of sd_script_is_last_frame", test_is_last_frame) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "test of sd_script_is_last_frame_at", test_is_last_frame_at) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "test of sd_script_is_first_frame", test_is_first_frame) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "test of sd_script_is_first_frame_at", test_is_first_frame_at) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "test of sd_script_isset", test_script_isset) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "test of sd_script_get", test_script_get) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "test of sd_script_next_frame_with_sprite", test_next_frame_with_sprite) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "test of sd_script_next_frame_with_tag", test_next_frame_with_tag) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "test of sd_script_set_tag", test_set_tag) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "test of sd_script_delete_tag", test_delete_tag) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "test of sd_script_append_frame", test_append_frame) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "test of sd_script_clear_tags", test_clear_tags) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "test of sd_script_set_tick_len_at_frame", test_set_tick_len_at_frame) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "test of sd_script_set_sprite_at_frame", test_set_sprite_at_frame) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "test of sd_script_letter_to_frame", test_letter_to_frame) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "test of sd_script_frame_to_letter", test_frame_to_letter) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "test of sd_script_encode_frame", test_script_encode_frame) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "testing odd tags", test_script_tag_vars) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "test of sd_script_free", test_script_free) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "test of all OMF strings", test_script_all) == NULL) {
-        return;
-    }
+    ADD_TEST("test of sd_script_create", test_script_create);
+    ADD_TEST("test of sd_script_decode", test_script_decode);
+    ADD_TEST("test of sd_script_get_total_ticks", test_total_ticks);
+    ADD_TEST("test of sd_script_get_tick_pos_at_frame", test_tick_pos_at_frame);
+    ADD_TEST("test of sd_script_get_tick_len_at_frame", test_tick_len_at_frame);
+    ADD_TEST("test of sd_script_encode", test_script_encode);
+    ADD_TEST("test of sd_script_get_frame", test_script_get_frame);
+    ADD_TEST("test of sd_script_get_frame_at", test_script_get_frame_at);
+    ADD_TEST("test of sd_script_get_tag", test_script_get_tag);
+    ADD_TEST("test of sd_script_frame_changed", test_script_frame_changed);
+    ADD_TEST("test of sd_script_get_frame_index", test_script_get_frame_index);
+    ADD_TEST("test of sd_script_get_frame_index_at", test_script_get_frame_index_at);
+    ADD_TEST("test of sd_script_is_last_frame", test_is_last_frame);
+    ADD_TEST("test of sd_script_is_last_frame_at", test_is_last_frame_at);
+    ADD_TEST("test of sd_script_is_first_frame", test_is_first_frame);
+    ADD_TEST("test of sd_script_is_first_frame_at", test_is_first_frame_at);
+    ADD_TEST("test of sd_script_isset", test_script_isset);
+    ADD_TEST("test of sd_script_get", test_script_get);
+    ADD_TEST("test of sd_script_next_frame_with_sprite", test_next_frame_with_sprite);
+    ADD_TEST("test of sd_script_next_frame_with_tag", test_next_frame_with_tag);
+    ADD_TEST("test of sd_script_set_tag", test_set_tag);
+    ADD_TEST("test of sd_script_delete_tag", test_delete_tag);
+    ADD_TEST("test of sd_script_append_frame", test_append_frame);
+    ADD_TEST("test of sd_script_clear_tags", test_clear_tags);
+    ADD_TEST("test of sd_script_set_tick_len_at_frame", test_set_tick_len_at_frame);
+    ADD_TEST("test of sd_script_set_sprite_at_frame", test_set_sprite_at_frame);
+    ADD_TEST("test of sd_script_letter_to_frame", test_letter_to_frame);
+    ADD_TEST("test of sd_script_frame_to_letter", test_frame_to_letter);
+    ADD_TEST("test of sd_script_encode_frame", test_script_encode_frame);
+    ADD_TEST("testing odd tags", test_script_tag_vars);
+    ADD_TEST("test of sd_script_free", test_script_free);
+    ADD_TEST("test of all OMF strings", test_script_all);
 }

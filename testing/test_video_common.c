@@ -1,5 +1,5 @@
+#include "common.h"
 #include "video/renderers/common.h"
-#include <CUnit/CUnit.h>
 
 #define ASSERT_RECT(a, b)                                                                                              \
     CU_ASSERT(a.w == b.w);                                                                                             \
@@ -30,7 +30,5 @@ void test_find_resolution_for_aspect_ratio(void) {
 }
 
 void video_common_test_suite(CU_pSuite suite) {
-    if(CU_add_test(suite, "Test for find_resolution_for_aspect_ratio", test_find_resolution_for_aspect_ratio) == NULL) {
-        return;
-    }
+    ADD_TEST("Test for find_resolution_for_aspect_ratio", test_find_resolution_for_aspect_ratio);
 }

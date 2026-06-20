@@ -1,5 +1,4 @@
-#include <CUnit/Basic.h>
-#include <CUnit/CUnit.h>
+#include "common.h"
 #include <utils/iterator.h>
 #include <utils/vector.h>
 
@@ -460,76 +459,28 @@ void test_vector_zero_size(void) {
 
 void vector_test_suite(CU_pSuite suite) {
     // Add tests
-    if(CU_add_test(suite, "Test for vector create", test_vector_create) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for vector append", test_vector_append) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for vector get", test_vector_get) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for vector iter_next", test_vector_iter_next) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for vector iter_prev", test_vector_iter_prev) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for vector delete", test_vector_delete) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for vector swap_delete_at", test_vector_swap_delete_at) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for zero size vector operation", test_vector_zero_size) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for vector pop", test_vector_pop) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for vector back", test_vector_back) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for vector back on empty", test_vector_back_empty) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for vector clone", test_vector_clone) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for vector clone empty", test_vector_clone_empty) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for vector clear", test_vector_clear) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for vector set", test_vector_set) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for vector insert_at", test_vector_insert_at) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for vector delete_at", test_vector_delete_at) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for vector swapdelete_at last element", test_vector_swapdelete_at_last) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for vector sort", test_vector_sort) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for vector append_ptr", test_vector_append_ptr) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for vector free callback", test_vector_free_callback) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for vector pop on empty", test_vector_pop_empty) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for vector delete on empty", test_vector_delete_empty) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for vector delete reverse iteration", test_vector_delete_reverse) == NULL) {
-        return;
-    }
+    ADD_TEST("Test for vector create", test_vector_create);
+    ADD_TEST("Test for vector append", test_vector_append);
+    ADD_TEST("Test for vector get", test_vector_get);
+    ADD_TEST("Test for vector iter_next", test_vector_iter_next);
+    ADD_TEST("Test for vector iter_prev", test_vector_iter_prev);
+    ADD_TEST("Test for vector delete", test_vector_delete);
+    ADD_TEST("Test for vector swap_delete_at", test_vector_swap_delete_at);
+    ADD_TEST("Test for zero size vector operation", test_vector_zero_size);
+    ADD_TEST("Test for vector pop", test_vector_pop);
+    ADD_TEST("Test for vector back", test_vector_back);
+    ADD_TEST("Test for vector back on empty", test_vector_back_empty);
+    ADD_TEST("Test for vector clone", test_vector_clone);
+    ADD_TEST("Test for vector clone empty", test_vector_clone_empty);
+    ADD_TEST("Test for vector clear", test_vector_clear);
+    ADD_TEST("Test for vector set", test_vector_set);
+    ADD_TEST("Test for vector insert_at", test_vector_insert_at);
+    ADD_TEST("Test for vector delete_at", test_vector_delete_at);
+    ADD_TEST("Test for vector swapdelete_at last element", test_vector_swapdelete_at_last);
+    ADD_TEST("Test for vector sort", test_vector_sort);
+    ADD_TEST("Test for vector append_ptr", test_vector_append_ptr);
+    ADD_TEST("Test for vector free callback", test_vector_free_callback);
+    ADD_TEST("Test for vector pop on empty", test_vector_pop_empty);
+    ADD_TEST("Test for vector delete on empty", test_vector_delete_empty);
+    ADD_TEST("Test for vector delete reverse iteration", test_vector_delete_reverse);
 }

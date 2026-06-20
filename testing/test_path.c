@@ -1,7 +1,5 @@
 #include "common.h"
 #include "utils/path.h"
-#include <CUnit/Basic.h>
-#include <CUnit/CUnit.h>
 #include <stdlib.h>
 
 void test_path_from_c(void) {

@@ -1,5 +1,4 @@
-#include <CUnit/Basic.h>
-#include <CUnit/CUnit.h>
+#include "common.h"
 #include <assert.h>
 #include <utils/str.h>
 
@@ -1014,231 +1013,82 @@ void test_str_append_format_long(void) {
 }
 
 void str_test_suite(CU_pSuite suite) {
-    if(CU_add_test(suite, "Test for str_create", test_str_create) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_free", test_str_free) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_from", test_str_from) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_from small string threshold, short", test_str_from_threshold_short) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_from small string threshold, long", test_str_from_threshold_long) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for long str_from", test_str_from_long) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_from_c", test_str_from_c) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for long str_from_c", test_str_from_c_long) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_from_buf", test_str_from_buf) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for long str_from_buf", test_str_from_buf_long) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_from_slice", test_str_from_slice) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for long str_from_slice", test_str_from_slice_long) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_from_format", test_str_from_format) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for long str_from_format", test_str_from_format_long) == NULL) {
-        return;
-    }
+    ADD_TEST("Test for str_create", test_str_create);
+    ADD_TEST("Test for str_free", test_str_free);
+    ADD_TEST("Test for str_from", test_str_from);
+    ADD_TEST("Test for str_from small string threshold, short", test_str_from_threshold_short);
+    ADD_TEST("Test for str_from small string threshold, long", test_str_from_threshold_long);
+    ADD_TEST("Test for long str_from", test_str_from_long);
+    ADD_TEST("Test for str_from_c", test_str_from_c);
+    ADD_TEST("Test for long str_from_c", test_str_from_c_long);
+    ADD_TEST("Test for str_from_buf", test_str_from_buf);
+    ADD_TEST("Test for long str_from_buf", test_str_from_buf_long);
+    ADD_TEST("Test for str_from_slice", test_str_from_slice);
+    ADD_TEST("Test for long str_from_slice", test_str_from_slice_long);
+    ADD_TEST("Test for str_from_format", test_str_from_format);
+    ADD_TEST("Test for long str_from_format", test_str_from_format_long);
 
-    if(CU_add_test(suite, "Test for str_toupper", test_str_toupper) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_tolower", test_str_tolower) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_rstrip", test_str_rstrip) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_lstrip", test_str_lstrip) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_strip", test_str_strip) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_rstrip (empty)", test_str_rstrip_empty) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_lstrip (empty)", test_str_lstrip_empty) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_strip (empty)", test_str_strip_empty) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_rstrip (all whitespace)", test_str_rstrip_all_whitespace) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_lstrip (all whitespace)", test_str_lstrip_all_whitespace) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_strip (all whitespace)", test_str_strip_all_whitespace) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_rstrip (no whitespace)", test_str_rstrip_no_whitespace) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_lstrip (no whitespace)", test_str_lstrip_no_whitespace) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_append", test_str_append) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_append_c", test_str_append_c) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_append_buf", test_str_append_buf) == NULL) {
-        return;
-    }
+    ADD_TEST("Test for str_toupper", test_str_toupper);
+    ADD_TEST("Test for str_tolower", test_str_tolower);
+    ADD_TEST("Test for str_rstrip", test_str_rstrip);
+    ADD_TEST("Test for str_lstrip", test_str_lstrip);
+    ADD_TEST("Test for str_strip", test_str_strip);
+    ADD_TEST("Test for str_rstrip (empty)", test_str_rstrip_empty);
+    ADD_TEST("Test for str_lstrip (empty)", test_str_lstrip_empty);
+    ADD_TEST("Test for str_strip (empty)", test_str_strip_empty);
+    ADD_TEST("Test for str_rstrip (all whitespace)", test_str_rstrip_all_whitespace);
+    ADD_TEST("Test for str_lstrip (all whitespace)", test_str_lstrip_all_whitespace);
+    ADD_TEST("Test for str_strip (all whitespace)", test_str_strip_all_whitespace);
+    ADD_TEST("Test for str_rstrip (no whitespace)", test_str_rstrip_no_whitespace);
+    ADD_TEST("Test for str_lstrip (no whitespace)", test_str_lstrip_no_whitespace);
+    ADD_TEST("Test for str_append", test_str_append);
+    ADD_TEST("Test for str_append_c", test_str_append_c);
+    ADD_TEST("Test for str_append_buf", test_str_append_buf);
 
-    if(CU_add_test(suite, "Test for str_replace (longer replacement)", test_str_replace_lg) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_replace (equal replacement)", test_str_replace_eq) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_replace (shorter replacement)", test_str_replace_sm) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_replace (shorter replacement regression test)",
-                   test_str_replace_sm_regression) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_replace (multiple hits)", test_str_replace_multi) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_replace (multiple hits, replacement contains seek)",
-                   test_str_replace_multi_regression) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_replace (multiple consecutive hits w/empty)",
-                   test_str_replace_multi_consecutive) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_replace (multiple hits w/limit)", test_str_replace_multi_limit) == NULL) {
-        return;
-    }
+    ADD_TEST("Test for str_replace (longer replacement)", test_str_replace_lg);
+    ADD_TEST("Test for str_replace (equal replacement)", test_str_replace_eq);
+    ADD_TEST("Test for str_replace (shorter replacement)", test_str_replace_sm);
+    ADD_TEST("Test for str_replace (shorter replacement regression test)", test_str_replace_sm_regression);
+    ADD_TEST("Test for str_replace (multiple hits)", test_str_replace_multi);
+    ADD_TEST("Test for str_replace (multiple hits, replacement contains seek)", test_str_replace_multi_regression);
+    ADD_TEST("Test for str_replace (multiple consecutive hits w/empty)", test_str_replace_multi_consecutive);
+    ADD_TEST("Test for str_replace (multiple hits w/limit)", test_str_replace_multi_limit);
 
-    if(CU_add_test(suite, "Test for str_first_of", test_str_first_of) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_last_of (near)", test_str_last_of_near) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_last_of (far)", test_str_last_of_far) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_equal", test_str_equal) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_equal_c", test_str_equal_c) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_equal_buf", test_str_equal_buf) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for small str_delete_at", test_str_delete_at_small) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for big str_delete_at", test_str_delete_at_big) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_set_at", test_str_set_at) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_set_c", test_str_set_c) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_set", test_str_set) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_cut_left", test_str_cut_left) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_cut", test_str_cut) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_truncate", test_str_truncate) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_insert_at", test_str_insert_at) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_insert_c_at", test_str_insert_c_at) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_split", test_str_split) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_split splitter char only", test_str_split_only_splitter) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_split splitter starts", test_str_split_splitter_starts) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_split splitter ends", test_str_split_splitter_ends) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_split multiple splits", test_str_split_multiple_splits) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_split no splits", test_str_split_no_splits) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_split_c", test_str_split_c) == NULL) {
-        return;
-    }
+    ADD_TEST("Test for str_first_of", test_str_first_of);
+    ADD_TEST("Test for str_last_of (near)", test_str_last_of_near);
+    ADD_TEST("Test for str_last_of (far)", test_str_last_of_far);
+    ADD_TEST("Test for str_equal", test_str_equal);
+    ADD_TEST("Test for str_equal_c", test_str_equal_c);
+    ADD_TEST("Test for str_equal_buf", test_str_equal_buf);
+    ADD_TEST("Test for small str_delete_at", test_str_delete_at_small);
+    ADD_TEST("Test for big str_delete_at", test_str_delete_at_big);
+    ADD_TEST("Test for str_set_at", test_str_set_at);
+    ADD_TEST("Test for str_set_c", test_str_set_c);
+    ADD_TEST("Test for str_set", test_str_set);
+    ADD_TEST("Test for str_cut_left", test_str_cut_left);
+    ADD_TEST("Test for str_cut", test_str_cut);
+    ADD_TEST("Test for str_truncate", test_str_truncate);
+    ADD_TEST("Test for str_insert_at", test_str_insert_at);
+    ADD_TEST("Test for str_insert_c_at", test_str_insert_c_at);
+    ADD_TEST("Test for str_split", test_str_split);
+    ADD_TEST("Test for str_split splitter char only", test_str_split_only_splitter);
+    ADD_TEST("Test for str_split splitter starts", test_str_split_splitter_starts);
+    ADD_TEST("Test for str_split splitter ends", test_str_split_splitter_ends);
+    ADD_TEST("Test for str_split multiple splits", test_str_split_multiple_splits);
+    ADD_TEST("Test for str_split no splits", test_str_split_no_splits);
+    ADD_TEST("Test for str_split_c", test_str_split_c);
 
-    if(CU_add_test(suite, "Test for str_starts_with", test_str_starts_with) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_ends_with", test_str_ends_with) == NULL) {
-        return;
-    }
+    ADD_TEST("Test for str_starts_with", test_str_starts_with);
+    ADD_TEST("Test for str_ends_with", test_str_ends_with);
 
-    if(CU_add_test(suite, "Test for str_match", test_str_match) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_imatch", test_str_imatch) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_at", test_str_at) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_at (empty)", test_str_at_empty) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_find_next", test_str_find_next) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_to_int", test_str_to_int) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_to_long", test_str_to_long) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_to_float", test_str_to_float) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_append_format", test_str_append_format) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for str_append_format (long)", test_str_append_format_long) == NULL) {
-        return;
-    }
+    ADD_TEST("Test for str_match", test_str_match);
+    ADD_TEST("Test for str_imatch", test_str_imatch);
+    ADD_TEST("Test for str_at", test_str_at);
+    ADD_TEST("Test for str_at (empty)", test_str_at_empty);
+    ADD_TEST("Test for str_find_next", test_str_find_next);
+    ADD_TEST("Test for str_to_int", test_str_to_int);
+    ADD_TEST("Test for str_to_long", test_str_to_long);
+    ADD_TEST("Test for str_to_float", test_str_to_float);
+    ADD_TEST("Test for str_append_format", test_str_append_format);
+    ADD_TEST("Test for str_append_format (long)", test_str_append_format_long);
 }
