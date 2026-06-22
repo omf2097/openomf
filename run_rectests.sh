@@ -77,6 +77,7 @@ tests=(
     "Katana enters winpose after landing from heel stomp:KATANA_WINPOSE.REC"
     "Round one starts on tick 92:ROUNDONE.REC"
     "Chronos can attack opponent when in stasis in the air and rehit mode is disabled:CHRONOS_AIR_STASIS.REC"
+    "Chronos cannot combo from throw when rehit mode is disabled:CHRONOS_THROW_COMBO_FAIL.REC"
 )
 
 # Setup temp directory for outputs

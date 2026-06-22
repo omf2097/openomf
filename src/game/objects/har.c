@@ -658,7 +658,9 @@ void har_move(object *obj) {
         controller *ctrl = game_player_get_ctrl(game_state_get_player(obj->gs, h->player_id));
 
         obj->pos.y = ARENA_FLOOR;
-        clear_rehits(h);
+        if(obj->vel.y > 0) {
+            clear_rehits(h);
+        }
 
         if(player_frame_isset(obj, "cl")) {
             af_move *move = af_get_move(h->af_data, obj->cur_animation->id);
@@ -1428,8 +1430,11 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
             har_spawn_scrap(obj_b, hit_coord, move->block_stun);
         }
 
+        if(air_hit) {
+            disable_rehit(b, move);
+        }
+
         b->rehit_combo = air_hit;
-        disable_rehit(b, move);
 
         if(move->next_move) {
             log_debug("HAR %s going to next move %d", har_get_name(a->id), move->next_move);
@@ -1878,6 +1883,8 @@ void har_tick(object *obj) {
         if(h->throw_duration == 0) {
             // we've already called har_take_damage, so just apply the damage and check for defeat
             h->health -= h->last_damage_value;
+            // cannot combo from throw unless rehit mode is enabled
+            h->rehit_combo = true;
             if(h->endurance < 0) {
                 h->endurance = 0;
             } else {
