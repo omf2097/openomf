@@ -12,7 +12,7 @@
  * \param b Object 2 to check
  * \return 1 if collision detected, 0 if not.
  */
-int intersect_object_object(object *a, object *b) {
+int intersect_object_object(const object *a, const object *b) {
     if(a->cur_sprite_id < 0 || b->cur_sprite_id < 0) {
         return 0;
     }
@@ -33,7 +33,7 @@ int intersect_object_object(object *a, object *b) {
  * \param point Point to intersect
  * \return 1 if collision detected, 0 if not.
  */
-int intersect_object_point(object *obj, vec2i point) {
+int intersect_object_point(const object *obj, vec2i point) {
     if(obj->cur_sprite_id < 0) {
         return 0;
     }
@@ -63,7 +63,7 @@ int intersect_object_point(object *obj, vec2i point) {
  * \param point Approximate point of collision
  * \return 1 if collision detected, 0 if not.
  */
-int intersect(object *obj, object *target, int level, vec2i *point, bool is_har) {
+int intersect(const object *obj, const object *target, int level, vec2i *point, bool is_har) {
     // Make sure both objects have sprites going
     if(obj->cur_sprite_id < 0 || target->cur_sprite_id < 0) {
         return 0;
@@ -159,10 +159,10 @@ int intersect(object *obj, object *target, int level, vec2i *point, bool is_har)
     return 0;
 }
 
-int intersect_sprite_hitpoint(object *obj, object *target, int level, vec2i *point) {
+int intersect_sprite_hitpoint(const object *obj, const object *target, int level, vec2i *point) {
     return intersect(obj, target, level, point, false);
 }
 
-int intersect_har_sprite_hitpoint(object *obj, object *target, int level, vec2i *point) {
+int intersect_har_sprite_hitpoint(const object *obj, const object *target, int level, vec2i *point) {
     return intersect(obj, target, level, point, true);
 }
