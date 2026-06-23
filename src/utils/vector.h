@@ -80,6 +80,12 @@ void vector_create_with_size_cb(vector *vector, unsigned int block_size, unsigne
 void vector_reserve(vector *vec, unsigned int reserved);
 
 /**
+ * @brief Shrink the reserved capacity to the number of elements currently stored.
+ * @param vec Vector to compact
+ */
+void vector_compact(vector *vec);
+
+/**
  * @brief Create a deep copy of a vector.
  * @details Copies all elements to a new vector. The free callback is also copied.
  * @param dst Destination vector (will be initialized)

@@ -45,6 +45,18 @@ void vector_reserve(vector *vec, unsigned int reserved) {
     vec->reserved = reserved;
 }
 
+void vector_compact(vector *vec) {
+    if(vec->reserved == vec->blocks) {
+        return;
+    }
+    if(vec->blocks == 0) {
+        omf_free(vec->data);
+    } else {
+        vec->data = omf_realloc(vec->data, vec->blocks * vec->block_size);
+    }
+    vec->reserved = vec->blocks;
+}
+
 void vector_clone(vector *dst, const vector *src) {
     dst->block_size = src->block_size;
     dst->blocks = src->blocks;
