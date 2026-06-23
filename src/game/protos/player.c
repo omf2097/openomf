@@ -88,47 +88,6 @@ int player_frame_get(const object *obj, const char *tag) {
     return sd_script_get(frame, tag);
 }
 
-/*
- * Try to spread <delay> ticks over the 'startup' frames; those that don't spawn projectiles or have hit coordinates
- */
-void player_set_delay(object *obj, int delay) {
-    // find the first frame that spawns a projectile, if any
-    int r = sd_script_next_frame_with_tag(&obj->animation_state.parser, "m", 0);
-    int frames = (r >= 0) ? r : 99;
-
-    // find the first frame with hit coordinates
-    iterator it;
-    collision_coord *cc;
-    vector_iter_begin(&obj->cur_animation->collision_coords, &it);
-    foreach(it, cc) {
-        r = sd_script_next_frame_with_sprite(&obj->animation_state.parser, cc->frame_index, 0);
-        frames = (r >= 0 && r < frames) ? r : frames;
-    }
-
-    // No frame found, just quit now.
-    if(!frames || !delay || frames == 99) {
-        return;
-    }
-
-    log_debug("Animation has %d initializer frames", frames);
-
-    int delay_per_frame = delay / frames;
-    int rem = delay % frames;
-    for(int i = 0; i < frames; i++) {
-        int duration = sd_script_get_tick_len_at_frame(&obj->animation_state.parser, i);
-        int old_dur = duration;
-        int new_duration = duration + delay_per_frame;
-        if(rem) {
-            new_duration++;
-            rem--;
-        }
-
-        sd_script_set_tick_len_at_frame(&obj->animation_state.parser, i, new_duration);
-        duration = sd_script_get_tick_len_at_frame(&obj->animation_state.parser, i);
-        log_debug("changed duration of frame %d from %d to %d", i, old_dur, duration);
-    }
-}
-
 #ifdef DEBUGMODE
 void player_describe_frame(const sd_script_frame *frame) {
     log_debug("Frame %c%d", 65 + frame->sprite, frame->tick_len);

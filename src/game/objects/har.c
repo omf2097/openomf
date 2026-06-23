@@ -274,10 +274,6 @@ void har_set_ani(object *obj, int animation_id, int repeat) {
     // uint8_t has_corner_hack = obj->animation_state.shadow_corner_hack;
     object_set_animation(obj, &move->ani);
     // obj->animation_state.shadow_corner_hack = has_corner_hack;
-    if(s != NULL && strcmp(s, "!") != 0 && strcmp(s, "0") != 0 && h->delay > 0) {
-        log_debug("delaying move %d %s by %d ticks", move->id, s, h->delay);
-        object_set_delay(obj, h->delay);
-    }
 
     // we shouldn't be idling while defeated
     assert(!((animation_id == ANIM_IDLE || animation_id == ANIM_CROUCHING) && h->health <= 0));
@@ -2916,11 +2912,6 @@ void har_reset(object *obj) {
 
     har_set_ani(obj, ANIM_IDLE, 1);
     object_set_stride(obj, h->stride);
-}
-
-void har_set_delay(object *obj, int delay) {
-    har *h = object_get_userdata(obj);
-    h->delay = delay;
 }
 
 uint8_t har_player_id(object *obj) {

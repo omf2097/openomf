@@ -85,7 +85,6 @@ int player_get_frame(const object *obj);
 void player_jump_to_tick(object *obj, int tick);
 char player_get_last_frame_letter(const object *obj);
 unsigned int player_get_len_ticks(const object *obj);
-void player_set_delay(object *obj, int delay);
 bool player_is_looping(const object *obj);
 uint32_t player_get_current_tick(const object *obj);
 void player_set_shadow_correction_y(object *obj, int value);

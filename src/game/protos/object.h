@@ -181,7 +181,6 @@ int object_clone_free(object *obj);
 void object_attach_to(object *obj, const object *attach_to);
 
 void object_set_stride(object *obj, int stride);
-void object_set_delay(object *obj, int delay);
 void object_set_playback_direction(object *obj, int dir);
 
 void object_set_stl(object *obj, const char *ptr);
