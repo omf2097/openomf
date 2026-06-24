@@ -164,6 +164,7 @@ typedef enum script_tag
     TAG_ZM,
     TAG_ZP,
     TAG_ZZ,
+    TAG_INVALID = 0xFF,
 } script_tag;
 
 #endif // SCRIPT_TAG_H

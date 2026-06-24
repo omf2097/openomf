@@ -171,8 +171,8 @@ void object_move(object *obj);
 float object_distance(object *a, object *b);
 void object_collide(object *a, object *b);
 int object_act(object *obj, int action);
-int object_finished(object *obj);
-void object_set_finished(object *obj);
+int object_is_finished(object *obj);
+void object_set_finished(object *obj, bool finished);
 void object_free(object *obj);
 
 int object_clone(object *src, object *dst, game_state *gs);

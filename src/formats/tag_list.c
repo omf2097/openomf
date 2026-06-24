@@ -1,5 +1,6 @@
 #include "formats/tag_list.h"
 #include "formats/script_tag.h"
+#include <stddef.h>
 
 // This file is generated automatically
 

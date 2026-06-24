@@ -2,19 +2,15 @@
 #include "game/protos/scene.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
-#include "utils/miscmath.h"
-#include <math.h>
-#include <stdlib.h>
 
 void hazard_tick(object *obj) {
-    scene *sc = obj->gs->sc;
-
-    if(obj->animation_state.finished) {
-        bk_info *anim = bk_get_info(sc->bk_data, obj->cur_animation->id);
+    const scene *sc = obj->gs->sc;
+    if(object_is_finished(obj)) {
+        const bk_info *anim = bk_get_info(sc->bk_data, obj->cur_animation->id);
         if(anim->chain_no_hit) {
             object_set_animation(obj, &bk_get_info(sc->bk_data, anim->chain_no_hit)->ani);
             object_set_repeat(obj, 0);
-            obj->animation_state.finished = 0;
+            object_set_finished(obj, false);
         }
     }
 }

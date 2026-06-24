@@ -1,27 +1,34 @@
 #include "formats/script.h"
 #include "formats/error.h"
-#include "formats/taglist.h"
+#include "formats/tag_list.h"
+#include "formats/tag_list_helpers.h"
 #include "utils/allocator.h"
+#include "utils/sstream.h"
 #include "utils/str.h"
 #include <assert.h>
+#include <string.h>
 
-static const char *INVALID_TAGS[] = {"c", "p", "o", "z", NULL}; // NULL guarded
+#define SCRIPT_MAX_TAG_LEN 3
 
-void sd_script_create(sd_script *script) {
-    assert(script != NULL);
-    memset(script, 0, sizeof(sd_script));
-    vector_create(&script->frames, sizeof(sd_script_frame));
+static bool tag_str_to_enum(const char *tag, script_tag *out) {
+    return script_tag_lookup(tag, (int)strlen(tag), out);
 }
 
-void sd_script_frame_create(sd_script_frame *frame, int tick_len, int sprite) {
-    vector_create(&frame->tags, sizeof(sd_script_tag));
+void script_create(script *script) {
+    assert(script != NULL);
+    memset(script, 0, sizeof(*script));
+    vector_create(&script->frames, sizeof(script_frame));
+}
+
+void script_frame_create(script_frame *frame, const int tick_len, const int sprite) {
+    vector_create(&frame->tags, sizeof(script_frame_tag));
     frame->tick_len = tick_len;
     frame->sprite = sprite;
 }
 
-int sd_script_frame_clone(const sd_script_frame *src, sd_script_frame *dst) {
+int script_frame_clone(const script_frame *src, script_frame *dst) {
     iterator it;
-    sd_script_tag *tag;
+    script_frame_tag *tag;
     vector_iter_begin(&src->tags, &it);
     foreach(it, tag) {
         vector_append(&dst->tags, tag);
@@ -29,73 +36,76 @@ int sd_script_frame_clone(const sd_script_frame *src, sd_script_frame *dst) {
     return SD_SUCCESS;
 }
 
-int sd_script_clone(const sd_script *src, sd_script *dst) {
-    sd_script_create(dst);
+int script_clone(const script *src, script *dst) {
+    script_create(dst);
     iterator it;
-    sd_script_frame *frame;
+    script_frame *frame;
     vector_iter_begin(&src->frames, &it);
     foreach(it, frame) {
-        sd_script_frame new_frame;
-        sd_script_frame_create(&new_frame, frame->tick_len, frame->sprite);
-        sd_script_frame_clone(frame, &new_frame);
+        script_frame new_frame;
+        script_frame_create(&new_frame, frame->tick_len, frame->sprite);
+        script_frame_clone(frame, &new_frame);
         vector_append(&dst->frames, &new_frame);
     }
     return SD_SUCCESS;
 }
 
-void sd_script_frame_free(sd_script_frame *frame) {
+void script_frame_free(script_frame *frame) {
     if(frame == NULL) {
         return;
     }
     vector_free(&frame->tags);
 }
 
-static void sd_script_tag_create(sd_script_tag *tag) {
-    memset(tag, 0, sizeof(sd_script_tag));
+static void script_frame_tag_create(script_frame_tag *tag) {
+    memset(tag, 0, sizeof(script_frame_tag));
 }
 
-bool sd_script_frame_add_tag(sd_script_frame *frame, const char *key, int value) {
-    sd_script_tag tag;
-    sd_script_tag_create(&tag);
-    if(sd_tag_info(key, &tag.has_param, &tag.key, &tag.desc) != 0) {
+bool script_frame_add_tag(script_frame *frame, const char *key, int value) {
+    script_tag id;
+    if(!tag_str_to_enum(key, &id)) {
         return false;
     }
+    script_frame_tag tag;
+    script_frame_tag_create(&tag);
+    tag.key = (uint8_t)id;
+    tag.has_param = (uint8_t)tag_descriptor_list[id].has_param;
     if(tag.has_param) {
-        tag.value = value;
+        tag.value = (int16_t)value;
     }
     vector_append(&frame->tags, &tag);
     return true;
 }
 
-void sd_script_free(sd_script *script) {
+void script_free(script *script) {
     if(script == NULL) {
         return;
     }
     iterator it;
-    sd_script_frame *frame;
+    script_frame *frame;
     vector_iter_begin(&script->frames, &it);
     foreach(it, frame) {
-        sd_script_frame_free(frame);
+        script_frame_free(frame);
     }
     vector_free(&script->frames);
 }
 
-int sd_script_append_frame(sd_script *script, int tick_len, int sprite_id) {
+int script_append_frame(script *script, int tick_len, int sprite_id) {
     assert(script != NULL);
 
-    sd_script_frame frame;
-    sd_script_frame_create(&frame, tick_len, sprite_id);
+    script_frame frame;
+    script_frame_create(&frame, tick_len, sprite_id);
     vector_append(&script->frames, &frame);
     return SD_SUCCESS;
 }
 
-int sd_script_clear_tags(sd_script *script, int frame_id) {
+int script_clear_tags(script *script, int frame_id) {
     assert(script != NULL);
     if(frame_id < 0) {
         return SD_INVALID_INPUT;
     }
 
-    sd_script_frame *frame = vector_get(&script->frames, frame_id);
+    script_frame *frame = vector_get(&script->frames, frame_id);
     if(frame == NULL) {
         return SD_INVALID_INPUT;
     }
@@ -104,13 +114,13 @@ int sd_script_clear_tags(sd_script *script, int frame_id) {
     return SD_SUCCESS;
 }
 
-int sd_script_set_tick_len_at_frame(sd_script *script, int frame_id, int duration) {
+int script_set_tick_len_at_frame(script *script, int frame_id, int duration) {
     assert(script != NULL);
     if(frame_id < 0) {
         return SD_INVALID_INPUT;
     }
 
-    sd_script_frame *frame = vector_get(&script->frames, frame_id);
+    script_frame *frame = vector_get(&script->frames, frame_id);
     if(frame == NULL) {
         return SD_INVALID_INPUT;
     }
@@ -119,13 +129,13 @@ int sd_script_set_tick_len_at_frame(sd_script *script, int frame_id, int duratio
     return SD_SUCCESS;
 }
 
-int sd_script_set_sprite_at_frame(sd_script *script, int frame_id, int sprite_id) {
+int script_set_sprite_at_frame(script *script, int frame_id, int sprite_id) {
     assert(script != NULL);
     if(frame_id < 0 || sprite_id < 0 || sprite_id > 25) {
         return SD_INVALID_INPUT;
     }
 
-    sd_script_frame *frame = vector_get(&script->frames, frame_id);
+    script_frame *frame = vector_get(&script->frames, frame_id);
     if(frame == NULL) {
         return SD_INVALID_INPUT;
     }
@@ -134,16 +144,16 @@ int sd_script_set_sprite_at_frame(sd_script *script, int frame_id, int sprite_id
     return SD_SUCCESS;
 }
 
-unsigned sd_script_get_total_ticks(const sd_script *script) {
-    return sd_script_get_tick_pos_at_frame(script, vector_size(&script->frames));
+unsigned script_get_total_ticks(const script *script) {
+    return script_get_tick_pos_at_frame(script, vector_size(&script->frames));
 }
 
-int sd_script_get_tick_pos_at_frame(const sd_script *script, int frame_id) {
+int script_get_tick_pos_at_frame(const script *script, int frame_id) {
     if(script == NULL) {
         return 0;
     }
     int len = 0;
-    sd_script_frame *frame;
+    script_frame *frame;
     for(int i = 0; i < frame_id; i++) {
         if((frame = vector_get(&script->frames, i)) != NULL) {
             len += frame->tick_len;
@@ -152,12 +162,12 @@ int sd_script_get_tick_pos_at_frame(const sd_script *script, int frame_id) {
     return len;
 }
 
-int sd_script_get_tick_len_at_frame(const sd_script *script, int frame_id) {
+int script_get_tick_len_at_frame(const script *script, int frame_id) {
     if(script == NULL) {
         return 0;
     }
 
-    sd_script_frame *frame = vector_get(&script->frames, frame_id);
+    const script_frame *frame = vector_get(&script->frames, frame_id);
     if(frame == NULL) {
         return 0;
     }
@@ -165,12 +175,12 @@ int sd_script_get_tick_len_at_frame(const sd_script *script, int frame_id) {
     return frame->tick_len;
 }
 
-int sd_script_get_sprite_at_frame(const sd_script *script, int frame_id) {
+int script_get_sprite_at_frame(const script *script, int frame_id) {
     if(script == NULL) {
         return 0;
     }
 
-    sd_script_frame *frame = vector_get(&script->frames, frame_id);
+    script_frame *frame = vector_get(&script->frames, frame_id);
     if(frame == NULL) {
         return 0;
     }
@@ -190,174 +200,143 @@ static bool is_numeric(const char c) {
     return c >= '0' && c <= '9';
 }
 
-static int find_numeric_span(const str *src, int start) {
-    int end = start;
-    char ch = str_at(src, start);
-    if(ch == '-' || ch == '+') {
-        end++;
-    }
-    do {
-        ch = str_at(src, end++);
-    } while(is_numeric(ch));
-    return end - 1;
+static bool is_value_start(const char c) {
+    return is_numeric(c) || c == '-' || c == '+';
 }
 
-static int read_int(const str *src, int *original) {
-    int value = 0;
-    int start = *original;
-    int end = find_numeric_span(src, start);
-    if(start == end) {
-        return 0; // If we found no number, just return default 0.
+static bool parse_tag(script_frame_tag *new, sstream *s) {
+    if(!is_tag_letter(sstream_peek(s))) {
+        return false;
     }
 
-    str test;
-    str_from_slice(&test, src, start, end);
-    if(!str_to_int(&test, &value)) {
-        value = 0; // This should never really happen.
+    // Try the longest matching tag first, since tags can be 1 to 3 characters long.
+    int max_len = sstream_left(s);
+    if(max_len > SCRIPT_MAX_TAG_LEN) {
+        max_len = SCRIPT_MAX_TAG_LEN;
     }
-    str_free(&test);
-    *original = end;
-    return value;
-}
-
-static bool test_tag_slice(const str *test, sd_script_tag *new, const str *src, int *now) {
-    const int len = str_size(test);
-    const int jmp = *now + len;
-    if(sd_tag_info(str_c(test), &new->has_param, &new->key, &new->desc) == 0) {
-        // Ensure that tag has no value, if value is not desired.
-        // Note -- the unneeded parenthesis are here so that clang-format stops misformatting this line.
-        if(!new->has_param && (find_numeric_span(src, jmp) > jmp)) {
-            return false;
+    for(int len = max_len; len > 0; len--) {
+        script_tag id;
+        if(!script_tag_lookup(sstream_ptr(s), len, &id)) {
+            continue;
         }
 
-        // Okay, tag found. Jump forward, read the value (if required), and we're done.
-        *now = jmp;
-        if(new->has_param) {
-            new->value = read_int(src, now);
+        // If the tag accepts no params but there are params, just keep searching.
+        const int has_param = tag_descriptor_list[id].has_param;
+        if(!has_param && is_value_start(sstream_peek_at(s, len))) {
+            continue;
+        }
+
+        // Tag found. Jump forward, read the value if required, and we're done.
+        new->key = (uint8_t)id;
+        new->has_param = (uint8_t)has_param;
+        sstream_skip(s, len);
+        if(has_param) {
+            long value;
+            sstream_read_long(s, &value, INT16_MIN, INT16_MAX);
+            new->value = (int16_t)value;
         }
         return true;
     }
     return false;
 }
 
-static bool parse_tag(sd_script_tag *new, const str *src, int *now) {
-    if(!is_tag_letter(str_at(src, *now))) {
+static bool parse_invalid_tag(script_frame_tag *new, sstream *s) {
+    const char ch = sstream_peek(s);
+    if(script_invalid_tag_name(ch) == NULL) {
         return false;
     }
-    // Check if tag is legit.
-    str test;
-    for(int m = 3; m > 0; m--) {
-        str_from_slice(&test, src, *now, *now + m);
-        if(test_tag_slice(&test, new, src, now)) {
-            str_free(&test);
-            return true;
-        }
-        str_free(&test);
-    }
-    return false;
+    new->key = (uint8_t)TAG_INVALID;
+    new->value = (int16_t)ch;
+    sstream_skip(s, 1);
+    return true;
 }
 
-static bool parse_invalid_tag(sd_script_tag *new, const str *src, int *now) {
-    if(!is_tag_letter(str_at(src, *now))) {
-        return false;
-    }
-
-    // Check if tag is an invalid tag.
-    str test;
-    str_from_slice(&test, src, *now, *now + 1);
-    for(int i = 0; INVALID_TAGS[i] != NULL; i++) {
-        const char *tag = INVALID_TAGS[i];
-        if(str_equal_c(&test, tag)) {
-            new->key = tag;
-            *now += strlen(tag);
-            str_free(&test);
-            return true;
-        }
-    }
-    str_free(&test);
-    return false;
-}
-
-static bool parse_frame(sd_script_frame *frame, const str *src, int *now) {
-    const char frame_id = str_at(src, *now);
+static bool parse_frame(script_frame *frame, sstream *s) {
+    const char frame_id = sstream_peek(s);
     if(is_frame_id(frame_id)) {
-        (*now)++; // Hop over the frame ID
-        frame->sprite = sd_script_letter_to_frame(frame_id);
-        frame->tick_len = read_int(src, now);
-        (*now)++; // Bypass separator '-'
+        sstream_skip(s, 1); // Hop over the frame ID
+        frame->sprite = script_letter_to_frame(frame_id);
+        long tick_len;
+        sstream_read_long(s, &tick_len, INT16_MIN, INT16_MAX);
+        frame->tick_len = (int)tick_len;
+        sstream_skip(s, 1); // Bypass separator '-'
         return true;
     }
     return false;
 }
 
-static void on_fail_seek_end(const str *src, int *now) {
-    while(str_at(src, *now) != '-' && *now < (int)str_size(src)) {
-        (*now)++;
+static void on_fail_seek_end(sstream *s) {
+    while(!sstream_eof(s) && sstream_peek(s) != '-') {
+        sstream_skip(s, 1);
     }
-    (*now)++;
+    sstream_skip(s, 1); // Bypass the '-' (or the end of the buffer)
 }
 
-static bool decode_next_frame(sd_script_frame *frame, const str *src, int *now) {
-    sd_script_tag tag;
-    sd_script_tag_create(&tag);
-    while(*now < (int)str_size(src)) {
-        if(parse_frame(frame, src, now)) {
+static bool decode_next_frame(script_frame *frame, sstream *s) {
+    script_frame_tag tag;
+    script_frame_tag_create(&tag);
+    while(!sstream_eof(s)) {
+        if(parse_frame(frame, s)) {
             return true;
         }
-        if(parse_tag(&tag, src, now)) {
+        if(parse_tag(&tag, s)) {
             vector_append(&frame->tags, &tag);
-            sd_script_tag_create(&tag);
+            script_frame_tag_create(&tag);
             continue;
         }
         // There are some invalid tags -- Just read them, so that we can round-trip properly.
-        if(parse_invalid_tag(&tag, src, now)) {
+        if(parse_invalid_tag(&tag, s)) {
             vector_append(&frame->tags, &tag);
-            sd_script_tag_create(&tag);
+            script_frame_tag_create(&tag);
             continue;
         }
-        on_fail_seek_end(src, now);
+        on_fail_seek_end(s);
         return false;
     }
     return false;
 }
 
-int sd_script_decode_str(sd_script *script, const str *src, int *invalid_pos) {
-    assert(script != NULL);
-    assert(src != NULL);
-
-    int now = 0;
-    int prev = 0;
-    while(now < (int)str_size(src)) {
-        sd_script_frame frame;
-        sd_script_frame_create(&frame, 0, 0);
-        if(decode_next_frame(&frame, src, &now)) {
+static int decode(script *script, sstream *s, int *invalid_pos) {
+    int prev = sstream_pos(s);
+    while(!sstream_eof(s)) {
+        script_frame frame;
+        script_frame_create(&frame, 0, 0);
+        if(decode_next_frame(&frame, s)) {
+            vector_compact(&frame.tags);
             vector_append(&script->frames, &frame);
         } else {
-            sd_script_frame_free(&frame);
+            script_frame_free(&frame);
         }
-        if(prev == now) {
+        if(prev == sstream_pos(s)) {
             // If we are not moving, then something crashed badly.
             if(invalid_pos != NULL) {
-                *invalid_pos = now;
+                *invalid_pos = sstream_pos(s);
             }
             return SD_ANIM_INVALID_STRING;
         }
-        prev = now;
+        prev = sstream_pos(s);
     }
+    vector_compact(&script->frames);
 
     return SD_SUCCESS;
 }
 
-int sd_script_decode(sd_script *script, const char *input, int *invalid_pos) {
-    assert(input != NULL);
-    str src;
-    str_from_c(&src, input);
-    const int ret = sd_script_decode_str(script, &src, invalid_pos);
-    str_free(&src);
-    return ret;
+int script_decode_str(script *script, const str *src, int *invalid_pos) {
+    assert(script != NULL);
+    assert(src != NULL);
+    sstream s;
+    sstream_open(&s, str_c(src), (int)str_size(src));
+    return decode(script, &s, invalid_pos);
 }
 
-int sd_script_encode(const sd_script *script, str *output) {
+int script_decode(script *script, const char *input, int *invalid_pos) {
+    assert(input != NULL);
+    sstream s;
+    sstream_open_c(&s, input);
+    return decode(script, &s, invalid_pos);
+}
+
+int script_encode(const script *script, str *output) {
     assert(script != NULL);
     assert(output != NULL);
 
@@ -368,10 +347,10 @@ int sd_script_encode(const sd_script *script, str *output) {
 
     // Frames exist. Walk through each, and output tags and ending frame tag + duration
     iterator it;
-    sd_script_frame *frame;
+    script_frame *frame;
     vector_iter_begin(&script->frames, &it);
     foreach(it, frame) {
-        sd_script_encode_frame(frame, output);
+        script_encode_frame(frame, output);
         str_append_char(output, '-');
     }
 
@@ -379,40 +358,40 @@ int sd_script_encode(const sd_script *script, str *output) {
     return SD_SUCCESS;
 }
 
-int sd_script_encode_frame(const sd_script_frame *frame, str *dst) {
+int script_encode_frame(const script_frame *frame, str *dst) {
     assert(frame != NULL);
     assert(dst != NULL);
 
     str tmp;
     iterator tag_it;
-    sd_script_tag *tag;
+    script_frame_tag *tag;
     vector_iter_begin(&frame->tags, &tag_it);
     foreach(tag_it, tag) {
-        str_append_c(dst, tag->key);
+        str_append_c(dst, script_get_frame_tag_name(tag));
         if(tag->has_param) {
             str_from_format(&tmp, "%d", tag->value);
             str_append(dst, &tmp);
             str_free(&tmp);
         }
     }
-    str_from_format(&tmp, "%c%d", sd_script_frame_to_letter(frame->sprite), frame->tick_len);
+    str_from_format(&tmp, "%c%d", script_frame_to_letter(frame->sprite), frame->tick_len);
     str_append(dst, &tmp);
     str_free(&tmp);
     return SD_SUCCESS;
 }
 
-const sd_script_frame *sd_script_get_frame_at(const sd_script *script, int ticks) {
+const script_frame *script_get_frame_at(const script *script, int ticks) {
     if(script == NULL || ticks < 0) {
         return NULL;
     }
 
     iterator it;
-    sd_script_frame *frame;
-    int next, pos = 0;
+    script_frame *frame;
+    int pos = 0;
 
     vector_iter_begin(&script->frames, &it);
     foreach(it, frame) {
-        next = pos + frame->tick_len;
+        const int next = pos + frame->tick_len;
         if(pos <= ticks && ticks < next) {
             return frame;
         }
@@ -421,23 +400,30 @@ const sd_script_frame *sd_script_get_frame_at(const sd_script *script, int ticks
     return NULL;
 }
 
-const sd_script_frame *sd_script_get_frame(const sd_script *script, int frame_number) {
+const script_frame *script_get_frame(const script *script, int frame_number) {
     if(script == NULL || frame_number < 0) {
         return NULL;
     }
     return vector_get(&script->frames, frame_number);
 }
 
-int sd_script_frame_changed(const sd_script *script, int tick_start, int tick_stop) {
+int script_get_frame_count(const script *script) {
+    if(script == NULL) {
+        return 0;
+    }
+    return (int)vector_size(&script->frames);
+}
+
+int script_frame_changed(const script *script, int tick_start, int tick_stop) {
     if(script == NULL || tick_start == tick_stop) {
         return 0;
     }
-    const sd_script_frame *frame_a = sd_script_get_frame_at(script, tick_start);
-    const sd_script_frame *frame_b = sd_script_get_frame_at(script, tick_stop);
+    const script_frame *frame_a = script_get_frame_at(script, tick_start);
+    const script_frame *frame_b = script_get_frame_at(script, tick_stop);
     return frame_a != frame_b;
 }
 
-int sd_script_get_frame_index(const sd_script *script, const sd_script_frame *frame) {
+int script_get_frame_index(const script *script, const script_frame *frame) {
     if(script == NULL || frame == NULL) {
         return -1;
     }
@@ -449,15 +435,15 @@ int sd_script_get_frame_index(const sd_script *script, const sd_script_frame *fr
     return -1;
 }
 
-int sd_script_get_frame_index_at(const sd_script *script, unsigned ticks) {
+int script_get_frame_index_at(const script *script, unsigned ticks) {
     if(script == NULL) {
         return -1;
     }
 
-    unsigned next, pos = 0;
+    unsigned pos = 0;
     for(unsigned i = 0; i < vector_size(&script->frames); i++) {
-        sd_script_frame *now = vector_get(&script->frames, i);
-        next = pos + now->tick_len;
+        const script_frame *now = vector_get(&script->frames, i);
+        const unsigned next = pos + now->tick_len;
         if(pos <= ticks && ticks < next) {
             return (int)i;
         }
@@ -466,73 +452,95 @@ int sd_script_get_frame_index_at(const sd_script *script, unsigned ticks) {
     return -1;
 }
 
-int sd_script_is_last_frame(const sd_script *script, const sd_script_frame *frame) {
+int script_is_last_frame(const script *script, const script_frame *frame) {
     if(script == NULL) {
         return 0;
     }
     return frame == vector_get(&script->frames, vector_size(&script->frames) - 1);
 }
 
-int sd_script_is_last_frame_at(const sd_script *script, int ticks) {
-    const sd_script_frame *frame = sd_script_get_frame_at(script, ticks);
-    return sd_script_is_last_frame(script, frame);
+int script_is_last_frame_at(const script *script, int ticks) {
+    const script_frame *frame = script_get_frame_at(script, ticks);
+    return script_is_last_frame(script, frame);
 }
 
-int sd_script_is_first_frame(const sd_script *script, const sd_script_frame *frame) {
+int script_is_first_frame(const script *script, const script_frame *frame) {
     if(script == NULL) {
         return 0;
     }
-    return sd_script_get_frame_index(script, frame) == 0;
+    return script_get_frame_index(script, frame) == 0;
 }
 
-int sd_script_is_first_frame_at(const sd_script *script, int ticks) {
-    const sd_script_frame *frame = sd_script_get_frame_at(script, ticks);
-    return sd_script_is_first_frame(script, frame);
+int script_is_first_frame_at(const script *script, int ticks) {
+    const script_frame *frame = script_get_frame_at(script, ticks);
+    return script_is_first_frame(script, frame);
 }
 
-const sd_script_tag *sd_script_get_tag(const sd_script_frame *frame, const char *tag) {
-    if(frame == NULL || tag == NULL) {
+const script_frame_tag *script_get_tag_by_id(const script_frame *frame, script_tag id) {
+    if(frame == NULL) {
         return NULL;
     }
     iterator it;
-    sd_script_tag *now;
+    script_frame_tag *now;
     vector_iter_end(&frame->tags, &it);
     foreach_reverse(it, now) {
-        if(strcmp(tag, now->key) == 0) {
+        if(now->key == (uint8_t)id) {
             return now;
         }
     }
     return NULL;
 }
 
-int sd_script_isset(const sd_script_frame *frame, const char *tag) {
-    return sd_script_get_tag(frame, tag) != NULL;
+const script_frame_tag *script_get_tag_by_name(const script_frame *frame, const char *tag) {
+    if(tag == NULL) {
+        return NULL;
+    }
+    script_tag wanted;
+    if(!tag_str_to_enum(tag, &wanted)) {
+        return NULL;
+    }
+    return script_get_tag_by_id(frame, wanted);
 }
 
-int sd_script_get(const sd_script_frame *frame, const char *tag) {
-    const sd_script_tag *stag = sd_script_get_tag(frame, tag);
+int script_is_tag_set_by_id(const script_frame *frame, script_tag id) {
+    return script_get_tag_by_id(frame, id) != NULL;
+}
+
+int script_get_tag_value_by_id(const script_frame *frame, script_tag id) {
+    const script_frame_tag *stag = script_get_tag_by_id(frame, id);
     if(stag == NULL) {
         return 0;
     }
     return stag->value;
 }
 
-int sd_script_next_frame_with_sprite(const sd_script *script, int sprite_id, unsigned current_tick) {
+int script_is_tag_set_by_name(const script_frame *frame, const char *tag) {
+    return script_get_tag_by_name(frame, tag) != NULL;
+}
+
+int script_get_tag_value_by_name(const script_frame *frame, const char *tag) {
+    const script_frame_tag *stag = script_get_tag_by_name(frame, tag);
+    if(stag == NULL) {
+        return 0;
+    }
+    return stag->value;
+}
+
+int script_get_next_frame_with_sprite(const script *script, int sprite_id, unsigned current_tick) {
     if(script == NULL) {
         return -1;
     }
     if(sprite_id < 0) {
         return -1;
     }
-    if(current_tick > sd_script_get_total_ticks(script)) {
+    if(current_tick > script_get_total_ticks(script)) {
         return -1;
     }
 
-    unsigned next, pos = 0;
-    sd_script_frame *frame;
+    unsigned pos = 0;
     for(unsigned i = 0; i < vector_size(&script->frames); i++) {
-        frame = vector_get(&script->frames, i);
-        next = pos + frame->tick_len;
+        const script_frame *frame = vector_get(&script->frames, i);
+        const unsigned next = pos + frame->tick_len;
         if(current_tick < pos && sprite_id == frame->sprite) {
             return (int)i;
         }
@@ -542,20 +550,19 @@ int sd_script_next_frame_with_sprite(const sd_script *script, int sprite_id, uns
     return -1;
 }
 
-int sd_script_next_frame_with_tag(const sd_script *script, const char *tag, uint32_t current_tick) {
-    if(script == NULL || tag == NULL) {
+int script_get_next_frame_with_tag_id(const script *script, script_tag id, uint32_t current_tick) {
+    if(script == NULL) {
         return -1;
     }
-    if(current_tick > sd_script_get_total_ticks(script)) {
+    if(current_tick > script_get_total_ticks(script)) {
         return -1;
     }
 
-    unsigned next, pos = 0;
-    sd_script_frame *frame;
+    unsigned pos = 0;
     for(unsigned i = 0; i < vector_size(&script->frames); i++) {
-        frame = vector_get(&script->frames, i);
-        next = pos + frame->tick_len;
-        if(current_tick < pos && sd_script_isset(frame, tag)) {
+        const script_frame *frame = vector_get(&script->frames, i);
+        const unsigned next = pos + frame->tick_len;
+        if(current_tick < pos && script_is_tag_set_by_id(frame, id)) {
             return (int)i;
         }
         pos = next;
@@ -564,23 +571,39 @@ int sd_script_next_frame_with_tag(const sd_script *script, const char *tag, uint
     return -1;
 }
 
-int sd_script_delete_tag(sd_script *script, int frame_id, const char *tag) {
+int script_get_next_frame_with_tag(const script *script, const char *tag, uint32_t current_tick) {
+    if(tag == NULL) {
+        return -1;
+    }
+    script_tag id;
+    if(!tag_str_to_enum(tag, &id)) {
+        return -1;
+    }
+    return script_get_next_frame_with_tag_id(script, id, current_tick);
+}
+
+int script_delete_tag(script *script, int frame_id, const char *tag) {
     assert(script != NULL);
     assert(tag != NULL);
     if(frame_id < 0) {
         return SD_INVALID_INPUT;
     }
 
-    sd_script_frame *frame = vector_get(&script->frames, frame_id);
+    script_frame *frame = vector_get(&script->frames, frame_id);
     if(frame == NULL) {
         return SD_INVALID_INPUT;
     }
 
+    script_tag wanted;
+    if(!tag_str_to_enum(tag, &wanted)) {
+        return SD_SUCCESS; // Nothing to delete for an unknown tag.
+    }
+
     iterator it;
-    sd_script_tag *now;
+    script_frame_tag *now;
     vector_iter_begin(&frame->tags, &it);
     foreach(it, now) {
-        if(strcmp(now->key, tag) == 0) {
+        if(now->key == (uint8_t)wanted) {
             vector_delete(&frame->tags, &it);
             return SD_SUCCESS;
         }
@@ -588,7 +611,7 @@ int sd_script_delete_tag(sd_script *script, int frame_id, const char *tag) {
     return SD_SUCCESS;
 }
 
-int sd_script_set_tag(sd_script *script, int frame_id, const char *tag, int value) {
+int script_set_tag(script *script, int frame_id, const char *tag, int value) {
     assert(script != NULL);
     assert(tag != NULL);
     if(frame_id < 0) {
@@ -596,31 +619,35 @@ int sd_script_set_tag(sd_script *script, int frame_id, const char *tag, int valu
     }
 
     // Get frame
-    sd_script_frame *frame = vector_get(&script->frames, frame_id);
+    script_frame *frame = vector_get(&script->frames, frame_id);
     if(frame == NULL) {
         return SD_INVALID_INPUT;
     }
 
     // Get tag information
-    sd_script_tag new;
-    if(sd_tag_info(tag, &new.has_param, &new.key, &new.desc) != SD_SUCCESS) {
+    script_tag id;
+    if(!tag_str_to_enum(tag, &id)) {
         return SD_INVALID_INPUT;
     }
+    script_frame_tag new;
+    script_frame_tag_create(&new);
+    new.key = (uint8_t)id;
+    new.has_param = (uint8_t)tag_descriptor_list[id].has_param;
     if(new.has_param) {
-        new.value = value;
+        new.value = (int16_t)value;
     }
 
     // Delete old tag (if exists), then add new.
-    sd_script_delete_tag(script, frame_id, tag);
+    script_delete_tag(script, frame_id, tag);
     vector_append(&frame->tags, &new);
     return SD_SUCCESS;
 }
 
-int sd_script_letter_to_frame(char letter) {
+int script_letter_to_frame(char letter) {
     return (int)(letter - 'A');
 }
 
-char sd_script_frame_to_letter(int frame_id) {
+char script_frame_to_letter(int frame_id) {
     assert(frame_id >= 0 && frame_id <= 25);
     return (char)(frame_id + 'A');
 }

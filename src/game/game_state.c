@@ -861,7 +861,7 @@ void game_state_cleanup(game_state *gs) {
     iterator it;
     vector_iter_begin(&gs->objects, &it);
     foreach(it, robj) {
-        if(object_finished(robj->obj)) {
+        if(object_is_finished(robj->obj)) {
             /*log_debug("Animation object %d is finished, removing.", robj->obj->cur_animation->id);*/
             object_free(robj->obj);
             omf_free(robj->obj);

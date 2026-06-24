@@ -10,6 +10,7 @@
 #ifndef TAG_LIST_HELPERS_H
 #define TAG_LIST_HELPERS_H
 
+#include "formats/script.h"
 #include "formats/script_tag.h"
 #include <stdbool.h>
 
@@ -20,5 +21,23 @@
  * @return true if a tag matches the slice, false otherwise.
  */
 bool script_tag_lookup(const char *buf, int len, script_tag *tag);
+
+/** @brief Returns the single character name of an unknown tag
+ * @param ch The original character stored for the unknown tag.
+ * @return The name string or NULL
+ */
+const char *script_invalid_tag_name(char ch);
+
+/** @brief Returns the tag name string
+ * @param tag Tag to inspect
+ * @return The tag string or NULL
+ */
+const char *script_get_frame_tag_name(const script_frame_tag *tag);
+
+/** @brief Returns the tag description string
+ * @param tag Tag to inspect
+ * @return The tag description or NULL
+ */
+const char *script_get_frame_tag_description(const script_frame_tag *tag);
 
 #endif // TAG_LIST_HELPERS_H

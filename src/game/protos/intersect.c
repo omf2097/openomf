@@ -87,14 +87,14 @@ int intersect(const object *obj, const object *target, int level, vec2i *point, 
     vec2i size_a = object_get_size(obj);
     vec2i size_b = object_get_size(target);
 
-    if((object_get_direction(obj) == OBJECT_FACE_LEFT && !player_frame_isset(obj, "r")) ||
-       (object_get_direction(obj) == OBJECT_FACE_RIGHT && player_frame_isset(obj, "r"))) {
+    if((object_get_direction(obj) == OBJECT_FACE_LEFT && !player_frame_isset(obj, TAG_R)) ||
+       (object_get_direction(obj) == OBJECT_FACE_RIGHT && player_frame_isset(obj, TAG_R))) {
         object_dir = OBJECT_FACE_LEFT;
         pos_a.x = object_get_pos(obj).x + ((cur_sprite->pos.x * -1) - size_a.x);
     }
 
-    if((object_get_direction(target) == OBJECT_FACE_LEFT && !player_frame_isset(target, "r")) ||
-       (object_get_direction(target) == OBJECT_FACE_RIGHT && player_frame_isset(target, "r"))) {
+    if((object_get_direction(target) == OBJECT_FACE_LEFT && !player_frame_isset(target, TAG_R)) ||
+       (object_get_direction(target) == OBJECT_FACE_RIGHT && player_frame_isset(target, TAG_R))) {
         target_dir = OBJECT_FACE_LEFT;
         pos_b.x = object_get_pos(target).x + ((target_sprite->pos.x * -1) - size_b.x);
     }

@@ -1,3 +1,5 @@
+#include <stdint.h>
+
 #include "common.h"
 #include "utils/sstream.h"
 

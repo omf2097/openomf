@@ -207,20 +207,20 @@ void anim_pop(sd_animation *ani) {
 }
 
 void string_strip(str *input, const char *tag) {
-    sd_script s;
-    sd_script_create(&s);
-    sd_script_decode_str(&s, input, NULL);
+    script s;
+    script_create(&s);
+    script_decode_str(&s, input, NULL);
 
-    for(unsigned i = 0; i < vector_size(&s.frames); i++) {
-        sd_script_delete_tag(&s, i, tag);
+    for(int i = 0; i < script_get_frame_count(&s); i++) {
+        script_delete_tag(&s, i, tag);
     }
 
     str dst;
     str_create(&dst);
-    sd_script_encode(&s, &dst);
+    script_encode(&s, &dst);
     str_set(input, &dst);
     str_free(&dst);
-    sd_script_free(&s);
+    script_free(&s);
 }
 
 void anim_strip_key(sd_animation *ani, int kn, const char **key, int kcount, const char *tag) {
