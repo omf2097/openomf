@@ -24,7 +24,7 @@ static void print_log(const char *buffer, long len, const char *header) {
         str_free(&sub);
         last = ++pos;
     }
-    log_error("--- end log ---", header);
+    log_error("--- end log ---");
 
     str_free(&log);
 }

@@ -23,7 +23,7 @@
 
 #define UPDATE_FIELD_INT(field_name, struct_field, new_value)                                                          \
     if(new_value != 0 && struct_field != new_value) {                                                                  \
-        log_info("setting " #field_name " from %d to %d", struct_field, new_value);                                    \
+        log_info("setting " #field_name " from %d to %d", (int)(struct_field), (int)(new_value));                      \
         struct_field = new_value;                                                                                      \
     }
 
@@ -122,7 +122,7 @@ int mod_find(list *mod_list) {
     if(!path_glob(&scan, mod_list, "*.zip")) {
         log_warn("Failed to scan user mods directory!");
     } else {
-        log_info("Found %d user mods.", list_size(mod_list) - size);
+        log_info("Found %d user mods.", (int)(list_size(mod_list) - size));
     }
     size = list_size(mod_list);
 
@@ -373,7 +373,7 @@ bool modmanager_init(void) {
         struct zip_t *zip = zip_open(path_c(p), 0, 'r');
         ssize_t entries = zip_entries_total(zip);
         if(entries > 0) {
-            log_info("mod %s has %d files", path_c(p), entries);
+            log_info("mod %s has %d files", path_c(p), (int)entries);
             for(size_t i = 0; i < (size_t)entries; i++) {
                 if(zip_entry_openbyindex(zip, i) == 0 && zip_entry_isdir(zip) == 0) {
                     log_info("mod contains %s", zip_entry_name(zip));
@@ -770,7 +770,7 @@ bool modmanager_get_music(str *name, unsigned int index, unsigned char **buf, si
 
     if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&l, &len)) {
         unsigned int count = list_size(l);
-        log_info("found %d music files for %s", count, name);
+        log_info("found %d music files for %s", count, str_c(name));
         if(index >= count) {
             log_warn("requested index %i into list of %d members", index, count);
             return false;
@@ -819,60 +819,60 @@ bool modmanager_parse_af_move_mod(const char *buf, af_move *current_move) {
 
     // Update integer fields only if they changed
     if(current_move->pos_constraints != cfg_getint(cfg, "pos_constraints")) {
-        log_info("setting pos_constraints from %u to %d", current_move->pos_constraints,
+        log_info("setting pos_constraints from %u to %ld", current_move->pos_constraints,
                  cfg_getint(cfg, "pos_constraints"));
         current_move->pos_constraints = cfg_getint(cfg, "pos_constraints");
     }
 
     if(current_move->next_move != cfg_getint(cfg, "next_move")) {
-        log_info("setting next_move from %u to %d", current_move->next_move, cfg_getint(cfg, "next_move"));
+        log_info("setting next_move from %u to %ld", current_move->next_move, cfg_getint(cfg, "next_move"));
         current_move->next_move = cfg_getint(cfg, "next_move");
     }
 
     if(current_move->successor_id != cfg_getint(cfg, "successor_id")) {
-        log_info("setting successor_id from %u to %d", current_move->successor_id, cfg_getint(cfg, "successor_id"));
+        log_info("setting successor_id from %u to %ld", current_move->successor_id, cfg_getint(cfg, "successor_id"));
         current_move->successor_id = cfg_getint(cfg, "successor_id");
     }
 
     if(current_move->category != cfg_getint(cfg, "category")) {
-        log_info("setting category from %u to %d", current_move->category, cfg_getint(cfg, "category"));
+        log_info("setting category from %u to %ld", current_move->category, cfg_getint(cfg, "category"));
         current_move->category = cfg_getint(cfg, "category");
     }
 
     if(current_move->points != cfg_getint(cfg, "points")) {
-        log_info("setting points from %u to %d", current_move->points, cfg_getint(cfg, "points"));
+        log_info("setting points from %u to %ld", current_move->points, cfg_getint(cfg, "points"));
         current_move->points = cfg_getint(cfg, "points");
     }
 
     if(current_move->block_damage != cfg_getint(cfg, "block_damage")) {
-        log_info("setting block_damage from %u to %d", current_move->block_damage, cfg_getint(cfg, "block_damage"));
+        log_info("setting block_damage from %u to %ld", current_move->block_damage, cfg_getint(cfg, "block_damage"));
         current_move->block_damage = cfg_getint(cfg, "block_damage");
     }
 
     if(current_move->block_stun != cfg_getint(cfg, "block_stun")) {
-        log_info("setting block_stun from %u to %d", current_move->block_stun, cfg_getint(cfg, "block_stun"));
+        log_info("setting block_stun from %u to %ld", current_move->block_stun, cfg_getint(cfg, "block_stun"));
         current_move->block_stun = cfg_getint(cfg, "block_stun");
     }
 
     if(current_move->throw_duration != cfg_getint(cfg, "throw_duration")) {
-        log_info("setting throw_duration from %u to %d", current_move->throw_duration,
+        log_info("setting throw_duration from %u to %ld", current_move->throw_duration,
                  cfg_getint(cfg, "throw_duration"));
         current_move->throw_duration = cfg_getint(cfg, "throw_duration");
     }
 
     if(current_move->extra_string_selector != cfg_getint(cfg, "extra_string_selector")) {
-        log_info("setting extra_string_selector from %u to %d", current_move->extra_string_selector,
+        log_info("setting extra_string_selector from %u to %ld", current_move->extra_string_selector,
                  cfg_getint(cfg, "extra_string_selector"));
         current_move->extra_string_selector = cfg_getint(cfg, "extra_string_selector");
     }
 
     if(current_move->ani.start_pos.x != cfg_getint(cfg, "start_x")) {
-        log_info("setting start_x from %d to %d", current_move->ani.start_pos.x, cfg_getint(cfg, "start_x"));
+        log_info("setting start_x from %d to %ld", current_move->ani.start_pos.x, cfg_getint(cfg, "start_x"));
         current_move->ani.start_pos.x = cfg_getint(cfg, "start_x");
     }
 
     if(current_move->ani.start_pos.y != cfg_getint(cfg, "start_y")) {
-        log_info("setting start_y from %d to %d", current_move->ani.start_pos.y, cfg_getint(cfg, "start_y"));
+        log_info("setting start_y from %d to %ld", current_move->ani.start_pos.y, cfg_getint(cfg, "start_y"));
         current_move->ani.start_pos.y = cfg_getint(cfg, "start_y");
     }
 
@@ -940,37 +940,37 @@ bool modmanager_parse_bk_info_mod(const char *buf, bk_info *current_info) {
 
     // Update integer fields only if they changed
     if(current_info->chain_hit != (unsigned int)cfg_getint(cfg, "chain_hit")) {
-        log_info("setting chain_hit from %u to %d", current_info->chain_hit, cfg_getint(cfg, "chain_hit"));
+        log_info("setting chain_hit from %u to %ld", current_info->chain_hit, cfg_getint(cfg, "chain_hit"));
         current_info->chain_hit = cfg_getint(cfg, "chain_hit");
     }
 
     if(current_info->chain_no_hit != (unsigned int)cfg_getint(cfg, "chain_no_hit")) {
-        log_info("setting chain_no_hit from %u to %d", current_info->chain_no_hit, cfg_getint(cfg, "chain_no_hit"));
+        log_info("setting chain_no_hit from %u to %ld", current_info->chain_no_hit, cfg_getint(cfg, "chain_no_hit"));
         current_info->chain_no_hit = cfg_getint(cfg, "chain_no_hit");
     }
 
     if(current_info->repeat != (unsigned int)cfg_getint(cfg, "repeat")) {
-        log_info("setting repeat from %u to %d", current_info->repeat, cfg_getint(cfg, "repeat"));
+        log_info("setting repeat from %u to %ld", current_info->repeat, cfg_getint(cfg, "repeat"));
         current_info->repeat = cfg_getint(cfg, "repeat");
     }
 
     if(current_info->probability != (unsigned int)cfg_getint(cfg, "probability")) {
-        log_info("setting probability from %u to %d", current_info->probability, cfg_getint(cfg, "probability"));
+        log_info("setting probability from %u to %ld", current_info->probability, cfg_getint(cfg, "probability"));
         current_info->probability = cfg_getint(cfg, "probability");
     }
 
     if(current_info->hazard_damage != (unsigned int)cfg_getint(cfg, "hazard_damage")) {
-        log_info("setting hazard_damage from %u to %d", current_info->hazard_damage, cfg_getint(cfg, "hazard_damage"));
+        log_info("setting hazard_damage from %u to %ld", current_info->hazard_damage, cfg_getint(cfg, "hazard_damage"));
         current_info->hazard_damage = cfg_getint(cfg, "hazard_damage");
     }
 
     if(current_info->ani.start_pos.x != cfg_getint(cfg, "start_x")) {
-        log_info("setting start_x from %d to %d", current_info->ani.start_pos.x, cfg_getint(cfg, "start_x"));
+        log_info("setting start_x from %d to %ld", current_info->ani.start_pos.x, cfg_getint(cfg, "start_x"));
         current_info->ani.start_pos.x = cfg_getint(cfg, "start_x");
     }
 
     if(current_info->ani.start_pos.y != cfg_getint(cfg, "start_y")) {
-        log_info("setting start_y from %d to %d", current_info->ani.start_pos.y, cfg_getint(cfg, "start_y"));
+        log_info("setting start_y from %d to %ld", current_info->ani.start_pos.y, cfg_getint(cfg, "start_y"));
         current_info->ani.start_pos.y = cfg_getint(cfg, "start_y");
     }
 
@@ -1122,7 +1122,7 @@ bool modmanager_parse_fighter_header_mod(const char *buf, af *fighter) {
     }
 
     if(fighter->health != (unsigned int)cfg_getint(cfg, "health")) {
-        log_info("setting health from %u to %d", fighter->health, cfg_getint(cfg, "health"));
+        log_info("setting health from %u to %ld", fighter->health, cfg_getint(cfg, "health"));
         fighter->health = cfg_getint(cfg, "health");
     }
 

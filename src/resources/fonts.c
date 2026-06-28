@@ -131,7 +131,7 @@ bool fonts_init(void) {
     // Load small font
     filename = get_resource_filename("CHARSMAL.DAT");
     if(font_load(&font_small, &filename, FONT_SMALL)) {
-        log_error("Unable to load font file '%s'!", filename);
+        log_error("Unable to load font file '%s'!", path_c(&filename));
         goto error_4;
     }
     log_info("Loaded font file '%s'", path_c(&filename));

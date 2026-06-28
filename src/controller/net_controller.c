@@ -249,7 +249,7 @@ void print_transcript(list *transcript) {
     list_iter_begin(transcript, &it);
     tick_events *ev = NULL;
     foreach(it, ev) {
-        log_debug("tick %d has events %d -- %d", ev->tick, ev->events[0], ev->events[1]);
+        log_debug("tick %d has events %d -- %d", ev->tick, ev->events[0][0], ev->events[1][0]);
     }
 }
 
@@ -592,7 +592,7 @@ int rewind_and_replay(wtf *data, controller *ctrl) {
     log_debug("advanced game state to %" PRIu32 ", expected %" PRIu32, gs->tick - data->local_proposal,
               data->last_tick - data->local_proposal);
 
-    log_debug("replayed %d ticks in %d milliseconds", tick_count, replay_end - replay_start);
+    log_debug("replayed %d ticks in %" PRIu64 " milliseconds", tick_count, replay_end - replay_start);
 
     // replace the game state with the replayed one
     gs->new_state = NULL;
@@ -655,7 +655,7 @@ void net_controller_free(controller *ctrl) {
         list_iter_begin(&data->transcript, &it);
         tick_events *ev = NULL;
         foreach(it, ev) {
-            log_debug("tick %" PRIu32 " has events %d -- %d", ev->tick, ev->events[0], ev->events[1]);
+            log_debug("tick %" PRIu32 " has events %d -- %d", ev->tick, ev->events[0][0], ev->events[1][0]);
             char buf0[12];
             char buf1[12];
 

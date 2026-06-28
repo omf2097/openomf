@@ -82,15 +82,15 @@ void player_describe_frame(const script_frame *frame) {
 
 void player_describe_object(object *obj) {
     log_debug("Object:");
-    log_debug("  - Start: %d, %d", obj->start.x, obj->start.y);
-    log_debug("  - Position: %d, %d", obj->pos.x, obj->pos.y);
-    log_debug("  - Velocity: %d, %d", obj->vel.x, obj->vel.y);
+    log_debug("  - Start: %f, %f", obj->start.x, obj->start.y);
+    log_debug("  - Position: %f, %f", obj->pos.x, obj->pos.y);
+    log_debug("  - Velocity: %f, %f", obj->vel.x, obj->vel.y);
     if(obj->cur_sprite_id) {
         sprite *cur_sprite = animation_get_sprite(obj->cur_animation, obj->cur_sprite_id);
         log_debug("  - Pos: %d, %d", cur_sprite->pos.x, cur_sprite->pos.y);
         log_debug("  - Size: %d, %d", cur_sprite->data->w, cur_sprite->data->h);
         player_sprite_state *rstate = &obj->sprite_state;
-        log_debug("CURRENT = %d - %d + %d - %d", obj->pos.y, cur_sprite->pos.y, rstate->o_correction.y,
+        log_debug("CURRENT = %f - %d + %d - %d", obj->pos.y, cur_sprite->pos.y, rstate->o_correction.y,
                   cur_sprite->data->h);
     }
 }
@@ -310,7 +310,7 @@ void player_run(object *obj) {
             trans_x = 0;
             if(script_get_tag_value_by_id(frame, TAG_BM) == 10 && destination > 0 &&
                fabsf(obj->pos.x - destination) > 5.0) {
-                log_debug("HAR walk to %d from %d", destination, obj->pos.x);
+                log_debug("HAR walk to %d from %f", destination, obj->pos.x);
                 har_walk_to(obj, destination);
                 return;
             }

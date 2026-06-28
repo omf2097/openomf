@@ -22,4 +22,11 @@ typedef uint_least32_t char32_t;
 #include <uchar.h>
 #endif
 
+// Tell the compiler that the marked a function takes printf-style arguments
+#if defined(__GNUC__)
+#define ATTR_FORMAT_PRINTF(fmt_idx, args_idx) __attribute__((format(printf, fmt_idx, args_idx)))
+#else
+#define ATTR_FORMAT_PRINTF(fmt_idx, args_idx)
+#endif
+
 #endif // COMPAT_H
