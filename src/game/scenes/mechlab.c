@@ -176,7 +176,7 @@ void mechlab_free(scene *scene) {
     game_player *player1 = game_state_get_player(scene->gs, 0);
     // save the character file
     if(player1->chr != NULL && sg_save(player1->chr) != SD_SUCCESS) {
-        log_error("Failed to save pilot %s", player1->chr->pilot.name);
+        log_error("Failed to save pilot %s", str_c(&player1->chr->pilot.name));
     }
 
     for(unsigned i = 0; i < N_ELEMENTS(local->bg_obj); i++) {
@@ -357,7 +357,7 @@ void mechlab_tick(scene *scene, int paused) {
             }
 
             if(sg_save(player1->chr) != SD_SUCCESS) {
-                log_error("Failed to save pilot %s", player1->chr->pilot.name);
+                log_error("Failed to save pilot %s", str_c(&player1->chr->pilot.name));
             }
             // force the character to reload because its just easier
 

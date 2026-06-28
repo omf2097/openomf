@@ -54,7 +54,7 @@ bool lab_dash_main_chr_load(component *c, void *userdata) {
 
     assert(oldchr != NULL);
     assert(oldchr != chr);
-    log_debug("Freeing previous CHR %s", oldchr->pilot.name);
+    log_debug("Freeing previous CHR %s", str_c(&oldchr->pilot.name));
     sd_chr_free(oldchr);
     omf_free(oldchr);
 
@@ -68,7 +68,7 @@ bool lab_dash_main_chr_load(component *c, void *userdata) {
         int16_t i = 0;
         foreach(it, chr) {
             if(i != dw->index) {
-                log_debug("Freeing CHR %s", chr->pilot.name);
+                log_debug("Freeing CHR %s", str_c(&chr->pilot.name));
                 sd_chr_free(chr);
             }
             ++i;
@@ -334,7 +334,7 @@ void lab_dash_main_chr_done(component *menu, component *submenu) {
     if(dw->savegames) {
         list_iter_begin(dw->savegames, &it);
         foreach(it, chr) {
-            log_debug("freeing CHR %s", chr->pilot.name);
+            log_debug("freeing CHR %s", str_c(&chr->pilot.name));
             sd_chr_free(chr);
         }
         list_free(dw->savegames);

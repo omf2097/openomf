@@ -383,7 +383,7 @@ static void arena_end(scene *sc) {
         }
 
         if(p1->chr && sg_save(p1->chr) != SD_SUCCESS) {
-            log_error("Failed to save pilot %s", p1->chr->pilot.name);
+            log_error("Failed to save pilot %s", str_c(&p1->chr->pilot.name));
         }
         if(is_demoplay(gs)) {
             game_state_set_next(gs, SCENE_VS);
@@ -1068,7 +1068,8 @@ void arena_spawn_hazard(scene *scene) {
                         }
                     }
 
-                    log_debug("Arena tick: Hazard with probability %d started.", info->probability, info->ani.id);
+                    log_debug("Arena tick: Hazard with probability %d started (anim id %d).", info->probability,
+                              info->ani.id);
                 } else {
                     object_free(obj);
                     omf_free(obj);

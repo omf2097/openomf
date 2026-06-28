@@ -35,7 +35,7 @@ void purchase_random_har(sd_pilot *pilot) {
     assert(n > 0 && "Pilot does not have enough money to purchase any HAR");
     pilot->har_id = possible_purchases[rand_int(n)];
     pilot->money -= har_prices[pilot->har_id];
-    log_debug("Pilot %s purchased HAR %u and has %d money left", pilot->name, pilot->har_id, pilot->money);
+    log_debug("Pilot %s purchased HAR %u and has %d money left", str_c(&pilot->name), pilot->har_id, pilot->money);
 }
 
 void purchase_random_har_upgrades(sd_pilot *pilot) {
@@ -54,7 +54,8 @@ void purchase_random_har_upgrades(sd_pilot *pilot) {
         }
         enum HAR_UPGRADE chosen_upgrade = possible_upgrades[rand_int(n)];
         upgrade_har(pilot, chosen_upgrade);
-        log_debug("Pilot %s bought upgrade %d and has %d money left", pilot->name, chosen_upgrade, pilot->money);
+        log_debug("Pilot %s bought upgrade %d and has %d money left", str_c(&pilot->name), chosen_upgrade,
+                  pilot->money);
     } while(n > 0);
 }
 

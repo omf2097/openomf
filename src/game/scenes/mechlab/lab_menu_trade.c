@@ -235,7 +235,7 @@ component *lab_menu_trade_create(scene *s) {
     // Init GUI buttons with locations from the "select" button sprites
     for(int i = 0; i < animation_get_sprite_count(main_buttons); i++) {
         if(i == p1->pilot->har_id || 0 == ((p1->pilot->har_trades >> i) & 1)) {
-            log_debug("skipping har %d", i, p1->pilot->har_trades);
+            log_debug("skipping har %d (trades %u)", i, p1->pilot->har_trades);
             continue;
         }
         log_debug("adding button");

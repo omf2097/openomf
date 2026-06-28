@@ -936,7 +936,7 @@ void har_take_damage(object *obj, af_move *move) {
         if(player->pilot->photo) {
             // in tournament mode, damage is mitigated by armor
             // (Armor + 2.5) * .25
-            log_debug("applying %f to %d modulated by armor %f", damage, h->health,
+            log_debug("applying %d to %d modulated by armor %f", damage, h->health,
                       0.25f * (2.5f + player->pilot->armor));
             h->health -= damage / (0.25f * (2.5f + player->pilot->armor));
         } else {
