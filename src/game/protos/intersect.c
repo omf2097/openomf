@@ -12,7 +12,7 @@
  * \param b Object 2 to check
  * \return 1 if collision detected, 0 if not.
  */
-int intersect_object_object(object *a, object *b) {
+int intersect_object_object(const object *a, const object *b) {
     if(a->cur_sprite_id < 0 || b->cur_sprite_id < 0) {
         return 0;
     }
@@ -33,7 +33,7 @@ int intersect_object_object(object *a, object *b) {
  * \param point Point to intersect
  * \return 1 if collision detected, 0 if not.
  */
-int intersect_object_point(object *obj, vec2i point) {
+int intersect_object_point(const object *obj, vec2i point) {
     if(obj->cur_sprite_id < 0) {
         return 0;
     }
@@ -63,7 +63,7 @@ int intersect_object_point(object *obj, vec2i point) {
  * \param point Approximate point of collision
  * \return 1 if collision detected, 0 if not.
  */
-int intersect(object *obj, object *target, int level, vec2i *point, bool is_har) {
+int intersect(const object *obj, const object *target, int level, vec2i *point, bool is_har) {
     // Make sure both objects have sprites going
     if(obj->cur_sprite_id < 0 || target->cur_sprite_id < 0) {
         return 0;
@@ -87,14 +87,14 @@ int intersect(object *obj, object *target, int level, vec2i *point, bool is_har)
     vec2i size_a = object_get_size(obj);
     vec2i size_b = object_get_size(target);
 
-    if((object_get_direction(obj) == OBJECT_FACE_LEFT && !player_frame_isset(obj, "r")) ||
-       (object_get_direction(obj) == OBJECT_FACE_RIGHT && player_frame_isset(obj, "r"))) {
+    if((object_get_direction(obj) == OBJECT_FACE_LEFT && !player_frame_isset(obj, TAG_R)) ||
+       (object_get_direction(obj) == OBJECT_FACE_RIGHT && player_frame_isset(obj, TAG_R))) {
         object_dir = OBJECT_FACE_LEFT;
         pos_a.x = object_get_pos(obj).x + ((cur_sprite->pos.x * -1) - size_a.x);
     }
 
-    if((object_get_direction(target) == OBJECT_FACE_LEFT && !player_frame_isset(target, "r")) ||
-       (object_get_direction(target) == OBJECT_FACE_RIGHT && player_frame_isset(target, "r"))) {
+    if((object_get_direction(target) == OBJECT_FACE_LEFT && !player_frame_isset(target, TAG_R)) ||
+       (object_get_direction(target) == OBJECT_FACE_RIGHT && player_frame_isset(target, TAG_R))) {
         target_dir = OBJECT_FACE_LEFT;
         pos_b.x = object_get_pos(target).x + ((target_sprite->pos.x * -1) - size_b.x);
     }
@@ -159,10 +159,10 @@ int intersect(object *obj, object *target, int level, vec2i *point, bool is_har)
     return 0;
 }
 
-int intersect_sprite_hitpoint(object *obj, object *target, int level, vec2i *point) {
+int intersect_sprite_hitpoint(const object *obj, const object *target, int level, vec2i *point) {
     return intersect(obj, target, level, point, false);
 }
 
-int intersect_har_sprite_hitpoint(object *obj, object *target, int level, vec2i *point) {
+int intersect_har_sprite_hitpoint(const object *obj, const object *target, int level, vec2i *point) {
     return intersect(obj, target, level, point, true);
 }

@@ -1,7 +1,7 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-#include "formats/script.h"
+#include "formats/script_reader.h"
 #include "game/game_state.h"
 #include "utils/vec.h"
 #include <stdint.h>
@@ -43,17 +43,14 @@ typedef struct player_slide_op_t {
 } player_slide_state;
 
 typedef struct player_animation_state_t {
-    uint32_t previous_tick;
-    uint32_t current_tick;
-    int previous;
-    int entered_frame;
-    sd_script parser;
-    uint8_t repeat;
-    uint8_t reverse;
-    uint8_t finished;
-    uint8_t disable_d;
-    uint8_t shadow_corner_hack;
-    bool looping;
+    bool entered_frame; ///< True if playback entered a new frame on the current tick.
+    script_reader reader;
+    bool finished;           ///< Playback reached the end of the script and was halted (not repeating).
+    bool repeat;             ///< Restart the animation from the beginning when it finishes.
+    bool reverse;            ///< Play the animation backwards (tick decrements each step).
+    bool disable_d;          ///< Ignore the 'd' re-enter tag for this animation.
+    bool shadow_corner_hack; ///< Enables the shadow HAR corner-case hack.
+    bool looping;            ///< The animation is looping via a 'd' re-enter tag.
 
     uint8_t pal_copy_entries; // ba
     uint8_t pal_copy_start;   // bi
@@ -69,13 +66,11 @@ typedef struct player_animation_state_t {
 } player_animation_state;
 
 void player_create(object *obj);
-void player_clone(object *src, object *dst);
-void player_free(object *obj);
 void player_reload(object *obj);
 void player_reload_with_str(object *obj, const char *str);
 void player_reset(object *obj);
-int player_frame_isset(const object *obj, const char *tag);
-int player_frame_get(const object *obj, const char *tag);
+int player_frame_isset(const object *obj, script_tag tag);
+int player_frame_get(const object *obj, script_tag tag);
 void player_run(object *obj);
 void player_set_repeat(object *obj, int repeat);
 int player_get_repeat(const object *obj);
@@ -85,7 +80,6 @@ int player_get_frame(const object *obj);
 void player_jump_to_tick(object *obj, int tick);
 char player_get_last_frame_letter(const object *obj);
 unsigned int player_get_len_ticks(const object *obj);
-void player_set_delay(object *obj, int delay);
 bool player_is_looping(const object *obj);
 uint32_t player_get_current_tick(const object *obj);
 void player_set_shadow_correction_y(object *obj, int value);

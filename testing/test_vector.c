@@ -457,6 +457,42 @@ void test_vector_zero_size(void) {
     vector_free(&zero_vector);
 }
 
+void test_vector_compact(void) {
+    vector v;
+    vector_create(&v, sizeof(int));
+
+    // Initially always sized 32
+    CU_ASSERT(v.reserved == 32);
+    for(int i = 0; i < 3; i++) {
+        vector_append(&v, &i);
+    }
+    CU_ASSERT(v.reserved == 32);
+    CU_ASSERT(vector_size(&v) == 3);
+
+    // Compact shrinks and keeps the contents
+    vector_compact(&v);
+    CU_ASSERT(v.reserved == 3);
+    CU_ASSERT(vector_size(&v) == 3);
+    CU_ASSERT(*(int *)vector_get(&v, 0) == 0);
+    CU_ASSERT(*(int *)vector_get(&v, 2) == 2);
+    vector_free(&v);
+
+    // If empty, release buffer entirely.
+    vector empty;
+    vector_create(&empty, sizeof(int));
+    vector_compact(&empty);
+    CU_ASSERT(empty.reserved == 0);
+    CU_ASSERT_PTR_NULL(empty.data);
+
+    // Appending again works.
+    const int x = 99;
+    vector_append(&empty, &x);
+    CU_ASSERT(vector_size(&empty) == 1);
+    CU_ASSERT(*(int *)vector_get(&empty, 0) == 99);
+    CU_ASSERT(empty.reserved >= 1);
+    vector_free(&empty);
+}
+
 void vector_test_suite(CU_pSuite suite) {
     // Add tests
     ADD_TEST("Test for vector create", test_vector_create);
@@ -483,4 +519,5 @@ void vector_test_suite(CU_pSuite suite) {
     ADD_TEST("Test for vector pop on empty", test_vector_pop_empty);
     ADD_TEST("Test for vector delete on empty", test_vector_delete_empty);
     ADD_TEST("Test for vector delete reverse iteration", test_vector_delete_reverse);
+    ADD_TEST("Test for vector compact", test_vector_compact);
 }
