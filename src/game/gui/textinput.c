@@ -199,9 +199,17 @@ static int textinput_event(component *c, SDL_Event *e) {
         } else if(state[SDL_SCANCODE_V] && state[SDL_SCANCODE_LCTRL]) {
             if(SDL_HasClipboardText()) {
                 char *clip = SDL_GetClipboardText();
-                str_insert_c_at(&ti->buf, ti->pos, clip);
+                str filtered;
+                str_create(&filtered);
+                for(const char *p = clip; *p != '\0'; p++) {
+                    if(is_valid_input(*p) && (ti->filter_cb == NULL || ti->filter_cb(*p))) {
+                        str_append_char(&filtered, *p);
+                    }
+                }
+                str_insert_buf_at(&ti->buf, ti->pos, str_c(&filtered), str_size(&filtered));
                 str_truncate(&ti->buf, ti->max_chars - 1);
-                ti->pos = smin2(ti->pos + strlen(clip), str_size(&ti->buf));
+                ti->pos = smin2(ti->pos + str_size(&filtered), str_size(&ti->buf));
+                str_free(&filtered);
                 SDL_free(clip);
                 refresh(c);
             }
