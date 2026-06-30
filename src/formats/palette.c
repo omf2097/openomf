@@ -46,6 +46,28 @@ unsigned char palette_resolve_color(uint8_t r, uint8_t g, uint8_t b, const vga_p
     return 0;
 }
 
+vga_index palette_resolve_closest(const vga_palette *pal, const vga_index start, const vga_index end, const uint8_t r,
+                                  const uint8_t g, const uint8_t b) {
+    assert(start >= 0 && end < VGA_PALETTE_SIZE && end >= start);
+    vga_index closest_index = start;
+    int32_t shortest_dist = 255 * 255 * 3 + 1; // Theoretical maximum and then some.
+    for(vga_index i = start; i <= end; i++) {
+        const int32_t rd = (int32_t)pal->colors[i].r - r;
+        const int32_t gd = (int32_t)pal->colors[i].g - g;
+        const int32_t bd = (int32_t)pal->colors[i].b - b;
+        const int32_t dist = rd * rd + gd * gd + bd * bd;
+        if(dist < shortest_dist) {
+            shortest_dist = dist;
+            closest_index = i;
+            if(dist == 0) {
+                // Cannot find shorter
+                break;
+            }
+        }
+    }
+    return closest_index;
+}
+
 int palette_to_gimp_palette(const vga_palette *pal, const path *filename) {
     sd_writer *w;
     unsigned char r, g, b;

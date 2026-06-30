@@ -33,6 +33,22 @@
  */
 unsigned char palette_resolve_color(uint8_t r, uint8_t g, uint8_t b, const vga_palette *pal);
 
+/** @brief Resolves an RGB color to the closest palette index within a range
+ *
+ * Resolves an RGB color to a palette index, even if it is not a perfect match.
+ * Only the given range is searched (inclusive).
+ *
+ * @param pal Palette data struct pointer
+ * @param start First index of the search range
+ * @param end Last index of the search range
+ * @param r Red component of the reference color (0 - 0xFF)
+ * @param g Green component of the reference color (0 - 0xFF)
+ * @param b Blue component of the reference color (0 - 0xFF)
+ * @return Index of the closest color in the range
+ */
+vga_index palette_resolve_closest(const vga_palette *pal, vga_index start, vga_index end, uint8_t r, uint8_t g,
+                                  uint8_t b);
+
 /** @brief Exports palette to GIMP palette file.
  *
  * Exports a palette to GIMP palette format (GPL).

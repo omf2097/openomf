@@ -15,6 +15,10 @@
 
 #include "game/gui/gui.h"
 
+#include "formats/palette.h"
+#include "video/vga_remap.h"
+#include "video/vga_state.h"
+
 #include <stdio.h>
 
 // FIXME: No idea what these should be
@@ -1637,9 +1641,6 @@ void lobby_tick(scene *scene, int paused) {
 }
 
 int lobby_create(scene *scene) {
-
-    lobby_local *local;
-
     // make sure we're using the configured settings
     game_state_match_settings_reset(scene->gs);
 
@@ -1647,7 +1648,7 @@ int lobby_create(scene *scene) {
     memset(fight_stats, 0, sizeof(*fight_stats));
 
     // Initialize local struct
-    local = omf_calloc(1, sizeof(lobby_local));
+    lobby_local *local = omf_calloc(1, sizeof(lobby_local));
     scene_set_userdata(scene, local);
 
     local->name[0] = 0;
@@ -1656,6 +1657,19 @@ int lobby_create(scene *scene) {
 
     local->nat_tries = 0;
     local->disconnected = false;
+
+    // Create remaps for the netarena. Since we load from PCX, we don't get these by default.
+    vga_remap_tables remaps;
+    vga_remaps_init(&remaps);
+    const vga_palette *pal = bk_get_palette(scene->bk_data, 0);
+    for(int i = 0; i < VGA_PALETTE_SIZE; i++) {
+        const vga_color c = pal->colors[i];
+        // 64 - 95 is the blue ramp in the palette. We use the brightness of the red value, to try and
+        // find a palette index that has a blue color as bright as the red value. Since the netarena.pcx palette has
+        // pure blue colors (R = 0, G = 0), this should work pretty directly.
+        remaps.tables[4].data[i] = palette_resolve_closest(pal, 64, 95, 0, 0, c.r);
+    }
+    vga_state_set_remaps_from(&remaps);
 
     // Create lobby theme
     gui_theme theme;
