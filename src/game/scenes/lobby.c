@@ -630,7 +630,7 @@ void lobby_do_yell(component *c, void *userdata) {
 component *lobby_yell_create(scene *s) {
     component *menu = menu_create();
 
-    menu_set_help_pos(menu, 10, 155, 500, 10);
+    menu_set_help_pos(menu, 10, 152, 500, 10);
     menu_set_help_text_settings(menu, FONT_NET2, TEXT_ALIGN_LEFT, 56);
     menu_set_horizontal(menu, true);
     menu_set_background(menu, false);
@@ -703,7 +703,7 @@ component *lobby_whisper_create(scene *s) {
 
     component *menu = menu_create();
 
-    menu_set_help_pos(menu, 10, 155, 500, 10);
+    menu_set_help_pos(menu, 10, 152, 500, 10);
     menu_set_help_text_settings(menu, FONT_NET2, TEXT_ALIGN_LEFT, 56);
     menu_set_horizontal(menu, true);
     menu_set_background(menu, false);
@@ -1700,7 +1700,7 @@ int lobby_create(scene *scene) {
     menu_set_background(menu, false);
     menu_set_padding(menu, 6);
 
-    menu_set_help_pos(menu, 10, 155, 500, 10);
+    menu_set_help_pos(menu, 10, 152, 500, 10);
 
     menu_set_help_text_settings(menu, FONT_NET2, TEXT_ALIGN_LEFT, 56);
     local->challenge_button =
