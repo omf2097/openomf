@@ -1671,6 +1671,7 @@ int lobby_create(scene *scene) {
     local->disconnected = false;
 
     // Create remaps for the netarena. Since we load from PCX, we don't get these by default.
+    // TODO: Use oklab for this when possible.
     vga_remap_tables remaps;
     vga_remaps_init(&remaps);
     const vga_palette *pal = bk_get_palette(scene->bk_data, 0);
