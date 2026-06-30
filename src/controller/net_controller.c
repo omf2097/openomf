@@ -566,8 +566,10 @@ int rewind_and_replay(wtf *data, controller *ctrl) {
                     c->gs = gs_current;
                 }
             }
-            game_state_clone_free(gs_old);
-            omf_free(gs_old);
+            if(gs_old) {
+                game_state_clone_free(gs_old);
+                omf_free(gs_old);
+            }
             return 1;
         } else if(gs->tick - data->local_proposal == data->peer_last_hash_tick) {
             log_debug("arena hashes agree!");
