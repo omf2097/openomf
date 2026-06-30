@@ -310,14 +310,14 @@ static void update_active_user_text(lobby_local *local) {
 
 void lobby_input_tick(scene *scene) {
     lobby_local *local = scene_get_userdata(scene);
-    ctrl_event *p1 = NULL, *i;
+    ctrl_event *p1 = NULL;
     game_state_menu_poll(scene->gs, &p1);
 
-    i = p1;
+    const ctrl_event *i = p1;
     if(i) {
         do {
             if(local->dialog && dialog_is_visible(local->dialog)) {
-                dialog_event(local->dialog, p1->event_data.action);
+                dialog_event(local->dialog, i->event_data.action);
             } else if(i->type == EVENT_TYPE_ACTION && i->event_data.action == ACT_DOWN) {
                 local->active_user++;
                 if(local->active_user >= list_size(&local->users)) {
@@ -331,7 +331,7 @@ void lobby_input_tick(scene *scene) {
                 }
                 update_active_user_text(local);
             } else {
-                gui_frame_action(local->frame, p1->event_data.action);
+                gui_frame_action(local->frame, i->event_data.action);
             }
         } while((i = i->next));
     }
