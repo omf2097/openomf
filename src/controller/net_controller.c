@@ -283,7 +283,7 @@ void send_events(wtf *data, int delay) {
             // each tick is written as the 32 bit tick value and a 0 terminated list of u8 actions on that tick
             serial_write_uint32(&ser, ev->tick);
             int i = 0;
-            while(ev->events[data->id][i]) {
+            while(ev->events[data->id][i] && i < MAX_EVENTS_PER_TICK) {
                 serial_write_int8(&ser, ev->events[data->id][i]);
                 i++;
             }
