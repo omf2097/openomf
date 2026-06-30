@@ -1813,6 +1813,13 @@ int lobby_create(scene *scene) {
             ENetPacket *packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
             enet_peer_send(local->peer, 0, packet);
             serial_free(&ser);
+        } else {
+            // We came back without a result (e.g. ESC out of the VS screen). Tell the server we are free!
+            serial_create(&ser);
+            serial_write_int8(&ser, PACKET_CHALLENGE << 4 | CHALLENGE_CANCEL);
+            ENetPacket *packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
+            enet_peer_send(local->peer, 0, packet);
+            serial_free(&ser);
         }
 
         serial_create(&ser);
