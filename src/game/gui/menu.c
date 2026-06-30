@@ -162,8 +162,15 @@ static int menu_action(component *mc, int action) {
         }
     }
 
-    // Handle down/up selection movement
+    // In a horizontal menu, let the selected component consume left/right
+    // first (a text input uses these to move its cursor). Only fall back to
+    // moving the selection if the component does not handle the action.
     c = sizer_get(mc, m->selected);
+    if(c != NULL && m->horizontal && (action == ACT_LEFT || action == ACT_RIGHT) && component_action(c, action) == 0) {
+        return 0;
+    }
+
+    // Handle down/up selection movement
     if(c != NULL && c->supports_select &&
        (((action == ACT_DOWN || action == ACT_UP) && !m->horizontal) ||
         ((action == ACT_LEFT || action == ACT_RIGHT) && m->horizontal))) {
