@@ -15,6 +15,10 @@
 
 #include "game/gui/gui.h"
 
+#include "formats/palette.h"
+#include "video/vga_remap.h"
+#include "video/vga_state.h"
+
 #include <stdio.h>
 
 // FIXME: No idea what these should be
@@ -306,14 +310,14 @@ static void update_active_user_text(lobby_local *local) {
 
 void lobby_input_tick(scene *scene) {
     lobby_local *local = scene_get_userdata(scene);
-    ctrl_event *p1 = NULL, *i;
+    ctrl_event *p1 = NULL;
     game_state_menu_poll(scene->gs, &p1);
 
-    i = p1;
+    const ctrl_event *i = p1;
     if(i) {
         do {
             if(local->dialog && dialog_is_visible(local->dialog)) {
-                dialog_event(local->dialog, p1->event_data.action);
+                dialog_event(local->dialog, i->event_data.action);
             } else if(i->type == EVENT_TYPE_ACTION && i->event_data.action == ACT_DOWN) {
                 local->active_user++;
                 if(local->active_user >= list_size(&local->users)) {
@@ -327,7 +331,7 @@ void lobby_input_tick(scene *scene) {
                 }
                 update_active_user_text(local);
             } else {
-                gui_frame_action(local->frame, p1->event_data.action);
+                gui_frame_action(local->frame, i->event_data.action);
             }
         } while((i = i->next));
     }
@@ -394,25 +398,37 @@ void lobby_render_overlay(scene *scene) {
             i++;
         }
 
-        int left = 32;
+        int left = 36;
+        int rows = 0;
         list_iter_end(&local->log, &it);
         log_event *log_msg;
         while((log_msg = iter_prev(&it)) && left > 0) {
+            const int msg_rows = (int)text_get_layout_rows(log_msg->message);
+            if(rows + msg_rows > 4) {
+                break;
+            }
+            rows += msg_rows;
             left -= text_get_layout_height(log_msg->message);
-            text_draw(log_msg->message, 10, 168 + left);
+            text_draw(log_msg->message, 10, 162 + left);
         }
     } else if(local->mode == LOBBY_YELL) {
         iterator it;
-        int left = 140;
+        int left = 136;
         list_iter_end(&local->log, &it);
         log_event *log_msg;
         while((log_msg = iter_prev(&it)) && left > 0) {
-            left -= text_get_layout_height(log_msg->message);
+            int h = text_get_layout_height(log_msg->message);
+            if(left - h < 0) {
+                break;
+            }
+            left -= h;
             text_draw(log_msg->message, 10, left);
         }
     }
 
-    gui_frame_render(local->frame);
+    if(!(local->mode == LOBBY_STARTING && local->dialog && dialog_is_visible(local->dialog))) {
+        gui_frame_render(local->frame);
+    }
 
     if(local->dialog && dialog_is_visible(local->dialog)) {
         dialog_render(local->dialog);
@@ -614,7 +630,7 @@ void lobby_do_yell(component *c, void *userdata) {
 component *lobby_yell_create(scene *s) {
     component *menu = menu_create();
 
-    menu_set_help_pos(menu, 10, 155, 500, 10);
+    menu_set_help_pos(menu, 10, 152, 500, 10);
     menu_set_help_text_settings(menu, FONT_NET2, TEXT_ALIGN_LEFT, 56);
     menu_set_horizontal(menu, true);
     menu_set_background(menu, false);
@@ -687,7 +703,7 @@ component *lobby_whisper_create(scene *s) {
 
     component *menu = menu_create();
 
-    menu_set_help_pos(menu, 10, 155, 500, 10);
+    menu_set_help_pos(menu, 10, 152, 500, 10);
     menu_set_help_text_settings(menu, FONT_NET2, TEXT_ALIGN_LEFT, 56);
     menu_set_horizontal(menu, true);
     menu_set_background(menu, false);
@@ -1637,9 +1653,6 @@ void lobby_tick(scene *scene, int paused) {
 }
 
 int lobby_create(scene *scene) {
-
-    lobby_local *local;
-
     // make sure we're using the configured settings
     game_state_match_settings_reset(scene->gs);
 
@@ -1647,7 +1660,7 @@ int lobby_create(scene *scene) {
     memset(fight_stats, 0, sizeof(*fight_stats));
 
     // Initialize local struct
-    local = omf_calloc(1, sizeof(lobby_local));
+    lobby_local *local = omf_calloc(1, sizeof(lobby_local));
     scene_set_userdata(scene, local);
 
     local->name[0] = 0;
@@ -1656,6 +1669,20 @@ int lobby_create(scene *scene) {
 
     local->nat_tries = 0;
     local->disconnected = false;
+
+    // Create remaps for the netarena. Since we load from PCX, we don't get these by default.
+    // TODO: Use oklab for this when possible.
+    vga_remap_tables remaps;
+    vga_remaps_init(&remaps);
+    const vga_palette *pal = bk_get_palette(scene->bk_data, 0);
+    for(int i = 0; i < VGA_PALETTE_SIZE; i++) {
+        const vga_color c = pal->colors[i];
+        // 64 - 95 is the blue ramp in the palette. We use the brightness of the red value, to try and
+        // find a palette index that has a blue color as bright as the red value. Since the netarena.pcx palette has
+        // pure blue colors (R = 0, G = 0), this should work pretty directly.
+        remaps.tables[4].data[i] = palette_resolve_closest(pal, 64, 95, 0, 0, c.r);
+    }
+    vga_state_set_remaps_from(&remaps);
 
     // Create lobby theme
     gui_theme theme;
@@ -1674,7 +1701,7 @@ int lobby_create(scene *scene) {
     menu_set_background(menu, false);
     menu_set_padding(menu, 6);
 
-    menu_set_help_pos(menu, 10, 155, 500, 10);
+    menu_set_help_pos(menu, 10, 152, 500, 10);
 
     menu_set_help_text_settings(menu, FONT_NET2, TEXT_ALIGN_LEFT, 56);
     local->challenge_button =
@@ -1784,6 +1811,13 @@ int lobby_create(scene *scene) {
             serial_create(&ser);
             serial_write_int8(&ser, PACKET_CHALLENGE << 4 | CHALLENGE_DONE);
             serial_write_int8(&ser, (uint8_t)winner);
+            ENetPacket *packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
+            enet_peer_send(local->peer, 0, packet);
+            serial_free(&ser);
+        } else {
+            // We came back without a result (e.g. ESC out of the VS screen). Tell the server we are free!
+            serial_create(&ser);
+            serial_write_int8(&ser, PACKET_CHALLENGE << 4 | CHALLENGE_CANCEL);
             ENetPacket *packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
             enet_peer_send(local->peer, 0, packet);
             serial_free(&ser);

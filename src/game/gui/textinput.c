@@ -45,11 +45,7 @@ static void set_cursor(component *c, bool focused) {
     if(focused) {
         str tmp;
         str_from(&tmp, &ti->buf);
-        if(ti->pos == str_size(&tmp)) {
-            str_append_char(&tmp, CURSOR_CHAR);
-        } else {
-            str_set_at(&tmp, ti->pos, CURSOR_CHAR);
-        }
+        str_insert_at(&tmp, ti->pos, CURSOR_CHAR);
         text_set_from_str(ti->text, &tmp);
         str_free(&tmp);
     } else {
@@ -60,7 +56,7 @@ static void set_cursor(component *c, bool focused) {
 
 static void refresh(component *c) {
     textinput *ti = widget_get_obj(c);
-    str_truncate(&ti->buf, ti->max_chars);
+    str_truncate(&ti->buf, ti->max_chars - 1);
     ti->was_focused = false;
     text_set_from_str(ti->text, &ti->buf);
 }
@@ -130,18 +126,17 @@ static char textinput_scroll_character(char cur, bool down) {
 
 static int textinput_action(component *c, int action) {
     textinput *ti = widget_get_obj(c);
-    char cursor_char = str_at(&ti->buf, ti->pos);
+    const char cursor_char = str_at(&ti->buf, ti->pos);
     char new_char;
     switch(action) {
         case ACT_RIGHT:
-            if(cursor_char == '\0' && ti->pos >= str_size(&ti->buf)) {
-                str_append_char(&ti->buf, ' ');
-            }
-            ti->pos = min2(ti->max_chars - 1, ti->pos + 1);
+            ti->pos = smin2(ti->pos + 1, str_size(&ti->buf));
             refresh(c);
             return 0;
         case ACT_LEFT:
-            ti->pos = max2(0, ti->pos - 1);
+            if(ti->pos > 0) {
+                ti->pos--;
+            }
             refresh(c);
             return 0;
         case ACT_UP:
@@ -186,27 +181,35 @@ static int textinput_event(component *c, SDL_Event *e) {
     if(e->type == SDL_TEXTINPUT && is_valid_input(e->text.text[0]) &&
        (ti->filter_cb == NULL || ti->filter_cb(e->text.text[0]))) {
         str_insert_at(&ti->buf, ti->pos, e->text.text[0]);
-        str_truncate(&ti->buf, ti->max_chars);
-        ti->pos = min2(ti->max_chars - 1, ti->pos + 1);
+        str_truncate(&ti->buf, ti->max_chars - 1);
+        ti->pos = smin2(ti->pos + 1, str_size(&ti->buf));
         refresh(c);
         return 0;
     } else if(e->type == SDL_KEYDOWN) {
         const unsigned char *state = SDL_GetKeyboardState(NULL);
         if(state[SDL_SCANCODE_BACKSPACE]) {
-            ti->pos = max2(0, ti->pos - 1);
-            str_delete_at(&ti->buf, ti->pos);
+            if(ti->pos > 0) {
+                ti->pos--;
+                str_delete_at(&ti->buf, ti->pos);
+            }
             refresh(c);
         } else if(state[SDL_SCANCODE_DELETE]) {
-            if(str_delete_at(&ti->buf, ti->pos)) {
-                ti->pos = max2(0, ti->pos);
-            }
+            str_delete_at(&ti->buf, ti->pos);
             refresh(c);
         } else if(state[SDL_SCANCODE_V] && state[SDL_SCANCODE_LCTRL]) {
             if(SDL_HasClipboardText()) {
                 char *clip = SDL_GetClipboardText();
-                str_insert_c_at(&ti->buf, ti->pos, clip);
-                str_truncate(&ti->buf, ti->max_chars);
-                ti->pos = min2(ti->max_chars - 1, ti->pos + strlen(clip));
+                str filtered;
+                str_create(&filtered);
+                for(const char *p = clip; *p != '\0'; p++) {
+                    if(is_valid_input(*p) && (ti->filter_cb == NULL || ti->filter_cb(*p))) {
+                        str_append_char(&filtered, *p);
+                    }
+                }
+                str_insert_buf_at(&ti->buf, ti->pos, str_c(&filtered), str_size(&filtered));
+                str_truncate(&ti->buf, ti->max_chars - 1);
+                ti->pos = smin2(ti->pos + str_size(&filtered), str_size(&ti->buf));
+                str_free(&filtered);
                 SDL_free(clip);
                 refresh(c);
             }
@@ -262,8 +265,8 @@ void textinput_set_done_cb(component *c, textinput_done_cb done_cb, void *userda
 void textinput_set_text(component *c, char const *value) {
     textinput *ti = widget_get_obj(c);
     str_set_c(&ti->buf, value);
-    ti->pos = str_size(&ti->buf);
     refresh(c);
+    ti->pos = str_size(&ti->buf);
 }
 
 void textinput_set_font(component *c, font_size font) {
@@ -333,7 +336,7 @@ component *textinput_create(int max_chars, const char *help, const char *initial
     ti->text_shadow_color = 0;
     ti->text_shadow = GLYPH_SHADOW_NONE;
     ti->text = text_create();
-    ti->pos = min2(str_size(&ti->buf), ti->max_chars);
+    ti->pos = smin2(str_size(&ti->buf), (size_t)(ti->max_chars - 1));
 
     component_set_help_text(c, help);
 

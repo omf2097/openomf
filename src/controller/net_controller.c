@@ -283,7 +283,7 @@ void send_events(wtf *data, int delay) {
             // each tick is written as the 32 bit tick value and a 0 terminated list of u8 actions on that tick
             serial_write_uint32(&ser, ev->tick);
             int i = 0;
-            while(ev->events[data->id][i]) {
+            while(ev->events[data->id][i] && i < MAX_EVENTS_PER_TICK) {
                 serial_write_int8(&ser, ev->events[data->id][i]);
                 i++;
             }
@@ -566,8 +566,10 @@ int rewind_and_replay(wtf *data, controller *ctrl) {
                     c->gs = gs_current;
                 }
             }
-            game_state_clone_free(gs_old);
-            omf_free(gs_old);
+            if(gs_old) {
+                game_state_clone_free(gs_old);
+                omf_free(gs_old);
+            }
             return 1;
         } else if(gs->tick - data->local_proposal == data->peer_last_hash_tick) {
             log_debug("arena hashes agree!");
