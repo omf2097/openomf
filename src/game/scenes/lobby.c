@@ -398,12 +398,18 @@ void lobby_render_overlay(scene *scene) {
             i++;
         }
 
-        int left = 32;
+        int left = 36;
+        int rows = 0;
         list_iter_end(&local->log, &it);
         log_event *log_msg;
         while((log_msg = iter_prev(&it)) && left > 0) {
+            const int msg_rows = (int)text_get_layout_rows(log_msg->message);
+            if(rows + msg_rows > 4) {
+                break;
+            }
+            rows += msg_rows;
             left -= text_get_layout_height(log_msg->message);
-            text_draw(log_msg->message, 10, 168 + left);
+            text_draw(log_msg->message, 10, 162 + left);
         }
     } else if(local->mode == LOBBY_YELL) {
         iterator it;
