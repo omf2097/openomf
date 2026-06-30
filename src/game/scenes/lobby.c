@@ -426,7 +426,9 @@ void lobby_render_overlay(scene *scene) {
         }
     }
 
-    gui_frame_render(local->frame);
+    if(!(local->mode == LOBBY_STARTING && local->dialog && dialog_is_visible(local->dialog))) {
+        gui_frame_render(local->frame);
+    }
 
     if(local->dialog && dialog_is_visible(local->dialog)) {
         dialog_render(local->dialog);
