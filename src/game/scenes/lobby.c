@@ -413,11 +413,15 @@ void lobby_render_overlay(scene *scene) {
         }
     } else if(local->mode == LOBBY_YELL) {
         iterator it;
-        int left = 140;
+        int left = 136;
         list_iter_end(&local->log, &it);
         log_event *log_msg;
         while((log_msg = iter_prev(&it)) && left > 0) {
-            left -= text_get_layout_height(log_msg->message);
+            int h = text_get_layout_height(log_msg->message);
+            if(left - h < 0) {
+                break;
+            }
+            left -= h;
             text_draw(log_msg->message, 10, left);
         }
     }
