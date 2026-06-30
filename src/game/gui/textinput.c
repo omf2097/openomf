@@ -193,8 +193,10 @@ static int textinput_event(component *c, SDL_Event *e) {
     } else if(e->type == SDL_KEYDOWN) {
         const unsigned char *state = SDL_GetKeyboardState(NULL);
         if(state[SDL_SCANCODE_BACKSPACE]) {
-            ti->pos = max2(0, ti->pos - 1);
-            str_delete_at(&ti->buf, ti->pos);
+            if(ti->pos > 0) {
+                ti->pos--;
+                str_delete_at(&ti->buf, ti->pos);
+            }
             refresh(c);
         } else if(state[SDL_SCANCODE_DELETE]) {
             if(str_delete_at(&ti->buf, ti->pos)) {
