@@ -166,8 +166,7 @@ static int menu_action(component *mc, int action) {
     // first (a text input uses these to move its cursor). Only fall back to
     // moving the selection if the component does not handle the action.
     c = sizer_get(mc, m->selected);
-    if(c != NULL && m->horizontal && (action == ACT_LEFT || action == ACT_RIGHT) &&
-       component_action(c, action) == 0) {
+    if(c != NULL && m->horizontal && (action == ACT_LEFT || action == ACT_RIGHT) && component_action(c, action) == 0) {
         return 0;
     }
 
