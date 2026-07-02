@@ -23,9 +23,9 @@ int component_event(component *c, SDL_Event *event) {
     return 1;
 }
 
-int component_action(component *c, int action) {
+int component_action(component *c, int action, int source) {
     if(c->action) {
-        return c->action(c, action);
+        return c->action(c, action, source);
     }
     return 1;
 }
@@ -51,23 +51,32 @@ void component_disable(component *c, bool disabled) {
     if(!c->supports_disable) {
         return;
     }
-    c->is_disabled = (disabled != 0) ? 1 : 0;
+    if(c->is_disabled != disabled) {
+        c->is_disabled = disabled;
+        c->dirty = true;
+    }
 }
 
 void component_select(component *c, bool selected) {
     if(!c->supports_select) {
         return;
     }
-    c->is_selected = (selected != 0) ? 1 : 0;
+    if(c->is_selected != selected) {
+        c->is_selected = selected;
+        c->dirty = true;
+    }
 }
 
 void component_focus(component *c, bool focused) {
     if(!c->supports_focus) {
         return;
     }
-    c->is_focused = (focused != 0) ? 1 : 0;
+    if(c->is_focused != focused) {
+        c->is_focused = focused;
+        c->dirty = true;
+    }
     if(c->focus) {
-        c->focus(c, c->is_focused == 1);
+        c->focus(c, c->is_focused);
     }
 }
 

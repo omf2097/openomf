@@ -1231,9 +1231,9 @@ void game_state_init_demo(game_state *gs) {
 void game_state_menu_poll(game_state *gs, ctrl_event **ev) {
     gs->menu_ctrl->last = gs->menu_ctrl->current;
     gs->menu_ctrl->current = 0;
-    // poll keyboard
+    gs->menu_ctrl->type = CTRL_TYPE_KEYBOARD;
     keyboard_menu_poll(gs->menu_ctrl, ev);
-    // poll joysticks
+    gs->menu_ctrl->type = CTRL_TYPE_GAMEPAD;
     joystick_menu_poll_all(gs->menu_ctrl, ev);
 }
 

@@ -43,6 +43,10 @@
 #define TEXT_SHADOW_COLOR 6
 #define DIALOG_BORDER_COLOR 0xFE
 
+// Ordered letter-wheel charsets for gamepad entry in chat fields.
+#define CHAT_NAME_WHEEL " ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+#define CHAT_MESSAGE_WHEEL " ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.,!?':;-"
+
 enum
 {
     LOBBY_STARTING,
@@ -317,21 +321,28 @@ void lobby_input_tick(scene *scene) {
     if(i) {
         do {
             if(local->dialog && dialog_is_visible(local->dialog)) {
-                dialog_event(local->dialog, i->event_data.action);
-            } else if(i->type == EVENT_TYPE_ACTION && i->event_data.action == ACT_DOWN) {
-                local->active_user++;
-                if(local->active_user >= list_size(&local->users)) {
-                    local->active_user = 0;
+                dialog_event(local->dialog, i->event_data.action, i->source);
+            } else if(i->type == EVENT_TYPE_ACTION &&
+                      (i->event_data.action == ACT_UP || i->event_data.action == ACT_DOWN)) {
+                // Offer up/down to the focused field first (e.g. the name entry
+                // letter wheel). Only browse the user list if nothing in the
+                // frame consumed them.
+                if(gui_frame_action(local->frame, i->event_data.action, i->source) != 0) {
+                    if(i->event_data.action == ACT_DOWN) {
+                        local->active_user++;
+                        if(local->active_user >= list_size(&local->users)) {
+                            local->active_user = 0;
+                        }
+                    } else {
+                        local->active_user--;
+                        if(local->active_user >= list_size(&local->users)) {
+                            local->active_user = list_size(&local->users) - 1;
+                        }
+                    }
+                    update_active_user_text(local);
                 }
-                update_active_user_text(local);
-            } else if(i->type == EVENT_TYPE_ACTION && i->event_data.action == ACT_UP) {
-                local->active_user--;
-                if(local->active_user >= list_size(&local->users)) {
-                    local->active_user = list_size(&local->users) - 1;
-                }
-                update_active_user_text(local);
             } else {
-                gui_frame_action(local->frame, i->event_data.action);
+                gui_frame_action(local->frame, i->event_data.action, i->source);
             }
         } while((i = i->next));
     }
@@ -648,6 +659,8 @@ component *lobby_yell_create(scene *s) {
     textinput_set_horizontal_align(yell_input, TEXT_ALIGN_LEFT);
     menu_attach(menu, yell_input);
     textinput_enable_background(yell_input, false);
+    textinput_set_wheel_charset(yell_input, CHAT_MESSAGE_WHEEL);
+    textinput_set_edit_by_default(yell_input, true);
     textinput_set_done_cb(yell_input, lobby_do_yell, s);
 
     return menu;
@@ -720,6 +733,8 @@ component *lobby_whisper_create(scene *s) {
     textinput_set_font(whisper_input, FONT_NET1);
     menu_attach(menu, whisper_input);
     textinput_enable_background(whisper_input, 0);
+    textinput_set_wheel_charset(whisper_input, CHAT_MESSAGE_WHEEL);
+    textinput_set_edit_by_default(whisper_input, true);
     textinput_set_done_cb(whisper_input, lobby_do_whisper, s);
 
     return menu;
@@ -1799,6 +1814,8 @@ int lobby_create(scene *scene) {
         textinput_enable_background(name_input, false);
         textinput_set_horizontal_align(name_input, TEXT_ALIGN_LEFT);
         textinput_set_done_cb(name_input, lobby_entered_name, scene);
+        textinput_set_wheel_charset(name_input, CHAT_NAME_WHEEL);
+        textinput_set_edit_by_default(name_input, true);
         menu_attach(name_menu, name_input);
 
         menu_set_submenu(menu, name_menu);

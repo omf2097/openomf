@@ -556,7 +556,7 @@ void mechlab_input_tick(scene *scene) {
                     }
                 } else {
                     log_debug("sending input %d to new player dash", i->event_data.action);
-                    gui_frame_action(local->dashboard, i->event_data.action);
+                    gui_frame_action(local->dashboard, i->event_data.action, i->source);
                 }
 
             } else if(local->dashtype == DASHBOARD_SELECT_NEW_PIC && i->event_data.action == ACT_ESC) {
@@ -580,7 +580,7 @@ void mechlab_input_tick(scene *scene) {
                 gui_frame_set_root(local->frame, lab_menu_main_create(scene, found));
                 gui_frame_layout(local->frame);
             } else {
-                gui_frame_action(local->frame, i->event_data.action);
+                gui_frame_action(local->frame, i->event_data.action, i->source);
             }
         }
     } while((i = i->next) != NULL);

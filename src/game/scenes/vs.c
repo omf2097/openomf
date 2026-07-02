@@ -175,12 +175,12 @@ static void vs_free(scene *scene) {
     scene_set_userdata(scene, local);
 }
 
-void vs_handle_action(scene *scene, int action) {
+void vs_handle_action(scene *scene, int action, int source) {
     vs_local *local = scene_get_userdata(scene);
     if(dialog_is_visible(&local->too_pathetic_dialog)) {
-        dialog_event(&local->too_pathetic_dialog, action);
+        dialog_event(&local->too_pathetic_dialog, action, source);
     } else if(dialog_is_visible(&local->quit_dialog)) {
-        dialog_event(&local->quit_dialog, action);
+        dialog_event(&local->quit_dialog, action, source);
     } else {
         switch(action) {
             case ACT_KICK:
@@ -237,7 +237,7 @@ void vs_dynamic_tick(scene *scene, int paused) {
     if(i) {
         do {
             if(i->type == EVENT_TYPE_ACTION) {
-                vs_handle_action(scene, i->event_data.action);
+                vs_handle_action(scene, i->event_data.action, i->source);
             } else if(i->type == EVENT_TYPE_CLOSE) {
                 game_state_set_next(scene->gs, SCENE_MENU);
                 return;
@@ -264,9 +264,9 @@ void vs_input_tick(scene *scene) {
     for(ctrl_event *i = menu_ev; i; i = i->next) {
         if(i->type == EVENT_TYPE_ACTION && i->event_data.action == ACT_ESC) {
             if(dialog_is_visible(&local->too_pathetic_dialog)) {
-                dialog_event(&local->too_pathetic_dialog, i->event_data.action);
+                dialog_event(&local->too_pathetic_dialog, i->event_data.action, i->source);
             } else if(dialog_is_visible(&local->quit_dialog)) {
-                dialog_event(&local->quit_dialog, i->event_data.action);
+                dialog_event(&local->quit_dialog, i->event_data.action, i->source);
             } else if(vs_is_singleplayer(scene) && player1->sp_wins != 0 && !player1->chr) {
                 // there's an active singleplayer campaign, confirm quitting
                 dialog_show(&local->quit_dialog, 1);
@@ -293,7 +293,7 @@ void vs_input_tick(scene *scene) {
     if(i) {
         do {
             if(i->type == EVENT_TYPE_ACTION) {
-                vs_handle_action(scene, i->event_data.action);
+                vs_handle_action(scene, i->event_data.action, i->source);
             } else if(i->type == EVENT_TYPE_CLOSE) {
                 game_state_set_next(scene->gs, SCENE_MENU);
             }

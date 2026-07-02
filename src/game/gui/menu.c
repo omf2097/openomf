@@ -136,13 +136,18 @@ static int menu_event(component *mc, SDL_Event *event) {
     return 1;
 }
 
-static int menu_action(component *mc, int action) {
+static int menu_action(component *mc, int action, int source) {
     menu *m = sizer_get_obj(mc);
-    component *c;
 
     // If submenu is set, we need to use it
     if(m->submenu != NULL && !menu_is_finished(m->submenu)) {
-        return component_action(m->submenu, action);
+        return component_action(m->submenu, action, source);
+    }
+
+    // While the selected component is in gamepad edit mode it owns all gamepad input except ESC.
+    component *c = sizer_get(mc, m->selected);
+    if(c != NULL && c->editing && source == CTRL_TYPE_GAMEPAD && action != ACT_ESC) {
+        return component_action(c, action, source);
     }
 
     if(action == ACT_ESC) {
@@ -166,7 +171,8 @@ static int menu_action(component *mc, int action) {
     // first (a text input uses these to move its cursor). Only fall back to
     // moving the selection if the component does not handle the action.
     c = sizer_get(mc, m->selected);
-    if(c != NULL && m->horizontal && (action == ACT_LEFT || action == ACT_RIGHT) && component_action(c, action) == 0) {
+    if(c != NULL && m->horizontal && (action == ACT_LEFT || action == ACT_RIGHT) &&
+       component_action(c, action, source) == 0) {
         return 0;
     }
 
@@ -212,7 +218,7 @@ static int menu_action(component *mc, int action) {
     // If the key wasn't handled yet and we have a valid component,
     // pass on the event
     if(c != NULL) {
-        return component_action(c, action);
+        return component_action(c, action, source);
     }
 
     // Tell the caller that the event was not handled here.

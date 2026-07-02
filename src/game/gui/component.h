@@ -18,7 +18,7 @@ typedef struct component component;
 
 typedef void (*component_render_cb)(component *c);                             ///< Render callback function type
 typedef int (*component_event_cb)(component *c, SDL_Event *event);             ///< SDL event callback function type
-typedef int (*component_action_cb)(component *c, int action);                  ///< Action callback function type
+typedef int (*component_action_cb)(component *c, int action, int source);      ///< Action callback function type
 typedef void (*component_focus_cb)(component *c, bool focused);                ///< Focus change callback function type
 typedef void (*component_layout_cb)(component *c, int x, int y, int w, int h); ///< Layout callback function type
 typedef void (*component_tick_cb)(component *c);                               ///< Tick/update callback function type
@@ -57,6 +57,9 @@ struct component {
 
     bool supports_focus; ///< Whether the component can be focused by component_focus() call.
     bool is_focused;     ///< Whether the component is focused
+
+    bool editing; ///< Whether this component is in edit mode and owns input
+    bool dirty;   ///< Render inputs changed since last render; a component can use this to skip recompute
 
     text *help; ///< Help text, if available
 
@@ -114,9 +117,10 @@ int component_event(component *c, SDL_Event *event);
  * @brief Handle an abstract action event
  * @param c Component to receive the action
  * @param action Action code to process
+ * @param source CTRL_TYPE_* of the device that produced the action
  * @return Non-zero if the action was handled
  */
-int component_action(component *c, int action);
+int component_action(component *c, int action, int source);
 
 /**
  * @brief Initialize the component with a theme
