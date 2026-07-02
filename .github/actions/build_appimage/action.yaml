@@ -28,6 +28,15 @@ runs:
       shell: bash
       run: unzip -j openomf-assets.zip -d build-release/release/usr/share/games/openomf/resources
 
+    - name: Get openomf mods
+      uses: ./.github/actions/fetch_mods
+
+    - name: Extract openomf mods
+      shell: bash
+      run: |
+        mkdir -p build-release/release/usr/share/games/openomf/mods
+        unzip -o openomf-mods.zip -d build-release/release/usr/share/games/openomf/mods
+
     - name: Download LinuxDeploy and AppImage Plugin
       shell: bash
       run: |
