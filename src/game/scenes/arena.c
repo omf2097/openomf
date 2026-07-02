@@ -1068,7 +1068,7 @@ void arena_spawn_hazard(scene *scene) {
                         }
                     }
 
-                    log_debug("Arena tick: Hazard with probability %d started (anim id %d).", info->probability,
+                    log_debug("Arena tick: Hazard with probability %u started (anim id %d).", info->probability,
                               info->ani.id);
                 } else {
                     object_free(obj);

@@ -17,7 +17,7 @@ int sg_count(void) {
     if(!scan_save_directory(&dir_list, "*.CHR")) {
         log_warn("Failed to scan savegame directory!");
     } else {
-        log_info("Found %d saved games.", list_size(&dir_list));
+        log_info("Found %u saved games.", list_size(&dir_list));
     }
     const int size = list_size(&dir_list);
     list_free(&dir_list);
@@ -33,7 +33,7 @@ list *sg_load_all(void) {
         log_error("Failed to scan savegame directory %s!", dirname);
         return NULL;
     }
-    log_debug("Found %d saved games", list_size(&dir_list));
+    log_debug("Found %u saved games", list_size(&dir_list));
 
     list *chr_list = omf_calloc(1, sizeof(list));
     list_create(chr_list);

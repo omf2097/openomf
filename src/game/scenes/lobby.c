@@ -236,13 +236,13 @@ void lobby_free(scene *scene) {
 }
 
 void lobby_print_match_settings(const int user_id, const match_settings *settings) {
-    log_debug("match_settings for user %u: {", user_id);
+    log_debug("match_settings for user %d: {", user_id);
     log_debug("  throw_range: %u", settings->throw_range);
     log_debug("  hit_pause: %u", settings->hit_pause);
     log_debug("  block_damage: %u", settings->block_damage);
     log_debug("  vitality: %u", settings->vitality);
     log_debug("  jump_height: %u", settings->jump_height);
-    log_debug("  knock_down: %d", settings->knock_down);
+    log_debug("  knock_down: %u", settings->knock_down);
     log_debug("  rehit: %s", settings->rehit ? "true" : "false");
     log_debug("  defensive_throws: %s", settings->defensive_throws ? "true" : "false");
     log_debug("  power1: %u", settings->power1);
@@ -289,7 +289,7 @@ void lobby_show_dialog(scene *scene, int dialog_style, char *dialog_text, dialog
 
 static void update_active_user_text(lobby_local *local) {
     char buf[64];
-    snprintf(buf, sizeof(buf), "%d of %d", local->active_user + 1, list_size(&local->users));
+    snprintf(buf, sizeof(buf), "%d of %u", local->active_user + 1, list_size(&local->users));
     text_set_from_c(local->titles[TITLE_USER_OF], buf);
 
     lobby_user *user = list_get(&local->users, local->active_user);
@@ -841,7 +841,7 @@ void lobby_try_connect(void *scenedata, void *userdata) {
     scene *s = scenedata;
     lobby_local *local = scene_get_userdata(s);
     if(local->opponent && !local->opponent_peer) {
-        log_info("doing scheduled outbound connection to %d.%d.%d.%d port %d", local->opponent->address.host & 0xFF,
+        log_info("doing scheduled outbound connection to %u.%u.%u.%u port %d", local->opponent->address.host & 0xFF,
                  (local->opponent->address.host >> 8) & 0xFF, (local->opponent->address.host >> 16) & 0xF,
                  (local->opponent->address.host >> 24) & 0xFF, local->opponent->address.port);
         local->opponent_peer = enet_host_connect(local->client, &local->opponent->address, 3, 0);
@@ -1063,8 +1063,8 @@ void lobby_tick(scene *scene, int paused) {
                    event.peer->address.port == local->peer->address.port) {
                     log_debug("Connection to server succeeded.");
 
-                    log_debug("local peer connect id %d", local->peer->connectID);
-                    log_debug("remote peer connect id %d", event.peer->connectID);
+                    log_debug("local peer connect id %u", local->peer->connectID);
+                    log_debug("remote peer connect id %u", event.peer->connectID);
 
                     event.peer->data = local->nat;
 
@@ -1242,7 +1242,7 @@ void lobby_tick(scene *scene, int paused) {
                             switch(control_byte & 0xf) {
                                 case JOIN_SUCCESS:
                                     local->id = serial_read_uint32(&ser);
-                                    log_debug("successfully joined lobby and assigned ID %d", local->id);
+                                    log_debug("successfully joined lobby and assigned ID %u", local->id);
                                     if(local->joinmenu) {
                                         local->joinmenu->finished = 1;
                                         local->joinmenu = NULL;
@@ -1346,7 +1346,7 @@ void lobby_tick(scene *scene, int paused) {
                             local->controllers_created = true;
 
                         } else {
-                            log_debug("opponent peer %p, host %d %d", (void *)local->opponent_peer,
+                            log_debug("opponent peer %p, host %u %u", (void *)local->opponent_peer,
                                       event.peer->address.host, local->opponent->address.host);
                         }
                         break;
@@ -1485,7 +1485,7 @@ void lobby_tick(scene *scene, int paused) {
                             case CHALLENGE_OFFER: {
                                 uint32_t connect_id = serial_read_uint32(&ser);
 
-                                log_debug("got challenge from %d, we are %d", connect_id, local->id);
+                                log_debug("got challenge from %u, we are %u", connect_id, local->id);
                                 iterator it;
                                 list_iter_begin(&local->users, &it);
                                 lobby_user *user;
@@ -1504,7 +1504,7 @@ void lobby_tick(scene *scene, int paused) {
                                     snprintf(buf, sizeof(buf), "Accept challenge from %s?", user->name);
                                     lobby_show_dialog(scene, DIALOG_STYLE_YES_NO, buf, lobby_dialog_accept_challenge);
                                 } else {
-                                    log_debug("unable to find user with id %d", connect_id);
+                                    log_debug("unable to find user with id %u", connect_id);
                                 }
                             } break;
                             case CHALLENGE_ACCEPT:
@@ -1516,7 +1516,7 @@ void lobby_tick(scene *scene, int paused) {
                                 local->opponent_peer =
                                     enet_host_connect(local->client, &local->opponent->address, 3, 0);
 
-                                log_debug("doing immediate outbound connection to %d.%d.%d.%d port %d",
+                                log_debug("doing immediate outbound connection to %u.%u.%u.%u port %d",
                                           local->opponent->address.host & 0xFF,
                                           (local->opponent->address.host >> 8) & 0xFF,
                                           (local->opponent->address.host >> 16) & 0xF,

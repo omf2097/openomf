@@ -40,7 +40,7 @@ const script *script_cache_get(const char *str) {
         crash_with_args("Failed to decode string '%s'; error at position %d.", str, invalid_pos);
     }
     hashmap_put_str(&state.scripts, str, &s, sizeof(s));
-    log_debug("Cached script '%s'; cache size now %d.", str, hashmap_reserved(&state.scripts));
+    log_debug("Cached script '%s'; cache size now %u.", str, hashmap_reserved(&state.scripts));
     return s;
 }
 
