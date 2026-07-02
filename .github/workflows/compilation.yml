@@ -127,6 +127,19 @@ jobs:
     - name: Build Ubuntu binary
       uses: ./.github/actions/build_ubuntu
 
+  # Build AppImage on Ubuntu 24.04
+  # -----------------------------------------------------------------------------------------------
+  build_appimage:
+    needs: [unittest, windows_units]
+    name: Build AppImage
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
+    - name: Build AppImage
+      uses: ./.github/actions/build_appimage
+
   # Build macos package, release artifact
   # -----------------------------------------------------------------------------------------------
   build_macos-arm:
@@ -156,7 +169,7 @@ jobs:
   # Create a "latest" release
   # -----------------------------------------------------------------------------------------------
   make_release:
-    needs: [check_mingw, build_macos-arm, build_ubuntu, build_msvc]
+    needs: [check_mingw, build_macos-arm, build_ubuntu, build_msvc, build_appimage]
     if: github.ref == 'refs/heads/master'
 
     name: Make "latest" release

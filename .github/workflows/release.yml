@@ -36,6 +36,14 @@ jobs:
     - name: Build Ubuntu binary
       uses: ./.github/actions/build_ubuntu
 
+  build_appimage:
+    name: Build ubuntu-24.04
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v6
+    - name: Build Ubuntu binary
+      uses: ./.github/actions/build_appimage
+
   build_macos-arm:
     name: Build macos-14
     runs-on: macos-14
