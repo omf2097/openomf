@@ -82,7 +82,7 @@ int spec_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                         serial_read_str(&ser, &p2->pilot->name);
 
                         uint32_t seed = serial_read_uint32(&ser);
-                        log_debug("spectator random seed set to %d", seed);
+                        log_debug("spectator random seed set to %u", seed);
                         random_seed(&ctrl->gs->rand, seed);
 
                         data->nscene = SCENE_ARENA0 + serial_read_int8(&ser);
@@ -124,7 +124,7 @@ int spec_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                             if(event.ticks > 100 && !data->started) {
                                 // insert the starting tick into the hashmap so we can offset all events from that
                                 hashmap_put_int(data->tick_lookup, 0, &ctrl->gs->tick, sizeof(ticks));
-                                log_info("spectator start tick was %d", ticks);
+                                log_info("spectator start tick was %u", ticks);
 
                                 // jump into the arena scene
                                 // ctrl->gs->this_id = data->nscene;
@@ -157,7 +157,7 @@ int spec_controller_poll(controller *ctrl, ctrl_event **ev) {
     spec_controller_event *move;
     unsigned int len;
     if(data->max_tick && ticks > data->max_tick) {
-        log_debug("closing controller because tick %d is higher than max_tick %d", ticks, data->max_tick);
+        log_debug("closing controller because tick %u is higher than max_tick %u", ticks, data->max_tick);
         controller_close(ctrl, ev);
         return 0;
     }

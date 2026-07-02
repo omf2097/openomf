@@ -89,4 +89,19 @@ void textinput_set_horizontal_align(component *c, text_horizontal_align align);
  */
 void textinput_set_text_shadow(component *c, uint8_t shadow, vga_index color);
 
+/**
+ * @brief Set the character set used by the gamepad letter wheel
+ * @param c Text input component to modify
+ * @param charset Ordered string of selectable characters (should include space)
+ */
+void textinput_set_wheel_charset(component *c, const char *charset);
+
+/**
+ * @brief Start (and stay) in gamepad edit mode
+ * @details For single-field screens where there is nothing to navigate to.
+ * @param c Text input component to modify
+ * @param enabled True to make the field edit-by-default
+ */
+void textinput_set_edit_by_default(component *c, bool enabled);
+
 #endif // TEXTINPUT_H

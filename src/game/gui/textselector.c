@@ -86,7 +86,7 @@ static void textselector_render(component *c) {
     text_draw(t->text, c->x, c->y);
 }
 
-static int textselector_action(component *c, int action) {
+static int textselector_action(component *c, int action, int source) {
     text_selector *tb = widget_get_obj(c);
     if(vector_size(&tb->options) <= 1) {
         return 0;

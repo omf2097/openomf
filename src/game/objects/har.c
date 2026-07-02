@@ -955,7 +955,7 @@ void har_take_damage(object *obj, af_move *move) {
         har_screencaps_capture(&other_player->screencaps, other_har, obj, SCREENCAP_BLOW);
 
         // Slow down game more for last shot
-        log_debug("Slowdown: Slowing from %d to %d.", game_state_get_speed(obj->gs),
+        log_debug("Slowdown: Slowing from %u to %u.", game_state_get_speed(obj->gs),
                   h->health == 0 ? game_state_get_speed(obj->gs) - 10 : game_state_get_speed(obj->gs) - 6);
         game_state_slowdown(obj->gs, 12,
                             h->health == 0 ? game_state_get_speed(obj->gs) - 10 : game_state_get_speed(obj->gs) - 6);
@@ -1539,7 +1539,7 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
         // check the animation is still going
         // for some reason this has been observed to happen sometimes, an example is frame 18 of chronos' stasis
         if(!script_reader_frame(&o_pjt->animation_state.reader)) {
-            log_debug("no such frame at tick %d", player_get_current_tick(o_pjt));
+            log_debug("no such frame at tick %u", player_get_current_tick(o_pjt));
             return;
         }
 
@@ -1884,7 +1884,7 @@ void har_tick(object *obj) {
                 har_screencaps_capture(&other_player->screencaps, other_har, obj, SCREENCAP_BLOW);
 
                 // Slow down game more for last shot
-                log_debug("Slowdown: Slowing from %d to %d.", game_state_get_speed(obj->gs),
+                log_debug("Slowdown: Slowing from %u to %u.", game_state_get_speed(obj->gs),
                           h->health == 0 ? game_state_get_speed(obj->gs) - 10 : game_state_get_speed(obj->gs) - 6);
                 game_state_slowdown(obj->gs, 12,
                                     h->health == 0 ? game_state_get_speed(obj->gs) - 10
@@ -2042,7 +2042,7 @@ static bool add_input(char *buf, int act_type, int direction) {
             // might just be kick or punch, check below
             break;
         default:
-            log_warn("Ignored input: buf %s, act_type 0x%x, direction %d", buf, act_type, direction);
+            log_warn("Ignored input: buf %s, act_type 0x%x, direction %d", buf, (unsigned)act_type, direction);
             assert(false);
     }
 

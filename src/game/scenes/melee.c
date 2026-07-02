@@ -633,6 +633,9 @@ void melee_input_tick(scene *scene) {
                 restore_cursors_to(local, local->pilot_id_a, local->pilot_id_b);
                 local->page = PILOT_SELECT;
                 load_pilot_portraits_palette(scene);
+            } else if(scene->gs->net_mode == NET_MODE_LOBBY) {
+                // came from the network lobby (challenge arena); go back there
+                game_state_set_next(scene->gs, SCENE_LOBBY);
             } else {
                 game_state_set_next(scene->gs, SCENE_MENU);
             }

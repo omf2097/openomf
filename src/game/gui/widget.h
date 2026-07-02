@@ -14,7 +14,7 @@
 
 typedef void (*widget_render_cb)(component *c);                             ///< Widget render callback
 typedef int (*widget_event_cb)(component *c, SDL_Event *event);             ///< Widget SDL event callback
-typedef int (*widget_action_cb)(component *c, int action);                  ///< Widget action callback
+typedef int (*widget_action_cb)(component *c, int action, int source);      ///< Widget action callback
 typedef void (*widget_focus_cb)(component *c, bool focused);                ///< Widget focus change callback
 typedef void (*widget_layout_cb)(component *c, int x, int y, int w, int h); ///< Widget layout callback
 typedef void (*widget_tick_cb)(component *c);                               ///< Widget tick callback

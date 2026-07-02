@@ -160,7 +160,7 @@ void lab_menu_focus_arena(component *c, bool focused, void *userdata) {
         sd_chr_enemy *enemy = mechlab_next_opponent(s);
         if(enemy) {
             char tmp[100];
-            snprintf(tmp, 100, lang_get(537), enemy->pilot.name);
+            snprintf(tmp, 100, lang_get(537), str_c(&enemy->pilot.name));
             mechlab_set_hint(s, tmp);
         }
     }

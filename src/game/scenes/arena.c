@@ -1068,7 +1068,7 @@ void arena_spawn_hazard(scene *scene) {
                         }
                     }
 
-                    log_debug("Arena tick: Hazard with probability %d started (anim id %d).", info->probability,
+                    log_debug("Arena tick: Hazard with probability %u started (anim id %d).", info->probability,
                               info->ani.id);
                 } else {
                     object_free(obj);
@@ -1446,7 +1446,7 @@ void arena_input_tick(scene *scene) {
             game_state_set_paused(scene->gs, local->menu_visible);
         } else if(i->type == EVENT_TYPE_ACTION && local->menu_visible && i->event_data.action != ACT_ESC) {
             // menu events
-            gui_frame_action(local->game_menu, i->event_data.action);
+            gui_frame_action(local->game_menu, i->event_data.action, i->source);
         }
     }
     controller_free_chain(menu_ev);

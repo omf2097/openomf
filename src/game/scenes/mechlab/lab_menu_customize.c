@@ -633,7 +633,7 @@ void lab_menu_focus_trade(component *c, bool focused, void *userdata) {
                 tradecount++;
             }
         }
-        log_debug("got %d trades from the bitmask %d", tradecount, p1->pilot->har_trades);
+        log_debug("got %d trades from the bitmask %u", tradecount, p1->pilot->har_trades);
         // check if there's anything for trade
         if(tradecount == 0) {
             label_set_text(header_label, lang_get(488));

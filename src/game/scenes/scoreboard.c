@@ -157,7 +157,7 @@ static void process_event(scene *scene, scoreboard_local *local, ctrl_event *eve
             local->has_pending_data = false;
             set_scores(local);
         } else {
-            gui_frame_action(local->frame, event->event_data.action);
+            gui_frame_action(local->frame, event->event_data.action, event->source);
         }
     } else {
         if(event->event_data.action == ACT_ESC || pressed_ok(event)) {
@@ -289,6 +289,8 @@ int scoreboard_create(scene *scene) {
         textinput_set_font(local->ti, FONT_SMALL);
         textinput_enable_background(local->ti, false);
         textinput_set_horizontal_align(local->ti, TEXT_ALIGN_LEFT);
+        textinput_set_wheel_charset(local->ti, " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
+        textinput_set_edit_by_default(local->ti, true);
         gui_frame_set_root(local->frame, local->ti);
         gui_frame_layout(local->frame);
         component_select(local->ti, 1);

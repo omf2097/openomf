@@ -66,7 +66,7 @@ static int xysizer_event(component *c, SDL_Event *event) {
     return 1; // Wasn't handled here (event though it might have been)
 }
 
-static int xysizer_action(component *c, int action) {
+static int xysizer_action(component *c, int action, int source) {
     log_debug("sizer action %d", action);
 
     // Just pass events to all children
@@ -74,7 +74,7 @@ static int xysizer_action(component *c, int action) {
     component **tmp;
     sizer_begin_iterator(c, &it);
     foreach(it, tmp) {
-        if(component_action(*tmp, action) == 0) {
+        if(component_action(*tmp, action, source) == 0) {
             return 0;
         }
     }

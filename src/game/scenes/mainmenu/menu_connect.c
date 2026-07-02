@@ -206,12 +206,14 @@ component *menu_connect_create(scene *s) {
     local->controllers_created = 0;
     local->connect_start = 0;
 
-    local->addr_input =
-        textinput_create(15, "Enter an IP address you wish to connect to.", settings_get()->net.net_connect_ip);
-    local->port_input = textinput_create(highest_port_digits, "Enter the remote port you wish to connect to.", "");
+    local->addr_input = textinput_create(40, "Enter an IP address or hostname you wish to connect to.",
+                                         settings_get()->net.net_connect_ip);
+    local->port_input = textinput_create(highest_port_digits + 1, "Enter the remote port you wish to connect to.", "");
     textinput_set_font(local->addr_input, FONT_BIG);
     textinput_set_font(local->port_input, FONT_BIG);
     menu_connect_reset_port_input(local);
+    textinput_set_wheel_charset(local->addr_input, " 0123456789.-ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+    textinput_set_wheel_charset(local->port_input, " 0123456789");
 
     local->connect_button =
         button_create("CONNECT", "Connect to the provided IP address.", false, false, menu_connect_start, s);
