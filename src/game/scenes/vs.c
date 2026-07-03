@@ -10,6 +10,7 @@
 #include "game/utils/settings.h"
 #include "resources/languages.h"
 #include "utils/allocator.h"
+#include "utils/c_string_util.h"
 #include "utils/log.h"
 #include "utils/miscmath.h"
 #include "utils/random.h"
@@ -353,7 +354,7 @@ static report_card *create_report_card(const fight_stats *fight_stats) {
     text_set_shadow_style(card->plug_whine, GLYPH_SHADOW_RIGHT | GLYPH_SHADOW_BOTTOM);
     text_set_shadow_color(card->plug_whine, 202);
     text_set_horizontal_align(card->plug_whine, TEXT_ALIGN_CENTER);
-    snprintf(text, sizeof(text), lang_get(fight_stats->plug_text + PLUG_TEXT_START), fight_stats->sold);
+    unsafe_snprintf(text, sizeof(text), lang_get(fight_stats->plug_text + PLUG_TEXT_START), fight_stats->sold);
     text_set_from_c(card->plug_whine, text);
 
     // These are all static. Note that for opponent labels, we reuse the own stats label.
