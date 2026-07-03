@@ -25,6 +25,7 @@
 #include "resources/sgmanager.h"
 #include "utils/allocator.h"
 #include "utils/c_array_util.h"
+#include "utils/c_string_util.h"
 #include "utils/log.h"
 #include "video/video.h"
 
@@ -305,7 +306,7 @@ void mechlab_tick(scene *scene, int paused) {
         game_player *player1 = game_state_get_player(scene->gs, 0);
         if(local->dashtype == DASHBOARD_NEW_PLAYER) {
             char select_photo[64];
-            snprintf(select_photo, sizeof(select_photo), lang_get(224), str_c(&player1->pilot->name));
+            unsafe_snprintf(select_photo, sizeof(select_photo), lang_get(224), str_c(&player1->pilot->name));
             mechlab_select_dashboard(scene, DASHBOARD_SELECT_NEW_PIC);
             gui_frame_free(local->frame);
             gui_theme theme;
