@@ -11,6 +11,7 @@
 
 #include "utils/allocator.h"
 #include "utils/log.h"
+#include "utils/miscmath.h"
 #include "video/vga_state.h"
 
 #define TEX_UNIT_ATLAS 0
@@ -522,10 +523,20 @@ static void render_area_prepare(void *userdata, const SDL_Rect *area) {
 static void render_area_finish(void *userdata, surface *dst) {
     gl3_context *ctx = userdata;
     finish_offscreen(ctx);
-    SDL_Rect *r = &ctx->culling_area;
-    uint16_t *buffer = omf_malloc(r->w * r->h * sizeof(uint16_t));
-    glReadPixels(r->x, r->y, r->w, r->h, GL_RED, GL_UNSIGNED_SHORT, buffer);
-    surface_create_from_flip_scale(dst, r->w, r->h, buffer, 1023.0f / 65535.0f);
+
+    // Ensure we don't read garbage from outside the FBO
+    const SDL_Rect *area = &ctx->culling_area;
+    const int x0 = clamp(area->x, 0, NATIVE_W);
+    const int y0 = clamp(area->y, 0, NATIVE_H);
+    const int x1 = clamp(area->x + area->w, 0, NATIVE_W);
+    const int y1 = clamp(area->y + area->h, 0, NATIVE_H);
+
+    // FBO may be scaled!
+    const int scale = ctx->fb_scale;
+    const SDL_Rect r = (SDL_Rect){x0 * scale, y0 * scale, (x1 - x0) * scale, (y1 - y0) * scale};
+    uint16_t *buffer = omf_calloc(r.w * r.h, sizeof(uint16_t));
+    glReadPixels(r.x, r.y, r.w, r.h, GL_RED, GL_UNSIGNED_SHORT, buffer);
+    surface_create_from_flip_scale(dst, r.w, r.h, buffer, 1023.0f / 65535.0f);
     omf_free(buffer);
 }
 
