@@ -221,6 +221,11 @@ omf_target_precompile_headers(openomf_core PUBLIC
     "<enet/enet.h>"
     "<epoxy/gl.h>"
 )
+if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
+    set_source_files_properties("${CMAKE_SOURCE_DIR}/src/vendored/argtable/argtable3.c"
+        PROPERTIES COMPILE_OPTIONS "-Wno-format-nonliteral"
+    )
+endif()
 target_link_libraries(openomf_core PRIVATE
     openomf::confuse
     openomf::enet
