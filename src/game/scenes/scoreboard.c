@@ -18,7 +18,7 @@
 #define CURSOR_STR "\x7f"
 #define SCORE_COUNT 20
 
-static const char *SCORE_ROW_FMT = "%-18.16s%-9s%-9s%11s";
+static const char SCORE_ROW_FMT[] = "%-18.16s%-9s%-9s%11s";
 
 #define DIALOG_BORDER_COLOR 0xFE
 #define TEXT_PRIMARY_COLOR 0xFD

@@ -203,7 +203,7 @@ void sd_skip(sd_reader *reader, unsigned int nbytes) {
 int sd_read_scan(const sd_reader *reader, const char *format, ...) {
     va_list argp;
     va_start(argp, format);
-    int ret = fscanf(reader->handle, format, argp);
+    int ret = vfscanf(reader->handle, format, argp);
     va_end(argp);
     return ret;
 }

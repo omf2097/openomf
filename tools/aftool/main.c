@@ -56,7 +56,7 @@ void sprite_play(sd_af_file *af, sd_bk_file *bk, int scale, int anim, int sprite
         return;
     }
 
-    printf("Sprite Info: pos=(%d,%d) size=(%d,%d) len=%d\n", s->pos.x, s->pos.y, s->width, s->height, s->len);
+    printf("Sprite Info: pos=(%d,%d) size=(%d,%d) len=%u\n", s->pos.x, s->pos.y, s->width, s->height, s->len);
 
     SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
@@ -160,7 +160,7 @@ void sprite_play(sd_af_file *af, sd_bk_file *bk, int scale, int anim, int sprite
                 if(changed) {
                     s = sd_animation_get_sprite(sd_af_get_move(af, anim)->animation, sprite);
                     sd_sprite_rgba_decode(&img, s, bk->palettes[0]);
-                    printf("Sprite Info: pos=(%d,%d) size=(%d,%d) len=%d\n", s->pos.x, s->pos.y, s->width, s->height,
+                    printf("Sprite Info: pos=(%d,%d) size=(%d,%d) len=%u\n", s->pos.x, s->pos.y, s->width, s->height,
                            s->len);
 
                     if(!(surface = SDL_CreateRGBSurfaceFrom((void *)img.data, img.w, img.h, 32, img.w * 4, rmask, gmask,
@@ -333,7 +333,7 @@ void move_set_key(sd_move *move, sd_animation *ani, const char **key, int kcount
             if(tmp < 21) {
                 str_set_c(&move->move_string, value);
             } else {
-                printf("String is too long! (%u bytes) Maximum size for move_string is 21 characters!\n", tmp);
+                printf("String is too long! (%d bytes) Maximum size for move_string is 21 characters!\n", tmp);
                 return;
             }
             break;
@@ -904,7 +904,7 @@ int main(int argc, char *argv[]) {
                     if(value->count > 0) {
                         move_set_key(mv, ani, key->sval, key->count, value->sval[0]);
                     } else {
-                        printf("move %2u: ", i);
+                        printf("move %2d: ", i);
                         move_get_key(mv, ani, key->sval, key->count, parse->count);
                     }
                 } else {

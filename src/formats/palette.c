@@ -81,7 +81,7 @@ int palette_to_gimp_palette(const vga_palette *pal, const path *filename) {
     }
 
     sd_write_fprintf(w, "GIMP Palette\n");
-    sd_write_fprintf(w, "Name: %s\n", filename);
+    sd_write_fprintf(w, "Name: %s\n", path_c(filename));
     sd_write_fprintf(w, "#\n");
     for(i = 0; i < 255; i++) {
         r = pal->colors[i].r & 0xff;

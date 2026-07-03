@@ -9,6 +9,7 @@
 #ifndef OSD_H
 #define OSD_H
 
+#include "utils/compat.h"
 #include "video/vga_palette.h"
 #include <stdarg.h>
 #include <stdbool.h>
@@ -38,7 +39,7 @@ void osd_render(void);
  * @param fmt Format string
  * @param ... Varargs
  */
-void osd_print(const char *fmt, ...);
+void osd_print(const char *fmt, ...) ATTR_FORMAT_PRINTF(1, 2);
 
 /**
  * Print text to the OSD layer using specific color.
@@ -47,14 +48,14 @@ void osd_print(const char *fmt, ...);
  * @param fmt Format string
  * @param ... Varargs
  */
-void osd_print_color(vga_index color, vga_index shadow_color, const char *fmt, ...);
+void osd_print_color(vga_index color, vga_index shadow_color, const char *fmt, ...) ATTR_FORMAT_PRINTF(3, 4);
 
 /**
  * Print text to the OSD layer (varargs version)
  * @param fmt Format string
  * @param ap Varargs
  */
-void osd_vprint(const char *fmt, va_list ap);
+void osd_vprint(const char *fmt, va_list ap) ATTR_FORMAT_PRINTF(1, 0);
 
 /**
  * Print text to the OSD layer using specific color. (varargs version)
@@ -63,7 +64,7 @@ void osd_vprint(const char *fmt, va_list ap);
  * @param fmt Format string
  * @param ap Varargs
  */
-void osd_vprint_color(vga_index color, vga_index shadow_color, const char *fmt, va_list ap);
+void osd_vprint_color(vga_index color, vga_index shadow_color, const char *fmt, va_list ap) ATTR_FORMAT_PRINTF(3, 0);
 
 /**
  * Clear OSD layer texts completely.

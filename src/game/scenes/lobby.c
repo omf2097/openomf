@@ -542,8 +542,8 @@ void lobby_dialog_do_spectate(dialog *dlg, dialog_result result) {
     }
 }
 
-char *challengeStr = "Challenge %s?\n\nRounds %s\nHazards %s\nFight Mode %s\nRehit Mode %s";
-char *spectateStr = "Spectate %s vs %s?";
+const char challengeStr[] = "Challenge %s?\n\nRounds %s\nHazards %s\nFight Mode %s\nRehit Mode %s";
+const char spectateStr[] = "Spectate %s vs %s?";
 
 char *get_fight_mode_setting_string(bool setting) {
     if(setting) {
