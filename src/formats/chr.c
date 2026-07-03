@@ -99,8 +99,8 @@ int sd_chr_load(sd_chr_file *chr, const path *filename) {
 
     if(trn_loaded) {
         for(int i = 0; i < SD_CHR_CUTSCENE_TEXT_COUNT; i++) {
-            if(str_size(&trn.locales[0]->end_texts[0][i]) > 0) {
-                str_set(&chr->cutscene_text[i], &trn.locales[0]->end_texts[0][i]);
+            if(str_size(&trn.locales[0]->end_texts[chr->pilot.har_id][i]) > 0) {
+                str_set(&chr->cutscene_text[i], &trn.locales[0]->end_texts[chr->pilot.har_id][i]);
             }
         }
         static_assert(sizeof(chr->bk_name) == sizeof(trn.bk_name), "must match");
