@@ -1841,13 +1841,13 @@ int arena_create(scene *scene) {
                 portrait->cur_sprite_id = 0;
                 game_state_add_object(scene->gs, portrait, RENDER_LAYER_TOP, 0, 0);
             } else {
-                object_create(portrait, scene->gs, vec2i_create(235, 5), vec2f_create(0, 0));
+                object_create(portrait, scene->gs, vec2i_create(213, 5), vec2f_create(0, 0));
                 sprite *sp = omf_calloc(1, sizeof(sprite));
                 sprite_create(sp, player->pilot->photo, -1);
                 portrait->x_percent = 0.70f;
                 portrait->y_percent = 0.70f;
                 object_set_sprite_override(portrait, 1);
-                object_set_animation(portrait, create_animation_from_single(sp, vec2i_create(235, 0)));
+                object_set_animation(portrait, create_animation_from_single(sp, vec2i_create(213, 0)));
                 object_set_direction(portrait, OBJECT_FACE_LEFT);
                 object_set_animation_owner(portrait, OWNER_OBJECT);
                 portrait->cur_sprite_id = 0;
