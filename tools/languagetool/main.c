@@ -350,7 +350,7 @@ int main(int argc, char *argv[]) {
         unsigned str_id = (unsigned)str->ival[0];
         ds = sd_language_get(&language, str_id);
         if(ds == NULL) {
-            fprintf(stderr, "String %d not found!\n", str_id);
+            fprintf(stderr, "String %u not found!\n", str_id);
             goto exit_0;
         }
 
@@ -369,7 +369,7 @@ int main(int argc, char *argv[]) {
         for(unsigned i = 0; i < vector_size(&language.strings); i++) {
             ds = sd_language_get(&language, i);
             if(ds != NULL) {
-                printf("ID: %d\n", i);
+                printf("ID: %u\n", i);
                 printf("Title: %s\n", str_c(&ds->description));
                 printf("Data: %s\n", str_c(&ds->data));
             }

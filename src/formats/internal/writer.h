@@ -47,7 +47,7 @@ int sd_writer_seek_end(const sd_writer *writer, long offset);
  */
 int sd_write_buf(sd_writer *writer, const char *buf, size_t len);
 
-int sd_write_fprintf(const sd_writer *writer, const char *format, ...);
+int sd_write_fprintf(const sd_writer *writer, const char *format, ...) ATTR_FORMAT_PRINTF(2, 3);
 
 void sd_write_ubyte(sd_writer *writer, uint8_t data);
 void sd_write_uword(sd_writer *writer, uint16_t data);

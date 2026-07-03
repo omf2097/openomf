@@ -99,7 +99,7 @@ void print_pilot_info(sd_pilot *pilot) {
 
         printf("  - Enhancements:\n");
         for(int i = 0; i < 11; i++) {
-            printf("     * %-10s: %x\n", har_list[i], pilot->enhancements[i]);
+            printf("     * %-10s: %x\n", har_list[i], (unsigned char)pilot->enhancements[i]);
         }
 
         printf("  - Secret:          %d\n", pilot->secret);
@@ -140,7 +140,7 @@ void print_pilot_info(sd_pilot *pilot) {
         printf("  - Pref fwd:        %d\n", pilot->pref_fwd);
         printf("  - Pref back:       %d\n", pilot->pref_back);
 
-        printf("  - Unknown E:       %d\n", pilot->unknown_e);
+        printf("  - Unknown E:       %u\n", pilot->unknown_e);
         printf("  - Learning:        %f\n", pilot->learning);
         printf("  - Forget:          %f\n", pilot->forget);
 
@@ -156,10 +156,10 @@ void print_pilot_info(sd_pilot *pilot) {
         printf("  - Enemies (exl unranked): %d\n", pilot->enemies_ex_unranked);
 
         printf("  - Unk. Int A:      %d\n", pilot->unk_d_a);
-        printf("  - Har Trades:      %d\n", pilot->har_trades);
+        printf("  - Har Trades:      %u\n", pilot->har_trades);
 
-        printf("  - Winnings:        %d\n", pilot->winnings);
-        printf("  - Total value:     %d\n", pilot->total_value);
+        printf("  - Winnings:        %u\n", pilot->winnings);
+        printf("  - Total value:     %u\n", pilot->total_value);
 
         printf("  - Current health:  %d\n", pilot->current_health);
         printf("  - Maximum health:  %d\n", pilot->maximum_health);
@@ -168,7 +168,7 @@ void print_pilot_info(sd_pilot *pilot) {
         printf("  - Palette:\n");
 
         printf("    ");
-        for(int i = 0; i < 48; i += 1) {
+        for(unsigned i = 0; i < 48; i += 1) {
             uint8_t r = pilot->palette.colors[i].r;
             uint8_t g = pilot->palette.colors[i].g;
             uint8_t b = pilot->palette.colors[i].b;

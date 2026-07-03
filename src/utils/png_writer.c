@@ -9,7 +9,7 @@
 static_assert(PNG_LIBPNG_VER >= 10600, "libpng version should be 1.6.0 or later");
 
 static void abort_png(png_structp png, const char *err) {
-    crash(err);
+    crash_with_args("%s", err);
 }
 
 bool write_rgb_png(const path *filename, int w, int h, const unsigned char *data, bool has_alpha, bool flip) {
