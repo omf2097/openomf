@@ -1080,36 +1080,41 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                 enet_packet_destroy(event.packet);
                 break;
             case ENET_EVENT_TYPE_DISCONNECT:
-                log_debug("peer disconnected!");
-                data->disconnected = 1;
-                event.peer->data = NULL;
-                data->synchronized = false;
-                data->winner = arena_is_over(ctrl->gs->sc);
-                if(data->winner == -1 && data->gs_bak) {
-                    // match did not end cleanly
-                    // so force the game to playback ALL events to try to update the trace/rec files
-                    data->last_received_tick = ctrl->gs->tick - data->local_proposal;
-                    rewind_and_replay(data, ctrl);
-                }
-                if(ctrl->gs->new_state) {
-                    game_state_clone_free(ctrl->gs->new_state);
-                    omf_free(ctrl->gs->new_state);
-                }
-                if(data->gs_bak) {
-                    game_state_clone_free(data->gs_bak);
-                    omf_free(data->gs_bak);
-                }
-                if(ctrl->gs->rec) {
-                    sd_rec_finish(ctrl->gs->rec, ticks - data->local_proposal);
-                }
-                if(data->lobby) {
-                    // lobby will handle the controller
-                    game_state_set_next(ctrl->gs, SCENE_LOBBY);
+                if(event.peer == data->peer) {
+                    log_debug("opponent peer disconnected!");
+                    data->disconnected = 1;
+                    data->synchronized = false;
+                    data->winner = arena_is_over(ctrl->gs->sc);
+                    if(data->winner == -1 && data->gs_bak) {
+                        // match did not end cleanly
+                        // so force the game to playback ALL events to try to update the trace/rec files
+                        data->last_received_tick = ctrl->gs->tick - data->local_proposal;
+                        rewind_and_replay(data, ctrl);
+                    }
+                    if(ctrl->gs->new_state) {
+                        game_state_clone_free(ctrl->gs->new_state);
+                        omf_free(ctrl->gs->new_state);
+                    }
+                    if(data->gs_bak) {
+                        game_state_clone_free(data->gs_bak);
+                        omf_free(data->gs_bak);
+                    }
+                    if(ctrl->gs->rec) {
+                        sd_rec_finish(ctrl->gs->rec, ticks - data->local_proposal);
+                    }
+                    if(data->lobby) {
+                        // lobby will handle the controller
+                        game_state_set_next(ctrl->gs, SCENE_LOBBY);
+                    } else {
+                        controller_close(ctrl, ev);
+                        game_state_set_next(ctrl->gs, SCENE_MENU);
+                    }
+                    event.peer->data = NULL;
+                    return 1; // bail the fuck out
                 } else {
-                    controller_close(ctrl, ev);
-                    game_state_set_next(ctrl->gs, SCENE_MENU);
+                    log_debug("non-opponent peer disconnected, ignoring");
                 }
-                return 1; // bail the fuck out
+                event.peer->data = NULL;
                 break;
             default:
                 break;

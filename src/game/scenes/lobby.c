@@ -797,10 +797,11 @@ void lobby_entered_name(component *c, void *userdata) {
         serial_create(&ser);
         serial_write_int8(&ser, PACKET_JOIN << 4 | (PROTOCOL_VERSION & 0x0f));
         // if we mapped an external port, send it to the server
+        // send 0 when no mapping so peers skip the advertised port and use the server-observed port
         if(local->nat->type != NAT_TYPE_NONE) {
-            serial_write_int16(&ser, local->nat->ext_port ? local->nat->ext_port : local->client->address.port);
+            serial_write_int16(&ser, local->nat->ext_port);
         } else {
-            serial_write_int16(&ser, local->client->address.port);
+            serial_write_int16(&ser, 0);
         }
         game_state_encode_match_settings(&ser, &scene->gs->match_settings);
         serial_write_int8(&ser, strlen(version));
@@ -842,7 +843,7 @@ void lobby_try_connect(void *scenedata, void *userdata) {
     lobby_local *local = scene_get_userdata(s);
     if(local->opponent && !local->opponent_peer) {
         log_info("doing scheduled outbound connection to %u.%u.%u.%u port %d", local->opponent->address.host & 0xFF,
-                 (local->opponent->address.host >> 8) & 0xFF, (local->opponent->address.host >> 16) & 0xF,
+                 (local->opponent->address.host >> 8) & 0xFF, (local->opponent->address.host >> 16) & 0xFF,
                  (local->opponent->address.host >> 24) & 0xFF, local->opponent->address.port);
         local->opponent_peer = enet_host_connect(local->client, &local->opponent->address, 3, 0);
         if(local->opponent_peer) {
@@ -1372,6 +1373,9 @@ void lobby_tick(scene *scene, int paused) {
                         lobby_show_dialog(scene, DIALOG_STYLE_CANCEL, "Connected via relay, synchronizing clocks...",
                                           NULL);
                         // lobby and opponent peer are now the same
+                        if(local->opponent_peer != NULL && local->opponent_peer != local->peer) {
+                            enet_peer_reset(local->opponent_peer);
+                        }
                         local->opponent_peer = local->peer;
                         serial_create(&ser);
                         serial_write_int8(&ser, PACKET_JOIN << 4);
@@ -1519,7 +1523,7 @@ void lobby_tick(scene *scene, int paused) {
                                 log_debug("doing immediate outbound connection to %u.%u.%u.%u port %d",
                                           local->opponent->address.host & 0xFF,
                                           (local->opponent->address.host >> 8) & 0xFF,
-                                          (local->opponent->address.host >> 16) & 0xF,
+                                          (local->opponent->address.host >> 16) & 0xFF,
                                           (local->opponent->address.host >> 24) & 0xFF, local->opponent->address.port);
                                 if(local->opponent_peer) {
                                     enet_peer_timeout(local->opponent_peer, 4, 1000, 1000);
