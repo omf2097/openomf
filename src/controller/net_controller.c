@@ -374,7 +374,7 @@ int rewind_and_replay(wtf *data, controller *ctrl) {
 
     uint32_t arena_hash;
 
-    uint32_t confirm_frame = data->last_acked_tick;
+    const uint32_t confirm_frame = min2(data->last_acked_tick, data->last_received_tick);
 
     ev = iter_next(&it);
 
