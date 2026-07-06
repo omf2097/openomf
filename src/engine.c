@@ -25,6 +25,7 @@
 
 #define MAX_TICKS_PER_FRAME 10
 #define TICK_EXPIRY_MS 100
+#define NET_TICK_EXPIRY_MS 2000
 
 static int run = 0;
 static int start_timeout = 30;
@@ -335,7 +336,7 @@ void engine_run(const engine_init_flags *init_flags) {
         }
 
         // drop ticks if it's been too long since they were due
-        dynamic_wait = min2(dynamic_wait, TICK_EXPIRY_MS);
+        dynamic_wait = min2(dynamic_wait, is_netplay(gs) ? NET_TICK_EXPIRY_MS : TICK_EXPIRY_MS);
         static_wait = min2(static_wait, TICK_EXPIRY_MS);
 
         // In warp mode, allow more ticks to happen per vsync period.
