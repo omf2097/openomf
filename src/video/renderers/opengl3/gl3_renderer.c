@@ -333,10 +333,11 @@ static void move_target(void *userdata, int x, int y) {
     ctx->target_move_y = y;
 }
 
-static void render_prepare(void *userdata, unsigned framebuffer_options) {
+static void render_prepare(void *userdata, const unsigned framebuffer_options) {
     const gl3_context *ctx = userdata;
     object_array_prepare(ctx->objects);
 
+    activate_program(ctx->rgba_prog_id);
     bind_uniform_1u(ctx->rgba_prog_id, "framebuffer_options", framebuffer_options);
 }
 
