@@ -765,6 +765,8 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
         game_state_clone_free(data->gs_bak);
         omf_free(data->gs_bak);
         data->last_action = ACT_NONE;
+        data->last_peer_action = ACT_NONE;
+        data->last_peer_input_tick = 0;
         data->synchronized = false;
         data->local_proposal = 0;
         data->peer_proposal = 0;
