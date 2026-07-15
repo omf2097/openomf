@@ -1018,8 +1018,9 @@ int arena_handle_events(scene *scene, game_player *player, ctrl_event *i) {
                             net_controller_set_winner(game_state_get_player(scene->gs, 1)->ctrl, local->winner);
                         }
                         game_state_set_next(scene->gs, SCENE_LOBBY);
+                    } else {
+                        game_state_set_next(scene->gs, SCENE_MENU);
                     }
-                    game_state_set_next(scene->gs, SCENE_MENU);
                 }
                 return 0;
             }
