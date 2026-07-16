@@ -1272,14 +1272,14 @@ int net_controller_poll(controller *ctrl, ctrl_event **ev) {
         if(e->events[id][0] != 0 && e->tick == current_tick) {
             // events for the current tick, send em all
             int i = 0;
-            while(e->events[id][i]) {
+            while(i < MAX_EVENTS_PER_TICK && e->events[id][i]) {
                 controller_cmd(ctrl, e->events[id][i], ev);
                 i++;
             }
             return 0;
         } else if(e->events[id][0] != 0 && e->tick < current_tick) {
             int i = 0;
-            while(e->events[id][i] && i < MAX_EVENTS_PER_TICK) {
+            while(i < MAX_EVENTS_PER_TICK && e->events[id][i]) {
                 last = e->events[id][i];
                 i++;
             }
