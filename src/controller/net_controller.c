@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <time.h>
 
+#include <SDL.h>
+
 #include "controller/net_controller.h"
 #include "game/game_state_type.h"
 #include "game/protos/scene.h"
@@ -72,7 +74,6 @@ typedef struct {
     int winner;
 } wtf;
 
-#define MAX_EVENTS_PER_TICK 11
 #define EVENT_NAME_BUF_LEN (MAX_EVENTS_PER_TICK * 3 + 1)
 
 typedef struct {
@@ -283,12 +284,7 @@ void send_events(wtf *data, int delay) {
            ev->tick < data->last_tick - data->local_proposal + delay) {
             // each tick is written as the 32 bit tick value and a 0 terminated list of u8 actions on that tick
             serial_write_uint32(&ser, ev->tick);
-            int i = 0;
-            while(ev->events[data->id][i] && i < MAX_EVENTS_PER_TICK) {
-                serial_write_int8(&ser, ev->events[data->id][i]);
-                i++;
-            }
-            serial_write_int8(&ser, 0);
+            serial_write_bytes(&ser, ev->events[data->id], MAX_EVENTS_PER_TICK);
             last_sent_tick = ev->tick;
         }
     }
@@ -819,22 +815,18 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                             }
                         }
 
-                        for(size_t i = ser.rpos; i < event.packet->dataLength;) {
+                        while(ser.rpos < ser.wpos) {
                             unsigned remote_tick = serial_read_uint32(&ser);
-                            // dispatch keypress to scene
-                            uint8_t action = 0;
-                            int k = 0;
-                            do {
-                                // read the 0 terminated action list for this tick
-                                action = serial_read_int8(&ser);
-                                k++;
-
+                            // read the 0 terminated action list for this tick
+                            uint8_t actions[MAX_EVENTS_PER_TICK];
+                            serial_read_bytes(&ser, actions, MAX_EVENTS_PER_TICK);
+                            for(int k = 0; k < MAX_EVENTS_PER_TICK && actions[k]; k++) {
+                                // dispatch keypress to scene
+                                uint8_t action = actions[k];
                                 if(data->synchronized && data->gs_bak) {
                                     if(remote_tick > data->last_received_tick) {
                                         has_received = true;
-                                        if(action) {
-                                            insert_event(data, remote_tick, action, abs(data->id - 1));
-                                        }
+                                        insert_event(data, remote_tick, action, abs(data->id - 1));
                                     }
                                 } else {
                                     if(action == ACT_ESC) {
@@ -843,8 +835,7 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                                         controller_cmd(ctrl, action, ev);
                                     }
                                 }
-                            } while(action);
-                            i += 4 + k;
+                            }
                         }
                         if(data->synchronized && data->gs_bak) {
                             // the 20 is here to avoid doing blank replays too often
