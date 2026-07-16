@@ -73,6 +73,7 @@ typedef struct {
 } wtf;
 
 #define MAX_EVENTS_PER_TICK 11
+#define EVENT_NAME_BUF_LEN (MAX_EVENTS_PER_TICK * 3 + 1)
 
 typedef struct {
     uint32_t tick;
@@ -469,8 +470,8 @@ int rewind_and_replay(wtf *data, controller *ctrl) {
                 }
 
                 if(data->trace_file) {
-                    char buf0[12];
-                    char buf1[12];
+                    char buf0[EVENT_NAME_BUF_LEN];
+                    char buf1[EVENT_NAME_BUF_LEN];
 
                     event_names(buf0, ev->events[0]);
                     event_names(buf1, ev->events[1]);
@@ -534,8 +535,8 @@ int rewind_and_replay(wtf *data, controller *ctrl) {
                                   arena_hash);
                 SDL_RWwrite(data->trace_file, buf, sz, 1);
 
-                char buf0[12];
-                char buf1[12];
+                char buf0[EVENT_NAME_BUF_LEN];
+                char buf1[EVENT_NAME_BUF_LEN];
 
                 event_names(buf0, ev->events[0]);
                 event_names(buf1, ev->events[1]);
@@ -658,8 +659,8 @@ void net_controller_free(controller *ctrl) {
         tick_events *ev = NULL;
         foreach(it, ev) {
             log_debug("tick %" PRIu32 " has events %d -- %d", ev->tick, ev->events[0][0], ev->events[1][0]);
-            char buf0[12];
-            char buf1[12];
+            char buf0[EVENT_NAME_BUF_LEN];
+            char buf1[EVENT_NAME_BUF_LEN];
 
             event_names(buf0, ev->events[0]);
             event_names(buf1, ev->events[1]);
