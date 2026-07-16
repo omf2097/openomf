@@ -118,6 +118,9 @@ int spec_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                     default: {
                     }
                 }
+                serial_free(&ser);
+                enet_packet_destroy(event.packet);
+                break;
             default: {
             }
         }
