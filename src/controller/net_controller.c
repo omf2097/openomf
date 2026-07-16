@@ -192,7 +192,7 @@ bool has_event(wtf *data, int delay) {
             return true;
         }
     }
-    if(data->last_acked_tick < (data->last_tick - data->local_proposal) - 50) {
+    if(data->last_acked_tick + 50 < data->last_tick - data->local_proposal) {
         return true;
     }
     return false;
