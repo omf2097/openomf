@@ -40,6 +40,7 @@ unsigned int game_state_is_running(game_state *gs);
 unsigned int game_state_is_paused(game_state *gs);
 void game_state_set_paused(game_state *gs, unsigned int paused);
 void game_state_set_next(game_state *gs, unsigned int next_scene_id);
+int game_state_swap_scene(game_state *gs, int scene_id);
 game_player *game_state_get_player(const game_state *gs, int player_id);
 int game_state_num_players(game_state *gs);
 void game_state_init_demo(game_state *gs);
