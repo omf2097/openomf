@@ -192,32 +192,6 @@ int spec_controller_poll(controller *ctrl, ctrl_event **ev) {
     return 0;
 }
 
-void spec_controller_find_old_last_action(controller *ctrl) {
-    spec_controller_data *data = ctrl->data;
-    uint32_t ticks = ctrl->gs->tick;
-
-    while(ticks-- != 0) {
-        bool found_action = false;
-        spec_controller_event *move;
-        unsigned int len;
-        if(hashmap_get_int(data->tick_lookup, ticks, (void **)(&move), &len) == 0) {
-            int i = 0;
-            uint8_t action;
-            while((action = move->actions[data->player_id][i])) {
-                found_action = true;
-                ctrl->last = action;
-            }
-        }
-        if(found_action) {
-            return;
-        }
-    }
-
-    // no action found
-    ctrl->last = ACT_STOP;
-    return;
-}
-
 ENetPeer *spec_controller_get_lobby_connection(controller *ctrl) {
     spec_controller_data *data = ctrl->data;
     return data->peer;
