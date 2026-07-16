@@ -184,9 +184,10 @@ bool has_event(wtf *data, int delay) {
 
     iterator it;
     list_iter_begin(&data->transcript, &it);
-    tick_events *ev = NULL;
+    const uint32_t local_tick = data->last_tick - data->local_proposal + delay;
+    const tick_events *ev = NULL;
     foreach(it, ev) {
-        if(ev->tick < data->last_tick + delay && ev->tick > data->last_sent_tick && ev->events[data->id][0]) {
+        if(ev->tick < local_tick && ev->tick > data->last_sent_tick && ev->events[data->id][0]) {
             return true;
         }
     }
