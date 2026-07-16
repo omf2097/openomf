@@ -38,4 +38,22 @@ float serial_read_float(serial *s);
 void serial_copy(serial *dst, const serial *src);
 serial *serial_calloc_copy(const serial *src);
 
+/**
+ * @brief Write a zero-terminated byte list.
+ * @details Writes bytes from buf until the first zero or until max bytes have been
+ *    written, then writes a zero terminator.
+ * @param buf Bytes to write.
+ * @param max Maximum number of bytes to write, not counting the terminator.
+ */
+void serial_write_bytes(serial *s, const uint8_t *buf, size_t max);
+
+/**
+ * @brief Read a zero-terminated byte list.
+ * @details Fills buf with zeroes, then reads bytes up to and including the terminator
+ *    or until the readable data runs out. Bytes that do not fit are consumed and dropped.
+ * @param buf Destination buffer.
+ * @param max Capacity of the destination buffer.
+ */
+void serial_read_bytes(serial *s, uint8_t *buf, size_t max);
+
 #endif // SERIAL_H

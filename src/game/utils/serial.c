@@ -126,6 +126,24 @@ void serial_write_str(serial *s, const str *src) {
     serial_write(s, str_c(src), str_size(src));
 }
 
+void serial_write_bytes(serial *s, const uint8_t *buf, const size_t max) {
+    for(size_t i = 0; i < max && buf[i]; i++) {
+        serial_write_uint8(s, buf[i]);
+    }
+    serial_write_uint8(s, 0);
+}
+
+void serial_read_bytes(serial *s, uint8_t *buf, const size_t max) {
+    size_t i = 0;
+    uint8_t b;
+    memset(buf, 0, max);
+    while(s->rpos < s->wpos && (b = serial_read_uint8(s)) != 0) {
+        if(i < max) {
+            buf[i++] = b;
+        }
+    }
+}
+
 void serial_read_str(serial *s, str *dst) {
     const uint8_t len = serial_read_uint8(s);
     char buf[256 + 1];
