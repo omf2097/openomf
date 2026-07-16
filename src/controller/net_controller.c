@@ -20,8 +20,7 @@ typedef struct {
     ENetPeer *peer;
     ENetPeer *lobby;
     int id;
-    uint32_t last_hb;
-    uint32_t outstanding_hb;
+    uint32_t last_hb_sent_tick;
     int disconnected;
     int rttbuf[100];
     int rttpos;
@@ -938,8 +937,6 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                             } else {
                                 ctrl->rtt = avg_rtt(data) * game_state_ms_per_dyntick(ctrl->gs);
                             }
-                            data->outstanding_hb = 0;
-                            data->last_hb = ticks;
                         } else {
                             uint32_t peerticks = serial_read_uint32(&ser);
 
@@ -1152,8 +1149,8 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
         tick_interval = 20;
     }
 
-    if((data->last_hb == 0 || ticks - data->last_hb > tick_interval) || !data->outstanding_hb) {
-        data->outstanding_hb = 1;
+    if(data->last_hb_sent_tick == 0 || ticks - data->last_hb_sent_tick > tick_interval) {
+        data->last_hb_sent_tick = ticks;
         if(peer) {
             ENetPacket *packet;
             serial ser;
@@ -1305,8 +1302,7 @@ void net_controller_create(controller *ctrl, ENetHost *host, ENetPeer *peer, ENe
     data->host = host;
     data->peer = peer;
     data->lobby = lobby; // this is null in a peer-to-peer game
-    data->last_hb = 0;
-    data->outstanding_hb = 0;
+    data->last_hb_sent_tick = 0;
     data->disconnected = 0;
     data->rttpos = 0;
     data->tick_offset = 0;
