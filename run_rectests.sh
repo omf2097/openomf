@@ -103,9 +103,18 @@ cd $BUILD_DIR
 export OPENOMF_RESOURCE_PATH="."
 export LSAN_OPTIONS="suppressions=../lsan.supp"
 
+timeout=$(which timeout)
+if [ -z "$timeout" ]; then
+    timeout=$(which gtimeout)
+fi
+if [ -z "$timeout" ]; then
+    echo "Cannot find the timeout command"
+    exit 1
+fi
+
 output_file="$temp_dir/output_shouldfail.log"
 ret=0
-gtimeout 10 $OPENOMF_BIN --force-audio-backend=NULL --force-renderer=NULL --speed=10 -P "$RUNDIR/rectests/SHOULDFAIL.REC" >"$output_file" 2>&1 || ret=$?
+$timeout -s 9 12 $OPENOMF_BIN --force-audio-backend=NULL --force-renderer=NULL --speed=10 -P "$RUNDIR/rectests/SHOULDFAIL.REC" >"$output_file" 2>&1 || ret=$?
 if [[ "$ret" -eq 0 ]]; then
     cat "$output_file"
     echo "CRITICAL ERROR: SHOULDFAIL.REC succeeded."
