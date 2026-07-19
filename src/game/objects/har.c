@@ -2189,18 +2189,18 @@ af_move *match_move(object *obj, char *inputs) {
     return move;
 }
 
-af_move *scrap_destruction_cheat(object *obj, char input) {
+af_move *scrap_destruction_cheat(object *obj) {
     har *h = object_get_userdata(obj);
     for(int i = 0; i < 70; i++) {
         af_move *move;
         if((move = af_get_move(h->af_data, i))) {
-            if(move->category == CAT_SCRAP && h->state == STATE_VICTORY && input == 'K' &&
+            if(move->category == CAT_SCRAP && h->state == STATE_VICTORY && h->kick_valid &&
                (player_frame_isset(obj, TAG_JF) ||
                 (player_frame_isset(obj, TAG_JN) && i == player_frame_get(obj, TAG_JN)))) {
                 return move;
             }
 
-            if(move->category == CAT_DESTRUCTION && h->state == STATE_SCRAP && input == 'P' &&
+            if(move->category == CAT_DESTRUCTION && h->state == STATE_SCRAP && h->punch_valid &&
                (player_frame_isset(obj, TAG_JF2) ||
                 (player_frame_isset(obj, TAG_JN) && i == player_frame_get(obj, TAG_JN)))) {
                 return move;
@@ -2266,7 +2266,6 @@ int har_act(object *obj, int act_type) {
     // always queue input, I guess
     bool input_changed = add_input(h->inputs, act_type, direction);
 
-    char prefix = 1; // should never match anything, even the empty string
     if(act_type & ACT_KICK) {
         h->kick_valid = INPUT_BUFFER_TICKS;
     } else if(act_type & ACT_PUNCH) {
@@ -2324,7 +2323,7 @@ int har_act(object *obj, int act_type) {
 
     if(game_state_get_player(obj->gs, h->player_id)->ez_destruct && move == NULL &&
        (h->state == STATE_VICTORY || h->state == STATE_SCRAP)) {
-        move = scrap_destruction_cheat(obj, prefix);
+        move = scrap_destruction_cheat(obj);
     }
 
     if(move) {
