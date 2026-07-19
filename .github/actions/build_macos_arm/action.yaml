@@ -38,7 +38,7 @@ runs:
 
     - name: Run rec tests
       shell: bash
-      run: ./run_rectests.sh build-test
+      run: ./run_rectests.sh build-release
 
     - name: Install pytest requirements
       shell: bash
@@ -48,7 +48,7 @@ runs:
 
     - name: Run menu tests
       shell: bash
-      run: ./run_pytest.sh build-test
+      run: ./run_pytest.sh build-release
 
     - name: Generate ZIP package
       shell: bash
