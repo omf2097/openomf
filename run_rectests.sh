@@ -114,7 +114,7 @@ fi
 
 output_file="$temp_dir/output_shouldfail.log"
 ret=0
-$timeout -s 9 12 $OPENOMF_BIN --force-audio-backend=NULL --force-renderer=NULL --speed=10 -P "$RUNDIR/rectests/SHOULDFAIL.REC" >"$output_file" 2>&1 || ret=$?
+$timeout -s 9 16 $OPENOMF_BIN --force-audio-backend=NULL --force-renderer=NULL --speed=10 -P "$RUNDIR/rectests/SHOULDFAIL.REC" >"$output_file" 2>&1 || ret=$?
 if [[ "$ret" -eq 0 ]]; then
     cat "$output_file"
     echo "CRITICAL ERROR: SHOULDFAIL.REC succeeded."
@@ -133,10 +133,13 @@ for test in "${tests[@]}"; do
     output_file="$temp_dir/output_$i.log"
 
     echo -n "${desc} :"
-    if $OPENOMF_BIN --force-audio-backend=NULL --force-renderer=NULL --speed=10 -P "$RUNDIR/rectests/${filename}" >"$output_file"  2>&1; then
+    ret=0
+    $timeout -s 9 16 $OPENOMF_BIN --force-audio-backend=NULL --force-renderer=NULL --speed=10 \
+        -P "$RUNDIR/rectests/${filename}" >"$output_file"  2>&1 || ret=$?
+    if [[ "$ret" -eq 0 ]]; then
         echo " PASS"
     else
-        echo " FAILED (${filename})"
+        echo " FAILED ret:$ret (${filename})"
         fail_summary="${fail_summary} ${filename}"
         cat $output_file
         ((fail_count++))
