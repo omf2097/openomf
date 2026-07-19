@@ -135,8 +135,8 @@ typedef struct har_t {
     uint8_t jump_delay;      // Prevent HARs from jumping again too soon
     float last_damage_value; // Last damage value taken
     float last_stun_value;   // Last stun value taken
-    uint8_t punch_valid;    // Buffer for punch input, counts down every tick
-    uint8_t kick_valid;     // Buffer for kick input, counts down every tick
+    uint8_t punch_valid;     // Buffer for punch input, counts down every tick
+    uint8_t kick_valid;      // Buffer for kick input, counts down every tick
 
     float jump_speed;      // Agility generated speed modifier for jumping
     float superjump_speed; // Agility generated speed modifier for jumping
