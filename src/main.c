@@ -178,12 +178,8 @@ int main(int argc, char *argv[]) {
 #else
     log_set_colors(false);
 #endif
-#if defined(DEBUGMODE)
     log_add_stderr(LOG_DEBUG, true);
     log_set_level(LOG_DEBUG);
-#else
-    log_set_level(LOG_INFO); // In release mode, drop debugs.
-#endif
     if(log_level->count > 0) {
         if(!is_log_level(log_level->sval[0])) {
             fprintf(stderr, "Invalid loging level value %s\n", log_level->sval[0]);
