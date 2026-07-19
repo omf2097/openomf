@@ -1839,6 +1839,13 @@ void har_tick(object *obj) {
         object_set_palette_transform_cb(obj, NULL);
     }
 
+    if (h->punch_valid) {
+        h->punch_valid--;
+    }
+    if (h->kick_valid) {
+        h->kick_valid--;
+    }
+
     if(h->p_fade_in_ticks_left > 0) {
         h->p_fade_in_ticks_left--;
     }
@@ -2142,7 +2149,7 @@ bool is_move_chain_allowed(object *obj, af_move *move) {
     return allowed;
 }
 
-af_move *match_move(object *obj, char prefix, char *inputs) {
+af_move *match_move_prefix(object *obj, char prefix, char *inputs) {
     har *h = object_get_userdata(obj);
     af_move *move = NULL;
     size_t len;
@@ -2164,6 +2171,22 @@ af_move *match_move(object *obj, char prefix, char *inputs) {
         }
     }
     return NULL;
+}
+
+af_move *match_move(object *obj, char *inputs) {
+    har *h = object_get_userdata(obj);
+    af_move *move = NULL;
+    if (h->punch_valid) {
+        move = match_move_prefix(obj, 'P', inputs);
+    }
+    if (move == NULL && h->kick_valid) {
+        move = match_move_prefix(obj, 'K', inputs);
+    }
+    if (move != NULL) {
+        h->punch_valid = 0;
+        h->kick_valid = 0;
+    }
+    return move;
 }
 
 af_move *scrap_destruction_cheat(object *obj, char input) {
@@ -2245,9 +2268,9 @@ int har_act(object *obj, int act_type) {
 
     char prefix = 1; // should never match anything, even the empty string
     if(act_type & ACT_KICK) {
-        prefix = 'K';
+        h->kick_valid = INPUT_BUFFER_TICKS;
     } else if(act_type & ACT_PUNCH) {
-        prefix = 'P';
+        h->punch_valid = INPUT_BUFFER_TICKS;
     }
 
     uint32_t input_staleness = obj->gs->tick - h->input_change_tick;
@@ -2262,8 +2285,10 @@ int har_act(object *obj, int act_type) {
     }
 
     if(h->endurance < 0) {
-        if(prefix == 'K' || prefix == 'P') { // Mash to recover from stun faster!
+        if(h->kick_valid || h->punch_valid) { // Mash to recover from stun faster!
             h->endurance += 512;
+            h->kick_valid = 0;
+            h->punch_valid = 0;
         }
         return 0;
     }
@@ -2291,7 +2316,7 @@ int har_act(object *obj, int act_type) {
             truncated_inputs[i] = flip_input(h->inputs[i], direction);
         }
     }
-    af_move *move = match_move(obj, prefix, truncated_inputs);
+    af_move *move = match_move(obj, truncated_inputs);
 
     if(player_frame_isset(obj, TAG_JN) && player_frame_isset(obj, TAG_CW) && (enemy_har->state == STATE_WALLDAMAGE)) {
         move = af_get_move(h->af_data, player_frame_get(obj, TAG_JN));
