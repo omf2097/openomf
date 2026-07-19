@@ -1839,10 +1839,10 @@ void har_tick(object *obj) {
         object_set_palette_transform_cb(obj, NULL);
     }
 
-    if (h->punch_valid) {
+    if(h->punch_valid) {
         h->punch_valid--;
     }
-    if (h->kick_valid) {
+    if(h->kick_valid) {
         h->kick_valid--;
     }
 
@@ -2176,13 +2176,13 @@ af_move *match_move_prefix(object *obj, char prefix, char *inputs) {
 af_move *match_move(object *obj, char *inputs) {
     har *h = object_get_userdata(obj);
     af_move *move = NULL;
-    if (h->punch_valid) {
+    if(h->punch_valid) {
         move = match_move_prefix(obj, 'P', inputs);
     }
-    if (move == NULL && h->kick_valid) {
+    if(move == NULL && h->kick_valid) {
         move = match_move_prefix(obj, 'K', inputs);
     }
-    if (move != NULL) {
+    if(move != NULL) {
         h->punch_valid = 0;
         h->kick_valid = 0;
     }
