@@ -105,7 +105,7 @@ export LSAN_OPTIONS="suppressions=../lsan.supp"
 
 output_file="$temp_dir/output_shouldfail.log"
 ret=0
-timeout 10 $OPENOMF_BIN --force-audio-backend=NULL --force-renderer=NULL --speed=10 -P "$RUNDIR/rectests/SHOULDFAIL.REC" >"$output_file" 2>&1 || ret=$?
+gtimeout 10 $OPENOMF_BIN --force-audio-backend=NULL --force-renderer=NULL --speed=10 -P "$RUNDIR/rectests/SHOULDFAIL.REC" >"$output_file" 2>&1 || ret=$?
 if [[ "$ret" -eq 0 ]]; then
     cat "$output_file"
     echo "CRITICAL ERROR: SHOULDFAIL.REC succeeded."
