@@ -36,6 +36,17 @@ runs:
         mkdir -p build-release/release/usr/share/games/openomf/mods
         unzip -o openomf-mods.zip -d build-release/release/usr/share/games/openomf/mods
 
+    - name: Run rec tests
+      run: ./run_rectests.sh build-test
+
+    - name: Install pytest requirements
+      run: |
+        pipx install poetry
+        poetry install
+
+    - name: Run menu tests
+      run: ./run_pytest.sh build-test
+
     - name: Generate ZIP package
       shell: bash
       run: |
