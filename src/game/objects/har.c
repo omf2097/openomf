@@ -539,6 +539,7 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t m
             projectile_set_invincible(obj);
         }
 
+        player_init_spawned(obj);
         game_state_add_object(parent->gs, obj, RENDER_LAYER_MIDDLE, 0, 0);
     }
 }
@@ -574,6 +575,7 @@ void har_floor_landing_effects(object *obj, bool play_sound) {
         object_create(dust, obj->gs, coord, vec2f_create(0, 0));
         object_set_stl(dust, object_get_stl(obj));
         object_set_animation(dust, &bk_get_info(game_state_get_scene(obj->gs)->bk_data, 26)->ani);
+        player_init_spawned(dust);
         game_state_add_object(obj->gs, dust, RENDER_LAYER_MIDDLE, 0, 0);
     }
 
@@ -1097,8 +1099,8 @@ static void har_spawn_oil(const object *obj, vec2i pos, int amount, int layer) {
         object_set_stl(scrap, object_get_stl(obj));
         object_set_gravity(scrap, har_sparks_random_gravity(obj));
         object_set_layers(scrap, LAYER_SCRAP);
-        object_dynamic_tick(scrap);
         scrap_create(scrap);
+        player_init_spawned(scrap);
         game_state_add_object(obj->gs, scrap, layer, 0, 0);
     }
 }
@@ -1131,9 +1133,9 @@ void har_spawn_scrap(const object *obj, vec2i pos, int amount) {
         object_set_pal_limit(scrap, object_get_pal_limit(obj));
         object_set_layers(scrap, LAYER_SCRAP);
         object_set_group(scrap, GROUP_SCRAP);
-        object_dynamic_tick(scrap);
         object_set_shadow(scrap, 1);
         scrap_create(scrap);
+        player_init_spawned(scrap);
         game_state_add_object(obj->gs, scrap, RENDER_LAYER_TOP, 0, 0);
     }
 }
@@ -1162,8 +1164,6 @@ void har_block(object *obj, vec2i hit_coord, uint8_t block_stun) {
     object_set_repeat(scrape, 0);
     object_set_gravity(scrape, 0);
     object_set_layers(scrape, LAYER_SCRAP);
-    object_dynamic_tick(scrape);
-    object_dynamic_tick(scrape);
     {
         sound_opts opts;
         sound_opts_init(&opts);
@@ -1171,6 +1171,7 @@ void har_block(object *obj, vec2i hit_coord, uint8_t block_stun) {
         opts.panning = 50;
         game_state_play_sound(obj->gs, 3, &opts);
     }
+    player_init_spawned(scrape);
     game_state_add_object(obj->gs, scrape, RENDER_LAYER_MIDDLE, 0, 0);
     h->damage_received = 1;
 }
@@ -1994,7 +1995,7 @@ void har_tick(object *obj) {
         object_set_custom_string(nobj, "bs100A1-bf0A15");
         object_add_animation_effects(nobj, EFFECT_SHADOW);
         object_set_direction(nobj, object_get_direction(obj));
-        object_dynamic_tick(nobj);
+        player_init_spawned(nobj);
         game_state_add_object(obj->gs, nobj, RENDER_LAYER_BOTTOM, 0, 0);
     }
 }

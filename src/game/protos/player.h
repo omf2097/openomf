@@ -42,15 +42,24 @@ typedef struct player_slide_op_t {
     int timer;
 } player_slide_state;
 
+typedef enum
+{
+    ANIM_PHASE_HOLD = 0, ///< Initial state; allows us to advance to tick zero.
+    ANIM_PHASE_RUNNING,  ///< Playback is ongoing.
+    ANIM_PHASE_FINISHED, ///< Reached the end of a script. The last sprite is held.
+} player_anim_phase;
+
 typedef struct player_animation_state_t {
     bool entered_frame; ///< True if playback entered a new frame on the current tick.
     script_reader reader;
-    bool finished;           ///< Playback reached the end of the script and was halted (not repeating).
+    player_anim_phase phase; ///< Playback lifecycle state (see player_anim_phase).
     bool repeat;             ///< Restart the animation from the beginning when it finishes.
     bool reverse;            ///< Play the animation backwards (tick decrements each step).
     bool disable_d;          ///< Ignore the 'd' re-enter tag for this animation.
     bool shadow_corner_hack; ///< Enables the shadow HAR corner-case hack.
     bool looping;            ///< The animation is looping via a 'd' re-enter tag.
+    bool pending_apply;      ///< An advance ran and its frame effects have not been applied yet.
+    bool from_spawn;         ///< bk-pool spawn: skip the same-tick bootstrap so it first renders on T+1.
 
     uint8_t pal_copy_entries; // ba
     uint8_t pal_copy_start;   // bi
@@ -72,12 +81,15 @@ void player_reset(object *obj);
 int player_frame_isset(const object *obj, script_tag tag);
 int player_frame_get(const object *obj, script_tag tag);
 void player_run(object *obj);
+void player_run_advance(object *obj);
+void player_run_apply(object *obj);
 void player_set_repeat(object *obj, int repeat);
 int player_get_repeat(const object *obj);
 void player_next_frame(object *obj);
 void player_goto_frame(object *obj, int frame_id);
 int player_get_frame(const object *obj);
 void player_jump_to_tick(object *obj, int tick);
+void player_init_spawned(object *obj);
 char player_get_last_frame_letter(const object *obj);
 unsigned int player_get_len_ticks(const object *obj);
 bool player_is_looping(const object *obj);
