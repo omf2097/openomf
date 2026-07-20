@@ -2266,12 +2266,6 @@ int har_act(object *obj, int act_type) {
     // always queue input, I guess
     bool input_changed = add_input(h->inputs, act_type, direction);
 
-    if(act_type & ACT_KICK) {
-        h->kick_valid = INPUT_BUFFER_TICKS;
-    } else if(act_type & ACT_PUNCH) {
-        h->punch_valid = INPUT_BUFFER_TICKS;
-    }
-
     uint32_t input_staleness = obj->gs->tick - h->input_change_tick;
     if(input_changed) {
         h->input_change_tick = obj->gs->tick;
@@ -2283,15 +2277,6 @@ int har_act(object *obj, int act_type) {
         h->input_change_tick = obj->gs->tick;
     }
 
-    if(h->endurance < 0) {
-        if(h->kick_valid || h->punch_valid) { // Mash to recover from stun faster!
-            h->endurance += 512;
-            h->kick_valid = 0;
-            h->punch_valid = 0;
-        }
-        return 0;
-    }
-
     if(object_get_halt(obj)) {
         // frozen, ignore input
         return 0;
@@ -2300,6 +2285,21 @@ int har_act(object *obj, int act_type) {
     // Don't allow movement if arena is starting or ending
     int arena_state = arena_get_state(game_state_get_scene(obj->gs));
     if(arena_state == ARENA_STATE_STARTING) {
+        return 0;
+    }
+
+    if(act_type & ACT_KICK) {
+        h->kick_valid = INPUT_BUFFER_TICKS;
+    } else if(act_type & ACT_PUNCH) {
+        h->punch_valid = INPUT_BUFFER_TICKS;
+    }
+
+    if(h->endurance < 0) {
+        if(h->kick_valid || h->punch_valid) { // Mash to recover from stun faster!
+            h->endurance += 512;
+            h->kick_valid = 0;
+            h->punch_valid = 0;
+        }
         return 0;
     }
 
