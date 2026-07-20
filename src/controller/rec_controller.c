@@ -225,7 +225,7 @@ void rec_controller_create(controller *ctrl, int player, sd_rec_file *rec) {
             data->max_tick = rec_move->tick;
         }
     }
-    log_debug("max tick is %" PRIu32, data->last_tick);
+    log_debug("max tick is %" PRIu32, data->max_tick);
     ctrl->data = data;
     ctrl->type = CTRL_TYPE_REC;
     ctrl->poll_fun = &rec_controller_poll;
