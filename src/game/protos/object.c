@@ -87,7 +87,6 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
 int object_clone(object *src, object *dst, game_state *gs) {
     memcpy(dst, src, sizeof(object));
     dst->gs = gs;
-    player_clone(src, dst);
 
     if(src->cur_animation_own == OWNER_OBJECT) {
         dst->cur_animation = omf_calloc(1, sizeof(animation));
@@ -112,10 +111,6 @@ void object_set_stride(object *obj, int stride) {
         stride = 1;
     }
     obj->stride = stride;
-}
-
-void object_set_delay(object *obj, int delay) {
-    player_set_delay(obj, delay);
 }
 
 void object_set_playback_direction(object *obj, int dir) {
@@ -294,8 +289,8 @@ void object_del_frame_effects(object *obj, uint32_t effects) {
 }
 
 void object_apply_controllable_velocity(object *obj, bool is_projectile, char input) {
-    if(player_frame_isset(obj, "cx")) {
-        float cx = player_frame_get(obj, "cx") / 10.0;
+    if(player_frame_isset(obj, TAG_CX)) {
+        float cx = player_frame_get(obj, TAG_CX) / 10.0;
         if(!is_projectile) {
             cx *= obj->horizontal_velocity_modifier;
         }
@@ -309,8 +304,8 @@ void object_apply_controllable_velocity(object *obj, bool is_projectile, char in
             obj->cvel.x -= cx * 0.7 * object_get_direction(obj);
         }
         // CY needs CX to be set, and only works for projectiles
-        if(player_frame_isset(obj, "cy") && is_projectile) {
-            float cy = player_frame_get(obj, "cy") / 10.0;
+        if(player_frame_isset(obj, TAG_CY) && is_projectile) {
+            float cy = player_frame_get(obj, TAG_CY) / 10.0;
             if(input == '8') {
                 obj->cvel.y -= cy;
             } else if(input == '2') {
@@ -501,7 +496,6 @@ void object_free(object *obj) {
     if(obj->free != NULL) {
         obj->free(obj);
     }
-    player_free(obj);
     if(obj->cur_animation_own == OWNER_OBJECT) {
         animation_free(obj->cur_animation);
         omf_free(obj->cur_animation);
@@ -514,7 +508,6 @@ int object_clone_free(object *obj) {
     if(obj->clone_free != NULL) {
         obj->clone_free(obj);
     }
-    player_free(obj);
     if(obj->cur_animation_own == OWNER_OBJECT) {
         animation_free(obj->cur_animation);
         omf_free(obj->cur_animation);
@@ -707,15 +700,17 @@ int object_get_halt(const object *obj) {
 void object_set_repeat(object *obj, int repeat) {
     player_set_repeat(obj, repeat);
 }
+
 int object_get_repeat(const object *obj) {
     return player_get_repeat(obj);
 }
-int object_finished(object *obj) {
+
+int object_is_finished(object *obj) {
     return obj->animation_state.finished;
 }
 
-void object_set_finished(object *obj) {
-    obj->animation_state.finished = 1;
+void object_set_finished(object *obj, bool finished) {
+    obj->animation_state.finished = finished;
 }
 
 void object_set_direction(object *obj, int dir) {
@@ -813,7 +808,7 @@ void object_set_disable_cb(object *obj, object_state_disable_cb cbf, void *userd
 }
 
 int object_is_airborne(const object *obj) {
-    return obj->pos.y < ARENA_FLOOR || obj->vel.y < 0 || player_frame_isset(obj, "ug");
+    return obj->pos.y < ARENA_FLOOR || obj->vel.y < 0 || player_frame_isset(obj, TAG_UG);
 }
 
 /* Attaches one object to another. Positions are synced to this from the attached. */

@@ -23,7 +23,7 @@
 
 #define UPDATE_FIELD_INT(field_name, struct_field, new_value)                                                          \
     if(new_value != 0 && struct_field != new_value) {                                                                  \
-        log_info("setting " #field_name " from %d to %d", struct_field, new_value);                                    \
+        log_info("setting " #field_name " from %d to %d", (int)(struct_field), (int)(new_value));                      \
         struct_field = new_value;                                                                                      \
     }
 
@@ -115,14 +115,14 @@ int mod_find(list *mod_list) {
     if(!path_glob(&scan, mod_list, "*.zip")) {
         log_warn("Failed to scan system mods directory!");
     } else {
-        log_info("Found %d system mods.", list_size(mod_list));
+        log_info("Found %u system mods.", list_size(mod_list));
     }
     size = list_size(mod_list);
     scan = get_user_mod_directory();
     if(!path_glob(&scan, mod_list, "*.zip")) {
         log_warn("Failed to scan user mods directory!");
     } else {
-        log_info("Found %d user mods.", list_size(mod_list) - size);
+        log_info("Found %d user mods.", (int)(list_size(mod_list) - size));
     }
     size = list_size(mod_list);
 
@@ -373,7 +373,7 @@ bool modmanager_init(void) {
         struct zip_t *zip = zip_open(path_c(p), 0, 'r');
         ssize_t entries = zip_entries_total(zip);
         if(entries > 0) {
-            log_info("mod %s has %d files", path_c(p), entries);
+            log_info("mod %s has %d files", path_c(p), (int)entries);
             for(size_t i = 0; i < (size_t)entries; i++) {
                 if(zip_entry_openbyindex(zip, i) == 0 && zip_entry_isdir(zip) == 0) {
                     log_info("mod contains %s", zip_entry_name(zip));
@@ -413,7 +413,7 @@ bool modmanager_init(void) {
 
                         if(sd_vga_image_from_png_in_memory(&buf->img, entry_buf, entry_size, true, NULL) ==
                            SD_SUCCESS) {
-                            log_info("got hitcoord overlay %dx%d", buf->img.w, buf->img.h);
+                            log_info("got hitcoord overlay %ux%u", buf->img.w, buf->img.h);
                             hashmap_put_str(&mod_resources, str_c(&filename), buf, sizeof(mod_asset));
                             omf_free(buf);
                         } else {
@@ -435,7 +435,7 @@ bool modmanager_init(void) {
                                 free_mod_asset(existing);
                             }
 
-                            log_info("got vga image %dx%d", buf->img.w, buf->img.h);
+                            log_info("got vga image %ux%u", buf->img.w, buf->img.h);
 
                             hashmap_put_str(&mod_resources, str_c(&filename), buf, sizeof(mod_asset));
                             omf_free(buf);
@@ -549,7 +549,7 @@ bool modmanager_get_bk_background(str *name, sd_vga_image **img) {
     if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&obuf, &len)) {
         assert(obuf->type == MOD_VGA_IMAGE);
         *img = &obuf->img;
-        log_info("got vga image %dx%d with size %d", (*img)->w, (*img)->h, len);
+        log_info("got vga image %ux%u with size %u", (*img)->w, (*img)->h, len);
         found = true;
     }
     str_free(&filename);
@@ -770,9 +770,9 @@ bool modmanager_get_music(str *name, unsigned int index, unsigned char **buf, si
 
     if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&l, &len)) {
         unsigned int count = list_size(l);
-        log_info("found %d music files for %s", count, name);
+        log_info("found %u music files for %s", count, str_c(name));
         if(index >= count) {
-            log_warn("requested index %i into list of %d members", index, count);
+            log_warn("requested index %u into list of %u members", index, count);
             return false;
         }
         mod_asset *obuf = list_get(l, index);
@@ -819,60 +819,60 @@ bool modmanager_parse_af_move_mod(const char *buf, af_move *current_move) {
 
     // Update integer fields only if they changed
     if(current_move->pos_constraints != cfg_getint(cfg, "pos_constraints")) {
-        log_info("setting pos_constraints from %u to %d", current_move->pos_constraints,
+        log_info("setting pos_constraints from %u to %ld", current_move->pos_constraints,
                  cfg_getint(cfg, "pos_constraints"));
         current_move->pos_constraints = cfg_getint(cfg, "pos_constraints");
     }
 
     if(current_move->next_move != cfg_getint(cfg, "next_move")) {
-        log_info("setting next_move from %u to %d", current_move->next_move, cfg_getint(cfg, "next_move"));
+        log_info("setting next_move from %u to %ld", current_move->next_move, cfg_getint(cfg, "next_move"));
         current_move->next_move = cfg_getint(cfg, "next_move");
     }
 
     if(current_move->successor_id != cfg_getint(cfg, "successor_id")) {
-        log_info("setting successor_id from %u to %d", current_move->successor_id, cfg_getint(cfg, "successor_id"));
+        log_info("setting successor_id from %u to %ld", current_move->successor_id, cfg_getint(cfg, "successor_id"));
         current_move->successor_id = cfg_getint(cfg, "successor_id");
     }
 
     if(current_move->category != cfg_getint(cfg, "category")) {
-        log_info("setting category from %u to %d", current_move->category, cfg_getint(cfg, "category"));
+        log_info("setting category from %u to %ld", current_move->category, cfg_getint(cfg, "category"));
         current_move->category = cfg_getint(cfg, "category");
     }
 
     if(current_move->points != cfg_getint(cfg, "points")) {
-        log_info("setting points from %u to %d", current_move->points, cfg_getint(cfg, "points"));
+        log_info("setting points from %u to %ld", current_move->points, cfg_getint(cfg, "points"));
         current_move->points = cfg_getint(cfg, "points");
     }
 
     if(current_move->block_damage != cfg_getint(cfg, "block_damage")) {
-        log_info("setting block_damage from %u to %d", current_move->block_damage, cfg_getint(cfg, "block_damage"));
+        log_info("setting block_damage from %u to %ld", current_move->block_damage, cfg_getint(cfg, "block_damage"));
         current_move->block_damage = cfg_getint(cfg, "block_damage");
     }
 
     if(current_move->block_stun != cfg_getint(cfg, "block_stun")) {
-        log_info("setting block_stun from %u to %d", current_move->block_stun, cfg_getint(cfg, "block_stun"));
+        log_info("setting block_stun from %u to %ld", current_move->block_stun, cfg_getint(cfg, "block_stun"));
         current_move->block_stun = cfg_getint(cfg, "block_stun");
     }
 
     if(current_move->throw_duration != cfg_getint(cfg, "throw_duration")) {
-        log_info("setting throw_duration from %u to %d", current_move->throw_duration,
+        log_info("setting throw_duration from %u to %ld", current_move->throw_duration,
                  cfg_getint(cfg, "throw_duration"));
         current_move->throw_duration = cfg_getint(cfg, "throw_duration");
     }
 
     if(current_move->extra_string_selector != cfg_getint(cfg, "extra_string_selector")) {
-        log_info("setting extra_string_selector from %u to %d", current_move->extra_string_selector,
+        log_info("setting extra_string_selector from %u to %ld", current_move->extra_string_selector,
                  cfg_getint(cfg, "extra_string_selector"));
         current_move->extra_string_selector = cfg_getint(cfg, "extra_string_selector");
     }
 
     if(current_move->ani.start_pos.x != cfg_getint(cfg, "start_x")) {
-        log_info("setting start_x from %d to %d", current_move->ani.start_pos.x, cfg_getint(cfg, "start_x"));
+        log_info("setting start_x from %d to %ld", current_move->ani.start_pos.x, cfg_getint(cfg, "start_x"));
         current_move->ani.start_pos.x = cfg_getint(cfg, "start_x");
     }
 
     if(current_move->ani.start_pos.y != cfg_getint(cfg, "start_y")) {
-        log_info("setting start_y from %d to %d", current_move->ani.start_pos.y, cfg_getint(cfg, "start_y"));
+        log_info("setting start_y from %d to %ld", current_move->ani.start_pos.y, cfg_getint(cfg, "start_y"));
         current_move->ani.start_pos.y = cfg_getint(cfg, "start_y");
     }
 
@@ -889,21 +889,21 @@ bool modmanager_parse_af_move_mod(const char *buf, af_move *current_move) {
 
     // Update string fields if they were modified
     char *move_str = cfg_getstr(cfg, "move_string");
-    if(move_str && strcmp(move_str, str_c(&current_move->move_string)) != 0) {
+    if(move_str && !str_equal_c(&current_move->move_string, move_str)) {
         log_info("setting move_string from '%s' to '%s'", str_c(&current_move->move_string), move_str);
         str_free(&current_move->move_string);
         str_from_c(&current_move->move_string, move_str);
     }
 
     char *footer_str = cfg_getstr(cfg, "footer_string");
-    if(footer_str && strcmp(footer_str, str_c(&current_move->footer_string)) != 0) {
+    if(footer_str && !str_equal_c(&current_move->footer_string, footer_str)) {
         log_info("setting footer_string from '%s' to '%s'", str_c(&current_move->footer_string), footer_str);
         str_free(&current_move->footer_string);
         str_from_c(&current_move->footer_string, footer_str);
     }
 
     char *anim_str = cfg_getstr(cfg, "animation_string");
-    if(anim_str && strcmp(anim_str, str_c(&current_move->ani.animation_string)) != 0) {
+    if(anim_str && !str_equal_c(&current_move->ani.animation_string, anim_str)) {
         log_info("setting animation_string from '%s' to '%s'", str_c(&current_move->ani.animation_string), anim_str);
         str_free(&current_move->ani.animation_string);
         str_from_c(&current_move->ani.animation_string, anim_str);
@@ -940,50 +940,50 @@ bool modmanager_parse_bk_info_mod(const char *buf, bk_info *current_info) {
 
     // Update integer fields only if they changed
     if(current_info->chain_hit != (unsigned int)cfg_getint(cfg, "chain_hit")) {
-        log_info("setting chain_hit from %u to %d", current_info->chain_hit, cfg_getint(cfg, "chain_hit"));
+        log_info("setting chain_hit from %u to %ld", current_info->chain_hit, cfg_getint(cfg, "chain_hit"));
         current_info->chain_hit = cfg_getint(cfg, "chain_hit");
     }
 
     if(current_info->chain_no_hit != (unsigned int)cfg_getint(cfg, "chain_no_hit")) {
-        log_info("setting chain_no_hit from %u to %d", current_info->chain_no_hit, cfg_getint(cfg, "chain_no_hit"));
+        log_info("setting chain_no_hit from %u to %ld", current_info->chain_no_hit, cfg_getint(cfg, "chain_no_hit"));
         current_info->chain_no_hit = cfg_getint(cfg, "chain_no_hit");
     }
 
     if(current_info->repeat != (unsigned int)cfg_getint(cfg, "repeat")) {
-        log_info("setting repeat from %u to %d", current_info->repeat, cfg_getint(cfg, "repeat"));
+        log_info("setting repeat from %u to %ld", current_info->repeat, cfg_getint(cfg, "repeat"));
         current_info->repeat = cfg_getint(cfg, "repeat");
     }
 
     if(current_info->probability != (unsigned int)cfg_getint(cfg, "probability")) {
-        log_info("setting probability from %u to %d", current_info->probability, cfg_getint(cfg, "probability"));
+        log_info("setting probability from %u to %ld", current_info->probability, cfg_getint(cfg, "probability"));
         current_info->probability = cfg_getint(cfg, "probability");
     }
 
     if(current_info->hazard_damage != (unsigned int)cfg_getint(cfg, "hazard_damage")) {
-        log_info("setting hazard_damage from %u to %d", current_info->hazard_damage, cfg_getint(cfg, "hazard_damage"));
+        log_info("setting hazard_damage from %u to %ld", current_info->hazard_damage, cfg_getint(cfg, "hazard_damage"));
         current_info->hazard_damage = cfg_getint(cfg, "hazard_damage");
     }
 
     if(current_info->ani.start_pos.x != cfg_getint(cfg, "start_x")) {
-        log_info("setting start_x from %d to %d", current_info->ani.start_pos.x, cfg_getint(cfg, "start_x"));
+        log_info("setting start_x from %d to %ld", current_info->ani.start_pos.x, cfg_getint(cfg, "start_x"));
         current_info->ani.start_pos.x = cfg_getint(cfg, "start_x");
     }
 
     if(current_info->ani.start_pos.y != cfg_getint(cfg, "start_y")) {
-        log_info("setting start_y from %d to %d", current_info->ani.start_pos.y, cfg_getint(cfg, "start_y"));
+        log_info("setting start_y from %d to %ld", current_info->ani.start_pos.y, cfg_getint(cfg, "start_y"));
         current_info->ani.start_pos.y = cfg_getint(cfg, "start_y");
     }
 
     // Update string fields if they were modified
     char *footer_str = cfg_getstr(cfg, "footer_string");
-    if(footer_str && strcmp(footer_str, str_c(&current_info->footer_string)) != 0) {
+    if(footer_str && !str_equal_c(&current_info->footer_string, footer_str)) {
         log_info("setting footer_string from '%s' to '%s'", str_c(&current_info->footer_string), footer_str);
         str_free(&current_info->footer_string);
         str_from_c(&current_info->footer_string, footer_str);
     }
 
     char *anim_str = cfg_getstr(cfg, "animation_string");
-    if(anim_str && strcmp(anim_str, str_c(&current_info->ani.animation_string)) != 0) {
+    if(anim_str && !str_equal_c(&current_info->ani.animation_string, anim_str)) {
         log_info("setting animation_string from '%s' to '%s'", str_c(&current_info->ani.animation_string), anim_str);
         str_free(&current_info->ani.animation_string);
         str_from_c(&current_info->ani.animation_string, anim_str);
@@ -1076,7 +1076,7 @@ bool modmanager_get_bk_animation(str *name, int anim_id, bk_info *bk_data) {
 
     str_free(&filename);
 
-    if(!result && strncmp("arena", str_c(name), 5) == 0 &&
+    if(!result && str_starts_with(name, "arena") &&
        ((anim_id >= 6 && anim_id <= 11) || (anim_id >= 24 && anim_id <= 27))) {
         // TODO make sure this is an arena
         // For arenas, check for 'common' for anim_ids 6 (round), 7 (number), 8 (you lose), 9 (you win), 10 (fight),
@@ -1122,7 +1122,7 @@ bool modmanager_parse_fighter_header_mod(const char *buf, af *fighter) {
     }
 
     if(fighter->health != (unsigned int)cfg_getint(cfg, "health")) {
-        log_info("setting health from %u to %d", fighter->health, cfg_getint(cfg, "health"));
+        log_info("setting health from %u to %ld", fighter->health, cfg_getint(cfg, "health"));
         fighter->health = cfg_getint(cfg, "health");
     }
 
@@ -1186,7 +1186,7 @@ bool modmanager_parse_pilot_mod(const char *buf, sd_pilot *pilot) {
 
     // Store original values for comparison
     char original_name[18];
-    strncpy(original_name, pilot->name, sizeof(original_name));
+    strncpy(original_name, str_c(&pilot->name), sizeof(original_name));
     original_name[17] = '\0';
 
     // Options for colors section
@@ -1253,9 +1253,8 @@ bool modmanager_parse_pilot_mod(const char *buf, sd_pilot *pilot) {
     // Update top-level string fields
     char *name = cfg_getstr(cfg, "name");
     if(name) {
-        strncpy(pilot->name, name, sizeof(pilot->name) - 1);
-        pilot->name[sizeof(pilot->name) - 1] = '\0';
-        log_info("setting name from '%s' to '%s'", original_name, pilot->name);
+        str_set_c(&pilot->name, name);
+        log_info("setting name from '%s' to '%s'", original_name, str_c(&pilot->name));
     }
 
     char *gender = cfg_getstr(cfg, "gender");
@@ -1368,10 +1367,7 @@ bool modmanager_parse_pilot_mod(const char *buf, sd_pilot *pilot) {
 
         char *quote = cfg_getstr(lang, "quote");
         if(quote) {
-            if(pilot->quotes[lang_index]) {
-                omf_free(pilot->quotes[lang_index]);
-            }
-            pilot->quotes[lang_index] = omf_strdup(quote);
+            str_set_c(&pilot->quotes[lang_index], quote);
             log_info("setting %s quote to '%s'", lang_name, quote);
         }
     }
@@ -1404,9 +1400,7 @@ bool modmanager_get_pilot_mod(const char *trn_name, uint8_t pilot_id, sd_pilot *
         }
         pilot_data->photo = omf_calloc(1, sizeof(sd_sprite));
         sd_sprite_create(pilot_data->photo);
-        if(sd_sprite_copy(pilot_data->photo, &obuf->spr) != SD_SUCCESS) {
-            log_warn("failed to copy photo");
-        }
+        sd_sprite_copy(pilot_data->photo, &obuf->spr);
     }
 
     str_free(&filename);
@@ -1543,6 +1537,7 @@ bool modmanager_parse_tournament_mod(const char *buf, sd_tournament_file *tourn)
         if(!locale) {
             // Allocate new locale if it doesn't exist
             locale = omf_calloc(1, sizeof(sd_tournament_locale));
+            sd_tournament_locale_create(locale);
             tourn->locales[locale_index] = locale;
             log_info("Created new locale for %s at index %d", lang_name, locale_index);
         }
@@ -1550,22 +1545,16 @@ bool modmanager_parse_tournament_mod(const char *buf, sd_tournament_file *tourn)
         // Update name
         char *name = cfg_getstr(lang, "name");
         if(name) {
-            log_info("previous title was %s", locale->title);
-            if(locale->title) {
-                omf_free(locale->title);
-            }
-            locale->title = omf_strdup(name);
+            log_info("previous title was %s", str_c(&locale->title));
+            str_set_c(&locale->title, name);
             log_info("setting %s name to '%s'", lang_name, name);
         }
 
         // Update description
         char *description = cfg_getstr(lang, "description");
         if(description) {
-            if(locale->description) {
-                omf_free(locale->description);
-            }
-            locale->description = omf_strdup(description);
-            log_info("setting %s description to %s", lang_name, locale->description);
+            str_set_c(&locale->description, description);
+            log_info("setting %s description to %s", lang_name, str_c(&locale->description));
 
             // Parse the description to extract metadata
             parse_tournament_description(locale);
@@ -1605,10 +1594,7 @@ bool modmanager_parse_tournament_mod(const char *buf, sd_tournament_file *tourn)
 
                 char *page_text = cfg_getstr(ending, page_key);
                 if(page_text) {
-                    if(locale->end_texts[ending_index][page]) {
-                        omf_free(locale->end_texts[ending_index][page]);
-                    }
-                    locale->end_texts[ending_index][page] = omf_strdup(page_text);
+                    str_set_c(&locale->end_texts[ending_index][page], page_text);
                     log_info("setting %s %s page%d text", lang_name, ending_type, page + 1);
                 }
             }
@@ -1656,9 +1642,7 @@ bool modmanager_get_tournament_mod(const char *tournament_name, sd_tournament_fi
     if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&obuf, &len)) {
         assert(obuf->type == MOD_SPRITE);
         sd_sprite_free(tourn_data->locales[0]->logo);
-        if(sd_sprite_copy(tourn_data->locales[0]->logo, &obuf->spr) != SD_SUCCESS) {
-            log_warn("failed to copy tournament logo");
-        }
+        sd_sprite_copy(tourn_data->locales[0]->logo, &obuf->spr);
     }
 
     // now apply any pilot mods
@@ -1771,20 +1755,18 @@ bool modmanager_get_player_pics(sd_pic_file *players) {
     unsigned int len = 0;
     bool result = false;
 
-    for(int i = 0; i < players->photo_count; i++) {
+    for(int i = 0; i < (int)vector_size(&players->photos); i++) {
+        sd_pic_photo *photo = vector_get(&players->photos, i);
 
         // Check for png replacement
         str_from_format(&filename, "players/%i/pilot.png", i);
         mod_asset *obuf;
         if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&obuf, &len)) {
             assert(obuf->type == MOD_SPRITE);
-            sd_sprite_free(players->photos[i]->sprite);
-            if(sd_sprite_copy(players->photos[i]->sprite, &obuf->spr) != SD_SUCCESS) {
-                log_warn("failed to copy player portrait");
-            } else {
-                result |= true;
-                log_info("loaded portrait %i", i);
-            }
+            sd_sprite_free(photo->sprite);
+            sd_sprite_copy(photo->sprite, &obuf->spr);
+            result |= true;
+            log_info("loaded portrait %i", i);
         }
         str_free(&filename);
 
@@ -1793,7 +1775,7 @@ bool modmanager_get_player_pics(sd_pic_file *players) {
         // copy HAR color palette, if exists
         if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&obuf, &len)) {
             assert(obuf->type == MOD_SPRITE);
-            palette_copy(&players->photos[i]->pal, obuf->pal, 0, 48);
+            palette_copy(&photo->pal, obuf->pal, 0, 48);
         }
         str_free(&filename);
 
@@ -1806,7 +1788,7 @@ bool modmanager_get_player_pics(sd_pic_file *players) {
             mod_asset *obuf;
             foreach(it, obuf) {
                 assert(obuf->type == MOD_BUFFER);
-                result |= modmanager_parse_photo_mod((char *)obuf->buf, players->photos[i]);
+                result |= modmanager_parse_photo_mod((char *)obuf->buf, photo);
             }
         }
 

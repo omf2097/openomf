@@ -21,7 +21,7 @@ int sd_vga_image_create(sd_vga_image *img, unsigned int w, unsigned int h) {
     return SD_SUCCESS;
 }
 
-int sd_vga_image_copy(sd_vga_image *dst, const sd_vga_image *src) {
+void sd_vga_image_copy(sd_vga_image *dst, const sd_vga_image *src) {
     assert(dst != NULL);
     assert(src != NULL);
     dst->w = src->w;
@@ -29,7 +29,6 @@ int sd_vga_image_copy(sd_vga_image *dst, const sd_vga_image *src) {
     dst->len = src->len;
     dst->data = omf_calloc(src->len, 1);
     memcpy(dst->data, src->data, src->len);
-    return SD_SUCCESS;
 }
 
 void sd_vga_image_free(sd_vga_image *img) {
@@ -40,13 +39,10 @@ void sd_vga_image_free(sd_vga_image *img) {
 }
 
 int sd_vga_image_decode(sd_rgba_image *dst, const sd_vga_image *src, const vga_palette *pal) {
-    int ret;
     assert(dst != NULL);
     assert(src != NULL);
     assert(pal != NULL);
-    if((ret = sd_rgba_image_create(dst, src->w, src->h)) != SD_SUCCESS) {
-        return ret;
-    }
+    sd_rgba_image_create(dst, src->w, src->h);
     int pos = 0;
     for(int y = src->h - 1; y >= 0; y--) {
         for(unsigned x = 0; x < src->w; x++) {

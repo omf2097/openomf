@@ -6,6 +6,7 @@
 
 #include "formats/error.h"
 #include "formats/script.h"
+#include "formats/tag_list_helpers.h"
 #include "utils/c_array_util.h"
 #include <argtable3.h>
 #include <stdint.h>
@@ -69,9 +70,9 @@ int main(int argc, char *argv[]) {
     printf("Parsing \"%s\".\n\n", str);
 
     int err_pos;
-    sd_script script;
-    sd_script_create(&script);
-    int ret = sd_script_decode(&script, str, &err_pos);
+    script script;
+    script_create(&script);
+    const int ret = script_decode(&script, str, &err_pos);
     if(ret != SD_SUCCESS) {
         if(ret == SD_INVALID_TAG) {
             printf("Bad input string! Error at position %d.\n", err_pos);
@@ -82,24 +83,25 @@ int main(int argc, char *argv[]) {
         goto exit_1;
     }
 
-    for(unsigned frame_id = 0; frame_id < vector_size(&script.frames); frame_id++) {
-        sd_script_frame *frame = vector_get(&script.frames, frame_id);
+    for(int frame_id = 0; frame_id < script_get_frame_count(&script); frame_id++) {
+        const script_frame *frame = script_get_frame(&script, frame_id);
         printf("%d. Frame %d: '%c%d'\n", frame_id, frame->sprite, (char)(frame->sprite + 65), frame->tick_len);
         for(unsigned tag_id = 0; tag_id < vector_size(&frame->tags); tag_id++) {
-            sd_script_tag *tag = vector_get(&frame->tags, tag_id);
-            if(tag->desc == NULL) {
-                tag->desc = "";
+            script_frame_tag *tag = vector_get(&frame->tags, tag_id);
+            const char *desc = script_get_frame_tag_description(tag);
+            if(desc == NULL) {
+                desc = "";
             }
             if(tag->has_param) {
-                printf("   %-4s %-4d %s\n", tag->key, tag->value, tag->desc);
+                printf("   %-4s %-4d %s\n", script_get_frame_tag_name(tag), tag->value, desc);
             } else {
-                printf("   %-4s      %s\n", tag->key, tag->desc);
+                printf("   %-4s      %s\n", script_get_frame_tag_name(tag), desc);
             }
         }
     }
 
 exit_1:
-    sd_script_free(&script);
+    script_free(&script);
 exit_0:
     arg_freetable(argtable, N_ELEMENTS(argtable));
     return 0;

@@ -15,9 +15,12 @@
 #include "formats/pilot.h"
 #include "formats/sprite.h"
 #include "utils/path.h"
+#include "utils/str.h"
 
-#define MAX_TRN_ENEMIES 256 ///< Maximum amount of tournament enemies
-#define MAX_TRN_LOCALES 10  ///< Maximum amount of tournament locales (some of these are unused)
+#define MAX_TRN_ENEMIES 256     ///< Maximum amount of tournament enemies
+#define MAX_TRN_LOCALES 10      ///< Maximum amount of tournament locales (some of these are unused)
+#define MAX_TRN_ENDING_HARS 11  ///< Number of HARs that have ending texts
+#define MAX_TRN_ENDING_PAGES 10 ///< Number of ending text pages per HAR
 
 /** @brief Locales
  *
@@ -42,16 +45,16 @@ enum
  * Translated resources for the tournament.
  */
 typedef struct {
-    sd_sprite *logo;            ///< Tournament logo
-    char *title;                ///< Tournament title (eg. World Championship)
-    char *description;          ///< Tournament description; A short text about the tournament.
-    char *stripped_description; ///< Tournament description stripped of metadata.
-    int desc_width;             ///< Tournament description width.
-    int desc_center;            ///< Tournament description center.
-    int desc_vmove;             ///< Tournament description vmove.
-    int desc_size;              ///< Tournament description size.
-    int desc_color;             ///< Tournament description color.
-    char *end_texts[11][10];    ///< Tournament victory texts that are visible at the ending.
+    sd_sprite *logo;          ///< Tournament logo
+    str title;                ///< Tournament title (eg. World Championship)
+    str description;          ///< Tournament description; A short text about the tournament.
+    str stripped_description; ///< Tournament description stripped of metadata.
+    int desc_width;           ///< Tournament description width.
+    int desc_center;          ///< Tournament description center.
+    int desc_vmove;           ///< Tournament description vmove.
+    int desc_size;            ///< Tournament description size.
+    int desc_color;           ///< Tournament description color.
+    str end_texts[MAX_TRN_ENDING_HARS][MAX_TRN_ENDING_PAGES]; ///< Tournament victory texts visible at the ending.
 } sd_tournament_locale;
 
 /** @brief Tournament data
@@ -59,9 +62,9 @@ typedef struct {
  * Tournament enemies, locales, quotes, name, etc.
  */
 typedef struct {
-    char filename[14];
-    uint16_t enemy_count; ///< Number of enemies in tournament
-    uint16_t unknown_b;
+    char filename[14];             ///< XXX: This is Vagabond's emotional support C string, do not remove
+    uint16_t enemy_count;          ///< Number of enemies in tournament
+    uint16_t unknown_b;            ///< TODO
     char bk_name[14];              ///< Tournament BK filename
     float winnings_multiplier;     ///< Match winnings multiplier
     int32_t unknown_a;             ///< Unknown @todo find out
@@ -81,11 +84,18 @@ typedef struct {
  *
  * Initializes the TRN file structure with empty values.
  *
- * @retval SD_SUCCESS Success.
- *
  * @param trn Allocated TRN struct pointer.
  */
-int sd_tournament_create(sd_tournament_file *trn);
+void sd_tournament_create(sd_tournament_file *trn);
+
+/** @brief Initialize a tournament locale's string fields
+ *
+ * Puts all string members of a freshly allocated locale into a valid empty state.
+ * Must be called before any of the locale's strings are read or assigned.
+ *
+ * @param locale Allocated locale struct pointer.
+ */
+void sd_tournament_locale_create(sd_tournament_locale *locale);
 
 /** @brief Load a TRN file
  *
@@ -117,21 +127,17 @@ int sd_tournament_save(const sd_tournament_file *trn, const path *filename);
 
 /** @brief Set the tournament BK filename
  *
- * @retval SD_SUCCESS Success.
- *
  * @param trn TRN file struct pointer.
  * @param bk_name BK filename to set.
  */
-int sd_tournament_set_bk_name(sd_tournament_file *trn, const char *bk_name);
+void sd_tournament_set_bk_name(sd_tournament_file *trn, const char *bk_name);
 
 /** @brief Set the tournament PIC filename
- *
- * @retval SD_SUCCESS Success.
  *
  * @param trn TRN file struct pointer.
  * @param pic_name PIC filename to set.
  */
-int sd_tournament_set_pic_name(sd_tournament_file *trn, const char *pic_name);
+void sd_tournament_set_pic_name(sd_tournament_file *trn, const char *pic_name);
 
 /** @brief Free TRN file structure
  *

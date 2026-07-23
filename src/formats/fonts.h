@@ -37,11 +37,9 @@ typedef struct {
  *
  * Initializes the font structure with empty values.
  *
- * @retval SD_SUCCESS Success.
- *
  * @param font Allocated font struct pointer.
  */
-int sd_font_create(sd_font *font);
+void sd_font_create(sd_font *font);
 
 /** @brief Free font structure
  *

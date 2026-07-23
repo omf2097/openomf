@@ -106,12 +106,12 @@ void dialog_tick(dialog *dlg) {
     gui_frame_tick(dlg->frame);
 }
 
-void dialog_event(dialog *dlg, int action) {
+void dialog_event(dialog *dlg, int action, int source) {
     if(!dlg->visible) {
         return;
     }
 
-    gui_frame_action(dlg->frame, action);
+    gui_frame_action(dlg->frame, action, source);
 
     if(action == ACT_ESC && dlg->clicked) {
         dlg->clicked(dlg, DIALOG_RESULT_CANCEL);

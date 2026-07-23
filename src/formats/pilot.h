@@ -17,7 +17,10 @@
 #include "formats/internal/writer.h"
 #include "formats/palette.h"
 #include "formats/sprite.h"
+#include "utils/str.h"
 #include <stdint.h>
+
+#define SD_PILOT_QUOTE_COUNT 10 ///< Number of pilot quotes (one per supported language)
 
 /** @brief PIC pilot information
  *
@@ -25,7 +28,7 @@
  */
 typedef struct {
     uint32_t unknown_a;      ///< Unknown
-    char name[18];           ///< Pilot name
+    str name;                ///< Pilot name
     uint16_t wins;           ///< Matches won by this pilot
     uint16_t losses;         ///< Matches lost by this pilot
     uint8_t rank;            ///< Rank
@@ -46,7 +49,7 @@ typedef struct {
     uint8_t color_2;         ///< HAR Secondary Color. 0-15 are altpals, 16 means use 'palette' field, 255 means random.
     uint8_t color_1;         ///< HAR Primary Color.   0-15 are altpals, 16 means use 'palette' field, 255 means random.
     char trn_name[13];       ///< Tournament file
-    char trn_desc[31];       ///< Tournament description
+    str trn_desc;            ///< Tournament description
     char trn_image[13];      ///< Tournament image file
     float trn_rank_money;    ///< Tournament rank money gain
     float trn_winnings_mult; ///< Unknown
@@ -112,7 +115,7 @@ typedef struct {
     uint16_t is_player;     ///< Photo is for a player
     uint16_t photo_id;      ///< Which face photo this pilot uses
 
-    char *quotes[10]; ///< Pilot quotes for each supported language
+    str quotes[SD_PILOT_QUOTE_COUNT]; ///< Pilot quotes, one per supported language
 
     int sex;
 
@@ -130,11 +133,9 @@ typedef enum
  *
  * Initializes the pilot structure with empty values.
  *
- * @retval SD_SUCCESS Success.
- *
  * @param pilot Allocated pilot struct pointer.
  */
-int sd_pilot_create(sd_pilot *pilot);
+void sd_pilot_create(sd_pilot *pilot);
 
 /** @brief Deep-copy a pilot
  *

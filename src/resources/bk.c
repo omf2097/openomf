@@ -39,9 +39,10 @@ void bk_create(bk *b, void *src, str *name) {
     // Copy info structs
     hashmap_create(&b->infos);
     bk_info tmp_bk_info;
-    for(int i = 0; i < 50; i++) {
-        if(sdbk->anims[i] != NULL) {
-            bk_info_create(name, &tmp_bk_info, &b->sprites, (void *)sdbk->anims[i], i);
+    for(int i = 0; i < MAX_BK_ANIMS; i++) {
+        sd_bk_anim *bka = sd_bk_get_anim(sdbk, i);
+        if(bka != NULL) {
+            bk_info_create(name, &tmp_bk_info, &b->sprites, (void *)bka, i);
             hashmap_put_int(&b->infos, i, &tmp_bk_info, sizeof(bk_info));
         }
     }

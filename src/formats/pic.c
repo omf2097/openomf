@@ -9,25 +9,18 @@
 #include "formats/pic.h"
 #include "utils/allocator.h"
 
-int sd_pic_create(sd_pic_file *pic) {
-    assert(pic != NULL);
-    memset(pic, 0, sizeof(sd_pic_file));
-    return SD_SUCCESS;
+static void sd_pic_photo_free_cb(void *ptr) {
+    sd_pic_photo *photo = ptr;
+    if(photo->sprite) {
+        sd_sprite_free(photo->sprite);
+        omf_free(photo->sprite);
+    }
 }
 
-void free_photos(sd_pic_file *pic) {
-    if(pic == NULL) {
-        return;
-    }
-    for(int i = 0; i < MAX_PIC_PHOTOS; i++) {
-        if(pic->photos[i]) {
-            if(pic->photos[i]->sprite) {
-                sd_sprite_free(pic->photos[i]->sprite);
-                omf_free(pic->photos[i]->sprite);
-            }
-            omf_free(pic->photos[i]);
-        }
-    }
+void sd_pic_create(sd_pic_file *pic) {
+    assert(pic != NULL);
+    memset(pic, 0, sizeof(sd_pic_file));
+    vector_create_cb(&pic->photos, sizeof(sd_pic_photo), sd_pic_photo_free_cb);
 }
 
 int sd_pic_load(sd_pic_file *pic, const path *filename) {
@@ -46,8 +39,8 @@ int sd_pic_load(sd_pic_file *pic, const path *filename) {
     }
 
     // Basic info
-    pic->photo_count = sd_read_dword(r);
-    if(pic->photo_count >= 256 || pic->photo_count < 0) {
+    const int photo_count = sd_read_dword(r);
+    if(photo_count >= 256 || photo_count < 0) {
         goto error_0;
     }
 
@@ -55,51 +48,48 @@ int sd_pic_load(sd_pic_file *pic, const path *filename) {
     sd_reader_set(r, 200);
     int offset_list[256];
     memset(offset_list, 0, sizeof(offset_list));
-    for(int i = 0; i < pic->photo_count; i++) {
+    for(int i = 0; i < photo_count; i++) {
         offset_list[i] = sd_read_dword(r);
     }
 
-    // Clear photos
-    for(int i = 0; i < MAX_PIC_PHOTOS; i++) {
-        pic->photos[i] = NULL;
-    }
-
     // Read data
-    for(int i = 0; i < pic->photo_count; i++) {
+    vector_reserve(&pic->photos, photo_count);
+    for(int i = 0; i < photo_count; i++) {
         // Set correct position
         sd_reader_set(r, offset_list[i]);
 
-        // Reserve mem
-        pic->photos[i] = omf_calloc(1, sizeof(sd_pic_photo));
+        sd_pic_photo *photo = vector_append_ptr(&pic->photos);
+        memset(photo, 0, sizeof(sd_pic_photo));
 
         // Read start bytes
-        pic->photos[i]->is_player = sd_read_ubyte(r);
-        pic->photos[i]->sex = sd_read_uword(r);
+        photo->is_player = sd_read_ubyte(r);
+        photo->sex = sd_read_uword(r);
 
         // Read palette
-        vga_palette_init(&pic->photos[i]->pal);
-        palette_load_range(r, &pic->photos[i]->pal, 0, 48);
+        vga_palette_init(&photo->pal);
+        palette_load_range(r, &photo->pal, 0, 48);
 
         // Nonzero if photo sprite data follows.
-        pic->photos[i]->has_photo = sd_read_ubyte(r);
+        photo->has_photo = sd_read_ubyte(r);
 
         // Sprite
-        pic->photos[i]->sprite = omf_calloc(1, sizeof(sd_sprite));
-        sd_sprite_create(pic->photos[i]->sprite);
-        if((ret = sd_sprite_load(r, pic->photos[i]->sprite)) != SD_SUCCESS) {
+        photo->sprite = omf_calloc(1, sizeof(sd_sprite));
+        sd_sprite_create(photo->sprite);
+        if((ret = sd_sprite_load(r, photo->sprite)) != SD_SUCCESS) {
             goto error_1;
         }
 
         // Fix length and width
-        pic->photos[i]->sprite->height++;
-        pic->photos[i]->sprite->width++;
+        photo->sprite->height++;
+        photo->sprite->width++;
     }
 
     sd_reader_close(r);
     return SD_SUCCESS;
 
 error_1:
-    free_photos(pic);
+    // The vector's free callback frees each loaded photo's sprite.
+    vector_clear(&pic->photos);
 
 error_0:
     sd_reader_close(r);
@@ -116,15 +106,17 @@ int sd_pic_save(const sd_pic_file *pic, const path *filename) {
     }
 
     // Write photo count, and then fill zero until 0xC8
-    sd_write_dword(w, pic->photo_count);
+    const int photo_count = vector_size(&pic->photos);
+    sd_write_dword(w, photo_count);
     sd_write_fill(w, 0, 200 - sd_writer_pos(w));
 
     // Offset list goes here. For now, just write zero
     // We will fill this out later.
-    sd_write_fill(w, 0, pic->photo_count * 4);
+    sd_write_fill(w, 0, photo_count * 4);
 
     // Write photos and offsets
-    for(int i = 0; i < pic->photo_count; i++) {
+    for(int i = 0; i < photo_count; i++) {
+        sd_pic_photo *photo = vector_get(&pic->photos, i);
         // Write offset to the catalog
         long pos = sd_writer_pos(w);
         if(pos < 0) {
@@ -139,17 +131,17 @@ int sd_pic_save(const sd_pic_file *pic, const path *filename) {
         }
 
         // flags, palette, etc.
-        sd_write_ubyte(w, pic->photos[i]->is_player);
-        sd_write_uword(w, pic->photos[i]->sex);
-        palette_save_range(w, &pic->photos[i]->pal, 0, 48);
-        sd_write_ubyte(w, pic->photos[i]->has_photo);
+        sd_write_ubyte(w, photo->is_player);
+        sd_write_uword(w, photo->sex);
+        palette_save_range(w, &photo->pal, 0, 48);
+        sd_write_ubyte(w, photo->has_photo);
 
         // Hackity hack. Sprite w and h should be n-1 for some reason.
-        pic->photos[i]->sprite->height--;
-        pic->photos[i]->sprite->width--;
-        sd_sprite_save(w, pic->photos[i]->sprite);
-        pic->photos[i]->sprite->height++;
-        pic->photos[i]->sprite->width++;
+        photo->sprite->height--;
+        photo->sprite->width--;
+        sd_sprite_save(w, photo->sprite);
+        photo->sprite->height++;
+        photo->sprite->width++;
     }
 
     if(sd_writer_errno(w)) {
@@ -166,12 +158,12 @@ error:
 }
 
 const sd_pic_photo *sd_pic_get(const sd_pic_file *pic, int entry_id) {
-    if(entry_id < 0 || entry_id > pic->photo_count) {
+    if(entry_id < 0 || entry_id >= (int)vector_size(&pic->photos)) {
         return NULL;
     }
-    return pic->photos[entry_id];
+    return vector_get(&pic->photos, entry_id);
 }
 
 void sd_pic_free(sd_pic_file *pic) {
-    free_photos(pic);
+    vector_free(&pic->photos);
 }

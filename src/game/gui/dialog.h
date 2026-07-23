@@ -108,7 +108,8 @@ void dialog_render(dialog *dlg);
  * @brief Handle an action event
  * @param dlg Dialog to receive the action
  * @param action Action code to process
+ * @param source CTRL_TYPE_* of the device that produced the action
  */
-void dialog_event(dialog *dlg, int action);
+void dialog_event(dialog *dlg, int action, int source);
 
 #endif // DIALOG_H

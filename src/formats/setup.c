@@ -5,10 +5,9 @@
 #include "formats/internal/reader.h"
 #include "formats/setup.h"
 
-int sd_setup_create(sd_setup_file *setup) {
+void sd_setup_create(sd_setup_file *setup) {
     assert(setup != NULL);
     memset(setup, 0, sizeof(sd_setup_file));
-    return SD_SUCCESS;
 }
 
 void sd_setup_free(sd_setup_file *setup) {

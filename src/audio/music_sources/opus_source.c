@@ -59,7 +59,8 @@ static void opus_read_loop_tags(opus_source *context) {
         return;
     }
     if(opus_resolve_loop_tags(tags, &context->loop_start, &context->loop_end)) {
-        log_debug("Opus loop tags: start = %lld, end = %lld", context->loop_start, context->loop_end);
+        log_debug("Opus loop tags: start = %lld, end = %lld", (long long)context->loop_start,
+                  (long long)context->loop_end);
     } else {
         log_debug("No loop tags found for opus file!");
     }

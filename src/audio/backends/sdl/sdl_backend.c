@@ -257,7 +257,7 @@ static bool setup_backend_context(void *userdata, const unsigned sample_rate, co
     }
 
     log_info("Requested audio device with options:");
-    log_info(" * Sample rate: %dHz", sample_rate);
+    log_info(" * Sample rate: %uHz", sample_rate);
     log_info(" * Channels: %d", mono ? 1 : 2);
     log_info(" * Format: %s", get_sdl_audio_format_string(AUDIO_S16SYS));
 

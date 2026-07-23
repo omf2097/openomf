@@ -62,9 +62,7 @@ static int font_load(font *font, const path *filename, unsigned int size) {
     }
 
     // Open font file
-    if(sd_font_create(&sdfont) != SD_SUCCESS) {
-        return 1;
-    }
+    sd_font_create(&sdfont);
     if(sd_font_load(&sdfont, filename, pixsize)) {
         sd_font_free(&sdfont);
         return 2;
@@ -133,7 +131,7 @@ bool fonts_init(void) {
     // Load small font
     filename = get_resource_filename("CHARSMAL.DAT");
     if(font_load(&font_small, &filename, FONT_SMALL)) {
-        log_error("Unable to load font file '%s'!", filename);
+        log_error("Unable to load font file '%s'!", path_c(&filename));
         goto error_4;
     }
     log_info("Loaded font file '%s'", path_c(&filename));

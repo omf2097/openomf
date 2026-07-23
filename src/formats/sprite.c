@@ -8,21 +8,19 @@
 #include "utils/allocator.h"
 #include "utils/log.h"
 
-int sd_sprite_create(sd_sprite *sprite) {
+void sd_sprite_create(sd_sprite *sprite) {
     assert(sprite != NULL);
     memset(sprite, 0, sizeof(sd_sprite));
-    return SD_SUCCESS;
 }
 
-int sd_sprite_copy(sd_sprite *dst, const sd_sprite *src) {
+void sd_sprite_copy(sd_sprite *dst, const sd_sprite *src) {
     assert(dst != NULL);
     assert(src != NULL);
 
     // Clear destination
     memset(dst, 0, sizeof(sd_sprite));
 
-    dst->pos_x = src->pos_x;
-    dst->pos_y = src->pos_y;
+    dst->pos = src->pos;
     dst->index = src->index;
     dst->missing = src->missing;
     dst->width = src->width;
@@ -36,8 +34,6 @@ int sd_sprite_copy(sd_sprite *dst, const sd_sprite *src) {
         dst->data = omf_calloc(src->len, 1);
         memcpy(dst->data, src->data, src->len);
     }
-
-    return SD_SUCCESS;
 }
 
 void sd_sprite_free(sd_sprite *sprite) {
@@ -52,10 +48,14 @@ void sd_sprite_free(sd_sprite *sprite) {
     }
 }
 
+void sd_sprite_free_cb(void *ptr) {
+    sd_sprite_free((sd_sprite *)ptr);
+}
+
 int sd_sprite_load(sd_reader *r, sd_sprite *sprite) {
     sprite->len = sd_read_uword(r);
-    sprite->pos_x = sd_read_word(r);
-    sprite->pos_y = sd_read_word(r);
+    sprite->pos.x = sd_read_word(r);
+    sprite->pos.y = sd_read_word(r);
     sprite->width = sd_read_uword(r);
     sprite->height = sd_read_uword(r);
     sprite->render_height = sprite->height;
@@ -81,8 +81,8 @@ int sd_sprite_save(sd_writer *w, const sd_sprite *sprite) {
     assert(w != NULL);
     assert(sprite != NULL);
     sd_write_uword(w, sprite->len);
-    sd_write_word(w, sprite->pos_x);
-    sd_write_word(w, sprite->pos_y);
+    sd_write_word(w, sprite->pos.x);
+    sd_write_word(w, sprite->pos.y);
     sd_write_uword(w, sprite->width);
     sd_write_uword(w, sprite->height);
     sd_write_ubyte(w, sprite->index);

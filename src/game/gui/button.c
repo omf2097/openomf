@@ -53,7 +53,7 @@ static void button_render(component *c) {
     }
 }
 
-static int button_action(component *c, int action) {
+static int button_action(component *c, int action, int source) {
     button *b = widget_get_obj(c);
     if(action == ACT_KICK || action == ACT_PUNCH) {
         if(b->click_cb) {

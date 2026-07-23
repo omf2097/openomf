@@ -1,4 +1,5 @@
 #include "controller/spec_controller.h"
+#include "controller/net_controller.h"
 #include "game/game_player.h"
 #include "game/game_state_type.h"
 #include "game/protos/scene.h"
@@ -9,7 +10,7 @@
 
 typedef struct {
     uint32_t ticks;
-    uint8_t actions[2][10];
+    uint8_t actions[2][MAX_EVENTS_PER_TICK];
 } spec_controller_event;
 
 typedef struct {
@@ -69,9 +70,7 @@ int spec_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                         sd_pilot_set_player_color(p1->pilot, PRIMARY, serial_read_int8(&ser));
                         sd_pilot_set_player_color(p1->pilot, SECONDARY, serial_read_int8(&ser));
                         sd_pilot_set_player_color(p1->pilot, TERTIARY, serial_read_int8(&ser));
-                        uint8_t namelen = serial_read_int8(&ser);
-                        serial_read(&ser, p1->pilot->name, namelen);
-                        p1->pilot->name[namelen] = '\0';
+                        serial_read_str(&ser, &p1->pilot->name);
 
                         p2->pilot->har_id = serial_read_int8(&ser);
                         p2->pilot->pilot_id = serial_read_int8(&ser);
@@ -81,12 +80,10 @@ int spec_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                         sd_pilot_set_player_color(p2->pilot, PRIMARY, serial_read_int8(&ser));
                         sd_pilot_set_player_color(p2->pilot, SECONDARY, serial_read_int8(&ser));
                         sd_pilot_set_player_color(p2->pilot, TERTIARY, serial_read_int8(&ser));
-                        namelen = serial_read_int8(&ser);
-                        serial_read(&ser, p2->pilot->name, namelen);
-                        p2->pilot->name[namelen] = '\0';
+                        serial_read_str(&ser, &p2->pilot->name);
 
                         uint32_t seed = serial_read_uint32(&ser);
-                        log_debug("spectator random seed set to %d", seed);
+                        log_debug("spectator random seed set to %u", seed);
                         random_seed(&ctrl->gs->rand, seed);
 
                         data->nscene = SCENE_ARENA0 + serial_read_int8(&ser);
@@ -107,28 +104,17 @@ int spec_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
 
                     } break;
                     case 1: {
-                        uint8_t action;
-                        for(size_t i = ser.rpos; i < event.packet->dataLength;) {
-                            spec_controller_event event;
-                            memset(&event, 0, sizeof(spec_controller_event));
+                        while(ser.rpos < ser.wpos) {
+                            spec_controller_event event = {0};
                             event.ticks = serial_read_uint32(&ser);
-
-                            for(int j = 0; j < 2; j++) {
-                                int k = 0;
-                                do {
-                                    action = serial_read_int8(&ser);
-                                    event.actions[j][k] = action;
-                                    k++;
-                                } while(action);
-                                i += k;
-                            }
-                            i += 4;
+                            serial_read_bytes(&ser, event.actions[0], MAX_EVENTS_PER_TICK);
+                            serial_read_bytes(&ser, event.actions[1], MAX_EVENTS_PER_TICK);
                             hashmap_put_int(data->tick_lookup, event.ticks, &event, sizeof(spec_controller_event));
 
                             if(event.ticks > 100 && !data->started) {
                                 // insert the starting tick into the hashmap so we can offset all events from that
                                 hashmap_put_int(data->tick_lookup, 0, &ctrl->gs->tick, sizeof(ticks));
-                                log_info("spectator start tick was %d", ticks);
+                                log_info("spectator start tick was %u", ticks);
 
                                 // jump into the arena scene
                                 // ctrl->gs->this_id = data->nscene;
@@ -161,7 +147,7 @@ int spec_controller_poll(controller *ctrl, ctrl_event **ev) {
     spec_controller_event *move;
     unsigned int len;
     if(data->max_tick && ticks > data->max_tick) {
-        log_debug("closing controller because tick %d is higher than max_tick %d", ticks, data->max_tick);
+        log_debug("closing controller because tick %u is higher than max_tick %u", ticks, data->max_tick);
         controller_close(ctrl, ev);
         return 0;
     }
@@ -172,13 +158,12 @@ int spec_controller_poll(controller *ctrl, ctrl_event **ev) {
         return 0;
     }
 
-    bool found_action = false;
-
     if(data->last_tick != ticks && ticks > 0) {
+        bool found_action = false;
         if(hashmap_get_int(data->tick_lookup, ticks, (void **)(&move), &len) == 0) {
             int i = 0;
             uint8_t action;
-            while((action = move->actions[data->player_id][i])) {
+            while(i < MAX_EVENTS_PER_TICK && (action = move->actions[data->player_id][i])) {
                 controller_cmd(ctrl, action, ev);
                 ctrl->last = action;
                 found_action = true;
@@ -194,32 +179,6 @@ int spec_controller_poll(controller *ctrl, ctrl_event **ev) {
         data->last_tick = ticks;
     }
     return 0;
-}
-
-void spec_controller_find_old_last_action(controller *ctrl) {
-    spec_controller_data *data = ctrl->data;
-    uint32_t ticks = ctrl->gs->tick;
-
-    while(ticks-- != 0) {
-        bool found_action = false;
-        spec_controller_event *move;
-        unsigned int len;
-        if(hashmap_get_int(data->tick_lookup, ticks, (void **)(&move), &len) == 0) {
-            int i = 0;
-            uint8_t action;
-            while((action = move->actions[data->player_id][i])) {
-                found_action = true;
-                ctrl->last = action;
-            }
-        }
-        if(found_action) {
-            return;
-        }
-    }
-
-    // no action found
-    ctrl->last = ACT_STOP;
-    return;
 }
 
 ENetPeer *spec_controller_get_lobby_connection(controller *ctrl) {

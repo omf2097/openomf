@@ -15,12 +15,14 @@ jobs:
   # -----------------------------------------------------------------------------------------------
   unittest:
     name: Run formatting Check, linux unittests
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     env:
-      clang-version: '18'
+      clang-version: '22'
 
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - name: Install dependencies
         uses: Eeems-Org/apt-cache-action@v1.5
@@ -53,6 +55,36 @@ jobs:
           cd build-test
           ctest --verbose --output-on-failure
 
+  # Run unittests on GCC compilation
+  # -----------------------------------------------------------------------------------------------
+  gcc_unittest:
+    name: GCC Linux unittests
+    runs-on: ubuntu-26.04
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install dependencies
+        uses: Eeems-Org/apt-cache-action@v1.5
+        with:
+          packages: cmake cmake-data ninja-build libcunit1-dev
+            libsdl2-mixer-dev libconfuse-dev libenet-dev libsdl2-dev libxmp-dev libpng-dev
+            libopusfile-dev libepoxy-dev libminiupnpc-dev libnatpmp-dev gcc
+
+      - name: Build tests
+        run: |
+          cmake -DCMAKE_C_COMPILER=gcc \
+                -DUSE_TESTS=On \
+                -DUSE_TOOLS=On \
+                -G "Ninja Multi-Config" \
+                -S . -B build-test
+          cmake --build build-test -j $(getconf _NPROCESSORS_ONLN)
+
+      - name: Run tests
+        run: |
+          cd build-test
+          ctest --verbose --output-on-failure
+
   # Run unittests on a recent version of MSVC
   # -----------------------------------------------------------------------------------------------
   windows_units:
@@ -60,6 +92,8 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - name: Prepare VCPKG
         # must be done *after* openomf has been checked out
@@ -102,6 +136,8 @@ jobs:
         - { arch: "arm64", build_languages: "OFF" }
     steps:
     - uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
     - name: Build MSVC binary
       uses: ./.github/actions/build_msvc
       with:
@@ -111,13 +147,28 @@ jobs:
   # Build ubuntu package, release artifact
   # -----------------------------------------------------------------------------------------------
   build_ubuntu:
-    needs: [unittest, windows_units]
-    name: Build ubuntu-latest
-    runs-on: ubuntu-latest
+    needs: [unittest, gcc_unittest, windows_units]
+    name: Build ubuntu-26.04
+    runs-on: ubuntu-26.04
     steps:
     - uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
     - name: Build Ubuntu binary
       uses: ./.github/actions/build_ubuntu
+
+  # Build AppImage on Ubuntu 24.04
+  # -----------------------------------------------------------------------------------------------
+  build_appimage:
+    needs: [unittest, windows_units]
+    name: Build AppImage
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
+    - name: Build AppImage
+      uses: ./.github/actions/build_appimage
 
   # Build macos package, release artifact
   # -----------------------------------------------------------------------------------------------
@@ -127,6 +178,8 @@ jobs:
     runs-on: macos-14
     steps:
     - uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
     - name: Build MacOS ARM binary
       uses: ./.github/actions/build_macos_arm
 
@@ -135,23 +188,27 @@ jobs:
   check_mingw:
     needs: [unittest, windows_units]
     name: Check MinGW-w64 cross
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
     - uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
     - name: Build Mingw-w64 binary
       uses: ./.github/actions/build_mingw
 
   # Create a "latest" release
   # -----------------------------------------------------------------------------------------------
   make_release:
-    needs: [check_mingw, build_macos-arm, build_ubuntu, build_msvc]
+    needs: [check_mingw, build_macos-arm, build_ubuntu, build_msvc, build_appimage]
     if: github.ref == 'refs/heads/master'
 
     name: Make "latest" release
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
 
     steps:
     - uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
 
     - name: Get OpenOMF Version
       uses: ./.github/actions/version

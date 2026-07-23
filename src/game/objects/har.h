@@ -160,7 +160,6 @@ typedef struct har_t {
     uint32_t input_change_tick; // last tick the input direction changed
 
     uint8_t stun_timer;
-    uint8_t delay; // used for 'stretching' frames in netplay
 
     // ptr, pe, etc. stuff
     uint8_t p_pal_ref;    // "pd"
@@ -208,8 +207,6 @@ int har_is_walking(har *h);
 int har_is_blocking(object *obj, af_move *move);
 void har_copy_actions(object *new, object *old);
 void har_reset(object *obj);
-
-void har_set_delay(object *obj, int delay);
 
 uint8_t har_player_id(object *obj);
 

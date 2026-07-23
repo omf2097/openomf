@@ -115,11 +115,11 @@ static int widget_event(component *c, SDL_Event *event) {
     return 1;
 }
 
-static int widget_action(component *c, int action) {
+static int widget_action(component *c, int action, int source) {
     assert(c->header == WIDGET_MAGIC);
     widget *local = component_get_obj(c);
     if(local->action) {
-        return local->action(c, action);
+        return local->action(c, action, source);
     }
     return 1;
 }

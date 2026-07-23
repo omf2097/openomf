@@ -52,6 +52,12 @@ void memwrite_buf(memwriter *writer, const char *buf, int len) {
     writer->data_len += len;
 }
 
+void memwrite_fixed_str(memwriter *writer, const str *src, size_t len) {
+    const size_t n = (str_size(src) < len) ? str_size(src) : len;
+    memwrite_buf(writer, str_c(src), n);
+    memwrite_fill(writer, 0, len - n);
+}
+
 void memwrite_ubyte(memwriter *writer, uint8_t value) {
     memwrite_buf(writer, (char *)&value, 1);
 }

@@ -177,12 +177,12 @@ static int sizer_event(component *c, SDL_Event *event) {
     return 1;
 }
 
-static int sizer_action(component *c, int action) {
+static int sizer_action(component *c, int action, int source) {
     assert(c->header == SIZER_MAGIC);
-    sizer *local = component_get_obj(c);
+    const sizer *local = component_get_obj(c);
     // Actions are something that the actual sizer needs to handle
     if(local->action) {
-        return local->action(c, action);
+        return local->action(c, action, source);
     }
     return 1;
 }
@@ -190,7 +190,7 @@ static int sizer_action(component *c, int action) {
 static void sizer_layout(component *c, int x, int y, int w, int h) {
     assert(c->header == SIZER_MAGIC);
     // Because we don't know how to order this stuff in base sizer, we just pass this on.
-    sizer *local = component_get_obj(c);
+    const sizer *local = component_get_obj(c);
     if(local->layout) {
         local->layout(c, x, y, w, h);
     }

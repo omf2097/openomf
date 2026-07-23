@@ -69,22 +69,22 @@ int base_info_diff(sd_af_file *a, sd_af_file *b) {
 int anim_header_diff(sd_animation *a, sd_animation *b) {
     int d_found = 0;
     printf("   * Common animation header:\n");
-    d_found |= int_diff("     + Start X", VNAME(start_x));
-    d_found |= int_diff("     + Start Y", VNAME(start_y));
-    d_found |= int_diff("     + Sprite count:", VNAME(sprite_count));
-    d_found |= int_diff("     + Extra string count", VNAME(extra_string_count));
-    d_found |= str_diff("     + Animation string", VNAME(anim_string));
+    d_found |= int_diff("     + Start X", a->start_pos.x, b->start_pos.x);
+    d_found |= int_diff("     + Start Y", a->start_pos.y, b->start_pos.y);
+    d_found |= int_diff("     + Sprite count:", sd_animation_get_sprite_count(a), sd_animation_get_sprite_count(b));
+    d_found |= int_diff("     + Extra string count", vector_size(&a->extra_strings), vector_size(&b->extra_strings));
+    d_found |= str_diff("     + Animation string", str_c(&a->anim_string), str_c(&b->anim_string));
     return d_found;
 }
 
 int anim_extrastrings_diff(sd_animation *a, sd_animation *b) {
     int d_found = 0;
     char k[20];
-    if(a->extra_string_count == b->extra_string_count) {
+    if(vector_size(&a->extra_strings) == vector_size(&b->extra_strings)) {
         printf("   * Extra strings:\n");
-        for(int i = 0; i < a->extra_string_count; i++) {
-            sprintf(k, "     + %d", i);
-            d_found |= str_diff(k, a->extra_strings[i], b->extra_strings[i]);
+        for(unsigned int i = 0; i < vector_size(&a->extra_strings); i++) {
+            sprintf(k, "     + %u", i);
+            d_found |= str_diff(k, str_c(vector_get(&a->extra_strings, i)), str_c(vector_get(&b->extra_strings, i)));
         }
     }
     return d_found;
@@ -101,18 +101,16 @@ int animations_diff(sd_af_file *a, sd_af_file *b) {
     int d_found = 0;
     printf("Animations:\n");
     char f[20];
-    for(int m = 0; m < 70; m++) {
+    for(int m = 0; m < MAX_AF_MOVES; m++) {
         sprintf(f, " * %-2d", m);
-        d_found |= null_diff(f, a->moves[m], b->moves[m]);
-        if(a->moves[m] && b->moves[m]) {
-            sd_move *am = a->moves[m];
-            sd_move *bm = b->moves[m];
+        sd_move *am = sd_af_get_move(a, m);
+        sd_move *bm = sd_af_get_move(b, m);
+        d_found |= null_diff(f, am, bm);
+        if(am && bm) {
             sd_animation *aa = am->animation;
             sd_animation *ba = bm->animation;
             printf(" * %d:\n", m);
             d_found |= anim_common_diff(aa, ba);
-
-            (void)(a->moves[m]);
         }
     }
     if(!d_found) {

@@ -4,6 +4,7 @@
 #include "utils/miscmath.h"
 #include <assert.h>
 #include <ctype.h>
+#include <stdarg.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -67,4 +68,24 @@ size_t omf_strnlen_s(char const *str, size_t strsz) {
     }
     char const *found = memchr(str, '\0', strsz);
     return found ? (size_t)(found - str) : strsz;
+}
+
+int unsafe_snprintf(char *str, size_t size, const char *format, ...) {
+    va_list args;
+    va_start(args, format);
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wformat-nonliteral"
+#elif defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#endif
+    int result = vsnprintf(str, size, format, args);
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#elif defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
+    va_end(args);
+    return result;
 }

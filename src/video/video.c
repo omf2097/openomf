@@ -76,7 +76,7 @@ void video_scan_renderers(void) {
  * @return true if data was read, false if index is out of range
  */
 bool video_get_renderer_info(int index, const char **name, const char **description) {
-    if(index < 0 && index >= renderer_count) {
+    if(index < 0 || index >= renderer_count) {
         return false;
     }
     if(name != NULL) {

@@ -11,6 +11,7 @@
 #define MEMREADER_H
 
 #include "formats/internal/reader.h"
+#include "utils/str.h"
 #include <stdint.h>
 
 typedef struct memreader_t {
@@ -28,6 +29,7 @@ long memreader_pos(const memreader *reader);
 void memreader_xor(memreader *reader, uint8_t key);
 
 int memread_buf(memreader *reader, char *buf, int len);
+void memread_fixed_str(memreader *reader, str *dst, size_t len);
 uint8_t memread_ubyte(memreader *reader);
 uint16_t memread_uword(memreader *reader);
 uint32_t memread_udword(memreader *reader);

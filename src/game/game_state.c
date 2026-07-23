@@ -102,7 +102,7 @@ void game_state_decode_match_settings(serial *ser, match_settings *ms) {
 }
 
 void game_state_set_pilot_name(game_state *gs, int pilot_id, const char *pilot_name) {
-    strncpy_or_truncate(gs->players[pilot_id]->pilot->name, pilot_name, sizeof(gs->players[pilot_id]->pilot->name));
+    str_set_c(&gs->players[pilot_id]->pilot->name, pilot_name);
 }
 
 int game_state_get_assertion_operand(const rec_assertion_operand *op, game_state *gs) {
@@ -454,7 +454,7 @@ void game_state_hit_pause(game_state *gs) {
 
 void game_state_set_speed(game_state *gs, int rate) {
     gs->speed = max2(rate, 0);
-    log_debug("game speed set to %d", gs->speed);
+    log_debug("game speed set to %u", gs->speed);
 }
 
 unsigned int game_state_get_speed(game_state *gs) {
@@ -861,7 +861,7 @@ void game_state_cleanup(game_state *gs) {
     iterator it;
     vector_iter_begin(&gs->objects, &it);
     foreach(it, robj) {
-        if(object_finished(robj->obj)) {
+        if(object_is_finished(robj->obj)) {
             /*log_debug("Animation object %d is finished, removing.", robj->obj->cur_animation->id);*/
             object_free(robj->obj);
             omf_free(robj->obj);
@@ -1079,7 +1079,7 @@ void game_state_dynamic_tick(game_state *gs, bool replay) {
 
     // Speed back up
     if(gs->speed_slowdown_time == 0) {
-        log_debug("Slowdown: Speed back up from %d to %d.", gs->speed, gs->speed_slowdown_previous);
+        log_debug("Slowdown: Speed back up from %u to %d.", gs->speed, gs->speed_slowdown_previous);
         gs->speed = gs->speed_slowdown_previous;
     }
     if(gs->speed_slowdown_time >= 0) {
@@ -1224,21 +1224,16 @@ void game_state_init_demo(game_state *gs) {
         sd_pilot_set_player_color(player->pilot, SECONDARY, pilot_info.color_2);
         sd_pilot_set_player_color(player->pilot, TERTIARY, pilot_info.color_3);
 
-        strncpy_or_abort(player->pilot->name, lang_get(player->pilot->pilot_id + 20), sizeof(player->pilot->name));
-        // TODO: lang: remove (the need for) newline stripping
-        // 1player name strings end in a newline...
-        if(player->pilot->name[strlen(player->pilot->name) - 1] == '\n') {
-            player->pilot->name[strlen(player->pilot->name) - 1] = 0;
-        }
+        str_set_c(&player->pilot->name, lang_get(player->pilot->pilot_id + 20));
     }
 }
 
 void game_state_menu_poll(game_state *gs, ctrl_event **ev) {
     gs->menu_ctrl->last = gs->menu_ctrl->current;
     gs->menu_ctrl->current = 0;
-    // poll keyboard
+    gs->menu_ctrl->type = CTRL_TYPE_KEYBOARD;
     keyboard_menu_poll(gs->menu_ctrl, ev);
-    // poll joysticks
+    gs->menu_ctrl->type = CTRL_TYPE_GAMEPAD;
     joystick_menu_poll_all(gs->menu_ctrl, ev);
 }
 

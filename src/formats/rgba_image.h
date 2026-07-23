@@ -27,13 +27,11 @@ typedef struct {
  *
  * Initializes the RGBA image structure with empty values.
  *
- * @retval SD_SUCCESS Success.
- *
  * @param img Allocated RGBA image struct pointer.
  * @param w Image width in pixels
  * @param h Image height in pixels
  */
-int sd_rgba_image_create(sd_rgba_image *img, unsigned int w, unsigned int h);
+void sd_rgba_image_create(sd_rgba_image *img, unsigned int w, unsigned int h);
 
 /** @brief Copy RGBA image structure
  *
@@ -43,12 +41,10 @@ int sd_rgba_image_create(sd_rgba_image *img, unsigned int w, unsigned int h);
  * Destination buffer does not need to be cleared. Source buffer must be a valid
  * RGBA image structure, or problems are likely to appear.
  *
- * @retval SD_SUCCESS Success.
- *
  * @param dst Destination RGBA image struct pointer.
  * @param src Source RGBA image struct pointer.
  */
-int sd_rgba_image_copy(sd_rgba_image *dst, const sd_rgba_image *src);
+void sd_rgba_image_copy(sd_rgba_image *dst, const sd_rgba_image *src);
 
 /** @brief Clear image with color
  *
@@ -62,7 +58,7 @@ int sd_rgba_image_copy(sd_rgba_image *dst, const sd_rgba_image *src);
  * @param b Blue channel value (0 - 0xFF)
  * @param a Alpha channel value (0 - 0xFF)
  */
-int sd_rgba_image_clear(sd_rgba_image *img, char r, char g, char b, char a);
+void sd_rgba_image_clear(sd_rgba_image *img, char r, char g, char b, char a);
 
 /** @brief Blit RGBA image to another image
  *

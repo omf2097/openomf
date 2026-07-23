@@ -53,9 +53,9 @@ static void cutscene_input_tick(scene *scene) {
         do {
             if(i->type == EVENT_TYPE_ACTION) {
                 if(i->event_data.action == ACT_KICK || i->event_data.action == ACT_PUNCH) {
-                    if(player1->chr && player1->chr->cutscene_text[local->pos + 1]) {
+                    if(player1->chr && str_size(&player1->chr->cutscene_text[local->pos + 1]) > 0) {
                         local->pos++;
-                        text_set_from_c(local->current, player1->chr->cutscene_text[local->pos]);
+                        text_set_from_c(local->current, str_c(&player1->chr->cutscene_text[local->pos]));
                     } else if(!player1->chr && local->pos < (int)vector_size(&local->texts) - 1) {
                         local->pos++;
                         text_set_from_str(local->current, vector_get(&local->texts, local->pos));
@@ -206,7 +206,7 @@ int cutscene_create(scene *scene) {
 
     if(p1->chr) {
         local->pos = 0;
-        text_set_from_c(local->current, p1->chr->cutscene_text[local->pos]);
+        text_set_from_c(local->current, str_c(&p1->chr->cutscene_text[local->pos]));
     } else {
         str_split_c(&local->texts, text, '\n');
         local->pos = 0;

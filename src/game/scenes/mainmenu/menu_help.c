@@ -70,7 +70,7 @@ static int menu_help_event(component *c, SDL_Event *event) {
     return 0;
 }
 
-static int menu_help_action(component *c, int action) {
+static int menu_help_action(component *c, int action, int source) {
     help_menu_data *local = menu_get_userdata(c);
     if((action == ACT_UP) && local->page > 0) {
         local->page--;

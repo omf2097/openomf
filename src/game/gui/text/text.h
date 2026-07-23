@@ -407,4 +407,36 @@ void text_draw(text *t, int16_t x, int16_t y);
  */
 void text_draw_opacity(text *t, int16_t x, int16_t y, uint8_t opacity);
 
+/**
+ * @brief Get the laid-out position of one character within the text block
+ * @param t Text object to read
+ * @param index Character index within the prepared string
+ * @param x Output pointer for the X coord
+ * @param y Output pointer for the Y coord
+ * @return True if the index exists and the coords were set
+ */
+bool text_get_glyph_pos(text *t, size_t index, int16_t *x, int16_t *y);
+
+/**
+ * @brief Draw an already-fetched glyph surface in the given palette color and opacity
+ * @details Helper function for text rendering.
+ * @param glyph Glyph surface to draw
+ * @param x X coordinate for rendering
+ * @param y Y coordinate for rendering
+ * @param color VGA palette color index
+ * @param opacity Opacity from 0 (transparent) to 255 (opaque)
+ */
+void text_draw_glyph_surface(const surface *glyph, int16_t x, int16_t y, vga_index color, uint8_t opacity);
+
+/**
+ * @brief Draw a single glyph by character in the given palette color
+ * @details Helper function for text rendering.
+ * @param font Font to take the glyph from
+ * @param ch Character to draw
+ * @param x X coordinate for rendering
+ * @param y Y coordinate for rendering
+ * @param color VGA palette color index
+ */
+void text_draw_glyph(const font *font, char ch, int16_t x, int16_t y, vga_index color);
+
 #endif // TEXT_ENGINE_H

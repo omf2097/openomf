@@ -52,12 +52,10 @@ int sd_vga_image_create(sd_vga_image *img, unsigned int w, unsigned int h);
  * Destination buffer does not need to be cleared. Source buffer must be a valid
  * VGA image structure, or problems are likely to appear.
  *
- * @retval SD_SUCCESS Success.
- *
  * @param dst Destination VGA image struct pointer.
  * @param src Source VGA image struct pointer.
  */
-int sd_vga_image_copy(sd_vga_image *dst, const sd_vga_image *src);
+void sd_vga_image_copy(sd_vga_image *dst, const sd_vga_image *src);
 
 /** @brief Free VGA image structure
  *

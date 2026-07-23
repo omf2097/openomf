@@ -8,10 +8,9 @@
 #include "formats/sounds.h"
 #include "utils/allocator.h"
 
-int sd_sounds_create(sd_sound_file *sf) {
+void sd_sounds_create(sd_sound_file *sf) {
     assert(sf != NULL);
     memset(sf, 0, sizeof(sd_sound_file));
-    return SD_SUCCESS;
 }
 
 int sd_sounds_load(sd_sound_file *sf, const path *filename) {

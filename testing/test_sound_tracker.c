@@ -8,8 +8,6 @@
 #include "game/audio/sound_tracker.h"
 #include "utils/log.h"
 #include "utils/vector.h"
-#include <CUnit/Basic.h>
-#include <CUnit/CUnit.h>
 
 int sound_tracker_suite_init(void) {
     log_init();

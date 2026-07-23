@@ -36,7 +36,7 @@ void mainmenu_1v1(component *c, void *userdata) {
 
     // clear player1's name so we know to open to the pilot select
     game_player *player1 = game_state_get_player(s->gs, 0);
-    player1->pilot->name[0] = '\0';
+    str_set_c(&player1->pilot->name, "");
 
     // Load MELEE scene
     game_state_set_next(s->gs, SCENE_MELEE);
@@ -66,7 +66,7 @@ void mainmenu_1v2(component *c, void *userdata) {
 
     // clear player1's name so we know to open to the pilot select
     game_player *player1 = game_state_get_player(s->gs, 0);
-    player1->pilot->name[0] = '\0';
+    str_set_c(&player1->pilot->name, "");
 
     // Load MELEE scene
     game_state_set_next(s->gs, SCENE_MELEE);

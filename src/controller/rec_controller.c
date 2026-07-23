@@ -82,7 +82,7 @@ int rec_controller_poll(controller *ctrl, ctrl_event **ev) {
     sd_rec_move *move;
     unsigned int len;
     if(ticks > data->max_tick) {
-        log_debug("closing controller because tick %d is higher than max_tick %d", ticks, data->max_tick);
+        log_debug("closing controller because tick %u is higher than max_tick %u", ticks, data->max_tick);
         controller_close(ctrl, ev);
         return 0;
     }
@@ -104,7 +104,7 @@ int rec_controller_poll(controller *ctrl, ctrl_event **ev) {
             } else if(move->lookup_id == 10 && extra_data[0] == REC_LOOKUP10_SETRANDOM_BYTE) {
                 uint32_t seed;
                 memcpy(&seed, extra_data + 4, sizeof(seed));
-                log_debug("setting random seed to %d from REC file", seed);
+                log_debug("setting random seed to %u from REC file", seed);
                 random_seed(&ctrl->gs->rand, seed);
             } else if(move->lookup_id == 2) {
                 int action = unpack_sd_action(extra_data[0]);
@@ -184,7 +184,7 @@ void rec_controller_step_back(controller *ctrl) {
 
     data->last_tick = ctrl->gs->tick;
 
-    log_debug("REWOUND game state from %d to %d", ctrl->gs->tick, gs_new->tick);
+    log_debug("REWOUND game state from %u to %u", ctrl->gs->tick, gs_new->tick);
 
     // fix the game state pointers in the controllers
     for(int i = 0; i < game_state_num_players(gs_new); i++) {
@@ -208,21 +208,24 @@ void rec_controller_create(controller *ctrl, int player, sd_rec_file *rec) {
     uint32_t last_tick = 0;
     int j = 0;
     data->max_tick = 0;
-    for(unsigned int i = 0; i < rec->move_count; i++) {
-        if(rec->moves[i].player_id == player && (rec->moves[i].lookup_id == 2 || rec->moves[i].lookup_id == 10)) {
-            if(last_tick == rec->moves[i].tick) {
+    iterator it;
+    sd_rec_move *rec_move;
+    vector_iter_begin(&rec->moves, &it);
+    foreach(it, rec_move) {
+        if(rec_move->player_id == player && (rec_move->lookup_id == 2 || rec_move->lookup_id == 10)) {
+            if(last_tick == rec_move->tick) {
                 j++;
             } else {
                 j = 0;
             }
-            hashmap_put_int(&data->tick_lookup, (rec->moves[i].tick * 10) + j, &rec->moves[i], sizeof(sd_rec_move));
-            last_tick = rec->moves[i].tick;
+            hashmap_put_int(&data->tick_lookup, (rec_move->tick * 10) + j, rec_move, sizeof(sd_rec_move));
+            last_tick = rec_move->tick;
         }
-        if((rec->moves[i].lookup_id == 2 || rec->moves[i].lookup_id == 10) && rec->moves[i].tick > data->max_tick) {
-            data->max_tick = rec->moves[i].tick;
+        if((rec_move->lookup_id == 2 || rec_move->lookup_id == 10) && rec_move->tick > data->max_tick) {
+            data->max_tick = rec_move->tick;
         }
     }
-    log_debug("max tick is %" PRIu32, data->last_tick);
+    log_debug("max tick is %" PRIu32, data->max_tick);
     ctrl->data = data;
     ctrl->type = CTRL_TYPE_REC;
     ctrl->poll_fun = &rec_controller_poll;

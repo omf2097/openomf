@@ -63,24 +63,24 @@ void sd_rec_move_free(sd_rec_move *move) {
     move->lookup_id = 0;
 }
 
-int sd_rec_create(sd_rec_file *rec) {
+static void sd_rec_move_free_cb(void *ptr) {
+    sd_rec_move_free(ptr);
+}
+
+void sd_rec_create(sd_rec_file *rec) {
     assert(rec != NULL);
     memset(rec, 0, sizeof(sd_rec_file));
+    vector_create_cb(&rec->moves, sizeof(sd_rec_move), sd_rec_move_free_cb);
     sd_pilot_create(&rec->pilots[0].info);
     sd_pilot_create(&rec->pilots[1].info);
-    return SD_SUCCESS;
 }
 
 void sd_rec_free(sd_rec_file *rec) {
     if(rec == NULL) {
         return;
     }
-    if(rec->moves) {
-        for(unsigned i = 0; i < rec->move_count; i++) {
-            sd_rec_move_free(&rec->moves[i]);
-        }
-        omf_free(rec->moves);
-    }
+    // The vector's free callback frees each move's extra data.
+    vector_free(&rec->moves);
 
     for(int i = 0; i < 2; i++) {
         sd_pilot_free(&rec->pilots[i].info);
@@ -106,8 +106,6 @@ int sd_rec_load(sd_rec_file *rec, const path *file) {
 
     // Read pilot data
     for(int i = 0; i < 2; i++) {
-        // Read pilot data
-        sd_pilot_create(&rec->pilots[i].info);
         if((ret = sd_pilot_load(r, &rec->pilots[i].info)) != SD_SUCCESS) {
             goto error_0;
         }
@@ -155,30 +153,23 @@ int sd_rec_load(sd_rec_file *rec, const path *file) {
     rec->hyper_mode = (in >> 24) & 0x01; // 00000001 00000000 00000000 00000000 (1)
     rec->unknown_m = sd_read_byte(r);
 
-    // Allocate enough space for the record blocks
-    // This will be reduced later when we know the ACTUAL count
-    size_t rsize = sd_reader_filesize(r) - sd_reader_pos(r);
-    unsigned max_movecount = rsize / 6; // minimum on-disk size is 6 bytes.
-    rec->moves = omf_calloc(max_movecount, sizeof(sd_rec_move));
+    // Reserve enough space for the record blocks up front
+    const size_t rsize = sd_reader_filesize(r) - sd_reader_pos(r);
+    const unsigned max_movecount = rsize / 6;
+    vector_reserve(&rec->moves, max_movecount);
 
     // Read blocks
-    unsigned i = 0;
-    while(i < max_movecount && sd_reader_pos(r) < sd_reader_filesize(r)) {
-        rec->moves[i].tick = sd_read_udword(r);
-        char *extra_data = sd_rec_set_lookup_id(&rec->moves[i], sd_read_ubyte(r));
-        rec->moves[i].player_id = sd_read_ubyte(r);
-        int extra_length = sd_rec_extra_len(rec->moves[i].lookup_id);
+    while(vector_size(&rec->moves) < max_movecount && sd_reader_pos(r) < sd_reader_filesize(r)) {
+        sd_rec_move *move = vector_append_ptr(&rec->moves);
+        memset(move, 0, sizeof(sd_rec_move));
+        move->tick = sd_read_udword(r);
+        char *extra_data = sd_rec_set_lookup_id(move, sd_read_ubyte(r));
+        move->player_id = sd_read_ubyte(r);
+        int extra_length = sd_rec_extra_len(move->lookup_id);
         if(extra_length > 0) {
             sd_read_buf(r, extra_data, extra_length);
         }
-        i++;
     }
-
-    rec->move_count = i;
-
-    // Okay, now reduce the allocated memory to match what we actually need
-    // Realloc should keep our old data intact
-    rec->moves = omf_realloc(rec->moves, rec->move_count * sizeof(sd_rec_move));
 
     // Close & return
     sd_reader_close(r);
@@ -243,11 +234,14 @@ int sd_rec_save(const sd_rec_file *rec, const path *file) {
     sd_write_byte(w, rec->unknown_m);
 
     // Move records
-    for(unsigned i = 0; i < rec->move_count; i++) {
-        sd_write_udword(w, rec->moves[i].tick);
-        sd_write_ubyte(w, rec->moves[i].lookup_id);
-        sd_write_ubyte(w, rec->moves[i].player_id);
-        sd_write_buf(w, sd_rec_get_extra_data(&rec->moves[i]), sd_rec_extra_len(rec->moves[i].lookup_id));
+    iterator it;
+    sd_rec_move *move;
+    vector_iter_begin(&rec->moves, &it);
+    foreach(it, move) {
+        sd_write_udword(w, move->tick);
+        sd_write_ubyte(w, move->lookup_id);
+        sd_write_ubyte(w, move->player_id);
+        sd_write_buf(w, sd_rec_get_extra_data(move), sd_rec_extra_len(move->lookup_id));
     }
 
     sd_writer_close(w);
@@ -256,26 +250,17 @@ int sd_rec_save(const sd_rec_file *rec, const path *file) {
 
 int sd_rec_delete_action(sd_rec_file *rec, unsigned int number) {
     assert(rec != NULL);
-    if(number >= rec->move_count) {
+    if(vector_delete_at(&rec->moves, number) != 0) {
         return SD_INVALID_INPUT;
     }
-
-    // Only move if we are not deleting the last entry
-    if(number < (rec->move_count - 1)) {
-        memmove(rec->moves + number, rec->moves + number + 1, (rec->move_count - number - 1) * sizeof(sd_rec_move));
-    }
-
-    // Resize to save memory
-    rec->move_count--;
-    rec->moves = omf_realloc(rec->moves, rec->move_count * sizeof(sd_rec_move));
     return SD_SUCCESS;
 }
 
 int sd_rec_insert_action_at_tick(sd_rec_file *rec, sd_rec_move *move) {
-
-    unsigned int i = 0;
-    for(i = 0; i < rec->move_count; i++) {
-        if(move->tick < rec->moves[i].tick) {
+    unsigned int i;
+    for(i = 0; i < vector_size(&rec->moves); i++) {
+        const sd_rec_move *m = vector_get(&rec->moves, i);
+        if(move->tick < m->tick) {
             break;
         }
     }
@@ -284,36 +269,20 @@ int sd_rec_insert_action_at_tick(sd_rec_file *rec, sd_rec_move *move) {
 
 int sd_rec_insert_action(sd_rec_file *rec, unsigned int number, sd_rec_move *move) {
     assert(rec != NULL);
-    if(number > rec->move_count) {
+    if(vector_insert_at(&rec->moves, number, move) != 0) {
         return SD_INVALID_INPUT;
     }
 
-    // Resize
-    rec->moves = omf_realloc(rec->moves, (rec->move_count + 1) * sizeof(sd_rec_move));
-
-    // Only move if we are inserting, not appending
-    // when number == move_count-1, we are pushing the last entry forwards by one
-    // when number == move_count, we are pushing to the end.
-    if(number < rec->move_count) {
-        memmove(rec->moves + number + 1, rec->moves + number, (rec->move_count - number) * sizeof(sd_rec_move));
-    }
-    memcpy(rec->moves + number, move, sizeof(sd_rec_move));
-
     move->lookup_id = 0;
     memset(&move->extra_data, 0, sizeof(smallbuffer));
-
-    rec->move_count++;
     return SD_SUCCESS;
 }
 
 void sd_rec_finish(sd_rec_file *rec, unsigned int ticks) {
-    sd_rec_move move;
-
-    memset(&move, 0, sizeof(move));
+    sd_rec_move move = {0};
     move.tick = ticks;
     move.player_id = 0;
     char *extra_data = sd_rec_set_lookup_id(&move, 2);
     extra_data[0] = SD_ACT_NONE;
-
-    sd_rec_insert_action(rec, rec->move_count, &move);
+    vector_append(&rec->moves, &move);
 }

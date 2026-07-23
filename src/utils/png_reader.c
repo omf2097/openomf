@@ -14,7 +14,7 @@ static_assert(PNG_LIBPNG_VER >= 10600, "libpng version should be 1.6.0 or later"
 #define SIGNATURE_SIZE 8
 
 static void abort_png(png_structp png, const char *err) {
-    crash(err);
+    crash_with_args("%s", err);
 }
 
 static FILE *open_and_check(const char *filename) {

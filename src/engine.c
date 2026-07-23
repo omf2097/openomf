@@ -11,7 +11,7 @@
 #include "resources/languages.h"
 #include "resources/modmanager.h"
 #include "resources/resource_files.h"
-#include "resources/resource_paths.h"
+#include "resources/script_cache.h"
 #include "resources/sounds_loader.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
@@ -88,6 +88,7 @@ int engine_init(const engine_init_flags *init_flags) {
         goto exit_8;
     }
     vga_state_init();
+    script_cache_init();
 
     // Return successfully
     run = 1;
@@ -416,6 +417,7 @@ void engine_run(const engine_init_flags *init_flags) {
 }
 
 void engine_close(void) {
+    script_cache_close();
     osd_close();
     console_close();
     altpals_close();

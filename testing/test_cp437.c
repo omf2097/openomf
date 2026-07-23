@@ -1,6 +1,5 @@
+#include "common.h"
 #include "utils/cp437.h"
-#include <CUnit/Basic.h>
-#include <CUnit/CUnit.h>
 #include <assert.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -143,16 +142,8 @@ static void test_cp437_utf8(void) {
 }
 
 void cp437_test_suite(CU_pSuite suite) {
-    if(CU_add_test(suite, "Test source-charset", test_source_charset) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test CP437 UTF-32 conversions", test_cp437_utf32) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test CP437 UTF-8 conversion string length", test_cp437_utf8_len) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test CP437 UTF-8 string conversions", test_cp437_utf8) == NULL) {
-        return;
-    }
+    ADD_TEST("Test source-charset", test_source_charset);
+    ADD_TEST("Test CP437 UTF-32 conversions", test_cp437_utf32);
+    ADD_TEST("Test CP437 UTF-8 conversion string length", test_cp437_utf8_len);
+    ADD_TEST("Test CP437 UTF-8 string conversions", test_cp437_utf8);
 }

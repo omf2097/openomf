@@ -229,7 +229,7 @@ int main(int argc, char *argv[]) {
         ip = NULL;
     }
     if(lobbyaddr) {
-        log_debug("Lobby address overridden to %s", lobby);
+        log_debug("Lobby address overridden to %s", lobbyaddr);
         oldlobbyaddr = settings_get()->net.net_lobby_address;
         settings_get()->net.net_lobby_address = lobbyaddr;
     }

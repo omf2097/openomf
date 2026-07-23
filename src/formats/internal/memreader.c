@@ -59,6 +59,13 @@ int memread_buf(memreader *reader, char *buf, int len) {
     return 1;
 }
 
+void memread_fixed_str(memreader *reader, str *dst, size_t len) {
+    char *buf = omf_calloc(1, len + 1); // Guaranteed null term at buf[len]
+    memread_buf(reader, buf, len);
+    str_from_c(dst, buf);
+    omf_free(buf);
+}
+
 uint8_t memread_ubyte(memreader *reader) {
     uint8_t r;
     memcpy(&r, reader->buf + reader->pos, sizeof(r));

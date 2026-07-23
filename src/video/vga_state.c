@@ -6,6 +6,7 @@
 #include "video/vga_state.h"
 
 #include "game/game_state.h"
+#include "utils/log.h"
 #include "utils/png_writer.h"
 #include <assert.h>
 
@@ -180,7 +181,11 @@ void vga_state_enable_palette_transform(vga_palette_transform transform_callback
     }
 #endif
 
-    assert(state.transformer_count < MAX_TRANSFORMER_COUNT - 1);
+    assert(state.transformer_count < MAX_TRANSFORMER_COUNT);
+    if(state.transformer_count >= MAX_TRANSFORMER_COUNT) {
+        log_error("Palette transformer limit reached, dropping transform");
+        return;
+    }
     state.transformers[state.transformer_count].callback = transform_callback;
     state.transformers[state.transformer_count].userdata = userdata;
     state.transformer_count++;

@@ -1,12 +1,11 @@
+#include "common.h"
 #include "formats/bk.h"
 #include "formats/error.h"
-#include <CUnit/Basic.h>
-#include <CUnit/CUnit.h>
 
 sd_bk_file bk;
 
 void test_sd_bk_create(void) {
-    CU_ASSERT(sd_bk_create(&bk) == SD_SUCCESS);
+    sd_bk_create(&bk);
 }
 
 void test_sd_bk_free(void) {
@@ -18,8 +17,7 @@ void test_bk_roundtrip(void) {
     sd_bk_file loaded;
     int ret;
 
-    ret = sd_bk_create(&new);
-    CU_ASSERT(ret == SD_SUCCESS);
+    sd_bk_create(&new);
 
     // Set some values
     new.file_id = 1;
@@ -30,8 +28,7 @@ void test_bk_roundtrip(void) {
     path_from_c(&test_file, "test.bk");
 
     // Roundtripping
-    ret = sd_bk_create(&loaded);
-    CU_ASSERT(ret == SD_SUCCESS);
+    sd_bk_create(&loaded);
     ret = sd_bk_save(&new, &test_file);
     CU_ASSERT(ret == SD_SUCCESS);
     ret = sd_bk_load(&loaded, &test_file);
@@ -49,13 +46,7 @@ void test_bk_roundtrip(void) {
 }
 
 void bk_test_suite(CU_pSuite suite) {
-    if(CU_add_test(suite, "test of sd_bk_create", test_sd_bk_create) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "test of BK empty roundtripping", test_bk_roundtrip) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "test of sd_bk_free", test_sd_bk_free) == NULL) {
-        return;
-    }
+    ADD_TEST("test of sd_bk_create", test_sd_bk_create);
+    ADD_TEST("test of BK empty roundtripping", test_bk_roundtrip);
+    ADD_TEST("test of sd_bk_free", test_sd_bk_free);
 }

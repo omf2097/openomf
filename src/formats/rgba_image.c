@@ -11,16 +11,15 @@
 
 #define STRIDE 4
 
-int sd_rgba_image_create(sd_rgba_image *img, unsigned int w, unsigned int h) {
+void sd_rgba_image_create(sd_rgba_image *img, unsigned int w, unsigned int h) {
     assert(img != NULL);
     img->w = w;
     img->h = h;
     img->len = w * h * STRIDE;
     img->data = omf_calloc(img->len, 1);
-    return SD_SUCCESS;
 }
 
-int sd_rgba_image_copy(sd_rgba_image *dst, const sd_rgba_image *src) {
+void sd_rgba_image_copy(sd_rgba_image *dst, const sd_rgba_image *src) {
     assert(dst != NULL);
     assert(src != NULL);
 
@@ -29,7 +28,6 @@ int sd_rgba_image_copy(sd_rgba_image *dst, const sd_rgba_image *src) {
     dst->len = src->len;
     dst->data = omf_calloc(src->len, 1);
     memcpy(dst->data, src->data, src->len);
-    return SD_SUCCESS;
 }
 
 int sd_rgba_image_blit(sd_rgba_image *dst, const sd_rgba_image *src, int x, int y) {
@@ -78,7 +76,7 @@ int sd_rgba_image_to_ppm(const sd_rgba_image *img, const char *filename) {
     return SD_SUCCESS;
 }
 
-int sd_rgba_image_clear(sd_rgba_image *img, char r, char g, char b, char a) {
+void sd_rgba_image_clear(sd_rgba_image *img, char r, char g, char b, char a) {
     assert(img != NULL);
     for(unsigned y = 0; y < img->h; y++) {
         for(unsigned x = 0; x < img->w; x++) {
@@ -88,7 +86,6 @@ int sd_rgba_image_clear(sd_rgba_image *img, char r, char g, char b, char a) {
             img->data[(y * img->w + x) * 4 + 3] = a;
         }
     }
-    return SD_SUCCESS;
 }
 
 int sd_rgba_image_to_png(const sd_rgba_image *img, const path *filename) {

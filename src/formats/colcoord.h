@@ -11,6 +11,7 @@
 #ifndef COLCOORD_H
 #define COLCOORD_H
 
+#include "utils/vec.h"
 #include <stdint.h>
 
 /** @brief Collision coordinate container
@@ -21,8 +22,7 @@
  * frame_id entry tells which sprite in animation the coordinate belongs to.
  */
 typedef struct {
-    int16_t x;        ///< X position coordinate
-    int16_t y;        ///< Y position coordinate
+    vec2i pos;        ///< Position coordinate
     uint8_t null;     ///< Probably null padding
     uint8_t frame_id; ///< Sprite the coordinate belongs to
 } sd_coord;

@@ -14,10 +14,7 @@ int load_af_file(af *a, int id) {
 
     // Load up AF file from libSD
     sd_af_file tmp;
-    if(sd_af_create(&tmp) != SD_SUCCESS) {
-        str_free(&fn);
-        return 1;
-    }
+    sd_af_create(&tmp);
     if(sd_af_load(&tmp, &filename) != SD_SUCCESS) {
         sd_af_free(&tmp);
         str_free(&fn);

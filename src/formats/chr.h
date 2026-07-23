@@ -15,8 +15,10 @@
 #include "formats/pilot.h"
 #include "formats/sprite.h"
 #include "formats/tournament.h"
+#include "utils/str.h"
 
-#define MAX_CHR_ENEMIES 256 ///< Maximum amount of enemies for a CHR file.
+#define MAX_CHR_ENEMIES 256           ///< Maximum amount of enemies for a CHR file.
+#define SD_CHR_CUTSCENE_TEXT_COUNT 10 ///< Number of cutscene dialog text pages.
 
 /** @brief CHR enemy state entry
  *
@@ -43,18 +45,16 @@ typedef struct {
     sd_chr_enemy *enemies[MAX_CHR_ENEMIES]; ///< List of enemy states in current tournament
     char bk_name[14];                       ///< cutscene bk for end of tournament
     int tournament_id;                      ///< set to 4 for WORLD.BK cutscene quirks, also known as TOURNAMENT NUMBER
-    char *cutscene_text[10];                ///< cutscene dialog text
+    str cutscene_text[SD_CHR_CUTSCENE_TEXT_COUNT]; ///< cutscene dialog text
 } sd_chr_file;
 
 /** @brief Initialize CHR structure
  *
  * Initializes the CHR structure with empty values.
  *
- * @retval SD_SUCCESS Success.
- *
  * @param chr Allocated CHR struct pointer.
  */
-int sd_chr_create(sd_chr_file *chr);
+void sd_chr_create(sd_chr_file *chr);
 
 /** @brief Free CHR structure
  *
@@ -67,13 +67,11 @@ void sd_chr_free(sd_chr_file *chr);
 
 /** @brief Build a CHR savegame from a tournament
  *
- * @retval SD_SUCCESS Success.
- *
  * @param chr CHR struct pointer to fill.
  * @param trn Source tournament file.
  * @param pilot Starting pilot.
  */
-int sd_chr_from_trn(sd_chr_file *chr, const sd_tournament_file *trn, const sd_pilot *pilot);
+void sd_chr_from_trn(sd_chr_file *chr, const sd_tournament_file *trn, const sd_pilot *pilot);
 
 /** @brief Load .CHR file
  *

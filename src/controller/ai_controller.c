@@ -2688,7 +2688,7 @@ int ai_controller_poll(controller *ctrl, ctrl_event **ev) {
     if(o) {
         object *enemy = game_state_find_object(ctrl->gs, o->animation_state.enemy_obj_id);
         // UJ tag signals to the AI it should probably jump
-        if(can_move && can_interupt_tactic && player_frame_isset(enemy, "uj") && smart_sometimes(a)) {
+        if(can_move && can_interupt_tactic && player_frame_isset(enemy, TAG_UJ) && smart_sometimes(a)) {
             reset_tactic_state(a);
             controller_cmd(ctrl, ACT_UP, ev);
             controller_cmd(ctrl, ACT_STOP, ev);

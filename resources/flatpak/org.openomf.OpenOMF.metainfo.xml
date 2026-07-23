@@ -8,6 +8,21 @@
   </branding>
 
   <releases>
+    <release version="0.8.6" date="2026-07-05">
+      <url type="details">https://github.com/omf2097/openomf/releases/tag/0.8.6</url>
+      <description>
+        <p>0.8.6 continues the bugfix and feature additions to the 0.8 branch</p>
+        <ul>
+          <li>Mod support for sprites, backgrounds and portraits</li>
+          <li>Music mod support with selectable originals/remixes</li>
+          <li>Audio subsystem overhaul</li>
+          <li>Graphics improvements (16-bit surfaces, extended palette, scaling filters)</li>
+          <li>Gameplay and fight mechanics fixes</li>
+          <li>Tournament improvements</li>
+          <li>Netplay and lobby fixes</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.8.5" date="2025-09-11">
       <url type="details">https://github.com/omf2097/openomf/releases/tag/0.8.5</url>
       <description>

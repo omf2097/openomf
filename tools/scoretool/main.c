@@ -23,7 +23,7 @@ void print_page(sd_score *score, int page_id) {
     for(int i = 0; i < SD_SCORE_ENTRIES; i++) {
         const sd_score_entry *entry = sd_score_get(score, page_id, i);
         if(entry->score > 0) {
-            printf("%-18s%-9s%-9s%11d\n", entry->name, har_name[entry->har_id], pilot_name[entry->pilot_id],
+            printf("%-18s%-9s%-9s%11u\n", entry->name, har_name[entry->har_id], pilot_name[entry->pilot_id],
                    entry->score);
         }
     }

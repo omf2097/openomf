@@ -53,6 +53,15 @@ runs:
       shell: pwsh
       run: cmake --install build-msvc --config Release --prefix install
 
+    - name: Get openomf mods
+      uses: ./.github/actions/fetch_mods
+
+    - name: Extract openomf mods
+      shell: pwsh
+      run: |
+        New-Item -ItemType Directory -Force -Path install/openomf/mods
+        Expand-Archive -Path openomf-mods.zip -DestinationPath install/openomf/mods -Force
+
     - name: Generate ZIP package
       shell: pwsh
       run: |

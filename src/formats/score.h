@@ -48,11 +48,9 @@ typedef struct {
  *
  * Initializes the score structure with empty values.
  *
- * @retval SD_SUCCESS Success.
- *
  * @param score Allocated score struct pointer.
  */
-int sd_score_create(sd_score *score);
+void sd_score_create(sd_score *score);
 
 /** @brief Free score structure
  *

@@ -25,7 +25,7 @@ void trnlist_init(vector *trnlist) {
         log_error("Could not scan resources path!");
         goto error_0;
     }
-    log_debug("Found %d tournaments.", list_size(&dir_list));
+    log_debug("Found %u tournaments.", list_size(&dir_list));
 
     vector_create(trnlist, sizeof(sd_tournament_file));
     iterator it;
@@ -50,7 +50,7 @@ void trnlist_init(vector *trnlist) {
 
     // sort the tournaments by ascending registration fee
     vector_sort(trnlist, trn_sort_compare_fn);
-    log_debug("Loaded %d tournaments", vector_size(trnlist));
+    log_debug("Loaded %u tournaments", vector_size(trnlist));
 
 error_0:
     list_free(&dir_list);

@@ -44,7 +44,7 @@ void projectile_finished(object *obj) {
         object_set_animation(obj, &af_get_move(local->af_data, move->successor_id)->ani);
         object_set_repeat(obj, 0);
         object_set_vel(obj, vec2f_create(0, 0));
-        obj->animation_state.finished = 0;
+        object_set_finished(obj, false);
     }
 }
 
@@ -84,15 +84,15 @@ void projectile_move(object *obj) {
         }
         // if not invincible, not ignoring bounds checking and actually has an X velocity (the latter two help with
         // shadow grab)
-    } else if(!local->invincible && !player_frame_isset(obj, "bh") && !IS_ZERO(obj->vel.x)) {
+    } else if(!local->invincible && !player_frame_isset(obj, TAG_BH) && !IS_ZERO(obj->vel.x)) {
         if(obj->pos.x < ARENA_LEFT_WALL) {
             obj->pos.x = ARENA_LEFT_WALL;
-            object_set_finished(obj);
+            object_set_finished(obj, true);
             projectile_finished(obj);
         }
         if(obj->pos.x > ARENA_RIGHT_WALL) {
             obj->pos.x = ARENA_RIGHT_WALL;
-            object_set_finished(obj);
+            object_set_finished(obj, true);
             projectile_finished(obj);
         }
     }
@@ -102,7 +102,7 @@ void projectile_move(object *obj) {
         obj->vel.x = obj->vel.x * dampen;
     } else if(obj->pos.y > ARENA_FLOOR) {
         obj->pos.y = ARENA_FLOOR;
-        object_set_finished(obj);
+        object_set_finished(obj, true);
         projectile_finished(obj);
     }
     if(obj->pos.y >= (ARENA_FLOOR - 5) && IS_ZERO(obj->vel.x) && obj->vel.y < obj->gravity * 1.1 &&

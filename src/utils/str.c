@@ -601,12 +601,12 @@ bool str_insert_buf_at(str *dst, size_t pos, const char *src, size_t src_len) {
     return true;
 }
 
-static void free_text(void *obj) {
-    str_free((str *)obj);
+void str_free_cb(void *ptr) {
+    str_free((str *)ptr);
 }
 
 void str_split(vector *dst, const str *src, char ch) {
-    vector_create_with_size_cb(dst, sizeof(str), 1, free_text);
+    vector_create_with_size_cb(dst, sizeof(str), 1, str_free_cb);
     size_t start = 0, end = 0;
     while(str_find_next(src, ch, &end)) {
         if(start != end) {

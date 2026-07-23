@@ -88,9 +88,10 @@ int gui_frame_event(gui_frame *frame, SDL_Event *event);
  * @brief Handle an abstract action event
  * @param frame Frame to receive the action
  * @param action Action code to process
+ * @param source CTRL_TYPE_* of the device that produced the action
  * @return Non-zero if the action was handled
  */
-int gui_frame_action(gui_frame *frame, int action);
+int gui_frame_action(gui_frame *frame, int action, int source);
 
 /**
  * @brief Perform layout calculation for the frame

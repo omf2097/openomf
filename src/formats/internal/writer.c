@@ -133,20 +133,26 @@ void sd_write_variable_str(sd_writer *w, const char *str) {
     sd_write_buf(w, str, len);
 }
 
-void sd_write_str(sd_writer *w, str *src, bool null_terminated) {
+void sd_write_padded_str(sd_writer *w, const str *src) {
     // If string length is 0, it will not have ending null byte either.
     if(str_size(src) == 0) {
         sd_write_uword(w, 0);
         return;
     }
+    sd_write_uword(w, str_size(src) + 1);
+    sd_write_buf(w, str_c(src), str_size(src));
+    sd_write_ubyte(w, 0);
+}
 
-    // If string is null terminated, then length should be string size + 1 byte for NULL.
-    if(null_terminated) {
-        sd_write_uword(w, str_size(src) + 1);
-        sd_write_buf(w, str_c(src), str_size(src));
-        sd_write_ubyte(w, 0);
-    } else {
-        sd_write_uword(w, str_size(src));
-        sd_write_buf(w, str_c(src), str_size(src));
-    }
+void sd_write_terminated_str(sd_writer *w, const str *src) {
+    const uint16_t len = str_size(src);
+    sd_write_uword(w, len);
+    sd_write_buf(w, str_c(src), len);
+    sd_write_ubyte(w, 0);
+}
+
+void sd_write_fixed_str(sd_writer *w, const str *src, size_t len) {
+    const size_t n = (str_size(src) < len) ? str_size(src) : len;
+    sd_write_buf(w, str_c(src), n);
+    sd_write_fill(w, 0, len - n);
 }

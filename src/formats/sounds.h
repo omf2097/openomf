@@ -41,11 +41,9 @@ typedef struct {
  *
  * Initializes the sounds structure with empty values.
  *
- * @retval SD_SUCCESS Success.
- *
  * @param sf Allocated sounds struct pointer.
  */
-int sd_sounds_create(sd_sound_file *sf);
+void sd_sounds_create(sd_sound_file *sf);
 
 /** @brief Free sounds structure
  *

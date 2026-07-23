@@ -85,9 +85,9 @@ int gui_frame_event(gui_frame *frame, SDL_Event *event) {
     return 1;
 }
 
-int gui_frame_action(gui_frame *frame, int action) {
+int gui_frame_action(gui_frame *frame, int action, int source) {
     if(frame->root_node) {
-        return component_action(frame->root_node, action);
+        return component_action(frame->root_node, action, source);
     }
     return 1;
 }
