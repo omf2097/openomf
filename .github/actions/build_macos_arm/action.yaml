@@ -1,31 +1,34 @@
 name: Build MacOS ARM
-description: Build MacOS ARM binary
+description: Build MacOS ARM app bundle
 runs:
   using: "composite"
   steps:
     - name: Get OpenOMF Version
       uses: ./.github/actions/version
 
-    - name: Install Mac Dependencies
+    - name: Install macOS build tools
       shell: bash
-      run: |
-        brew update
-        brew install cunit sdl2_mixer confuse enet sdl2 libxmp libpng opusfile libepoxy miniupnpc libnatpmp
+      run: brew install autoconf autoconf-archive automake libtool
 
-    - name: Generate Release
-      shell: bash
-      run: |
-        mkdir build-release && cd build-release
-        cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=release/usr ..
-        make -j $(getconf _NPROCESSORS_ONLN)
-        make -j $(getconf _NPROCESSORS_ONLN) install
+    - name: Prepare vcpkg
+      uses: johnwason/vcpkg-action@v8
+      id: prepare-vcpkg
+      with:
+        manifest-dir: ${{ github.workspace }}
+        triplet: arm64-osx
+        revision: 2026.07.29
+        token: ${{ github.token }}
 
     - name: Get openomf assets
       uses: ./.github/actions/assets
 
     - name: Extract openomf assets
       shell: bash
-      run: unzip -j openomf-assets.zip -d build-release/release/usr/share/games/openomf/resources
+      run: |
+        set -euo pipefail
+        rm -rf data
+        mkdir data
+        unzip -j openomf-assets.zip -d data
 
     - name: Get openomf mods
       uses: ./.github/actions/fetch_mods
@@ -33,14 +36,25 @@ runs:
     - name: Extract openomf mods
       shell: bash
       run: |
-        mkdir -p build-release/release/usr/share/games/openomf/mods
-        unzip -o openomf-mods.zip -d build-release/release/usr/share/games/openomf/mods
+        set -euo pipefail
+        mkdir -p data/mods
+        unzip -o openomf-mods.zip -d data/mods
+
+    - name: Build macOS app
+      shell: bash
+      run: |
+        set -euo pipefail
+        VCPKG_ROOT="${GITHUB_WORKSPACE}/vcpkg" \
+        VCPKG_TARGET_TRIPLET=arm64-osx \
+        OPENOMF_BUNDLE_VERSION="${OPENOMF_VERSION}" \
+        ./packaging/macos/build-app.sh
 
     - name: Generate ZIP package
       shell: bash
       run: |
-        cd build-release/release
-        zip -r ${GITHUB_WORKSPACE}/openomf_${{ env.OPENOMF_VERSION }}_macos14_arm.zip .
+        ditto -c -k --keepParent \
+          "dist/macos/OpenOMF.app" \
+          "${GITHUB_WORKSPACE}/openomf_${{ env.OPENOMF_VERSION }}_macos14_arm.zip"
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v7
