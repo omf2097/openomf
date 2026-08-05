@@ -31,7 +31,7 @@ static void print_log(const char *buffer, long len, const char *header) {
 
 static void print_shader_log(const GLuint shader, const char *header) {
     if(!glIsShader(shader)) {
-        log_error("Attempted to print logs for shader %d: not a shader", shader);
+        log_error("Attempted to print logs for shader %u: not a shader", shader);
         return;
     }
 
@@ -45,7 +45,7 @@ static void print_shader_log(const GLuint shader, const char *header) {
 
 static void print_program_log(const GLuint program) {
     if(!glIsProgram(program)) {
-        log_error("Attempted to print logs for program %d: not a program", program);
+        log_error("Attempted to print logs for program %u: not a program", program);
         return;
     }
 
@@ -76,11 +76,11 @@ static bool load_shader(GLuint program_id, GLenum shader_type, const char *shade
     GLint status = GL_FALSE;
     glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
     if(status != GL_TRUE) {
-        log_error("Compilation error for shader %d (file=%s)", shader, shader_file);
+        log_error("Compilation error for shader %u (file=%s)", shader, shader_file);
         print_shader_log(shader, shader_file);
         return false;
     }
-    log_debug("Compilation succeeded for shader %d (file=%s)", shader, shader_file);
+    log_debug("Compilation succeeded for shader %u (file=%s)", shader, shader_file);
     glAttachShader(program_id, shader);
     return true;
 }
@@ -94,12 +94,12 @@ void delete_program(GLuint program_id) {
         glUseProgram(0);
         glGetAttachedShaders(program_id, attached_count, NULL, shaders);
         for(int i = 0; i < attached_count; i++) {
-            log_debug("Shader %d deleted", shaders[i]);
+            log_debug("Shader %u deleted", shaders[i]);
             glDeleteShader(shaders[i]); // Mark for removal, glDeleteProgram will handle deletion.
         }
     }
     glDeleteProgram(program_id);
-    log_debug("Program %d deleted", program_id);
+    log_debug("Program %u deleted", program_id);
     omf_free(shaders);
 }
 
@@ -116,13 +116,13 @@ bool create_program(GLuint *program_id, const char *vertex_shader, const char *f
     GLint status = GL_TRUE;
     glGetProgramiv(id, GL_LINK_STATUS, &status);
     if(status != GL_TRUE) {
-        log_error("Compilation error for program %d (vert=%s, frag=%s)", id, vertex_shader, fragment_shader);
+        log_error("Compilation error for program %u (vert=%s, frag=%s)", id, vertex_shader, fragment_shader);
         print_program_log(id);
         goto error_0;
     }
 
     *program_id = id;
-    log_debug("Compilation succeeded for program %d (vert=%s, frag=%s)", id, vertex_shader, fragment_shader);
+    log_debug("Compilation succeeded for program %u (vert=%s, frag=%s)", id, vertex_shader, fragment_shader);
     return true;
 
 error_0:

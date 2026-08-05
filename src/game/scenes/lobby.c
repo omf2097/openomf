@@ -15,6 +15,10 @@
 
 #include "game/gui/gui.h"
 
+#include "formats/palette.h"
+#include "video/vga_remap.h"
+#include "video/vga_state.h"
+
 #include <stdio.h>
 
 // FIXME: No idea what these should be
@@ -38,6 +42,10 @@
 #define TEXT_INACTIVE_COLOR 3
 #define TEXT_SHADOW_COLOR 6
 #define DIALOG_BORDER_COLOR 0xFE
+
+// Ordered letter-wheel charsets for gamepad entry in chat fields.
+#define CHAT_NAME_WHEEL " ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+#define CHAT_MESSAGE_WHEEL " ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.,!?':;-"
 
 enum
 {
@@ -228,13 +236,13 @@ void lobby_free(scene *scene) {
 }
 
 void lobby_print_match_settings(const int user_id, const match_settings *settings) {
-    log_debug("match_settings for user %u: {", user_id);
+    log_debug("match_settings for user %d: {", user_id);
     log_debug("  throw_range: %u", settings->throw_range);
     log_debug("  hit_pause: %u", settings->hit_pause);
     log_debug("  block_damage: %u", settings->block_damage);
     log_debug("  vitality: %u", settings->vitality);
     log_debug("  jump_height: %u", settings->jump_height);
-    log_debug("  knock_down: %d", settings->knock_down);
+    log_debug("  knock_down: %u", settings->knock_down);
     log_debug("  rehit: %s", settings->rehit ? "true" : "false");
     log_debug("  defensive_throws: %s", settings->defensive_throws ? "true" : "false");
     log_debug("  power1: %u", settings->power1);
@@ -281,7 +289,7 @@ void lobby_show_dialog(scene *scene, int dialog_style, char *dialog_text, dialog
 
 static void update_active_user_text(lobby_local *local) {
     char buf[64];
-    snprintf(buf, sizeof(buf), "%d of %d", local->active_user + 1, list_size(&local->users));
+    snprintf(buf, sizeof(buf), "%d of %u", local->active_user + 1, list_size(&local->users));
     text_set_from_c(local->titles[TITLE_USER_OF], buf);
 
     lobby_user *user = list_get(&local->users, local->active_user);
@@ -306,28 +314,35 @@ static void update_active_user_text(lobby_local *local) {
 
 void lobby_input_tick(scene *scene) {
     lobby_local *local = scene_get_userdata(scene);
-    ctrl_event *p1 = NULL, *i;
+    ctrl_event *p1 = NULL;
     game_state_menu_poll(scene->gs, &p1);
 
-    i = p1;
+    const ctrl_event *i = p1;
     if(i) {
         do {
             if(local->dialog && dialog_is_visible(local->dialog)) {
-                dialog_event(local->dialog, p1->event_data.action);
-            } else if(i->type == EVENT_TYPE_ACTION && i->event_data.action == ACT_DOWN) {
-                local->active_user++;
-                if(local->active_user >= list_size(&local->users)) {
-                    local->active_user = 0;
+                dialog_event(local->dialog, i->event_data.action, i->source);
+            } else if(i->type == EVENT_TYPE_ACTION &&
+                      (i->event_data.action == ACT_UP || i->event_data.action == ACT_DOWN)) {
+                // Offer up/down to the focused field first (e.g. the name entry
+                // letter wheel). Only browse the user list if nothing in the
+                // frame consumed them.
+                if(gui_frame_action(local->frame, i->event_data.action, i->source) != 0) {
+                    if(i->event_data.action == ACT_DOWN) {
+                        local->active_user++;
+                        if(local->active_user >= list_size(&local->users)) {
+                            local->active_user = 0;
+                        }
+                    } else {
+                        local->active_user--;
+                        if(local->active_user >= list_size(&local->users)) {
+                            local->active_user = list_size(&local->users) - 1;
+                        }
+                    }
+                    update_active_user_text(local);
                 }
-                update_active_user_text(local);
-            } else if(i->type == EVENT_TYPE_ACTION && i->event_data.action == ACT_UP) {
-                local->active_user--;
-                if(local->active_user >= list_size(&local->users)) {
-                    local->active_user = list_size(&local->users) - 1;
-                }
-                update_active_user_text(local);
             } else {
-                gui_frame_action(local->frame, p1->event_data.action);
+                gui_frame_action(local->frame, i->event_data.action, i->source);
             }
         } while((i = i->next));
     }
@@ -394,25 +409,37 @@ void lobby_render_overlay(scene *scene) {
             i++;
         }
 
-        int left = 32;
+        int left = 36;
+        int rows = 0;
         list_iter_end(&local->log, &it);
         log_event *log_msg;
         while((log_msg = iter_prev(&it)) && left > 0) {
+            const int msg_rows = (int)text_get_layout_rows(log_msg->message);
+            if(rows + msg_rows > 4) {
+                break;
+            }
+            rows += msg_rows;
             left -= text_get_layout_height(log_msg->message);
-            text_draw(log_msg->message, 10, 168 + left);
+            text_draw(log_msg->message, 10, 162 + left);
         }
     } else if(local->mode == LOBBY_YELL) {
         iterator it;
-        int left = 140;
+        int left = 136;
         list_iter_end(&local->log, &it);
         log_event *log_msg;
         while((log_msg = iter_prev(&it)) && left > 0) {
-            left -= text_get_layout_height(log_msg->message);
+            int h = text_get_layout_height(log_msg->message);
+            if(left - h < 0) {
+                break;
+            }
+            left -= h;
             text_draw(log_msg->message, 10, left);
         }
     }
 
-    gui_frame_render(local->frame);
+    if(!(local->mode == LOBBY_STARTING && local->dialog && dialog_is_visible(local->dialog))) {
+        gui_frame_render(local->frame);
+    }
 
     if(local->dialog && dialog_is_visible(local->dialog)) {
         dialog_render(local->dialog);
@@ -515,8 +542,8 @@ void lobby_dialog_do_spectate(dialog *dlg, dialog_result result) {
     }
 }
 
-char *challengeStr = "Challenge %s?\n\nRounds %s\nHazards %s\nFight Mode %s\nRehit Mode %s";
-char *spectateStr = "Spectate %s vs %s?";
+const char challengeStr[] = "Challenge %s?\n\nRounds %s\nHazards %s\nFight Mode %s\nRehit Mode %s";
+const char spectateStr[] = "Spectate %s vs %s?";
 
 char *get_fight_mode_setting_string(bool setting) {
     if(setting) {
@@ -614,7 +641,7 @@ void lobby_do_yell(component *c, void *userdata) {
 component *lobby_yell_create(scene *s) {
     component *menu = menu_create();
 
-    menu_set_help_pos(menu, 10, 155, 500, 10);
+    menu_set_help_pos(menu, 10, 152, 500, 10);
     menu_set_help_text_settings(menu, FONT_NET2, TEXT_ALIGN_LEFT, 56);
     menu_set_horizontal(menu, true);
     menu_set_background(menu, false);
@@ -632,6 +659,8 @@ component *lobby_yell_create(scene *s) {
     textinput_set_horizontal_align(yell_input, TEXT_ALIGN_LEFT);
     menu_attach(menu, yell_input);
     textinput_enable_background(yell_input, false);
+    textinput_set_wheel_charset(yell_input, CHAT_MESSAGE_WHEEL);
+    textinput_set_edit_by_default(yell_input, true);
     textinput_set_done_cb(yell_input, lobby_do_yell, s);
 
     return menu;
@@ -687,7 +716,7 @@ component *lobby_whisper_create(scene *s) {
 
     component *menu = menu_create();
 
-    menu_set_help_pos(menu, 10, 155, 500, 10);
+    menu_set_help_pos(menu, 10, 152, 500, 10);
     menu_set_help_text_settings(menu, FONT_NET2, TEXT_ALIGN_LEFT, 56);
     menu_set_horizontal(menu, true);
     menu_set_background(menu, false);
@@ -704,6 +733,8 @@ component *lobby_whisper_create(scene *s) {
     textinput_set_font(whisper_input, FONT_NET1);
     menu_attach(menu, whisper_input);
     textinput_enable_background(whisper_input, 0);
+    textinput_set_wheel_charset(whisper_input, CHAT_MESSAGE_WHEEL);
+    textinput_set_edit_by_default(whisper_input, true);
     textinput_set_done_cb(whisper_input, lobby_do_whisper, s);
 
     return menu;
@@ -766,10 +797,11 @@ void lobby_entered_name(component *c, void *userdata) {
         serial_create(&ser);
         serial_write_int8(&ser, PACKET_JOIN << 4 | (PROTOCOL_VERSION & 0x0f));
         // if we mapped an external port, send it to the server
+        // send 0 when no mapping so peers skip the advertised port and use the server-observed port
         if(local->nat->type != NAT_TYPE_NONE) {
-            serial_write_int16(&ser, local->nat->ext_port ? local->nat->ext_port : local->client->address.port);
+            serial_write_int16(&ser, local->nat->ext_port);
         } else {
-            serial_write_int16(&ser, local->client->address.port);
+            serial_write_int16(&ser, 0);
         }
         game_state_encode_match_settings(&ser, &scene->gs->match_settings);
         serial_write_int8(&ser, strlen(version));
@@ -810,8 +842,8 @@ void lobby_try_connect(void *scenedata, void *userdata) {
     scene *s = scenedata;
     lobby_local *local = scene_get_userdata(s);
     if(local->opponent && !local->opponent_peer) {
-        log_info("doing scheduled outbound connection to %d.%d.%d.%d port %d", local->opponent->address.host & 0xFF,
-                 (local->opponent->address.host >> 8) & 0xFF, (local->opponent->address.host >> 16) & 0xF,
+        log_info("doing scheduled outbound connection to %u.%u.%u.%u port %d", local->opponent->address.host & 0xFF,
+                 (local->opponent->address.host >> 8) & 0xFF, (local->opponent->address.host >> 16) & 0xFF,
                  (local->opponent->address.host >> 24) & 0xFF, local->opponent->address.port);
         local->opponent_peer = enet_host_connect(local->client, &local->opponent->address, 3, 0);
         if(local->opponent_peer) {
@@ -1032,8 +1064,8 @@ void lobby_tick(scene *scene, int paused) {
                    event.peer->address.port == local->peer->address.port) {
                     log_debug("Connection to server succeeded.");
 
-                    log_debug("local peer connect id %d", local->peer->connectID);
-                    log_debug("remote peer connect id %d", event.peer->connectID);
+                    log_debug("local peer connect id %u", local->peer->connectID);
+                    log_debug("remote peer connect id %u", event.peer->connectID);
 
                     event.peer->data = local->nat;
 
@@ -1211,7 +1243,7 @@ void lobby_tick(scene *scene, int paused) {
                             switch(control_byte & 0xf) {
                                 case JOIN_SUCCESS:
                                     local->id = serial_read_uint32(&ser);
-                                    log_debug("successfully joined lobby and assigned ID %d", local->id);
+                                    log_debug("successfully joined lobby and assigned ID %u", local->id);
                                     if(local->joinmenu) {
                                         local->joinmenu->finished = 1;
                                         local->joinmenu = NULL;
@@ -1315,7 +1347,7 @@ void lobby_tick(scene *scene, int paused) {
                             local->controllers_created = true;
 
                         } else {
-                            log_debug("opponent peer %p, host %d %d", (void *)local->opponent_peer,
+                            log_debug("opponent peer %p, host %u %u", (void *)local->opponent_peer,
                                       event.peer->address.host, local->opponent->address.host);
                         }
                         break;
@@ -1341,6 +1373,9 @@ void lobby_tick(scene *scene, int paused) {
                         lobby_show_dialog(scene, DIALOG_STYLE_CANCEL, "Connected via relay, synchronizing clocks...",
                                           NULL);
                         // lobby and opponent peer are now the same
+                        if(local->opponent_peer != NULL && local->opponent_peer != local->peer) {
+                            enet_peer_reset(local->opponent_peer);
+                        }
                         local->opponent_peer = local->peer;
                         serial_create(&ser);
                         serial_write_int8(&ser, PACKET_JOIN << 4);
@@ -1454,7 +1489,7 @@ void lobby_tick(scene *scene, int paused) {
                             case CHALLENGE_OFFER: {
                                 uint32_t connect_id = serial_read_uint32(&ser);
 
-                                log_debug("got challenge from %d, we are %d", connect_id, local->id);
+                                log_debug("got challenge from %u, we are %u", connect_id, local->id);
                                 iterator it;
                                 list_iter_begin(&local->users, &it);
                                 lobby_user *user;
@@ -1473,7 +1508,7 @@ void lobby_tick(scene *scene, int paused) {
                                     snprintf(buf, sizeof(buf), "Accept challenge from %s?", user->name);
                                     lobby_show_dialog(scene, DIALOG_STYLE_YES_NO, buf, lobby_dialog_accept_challenge);
                                 } else {
-                                    log_debug("unable to find user with id %d", connect_id);
+                                    log_debug("unable to find user with id %u", connect_id);
                                 }
                             } break;
                             case CHALLENGE_ACCEPT:
@@ -1485,10 +1520,10 @@ void lobby_tick(scene *scene, int paused) {
                                 local->opponent_peer =
                                     enet_host_connect(local->client, &local->opponent->address, 3, 0);
 
-                                log_debug("doing immediate outbound connection to %d.%d.%d.%d port %d",
+                                log_debug("doing immediate outbound connection to %u.%u.%u.%u port %d",
                                           local->opponent->address.host & 0xFF,
                                           (local->opponent->address.host >> 8) & 0xFF,
-                                          (local->opponent->address.host >> 16) & 0xF,
+                                          (local->opponent->address.host >> 16) & 0xFF,
                                           (local->opponent->address.host >> 24) & 0xFF, local->opponent->address.port);
                                 if(local->opponent_peer) {
                                     enet_peer_timeout(local->opponent_peer, 4, 1000, 1000);
@@ -1637,9 +1672,6 @@ void lobby_tick(scene *scene, int paused) {
 }
 
 int lobby_create(scene *scene) {
-
-    lobby_local *local;
-
     // make sure we're using the configured settings
     game_state_match_settings_reset(scene->gs);
 
@@ -1647,7 +1679,7 @@ int lobby_create(scene *scene) {
     memset(fight_stats, 0, sizeof(*fight_stats));
 
     // Initialize local struct
-    local = omf_calloc(1, sizeof(lobby_local));
+    lobby_local *local = omf_calloc(1, sizeof(lobby_local));
     scene_set_userdata(scene, local);
 
     local->name[0] = 0;
@@ -1656,6 +1688,20 @@ int lobby_create(scene *scene) {
 
     local->nat_tries = 0;
     local->disconnected = false;
+
+    // Create remaps for the netarena. Since we load from PCX, we don't get these by default.
+    // TODO: Use oklab for this when possible.
+    vga_remap_tables remaps;
+    vga_remaps_init(&remaps);
+    const vga_palette *pal = bk_get_palette(scene->bk_data, 0);
+    for(int i = 0; i < VGA_PALETTE_SIZE; i++) {
+        const vga_color c = pal->colors[i];
+        // 64 - 95 is the blue ramp in the palette. We use the brightness of the red value, to try and
+        // find a palette index that has a blue color as bright as the red value. Since the netarena.pcx palette has
+        // pure blue colors (R = 0, G = 0), this should work pretty directly.
+        remaps.tables[4].data[i] = palette_resolve_closest(pal, 64, 95, 0, 0, c.r);
+    }
+    vga_state_set_remaps_from(&remaps);
 
     // Create lobby theme
     gui_theme theme;
@@ -1674,7 +1720,7 @@ int lobby_create(scene *scene) {
     menu_set_background(menu, false);
     menu_set_padding(menu, 6);
 
-    menu_set_help_pos(menu, 10, 155, 500, 10);
+    menu_set_help_pos(menu, 10, 152, 500, 10);
 
     menu_set_help_text_settings(menu, FONT_NET2, TEXT_ALIGN_LEFT, 56);
     local->challenge_button =
@@ -1772,6 +1818,8 @@ int lobby_create(scene *scene) {
         textinput_enable_background(name_input, false);
         textinput_set_horizontal_align(name_input, TEXT_ALIGN_LEFT);
         textinput_set_done_cb(name_input, lobby_entered_name, scene);
+        textinput_set_wheel_charset(name_input, CHAT_NAME_WHEEL);
+        textinput_set_edit_by_default(name_input, true);
         menu_attach(name_menu, name_input);
 
         menu_set_submenu(menu, name_menu);
@@ -1784,6 +1832,13 @@ int lobby_create(scene *scene) {
             serial_create(&ser);
             serial_write_int8(&ser, PACKET_CHALLENGE << 4 | CHALLENGE_DONE);
             serial_write_int8(&ser, (uint8_t)winner);
+            ENetPacket *packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
+            enet_peer_send(local->peer, 0, packet);
+            serial_free(&ser);
+        } else {
+            // We came back without a result (e.g. ESC out of the VS screen). Tell the server we are free!
+            serial_create(&ser);
+            serial_write_int8(&ser, PACKET_CHALLENGE << 4 | CHALLENGE_CANCEL);
             ENetPacket *packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
             enet_peer_send(local->peer, 0, packet);
             serial_free(&ser);

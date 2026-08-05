@@ -82,7 +82,7 @@ int rec_controller_poll(controller *ctrl, ctrl_event **ev) {
     sd_rec_move *move;
     unsigned int len;
     if(ticks > data->max_tick) {
-        log_debug("closing controller because tick %d is higher than max_tick %d", ticks, data->max_tick);
+        log_debug("closing controller because tick %u is higher than max_tick %u", ticks, data->max_tick);
         controller_close(ctrl, ev);
         return 0;
     }
@@ -104,7 +104,7 @@ int rec_controller_poll(controller *ctrl, ctrl_event **ev) {
             } else if(move->lookup_id == 10 && extra_data[0] == REC_LOOKUP10_SETRANDOM_BYTE) {
                 uint32_t seed;
                 memcpy(&seed, extra_data + 4, sizeof(seed));
-                log_debug("setting random seed to %d from REC file", seed);
+                log_debug("setting random seed to %u from REC file", seed);
                 random_seed(&ctrl->gs->rand, seed);
             } else if(move->lookup_id == 2) {
                 int action = unpack_sd_action(extra_data[0]);
@@ -184,7 +184,7 @@ void rec_controller_step_back(controller *ctrl) {
 
     data->last_tick = ctrl->gs->tick;
 
-    log_debug("REWOUND game state from %d to %d", ctrl->gs->tick, gs_new->tick);
+    log_debug("REWOUND game state from %u to %u", ctrl->gs->tick, gs_new->tick);
 
     // fix the game state pointers in the controllers
     for(int i = 0; i < game_state_num_players(gs_new); i++) {

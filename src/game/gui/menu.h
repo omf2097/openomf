@@ -165,7 +165,7 @@ void menu_set_background(component *c, bool background);
  * @param h Height of help area
  * @param w Width of help area
  */
-void menu_set_help_pos(component *c, int x, int y, int h, int w);
+void menu_set_help_pos(component *c, int x, int y, int w, int h);
 
 /**
  * @brief Set the help text display settings

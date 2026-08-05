@@ -14,7 +14,7 @@
 
 typedef void (*sizer_render_cb)(component *c);                             ///< Sizer render callback
 typedef int (*sizer_event_cb)(component *c, SDL_Event *event);             ///< Sizer SDL event callback
-typedef int (*sizer_action_cb)(component *c, int action);                  ///< Sizer action callback
+typedef int (*sizer_action_cb)(component *c, int action, int source);      ///< Sizer action callback
 typedef void (*sizer_layout_cb)(component *c, int x, int y, int w, int h); ///< Sizer layout callback
 typedef void (*sizer_tick_cb)(component *c);                               ///< Sizer tick callback
 typedef void (*sizer_init_cb)(component *c, const gui_theme *theme);       ///< Sizer initialization callback

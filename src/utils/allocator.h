@@ -13,11 +13,6 @@
 #ifndef ALLOCATOR_H
 #define ALLOCATOR_H
 
-// format strings for use in platform-specific allocator header
-extern const char *_text_malloc_error;
-extern const char *_text_calloc_error;
-extern const char *_text_realloc_error;
-
 // Add ifdefs here to include platform-specific allocators.
 #include "utils/allocator_default.h"
 

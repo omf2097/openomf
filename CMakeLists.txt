@@ -93,7 +93,10 @@ if(MSVC)
     # C4702: unreachable code
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /we4702")
 else()
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wno-unused-parameter -Wformat -pedantic -Wvla")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wno-unused-parameter -Wformat=2 -pedantic -Wvla")
+    if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wformat-signedness")
+    endif()
     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -ggdb -Werror -fno-omit-frame-pointer")
     set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -g -O2 -fno-omit-frame-pointer -DNDEBUG")
     set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O2 -DNDEBUG")
@@ -238,6 +241,11 @@ omf_target_precompile_headers(openomf_core PUBLIC
     "<enet/enet.h>"
     "<epoxy/gl.h>"
 )
+if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
+    set_source_files_properties("${CMAKE_SOURCE_DIR}/src/vendored/argtable/argtable3.c"
+        PROPERTIES COMPILE_OPTIONS "-Wno-format-nonliteral"
+    )
+endif()
 target_link_libraries(openomf_core PRIVATE
     openomf::confuse
     openomf::enet

@@ -115,7 +115,7 @@ int mod_find(list *mod_list) {
     if(!path_glob(&scan, mod_list, "*.zip")) {
         log_warn("Failed to scan system mods directory!");
     } else {
-        log_info("Found %d system mods.", list_size(mod_list));
+        log_info("Found %u system mods.", list_size(mod_list));
     }
     size = list_size(mod_list);
     scan = get_user_mod_directory();
@@ -413,7 +413,7 @@ bool modmanager_init(void) {
 
                         if(sd_vga_image_from_png_in_memory(&buf->img, entry_buf, entry_size, true, NULL) ==
                            SD_SUCCESS) {
-                            log_info("got hitcoord overlay %dx%d", buf->img.w, buf->img.h);
+                            log_info("got hitcoord overlay %ux%u", buf->img.w, buf->img.h);
                             hashmap_put_str(&mod_resources, str_c(&filename), buf, sizeof(mod_asset));
                             omf_free(buf);
                         } else {
@@ -435,7 +435,7 @@ bool modmanager_init(void) {
                                 free_mod_asset(existing);
                             }
 
-                            log_info("got vga image %dx%d", buf->img.w, buf->img.h);
+                            log_info("got vga image %ux%u", buf->img.w, buf->img.h);
 
                             hashmap_put_str(&mod_resources, str_c(&filename), buf, sizeof(mod_asset));
                             omf_free(buf);
@@ -549,7 +549,7 @@ bool modmanager_get_bk_background(str *name, sd_vga_image **img) {
     if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&obuf, &len)) {
         assert(obuf->type == MOD_VGA_IMAGE);
         *img = &obuf->img;
-        log_info("got vga image %dx%d with size %d", (*img)->w, (*img)->h, len);
+        log_info("got vga image %ux%u with size %u", (*img)->w, (*img)->h, len);
         found = true;
     }
     str_free(&filename);
@@ -770,9 +770,9 @@ bool modmanager_get_music(str *name, unsigned int index, unsigned char **buf, si
 
     if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&l, &len)) {
         unsigned int count = list_size(l);
-        log_info("found %d music files for %s", count, str_c(name));
+        log_info("found %u music files for %s", count, str_c(name));
         if(index >= count) {
-            log_warn("requested index %i into list of %d members", index, count);
+            log_warn("requested index %u into list of %u members", index, count);
             return false;
         }
         mod_asset *obuf = list_get(l, index);

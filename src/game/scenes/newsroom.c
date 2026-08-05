@@ -254,9 +254,9 @@ void newsroom_input_tick(scene *scene) {
         do {
             if(i->type == EVENT_TYPE_ACTION) {
                 if(dialog_is_visible(&local->continue_dialog)) {
-                    dialog_event(&local->continue_dialog, i->event_data.action);
+                    dialog_event(&local->continue_dialog, i->event_data.action, i->source);
                 } else if(dialog_is_visible(&local->accept_challenge_dialog)) {
-                    dialog_event(&local->accept_challenge_dialog, i->event_data.action);
+                    dialog_event(&local->accept_challenge_dialog, i->event_data.action, i->source);
                 } else if(i->event_data.action == ACT_ESC || i->event_data.action == ACT_KICK ||
                           i->event_data.action == ACT_PUNCH) {
                     local->screen++;

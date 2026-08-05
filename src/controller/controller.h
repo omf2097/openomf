@@ -49,6 +49,7 @@ typedef struct ctrl_event_t ctrl_event;
 
 struct ctrl_event_t {
     int type;
+    int source; ///< CTRL_TYPE_* of the device that produced this event
     // TODO the 'ser' component is no longer used, remove it and this union
     union {
         int action;

@@ -454,7 +454,7 @@ void game_state_hit_pause(game_state *gs) {
 
 void game_state_set_speed(game_state *gs, int rate) {
     gs->speed = max2(rate, 0);
-    log_debug("game speed set to %d", gs->speed);
+    log_debug("game speed set to %u", gs->speed);
 }
 
 unsigned int game_state_get_speed(game_state *gs) {
@@ -1079,7 +1079,7 @@ void game_state_dynamic_tick(game_state *gs, bool replay) {
 
     // Speed back up
     if(gs->speed_slowdown_time == 0) {
-        log_debug("Slowdown: Speed back up from %d to %d.", gs->speed, gs->speed_slowdown_previous);
+        log_debug("Slowdown: Speed back up from %u to %d.", gs->speed, gs->speed_slowdown_previous);
         gs->speed = gs->speed_slowdown_previous;
     }
     if(gs->speed_slowdown_time >= 0) {
@@ -1231,9 +1231,9 @@ void game_state_init_demo(game_state *gs) {
 void game_state_menu_poll(game_state *gs, ctrl_event **ev) {
     gs->menu_ctrl->last = gs->menu_ctrl->current;
     gs->menu_ctrl->current = 0;
-    // poll keyboard
+    gs->menu_ctrl->type = CTRL_TYPE_KEYBOARD;
     keyboard_menu_poll(gs->menu_ctrl, ev);
-    // poll joysticks
+    gs->menu_ctrl->type = CTRL_TYPE_GAMEPAD;
     joystick_menu_poll_all(gs->menu_ctrl, ev);
 }
 

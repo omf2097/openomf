@@ -54,7 +54,7 @@ void purchase_random_har_upgrades(sd_pilot *pilot) {
         }
         enum HAR_UPGRADE chosen_upgrade = possible_upgrades[rand_int(n)];
         upgrade_har(pilot, chosen_upgrade);
-        log_debug("Pilot %s bought upgrade %d and has %d money left", str_c(&pilot->name), chosen_upgrade,
+        log_debug("Pilot %s bought upgrade %u and has %d money left", str_c(&pilot->name), chosen_upgrade,
                   pilot->money);
     } while(n > 0);
 }

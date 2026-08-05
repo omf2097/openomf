@@ -1,5 +1,5 @@
-name: Build Ubuntu
-description: Build Ubuntu linux binary
+name: Build AppImage
+description: Build AppImage
 runs:
   using: "composite"
   steps:
@@ -37,35 +37,32 @@ runs:
         mkdir -p build-release/release/usr/share/games/openomf/mods
         unzip -o openomf-mods.zip -d build-release/release/usr/share/games/openomf/mods
 
-    - name: Generate TGZ package
+    - name: Download LinuxDeploy and AppImage Plugin
       shell: bash
-      run: tar cvfz ${GITHUB_WORKSPACE}/openomf_${{ env.OPENOMF_VERSION }}_linux_amd64.tar.gz -C build-release/release/ .
+      run: |
+        wget -q https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+        chmod +x linuxdeploy-x86_64.AppImage
 
-    - name: Upload TGZ artifact
+    - name: Fix desktop icon path for AppImage
+      shell: bash
+      run: |
+        sed -i -e "s/Icon=.*/Icon=openomf/" \
+          build-release/release/usr/share/games/openomf/resources/org.openomf.OpenOMF.desktop
+
+    - name: Bundle OpenOMF into an AppImage
+      shell: bash
+      env:
+        OUTPUT: OpenOMF-${{ env.OPENOMF_VERSION }}-x86_64.AppImage
+      run: |
+        ./linuxdeploy-x86_64.AppImage \
+          --appdir build-release/release \
+          --desktop-file build-release/release/usr/share/games/openomf/resources/org.openomf.OpenOMF.desktop \
+          --icon-file build-release/release/usr/share/games/openomf/resources/openomf.png \
+          --output appimage
+
+    - name: Upload AppImage Artifact
       uses: actions/upload-artifact@v7
       with:
-        name: openomf_${{ env.OPENOMF_VERSION }}_linux_amd64
-        path: openomf_${{ env.OPENOMF_VERSION }}_linux_amd64.tar.gz
-        if-no-files-found: error
-
-    - name: Generate DEB package
-      uses: jiro4989/build-deb-action@v4
-      with:
-        package: openomf
-        package_root: build-release/release
-        maintainer: ${{ github.repository_owner }}
-        version: ${{ env.OPENOMF_VERSION }}
-        arch: 'amd64'
-        depends: 'libsdl2-mixer-2.0-0, libconfuse2, libenet7, libsdl2-2.0-0, libxmp4, libpng16-16, libopusfile0, libepoxy0, libminiupnpc21, libnatpmp1'
-        desc: 'One Must Fall 2097 Remake'
-
-    - name: Install the DEB package
-      shell: bash
-      run: sudo apt install ./openomf_${{ env.OPENOMF_VERSION }}_amd64.deb
-
-    - name: Upload DEB artifact
-      uses: actions/upload-artifact@v7
-      with:
-        name: openomf_${{ env.OPENOMF_VERSION }}_deb_amd64
-        path: openomf_${{ env.OPENOMF_VERSION }}_amd64.deb
+        name: OpenOMF-${{ env.OPENOMF_VERSION }}-x86_64.AppImage
+        path: OpenOMF-${{ env.OPENOMF_VERSION }}-x86_64.AppImage
         if-no-files-found: error

@@ -57,7 +57,7 @@ void sprite_play(sd_bk_file *bk, int scale, int anim, int sprite) {
         return;
     }
 
-    printf("Sprite Info: pos=(%d,%d) size=(%d,%d) len=%d\n", s->pos.x, s->pos.y, s->width, s->height, s->len);
+    printf("Sprite Info: pos=(%d,%d) size=(%d,%d) len=%u\n", s->pos.x, s->pos.y, s->width, s->height, s->len);
 
     SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
@@ -128,7 +128,7 @@ void sprite_play(sd_bk_file *bk, int scale, int anim, int sprite) {
                 switch(e.key.keysym.sym) {
                     case SDLK_RIGHT:
                         sprite = (sprite + 1) % sd_animation_get_sprite_count(sd_bk_get_anim(bk, anim)->animation);
-                        printf("sprite is now %u\n", sprite);
+                        printf("sprite is now %d\n", sprite);
                         changed = 1;
                         break;
                     case SDLK_LEFT:
@@ -180,7 +180,7 @@ void sprite_play(sd_bk_file *bk, int scale, int anim, int sprite) {
                     sd_sprite_rgba_decode(&img, s, bk->palettes[0]);
                     int x = s->pos.x + sd_bk_get_anim(bk, anim)->animation->start_pos.x;
                     int y = s->pos.y + sd_bk_get_anim(bk, anim)->animation->start_pos.y;
-                    printf("Sprite Info: pos=(%d,%d) size=(%d,%d) len=%d\n", x, y, s->width, s->height, s->len);
+                    printf("Sprite Info: pos=(%d,%d) size=(%d,%d) len=%u\n", x, y, s->width, s->height, s->len);
 
                     if(!(surface = SDL_CreateRGBSurfaceFrom((void *)img.data, img.w, img.h, 32, img.w * 4, rmask, gmask,
                                                             bmask, amask))) {
@@ -426,7 +426,7 @@ void bk_get_key(sd_bk_file *bk, const char **key, int kcount) {
     unsigned char r, g, b;
     switch(bk_key_get_id(key[0])) {
         case 0:
-            printf("%d\n", bk->file_id);
+            printf("%u\n", bk->file_id);
             break;
         case 1: {
             if(kcount <= 1) {
@@ -580,7 +580,7 @@ void bk_keylist(void) {
 
 void bk_getinfo(sd_bk_file *bk) {
     printf("BK File information:\n");
-    printf(" * File ID:     %d\n", bk->file_id);
+    printf(" * File ID:     %u\n", bk->file_id);
     printf(" * Palettes:    %d\n", bk->palette_count);
     printf(" * Unknown A:   %d\n", bk->unknown_a);
 
@@ -863,7 +863,7 @@ int main(int argc, char *argv[]) {
                     if(value->count > 0) {
                         bkanim_set_key(bka, ani, key->sval, key->count, value->sval[0]);
                     } else {
-                        printf("Animation %2u: ", i);
+                        printf("Animation %2d: ", i);
                         bkanim_get_key(bka, ani, key->sval, key->count, parse->count);
                     }
                 } else {

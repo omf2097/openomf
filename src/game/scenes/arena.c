@@ -1089,7 +1089,7 @@ void arena_spawn_hazard(scene *scene) {
                         }
                     }
 
-                    log_debug("Arena tick: Hazard with probability %d started (anim id %d).", info->probability,
+                    log_debug("Arena tick: Hazard with probability %u started (anim id %d).", info->probability,
                               info->ani.id);
                 } else {
                     object_free(obj);
@@ -1470,7 +1470,7 @@ void arena_input_tick(scene *scene) {
             game_state_set_paused(scene->gs, local->menu_visible);
         } else if(i->type == EVENT_TYPE_ACTION && local->menu_visible && i->event_data.action != ACT_ESC) {
             // menu events
-            gui_frame_action(local->game_menu, i->event_data.action);
+            gui_frame_action(local->game_menu, i->event_data.action, i->source);
         }
     }
     controller_free_chain(menu_ev);
@@ -1871,13 +1871,13 @@ int arena_create(scene *scene) {
                 portrait->cur_sprite_id = 0;
                 game_state_add_object(scene->gs, portrait, RENDER_LAYER_TOP, 0, 0);
             } else {
-                object_create(portrait, scene->gs, vec2i_create(235, 5), vec2f_create(0, 0));
+                object_create(portrait, scene->gs, vec2i_create(213, 5), vec2f_create(0, 0));
                 sprite *sp = omf_calloc(1, sizeof(sprite));
                 sprite_create(sp, player->pilot->photo, -1);
                 portrait->x_percent = 0.70f;
                 portrait->y_percent = 0.70f;
                 object_set_sprite_override(portrait, 1);
-                object_set_animation(portrait, create_animation_from_single(sp, vec2i_create(235, 0)));
+                object_set_animation(portrait, create_animation_from_single(sp, vec2i_create(213, 0)));
                 object_set_direction(portrait, OBJECT_FACE_LEFT);
                 object_set_animation_owner(portrait, OWNER_OBJECT);
                 portrait->cur_sprite_id = 0;

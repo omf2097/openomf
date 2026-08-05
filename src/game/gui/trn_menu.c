@@ -240,7 +240,7 @@ static int find_next_button(component *c, int act) {
     return best_idx;
 }
 
-static int trnmenu_action(component *c, int action) {
+static int trnmenu_action(component *c, int action, int source) {
     trnmenu *m = sizer_get_obj(c);
 
     // If fading, wait until it's done.
@@ -250,7 +250,7 @@ static int trnmenu_action(component *c, int action) {
 
     // If submenu is set, we need to use it
     if(m->submenu != NULL && !trnmenu_is_finished(m->submenu)) {
-        return component_action(m->submenu, action);
+        return component_action(m->submenu, action, source);
     }
 
     int next;
@@ -274,7 +274,7 @@ static int trnmenu_action(component *c, int action) {
             component *sel = sizer_get(c, m->selected);
             if(sel != NULL) {
                 m->hand.play = 1;
-                return component_action(sel, action);
+                return component_action(sel, action, source);
             }
         } break;
     }

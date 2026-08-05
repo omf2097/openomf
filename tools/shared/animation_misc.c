@@ -142,7 +142,7 @@ void sprite_info(sd_sprite *s, int anim, int sprite) {
     printf(" * H:        %d\n", s->height);
     printf(" * Index:    %d\n", s->index);
     printf(" * Missing:  %d\n", s->missing);
-    printf(" * Length:   %d\n", s->len);
+    printf(" * Length:   %u\n", s->len);
 }
 
 void anim_common_info(sd_animation *ani) {

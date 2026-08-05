@@ -76,7 +76,7 @@ static void spritebutton_focus(component *c, bool focused) {
     }
 }
 
-static int spritebutton_action(component *c, int action) {
+static int spritebutton_action(component *c, int action, int source) {
     spritebutton *b = widget_get_obj(c);
     if(component_is_disabled(c)) {
         return 1;

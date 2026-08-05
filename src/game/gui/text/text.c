@@ -537,10 +537,21 @@ void text_generate_layout(text *t) {
     }
 }
 
+void text_draw_glyph_surface(const surface *glyph, int16_t x, int16_t y, vga_index color, uint8_t opacity) {
+    video_draw_full(glyph, x, y, glyph->w, glyph->h, 0, 0, (int)color - 1, 255, opacity, 0, 0);
+}
+
+void text_draw_glyph(const font *font, char ch, int16_t x, int16_t y, vga_index color) {
+    const surface *glyph = font_get_surface(font, ch);
+    if(glyph == NULL) {
+        return;
+    }
+    text_draw_glyph_surface(glyph, x, y, color, 255);
+}
+
 static inline void draw_glyph(const surface *glyph, const int x, const int y, const vga_index color,
                               const uint8_t opacity) {
-    const int palette_offset = (int)color - 1;
-    video_draw_full(glyph, x, y, glyph->w, glyph->h, 0, 0, palette_offset, 255, opacity, 0, 0);
+    text_draw_glyph_surface(glyph, (int16_t)x, (int16_t)y, color, opacity);
 }
 
 static inline void draw_shadow(const text_layout_item *item, const int16_t offset_x, const int16_t offset_y,
@@ -590,4 +601,16 @@ void text_draw_opacity(text *t, int16_t offset_x, int16_t offset_y, uint8_t opac
 
 void text_draw(text *t, int16_t offset_x, int16_t offset_y) {
     text_draw_opacity(t, offset_x, offset_y, 255);
+}
+
+bool text_get_glyph_pos(text *t, size_t index, int16_t *x, int16_t *y) {
+    assert(t != NULL);
+    text_generate_layout(t);
+    if(index >= vector_size(&t->layout.items)) {
+        return false;
+    }
+    const text_layout_item *item = vector_get(&t->layout.items, (unsigned int)index);
+    *x = (int16_t)item->x;
+    *y = (int16_t)item->y;
+    return true;
 }

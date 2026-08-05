@@ -47,7 +47,7 @@ void mainmenu_input_tick(scene *scene) {
     for(p = ev; p; p = p->next) {
         if(p->type == EVENT_TYPE_ACTION) {
             // Pass on the event
-            gui_frame_action(local->frame, p->event_data.action);
+            gui_frame_action(local->frame, p->event_data.action, p->source);
         }
     }
     controller_free_chain(ev);
@@ -154,15 +154,15 @@ int mainmenu_create(scene *scene) {
     scene_set_startup_cb(scene, mainmenu_startup);
 
     if(scene->gs->net_mode == NET_MODE_CLIENT) {
-        component_action(gui_frame_find(local->frame, NETWORK_BUTTON_ID), ACT_PUNCH);
-        component_action(gui_frame_find(local->frame, NETWORK_CONNECT_BUTTON_ID), ACT_PUNCH);
-        component_action(gui_frame_find(local->frame, NETWORK_CONNECT_IP_BUTTON_ID), ACT_PUNCH);
+        component_action(gui_frame_find(local->frame, NETWORK_BUTTON_ID), ACT_PUNCH, CTRL_TYPE_KEYBOARD);
+        component_action(gui_frame_find(local->frame, NETWORK_CONNECT_BUTTON_ID), ACT_PUNCH, CTRL_TYPE_KEYBOARD);
+        component_action(gui_frame_find(local->frame, NETWORK_CONNECT_IP_BUTTON_ID), ACT_PUNCH, CTRL_TYPE_KEYBOARD);
     } else if(scene->gs->net_mode == NET_MODE_SERVER) {
-        component_action(gui_frame_find(local->frame, NETWORK_BUTTON_ID), ACT_PUNCH);
-        component_action(gui_frame_find(local->frame, NETWORK_LISTEN_BUTTON_ID), ACT_PUNCH);
+        component_action(gui_frame_find(local->frame, NETWORK_BUTTON_ID), ACT_PUNCH, CTRL_TYPE_KEYBOARD);
+        component_action(gui_frame_find(local->frame, NETWORK_LISTEN_BUTTON_ID), ACT_PUNCH, CTRL_TYPE_KEYBOARD);
     } else if(scene->gs->net_mode == NET_MODE_LOBBY) {
-        component_action(gui_frame_find(local->frame, NETWORK_BUTTON_ID), ACT_PUNCH);
-        component_action(gui_frame_find(local->frame, NETWORK_LOBBY_BUTTON_ID), ACT_PUNCH);
+        component_action(gui_frame_find(local->frame, NETWORK_BUTTON_ID), ACT_PUNCH, CTRL_TYPE_KEYBOARD);
+        component_action(gui_frame_find(local->frame, NETWORK_LOBBY_BUTTON_ID), ACT_PUNCH, CTRL_TYPE_KEYBOARD);
     }
 
     // clear it, so this only happens the first time
