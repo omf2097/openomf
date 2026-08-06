@@ -18,6 +18,7 @@
 #include "game/gui/trn_menu.h"
 #include "game/scenes/mechlab.h"
 #include "game/scenes/mechlab/har_economy.h"
+#include "utils/c_string_util.h"
 #include "game/scenes/mechlab/lab_menu_confirm.h"
 #include "game/scenes/mechlab/lab_menu_trade.h"
 #include "game/utils/formatting.h"
@@ -130,13 +131,19 @@ static void ap_sync_pilot(sd_pilot *pilot) {
     pilot->har_trades = APItems.har_unlocked;
 }
 
-static void ap_drain_money(sd_pilot *pilot) {
-    if(APStats.pending_money == 0 || pilot->har_id >= 11) return;
-    log_debug("AP - money drain: +%d into HAR %d (had %d)", APStats.pending_money, pilot->har_id,
-              APSave.har_money[pilot->har_id]);
-    APSave.har_money[pilot->har_id] += APStats.pending_money;
+// Money is credited directly into APSave.har_money[] as items arrive (see
+// apply_item_consumable), which bumps every HAR's wallet by the same amount.
+// Add that delta into the active pilot's runtime money rather than overwriting
+// from the wallet: runtime money is authoritative while spending (buys/training
+// decrement it directly and only flush to the wallet on mechlab-save), and this
+// sync also runs after buy/train checks echo an item back from the server, so
+// overwriting here would silently revert an unsaved spend.
+static void ap_sync_money(sd_pilot *pilot) {
+    if(pilot->har_id >= 11 || APStats.pending_money == 0) return;
+    log_debug("AP - money sync: HAR %d pilot->money %d + pending %d (wallet %d)", pilot->har_id, pilot->money,
+              APStats.pending_money, APSave.har_money[pilot->har_id]);
+    pilot->money += APStats.pending_money;
     APStats.pending_money = 0;
-    pilot->money = APSave.har_money[pilot->har_id];
 }
 
 // --- Scout cache ---
@@ -201,7 +208,7 @@ static void on_items_done(void) {
     game_player *p1 = game_state_get_player(g_scene->gs, 0);
     sd_pilot *pilot = game_player_get_pilot(p1);
     if(pilot) {
-        ap_drain_money(pilot);
+        ap_sync_money(pilot);
         ap_sync_pilot(pilot);
     }
     log_debug("AP - items_done: pilot synced");
@@ -281,7 +288,7 @@ void ap_mechlab_attach(scene *s) {
     game_player *p1 = game_state_get_player(s->gs, 0);
     sd_pilot *pilot = game_player_get_pilot(p1);
     if(pilot) {
-        ap_drain_money(pilot);
+        ap_sync_money(pilot);
         ap_sync_pilot(pilot);
     }
 
@@ -364,7 +371,11 @@ void ap_customize_buy(scene *s, sd_pilot *pilot, int stat) {
     int32_t vanilla = har_upgrade_price[pilot->har_id]
                     * upgrade_level_multiplier[buy_level + 1]
                     * s_buy_multipliers[stat];
-    pilot->money -= ap_buy_price(vanilla, buy_level + 1);
+    int32_t price = ap_buy_price(vanilla, buy_level + 1);
+    int32_t before = pilot->money;
+    pilot->money -= price;
+    log_debug("AP - money SPENT (buy HAR %d stat %d level %d): price=%d %d -> %d",
+              pilot->har_id, stat, buy_level + 1, price, before, pilot->money);
     ap_do_buy_har(s, pilot->har_id, stat);
     ap_update_buy_har_labels(pilot, stat, buy_level + 1);
 }
@@ -384,7 +395,7 @@ void ap_customize_focus(scene *s, sd_pilot *pilot, int stat) {
     char hint[100];
     const char *fmt = lang_get(s_buy_hint_lang[stat]);
     if(s_buy_hint_arg[stat]) {
-        snprintf(hint, sizeof(hint), fmt, s_buy_hint_arg[stat]);
+        unsafe_snprintf(hint, sizeof(hint), fmt, s_buy_hint_arg[stat]);
     } else {
         snprintf(hint, sizeof(hint), "%s", fmt);
     }
@@ -400,7 +411,11 @@ void ap_training_buy(scene *s, int stat) {
     game_player *p1 = game_state_get_player(s->gs, 0);
     sd_pilot *pilot = game_player_get_pilot(p1);
     int level = APChecks.pilot_train[stat];
-    pilot->money -= ap_train_price(level);
+    int32_t price = ap_train_price(level);
+    int32_t before = pilot->money;
+    pilot->money -= price;
+    log_debug("AP - money SPENT (train stat %d level %d): price=%d %d -> %d",
+              stat, level + 1, price, before, pilot->money);
     ap_do_train(s, stat);
     ap_update_train_labels(s_train_lang_ids[stat], level + 1);
     mechlab_update(s);
@@ -524,7 +539,10 @@ void ap_mechlab_save(game_player *p1) {
     char ap_ident[12] = "";
     Archipelago_GetSaveIdent(ap_ident, sizeof(ap_ident));
     int har = p1->chr->pilot.har_id;
-    if(har >= 0 && har < 11) APSave.har_money[har] = p1->chr->pilot.money;
+    if(har >= 0 && har < 11) {
+        log_debug("AP - money save: HAR %d wallet %d -> %d", har, APSave.har_money[har], p1->chr->pilot.money);
+        APSave.har_money[har] = p1->chr->pilot.money;
+    }
     Archipelago_APSaveState(ap_ident);
     int save_ret = sg_save_ap(p1->chr, ap_ident);
     if(save_ret != SD_SUCCESS)
@@ -547,7 +565,11 @@ void ap_arena_match_win(game_state *gs, game_player *p1, game_player *p2) {
             break;
         }
     }
-    if(p1->pilot->money < 0) p1->pilot->money = 0;
+    if(p1->pilot->money < 0) {
+        log_debug("AP - money clamp: HAR %d money %d -> 0 (repair cost overspend)", p1->pilot->har_id,
+                  p1->pilot->money);
+        p1->pilot->money = 0;
+    }
 }
 
 // --- Trade menu ---
@@ -600,8 +622,8 @@ void ap_confirm_trade(component *c, scene *s, game_player *p1) {
 void ap_do_trade(component *c, scene *s) {
     game_player *p1 = game_state_get_player(s->gs, 0);
     char tmp[100];
-    snprintf(tmp, sizeof(tmp), lang_get(520), lang_get(31 + p1->chr->pilot.har_id),
-             lang_get(31 + p1->pilot->har_id));
+    unsafe_snprintf(tmp, sizeof(tmp), lang_get(520), lang_get(31 + p1->chr->pilot.har_id),
+                     lang_get(31 + p1->pilot->har_id));
     component *menu = lab_menu_confirm_create(s, confirm_trade, s, cancel_trade, s, tmp);
     trnmenu_set_userdata(menu, s);
     trnmenu_set_submenu_done_cb(menu, lab_menu_trade_done);

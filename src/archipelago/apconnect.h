@@ -48,11 +48,15 @@ void Archipelago_GetSaveIdent(char *out, size_t len);
 // Write the connected slot name into out (up to len bytes, including NUL).
 void Archipelago_GetSlotName(char *out, size_t len);
 
-// Persist APSave (har_money, last_applied_item_index, tournaments_won_mask) to <ident>.APS.
+// Persist APSave (har_money, last_applied_item_index, tournaments_won_mask,
+// money_small_received, money_large_received) to <ident>.APS.
 void Archipelago_APSaveState(const char *ident);
 
 // Load APSave from <ident>.APS. Returns true on success, false if the file doesn't exist.
 bool Archipelago_APLoadState(const char *ident);
+
+// Pure award formula for a money check: base + step * received_count. Exposed for unit tests.
+int32_t ap_money_award(int32_t base, int32_t step, uint32_t received_count);
 
 #ifdef __cplusplus
 }

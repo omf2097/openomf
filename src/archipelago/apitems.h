@@ -62,6 +62,10 @@
 #define AP_TOURNAMENT_WORLD_CHAMPIONSHIP  3
 #define AP_TOURNAMENT_ALL                 4
 
-// Money bundle values (in game credits). 
+// Money bundle values (in game credits).
 #define AP_MONEY_SMALL_VALUE  3000
 #define AP_MONEY_LARGE_VALUE  15000
+
+// Growth in award value per money item of that type already received (0 = flat).
+#define AP_MONEY_SMALL_STEP   150
+#define AP_MONEY_LARGE_STEP   750

@@ -123,23 +123,27 @@ static void apply_item_idempotent(int64_t id) {
     }
 }
 
-// Prize money scales with the highest tournament currently accessible.
-// Ratios mirror registration fees: NAO=1500, Katushai=3000, WAR=5000, World=10000.
-static const int AP_TOURNAMENT_MONEY_MULT[4] = { 1, 2, 3, 6 };
+extern "C" int32_t ap_money_award(int32_t base, int32_t step, uint32_t received_count) {
+    return base + step * (int32_t)received_count;
+}
 
+// Each money check credits every HAR's wallet equally (not just the active HAR),
+// so a backlog of checks doesn't over-fund whichever HAR happens to be active.
 static void apply_item_consumable(int64_t id) {
     if (id == AP_ITEM_MONEY_SMALL || id == AP_ITEM_MONEY_LARGE) {
-        int t = (int)APItems.tournament_access_count;
-        if (t > 3) t = 3;
-        int t_mult = AP_TOURNAMENT_MONEY_MULT[t];
-        int32_t base = (id == AP_ITEM_MONEY_SMALL)
-                           ? APSeedSettings.money_small_value
-                           : APSeedSettings.money_large_value;
-        int32_t award = (int32_t)((int64_t)base * t_mult);
+        bool small = (id == AP_ITEM_MONEY_SMALL);
+        uint32_t count = small ? APSave.money_small_received : APSave.money_large_received;
+        int32_t base   = small ? APSeedSettings.money_small_value : APSeedSettings.money_large_value;
+        int32_t step   = small ? APSeedSettings.money_small_step  : APSeedSettings.money_large_step;
+        int32_t award  = ap_money_award(base, step, count);
+        if (small) APSave.money_small_received++; else APSave.money_large_received++;
+        for (int i = 0; i < 11; i++) APSave.har_money[i] += award;
         APStats.pending_money += award;
-        log_debug("AP - money %s: base=%d t_mult=%d award=%d pending=%d",
-                  (id == AP_ITEM_MONEY_SMALL) ? "small" : "large",
-                  base, t_mult, award, APStats.pending_money);
+        log_debug("AP - money RECEIVED %s: count=%u base=%d step=%d award=%d -> each HAR wallet +%d (HAR0 now %d)",
+                  small ? "small" : "large", count,
+                  small ? APSeedSettings.money_small_value : APSeedSettings.money_large_value,
+                  small ? APSeedSettings.money_small_step  : APSeedSettings.money_large_step,
+                  award, award, APSave.har_money[0]);
     }
     // HAR color and tournament access items are idempotent progressives, not consumables
 }
@@ -233,6 +237,12 @@ static void on_slot_connected(const json& slot_data) {
         APSeedSettings.money_small_value = slot_data["money_small_value"].get<int>();
     if (slot_data.contains("money_large_value"))
         APSeedSettings.money_large_value = slot_data["money_large_value"].get<int>();
+    APSeedSettings.money_small_step = AP_MONEY_SMALL_STEP;
+    APSeedSettings.money_large_step = AP_MONEY_LARGE_STEP;
+    if (slot_data.contains("money_small_step"))
+        APSeedSettings.money_small_step = slot_data["money_small_step"].get<int>();
+    if (slot_data.contains("money_large_step"))
+        APSeedSettings.money_large_step = slot_data["money_large_step"].get<int>();
     APSeedSettings.shop_hints = true;
     if (slot_data.contains("shop_hints"))
         APSeedSettings.shop_hints = slot_data["shop_hints"].get<bool>();
@@ -378,12 +388,14 @@ extern "C" void Archipelago_APSaveState(const char *ident) {
     FILE *f = fopen(path_c(&save), "wb");
     if (!f) { log_error("AP - can't write state %s", path_c(&save)); return; }
     const uint8_t magic[4] = {'A','P','S','T'};
-    const uint8_t version  = 1;
+    const uint8_t version  = 2;
     fwrite(magic,                           1,             4,  f);
     fwrite(&version,                        1,             1,  f);
     fwrite(APSave.har_money,                sizeof(int32_t), 11, f);
     fwrite(&APSave.last_applied_item_index, sizeof(uint32_t), 1,  f);
     fwrite(&APSave.tournaments_won_mask,    sizeof(uint8_t),  1,  f);
+    fwrite(&APSave.money_small_received,    sizeof(uint32_t), 1,  f);
+    fwrite(&APSave.money_large_received,    sizeof(uint32_t), 1,  f);
     fclose(f);
     log_debug("AP - state saved: %s (last_idx=%u)", path_c(&save), APSave.last_applied_item_index);
 }
@@ -410,6 +422,10 @@ extern "C" bool Archipelago_APLoadState(const char *ident) {
         if (disk_idx > APSave.last_applied_item_index)
             APSave.last_applied_item_index = disk_idx;
         fread(&APSave.tournaments_won_mask, sizeof(uint8_t),  1,  f);
+    }
+    if (version >= 2) {
+        fread(&APSave.money_small_received, sizeof(uint32_t), 1, f);
+        fread(&APSave.money_large_received, sizeof(uint32_t), 1, f);
     }
     fclose(f);
     log_debug("AP - state loaded: %s (last_idx=%u)", path_c(&save), APSave.last_applied_item_index);

@@ -13,6 +13,7 @@ mingw_build/
 build-noap/
 build-langtools/
 build-native/
+build-test/
 build-windows/
 build2/
 *.sw[klmnop]

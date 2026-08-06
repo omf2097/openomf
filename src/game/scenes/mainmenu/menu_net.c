@@ -49,6 +49,10 @@ component *menu_net_create(scene *s) {
     menu_attach(menu, label_create_title("NETWORK PLAY"));
     menu_attach(menu, filler_create());
 
+#if ARCHIPELAGO_ENABLED
+    menu_attach(menu, button_create("ARCHIPELAGO", "Connect to an Archipelago multiworld server.", false, false, menu_net_archipelago, s));
+#endif
+
     component *lobby = button_create("LOBBY", "Join the OpenOMF network lobby to challenge other players.", false,
                                      false, menu_net_lobby, s);
     widget_set_id(lobby, NETWORK_LOBBY_BUTTON_ID);
@@ -67,9 +71,6 @@ component *menu_net_create(scene *s) {
     component *config = button_create("CONFIGURATION", "Configure network options.", false, false, menu_net_config, s);
     menu_attach(menu, config);
 
-#if ARCHIPELAGO_ENABLED
-    menu_attach(menu, button_create("ARCHIPELAGO", "Connect to an Archipelago multiworld server.", false, false, menu_net_archipelago, s));
-#endif
     menu_attach(menu, button_create("DONE", "Return to main menu.", false, false, menu_net_done, NULL));
     return menu;
 }

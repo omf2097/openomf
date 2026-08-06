@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 #if ARCHIPELAGO_ENABLED
+#include "archipelago/apconnect.h"
 #include "archipelago/apstate.h"
 #endif
 #include "formats/chr.h"
@@ -65,6 +66,9 @@ void lab_menu_main_arena(component *c, void *userdata) {
 
 void lab_menu_main_quit(component *c, void *userdata) {
     scene *s = userdata;
+#if ARCHIPELAGO_ENABLED
+    if(ap_mode) Archipelago_Disconnect();
+#endif
     game_state_set_next(s->gs, SCENE_MENU);
 }
 

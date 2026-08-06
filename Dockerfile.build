@@ -8,5 +8,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libminiupnpc-dev libnatpmp-dev \
     libssl-dev \
     libasio-dev \
+    libcunit1-dev \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /src
