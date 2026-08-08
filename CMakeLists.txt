@@ -220,7 +220,7 @@ omf_target_precompile_headers(openomf_core PUBLIC
     "<enet/enet.h>"
     "<epoxy/gl.h>"
 )
-if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
+if(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
     set_source_files_properties("${CMAKE_SOURCE_DIR}/src/vendored/argtable/argtable3.c"
         PROPERTIES COMPILE_OPTIONS "-Wno-format-nonliteral"
     )
