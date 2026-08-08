@@ -660,8 +660,8 @@ void net_controller_free(controller *ctrl) {
 
             event_names(buf0, ev->events[0]);
             event_names(buf1, ev->events[1]);
-            int sz = snprintf(buf, sizeof(buf), "tick %" PRIu32 " -- player 1 %s (%d) -- player 2 %s (%d)\n", ev->tick,
-                              buf0, ev->events[0][0], buf1, ev->events[1][0]);
+            sz = snprintf(buf, sizeof(buf), "tick %" PRIu32 " -- player 1 %s (%d) -- player 2 %s (%d)\n", ev->tick,
+                          buf0, ev->events[0][0], buf1, ev->events[1][0]);
             SDL_RWwrite(data->trace_file, buf, sz, 1);
         }
 
@@ -1147,16 +1147,16 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
         data->outstanding_hb = 1;
         if(peer) {
             ENetPacket *packet;
-            serial ser;
-            serial_create(&ser);
+            serial hb_serial;
+            serial_create(&hb_serial);
 
-            serial_write_int8(&ser, EVENT_TYPE_HB);
-            serial_write_int8(&ser, data->id);
+            serial_write_int8(&hb_serial, EVENT_TYPE_HB);
+            serial_write_int8(&hb_serial, data->id);
             // send the int_tick to use as a higher quality timing source
-            serial_write_uint32(&ser, ctrl->gs->int_tick);
+            serial_write_uint32(&hb_serial, ctrl->gs->int_tick);
 
-            packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_UNSEQUENCED);
-            serial_free(&ser);
+            packet = enet_packet_create(hb_serial.data, serial_len(&hb_serial), ENET_PACKET_FLAG_UNSEQUENCED);
+            serial_free(&hb_serial);
             enet_peer_send(peer, 1, packet);
             enet_host_flush(host);
         } else {

@@ -105,13 +105,14 @@ int spec_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                     } break;
                     case 1: {
                         while(ser.rpos < ser.wpos) {
-                            spec_controller_event event = {0};
-                            event.ticks = serial_read_uint32(&ser);
-                            serial_read_bytes(&ser, event.actions[0], MAX_EVENTS_PER_TICK);
-                            serial_read_bytes(&ser, event.actions[1], MAX_EVENTS_PER_TICK);
-                            hashmap_put_int(data->tick_lookup, event.ticks, &event, sizeof(spec_controller_event));
+                            spec_controller_event spec_event = {0};
+                            spec_event.ticks = serial_read_uint32(&ser);
+                            serial_read_bytes(&ser, spec_event.actions[0], MAX_EVENTS_PER_TICK);
+                            serial_read_bytes(&ser, spec_event.actions[1], MAX_EVENTS_PER_TICK);
+                            hashmap_put_int(data->tick_lookup, spec_event.ticks, &spec_event,
+                                            sizeof(spec_controller_event));
 
-                            if(event.ticks > 100 && !data->started) {
+                            if(spec_event.ticks > 100 && !data->started) {
                                 // insert the starting tick into the hashmap so we can offset all events from that
                                 hashmap_put_int(data->tick_lookup, 0, &ctrl->gs->tick, sizeof(ticks));
                                 log_info("spectator start tick was %u", ticks);

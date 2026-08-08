@@ -54,8 +54,6 @@ if(MSVC)
     # Disable select warnings:
     # C4100: unreferenced formal parameter
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4100")
-    # C4456: declaration hides previous local declaration
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4456")
     # C4244: implicit conversion, possible loss of data
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4244")
     # C4267: implicit conversion from size_t, possible loss of data

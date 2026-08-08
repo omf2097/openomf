@@ -244,14 +244,14 @@ int main(int argc, char *argv[]) {
     // commandline argument parser options
     struct arg_lit *help = arg_lit0("h", "help", "print this help and exit");
     struct arg_lit *vers = arg_lit0("v", "version", "print version information and exit");
-    struct arg_file *file = arg_file0("f", "file", "<file>", "load OMF language file");
+    struct arg_file *file_arg = arg_file0("f", "file", "<file>", "load OMF language file");
     struct arg_file *input = arg_file0("i", "import", "<file>", "import UTF-8 .TXT file");
     struct arg_int *str = arg_int0("s", "string", "<value>", "display language string number");
     struct arg_file *output = arg_file0("o", "output", "<file>", "compile output language file");
     struct arg_int *check_count =
         arg_int0("c", "check-count", "<NUM>", "Check that language file has this many entries, or bail.");
     struct arg_end *end = arg_end(20);
-    void *argtable[] = {help, vers, file, input, output, str, check_count, end};
+    void *argtable[] = {help, vers, file_arg, input, output, str, check_count, end};
     const char *progname = "languagetool";
 
     bool language_is_utf8 = false;
@@ -296,9 +296,9 @@ int main(int argc, char *argv[]) {
 
     // Get strings
     int ret;
-    if(file->count > 0) {
+    if(file_arg->count > 0) {
         path input_filename;
-        path_from_c(&input_filename, file->filename[0]);
+        path_from_c(&input_filename, file_arg->filename[0]);
         ret = sd_language_load(&language, &input_filename, true);
         language_is_utf8 = false;
         if(ret != SD_SUCCESS) {

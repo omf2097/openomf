@@ -1424,10 +1424,10 @@ bool modmanager_get_pilot_mod(const char *trn_name, uint8_t pilot_id, sd_pilot *
     if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&l, &len)) {
         iterator it;
         list_iter_begin(l, &it);
-        mod_asset *obuf;
-        foreach(it, obuf) {
-            assert(obuf->type == MOD_BUFFER);
-            result |= modmanager_parse_pilot_mod((char *)obuf->buf, pilot_data);
+        mod_asset *asset;
+        foreach(it, asset) {
+            assert(asset->type == MOD_BUFFER);
+            result |= modmanager_parse_pilot_mod((char *)asset->buf, pilot_data);
         }
     }
 
@@ -1785,10 +1785,10 @@ bool modmanager_get_player_pics(sd_pic_file *players) {
         if(!hashmap_get_str(&mod_resources, str_c(&filename), (void **)&l, &len)) {
             iterator it;
             list_iter_begin(l, &it);
-            mod_asset *obuf;
-            foreach(it, obuf) {
-                assert(obuf->type == MOD_BUFFER);
-                result |= modmanager_parse_photo_mod((char *)obuf->buf, photo);
+            mod_asset *asset;
+            foreach(it, asset) {
+                assert(asset->type == MOD_BUFFER);
+                result |= modmanager_parse_photo_mod((char *)asset->buf, photo);
             }
         }
 
