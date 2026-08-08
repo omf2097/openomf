@@ -480,6 +480,16 @@ set(DOC_FILES
     src/vendored/zip/LICENSE.zip
 )
 
+if(APPLE)
+    set_target_properties(openomf PROPERTIES
+        MACOSX_BUNDLE TRUE
+        MACOSX_BUNDLE_BUNDLE_NAME "OpenOMF"
+        MACOSX_BUNDLE_GUI_IDENTIFIER "org.openomf.openomf"
+        MACOSX_BUNDLE_BUNDLE_VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}${VERSION_LABEL}"
+        MACOSX_BUNDLE_SHORT_VERSION_STRING "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}${VERSION_LABEL}"
+    )
+endif()
+
 # Installation
 if(WIN32)
     # On windows, generate a flat directory structure under openomf/ subdir.
@@ -488,6 +498,14 @@ if(WIN32)
     install(FILES resources/openomf.bk resources/gamecontrollerdb/gamecontrollerdb.txt DESTINATION openomf/resources/ COMPONENT Data)
     install(DIRECTORY shaders/ DESTINATION openomf/shaders COMPONENT Data)
     install(FILES ${DOC_FILES} DESTINATION openomf/ COMPONENT Data)
+elseif(APPLE)
+    install(TARGETS openomf BUNDLE DESTINATION . RUNTIME DESTINATION bin COMPONENT Binaries)
+    install(FILES ${DOC_FILES} resources/openomf.bk resources/gamecontrollerdb/gamecontrollerdb.txt
+            resources/icons/openomf.png resources/flatpak/org.openomf.OpenOMF.desktop
+        DESTINATION openomf.app/Contents/resources
+        COMPONENT Data
+    )
+    install(DIRECTORY shaders/ DESTINATION openomf.app/Contents/shaders COMPONENT Data)
 else()
     # On unixy systems, follow standard.
     install(TARGETS openomf RUNTIME DESTINATION bin COMPONENT Binaries)
@@ -497,4 +515,22 @@ else()
         COMPONENT Data
     )
     install(DIRECTORY shaders/ DESTINATION share/games/openomf/shaders COMPONENT Data)
+endif()
+
+# Bundle in libSDL3.dylib since fixup_bundle() does not see the dependency.
+if(APPLE)
+    find_package(SDL3 REQUIRED)
+    get_target_property(SDL3_LIBRARY_PATH SDL3::SDL3 IMPORTED_LOCATION)
+    install(CODE "set(SDL3_LIBRARY_PATH [=[${SDL3_LIBRARY_PATH}]=])"
+    [[
+        include(BundleUtilities)
+
+        set(APP_PATH "${CMAKE_INSTALL_PREFIX}/openomf.app")
+        set(CONTENTS_DIR "${APP_PATH}/Contents")
+
+        file(INSTALL "${SDL3_LIBRARY_PATH}" DESTINATION "${CONTENTS_DIR}/Frameworks" RENAME "libSDL3.dylib")
+        fixup_bundle("${APP_PATH}" "" "/opt/homebrew/lib;/usr/local/lib")
+        execute_process(COMMAND codesign --force --sign - "${CONTENTS_DIR}/Frameworks/libSDL3.dylib" OUTPUT_QUIET ERROR_QUIET)
+        execute_process(COMMAND codesign --force --sign - "${CONTENTS_DIR}/MacOS/openomf" OUTPUT_QUIET ERROR_QUIET)
+    ]] COMPONENT Binaries)
 endif()

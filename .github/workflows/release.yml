@@ -45,8 +45,8 @@ jobs:
       uses: ./.github/actions/build_appimage
 
   build_macos-arm:
-    name: Build macos-14
-    runs-on: macos-14
+    name: Build MacOS 26
+    runs-on: macos-26
     steps:
     - uses: actions/checkout@v6
       with:

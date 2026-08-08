@@ -11,6 +11,8 @@ set(OPENOMF_LANGS DANISH)
 
 if(WIN32)
     set(LANGUAGE_INSTALL_PATH "openomf/resources/")
+elseif(APPLE)
+    set(LANGUAGE_INSTALL_PATH "openomf.app/Contents/resources/")
 else()
     set(LANGUAGE_INSTALL_PATH "share/games/openomf/resources/")
 endif()
