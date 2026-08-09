@@ -59,6 +59,7 @@ runs:
     - name: Verify openomf.app signature
       shell: bash
       run: |
+        cat /Applications/openomf.app/Contents/Info.plist
         codesign --display --verbose=4 /Applications/openomf.app
 
     - name: Check openomf --version works
