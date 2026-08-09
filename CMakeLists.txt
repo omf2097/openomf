@@ -520,7 +520,7 @@ endif()
 # Bundle in libSDL3.dylib since fixup_bundle() does not see the dependency.
 if(APPLE)
     find_package(SDL3 REQUIRED)
-    get_target_property(SDL3_LIBRARY_PATH SDL3::SDL3 IMPORTED_LOCATION)
+    get_target_property(SDL3_LIBRARY_PATH SDL3::SDL3 LOCATION)
     if(NOT SDL3_LIBRARY_PATH)
         message(FATAL_ERROR "SDL3 not found")
     endif()
