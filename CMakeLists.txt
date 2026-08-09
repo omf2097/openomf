@@ -502,7 +502,7 @@ elseif(APPLE)
     install(TARGETS openomf BUNDLE DESTINATION . RUNTIME DESTINATION bin COMPONENT Binaries)
     install(FILES ${DOC_FILES} resources/openomf.bk resources/gamecontrollerdb/gamecontrollerdb.txt
             resources/icons/openomf.png resources/flatpak/org.openomf.OpenOMF.desktop
-        DESTINATION openomf.app/Contents/resources
+        DESTINATION openomf.app/Contents/Resources
         COMPONENT Data
     )
     install(DIRECTORY shaders/ DESTINATION openomf.app/Contents/shaders COMPONENT Data)

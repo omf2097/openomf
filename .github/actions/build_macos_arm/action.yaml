@@ -27,7 +27,7 @@ runs:
 
     - name: Extract openomf assets
       shell: bash
-      run: unzip -j openomf-assets.zip -d build-release/openomf.app/Contents/resources
+      run: unzip -j openomf-assets.zip -d build-release/openomf.app/Contents/Resources
 
     - name: Get openomf mods
       uses: ./.github/actions/fetch_mods
