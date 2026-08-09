@@ -56,6 +56,11 @@ runs:
         cp -R ./mounted_openomf/openomf.app /Applications/
         hdiutil detach ./mounted_openomf
 
+    - name: Verify openomf.app signature
+      shell: bash
+      run: |
+        codesign --verify --verbose=2 /Applications/openomf.app
+
     - name: Check openomf --version works
       shell: bash
       run: |
