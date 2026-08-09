@@ -524,6 +524,7 @@ if(APPLE)
     if(NOT SDL3_LIBRARY_PATH)
         message(FATAL_ERROR "SDL3 not found")
     endif()
+    message(STATUS "SDL3 is in ${SDL3_LIBRARY_PATH}")
 
     set(SDL3_BUNDLE_SCRIPT "set(SDL3_LIBRARY_PATH [=[${SDL3_LIBRARY_PATH}]=])\n")
 
