@@ -530,7 +530,13 @@ if(APPLE)
 
         file(INSTALL "${SDL3_LIBRARY_PATH}" DESTINATION "${CONTENTS_DIR}/Frameworks" RENAME "libSDL3.dylib")
         fixup_bundle("${APP_PATH}" "" "/opt/homebrew/lib;/usr/local/lib")
-        execute_process(COMMAND codesign --force --sign - "${CONTENTS_DIR}/Frameworks/libSDL3.dylib")
-        execute_process(COMMAND codesign --force --identifier "org.openomf.openomf" --sign - "${APP_PATH}")
+        execute_process(
+            COMMAND codesign --force --sign - "${CONTENTS_DIR}/Frameworks/libSDL3.dylib"
+            COMMAND_ERROR_IS_FATAL ANY
+        )
+        execute_process(
+            COMMAND codesign --force --identifier "org.openomf.openomf" --sign - "${APP_PATH}"
+            COMMAND_ERROR_IS_FATAL ANY
+        )
     ]] COMPONENT Binaries)
 endif()
