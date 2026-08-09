@@ -521,8 +521,10 @@ endif()
 if(APPLE)
     find_package(SDL3 REQUIRED)
     get_target_property(SDL3_LIBRARY_PATH SDL3::SDL3 IMPORTED_LOCATION)
-    install(CODE "set(SDL3_LIBRARY_PATH [=[${SDL3_LIBRARY_PATH}]=])"
-    [[
+
+    set(SDL3_BUNDLE_SCRIPT "set(SDL3_LIBRARY_PATH [=[${SDL3_LIBRARY_PATH}]=])\n")
+
+    string(APPEND SDL3_BUNDLE_SCRIPT [[
         include(BundleUtilities)
 
         set(APP_PATH "${CMAKE_INSTALL_PREFIX}/openomf.app")
@@ -530,6 +532,7 @@ if(APPLE)
 
         file(INSTALL "${SDL3_LIBRARY_PATH}" DESTINATION "${CONTENTS_DIR}/Frameworks" RENAME "libSDL3.dylib")
         fixup_bundle("${APP_PATH}" "" "/opt/homebrew/lib;/usr/local/lib")
+
         execute_process(
             COMMAND codesign --force --sign - "${CONTENTS_DIR}/Frameworks/libSDL3.dylib"
             COMMAND_ERROR_IS_FATAL ANY
@@ -538,5 +541,7 @@ if(APPLE)
             COMMAND codesign --force --identifier "org.openomf.openomf" --sign - "${APP_PATH}"
             COMMAND_ERROR_IS_FATAL ANY
         )
-    ]] COMPONENT Binaries)
+    ]])
+
+    install(CODE "${SDL3_BUNDLE_SCRIPT}" COMPONENT Binaries)
 endif()
