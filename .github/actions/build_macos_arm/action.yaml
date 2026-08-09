@@ -59,7 +59,7 @@ runs:
     - name: Verify openomf.app signature
       shell: bash
       run: |
-        codesign --verify --verbose=4 /Applications/openomf.app
+        codesign --verify --deep --verbose=4 /Applications/openomf.app
 
     - name: Check openomf --version works
       shell: bash
