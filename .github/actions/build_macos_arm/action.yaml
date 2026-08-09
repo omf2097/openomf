@@ -22,6 +22,13 @@ runs:
         make -j $(getconf _NPROCESSORS_ONLN)
         make -j $(getconf _NPROCESSORS_ONLN) install
 
+    - name: Verify openomf.app signature in ./openomf.app
+      shell: bash
+      run: |
+        cd build-release
+        cat ./openomf.app/Contents/Info.plist
+        codesign --display --verbose=4 ./openomf.app
+
     - name: Get openomf assets
       uses: ./.github/actions/assets
 
@@ -48,7 +55,7 @@ runs:
           "openomf_${{ env.OPENOMF_VERSION }}_macos26_arm.dmg" \
           "build-release/openomf.app/"
 
-    - name: Mount DMG and Install OpenOMF
+    - name: Mount DMG and Install OpenOMF to /Applications
       shell: bash
       run: |
         hdiutil attach "openomf_${{ env.OPENOMF_VERSION }}_macos26_arm.dmg" \
@@ -56,7 +63,7 @@ runs:
         cp -R ./mounted_openomf/openomf.app /Applications/
         hdiutil detach ./mounted_openomf
 
-    - name: Verify openomf.app signature
+    - name: Verify openomf.app signature in /Applications
       shell: bash
       run: |
         cat /Applications/openomf.app/Contents/Info.plist
