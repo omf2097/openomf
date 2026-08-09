@@ -82,7 +82,6 @@ void animation_create(animation_source type, str *name, animation *ani, array *s
         vector_create_with_size(&new_coords, sizeof(collision_coord), 0);
         if(modmanager_get_hitcoords(type, name, id, i, &new_coords, &origin, &sprite_offset)) {
             if(vector_size(&new_coords) > 0) {
-                iterator it;
                 int to_add = vector_size(&new_coords);
                 int dropped = 0;
                 // Remove all original coords for this frame.

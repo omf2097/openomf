@@ -513,7 +513,7 @@ int console_cmd_assert(game_state *gs, int argc, char **argv) {
         *dot_pos = '\0';  // Terminate har part
         char *rh_attr_part = dot_pos + 1;
 
-        int res = rec_assertion_get_operand(&op.operand2, rh_har_part, rh_attr_part);
+        res = rec_assertion_get_operand(&op.operand2, rh_har_part, rh_attr_part);
         if(res == 1) {
             console_output_addline("Invalid RHS har identifier. Use har1 or har2.\n");
             return 1;

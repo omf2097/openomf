@@ -63,7 +63,6 @@ bool lab_dash_main_chr_load(component *c, void *userdata) {
     if(dw->savegames) {
         iterator it;
         list_iter_begin(dw->savegames, &it);
-        sd_chr_file *chr = NULL;
 
         int16_t i = 0;
         foreach(it, chr) {
