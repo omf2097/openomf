@@ -534,8 +534,8 @@ if(APPLE)
         set(APP_PATH "${CMAKE_INSTALL_PREFIX}/openomf.app")
         set(CONTENTS_DIR "${APP_PATH}/Contents")
 
-        file(INSTALL "${SDL3_LIBRARY_PATH}" DESTINATION "${CONTENTS_DIR}/Frameworks" RENAME "libSDL3.dylib")
         fixup_bundle("${APP_PATH}" "" "/opt/homebrew/lib;/usr/local/lib")
+        file(INSTALL "${SDL3_LIBRARY_PATH}" DESTINATION "${CONTENTS_DIR}/Frameworks" RENAME "libSDL3.dylib")
 
         execute_process(
             COMMAND codesign --force --sign - "${CONTENTS_DIR}/Frameworks/libSDL3.dylib"
