@@ -506,6 +506,8 @@ if(CUNIT_FOUND)
         RELATIVE ${CMAKE_SOURCE_DIR}
         "testing/*.c"
     )
+    # AP tests link against Archipelago-only symbols and get their own executable below.
+    list(FILTER TEST_SRC EXCLUDE REGEX "^testing/test_ap_")
 
     add_executable(openomf_test_main ${TEST_SRC})
 
@@ -526,6 +528,33 @@ if(CUNIT_FOUND)
     endif()
 
     add_test(main openomf_test_main)
+
+    if(USE_ARCHIPELAGO)
+        file(GLOB TEST_AP_SRC
+            LIST_DIRECTORIES OFF
+            CONFIGURE_DEPENDS
+            RELATIVE ${CMAKE_SOURCE_DIR}
+            "testing/test_ap_*.c"
+        )
+
+        add_executable(openomf_test_ap ${TEST_AP_SRC})
+
+        target_compile_definitions(openomf_test_ap PRIVATE
+                                   TESTS_ROOT_DIR="${CMAKE_SOURCE_DIR}/testing")
+
+        target_include_directories(openomf_test_ap PRIVATE testing/ src/)
+        target_link_libraries(openomf_test_ap ${CORELIBS} openomf::SDL2main openomf::epoxy openomf::cunit)
+
+        if(MSVC)
+            target_precompile_headers(openomf_test_ap PRIVATE "<stdio.h>")
+        endif()
+
+        if(MINGW)
+            set_target_properties(openomf_test_ap PROPERTIES LINK_FLAGS "-mconsole")
+        endif()
+
+        add_test(ap openomf_test_ap)
+    endif()
 
     message(STATUS "Development: Unit-tests are enabled")
 else()

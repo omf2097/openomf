@@ -132,6 +132,14 @@ void game_menu_quit(component *c, void *userdata) {
     arena_local *local = scene_get_userdata((scene *)userdata);
     local->winner = 1;
 
+    // This might be a change that we want to just apply to all modes, not just AP
+#if ARCHIPELAGO_ENABLED
+    // fight_stats.winner only gets set on a real KO (arena_har_defeat_hook); without this,
+    // arena_end()'s AP match-check reads whatever stale value is left from the *previous*
+    // match and can wrongly treat a forfeit as a win.
+    if(ap_mode) s->gs->fight_stats.winner = 1;
+#endif
+
     s->gs->fight_stats.plug_text = PLUG_FORFEIT;
     chr_score_reset(game_player_get_score(game_state_get_player((s)->gs, 0)), 1);
     chr_score_reset(game_player_get_score(game_state_get_player((s)->gs, 1)), 1);

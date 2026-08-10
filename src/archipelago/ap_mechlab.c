@@ -473,6 +473,12 @@ void ap_on_tournament_win(void) {
     for(int r = 0; r < 3; r++)
         Archipelago_SendCheck(ap_tournament_win_id(tidx, r));
     APSave.tournaments_won_mask |= (uint8_t)(1u << tidx);
+    // Persist immediately: the mechlab scene we're about to return to reloads APSave from
+    // disk on entry (ap_mechlab_find_player), which would otherwise clobber this mask bit
+    // with the stale on-disk value and silently drop it, breaking the "all tournaments" goal.
+    char ap_ident[12] = "";
+    Archipelago_GetSaveIdent(ap_ident, sizeof(ap_ident));
+    Archipelago_APSaveState(ap_ident);
     bool goal_met = (APSeedSettings.goal_tournament == tidx) ||
                     (APSeedSettings.goal_tournament == AP_TOURNAMENT_ALL &&
                      (APSave.tournaments_won_mask & 0x0Fu) == 0x0Fu);
