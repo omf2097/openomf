@@ -250,7 +250,7 @@ void player_run_apply(object *obj) {
     }
 
     // Check if frame changed from the previous tick
-    state->entered_frame = script_reader_frame_changed(&state->reader);
+    state->entered_frame = script_reader_frame_changed(&state->reader) || obj->age == 1;
     if(state->entered_frame) {
 #ifdef DEBUGMODE
         // player_describe_frame(frame);
