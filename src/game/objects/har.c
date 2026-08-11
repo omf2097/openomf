@@ -1317,7 +1317,6 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
         obj_a->can_hit = 0;
     } else if((obj_b->cur_animation->id == ANIM_STANDING_BLOCK || obj_b->cur_animation->id == ANIM_CROUCHING_BLOCK) &&
         player_frame_isset(obj_a, TAG_UR)) {
-        log_debug("UR TAG reset blockstun to %d", move->block_stun);
         b->block_duration = move->block_stun;
     }
     if(a->damage_done == 0 &&
