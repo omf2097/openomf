@@ -1315,6 +1315,10 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
     if(obj_a->can_hit) {
         a->damage_done = 0;
         obj_a->can_hit = 0;
+    } else if((obj_b->cur_animation->id == ANIM_STANDING_BLOCK || obj_b->cur_animation->id == ANIM_CROUCHING_BLOCK) &&
+        player_frame_isset(obj_a, TAG_UR)) {
+        log_debug("UR TAG reset blockstun to %d", move->block_stun);
+        b->block_duration = move->block_stun;
     }
     if(a->damage_done == 0 &&
        (intersect_har_sprite_hitpoint(obj_a, obj_b, level, &hit_coord) || move->category == CAT_CLOSE ||
@@ -2495,15 +2499,9 @@ void har_finished(object *obj) {
     h->executing_move = 0;
 
     if(h->block_duration && (h->state == STATE_BLOCKSTUN || h->state == STATE_CROUCHBLOCK)) {
-        object *enemy_obj =
-            game_state_find_object(obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
         object_set_custom_string(obj, "A1");
         object_dynamic_tick(obj);
         h->block_duration--;
-        // If UR is set, force other HAR to stay in blockstun if they're in it
-        if(player_frame_isset(enemy_obj, TAG_UR)) {
-            h->block_duration = 1;
-        }
     } else if(h->state == STATE_SCRAP || h->state == STATE_DESTRUCTION) {
         // play victory animation again, but do not allow any more moves to be executed
         h->state = STATE_DONE;
