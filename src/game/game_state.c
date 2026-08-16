@@ -701,11 +701,7 @@ void game_state_debug(game_state *gs) {
 #endif
 }
 
-int game_load_new(game_state *gs, int scene_id) {
-    // Free old scene
-    scene_free(gs->sc);
-    omf_free(gs->sc);
-
+int game_state_swap_scene(game_state *gs, int scene_id) {
     // Remove old objects
     render_obj *robj;
     iterator it;
@@ -831,6 +827,12 @@ error_1:
 error_0:
     omf_free(gs->sc);
     return 1;
+}
+
+int game_load_new(game_state *gs, int scene_id) {
+    scene_free(gs->sc);
+    omf_free(gs->sc);
+    return game_state_swap_scene(gs, scene_id);
 }
 
 void game_state_call_collide(game_state *gs) {
