@@ -539,7 +539,6 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t m
             projectile_set_invincible(obj);
         }
 
-        // Spawned objects skip string tick 0 (first render on T+1 at tick 1), matching the original.
         player_init_spawned(obj);
         game_state_add_object(parent->gs, obj, RENDER_LAYER_MIDDLE, 0, 0);
     }

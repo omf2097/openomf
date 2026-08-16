@@ -852,10 +852,10 @@ void player_jump_to_tick(object *obj, int tick) {
 }
 
 void player_init_spawned(object *obj) {
-    // bk-pool spawns skip string tick 0 (first render on T+1 at tick 1) and must not be
-    // caught by the same-tick bootstrap in object_dynamic_tick_apply.
+    // Spawned objects skip tick 0 (first tick at +1).
     obj->animation_state.from_spawn = true;
-    player_jump_to_tick(obj, 1);
+    script_reader_reset(&obj->animation_state.reader);
+    script_reader_seek(&obj->animation_state.reader, 1);
 }
 
 unsigned int player_get_len_ticks(const object *obj) {
