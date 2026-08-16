@@ -384,7 +384,7 @@ int har_is_blocking(object *obj, af_move *move) {
         return 0;
     }
 
-    char last_input = get_last_input(obj);
+    char last_input = h->last_input;
     if(obj->crossup_protection) {
         if(last_input == '6') {
             last_input = '4';
@@ -1142,8 +1142,7 @@ void har_spawn_scrap(const object *obj, vec2i pos, int amount) {
 
 void har_block(object *obj, vec2i hit_coord, uint8_t block_stun) {
     har *h = obj->userdata;
-    char last_input = get_last_input(obj);
-    if(last_input == '1' || last_input == '3') {
+    if(h->last_input == '1' || h->last_input == '3') {
         object_set_animation(obj, &af_get_move(h->af_data, ANIM_CROUCHING_BLOCK)->ani);
     } else {
         object_set_animation(obj, &af_get_move(h->af_data, ANIM_STANDING_BLOCK)->ani);
@@ -2253,6 +2252,7 @@ int har_act(object *obj, int act_type) {
     uint32_t input_staleness = obj->gs->tick - h->input_change_tick;
     if(input_changed) {
         h->input_change_tick = obj->gs->tick;
+        h->last_input = flip_input(h->inputs[0], object_get_direction(obj));
     }
 
     if(h->jump_delay) {

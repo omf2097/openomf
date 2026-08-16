@@ -158,6 +158,7 @@ typedef struct har_t {
     int endurance_max, endurance;
     char inputs[11];
     uint32_t input_change_tick; // last tick the input direction changed
+    char last_input; // last held direction, corrected for facing
 
     uint8_t stun_timer;
 
