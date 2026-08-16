@@ -166,6 +166,8 @@ void object_palette_transform(object *obj);
 void object_debug(object *obj);
 void object_static_tick(object *obj);
 void object_dynamic_tick(object *obj);
+void object_dynamic_tick_advance(object *obj);
+void object_dynamic_tick_apply(object *obj);
 void object_set_tick_pos(object *obj, int tick);
 void object_move(object *obj);
 float object_distance(object *a, object *b);
