@@ -1,10 +1,8 @@
 #include "controller/spec_controller.h"
 #include "controller/net_controller.h"
+#include "game/common_defines.h"
 #include "game/game_player.h"
-#include "game/game_state_type.h"
-#include "game/protos/scene.h"
-#include "game/scenes/arena.h"
-#include "game/scenes/vs.h"
+#include "game/game_state.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
 
@@ -90,18 +88,11 @@ int spec_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
 
                         ctrl->gs->arena = data->nscene - SCENE_ARENA0;
 
-                        // jump into the arena scene
-                        ctrl->gs->this_id = SCENE_VS;
-                        ctrl->gs->next_id = SCENE_VS;
-
-                        if(scene_create(ctrl->gs->sc, ctrl->gs, SCENE_VS)) {
+                        // jump into the VS scene, keeping the lobby scene and its
+                        // network connection alive
+                        if(game_state_swap_scene(ctrl->gs, SCENE_VS)) {
                             log_error("Error while loading scene %d.", SCENE_VS);
                         }
-
-                        if(vs_create(ctrl->gs->sc)) {
-                            log_error("Error while creating arena");
-                        }
-
                     } break;
                     case 1: {
                         while(ser.rpos < ser.wpos) {
@@ -117,16 +108,9 @@ int spec_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                                 hashmap_put_int(data->tick_lookup, 0, &ctrl->gs->tick, sizeof(ticks));
                                 log_info("spectator start tick was %u", ticks);
 
-                                // jump into the arena scene
-                                // ctrl->gs->this_id = data->nscene;
-                                ctrl->gs->next_id = data->nscene;
-
-                                if(scene_create(ctrl->gs->sc, ctrl->gs, data->nscene)) {
+                                // jump into the arena scene, keeping the old scene alive
+                                if(game_state_swap_scene(ctrl->gs, data->nscene)) {
                                     log_error("Error while loading scene %d.", data->nscene);
-                                }
-
-                                if(arena_create(ctrl->gs->sc)) {
-                                    log_error("Error while creating arena");
                                 }
                                 data->started = true;
                             }
@@ -135,6 +119,9 @@ int spec_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                     default: {
                     }
                 }
+                serial_free(&ser);
+                enet_packet_destroy(event.packet);
+                break;
             default: {
             }
         }

@@ -191,7 +191,7 @@ void object_palette_copy_transform(damage_tracker *damage, vga_palette *pal, voi
     damage_add_range(damage, src_end, pos);
 }
 
-void object_dynamic_tick(object *obj) {
+void object_dynamic_tick_advance(object *obj) {
     obj->age++;
 
     if(obj->attached_to_id != 0) {
@@ -206,6 +206,12 @@ void object_dynamic_tick(object *obj) {
         obj->halt = (obj->halt_ticks > 0);
     }
 
+    if(obj->cur_animation != NULL && obj->halt == 0) {
+        player_run_advance(obj);
+    }
+}
+
+void object_dynamic_tick_apply(object *obj) {
     // Tick object implementation
     if(obj->dynamic_tick != NULL) {
         obj->dynamic_tick(obj);
@@ -221,12 +227,32 @@ void object_dynamic_tick(object *obj) {
         obj->sprite_state.screen_shake_horizontal = 0;
     }
 
-    // Run animation player LAST, so that we have operated what we want on the current tick.
-    if(obj->cur_animation != NULL && obj->halt == 0) {
-        for(int i = 0; i < obj->stride; i++) {
-            player_run(obj);
+    if(obj->cur_animation == NULL) {
+        return;
+    }
+
+    // Objects created after the advance pass need their frame 0 on the same tick, matching the
+    // original (a freshly-set HAR frame renders on the same tick). Spawns are the exception:
+    // they skip string tick 0 and first render on T+1, so they must not be bootstrapped here.
+    if(obj->animation_state.phase == ANIM_PHASE_HOLD && obj->halt == 0 && !obj->animation_state.from_spawn) {
+        player_run_advance(obj);
+    }
+
+    // Apply frame effects LAST, so that we have operated what we want on the current tick.
+    if(obj->animation_state.pending_apply) {
+        player_run_apply(obj);
+        for(int i = 1; i < obj->stride; i++) {
+            player_run_advance(obj);
+            if(obj->animation_state.pending_apply) {
+                player_run_apply(obj);
+            }
         }
     }
+}
+
+void object_dynamic_tick(object *obj) {
+    object_dynamic_tick_advance(obj);
+    object_dynamic_tick_apply(obj);
 }
 
 void object_static_tick(object *obj) {
@@ -706,11 +732,15 @@ int object_get_repeat(const object *obj) {
 }
 
 int object_is_finished(object *obj) {
-    return obj->animation_state.finished;
+    return obj->animation_state.phase == ANIM_PHASE_FINISHED;
 }
 
 void object_set_finished(object *obj, bool finished) {
-    obj->animation_state.finished = finished;
+    if(finished) {
+        obj->animation_state.phase = ANIM_PHASE_FINISHED;
+    } else if(obj->animation_state.phase == ANIM_PHASE_FINISHED) {
+        obj->animation_state.phase = ANIM_PHASE_RUNNING;
+    }
 }
 
 void object_set_direction(object *obj, int dir) {

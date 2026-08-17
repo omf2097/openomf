@@ -615,6 +615,7 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
                 object_create(obj, scene->gs, info->ani.start_pos, vec2f_create(0, 0));
                 object_set_stl(obj, scene->bk_data->sound_translation_table);
                 object_set_animation(obj, &info->ani);
+                player_init_spawned(obj);
                 if(game_state_add_object(scene->gs, obj, RENDER_LAYER_BOTTOM, 1, 0) != 0) {
                     object_free(obj);
                     omf_free(obj);
@@ -630,7 +631,7 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
                 object_set_stl(obj2, scene->bk_data->sound_translation_table);
                 object_set_animation(obj2, &info->ani);
                 object_attach_to(obj2, o_har);
-                // object_dynamic_tick(obj2);
+                player_init_spawned(obj2);
                 if(game_state_add_object(scene->gs, obj2, RENDER_LAYER_TOP, 0, 0)) {
                     object_free(obj2);
                     omf_free(obj2);
@@ -648,6 +649,7 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
                 object_create(dust, scene->gs, coord, vec2f_create(0, 0));
                 object_set_stl(dust, scene->bk_data->sound_translation_table);
                 object_set_animation(dust, &bk_get_info(scene->bk_data, anim_no)->ani);
+                player_init_spawned(dust);
                 game_state_add_object(scene->gs, dust, RENDER_LAYER_MIDDLE, 0, 0);
             }
 
@@ -681,6 +683,7 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
                 object_set_animation(obj, &info->ani);
                 // TODO: Adjust this animation based on velocity
                 object_set_custom_string(obj, "brwA1-brwB1-brwD1-brwE0-brwD4-brwC2-brwB2-brwA2");
+                player_init_spawned(obj);
                 if(game_state_add_object(scene->gs, obj, RENDER_LAYER_BOTTOM, 1, 0) != 0) {
                     object_free(obj);
                     omf_free(obj);
@@ -1053,6 +1056,7 @@ void arena_spawn_hazard(scene *scene) {
                 /*object_set_spawn_cb(obj, cb_scene_spawn_object, (void*)scene);*/
                 /*object_set_destroy_cb(obj, cb_scene_destroy_object, (void*)scene);*/
                 hazard_create(obj, scene);
+                player_init_spawned(obj);
                 if(game_state_add_object(scene->gs, obj, RENDER_LAYER_BOTTOM, 1, 0) == 0) {
                     object_set_layers(obj, LAYER_HAZARD | LAYER_HAR);
                     object_set_group(obj, GROUP_HAZARD);
@@ -1382,8 +1386,8 @@ void arena_dynamic_tick(scene *scene, int paused) {
                     object_set_layers(scrap, LAYER_SCRAP);
                     object_set_shadow(scrap, 1);
                     object_set_group(scrap, GROUP_SCRAP);
-                    object_dynamic_tick(scrap);
                     scrap_create(scrap);
+                    player_init_spawned(scrap);
                     game_state_add_object(gs, scrap, RENDER_LAYER_TOP, 0, 0);
                 }
             }

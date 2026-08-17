@@ -539,6 +539,7 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t m
             projectile_set_invincible(obj);
         }
 
+        player_init_spawned(obj);
         game_state_add_object(parent->gs, obj, RENDER_LAYER_MIDDLE, 0, 0);
     }
 }
@@ -574,6 +575,7 @@ void har_floor_landing_effects(object *obj, bool play_sound) {
         object_create(dust, obj->gs, coord, vec2f_create(0, 0));
         object_set_stl(dust, object_get_stl(obj));
         object_set_animation(dust, &bk_get_info(game_state_get_scene(obj->gs)->bk_data, 26)->ani);
+        player_init_spawned(dust);
         game_state_add_object(obj->gs, dust, RENDER_LAYER_MIDDLE, 0, 0);
     }
 
@@ -1097,8 +1099,8 @@ static void har_spawn_oil(const object *obj, vec2i pos, int amount, int layer) {
         object_set_stl(scrap, object_get_stl(obj));
         object_set_gravity(scrap, har_sparks_random_gravity(obj));
         object_set_layers(scrap, LAYER_SCRAP);
-        object_dynamic_tick(scrap);
         scrap_create(scrap);
+        player_init_spawned(scrap);
         game_state_add_object(obj->gs, scrap, layer, 0, 0);
     }
 }
@@ -1131,9 +1133,9 @@ void har_spawn_scrap(const object *obj, vec2i pos, int amount) {
         object_set_pal_limit(scrap, object_get_pal_limit(obj));
         object_set_layers(scrap, LAYER_SCRAP);
         object_set_group(scrap, GROUP_SCRAP);
-        object_dynamic_tick(scrap);
         object_set_shadow(scrap, 1);
         scrap_create(scrap);
+        player_init_spawned(scrap);
         game_state_add_object(obj->gs, scrap, RENDER_LAYER_TOP, 0, 0);
     }
 }
@@ -1162,8 +1164,6 @@ void har_block(object *obj, vec2i hit_coord, uint8_t block_stun) {
     object_set_repeat(scrape, 0);
     object_set_gravity(scrape, 0);
     object_set_layers(scrape, LAYER_SCRAP);
-    object_dynamic_tick(scrape);
-    object_dynamic_tick(scrape);
     {
         sound_opts opts;
         sound_opts_init(&opts);
@@ -1171,6 +1171,7 @@ void har_block(object *obj, vec2i hit_coord, uint8_t block_stun) {
         opts.panning = 50;
         game_state_play_sound(obj->gs, 3, &opts);
     }
+    player_init_spawned(scrape);
     game_state_add_object(obj->gs, scrape, RENDER_LAYER_MIDDLE, 0, 0);
     h->damage_received = 1;
 }
@@ -1314,6 +1315,9 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
     if(obj_a->can_hit) {
         a->damage_done = 0;
         obj_a->can_hit = 0;
+    } else if((obj_b->cur_animation->id == ANIM_STANDING_BLOCK || obj_b->cur_animation->id == ANIM_CROUCHING_BLOCK) &&
+              player_frame_isset(obj_a, TAG_UR)) {
+        b->block_duration = move->block_stun;
     }
     if(a->damage_done == 0 &&
        (intersect_har_sprite_hitpoint(obj_a, obj_b, level, &hit_coord) || move->category == CAT_CLOSE ||
@@ -1994,7 +1998,7 @@ void har_tick(object *obj) {
         object_set_custom_string(nobj, "bs100A1-bf0A15");
         object_add_animation_effects(nobj, EFFECT_SHADOW);
         object_set_direction(nobj, object_get_direction(obj));
-        object_dynamic_tick(nobj);
+        player_init_spawned(nobj);
         game_state_add_object(obj->gs, nobj, RENDER_LAYER_BOTTOM, 0, 0);
     }
 }
@@ -2494,15 +2498,9 @@ void har_finished(object *obj) {
     h->executing_move = 0;
 
     if(h->block_duration && (h->state == STATE_BLOCKSTUN || h->state == STATE_CROUCHBLOCK)) {
-        object *enemy_obj =
-            game_state_find_object(obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
         object_set_custom_string(obj, "A1");
         object_dynamic_tick(obj);
         h->block_duration--;
-        // If UR is set, force other HAR to stay in blockstun if they're in it
-        if(player_frame_isset(enemy_obj, TAG_UR)) {
-            h->block_duration = 1;
-        }
     } else if(h->state == STATE_SCRAP || h->state == STATE_DESTRUCTION) {
         // play victory animation again, but do not allow any more moves to be executed
         h->state = STATE_DONE;

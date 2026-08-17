@@ -44,12 +44,6 @@
 // slowest dynamic tick, in ms
 #define MS_PER_OMF_TICK_SLOWEST 60
 
-enum
-{
-    TICK_DYNAMIC = 0,
-    TICK_STATIC,
-};
-
 static void _setup_rec_controller(game_state *gs, int player_id, sd_rec_file *rec);
 
 // How long the scene waits after order to move to another scene
@@ -707,11 +701,7 @@ void game_state_debug(game_state *gs) {
 #endif
 }
 
-int game_load_new(game_state *gs, int scene_id) {
-    // Free old scene
-    scene_free(gs->sc);
-    omf_free(gs->sc);
-
+int game_state_swap_scene(game_state *gs, int scene_id) {
     // Remove old objects
     render_obj *robj;
     iterator it;
@@ -839,6 +829,12 @@ error_0:
     return 1;
 }
 
+int game_load_new(game_state *gs, int scene_id) {
+    scene_free(gs->sc);
+    omf_free(gs->sc);
+    return game_state_swap_scene(gs, scene_id);
+}
+
 void game_state_call_collide(game_state *gs) {
     object *a, *b;
     unsigned int size = vector_size(&gs->objects);
@@ -921,22 +917,33 @@ static int sound_pan_lookup_object(void *ctx, uint32_t object_id) {
     return clamp((pos.x - 160) * 100 / 160, -100, 100);
 }
 
-// This function is called with changing interval, depending on the value of game speed
-void game_state_call_tick(game_state *gs, const int mode) {
+void game_state_call_dynamic_tick_advance(game_state *gs) {
     render_obj *robj;
     iterator it;
     vector_iter_begin(&gs->objects, &it);
     foreach(it, robj) {
-        if(mode == TICK_DYNAMIC) {
-            object_dynamic_tick(robj->obj);
-        } else {
-            object_static_tick(robj->obj);
-        }
+        object_dynamic_tick_advance(robj->obj);
+    }
+}
+
+void game_state_call_dynamic_tick_apply(game_state *gs) {
+    render_obj *robj;
+    iterator it;
+    vector_iter_begin(&gs->objects, &it);
+    foreach(it, robj) {
+        object_dynamic_tick_apply(robj->obj);
     }
 
-    if(mode == TICK_DYNAMIC) {
-        const int delta = game_state_ms_per_dyntick(gs);
-        sound_tracker_tick(&gs->tracker, delta, sound_pan_lookup_object, gs);
+    const int delta = game_state_ms_per_dyntick(gs);
+    sound_tracker_tick(&gs->tracker, delta, sound_pan_lookup_object, gs);
+}
+
+void game_state_call_static_tick(game_state *gs) {
+    render_obj *robj;
+    iterator it;
+    vector_iter_begin(&gs->objects, &it);
+    foreach(it, robj) {
+        object_static_tick(robj->obj);
     }
 }
 
@@ -996,7 +1003,7 @@ void game_state_static_tick(game_state *gs, bool replay) {
     scene_static_tick(gs->sc, game_state_is_paused(gs));
 
     // Call static tick functions
-    game_state_call_tick(gs, TICK_STATIC);
+    game_state_call_static_tick(gs);
 }
 
 // This function is called when the game speed requires it
@@ -1059,6 +1066,9 @@ void game_state_dynamic_tick(game_state *gs, bool replay) {
         // Clean up objects
         game_state_cleanup(gs);
 
+        // Advance animations first so movement and collision see the current tick's frames
+        game_state_call_dynamic_tick_advance(gs);
+
         // Call object_move for all objects
         game_state_call_move(gs);
 
@@ -1066,7 +1076,7 @@ void game_state_dynamic_tick(game_state *gs, bool replay) {
         game_state_call_collide(gs);
 
         // Tick all objects
-        game_state_call_tick(gs, TICK_DYNAMIC);
+        game_state_call_dynamic_tick_apply(gs);
 
         // Increment tick
         gs->tick++;

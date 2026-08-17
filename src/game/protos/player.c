@@ -54,8 +54,9 @@ void player_reload(object *obj) {
 
 void player_reset(object *obj) {
     script_reader_reset(&obj->animation_state.reader);
-    obj->animation_state.finished = false;
+    obj->animation_state.phase = ANIM_PHASE_HOLD;
     obj->animation_state.disable_d = 0;
+    obj->animation_state.pending_apply = false;
 }
 
 int player_frame_isset(const object *obj, const script_tag tag) {
@@ -126,39 +127,88 @@ void player_describe_mp_flags(const script_frame *frame, int mp) {
 }
 #endif /* DEBUGMODE */
 
-void player_run(object *obj) {
-    // Some vars for easier life
+void player_run_advance(object *obj) {
     player_animation_state *state = &obj->animation_state;
-    player_sprite_state *rstate = &obj->sprite_state;
-    object *enemy = game_state_find_object(obj->gs, state->enemy_obj_id);
-    if(state->finished) {
+    state->pending_apply = false;
+    if(state->phase == ANIM_PHASE_FINISHED) {
         return;
     }
 
-    const script *script = script_reader_get_script(&state->reader);
-    const script_frame *frame = script_reader_frame(&state->reader);
+    script_reader *reader = &state->reader;
+    const script *script = script_reader_get_script(reader);
+
+    // First run; make sure we don't advance the script, as we want to run tick 0.
+    if(state->phase == ANIM_PHASE_HOLD) {
+        state->phase = ANIM_PHASE_RUNNING;
+        const script_frame *frame = script_reader_frame(reader);
+        if(frame != NULL) {
+            object_select_sprite(obj, frame->sprite);
+        }
+        state->pending_apply = true;
+        return;
+    }
+
+    // Tick management; a 'd' tag redirects the reader, otherwise advance.
+    const script_frame *frame = script_reader_frame(reader);
+    script_reader_mark_previous(reader);
+    if(frame != NULL && script_is_tag_set_by_id(frame, TAG_D) && !state->disable_d) {
+        int tick_value = script_get_tag_value_by_id(frame, TAG_D);
+        if(tick_value >= 0) {
+            script_reader_seek(reader, tick_value + 1);
+            state->looping = true;
+        } else {
+            script_reader_seek(reader, script_get_total_ticks(script) + tick_value);
+        }
+    } else {
+        script_reader_advance(reader, state->reverse ? -1 : 1);
+    }
 
     // Animation has ended ?
+    frame = script_reader_frame(reader);
     if(frame == NULL) {
         if(state->repeat) {
             player_reset(obj);
-            frame = script_reader_frame(&state->reader);
+            state->phase = ANIM_PHASE_RUNNING;
+            frame = script_reader_frame(reader);
         } else {
-            state->finished = true;
+            state->phase = ANIM_PHASE_FINISHED;
             if(obj->finish != NULL) {
                 obj->finish(obj);
             }
             // let har_finish hold last sprite of victory animation indefinitely
-            // Note that the finished flag can be modified by the obj->finish() call.
-            if(state->finished) {
+            // Note that the phase can be modified by the obj->finish() call.
+            if(state->phase == ANIM_PHASE_FINISHED) {
                 obj->cur_sprite_id = -1;
             }
             return;
         }
     }
+    if(frame == NULL) {
+        return;
+    }
 
-    // This should really never happen, but just make sure anyway.
-    assert(frame != NULL);
+    // Select the sprite here so collision checks see the current frame.
+    if(script_reader_frame_changed(reader)) {
+        object_select_sprite(obj, frame->sprite);
+    }
+    state->pending_apply = true;
+}
+
+void player_run_apply(object *obj) {
+    // Some vars for easier life
+    player_animation_state *state = &obj->animation_state;
+    player_sprite_state *rstate = &obj->sprite_state;
+    object *enemy = game_state_find_object(obj->gs, state->enemy_obj_id);
+    state->pending_apply = false;
+    if(state->phase == ANIM_PHASE_FINISHED) {
+        return;
+    }
+
+    const script *script = script_reader_get_script(&state->reader);
+    const script_frame *frame = script_reader_frame(&state->reader);
+    if(frame == NULL) {
+        return;
+    }
 
     // Get MP flag content, set to 0 if not set.
     uint8_t mp = script_is_tag_set_by_id(frame, TAG_MP) ? script_get_tag_value_by_id(frame, TAG_MP) & 0xFF : 0;
@@ -218,7 +268,7 @@ void player_run(object *obj) {
             }
         }
 
-        // TODO this needs to somehow be delayed for 1 tick
+        // Collision reads this flag one tick behind the frame it tests
         if(script_is_tag_set_by_id(frame, TAG_N)) {
             obj->hit_pixels_disabled = true;
         } else {
@@ -234,7 +284,6 @@ void player_run(object *obj) {
             if(new_ani == ANIM_STANDUP) {
                 har_face_enemy(obj, enemy);
             }
-            object_dynamic_tick(obj);
             return;
         }
 
@@ -312,6 +361,7 @@ void player_run(object *obj) {
                fabsf(obj->pos.x - destination) > 5.0) {
                 log_debug("HAR walk to %d from %f", destination, obj->pos.x);
                 har_walk_to(obj, destination);
+                state->phase = ANIM_PHASE_HOLD;
                 return;
             }
         }
@@ -781,34 +831,31 @@ void player_run(object *obj) {
         }
     }
 
-    // Tick management
-    if(script_is_tag_set_by_id(frame, TAG_D) && !obj->animation_state.disable_d) {
-        script_reader_mark_previous(&state->reader);
-        int tick_value = script_get_tag_value_by_id(frame, TAG_D);
-        if(tick_value >= 0) {
-            script_reader_seek(&state->reader, tick_value + 1);
-            state->looping = true;
-        } else {
-            script_reader_seek(&state->reader, script_get_total_ticks(script) + tick_value);
-        }
-        return;
+    // Sprite ticks. Frames with a 'd' redirect never accumulate sprite
+    // display time; the redirect itself is handled on the next advance.
+    if(!(script_is_tag_set_by_id(frame, TAG_D) && !state->disable_d)) {
+        rstate->timer++;
     }
+}
 
-    // Animation ticks
-    script_reader_mark_previous(&state->reader);
-    script_reader_advance(&state->reader, state->reverse ? -1 : 1);
-
-    // Sprite ticks
-    rstate->timer++;
-
-    // All done.
-    return;
+void player_run(object *obj) {
+    player_run_advance(obj);
+    if(obj->animation_state.pending_apply) {
+        player_run_apply(obj);
+    }
 }
 
 void player_jump_to_tick(object *obj, int tick) {
     player_animation_state *state = &obj->animation_state;
     script_reader_mark_previous(&state->reader);
     script_reader_seek(&state->reader, tick);
+}
+
+void player_init_spawned(object *obj) {
+    // Spawned objects skip tick 0 (first tick at +1).
+    obj->animation_state.from_spawn = true;
+    script_reader_reset(&obj->animation_state.reader);
+    script_reader_seek(&obj->animation_state.reader, 1);
 }
 
 unsigned int player_get_len_ticks(const object *obj) {
