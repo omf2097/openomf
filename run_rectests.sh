@@ -6,7 +6,7 @@ if [ -z "$1" ]; then
 fi
 
 export BUILD_DIR="$1"
-OPENOMF_BIN=$(find "$BUILD_DIR" -name openomf -type f -executable -print -quit)
+OPENOMF_BIN=$(find "$BUILD_DIR" -name openomf -type f -exec test -x {} \; -print -quit)
 if [ -z "$OPENOMF_BIN" ]; then
     echo "Could not find openomf executable from $BUILD_DIR" >&2
     exit 1
@@ -98,7 +98,7 @@ RUNDIR=$(pwd)
 
 cd $BUILD_DIR
 
-export OPENOMF_RESOURCE_PATH="."
+export OPENOMF_RESOURCE_PATH="${OPENOMF_RESOURCE_PATH:-.}"
 export LSAN_OPTIONS="suppressions=../lsan.supp"
 
 output_file="$temp_dir/output_shouldfail.log"

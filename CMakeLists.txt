@@ -220,7 +220,7 @@ omf_target_precompile_headers(openomf_core PUBLIC
     "<enet/enet.h>"
     "<epoxy/gl.h>"
 )
-if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
+if(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
     set_source_files_properties("${CMAKE_SOURCE_DIR}/src/vendored/argtable/argtable3.c"
         PROPERTIES COMPILE_OPTIONS "-Wno-format-nonliteral"
     )
@@ -480,6 +480,16 @@ set(DOC_FILES
     src/vendored/zip/LICENSE.zip
 )
 
+if(APPLE)
+    set_target_properties(openomf PROPERTIES
+        MACOSX_BUNDLE TRUE
+        MACOSX_BUNDLE_BUNDLE_NAME "OpenOMF"
+        MACOSX_BUNDLE_GUI_IDENTIFIER "org.openomf.openomf"
+        MACOSX_BUNDLE_BUNDLE_VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}${VERSION_LABEL}"
+        MACOSX_BUNDLE_SHORT_VERSION_STRING "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}${VERSION_LABEL}"
+    )
+endif()
+
 # Installation
 if(WIN32)
     # On windows, generate a flat directory structure under openomf/ subdir.
@@ -488,6 +498,14 @@ if(WIN32)
     install(FILES resources/openomf.bk resources/gamecontrollerdb/gamecontrollerdb.txt DESTINATION openomf/resources/ COMPONENT Data)
     install(DIRECTORY shaders/ DESTINATION openomf/shaders COMPONENT Data)
     install(FILES ${DOC_FILES} DESTINATION openomf/ COMPONENT Data)
+elseif(APPLE)
+    install(TARGETS openomf BUNDLE DESTINATION . RUNTIME DESTINATION bin COMPONENT Binaries)
+    install(FILES ${DOC_FILES} resources/openomf.bk resources/gamecontrollerdb/gamecontrollerdb.txt
+            resources/icons/openomf.png resources/flatpak/org.openomf.OpenOMF.desktop
+        DESTINATION openomf.app/Contents/Resources
+        COMPONENT Data
+    )
+    install(DIRECTORY shaders/ DESTINATION openomf.app/Contents/shaders COMPONENT Data)
 else()
     # On unixy systems, follow standard.
     install(TARGETS openomf RUNTIME DESTINATION bin COMPONENT Binaries)
@@ -497,4 +515,37 @@ else()
         COMPONENT Data
     )
     install(DIRECTORY shaders/ DESTINATION share/games/openomf/shaders COMPONENT Data)
+endif()
+
+# Bundle in libSDL3.dylib since fixup_bundle() does not see the dependency.
+if(APPLE)
+    find_package(SDL3 REQUIRED)
+    get_target_property(SDL3_LIBRARY_PATH SDL3::SDL3 LOCATION)
+    if(NOT SDL3_LIBRARY_PATH)
+        message(FATAL_ERROR "SDL3 not found")
+    endif()
+    message(STATUS "SDL3 is in ${SDL3_LIBRARY_PATH}")
+
+    set(SDL3_BUNDLE_SCRIPT "set(SDL3_LIBRARY_PATH [=[${SDL3_LIBRARY_PATH}]=])\n")
+
+    string(APPEND SDL3_BUNDLE_SCRIPT [[
+        include(BundleUtilities)
+
+        set(APP_PATH "${CMAKE_INSTALL_PREFIX}/openomf.app")
+        set(CONTENTS_DIR "${APP_PATH}/Contents")
+
+        fixup_bundle("${APP_PATH}" "" "/opt/homebrew/lib;/usr/local/lib")
+        file(INSTALL "${SDL3_LIBRARY_PATH}" DESTINATION "${CONTENTS_DIR}/Frameworks" RENAME "libSDL3.dylib")
+
+        execute_process(
+            COMMAND codesign --force --sign - "${CONTENTS_DIR}/Frameworks/libSDL3.dylib"
+            COMMAND_ERROR_IS_FATAL ANY
+        )
+        execute_process(
+            COMMAND codesign --force --identifier "org.openomf.openomf" --sign - "${APP_PATH}"
+            COMMAND_ERROR_IS_FATAL ANY
+        )
+    ]])
+
+    install(CODE "${SDL3_BUNDLE_SCRIPT}" COMPONENT Binaries)
 endif()
