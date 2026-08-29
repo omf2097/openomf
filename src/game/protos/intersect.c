@@ -97,7 +97,8 @@ int intersect(const object *obj, const object *target, vec2i *point, bool is_har
     }
 
     // Iterate through hitpoints
-    vec2i hcoords;
+    vec2i hcoords[2];
+    int found = 0;
     iterator it;
     collision_coord *cc;
     vector_iter_begin(&obj->cur_animation->collision_coords, &it);
@@ -138,9 +139,16 @@ int intersect(const object *obj, const object *target, vec2i *point, bool is_har
         }
         // Only main HAR colors count
         if(sfc->data[hitpoint] != sfc->transparent && (sfc->data[hitpoint] < 96 || !is_har)) {
-            hcoords = vec2i_create(xcoord, ycoord);
-            point->x = hcoords.x + pos_b.x;
-            point->y = hcoords.y + pos_b.y;
+            hcoords[found++] = vec2i_create(xcoord, ycoord);
+        }
+        if(found > 0) {
+            vec2f sum = vec2f_create(0, 0);
+            for(int k = 0; k < found; k++) {
+                sum.x += hcoords[k].x;
+                sum.y += hcoords[k].y;
+            }
+            point->x = (sum.x / found) + pos_b.x;
+            point->y = (sum.y / found) + pos_b.y;
             return 1;
         }
     }
