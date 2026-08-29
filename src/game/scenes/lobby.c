@@ -1086,6 +1086,11 @@ void lobby_tick(scene *scene, int paused) {
                 if(local->opponent_peer && event.peer->address.host == local->opponent->address.host) {
                     log_debug("connected to peer outbound!");
 
+                    // NAT probes use a deliberately short timeout. Restore ENet's normal timeout window once the
+                    // connection succeeds so a brief packet-loss spike does not terminate the match.
+                    enet_peer_timeout(event.peer, ENET_PEER_TIMEOUT_LIMIT, ENET_PEER_TIMEOUT_MINIMUM,
+                                      ENET_PEER_TIMEOUT_MAXIMUM);
+
                     // TODO probably need a more specific cancel callback here
                     lobby_show_dialog(scene, DIALOG_STYLE_CANCEL, "Connected, synchronizing clocks...", NULL);
                     local->opponent_peer = event.peer;
@@ -1270,6 +1275,8 @@ void lobby_tick(scene *scene, int paused) {
                             }
                         } else if(!local->opponent_peer && event.peer->address.host == local->opponent->address.host) {
                             log_debug("connected to peer inbound!");
+                            enet_peer_timeout(event.peer, ENET_PEER_TIMEOUT_LIMIT, ENET_PEER_TIMEOUT_MINIMUM,
+                                              ENET_PEER_TIMEOUT_MAXIMUM);
                             local->opponent_peer = event.peer;
 
                             // TODO probably need a more specific cancel callback here
@@ -1747,21 +1754,37 @@ int lobby_create(scene *scene) {
     menu_attach(menu, exit_button);
 
     int winner = -1;
+    bool lobby_reconnect = false;
+    bool opponent_disconnected = false;
     // check if there's already a net controller provisioned
     // and harvest the information from it, if possible
     if(game_state_get_player(scene->gs, 0)->ctrl->type == CTRL_TYPE_NETWORK) {
-        local->peer = net_controller_get_lobby_connection(game_state_get_player(scene->gs, 0)->ctrl);
-        local->client = net_controller_get_host(game_state_get_player(scene->gs, 0)->ctrl);
-        local->nat = local->peer->data;
-        winner = net_controller_get_winner(game_state_get_player(scene->gs, 0)->ctrl);
-        local->mode = LOBBY_MAIN;
+        controller *ctrl = game_state_get_player(scene->gs, 0)->ctrl;
+        local->peer = net_controller_get_lobby_connection(ctrl);
+        local->client = net_controller_get_host(ctrl);
+        local->nat = local->peer ? local->peer->data : NULL;
+        winner = net_controller_get_winner(ctrl);
+        opponent_disconnected = net_controller_opponent_disconnected(ctrl);
+        lobby_reconnect = !net_controller_lobby_connected(ctrl);
+        if(lobby_reconnect) {
+            local->peer = NULL;
+        } else {
+            local->mode = LOBBY_MAIN;
+        }
         local->nat_tries = 12;
     } else if(game_state_get_player(scene->gs, 1)->ctrl->type == CTRL_TYPE_NETWORK) {
-        local->peer = net_controller_get_lobby_connection(game_state_get_player(scene->gs, 1)->ctrl);
-        local->client = net_controller_get_host(game_state_get_player(scene->gs, 1)->ctrl);
-        local->nat = local->peer->data;
-        winner = net_controller_get_winner(game_state_get_player(scene->gs, 1)->ctrl);
-        local->mode = LOBBY_MAIN;
+        controller *ctrl = game_state_get_player(scene->gs, 1)->ctrl;
+        local->peer = net_controller_get_lobby_connection(ctrl);
+        local->client = net_controller_get_host(ctrl);
+        local->nat = local->peer ? local->peer->data : NULL;
+        winner = net_controller_get_winner(ctrl);
+        opponent_disconnected = net_controller_opponent_disconnected(ctrl);
+        lobby_reconnect = !net_controller_lobby_connected(ctrl);
+        if(lobby_reconnect) {
+            local->peer = NULL;
+        } else {
+            local->mode = LOBBY_MAIN;
+        }
         local->nat_tries = 12;
     } else if(game_state_get_player(scene->gs, 0)->ctrl->type == CTRL_TYPE_SPECTATOR) {
         // in spectator mode, only the first controller can have the enet data
@@ -1824,7 +1847,13 @@ int lobby_create(scene *scene) {
 
         menu_set_submenu(menu, name_menu);
 
-        lobby_show_dialog(scene, DIALOG_STYLE_CANCEL, "Establishing network socket...", lobby_dialog_close_exit);
+        if(lobby_reconnect) {
+            char *message = opponent_disconnected ? "Opponent and lobby connections lost. Reconnecting..."
+                                                  : "Lobby connection lost. Reconnecting...";
+            lobby_show_dialog(scene, DIALOG_STYLE_CANCEL, message, lobby_dialog_close_exit);
+        } else {
+            lobby_show_dialog(scene, DIALOG_STYLE_CANCEL, "Establishing network socket...", lobby_dialog_close_exit);
+        }
 
     } else {
         serial ser;
@@ -1851,6 +1880,10 @@ int lobby_create(scene *scene) {
         ENetPacket *packet = enet_packet_create(ser.data, serial_len(&ser), ENET_PACKET_FLAG_RELIABLE);
         enet_peer_send(local->peer, 0, packet);
         serial_free(&ser);
+
+        if(opponent_disconnected) {
+            lobby_show_dialog(scene, DIALOG_STYLE_OK, "Opponent disconnected.", lobby_dialog_close);
+        }
     }
 
     scene_set_input_poll_cb(scene, lobby_input_tick);
