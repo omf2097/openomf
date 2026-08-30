@@ -1838,6 +1838,13 @@ void har_tick(object *obj) {
         object_set_palette_transform_cb(obj, NULL);
     }
 
+    if(h->punch_valid) {
+        h->punch_valid--;
+    }
+    if(h->kick_valid) {
+        h->kick_valid--;
+    }
+
     if(h->p_fade_in_ticks_left > 0) {
         h->p_fade_in_ticks_left--;
     }
@@ -2141,7 +2148,7 @@ bool is_move_chain_allowed(object *obj, af_move *move) {
     return allowed;
 }
 
-af_move *match_move(object *obj, char prefix, char *inputs) {
+af_move *match_move_prefix(object *obj, char prefix, char *inputs) {
     har *h = object_get_userdata(obj);
     af_move *move = NULL;
     size_t len;
@@ -2165,18 +2172,34 @@ af_move *match_move(object *obj, char prefix, char *inputs) {
     return NULL;
 }
 
-af_move *scrap_destruction_cheat(object *obj, char input) {
+af_move *match_move(object *obj, char *inputs) {
+    har *h = object_get_userdata(obj);
+    af_move *move = NULL;
+    if(h->punch_valid) {
+        move = match_move_prefix(obj, 'P', inputs);
+    }
+    if(move == NULL && h->kick_valid) {
+        move = match_move_prefix(obj, 'K', inputs);
+    }
+    if(move != NULL) {
+        h->punch_valid = 0;
+        h->kick_valid = 0;
+    }
+    return move;
+}
+
+af_move *scrap_destruction_cheat(object *obj) {
     har *h = object_get_userdata(obj);
     for(int i = 0; i < 70; i++) {
         af_move *move;
         if((move = af_get_move(h->af_data, i))) {
-            if(move->category == CAT_SCRAP && h->state == STATE_VICTORY && input == 'K' &&
+            if(move->category == CAT_SCRAP && h->state == STATE_VICTORY && h->kick_valid &&
                (player_frame_isset(obj, TAG_JF) ||
                 (player_frame_isset(obj, TAG_JN) && i == player_frame_get(obj, TAG_JN)))) {
                 return move;
             }
 
-            if(move->category == CAT_DESTRUCTION && h->state == STATE_SCRAP && input == 'P' &&
+            if(move->category == CAT_DESTRUCTION && h->state == STATE_SCRAP && h->punch_valid &&
                (player_frame_isset(obj, TAG_JF2) ||
                 (player_frame_isset(obj, TAG_JN) && i == player_frame_get(obj, TAG_JN)))) {
                 return move;
@@ -2242,13 +2265,6 @@ int har_act(object *obj, int act_type) {
     // always queue input, I guess
     bool input_changed = add_input(h->inputs, act_type, direction);
 
-    char prefix = 1; // should never match anything, even the empty string
-    if(act_type & ACT_KICK) {
-        prefix = 'K';
-    } else if(act_type & ACT_PUNCH) {
-        prefix = 'P';
-    }
-
     uint32_t input_staleness = obj->gs->tick - h->input_change_tick;
     if(input_changed) {
         h->input_change_tick = obj->gs->tick;
@@ -2261,13 +2277,6 @@ int har_act(object *obj, int act_type) {
         h->input_change_tick = obj->gs->tick;
     }
 
-    if(h->endurance < 0) {
-        if(prefix == 'K' || prefix == 'P') { // Mash to recover from stun faster!
-            h->endurance += 512;
-        }
-        return 0;
-    }
-
     if(object_get_halt(obj)) {
         // frozen, ignore input
         return 0;
@@ -2276,6 +2285,21 @@ int har_act(object *obj, int act_type) {
     // Don't allow movement if arena is starting or ending
     int arena_state = arena_get_state(game_state_get_scene(obj->gs));
     if(arena_state == ARENA_STATE_STARTING) {
+        return 0;
+    }
+
+    if(act_type & ACT_KICK) {
+        h->kick_valid = INPUT_BUFFER_TICKS;
+    } else if(act_type & ACT_PUNCH) {
+        h->punch_valid = INPUT_BUFFER_TICKS;
+    }
+
+    if(h->endurance < 0) {
+        if(h->kick_valid || h->punch_valid) { // Mash to recover from stun faster!
+            h->endurance += 512;
+            h->kick_valid = 0;
+            h->punch_valid = 0;
+        }
         return 0;
     }
 
@@ -2291,7 +2315,7 @@ int har_act(object *obj, int act_type) {
             truncated_inputs[i] = flip_input(h->inputs[i], direction);
         }
     }
-    af_move *move = match_move(obj, prefix, truncated_inputs);
+    af_move *move = match_move(obj, truncated_inputs);
 
     if(player_frame_isset(obj, TAG_JN) && player_frame_isset(obj, TAG_CW) && (enemy_har->state == STATE_WALLDAMAGE)) {
         move = af_get_move(h->af_data, player_frame_get(obj, TAG_JN));
@@ -2299,7 +2323,7 @@ int har_act(object *obj, int act_type) {
 
     if(game_state_get_player(obj->gs, h->player_id)->ez_destruct && move == NULL &&
        (h->state == STATE_VICTORY || h->state == STATE_SCRAP)) {
-        move = scrap_destruction_cheat(obj, prefix);
+        move = scrap_destruction_cheat(obj);
     }
 
     if(move) {
