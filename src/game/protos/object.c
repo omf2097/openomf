@@ -314,6 +314,7 @@ void object_del_frame_effects(object *obj, uint32_t effects) {
     obj->frame_video_effects &= ~effects;
 }
 
+// Assuming pre-flipped input
 void object_apply_controllable_velocity(object *obj, bool is_projectile, char input) {
     if(player_frame_isset(obj, TAG_CX)) {
         float cx = player_frame_get(obj, TAG_CX) / 10.0;
@@ -321,13 +322,13 @@ void object_apply_controllable_velocity(object *obj, bool is_projectile, char in
             cx *= obj->horizontal_velocity_modifier;
         }
         if(input == '4') {
-            obj->cvel.x -= cx * object_get_direction(obj);
+            obj->cvel.x -= cx;
         } else if(input == '6') {
-            obj->cvel.x += cx * object_get_direction(obj);
+            obj->cvel.x += cx;
         } else if(input == '3' || input == '9') {
-            obj->cvel.x += cx * 0.7 * object_get_direction(obj);
+            obj->cvel.x += cx * 0.7;
         } else if(input == '1' || input == '7') {
-            obj->cvel.x -= cx * 0.7 * object_get_direction(obj);
+            obj->cvel.x -= cx * 0.7;
         }
         // CY needs CX to be set, and only works for projectiles
         if(player_frame_isset(obj, TAG_CY) && is_projectile) {
