@@ -384,7 +384,7 @@ int har_is_blocking(object *obj, af_move *move) {
         return 0;
     }
 
-    char last_input = get_last_input(obj);
+    char last_input = h->last_input;
     if(obj->crossup_protection) {
         if(last_input == '6') {
             last_input = '4';
@@ -722,13 +722,6 @@ void har_move(object *obj) {
                 har_event_land(h, ctrl);
                 har_finished(obj);
             }
-
-            if(obj->pos.x < ARENA_LEFT_WALL) {
-                obj->pos.x = ARENA_LEFT_WALL;
-            }
-            if(obj->pos.x > ARENA_RIGHT_WALL) {
-                obj->pos.x = ARENA_RIGHT_WALL;
-            }
         }
 
         if(h->state != STATE_SCRAP) {
@@ -736,13 +729,13 @@ void har_move(object *obj) {
             // This is important to dampen/eliminate the velocity added from pushing away from the other HAR
             // friction decreases velocity by 1 each tick, and sets it to 0 if its under |2|
             if(obj->vel.x > 0.0f) {
-                if(obj->vel.x < 2.0f) {
+                if(obj->vel.x <= 1.0f) {
                     obj->vel.x = 0.0f;
                 } else {
                     obj->vel.x -= 1.0f;
                 }
             } else if(obj->vel.x < 0.0f) {
-                if(obj->vel.x > -2.0f) {
+                if(obj->vel.x >= -1.0f) {
                     obj->vel.x = 0.0f;
                 } else {
                     obj->vel.x += 1.0f;
@@ -1026,7 +1019,16 @@ void har_take_damage(object *obj, af_move *move) {
             object_set_custom_string(obj, str_c(string));
             log_debug("HAR %s animation set to %s", har_get_name(h->id), str_c(string));
         }
-        object_dynamic_tick(obj);
+        if(!object_is_airborne(obj)) {
+            int hit_ticks = player_get_len_ticks(obj);
+            if(hit_ticks < 20) {
+                float push = (hit_ticks - 3) * 20.0 / 29.0 + 0.5;
+                if(push < 7) {
+                    push = 7;
+                }
+                obj->vel.x = push * object_get_direction(obj) * -1;
+            }
+        }
 
         // XXX hack - if the first frame has the 'k' tag, treat it as some vertical knockback
         // we can't do this in player.c because it breaks the jaguar leap, which also uses the 'k' tag.
@@ -1142,8 +1144,7 @@ void har_spawn_scrap(const object *obj, vec2i pos, int amount) {
 
 void har_block(object *obj, vec2i hit_coord, uint8_t block_stun) {
     har *h = obj->userdata;
-    char last_input = get_last_input(obj);
-    if(last_input == '1' || last_input == '3') {
+    if(h->last_input == '1' || h->last_input == '3') {
         object_set_animation(obj, &af_get_move(h->af_data, ANIM_CROUCHING_BLOCK)->ani);
     } else {
         object_set_animation(obj, &af_get_move(h->af_data, ANIM_STANDING_BLOCK)->ani);
@@ -1250,6 +1251,27 @@ void har_debug(object *obj) {
 }
 #endif // DEBUGMODE
 
+void har_cornerpush(const object *self, object *enemy, const float distance) {
+    har *h = object_get_userdata(self);
+    if(h->throw_duration || (h->cornerpush_enabled && h->state == STATE_BLOCKSTUN)) {
+        enemy->pos.x += distance;
+    } else if(h->cornerpush_enabled && h->state == STATE_RECOIL) {
+        if(!object_is_airborne(self) && !object_is_airborne(enemy)) {
+            enemy->pos.x += distance / 2.0 + (distance < 0 ? -2 : 2);
+        } else if(object_is_airborne(self) && !object_is_airborne(enemy) && player_get_current_tick(self) <= 2 &&
+                  !h->cornerpush_vel_applied) { // todo, also check last hit wasn't CAT_CLOSE or CAT_JUMP
+            float pushvel = (h->last_hit_raw_damage + 15) / 3.0;
+            if(pushvel > 9) {
+                pushvel = 9;
+            }
+            h->cornerpush_vel_applied = true;
+            vec2f vel = object_get_vel(enemy);
+            vel.x = distance < 0 ? -1 : 1 * pushvel;
+            object_set_vel(enemy, vel);
+        }
+    }
+}
+
 // function to check if har A is hitting har B. Returns 1 if the har is executing a priority move which
 // would interrupt B. Currently only throws are considered priority.
 int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
@@ -1260,7 +1282,6 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
     controller *ctrl_b = game_player_get_ctrl(game_state_get_player(obj_b->gs, b->player_id));
 
     // Check for collisions by sprite collision points
-    int level = 1;
     af_move *move = af_get_move(a->af_data, obj_a->cur_animation->id);
 
     if(a->in_stasis_ticks) {
@@ -1319,12 +1340,14 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
               player_frame_isset(obj_a, TAG_UR)) {
         b->block_duration = move->block_stun;
     }
-    if(a->damage_done == 0 &&
-       (intersect_har_sprite_hitpoint(obj_a, obj_b, level, &hit_coord) || move->category == CAT_CLOSE ||
-        (player_frame_isset(obj_a, TAG_UE) && !object_is_airborne(obj_b)))) {
+    if(a->damage_done == 0 && (intersect_har_sprite_hitpoint(obj_a, obj_b, &hit_coord) || move->category == CAT_CLOSE ||
+                               (player_frame_isset(obj_a, TAG_UE) && !object_is_airborne(obj_b)))) {
 
         obj_a->q_counter = obj_a->q_val;
         obj_a->should_hitpause = true;
+        b->cornerpush_vel_applied = false;
+        b->last_hit_raw_damage = move->damage;
+        b->cornerpush_enabled = !player_frame_isset(obj_a, TAG_UN);
 
         if(har_is_blocking(obj_b, move) && !player_frame_isset(obj_a, TAG_BN)) {
             a->damage_done = 1;
@@ -1334,27 +1357,21 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
             if(player_frame_isset(obj_a, TAG_I) && move->next_move) {
                 har_set_ani(obj_a, move->next_move, 0);
             }
-            if(b->is_wallhugging) {
-                vec2f push = object_get_vel(obj_a);
-                // TODO use 90% of the block pushback as cornerpush for now
-                push.x = -1 * object_get_direction(obj_a) * (((move->block_stun - 2) * 0.74) + 1) * 0.9;
-                log_debug("doing block cornerpush of %f",
-                          -1 * object_get_direction(obj_a) * (((move->block_stun - 2) * 0.74) + 1) * 0.9);
-                object_set_vel(obj_a, push);
-            } else {
-                vec2f push = object_get_vel(obj_b);
-                push.x = -1 * object_get_direction(obj_b) * (((move->block_stun - 2) * 0.74) + 1);
-                log_debug("doing block pushback of %f",
-                          -1 * object_get_direction(obj_b) * (((move->block_stun - 2) * 0.74) + 1));
-                object_set_vel(obj_b, push);
+            int block_val = move->block_stun;
+            if(block_val <= 1) {
+                block_val = 2;
             }
+            vec2f push = object_get_vel(obj_b);
+            push.x = -1 * object_get_direction(obj_b) * (block_val * (20.0 / 27.0) + 1);
+            log_debug("doing block pushback of %f", push.x);
+            object_set_vel(obj_b, push);
             return 0;
         }
 
         vec2i hit_coord2 = vec2i_create(0, 0);
 
         if(move->category != CAT_CLOSE && b->damage_done == 0 && loop == 0 &&
-           intersect_har_sprite_hitpoint(obj_b, obj_a, level, &hit_coord2)) {
+           intersect_har_sprite_hitpoint(obj_b, obj_a, &hit_coord2)) {
             log_debug("both hars hit at the same time!");
             if(har_collide_with_har(obj_b, obj_a, 1)) {
                 // other player threw us
@@ -1381,26 +1398,6 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
 
         har_event_take_hit(b, move, false, ctrl_b);
         har_event_land_hit(a, move, false, ctrl_a);
-
-        if(move->category != CAT_CLOSE) {
-            if(b->is_wallhugging) {
-                // back the attacker off a little
-                vec2f push = object_get_vel(obj_a);
-                if(fabsf(push.x) < 5.5f) {
-                    // TODO need real formula here
-                    log_debug("doing corner push of 6.3");
-                    push.x = -6.3f * object_get_direction(obj_a);
-                    object_set_vel(obj_a, push);
-                }
-            } else {
-                vec2f push = object_get_vel(obj_b);
-                if(fabsf(push.x) < 7.0f) {
-                    log_debug("doing knockback of 7");
-                    push.x = -7.0f * object_get_direction(obj_b);
-                    object_set_vel(obj_b, push);
-                }
-            }
-        }
 
         if(object_is_airborne(obj_a) && object_is_airborne(obj_b)) {
             // modify the horizontal velocity of the attacker when doing air knockback
@@ -1493,16 +1490,18 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
     }
 
     // Check for collisions by sprite collision points
-    int level = 2;
     vec2i hit_coord;
     if(o_pjt->can_hit) {
         projectile_clear_hit(o_pjt);
         o_pjt->can_hit = 0;
     }
-    if(intersect_har_sprite_hitpoint(o_pjt, o_har, level, &hit_coord)) {
+    if(intersect_har_sprite_hitpoint(o_pjt, o_har, &hit_coord)) {
         o_pjt->q_counter = o_pjt->q_val;
+        h->cornerpush_vel_applied = false;
+        h->cornerpush_enabled = !player_frame_isset(o_pjt, TAG_UN);
 
         af_move *move = af_get_move(prog_owner_af_data, o_pjt->cur_animation->id);
+        h->last_hit_raw_damage = move->damage;
 
         controller *ctrl = game_player_get_ctrl(game_state_get_player(o_har->gs, h->player_id));
         controller *ctrl_other = game_player_get_ctrl(game_state_get_player(o_pjt->gs, other->player_id));
@@ -1522,10 +1521,13 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
             h->damage_received = 0;
             har_block(o_har, hit_coord, move->block_stun);
             // do block pushback
+            int block_val = move->block_stun;
+            if(block_val <= 1) {
+                block_val = 2;
+            }
             vec2f push = object_get_vel(o_har);
-            push.x = -1 * object_get_direction(o_har) * (((move->block_stun - 2) * 0.74) + 1);
-            log_debug("doing block pushback of %f",
-                      -1 * object_get_direction(o_har) * (((move->block_stun - 2) * 0.74) + 1));
+            push.x = -1 * object_get_direction(o_har) * (block_val * (20.0 / 27.0) + 1);
+            log_debug("doing block pushback of %f", push.x);
             object_set_vel(o_har, push);
             return;
         }
@@ -1576,15 +1578,6 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
             if(air_hit) {
                 o_har->vel.y -= 3;
             }
-            if(!h->is_wallhugging && !object_is_airborne(o_har)) {
-                vec2f push = object_get_vel(o_har);
-                if(fabsf(push.x) < 7.0f) {
-                    log_debug("doing knockback of 7");
-                    push.x = -7.0f * object_get_direction(o_har);
-                    object_set_vel(o_har, push);
-                }
-            }
-
         } else if(move->category == CAT_CLOSE) {
             // shadow grab is a projectile
             h->throw_duration = move->throw_duration;
@@ -1646,9 +1639,8 @@ void har_collide_with_hazard(object *o_har, object *o_hzd) {
     }
 
     // Check for collisions by sprite collision points
-    int level = 2;
     vec2i hit_coord;
-    if(!h->damage_received && intersect_har_sprite_hitpoint(o_hzd, o_har, level, &hit_coord)) {
+    if(!h->damage_received && intersect_har_sprite_hitpoint(o_hzd, o_har, &hit_coord)) {
         af_move *move = omf_calloc(1, sizeof(af_move));
         move->damage = anim->hazard_damage;
         move->footer_string = anim->footer_string;
@@ -1670,7 +1662,7 @@ void har_collide_with_hazard(object *o_har, object *o_hzd) {
         har_spawn_scrap(o_har, hit_coord, 9);
         h->damage_received = 1;
         h->rehit_combo = air_hit;
-    } else if(anim->chain_hit && intersect_sprite_hitpoint(o_har, o_hzd, level, &hit_coord)) {
+    } else if(anim->chain_hit && intersect_sprite_hitpoint(o_har, o_hzd, &hit_coord)) {
         // we can punch this! Only set on fire pit orb
         anim = bk_get_info(bk_data, anim->chain_hit);
         o_hzd->animation_state.enemy_obj_id = o_har->animation_state.enemy_obj_id;
@@ -1839,6 +1831,13 @@ void har_tick(object *obj) {
         object_set_palette_transform_cb(obj, NULL);
     }
 
+    if(h->punch_valid) {
+        h->punch_valid--;
+    }
+    if(h->kick_valid) {
+        h->kick_valid--;
+    }
+
     if(h->p_fade_in_ticks_left > 0) {
         h->p_fade_in_ticks_left--;
     }
@@ -1913,13 +1912,20 @@ void har_tick(object *obj) {
     if((h->state != STATE_DEFEAT && !ab_flag) || player_frame_isset(enemy_obj, TAG_CW)) {
         int wall_flag = player_frame_isset(obj, TAG_AW);
         int wall = 0;
+        float distance = 0;
         if(pos.x < ARENA_LEFT_WALL) {
+            distance = ARENA_LEFT_WALL - pos.x;
             pos.x = ARENA_LEFT_WALL;
             obj->wall_collision = true;
         } else if(pos.x > ARENA_RIGHT_WALL) {
+            distance = ARENA_RIGHT_WALL - pos.x;
             pos.x = ARENA_RIGHT_WALL;
             wall = 1;
             obj->wall_collision = true;
+        }
+        if(distance != 0 && (h->state == STATE_BLOCKSTUN || h->state == STATE_RECOIL)) {
+            log_debug("Trigger cornerpush, distance %f", distance);
+            har_cornerpush(obj, enemy_obj, distance);
         }
 
         af_move *move = af_get_move(h->af_data, obj->cur_animation->id);
@@ -2142,7 +2148,7 @@ bool is_move_chain_allowed(object *obj, af_move *move) {
     return allowed;
 }
 
-af_move *match_move(object *obj, char prefix, char *inputs) {
+af_move *match_move_prefix(object *obj, char prefix, char *inputs) {
     har *h = object_get_userdata(obj);
     af_move *move = NULL;
     size_t len;
@@ -2166,18 +2172,34 @@ af_move *match_move(object *obj, char prefix, char *inputs) {
     return NULL;
 }
 
-af_move *scrap_destruction_cheat(object *obj, char input) {
+af_move *match_move(object *obj, char *inputs) {
+    har *h = object_get_userdata(obj);
+    af_move *move = NULL;
+    if(h->punch_valid) {
+        move = match_move_prefix(obj, 'P', inputs);
+    }
+    if(move == NULL && h->kick_valid) {
+        move = match_move_prefix(obj, 'K', inputs);
+    }
+    if(move != NULL) {
+        h->punch_valid = 0;
+        h->kick_valid = 0;
+    }
+    return move;
+}
+
+af_move *scrap_destruction_cheat(object *obj) {
     har *h = object_get_userdata(obj);
     for(int i = 0; i < 70; i++) {
         af_move *move;
         if((move = af_get_move(h->af_data, i))) {
-            if(move->category == CAT_SCRAP && h->state == STATE_VICTORY && input == 'K' &&
+            if(move->category == CAT_SCRAP && h->state == STATE_VICTORY && h->kick_valid &&
                (player_frame_isset(obj, TAG_JF) ||
                 (player_frame_isset(obj, TAG_JN) && i == player_frame_get(obj, TAG_JN)))) {
                 return move;
             }
 
-            if(move->category == CAT_DESTRUCTION && h->state == STATE_SCRAP && input == 'P' &&
+            if(move->category == CAT_DESTRUCTION && h->state == STATE_SCRAP && h->punch_valid &&
                (player_frame_isset(obj, TAG_JF2) ||
                 (player_frame_isset(obj, TAG_JN) && i == player_frame_get(obj, TAG_JN)))) {
                 return move;
@@ -2243,29 +2265,16 @@ int har_act(object *obj, int act_type) {
     // always queue input, I guess
     bool input_changed = add_input(h->inputs, act_type, direction);
 
-    char prefix = 1; // should never match anything, even the empty string
-    if(act_type & ACT_KICK) {
-        prefix = 'K';
-    } else if(act_type & ACT_PUNCH) {
-        prefix = 'P';
-    }
-
     uint32_t input_staleness = obj->gs->tick - h->input_change_tick;
     if(input_changed) {
         h->input_change_tick = obj->gs->tick;
+        h->last_input = flip_input(h->inputs[0], object_get_direction(obj));
     }
 
     if(h->jump_delay) {
         h->jump_delay--;
         // Extend the superjump timeframe, will rework so it doesn't mess with overall input buffer later
         h->input_change_tick = obj->gs->tick;
-    }
-
-    if(h->endurance < 0) {
-        if(prefix == 'K' || prefix == 'P') { // Mash to recover from stun faster!
-            h->endurance += 512;
-        }
-        return 0;
     }
 
     if(object_get_halt(obj)) {
@@ -2276,6 +2285,21 @@ int har_act(object *obj, int act_type) {
     // Don't allow movement if arena is starting or ending
     int arena_state = arena_get_state(game_state_get_scene(obj->gs));
     if(arena_state == ARENA_STATE_STARTING) {
+        return 0;
+    }
+
+    if(act_type & ACT_KICK) {
+        h->kick_valid = INPUT_BUFFER_TICKS;
+    } else if(act_type & ACT_PUNCH) {
+        h->punch_valid = INPUT_BUFFER_TICKS;
+    }
+
+    if(h->endurance < 0) {
+        if(h->kick_valid || h->punch_valid) { // Mash to recover from stun faster!
+            h->endurance += 512;
+            h->kick_valid = 0;
+            h->punch_valid = 0;
+        }
         return 0;
     }
 
@@ -2291,7 +2315,7 @@ int har_act(object *obj, int act_type) {
             truncated_inputs[i] = flip_input(h->inputs[i], direction);
         }
     }
-    af_move *move = match_move(obj, prefix, truncated_inputs);
+    af_move *move = match_move(obj, truncated_inputs);
 
     if(player_frame_isset(obj, TAG_JN) && player_frame_isset(obj, TAG_CW) && (enemy_har->state == STATE_WALLDAMAGE)) {
         move = af_get_move(h->af_data, player_frame_get(obj, TAG_JN));
@@ -2299,7 +2323,7 @@ int har_act(object *obj, int act_type) {
 
     if(game_state_get_player(obj->gs, h->player_id)->ez_destruct && move == NULL &&
        (h->state == STATE_VICTORY || h->state == STATE_SCRAP)) {
-        move = scrap_destruction_cheat(obj, prefix);
+        move = scrap_destruction_cheat(obj);
     }
 
     if(move) {
