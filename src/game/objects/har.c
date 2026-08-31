@@ -1910,6 +1910,10 @@ void har_tick(object *obj) {
         int right_bound = ARENA_RIGHT_WALL;
         if(pos.y != ARENA_FLOOR) {
             right_bound = ARENA_RIGHT_WALL - 1;
+            /** TODO: Add optional config to enable this bugfix! **/
+            /*
+            left_bound = ARENA_LEFT_WALL + 1;
+            */
         }
 
         int wall_flag = player_frame_isset(obj, TAG_AW);
