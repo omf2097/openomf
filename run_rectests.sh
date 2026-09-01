@@ -77,6 +77,7 @@ tests=(
     "Katana enters winpose after landing from heel stomp:KATANA_WINPOSE.REC"
     "Round one starts on tick 92:ROUNDONE.REC"
     "Chronos can attack opponent when in stasis in the air and rehit mode is disabled:CHRONOS_AIR_STASIS.REC"
+    "Player 2 can crossup in the left corner and neither player can crossup in the right corner:CORNER_TEST.REC"
     "Player can hold back to block even after being crossed up:BLOCK_DIR.REC"
 )
 
