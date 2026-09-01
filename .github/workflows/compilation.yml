@@ -11,10 +11,10 @@ on:
 
 jobs:
 
-  # Run unittests on a recent version of clang
+  # Run unit tests on a recent version of Clang
   # -----------------------------------------------------------------------------------------------
   unittest:
-    name: Run formatting Check, linux unittests
+    name: Run formatting check and unit tests on Linux
     runs-on: ubuntu-26.04
     env:
       clang-version: '22'
@@ -50,15 +50,15 @@ jobs:
                 -S . -B build-test
           cmake --build build-test -j $(getconf _NPROCESSORS_ONLN)
 
-      - name: Run tests
+      - name: Run unit tests
         run: |
           cd build-test
           ctest --verbose --output-on-failure
 
-  # Run unittests on GCC compilation
+  # Run unit tests on GCC compilation
   # -----------------------------------------------------------------------------------------------
   gcc_unittest:
-    name: GCC Linux unittests
+    name: GCC Linux unit tests
     runs-on: ubuntu-26.04
 
     steps:
@@ -85,10 +85,10 @@ jobs:
           cd build-test
           ctest --verbose --output-on-failure
 
-  # Run unittests on a recent version of MSVC
+  # Run unit tests on a recent version of MSVC
   # -----------------------------------------------------------------------------------------------
   windows_units:
-    name: Run windows unit-tests
+    name: Run Windows unit tests
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v6
@@ -96,7 +96,7 @@ jobs:
           fetch-depth: 0
 
       - name: Prepare VCPKG
-        # must be done *after* openomf has been checked out
+        # Must be done *after* OpenOMF has been checked out
         uses: johnwason/vcpkg-action@v8
         id: prepare-vcpkg
         with:
@@ -117,13 +117,13 @@ jobs:
           -DUSE_TESTS=On
           -DBUILD_LANGUAGES=Off
 
-      - name: Build openomf
+      - name: Build OpenOMF
         run: cmake --build build-msvc
 
       - name: Run tests
         run: ctest --test-dir build-msvc --verbose --output-on-failure
 
-  # Build windows release artifacts with MSVC
+  # Build Windows release artifacts with MSVC
   # -----------------------------------------------------------------------------------------------
   build_msvc:
     needs: [unittest, windows_units]
@@ -144,11 +144,11 @@ jobs:
         arch: ${{ matrix.config.arch }}
         build_languages: ${{ matrix.config.build_languages }}
 
-  # Build ubuntu package, release artifact
+  # Build Ubuntu package and release artifact
   # -----------------------------------------------------------------------------------------------
   build_ubuntu:
     needs: [unittest, gcc_unittest, windows_units]
-    name: Build ubuntu-26.04
+    name: Build Ubuntu 26.04
     runs-on: ubuntu-26.04
     steps:
     - uses: actions/checkout@v6
@@ -170,7 +170,7 @@ jobs:
     - name: Build AppImage
       uses: ./.github/actions/build_appimage
 
-  # Build macos package, release artifact
+  # Build MacOS package and release artifact
   # -----------------------------------------------------------------------------------------------
   build_macos-arm:
     needs: [unittest, windows_units]
