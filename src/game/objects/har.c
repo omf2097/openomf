@@ -1908,18 +1908,27 @@ void har_tick(object *obj) {
     // Make sure HAR doesn't walk through walls
     // TODO: Roof!
     vec2i pos = object_get_pos(obj);
-    int ab_flag = player_frame_isset(obj, TAG_AB);
-    if((h->state != STATE_DEFEAT && !ab_flag) || player_frame_isset(enemy_obj, TAG_CW)) {
+    if(!player_frame_isset(obj, TAG_AB)) {
+        int left_bound = ARENA_LEFT_WALL;
+        int right_bound = ARENA_RIGHT_WALL;
+        if(pos.y != ARENA_FLOOR) {
+            right_bound = ARENA_RIGHT_WALL - 1;
+            /** TODO: Add optional config to enable this bugfix! **/
+            /*
+            left_bound = ARENA_LEFT_WALL + 1;
+            */
+        }
+
         int wall_flag = player_frame_isset(obj, TAG_AW);
         int wall = 0;
         float distance = 0;
-        if(pos.x < ARENA_LEFT_WALL) {
-            distance = ARENA_LEFT_WALL - pos.x;
-            pos.x = ARENA_LEFT_WALL;
+        if(pos.x < left_bound) {
+            distance = left_bound - pos.x;
+            pos.x = left_bound;
             obj->wall_collision = true;
-        } else if(pos.x > ARENA_RIGHT_WALL) {
-            distance = ARENA_RIGHT_WALL - pos.x;
-            pos.x = ARENA_RIGHT_WALL;
+        } else if(pos.x > right_bound) {
+            distance = right_bound - pos.x;
+            pos.x = right_bound;
             wall = 1;
             obj->wall_collision = true;
         }
