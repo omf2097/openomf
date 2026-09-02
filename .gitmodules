@@ -1,0 +1,15 @@
+[submodule "src/archipelago/submodule/apclientpp"]
+	path = src/archipelago/submodule/apclientpp
+	url = https://github.com/black-sliver/apclientpp
+[submodule "src/archipelago/submodule/wswrap"]
+	path = src/archipelago/submodule/wswrap
+	url = https://github.com/black-sliver/wswrap
+[submodule "src/archipelago/submodule/json"]
+	path = src/archipelago/submodule/json
+	url = https://github.com/nlohmann/json
+[submodule "src/archipelago/submodule/websocketpp"]
+	path = src/archipelago/submodule/websocketpp
+	url = https://github.com/zaphoyd/websocketpp
+[submodule "src/archipelago/submodule/asio"]
+	path = src/archipelago/submodule/asio
+	url = https://github.com/chriskohlhoff/asio

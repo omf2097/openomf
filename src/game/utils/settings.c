@@ -164,6 +164,14 @@ const field f_net[] = {
     F_BOOL(settings_network, net_use_upnp, 1),
 };
 
+#if ARCHIPELAGO_ENABLED
+const field f_archipelago[] = {
+    F_STRING(settings_archipelago, ap_server,   "localhost:38281"),
+    F_STRING(settings_archipelago, ap_slot,     ""),
+    F_STRING(settings_archipelago, ap_password, ""),
+};
+#endif
+
 // Map struct to field
 const struct_to_field struct_to_fields[] = {
     S_2_F(&_settings.language, f_language),
@@ -173,7 +181,10 @@ const struct_to_field struct_to_fields[] = {
     S_2_F(&_settings.tournament, f_tournament),
     S_2_F(&_settings.advanced, f_advanced),
     S_2_F(&_settings.keys, f_keyboard),
-    S_2_F(&_settings.net, f_net)
+    S_2_F(&_settings.net, f_net),
+#if ARCHIPELAGO_ENABLED
+    S_2_F(&_settings.archipelago, f_archipelago),
+#endif
 };
 // clang-format on
 

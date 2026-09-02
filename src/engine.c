@@ -1,4 +1,7 @@
 #include "engine.h"
+#if ARCHIPELAGO_ENABLED
+#include "archipelago/apconnect.h"
+#endif
 #include "audio/audio.h"
 #include "console/console.h"
 #include "controller/controller.h"
@@ -323,6 +326,10 @@ void engine_run(const engine_init_flags *init_flags) {
                 SDL_ShowCursor(0);
             }
         }
+
+#if ARCHIPELAGO_ENABLED
+        Archipelago_Poll();
+#endif
 
         // Render scene
         uint64_t frame_dt = SDL_GetTicks64() - frame_start;

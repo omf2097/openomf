@@ -1,5 +1,10 @@
 #include <stdio.h>
 
+#if ARCHIPELAGO_ENABLED
+#include <stdlib.h>
+#include "archipelago/ap_mechlab.h"
+#include "archipelago/apstate.h"
+#endif
 #include "game/gui/sizer.h"
 #include "game/gui/spritebutton.h"
 #include "game/gui/trn_menu.h"
@@ -28,6 +33,9 @@ void lab_menu_trade_done(component *menu, component *submenu) {
 bool confirm_trade(component *c, void *userdata) {
     scene *s = userdata;
     game_player *p1 = game_state_get_player(s->gs, 0);
+#if ARCHIPELAGO_ENABLED
+    if(ap_mode) { ap_confirm_trade(c, s, p1); return true; }
+#endif
     int trade_value = calculate_trade_value(&p1->chr->pilot);
     int har_value = har_price(p1->pilot->har_id);
     p1->chr->pilot.money += trade_value - har_value;
@@ -57,6 +65,9 @@ bool cancel_trade(component *c, void *userdata) {
 
 void lab_menu_trade(component *c, void *userdata) {
     scene *s = userdata;
+#if ARCHIPELAGO_ENABLED
+    if(ap_mode) { ap_do_trade(c, s); return; }
+#endif
     game_player *p1 = game_state_get_player(s->gs, 0);
     char tmp[100];
     int trade_value = calculate_trade_value(&p1->chr->pilot);
@@ -87,6 +98,9 @@ void lab_menu_trade_for_jaguar_focus(component *c, bool focused, void *userdata)
     if(focused) {
         scene *s = userdata;
         game_player *p1 = game_state_get_player(s->gs, 0);
+#if ARCHIPELAGO_ENABLED
+        if(ap_mode) { ap_preview_har(userdata, 0); return; }
+#endif
         sd_pilot *pilot = game_player_get_pilot(p1);
         pilot->har_id = 0;
         mechlab_update(s);
@@ -97,6 +111,9 @@ void lab_menu_trade_for_shadow_focus(component *c, bool focused, void *userdata)
     if(focused) {
         scene *s = userdata;
         game_player *p1 = game_state_get_player(s->gs, 0);
+#if ARCHIPELAGO_ENABLED
+        if(ap_mode) { ap_preview_har(userdata, 1); return; }
+#endif
         sd_pilot *pilot = game_player_get_pilot(p1);
         pilot->har_id = 1;
         mechlab_update(s);
@@ -107,6 +124,9 @@ void lab_menu_trade_for_thorn_focus(component *c, bool focused, void *userdata) 
     if(focused) {
         scene *s = userdata;
         game_player *p1 = game_state_get_player(s->gs, 0);
+#if ARCHIPELAGO_ENABLED
+        if(ap_mode) { ap_preview_har(userdata, 2); return; }
+#endif
         sd_pilot *pilot = game_player_get_pilot(p1);
         pilot->har_id = 2;
         mechlab_update(s);
@@ -117,6 +137,9 @@ void lab_menu_trade_for_pyros_focus(component *c, bool focused, void *userdata) 
     if(focused) {
         scene *s = userdata;
         game_player *p1 = game_state_get_player(s->gs, 0);
+#if ARCHIPELAGO_ENABLED
+        if(ap_mode) { ap_preview_har(userdata, 3); return; }
+#endif
         sd_pilot *pilot = game_player_get_pilot(p1);
         pilot->har_id = 3;
         mechlab_update(s);
@@ -127,6 +150,9 @@ void lab_menu_trade_for_electra_focus(component *c, bool focused, void *userdata
     if(focused) {
         scene *s = userdata;
         game_player *p1 = game_state_get_player(s->gs, 0);
+#if ARCHIPELAGO_ENABLED
+        if(ap_mode) { ap_preview_har(userdata, 4); return; }
+#endif
         sd_pilot *pilot = game_player_get_pilot(p1);
         pilot->har_id = 4;
         mechlab_update(s);
@@ -137,6 +163,9 @@ void lab_menu_trade_for_katana_focus(component *c, bool focused, void *userdata)
     if(focused) {
         scene *s = userdata;
         game_player *p1 = game_state_get_player(s->gs, 0);
+#if ARCHIPELAGO_ENABLED
+        if(ap_mode) { ap_preview_har(userdata, 5); return; }
+#endif
         sd_pilot *pilot = game_player_get_pilot(p1);
         pilot->har_id = 5;
         mechlab_update(s);
@@ -147,6 +176,9 @@ void lab_menu_trade_for_shredder_focus(component *c, bool focused, void *userdat
     if(focused) {
         scene *s = userdata;
         game_player *p1 = game_state_get_player(s->gs, 0);
+#if ARCHIPELAGO_ENABLED
+        if(ap_mode) { ap_preview_har(userdata, 6); return; }
+#endif
         sd_pilot *pilot = game_player_get_pilot(p1);
         pilot->har_id = 6;
         mechlab_update(s);
@@ -157,6 +189,9 @@ void lab_menu_trade_for_flail_focus(component *c, bool focused, void *userdata) 
     if(focused) {
         scene *s = userdata;
         game_player *p1 = game_state_get_player(s->gs, 0);
+#if ARCHIPELAGO_ENABLED
+        if(ap_mode) { ap_preview_har(userdata, 7); return; }
+#endif
         sd_pilot *pilot = game_player_get_pilot(p1);
         pilot->har_id = 7;
         mechlab_update(s);
@@ -167,6 +202,9 @@ void lab_menu_trade_for_gargoyle_focus(component *c, bool focused, void *userdat
     if(focused) {
         scene *s = userdata;
         game_player *p1 = game_state_get_player(s->gs, 0);
+#if ARCHIPELAGO_ENABLED
+        if(ap_mode) { ap_preview_har(userdata, 8); return; }
+#endif
         sd_pilot *pilot = game_player_get_pilot(p1);
         pilot->har_id = 8;
         mechlab_update(s);
@@ -177,6 +215,9 @@ void lab_menu_trade_for_chronos_focus(component *c, bool focused, void *userdata
     if(focused) {
         scene *s = userdata;
         game_player *p1 = game_state_get_player(s->gs, 0);
+#if ARCHIPELAGO_ENABLED
+        if(ap_mode) { ap_preview_har(userdata, 9); return; }
+#endif
         sd_pilot *pilot = game_player_get_pilot(p1);
         pilot->har_id = 9;
         mechlab_update(s);
@@ -187,6 +228,9 @@ void lab_menu_trade_for_nova_focus(component *c, bool focused, void *userdata) {
     if(focused) {
         scene *s = userdata;
         game_player *p1 = game_state_get_player(s->gs, 0);
+#if ARCHIPELAGO_ENABLED
+        if(ap_mode) { ap_preview_har(userdata, 10); return; }
+#endif
         sd_pilot *pilot = game_player_get_pilot(p1);
         pilot->har_id = 10;
         mechlab_update(s);
@@ -228,12 +272,34 @@ component *lab_menu_trade_create(scene *s) {
     p1->pilot->arm_power = 0;
     p1->pilot->armor = 0;
     p1->pilot->stun_resistance = 0;
+#if ARCHIPELAGO_ENABLED
+    if(ap_mode) ap_preview_har(s, p1->pilot->har_id);
+#endif
 
     int x = 24;
     int y = 148;
     // Initialize menu, and set button sheet
     component *menu = trnmenu_create(NULL, x, y, false);
 
+#if ARCHIPELAGO_ENABLED
+    int display[6];
+    int display_count;
+    if(ap_mode) {
+        display_count = ap_trade_page(p1->pilot->har_id, p1->pilot->har_trades, display);
+    } else {
+        int trade_value = calculate_trade_value(p1->pilot);
+        display_count = 0;
+        for(int i = 0; i < animation_get_sprite_count(main_buttons); i++) {
+            if(i == p1->pilot->har_id) continue;
+            if(!((p1->pilot->har_trades >> i) & 1)) continue;
+            if(har_price(i) > trade_value + p1->pilot->money) continue;
+            display[display_count++] = i;
+        }
+    }
+    log_debug("trade: %d display HARs (har_trades=0x%04x)", display_count, p1->pilot->har_trades);
+    for(int k = 0; k < display_count; k++) {
+        int i = display[k];
+#else
     // Init GUI buttons with locations from the "select" button sprites
     for(int i = 0; i < animation_get_sprite_count(main_buttons); i++) {
         if(i == p1->pilot->har_id || 0 == ((p1->pilot->har_trades >> i) & 1)) {
@@ -242,6 +308,7 @@ component *lab_menu_trade_create(scene *s) {
         }
         log_debug("adding button");
 
+#endif
         sprite *button_sprite = animation_get_sprite(main_buttons, i);
         component *button = sprite_button_from_details(&details_list[i], NULL, button_sprite->data, s);
         spritebutton_set_font(button, FONT_SMALL);

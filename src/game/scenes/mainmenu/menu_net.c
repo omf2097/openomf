@@ -1,4 +1,7 @@
 #include "game/scenes/mainmenu/menu_net.h"
+#if ARCHIPELAGO_ENABLED
+#include "game/scenes/mainmenu/menu_ap.h"
+#endif
 #include "game/scenes/mainmenu/menu_connect.h"
 #include "game/scenes/mainmenu/menu_listen.h"
 #include "game/scenes/mainmenu/menu_netconfig.h"
@@ -34,10 +37,21 @@ void menu_net_config(component *c, void *userdata) {
     menu_set_submenu(c->parent, menu_netconfig_create(s));
 }
 
+#if ARCHIPELAGO_ENABLED
+void menu_net_archipelago(component *c, void *userdata) {
+    scene *s = userdata;
+    menu_set_submenu(c->parent, menu_ap_create(s));
+}
+#endif
+
 component *menu_net_create(scene *s) {
     component *menu = menu_create();
     menu_attach(menu, label_create_title("NETWORK PLAY"));
     menu_attach(menu, filler_create());
+
+#if ARCHIPELAGO_ENABLED
+    menu_attach(menu, button_create("ARCHIPELAGO", "Connect to an Archipelago multiworld server.", false, false, menu_net_archipelago, s));
+#endif
 
     component *lobby = button_create("LOBBY", "Join the OpenOMF network lobby to challenge other players.", false,
                                      false, menu_net_lobby, s);

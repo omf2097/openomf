@@ -1,5 +1,10 @@
 #include <stdio.h>
+#include <stdlib.h>
 
+#if ARCHIPELAGO_ENABLED
+#include "archipelago/ap_mechlab.h"
+#include "archipelago/apstate.h"
+#endif
 #include "formats/pilot.h"
 #include "game/gui/label.h"
 #include "game/gui/spritebutton.h"
@@ -64,6 +69,9 @@ void lab_menu_customize_done(component *c, void *userdata) {
 }
 
 void lab_menu_customize_color_main(component *c, void *userdata) {
+#if ARCHIPELAGO_ENABLED
+    if(ap_mode && !ap_has_har_color_primary()) return;
+#endif
     scene *s = userdata;
     game_player *p1 = game_state_get_player(s->gs, 0);
     sd_pilot_set_player_color(&p1->chr->pilot, PRIMARY, (p1->chr->pilot.color_1 + 1) % 17);
@@ -71,6 +79,9 @@ void lab_menu_customize_color_main(component *c, void *userdata) {
 }
 
 void lab_menu_customize_color_secondary(component *c, void *userdata) {
+#if ARCHIPELAGO_ENABLED
+    if(ap_mode && !ap_has_har_color_secondary()) return;
+#endif
     scene *s = userdata;
     game_player *p1 = game_state_get_player(s->gs, 0);
     sd_pilot_set_player_color(&p1->chr->pilot, SECONDARY, (p1->chr->pilot.color_2 + 1) % 17);
@@ -78,6 +89,9 @@ void lab_menu_customize_color_secondary(component *c, void *userdata) {
 }
 
 void lab_menu_customize_color_third(component *c, void *userdata) {
+#if ARCHIPELAGO_ENABLED
+    if(ap_mode && !ap_has_har_color_tertiary()) return;
+#endif
     scene *s = userdata;
     game_player *p1 = game_state_get_player(s->gs, 0);
     sd_pilot_set_player_color(&p1->chr->pilot, TERTIARY, (p1->chr->pilot.color_3 + 1) % 17);
@@ -88,6 +102,9 @@ void lab_menu_customize_arm_power(component *c, void *userdata) {
     scene *s = userdata;
     game_player *p1 = game_state_get_player(s->gs, 0);
     sd_pilot *pilot = game_player_get_pilot(p1);
+#if ARCHIPELAGO_ENABLED
+    if(ap_mode) { ap_customize_buy(s, pilot, AP_STAT_ARM_POWER); return; }
+#endif
     if(mechlab_get_selling(s)) {
         int32_t price =
             har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[pilot->arm_power] * arm_leg_multiplier;
@@ -110,6 +127,9 @@ void lab_menu_customize_check_arm_power_price(component *c, void *userdata) {
     scene *s = userdata;
     game_player *p1 = game_state_get_player(s->gs, 0);
     sd_pilot *pilot = game_player_get_pilot(p1);
+#if ARCHIPELAGO_ENABLED
+    if(ap_mode) { ap_customize_check_price(c, pilot, AP_STAT_ARM_POWER); return; }
+#endif
     if(mechlab_get_selling(s)) {
         int32_t price =
             har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[pilot->arm_power] * arm_leg_multiplier;
@@ -125,6 +145,9 @@ void lab_menu_customize_leg_power(component *c, void *userdata) {
     scene *s = userdata;
     game_player *p1 = game_state_get_player(s->gs, 0);
     sd_pilot *pilot = game_player_get_pilot(p1);
+#if ARCHIPELAGO_ENABLED
+    if(ap_mode) { ap_customize_buy(s, pilot, AP_STAT_LEG_POWER); return; }
+#endif
     if(mechlab_get_selling(s)) {
         int32_t price =
             har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[pilot->leg_power] * arm_leg_multiplier;
@@ -147,6 +170,9 @@ void lab_menu_customize_check_leg_power_price(component *c, void *userdata) {
     scene *s = userdata;
     game_player *p1 = game_state_get_player(s->gs, 0);
     sd_pilot *pilot = game_player_get_pilot(p1);
+#if ARCHIPELAGO_ENABLED
+    if(ap_mode) { ap_customize_check_price(c, pilot, AP_STAT_LEG_POWER); return; }
+#endif
     if(mechlab_get_selling(s)) {
         int32_t price =
             har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[pilot->leg_power] * arm_leg_multiplier;
@@ -162,6 +188,9 @@ void lab_menu_customize_arm_speed(component *c, void *userdata) {
     scene *s = userdata;
     game_player *p1 = game_state_get_player(s->gs, 0);
     sd_pilot *pilot = game_player_get_pilot(p1);
+#if ARCHIPELAGO_ENABLED
+    if(ap_mode) { ap_customize_buy(s, pilot, AP_STAT_ARM_SPEED); return; }
+#endif
     if(mechlab_get_selling(s)) {
         int32_t price =
             har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[pilot->arm_speed] * arm_leg_multiplier;
@@ -184,6 +213,9 @@ void lab_menu_customize_check_arm_speed_price(component *c, void *userdata) {
     scene *s = userdata;
     game_player *p1 = game_state_get_player(s->gs, 0);
     sd_pilot *pilot = game_player_get_pilot(p1);
+#if ARCHIPELAGO_ENABLED
+    if(ap_mode) { ap_customize_check_price(c, pilot, AP_STAT_ARM_SPEED); return; }
+#endif
     if(mechlab_get_selling(s)) {
         int32_t price =
             har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[pilot->arm_speed] * arm_leg_multiplier;
@@ -199,6 +231,9 @@ void lab_menu_customize_leg_speed(component *c, void *userdata) {
     scene *s = userdata;
     game_player *p1 = game_state_get_player(s->gs, 0);
     sd_pilot *pilot = game_player_get_pilot(p1);
+#if ARCHIPELAGO_ENABLED
+    if(ap_mode) { ap_customize_buy(s, pilot, AP_STAT_LEG_SPEED); return; }
+#endif
     if(mechlab_get_selling(s)) {
         int32_t price =
             har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[pilot->leg_speed] * arm_leg_multiplier;
@@ -221,6 +256,9 @@ void lab_menu_customize_check_leg_speed_price(component *c, void *userdata) {
     scene *s = userdata;
     game_player *p1 = game_state_get_player(s->gs, 0);
     sd_pilot *pilot = game_player_get_pilot(p1);
+#if ARCHIPELAGO_ENABLED
+    if(ap_mode) { ap_customize_check_price(c, pilot, AP_STAT_LEG_SPEED); return; }
+#endif
     if(mechlab_get_selling(s)) {
         int32_t price =
             har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[pilot->leg_speed] * arm_leg_multiplier;
@@ -236,6 +274,9 @@ void lab_menu_customize_armor(component *c, void *userdata) {
     scene *s = userdata;
     game_player *p1 = game_state_get_player(s->gs, 0);
     sd_pilot *pilot = game_player_get_pilot(p1);
+#if ARCHIPELAGO_ENABLED
+    if(ap_mode) { ap_customize_buy(s, pilot, AP_STAT_ARMOR); return; }
+#endif
     if(mechlab_get_selling(s)) {
         int32_t price = har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[pilot->armor] * armor_multiplier;
         if(price > 0) {
@@ -257,6 +298,9 @@ void lab_menu_customize_check_armor_price(component *c, void *userdata) {
     scene *s = userdata;
     game_player *p1 = game_state_get_player(s->gs, 0);
     sd_pilot *pilot = game_player_get_pilot(p1);
+#if ARCHIPELAGO_ENABLED
+    if(ap_mode) { ap_customize_check_price(c, pilot, AP_STAT_ARMOR); return; }
+#endif
     if(mechlab_get_selling(s)) {
         int32_t price = har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[pilot->armor] * armor_multiplier;
         component_disable(c, price < 1);
@@ -271,6 +315,9 @@ void lab_menu_customize_stun_resistance(component *c, void *userdata) {
     scene *s = userdata;
     game_player *p1 = game_state_get_player(s->gs, 0);
     sd_pilot *pilot = game_player_get_pilot(p1);
+#if ARCHIPELAGO_ENABLED
+    if(ap_mode) { ap_customize_buy(s, pilot, AP_STAT_STUN_RESIST); return; }
+#endif
     if(mechlab_get_selling(s)) {
         int32_t price =
             har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[pilot->stun_resistance] * stun_res_multiplier;
@@ -293,6 +340,9 @@ void lab_menu_customize_check_stun_resistance_price(component *c, void *userdata
     scene *s = userdata;
     game_player *p1 = game_state_get_player(s->gs, 0);
     sd_pilot *pilot = game_player_get_pilot(p1);
+#if ARCHIPELAGO_ENABLED
+    if(ap_mode) { ap_customize_check_price(c, pilot, AP_STAT_STUN_RESIST); return; }
+#endif
     if(mechlab_get_selling(s)) {
         int32_t price =
             har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[pilot->stun_resistance] * stun_res_multiplier;
@@ -320,9 +370,18 @@ void lab_menu_customize_check_trade_robot(component *c, void *userdata) {
             // don't trade for the current HAR
             continue;
         }
+#if ARCHIPELAGO_ENABLED
+        if((p1->pilot->har_trades >> i) & 1) {
+            if(ap_mode || har_prices[i] < trade_value + p1->pilot->money) {
+                trades = true;
+                break;
+            }
+        }
+#else
         if((p1->pilot->har_trades >> i) & 1 && har_prices[i] < trade_value + p1->pilot->money) {
             trades = true;
         }
+#endif
     }
     component_disable(c, !trades);
 }
@@ -419,9 +478,11 @@ static void lab_menu_focus_arm_power(component *c, bool focused, void *userdata)
             mechlab_set_hint(s, tmp);
         } else {
             label_set_text(header_label, "ARM POWER:\n\nUPGRADE COST:");
-            int32_t price =
-                har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[pilot->arm_power + 1] * arm_leg_multiplier;
-            if(pilot->arm_power >= max_arm_power[pilot->har_id]) {
+#if ARCHIPELAGO_ENABLED
+            if(ap_mode) { ap_customize_focus(s, pilot, AP_STAT_ARM_POWER); return; }
+#endif
+            int32_t price = har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[pilot->arm_power + 1] * arm_leg_multiplier;
+            if(pilot->arm_power + 1 > max_arm_power[pilot->har_id]) {
                 label_set_text(details_label, "Unavailable\n\nUnavailable");
             } else {
                 score_format(price, price_str, sizeof(price_str));
@@ -456,9 +517,11 @@ static void lab_menu_focus_leg_power(component *c, bool focused, void *userdata)
             mechlab_set_hint(s, tmp);
         } else {
             label_set_text(header_label, "LEG POWER:\n\nUPGRADE COST:");
-            int32_t price =
-                har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[pilot->leg_power + 1] * arm_leg_multiplier;
-            if(pilot->leg_power >= max_leg_power[pilot->har_id]) {
+#if ARCHIPELAGO_ENABLED
+            if(ap_mode) { ap_customize_focus(s, pilot, AP_STAT_LEG_POWER); return; }
+#endif
+            int32_t price = har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[pilot->leg_power + 1] * arm_leg_multiplier;
+            if(pilot->leg_power + 1 > max_leg_power[pilot->har_id]) {
                 label_set_text(details_label, "Unavailable\n\nUnavailable");
             } else {
                 score_format(price, price_str, sizeof(price_str));
@@ -493,9 +556,11 @@ static void lab_menu_focus_arm_speed(component *c, bool focused, void *userdata)
             mechlab_set_hint(s, tmp);
         } else {
             label_set_text(header_label, "ARM SPEED:\n\nUPGRADE COST:");
-            int32_t price =
-                har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[pilot->arm_speed + 1] * arm_leg_multiplier;
-            if(pilot->arm_speed >= max_arm_speed[pilot->har_id]) {
+#if ARCHIPELAGO_ENABLED
+            if(ap_mode) { ap_customize_focus(s, pilot, AP_STAT_ARM_SPEED); return; }
+#endif
+            int32_t price = har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[pilot->arm_speed + 1] * arm_leg_multiplier;
+            if(pilot->arm_speed + 1 > max_arm_speed[pilot->har_id]) {
                 label_set_text(details_label, "Unavailable\n\nUnavailable");
             } else {
                 score_format(price, price_str, sizeof(price_str));
@@ -530,9 +595,11 @@ static void lab_menu_focus_leg_speed(component *c, bool focused, void *userdata)
             mechlab_set_hint(s, tmp);
         } else {
             label_set_text(header_label, "LEG SPEED:\n\nUPGRADE COST:");
-            int32_t price =
-                har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[pilot->leg_speed + 1] * arm_leg_multiplier;
-            if(pilot->leg_speed >= max_leg_speed[pilot->har_id]) {
+#if ARCHIPELAGO_ENABLED
+            if(ap_mode) { ap_customize_focus(s, pilot, AP_STAT_LEG_SPEED); return; }
+#endif
+            int32_t price = har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[pilot->leg_speed + 1] * arm_leg_multiplier;
+            if(pilot->leg_speed + 1 > max_leg_speed[pilot->har_id]) {
                 label_set_text(details_label, "Unavailable\n\nUnavailable");
             } else {
                 score_format(price, price_str, sizeof(price_str));
@@ -566,9 +633,11 @@ static void lab_menu_focus_armor(component *c, bool focused, void *userdata) {
             mechlab_set_hint(s, lang_get(561));
         } else {
             label_set_text(header_label, "ARMOR PLATE:\n\nUPGRADE COST:");
-            int32_t price =
-                har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[pilot->armor + 1] * armor_multiplier;
-            if(pilot->armor >= max_armor[pilot->har_id]) {
+#if ARCHIPELAGO_ENABLED
+            if(ap_mode) { ap_customize_focus(s, pilot, AP_STAT_ARMOR); return; }
+#endif
+            int32_t price = har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[pilot->armor + 1] * armor_multiplier;
+            if(pilot->armor + 1 > max_armor[pilot->har_id]) {
                 label_set_text(details_label, "Unavailable\n\nUnavailable");
             } else {
                 score_format(price, price_str, sizeof(price_str));
@@ -601,9 +670,11 @@ static void lab_menu_focus_stun_resistance(component *c, bool focused, void *use
             mechlab_set_hint(s, lang_get(563));
         } else {
             label_set_text(header_label, "STUN RES.:\n\nUPGRADE COST:");
-            int32_t price = har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[pilot->stun_resistance + 1] *
-                            stun_res_multiplier;
-            if(pilot->stun_resistance >= max_stun_res[pilot->har_id]) {
+#if ARCHIPELAGO_ENABLED
+            if(ap_mode) { ap_customize_focus(s, pilot, AP_STAT_STUN_RESIST); return; }
+#endif
+            int32_t price = har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[pilot->stun_resistance + 1] * stun_res_multiplier;
+            if(pilot->stun_resistance + 1 > max_stun_res[pilot->har_id]) {
                 label_set_text(details_label, "Unavailable\n\nUnavailable");
             } else {
                 score_format(price, price_str, sizeof(price_str));
@@ -621,12 +692,32 @@ void lab_menu_focus_trade(component *c, bool focused, void *userdata) {
         game_player *p1 = game_state_get_player(s->gs, 0);
         mechlab_set_hint(s, lang_get(565));
         int trade_value = calculate_trade_value(p1->pilot);
+
+#if ARCHIPELAGO_ENABLED
+        uint8_t trades[11];
+        uint8_t tradecount = 0;
+        for(int i = 0; i < 11; i++) {
+            if(i == p1->pilot->har_id) continue;
+            if(!((p1->pilot->har_trades >> i) & 1)) continue;
+            if(!ap_mode && !(har_prices[i] < trade_value + p1->pilot->money)) continue;
+            trades[tradecount++] = (uint8_t)i;
+        }
+        if(tradecount > 6) {
+            for(int i = tradecount - 1; i > 0; i--) {
+                int j = rand() % (i + 1);
+                uint8_t tmp = trades[i];
+                trades[i] = trades[j];
+                trades[j] = tmp;
+            }
+            tradecount = 6;
+        }
+        log_debug("trade hover: %d eligible (har_trades=0x%04x)", tradecount, p1->pilot->har_trades);
+#else
         uint8_t trades[5];
         memset(trades, 0, sizeof(trades));
         uint8_t tradecount = 0;
         for(int i = 0; i < 11; i++) {
             if(i == p1->pilot->har_id) {
-                // don't trade for the current HAR
                 continue;
             }
             if((p1->pilot->har_trades >> i) & 1 && har_prices[i] < trade_value + p1->pilot->money) {
@@ -635,28 +726,33 @@ void lab_menu_focus_trade(component *c, bool focused, void *userdata) {
             }
         }
         log_debug("got %d trades from the bitmask %u", tradecount, p1->pilot->har_trades);
-        // check if there's anything for trade
+#endif
         if(tradecount == 0) {
             label_set_text(header_label, lang_get(488));
             label_set_text(details_label, "");
         } else {
             label_set_text(header_label, lang_get(461));
             char tmp[200] = "";
-            // pick 5 of however many we got
-            // naturally, I unrolled this loop for performance
             if(tradecount == 1) {
-                snprintf(tmp, 200, "%s", lang_get(31 + trades[0]));
+                snprintf(tmp, sizeof(tmp), "%s", lang_get(31 + trades[0]));
             } else if(tradecount == 2) {
-                snprintf(tmp, 200, "%s\n%s", lang_get(31 + trades[0]), lang_get(31 + trades[1]));
+                snprintf(tmp, sizeof(tmp), "%s\n%s", lang_get(31 + trades[0]), lang_get(31 + trades[1]));
             } else if(tradecount == 3) {
-                snprintf(tmp, 200, "%s\n%s\n%s", lang_get(31 + trades[0]), lang_get(31 + trades[1]),
+                snprintf(tmp, sizeof(tmp), "%s\n%s\n%s", lang_get(31 + trades[0]), lang_get(31 + trades[1]),
                          lang_get(31 + trades[2]));
             } else if(tradecount == 4) {
-                snprintf(tmp, 200, "%s\n%s\n%s\n%s", lang_get(31 + trades[0]), lang_get(31 + trades[1]),
+                snprintf(tmp, sizeof(tmp), "%s\n%s\n%s\n%s", lang_get(31 + trades[0]), lang_get(31 + trades[1]),
                          lang_get(31 + trades[2]), lang_get(31 + trades[3]));
             } else if(tradecount == 5) {
-                snprintf(tmp, 200, "%s\n%s\n%s\n%s\n%s", lang_get(31 + trades[0]), lang_get(31 + trades[1]),
-                         lang_get(31 + trades[2]), lang_get(31 + trades[3]), lang_get(31 + trades[4]));
+                snprintf(tmp, sizeof(tmp), "%s\n%s\n%s\n%s\n%s", lang_get(31 + trades[0]),
+                         lang_get(31 + trades[1]), lang_get(31 + trades[2]), lang_get(31 + trades[3]),
+                         lang_get(31 + trades[4]));
+#if ARCHIPELAGO_ENABLED
+            } else {
+                snprintf(tmp, sizeof(tmp), "%s\n%s\n%s\n%s\n%s\n%s", lang_get(31 + trades[0]),
+                         lang_get(31 + trades[1]), lang_get(31 + trades[2]), lang_get(31 + trades[3]),
+                         lang_get(31 + trades[4]), lang_get(31 + trades[5]));
+#endif
             }
             label_set_text(details_label, tmp);
         }
@@ -744,6 +840,10 @@ component *lab_menu_customize_create(scene *s) {
     component_set_size_hints(details_label, 90, 80);
     component_set_pos_hints(details_label, 210, 158);
     trnmenu_attach(menu, details_label);
+
+#if ARCHIPELAGO_ENABLED
+    ap_register_buy_labels(header_label, details_label);
+#endif
 
     // Bind hand animation
     trnmenu_bind_hand(menu, hand_of_doom, s->gs);

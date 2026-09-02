@@ -2,7 +2,6 @@
 
 // In
 in vec2 tex_coord;
-uniform vec2 texture_size;
 uniform sampler2D framebuffer;
 
 // Out

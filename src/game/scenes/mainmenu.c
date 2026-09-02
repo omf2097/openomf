@@ -120,7 +120,13 @@ int mainmenu_create(scene *scene) {
     theme.text.inactive_color = TEXT_INACTIVE_COLOR;
     theme.text.shadow_color = TEXT_SHADOW_COLOR;
 
+    
+#if ARCHIPELAGO_ENABLED
+    local->frame = gui_frame_create(&theme, 165, 5, 151, 132);
+#else
     local->frame = gui_frame_create(&theme, 165, 5, 151, 119);
+#endif
+    
     gui_frame_set_root(local->frame, menu_main_create(scene));
     gui_frame_layout(local->frame);
 

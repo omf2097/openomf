@@ -1,7 +1,13 @@
 #include <SDL.h>
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
+#if ARCHIPELAGO_ENABLED
+#include "archipelago/ap_mechlab.h"
+#include "archipelago/apstate.h"
+#endif
 #include "formats/error.h"
 #include "formats/tournament.h"
 #include "game/game_state.h"
@@ -173,11 +179,20 @@ sd_chr_enemy *mechlab_next_opponent(scene *scene) {
 
 void mechlab_free(scene *scene) {
     mechlab_local *local = scene_get_userdata(scene);
+#if ARCHIPELAGO_ENABLED
+    if(ap_mode) ap_mechlab_detach();
+#endif
 
     game_player *player1 = game_state_get_player(scene->gs, 0);
     // save the character file
-    if(player1->chr != NULL && sg_save(player1->chr) != SD_SUCCESS) {
-        log_error("Failed to save pilot %s", str_c(&player1->chr->pilot.name));
+    if(player1->chr != NULL) {
+#if ARCHIPELAGO_ENABLED
+        if(ap_mode) { ap_mechlab_save(player1); }
+        else
+#endif
+        if(sg_save(player1->chr) != SD_SUCCESS) {
+            log_error("Failed to save pilot %s", str_c(&player1->chr->pilot.name));
+        }
     }
 
     for(unsigned i = 0; i < N_ELEMENTS(local->bg_obj); i++) {
@@ -340,6 +355,9 @@ void mechlab_tick(scene *scene, int paused) {
             } else {
                 player1->pilot->money = player1->pilot->money - trn->registration_fee;
             }
+#if ARCHIPELAGO_ENABLED
+            if(ap_mode) ap_mechlab_set_tournament(trn);
+#endif
             sd_chr_file *oldchr = player1->chr;
             player1->chr = omf_calloc(1, sizeof(sd_chr_file));
             sd_chr_create(player1->chr);
@@ -357,6 +375,10 @@ void mechlab_tick(scene *scene, int paused) {
                 omf_free(oldchr);
             }
 
+#if ARCHIPELAGO_ENABLED
+            if(ap_mode) { ap_mechlab_save(player1); }
+            else
+#endif
             if(sg_save(player1->chr) != SD_SUCCESS) {
                 log_error("Failed to save pilot %s", str_c(&player1->chr->pilot.name));
             }
@@ -365,7 +387,11 @@ void mechlab_tick(scene *scene, int paused) {
             sd_chr_free(player1->chr);
             omf_free(player1->chr);
 
-            bool found = mechlab_find_last_player(scene);
+            bool found =
+#if ARCHIPELAGO_ENABLED
+                ap_mode ? ap_mechlab_find_and_attach(scene) :
+#endif
+                mechlab_find_last_player(scene);
             mechlab_select_dashboard(scene, DASHBOARD_STATS);
             gui_frame_free(local->frame);
             gui_theme theme;
@@ -518,6 +544,7 @@ void mechlab_render(scene *scene) {
         video_draw(&local->popup_bg2, (NATIVE_W - POPUP_BG_W) / 2, POPUP_CENTERY - POPUP_BG_H / 2);
         text_draw(local->popup, (NATIVE_W - POPUP_TEXT_W) / 2, POPUP_CENTERY - POPUP_TEXT_H / 2);
     }
+
 }
 
 void mechlab_input_tick(scene *scene) {
@@ -631,7 +658,12 @@ int mechlab_create(scene *scene) {
     component_layout(local->hint, 32, 131, 248, 13);
 
     scene_set_userdata(scene, local);
-    bool found = mechlab_find_last_player(scene);
+    bool found =
+#if ARCHIPELAGO_ENABLED
+        ap_mode ? ap_mechlab_find_and_attach(scene) :
+#endif
+        mechlab_find_last_player(scene);
+
     mechlab_select_dashboard(scene, DASHBOARD_STATS);
 
     menu_transparent_bg_create(&local->popup_bg1, POPUP_BG_W, POPUP_BG_H);

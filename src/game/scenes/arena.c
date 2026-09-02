@@ -32,6 +32,11 @@
 #include "game/utils/score.h"
 #include "game/utils/settings.h"
 #include "game/utils/ticktimer.h"
+#if ARCHIPELAGO_ENABLED
+#include "archipelago/ap_arena.h"
+#include "archipelago/ap_mechlab.h"
+#include "archipelago/apstate.h"
+#endif
 #include "resources/languages.h"
 #include "resources/script_cache.h"
 #include "resources/sgmanager.h"
@@ -126,6 +131,14 @@ void game_menu_quit(component *c, void *userdata) {
     scene *s = userdata;
     arena_local *local = scene_get_userdata((scene *)userdata);
     local->winner = 1;
+
+    // This might be a change that we want to just apply to all modes, not just AP
+#if ARCHIPELAGO_ENABLED
+    // fight_stats.winner only gets set on a real KO (arena_har_defeat_hook); without this,
+    // arena_end()'s AP match-check reads whatever stale value is left from the *previous*
+    // match and can wrongly treat a forfeit as a win.
+    if(ap_mode) s->gs->fight_stats.winner = 1;
+#endif
 
     s->gs->fight_stats.plug_text = PLUG_FORFEIT;
     chr_score_reset(game_player_get_score(game_state_get_player((s)->gs, 0)), 1);
@@ -341,6 +354,12 @@ static void arena_end(scene *sc) {
 
         if(!gs->match_settings.sim) {
             p1->pilot->money += fight_stats->profit;
+#if ARCHIPELAGO_ENABLED
+            // this is to prevent selling parts, which can't happen in AP
+            if(ap_mode && p1->pilot->money < 0) {
+                p1->pilot->money = 0;
+            }
+#endif
         }
         if(fight_stats->hits_landed[0] != 0) {
             fight_stats->average_damage[0] =
@@ -357,6 +376,9 @@ static void arena_end(scene *sc) {
             fight_stats->hit_miss_ratio[1] = 100 * fight_stats->hits_landed[1] / fight_stats->total_attacks[1];
         }
         if(fight_stats->winner == 0) {
+#if ARCHIPELAGO_ENABLED
+            if(ap_mode && is_tournament(gs) && p1->chr && !gs->match_settings.sim) ap_arena_match_win(gs, p1, p2);
+#endif
             int16_t hp_left_percent = har_health_percent(p1_har);
             // check if this is an unranked challenger with an enhancement we don't have
             if(p2->pilot->rank == 0 && fight_stats->finish == FINISH_DESTRUCTION &&
@@ -382,8 +404,15 @@ static void arena_end(scene *sc) {
             fight_stats->plug_text = PLUG_LOSE + rand_int(5);
         }
 
-        if(p1->chr && sg_save(p1->chr) != SD_SUCCESS) {
-            log_error("Failed to save pilot %s", str_c(&p1->chr->pilot.name));
+        if(p1->chr) {
+#if ARCHIPELAGO_ENABLED
+            if(ap_mode) {
+                ap_mechlab_save(p1);
+            } else
+#endif
+            if(sg_save(p1->chr) != SD_SUCCESS) {
+                log_error("Failed to save pilot %s", str_c(&p1->chr->pilot.name));
+            }
         }
         if(is_demoplay(gs)) {
             game_state_set_next(gs, SCENE_VS);
@@ -1279,6 +1308,9 @@ void arena_dynamic_tick(scene *scene, int paused) {
         // Handle scrolling score texts
         chr_score_tick(game_player_get_score(game_state_get_player(scene->gs, 0)));
         chr_score_tick(game_player_get_score(game_state_get_player(scene->gs, 1)));
+#if ARCHIPELAGO_ENABLED
+        if(ap_mode) ap_arena_tick();
+#endif
 
         // Set and tick all proggressbars
         for(int i = 0; i < 2; i++) {
@@ -1492,6 +1524,9 @@ void arena_render_overlay(scene *scene) {
         // Render score stuff
         chr_score_render(game_player_get_score(player[0]), game_player_get_selectable(player[0]));
         chr_score_render(game_player_get_score(player[1]), game_player_get_selectable(player[1]));
+#if ARCHIPELAGO_ENABLED
+        if(ap_mode) ap_arena_render();
+#endif
 
         // render ping, if player is networked
         if(player[0]->ctrl->type == CTRL_TYPE_NETWORK) {
@@ -1652,6 +1687,9 @@ static void arena_startup(scene *scene, int id, int *m_load, int *m_repeat) {
 
 static void arena_free(scene *scene) {
     arena_local *local = scene_get_userdata(scene);
+#if ARCHIPELAGO_ENABLED
+    if(ap_mode) { ap_arena_detach(); }
+#endif
     free_debug_data(scene);
 
     game_state_set_paused(scene->gs, 0);
@@ -2124,6 +2162,10 @@ int arena_create(scene *scene) {
         memcpy(extra_data + 4, &seed, sizeof(seed));
         sd_rec_insert_action_at_tick(scene->gs->rec, &mv);
     }
+
+#if ARCHIPELAGO_ENABLED
+    if(ap_mode) { ap_arena_attach(scene); }
+#endif
 
     // All done!
     return 0;

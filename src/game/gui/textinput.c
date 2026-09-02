@@ -386,9 +386,16 @@ static void textinput_init(component *c, const gui_theme *theme) {
     }
     refresh(c);
     if(c->h_hint < 0) {
+        if(str_size(&ti->buf) == 0) {
+            str tmp;
+            str_from_c(&tmp, " ");
+            text_set_from_str(ti->text, &tmp);
+            str_free(&tmp);
+        }
         text_generate_layout(ti->text);
         int text_height = text_get_layout_height(ti->text) + (ti->bg_enabled ? 2 : 0);
         component_set_size_hints(c, c->w_hint, text_height);
+        text_set_from_str(ti->text, &ti->buf);
     }
 }
 

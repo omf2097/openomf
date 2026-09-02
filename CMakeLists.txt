@@ -15,6 +15,7 @@ OPTION(USE_EXTENDED_PALETTE "Use 1024-color extended palette instead of 256" ON)
 
 OPTION(USE_MINIUPNPC "Use miniupnpc for port forwarding" ON)
 OPTION(USE_NATPMP "Use natpmp for port forwarding" ON)
+OPTION(USE_ARCHIPELAGO "Build with Archipelago multiworld randomizer support" ON)
 
 # vcpkg features must be set before project()
 if(USE_TESTS)
@@ -28,6 +29,15 @@ if(USE_NATPMP)
 endif()
 
 project(OpenOMF C)
+
+if(USE_ARCHIPELAGO)
+    enable_language(CXX)
+    set(CMAKE_CXX_STANDARD 17)
+    set(CMAKE_CXX_STANDARD_REQUIRED ON)
+    message(STATUS "Archipelago: enabled")
+else()
+    message(STATUS "Archipelago: disabled")
+endif()
 
 # Generate compile_commands.json so editors can find the correct headers.
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -183,6 +193,13 @@ set_source_files_properties("src/game/audio/audio_sources.c"
 
 # Remove all render plugin source code from OPENOMF_SRC
 list(FILTER OPENOMF_SRC EXCLUDE REGEX "^src/video/renderers/.*/")
+# Exclude AP sources when Archipelago is disabled; exclude submodule always (built separately).
+if(USE_ARCHIPELAGO)
+    list(FILTER OPENOMF_SRC EXCLUDE REGEX "^src/archipelago/submodule/")
+else()
+    list(FILTER OPENOMF_SRC EXCLUDE REGEX "^src/archipelago/")
+    list(FILTER OPENOMF_SRC EXCLUDE REGEX "menu_ap\.")
+endif()
 # Enable "NULL" renderer in debug builds, for automated testing
 list(APPEND OPENOMF_SRC
   "$<$<CONFIG:Debug>:src/video/renderers/null/null_renderer.c>"
@@ -256,7 +273,48 @@ if(USE_NATPMP)
     target_link_libraries(openomf_core PUBLIC openomf::natpmp)
 endif()
 
+if(USE_ARCHIPELAGO)
+    set(AP_SUB ${CMAKE_CURRENT_SOURCE_DIR}/src/archipelago/submodule)
+    add_library(omf_apclient STATIC src/archipelago/apconnect.cpp)
+    target_compile_definitions(omf_apclient PRIVATE
+        AP_NO_SCHEMA
+        ASIO_STANDALONE
+        _WEBSOCKETPP_CPP11_STRICT_
+        _WEBSOCKETPP_CPP11_THREAD_
+    )
+    # Use system asio (libasio-dev) — the submodule asio 1.38 removed io_service
+    # which websocketpp still requires.
+    find_path(ASIO_INCLUDE_DIR asio.hpp REQUIRED)
+    target_include_directories(omf_apclient PRIVATE
+        src
+        ${AP_SUB}/apclientpp
+        ${AP_SUB}/wswrap/include
+        ${AP_SUB}/json/single_include
+        ${AP_SUB}/websocketpp
+        ${ASIO_INCLUDE_DIR}
+    )
+    target_compile_definitions(openomf_core PUBLIC ARCHIPELAGO_ENABLED)
+    # AP C files compiled into openomf_core (not omf_apclient).
+    target_sources(openomf_core PRIVATE src/archipelago/ap_mechlab.c)
+    target_sources(openomf_core PRIVATE src/archipelago/ap_arena.c)
+    target_sources(openomf_core PRIVATE src/archipelago/ap_sgmanager.c)
+    # Suppress warnings from heavy AP headers when compiling apconnect.cpp
+    if(NOT MSVC)
+        target_compile_options(omf_apclient PRIVATE -w)
+    endif()
+    # OpenSSL: needed by asio/ssl for wss:// support; PUBLIC so it propagates.
+    find_package(OpenSSL REQUIRED)
+    target_link_libraries(omf_apclient PUBLIC OpenSSL::SSL OpenSSL::Crypto)
+    if(WIN32)
+        target_link_libraries(omf_apclient PUBLIC crypt32)
+    endif()
+endif()
+
 list(APPEND CORELIBS openomf_core)
+# omf_apclient must come after openomf_core so the linker can resolve AP symbols.
+if(USE_ARCHIPELAGO)
+    list(APPEND CORELIBS omf_apclient)
+endif()
 
 if(WIN32 AND NOT MINGW)
     omf_target_precompile_headers(openomf_core PUBLIC
@@ -426,6 +484,9 @@ endif()
 # Make sure libraries are linked
 target_link_libraries(openomf PRIVATE ${CORELIBS})
 target_link_libraries(openomf PRIVATE openomf::argtable openomf::zip openomf::SDL2main openomf::epoxy)
+if(USE_ARCHIPELAGO AND UNIX AND NOT APPLE)
+    target_link_libraries(openomf PRIVATE pthread)
+endif()
 foreach(TARGET ${TOOL_TARGET_NAMES})
     target_link_libraries(${TARGET} PRIVATE ${CORELIBS})
     target_link_libraries(${TARGET} PRIVATE openomf::argtable openomf::zip openomf::SDL2main openomf::epoxy)
@@ -441,6 +502,8 @@ if(CUNIT_FOUND)
         RELATIVE ${CMAKE_SOURCE_DIR}
         "testing/*.c"
     )
+    # AP tests link against Archipelago-only symbols and get their own executable below.
+    list(FILTER TEST_SRC EXCLUDE REGEX "^testing/test_ap_")
 
     add_executable(openomf_test_main ${TEST_SRC})
 
@@ -461,6 +524,33 @@ if(CUNIT_FOUND)
     endif()
 
     add_test(main openomf_test_main)
+
+    if(USE_ARCHIPELAGO)
+        file(GLOB TEST_AP_SRC
+            LIST_DIRECTORIES OFF
+            CONFIGURE_DEPENDS
+            RELATIVE ${CMAKE_SOURCE_DIR}
+            "testing/test_ap_*.c"
+        )
+
+        add_executable(openomf_test_ap ${TEST_AP_SRC})
+
+        target_compile_definitions(openomf_test_ap PRIVATE
+                                   TESTS_ROOT_DIR="${CMAKE_SOURCE_DIR}/testing")
+
+        target_include_directories(openomf_test_ap PRIVATE testing/ src/)
+        target_link_libraries(openomf_test_ap ${CORELIBS} openomf::SDL2main openomf::epoxy openomf::cunit)
+
+        if(MSVC)
+            target_precompile_headers(openomf_test_ap PRIVATE "<stdio.h>")
+        endif()
+
+        if(MINGW)
+            set_target_properties(openomf_test_ap PROPERTIES LINK_FLAGS "-mconsole")
+        endif()
+
+        add_test(ap openomf_test_ap)
+    endif()
 
     message(STATUS "Development: Unit-tests are enabled")
 else()
