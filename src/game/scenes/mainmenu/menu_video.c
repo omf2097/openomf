@@ -293,11 +293,11 @@ component *menu_video_create(scene *s) {
     }
 
     // scaling mode selector
-    menu_attach(menu, textselector_create_bind_opts(
-                          "SCALING:",
-                          "Sets output scaling mode. Nearest=crisp, Bilinear=smooth, CRT=CRT colors, "
-                          "Scanlines=CRT colors with scanlines.",
-                          NULL, NULL, &setting->video.scaling_mode, scaling_opts, 4));
+    menu_attach(
+        menu, textselector_create_bind_opts("SCALING:",
+                                            "Sets output scaling mode. Nearest=crisp, Bilinear=smooth, CRT=CRT colors, "
+                                            "Scanlines=CRT colors with scanlines.",
+                                            NULL, NULL, &setting->video.scaling_mode, scaling_opts, 4));
 
     // vsync and fullscreen
     menu_attach(menu, textselector_create_bind_opts("VSYNC", "Toggle vertical sync on or off.", NULL, NULL,
