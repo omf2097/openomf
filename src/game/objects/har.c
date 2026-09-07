@@ -895,7 +895,7 @@ void har_take_damage(object *obj, af_move *move) {
     calc_damage_and_stun(other_har, move, &damage, &stun);
 
     // rehits do 60% more damage
-    damage = h->rehit_combo ? (6 * damage) / 10 : damage;
+    damage = h->rehit_combo ? (10 * damage) / 6 : damage;
 
     // Save damage taken
     h->last_damage_value = damage;
