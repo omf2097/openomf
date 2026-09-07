@@ -937,7 +937,7 @@ void har_take_damage(object *obj, af_move *move) {
             // (Armor + 2.5) * .25
             int armor_numer = (5 + 2 * player->pilot->armor);
             int armor_denom = 8;
-            log_debug("applying %f to %d modulated by armor %f", damage, h->health, armor_numer / (float)armor_denom);
+            log_debug("applying %d to %d modulated by armor %f", damage, h->health, armor_numer / (float)armor_denom);
             h->health -= damage * armor_denom / armor_numer;
         } else {
             h->health -= damage;
@@ -1573,8 +1573,7 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
             assert(str_size(&move->footer_string) > 0);
 
             // Just take damage normally if there is no footer string in successor
-            log_debug("projectile dealt damage of %f", move->damage);
-            log_debug("projectile %d dealt damage of %f", move->id, move->damage);
+            log_debug("projectile %d dealt damage of %d", move->id, move->damage);
 
             // face B to the direction they're being attacked from
             object_set_direction(o_har, -object_get_direction(o_pjt));
