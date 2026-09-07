@@ -76,9 +76,13 @@ static void get_scaling_shader_names(const int scaling_mode, const char **vert_s
             *vert_shader = "scalers/bilinear.vert";
             *frag_shader = "scalers/bilinear.frag";
             break;
-        case 2: // CRT
+        case 2: // CRT colors, no scanlines
             *vert_shader = "scalers/crt.vert";
             *frag_shader = "scalers/crt.frag";
+            break;
+        case 3: // CRT colors with scanlines
+            *vert_shader = "scalers/crt.vert";
+            *frag_shader = "scalers/scanlines.frag";
             break;
         default:
             *vert_shader = "scalers/none.vert";
