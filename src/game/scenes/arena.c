@@ -1303,7 +1303,7 @@ void arena_dynamic_tick(scene *scene, int paused) {
         } else if(local->state == ARENA_STATE_STARTING) {
             if(local->state_ticks == ARENA_CROSSFADE_TICKS) {
                 arena_create_roundstart_anim(scene);
-            } else if(local->state_ticks == 92) {
+            } else if(local->state_ticks == 90) {
                 // release the HARs for action
                 local->state = ARENA_STATE_FIGHTING;
                 local->state_ticks = 0;
