@@ -268,6 +268,12 @@ void har_stunned_done(object *har_obj) {
 
 // Simple helper function
 void har_set_ani(object *obj, int animation_id, int repeat) {
+    // Do not reset walk animation
+    if(obj->cur_animation) {
+        if(obj->cur_animation->id == ANIM_WALKING && animation_id == ANIM_WALKING) {
+            return;
+        }
+    }
     har *h = object_get_userdata(obj);
     af_move *move = af_get_move(h->af_data, animation_id);
     object_set_animation(obj, &move->ani);
