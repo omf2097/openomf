@@ -10,7 +10,7 @@ runs:
       shell: bash
       run: |
         set -euo pipefail
-        git clone https://github.com/microsoft/vcpkg.git .vcpkg
+        git clone --branch 2026.07.29 --depth 1 https://github.com/microsoft/vcpkg.git .vcpkg
         ./.vcpkg/bootstrap-vcpkg.sh -disableMetrics
 
     - name: Get openomf assets
