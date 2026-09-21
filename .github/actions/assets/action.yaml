@@ -29,6 +29,11 @@ runs:
       shell: pwsh
       run: Invoke-WebRequest "${{ inputs.asset_url }}" -OutFile "${{ inputs.filename }}"
 
+    - name: Download assets file
+      if: ${{ (steps.cache-assets.outputs.cache-hit != 'true') && (runner.os == 'macOS') }}
+      shell: bash
+      run: curl -fsSL "${{ inputs.asset_url }}" -o "${{ inputs.filename }}"
+
     - name: Cache assets file
       if: steps.cache-assets.outputs.cache-hit != 'true'
       uses: actions/cache/save@v5
