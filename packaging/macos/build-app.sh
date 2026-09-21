@@ -39,6 +39,7 @@ if [[ -f "$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" ]]; then
     cmake_args+=(
         -DCMAKE_TOOLCHAIN_FILE="$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake"
         -DVCPKG_TARGET_TRIPLET="$VCPKG_TRIPLET"
+        -DVCPKG_OVERLAY_PORTS="$ROOT_DIR/packaging/macos/vcpkg-ports"
     )
 fi
 
