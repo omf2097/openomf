@@ -14,13 +14,25 @@ runs:
         ./.vcpkg/bootstrap-vcpkg.sh -disableMetrics
 
     - name: Get openomf assets
+      uses: ./.github/actions/assets
+
+    - name: Extract openomf assets
       shell: bash
       run: |
         set -euo pipefail
-        curl -fL https://www.omf2097.com/pub/files/omf/openomf-assets.zip -o openomf-assets.zip
         rm -rf data
         mkdir data
         unzip -j openomf-assets.zip -d data
+
+    - name: Get openomf mods
+      uses: ./.github/actions/fetch_mods
+
+    - name: Extract openomf mods
+      shell: bash
+      run: |
+        set -euo pipefail
+        mkdir -p data/mods
+        unzip -o openomf-mods.zip -d data/mods
 
     - name: Build macOS app
       shell: bash
