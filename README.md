@@ -34,6 +34,12 @@ Installation
 1. Download the latest windows package from https://github.com/omf2097/openomf/releases
 2. Extract the zip file somewhere
 
+### macOS
+
+1. Download the latest `macos14_arm` package from https://github.com/omf2097/openomf/releases
+2. Extract `OpenOMF.app` and try to open it
+3. If macOS blocks the app, open **System Settings > Privacy & Security**, scroll to the Security section, and click **Open Anyway**
+
 Build
 -----
 For compiling from sources, please see [BUILD.md](BUILD.md).
