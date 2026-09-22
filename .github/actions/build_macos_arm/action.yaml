@@ -6,6 +6,10 @@ runs:
     - name: Get OpenOMF Version
       uses: ./.github/actions/version
 
+    - name: Install macOS build tools
+      shell: bash
+      run: brew install autoconf autoconf-archive automake libtool
+
     - name: Prepare vcpkg
       uses: johnwason/vcpkg-action@v8
       id: prepare-vcpkg
