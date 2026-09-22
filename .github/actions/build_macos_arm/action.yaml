@@ -6,12 +6,14 @@ runs:
     - name: Get OpenOMF Version
       uses: ./.github/actions/version
 
-    - name: Install vcpkg
-      shell: bash
-      run: |
-        set -euo pipefail
-        git clone --branch 2026.07.29 --depth 1 https://github.com/microsoft/vcpkg.git .vcpkg
-        ./.vcpkg/bootstrap-vcpkg.sh -disableMetrics
+    - name: Prepare vcpkg
+      uses: johnwason/vcpkg-action@v8
+      id: prepare-vcpkg
+      with:
+        manifest-dir: ${{ github.workspace }}
+        triplet: arm64-osx
+        revision: 2026.07.29
+        token: ${{ github.token }}
 
     - name: Get openomf assets
       uses: ./.github/actions/assets
@@ -38,7 +40,7 @@ runs:
       shell: bash
       run: |
         set -euo pipefail
-        VCPKG_ROOT="${GITHUB_WORKSPACE}/.vcpkg" \
+        VCPKG_ROOT="${GITHUB_WORKSPACE}/vcpkg" \
         VCPKG_TARGET_TRIPLET=arm64-osx \
         OPENOMF_BUNDLE_VERSION="${OPENOMF_VERSION}" \
         ./packaging/macos/build-app.sh
