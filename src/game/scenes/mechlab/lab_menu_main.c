@@ -1,5 +1,9 @@
 #include <stdio.h>
 
+#if ARCHIPELAGO_ENABLED
+#include "archipelago/apconnect.h"
+#include "archipelago/apstate.h"
+#endif
 #include "formats/chr.h"
 #include "game/common_defines.h"
 #include "game/gui/sizer.h"
@@ -62,6 +66,9 @@ void lab_menu_main_arena(component *c, void *userdata) {
 
 void lab_menu_main_quit(component *c, void *userdata) {
     scene *s = userdata;
+#if ARCHIPELAGO_ENABLED
+    if(ap_mode) Archipelago_Disconnect();
+#endif
     game_state_set_next(s->gs, SCENE_MENU);
 }
 
@@ -262,7 +269,11 @@ void lab_menu_tick_in_tournament(component *c, void *userdata) {
 static void lab_menu_tick_chr_loaded(component *c, void *userdata) {
     scene *s = userdata;
     game_player *p1 = game_state_get_player(s->gs, 0);
-    if(p1->chr) {
+    if(
+#if ARCHIPELAGO_ENABLED
+        ap_mode ||
+#endif
+        p1->chr) {
         component_disable(c, 0);
         c->supports_select = true;
     } else {
@@ -271,14 +282,30 @@ static void lab_menu_tick_chr_loaded(component *c, void *userdata) {
     }
 }
 
+#if ARCHIPELAGO_ENABLED
+static void lab_menu_tick_ap_disabled(component *c, void *userdata) {
+    if(ap_mode) {
+        component_disable(c, 1);
+        c->supports_select = false;
+    }
+}
+#endif
+
 static const spritebutton_tick_cb tick_cbs[] = {
     lab_menu_tick_arena,         // lab_menu_tick_arena,
     lab_menu_tick_in_tournament, // lab_menu_tick_training,
     lab_menu_tick_in_tournament, // lab_menu_tick_buy,
+#if ARCHIPELAGO_ENABLED
+    lab_menu_tick_ap_disabled,   // lab_menu_tick_sell,
+    lab_menu_tick_ap_disabled,   // lab_menu_tick_load,
+    lab_menu_tick_ap_disabled,   // lab_menu_tick_new,
+    lab_menu_tick_ap_disabled,   // lab_menu_tick_delete,
+#else
     lab_menu_tick_in_tournament, // lab_menu_tick_sell,
     NULL,                        // lab_menu_tick_load,
     NULL,                        // lab_menu_tick_new,
     NULL,                        // lab_menu_tick_delete,
+#endif
     lab_menu_tick_in_tournament, // lab_menu_tick_sim,
     NULL,                        // lab_menu_tick_quit,
     lab_menu_tick_chr_loaded,    // lab_menu_tick_tournament,

@@ -1,3 +1,7 @@
+#if ARCHIPELAGO_ENABLED
+#include "archipelago/ap_mechlab.h"
+#include "archipelago/apstate.h"
+#endif
 #include "game/scenes/newsroom.h"
 #include "game/audio/music_tracker.h"
 #include "game/gui/dialog.h"
@@ -316,6 +320,9 @@ void newsroom_input_tick(scene *scene) {
                                 }
                             }
                             if(p1->chr && local->champion) {
+#if ARCHIPELAGO_ENABLED
+                                if(ap_mode) ap_on_tournament_win();
+#endif
                                 game_state_set_next(scene->gs, SCENE_TRN_CUTSCENE);
                             } else {
                                 game_state_set_next(scene->gs, SCENE_VS);
