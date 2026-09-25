@@ -27,7 +27,7 @@ jobs:
         build_languages: ${{ matrix.config.build_languages }}
 
   build_ubuntu:
-    name: Build ubuntu-26.04
+    name: Build Ubuntu 26.04
     runs-on: ubuntu-26.04
     steps:
     - uses: actions/checkout@v6
@@ -37,7 +37,7 @@ jobs:
       uses: ./.github/actions/build_ubuntu
 
   build_appimage:
-    name: Build ubuntu-24.04
+    name: Build AppImage
     runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v6
@@ -55,7 +55,7 @@ jobs:
       uses: ./.github/actions/build_macos_arm
 
   make_release:
-    needs: [build_macos-arm, build_ubuntu, build_msvc]
+    needs: [build_appimage, build_macos-arm, build_ubuntu, build_msvc]
     name: Roll a release
     runs-on: ubuntu-26.04
     steps:
