@@ -7,7 +7,7 @@ runs:
       uses: ./.github/actions/version
 
     - name: Install macOS build tools
-      shell: bash
+      shell: bash --noprofile --norc -euo pipefail {0}
       run: brew install autoconf autoconf-archive automake libtool
 
     - name: Prepare vcpkg
@@ -23,9 +23,8 @@ runs:
       uses: ./.github/actions/assets
 
     - name: Extract openomf assets
-      shell: bash
+      shell: bash --noprofile --norc -euo pipefail {0}
       run: |
-        set -euo pipefail
         rm -rf data
         mkdir data
         unzip -j openomf-assets.zip -d data
@@ -34,23 +33,21 @@ runs:
       uses: ./.github/actions/fetch_mods
 
     - name: Extract openomf mods
-      shell: bash
+      shell: bash --noprofile --norc -euo pipefail {0}
       run: |
-        set -euo pipefail
         mkdir -p data/mods
         unzip -o openomf-mods.zip -d data/mods
 
     - name: Build macOS app
-      shell: bash
+      shell: bash --noprofile --norc -euo pipefail {0}
       run: |
-        set -euo pipefail
         VCPKG_ROOT="${GITHUB_WORKSPACE}/vcpkg" \
         VCPKG_TARGET_TRIPLET=arm64-osx \
         OPENOMF_BUNDLE_VERSION="${OPENOMF_VERSION}" \
         ./packaging/macos/build-app.sh
 
     - name: Generate ZIP package
-      shell: bash
+      shell: bash --noprofile --norc -euo pipefail {0}
       run: |
         ditto -c -k --keepParent \
           "dist/macos/OpenOMF.app" \
