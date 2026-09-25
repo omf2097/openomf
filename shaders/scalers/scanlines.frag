@@ -1,14 +1,16 @@
 #version 330 core
 
-// CRT colors without the geometry stuff
+// CRT colors with scanlines
 // The ideas used here are mostly from https://github.com/libretro/slang-shaders/
 // and https://github.com/dosbox-staging/dosbox-staging shaders.
 
 // Tunables
+uniform float scanline_intensity = 0.25;
 uniform float color_bleed_weight = 0.35;
 const float color_bleed_spread = 1.0;
 const float source_gamma = 2.4;
 const float display_gamma = 2.2;
+const float native_height = 200.0;
 const float min_blend_width = 1.0 / 256.0;
 
 // In
@@ -18,6 +20,8 @@ uniform sampler2D framebuffer;
 
 // Out
 layout (location = 0) out vec4 color;
+
+const float pi = 3.14159265;
 
 vec4 sample_bilinear(vec2 texel_floor, vec2 texel_fract) {
     vec2 texel_size = 1.0 / texture_size;
@@ -60,6 +64,24 @@ void main() {
     vec3 linear_center = to_linear(center.rgb);
     vec3 linear_neighbors = (to_linear(left.rgb) + to_linear(right.rgb)) * 0.5;
     vec3 linear_color = mix(linear_center, linear_neighbors, color_bleed_weight);
+
+    // Scanline profile
+    float line_pos = tex_coord.y * native_height;
+    float gap_darkness = 0.5 + 0.5 * cos(2.0 * pi * line_pos);
+
+    // How many source lines a screen pixel covers
+    float lines_per_pixel = clamp(fwidth(line_pos), min_blend_width, 1.0);
+
+    // Fade the effect out smoothly instead of aliasing into moire
+    float attenuation = sin(pi * lines_per_pixel) / (pi * lines_per_pixel);
+
+    // Darken the gaps multiplicatively so shadow detail survives
+    float scanline_factor = 1.0 - scanline_intensity * gap_darkness * attenuation;
+
+    // Boost gap brightness so the mean brightness stays as it was
+    float brightness_compensation = 1.0 / (1.0 - 0.5 * scanline_intensity * attenuation);
+
+    linear_color *= scanline_factor * brightness_compensation;
 
     color = vec4(to_display(linear_color), center.a);
 }
