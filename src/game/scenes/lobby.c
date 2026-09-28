@@ -524,10 +524,10 @@ void lobby_dialog_do_challenge(dialog *dlg, dialog_result result) {
     dialog_show(dlg, 0);
     scene *s = dlg->userdata;
     lobby_local *local = scene_get_userdata(s);
-    if(result == DIALOG_RESULT_NO) {
-        local->mode = LOBBY_MAIN;
-    } else if(result == DIALOG_RESULT_YES_OK) {
+    if(result == DIALOG_RESULT_YES_OK) {
         lobby_do_challenge(NULL, s);
+    } else {
+        local->mode = LOBBY_MAIN;
     }
 }
 
@@ -535,10 +535,10 @@ void lobby_dialog_do_spectate(dialog *dlg, dialog_result result) {
     dialog_show(dlg, 0);
     scene *s = dlg->userdata;
     lobby_local *local = scene_get_userdata(s);
-    if(result == DIALOG_RESULT_NO) {
-        local->mode = LOBBY_MAIN;
-    } else if(result == DIALOG_RESULT_YES_OK) {
+    if(result == DIALOG_RESULT_YES_OK) {
         lobby_do_spectate(NULL, s);
+    } else {
+        local->mode = LOBBY_MAIN;
     }
 }
 
