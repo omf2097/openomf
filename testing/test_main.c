@@ -28,6 +28,7 @@ void sprite_packer_test_suite(CU_pSuite suite);
 void sound_tracker_test_suite(CU_pSuite suite);
 int sound_tracker_suite_init(void);
 int sound_tracker_suite_free(void);
+void log_channel_test_suite(CU_pSuite suite);
 
 int main(int argc, char **argv) {
     CU_pSuite suite = NULL;
@@ -175,6 +176,12 @@ int main(int argc, char **argv) {
         goto end;
     }
     sound_tracker_test_suite(sound_tracker_suite);
+
+    CU_pSuite log_channel_suite = CU_add_suite("Log Channels", NULL, NULL);
+    if(log_channel_suite == NULL) {
+        goto end;
+    }
+    log_channel_test_suite(log_channel_suite);
 
     // Run tests
     CU_basic_set_mode(CU_BRM_VERBOSE);

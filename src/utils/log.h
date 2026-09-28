@@ -11,8 +11,8 @@
 #ifndef LOG_H
 #define LOG_H
 
-#include "utils/compat.h"
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdlib.h>
 
 /**
@@ -25,6 +25,19 @@ typedef enum log_level
     LOG_WARN,  ///< Warning messages
     LOG_ERROR  ///< Error messages
 } log_level;
+
+/**
+ * @brief Channel filter bitmask for log output.
+ * Unset means all channels enabled; otherwise only matching bits are shown.
+ */
+typedef uint32_t log_channel;
+enum {
+    LOG_CHANNEL_NONE = 0u,
+    LOG_CHANNEL_AI_STATE = 1u << 0,
+    LOG_CHANNEL_AI_DECISION = 1u << 1,
+    LOG_CHANNEL_REC = 1u << 2,
+    LOG_CHANNEL_AI = LOG_CHANNEL_AI_STATE | LOG_CHANNEL_AI_DECISION,
+};
 
 /**
  * @brief Log a debug message.
@@ -49,6 +62,57 @@ typedef enum log_level
  * @param ... Printf-style format string and arguments
  */
 #define log_error(...) log_msg(LOG_ERROR, __VA_ARGS__)
+
+/**
+ * @brief Log a debug message tagged with a channel.
+ * @param module Channel bitmask to tag the message with.
+ * @param ... Printf-style format string and arguments
+ */
+#define log_debug_c(module, ...) log_msg_channel(module, LOG_DEBUG, __VA_ARGS__)
+
+/**
+ * @brief Log an informational message tagged with a channel.
+ * @param module Channel bitmask to tag the message with.
+ * @param ... Printf-style format string and arguments
+ */
+#define log_info_c(module, ...) log_msg_channel(module, LOG_INFO, __VA_ARGS__)
+
+/**
+ * @brief Log a warning message tagged with a channel.
+ * @param module Channel bitmask to tag the message with.
+ * @param ... Printf-style format string and arguments
+ */
+#define log_warn_c(module, ...) log_msg_channel(module, LOG_WARN, __VA_ARGS__)
+
+/**
+ * @brief Log an error message tagged with a channel.
+ * @param module Channel bitmask to tag the message with.
+ * @param ... Printf-style format string and arguments
+ */
+#define log_error_c(module, ...) log_msg_channel(module, LOG_ERROR, __VA_ARGS__)
+
+/**
+ * @brief Set the active channel filter.
+ * @param modules Bitmask of channels to enable; unset means all channels.
+ */
+void log_set_channel_filter(log_channel modules);
+
+/**
+ * @brief Parse a channel list into a bitmask.
+ * @param modules Comma-separated channel names, such as "ai,rec".
+ * @return Bitmask of enabled channels; NULL/empty leaves all channels enabled.
+ */
+log_channel log_channels_from_string(const char *modules);
+
+/**
+ * @brief Log a message at the specified level, tagged with a channel.
+ * @details Prefer using the log_debug_m/info_m/warn_m/error_m macros instead.
+ * @param module Channel bitmask to tag the message with.
+ * @param level Severity level
+ * @param fmt Printf-style format string
+ * @param ... Format arguments
+ */
+void log_msg_channel(log_channel module, log_level level, const char *fmt, ...);
 
 /**
  * @brief Initialize the logging system.
@@ -111,7 +175,7 @@ bool is_log_level(const char *level);
  * @param fmt Printf-style format string
  * @param ... Format arguments
  */
-void log_msg(log_level level, const char *fmt, ...) ATTR_FORMAT_PRINTF(2, 3);
+void log_msg(log_level level, const char *fmt, ...);
 
 /**
  * @brief Get the last logged error message.
