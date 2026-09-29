@@ -2,7 +2,6 @@
 
 #include "formats/chr.h"
 #include "game/common_defines.h"
-#include "game/gui/sizer.h"
 #include "game/gui/spritebutton.h"
 #include "game/gui/trn_menu.h"
 #include "game/scenes/mechlab.h"
