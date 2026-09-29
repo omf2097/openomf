@@ -99,7 +99,6 @@ void menu_connect_start(component *c, void *userdata) {
 }
 
 void menu_connect_cancel(component *c, void *userdata) {
-    menu *m = sizer_get_obj(c->parent);
 
     connect_menu_data *local = menu_get_userdata(c->parent);
     if(local->connect_start && difftime(time(NULL), local->connect_start) < 0.1) {
@@ -107,7 +106,7 @@ void menu_connect_cancel(component *c, void *userdata) {
     }
 
     // Finish menu
-    m->finished = 1;
+    menu_finish(c->parent);
 
     // Clean up host
     if(local->host && !local->controllers_created) {

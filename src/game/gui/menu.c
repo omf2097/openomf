@@ -10,6 +10,38 @@
 #include "video/surface.h"
 #include "video/video.h"
 
+typedef struct menu {
+    surface *bg1;      ///< Primary background surface
+    surface *bg2;      ///< Secondary background surface
+    surface *help_bg1; ///< Primary help area background
+    surface *help_bg2; ///< Secondary help area background
+    int selected;      ///< Index of selected item
+    int margin_top;    ///< Top margin in pixels
+    int padding;       ///< Padding between items
+    bool finished;     ///< Whether the menu is finished
+    bool horizontal;   ///< Whether items are arranged horizontally
+    bool background;   ///< Whether to draw background
+    bool centered;     ///< Whether items are centered
+    bool is_submenu;   ///< Whether this menu is a submenu
+
+    int help_x;                             ///< Help area X coordinate
+    int help_y;                             ///< Help area Y coordinate
+    int help_w;                             ///< Help area width
+    int help_h;                             ///< Help area height
+    vga_index help_text_color;              ///< Help text color
+    text_horizontal_align help_text_halign; ///< Help text horizontal alignment
+    text_vertical_align help_text_valign;   ///< Help text vertical alignment
+    font_size help_text_font;               ///< Help text font
+
+    char prev_submenu_state;           ///< Previous submenu state
+    component *submenu;                ///< Active submenu
+    menu_submenu_done_cb submenu_done; ///< Submenu completion callback
+
+    void *userdata;    ///< User data for callbacks
+    menu_free_cb free; ///< Free callback
+    menu_tick_cb tick; ///< Tick callback
+} menu;
+
 void menu_select(component *c, component *sc) {
     menu *m = sizer_get_obj(c);
     component **tmp;
@@ -160,7 +192,7 @@ static int menu_action(component *mc, int action, int source) {
             // If the last item is already selected, and ESC if punched, change the action to punch
             // This is then passed to the quit (last) component and its callback is called
             // Hacky, but works well in menu sizer.
-            m->finished = 1;
+            m->finished = true;
             action = ACT_PUNCH;
         } else {
             return 0;
@@ -259,7 +291,12 @@ component *menu_get_submenu(const component *c) {
     return m->submenu;
 }
 
-int menu_is_finished(const component *c) {
+void menu_finish(component *c) {
+    menu *m = sizer_get_obj(c);
+    m->finished = true;
+}
+
+bool menu_is_finished(const component *c) {
     menu *m = sizer_get_obj(c);
     return m->finished;
 }

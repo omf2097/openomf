@@ -81,8 +81,7 @@ static int menu_help_action(component *c, int action, int source) {
         help_menu_update(local);
         return 1;
     } else if(action == ACT_ESC) {
-        menu *m = sizer_get_obj(c);
-        m->finished = 1;
+        menu_finish(c);
     }
 
     return 0;

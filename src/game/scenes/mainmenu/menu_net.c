@@ -7,8 +7,7 @@
 #include "game/gui/gui.h"
 
 void menu_net_done(component *c, void *userdata) {
-    menu *m = sizer_get_obj(c->parent);
-    m->finished = 1;
+    menu_finish(c->parent);
 }
 
 void menu_net_lobby(component *c, void *userdata) {

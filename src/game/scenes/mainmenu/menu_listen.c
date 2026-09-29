@@ -106,8 +106,7 @@ void menu_listen_tick(component *c) {
 }
 
 void menu_listen_cancel(component *c, void *userdata) {
-    menu *m = sizer_get_obj(c->parent);
-    m->finished = 1;
+    menu_finish(c->parent);
 
     // Clean up host
     listen_menu_data *local = menu_get_userdata(c->parent);
