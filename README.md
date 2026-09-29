@@ -46,20 +46,23 @@ For compiling from sources, please see [BUILD.md](BUILD.md).
 
 Logging channels
 ----------------
-When running a local build, you can limit log output to specific channels:
+When running a local build, you can limit log output to specific channels by listing the individual channel names you want, separated by commas:
 
 ```bash
-./openomf --log-level DEBUG --log-channels ai
+./openomf --log-level DEBUG --log-channels ai-state,rec
 ```
 
 If `--log-channels` is omitted, all channels are enabled.
 
 | Channel | Description |
 | --- | --- |
-| `ai` | All AI channels (`ai-state`, `ai-decision`) |
 | `ai-state` | AI state changes used during decision making |
 | `ai-decision` | AI choices, tactic selection, and scoring |
 | `rec` | REC playback/recording, replay controls, and REC assertions |
+| `network` | Reserved placeholder for networking |
+| `gameplay` | Reserved placeholder for gameplay |
+| `graphics` | Reserved placeholder for graphics |
+| `sound` | Reserved placeholder for sound |
 
 License
 -------

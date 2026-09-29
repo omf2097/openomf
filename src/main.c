@@ -83,7 +83,7 @@ int main(int argc, char *argv[]) {
     struct arg_str *log_level = arg_str0(NULL, "log-level", "<level>", "Log level (DEBUG, INFO, WARN, ERROR)");
     struct arg_str *log_channels =
         arg_str0(NULL, "log-channels", "<channels>", "Comma-separated log channels to enable "
-                                                     "(ai,ai-state,ai-decision,rec)");
+                                                     "(ai-state,ai-decision,rec)");
     struct arg_end *end = arg_end(30);
     void *argtable[] = {help,  vers, listen, lobby, lobbyarg, connect, force_audio_backend, force_renderer,
                         trace, port, play,   rec,   warp,     speed,   log_level, log_channels, end};

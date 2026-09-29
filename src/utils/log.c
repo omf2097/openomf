@@ -45,22 +45,18 @@ static const char *level_colors[] = {
     "\x1b[31m",
 };
 
-// Module names, indexed by bit position (must match the LOG_CHANNEL_* defines in log.h).
+// Channel names, indexed by bit position (must match the LOG_CHANNEL_* defines in log.h).
 static const char *channel_names[] = {
     "ai-state",
     "ai-decision",
     "rec",
+    "network",
+    "gameplay",
+    "graphics",
+    "sound",
 };
 
 #define CHANNEL_NAME_COUNT (sizeof(channel_names) / sizeof(channel_names[0]))
-
-static bool channel_name_matches(const char *token, size_t len, const char *name) {
-    return strlen(name) == len && strncmp(token, name, len) == 0;
-}
-
-static bool channel_token_matches(const char *token, size_t len, size_t index) {
-    return channel_name_matches(token, len, channel_names[index]);
-}
 
 static log_state *state = NULL;
 
@@ -132,40 +128,27 @@ log_channel log_channels_from_string(const char *modules) {
         return LOG_CHANNEL_NONE;
     }
 
+    char *copy = omf_strdup(modules);
+    if(copy == NULL) {
+        return LOG_CHANNEL_NONE;
+    }
+
     log_channel result = LOG_CHANNEL_NONE;
-    const char *p = modules;
-    while(*p) {
-        // Skip separators and whitespace between tokens.
-        while(*p == ',' || *p == ' ' || *p == '\t') {
-            p++;
-        }
-        if(!*p) {
-            break;
-        }
-
-        const char *start = p;
-        while(*p && *p != ',' && *p != ' ' && *p != '\t') {
-            p++;
-        }
-        size_t len = (size_t)(p - start);
-
-        if(len == 2 && start[0] == 'a' && start[1] == 'i') {
-            result |= LOG_CHANNEL_AI;
-            continue;
-        }
-
+    for(char *token = strtok(copy, " \t,"); token != NULL; token = strtok(NULL, " \t,")) {
         for(size_t i = 0; i < CHANNEL_NAME_COUNT; i++) {
-            if(channel_token_matches(start, len, i)) {
-                result |= ((log_channel)1 << i);
+            if(strcmp(token, channel_names[i]) == 0) {
+                result |= ((log_channel)1u << i);
                 break;
             }
         }
     }
 
+    omf_free(copy);
     return result;
 }
 
-// Render a module bitmask as a compact tag like " [ai,tactic]"; empty for LOG_CHANNEL_NONE.
+// Format the emitted log channels, not the active filter mask.
+// Example: " [ai-state,rec]"; empty for LOG_CHANNEL_NONE.
 static void format_channel_tag(log_channel module, char *buf, size_t len) {
     buf[0] = '\0';
     if(module == LOG_CHANNEL_NONE) {
