@@ -95,10 +95,14 @@ bool component_is_selected(const component *c) {
 }
 
 bool component_is_selectable(component *c) {
-    if(!c->supports_select) {
-        return false;
+    return c->supports_select;
+}
+
+void component_set_selectable(component *c, bool selectable) {
+    if(c->supports_select != selectable) {
+        c->supports_select = selectable;
+        c->dirty = true;
     }
-    return true;
 }
 
 bool component_is_focused(const component *c) {

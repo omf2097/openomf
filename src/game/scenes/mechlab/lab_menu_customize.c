@@ -724,7 +724,7 @@ component *lab_menu_customize_create(scene *s) {
     const sprite *bsprite = animation_get_sprite(har_picture, p1->pilot->har_id);
     component *button = spritebutton_create(NULL, bsprite->data, false, NULL, s);
     component_set_pos_hints(button, bsprite->pos.x, bsprite->pos.y);
-    button->supports_select = false;
+    component_set_selectable(button, false);
     spritebutton_set_always_display(button);
     spritebutton_set_tick_cb(button, lab_menu_har_picture_tick);
     trnmenu_attach(menu, button);

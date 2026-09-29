@@ -189,6 +189,13 @@ bool component_is_focused(const component *c);
 bool component_is_selectable(component *c);
 
 /**
+ * @brief Sets whether the component can be selected
+ * @param c Component to modify
+ * @param selectable True to allow selection, false to disallow.
+ */
+void component_set_selectable(component *c, bool selectable);
+
+/**
  * @brief Set size hints for the component
  * @param c Component to modify
  * @param w Width hint (-1 for not set)
