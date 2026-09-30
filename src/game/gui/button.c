@@ -110,6 +110,7 @@ static void button_layout(component *c, int x, int y, int w, int h) {
     text_set_horizontal_align(b->text, TEXT_ALIGN_CENTER);
     if(b->use_border) {
         text_set_bounding_box(b->text, w - 4, h - 4);
+        surface_free(&b->border);
         menu_background_border_create(&b->border, w, h, theme->dialog.border_color);
     } else {
         text_set_bounding_box(b->text, w, h);
