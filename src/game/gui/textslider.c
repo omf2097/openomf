@@ -59,7 +59,7 @@ static void textslider_render(component *c) {
     text_draw(t->text, c->x, c->y);
 }
 
-static int textslider_action(component *c, int action, int source) {
+static bool textslider_action(component *c, int action, int source) {
     text_slider *t = widget_get_obj(c);
     int old_pos = *t->pos;
     int panning = t->disable_panning ? 0 : 50;
@@ -84,9 +84,9 @@ static int textslider_action(component *c, int action, int source) {
         }
         // reset ticks so text is bright
         t->ticks = 0;
-        return 0;
+        return true;
     }
-    return 1;
+    return false;
 }
 
 static void textslider_tick(component *c) {

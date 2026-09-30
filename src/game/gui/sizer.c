@@ -167,24 +167,24 @@ static void sizer_render(component *c) {
     }
 }
 
-static int sizer_event(component *c, SDL_Event *event) {
+static bool sizer_event(component *c, SDL_Event *event) {
     assert(c->header == SIZER_MAGIC);
     sizer *local = component_get_obj(c);
     // Events are something that the actual sizer needs to handle
     if(local->event) {
         return local->event(c, event);
     }
-    return 1;
+    return false;
 }
 
-static int sizer_action(component *c, int action, int source) {
+static bool sizer_action(component *c, int action, int source) {
     assert(c->header == SIZER_MAGIC);
     const sizer *local = component_get_obj(c);
     // Actions are something that the actual sizer needs to handle
     if(local->action) {
         return local->action(c, action, source);
     }
-    return 1;
+    return false;
 }
 
 static void sizer_layout(component *c, int x, int y, int w, int h) {

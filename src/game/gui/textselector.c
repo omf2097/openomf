@@ -86,10 +86,10 @@ static void textselector_render(component *c) {
     text_draw(t->text, c->x, c->y);
 }
 
-static int textselector_action(component *c, int action, int source) {
+static bool textselector_action(component *c, int action, int source) {
     text_selector *tb = widget_get_obj(c);
     if(vector_size(&tb->options) <= 1) {
-        return 0;
+        return false;
     }
     int old_pos = *tb->pos;
     int panning = 0;
@@ -114,9 +114,9 @@ static int textselector_action(component *c, int action, int source) {
         audio_play_sound_simple(20, panning);
         // reset ticks so text is bright
         tb->ticks = 0;
-        return 0;
+        return true;
     }
-    return 1;
+    return false;
 }
 
 static void textselector_tick(component *c) {

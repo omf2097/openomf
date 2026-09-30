@@ -553,12 +553,11 @@ void game_state_set_paused(game_state *gs, unsigned int paused) {
     gs->paused = paused;
 }
 
-// Return 0 if event was handled here
-int game_state_handle_event(game_state *gs, SDL_Event *event) {
+bool game_state_handle_event(game_state *gs, SDL_Event *event) {
     if(event->type == SDL_KEYDOWN && is_demoplay(gs) && event->key.keysym.sym == SDLK_ESCAPE) {
         // ESC during demo mode jumps you back to the main menu
         game_state_set_next(gs, SCENE_MENU);
-        return 0;
+        return true;
     } else if(event->type == SDL_KEYDOWN && is_demoplay(gs) && event->key.keysym.sym == SDLK_RETURN) {
         // ENTER during demo mode skips menus
         if(gs->sc->id < SCENE_ARENA0 || gs->sc->id > SCENE_ARENA4) {
@@ -566,13 +565,10 @@ int game_state_handle_event(game_state *gs, SDL_Event *event) {
                 game_state_init_demo(gs);
             }
             game_state_set_next(gs, rand_arena());
-            return 0;
+            return true;
         }
     }
-    if(scene_event(gs->sc, event) == 0) {
-        return 0;
-    }
-    return 1;
+    return scene_event(gs->sc, event);
 }
 
 void cross_fade_transform(damage_tracker *damage, vga_palette *pal, void *userdata) {

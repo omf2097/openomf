@@ -240,12 +240,12 @@ static int find_next_button(component *c, int act) {
     return best_idx;
 }
 
-static int trnmenu_action(component *c, int action, int source) {
+static bool trnmenu_action(component *c, int action, int source) {
     trnmenu *m = sizer_get_obj(c);
 
     // If fading, wait until it's done.
     if(m->fade) {
-        return 1;
+        return false;
     }
 
     // If submenu is set, we need to use it
@@ -264,11 +264,12 @@ static int trnmenu_action(component *c, int action, int source) {
                 trnmenu_hand_deselect(c);
                 m->selected = next;
                 trnmenu_hand_select(c);
+                return true;
             }
-            break;
+            return false;
         case ACT_ESC:
             trnmenu_finish(c);
-            break;
+            return true;
         case ACT_PUNCH:
         case ACT_KICK: {
             component *sel = sizer_get(c, m->selected);
@@ -276,9 +277,11 @@ static int trnmenu_action(component *c, int action, int source) {
                 m->hand.play = 1;
                 return component_action(sel, action, source);
             }
-        } break;
+            return false;
+        }
+        default:
+            return false;
     }
-    return 0;
 }
 
 static void trnmenu_render(component *c) {
@@ -394,12 +397,12 @@ int trnmenu_is_fading(const component *c) {
     return m->fade;
 }
 
-static int trnmenu_event(component *mc, SDL_Event *event) {
+static bool trnmenu_event(component *mc, SDL_Event *event) {
     trnmenu *m = sizer_get_obj(mc);
 
     // If fading, wait until it's done.
     if(m->fade) {
-        return 1;
+        return false;
     }
 
     // If submenu is set, we need to use it
@@ -412,7 +415,7 @@ static int trnmenu_event(component *mc, SDL_Event *event) {
     if(c != NULL) {
         return component_event(c, event);
     }
-    return 1;
+    return false;
 }
 
 int trnmenu_is_finished(const component *c) {

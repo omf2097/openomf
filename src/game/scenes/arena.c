@@ -1453,8 +1453,8 @@ void arena_input_tick(scene *scene) {
     controller_free_chain(menu_ev);
 }
 
-int arena_event(scene *scene, SDL_Event *e) {
-    return 0;
+bool arena_event(scene *scene, SDL_Event *e) {
+    return false;
 }
 
 void arena_render_overlay(scene *scene) {

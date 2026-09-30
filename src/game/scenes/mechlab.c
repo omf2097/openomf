@@ -458,14 +458,14 @@ void mechlab_select_dashboard(scene *scene, dashboard_type type) {
     }
 }
 
-int mechlab_event(scene *scene, SDL_Event *event) {
+bool mechlab_event(scene *scene, SDL_Event *event) {
     mechlab_local *local = scene_get_userdata(scene);
     game_player *player1 = game_state_get_player(scene->gs, 0);
     if(player1->ctrl->type == CTRL_TYPE_GAMEPAD ||
        (player1->ctrl->type == CTRL_TYPE_KEYBOARD && event->type == SDL_KEYDOWN &&
         keyboard_binds_key(player1->ctrl, event))) {
         // these events will be handled by polling
-        return 1;
+        return false;
     }
 
     if(local->dashtype == DASHBOARD_STATS && event->type == SDL_KEYDOWN && event->key.keysym.sym == SDLK_e) {
@@ -476,7 +476,7 @@ int mechlab_event(scene *scene, SDL_Event *event) {
             log_info("Replaying cutscene '%s'", player1->chr->bk_name);
             scene->gs->fight_stats.winner = -1;
             game_state_set_next(scene->gs, SCENE_TRN_CUTSCENE);
-            return 1;
+            return true;
         }
     }
 

@@ -152,7 +152,7 @@ static void menu_render(component *c) {
     }
 }
 
-static int menu_event(component *mc, SDL_Event *event) {
+static bool menu_event(component *mc, SDL_Event *event) {
     menu *m = sizer_get_obj(mc);
 
     // If submenu is set, we need to use it
@@ -165,10 +165,10 @@ static int menu_event(component *mc, SDL_Event *event) {
     if(c != NULL) {
         return component_event(c, event);
     }
-    return 1;
+    return false;
 }
 
-static int menu_action(component *mc, int action, int source) {
+static bool menu_action(component *mc, int action, int source) {
     menu *m = sizer_get_obj(mc);
 
     // If submenu is set, we need to use it
@@ -195,7 +195,7 @@ static int menu_action(component *mc, int action, int source) {
             m->finished = true;
             action = ACT_PUNCH;
         } else {
-            return 0;
+            return true;
         }
     }
 
@@ -204,8 +204,8 @@ static int menu_action(component *mc, int action, int source) {
     // moving the selection if the component does not handle the action.
     c = sizer_get(mc, m->selected);
     if(c != NULL && m->horizontal && (action == ACT_LEFT || action == ACT_RIGHT) &&
-       component_action(c, action, source) == 0) {
-        return 0;
+       component_action(c, action, source)) {
+        return true;
     }
 
     // Handle down/up selection movement
@@ -244,7 +244,7 @@ static int menu_action(component *mc, int action, int source) {
             audio_play_sound_simple(19, 0);
             component_select(c, 1);
         }
-        return 0;
+        return true;
     }
 
     // If the key wasn't handled yet and we have a valid component,
@@ -254,7 +254,7 @@ static int menu_action(component *mc, int action, int source) {
     }
 
     // Tell the caller that the event was not handled here.
-    return 1;
+    return false;
 }
 
 void menu_set_submenu(component *mc, component *submenu) {

@@ -254,7 +254,7 @@ void lobby_print_match_settings(const int user_id, const match_settings *setting
     log_debug("}");
 }
 
-static int lobby_event(scene *scene, SDL_Event *e) {
+static bool lobby_event(scene *scene, SDL_Event *e) {
     lobby_local *local = scene_get_userdata(scene);
     return gui_frame_event(local->frame, e);
 }
@@ -327,7 +327,7 @@ void lobby_input_tick(scene *scene) {
                 // Offer up/down to the focused field first (e.g. the name entry
                 // letter wheel). Only browse the user list if nothing in the
                 // frame consumed them.
-                if(gui_frame_action(local->frame, i->event_data.action, i->source) != 0) {
+                if(!gui_frame_action(local->frame, i->event_data.action, i->source)) {
                     if(i->event_data.action == ACT_DOWN) {
                         local->active_user++;
                         if(local->active_user >= list_size(&local->users)) {
