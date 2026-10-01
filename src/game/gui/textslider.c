@@ -12,7 +12,6 @@
 typedef struct text_slider {
     text *text;
     str title;
-    int ticks;
     int pos_;
     int *pos;
     int has_off;
@@ -82,16 +81,9 @@ static bool textslider_action(component *c, int action, int source) {
         if(t->slide) {
             t->slide(c, t->userdata, *t->pos);
         }
-        // reset ticks so text is bright
-        t->ticks = 0;
         return true;
     }
     return false;
-}
-
-static void textslider_tick(component *c) {
-    text_slider *t = widget_get_obj(c);
-    t->ticks++;
 }
 
 static void textslider_free(component *c) {
@@ -127,7 +119,6 @@ component *textslider_create(const char *text, const char *help, unsigned int po
 
     text_slider *t = omf_calloc(1, sizeof(text_slider));
     t->text = text_create();
-    t->ticks = 0;
     t->pos_ = 1;
     t->pos = &t->pos_;
     t->has_off = has_off;
@@ -144,7 +135,6 @@ component *textslider_create(const char *text, const char *help, unsigned int po
 
     widget_set_render_cb(c, textslider_render);
     widget_set_action_cb(c, textslider_action);
-    widget_set_tick_cb(c, textslider_tick);
     widget_set_free_cb(c, textslider_free);
     widget_set_init_cb(c, textslider_init);
     widget_set_layout_cb(c, textslider_layout);

@@ -12,7 +12,6 @@
 typedef struct text_selector {
     text *text;
     str title;
-    int ticks;
     int dir;
     int pos_;
     int *pos;
@@ -112,16 +111,9 @@ static bool textselector_action(component *c, int action, int source) {
             tb->toggle(c, tb->userdata, *tb->pos);
         }
         audio_play_sound_simple(20, panning);
-        // reset ticks so text is bright
-        tb->ticks = 0;
         return true;
     }
     return false;
-}
-
-static void textselector_tick(component *c) {
-    text_selector *t = widget_get_obj(c);
-    t->ticks++;
 }
 
 int textselector_get_pos(const component *c) {
@@ -185,7 +177,6 @@ component *textselector_create(const char *text, const char *help, textselector_
 
     widget_set_render_cb(c, textselector_render);
     widget_set_action_cb(c, textselector_action);
-    widget_set_tick_cb(c, textselector_tick);
     widget_set_free_cb(c, textselector_free);
     widget_set_init_cb(c, textselector_init);
     widget_set_layout_cb(c, textselector_layout);
