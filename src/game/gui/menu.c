@@ -73,11 +73,7 @@ void menu_select(component *c, component *sc) {
 
 component *menu_selected(const component *mc) {
     menu *m = sizer_get_obj(mc);
-    component *c = sizer_get(mc, m->selected);
-    if(c != NULL) {
-        return c;
-    }
-    return NULL;
+    return sizer_get(mc, m->selected);
 }
 
 void menu_set_submenu_done_cb(component *c, menu_submenu_done_cb done_cb) {
