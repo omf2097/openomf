@@ -2,7 +2,6 @@
 #include "game/gui/sizer.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
-#include "utils/vector.h"
 
 typedef struct xysizer {
     void *userdata;
@@ -67,8 +66,6 @@ static bool xysizer_event(component *c, SDL_Event *event) {
 }
 
 static bool xysizer_action(component *c, int action, int source) {
-    log_debug("sizer action %d", action);
-
     // Just pass events to all children
     iterator it;
     component **tmp;
