@@ -301,7 +301,7 @@ static bool textinput_event(component *c, SDL_Event *e) {
 const char *textinput_value(const component *c) {
     textinput *ti = widget_get_obj(c);
     str_strip(&ti->buf);
-    ti->pos = 0;
+    ti->pos = smin2(ti->pos, str_size(&ti->buf));
     return str_c(&ti->buf);
 }
 
@@ -401,6 +401,7 @@ static void textinput_layout(component *c, int x, int y, int w, int h) {
         image_create(&img, w - 4, h);
         image_clear(&img, 0);
         image_rect(&img, 0, 0, w - 4, h, COLOR_MENU_BORDER);
+        surface_free(&ti->bg_surface);
         surface_create_from_image(&ti->bg_surface, &img);
         image_free(&img);
     } else {
