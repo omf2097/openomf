@@ -170,7 +170,7 @@ typedef struct lobby_local {
 
     dialog *dialog;
 
-    menu *joinmenu;
+    component *joinmenu;
 
     text *presences[PRESENCE_COUNT];
     text *titles[5];
@@ -254,7 +254,7 @@ void lobby_print_match_settings(const int user_id, const match_settings *setting
     log_debug("}");
 }
 
-static int lobby_event(scene *scene, SDL_Event *e) {
+static bool lobby_event(scene *scene, SDL_Event *e) {
     lobby_local *local = scene_get_userdata(scene);
     return gui_frame_event(local->frame, e);
 }
@@ -327,7 +327,7 @@ void lobby_input_tick(scene *scene) {
                 // Offer up/down to the focused field first (e.g. the name entry
                 // letter wheel). Only browse the user list if nothing in the
                 // frame consumed them.
-                if(gui_frame_action(local->frame, i->event_data.action, i->source) != 0) {
+                if(!gui_frame_action(local->frame, i->event_data.action, i->source)) {
                     if(i->event_data.action == ACT_DOWN) {
                         local->active_user++;
                         if(local->active_user >= list_size(&local->users)) {
@@ -513,10 +513,9 @@ void lobby_do_spectate(component *c, void *userdata) {
 }
 
 void lobby_cancel_challenge(component *c, void *userdata) {
-    menu *m = sizer_get_obj(c->parent);
     scene *s = userdata;
     lobby_local *local = scene_get_userdata(s);
-    m->finished = 1;
+    menu_finish(c->parent);
     local->mode = LOBBY_MAIN;
 }
 
@@ -524,10 +523,10 @@ void lobby_dialog_do_challenge(dialog *dlg, dialog_result result) {
     dialog_show(dlg, 0);
     scene *s = dlg->userdata;
     lobby_local *local = scene_get_userdata(s);
-    if(result == DIALOG_RESULT_NO) {
-        local->mode = LOBBY_MAIN;
-    } else if(result == DIALOG_RESULT_YES_OK) {
+    if(result == DIALOG_RESULT_YES_OK) {
         lobby_do_challenge(NULL, s);
+    } else {
+        local->mode = LOBBY_MAIN;
     }
 }
 
@@ -535,10 +534,10 @@ void lobby_dialog_do_spectate(dialog *dlg, dialog_result result) {
     dialog_show(dlg, 0);
     scene *s = dlg->userdata;
     lobby_local *local = scene_get_userdata(s);
-    if(result == DIALOG_RESULT_NO) {
-        local->mode = LOBBY_MAIN;
-    } else if(result == DIALOG_RESULT_YES_OK) {
+    if(result == DIALOG_RESULT_YES_OK) {
         lobby_do_spectate(NULL, s);
+    } else {
+        local->mode = LOBBY_MAIN;
     }
 }
 
@@ -618,7 +617,6 @@ void lobby_do_yell(component *c, void *userdata) {
     scene *scene = userdata;
     lobby_local *local = scene_get_userdata(scene);
 
-    // menu *m = sizer_get_obj(c->parent);
     const char *yell = textinput_value(c);
 
     if(strlen(yell) > 0) {
@@ -676,7 +674,6 @@ static text *create_log_message(const char *status, vga_index color) {
 }
 
 void lobby_do_whisper(component *c, void *userdata) {
-    menu *m = sizer_get_obj(c->parent);
     scene *s = userdata;
 
     const char *whisper = textinput_value(c);
@@ -705,7 +702,7 @@ void lobby_do_whisper(component *c, void *userdata) {
         list_append(&local->log, &log, sizeof(log));
         str_free(&tmp);
 
-        m->finished = 1;
+        menu_finish(c->parent);
         local->mode = LOBBY_MAIN;
         textinput_clear(c);
     }
@@ -776,10 +773,9 @@ void lobby_do_exit(component *c, void *userdata) {
 }
 
 void lobby_refuse_exit(component *c, void *userdata) {
-    menu *m = sizer_get_obj(c->parent);
     scene *s = userdata;
     lobby_local *local = scene_get_userdata(s);
-    m->finished = 1;
+    menu_finish(c->parent);
     local->mode = LOBBY_MAIN;
 }
 
@@ -817,7 +813,7 @@ void lobby_entered_name(component *c, void *userdata) {
 
         enet_peer_send(local->peer, 0, packet);
 
-        local->joinmenu = sizer_get_obj(c->parent);
+        local->joinmenu = c->parent;
     }
 }
 
@@ -1245,7 +1241,7 @@ void lobby_tick(scene *scene, int paused) {
                                     local->id = serial_read_uint32(&ser);
                                     log_debug("successfully joined lobby and assigned ID %u", local->id);
                                     if(local->joinmenu) {
-                                        local->joinmenu->finished = 1;
+                                        menu_finish(local->joinmenu);
                                         local->joinmenu = NULL;
                                     }
                                     local->mode = LOBBY_MAIN;

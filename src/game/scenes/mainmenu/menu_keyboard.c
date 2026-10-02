@@ -101,8 +101,7 @@ void menu_update_keys(component *c) {
 
 void menu_keyboard_done(component *c, void *userdata) {
     // Set menu as finished
-    menu *m = sizer_get_obj(c->parent);
-    m->finished = 1;
+    menu_finish(c->parent);
 
     // Apply config
     keyboard_menu_local *local = menu_get_userdata(c->parent);

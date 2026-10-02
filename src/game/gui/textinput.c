@@ -171,7 +171,7 @@ static void textinput_move_caret(component *c, bool right) {
     refresh(c);
 }
 
-static int textinput_action(component *c, int action, int source) {
+static bool textinput_action(component *c, int action, int source) {
     textinput *ti = widget_get_obj(c);
     // A connected but idle gamepad emits ACT_STOP every tick. That idle signal is
     // not real input, so it must not flip the field into gamepad mode while the
@@ -186,60 +186,60 @@ static int textinput_action(component *c, int action, int source) {
         switch(action) {
             case ACT_RIGHT:
                 textinput_move_caret(c, true);
-                return 0;
+                return true;
             case ACT_LEFT:
                 textinput_move_caret(c, false);
-                return 0;
+                return true;
             case ACT_PUNCH:
                 if(ti->done_cb) {
                     ti->done_cb(c, ti->userdata);
-                    return 0;
+                    return true;
                 }
                 break;
             default:
                 break;
         }
-        return 1;
+        return false;
     }
 
     // If controller is gamepad and if not yet editing, enable edit mode.
     if(!c->editing) {
         if(action == ACT_PUNCH) {
             textinput_set_editing(c, true);
-            return 0;
+            return true;
         }
-        return 1;
+        return false;
     }
 
     // If controller is gamepad, and we are editing, work with the text.
     switch(action) {
         case ACT_RIGHT:
             textinput_move_caret(c, true);
-            return 0;
+            return true;
         case ACT_LEFT:
             textinput_move_caret(c, false);
-            return 0;
+            return true;
         case ACT_UP:
             textinput_wheel_scroll(c, true);
-            return 0;
+            return true;
         case ACT_DOWN:
             textinput_wheel_scroll(c, false);
-            return 0;
+            return true;
         case ACT_KICK:
             if(!ti->edit_by_default) {
                 textinput_set_editing(c, false);
-                return 0;
+                return true;
             }
-            return 1;
+            return false;
         case ACT_PUNCH:
             if(ti->done_cb) {
                 ti->done_cb(c, ti->userdata);
             }
-            return 0;
+            return true;
         default:
             break;
     }
-    return 1;
+    return false;
 }
 
 // '@' and '~' are not printable in this game
@@ -247,7 +247,7 @@ static bool is_valid_input(char c) {
     return isprint(c) && c != '@' && c != '~';
 }
 
-static int textinput_event(component *c, SDL_Event *e) {
+static bool textinput_event(component *c, SDL_Event *e) {
     // Handle selection
     textinput *ti = widget_get_obj(c);
     if((e->type == SDL_TEXTINPUT || e->type == SDL_KEYDOWN) && ti->last_source != CTRL_TYPE_KEYBOARD) {
@@ -263,7 +263,7 @@ static int textinput_event(component *c, SDL_Event *e) {
         str_truncate(&ti->buf, ti->max_chars - 1);
         ti->pos = smin2(ti->pos + 1, str_size(&ti->buf));
         refresh(c);
-        return 0;
+        return true;
     } else if(e->type == SDL_KEYDOWN) {
         const unsigned char *state = SDL_GetKeyboardState(NULL);
         if(state[SDL_SCANCODE_BACKSPACE]) {
@@ -293,15 +293,15 @@ static int textinput_event(component *c, SDL_Event *e) {
                 refresh(c);
             }
         }
-        return 0;
+        return true;
     }
-    return 1;
+    return false;
 }
 
 const char *textinput_value(const component *c) {
     textinput *ti = widget_get_obj(c);
     str_strip(&ti->buf);
-    ti->pos = 0;
+    ti->pos = smin2(ti->pos, str_size(&ti->buf));
     return str_c(&ti->buf);
 }
 
@@ -401,6 +401,7 @@ static void textinput_layout(component *c, int x, int y, int w, int h) {
         image_create(&img, w - 4, h);
         image_clear(&img, 0);
         image_rect(&img, 0, 0, w - 4, h, COLOR_MENU_BORDER);
+        surface_free(&ti->bg_surface);
         surface_create_from_image(&ti->bg_surface, &img);
         image_free(&img);
     } else {

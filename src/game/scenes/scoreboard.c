@@ -126,14 +126,14 @@ static void handle_scoreboard_save(scoreboard_local *local) {
     scores_write(&local->data);
 }
 
-static int scoreboard_event(scene *scene, SDL_Event *event) {
+static bool scoreboard_event(scene *scene, SDL_Event *event) {
     scoreboard_local *local = scene_get_userdata(scene);
 
     // If we are in writing mode, try handling text input
     if(local->has_pending_data) {
         return gui_frame_event(local->frame, event);
     }
-    return 1;
+    return false;
 }
 
 static void scoreboard_tick(scene *scene, int paused) {

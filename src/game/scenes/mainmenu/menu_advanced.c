@@ -15,7 +15,6 @@ typedef struct {
 } menu_advanced_local;
 
 void menu_advanced_done(component *c, void *u) {
-    menu *m = sizer_get_obj(c->parent);
     menu_advanced_local *local = menu_get_userdata(c->parent);
 
     // convert the positions back into values
@@ -26,7 +25,7 @@ void menu_advanced_done(component *c, void *u) {
 
     omf_free(local);
 
-    m->finished = 1;
+    menu_finish(c->parent);
 }
 
 component *menu_advanced_create(scene *s) {

@@ -80,18 +80,18 @@ void gui_frame_render(gui_frame *frame);
  * @brief Handle an SDL event
  * @param frame Frame to receive the event
  * @param event SDL event to process
- * @return Non-zero if the event was handled
+ * @return True if the event was consumed, false if not
  */
-int gui_frame_event(gui_frame *frame, SDL_Event *event);
+bool gui_frame_event(gui_frame *frame, SDL_Event *event);
 
 /**
  * @brief Handle an abstract action event
  * @param frame Frame to receive the action
  * @param action Action code to process
  * @param source CTRL_TYPE_* of the device that produced the action
- * @return Non-zero if the action was handled
+ * @return True if the action was consumed, false if not
  */
-int gui_frame_action(gui_frame *frame, int action, int source);
+bool gui_frame_action(gui_frame *frame, int action, int source);
 
 /**
  * @brief Perform layout calculation for the frame

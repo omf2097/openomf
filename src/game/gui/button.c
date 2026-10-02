@@ -53,16 +53,16 @@ static void button_render(component *c) {
     }
 }
 
-static int button_action(component *c, int action, int source) {
+static bool button_action(component *c, int action, int source) {
     button *b = widget_get_obj(c);
     if(action == ACT_KICK || action == ACT_PUNCH) {
         if(b->click_cb) {
             b->click_cb(c, b->userdata);
         }
         audio_play_sound_simple(20, 0);
-        return 0;
+        return true;
     }
-    return 1;
+    return false;
 }
 
 void button_set_userdata(component *c, void *userdata) {
@@ -110,6 +110,7 @@ static void button_layout(component *c, int x, int y, int w, int h) {
     text_set_horizontal_align(b->text, TEXT_ALIGN_CENTER);
     if(b->use_border) {
         text_set_bounding_box(b->text, w - 4, h - 4);
+        surface_free(&b->border);
         menu_background_border_create(&b->border, w, h, theme->dialog.border_color);
     } else {
         text_set_bounding_box(b->text, w, h);

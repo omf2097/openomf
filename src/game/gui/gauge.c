@@ -101,9 +101,7 @@ static void gauge_free(component *c) {
 
 void gauge_set_lit(component *c, int lit) {
     gauge *g = widget_get_obj(c);
-    if(lit != g->lit) {
-        g->lit = lit;
-    }
+    g->lit = lit;
 }
 
 int gauge_get_lit(component *c) {

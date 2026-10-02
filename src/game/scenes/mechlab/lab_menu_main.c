@@ -2,7 +2,6 @@
 
 #include "formats/chr.h"
 #include "game/common_defines.h"
-#include "game/gui/sizer.h"
 #include "game/gui/spritebutton.h"
 #include "game/gui/trn_menu.h"
 #include "game/scenes/mechlab.h"
@@ -158,7 +157,7 @@ static const button_details details_list[] = {
 void lab_menu_focus_arena(component *c, bool focused, void *userdata) {
     if(focused) {
         scene *s = userdata;
-        sd_chr_enemy *enemy = mechlab_next_opponent(s);
+        const sd_chr_enemy *enemy = mechlab_next_opponent(s);
         if(enemy) {
             char tmp[100];
             unsafe_snprintf(tmp, 100, lang_get(537), str_c(&enemy->pilot.name));
@@ -240,10 +239,10 @@ void lab_menu_tick_arena(component *c, void *userdata) {
     game_player *p1 = game_state_get_player(s->gs, 0);
     if(p1->chr && p1->chr->pilot.rank > 1) {
         component_disable(c, 0);
-        c->supports_select = true;
+        component_set_selectable(c, true);
     } else {
         component_disable(c, 1);
-        c->supports_select = false;
+        component_set_selectable(c, false);
     }
 }
 
@@ -252,10 +251,10 @@ void lab_menu_tick_in_tournament(component *c, void *userdata) {
     game_player *p1 = game_state_get_player(s->gs, 0);
     if(p1->chr && p1->chr->pilot.rank != 0) {
         component_disable(c, 0);
-        c->supports_select = true;
+        component_set_selectable(c, true);
     } else {
         component_disable(c, 1);
-        c->supports_select = false;
+        component_set_selectable(c, false);
     }
 }
 
@@ -264,10 +263,10 @@ static void lab_menu_tick_chr_loaded(component *c, void *userdata) {
     game_player *p1 = game_state_get_player(s->gs, 0);
     if(p1->chr) {
         component_disable(c, 0);
-        c->supports_select = true;
+        component_set_selectable(c, true);
     } else {
         component_disable(c, 1);
-        c->supports_select = false;
+        component_set_selectable(c, false);
     }
 }
 

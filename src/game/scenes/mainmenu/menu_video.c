@@ -179,8 +179,7 @@ void menu_video_done(component *c, void *u) {
 
         menu_set_submenu(c->parent, menu_video_confirm_create(s, &local->old_video_settings));
     } else {
-        menu *m = sizer_get_obj(c->parent);
-        m->finished = 1;
+        menu_finish(c->parent);
     }
 }
 
@@ -191,8 +190,7 @@ void menu_video_free(component *c) {
 }
 
 void menu_video_submenu_done(component *c, component *submenu) {
-    menu *m = sizer_get_obj(c);
-    m->finished = 1;
+    menu_finish(c);
 }
 
 component *menu_video_create(scene *s) {

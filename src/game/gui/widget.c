@@ -106,22 +106,22 @@ static void widget_render(component *c) {
     }
 }
 
-static int widget_event(component *c, SDL_Event *event) {
+static bool widget_event(component *c, SDL_Event *event) {
     assert(c->header == WIDGET_MAGIC);
     widget *local = component_get_obj(c);
     if(local->event) {
         return local->event(c, event);
     }
-    return 1;
+    return false;
 }
 
-static int widget_action(component *c, int action, int source) {
+static bool widget_action(component *c, int action, int source) {
     assert(c->header == WIDGET_MAGIC);
     widget *local = component_get_obj(c);
     if(local->action) {
         return local->action(c, action, source);
     }
-    return 1;
+    return false;
 }
 
 void widget_focus(component *c, bool focused) {

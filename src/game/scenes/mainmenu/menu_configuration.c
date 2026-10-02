@@ -8,8 +8,7 @@
 #include "game/utils/settings.h"
 
 void menu_config_done(component *c, void *u) {
-    menu *m = sizer_get_obj(c->parent);
-    m->finished = 1;
+    menu_finish(c->parent);
 }
 
 static void menu_enter_language(component *c, void *userdata) {

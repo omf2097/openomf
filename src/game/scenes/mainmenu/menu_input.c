@@ -166,8 +166,7 @@ void menu_set_custom_keyboard(component *c, void *u) {
 }
 
 void menu_input_done(component *c, void *u) {
-    menu *m = sizer_get_obj(c->parent);
-    m->finished = 1;
+    menu_finish(c->parent);
 }
 
 void menu_input_free(component *c) {

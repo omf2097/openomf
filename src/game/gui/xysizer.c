@@ -2,7 +2,6 @@
 #include "game/gui/sizer.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
-#include "utils/vector.h"
 
 typedef struct xysizer {
     void *userdata;
@@ -52,34 +51,32 @@ static void xysizer_layout(component *c, int x, int y, int w, int h) {
     }
 }
 
-static int xysizer_event(component *c, SDL_Event *event) {
+static bool xysizer_event(component *c, SDL_Event *event) {
     // Just pass events to all children, stop if it gets handled.
     iterator it;
     component **tmp;
     sizer_begin_iterator(c, &it);
     foreach(it, tmp) {
-        if(component_event(*tmp, event) == 0) {
-            return 0;
+        if(component_event(*tmp, event)) {
+            return true;
         }
     }
 
-    return 1; // Wasn't handled here (event though it might have been)
+    return false;
 }
 
-static int xysizer_action(component *c, int action, int source) {
-    log_debug("sizer action %d", action);
-
+static bool xysizer_action(component *c, int action, int source) {
     // Just pass events to all children
     iterator it;
     component **tmp;
     sizer_begin_iterator(c, &it);
     foreach(it, tmp) {
-        if(component_action(*tmp, action, source) == 0) {
-            return 0;
+        if(component_action(*tmp, action, source)) {
+            return true;
         }
     }
 
-    return 1; // Wasn't handled here (event though it might have been)
+    return false;
 }
 
 static void xysizer_free(component *c) {

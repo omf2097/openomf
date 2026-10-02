@@ -6,8 +6,7 @@
 #include "game/utils/settings.h"
 
 void menu_gameplay_done(component *c, void *u) {
-    menu *m = sizer_get_obj(c->parent);
-    m->finished = 1;
+    menu_finish(c->parent);
 }
 
 void menu_gameplay_speed_slide(component *c, void *userdata, int pos) {

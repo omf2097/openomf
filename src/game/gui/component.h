@@ -17,8 +17,8 @@
 typedef struct component component;
 
 typedef void (*component_render_cb)(component *c);                             ///< Render callback function type
-typedef int (*component_event_cb)(component *c, SDL_Event *event);             ///< SDL event callback function type
-typedef int (*component_action_cb)(component *c, int action, int source);      ///< Action callback function type
+typedef bool (*component_event_cb)(component *c, SDL_Event *event);            ///< SDL event callback function type
+typedef bool (*component_action_cb)(component *c, int action, int source);     ///< Action callback function type
 typedef void (*component_focus_cb)(component *c, bool focused);                ///< Focus change callback function type
 typedef void (*component_layout_cb)(component *c, int x, int y, int w, int h); ///< Layout callback function type
 typedef void (*component_tick_cb)(component *c);                               ///< Tick/update callback function type
@@ -109,18 +109,18 @@ void component_render(component *c);
  * @brief Handle an SDL event
  * @param c Component to receive the event
  * @param event SDL event to process
- * @return Non-zero if the event was handled
+ * @return True if the event was consumed, false if not
  */
-int component_event(component *c, SDL_Event *event);
+bool component_event(component *c, SDL_Event *event);
 
 /**
  * @brief Handle an abstract action event
  * @param c Component to receive the action
  * @param action Action code to process
  * @param source CTRL_TYPE_* of the device that produced the action
- * @return Non-zero if the action was handled
+ * @return True if the action was consumed, false if not
  */
-int component_action(component *c, int action, int source);
+bool component_action(component *c, int action, int source);
 
 /**
  * @brief Initialize the component with a theme
@@ -187,6 +187,13 @@ bool component_is_focused(const component *c);
  * @return True if the component supports selection and is not disabled
  */
 bool component_is_selectable(component *c);
+
+/**
+ * @brief Sets whether the component can be selected
+ * @param c Component to modify
+ * @param selectable True to allow selection, false to disallow.
+ */
+void component_set_selectable(component *c, bool selectable);
 
 /**
  * @brief Set size hints for the component
