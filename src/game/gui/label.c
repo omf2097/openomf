@@ -12,7 +12,7 @@ typedef struct label {
     font_size override_font;
     text_horizontal_align text_horizontal_align;
     text_vertical_align text_vertical_align;
-    uint8_t letter_spacing;
+    uint8_t line_spacing;
     uint8_t text_shadow;
     text_margin text_margin;
     vga_index text_shadow_color;
@@ -68,9 +68,9 @@ void label_set_text_vertical_align(component *c, text_vertical_align align) {
     local->text_vertical_align = align;
 }
 
-void label_set_text_letter_spacing(component *c, uint8_t spacing) {
+void label_set_text_line_spacing(component *c, uint8_t spacing) {
     label *local = widget_get_obj(c);
-    local->letter_spacing = spacing;
+    local->line_spacing = spacing;
 }
 
 void label_set_text_shadow(component *c, uint8_t shadow, vga_index color) {
@@ -87,7 +87,7 @@ void label_set_color_theme(component *c, int theme) {
 static void label_init(component *c, const gui_theme *theme) {
     label *local = widget_get_obj(c);
     text_set_font(local->text, local->override_font != FONT_NONE ? local->override_font : theme->text.font);
-    text_set_line_spacing(local->text, local->letter_spacing);
+    text_set_line_spacing(local->text, local->line_spacing);
     text_set_horizontal_align(local->text, TEXT_ALIGN_LEFT);
     text_set_shadow_style(local->text, local->text_shadow);
     text_set_shadow_color(local->text, local->text_shadow_color);
@@ -129,7 +129,7 @@ component *label_create_with_width(const char *text, uint16_t max_width) {
     local->override_font = FONT_NONE;
     local->text_horizontal_align = TEXT_ALIGN_LEFT;
     local->text_vertical_align = TEXT_ALIGN_TOP;
-    local->letter_spacing = 0;
+    local->line_spacing = 0;
     local->text_shadow = GLYPH_SHADOW_NONE;
     local->text_shadow_color = 0;
     local->text_margin = (text_margin){0, 0, 0, 0};

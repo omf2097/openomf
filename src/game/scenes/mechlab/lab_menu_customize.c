@@ -730,7 +730,7 @@ component *lab_menu_customize_create(scene *s) {
     trnmenu_attach(menu, button);
 
     header_label = label_create("");
-    label_set_text_letter_spacing(header_label, 2);
+    label_set_text_line_spacing(header_label, 2);
     label_set_text_color(header_label, 0xA5);
     label_set_font(header_label, FONT_SMALL);
     component_set_size_hints(header_label, 90, 80);
@@ -738,7 +738,7 @@ component *lab_menu_customize_create(scene *s) {
     trnmenu_attach(menu, header_label);
 
     details_label = label_create("");
-    label_set_text_letter_spacing(details_label, 2);
+    label_set_text_line_spacing(details_label, 2);
     label_set_text_color(details_label, 0xA7);
     label_set_font(details_label, FONT_SMALL);
     component_set_size_hints(details_label, 90, 80);

@@ -64,11 +64,11 @@ void label_set_text_horizontal_align(component *c, text_horizontal_align align);
 void label_set_text_vertical_align(component *c, text_vertical_align align);
 
 /**
- * @brief Set the letter spacing
+ * @brief Set the line spacing
  * @param c Label component to modify
- * @param spacing Spacing in pixels between letters
+ * @param spacing Spacing in pixels between lines
  */
-void label_set_text_letter_spacing(component *c, uint8_t spacing);
+void label_set_text_line_spacing(component *c, uint8_t spacing);
 
 /**
  * @brief Set the text shadow style and color
