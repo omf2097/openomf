@@ -184,7 +184,7 @@ bool component_is_focused(const component *c);
 /**
  * @brief Check if the component can be selected
  * @param c Component to check
- * @return True if the component supports selection and is not disabled
+ * @return True if the component supports selection
  */
 bool component_is_selectable(component *c);
 
