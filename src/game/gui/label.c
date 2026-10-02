@@ -117,13 +117,13 @@ static void label_layout(component *c, int x, int y, int w, int h) {
     text_generate_layout(local->text);
 }
 
-component *label_create_with_width(const char *text, uint16_t max_width) {
+component *label_create(const char *text) {
     component *c = widget_create();
     component_disable(c, true);
     component_set_supports(c, true, false, false);
 
     label *local = omf_calloc(1, sizeof(label));
-    local->text = text_create_with_font_and_size(FONT_BIG, max_width, TEXT_BBOX_MAX);
+    local->text = text_create_with_font_and_size(FONT_BIG, TEXT_BBOX_MAX, TEXT_BBOX_MAX);
     local->override_color = -1;
     local->color_theme = 0; // 0 = primary color, 1 = secondary color.
     local->override_font = FONT_NONE;
@@ -143,12 +143,8 @@ component *label_create_with_width(const char *text, uint16_t max_width) {
     return c;
 }
 
-component *label_create(const char *text) {
-    return label_create_with_width(text, TEXT_BBOX_MAX);
-}
-
 component *label_create_title(const char *text) {
-    component *c = label_create_with_width(text, TEXT_BBOX_MAX);
+    component *c = label_create(text);
     label_set_text_horizontal_align(c, TEXT_ALIGN_CENTER);
     label_set_color_theme(c, 1); // Secondary color
     return c;

@@ -14,14 +14,6 @@
 #include "game/gui/text/text.h"
 
 /**
- * @brief Create a label with a maximum width constraint
- * @param text Text content to display
- * @param max_width Maximum width in pixels for word wrapping
- * @return Pointer to the newly created label component
- */
-component *label_create_with_width(const char *text, uint16_t max_width);
-
-/**
  * @brief Create a title-style label
  * @param text Text content to display
  * @return Pointer to the newly created title label component
