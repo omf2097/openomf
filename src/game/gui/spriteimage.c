@@ -1,6 +1,5 @@
 #include <stdlib.h>
 
-#include "game/gui/sizer.h"
 #include "game/gui/spriteimage.h"
 #include "game/gui/widget.h"
 #include "utils/allocator.h"
