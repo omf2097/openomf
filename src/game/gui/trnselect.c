@@ -1,9 +1,6 @@
-#include <stdio.h>
-
-#include "controller/controller.h"
+#include "game/gui/trnselect.h"
 #include "formats/tournament.h"
 #include "game/gui/label.h"
-#include "game/gui/trnselect.h"
 #include "game/gui/widget.h"
 #include "resources/sprite.h"
 #include "resources/trnmanager.h"

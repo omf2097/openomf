@@ -11,15 +11,7 @@
 #define LABEL_H
 
 #include "game/gui/component.h"
-#include "game/gui/text/text.h"
-
-/**
- * @brief Create a label with a maximum width constraint
- * @param text Text content to display
- * @param max_width Maximum width in pixels for word wrapping
- * @return Pointer to the newly created label component
- */
-component *label_create_with_width(const char *text, uint16_t max_width);
+#include "game/gui/text/enums.h"
 
 /**
  * @brief Create a title-style label
@@ -64,11 +56,11 @@ void label_set_text_horizontal_align(component *c, text_horizontal_align align);
 void label_set_text_vertical_align(component *c, text_vertical_align align);
 
 /**
- * @brief Set the letter spacing
+ * @brief Set the line spacing
  * @param c Label component to modify
- * @param spacing Spacing in pixels between letters
+ * @param spacing Spacing in pixels between lines
  */
-void label_set_text_letter_spacing(component *c, uint8_t spacing);
+void label_set_text_line_spacing(component *c, uint8_t spacing);
 
 /**
  * @brief Set the text shadow style and color

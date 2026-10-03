@@ -11,8 +11,6 @@
 #define MENU_H
 
 #include "game/gui/component.h"
-#include "game/gui/gui_frame.h"
-#include "video/surface.h"
 
 typedef void (*menu_tick_cb)(component *c);                                ///< Menu tick callback
 typedef void (*menu_free_cb)(component *c);                                ///< Menu free callback
@@ -68,11 +66,15 @@ bool menu_is_finished(const component *menu);
 void menu_set_submenu(component *menu, component *submenu);
 
 /**
- * @brief Link this menu to a GUI frame
+ * @brief Set the active submenu, at an given position and size
  * @param menu Menu to modify
- * @param linked_menu GUI frame to link
+ * @param submenu Submenu component to set
+ * @param x X coordinate in pixels
+ * @param y Y coordinate in pixels
+ * @param w Width in pixels
+ * @param h Height in pixels
  */
-void menu_link_menu(component *menu, gui_frame *linked_menu);
+void menu_link_menu(component *menu, component *submenu, int x, int y, int w, int h);
 
 /**
  * @brief Get the current submenu

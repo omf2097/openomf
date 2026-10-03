@@ -1,9 +1,9 @@
 #ifndef MENU_KEYBOARD_H
 #define MENU_KEYBOARD_H
 
-#include "game/gui/gui_frame.h"
+#include "game/gui/component.h"
 #include "game/protos/scene.h"
 
-gui_frame *menu_keyboard_create(scene *s, const gui_theme *theme, int player_id);
+component *menu_keyboard_create(scene *s, int player_id);
 
 #endif // MENU_KEYBOARD_H

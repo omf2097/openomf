@@ -1,10 +1,7 @@
-#include <stdio.h>
-#include <stdlib.h>
-
+#include "game/gui/textselector.h"
 #include "audio/audio.h"
 #include "controller/controller.h"
 #include "game/gui/text/text.h"
-#include "game/gui/textselector.h"
 #include "game/gui/widget.h"
 #include "utils/allocator.h"
 #include "utils/c_string_util.h"

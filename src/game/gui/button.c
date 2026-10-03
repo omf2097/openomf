@@ -1,5 +1,4 @@
 #include <stdbool.h>
-#include <stdlib.h>
 
 #include "audio/audio.h"
 #include "controller/controller.h"
