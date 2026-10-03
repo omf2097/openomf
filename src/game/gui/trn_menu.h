@@ -10,7 +10,6 @@
 #ifndef TRN_MENU_H
 #define TRN_MENU_H
 
-#include "game/game_state.h"
 #include "game/gui/component.h"
 #include "game/protos/object.h"
 #include "resources/animation.h"

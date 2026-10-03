@@ -11,7 +11,7 @@
 #define LABEL_H
 
 #include "game/gui/component.h"
-#include "game/gui/text/text.h"
+#include "game/gui/text/enums.h"
 
 /**
  * @brief Create a title-style label

@@ -1,7 +1,5 @@
 #include "game/gui/text/text_layout.h"
 #include "resources/fonts.h"
-#include "utils/allocator.h"
-#include "utils/log.h"
 #include "utils/miscmath.h"
 #include "video/surface.h"
 

@@ -4,7 +4,6 @@
 #include "game/gui/menu_background.h"
 #include "game/gui/sizer.h"
 #include "utils/allocator.h"
-#include "utils/log.h"
 #include "utils/miscmath.h"
 #include "video/color.h"
 #include "video/surface.h"

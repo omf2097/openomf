@@ -1,6 +1,5 @@
 #include "game/gui/widget.h"
 #include "utils/allocator.h"
-#include "utils/log.h"
 
 #define WIDGET_MAGIC 0x8BADF00D
 
