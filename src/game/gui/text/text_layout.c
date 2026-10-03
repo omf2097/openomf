@@ -42,7 +42,7 @@ size_t find_next_line_end(const str *buf, const font *font, text_row_direction d
 
         // Check if this is a potential cut-off point. Cut-off is used if we run out of space
         // before we reach an actual linebreak.
-        if(ptr[i] == ' ' || ptr[i] == '-') {
+        if(ptr[i] == ' ') {
             cut_off = i + 1;
             found_cut_off = true;
         }
@@ -65,6 +65,12 @@ size_t find_next_line_end(const str *buf, const font *font, text_row_direction d
             } else {
                 return i;
             }
+        }
+
+        // A dash is kept on the row, so it may only act as a cut-off point if it fits.
+        if(ptr[i] == '-') {
+            cut_off = i + 1;
+            found_cut_off = true;
         }
     }
     return len;
