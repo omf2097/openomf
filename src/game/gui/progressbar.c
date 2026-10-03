@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 
 #include "game/gui/progressbar.h"
 #include "game/gui/widget.h"
@@ -39,9 +40,12 @@ const progressbar_theme _progressbar_theme_melee = {
 };
 
 typedef struct progressbar {
-    surface *background;
-    surface *background_alt;
-    surface *block;
+    surface background;
+    surface background_alt;
+    surface fill_left;
+    surface fill_mid;
+    surface fill_right;
+    bool surfaces_created;
     int orientation;
     int percentage;
     int display_percentage;
@@ -50,17 +54,12 @@ typedef struct progressbar {
     int rate;
     int state;
     int tick;
-    int refresh;
     bool highlight;
 } progressbar;
 
 void progressbar_set_progress(component *c, int percentage, bool animate) {
     progressbar *bar = widget_get_obj(c);
-    int tmp = clamp(percentage, 0, 100);
-    if(!bar->refresh) {
-        bar->refresh = (tmp != bar->percentage);
-    }
-    bar->percentage = tmp;
+    bar->percentage = clamp(percentage, 0, 100);
     if(!animate || bar->percentage > bar->display_percentage) {
         // refilling the meter is instant
         bar->display_percentage = bar->percentage;
@@ -82,58 +81,36 @@ void progressbar_set_highlight(component *c, bool highlight) {
     bar->highlight = highlight;
 }
 
+static void progressbar_render_fill(const progressbar *bar, int x, int y, int w, int h) {
+    const int fill_w = w * bar->display_percentage / 100;
+    const int fill_x = x + (bar->orientation == PROGRESSBAR_LEFT ? 0 : w - fill_w);
+    const int offset = bar->highlight ? 1 : 0;
+
+    // Start cap if its needed
+    if(fill_w > 0) {
+        video_draw_full(&bar->fill_left, fill_x, y, 1, h, 0, 0, offset, 255, 255, 0, 0);
+    }
+    // If we need to draw more than start and end caps, then horizontally draw & stretch the middle part.
+    if(fill_w > 2) {
+        video_draw_full(&bar->fill_mid, fill_x + 1, y, fill_w - 2, h, 0, 0, offset, 255, 255, 0, 0);
+    }
+    // End cap if its needed.
+    if(fill_w > 1) {
+        video_draw_full(&bar->fill_right, fill_x + fill_w - 1, y, 1, h, 0, 0, offset, 255, 255, 0, 0);
+    }
+}
+
 static void progressbar_render(component *c) {
-    progressbar *bar = widget_get_obj(c);
-
-    // If necessary, refresh the progress block
-    if(bar->refresh || bar->display_percentage > bar->percentage) {
-        bar->refresh = 0;
-
-        if(bar->display_percentage > bar->percentage) {
-            bar->display_percentage--;
-        }
-
-        // Free old block first ...
-        if(bar->block) {
-            surface_free(bar->block);
-        }
-
-        // ... Then draw the new one
-        float prog = bar->display_percentage / 100.0f;
-        int w = c->w * prog;
-        int h = c->h;
-        if(w > 1 && h > 1) {
-            image tmp;
-            image_create(&tmp, w, h);
-            image_clear(&tmp, bar->theme.int_bg_color);
-            image_rect_bevel(&tmp, 0, 0, w - 1, h - 1, bar->theme.int_topleft_color, bar->theme.int_bottomright_color,
-                             bar->theme.int_bottomright_color, bar->theme.int_topleft_color);
-            if(bar->block == NULL) {
-                bar->block = omf_calloc(1, sizeof(surface));
-            }
-            surface_create_from_image(bar->block, &tmp);
-            image_free(&tmp);
-        } else {
-            omf_free(bar->block);
-        }
-    }
-
-    // Render background (flashing or not)
-    if(bar->state) {
-        video_draw(bar->background_alt, c->x, c->y);
-    } else {
-        video_draw(bar->background, c->x, c->y);
-    }
-
-    // Render block
-    if(bar->block != NULL) {
-        video_draw_offset(bar->block, c->x + (bar->orientation == PROGRESSBAR_LEFT ? 0 : c->w - bar->block->w), c->y,
-                          bar->highlight ? 1 : 0, 255);
-    }
+    const progressbar *bar = widget_get_obj(c);
+    video_draw(bar->state ? &bar->background_alt : &bar->background, c->x, c->y);
+    progressbar_render_fill(bar, c->x, c->y, c->w, c->h);
 }
 
 static void progressbar_tick(component *c) {
     progressbar *bar = widget_get_obj(c);
+    if(bar->display_percentage > bar->percentage) {
+        bar->display_percentage--;
+    }
     if(bar->flashing) {
         if(bar->tick > bar->rate) {
             bar->tick = 0;
@@ -143,58 +120,57 @@ static void progressbar_tick(component *c) {
     }
 }
 
+static void progressbar_free_surfaces(progressbar *bar) {
+    if(bar->surfaces_created) {
+        surface_free(&bar->background);
+        surface_free(&bar->background_alt);
+        surface_free(&bar->fill_left);
+        surface_free(&bar->fill_mid);
+        surface_free(&bar->fill_right);
+        bar->surfaces_created = false;
+    }
+}
+
 static void progressbar_free(component *c) {
     progressbar *bar = widget_get_obj(c);
-    if(bar->block) {
-        surface_free(bar->block);
-        omf_free(bar->block);
-    }
-    surface_free(bar->background);
-    omf_free(bar->background);
-    surface_free(bar->background_alt);
-    omf_free(bar->background_alt);
+    progressbar_free_surfaces(bar);
     omf_free(bar);
 }
 
+static void progressbar_create_background(surface *s, int w, int h, const progressbar_theme *t, uint8_t bg_color) {
+    image img;
+    image_create(&img, w, h);
+    image_clear(&img, bg_color);
+    image_rect_bevel(&img, 0, 0, w - 1, h - 1, t->border_topleft_color, t->border_bottomright_color,
+                     t->border_bottomright_color, t->border_topleft_color);
+    surface_create_from_image(s, &img);
+    surface_set_transparency(s, 0);
+    image_free(&img);
+}
+
+static void progressbar_create_column(surface *s, int h, uint8_t top, uint8_t middle, uint8_t bottom) {
+    unsigned char *col = omf_malloc(h);
+    memset(col, middle, h);
+    col[0] = top;
+    col[h - 1] = bottom;
+    surface_create_from_data(s, 1, h, col);
+    surface_set_transparency(s, -1);
+    omf_free(col);
+}
+
 static void progressbar_layout(component *c, int x, int y, int w, int h) {
-    image tmp;
     progressbar *bar = widget_get_obj(c);
+    const progressbar_theme *t = &bar->theme;
 
-    // Free previous allocations if they exist (in case of re-layout)
-    if(bar->background != NULL) {
-        surface_free(bar->background);
-        omf_free(bar->background);
-    }
-    if(bar->background_alt != NULL) {
-        surface_free(bar->background_alt);
-        omf_free(bar->background_alt);
-    }
-    if(bar->block != NULL) {
-        surface_free(bar->block);
-        omf_free(bar->block);
-    }
+    progressbar_free_surfaces(bar);
 
-    // Allocate everything
-    bar->background = omf_calloc(1, sizeof(surface));
-    bar->background_alt = omf_calloc(1, sizeof(surface));
-    bar->block = NULL;
-
-    // Background,
-    image_create(&tmp, w, h);
-    image_clear(&tmp, bar->theme.bg_color);
-    image_rect_bevel(&tmp, 0, 0, w - 1, h - 1, bar->theme.border_topleft_color, bar->theme.border_bottomright_color,
-                     bar->theme.border_bottomright_color, bar->theme.border_topleft_color);
-    surface_create_from_image(bar->background, &tmp);
-    surface_set_transparency(bar->background, 0);
-    image_free(&tmp);
-
-    image_create(&tmp, w, h);
-    image_clear(&tmp, bar->theme.bg_color_alt);
-    image_rect_bevel(&tmp, 0, 0, w - 1, h - 1, bar->theme.border_topleft_color, bar->theme.border_bottomright_color,
-                     bar->theme.border_bottomright_color, bar->theme.border_topleft_color);
-    surface_create_from_image(bar->background_alt, &tmp);
-    surface_set_transparency(bar->background_alt, 0);
-    image_free(&tmp);
+    progressbar_create_background(&bar->background, w, h, t, t->bg_color);
+    progressbar_create_background(&bar->background_alt, w, h, t, t->bg_color_alt);
+    progressbar_create_column(&bar->fill_left, h, t->int_topleft_color, t->int_topleft_color, t->int_topleft_color);
+    progressbar_create_column(&bar->fill_mid, h, t->int_topleft_color, t->int_bg_color, t->int_bottomright_color);
+    progressbar_create_column(&bar->fill_right, h, t->int_bottomright_color, t->int_bottomright_color,
+                              t->int_bottomright_color);
+    bar->surfaces_created = true;
 }
 
 component *progressbar_create(progressbar_theme theme, int orientation, int percentage) {
@@ -208,7 +184,6 @@ component *progressbar_create(progressbar_theme theme, int orientation, int perc
     local->orientation = clamp(orientation, 0, 1);
     local->percentage = clamp(percentage, 0, 100);
     local->display_percentage = local->percentage;
-    local->refresh = 1;
 
     widget_set_obj(c, local);
     widget_set_render_cb(c, progressbar_render);
