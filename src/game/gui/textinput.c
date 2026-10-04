@@ -265,17 +265,20 @@ static bool textinput_event(component *c, SDL_Event *e) {
         refresh(c);
         return true;
     } else if(e->type == SDL_KEYDOWN) {
-        const unsigned char *state = SDL_GetKeyboardState(NULL);
-        if(state[SDL_SCANCODE_BACKSPACE]) {
+        const SDL_Scancode key = e->key.keysym.scancode;
+        const bool ctrl_mod = (e->key.keysym.mod & KMOD_CTRL) != 0;
+        if(key == SDL_SCANCODE_BACKSPACE) {
             if(ti->pos > 0) {
                 ti->pos--;
                 str_delete_at(&ti->buf, ti->pos);
             }
             refresh(c);
-        } else if(state[SDL_SCANCODE_DELETE]) {
+            return true;
+        } else if(key == SDL_SCANCODE_DELETE) {
             str_delete_at(&ti->buf, ti->pos);
             refresh(c);
-        } else if(state[SDL_SCANCODE_V] && state[SDL_SCANCODE_LCTRL]) {
+            return true;
+        } else if(key == SDL_SCANCODE_V && ctrl_mod) {
             if(SDL_HasClipboardText()) {
                 char *clip = SDL_GetClipboardText();
                 str filtered;
@@ -292,8 +295,8 @@ static bool textinput_event(component *c, SDL_Event *e) {
                 SDL_free(clip);
                 refresh(c);
             }
+            return true;
         }
-        return true;
     }
     return false;
 }

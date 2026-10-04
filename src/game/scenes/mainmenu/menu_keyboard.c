@@ -12,14 +12,10 @@
 static const char *keynames[] = {"JUMP UP",   "JUMP RIGHT", "WALK RIGHT", "DUCK FORWARD", "DUCK",
                                  "DUCK BACK", "WALK BACK",  "JUMP LEFT",  "PUNCH",        "KICK"};
 
-// TODO: This menu is using gui_frame instead of component. I consider it as hack.
-// The reasons are that the menu is positioned outside its parent component.
-// Because of this it also needs its own background. Both of these things are
-// handled by special gui_frame. The menu is also added by special function
-// menu_link_menu instead of standard menu_set_submenu.
+// This menu is wider than its parent, so it is attached with menu_link_menu
+// (explicit rectangle) instead of menu_set_submenu (parent's rectangle).
 
 typedef struct {
-    gui_frame *frame;
     component *keys[10];
     int selected_player;
 } keyboard_menu_local;
@@ -123,10 +119,9 @@ void menu_keyboard_keypress_done(component *c, component *submenu) {
     menu_update_keys(c);
 }
 
-gui_frame *menu_keyboard_create(scene *s, const gui_theme *theme, int selected_player) {
+component *menu_keyboard_create(scene *s, int selected_player) {
     keyboard_menu_local *local = omf_calloc(1, sizeof(keyboard_menu_local));
     local->selected_player = selected_player;
-    local->frame = gui_frame_create(theme, 25, 5, 270, 140);
     component *menu = menu_create();
     menu_attach(menu, label_create_title("CUSTOM KEYBOARD SETUP"));
     char tmp_buf[32];
@@ -138,11 +133,8 @@ gui_frame *menu_keyboard_create(scene *s, const gui_theme *theme, int selected_p
     }
     menu_attach(menu, button_create("DONE", "Leave custom keyboard setup.", false, false, menu_keyboard_done, s));
 
-    gui_frame_set_root(local->frame, menu);
-    gui_frame_layout(local->frame);
-
     menu_set_userdata(menu, local);
     menu_set_free_cb(menu, menu_keyboard_free);
     menu_set_submenu_done_cb(menu, menu_keyboard_keypress_done);
-    return local->frame;
+    return menu;
 }

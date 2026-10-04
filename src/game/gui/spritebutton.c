@@ -1,11 +1,8 @@
-#include <stdlib.h>
-
-#include "controller/controller.h"
 #include "game/gui/spritebutton.h"
+#include "controller/controller.h"
 #include "game/gui/text/text.h"
 #include "game/gui/widget.h"
 #include "utils/allocator.h"
-#include "utils/log.h"
 #include "video/video.h"
 
 typedef struct spritebutton {
