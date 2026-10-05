@@ -38,8 +38,8 @@ enum {
     LOG_CHANNEL_REC = 1u << 2,         ///< REC playback/recording controller events.
     LOG_CHANNEL_NETWORK = 1u << 3,     ///< Reserved placeholder for networking/logging during future migration.
     LOG_CHANNEL_GAMEPLAY = 1u << 4,    ///< Reserved placeholder for gameplay systems and world simulation logs.
-    LOG_CHANNEL_GRAPHICS = 1u << 5,    ///< Reserved placeholder for rendering and graphics pipeline diagnostics.
-    LOG_CHANNEL_SOUND = 1u << 6,       ///< Reserved placeholder for audio/sound system diagnostics.
+    LOG_CHANNEL_VIDEO = 1u << 5,       ///< Reserved placeholder for rendering and video pipeline diagnostics.
+    LOG_CHANNEL_AUDIO = 1u << 6,       ///< Reserved placeholder for audio system diagnostics.
 };
 
 /**
@@ -71,28 +71,28 @@ enum {
  * @param channel Channel bitmask to tag the message with.
  * @param ... Printf-style format string and arguments
  */
-#define log_debug_c(channel, ...) log_msg_channel((channel), LOG_DEBUG, __VA_ARGS__)
+#define log_debug_channel(channel, ...) log_msg_channel((channel), LOG_DEBUG, __VA_ARGS__)
 
 /**
  * @brief Log an informational message tagged with a channel.
  * @param channel Channel bitmask to tag the message with.
  * @param ... Printf-style format string and arguments
  */
-#define log_info_c(channel, ...) log_msg_channel((channel), LOG_INFO, __VA_ARGS__)
+#define log_info_channel(channel, ...) log_msg_channel((channel), LOG_INFO, __VA_ARGS__)
 
 /**
  * @brief Log a warning message tagged with a channel.
  * @param channel Channel bitmask to tag the message with.
  * @param ... Printf-style format string and arguments
  */
-#define log_warn_c(channel, ...) log_msg_channel((channel), LOG_WARN, __VA_ARGS__)
+#define log_warn_channel(channel, ...) log_msg_channel((channel), LOG_WARN, __VA_ARGS__)
 
 /**
  * @brief Log an error message tagged with a channel.
  * @param channel Channel bitmask to tag the message with.
  * @param ... Printf-style format string and arguments
  */
-#define log_error_c(channel, ...) log_msg_channel((channel), LOG_ERROR, __VA_ARGS__)
+#define log_error_channel(channel, ...) log_msg_channel((channel), LOG_ERROR, __VA_ARGS__)
 
 /**
  * @brief Set the active channel filter.
@@ -109,7 +109,7 @@ log_channel log_channels_from_string(const char *channels);
 
 /**
  * @brief Log a message at the specified level, tagged with a channel.
- * @details Prefer using the log_debug_c/info_c/warn_c/error_c macros instead.
+ * @details Prefer using the log_debug_channel/info_channel/warn_channel/error_channel macros instead.
  * @param channel Channel bitmask to tag the message with.
  * @param level Severity level
  * @param fmt Printf-style format string

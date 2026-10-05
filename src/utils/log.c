@@ -52,8 +52,8 @@ static const char *channel_names[] = {
     "rec",
     "network",
     "gameplay",
-    "graphics",
-    "sound",
+    "video",
+    "audio",
 };
 
 #define CHANNEL_NAME_COUNT (sizeof(channel_names) / sizeof(channel_names[0]))

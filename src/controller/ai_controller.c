@@ -618,37 +618,37 @@ void queue_tactic(controller *ctrl, int tactic_type) {
     // log when we queue a tactic
     switch(tactic_type) {
         case TACTIC_GRAB:
-            log_debug_c(LOG_CHANNEL_AI_DECISION, "HAR %d queued tactic: GRAB", h->id);
+            log_debug_channel(LOG_CHANNEL_AI_DECISION, "HAR %d queued tactic: GRAB", h->id);
             break;
         case TACTIC_TRIP:
-            log_debug_c(LOG_CHANNEL_AI_DECISION, "HAR %d queued tactic: TRIP", h->id);
+            log_debug_channel(LOG_CHANNEL_AI_DECISION, "HAR %d queued tactic: TRIP", h->id);
             break;
         case TACTIC_QUICK:
-            log_debug_c(LOG_CHANNEL_AI_DECISION, "HAR %d queued tactic: QUICK", h->id);
+            log_debug_channel(LOG_CHANNEL_AI_DECISION, "HAR %d queued tactic: QUICK", h->id);
             break;
         case TACTIC_CLOSE:
-            log_debug_c(LOG_CHANNEL_AI_DECISION, "HAR %d queued tactic: CLOSE", h->id);
+            log_debug_channel(LOG_CHANNEL_AI_DECISION, "HAR %d queued tactic: CLOSE", h->id);
             break;
         case TACTIC_FLY:
-            log_debug_c(LOG_CHANNEL_AI_DECISION, "HAR %d queued tactic: FLY", h->id);
+            log_debug_channel(LOG_CHANNEL_AI_DECISION, "HAR %d queued tactic: FLY", h->id);
             break;
         case TACTIC_SHOOT:
-            log_debug_c(LOG_CHANNEL_AI_DECISION, "HAR %d queued tactic: SHOOT", h->id);
+            log_debug_channel(LOG_CHANNEL_AI_DECISION, "HAR %d queued tactic: SHOOT", h->id);
             break;
         case TACTIC_PUSH:
-            log_debug_c(LOG_CHANNEL_AI_DECISION, "HAR %d queued tactic: PUSH", h->id);
+            log_debug_channel(LOG_CHANNEL_AI_DECISION, "HAR %d queued tactic: PUSH", h->id);
             break;
         case TACTIC_SPAM:
-            log_debug_c(LOG_CHANNEL_AI_DECISION, "HAR %d queued tactic: SPAM", h->id);
+            log_debug_channel(LOG_CHANNEL_AI_DECISION, "HAR %d queued tactic: SPAM", h->id);
             break;
         case TACTIC_ESCAPE:
-            log_debug_c(LOG_CHANNEL_AI_DECISION, "HAR %d queued tactic: ESCAPE", h->id);
+            log_debug_channel(LOG_CHANNEL_AI_DECISION, "HAR %d queued tactic: ESCAPE", h->id);
             break;
         case TACTIC_TURTLE:
-            log_debug_c(LOG_CHANNEL_AI_DECISION, "HAR %d queued tactic: TURTLE", h->id);
+            log_debug_channel(LOG_CHANNEL_AI_DECISION, "HAR %d queued tactic: TURTLE", h->id);
             break;
         case TACTIC_COUNTER:
-            log_debug_c(LOG_CHANNEL_AI_DECISION, "HAR %d queued tactic: COUNTER", h->id);
+            log_debug_channel(LOG_CHANNEL_AI_DECISION, "HAR %d queued tactic: COUNTER", h->id);
             break;
     }
 
@@ -1105,7 +1105,7 @@ int ai_har_event(controller *ctrl, har_event event) {
                    (a->tactic->chain_hit_on == 0 || a->tactic->chain_hit_on != event.move->category)) {
                     reset_tactic_state(a);
                     has_queued_tactic = false;
-                    log_debug_c(LOG_CHANNEL_AI_STATE, "Reset tactic queue: EVENT_BLOCK");
+                    log_debug_channel(LOG_CHANNEL_AI_STATE, "Reset tactic queue: EVENT_BLOCK");
                 }
                 break;
             case HAR_EVENT_TAKE_HIT:
@@ -1114,18 +1114,18 @@ int ai_har_event(controller *ctrl, har_event event) {
                    (a->tactic->tactic_type == TACTIC_TURTLE && !pilot->att_def)) {
                     reset_tactic_state(a);
                     has_queued_tactic = false;
-                    log_debug_c(LOG_CHANNEL_AI_STATE, "Reset tactic queue: EVENT_TAKE_HIT");
+                    log_debug_channel(LOG_CHANNEL_AI_STATE, "Reset tactic queue: EVENT_TAKE_HIT");
                 }
                 break;
             case HAR_EVENT_ENEMY_STUN: {
                 if(a->tactic->tactic_type == TACTIC_GRAB || a->tactic->tactic_type == TACTIC_CLOSE ||
                    a->tactic->tactic_type == TACTIC_TRIP) {
-                    log_debug_c(LOG_CHANNEL_AI_DECISION, "Extend tactic move timer to capitalize on stun");
+                    log_debug_channel(LOG_CHANNEL_AI_DECISION, "Extend tactic move timer to capitalize on stun");
                     a->tactic->move_timer = TACTIC_MOVE_TIMER_MAX;
                 } else if(a->tactic->tactic_type != TACTIC_SHOOT) {
                     reset_tactic_state(a);
                     has_queued_tactic = false;
-                    log_debug_c(LOG_CHANNEL_AI_STATE, "Reset tactic queue: EVENT_ENEMY_STUN");
+                    log_debug_channel(LOG_CHANNEL_AI_STATE, "Reset tactic queue: EVENT_ENEMY_STUN");
                 }
             } break;
         }
@@ -1170,7 +1170,7 @@ int ai_har_event(controller *ctrl, har_event event) {
             a->last_move_id = event.move->id;
 
             if(a->tactic->chain_hit_on == event.move->category) {
-                log_debug_c(LOG_CHANNEL_AI_DECISION, "Queueing chained tactic");
+                log_debug_channel(LOG_CHANNEL_AI_DECISION, "Queueing chained tactic");
                 queue_tactic(ctrl, a->tactic->chain_hit_tactic);
                 break;
             }
@@ -1223,7 +1223,7 @@ int ai_har_event(controller *ctrl, har_event event) {
 
             if(has_queued_tactic && a->tactic->attack_on == HAR_EVENT_BLOCK) {
                 // do the attack now
-                log_debug_c(LOG_CHANNEL_AI_DECISION, "Attempting counter move");
+                log_debug_channel(LOG_CHANNEL_AI_DECISION, "Attempting counter move");
                 a->tactic->move_timer = 0;
                 break;
             }
@@ -1251,7 +1251,7 @@ int ai_har_event(controller *ctrl, har_event event) {
 
             if(has_queued_tactic && a->tactic->attack_on == HAR_EVENT_LAND && h->state == STATE_STANDING) {
                 // do the attack now
-                log_debug_c(LOG_CHANNEL_AI_DECISION, "Attempting landing move");
+                log_debug_channel(LOG_CHANNEL_AI_DECISION, "Attempting landing move");
                 a->tactic->move_timer = 0;
                 a->tactic->attack_on = 0;
                 break;
@@ -1379,7 +1379,7 @@ int ai_har_event(controller *ctrl, har_event event) {
                 break;
             }
 
-            log_debug_c(LOG_CHANNEL_AI_DECISION, "HAR %d capitalize on hazard", h->id);
+            log_debug_channel(LOG_CHANNEL_AI_DECISION, "HAR %d capitalize on hazard", h->id);
 
             int tacs[] = {TACTIC_GRAB, TACTIC_TRIP, TACTIC_QUICK, TACTIC_CLOSE, TACTIC_SHOOT};
             chain_consider_tactics(ctrl, tacs, N_ELEMENTS(tacs));
@@ -1389,7 +1389,7 @@ int ai_har_event(controller *ctrl, har_event event) {
                 break;
             }
 
-            log_debug_c(LOG_CHANNEL_AI_DECISION, "HAR %d capitalize on stun", h->id);
+            log_debug_channel(LOG_CHANNEL_AI_DECISION, "HAR %d capitalize on stun", h->id);
 
             int tacs[] = {TACTIC_GRAB, TACTIC_CLOSE, TACTIC_TRIP, TACTIC_SHOOT};
             chain_consider_tactics(ctrl, tacs, N_ELEMENTS(tacs));
