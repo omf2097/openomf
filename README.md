@@ -61,8 +61,8 @@ If `--log-channels` is omitted, all channels are enabled.
 | `rec` | REC playback/recording, replay controls, and REC assertions |
 | `network` | Reserved placeholder for networking |
 | `gameplay` | Reserved placeholder for gameplay |
-| `graphics` | Reserved placeholder for graphics |
-| `sound` | Reserved placeholder for sound |
+| `video` | Reserved placeholder for video |
+| `audio` | Reserved placeholder for audio |
 
 License
 -------
