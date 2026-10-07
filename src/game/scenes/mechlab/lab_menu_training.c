@@ -97,7 +97,7 @@ void lab_menu_training_check_endurance_price(component *c, void *userdata) {
 }
 
 void lab_menu_training_done(component *c, void *userdata) {
-    trnmenu_finish(c->parent);
+    trnmenu_finish(component_get_parent(c));
 }
 
 // clang-format off

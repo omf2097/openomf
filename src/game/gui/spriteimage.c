@@ -12,7 +12,8 @@ typedef struct spriteimage {
 
 static void spriteimage_render(component *c) {
     spriteimage *sb = widget_get_obj(c);
-    video_draw(sb->img, c->x, c->y);
+    const vec2i pos = component_get_pos(c);
+    video_draw(sb->img, pos.x, pos.y);
 }
 
 static void spriteimage_free(component *c) {
@@ -33,9 +34,7 @@ void spriteimage_set_owns_sprite(component *c, bool owns_sprite) {
 component *spriteimage_create(const surface *img) {
     component *c = widget_create();
     component_disable(c, 1);
-    c->supports_focus = 0;
-    c->supports_disable = 1;
-    c->supports_select = 0;
+    component_set_supported(c, true, false, false);
 
     spriteimage *sb = omf_calloc(1, sizeof(spriteimage));
     sb->img = img;

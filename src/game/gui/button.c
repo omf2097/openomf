@@ -44,11 +44,12 @@ static void button_render(component *c) {
         text_set_color(b->text, theme->text.inactive_color);
     }
 
+    const vec2i pos = component_get_pos(c);
     if(b->use_border) {
-        video_draw(&b->border, c->x, c->y);
-        text_draw(b->text, c->x + 2, c->y + 2);
+        video_draw(&b->border, pos.x, pos.y);
+        text_draw(b->text, pos.x + 2, pos.y + 2);
     } else {
-        text_draw(b->text, c->x, c->y);
+        text_draw(b->text, pos.x, pos.y);
     }
 }
 
@@ -88,15 +89,16 @@ static void button_init(component *c, const gui_theme *theme) {
     text_set_shadow_style(b->text, b->text_shadow);
     text_set_shadow_color(b->text, b->text_shadow_color);
 
-    if(c->w_hint < 0) {
+    const vec2i hint = component_get_size_hint(c);
+    if(hint.x < 0) {
         text_generate_layout(b->text);
         int text_width = text_get_layout_width(b->text);
-        component_set_size_hints(c, text_width + (b->use_border ? 4 : 0), c->h_hint);
+        component_set_size_hints(c, text_width + (b->use_border ? 4 : 0), hint.y);
     }
-    if(c->h_hint < 0) {
+    if(hint.y < 0) {
         text_generate_layout(b->text);
         int text_height = text_get_layout_height(b->text);
-        component_set_size_hints(c, c->w_hint, text_height + (b->use_border ? 4 : 0));
+        component_set_size_hints(c, hint.x, text_height + (b->use_border ? 4 : 0));
     }
 }
 
