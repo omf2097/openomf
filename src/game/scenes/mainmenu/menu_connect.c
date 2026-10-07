@@ -50,7 +50,7 @@ void menu_connect_free(component *c) {
 
 void menu_connect_start(component *c, void *userdata) {
     scene *s = userdata;
-    connect_menu_data *local = menu_get_userdata(c->parent);
+    connect_menu_data *local = menu_get_userdata(component_get_parent(c));
     ENetAddress address;
     const char *addr = textinput_value(local->addr_input);
     s->gs->role = ROLE_CLIENT;
@@ -83,7 +83,7 @@ void menu_connect_start(component *c, void *userdata) {
     component_disable(local->connect_button, 1);
     component_disable(local->addr_input, 1);
     component_disable(local->port_input, 1);
-    menu_select(c->parent, local->cancel_button);
+    menu_select(component_get_parent(c), local->cancel_button);
 
     // Set address
     enet_address_set_host(&address, addr);
@@ -100,13 +100,13 @@ void menu_connect_start(component *c, void *userdata) {
 
 void menu_connect_cancel(component *c, void *userdata) {
 
-    connect_menu_data *local = menu_get_userdata(c->parent);
+    connect_menu_data *local = menu_get_userdata(component_get_parent(c));
     if(local->connect_start && difftime(time(NULL), local->connect_start) < 0.1) {
         return;
     }
 
     // Finish menu
-    menu_finish(c->parent);
+    menu_finish(component_get_parent(c));
 
     // Clean up host
     if(local->host && !local->controllers_created) {

@@ -515,7 +515,7 @@ void lobby_do_spectate(component *c, void *userdata) {
 void lobby_cancel_challenge(component *c, void *userdata) {
     scene *s = userdata;
     lobby_local *local = scene_get_userdata(s);
-    menu_finish(c->parent);
+    menu_finish(component_get_parent(c));
     local->mode = LOBBY_MAIN;
 }
 
@@ -702,7 +702,7 @@ void lobby_do_whisper(component *c, void *userdata) {
         list_append(&local->log, &log, sizeof(log));
         str_free(&tmp);
 
-        menu_finish(c->parent);
+        menu_finish(component_get_parent(c));
         local->mode = LOBBY_MAIN;
         textinput_clear(c);
     }
@@ -739,14 +739,14 @@ component *lobby_whisper_create(scene *s) {
 
 void lobby_whisper(component *c, void *userdata) {
     scene *s = userdata;
-    menu_set_submenu(c->parent, lobby_whisper_create(s));
+    menu_set_submenu(component_get_parent(c), lobby_whisper_create(s));
 }
 
 void lobby_yell(component *c, void *userdata) {
     scene *s = userdata;
     lobby_local *local = scene_get_userdata(s);
     local->mode = LOBBY_YELL;
-    menu_set_submenu(c->parent, lobby_yell_create(s));
+    menu_set_submenu(component_get_parent(c), lobby_yell_create(s));
 }
 
 void lobby_refresh(component *c, void *userdata) {
@@ -775,7 +775,7 @@ void lobby_do_exit(component *c, void *userdata) {
 void lobby_refuse_exit(component *c, void *userdata) {
     scene *s = userdata;
     lobby_local *local = scene_get_userdata(s);
-    menu_finish(c->parent);
+    menu_finish(component_get_parent(c));
     local->mode = LOBBY_MAIN;
 }
 
@@ -813,7 +813,7 @@ void lobby_entered_name(component *c, void *userdata) {
 
         enet_peer_send(local->peer, 0, packet);
 
-        local->joinmenu = c->parent;
+        local->joinmenu = component_get_parent(c);
     }
 }
 
@@ -893,7 +893,7 @@ component *lobby_exit_create(scene *s) {
 
 void lobby_exit(component *c, void *userdata) {
     scene *s = userdata;
-    menu_set_submenu(c->parent, lobby_exit_create(s));
+    menu_set_submenu(component_get_parent(c), lobby_exit_create(s));
 }
 
 void lobby_dialog_close(dialog *dlg, dialog_result result) {

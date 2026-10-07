@@ -97,10 +97,10 @@ void menu_update_keys(component *c) {
 
 void menu_keyboard_done(component *c, void *userdata) {
     // Set menu as finished
-    menu_finish(c->parent);
+    menu_finish(component_get_parent(c));
 
     // Apply config
-    keyboard_menu_local *local = menu_get_userdata(c->parent);
+    keyboard_menu_local *local = menu_get_userdata(component_get_parent(c));
     settings_keyboard *k = &settings_get()->keys;
     if(local->selected_player == 1) {
         k->ctrl_type1 = CTRL_TYPE_KEYBOARD;
@@ -112,7 +112,7 @@ void menu_keyboard_done(component *c, void *userdata) {
 
 void menu_keyboard_set_key(component *c, void *userdata) {
     char **key = (char **)userdata;
-    menu_set_submenu(c->parent, menu_presskey_create(key));
+    menu_set_submenu(component_get_parent(c), menu_presskey_create(key));
 }
 
 void menu_keyboard_keypress_done(component *c, component *submenu) {

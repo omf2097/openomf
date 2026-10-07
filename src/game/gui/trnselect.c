@@ -21,7 +21,8 @@ typedef struct trnselect {
 static void trnselect_render(component *c) {
     trnselect *g = widget_get_obj(c);
 
-    video_draw(g->img->data, c->x + g->img->pos.x, c->y + g->img->pos.y);
+    const vec2i pos = component_get_pos(c);
+    video_draw(g->img->data, pos.x + g->img->pos.x, pos.y + g->img->pos.y);
     if(g->label) {
         component_render(g->label);
     }
@@ -126,7 +127,7 @@ static void trnselect_init(component *c, const gui_theme *theme) {
 
 component *trnselect_create(void) {
     component *c = widget_create();
-    component_set_supports(c, false, false, false);
+    component_set_supported(c, false, false, false);
 
     // Local information
     trnselect *local = omf_calloc(1, sizeof(trnselect));

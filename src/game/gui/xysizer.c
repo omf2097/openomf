@@ -40,10 +40,12 @@ static void xysizer_layout(component *c, int x, int y, int w, int h) {
     sizer_begin_iterator(c, &it);
     foreach(it, tmp) {
         // Set component position and size from the component hint
-        int m_x = ((*tmp)->x_hint < x) ? x : (*tmp)->x_hint;
-        int m_y = ((*tmp)->y_hint < y) ? y : (*tmp)->y_hint;
-        int m_w = ((*tmp)->w_hint < 0) ? 0 : (*tmp)->w_hint;
-        int m_h = ((*tmp)->h_hint < 0) ? 0 : (*tmp)->h_hint;
+        const vec2i pos_hint = component_get_pos_hint(*tmp);
+        const vec2i size_hint = component_get_size_hint(*tmp);
+        const int m_x = (pos_hint.x < x) ? x : pos_hint.x;
+        const int m_y = (pos_hint.y < y) ? y : pos_hint.y;
+        const int m_w = (size_hint.x < 0) ? 0 : size_hint.x;
+        const int m_h = (size_hint.y < 0) ? 0 : size_hint.y;
         if(m_w == 0 || m_h == 0) {
             log_debug("Warning: Gui component hidden, because size is 0. Make sure size hints are set!");
         }

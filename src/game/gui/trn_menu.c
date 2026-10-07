@@ -44,6 +44,24 @@ void trnmenu_attach(component *c, component *nc) {
     sizer_attach(c, nc);
 }
 
+static vec2f center(const component *c) {
+    const vec2i pos = component_get_pos(c);
+    const vec2i size = component_get_size(c);
+    return vec2f_create(pos.x + size.x / 2, pos.y + size.y / 2);
+}
+
+static vec2f rcenter(const component *c) {
+    const vec2i pos = component_get_pos(c);
+    const vec2i size = component_get_size(c);
+    return vec2f_create(pos.x + size.x, pos.y + size.y / 2);
+}
+
+static vec2f lcenter(const component *c) {
+    const vec2i pos = component_get_pos(c);
+    const vec2i size = component_get_size(c);
+    return vec2f_create(pos.x, pos.y + size.y / 2);
+}
+
 static void trnmenu_hand_finished(object *hand_obj) {
     trnmenu_hand *hand = object_get_userdata(hand_obj);
     hand->play = 0;
@@ -72,7 +90,7 @@ static int trnmenu_hand_select(component *c) {
     component_focus(sel, 1);
     m->hand.move = 1;
     m->hand.pstart = object_get_pos(m->hand.obj);
-    m->hand.pend = vec2i_create(sel->x + sel->w / 2, sel->y + sel->h / 2);
+    m->hand.pend = vec2f_to_i(center(sel));
     m->hand.moved = 0.0f;
     return 1;
 }
@@ -149,10 +167,12 @@ static void trnmenu_layout(component *c, int x, int y, int w, int h) {
         }
 
         // Set component position and size from the component hint
-        int m_x = ((*tmp)->x_hint < x) ? x : (*tmp)->x_hint;
-        int m_y = ((*tmp)->y_hint < y) ? y : (*tmp)->y_hint;
-        int m_w = ((*tmp)->w_hint < 0) ? 0 : (*tmp)->w_hint;
-        int m_h = ((*tmp)->h_hint < 0) ? 0 : (*tmp)->h_hint;
+        const vec2i pos_hint = component_get_pos_hint(*tmp);
+        const vec2i size_hint = component_get_size_hint(*tmp);
+        const int m_x = (pos_hint.x < x) ? x : pos_hint.x;
+        const int m_y = (pos_hint.y < y) ? y : pos_hint.y;
+        const int m_w = (size_hint.x < 0) ? 0 : size_hint.x;
+        const int m_h = (size_hint.y < 0) ? 0 : size_hint.y;
         if(m_w == 0 || m_h == 0) {
             log_debug("Warning: Gui component hidden, because size is 0. Make sure size hints are set!");
         }
@@ -163,20 +183,8 @@ static void trnmenu_layout(component *c, int x, int y, int w, int h) {
     // Set initial hand position
     component *sel = sizer_get(c, m->selected);
     if(sel != NULL) {
-        object_set_pos(m->hand.obj, vec2i_create(sel->x + sel->w / 2, sel->y + sel->h / 2));
+        object_set_pos(m->hand.obj, vec2f_to_i(center(sel)));
     }
-}
-
-static vec2f center(component *c) {
-    return vec2f_create(c->x + c->w / 2, c->y + c->h / 2);
-}
-
-static vec2f rcenter(component *c) {
-    return vec2f_create(c->x + c->w, c->y + c->h / 2);
-}
-
-static vec2f lcenter(component *c) {
-    return vec2f_create(c->x, c->y + c->h / 2);
 }
 
 static int find_next_button(component *c, int act) {
@@ -198,7 +206,7 @@ static int find_next_button(component *c, int act) {
         }
         switch(act) {
             case ACT_LEFT:
-                if(t->x < cur->x) {
+                if(component_get_pos(t).x < component_get_pos(cur).x) {
                     float tdist = vec2f_dist(rcenter(t), lcenter(cur));
                     if(tdist < best_dist) {
                         best_dist = tdist;
@@ -207,7 +215,7 @@ static int find_next_button(component *c, int act) {
                 }
                 break;
             case ACT_RIGHT:
-                if(t->x > cur->x) {
+                if(component_get_pos(t).x > component_get_pos(cur).x) {
                     float tdist = vec2f_dist(lcenter(t), rcenter(cur));
                     if(tdist < best_dist) {
                         best_dist = tdist;
@@ -216,7 +224,7 @@ static int find_next_button(component *c, int act) {
                 }
                 break;
             case ACT_UP:
-                if(t->y < cur->y) {
+                if(component_get_pos(t).y < component_get_pos(cur).y) {
                     float tdist = vec2f_dist(center(t), center(cur));
                     if(tdist < best_dist) {
                         best_dist = tdist;
@@ -225,7 +233,7 @@ static int find_next_button(component *c, int act) {
                 }
                 break;
             case ACT_DOWN:
-                if(t->y > cur->y) {
+                if(component_get_pos(t).y > component_get_pos(cur).y) {
                     float tdist = vec2f_dist(center(t), center(cur));
                     if(tdist < best_dist) {
                         best_dist = tdist;
@@ -429,9 +437,11 @@ void trnmenu_set_submenu(component *c, component *submenu) {
         component_free(m->submenu);
     }
     m->submenu = submenu;
-    submenu->parent = c; // Set correct parent
+    component_set_parent(submenu, c);
     component_init(m->submenu, component_get_theme(c));
-    component_layout(m->submenu, c->x, c->y, c->w, c->h);
+    const vec2i pos = component_get_pos(c);
+    const vec2i size = component_get_size(c);
+    component_layout(m->submenu, pos.x, pos.y, size.x, size.y);
 
     trnmenu *n = sizer_get_obj(submenu);
     if(n->submenu_init) {

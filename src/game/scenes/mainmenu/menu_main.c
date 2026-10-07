@@ -99,22 +99,22 @@ void mainmenu_mechlab(component *c, void *userdata) {
 
 void mainmenu_enter_configuration(component *c, void *userdata) {
     scene *s = userdata;
-    menu_set_submenu(c->parent, menu_configuration_create(s));
+    menu_set_submenu(component_get_parent(c), menu_configuration_create(s));
 }
 
 void mainmenu_enter_gameplay(component *c, void *userdata) {
     scene *s = userdata;
-    menu_set_submenu(c->parent, menu_gameplay_create(s));
+    menu_set_submenu(component_get_parent(c), menu_gameplay_create(s));
 }
 
 void mainmenu_enter_network(component *c, void *userdata) {
     scene *s = userdata;
-    menu_set_submenu(c->parent, menu_net_create(s));
+    menu_set_submenu(component_get_parent(c), menu_net_create(s));
 }
 
 void mainmenu_enter_help(component *c, void *userdata) {
     scene *s = userdata;
-    menu_set_submenu(c->parent, menu_help_create(s));
+    menu_set_submenu(component_get_parent(c), menu_help_create(s));
 }
 
 component *menu_main_create(scene *s) {
