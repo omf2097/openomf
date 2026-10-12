@@ -5,6 +5,7 @@ void af_test_suite(CU_pSuite suite);
 void bk_test_suite(CU_pSuite suite);
 void palette_test_suite(CU_pSuite suite);
 void rec_test_suite(CU_pSuite suite);
+void rec_assertion_test_suite(CU_pSuite suite);
 void trn_test_suite(CU_pSuite suite);
 void script_test_suite(CU_pSuite suite);
 void script_reader_test_suite(CU_pSuite suite);
@@ -133,6 +134,12 @@ int main(int argc, char **argv) {
         goto end;
     }
     rec_test_suite(suite);
+
+    suite = CU_add_suite("REC assertions", NULL, NULL);
+    if(suite == NULL) {
+        goto end;
+    }
+    rec_assertion_test_suite(suite);
 
     suite = CU_add_suite("TRN files", NULL, NULL);
     if(suite == NULL) {
