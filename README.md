@@ -44,6 +44,10 @@ Build
 -----
 For compiling from sources, please see [BUILD.md](BUILD.md).
 
+Testing
+-------
+For running the test suites, please see [TESTING.md](TESTING.md).
+
 License
 -------
 OpenOMF is developed under the MIT License. Please read [LICENSE](LICENSE)
