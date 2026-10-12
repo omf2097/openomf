@@ -81,12 +81,13 @@ int main(int argc, char *argv[]) {
     struct arg_lit *warp = arg_lit0(NULL, "warp", "run the game at warp speed");
     struct arg_int *speed = arg_int0(NULL, "speed", "<speed>", "game speed to use: 1-10");
     struct arg_str *log_level = arg_str0(NULL, "log-level", "<level>", "Log level (DEBUG, INFO, WARN, ERROR)");
-    struct arg_str *log_channels =
-        arg_str0(NULL, "log-channels", "<channels>", "Comma-separated log channels to enable "
-                                                     "(ai-state,ai-decision,rec)");
+    struct arg_str *log_channels = arg_str0(NULL, "log-channels", "<channels>",
+                                            "Comma-separated log channels to enable "
+                                            "(ai-state,ai-decision,rec)");
     struct arg_end *end = arg_end(30);
-    void *argtable[] = {help,  vers, listen, lobby, lobbyarg, connect, force_audio_backend, force_renderer,
-                        trace, port, play,   rec,   warp,     speed,   log_level, log_channels, end};
+    void *argtable[] = {help,           vers,         listen, lobby, lobbyarg, connect, force_audio_backend,
+                        force_renderer, trace,        port,   play,  rec,      warp,    speed,
+                        log_level,      log_channels, end};
     const char *progname = "openomf";
 
     // Make sure everything got allocated

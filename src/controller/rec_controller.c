@@ -83,7 +83,7 @@ int rec_controller_poll(controller *ctrl, ctrl_event **ev) {
     unsigned int len;
     if(ticks > data->max_tick) {
         log_debug_channel(LOG_CHANNEL_REC, "closing controller because tick %u is higher than max_tick %u", ticks,
-                data->max_tick);
+                          data->max_tick);
         controller_close(ctrl, ev);
         return 0;
     }

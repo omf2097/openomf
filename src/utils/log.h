@@ -11,6 +11,8 @@
 #ifndef LOG_H
 #define LOG_H
 
+#include "utils/compat.h"
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -31,7 +33,8 @@ typedef enum log_level
  * Unset means all channels enabled; otherwise only matching bits are shown.
  */
 typedef uint32_t log_channel;
-enum {
+enum
+{
     LOG_CHANNEL_NONE = 0u,
     LOG_CHANNEL_AI_STATE = 1u << 0,    ///< AI state transitions and behavior flow.
     LOG_CHANNEL_AI_DECISION = 1u << 1, ///< AI tactical decisions and intent selection.

@@ -8,6 +8,7 @@
 #include <time.h>
 
 #include "utils/allocator.h"
+#include "utils/c_string_util.h"
 
 #define MAX_TARGETS 3
 #define LOG_LEVELS 4
@@ -47,13 +48,7 @@ static const char *level_colors[] = {
 
 // Channel names, indexed by bit position (must match the LOG_CHANNEL_* defines in log.h).
 static const char *channel_names[] = {
-    "ai-state",
-    "ai-decision",
-    "rec",
-    "network",
-    "gameplay",
-    "video",
-    "audio",
+    "ai-state", "ai-decision", "rec", "network", "gameplay", "video", "audio",
 };
 
 #define CHANNEL_NAME_COUNT (sizeof(channel_names) / sizeof(channel_names[0]))
@@ -205,6 +200,9 @@ static void format_timestamp(char *buffer, size_t len) {
     strftime(buffer, len, "%H:%M:%S", tm);
     buffer[len - 1] = 0;
 }
+
+static void log_vmsg_channel(log_channel module, log_level level, const char *fmt, va_list args)
+    ATTR_FORMAT_PRINTF(3, 0);
 
 static void log_vmsg_channel(log_channel module, log_level level, const char *fmt, va_list args) {
     assert(state != NULL);

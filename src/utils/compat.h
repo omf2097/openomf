@@ -22,9 +22,10 @@ typedef uint_least32_t char32_t;
 #include <uchar.h>
 #endif
 
-// Tell the compiler that the marked a function takes printf- or scanf-style
-// arguments
-#if defined(__GNUC__)
+// Tell the compiler that the marked function takes printf- or scanf-style
+// arguments. GCC/Clang support the format attribute; MSVC does not.
+
+#if defined(__clang__) || defined(__GNUC__)
 #define ATTR_FORMAT_PRINTF(fmt_idx, args_idx) __attribute__((format(printf, fmt_idx, args_idx)))
 #define ATTR_FORMAT_SCANF(fmt_idx, args_idx) __attribute__((format(scanf, fmt_idx, args_idx)))
 #else
