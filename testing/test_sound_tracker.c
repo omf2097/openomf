@@ -173,6 +173,29 @@ void test_merge_same_in_both_is_noop(void) {
     sound_tracker_free(&new_t);
 }
 
+void test_merge_same_transfers_playback_handle(void) {
+    null_audio_backend_reset_state();
+    sound_tracker old_t, new_t;
+    sound_tracker_create(&old_t);
+    sound_tracker_create(&new_t);
+
+    sound_tracker_play(&old_t, 5, false, 0, NULL);
+    sound_tracker_play(&new_t, 5, true, 0, NULL);
+
+    const playing_sound *old_sound = vector_get(&old_t.entries, 0);
+    playing_sound *new_sound = vector_get(&new_t.entries, 0);
+    CU_ASSERT_TRUE(old_sound->playback_id != AUDIO_INVALID_HANDLE);
+    CU_ASSERT_EQUAL(new_sound->playback_id, AUDIO_INVALID_HANDLE);
+
+    sound_tracker_merge(&old_t, &new_t);
+
+    CU_ASSERT_EQUAL(new_sound->playback_id, old_sound->playback_id);
+    CU_ASSERT_EQUAL(null_audio_backend_get_play_count(0), 1);
+
+    sound_tracker_free(&old_t);
+    sound_tracker_free(&new_t);
+}
+
 void test_merge_old_only_fades_out(void) {
     null_audio_backend_reset_state();
     sound_tracker old_t, new_t;
@@ -380,6 +403,7 @@ void sound_tracker_test_suite(CU_pSuite suite) {
     ADD_TEST("Test duration math per id", test_duration_math_per_id);
     ADD_TEST("Test clone copies entries independently", test_clone_copies_entries_independently);
     ADD_TEST("Test merge: identical entries are a no-op", test_merge_same_in_both_is_noop);
+    ADD_TEST("Test merge: identical entries retain playback handle", test_merge_same_transfers_playback_handle);
     ADD_TEST("Test merge: old-only entries fade out", test_merge_old_only_fades_out);
     ADD_TEST("Test merge: new-only entries start playback", test_merge_new_only_starts_playback);
     ADD_TEST("Test eviction when all channels are busy", test_eviction_when_all_channels_busy);
