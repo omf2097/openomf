@@ -76,9 +76,13 @@ static void get_scaling_shader_names(const int scaling_mode, const char **vert_s
             *vert_shader = "scalers/bilinear.vert";
             *frag_shader = "scalers/bilinear.frag";
             break;
-        case 2: // CRT
+        case 2: // CRT colors, no scanlines
             *vert_shader = "scalers/crt.vert";
             *frag_shader = "scalers/crt.frag";
+            break;
+        case 3: // CRT colors with scanlines
+            *vert_shader = "scalers/crt.vert";
+            *frag_shader = "scalers/scanlines.frag";
             break;
         default:
             *vert_shader = "scalers/none.vert";
@@ -269,6 +273,7 @@ static bool reset_context_with(void *userdata, int window_w, int window_h, bool 
     }
 
     // Reload scaling shader if scaling mode changed
+    bool scaler_program_changed = false;
     if(scaling_mode_changed) {
         const char *scale_vert, *scale_frag;
         get_scaling_shader_names(scaling_mode, &scale_vert, &scale_frag);
@@ -276,14 +281,15 @@ static bool reset_context_with(void *userdata, int window_w, int window_h, bool 
         if(create_program(&new_prog_id, scale_vert, scale_frag)) {
             delete_program(ctx->scale_prog_id);
             ctx->scale_prog_id = new_prog_id;
-            reload_scaler_program(ctx);
             ctx->scaling_mode = scaling_mode;
+            scaler_program_changed = true;
         } else {
             log_error("Failed to load scaling shader, reverting to previous.");
             success = false;
         }
-    } else if(fb_scale_changed) {
-        // If only fb_scale changed, update shader uniforms with new texture size
+    }
+
+    if(scaler_program_changed || fb_scale_changed) {
         reload_scaler_program(ctx);
     }
 
