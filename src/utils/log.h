@@ -29,21 +29,25 @@ typedef enum log_level
 } log_level;
 
 /**
- * @brief Channel filter bitmask for log output.
- * Unset means all channels enabled; otherwise only matching bits are shown.
+ * @brief Channel attached to a log message.
  */
-typedef uint32_t log_channel;
-enum
+typedef enum log_channel
 {
-    LOG_CHANNEL_NONE = 0u,
-    LOG_CHANNEL_AI_STATE = 1u << 0,    ///< AI state transitions and behavior flow.
-    LOG_CHANNEL_AI_DECISION = 1u << 1, ///< AI tactical decisions and intent selection.
-    LOG_CHANNEL_REC = 1u << 2,         ///< REC playback/recording controller events.
-    LOG_CHANNEL_NETWORK = 1u << 3,     ///< Reserved placeholder for networking/logging during future migration.
-    LOG_CHANNEL_GAMEPLAY = 1u << 4,    ///< Reserved placeholder for gameplay systems and world simulation logs.
-    LOG_CHANNEL_VIDEO = 1u << 5,       ///< Reserved placeholder for rendering and video pipeline diagnostics.
-    LOG_CHANNEL_AUDIO = 1u << 6,       ///< Reserved placeholder for audio system diagnostics.
-};
+    LOG_CHANNEL_NONE = 0,
+    LOG_CHANNEL_AI,       ///< AI state transitions, decisions, and intent flow.
+    LOG_CHANNEL_REC,      ///< REC playback/recording controller events.
+    LOG_CHANNEL_NETWORK,  ///< Reserved placeholder for networking/logging during future migration.
+    LOG_CHANNEL_GAMEPLAY, ///< Reserved placeholder for gameplay systems and world simulation logs.
+    LOG_CHANNEL_VIDEO,    ///< Reserved placeholder for rendering and video pipeline diagnostics.
+    LOG_CHANNEL_AUDIO,    ///< Reserved placeholder for audio system diagnostics.
+    LOG_CHANNEL_COUNT     ///< Number of channel values; not a message channel.
+} log_channel;
+
+/** An inactive filter accepts all tagged channels. */
+typedef struct log_channel_filter {
+    bool active;
+    bool enabled[LOG_CHANNEL_COUNT];
+} log_channel_filter;
 
 /**
  * @brief Log a debug message.
@@ -71,49 +75,49 @@ enum
 
 /**
  * @brief Log a debug message tagged with a channel.
- * @param channel Channel bitmask to tag the message with.
+ * @param channel Channel to tag the message with.
  * @param ... Printf-style format string and arguments
  */
 #define log_debug_channel(channel, ...) log_msg_channel((channel), LOG_DEBUG, __VA_ARGS__)
 
 /**
  * @brief Log an informational message tagged with a channel.
- * @param channel Channel bitmask to tag the message with.
+ * @param channel Channel to tag the message with.
  * @param ... Printf-style format string and arguments
  */
 #define log_info_channel(channel, ...) log_msg_channel((channel), LOG_INFO, __VA_ARGS__)
 
 /**
  * @brief Log a warning message tagged with a channel.
- * @param channel Channel bitmask to tag the message with.
+ * @param channel Channel to tag the message with.
  * @param ... Printf-style format string and arguments
  */
 #define log_warn_channel(channel, ...) log_msg_channel((channel), LOG_WARN, __VA_ARGS__)
 
 /**
  * @brief Log an error message tagged with a channel.
- * @param channel Channel bitmask to tag the message with.
+ * @param channel Channel to tag the message with.
  * @param ... Printf-style format string and arguments
  */
 #define log_error_channel(channel, ...) log_msg_channel((channel), LOG_ERROR, __VA_ARGS__)
 
 /**
  * @brief Set the active channel filter.
- * @param channels Bitmask of channels to enable; unset means all channels.
+ * @param filter Enabled channels; inactive means all tagged channels.
  */
-void log_set_channel_filter(log_channel channels);
+void log_set_channel_filter(log_channel_filter filter);
 
 /**
- * @brief Parse a channel list into a bitmask.
- * @param channels Comma-separated channel names, such as "ai-state,rec".
- * @return Bitmask of enabled channels; NULL/empty leaves all channels enabled.
+ * @brief Parse a channel list into a filter.
+ * @param channels Comma-separated channel names, such as "ai,rec".
+ * @return Enabled channels; NULL/empty or no recognized names accepts all tagged channels.
  */
-log_channel log_channels_from_string(const char *channels);
+log_channel_filter log_channels_from_string(const char *channels);
 
 /**
  * @brief Log a message at the specified level, tagged with a channel.
  * @details Prefer using the log_debug_channel/info_channel/warn_channel/error_channel macros instead.
- * @param channel Channel bitmask to tag the message with.
+ * @param channel Channel to tag the message with.
  * @param level Severity level
  * @param fmt Printf-style format string
  * @param ... Format arguments

@@ -49,15 +49,14 @@ Logging channels
 When running a local build, you can limit log output to specific channels by listing the individual channel names you want, separated by commas:
 
 ```bash
-./openomf --log-level DEBUG --log-channels ai-state,rec
+./openomf --log-level DEBUG --log-channels ai,rec
 ```
 
 If `--log-channels` is omitted, all channels are enabled.
 
 | Channel | Description |
 | --- | --- |
-| `ai-state` | AI state changes used during decision making |
-| `ai-decision` | AI choices, tactic selection, and scoring |
+| `ai` | AI state changes, decisions, tactic selection, and scoring |
 | `rec` | REC playback/recording, replay controls, and REC assertions |
 | `network` | Reserved placeholder for networking |
 | `gameplay` | Reserved placeholder for gameplay |
