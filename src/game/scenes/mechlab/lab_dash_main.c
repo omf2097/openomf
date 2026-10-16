@@ -21,7 +21,7 @@
 #include "video/video.h"
 
 bool lab_dash_main_photo_select(component *c, void *userdata) {
-    trnmenu_finish(c->parent);
+    trnmenu_finish(component_get_parent(c));
     return true;
 }
 
@@ -77,7 +77,7 @@ bool lab_dash_main_chr_load(component *c, void *userdata) {
         omf_free(dw->savegames);
     }
 
-    trnmenu_finish(c->parent); // We refer to the components sizer
+    trnmenu_finish(component_get_parent(c)); // We refer to the components sizer
     return true;
 }
 
@@ -86,7 +86,7 @@ bool lab_dash_main_chr_delete(component *c, void *userdata) {
     game_player *p1 = game_state_get_player(dw->scene->gs, 0);
     const char *pilot_name = str_c(&p1->pilot->name);
     sg_delete(pilot_name);
-    trnmenu_finish(c->parent);
+    trnmenu_finish(component_get_parent(c));
     return true;
 }
 
@@ -182,8 +182,10 @@ void lab_dash_sim_update_portraits(dashboard_widgets *dw) {
         }
     }
 
-    component_layout(dw->photo_highlight->parent, dw->photo_highlight->parent->x, dw->photo_highlight->parent->y,
-                     dw->photo_highlight->parent->w, dw->photo_highlight->parent->h);
+    component *parent = component_get_parent(dw->photo_highlight);
+    const vec2i pos = component_get_pos(parent);
+    const vec2i size = component_get_size(parent);
+    component_layout(parent, pos.x, pos.y, size.x, size.y);
 }
 
 bool lab_dash_sim_left(component *c, void *userdata) {

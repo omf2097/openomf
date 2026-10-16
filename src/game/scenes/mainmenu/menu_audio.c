@@ -30,7 +30,7 @@ void menu_audio_done(component *c, void *userdata) {
     audio_menu_data *local = userdata;
 
     // Set menu as finished
-    menu_finish(c->parent);
+    menu_finish(component_get_parent(c));
 
     // Reload music if changes made
     settings_sound *s = &settings_get()->sound;

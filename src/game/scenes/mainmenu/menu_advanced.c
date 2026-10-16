@@ -15,7 +15,7 @@ typedef struct {
 } menu_advanced_local;
 
 void menu_advanced_done(component *c, void *u) {
-    menu_advanced_local *local = menu_get_userdata(c->parent);
+    menu_advanced_local *local = menu_get_userdata(component_get_parent(c));
 
     // convert the positions back into values
     settings_get()->advanced.throw_range = local->throw_range * 20;
@@ -25,7 +25,7 @@ void menu_advanced_done(component *c, void *u) {
 
     omf_free(local);
 
-    menu_finish(c->parent);
+    menu_finish(component_get_parent(c));
 }
 
 component *menu_advanced_create(scene *s) {

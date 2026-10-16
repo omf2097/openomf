@@ -38,32 +38,25 @@ typedef struct textinput {
     void *userdata;
 } textinput;
 
-static void textinput_set_editing(component *c, bool editing) {
-    if(c->editing != editing) {
-        c->editing = editing;
-        c->dirty = true;
-    }
-}
-
 static bool textinput_wheel_active(component *c) {
     const textinput *ti = widget_get_obj(c);
-    return ti->last_source == CTRL_TYPE_GAMEPAD && c->editing;
+    return ti->last_source == CTRL_TYPE_GAMEPAD && component_is_editing(c);
 }
 
 // This keeps a field from being left in edit mode.
 static void textinput_focus(component *c, bool focused) {
     textinput *ti = widget_get_obj(c);
-    textinput_set_editing(c, focused && ti->edit_by_default);
+    component_set_editing(c, focused && ti->edit_by_default);
 }
 
 static void set_cursor(component *c, bool focused) {
     const textinput *ti = widget_get_obj(c);
 
     // Try to avoid pointless work
-    if(!c->dirty) {
+    if(!component_is_dirty(c)) {
         return;
     }
-    c->dirty = false;
+    component_set_dirty(c, false);
 
     // Not focused, just show the text as-is (no cursor)
     if(!focused) {
@@ -75,7 +68,7 @@ static void set_cursor(component *c, bool focused) {
     str tmp;
     str_from(&tmp, &ti->buf);
     if(ti->last_source == CTRL_TYPE_GAMEPAD) {
-        if(c->editing) {
+        if(component_is_editing(c)) {
             // If user is using a gamepad and has entered editing mode (via PUNCH), we show the cursor
             // ON TOP of the character.
             if(ti->pos >= str_size(&tmp)) {
@@ -95,7 +88,7 @@ static void set_cursor(component *c, bool focused) {
 static void refresh(component *c) {
     textinput *ti = widget_get_obj(c);
     str_truncate(&ti->buf, ti->max_chars - 1);
-    c->dirty = true;
+    component_set_dirty(c, true);
     text_set_from_str(ti->text, &ti->buf);
 }
 
@@ -103,8 +96,9 @@ static void textinput_render(component *c) {
     const textinput *ti = widget_get_obj(c);
     const gui_theme *theme = component_get_theme(c);
 
+    const vec2i pos = component_get_pos(c);
     if(ti->bg_enabled) {
-        video_draw(&ti->bg_surface, c->x + 2, c->y);
+        video_draw(&ti->bg_surface, pos.x + 2, pos.y);
     }
 
     if(component_is_selected(c)) {
@@ -123,7 +117,7 @@ static void textinput_render(component *c) {
         left += 2;
         top += 2;
     }
-    text_draw(ti->text, c->x + left, c->y + top);
+    text_draw(ti->text, pos.x + left, pos.y + top);
 
     // Render a black character on top of the cursor when using gamepad letter wheel
     if(component_is_selected(c) && !component_is_disabled(c) && textinput_wheel_active(c) &&
@@ -131,7 +125,7 @@ static void textinput_render(component *c) {
         int16_t gx, gy;
         if(text_get_glyph_pos(ti->text, ti->pos, &gx, &gy)) {
             const font *font = fonts_get_font(text_get_font(ti->text));
-            text_draw_glyph(font, str_at(&ti->buf, ti->pos), (int16_t)(c->x + left + gx), (int16_t)(c->y + top + gy),
+            text_draw_glyph(font, str_at(&ti->buf, ti->pos), (int16_t)(pos.x + left + gx), (int16_t)(pos.y + top + gy),
                             0);
         }
     }
@@ -178,7 +172,7 @@ static bool textinput_action(component *c, int action, int source) {
     // keyboard is being used.
     if(action != ACT_STOP && ti->last_source != source) {
         ti->last_source = source;
-        c->dirty = true;
+        component_set_dirty(c, true);
     }
 
     // Keyboard handling
@@ -203,9 +197,9 @@ static bool textinput_action(component *c, int action, int source) {
     }
 
     // If controller is gamepad and if not yet editing, enable edit mode.
-    if(!c->editing) {
+    if(!component_is_editing(c)) {
         if(action == ACT_PUNCH) {
-            textinput_set_editing(c, true);
+            component_set_editing(c, true);
             return true;
         }
         return false;
@@ -227,7 +221,7 @@ static bool textinput_action(component *c, int action, int source) {
             return true;
         case ACT_KICK:
             if(!ti->edit_by_default) {
-                textinput_set_editing(c, false);
+                component_set_editing(c, false);
                 return true;
             }
             return false;
@@ -252,7 +246,7 @@ static bool textinput_event(component *c, SDL_Event *e) {
     textinput *ti = widget_get_obj(c);
     if((e->type == SDL_TEXTINPUT || e->type == SDL_KEYDOWN) && ti->last_source != CTRL_TYPE_KEYBOARD) {
         ti->last_source = CTRL_TYPE_KEYBOARD;
-        c->dirty = true;
+        component_set_dirty(c, true);
     }
     // Only accept input if:
     // - The global filter accepts that this is text supported by font (is_valid_input)
@@ -311,7 +305,7 @@ const char *textinput_value(const component *c) {
 void textinput_clear(component *c) {
     textinput *ti = widget_get_obj(c);
     str_truncate(&ti->buf, 0);
-    c->dirty = true;
+    component_set_dirty(c, true);
     text_set_from_str(ti->text, &ti->buf);
     ti->pos = 0;
 }
@@ -372,7 +366,7 @@ void textinput_set_wheel_charset(component *c, const char *charset) {
 void textinput_set_edit_by_default(component *c, bool enabled) {
     textinput *ti = widget_get_obj(c);
     ti->edit_by_default = enabled;
-    textinput_set_editing(c, enabled);
+    component_set_editing(c, enabled);
 }
 
 static void textinput_init(component *c, const gui_theme *theme) {
@@ -388,10 +382,11 @@ static void textinput_init(component *c, const gui_theme *theme) {
         text_set_margin(ti->text, (text_margin){1, 1, 1, 1});
     }
     refresh(c);
-    if(c->h_hint < 0) {
+    const vec2i hint = component_get_size_hint(c);
+    if(hint.y < 0) {
         text_generate_layout(ti->text);
         int text_height = text_get_layout_height(ti->text) + (ti->bg_enabled ? 2 : 0);
-        component_set_size_hints(c, c->w_hint, text_height);
+        component_set_size_hints(c, hint.x, text_height);
     }
 }
 

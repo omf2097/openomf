@@ -40,7 +40,7 @@ bool confirm_trade(component *c, void *userdata) {
     omf_free(p1->pilot);
     p1->pilot = &p1->chr->pilot;
     mechlab_update(s);
-    trnmenu_finish(c->parent);
+    trnmenu_finish(component_get_parent(c));
     return true;
 }
 
@@ -50,7 +50,7 @@ bool cancel_trade(component *c, void *userdata) {
     omf_free(p1->pilot);
     p1->pilot = &p1->chr->pilot;
     mechlab_update(s);
-    trnmenu_finish(c->parent);
+    trnmenu_finish(component_get_parent(c));
     return true;
 }
 
@@ -78,8 +78,8 @@ void lab_menu_trade(component *c, void *userdata) {
     component *menu = lab_menu_confirm_create(s, confirm_trade, s, cancel_trade, s, tmp);
     trnmenu_set_userdata(menu, s);
     trnmenu_set_submenu_done_cb(menu, lab_menu_trade_done);
-    trnmenu_finish(c->parent);
-    trnmenu_set_submenu(c->parent->parent, menu);
+    trnmenu_finish(component_get_parent(c));
+    trnmenu_set_submenu(component_get_parent(component_get_parent(c)), menu);
 }
 
 void lab_menu_trade_for_jaguar_focus(component *c, bool focused, void *userdata) {

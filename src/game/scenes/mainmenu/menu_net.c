@@ -7,7 +7,7 @@
 #include "game/gui/gui.h"
 
 void menu_net_done(component *c, void *userdata) {
-    menu_finish(c->parent);
+    menu_finish(component_get_parent(c));
 }
 
 void menu_net_lobby(component *c, void *userdata) {
@@ -17,20 +17,20 @@ void menu_net_lobby(component *c, void *userdata) {
 
 void menu_net_connect(component *c, void *userdata) {
     scene *s = userdata;
-    menu_set_submenu(c->parent, menu_connect_create(s));
+    menu_set_submenu(component_get_parent(c), menu_connect_create(s));
 }
 
 void menu_net_listen(component *c, void *userdata) {
     scene *s = userdata;
     component *new_menu = menu_listen_create(s);
     if(new_menu != NULL) {
-        menu_set_submenu(c->parent, new_menu);
+        menu_set_submenu(component_get_parent(c), new_menu);
     }
 }
 
 void menu_net_config(component *c, void *userdata) {
     scene *s = userdata;
-    menu_set_submenu(c->parent, menu_netconfig_create(s));
+    menu_set_submenu(component_get_parent(c), menu_netconfig_create(s));
 }
 
 component *menu_net_create(scene *s) {

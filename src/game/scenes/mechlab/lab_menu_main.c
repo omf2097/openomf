@@ -67,18 +67,18 @@ void lab_menu_main_quit(component *c, void *userdata) {
 void lab_menu_main_buy_enter(component *c, void *userdata) {
     scene *s = userdata;
     mechlab_set_selling(s, false);
-    trnmenu_set_submenu(c->parent, lab_menu_customize_create(s));
+    trnmenu_set_submenu(component_get_parent(c), lab_menu_customize_create(s));
 }
 
 void lab_menu_main_sell_enter(component *c, void *userdata) {
     scene *s = userdata;
     mechlab_set_selling(s, true);
-    trnmenu_set_submenu(c->parent, lab_menu_customize_create(s));
+    trnmenu_set_submenu(component_get_parent(c), lab_menu_customize_create(s));
 }
 
 void lab_menu_main_training_enter(component *c, void *userdata) {
     scene *s = userdata;
-    trnmenu_set_submenu(c->parent, lab_menu_training_create(s));
+    trnmenu_set_submenu(component_get_parent(c), lab_menu_training_create(s));
 }
 
 void lab_menu_main_new(component *c, void *userdata) {
@@ -104,7 +104,7 @@ void lab_menu_main_load(component *c, void *userdata) {
         mechlab_open_popup(s, lang_get(157));
         return;
     }
-    trnmenu_set_submenu(c->parent, mechlab_chrload_menu_create(s));
+    trnmenu_set_submenu(component_get_parent(c), mechlab_chrload_menu_create(s));
 }
 
 void lab_menu_main_delete(component *c, void *userdata) {
@@ -115,13 +115,13 @@ void lab_menu_main_delete(component *c, void *userdata) {
         mechlab_open_popup(s, lang_get(159));
         return;
     }
-    trnmenu_set_submenu(c->parent, mechlab_chrdelete_menu_create(s));
+    trnmenu_set_submenu(component_get_parent(c), mechlab_chrdelete_menu_create(s));
 }
 
 void lab_menu_main_sim(component *c, void *userdata) {
     scene *s = userdata;
     mechlab_select_dashboard(s, DASHBOARD_SIM);
-    trnmenu_set_submenu(c->parent, mechlab_sim_menu_create(s));
+    trnmenu_set_submenu(component_get_parent(c), mechlab_sim_menu_create(s));
 }
 
 enum lab_buttons

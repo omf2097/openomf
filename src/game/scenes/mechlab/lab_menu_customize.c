@@ -60,7 +60,7 @@ int har_price(int har_id) {
 }
 
 void lab_menu_customize_done(component *c, void *userdata) {
-    trnmenu_finish(c->parent);
+    trnmenu_finish(component_get_parent(c));
 }
 
 void lab_menu_customize_color_main(component *c, void *userdata) {
@@ -306,7 +306,7 @@ void lab_menu_customize_check_stun_resistance_price(component *c, void *userdata
 
 void lab_menu_customize_trade(component *c, void *userdata) {
     scene *s = userdata;
-    trnmenu_set_submenu(c->parent, lab_menu_trade_create(s));
+    trnmenu_set_submenu(component_get_parent(c), lab_menu_trade_create(s));
 }
 
 void lab_menu_customize_check_trade_robot(component *c, void *userdata) {
@@ -684,7 +684,7 @@ static const spritebutton_focus_cb focus_cbs[] = {
 };
 
 static void lab_menu_har_picture_tick(component *current_picture, void *userdata) {
-    if(trnmenu_is_fading(current_picture->parent)) {
+    if(trnmenu_is_fading(component_get_parent(current_picture))) {
         return;
     }
     scene *s = userdata;
