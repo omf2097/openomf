@@ -27,7 +27,7 @@ jobs:
         build_languages: ${{ matrix.config.build_languages }}
 
   build_ubuntu:
-    name: Build ubuntu-26.04
+    name: Build Ubuntu 26.04
     runs-on: ubuntu-26.04
     steps:
     - uses: actions/checkout@v6
