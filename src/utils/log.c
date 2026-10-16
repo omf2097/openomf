@@ -51,7 +51,7 @@ static const char *channel_names[] = {
     "ai-state", "ai-decision", "rec", "network", "gameplay", "video", "audio",
 };
 
-#define CHANNEL_NAME_COUNT (sizeof(channel_names) / sizeof(channel_names[0]))
+#define CHANNEL_NAME_COUNT N_ELEMENTS(channel_names)
 
 static log_state *state = NULL;
 
