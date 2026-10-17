@@ -17,7 +17,7 @@ typedef struct {
     key = omf_strdup(SDL_GetScancodeName(scancode))
 
 void menu_set_right_keyboard(component *c, void *userdata) {
-    menu_input_local *local = menu_get_userdata(c->parent);
+    menu_input_local *local = menu_get_userdata(component_get_parent(c));
     settings_keyboard *k = &settings_get()->keys;
     if(local->selected_player == 1) {
         KEY_RESET(k->key1_jump_up, SDL_SCANCODE_UP);
@@ -71,7 +71,7 @@ void menu_set_right_keyboard(component *c, void *userdata) {
 }
 
 void menu_set_left_keyboard(component *c, void *userdata) {
-    menu_input_local *local = menu_get_userdata(c->parent);
+    menu_input_local *local = menu_get_userdata(component_get_parent(c));
     settings_keyboard *k = &settings_get()->keys;
     if(local->selected_player == 1) {
         KEY_RESET(k->key1_jump_up, SDL_SCANCODE_W);
@@ -125,7 +125,7 @@ void menu_set_left_keyboard(component *c, void *userdata) {
 }
 
 void menu_set_joystick1(component *c, void *userdata) {
-    menu_input_local *local = menu_get_userdata(c->parent);
+    menu_input_local *local = menu_get_userdata(component_get_parent(c));
     settings_keyboard *k = &settings_get()->keys;
     if(local->selected_player == 1) {
         k->ctrl_type1 = CTRL_TYPE_GAMEPAD;
@@ -142,7 +142,7 @@ void menu_set_joystick1(component *c, void *userdata) {
 }
 
 void menu_set_joystick2(component *c, void *userdata) {
-    menu_input_local *local = menu_get_userdata(c->parent);
+    menu_input_local *local = menu_get_userdata(component_get_parent(c));
     settings_keyboard *k = &settings_get()->keys;
     if(local->selected_player == 1) {
         k->ctrl_type1 = CTRL_TYPE_GAMEPAD;
@@ -160,12 +160,12 @@ void menu_set_joystick2(component *c, void *userdata) {
 
 void menu_set_custom_keyboard(component *c, void *u) {
     scene *s = u;
-    menu_input_local *local = menu_get_userdata(c->parent);
-    menu_link_menu(c->parent, menu_keyboard_create(s, local->selected_player), 25, 5, 270, 140);
+    menu_input_local *local = menu_get_userdata(component_get_parent(c));
+    menu_link_menu(component_get_parent(c), menu_keyboard_create(s, local->selected_player), 25, 5, 270, 140);
 }
 
 void menu_input_done(component *c, void *u) {
-    menu_finish(c->parent);
+    menu_finish(component_get_parent(c));
 }
 
 void menu_input_free(component *c) {

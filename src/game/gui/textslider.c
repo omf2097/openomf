@@ -54,7 +54,8 @@ static void textslider_render(component *c) {
     } else {
         text_set_color(t->text, theme->text.inactive_color);
     }
-    text_draw(t->text, c->x, c->y);
+    const vec2i pos = component_get_pos(c);
+    text_draw(t->text, pos.x, pos.y);
 }
 
 static bool textslider_action(component *c, int action, int source) {
@@ -96,7 +97,8 @@ static void textslider_init(component *c, const gui_theme *theme) {
     text_slider *t = widget_get_obj(c);
     refresh(c);
     text_set_font(t->text, t->override_font != FONT_NONE ? t->override_font : theme->text.font);
-    if(c->w_hint < 0 && c->h_hint < 0) {
+    const vec2i hint = component_get_size_hint(c);
+    if(hint.x < 0 && hint.y < 0) {
         text_generate_layout(t->text);
         int text_width = text_get_layout_width(t->text);
         int text_height = text_get_layout_height(t->text);

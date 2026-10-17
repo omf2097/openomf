@@ -8,32 +8,32 @@
 #include "game/utils/settings.h"
 
 void menu_config_done(component *c, void *u) {
-    menu_finish(c->parent);
+    menu_finish(component_get_parent(c));
 }
 
 static void menu_enter_language(component *c, void *userdata) {
     scene *s = userdata;
-    menu_set_submenu(c->parent, menu_language_create(s));
+    menu_set_submenu(component_get_parent(c), menu_language_create(s));
 }
 
 void menu_enter_input_1(component *c, void *userdata) {
     scene *s = userdata;
-    menu_set_submenu(c->parent, menu_input_create(s, 1));
+    menu_set_submenu(component_get_parent(c), menu_input_create(s, 1));
 }
 
 void menu_enter_input_2(component *c, void *userdata) {
     scene *s = userdata;
-    menu_set_submenu(c->parent, menu_input_create(s, 2));
+    menu_set_submenu(component_get_parent(c), menu_input_create(s, 2));
 }
 
 void menu_enter_video(component *c, void *userdata) {
     scene *s = userdata;
-    menu_set_submenu(c->parent, menu_video_create(s));
+    menu_set_submenu(component_get_parent(c), menu_video_create(s));
 }
 
 void menu_enter_audio(component *c, void *userdata) {
     scene *s = userdata;
-    menu_set_submenu(c->parent, menu_audio_create(s));
+    menu_set_submenu(component_get_parent(c), menu_audio_create(s));
 }
 
 component *menu_configuration_create(scene *s) {

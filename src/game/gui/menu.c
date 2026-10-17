@@ -119,29 +119,31 @@ static void menu_render(component *c) {
     // Otherwise handle this component
     iterator it;
     component **tmp;
+    const vec2i pos = component_get_pos(c);
     if(m->bg1) {
-        video_draw_remap(m->bg1, c->x, c->y, 4, 1, 0);
+        video_draw_remap(m->bg1, pos.x, pos.y, 4, 1, 0);
     }
     if(m->bg2) {
-        video_draw(m->bg2, c->x, c->y);
+        video_draw(m->bg2, pos.x, pos.y);
     }
     sizer_begin_iterator(c, &it);
     int i = 0;
     foreach(it, tmp) {
         component_render(*tmp);
-        if(m->selected == i && (*tmp)->help != NULL) {
+        text *help = component_get_help_text(*tmp);
+        if(m->selected == i && help != NULL) {
             if(m->help_bg1) {
                 video_draw_remap(m->help_bg1, m->help_x - 8, m->help_y - 8, 4, 1, 0);
             }
             if(m->help_bg2) {
                 video_draw(m->help_bg2, m->help_x - 8, m->help_y - 8);
             }
-            text_set_bounding_box((*tmp)->help, m->help_w, m->help_h);
-            text_set_color((*tmp)->help, m->help_text_color);
-            text_set_horizontal_align((*tmp)->help, m->help_text_halign);
-            text_set_vertical_align((*tmp)->help, m->help_text_valign);
-            text_set_font((*tmp)->help, m->help_text_font);
-            text_draw((*tmp)->help, m->help_x, m->help_y);
+            text_set_bounding_box(help, m->help_w, m->help_h);
+            text_set_color(help, m->help_text_color);
+            text_set_horizontal_align(help, m->help_text_halign);
+            text_set_vertical_align(help, m->help_text_valign);
+            text_set_font(help, m->help_text_font);
+            text_draw(help, m->help_x, m->help_y);
         }
         i++;
     }
@@ -173,7 +175,7 @@ static bool menu_action(component *mc, int action, int source) {
 
     // While the selected component is in gamepad edit mode it owns all gamepad input except ESC.
     component *c = sizer_get(mc, m->selected);
-    if(c != NULL && c->editing && source == CTRL_TYPE_GAMEPAD && action != ACT_ESC) {
+    if(c != NULL && component_is_editing(c) && source == CTRL_TYPE_GAMEPAD && action != ACT_ESC) {
         return component_action(c, action, source);
     }
 
@@ -204,7 +206,7 @@ static bool menu_action(component *mc, int action, int source) {
     }
 
     // Handle down/up selection movement
-    if(c != NULL && c->supports_select &&
+    if(c != NULL && component_is_selectable(c) &&
        (((action == ACT_DOWN || action == ACT_UP) && !m->horizontal) ||
         ((action == ACT_LEFT || action == ACT_RIGHT) && m->horizontal))) {
         component *old_c = c;
@@ -261,9 +263,11 @@ void menu_set_submenu(component *mc, component *submenu) {
     }
     m->submenu = submenu;
     m->prev_submenu_state = 0;
-    submenu->parent = mc; // Set correct parent
+    component_set_parent(submenu, mc);
     component_init(m->submenu, component_get_theme(mc));
-    component_layout(m->submenu, mc->x, mc->y, mc->w, mc->h);
+    const vec2i pos = component_get_pos(mc);
+    const vec2i size = component_get_size(mc);
+    component_layout(m->submenu, pos.x, pos.y, size.x, size.y);
 }
 
 void menu_link_menu(component *mc, component *submenu, int x, int y, int w, int h) {
@@ -273,7 +277,7 @@ void menu_link_menu(component *mc, component *submenu, int x, int y, int w, int 
     }
     m->submenu = submenu;
     m->prev_submenu_state = 0;
-    submenu->parent = mc; // Set correct parent
+    component_set_parent(submenu, mc);
     component_init(m->submenu, component_get_theme(mc));
     component_layout(m->submenu, x, y, w, h);
 }
@@ -304,7 +308,8 @@ static void menu_layout(component *c, int x, int y, int w, int h) {
     int non_reserved_space = available_space;
     int non_reserved_items = sizer_size(c);
     foreach(it, tmp) {
-        int hint = m->horizontal ? (*tmp)->w_hint : (*tmp)->h_hint;
+        const vec2i size_hint = component_get_size_hint(*tmp);
+        const int hint = m->horizontal ? size_hint.x : size_hint.y;
         if(hint > -1) {
             non_reserved_space -= hint;
             non_reserved_items -= 1;
@@ -346,13 +351,14 @@ static void menu_layout(component *c, int x, int y, int w, int h) {
     foreach(it, tmp) {
         // Set component position and size
         int left = available_space - (offset > 0 ? offset - m->padding : offset);
+        const vec2i size_hint = component_get_size_hint(*tmp);
         if(m->horizontal) {
-            int obj_w = (*tmp)->w_hint > -1 ? (*tmp)->w_hint : non_hinted_item_space;
+            int obj_w = size_hint.x > -1 ? size_hint.x : non_hinted_item_space;
             obj_w = min2(left, obj_w);
             component_layout(*tmp, x + offset, y, obj_w, h);
             offset += obj_w + m->padding;
         } else {
-            int obj_h = (*tmp)->h_hint > -1 ? (*tmp)->h_hint : non_hinted_item_space;
+            int obj_h = size_hint.y > -1 ? size_hint.y : non_hinted_item_space;
             obj_h = min2(left, obj_h);
             component_layout(*tmp, x, y + offset, w, obj_h);
             offset += obj_h + m->padding;

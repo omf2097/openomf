@@ -100,8 +100,9 @@ static void progressbar_render(component *c) {
 
         // ... Then draw the new one
         float prog = bar->display_percentage / 100.0f;
-        int w = c->w * prog;
-        int h = c->h;
+        const vec2i size = component_get_size(c);
+        const int w = size.x * prog;
+        const int h = size.y;
         if(w > 1 && h > 1) {
             image tmp;
             image_create(&tmp, w, h);
@@ -119,15 +120,17 @@ static void progressbar_render(component *c) {
     }
 
     // Render background (flashing or not)
+    const vec2i pos = component_get_pos(c);
     if(bar->state) {
-        video_draw(bar->background_alt, c->x, c->y);
+        video_draw(bar->background_alt, pos.x, pos.y);
     } else {
-        video_draw(bar->background, c->x, c->y);
+        video_draw(bar->background, pos.x, pos.y);
     }
 
     // Render block
     if(bar->block != NULL) {
-        video_draw_offset(bar->block, c->x + (bar->orientation == PROGRESSBAR_LEFT ? 0 : c->w - bar->block->w), c->y,
+        const int width = component_get_size(c).x;
+        video_draw_offset(bar->block, pos.x + (bar->orientation == PROGRESSBAR_LEFT ? 0 : width - bar->block->w), pos.y,
                           bar->highlight ? 1 : 0, 255);
     }
 }
@@ -199,9 +202,7 @@ static void progressbar_layout(component *c, int x, int y, int w, int h) {
 
 component *progressbar_create(progressbar_theme theme, int orientation, int percentage) {
     component *c = widget_create();
-    c->supports_disable = 0;
-    c->supports_select = 0;
-    c->supports_focus = 0;
+    component_set_supported(c, false, false, false);
 
     progressbar *local = omf_calloc(1, sizeof(progressbar));
     local->theme = theme;

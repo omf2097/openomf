@@ -26,7 +26,8 @@ static void label_render(component *c) {
         color = theme->text.secondary_color;
     }
     text_set_color(local->text, color);
-    text_draw(local->text, c->x, c->y);
+    const vec2i pos = component_get_pos(c);
+    text_draw(local->text, pos.x, pos.y);
 }
 
 static void label_free(component *c) {
@@ -90,19 +91,20 @@ static void label_init(component *c, const gui_theme *theme) {
     text_set_shadow_color(local->text, local->text_shadow_color);
     text_set_margin(local->text, local->text_margin);
 
-    int bb_w = c->w_hint < 0 ? TEXT_BBOX_MAX : c->w_hint;
-    int bb_h = c->h_hint < 0 ? TEXT_BBOX_MAX : c->h_hint;
+    const vec2i hint = component_get_size_hint(c);
+    const int bb_w = hint.x < 0 ? TEXT_BBOX_MAX : hint.x;
+    const int bb_h = hint.y < 0 ? TEXT_BBOX_MAX : hint.y;
     text_set_bounding_box(local->text, bb_w, bb_h);
 
-    if(c->w_hint < 0) {
+    if(hint.x < 0) {
         text_generate_layout(local->text);
         int text_width = text_get_layout_width(local->text);
-        component_set_size_hints(c, text_width + 6, c->h_hint);
+        component_set_size_hints(c, text_width + 6, hint.y);
     }
-    if(c->h_hint < 0) {
+    if(hint.y < 0) {
         text_generate_layout(local->text);
         int text_height = text_get_layout_height(local->text);
-        component_set_size_hints(c, c->w_hint, text_height + 3);
+        component_set_size_hints(c, hint.x, text_height + 3);
     }
 }
 
@@ -117,7 +119,7 @@ static void label_layout(component *c, int x, int y, int w, int h) {
 component *label_create(const char *text) {
     component *c = widget_create();
     component_disable(c, true);
-    component_set_supports(c, true, false, false);
+    component_set_supported(c, true, false, false);
 
     label *local = omf_calloc(1, sizeof(label));
     local->text = text_create_with_font_and_size(FONT_BIG, TEXT_BBOX_MAX, TEXT_BBOX_MAX);

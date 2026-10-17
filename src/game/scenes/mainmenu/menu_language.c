@@ -23,11 +23,11 @@ typedef struct {
 } language_menu_data;
 
 void menu_language_done(component *c, void *u) {
-    language_menu_data *local = menu_get_userdata(c->parent);
+    language_menu_data *local = menu_get_userdata(component_get_parent(c));
     settings_language *l = &settings_get()->language;
 
     // Set menu as finished
-    menu_finish(c->parent);
+    menu_finish(component_get_parent(c));
 
     if(strcmp(l->language, local->language_filenames[local->selected_language]) != 0) {
         omf_free(l->language);

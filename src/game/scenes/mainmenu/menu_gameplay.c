@@ -6,7 +6,7 @@
 #include "game/utils/settings.h"
 
 void menu_gameplay_done(component *c, void *u) {
-    menu_finish(c->parent);
+    menu_finish(component_get_parent(c));
 }
 
 void menu_gameplay_speed_slide(component *c, void *userdata, int pos) {
@@ -16,7 +16,7 @@ void menu_gameplay_speed_slide(component *c, void *userdata, int pos) {
 
 void menu_enter_advanced(component *c, void *userdata) {
     scene *s = userdata;
-    menu_set_submenu(c->parent, menu_advanced_create(s));
+    menu_set_submenu(component_get_parent(c), menu_advanced_create(s));
 }
 
 component *menu_gameplay_create(scene *s) {
