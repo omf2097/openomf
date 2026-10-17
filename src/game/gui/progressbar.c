@@ -9,6 +9,8 @@
 #include "video/surface.h"
 #include "video/video.h"
 
+#define BAR_DRAIN_PER_TICK 2
+
 const progressbar_theme _progressbar_theme_health = {
     .border_topleft_color = 0xB9,
     .border_bottomright_color = 0xBE,
@@ -109,7 +111,8 @@ static void progressbar_render(component *c) {
 static void progressbar_tick(component *c) {
     progressbar *bar = widget_get_obj(c);
     if(bar->display_percentage > bar->percentage) {
-        bar->display_percentage--;
+        int diff = bar->display_percentage - bar->percentage;
+        bar->display_percentage -= min2(diff, BAR_DRAIN_PER_TICK);
     }
     if(bar->flashing) {
         if(bar->tick > bar->rate) {
