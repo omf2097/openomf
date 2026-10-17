@@ -8,6 +8,7 @@
 #include <time.h>
 
 #include "utils/allocator.h"
+#include "utils/c_string_util.h"
 
 #define MAX_TARGETS 3
 #define LOG_LEVELS 4
@@ -25,6 +26,7 @@ typedef struct log_target {
 typedef struct log_state {
     bool colors;
     log_level level;
+    log_channel_filter channel_filter;
     log_target targets[MAX_TARGETS];
     int target_count;
     uint32_t tick;
@@ -42,6 +44,12 @@ static const char *level_colors[] = {
     "\x1b[32m",
     "\x1b[33m",
     "\x1b[31m",
+};
+
+static const char *channel_names[LOG_CHANNEL_COUNT] = {
+    [LOG_CHANNEL_AI] = "ai",           [LOG_CHANNEL_REC] = "rec",
+    [LOG_CHANNEL_NETWORK] = "network", [LOG_CHANNEL_GAMEPLAY] = "gameplay",
+    [LOG_CHANNEL_VIDEO] = "video",     [LOG_CHANNEL_AUDIO] = "audio",
 };
 
 static log_state *state = NULL;
@@ -103,6 +111,47 @@ void log_set_colors(bool toggle) {
     state->colors = toggle;
 }
 
+void log_set_channel_filter(log_channel_filter filter) {
+    assert(state != NULL);
+    state->channel_filter = filter;
+}
+
+log_channel_filter log_channels_from_string(const char *modules) {
+    log_channel_filter result = {0};
+    if(modules == NULL || modules[0] == '\0') {
+        return result;
+    }
+
+    char *copy = omf_strdup(modules);
+    if(copy == NULL) {
+        return result;
+    }
+
+    for(char *token = strtok(copy, " \t,"); token != NULL; token = strtok(NULL, " \t,")) {
+        for(log_channel i = LOG_CHANNEL_AI; i < LOG_CHANNEL_COUNT; i++) {
+            if(strcmp(token, channel_names[i]) == 0) {
+                result.enabled[i] = true;
+                result.active = true;
+                break;
+            }
+        }
+    }
+
+    omf_free(copy);
+    return result;
+}
+
+// Format the message channel, not the active filter.
+// Example: " [ai]"; empty for LOG_CHANNEL_NONE.
+static void format_channel_tag(log_channel module, char *buf, size_t len) {
+    buf[0] = '\0';
+    if(module <= LOG_CHANNEL_NONE || module >= LOG_CHANNEL_COUNT) {
+        return;
+    }
+
+    snprintf(buf, len, " [%s]", channel_names[module]);
+}
+
 static void log_add_fp(FILE *fp, bool close, log_level level, bool colors) {
     assert(state != NULL);
     assert(state->target_count < MAX_TARGETS - 1);
@@ -132,19 +181,32 @@ static void format_timestamp(char *buffer, size_t len) {
     buffer[len - 1] = 0;
 }
 
-void log_msg(log_level level, const char *fmt, ...) {
+static void log_vmsg_channel(log_channel module, log_level level, const char *fmt, va_list args)
+    ATTR_FORMAT_PRINTF(3, 0);
+
+static void log_vmsg_channel(log_channel module, log_level level, const char *fmt, va_list args) {
     assert(state != NULL);
     char dt[16];
-    va_list args;
+    char module_tag[64];
     const char *color = level_colors[level];
     const char *name = level_names[level];
 
     if(level < state->level) {
         return;
     }
+    // Untagged DEBUG messages stay quiet; untagged INFO/WARN/ERROR remain visible.
+    // When filtering, emit tagged messages only for the enabled channels.
+    if(module == LOG_CHANNEL_NONE) {
+        if(level < LOG_INFO) {
+            return;
+        }
+    } else if(module < LOG_CHANNEL_AI || module >= LOG_CHANNEL_COUNT ||
+              (state->channel_filter.active && !state->channel_filter.enabled[module])) {
+        return;
+    }
 
-    va_start(args, fmt);
     format_timestamp(dt, 16);
+    format_channel_tag(module, module_tag, sizeof(module_tag));
     for(int i = 0; i < state->target_count; i++) {
         const log_target *target = &state->targets[i];
         if(level < target->level) {
@@ -154,9 +216,9 @@ void log_msg(log_level level, const char *fmt, ...) {
             continue;
         }
         if(state->colors && target->colors) {
-            fprintf(target->fp, "%s %s%-5s\x1b[0m \x1b[0m ", dt, color, name);
+            fprintf(target->fp, "%s %s%-5s\x1b[0m%s \x1b[0m ", dt, color, name, module_tag);
         } else {
-            fprintf(target->fp, "%s %-5s ", dt, name);
+            fprintf(target->fp, "%s %-5s%s ", dt, name, module_tag);
         }
         va_list args_copy;
         va_copy(args_copy, args);
@@ -175,6 +237,21 @@ void log_msg(log_level level, const char *fmt, ...) {
         fflush(target->fp);
         SDL_UnlockMutex(target->lock);
     }
+}
+
+void log_msg(log_level level, const char *fmt, ...) {
+    assert(state != NULL);
+    va_list args;
+    va_start(args, fmt);
+    log_vmsg_channel(LOG_CHANNEL_NONE, level, fmt, args);
+    va_end(args);
+}
+
+void log_msg_channel(log_channel module, log_level level, const char *fmt, ...) {
+    assert(state != NULL);
+    va_list args;
+    va_start(args, fmt);
+    log_vmsg_channel(module, level, fmt, args);
     va_end(args);
 }
 
