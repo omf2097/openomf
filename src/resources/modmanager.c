@@ -803,7 +803,7 @@ bool modmanager_parse_af_move_mod(const char *buf, af_move *current_move) {
         CFG_INT("block_stun", current_move->block_stun, CFGF_NONE),
         CFG_INT("throw_duration", current_move->throw_duration, CFGF_NONE),
         CFG_INT("extra_string_selector", current_move->extra_string_selector, CFGF_NONE),
-        CFG_FLOAT("damage", current_move->damage, CFGF_NONE), CFG_FLOAT("stun", current_move->stun, CFGF_NONE),
+        CFG_INT("damage", current_move->damage, CFGF_NONE), CFG_FLOAT("stun", current_move->stun, CFGF_NONE),
         CFG_STR("move_string", str_c(&current_move->move_string), CFGF_NONE),
         CFG_STR("footer_string", str_c(&current_move->footer_string), CFGF_NONE),
 
@@ -878,10 +878,9 @@ bool modmanager_parse_af_move_mod(const char *buf, af_move *current_move) {
         current_move->ani.start_pos.y = cfg_getint(cfg, "start_y");
     }
 
-    // Update float fields only if they changed
-    if(current_move->damage != cfg_getfloat(cfg, "damage")) {
-        log_info("setting damage from %f to %f", current_move->damage, cfg_getfloat(cfg, "damage"));
-        current_move->damage = cfg_getfloat(cfg, "damage");
+    if(current_move->damage != cfg_getint(cfg, "damage")) {
+        log_info("setting damage from %d to %ld", current_move->damage, cfg_getint(cfg, "damage"));
+        current_move->damage = cfg_getint(cfg, "damage");
     }
 
     if(current_move->stun != cfg_getfloat(cfg, "stun")) {
