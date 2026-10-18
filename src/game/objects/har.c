@@ -16,6 +16,7 @@
 #include "resources/af_loader.h"
 #include "resources/animation.h"
 #include "utils/allocator.h"
+#include "utils/fixedpt.h"
 #include "utils/log.h"
 #include "utils/miscmath.h"
 #include "utils/random.h"
@@ -855,8 +856,9 @@ void calc_damage_and_stun(object *obj, af_move *move, int *damage, int *stun) {
         *damage = *damage * (25 + pilot->power) / 35 + 1;
 
         // (Limb Power + 3) * .192
-        float leg_power = (pilot->leg_power + 3) * 0.192f;
-        float arm_power = (pilot->arm_power + 3) * 0.192f;
+        static const fixedpt power_multiplier = FIXEDPT_DEF3(0, 192);
+        fixedpt leg_power = fixedpt_mul(fixedpt_fromint(pilot->leg_power + 3), power_multiplier);
+        fixedpt arm_power = fixedpt_mul(fixedpt_fromint(pilot->arm_power + 3), power_multiplier);
 
         switch(move->extra_string_selector) {
             case ESS_NONE:
@@ -864,16 +866,16 @@ void calc_damage_and_stun(object *obj, af_move *move, int *damage, int *stun) {
             case ESS_ARM_SPEED:
             case ESS_SPECIAL_ARM:
                 // apply arm power for damage
-                *damage = *damage * arm_power;
+                *damage = fixedpt_toint(fixedpt_mul(fixedpt_fromint(*damage), arm_power));
                 break;
             case ESS_LEG_SPEED:
             case ESS_SPECIAL_LEG:
                 // apply leg power for damage
-                *damage = *damage * leg_power;
+                *damage = fixedpt_toint(fixedpt_mul(fixedpt_fromint(*damage), leg_power));
                 break;
             case ESS_SPECIAL:
                 // apply leg and arm power for damage
-                *damage = *damage * arm_power * leg_power;
+                *damage = fixedpt_toint(fixedpt_mul(fixedpt_fromint(*damage), fixedpt_mul(arm_power, leg_power)));
         }
     }
     // log_debug("Calculated damage %d", *damage);
@@ -897,7 +899,7 @@ void har_take_damage(object *obj, af_move *move) {
     calc_damage_and_stun(other_har, move, &damage, &stun);
 
     // rehits do 60% more damage
-    damage = h->rehit_combo ? damage / 0.6 : damage;
+    damage = h->rehit_combo ? (10 * damage) / 6 : damage;
 
     // Save damage taken
     h->last_damage_value = damage;
@@ -937,9 +939,13 @@ void har_take_damage(object *obj, af_move *move) {
         if(player->pilot->photo) {
             // in tournament mode, damage is mitigated by armor
             // (Armor + 2.5) * .25
-            log_debug("applying %d to %d modulated by armor %f", damage, h->health,
-                      0.25f * (2.5f + player->pilot->armor));
-            h->health -= damage / (0.25f * (2.5f + player->pilot->armor));
+            static const fixedpt quarter = FIXEDPT_DEF2(0, 25);
+            static const fixedpt armor_magic = FIXEDPT_DEF1(2, 5);
+            fixedpt armor_divisor =
+                fixedpt_mul(fixedpt_add(fixedpt_fromint(player->pilot->armor), armor_magic), quarter);
+            log_debug("Applying %d damage to %d health modulated by armor %s", damage, h->health,
+                      fixedpt_cstr(armor_divisor, -3));
+            h->health -= fixedpt_toint(fixedpt_div(fixedpt_fromint(damage), armor_divisor));
         } else {
             h->health -= damage;
         }
@@ -1574,8 +1580,8 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
             assert(str_size(&move->footer_string) > 0);
 
             // Just take damage normally if there is no footer string in successor
-            log_debug("projectile dealt damage of %f", move->damage);
-            log_debug("projectile %d dealt damage of %f", move->id, move->damage);
+            log_debug("projectile dealt damage of %d", move->damage);
+            log_debug("projectile %d dealt damage of %d", move->id, move->damage);
 
             // face B to the direction they're being attacked from
             object_set_direction(o_har, -object_get_direction(o_pjt));
@@ -2764,7 +2770,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     local->walk_done_anim = 0;
 
     // Last damage value, for convenience
-    local->last_damage_value = 0.0f;
+    local->last_damage_value = 0;
 
     // p<x> stuff
     local->p_fade_in_ticks_left = local->p_fade_in_ticks = 0;
