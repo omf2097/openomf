@@ -6,8 +6,6 @@
 #include "video/surface.h"
 #include "video/video.h"
 
-#define OPACITY_STEP 0.03f
-
 typedef struct trnmenu_hand {
     object *obj;
     vec2i pstart;
@@ -24,9 +22,6 @@ typedef struct {
     int sheet_x;
     int sheet_y;
     bool return_hand;
-
-    int fade;
-    float opacity_step;
 
     trnmenu_hand hand;
 
@@ -251,11 +246,6 @@ static int find_next_button(component *c, int act) {
 static bool trnmenu_action(component *c, int action, int source) {
     trnmenu *m = sizer_get_obj(c);
 
-    // If fading, wait until it's done.
-    if(m->fade) {
-        return false;
-    }
-
     // If submenu is set, we need to use it
     if(m->submenu != NULL && !trnmenu_is_finished(m->submenu)) {
         return component_action(m->submenu, action, source);
@@ -296,7 +286,7 @@ static void trnmenu_render(component *c) {
     trnmenu *m = sizer_get_obj(c);
 
     // If submenu is set, we need to use it
-    if(!m->fade && m->submenu != NULL && !trnmenu_is_finished(m->submenu)) {
+    if(m->submenu != NULL && !trnmenu_is_finished(m->submenu)) {
         component_render(m->submenu);
         return;
     }
@@ -323,38 +313,14 @@ static void trnmenu_render(component *c) {
 static void trnmenu_tick(component *c) {
     trnmenu *m = sizer_get_obj(c);
 
-    // If fade is not ongoing, try to handle submenu. If fade IS ongoing, handle it.
-    if(!m->fade) {
-        // If submenu is set, we need to tick it
-        if(m->submenu != NULL && !trnmenu_is_finished(m->submenu)) {
-            component_tick(m->submenu);
-            return;
-        }
-    } else {
-        // Tick opacity
-        float opacity = sizer_get_opacity(c) + m->opacity_step;
-
-        // Check if fade is done, and set tick to 0 if so.
-        if(m->opacity_step > 0 && opacity >= 1.0f) {
-            sizer_set_opacity(c, 1.0f);
-            m->fade = 0;
-        } else if(m->opacity_step < 0 && opacity <= 0.0f) {
-            sizer_set_opacity(c, 0.0f);
-            m->fade = 0;
-            if(m->submenu == NULL || trnmenu_is_finished(m->submenu)) {
-                m->finished = 1;
-            }
-        } else {
-            sizer_set_opacity(c, opacity);
-        }
+    // If submenu is set, we need to tick it
+    if(m->submenu != NULL && !trnmenu_is_finished(m->submenu)) {
+        component_tick(m->submenu);
+        return;
     }
 
     // Check if we need to run submenu done -callback
-    // Also reset fade
-    if(m->submenu != NULL && trnmenu_is_finished(m->submenu) && !trnmenu_is_fading(m->submenu)) {
-        m->fade = 1;
-        m->opacity_step = OPACITY_STEP;
-        sizer_set_opacity(c, 0.0f);
+    if(m->submenu != NULL && trnmenu_is_finished(m->submenu)) {
         component *sel = sizer_get(c, m->selected);
         if(sel != NULL) {
             component_focus(sel, 1);
@@ -400,18 +366,8 @@ static void trnmenu_tick(component *c) {
     }
 }
 
-int trnmenu_is_fading(const component *c) {
-    trnmenu *m = sizer_get_obj(c);
-    return m->fade;
-}
-
 static bool trnmenu_event(component *mc, SDL_Event *event) {
     trnmenu *m = sizer_get_obj(mc);
-
-    // If fading, wait until it's done.
-    if(m->fade) {
-        return false;
-    }
 
     // If submenu is set, we need to use it
     if(m->submenu != NULL && !trnmenu_is_finished(m->submenu)) {
@@ -447,9 +403,6 @@ void trnmenu_set_submenu(component *c, component *submenu) {
     if(n->submenu_init) {
         n->submenu_init(c, m->submenu);
     }
-
-    m->opacity_step = -OPACITY_STEP;
-    m->fade = 1;
 }
 
 component *trnmenu_get_submenu(const component *c) {
@@ -469,8 +422,9 @@ void trnmenu_set_submenu_init_cb(component *c, trnmenu_submenu_init_cb init_cb) 
 
 void trnmenu_finish(component *c) {
     trnmenu *m = sizer_get_obj(c);
-    m->fade = 1;
-    m->opacity_step = -OPACITY_STEP;
+    if(m->submenu == NULL || trnmenu_is_finished(m->submenu)) {
+        m->finished = 1;
+    }
 }
 
 component *trnmenu_create(surface *button_sheet, int sheet_x, int sheet_y, bool return_hand) {
@@ -480,10 +434,8 @@ component *trnmenu_create(surface *button_sheet, int sheet_x, int sheet_y, bool 
     m->button_sheet = button_sheet;
     m->sheet_x = sheet_x;
     m->sheet_y = sheet_y;
-    m->fade = 1;
     m->submenu_init = NULL;
     m->submenu_done = NULL;
-    m->opacity_step = OPACITY_STEP;
     m->return_hand = return_hand;
     sizer_set_obj(c, m);
 

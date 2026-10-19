@@ -59,20 +59,6 @@ component *sizer_get(const component *c, int item);
 int sizer_size(const component *c);
 
 /**
- * @brief Get the sizer's opacity
- * @param c Sizer component to query
- * @return Opacity value (0.0 to 1.0)
- */
-float sizer_get_opacity(const component *c);
-
-/**
- * @brief Set the sizer's opacity
- * @param c Sizer component to modify
- * @param opacity Opacity value (0.0 to 1.0)
- */
-void sizer_set_opacity(const component *c, float opacity);
-
-/**
  * @brief Begin iterating over child components
  * @param c Sizer component to iterate
  * @param it Iterator to initialize
