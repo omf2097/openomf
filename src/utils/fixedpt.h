@@ -10,10 +10,8 @@
 #ifndef FIXEDPT_H
 #define FIXEDPT_H
 
-#include <limits.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <stdlib.h>
 
 #define FIXEDPT_BITS 32
 #define FIXEDPT_WBITS 24
@@ -39,27 +37,7 @@
 #error "FIXEDPT_BITS must be equal to 32 or 64"
 #endif
 
-#undef fixedpt_fromint
-#define fixedpt_fromint(I) ((fixedptd)(I) * FIXEDPT_ONE)
-#undef fixedpt_toint
-#define fixedpt_toint(F) ((F) / FIXEDPT_ONE)
-#undef fixedpt_xmul
-#define fixedpt_xmul(A, B) ((fixedpt)(((fixedptd)(A) * (fixedptd)(B)) / FIXEDPT_ONE))
-#undef fixedpt_xdiv
-#define fixedpt_xdiv(A, B) ((fixedpt)(((fixedptd)(A) * FIXEDPT_ONE) / (fixedptd)(B)))
 #define fixedpt_xmul3(A, B, C) fixedpt_xmul(fixedpt_xmul((A), (B)), (C))
-
-#undef fixedpt_fracpart
-#define fixedpt_fracpart(A) ((fixedptud)(A) & FIXEDPT_FMASK)
-
-#undef fixedpt_abs
-#if FIXEDPT_MAX <= INT_MAX
-#define fixedpt_abs(A) abs((A))
-#elif FIXEDPT_MAX <= LLONG_MAX
-#define fixedpt_abs(A) llabs((A))
-#else
-#define fixedpt_abs(A) ((A) < 0 ? -(A) : (A))
-#endif
 
 /*
  * Note: adding and substracting fixedpt numbers can be done by using
