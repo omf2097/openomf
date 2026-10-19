@@ -181,9 +181,7 @@ static void format_timestamp(char *buffer, size_t len) {
     buffer[len - 1] = 0;
 }
 
-static void log_vmsg_channel(log_channel module, log_level level, const char *fmt, va_list args)
-    ATTR_FORMAT_PRINTF(3, 0);
-
+ATTR_FORMAT_PRINTF(3, 0)
 static void log_vmsg_channel(log_channel module, log_level level, const char *fmt, va_list args) {
     assert(state != NULL);
     assert(module >= LOG_CHANNEL_NONE && module < LOG_CHANNEL_COUNT);
