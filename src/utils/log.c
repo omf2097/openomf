@@ -186,6 +186,7 @@ static void log_vmsg_channel(log_channel module, log_level level, const char *fm
 
 static void log_vmsg_channel(log_channel module, log_level level, const char *fmt, va_list args) {
     assert(state != NULL);
+    assert(module >= LOG_CHANNEL_NONE && module < LOG_CHANNEL_COUNT);
     char dt[16];
     char module_tag[64];
     const char *color = level_colors[level];
@@ -194,14 +195,8 @@ static void log_vmsg_channel(log_channel module, log_level level, const char *fm
     if(level < state->level) {
         return;
     }
-    // Untagged DEBUG messages stay quiet; untagged INFO/WARN/ERROR remain visible.
-    // When filtering, emit tagged messages only for the enabled channels.
-    if(module == LOG_CHANNEL_NONE) {
-        if(level < LOG_INFO) {
-            return;
-        }
-    } else if(module < LOG_CHANNEL_AI || module >= LOG_CHANNEL_COUNT ||
-              (state->channel_filter.active && !state->channel_filter.enabled[module])) {
+    // Channel filtering only applies to tagged messages.
+    if(module != LOG_CHANNEL_NONE && state->channel_filter.active && !state->channel_filter.enabled[module]) {
         return;
     }
 
