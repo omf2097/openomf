@@ -55,7 +55,7 @@
 #undef fixedpt_abs
 #if FIXEDPT_MAX <= INT_MAX
 #define fixedpt_abs(A) abs((A))
-#elif FIXEDPT_MAX <= INT64_MAX
+#elif FIXEDPT_MAX <= LLONG_MAX
 #define fixedpt_abs(A) llabs((A))
 #else
 #define fixedpt_abs(A) ((A) < 0 ? -(A) : (A))
