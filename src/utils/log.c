@@ -178,7 +178,7 @@ static void format_timestamp(char *buffer, size_t len) {
     time_t t = time(NULL);
     struct tm *tm = localtime(&t);
     strftime(buffer, len, "%H:%M:%S", tm);
-    buffer[len - 1] = 0;
+    buffer[len - 1] = '\0';
 }
 
 ATTR_FORMAT_PRINTF(3, 0)
