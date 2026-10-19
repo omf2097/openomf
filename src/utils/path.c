@@ -120,95 +120,12 @@ const char *path_c(const path *path) {
 #endif
 
 bool path_resolve(path *p) {
-    char work[PATH_MAX_LENGTH];
-    char output[PATH_MAX_LENGTH];
-    char segment[PATH_MAX_LENGTH];
-    size_t out_len = 0;
-    size_t seg_len = 0;
-
-    if(p == NULL || p->buf[0] == '\0') {
+    char *resolved = realpath(p->buf, NULL);
+    if(resolved == NULL) {
         return false;
     }
-
-    strncpy_or_abort(work, p->buf, PATH_MAX_LENGTH);
-    ENSURE_ZERO(work);
-
-    if(work[0] != '/') {
-        char cwd[PATH_MAX_LENGTH];
-        size_t len = 0;
-        if(getcwd(cwd, sizeof(cwd)) == NULL) {
-            return false;
-        }
-        memset(output, 0, sizeof(output));
-        len = strlen(cwd);
-        if(len >= PATH_MAX_LENGTH - 1) {
-            return false;
-        }
-        memcpy(output, cwd, len);
-        if(len > 0 && output[len - 1] != '/') {
-            output[len++] = '/';
-        }
-        if(len + strlen(work) >= PATH_MAX_LENGTH) {
-            return false;
-        }
-        memcpy(output + len, work, strlen(work) + 1);
-        strncpy_or_abort(work, output, PATH_MAX_LENGTH);
-        ENSURE_ZERO(work);
-    }
-
-    output[0] = '\0';
-    out_len = 0;
-    if(work[0] == '/') {
-        output[out_len++] = '/';
-    }
-
-    for(char *it = work; *it != '\0';) {
-        while(*it == '/') {
-            it++;
-        }
-        if(*it == '\0') {
-            break;
-        }
-
-        seg_len = 0;
-        while(*it != '\0' && *it != '/') {
-            if(seg_len + 1 < sizeof(segment)) {
-                segment[seg_len++] = *it;
-            }
-            it++;
-        }
-        segment[seg_len] = '\0';
-
-        if(strcmp(segment, ".") == 0) {
-            continue;
-        }
-
-        if(strcmp(segment, "..") == 0) {
-            if(out_len > 1) {
-                out_len--;
-                while(out_len > 1 && output[out_len - 1] != '/') {
-                    out_len--;
-                }
-                output[out_len] = '\0';
-            }
-            continue;
-        }
-
-        if(out_len > 1 && output[out_len - 1] != '/') {
-            output[out_len++] = '/';
-        }
-        memcpy(output + out_len, segment, seg_len + 1);
-        out_len += seg_len;
-        output[out_len] = '\0';
-    }
-
-    if(output[0] == '\0') {
-        output[0] = '/';
-        output[1] = '\0';
-    }
-
-    strncpy_or_abort(p->buf, output, PATH_MAX_LENGTH);
-    ENSURE_ZERO(p->buf);
+    strncpy_or_abort(p->buf, resolved, PATH_MAX_LENGTH);
+    free(resolved);
     return true;
 }
 
