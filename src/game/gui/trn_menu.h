@@ -86,13 +86,6 @@ int trnmenu_is_finished(const component *menu);
 void trnmenu_finish(component *menu);
 
 /**
- * @brief Check if the menu is currently fading
- * @param menu Tournament menu to query
- * @return Non-zero if menu is fading
- */
-int trnmenu_is_fading(const component *menu);
-
-/**
  * @brief Set user data for the menu
  * @param menu Tournament menu to modify
  * @param userdata User data pointer to store

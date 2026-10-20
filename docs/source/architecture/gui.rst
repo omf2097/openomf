@@ -119,7 +119,6 @@ Rendering follows a recursive depth-first traversal of the component tree:
 
 1. Sizers iterate through children and render each
 2. Widgets call their specialized render callback
-3. Sizers support opacity (0.0-1.0) for fade effects
 
 The render callback draws the component at its computed position (``c->x``, ``c->y``) with
 computed dimensions (``c->w``, ``c->h``).

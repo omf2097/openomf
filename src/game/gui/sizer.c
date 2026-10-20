@@ -5,9 +5,6 @@ typedef struct sizer {
     void *obj;   ///< Sizer specialization object, eg. menu, trnmenu
     vector objs; ///< Contains all the child objects in the sizer
 
-    float opacity; ///< Some sizers may want to fade their contents (eg. tournament menu). In these cases, if should be
-                   ///< handled via this variable.
-
     sizer_render_cb render;
     sizer_event_cb event;
     sizer_action_cb action;
@@ -27,18 +24,6 @@ component *sizer_get(const component *nc, int item) {
         return *c;
     }
     return NULL;
-}
-
-float sizer_get_opacity(const component *c) {
-    assert(component_is_sizer(c));
-    sizer *local = component_get_obj(c);
-    return local->opacity;
-}
-
-void sizer_set_opacity(const component *c, float opacity) {
-    assert(component_is_sizer(c));
-    sizer *local = component_get_obj(c);
-    local->opacity = opacity;
 }
 
 void sizer_begin_iterator(const component *c, iterator *it) {
