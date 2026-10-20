@@ -137,6 +137,27 @@ void test_near_max_value(void) {
     CU_ASSERT_EQUAL(written, 10);
 }
 
+void test_def_macro(void) {
+    char buf[FIXEDPT_STR_BUFSIZE];
+    fixedpt val;
+    size_t written;
+
+    val = FIXEDPT_DEF1(0, 5);
+    written = fixedpt_str(val, buf, sizeof(buf), -3);
+    CU_ASSERT_STRING_EQUAL(buf, "0.5");
+    CU_ASSERT_EQUAL(written, 3);
+
+    val = FIXEDPT_DEF2(0, 75);
+    written = fixedpt_str(val, buf, sizeof(buf), -3);
+    CU_ASSERT_STRING_EQUAL(buf, "0.75");
+    CU_ASSERT_EQUAL(written, 4);
+
+    val = FIXEDPT_DEF3(0, 192);
+    written = fixedpt_str(val, buf, sizeof(buf), -3);
+    CU_ASSERT_EQUAL(written, 10);
+    CU_ASSERT_STRING_EQUAL(buf, "0.19140625");
+}
+
 void fixedpt_str_test_suite(CU_pSuite suite) {
     CU_add_test(suite, "Zero Handling", test_zero_value);
     CU_add_test(suite, "Positive Integers", test_positive_integers);
@@ -149,4 +170,5 @@ void fixedpt_str_test_suite(CU_pSuite suite) {
     CU_add_test(suite, "Near Min Value", test_near_min_value);
     CU_add_test(suite, "Max Value", test_max_value);
     CU_add_test(suite, "Near Max Value", test_near_max_value);
+    CU_add_test(suite, "Def Macro", test_def_macro);
 }
