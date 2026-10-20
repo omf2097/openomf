@@ -1,5 +1,5 @@
 #include "game/gui/gauge.h"
-#include "game/gui/widget.h"
+#include "game/gui/component.h"
 #include "utils/allocator.h"
 #include "utils/miscmath.h"
 #include "video/surface.h"
@@ -78,7 +78,7 @@ static void surface_from_pix_img(surface *sur, const pixel_image *pix) {
 }
 
 static void gauge_render(component *c) {
-    gauge *g = widget_get_obj(c);
+    const gauge *g = component_get_obj(c);
 
     int k = 0;
     const vec2i pos = component_get_pos(c);
@@ -94,29 +94,29 @@ static void gauge_render(component *c) {
 }
 
 static void gauge_free(component *c) {
-    gauge *g = widget_get_obj(c);
+    gauge *g = component_get_obj(c);
     surface_free(&g->on);
     surface_free(&g->off);
     omf_free(g);
 }
 
 void gauge_set_lit(component *c, int lit) {
-    gauge *g = widget_get_obj(c);
+    gauge *g = component_get_obj(c);
     g->lit = lit;
 }
 
 int gauge_get_lit(component *c) {
-    gauge *g = widget_get_obj(c);
+    const gauge *g = component_get_obj(c);
     return g->lit;
 }
 
 int gauge_get_size(component *c) {
-    gauge *g = widget_get_obj(c);
+    const gauge *g = component_get_obj(c);
     return g->size;
 }
 
 void gauge_set_size(component *c, int size) {
-    gauge *g = widget_get_obj(c);
+    gauge *g = component_get_obj(c);
     if(size != g->size) {
         g->size = size;
         if(g->lit > g->size) {
@@ -126,7 +126,7 @@ void gauge_set_size(component *c, int size) {
 }
 
 component *gauge_create(gauge_type type, int size, int lit) {
-    component *c = widget_create();
+    component *c = component_create();
     component_set_supported(c, false, false, false);
 
     // Local information
@@ -147,8 +147,8 @@ component *gauge_create(gauge_type type, int size, int lit) {
     }
 
     // Set callbacks
-    widget_set_obj(c, local);
-    widget_set_render_cb(c, gauge_render);
-    widget_set_free_cb(c, gauge_free);
+    component_set_obj(c, local);
+    component_set_render_cb(c, gauge_render);
+    component_set_free_cb(c, gauge_free);
     return c;
 }

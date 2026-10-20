@@ -1,8 +1,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "game/gui/component.h"
 #include "game/gui/progressbar.h"
-#include "game/gui/widget.h"
 #include "utils/allocator.h"
 #include "utils/miscmath.h"
 #include "video/image.h"
@@ -60,7 +60,7 @@ typedef struct progressbar {
 } progressbar;
 
 void progressbar_set_progress(component *c, int percentage, bool animate) {
-    progressbar *bar = widget_get_obj(c);
+    progressbar *bar = component_get_obj(c);
     bar->percentage = clamp(percentage, 0, 100);
     if(!animate || bar->percentage > bar->display_percentage) {
         // refilling the meter is instant
@@ -69,7 +69,7 @@ void progressbar_set_progress(component *c, int percentage, bool animate) {
 }
 
 void progressbar_set_flashing(component *c, int flashing, int rate) {
-    progressbar *bar = widget_get_obj(c);
+    progressbar *bar = component_get_obj(c);
     if(flashing != bar->flashing) {
         bar->tick = 0;
         bar->state = 0;
@@ -79,7 +79,7 @@ void progressbar_set_flashing(component *c, int flashing, int rate) {
 }
 
 void progressbar_set_highlight(component *c, bool highlight) {
-    progressbar *bar = widget_get_obj(c);
+    progressbar *bar = component_get_obj(c);
     bar->highlight = highlight;
 }
 
@@ -103,7 +103,7 @@ static void progressbar_render_fill(const progressbar *bar, int x, int y, int w,
 }
 
 static void progressbar_render(component *c) {
-    const progressbar *bar = widget_get_obj(c);
+    const progressbar *bar = component_get_obj(c);
     const vec2i pos = component_get_pos(c);
     const vec2i size = component_get_size(c);
     video_draw(bar->state ? &bar->background_alt : &bar->background, pos.x, pos.y);
@@ -111,7 +111,7 @@ static void progressbar_render(component *c) {
 }
 
 static void progressbar_tick(component *c) {
-    progressbar *bar = widget_get_obj(c);
+    progressbar *bar = component_get_obj(c);
     if(bar->display_percentage > bar->percentage) {
         int diff = bar->display_percentage - bar->percentage;
         bar->display_percentage -= min2(diff, BAR_DRAIN_PER_TICK);
@@ -137,7 +137,7 @@ static void progressbar_free_surfaces(progressbar *bar) {
 }
 
 static void progressbar_free(component *c) {
-    progressbar *bar = widget_get_obj(c);
+    progressbar *bar = component_get_obj(c);
     progressbar_free_surfaces(bar);
     omf_free(bar);
 }
@@ -164,7 +164,7 @@ static void progressbar_create_column(surface *s, int h, uint8_t top, uint8_t mi
 }
 
 static void progressbar_layout(component *c, int x, int y, int w, int h) {
-    progressbar *bar = widget_get_obj(c);
+    progressbar *bar = component_get_obj(c);
     const progressbar_theme *t = &bar->theme;
 
     progressbar_free_surfaces(bar);
@@ -179,7 +179,7 @@ static void progressbar_layout(component *c, int x, int y, int w, int h) {
 }
 
 component *progressbar_create(progressbar_theme theme, int orientation, int percentage) {
-    component *c = widget_create();
+    component *c = component_create();
     component_set_supported(c, false, false, false);
 
     progressbar *local = omf_calloc(1, sizeof(progressbar));
@@ -188,11 +188,11 @@ component *progressbar_create(progressbar_theme theme, int orientation, int perc
     local->percentage = clamp(percentage, 0, 100);
     local->display_percentage = local->percentage;
 
-    widget_set_obj(c, local);
-    widget_set_render_cb(c, progressbar_render);
-    widget_set_tick_cb(c, progressbar_tick);
-    widget_set_free_cb(c, progressbar_free);
-    widget_set_layout_cb(c, progressbar_layout);
+    component_set_obj(c, local);
+    component_set_render_cb(c, progressbar_render);
+    component_set_tick_cb(c, progressbar_tick);
+    component_set_free_cb(c, progressbar_free);
+    component_set_layout_cb(c, progressbar_layout);
 
     return c;
 }

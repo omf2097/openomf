@@ -1,7 +1,7 @@
 #include "game/gui/spritebutton.h"
 #include "controller/controller.h"
+#include "game/gui/component.h"
 #include "game/gui/text/text.h"
-#include "game/gui/widget.h"
 #include "utils/allocator.h"
 #include "video/video.h"
 
@@ -25,7 +25,7 @@ typedef struct spritebutton {
 } spritebutton;
 
 static void spritebutton_render(component *c) {
-    spritebutton *b = widget_get_obj(c);
+    const spritebutton *b = component_get_obj(c);
     const gui_theme *theme = component_get_theme(c);
     const vec2i pos = component_get_pos(c);
 
@@ -49,7 +49,7 @@ static void spritebutton_render(component *c) {
 }
 
 static void spritebutton_free(component *c) {
-    spritebutton *b = widget_get_obj(c);
+    spritebutton *b = component_get_obj(c);
     if(b->free_userdata) {
         omf_free(b->userdata);
     }
@@ -58,7 +58,7 @@ static void spritebutton_free(component *c) {
 }
 
 static void spritebutton_tick(component *c) {
-    spritebutton *b = widget_get_obj(c);
+    spritebutton *b = component_get_obj(c);
     if(b->active_ticks > 0) {
         b->active_ticks--;
     }
@@ -68,14 +68,14 @@ static void spritebutton_tick(component *c) {
 }
 
 static void spritebutton_focus(component *c, bool focused) {
-    spritebutton *b = widget_get_obj(c);
+    const spritebutton *b = component_get_obj(c);
     if(b->focus_cb) {
         b->focus_cb(c, focused, b->userdata);
     }
 }
 
 static bool spritebutton_action(component *c, int action, int source) {
-    spritebutton *b = widget_get_obj(c);
+    spritebutton *b = component_get_obj(c);
     if(component_is_disabled(c)) {
         return false;
     }
@@ -93,7 +93,7 @@ static bool spritebutton_action(component *c, int action, int source) {
 
 static void spritebutton_layout(component *c, int x, int y, int w, int h) {
     const gui_theme *theme = component_get_theme(c);
-    spritebutton *b = widget_get_obj(c);
+    const spritebutton *b = component_get_obj(c);
     if(b->text != NULL) {
         text_set_font(b->text, b->font != FONT_NONE ? b->font : theme->text.font);
         text_set_color(b->text, b->override_color > -1 ? b->override_color : theme->text.primary_color);
@@ -108,7 +108,7 @@ static void spritebutton_layout(component *c, int x, int y, int w, int h) {
 
 component *spritebutton_create(const char *text, const surface *img, bool disabled, spritebutton_click_cb cb,
                                void *userdata) {
-    component *c = widget_create();
+    component *c = component_create();
     component_disable(c, disabled);
     component_set_supported(c, true, true, true);
     component_set_size_hints(c, img->w, img->h);
@@ -127,73 +127,73 @@ component *spritebutton_create(const char *text, const surface *img, bool disabl
     b->userdata = userdata;
     b->tick_cb = NULL;
     b->focus_cb = NULL;
-    widget_set_obj(c, b);
+    component_set_obj(c, b);
 
-    widget_set_render_cb(c, spritebutton_render);
-    widget_set_action_cb(c, spritebutton_action);
-    widget_set_focus_cb(c, spritebutton_focus);
-    widget_set_tick_cb(c, spritebutton_tick);
-    widget_set_free_cb(c, spritebutton_free);
-    widget_set_layout_cb(c, spritebutton_layout);
+    component_set_render_cb(c, spritebutton_render);
+    component_set_action_cb(c, spritebutton_action);
+    component_set_focus_cb(c, spritebutton_focus);
+    component_set_tick_cb(c, spritebutton_tick);
+    component_set_free_cb(c, spritebutton_free);
+    component_set_layout_cb(c, spritebutton_layout);
     return c;
 }
 
 void spritebutton_set_horizontal_align(component *c, text_horizontal_align align) {
-    spritebutton *b = widget_get_obj(c);
+    spritebutton *b = component_get_obj(c);
     b->horizontal_align = align;
 }
 
 void spritebutton_set_vertical_align(component *c, text_vertical_align align) {
-    spritebutton *b = widget_get_obj(c);
+    spritebutton *b = component_get_obj(c);
     b->vertical_align = align;
 }
 
 void spritebutton_set_text_direction(component *c, text_row_direction direction) {
-    spritebutton *b = widget_get_obj(c);
+    spritebutton *b = component_get_obj(c);
     b->row_direction = direction;
 }
 
 void spritebutton_set_font(component *c, font_size font) {
-    spritebutton *b = widget_get_obj(c);
+    spritebutton *b = component_get_obj(c);
     b->font = font;
 }
 
 const surface *spritebutton_get_img(const component *c) {
-    spritebutton *b = widget_get_obj(c);
+    const spritebutton *b = component_get_obj(c);
     return b->img;
 }
 
 void spritebutton_set_img(component *c, const surface *img) {
-    spritebutton *b = widget_get_obj(c);
+    spritebutton *b = component_get_obj(c);
     b->img = img;
 }
 
 void spritebutton_set_text_color(component *c, vga_index color) {
-    spritebutton *b = widget_get_obj(c);
+    spritebutton *b = component_get_obj(c);
     b->override_color = color;
 }
 
 void spritebutton_set_text_margin(component *c, text_margin margins) {
-    spritebutton *b = widget_get_obj(c);
+    spritebutton *b = component_get_obj(c);
     b->margins = margins;
 }
 
 void spritebutton_set_tick_cb(component *c, spritebutton_tick_cb cb) {
-    spritebutton *b = widget_get_obj(c);
+    spritebutton *b = component_get_obj(c);
     b->tick_cb = cb;
 }
 
 void spritebutton_set_focus_cb(component *c, spritebutton_focus_cb cb) {
-    spritebutton *b = widget_get_obj(c);
+    spritebutton *b = component_get_obj(c);
     b->focus_cb = cb;
 }
 
 void spritebutton_set_always_display(component *c) {
-    spritebutton *b = widget_get_obj(c);
+    spritebutton *b = component_get_obj(c);
     b->active_ticks = -1;
 }
 
 void spritebutton_set_free_userdata(component *c, bool free_userdata) {
-    spritebutton *b = widget_get_obj(c);
+    spritebutton *b = component_get_obj(c);
     b->free_userdata = free_userdata;
 }

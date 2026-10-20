@@ -1,6 +1,6 @@
 #include "game/gui/label.h"
+#include "game/gui/component.h"
 #include "game/gui/text/text.h"
-#include "game/gui/widget.h"
 #include "utils/allocator.h"
 
 typedef struct label {
@@ -17,7 +17,7 @@ typedef struct label {
 } label;
 
 static void label_render(component *c) {
-    label *local = widget_get_obj(c);
+    const label *local = component_get_obj(c);
     const gui_theme *theme = component_get_theme(c);
     vga_index color = theme->text.primary_color;
     if(local->override_color > -1) {
@@ -31,59 +31,59 @@ static void label_render(component *c) {
 }
 
 static void label_free(component *c) {
-    label *local = widget_get_obj(c);
+    label *local = component_get_obj(c);
     text_free(&local->text);
     omf_free(local);
 }
 
 void label_set_text(component *c, const char *text) {
-    label *local = widget_get_obj(c);
+    const label *local = component_get_obj(c);
     text_set_from_c(local->text, text);
 }
 
 void label_set_text_color(component *c, vga_index color) {
-    label *local = widget_get_obj(c);
+    label *local = component_get_obj(c);
     local->override_color = color;
 }
 
 void label_set_margin(component *c, text_margin margin) {
-    label *local = widget_get_obj(c);
+    label *local = component_get_obj(c);
     local->text_margin = margin;
 }
 
 void label_set_font(component *c, font_size font) {
-    label *local = widget_get_obj(c);
+    label *local = component_get_obj(c);
     local->override_font = font;
 }
 
 void label_set_text_horizontal_align(component *c, text_horizontal_align align) {
-    label *local = widget_get_obj(c);
+    label *local = component_get_obj(c);
     local->text_horizontal_align = align;
 }
 
 void label_set_text_vertical_align(component *c, text_vertical_align align) {
-    label *local = widget_get_obj(c);
+    label *local = component_get_obj(c);
     local->text_vertical_align = align;
 }
 
 void label_set_text_line_spacing(component *c, uint8_t spacing) {
-    label *local = widget_get_obj(c);
+    label *local = component_get_obj(c);
     local->line_spacing = spacing;
 }
 
 void label_set_text_shadow(component *c, uint8_t shadow, vga_index color) {
-    label *local = widget_get_obj(c);
+    label *local = component_get_obj(c);
     local->text_shadow = shadow;
     local->text_shadow_color = color;
 }
 
 void label_set_color_theme(component *c, int theme) {
-    label *local = widget_get_obj(c);
+    label *local = component_get_obj(c);
     local->color_theme = theme;
 }
 
 static void label_init(component *c, const gui_theme *theme) {
-    label *local = widget_get_obj(c);
+    const label *local = component_get_obj(c);
     text_set_font(local->text, local->override_font != FONT_NONE ? local->override_font : theme->text.font);
     text_set_line_spacing(local->text, local->line_spacing);
     text_set_horizontal_align(local->text, TEXT_ALIGN_LEFT);
@@ -109,7 +109,7 @@ static void label_init(component *c, const gui_theme *theme) {
 }
 
 static void label_layout(component *c, int x, int y, int w, int h) {
-    label *local = widget_get_obj(c);
+    const label *local = component_get_obj(c);
     text_set_bounding_box(local->text, w, h);
     text_set_horizontal_align(local->text, local->text_horizontal_align);
     text_set_vertical_align(local->text, local->text_vertical_align);
@@ -117,7 +117,7 @@ static void label_layout(component *c, int x, int y, int w, int h) {
 }
 
 component *label_create(const char *text) {
-    component *c = widget_create();
+    component *c = component_create();
     component_disable(c, true);
     component_set_supported(c, true, false, false);
 
@@ -133,12 +133,12 @@ component *label_create(const char *text) {
     local->text_shadow_color = 0;
     local->text_margin = (text_margin){0, 0, 0, 0};
     text_set_from_c(local->text, text);
-    widget_set_obj(c, local);
+    component_set_obj(c, local);
 
-    widget_set_render_cb(c, label_render);
-    widget_set_free_cb(c, label_free);
-    widget_set_init_cb(c, label_init);
-    widget_set_layout_cb(c, label_layout);
+    component_set_render_cb(c, label_render);
+    component_set_free_cb(c, label_free);
+    component_set_init_cb(c, label_init);
+    component_set_layout_cb(c, label_layout);
     return c;
 }
 

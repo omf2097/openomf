@@ -123,7 +123,7 @@ component *menu_main_create(scene *s) {
     menu_attach(menu, button_create("TWO PLAYER GAME", NULL, false, false, mainmenu_1v2, s));
     menu_attach(menu, button_create("TOURNAMENT PLAY", NULL, false, false, mainmenu_mechlab, s));
     component *net = button_create("NETWORK PLAY", NULL, false, false, mainmenu_enter_network, s);
-    widget_set_id(net, NETWORK_BUTTON_ID);
+    component_set_id(net, NETWORK_BUTTON_ID);
     menu_attach(menu, net);
     menu_attach(menu, button_create("CONFIGURATION", NULL, false, false, mainmenu_enter_configuration, s));
     menu_attach(menu, button_create("GAMEPLAY", NULL, false, false, mainmenu_enter_gameplay, s));

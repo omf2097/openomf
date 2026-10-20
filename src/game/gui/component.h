@@ -1,7 +1,7 @@
 /**
  * @file component.h
  * @brief GUI base component
- * @details Base component for GUI elements. Sizers, widgets etc. are based on this.
+ * @details Base component for GUI elements.
  * @copyright MIT License
  * @date 2026
  * @author OpenOMF Project
@@ -12,6 +12,7 @@
 
 #include "game/gui/text/text.h"
 #include "game/gui/theme.h"
+#include "utils/iterator.h"
 #include "utils/vec.h"
 #include <SDL.h>
 
@@ -28,50 +29,26 @@ typedef void (*component_init_cb)(component *c, const gui_theme *theme); ///< In
 typedef component *(*component_find_cb)(component *c, int id); ///< Find component by ID callback function type
 
 /**
- * @brief Component type
- */
-typedef enum component_type
-{
-    COMPONENT_SIZER = 0x1337C0D3,  ///< Component is a sizer (contains children)
-    COMPONENT_WIDGET = 0x1337BEEF, ///< Component is a widget (leaf element)
-} component_type;
-
-/**
  * @brief Create a new component
  *
- * This is the basic component that you get by creating any textbutton, togglebutton, etc.
+ * This is the basic component that you get by creating any textbutton, togglebutton, menu, etc.
  * The point is to abstract away rendering and event handling.
  *
  * @note The component doesn't have position or size before component_layout has been called.
- * Component_layout call for a sizer will cause all its children widgets and sizers to be set also.
+ * Component_layout call for a component with children will cause all its children to be set also.
  *
- * @param type Whether the component is a sizer or a widget
  * @return Pointer to the newly created component
  */
-component *component_create(component_type type);
+component *component_create(void);
 
 /**
- * @brief Check if the component is a sizer
- * @param c Component to check
- * @return True if the component is a sizer
- */
-bool component_is_sizer(const component *c);
-
-/**
- * @brief Check if the component is a widget
- * @param c Component to check
- * @return True if the component is a widget
- */
-bool component_is_widget(const component *c);
-
-/**
- * @brief Free a component and its resources
+ * @brief Free a component, its children and its resources
  * @param c Component to free
  */
 void component_free(component *c);
 
 /**
- * @brief Process a tick update for the component
+ * @brief Process a tick update for the component and its children
  * @param c Component to tick
  */
 void component_tick(component *c);
@@ -100,7 +77,7 @@ bool component_event(component *c, SDL_Event *event);
 bool component_action(component *c, int action, int source);
 
 /**
- * @brief Initialize the component with a theme
+ * @brief Initialize the component and its children with a theme
  * @param c Component to initialize
  * @param theme Theme to apply
  */
@@ -297,6 +274,7 @@ const gui_theme *component_get_theme(component *c);
 
 /**
  * @brief Find a component by ID within a component tree
+ * @details Checks the component itself, then its children, then the find callback.
  * @param c Root component to search from
  * @param id ID to search for
  * @return Pointer to the found component, or NULL if not found
@@ -306,7 +284,7 @@ component *component_find(component *c, int id);
 /**
  * @brief Set the specialization object for the component
  * @param c Component to modify
- * @param obj Object pointer (typically sizer or widget struct)
+ * @param obj Object pointer, eg. a label, button or menu struct
  */
 void component_set_obj(component *c, void *obj);
 
@@ -316,6 +294,50 @@ void component_set_obj(component *c, void *obj);
  * @return Object pointer
  */
 void *component_get_obj(const component *c);
+
+/**
+ * @brief Set the component's ID for lookup
+ * @param c Component to modify
+ * @param id Component ID. Default is -1, which means not set.
+ */
+void component_set_id(component *c, int id);
+
+/**
+ * @brief Get the component's ID
+ * @param c Component to query
+ * @return Component ID, or -1 if not set
+ */
+int component_get_id(const component *c);
+
+/**
+ * @brief Attach a child component
+ * @details The child is owned by the parent and freed with it.
+ * @param c Parent component
+ * @param nc Child component to attach
+ */
+void component_attach(component *c, component *nc);
+
+/**
+ * @brief Get a child component by index
+ * @param c Parent component to query
+ * @param item Index of the child
+ * @return Pointer to the child component, or NULL if out of range
+ */
+component *component_get_child(const component *c, int item);
+
+/**
+ * @brief Get the number of children
+ * @param c Parent component to query
+ * @return Number of child components
+ */
+int component_child_count(const component *c);
+
+/**
+ * @brief Begin iterating over child components
+ * @param c Parent component to iterate
+ * @param it Iterator to initialize
+ */
+void component_iter_begin(const component *c, iterator *it);
 
 /**
  * @brief Set the render callback

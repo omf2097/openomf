@@ -217,7 +217,7 @@ component *menu_connect_create(scene *s) {
     local->connect_button =
         button_create("CONNECT", "Connect to the provided IP address.", false, false, menu_connect_start, s);
     local->cancel_button = button_create("CANCEL", "Exit from this menu.", false, false, menu_connect_cancel, s);
-    widget_set_id(local->connect_button, NETWORK_CONNECT_IP_BUTTON_ID);
+    component_set_id(local->connect_button, NETWORK_CONNECT_IP_BUTTON_ID);
     menu_attach(menu, local->addr_input);
     menu_attach(menu, local->port_input);
     menu_attach(menu, local->connect_button);
