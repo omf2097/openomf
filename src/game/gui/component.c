@@ -1,14 +1,16 @@
 #include "game/gui/component.h"
 #include "utils/allocator.h"
+#include "utils/vector.h"
 
 struct component {
-    component_type type; ///< Type tag. The magic enum values also act as a safety header.
-
     int x;     ///< Horizontal position of the object in pixels. This is in screen coordinates.
     int y;     ///< Vertical position of the object in pixels. This is in screen coordinates.
     int w;     ///< Width of the object in pixels.
     int h;     ///< Height of the object in pixels.
-    void *obj; ///< Specialization object pointer. Basically always Sizer or Widget struct.
+    void *obj; ///< Specialization object pointer, eg. label, button or menu struct.
+    int id;    ///< Lookup ID. Default is -1, which means "not set". User should always set positive values!
+
+    vector children; ///< Child components. Empty in the widget role; nothing is allocated until the first attach.
 
     int x_hint; ///< X position hint. Sizers may or may not obey this. -1 = not set. >=0 means set.
     int y_hint; ///< Y position hint. Sizers may or may not obey this. -1 = not set. >=0 means set.
@@ -43,20 +45,18 @@ struct component {
     component_init_cb init;     ///< Initialization function callback. This is called right before layout function. This
                                 ///< should be used to prerender elements, decide size hints, etc.
 
-    component *parent; ///< Parent component. For widgets, usually a sizer. NULL for root component.
+    component *parent; ///< Parent component. NULL for root component.
 };
-
-bool component_is_sizer(const component *c) {
-    return c->type == COMPONENT_SIZER;
-}
-
-bool component_is_widget(const component *c) {
-    return c->type == COMPONENT_WIDGET;
-}
 
 void component_tick(component *c) {
     if(c->tick) {
         c->tick(c);
+    }
+    iterator it;
+    component **child;
+    vector_iter_begin(&c->children, &it);
+    foreach(it, child) {
+        component_tick(*child);
     }
 }
 
@@ -84,6 +84,12 @@ void component_init(component *c, const gui_theme *theme) {
     component_set_theme(c, theme);
     if(c->init) {
         c->init(c, c->theme);
+    }
+    iterator it;
+    component **child;
+    vector_iter_begin(&c->children, &it);
+    foreach(it, child) {
+        component_init(*child, theme);
     }
 }
 
@@ -189,18 +195,65 @@ void component_set_pos_hints(component *c, int x, int y) {
 }
 
 component *component_find(component *c, int id) {
-    if(c == NULL || c->find == NULL) {
+    if(c == NULL || id < 0) {
         return NULL;
     }
-    return c->find(c, id);
+    if(c->id == id) {
+        return c;
+    }
+    iterator it;
+    component **child;
+    vector_iter_begin(&c->children, &it);
+    foreach(it, child) {
+        component *out = component_find(*child, id);
+        if(out != NULL) {
+            return out;
+        }
+    }
+    if(c->find) {
+        return c->find(c, id);
+    }
+    return NULL;
 }
 
 void component_set_obj(component *c, void *obj) {
+    assert(c->obj == NULL && "Specialization object is already set");
     c->obj = obj;
 }
 
 void *component_get_obj(const component *c) {
     return c->obj;
+}
+
+void component_set_id(component *c, int id) {
+    assert(id >= 0 && "Component ID must be non-negative");
+    c->id = id;
+}
+
+int component_get_id(const component *c) {
+    return c->id;
+}
+
+void component_attach(component *c, component *nc) {
+    assert(nc != NULL);
+    component_set_parent(nc, c);
+    vector_append(&c->children, &nc);
+}
+
+component *component_get_child(const component *c, int item) {
+    component **child = vector_get(&c->children, item);
+    if(child != NULL) {
+        return *child;
+    }
+    return NULL;
+}
+
+int component_child_count(const component *c) {
+    return vector_size(&c->children);
+}
+
+void component_iter_begin(const component *c, iterator *it) {
+    vector_iter_begin(&c->children, it);
 }
 
 void component_set_supported(component *c, bool allow_disable, bool allow_select, bool allow_focus) {
@@ -233,6 +286,7 @@ component *component_get_parent(const component *c) {
 }
 
 void component_set_parent(component *c, component *parent) {
+    assert((parent == NULL || c->parent == NULL) && "Component already has a parent");
     c->parent = parent;
 }
 
@@ -299,9 +353,12 @@ const gui_theme *component_get_theme(component *c) {
     return NULL;
 }
 
-component *component_create(component_type type) {
+component *component_create(void) {
     component *c = omf_calloc(1, sizeof(component));
-    c->type = type;
+    c->id = -1;
+    // Zero capacity: widgets never allocate child storage.
+    vector_create_with_size(&c->children, sizeof(component *), 0);
+    component_set_supported(c, true, true, true);
     c->x_hint = -1;
     c->y_hint = -1;
     c->w_hint = -1;
@@ -317,9 +374,16 @@ void component_free(component *c) {
     if(c->is_focused != 0) {
         component_focus(c, false);
     }
+    iterator it;
+    component **child;
+    vector_iter_begin(&c->children, &it);
+    foreach(it, child) {
+        component_free(*child);
+    }
     if(c->free != NULL) {
         c->free(c);
     }
+    vector_free(&c->children);
     if(c->help != NULL) {
         text_free(&c->help);
     }

@@ -14,13 +14,13 @@
 #include "game/game_player.h"
 #include "game/game_state.h"
 #include "game/gui/button.h"
+#include "game/gui/component.h"
 #include "game/gui/filler.h"
 #include "game/gui/gui_frame.h"
 #include "game/gui/label.h"
 #include "game/gui/menu.h"
 #include "game/gui/progressbar.h"
 #include "game/gui/textslider.h"
-#include "game/gui/widget.h"
 #include "game/objects/arena_constraints.h"
 #include "game/objects/har.h"
 #include "game/objects/hazard.h"
@@ -1929,7 +1929,7 @@ int arena_create(scene *scene) {
     menu_attach(menu, filler_create());
     component *return_button =
         button_create("RETURN TO GAME", "Continue fighting.", false, false, game_menu_return, scene);
-    widget_set_id(return_button, GAME_MENU_RETURN_ID);
+    component_set_id(return_button, GAME_MENU_RETURN_ID);
     menu_attach(menu, return_button);
 
     menu_attach(menu, textslider_create_bind(
@@ -1960,7 +1960,7 @@ int arena_create(scene *scene) {
     } else {
         quit_button = button_create("QUIT", lang_get(322), false, false, game_menu_quit, scene);
     }
-    widget_set_id(quit_button, GAME_MENU_QUIT_ID);
+    component_set_id(quit_button, GAME_MENU_QUIT_ID);
     menu_attach(menu, quit_button);
 
     gui_frame_set_root(local->game_menu, menu);

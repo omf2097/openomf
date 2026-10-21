@@ -1,5 +1,5 @@
 #include "game/gui/xysizer.h"
-#include "game/gui/sizer.h"
+#include "game/gui/component.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
 
@@ -10,16 +10,16 @@ typedef struct xysizer {
 void xysizer_attach(component *c, component *nc, int x, int y, int w, int h) {
     component_set_size_hints(nc, w, h);
     component_set_pos_hints(nc, x, y);
-    sizer_attach(c, nc);
+    component_attach(c, nc);
 }
 
 void xysizer_set_userdata(component *c, void *userdata) {
-    xysizer *m = sizer_get_obj(c);
+    xysizer *m = component_get_obj(c);
     m->userdata = userdata;
 }
 
 void *xysizer_get_userdata(component *c) {
-    xysizer *m = sizer_get_obj(c);
+    const xysizer *m = component_get_obj(c);
     return m->userdata;
 }
 
@@ -27,7 +27,7 @@ static void xysizer_render(component *c) {
     // Just render all children
     iterator it;
     component **tmp;
-    sizer_begin_iterator(c, &it);
+    component_iter_begin(c, &it);
     foreach(it, tmp) {
         component_render(*tmp);
     }
@@ -37,7 +37,7 @@ static void xysizer_layout(component *c, int x, int y, int w, int h) {
     // Set layout for all components in the sizer
     iterator it;
     component **tmp;
-    sizer_begin_iterator(c, &it);
+    component_iter_begin(c, &it);
     foreach(it, tmp) {
         // Set component position and size from the component hint
         const vec2i pos_hint = component_get_pos_hint(*tmp);
@@ -57,7 +57,7 @@ static bool xysizer_event(component *c, SDL_Event *event) {
     // Just pass events to all children, stop if it gets handled.
     iterator it;
     component **tmp;
-    sizer_begin_iterator(c, &it);
+    component_iter_begin(c, &it);
     foreach(it, tmp) {
         if(component_event(*tmp, event)) {
             return true;
@@ -71,7 +71,7 @@ static bool xysizer_action(component *c, int action, int source) {
     // Just pass events to all children
     iterator it;
     component **tmp;
-    sizer_begin_iterator(c, &it);
+    component_iter_begin(c, &it);
     foreach(it, tmp) {
         if(component_action(*tmp, action, source)) {
             return true;
@@ -82,21 +82,22 @@ static bool xysizer_action(component *c, int action, int source) {
 }
 
 static void xysizer_free(component *c) {
-    xysizer *m = sizer_get_obj(c);
+    xysizer *m = component_get_obj(c);
     omf_free(m);
 }
 
 component *xysizer_create(void) {
-    component *c = sizer_create();
+    component *c = component_create();
+    component_set_supported(c, false, false, false);
 
     xysizer *m = omf_calloc(1, sizeof(xysizer));
-    sizer_set_obj(c, m);
+    component_set_obj(c, m);
 
-    sizer_set_render_cb(c, xysizer_render);
-    sizer_set_layout_cb(c, xysizer_layout);
-    sizer_set_event_cb(c, xysizer_event);
-    sizer_set_action_cb(c, xysizer_action);
-    sizer_set_free_cb(c, xysizer_free);
+    component_set_render_cb(c, xysizer_render);
+    component_set_layout_cb(c, xysizer_layout);
+    component_set_event_cb(c, xysizer_event);
+    component_set_action_cb(c, xysizer_action);
+    component_set_free_cb(c, xysizer_free);
 
     return c;
 }

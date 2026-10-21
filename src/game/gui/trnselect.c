@@ -1,7 +1,7 @@
 #include "game/gui/trnselect.h"
 #include "formats/tournament.h"
+#include "game/gui/component.h"
 #include "game/gui/label.h"
-#include "game/gui/widget.h"
 #include "resources/sprite.h"
 #include "resources/trnmanager.h"
 #include "utils/allocator.h"
@@ -19,7 +19,7 @@ typedef struct trnselect {
 } trnselect;
 
 static void trnselect_render(component *c) {
-    trnselect *g = widget_get_obj(c);
+    const trnselect *g = component_get_obj(c);
 
     const vec2i pos = component_get_pos(c);
     video_draw(g->img->data, pos.x + g->img->pos.x, pos.y + g->img->pos.y);
@@ -54,7 +54,7 @@ static void load_description(component **c, const gui_theme *theme, const sd_tou
 }
 
 static void trnselect_free(component *c) {
-    trnselect *g = widget_get_obj(c);
+    trnselect *g = component_get_obj(c);
     vga_state_pop_palette(); // Recover previous palette
     if(g->img != NULL) {
         sprite_free(g->img);
@@ -68,7 +68,7 @@ static void trnselect_free(component *c) {
 }
 
 void trnselect_next(component *c) {
-    trnselect *local = widget_get_obj(c);
+    trnselect *local = component_get_obj(c);
     local->selected++;
     if(local->selected >= (int)vector_size(&local->tournaments)) {
         local->selected = 0;
@@ -85,7 +85,7 @@ void trnselect_next(component *c) {
 }
 
 void trnselect_prev(component *c) {
-    trnselect *local = widget_get_obj(c);
+    trnselect *local = component_get_obj(c);
     local->selected--;
     if(local->selected < 0) {
         local->selected = vector_size(&local->tournaments) - 1;
@@ -102,12 +102,12 @@ void trnselect_prev(component *c) {
 }
 
 sd_tournament_file *trnselect_selected(component *c) {
-    trnselect *local = widget_get_obj(c);
+    const trnselect *local = component_get_obj(c);
     return vector_get(&local->tournaments, local->selected);
 }
 
 static void trnselect_init(component *c, const gui_theme *theme) {
-    trnselect *local = widget_get_obj(c);
+    trnselect *local = component_get_obj(c);
     trnlist_init(&local->tournaments);
     local->img = omf_calloc(1, sizeof(sprite));
     local->label = NULL;
@@ -126,7 +126,7 @@ static void trnselect_init(component *c, const gui_theme *theme) {
 }
 
 component *trnselect_create(void) {
-    component *c = widget_create();
+    component *c = component_create();
     component_set_supported(c, false, false, false);
 
     // Local information
@@ -134,11 +134,11 @@ component *trnselect_create(void) {
     local->selected = 0;
     local->img = NULL;
     local->label = NULL;
-    widget_set_obj(c, local);
+    component_set_obj(c, local);
 
     // Set callbacks
-    widget_set_render_cb(c, trnselect_render);
-    widget_set_free_cb(c, trnselect_free);
-    widget_set_init_cb(c, trnselect_init);
+    component_set_render_cb(c, trnselect_render);
+    component_set_free_cb(c, trnselect_free);
+    component_set_init_cb(c, trnselect_init);
     return c;
 }
