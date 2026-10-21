@@ -22,8 +22,7 @@ typedef struct {
     ENetPeer *peer;
     ENetPeer *lobby;
     int id;
-    uint32_t last_hb;
-    uint32_t outstanding_hb;
+    uint32_t last_hb_sent_tick;
     int disconnected;
     int rttbuf[100];
     int rttpos;
@@ -186,13 +185,14 @@ bool has_event(wtf *data, int delay) {
 
     iterator it;
     list_iter_begin(&data->transcript, &it);
-    tick_events *ev = NULL;
+    const uint32_t local_tick = data->last_tick - data->local_proposal + delay;
+    const tick_events *ev = NULL;
     foreach(it, ev) {
-        if(ev->tick < data->last_tick + delay && ev->tick > data->last_sent_tick && ev->events[data->id][0]) {
+        if(ev->tick < local_tick && ev->tick > data->last_sent_tick && ev->events[data->id][0]) {
             return true;
         }
     }
-    if(data->last_acked_tick < (data->last_tick - data->local_proposal) - 50) {
+    if(data->last_acked_tick + 50 < data->last_tick - data->local_proposal) {
         return true;
     }
     return false;
@@ -929,8 +929,6 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                             } else {
                                 ctrl->rtt = avg_rtt(data) * game_state_ms_per_dyntick(ctrl->gs);
                             }
-                            data->outstanding_hb = 0;
-                            data->last_hb = ticks;
                         } else {
                             uint32_t peerticks = serial_read_uint32(&ser);
 
@@ -1143,8 +1141,8 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
         tick_interval = 20;
     }
 
-    if((data->last_hb == 0 || ticks - data->last_hb > tick_interval) || !data->outstanding_hb) {
-        data->outstanding_hb = 1;
+    if(data->last_hb_sent_tick == 0 || ticks - data->last_hb_sent_tick > tick_interval) {
+        data->last_hb_sent_tick = ticks;
         if(peer) {
             ENetPacket *packet;
             serial hb_serial;
@@ -1296,8 +1294,7 @@ void net_controller_create(controller *ctrl, ENetHost *host, ENetPeer *peer, ENe
     data->host = host;
     data->peer = peer;
     data->lobby = lobby; // this is null in a peer-to-peer game
-    data->last_hb = 0;
-    data->outstanding_hb = 0;
+    data->last_hb_sent_tick = 0;
     data->disconnected = 0;
     data->rttpos = 0;
     data->tick_offset = 0;
