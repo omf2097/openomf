@@ -25,6 +25,8 @@ typedef struct {
     uint32_t last_hb;
     uint32_t outstanding_hb;
     int disconnected;
+    bool lobby_disconnected;
+    bool opponent_disconnected;
     int rttbuf[100];
     int rttpos;
     int rttfilled;
@@ -610,6 +612,16 @@ ENetPeer *net_controller_get_lobby_connection(controller *ctrl) {
     return data->lobby;
 }
 
+bool net_controller_lobby_connected(controller *ctrl) {
+    wtf *data = ctrl->data;
+    return data->lobby != NULL && !data->lobby_disconnected;
+}
+
+bool net_controller_opponent_disconnected(controller *ctrl) {
+    wtf *data = ctrl->data;
+    return data->opponent_disconnected;
+}
+
 ENetHost *net_controller_get_host(controller *ctrl) {
     wtf *data = ctrl->data;
     return data->host;
@@ -1077,8 +1089,12 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                 if(event.peer == data->peer) {
                     log_debug("opponent peer disconnected!");
                     data->disconnected = 1;
+                    data->opponent_disconnected = true;
+                    if(event.peer == data->lobby) {
+                        data->lobby_disconnected = true;
+                    }
                     data->synchronized = false;
-                    data->winner = arena_is_over(ctrl->gs->sc);
+                    data->winner = scene_is_arena(ctrl->gs->sc) ? arena_is_over(ctrl->gs->sc) : -1;
                     if(data->winner == -1 && data->gs_bak) {
                         // match did not end cleanly
                         // so force the game to playback ALL events to try to update the trace/rec files
@@ -1088,10 +1104,12 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                     if(ctrl->gs->new_state) {
                         game_state_clone_free(ctrl->gs->new_state);
                         omf_free(ctrl->gs->new_state);
+                        ctrl->gs->new_state = NULL;
                     }
                     if(data->gs_bak) {
                         game_state_clone_free(data->gs_bak);
                         omf_free(data->gs_bak);
+                        data->gs_bak = NULL;
                     }
                     if(ctrl->gs->rec) {
                         sd_rec_finish(ctrl->gs->rec, ticks - data->local_proposal);
@@ -1105,8 +1123,14 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                     }
                     event.peer->data = NULL;
                     return 1; // bail the fuck out
+                } else if(event.peer == data->lobby) {
+                    // Keep an established direct match running if only the lobby server goes away. Remember the
+                    // failure so the lobby scene can reconnect instead of reusing this disconnected peer later.
+                    log_warn("lobby server disconnected during netplay; direct opponent connection remains active");
+                    data->lobby_disconnected = true;
+                    break;
                 } else {
-                    log_debug("non-opponent peer disconnected, ignoring");
+                    log_debug("unrelated peer disconnected, ignoring");
                 }
                 event.peer->data = NULL;
                 break;

@@ -10,6 +10,10 @@
 #include <limits.h>
 #include <stdbool.h>
 
+// A rollback-resumed effect starts in the middle of its sample. Use a very
+// short fade to avoid a click without making brief impact sounds inaudible.
+#define ROLLBACK_SOUND_FADE_IN_MS 10
+
 void sound_tracker_create(sound_tracker *t) {
     vector_create(&t->entries, sizeof(playing_sound));
 }
@@ -109,6 +113,10 @@ void sound_tracker_merge(sound_tracker *old, sound_tracker *new) {
         vector_iter_begin(&old->entries, &it2);
         foreach(it2, s2) {
             if(s->sound_id == s2->sound_id && s->tick == s2->tick) {
+                // The replayed state only recorded this sound and therefore
+                // has no backend handle. Keep tracking the playback that was
+                // already started by the state being replaced.
+                s->playback_id = s2->playback_id;
                 found = true;
                 break;
             }
@@ -147,7 +155,7 @@ void sound_tracker_merge(sound_tracker *old, sound_tracker *new) {
                 opts.volume = s->volume;
                 opts.panning = s->panning;
                 opts.pitch = s->pitch;
-                opts.fade_in_ms = 500; // TODO decide on a fade in time
+                opts.fade_in_ms = ROLLBACK_SOUND_FADE_IN_MS;
                 s->playback_id = audio_play_source(&src, &opts);
             }
             sound_source_close(&src);
