@@ -332,6 +332,7 @@ if (USE_TOOLS)
     add_executable(aftool tools/aftool/main.c
         tools/shared/animation_misc.c
         tools/shared/conversions.c)
+    add_executable(fptool tools/fptool/main.c)
     add_executable(soundtool tools/soundtool/main.c)
     add_executable(afdiff tools/afdiff/main.c)
     add_executable(rectool tools/rectool/main.c tools/shared/pilot.c)
