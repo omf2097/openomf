@@ -122,9 +122,13 @@ component *menu_main_create(scene *s) {
     menu_attach(menu, button_create("ONE PLAYER GAME", NULL, false, false, mainmenu_1v1, s));
     menu_attach(menu, button_create("TWO PLAYER GAME", NULL, false, false, mainmenu_1v2, s));
     menu_attach(menu, button_create("TOURNAMENT PLAY", NULL, false, false, mainmenu_mechlab, s));
+#ifndef MIN_LIB_BUILD
     component *net = button_create("NETWORK PLAY", NULL, false, false, mainmenu_enter_network, s);
     component_set_id(net, NETWORK_BUTTON_ID);
     menu_attach(menu, net);
+#else
+    menu_attach(menu, label_create("NETWORK PLAY")); // It's uncentered and and green but what ever.
+#endif
     menu_attach(menu, button_create("CONFIGURATION", NULL, false, false, mainmenu_enter_configuration, s));
     menu_attach(menu, button_create("GAMEPLAY", NULL, false, false, mainmenu_enter_gameplay, s));
     menu_attach(menu, button_create("HELP", NULL, false, false, mainmenu_enter_help, s));

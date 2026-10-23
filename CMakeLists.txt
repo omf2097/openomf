@@ -15,6 +15,18 @@ OPTION(USE_EXTENDED_PALETTE "Use 1024-color extended palette instead of 256" ON)
 
 OPTION(USE_MINIUPNPC "Use miniupnpc for port forwarding" ON)
 OPTION(USE_NATPMP "Use natpmp for port forwarding" ON)
+OPTION(MIN_LIB_BUILD "Build with in-tree stand-ins (no SDL, enet, confuse, xmp, epoxy, png, opus)" OFF)
+
+# Force optional third-party features off before vcpkg reads them.
+if(MIN_LIB_BUILD)
+    set(USE_LIBPNG OFF CACHE BOOL "" FORCE)
+    set(USE_OPUSFILE OFF CACHE BOOL "" FORCE)
+    set(USE_MINIUPNPC OFF CACHE BOOL "" FORCE)
+    set(USE_NATPMP OFF CACHE BOOL "" FORCE)
+    set(USE_TESTS OFF CACHE BOOL "" FORCE)
+    set(USE_TOOLS OFF CACHE BOOL "" FORCE)
+    set(BUILD_LANGUAGES OFF CACHE BOOL "" FORCE)
+endif()
 
 # vcpkg features must be set before project()
 if(USE_TESTS)
@@ -28,6 +40,10 @@ if(USE_NATPMP)
 endif()
 
 project(OpenOMF C)
+
+if(MIN_LIB_BUILD)
+    add_compile_definitions(MIN_LIB_BUILD)
+endif()
 
 # Generate compile_commands.json so editors can find the correct headers.
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -142,6 +158,26 @@ file(GLOB_RECURSE OPENOMF_SRC
     "src/*/*.c" "src/*/*.h"
 )
 
+# Stand-ins live under src/minlib and are only part of MIN_LIB_BUILD.
+list(FILTER OPENOMF_SRC EXCLUDE REGEX "^src/minlib/")
+if(MIN_LIB_BUILD)
+    list(FILTER OPENOMF_SRC EXCLUDE REGEX "^src/utils/config\\.c$")
+    list(FILTER OPENOMF_SRC EXCLUDE REGEX "^src/resources/modmanager\\.c$")
+    list(FILTER OPENOMF_SRC EXCLUDE REGEX "^src/vendored/argtable/")
+    list(FILTER OPENOMF_SRC EXCLUDE REGEX "^src/vendored/zip/")
+    list(FILTER OPENOMF_SRC EXCLUDE REGEX "^src/console/console\\.c$")
+    list(FILTER OPENOMF_SRC EXCLUDE REGEX "^src/console/console_cmd\\.c$")
+    list(APPEND OPENOMF_SRC
+        src/minlib/sdl_dumb.c
+        src/minlib/gl_loader.c
+        src/minlib/config.c
+        src/minlib/modmanager.c
+        src/minlib/xmp_stub.c
+        src/minlib/console.c
+        src/minlib/enet_stub.c
+    )
+endif()
+
 # Remove all player plugin source code from OPENOMF_SRC
 list(FILTER OPENOMF_SRC EXCLUDE REGEX "^src/audio/backends/.*/")
 # Enable "NULL" player in debug builds, for automated testing
@@ -151,7 +187,11 @@ list(APPEND OPENOMF_SRC
 )
 list(APPEND AUDIO_C_DEFINES "$<$<CONFIG:Debug>:ENABLE_NULL_AUDIO_BACKEND>")
 # and enable select render plugins
-set(ENABLED_AUDIO_BACKEND_PLUGINS sdl)
+if(MIN_LIB_BUILD)
+    set(ENABLED_AUDIO_BACKEND_PLUGINS "")
+else()
+    set(ENABLED_AUDIO_BACKEND_PLUGINS sdl)
+endif()
 foreach (PLUGIN ${ENABLED_AUDIO_BACKEND_PLUGINS})
     # add render plugin sources
     file(GLOB_RECURSE PLUGIN_SRC
@@ -167,6 +207,11 @@ foreach (PLUGIN ${ENABLED_AUDIO_BACKEND_PLUGINS})
     list(APPEND AUDIO_C_DEFINES "ENABLE_${PLUGIN_UPPER}_AUDIO_BACKEND")
     message(STATUS "Enabled audio backend plugin '${PLUGIN}'")
 endforeach ()
+if(MIN_LIB_BUILD)
+    list(APPEND OPENOMF_SRC src/minlib/audio_dumb.c)
+    list(APPEND AUDIO_C_DEFINES "ENABLE_DUMB_AUDIO_BACKEND")
+    message(STATUS "Enabled audio backend plugin 'dumb'")
+endif()
 set_source_files_properties("src/audio/audio.c" PROPERTIES COMPILE_DEFINITIONS "${AUDIO_C_DEFINES}")
 
 # Remove all null-source code from OPENOMF_SRC
@@ -211,29 +256,36 @@ set_source_files_properties("src/video/video.c" PROPERTIES COMPILE_DEFINITIONS "
 # Build core sources first as an object library
 # this can then be reused in tests and main executable to speed things up
 add_library(openomf_core OBJECT ${OPENOMF_SRC})
+if(MIN_LIB_BUILD)
+    target_include_directories(openomf_core BEFORE PUBLIC "${CMAKE_SOURCE_DIR}/src/minlib/include")
+endif()
 target_compile_definitions(openomf_core PUBLIC
     "$<$<CONFIG:Debug>:DEBUGMODE>"
     "$<$<BOOL:${USE_EXTENDED_PALETTE}>:USE_EXTENDED_PALETTE>"
 )
-omf_target_precompile_headers(openomf_core PUBLIC
-    "<SDL.h>"
-    "<enet/enet.h>"
-    "<epoxy/gl.h>"
-)
+# On a Windows MIN_LIB_BUILD, windows.h must be first so it owns APIENTRY
+# before the GL stand-in header.
+set(OMF_PCH_HEADERS "<SDL.h>" "<enet/enet.h>" "<epoxy/gl.h>")
+if(MIN_LIB_BUILD AND WIN32)
+    list(PREPEND OMF_PCH_HEADERS "<windows.h>")
+endif()
+omf_target_precompile_headers(openomf_core PUBLIC ${OMF_PCH_HEADERS})
 # Match all variants of GCC and Clang.
 if(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
     set_source_files_properties("${CMAKE_SOURCE_DIR}/src/vendored/argtable/argtable3.c"
         PROPERTIES COMPILE_OPTIONS "-Wno-format-nonliteral"
     )
 endif()
-target_link_libraries(openomf_core PRIVATE
-    openomf::confuse
-    openomf::enet
-    openomf::epoxy
-    openomf::SDL2
-    openomf::SDL2_mixer
-    openomf::xmp
-)
+if(NOT MIN_LIB_BUILD)
+    target_link_libraries(openomf_core PRIVATE
+        openomf::confuse
+        openomf::enet
+        openomf::epoxy
+        openomf::SDL2
+        openomf::SDL2_mixer
+        openomf::xmp
+    )
+endif()
 
 if(USE_LIBPNG)
     message(STATUS "libpng support is enabled.")
@@ -259,7 +311,7 @@ endif()
 
 list(APPEND CORELIBS openomf_core)
 
-if(WIN32 AND NOT MINGW)
+if(WIN32 AND NOT MINGW AND NOT MIN_LIB_BUILD)
     omf_target_precompile_headers(openomf_core PUBLIC
         "<windows.h>"
     )
@@ -286,6 +338,9 @@ set(COREINCS
     src
     ${CMAKE_CURRENT_BINARY_DIR}/src/
 )
+if(MIN_LIB_BUILD)
+    list(INSERT COREINCS 0 "${CMAKE_SOURCE_DIR}/src/minlib/include")
+endif()
 
 # MingW build should add mingw32 lib
 if(MINGW)
@@ -295,6 +350,9 @@ endif()
 # On windows, add winsock2, winmm, and shlwapi
 if(WIN32)
     set(CORELIBS ${CORELIBS} ws2_32 winmm shlwapi)
+    if(MIN_LIB_BUILD)
+        list(APPEND CORELIBS opengl32 gdi32 user32 Xinput9_1_0)
+    endif()
 endif()
 
 # On unix platforms, add libm (sometimes needed, it seems)
@@ -426,10 +484,15 @@ endif()
 
 # Make sure libraries are linked
 target_link_libraries(openomf PRIVATE ${CORELIBS})
-target_link_libraries(openomf PRIVATE openomf::argtable openomf::zip openomf::SDL2main openomf::epoxy)
+if(NOT MIN_LIB_BUILD)
+    target_link_libraries(openomf PRIVATE openomf::argtable openomf::zip openomf::SDL2main openomf::epoxy)
+endif()
 foreach(TARGET ${TOOL_TARGET_NAMES})
     target_link_libraries(${TARGET} PRIVATE ${CORELIBS})
-    target_link_libraries(${TARGET} PRIVATE openomf::argtable openomf::zip openomf::SDL2main openomf::epoxy)
+    target_link_libraries(${TARGET} PRIVATE openomf::argtable openomf::zip)
+    if(NOT MIN_LIB_BUILD)
+        target_link_libraries(${TARGET} PRIVATE openomf::SDL2main openomf::epoxy)
+    endif()
 endforeach()
 
 # Testing stuff

@@ -1,5 +1,7 @@
 #include <assert.h>
+#ifdef PNG_FOUND
 #include <png.h>
+#endif
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>

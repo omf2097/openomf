@@ -7,6 +7,9 @@
 #include <assert.h>
 #include <string.h>
 
+#ifdef ENABLE_DUMB_AUDIO_BACKEND
+#include "minlib/audio_dumb.h"
+#endif
 #ifdef ENABLE_SDL_AUDIO_BACKEND
 #include "audio/backends/sdl/sdl_backend.h"
 #endif
@@ -33,6 +36,9 @@ typedef void (*audio_backend_init)(audio_backend *backend);
 
 // All built-in backends, most preferred first.
 static audio_backend_init all_backends[] = {
+#ifdef ENABLE_DUMB_AUDIO_BACKEND
+    dumb_audio_backend_set_callbacks,
+#endif
 #ifdef ENABLE_SDL_AUDIO_BACKEND
     sdl_audio_backend_set_callbacks,
 #endif

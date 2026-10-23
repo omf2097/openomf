@@ -75,13 +75,24 @@ bool write_paletted_png(const path *filename, int w, int h, const vga_palette *p
 
 #else // PNG_FOUND
 
-bool png_write_rgb(const char *filename, int w, int h, const unsigned char *data, bool has_alpha, bool flip) {
-    PERROR("PNG writing is not supported in current build!");
+bool write_rgb_png(const path *filename, int w, int h, const unsigned char *data, bool has_alpha, bool flip) {
+    (void)filename;
+    (void)w;
+    (void)h;
+    (void)data;
+    (void)has_alpha;
+    (void)flip;
+    log_error("PNG writing is not supported in current build!");
     return false;
 }
 
-bool png_write_paletted(const char *filename, int w, int h, const vga_palette *pal, const unsigned char *data) {
-    PERROR("PNG writing is not supported in current build!");
+bool write_paletted_png(const path *filename, int w, int h, const vga_palette *pal, const unsigned char *data) {
+    (void)filename;
+    (void)w;
+    (void)h;
+    (void)pal;
+    (void)data;
+    log_error("PNG writing is not supported in current build!");
     return false;
 }
 

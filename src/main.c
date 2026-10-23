@@ -14,7 +14,9 @@
 #include "utils/random.h"
 
 #include <SDL.h>
+#ifndef MIN_LIB_BUILD
 #include <argtable3.h>
+#endif
 #include <enet/enet.h>
 #include <stdio.h>
 #include <string.h>
@@ -63,7 +65,9 @@ int main(int argc, char *argv[]) {
     unsigned short listen_port = 0;
     engine_init_flags init_flags;
     memset(&init_flags, 0, sizeof(init_flags));
+    init_flags.speed = -1;
 
+#ifndef MIN_LIB_BUILD
     struct arg_lit *help = arg_lit0("h", "help", "print this help and exit");
     struct arg_lit *vers = arg_lit0("v", "version", "print version information and exit");
     struct arg_lit *listen = arg_lit0("l", "listen", "Start a network game server");
@@ -170,6 +174,10 @@ int main(int argc, char *argv[]) {
     if(trace->count > 0) {
         trace_file = omf_strdup(trace->sval[0]);
     }
+#else
+    (void)argc;
+    (void)argv;
+#endif
 
     // Init log
     log_init();
@@ -184,6 +192,7 @@ int main(int argc, char *argv[]) {
 #else
     log_set_level(LOG_INFO); // In release mode, drop debugs.
 #endif
+#ifndef MIN_LIB_BUILD
     if(log_level->count > 0) {
         if(!is_log_level(log_level->sval[0])) {
             fprintf(stderr, "Invalid loging level value %s\n", log_level->sval[0]);
@@ -191,6 +200,7 @@ int main(int argc, char *argv[]) {
         }
         log_set_level(log_level_text_to_enum(log_level->sval[0], LOG_INFO));
     }
+#endif
 
     // Load file paths
     if(!resource_path_init()) {
@@ -314,6 +324,8 @@ exit_0:
     if(trace_file) {
         omf_free(trace_file);
     }
+#ifndef MIN_LIB_BUILD
     arg_freetable(argtable, N_ELEMENTS(argtable));
+#endif
     return retval;
 }

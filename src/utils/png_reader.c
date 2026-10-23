@@ -195,13 +195,22 @@ bool read_paletted_png_from_memory(const unsigned char *buffer, size_t size, uns
 #else // PNG_FOUND
 
 bool read_paletted_png(const path *filename, unsigned char *dst) {
-    PERROR("PNG reading is not supported in current build!");
+    (void)filename;
+    (void)dst;
+    log_error("PNG reading is not supported in current build!");
     return false;
 }
 
-bool read_paletted_png_from_memory(const char *buffer, size_t size, unsigned char *dst, int *w, int *h,
+bool read_paletted_png_from_memory(const unsigned char *buffer, size_t size, unsigned char *dst, int *w, int *h,
                                    bool allow_transparency, vga_palette *pal) {
-    PERROR("PNG reading is not supported in current build!");
+    (void)buffer;
+    (void)size;
+    (void)dst;
+    (void)w;
+    (void)h;
+    (void)allow_transparency;
+    (void)pal;
+    log_error("PNG reading is not supported in current build!");
     return false;
 }
 

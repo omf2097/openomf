@@ -6,6 +6,11 @@
 set(ORIGINAL_CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-scripts)
 
+# No third-party packages. Settings, mods, and command-line parsing are omitted.
+if(MIN_LIB_BUILD)
+    set(CMAKE_MODULE_PATH ${ORIGINAL_CMAKE_MODULE_PATH})
+    return()
+endif()
 
 # SDL2, SDL2_mixer
 add_library(openomf::SDL2 INTERFACE IMPORTED)

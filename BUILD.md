@@ -55,6 +55,13 @@ cmake -B build -S . --toolchain C:\vcpkg\scripts\buildsystems\vcpkg.cmake
 cmake --build build
 ```
 
+`MIN_LIB_BUILD` skips vcpkg and other third-party libraries. SDL, SDL_mixer, libepoxy, and libxmp are replaced in-tree. Settings stay at the compiled-in defaults, command-line arguments are ignored, mods are disabled, and language files are not rebuilt. Zip, argtable, and enet are left out. PNG screenshots, Opus music, UPnP, NAT-PMP, dev tools, and unit tests are turned off. PSM music plays as silence.
+
+```
+cmake -B build-min -S . -DMIN_LIB_BUILD=ON
+cmake --build build-min
+```
+
 To compile on other operating systems (change install prefix if necessary):
 
 ```
@@ -76,6 +83,7 @@ Some useful CMake flags:
 | USE_SANITIZERS       | Enables asan and ubsan (dev only!)      | On/Off          | Off     |
 | USE_FORMAT           | Enables clang-format (dev only!)        | On/Off          | Off     |
 | USE_TIDY             | Enables clang-tidy (dev only!)          | On/Off          | Off     |
+| MIN_LIB_BUILD        | In-tree stand-ins, no third-party libraries | On/Off          | Off     |
 
 Note that when USE_FORMAT is selected, you can run command "make clangformat" to run code
 formatter to the entire codebase.

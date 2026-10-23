@@ -199,6 +199,20 @@ exit_0:
 #else
 
 bool opus_load(music_source *src, const int channels, const int sample_rate, const char *file) {
+    (void)src;
+    (void)channels;
+    (void)sample_rate;
+    (void)file;
+    log_error("No opusfile support!");
+    return false;
+}
+
+bool opus_load_memory(music_source *src, int channels, int sample_rate, const unsigned char *buffer, size_t buflen) {
+    (void)src;
+    (void)channels;
+    (void)sample_rate;
+    (void)buffer;
+    (void)buflen;
     log_error("No opusfile support!");
     return false;
 }

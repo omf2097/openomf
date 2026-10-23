@@ -88,6 +88,7 @@ static int font_load(font *font, const path *filename, unsigned int size) {
     return 0;
 }
 
+#ifndef MIN_LIB_BUILD // MinBuild assumes no networking support
 static int pcx_font_load(font *font, const path *filename, int8_t palette_offset) {
     sd_vga_image img;
     pcx_font pcx_font;
@@ -120,6 +121,7 @@ static int pcx_font_load(font *font, const path *filename, int8_t palette_offset
     pcx_font_free(&pcx_font);
     return 0;
 }
+#endif
 
 bool fonts_init(void) {
     path filename;
@@ -144,6 +146,7 @@ bool fonts_init(void) {
     }
     log_info("Loaded font file '%s'", path_c(&filename));
 
+#ifndef MIN_LIB_BUILD // MinBuild assumes no networking support
     // Load big net font
     filename = get_resource_filename("NETFONT1.PCX");
     if(pcx_font_load(&font_net1, &filename, 3)) {
@@ -158,16 +161,19 @@ bool fonts_init(void) {
         log_error("Unable to load font file '%s'!", path_c(&filename));
         goto error_1;
     }
+#endif
     log_info("Loaded font file '%s'", path_c(&filename));
 
     // All done.
     fonts_loaded = 1;
     return true;
 
+#ifndef MIN_LIB_BUILD // MinBuild assumes no networking support
 error_1:
     font_free(&font_net2);
 error_2:
     font_free(&font_net1);
+#endif
 error_3:
     font_free(&font_large);
 error_4:
