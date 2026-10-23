@@ -8,6 +8,12 @@ set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-scripts)
 
 # No third-party packages. Settings, mods, and command-line parsing are omitted.
 if(MIN_LIB_BUILD)
+    if(USE_TESTS)
+        find_package(CUnit REQUIRED)
+        add_library(openomf::cunit INTERFACE IMPORTED)
+        target_link_libraries(openomf::cunit INTERFACE ${CUNIT_LIBRARY})
+        target_include_directories(openomf::cunit INTERFACE ${CUNIT_INCLUDE_DIR})
+    endif()
     set(CMAKE_MODULE_PATH ${ORIGINAL_CMAKE_MODULE_PATH})
     return()
 endif()
