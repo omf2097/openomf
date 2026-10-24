@@ -123,6 +123,44 @@ jobs:
       - name: Run tests
         run: ctest --test-dir build-msvc --verbose --output-on-failure
 
+
+  # Compile with as few third-party libraries as possible
+  # -----------------------------------------------------------------------------------------------
+  minlib_windows:
+    name: MIN_LIB_BUILD Windows
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Prepare VCPKG
+        uses: johnwason/vcpkg-action@v8
+        id: prepare-vcpkg
+        with:
+          manifest-dir: ${{ github.workspace }}
+          triplet: x64-windows-static
+          token: ${{ github.token }}
+          extra-args: --x-feature ci-deps
+
+      - uses: lukka/get-cmake@latest
+
+      - uses: step-security/msvc-dev-cmd@v1
+
+      - name: Configure CMake
+        run: >
+          cmake -S . -B build-min
+          ${{ steps.prepare-vcpkg.outputs.vcpkg-cmake-config }}
+          -A x64
+          -DMIN_LIB_BUILD:BOOL=ON
+          -DUSE_TESTS=On
+
+      - name: Build OpenOMF
+        run: cmake --build build-min --config Debug
+
+      - name: Run tests
+        run: ctest --test-dir build-min --build-config Debug --verbose --output-on-failure
+
   # Build Windows release artifacts with MSVC
   # -----------------------------------------------------------------------------------------------
   build_msvc:
