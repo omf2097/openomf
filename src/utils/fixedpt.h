@@ -37,6 +37,11 @@
 #error "FIXEDPT_BITS must be equal to 32 or 64"
 #endif
 
+/* Define a fixedpt constant with 1, 2, or 3 decimals. */
+#define FIXEDPT_DEF1(I, D) (((fixedpt)(I) << FIXEDPT_FBITS) + (((fixedpt)(D) << FIXEDPT_FBITS) / 10))
+#define FIXEDPT_DEF2(I, D) (((fixedpt)(I) << FIXEDPT_FBITS) + (((fixedpt)(D) << FIXEDPT_FBITS) / 100))
+#define FIXEDPT_DEF3(I, D) (((fixedpt)(I) << FIXEDPT_FBITS) + (((fixedpt)(D) << FIXEDPT_FBITS) / 1000))
+
 #define fixedpt_xmul3(A, B, C) fixedpt_xmul(fixedpt_xmul((A), (B)), (C))
 
 /*
