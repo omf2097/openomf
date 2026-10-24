@@ -19,6 +19,18 @@ OPTION(USE_NATPMP "Use natpmp for port forwarding" ON)
 OPTION(USE_ARGTABLE "Use argtable for parsing commandline arguments" ON)
 OPTION(USE_CONFUSE "Use confuse for config file persistence" ON)
 
+if(MIN_LIB_BUILD)
+    message(STATUS "Building with minimal deps (for CI check)")
+    set(USE_MINIUPNPC OFF)
+    set(USE_NATPMP OFF)
+    set(USE_ARGTABLE OFF)
+    set(USE_CONFUSE OFF)
+    # unfortunately, these features must be turned off
+    set(USE_TOOLS OFF)
+    set(BUILD_LANGUAGES OFF)
+    set(ENABLE_MODMANAGER OFF)
+endif()
+
 # vcpkg features must be set before project()
 if(USE_TESTS)
     list(APPEND VCPKG_MANIFEST_FEATURES use-tests)
