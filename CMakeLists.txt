@@ -12,6 +12,7 @@ OPTION(BUILD_LANGUAGES "Build Language Files" ON)
 OPTION(USE_COLORS "Use colors in log output" ON)
 OPTION(USE_OPUSFILE "Support ogg/opus music files" ON)
 OPTION(USE_EXTENDED_PALETTE "Use 1024-color extended palette instead of 256" ON)
+OPTION(ENABLE_MODMANAGER "Enable modmanager" ON)
 
 OPTION(USE_MINIUPNPC "Use miniupnpc for port forwarding" ON)
 OPTION(USE_NATPMP "Use natpmp for port forwarding" ON)
@@ -222,6 +223,7 @@ add_library(openomf_core OBJECT ${OPENOMF_SRC})
 target_compile_definitions(openomf_core PUBLIC
     "$<$<CONFIG:Debug>:DEBUGMODE>"
     "$<$<BOOL:${USE_EXTENDED_PALETTE}>:USE_EXTENDED_PALETTE>"
+    "$<$<BOOL:${ENABLE_MODMANAGER}>:ENABLE_MODMANAGER>"
 )
 omf_target_precompile_headers(openomf_core PUBLIC
     "<SDL.h>"
