@@ -18,6 +18,7 @@ OPTION(USE_MINIUPNPC "Use miniupnpc for port forwarding" ON)
 OPTION(USE_NATPMP "Use natpmp for port forwarding" ON)
 OPTION(USE_ARGTABLE "Use argtable for parsing commandline arguments" ON)
 OPTION(USE_CONFUSE "Use confuse for config file persistence" ON)
+OPTION(USE_ZIP "Use zip (required for mods)" ON)
 
 if(MIN_LIB_BUILD)
     message(STATUS "Building with minimal deps (for CI check)")
@@ -25,7 +26,8 @@ if(MIN_LIB_BUILD)
     set(USE_NATPMP OFF)
     set(USE_ARGTABLE OFF)
     set(USE_CONFUSE OFF)
-    # unfortunately, these features must be turned off
+    set(USE_ZIP OFF)
+    # turn off features that rely on these 3rd party deps
     set(USE_TOOLS OFF)
     set(BUILD_LANGUAGES OFF)
     set(ENABLE_MODMANAGER OFF)
@@ -54,6 +56,9 @@ endif()
 if(ENABLE_MODMANAGER AND NOT USE_CONFUSE)
     # FIXME: modmanager should use config.h instead of directly depending on libconfuse. yes, config.h would need to be taught new tricks.
     message(FATAL_ERROR "Cannot currently ENABLE_MODMANAGER without USE_CONFUSE.\n Please either turn the modmanager off by setting ENABLE_MODMANAGER=OFF or enable the confuse dependency with USE_CONFUSE=ON")
+endif()
+if(ENABLE_MODMANAGER AND NOT USE_ZIP)
+    message(FATAL_ERROR "Cannot ENABLE_MODMANAGER without USE_ZIP.\n Please either turn the modmanager off by setting ENABLE_MODMANAGER=OFF or enable the confuse dependency with USE_ZIP=ON")
 endif()
 
 project(OpenOMF C)
@@ -271,6 +276,12 @@ else()
     message(STATUS "libpng support is disabled -- screenshots not available!")
 endif()
 
+if(USE_ZIP)
+    target_link_libraries(openomf_core PRIVATE
+        openomf::zip
+    )
+endif()
+
 if(USE_OPUSFILE)
     message(STATUS "libopusfile support is enabled.")
     target_link_libraries(openomf_core PRIVATE openomf::opusfile)
@@ -463,10 +474,10 @@ endif()
 
 # Make sure libraries are linked
 target_link_libraries(openomf PRIVATE ${CORELIBS})
-target_link_libraries(openomf PRIVATE openomf::zip openomf::SDL2main openomf::epoxy)
+target_link_libraries(openomf PRIVATE openomf::SDL2main openomf::epoxy)
 foreach(TARGET ${TOOL_TARGET_NAMES})
     target_link_libraries(${TARGET} PRIVATE ${CORELIBS})
-    target_link_libraries(${TARGET} PRIVATE openomf::zip openomf::SDL2main openomf::epoxy)
+    target_link_libraries(${TARGET} PRIVATE openomf::SDL2main openomf::epoxy)
 endforeach()
 
 # Testing stuff
