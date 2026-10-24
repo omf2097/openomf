@@ -45,9 +45,11 @@ if(USE_ARGTABLE)
     target_compile_definitions(openomf::argtable INTERFACE USE_ARGTABLE)
 endif()
 
-# zip
-add_library(openomf::zip INTERFACE IMPORTED)
-target_include_directories(openomf::zip INTERFACE "${CMAKE_SOURCE_DIR}/src/vendored/zip")
+if(USE_ZIP)
+    # zip
+    add_library(openomf::zip INTERFACE IMPORTED)
+    target_include_directories(openomf::zip INTERFACE "${CMAKE_SOURCE_DIR}/src/vendored/zip")
+endif()
 
 # enet
 add_library(openomf::enet INTERFACE IMPORTED)

@@ -11,8 +11,8 @@
 #include "utils/hashmap.h"
 #include "utils/log.h"
 #include "utils/miscmath.h"
-#include "vendored/zip/zip.h"
 #include "video/vga_palette.h"
+#include "zip.h"
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
