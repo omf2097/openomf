@@ -14,11 +14,14 @@
 #include "utils/random.h"
 
 #include <SDL.h>
-#include <argtable3.h>
 #include <enet/enet.h>
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+
+#if defined(USE_ARGTABLE)
+#include <argtable3.h>
+#endif
 
 #ifndef SHA1_HASH
 static const char *git_sha1_hash = "";
@@ -62,8 +65,11 @@ int main(int argc, char *argv[]) {
     unsigned short connect_port = 0;
     unsigned short listen_port = 0;
     engine_init_flags init_flags;
-    memset(&init_flags, 0, sizeof(init_flags));
 
+    memset(&init_flags, 0, sizeof(init_flags));
+    init_flags.speed = -1;
+
+#if defined(USE_ARGTABLE)
     struct arg_lit *help = arg_lit0("h", "help", "print this help and exit");
     struct arg_lit *vers = arg_lit0("v", "version", "print version information and exit");
     struct arg_lit *listen = arg_lit0("l", "listen", "Start a network game server");
@@ -145,14 +151,10 @@ int main(int argc, char *argv[]) {
 
     if(warp->count > 0) {
         init_flags.warpspeed = 1;
-    } else {
-        init_flags.warpspeed = 0;
     }
 
     if(speed->count > 0) {
         init_flags.speed = speed->ival[0];
-    } else {
-        init_flags.speed = -1;
     }
 
     if(force_renderer->count > 0) {
@@ -170,6 +172,7 @@ int main(int argc, char *argv[]) {
     if(trace->count > 0) {
         trace_file = omf_strdup(trace->sval[0]);
     }
+#endif // defined(USE_ARGTABLE)
 
     // Init log
     log_init();
@@ -314,6 +317,8 @@ exit_0:
     if(trace_file) {
         omf_free(trace_file);
     }
+#if defined(USE_ARGTABLE)
     arg_freetable(argtable, N_ELEMENTS(argtable));
+#endif
     return retval;
 }
