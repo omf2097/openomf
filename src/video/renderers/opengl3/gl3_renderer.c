@@ -356,7 +356,7 @@ static inline void video_set_blend_mode(gl3_context *ctx, object_array_blend_mod
         glColorMask(GL_FALSE, GL_TRUE, GL_FALSE, GL_FALSE);
         glEnable(GL_BLEND);
         glBlendEquation(GL_MAX);
-    } else if(request_mode == MODE_DARK_TINT) {
+    } else if(request_mode == MODE_TRANSLUCENT) {
         glColorMask(GL_FALSE, GL_TRUE, GL_TRUE, GL_TRUE);
     } else {
         assert(!"invalid blend mode");

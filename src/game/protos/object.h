@@ -48,15 +48,12 @@ enum
 {
     EFFECT_NONE = 0,
     EFFECT_SHADOW = 0x1,
-    EFFECT_DARK_TINT = 0x2,
+    EFFECT_TRANSLUCENT = 0x2,
     EFFECT_POSITIONAL_LIGHTING = 0x4,
-    EFFECT_STASIS = 0x8,
     EFFECT_SATURATE = 0x10,
     EFFECT_GLOW = 0x20,
     EFFECT_TRAIL = 0x40,
     EFFECT_ADD = 0x80,
-    // palette quirks for electra electricity and pyros fire
-    EFFECT_HAR_QUIRKS = 0x100,
 };
 
 enum

@@ -24,10 +24,8 @@ in vec4 gl_FragCoord;
 bool SPRITE_REMAP = (options & 1u) != 0u;
 bool SPRITE_SHADOWMASK = (options & 2u) != 0u;
 bool SPRITE_INDEX_ADD = (options & 4u) != 0u;
-bool SPRITE_HAR_QUIRKS = (options & 8u) != 0u;
-bool SPRITE_DARK_TINT = (options & 0x10u) != 0u;
+bool SPRITE_TRANSLUCENT = (options & 8u) != 0u;
 
-const int MAGIC_REMAP_ROUNDS = 12;
 const float PHI = 1.61803398874989484820459;
 const float ATLAS_H = 2048.0;
 const vec2 NATIVE_SIZE = vec2(320.0, 200.0);
@@ -42,7 +40,7 @@ float noise(in vec2 v) {
 // Encode a palette index into the paletted framebuffer (GL_RGBA16).
 // Channels are written selectively via glColorMask depending on blend mode:
 //   MODE_SET:            RGBA  (base sprite)
-//   MODE_DARK_TINT:      _GBA  (tint overlay)
+//   MODE_TRANSLUCENT:    _GBA  (darkened sprite, blended with R by rgba.frag)
 //   MODE_REMAP:          _G__  (remap overlay, on top of existing R from MODE_SET)
 //   MODE_SPRITE_SHADOW:  _G__  (shadow overlay, GL_MAX blended)
 //   MODE_ADD:            ___A  (additive index overlay)
@@ -50,14 +48,14 @@ float noise(in vec2 v) {
 // Output channels:
 //   R: palette index / 1023.0
 //   G: (remap_offset + remap_rounds * 19 [+ index]) / 255.0 -- decoded by rgba.frag
-//   B: dark tint palette index / 1023.0
+//   B: translucent sprite palette index + 1 (0 = none) / 1023.0
 //   A: additive index (index * 60) / 1023.0
 vec4 handle(int index) {
-    if (SPRITE_DARK_TINT) {
-        // use magic rounds to detect if dark_tint's remap has been
-        // overwritten by the pause menu's background
-        float remap = float(remap_offset + MAGIC_REMAP_ROUNDS * 19) / 255.0;
-        return vec4(0.0, remap, float(index) / 1023.0, 0.0);
+    if (SPRITE_TRANSLUCENT) {
+        if (index < 0x80) {
+            index = (index & 0xF0) + ((index & 0x0F) >> 1);
+        }
+        return vec4(0.0, 0.0, float(index + 1) / 1023.0, 0.0);
     }
     if (remap_rounds > 0) {
         float remap = float(remap_offset + remap_rounds * 19 + index) / 255.0;
@@ -111,10 +109,8 @@ void main() {
         index = clamp(index + palette_offset, 0, palette_limit);
     }
 
-    bool NO_REMAP = SPRITE_HAR_QUIRKS && index > 0x30;
-
     // If remapping is on, do it now.
-    if (SPRITE_REMAP && !NO_REMAP) {
+    if (SPRITE_REMAP) {
         uvec4 remap = texelFetch(remaps, ivec2(index, remap_offset), 0);
         index = int(remap.r);
     }
