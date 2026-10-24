@@ -2707,10 +2707,10 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
 
         //  The stun cap is calculated as follows
         //  HAR Endurance * 3.6 * (Pilot Endurance + 16) / 23
-        local->endurance_max = (af_data->endurance * 3.6 * (pilot->endurance + 16) / 23);
+        local->endurance_max = (af_data->endurance * 36 * (pilot->endurance + 16) / 23 / 10);
         local->stun_factor = 1.2 * 256 * (pilot->endurance + 30) / 40;
     } else {
-        local->endurance_max = (af_data->endurance * 3.6 * (pilot->endurance + 25) / 37);
+        local->endurance_max = (af_data->endurance * 36 * (pilot->endurance + 25) / 37 / 10);
         local->endurance_max = (local->endurance_max * (pilot->stun_resistance + 2)) / 3;
         local->stun_factor = (pilot->stun_resistance + 3.0) * 0.2 * 0.9 * 256.0 * (pilot->endurance + 30) / 40;
     }
@@ -2723,7 +2723,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
 
     // log_debug("HAR health is %d with pilot endurance %d and base health %d", local->health, pilot->endurance,
     // af_data->health);
-    log_debug("HAR endurance is %d with pilot endurance %d and base endurance %f", local->endurance_max,
+    log_debug("HAR endurance is %d with pilot endurance %d and base endurance %d", local->endurance_max,
               pilot->endurance, af_data->endurance);
     log_debug("HAR stun factor is %d", local->stun_factor);
 

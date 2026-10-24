@@ -7,7 +7,7 @@
 
 typedef struct af_t {
     unsigned int id;
-    float endurance;
+    int32_t endurance;
     unsigned int health;
     float forward_speed;
     float reverse_speed;

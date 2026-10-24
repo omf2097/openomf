@@ -518,7 +518,7 @@ void af_get_key(sd_af_file *af, const char **key, int kcount) {
             printf("%d\n", af->exec_window);
             break;
         case 2:
-            printf("%f\n", af->endurance);
+            printf("%d\n", af->endurance);
             break;
         case 3:
             printf("%d\n", af->upwards_jump_frame_limit);
@@ -634,7 +634,7 @@ void af_info(sd_af_file *af) {
     printf("AF File information:\n");
     printf(" * Fighter ID:       %d\n", af->fighter_id);
     printf(" * Exec window:      %d\n", af->exec_window);
-    printf(" * Endurance:        %f\n", af->endurance);
+    printf(" * Endurance:        %d\n", af->endurance);
     printf(" * Jump frame limit: %d\n", af->upwards_jump_frame_limit);
     printf(" * Health:           %d\n", af->health);
     printf(" * Fwd speed:        %f\n", af->forward_speed);
