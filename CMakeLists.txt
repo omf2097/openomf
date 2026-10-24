@@ -17,6 +17,7 @@ OPTION(ENABLE_MODMANAGER "Enable modmanager" ON)
 OPTION(USE_MINIUPNPC "Use miniupnpc for port forwarding" ON)
 OPTION(USE_NATPMP "Use natpmp for port forwarding" ON)
 OPTION(USE_ARGTABLE "Use argtable for parsing commandline arguments" ON)
+OPTION(USE_CONFUSE "Use confuse for config file persistence" ON)
 
 # vcpkg features must be set before project()
 if(USE_TESTS)
@@ -28,12 +29,19 @@ endif()
 if(USE_NATPMP)
     list(APPEND VCPKG_MANIFEST_FEATURES natpmp)
 endif()
+if(USE_CONFUSE)
+    list(APPEND VCPKG_MANIFEST_FEATURES confuse)
+endif()
 
 if(USE_TOOLS AND NOT USE_ARGTABLE)
     message(FATAL_ERROR "Cannot USE_TOOLS without USE_ARGTABLE.\n Please either turn tools off by setting USE_TOOLS=OFF or enable the argtable dependency with USE_ARGTABLE=ON")
 endif()
 if(BUILD_LANGUAGES AND NOT USE_ARGTABLE)
     message(FATAL_ERROR "Cannot BUILD_LANGUAGES without USE_ARGTABLE.\n Please either turn language-building off by setting BUILD_LANGUAGES=OFF or enable the argtable dependency with USE_ARGTABLE=ON")
+endif()
+if(ENABLE_MODMANAGER AND NOT USE_CONFUSE)
+    # FIXME: modmanager should use config.h instead of directly depending on libconfuse. yes, config.h would need to be taught new tricks.
+    message(FATAL_ERROR "Cannot currently ENABLE_MODMANAGER without USE_CONFUSE.\n Please either turn the modmanager off by setting ENABLE_MODMANAGER=OFF or enable the confuse dependency with USE_CONFUSE=ON")
 endif()
 
 project(OpenOMF C)
@@ -237,7 +245,6 @@ if(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
     )
 endif()
 target_link_libraries(openomf_core PRIVATE
-    openomf::confuse
     openomf::enet
     openomf::epoxy
     openomf::SDL2
@@ -269,6 +276,10 @@ endif()
 
 if(USE_ARGTABLE)
     target_link_libraries(openomf_core PUBLIC openomf::argtable)
+endif()
+
+if(USE_CONFUSE)
+    target_link_libraries(openomf_core PUBLIC openomf::confuse)
 endif()
 
 list(APPEND CORELIBS openomf_core)
