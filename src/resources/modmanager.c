@@ -877,9 +877,9 @@ bool modmanager_parse_af_move_mod(const char *buf, af_move *current_move) {
     }
 
     // Update float fields only if they changed
-    if(current_move->damage != cfg_getfloat(cfg, "damage")) {
-        log_info("setting damage from %f to %f", current_move->damage, cfg_getfloat(cfg, "damage"));
-        current_move->damage = cfg_getfloat(cfg, "damage");
+    if(current_move->damage != cfg_getint(cfg, "damage")) {
+        log_info("setting damage from %d to %ld", current_move->damage, cfg_getint(cfg, "damage"));
+        current_move->damage = cfg_getint(cfg, "damage");
     }
 
     if(current_move->stun != cfg_getfloat(cfg, "stun")) {
