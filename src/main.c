@@ -187,6 +187,8 @@ int main(int argc, char *argv[]) {
 #else
     log_set_level(LOG_INFO); // In release mode, drop debugs.
 #endif
+
+#if defined(USE_ARGTABLE)
     if(log_level->count > 0) {
         if(!is_log_level(log_level->sval[0])) {
             fprintf(stderr, "Invalid loging level value %s\n", log_level->sval[0]);
@@ -194,6 +196,7 @@ int main(int argc, char *argv[]) {
         }
         log_set_level(log_level_text_to_enum(log_level->sval[0], LOG_INFO));
     }
+#endif // defined(USE_ARGTABLE)
 
     // Load file paths
     if(!resource_path_init()) {

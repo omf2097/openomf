@@ -21,7 +21,6 @@
 #include <opusfile.h>
 #endif
 
-// TODO: FIXME: modmanager should be able to use config.h instead of directly using libconfuse
 #include <confuse.h>
 
 #define UPDATE_FIELD_INT(field_name, struct_field, new_value)                                                          \
