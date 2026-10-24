@@ -1862,10 +1862,10 @@ void har_tick(object *obj) {
         h->in_stasis_ticks--;
         if(h->in_stasis_ticks) {
             object_set_halt(obj, 1);
-            object_add_animation_effects(obj, EFFECT_STASIS);
+            object_add_animation_effects(obj, EFFECT_TRANSLUCENT);
         } else {
             object_set_halt(obj, 0);
-            object_del_animation_effects(obj, EFFECT_STASIS);
+            object_del_animation_effects(obj, EFFECT_TRANSLUCENT);
         }
     }
 
@@ -2832,18 +2832,13 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
 
 #endif
 
-    // Enable Electra Electricity & Pyros Fire palette tricks
-    object_add_animation_effects(obj, EFFECT_HAR_QUIRKS);
-
-    af_move *move;
-    int extra_index;
-    int fight_mode = obj->gs->match_settings.fight_mode;
+    const int fight_mode = obj->gs->match_settings.fight_mode;
     // apply HAR upgrades/enhancements/hyper mode to the HAR
     for(int i = 0; i < MAX_AF_MOVES; i++) {
-        move = af_get_move(af_data, i);
+        af_move *move = af_get_move(af_data, i);
         if(move != NULL) {
             // normal or hyper
-            extra_index = fight_mode ? 1 : 0;
+            int extra_index = fight_mode ? 1 : 0;
 
             // check for enhancements
             if(move->ani.extra_string_count > 0 && move->extra_string_selector != ESS_ARM_SPEED &&
