@@ -15,6 +15,7 @@ OPTION(USE_EXTENDED_PALETTE "Use 1024-color extended palette instead of 256" ON)
 
 OPTION(USE_MINIUPNPC "Use miniupnpc for port forwarding" ON)
 OPTION(USE_NATPMP "Use natpmp for port forwarding" ON)
+OPTION(USE_ARGTABLE "Use argtable for parsing commandline arguments" ON)
 
 # vcpkg features must be set before project()
 if(USE_TESTS)
@@ -25,6 +26,13 @@ if(USE_MINIUPNPC)
 endif()
 if(USE_NATPMP)
     list(APPEND VCPKG_MANIFEST_FEATURES natpmp)
+endif()
+
+if(USE_TOOLS AND NOT USE_ARGTABLE)
+    message(FATAL_ERROR "Cannot USE_TOOLS without USE_ARGTABLE.\n Please either turn tools off by setting USE_TOOLS=OFF or enable the argtable dependency with USE_ARGTABLE=ON")
+endif()
+if(BUILD_LANGUAGES AND NOT USE_ARGTABLE)
+    message(FATAL_ERROR "Cannot BUILD_LANGUAGES without USE_ARGTABLE.\n Please either turn language-building off by setting BUILD_LANGUAGES=OFF or enable the argtable dependency with USE_ARGTABLE=ON")
 endif()
 
 project(OpenOMF C)
@@ -257,6 +265,10 @@ if(USE_NATPMP)
     target_link_libraries(openomf_core PUBLIC openomf::natpmp)
 endif()
 
+if(USE_ARGTABLE)
+    target_link_libraries(openomf_core PUBLIC openomf::argtable)
+endif()
+
 list(APPEND CORELIBS openomf_core)
 
 if(WIN32 AND NOT MINGW)
@@ -426,10 +438,10 @@ endif()
 
 # Make sure libraries are linked
 target_link_libraries(openomf PRIVATE ${CORELIBS})
-target_link_libraries(openomf PRIVATE openomf::argtable openomf::zip openomf::SDL2main openomf::epoxy)
+target_link_libraries(openomf PRIVATE openomf::zip openomf::SDL2main openomf::epoxy)
 foreach(TARGET ${TOOL_TARGET_NAMES})
     target_link_libraries(${TARGET} PRIVATE ${CORELIBS})
-    target_link_libraries(${TARGET} PRIVATE openomf::argtable openomf::zip openomf::SDL2main openomf::epoxy)
+    target_link_libraries(${TARGET} PRIVATE openomf::zip openomf::SDL2main openomf::epoxy)
 endforeach()
 
 # Testing stuff

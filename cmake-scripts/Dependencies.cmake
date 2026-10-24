@@ -38,9 +38,12 @@ else()
     target_include_directories(openomf::xmp INTERFACE ${XMP_INCLUDE_DIR})
 endif()
 
-# argtable
-add_library(openomf::argtable INTERFACE IMPORTED)
-target_include_directories(openomf::argtable INTERFACE "${CMAKE_SOURCE_DIR}/src/vendored/argtable")
+if(USE_ARGTABLE)
+    # argtable
+    add_library(openomf::argtable INTERFACE IMPORTED)
+    target_include_directories(openomf::argtable INTERFACE "${CMAKE_SOURCE_DIR}/src/vendored/argtable")
+    target_compile_definitions(openomf::argtable INTERFACE USE_ARGTABLE)
+endif()
 
 # zip
 add_library(openomf::zip INTERFACE IMPORTED)
