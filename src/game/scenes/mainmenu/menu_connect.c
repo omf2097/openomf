@@ -4,6 +4,7 @@
 #include "game/scenes/mainmenu/menu_connect.h"
 #include "game/scenes/mainmenu/menu_widget_ids.h"
 
+#include "controller/net_controller.h"
 #include "game/game_state.h"
 #include "game/gui/gui.h"
 #include "game/protos/scene.h"

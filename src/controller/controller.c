@@ -211,6 +211,9 @@ bool controller_set_delay(controller *ctrl, uint8_t delay) {
     return false;
 }
 
+void controller_set_winner(controller *ctrl, int winner) {
+}
+
 int controller_rumble(controller *ctrl, float magnitude, int duration) {
     if(ctrl->rumble_fun != NULL) {
         return ctrl->rumble_fun(ctrl, magnitude, duration);

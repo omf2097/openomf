@@ -7,7 +7,6 @@
 
 #include "audio/audio.h"
 #include "controller/controller.h"
-#include "controller/net_controller.h"
 #include "formats/error.h"
 #include "formats/rec.h"
 #include "game/audio/music_tracker.h"
@@ -395,10 +394,10 @@ static void arena_end(scene *sc) {
         }
     } else if(gs->net_mode == NET_MODE_LOBBY) {
         if(game_state_get_player(scene->gs, 0)->ctrl->type == CTRL_TYPE_NETWORK) {
-            net_controller_set_winner(game_state_get_player(scene->gs, 0)->ctrl, local->winner);
+            controller_set_winner(game_state_get_player(scene->gs, 0)->ctrl, local->winner);
         }
         if(game_state_get_player(scene->gs, 1)->ctrl->type == CTRL_TYPE_NETWORK) {
-            net_controller_set_winner(game_state_get_player(scene->gs, 1)->ctrl, local->winner);
+            controller_set_winner(game_state_get_player(scene->gs, 1)->ctrl, local->winner);
         }
         game_state_set_next(gs, SCENE_LOBBY);
     } else {
@@ -1015,10 +1014,10 @@ int arena_handle_events(scene *scene, game_player *player, ctrl_event *i) {
                     if(scene->gs->net_mode == NET_MODE_LOBBY) {
                         arena_local *local = scene_get_userdata(scene);
                         if(game_state_get_player(scene->gs, 0)->ctrl->type == CTRL_TYPE_NETWORK) {
-                            net_controller_set_winner(game_state_get_player(scene->gs, 0)->ctrl, local->winner);
+                            controller_set_winner(game_state_get_player(scene->gs, 0)->ctrl, local->winner);
                         }
                         if(game_state_get_player(scene->gs, 1)->ctrl->type == CTRL_TYPE_NETWORK) {
-                            net_controller_set_winner(game_state_get_player(scene->gs, 1)->ctrl, local->winner);
+                            controller_set_winner(game_state_get_player(scene->gs, 1)->ctrl, local->winner);
                         }
                         game_state_set_next(scene->gs, SCENE_LOBBY);
                     } else {

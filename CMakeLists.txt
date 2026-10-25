@@ -14,6 +14,7 @@ OPTION(USE_OPUSFILE "Support ogg/opus music files" ON)
 OPTION(USE_EXTENDED_PALETTE "Use 1024-color extended palette instead of 256" ON)
 OPTION(ENABLE_MODMANAGER "Enable modmanager" ON)
 
+OPTION(USE_ENET "Use enet for network play" ON)
 OPTION(USE_MINIUPNPC "Use miniupnpc for port forwarding" ON)
 OPTION(USE_NATPMP "Use natpmp for port forwarding" ON)
 OPTION(USE_ARGTABLE "Use argtable for parsing commandline arguments" ON)
@@ -22,6 +23,7 @@ OPTION(USE_ZIP "Use zip (required for mods)" ON)
 
 if(MIN_LIB_BUILD)
     message(STATUS "Building with minimal deps (for CI check)")
+    set(USE_ENET OFF)
     set(USE_MINIUPNPC OFF)
     set(USE_NATPMP OFF)
     set(USE_ARGTABLE OFF)
@@ -242,6 +244,16 @@ foreach(PLUGIN ${ENABLED_RENDER_PLUGINS})
 endforeach()
 set_source_files_properties("src/video/video.c" PROPERTIES COMPILE_DEFINITIONS "${VIDEO_C_DEFINES}")
 
+if(NOT USE_ENET)
+    # Remove all network source from OPENOMF_SRC
+    list(FILTER OPENOMF_SRC EXCLUDE REGEX "^src/controller/net_controller\\.")
+    list(FILTER OPENOMF_SRC EXCLUDE REGEX "^src/controller/spec_controller\\.")
+    list(FILTER OPENOMF_SRC EXCLUDE REGEX "^src/game/scenes/lobby\\.")
+    list(FILTER OPENOMF_SRC EXCLUDE REGEX "^src/game/scenes/mainmenu/menu_connect\\.")
+    list(FILTER OPENOMF_SRC EXCLUDE REGEX "^src/game/scenes/mainmenu/menu_listen\\.")
+    list(FILTER OPENOMF_SRC EXCLUDE REGEX "^src/game/scenes/mainmenu/menu_net\\.")
+endif()
+
 # Build core sources first as an object library
 # this can then be reused in tests and main executable to speed things up
 add_library(openomf_core OBJECT ${OPENOMF_SRC})
@@ -252,7 +264,6 @@ target_compile_definitions(openomf_core PUBLIC
 )
 omf_target_precompile_headers(openomf_core PUBLIC
     "<SDL.h>"
-    "<enet/enet.h>"
     "<epoxy/gl.h>"
 )
 # Match all variants of GCC and Clang.
@@ -262,7 +273,6 @@ if(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
     )
 endif()
 target_link_libraries(openomf_core PRIVATE
-    openomf::enet
     openomf::epoxy
     openomf::SDL2
     openomf::SDL2_mixer
@@ -289,12 +299,19 @@ else()
     message(STATUS "libopusfile support is disabled -- ogg/opus music not available!")
 endif()
 
-if(USE_MINIUPNPC)
-    target_link_libraries(openomf_core PUBLIC openomf::miniupnpc)
-endif()
+if(USE_ENET)
+    target_link_libraries(openomf_core PUBLIC openomf::enet)
+    omf_target_precompile_headers(openomf_core PUBLIC
+        "<enet/enet.h>"
+    )
+    # these are used by networking, so no point linking them if there's no enet
+    if(USE_MINIUPNPC)
+        target_link_libraries(openomf_core PUBLIC openomf::miniupnpc)
+    endif()
 
-if(USE_NATPMP)
-    target_link_libraries(openomf_core PUBLIC openomf::natpmp)
+    if(USE_NATPMP)
+        target_link_libraries(openomf_core PUBLIC openomf::natpmp)
+    endif()
 endif()
 
 if(USE_ARGTABLE)

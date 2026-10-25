@@ -9,6 +9,7 @@
 #include "utils/miscmath.h"
 
 #include "controller/spec_controller.h"
+#include "controller/net_controller.h"
 
 #include "game/utils/nat.h"
 #include "game/utils/settings.h"

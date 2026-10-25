@@ -278,11 +278,13 @@ int main(int argc, char *argv[]) {
     joystick_load_external_mappings();
     scan_game_controllers();
 
+#ifdef ENET_FOUND
     // Init enet
     if(enet_initialize() != 0) {
         err_msgbox("Failed to initialize enet");
         goto exit_3;
     }
+#endif
 
     // Initialize engine
     if(engine_init(&init_flags)) {
@@ -297,8 +299,10 @@ int main(int argc, char *argv[]) {
     // Close everything
     engine_close();
 exit_4:
+#ifdef ENET_FOUND
     enet_deinitialize();
 exit_3:
+#endif
     SDL_Quit();
 exit_2:
     if(oldlobbyaddr) {
