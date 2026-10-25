@@ -768,7 +768,7 @@ void player_run_apply(object *obj) {
         // Set video effects now.
         int effects = EFFECT_NONE;
         if(script_is_tag_set_by_id(frame, TAG_BT)) {
-            effects |= EFFECT_DARK_TINT;
+            effects |= EFFECT_TRANSLUCENT;
         }
         if(script_is_tag_set_by_id(frame, TAG_BR)) {
             effects |= EFFECT_GLOW;
