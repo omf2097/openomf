@@ -84,11 +84,19 @@ void sd_write_ubyte(sd_writer *writer, uint8_t data) {
 }
 
 void sd_write_uword(sd_writer *writer, uint16_t data) {
-    sd_write_buf(writer, (char *)&data, 2);
+    uint8_t b[sizeof(data)];
+    b[0] = (uint8_t)data;
+    b[1] = (uint8_t)(data >> 8);
+    sd_write_buf(writer, (char *)b, sizeof(b));
 }
 
 void sd_write_udword(sd_writer *writer, uint32_t data) {
-    sd_write_buf(writer, (char *)&data, 4);
+    uint8_t b[sizeof(data)];
+    b[0] = (uint8_t)data;
+    b[1] = (uint8_t)(data >> 8);
+    b[2] = (uint8_t)(data >> 16);
+    b[3] = (uint8_t)(data >> 24);
+    sd_write_buf(writer, (char *)b, sizeof(b));
 }
 
 void sd_write_byte(sd_writer *writer, int8_t data) {
@@ -96,15 +104,17 @@ void sd_write_byte(sd_writer *writer, int8_t data) {
 }
 
 void sd_write_word(sd_writer *writer, int16_t data) {
-    sd_write_buf(writer, (char *)&data, 2);
+    sd_write_uword(writer, (uint16_t)data);
 }
 
 void sd_write_dword(sd_writer *writer, int32_t data) {
-    sd_write_buf(writer, (char *)&data, 4);
+    sd_write_udword(writer, (uint32_t)data);
 }
 
 void sd_write_float(sd_writer *writer, float data) {
-    sd_write_buf(writer, (char *)&data, sizeof(float));
+    uint32_t u;
+    memcpy(&u, &data, sizeof(u));
+    sd_write_udword(writer, u);
 }
 
 void sd_write_fill(sd_writer *writer, char content, size_t len) {
