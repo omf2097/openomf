@@ -62,28 +62,61 @@ void memwrite_ubyte(memwriter *writer, uint8_t value) {
     memwrite_buf(writer, (char *)&value, 1);
 }
 
+#if defined(BIG_ENDIAN_BUILD)
+
 void memwrite_uword(memwriter *writer, uint16_t value) {
-    memwrite_buf(writer, (char *)&value, 2);
+    uint8_t b[sizeof(value)];
+    b[0] = (uint8_t)value;
+    b[1] = (uint8_t)(value >> 8);
+    memwrite_buf(writer, (char *)b, (int)sizeof(b));
 }
 
 void memwrite_udword(memwriter *writer, uint32_t value) {
-    memwrite_buf(writer, (char *)&value, 4);
+    uint8_t b[sizeof(value)];
+    b[0] = (uint8_t)value;
+    b[1] = (uint8_t)(value >> 8);
+    b[2] = (uint8_t)(value >> 16);
+    b[3] = (uint8_t)(value >> 24);
+    memwrite_buf(writer, (char *)b, (int)sizeof(b));
 }
+
+void memwrite_float(memwriter *writer, float value) {
+    uint32_t u;
+    uint8_t b[sizeof(value)];
+    memcpy(&u, &value, sizeof(u));
+    b[0] = (uint8_t)u;
+    b[1] = (uint8_t)(u >> 8);
+    b[2] = (uint8_t)(u >> 16);
+    b[3] = (uint8_t)(u >> 24);
+    memwrite_buf(writer, (char *)b, (int)sizeof(b));
+}
+
+#else
+
+void memwrite_uword(memwriter *writer, uint16_t value) {
+    memwrite_buf(writer, (char *)&value, (int)sizeof(value));
+}
+
+void memwrite_udword(memwriter *writer, uint32_t value) {
+    memwrite_buf(writer, (char *)&value, (int)sizeof(value));
+}
+
+void memwrite_float(memwriter *writer, float value) {
+    memwrite_buf(writer, (char *)&value, (int)sizeof(value));
+}
+
+#endif
 
 void memwrite_byte(memwriter *writer, int8_t value) {
     memwrite_buf(writer, (char *)&value, 1);
 }
 
 void memwrite_word(memwriter *writer, int16_t value) {
-    memwrite_buf(writer, (char *)&value, 2);
+    memwrite_uword(writer, (uint16_t)value);
 }
 
 void memwrite_dword(memwriter *writer, int32_t value) {
-    memwrite_buf(writer, (char *)&value, 4);
-}
-
-void memwrite_float(memwriter *writer, float value) {
-    memwrite_buf(writer, (char *)&value, sizeof(float));
+    memwrite_udword(writer, (uint32_t)value);
 }
 
 void memwrite_fill(memwriter *writer, char content, int len) {

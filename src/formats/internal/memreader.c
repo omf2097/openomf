@@ -73,6 +73,33 @@ uint8_t memread_ubyte(memreader *reader) {
     return r;
 }
 
+#if defined(BIG_ENDIAN_BUILD)
+
+uint16_t memread_uword(memreader *reader) {
+    const uint8_t *b = (const uint8_t *)(reader->buf + reader->pos);
+    uint16_t r = (uint16_t)b[0] | ((uint16_t)b[1] << 8);
+    reader->pos += sizeof(r);
+    return r;
+}
+
+uint32_t memread_udword(memreader *reader) {
+    const uint8_t *b = (const uint8_t *)(reader->buf + reader->pos);
+    uint32_t r = (uint32_t)b[0] | ((uint32_t)b[1] << 8) | ((uint32_t)b[2] << 16) | ((uint32_t)b[3] << 24);
+    reader->pos += sizeof(r);
+    return r;
+}
+
+float memread_float(memreader *reader) {
+    const uint8_t *b = (const uint8_t *)(reader->buf + reader->pos);
+    uint32_t u = (uint32_t)b[0] | ((uint32_t)b[1] << 8) | ((uint32_t)b[2] << 16) | ((uint32_t)b[3] << 24);
+    float r;
+    memcpy(&r, &u, sizeof(r));
+    reader->pos += sizeof(r);
+    return r;
+}
+
+#else
+
 uint16_t memread_uword(memreader *reader) {
     uint16_t r;
     memcpy(&r, reader->buf + reader->pos, sizeof(r));
@@ -87,6 +114,15 @@ uint32_t memread_udword(memreader *reader) {
     return r;
 }
 
+float memread_float(memreader *reader) {
+    float r;
+    memcpy(&r, reader->buf + reader->pos, sizeof(r));
+    reader->pos += sizeof(r);
+    return r;
+}
+
+#endif
+
 int8_t memread_byte(memreader *reader) {
     int8_t r;
     memcpy(&r, reader->buf + reader->pos, sizeof(r));
@@ -95,24 +131,11 @@ int8_t memread_byte(memreader *reader) {
 }
 
 int16_t memread_word(memreader *reader) {
-    int16_t r;
-    memcpy(&r, reader->buf + reader->pos, sizeof(r));
-    reader->pos += sizeof(r);
-    return r;
+    return (int16_t)memread_uword(reader);
 }
 
 int32_t memread_dword(memreader *reader) {
-    int32_t r;
-    memcpy(&r, reader->buf + reader->pos, sizeof(r));
-    reader->pos += sizeof(r);
-    return r;
-}
-
-float memread_float(memreader *reader) {
-    float r;
-    memcpy(&r, reader->buf + reader->pos, sizeof(r));
-    reader->pos += sizeof(r);
-    return r;
+    return (int32_t)memread_udword(reader);
 }
 
 void sd_mskip(memreader *reader, unsigned int nbytes) {

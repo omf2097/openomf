@@ -106,17 +106,91 @@ uint8_t sd_read_ubyte(sd_reader *reader) {
     return d;
 }
 
+#if defined(BIG_ENDIAN_BUILD)
+
+uint16_t sd_read_uword(sd_reader *reader) {
+    uint8_t b[sizeof(uint16_t)] = {0};
+    sd_read_buf(reader, (char *)b, sizeof(b));
+    return (uint16_t)b[0] | ((uint16_t)b[1] << 8);
+}
+
+uint32_t sd_read_udword(sd_reader *reader) {
+    uint8_t b[sizeof(uint32_t)] = {0};
+    sd_read_buf(reader, (char *)b, sizeof(b));
+    return (uint32_t)b[0] | ((uint32_t)b[1] << 8) | ((uint32_t)b[2] << 16) | ((uint32_t)b[3] << 24);
+}
+
+float sd_read_float(sd_reader *reader) {
+    uint8_t b[sizeof(float)] = {0};
+    uint32_t u;
+    float f;
+    sd_read_buf(reader, (char *)b, sizeof(b));
+    u = (uint32_t)b[0] | ((uint32_t)b[1] << 8) | ((uint32_t)b[2] << 16) | ((uint32_t)b[3] << 24);
+    memcpy(&f, &u, sizeof(f));
+    return f;
+}
+
+uint16_t sd_peek_uword(sd_reader *reader) {
+    uint8_t b[sizeof(uint16_t)] = {0};
+    sd_peek_buf(reader, (char *)b, (int)sizeof(b));
+    return (uint16_t)b[0] | ((uint16_t)b[1] << 8);
+}
+
+uint32_t sd_peek_udword(sd_reader *reader) {
+    uint8_t b[sizeof(uint32_t)] = {0};
+    sd_peek_buf(reader, (char *)b, (int)sizeof(b));
+    return (uint32_t)b[0] | ((uint32_t)b[1] << 8) | ((uint32_t)b[2] << 16) | ((uint32_t)b[3] << 24);
+}
+
+float sd_peek_float(sd_reader *reader) {
+    uint8_t b[sizeof(float)] = {0};
+    uint32_t u;
+    float f;
+    sd_peek_buf(reader, (char *)b, (int)sizeof(b));
+    u = (uint32_t)b[0] | ((uint32_t)b[1] << 8) | ((uint32_t)b[2] << 16) | ((uint32_t)b[3] << 24);
+    memcpy(&f, &u, sizeof(f));
+    return f;
+}
+
+#else
+
 uint16_t sd_read_uword(sd_reader *reader) {
     uint16_t d = 0;
-    sd_read_buf(reader, (char *)&d, 2);
+    sd_read_buf(reader, (char *)&d, sizeof(d));
     return d;
 }
 
 uint32_t sd_read_udword(sd_reader *reader) {
     uint32_t d = 0;
-    sd_read_buf(reader, (char *)&d, 4);
+    sd_read_buf(reader, (char *)&d, sizeof(d));
     return d;
 }
+
+float sd_read_float(sd_reader *reader) {
+    float f = 0;
+    sd_read_buf(reader, (char *)&f, sizeof(f));
+    return f;
+}
+
+uint16_t sd_peek_uword(sd_reader *reader) {
+    uint16_t d = 0;
+    sd_peek_buf(reader, (char *)&d, (int)sizeof(d));
+    return d;
+}
+
+uint32_t sd_peek_udword(sd_reader *reader) {
+    uint32_t d = 0;
+    sd_peek_buf(reader, (char *)&d, (int)sizeof(d));
+    return d;
+}
+
+float sd_peek_float(sd_reader *reader) {
+    float f = 0;
+    sd_peek_buf(reader, (char *)&f, (int)sizeof(f));
+    return f;
+}
+
+#endif
 
 int8_t sd_read_byte(sd_reader *reader) {
     int8_t d = 0;
@@ -125,38 +199,16 @@ int8_t sd_read_byte(sd_reader *reader) {
 }
 
 int16_t sd_read_word(sd_reader *reader) {
-    int16_t d = 0;
-    sd_read_buf(reader, (char *)&d, 2);
-    return d;
+    return (int16_t)sd_read_uword(reader);
 }
 
 int32_t sd_read_dword(sd_reader *reader) {
-    int32_t d = 0;
-    sd_read_buf(reader, (char *)&d, 4);
-    return d;
-}
-
-float sd_read_float(sd_reader *reader) {
-    float f = 0;
-    sd_read_buf(reader, (char *)&f, 4);
-    return f;
+    return (int32_t)sd_read_udword(reader);
 }
 
 uint8_t sd_peek_ubyte(sd_reader *reader) {
     uint8_t d = 0;
     sd_peek_buf(reader, (char *)&d, 1);
-    return d;
-}
-
-uint16_t sd_peek_uword(sd_reader *reader) {
-    uint16_t d = 0;
-    sd_peek_buf(reader, (char *)&d, 2);
-    return d;
-}
-
-uint32_t sd_peek_udword(sd_reader *reader) {
-    uint32_t d = 0;
-    sd_peek_buf(reader, (char *)&d, 4);
     return d;
 }
 
@@ -167,21 +219,11 @@ int8_t sd_peek_byte(sd_reader *reader) {
 }
 
 int16_t sd_peek_word(sd_reader *reader) {
-    int16_t d = 0;
-    sd_peek_buf(reader, (char *)&d, 2);
-    return d;
+    return (int16_t)sd_peek_uword(reader);
 }
 
 int32_t sd_peek_dword(sd_reader *reader) {
-    int32_t d = 0;
-    sd_peek_buf(reader, (char *)&d, 4);
-    return d;
-}
-
-float sd_peek_float(sd_reader *reader) {
-    float f = 0;
-    sd_peek_buf(reader, (char *)&f, 4);
-    return f;
+    return (int32_t)sd_peek_udword(reader);
 }
 
 int sd_match(sd_reader *reader, const char *buf, unsigned int nbytes) {
