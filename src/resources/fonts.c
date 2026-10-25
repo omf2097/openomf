@@ -88,6 +88,7 @@ static int font_load(font *font, const path *filename, unsigned int size) {
     return 0;
 }
 
+#if defined(ENABLE_NETPLAY)
 static int pcx_font_load(font *font, const path *filename, int8_t palette_offset) {
     sd_vga_image img;
     pcx_font pcx_font;
@@ -120,6 +121,7 @@ static int pcx_font_load(font *font, const path *filename, int8_t palette_offset
     pcx_font_free(&pcx_font);
     return 0;
 }
+#endif
 
 bool fonts_init(void) {
     path filename;
@@ -132,7 +134,7 @@ bool fonts_init(void) {
     filename = get_resource_filename("CHARSMAL.DAT");
     if(font_load(&font_small, &filename, FONT_SMALL)) {
         log_error("Unable to load font file '%s'!", path_c(&filename));
-        goto error_4;
+        goto error;
     }
     log_info("Loaded font file '%s'", path_c(&filename));
 
@@ -140,15 +142,16 @@ bool fonts_init(void) {
     filename = get_resource_filename("GRAPHCHR.DAT");
     if(font_load(&font_large, &filename, FONT_BIG)) {
         log_error("Unable to load font file '%s'!", path_c(&filename));
-        goto error_3;
+        goto error;
     }
     log_info("Loaded font file '%s'", path_c(&filename));
 
+#if defined(ENABLE_NETPLAY)
     // Load big net font
     filename = get_resource_filename("NETFONT1.PCX");
     if(pcx_font_load(&font_net1, &filename, 3)) {
         log_error("Unable to load font file '%s'!", path_c(&filename));
-        goto error_2;
+        goto error;
     }
     log_info("Loaded font file '%s'", path_c(&filename));
 
@@ -156,21 +159,19 @@ bool fonts_init(void) {
     filename = get_resource_filename("NETFONT2.PCX");
     if(pcx_font_load(&font_net2, &filename, 16)) {
         log_error("Unable to load font file '%s'!", path_c(&filename));
-        goto error_1;
+        goto error;
     }
     log_info("Loaded font file '%s'", path_c(&filename));
+#endif
 
     // All done.
     fonts_loaded = 1;
     return true;
 
-error_1:
+error: // The code below currently never runs because omf_alloc forcing a _crash on failure.
     font_free(&font_net2);
-error_2:
     font_free(&font_net1);
-error_3:
     font_free(&font_large);
-error_4:
     font_free(&font_small);
     return false;
 }

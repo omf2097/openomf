@@ -1,6 +1,7 @@
 #include "controller/game_controller_db.h"
 #include "engine.h"
 #include "game/game_state.h"
+#include "game/netplay.h"
 #include "game/utils/settings.h"
 #include "game/utils/version.h"
 #include "resources/resource_files.h"
@@ -14,7 +15,6 @@
 #include "utils/random.h"
 
 #include <SDL.h>
-#include <enet/enet.h>
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
@@ -129,6 +129,11 @@ int main(int argc, char *argv[]) {
     }
 
     // Check other flags
+    if((connect->count > 0 || listen->count > 0 || lobby->count > 0) && !netplay_enabled()) {
+        fprintf(stderr, "Network play is not available in this build.\n");
+        goto exit_0;
+    }
+
     if(connect->count > 0) {
         init_flags.net_mode = NET_MODE_CLIENT;
         connect_port = 2097;
@@ -278,9 +283,9 @@ int main(int argc, char *argv[]) {
     joystick_load_external_mappings();
     scan_game_controllers();
 
-    // Init enet
-    if(enet_initialize() != 0) {
-        err_msgbox("Failed to initialize enet");
+    // Init network play
+    if(!netplay_init()) {
+        err_msgbox("Failed to initialize network play");
         goto exit_3;
     }
 
@@ -297,7 +302,7 @@ int main(int argc, char *argv[]) {
     // Close everything
     engine_close();
 exit_4:
-    enet_deinitialize();
+    netplay_quit();
 exit_3:
     SDL_Quit();
 exit_2:

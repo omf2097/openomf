@@ -5,7 +5,6 @@
 #include "controller/controller.h"
 #include "controller/joystick.h"
 #include "controller/keyboard.h"
-#include "controller/net_controller.h"
 #include "controller/rec_controller.h"
 #include "formats/chr.h"
 #include "formats/pilot.h"

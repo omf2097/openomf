@@ -19,6 +19,7 @@ OPTION(USE_NATPMP "Use natpmp for port forwarding" ON)
 OPTION(USE_ARGTABLE "Use argtable for parsing commandline arguments" ON)
 OPTION(USE_CONFUSE "Use confuse for config file persistence" ON)
 OPTION(USE_ZIP "Use zip (required for mods)" ON)
+OPTION(ENABLE_NETPLAY "Enable network play" ON)
 
 if(MIN_LIB_BUILD)
     message(STATUS "Building with minimal deps (for CI check)")
@@ -27,6 +28,7 @@ if(MIN_LIB_BUILD)
     set(USE_ARGTABLE OFF)
     set(USE_CONFUSE OFF)
     set(USE_ZIP OFF)
+    set(ENABLE_NETPLAY OFF)
     # turn off features that rely on these 3rd party deps
     set(USE_TOOLS OFF)
     set(BUILD_LANGUAGES OFF)
@@ -45,6 +47,9 @@ if(USE_NATPMP)
 endif()
 if(USE_CONFUSE)
     list(APPEND VCPKG_MANIFEST_FEATURES confuse)
+endif()
+if(ENABLE_NETPLAY)
+    list(APPEND VCPKG_MANIFEST_FEATURES enet)
 endif()
 
 if(USE_TOOLS AND NOT USE_ARGTABLE)
@@ -176,6 +181,14 @@ file(GLOB_RECURSE OPENOMF_SRC
     "src/*/*.c" "src/*/*.h"
 )
 
+if(NOT ENABLE_NETPLAY)
+    list(FILTER OPENOMF_SRC EXCLUDE REGEX "^src/controller/net_controller\\.c$")
+    list(FILTER OPENOMF_SRC EXCLUDE REGEX "^src/controller/spec_controller\\.c$")
+    list(FILTER OPENOMF_SRC EXCLUDE REGEX "^src/game/scenes/lobby\\.c$")
+    list(FILTER OPENOMF_SRC EXCLUDE REGEX "^src/game/scenes/mainmenu/menu_listen\\.c$")
+    list(FILTER OPENOMF_SRC EXCLUDE REGEX "^src/game/scenes/mainmenu/menu_connect\\.c$")
+endif()
+
 # Remove all player plugin source code from OPENOMF_SRC
 list(FILTER OPENOMF_SRC EXCLUDE REGEX "^src/audio/backends/.*/")
 # Enable "NULL" player in debug builds, for automated testing
@@ -249,12 +262,20 @@ target_compile_definitions(openomf_core PUBLIC
     "$<$<CONFIG:Debug>:DEBUGMODE>"
     "$<$<BOOL:${USE_EXTENDED_PALETTE}>:USE_EXTENDED_PALETTE>"
     "$<$<BOOL:${ENABLE_MODMANAGER}>:ENABLE_MODMANAGER>"
+    "$<$<BOOL:${ENABLE_NETPLAY}>:ENABLE_NETPLAY>"
 )
-omf_target_precompile_headers(openomf_core PUBLIC
-    "<SDL.h>"
-    "<enet/enet.h>"
-    "<epoxy/gl.h>"
-)
+if(ENABLE_NETPLAY)
+    omf_target_precompile_headers(openomf_core PUBLIC
+        "<SDL.h>"
+        "<enet/enet.h>"
+        "<epoxy/gl.h>"
+    )
+else()
+    omf_target_precompile_headers(openomf_core PUBLIC
+        "<SDL.h>"
+        "<epoxy/gl.h>"
+    )
+endif()
 # Match all variants of GCC and Clang.
 if(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
     set_source_files_properties("${CMAKE_SOURCE_DIR}/src/vendored/argtable/argtable3.c"
@@ -262,12 +283,18 @@ if(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
     )
 endif()
 target_link_libraries(openomf_core PRIVATE
-    openomf::enet
     openomf::epoxy
     openomf::SDL2
     openomf::SDL2_mixer
     openomf::xmp
 )
+
+if(ENABLE_NETPLAY)
+    message(STATUS "Network play is enabled.")
+    target_link_libraries(openomf_core PRIVATE openomf::enet)
+else()
+    message(STATUS "Network play is disabled.")
+endif()
 
 if(USE_LIBPNG)
     message(STATUS "libpng support is enabled.")

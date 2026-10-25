@@ -8,6 +8,7 @@
 #include "game/gui/menu_background.h"
 #include "game/gui/progressbar.h"
 #include "game/gui/text/text.h"
+#include "game/netplay.h"
 #include "game/protos/object.h"
 #include "game/protos/scene.h"
 #include "game/scenes/melee.h"
@@ -951,14 +952,14 @@ int melee_create(scene *scene) {
             log_debug("installing controller hook on controller 2");
             controller_clear_hooks(player2_ctrl);
             controller_add_hook(player2_ctrl, player1_ctrl, player1_ctrl->controller_hook);
-            controller_add_hook(scene->gs->menu_ctrl, player1_ctrl, menu_controller_hook);
+            controller_add_hook(scene->gs->menu_ctrl, player1_ctrl, netplay_menu_hook);
         }
 
         if(player2_ctrl->type == CTRL_TYPE_NETWORK) {
             log_debug("installing controller hook on controller 1");
             controller_clear_hooks(player1_ctrl);
             controller_add_hook(player1_ctrl, player2_ctrl, player2_ctrl->controller_hook);
-            controller_add_hook(scene->gs->menu_ctrl, player2_ctrl, menu_controller_hook);
+            controller_add_hook(scene->gs->menu_ctrl, player2_ctrl, netplay_menu_hook);
         }
     }
 

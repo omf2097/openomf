@@ -7,13 +7,13 @@
 #include "formats/pilot.h"
 #include "game/audio/sound_tracker.h"
 #include "game/common_defines.h"
+#include "game/netplay.h"
 #include "game/protos/object.h"
 #include "game/protos/scene.h"
 #include "game/scenes/arena.h"
 #include "game/scenes/credits.h"
 #include "game/scenes/cutscene.h"
 #include "game/scenes/intro.h"
-#include "game/scenes/lobby.h"
 #include "game/scenes/mainmenu.h"
 #include "game/scenes/mechlab.h"
 #include "game/scenes/melee.h"
@@ -788,7 +788,7 @@ int game_state_swap_scene(game_state *gs, int scene_id) {
             }
             break;
         case SCENE_LOBBY:
-            if(lobby_create(gs->sc)) {
+            if(netplay_lobby_create(gs->sc)) {
                 log_error("Error creating Lobby scene.");
                 goto error_1;
             }

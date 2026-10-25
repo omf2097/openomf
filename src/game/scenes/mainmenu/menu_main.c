@@ -1,4 +1,5 @@
 #include "game/scenes/mainmenu/menu_main.h"
+#include "game/netplay.h"
 #include "game/scenes/mainmenu/menu_configuration.h"
 #include "game/scenes/mainmenu/menu_gameplay.h"
 #include "game/scenes/mainmenu/menu_help.h"
@@ -122,7 +123,7 @@ component *menu_main_create(scene *s) {
     menu_attach(menu, button_create("ONE PLAYER GAME", NULL, false, false, mainmenu_1v1, s));
     menu_attach(menu, button_create("TWO PLAYER GAME", NULL, false, false, mainmenu_1v2, s));
     menu_attach(menu, button_create("TOURNAMENT PLAY", NULL, false, false, mainmenu_mechlab, s));
-    component *net = button_create("NETWORK PLAY", NULL, false, false, mainmenu_enter_network, s);
+    component *net = button_create("NETWORK PLAY", NULL, !netplay_enabled(), false, mainmenu_enter_network, s);
     component_set_id(net, NETWORK_BUTTON_ID);
     menu_attach(menu, net);
     menu_attach(menu, button_create("CONFIGURATION", NULL, false, false, mainmenu_enter_configuration, s));
