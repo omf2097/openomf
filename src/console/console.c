@@ -1,4 +1,7 @@
 #include "console/console.h"
+
+#if defined(ENABLE_CONSOLE)
+
 #include "console/console_type.h"
 #include "game/gui/menu_background.h"
 #include "game/gui/text/text.h"
@@ -209,6 +212,10 @@ void console_output_addline(const char *text) {
     console_output_add("\n");
 }
 
+bool console_enabled(void) {
+    return true;
+}
+
 bool console_init(void) {
     if(con != NULL) {
         return false;
@@ -392,3 +399,61 @@ void console_window_close(void) {
     }
     con->is_open = false;
 }
+
+#else // !defined(ENABLE_CONSOLE)
+
+#include "utils/log.h"
+
+bool console_enabled(void) {
+    return false;
+}
+
+bool console_init(void) {
+    log_info("Console is disabled.");
+    return true;
+}
+
+void console_close(void) {
+}
+
+void console_event(game_state *scene, SDL_Event *event) {
+    (void)scene;
+    (void)event;
+}
+
+void console_render(void) {
+}
+
+void console_tick(game_state *gs) {
+    (void)gs;
+}
+
+void console_add_cmd(const char *name, command_func func, const char *doc) {
+    (void)name;
+    (void)func;
+    (void)doc;
+}
+
+void console_remove_cmd(const char *name) {
+    (void)name;
+}
+
+void console_output_add(const char *text) {
+    (void)text;
+}
+
+void console_output_addline(const char *text) {
+    (void)text;
+}
+
+bool console_window_is_open(void) {
+    return false;
+}
+
+void console_window_open(void) {
+}
+
+void console_window_close(void) {
+}
+
+#endif // !defined(ENABLE_CONSOLE)

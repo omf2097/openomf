@@ -20,6 +20,7 @@ OPTION(USE_ARGTABLE "Use argtable for parsing commandline arguments" ON)
 OPTION(USE_CONFUSE "Use confuse for config file persistence" ON)
 OPTION(USE_ZIP "Use zip (required for mods)" ON)
 OPTION(ENABLE_NETPLAY "Enable network play" ON)
+OPTION(ENABLE_CONSOLE "Enable debug console" ON)
 
 if(MIN_LIB_BUILD)
     message(STATUS "Building with minimal deps (for CI check)")
@@ -29,6 +30,7 @@ if(MIN_LIB_BUILD)
     set(USE_CONFUSE OFF)
     set(USE_ZIP OFF)
     set(ENABLE_NETPLAY OFF)
+    set(ENABLE_CONSOLE OFF)
     # turn off features that rely on these 3rd party deps
     set(USE_TOOLS OFF)
     set(BUILD_LANGUAGES OFF)
@@ -189,6 +191,10 @@ if(NOT ENABLE_NETPLAY)
     list(FILTER OPENOMF_SRC EXCLUDE REGEX "^src/game/scenes/mainmenu/menu_connect\\.c$")
 endif()
 
+if(NOT ENABLE_CONSOLE)
+    list(FILTER OPENOMF_SRC EXCLUDE REGEX "^src/console/console_cmd\\.c$")
+endif()
+
 # Remove all player plugin source code from OPENOMF_SRC
 list(FILTER OPENOMF_SRC EXCLUDE REGEX "^src/audio/backends/.*/")
 # Enable "NULL" player in debug builds, for automated testing
@@ -263,6 +269,7 @@ target_compile_definitions(openomf_core PUBLIC
     "$<$<BOOL:${USE_EXTENDED_PALETTE}>:USE_EXTENDED_PALETTE>"
     "$<$<BOOL:${ENABLE_MODMANAGER}>:ENABLE_MODMANAGER>"
     "$<$<BOOL:${ENABLE_NETPLAY}>:ENABLE_NETPLAY>"
+    "$<$<BOOL:${ENABLE_CONSOLE}>:ENABLE_CONSOLE>"
 )
 if(ENABLE_NETPLAY)
     omf_target_precompile_headers(openomf_core PUBLIC
@@ -294,6 +301,12 @@ if(ENABLE_NETPLAY)
     target_link_libraries(openomf_core PRIVATE openomf::enet)
 else()
     message(STATUS "Network play is disabled.")
+endif()
+
+if(ENABLE_CONSOLE)
+    message(STATUS "Debug console is enabled.")
+else()
+    message(STATUS "Debug console is disabled.")
 endif()
 
 if(USE_LIBPNG)

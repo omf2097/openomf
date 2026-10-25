@@ -8,6 +8,7 @@
 // return 0 on success, otherwise return error code
 typedef int (*command_func)(game_state *scene, int argc, char **argv);
 
+bool console_enabled(void);
 bool console_init(void);
 void console_close(void);
 void console_event(game_state *scene, SDL_Event *event);
