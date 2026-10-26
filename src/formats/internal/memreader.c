@@ -74,15 +74,15 @@ uint8_t memread_ubyte(memreader *reader) {
 }
 
 uint16_t memread_uword(memreader *reader) {
-    uint16_t r;
-    memcpy(&r, reader->buf + reader->pos, sizeof(r));
+    const uint8_t *b = (const uint8_t *)(reader->buf + reader->pos);
+    uint16_t r = (uint16_t)b[0] | ((uint16_t)b[1] << 8);
     reader->pos += sizeof(r);
     return r;
 }
 
 uint32_t memread_udword(memreader *reader) {
-    uint32_t r;
-    memcpy(&r, reader->buf + reader->pos, sizeof(r));
+    const uint8_t *b = (const uint8_t *)(reader->buf + reader->pos);
+    uint32_t r = (uint32_t)b[0] | ((uint32_t)b[1] << 8) | ((uint32_t)b[2] << 16) | ((uint32_t)b[3] << 24);
     reader->pos += sizeof(r);
     return r;
 }
@@ -95,23 +95,17 @@ int8_t memread_byte(memreader *reader) {
 }
 
 int16_t memread_word(memreader *reader) {
-    int16_t r;
-    memcpy(&r, reader->buf + reader->pos, sizeof(r));
-    reader->pos += sizeof(r);
-    return r;
+    return (int16_t)memread_uword(reader);
 }
 
 int32_t memread_dword(memreader *reader) {
-    int32_t r;
-    memcpy(&r, reader->buf + reader->pos, sizeof(r));
-    reader->pos += sizeof(r);
-    return r;
+    return (int32_t)memread_udword(reader);
 }
 
 float memread_float(memreader *reader) {
+    uint32_t u = memread_udword(reader);
     float r;
-    memcpy(&r, reader->buf + reader->pos, sizeof(r));
-    reader->pos += sizeof(r);
+    memcpy(&r, &u, sizeof(r));
     return r;
 }
 
