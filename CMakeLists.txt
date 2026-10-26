@@ -123,6 +123,10 @@ else()
     set(CMAKE_C_FLAGS_MINSIZEREL "${CMAKE_C_FLAGS_MINSIZEREL} -Os -DNDEBUG")
 endif()
 
+# Detect C11 uchar.h instead of assuming its availability from the OS.
+# All targets, including tools and tests, share this compatibility setting.
+include("cmake-scripts/DetectUchar.cmake")
+
 # Enable AddressSanitizer if requested
 if(USE_SANITIZERS)
     if(CMAKE_C_COMPILER_ID STREQUAL "MSVC")
