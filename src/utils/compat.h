@@ -13,13 +13,13 @@
 
 #include <string.h>
 
-#ifdef __APPLE__
-// MacOS X does not ship uchar.h
+#ifdef OMF_HAVE_UCHAR_H
+#include <uchar.h>
+#else
+// Use standard integer types when the C11 uchar.h header is unavailable.
 #include <stdint.h>
 typedef uint_least16_t char16_t;
 typedef uint_least32_t char32_t;
-#else
-#include <uchar.h>
 #endif
 
 // Tell the compiler that the marked a function takes printf- or scanf-style
