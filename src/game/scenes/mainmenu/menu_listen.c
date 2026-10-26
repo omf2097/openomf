@@ -3,6 +3,8 @@
 
 #include "game/scenes/mainmenu/menu_listen.h"
 
+#include "controller/net_controller.h"
+
 #include "game/game_state.h"
 #include "game/gui/gui.h"
 #include "game/protos/scene.h"

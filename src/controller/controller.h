@@ -75,7 +75,9 @@ struct controller_t {
     int (*har_hook)(controller *ctrl, har_event event);
     void (*rewind_fun)(controller *ctrl);
     void (*controller_hook)(controller *ctrl, int action);
+    void (*menu_controller_hook)(controller *ctrl, int action);
     void (*free_fun)(controller *ctrl);
+
     void *data;
     int type;
     int rtt;
@@ -94,11 +96,13 @@ int controller_tick(controller *ctrl, uint32_t ticks, ctrl_event **ev);
 int controller_dyntick(controller *ctrl, uint32_t ticks, ctrl_event **ev);
 int controller_har_hook(controller *ctrl, har_event event);
 void controller_add_hook(controller *ctrl, controller *source, void (*fp)(controller *ctrl, int act_type));
+void controller_add_hook(controller *ctrl, controller *source, void (*fp)(controller *ctrl, int act_type));
 void controller_clear_hooks(controller *ctrl);
 void controller_free_chain(ctrl_event *ev);
 void controller_free(controller *ctrl);
 void controller_set_repeat(controller *ctrl, int repeat);
 bool controller_set_delay(controller *ctrl, uint8_t delay);
+void controller_set_winner(controller *ctrl, int winner);
 int controller_rumble(controller *ctrl, float magnitude, int duration);
 void controller_rewind(controller *ctrl);
 

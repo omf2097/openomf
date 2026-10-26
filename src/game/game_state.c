@@ -13,7 +13,9 @@
 #include "game/scenes/credits.h"
 #include "game/scenes/cutscene.h"
 #include "game/scenes/intro.h"
+#ifdef ENET_FOUND
 #include "game/scenes/lobby.h"
+#endif
 #include "game/scenes/mainmenu.h"
 #include "game/scenes/mechlab.h"
 #include "game/scenes/melee.h"
@@ -787,12 +789,14 @@ int game_state_swap_scene(game_state *gs, int scene_id) {
                 goto error_1;
             }
             break;
+#ifdef ENET_FOUND
         case SCENE_LOBBY:
             if(lobby_create(gs->sc)) {
                 log_error("Error creating Lobby scene.");
                 goto error_1;
             }
             break;
+#endif
         case SCENE_ARENA0:
         case SCENE_ARENA1:
         case SCENE_ARENA2:

@@ -2,7 +2,9 @@
 #include "game/scenes/mainmenu/menu_configuration.h"
 #include "game/scenes/mainmenu/menu_gameplay.h"
 #include "game/scenes/mainmenu/menu_help.h"
+#ifdef ENET_FOUND
 #include "game/scenes/mainmenu/menu_net.h"
+#endif
 #include "game/scenes/mainmenu/menu_widget_ids.h"
 
 #include "game/gui/gui.h"
@@ -107,10 +109,12 @@ void mainmenu_enter_gameplay(component *c, void *userdata) {
     menu_set_submenu(component_get_parent(c), menu_gameplay_create(s));
 }
 
+#ifdef ENET_FOUND
 void mainmenu_enter_network(component *c, void *userdata) {
     scene *s = userdata;
     menu_set_submenu(component_get_parent(c), menu_net_create(s));
 }
+#endif
 
 void mainmenu_enter_help(component *c, void *userdata) {
     scene *s = userdata;
@@ -122,9 +126,11 @@ component *menu_main_create(scene *s) {
     menu_attach(menu, button_create("ONE PLAYER GAME", NULL, false, false, mainmenu_1v1, s));
     menu_attach(menu, button_create("TWO PLAYER GAME", NULL, false, false, mainmenu_1v2, s));
     menu_attach(menu, button_create("TOURNAMENT PLAY", NULL, false, false, mainmenu_mechlab, s));
+#ifdef ENET_FOUND
     component *net = button_create("NETWORK PLAY", NULL, false, false, mainmenu_enter_network, s);
     component_set_id(net, NETWORK_BUTTON_ID);
     menu_attach(menu, net);
+#endif
     menu_attach(menu, button_create("CONFIGURATION", NULL, false, false, mainmenu_enter_configuration, s));
     menu_attach(menu, button_create("GAMEPLAY", NULL, false, false, mainmenu_enter_gameplay, s));
     menu_attach(menu, button_create("HELP", NULL, false, false, mainmenu_enter_help, s));

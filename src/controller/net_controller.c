@@ -1330,6 +1330,7 @@ void net_controller_create(controller *ctrl, ENetHost *host, ENetPeer *peer, ENe
     ctrl->type = CTRL_TYPE_NETWORK;
     ctrl->tick_fun = &net_controller_tick;
     ctrl->controller_hook = &controller_hook;
+    ctrl->menu_controller_hook = &menu_controller_hook;
     ctrl->free_fun = &net_controller_free;
     ctrl->poll_fun = &net_controller_poll;
 }
