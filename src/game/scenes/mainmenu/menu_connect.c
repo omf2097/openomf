@@ -1,6 +1,7 @@
 #include <enet/enet.h>
 #include <time.h>
 
+#include "controller/net_controller.h"
 #include "game/scenes/mainmenu/menu_connect.h"
 #include "game/scenes/mainmenu/menu_widget_ids.h"
 

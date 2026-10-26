@@ -1,6 +1,5 @@
 #include "game/scenes/mainmenu/menu_net.h"
-#include "game/scenes/mainmenu/menu_connect.h"
-#include "game/scenes/mainmenu/menu_listen.h"
+#include "game/netplay.h"
 #include "game/scenes/mainmenu/menu_netconfig.h"
 #include "game/scenes/mainmenu/menu_widget_ids.h"
 
@@ -17,12 +16,15 @@ void menu_net_lobby(component *c, void *userdata) {
 
 void menu_net_connect(component *c, void *userdata) {
     scene *s = userdata;
-    menu_set_submenu(component_get_parent(c), menu_connect_create(s));
+    component *submenu = netplay_menu_connect_create(s);
+    if(submenu != NULL) {
+        menu_set_submenu(component_get_parent(c), submenu);
+    }
 }
 
 void menu_net_listen(component *c, void *userdata) {
     scene *s = userdata;
-    component *new_menu = menu_listen_create(s);
+    component *new_menu = netplay_menu_listen_create(s);
     if(new_menu != NULL) {
         menu_set_submenu(component_get_parent(c), new_menu);
     }

@@ -293,8 +293,9 @@ void engine_run(const engine_init_flags *init_flags) {
                     break;
             }
 
-            // Console events
-            if(e.type == SDL_KEYDOWN) {
+            // Console events. Skip this when the console is compiled out so
+            // tab and backtick still reach the game.
+            if(console_enabled() && e.type == SDL_KEYDOWN) {
                 if(console_window_is_open() &&
                    (e.key.keysym.scancode == SDL_SCANCODE_GRAVE || e.key.keysym.sym == SDLK_BACKQUOTE ||
                     e.key.keysym.sym == SDLK_TAB || e.key.keysym.sym == SDLK_ESCAPE)) {
