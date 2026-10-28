@@ -594,15 +594,11 @@ else()
     install(DIRECTORY shaders/ DESTINATION share/games/openomf/shaders COMPONENT Data)
 endif()
 
-# Link PSP static libraries after the shared OpenOMF targets.
-# SDL2 and opusfile must appear before the PSP SDK libraries in the linker command.
 if(PSP)
+    # SDL2 and opusfile must appear before the PSP SDK libraries in the linker command.
     target_link_libraries(openomf PRIVATE
-        SDL2 opusfile opus GL pspvram pspvfpu psphprm
-        vorbisfile vorbis ogg modplug stdc++
-        pspgu pspge pspdisplay pspctrl pspaudio
-        pspnet pspnet_inet pspnet_resolver pspnet_apctl pspwlan
-        psppower pspdebug m z
+        pspvram pspvfpu psphprm pspgu pspge pspdisplay pspctrl pspaudio pspnet
+        pspnet_inet pspnet_resolver pspnet_apctl pspwlan psppower pspdebug
     )
     create_pbp_file(TARGET openomf TITLE "OpenOMF" MEMSIZE 1)
 endif()
