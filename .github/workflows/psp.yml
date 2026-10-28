@@ -1,0 +1,39 @@
+name: PSP
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/psp.yml'
+      - 'CMakeLists.txt'
+      - 'cmake-scripts/**'
+      - 'src/**'
+
+jobs:
+  psp:
+    name: PSP NULL drivers
+    runs-on: ubuntu-24.04
+    container:
+      image: ghcr.io/pspdev/pspdev:v20261001
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - name: Install build tools
+        run: apk add --no-cache build-base ninja
+      - name: Trust checkout in build container
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - name: Configure
+        run: |
+          psp-cmake -S . -B build/psp -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DUSE_MINIUPNPC=OFF \
+            -DUSE_NATPMP=OFF \
+            -DUSE_ARGTABLE=OFF \
+            -DUSE_CONFUSE=OFF \
+            -DUSE_ZIP=OFF \
+            -DENABLE_MODMANAGER=OFF \
+            -DBUILD_LANGUAGES=OFF \
+            -DOMF_AUDIO_BACKENDS=null \
+            -DOMF_VIDEO_RENDERERS=null \
+            -DOMF_STRIP_GNU_BINARIES=OFF
+      - name: Build
+        run: cmake --build build/psp --parallel "$(nproc)"
