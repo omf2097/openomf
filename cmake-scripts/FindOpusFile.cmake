@@ -1,25 +1,57 @@
-
-SET(OPUSFILE_SEARCH_PATHS
-    /usr/local/
-    /usr
-    /opt
-)
-
-FIND_PATH(OPUSFILE_INCLUDE_DIR opusfile.h
-    HINTS ${OPUSFILE_ROOT}
-    PATH_SUFFIXES opus include/opus include
-    PATHS ${OPUSFILE_SEARCH_PATHS}
-)
-FIND_LIBRARY(OPUSFILE_LIBRARY opusfile
-    HINTS ${OPUSFILE_ROOT}
-    PATH_SUFFIXES lib64 lib bin
-    PATHS ${OPUSFILE_SEARCH_PATHS}
-)
+#
+# This script is from SDL_mixer.
+# Its license is in the adjacent LICENSE.SDL_mixer.txt file.
+#
 
 include(FindPackageHandleStandardArgs)
-# handle the QUIETLY and REQUIRED arguments
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(opusfile
-    REQUIRED_VARS OPUSFILE_LIBRARY OPUSFILE_INCLUDE_DIR
+
+find_package(PkgConfig QUIET)
+pkg_check_modules(PC_OPUSFILE QUIET opusfile)
+
+find_library(OpusFile_LIBRARY
+    NAMES opusfile
+    HINTS ${PC_OPUSFILE_LIBDIR}
 )
 
-mark_as_advanced(OPUSFILE_INCLUDE_DIR OPUSFILE_LIBRARY OPUSFILE_SEARCH_PATHS)
+find_path(OpusFile_INCLUDE_PATH
+    NAMES opusfile.h
+    PATH_SUFFIXES opus
+    HINTS ${PC_OPUSFILE_INCLUDEDIR}
+)
+
+if(PC_OPUSFILE_FOUND)
+    get_flags_from_pkg_config("${OpusFile_LIBRARY}" "PC_OPUSFILE" "_opusfile")
+endif()
+
+set(OpusFile_COMPILE_OPTIONS "${_opusfile_compile_options}" CACHE STRING "Extra compile options of opusfile")
+
+set(OpusFile_LINK_LIBRARIES "${_opusfile_link_libraries}" CACHE STRING "Extra link libraries of opusfile")
+
+set(OpusFile_LINK_OPTIONS "${_opusfile_link_options}" CACHE STRING "Extra link flags of opusfile")
+
+set(OpusFile_LINK_DIRECTORIES "${_opusfile_link_directories}" CACHE PATH "Extra link directories of opusfile")
+
+find_package(Ogg)
+find_package(Opus)
+
+find_package_handle_standard_args(OpusFile
+    REQUIRED_VARS OpusFile_LIBRARY OpusFile_INCLUDE_PATH Ogg_FOUND Opus_FOUND
+)
+
+if(OpusFile_FOUND)
+    set(OpusFile_dirs ${OpusFile_INCLUDE_PATH})
+    if(EXISTS "${OpusFile_INCLUDE_PATH}/opus")
+        list(APPEND OpusFile_dirs "${OpusFile_INCLUDE_PATH}/opus")
+    endif()
+    if(NOT TARGET OpusFile::opusfile)
+        add_library(OpusFile::opusfile UNKNOWN IMPORTED)
+        set_target_properties(OpusFile::opusfile PROPERTIES
+            IMPORTED_LOCATION "${OpusFile_LIBRARY}"
+            INTERFACE_INCLUDE_DIRECTORIES "${OpusFile_dirs};$<TARGET_PROPERTY:Ogg::ogg,INTERFACE_INCLUDE_DIRECTORIES>;$<TARGET_PROPERTY:Opus::opus,INTERFACE_INCLUDE_DIRECTORIES>"
+            INTERFACE_COMPILE_OPTIONS "${OpusFile_COMPILE_OPTIONS}"
+            INTERFACE_LINK_LIBRARIES "${OpusFile_LINK_LIBRARIES}"
+            INTERFACE_LINK_OPTIONS "${OpusFile_LINK_OPTIONS}"
+            INTERFACE_LINK_DIRECTORIES "${OpusFile_LINK_DIRECTORIES}"
+        )
+    endif()
+endif()
