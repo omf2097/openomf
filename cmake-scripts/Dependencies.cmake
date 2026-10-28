@@ -10,27 +10,14 @@ set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-scripts)
 # SDL2, SDL2_mixer
 add_library(openomf::SDL2 INTERFACE IMPORTED)
 add_library(openomf::SDL2main INTERFACE IMPORTED)
+find_package(SDL2 CONFIG REQUIRED)
+target_link_libraries(openomf::SDL2 INTERFACE "$<IF:$<TARGET_EXISTS:SDL2::SDL2>,SDL2::SDL2,SDL2::SDL2-static>")
+target_link_libraries(openomf::SDL2main INTERFACE SDL2::SDL2main openomf::SDL2)
+
 if(OMF_USE_SDL_AUDIO_DRIVER)
     add_library(openomf::SDL2_mixer INTERFACE IMPORTED)
-endif()
-if(VCPKG_TOOLCHAIN)
-    find_package(SDL2 CONFIG REQUIRED)
-    target_link_libraries(openomf::SDL2 INTERFACE "$<IF:$<TARGET_EXISTS:SDL2::SDL2>,SDL2::SDL2,SDL2::SDL2-static>")
-    target_link_libraries(openomf::SDL2main INTERFACE SDL2::SDL2main openomf::SDL2)
-
-    if(OMF_USE_SDL_AUDIO_DRIVER)
-        find_package(SDL2_mixer CONFIG REQUIRED)
-        target_link_libraries(openomf::SDL2_mixer INTERFACE "$<IF:$<TARGET_EXISTS:SDL2_mixer::SDL2_mixer>,SDL2_mixer::SDL2_mixer,SDL2_mixer::SDL2_mixer-static>")
-    endif()
-else()
-    find_package(SDL2 REQUIRED)
-    target_link_libraries(openomf::SDL2 INTERFACE SDL2::Core)
-    target_link_libraries(openomf::SDL2main INTERFACE SDL2::Main openomf::SDL2)
-
-    if(OMF_USE_SDL_AUDIO_DRIVER)
-        find_package(SDL2_mixer REQUIRED)
-        target_link_libraries(openomf::SDL2_mixer INTERFACE SDL2::Mixer)
-    endif()
+    find_package(SDL2_mixer CONFIG REQUIRED)
+    target_link_libraries(openomf::SDL2_mixer INTERFACE "$<IF:$<TARGET_EXISTS:SDL2_mixer::SDL2_mixer>,SDL2_mixer::SDL2_mixer,SDL2_mixer::SDL2_mixer-static>")
 endif()
 
 # xmp
