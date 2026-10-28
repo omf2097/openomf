@@ -63,6 +63,21 @@ endif()
 
 project(OpenOMF C)
 
+# Build capabilities are configured by the caller (e.g. a CI toolchain job).
+# Defaults preserve the existing desktop configuration.
+set(OMF_AUDIO_BACKENDS "sdl" CACHE STRING "Semicolon-separated audio backend plugins")
+set(OMF_VIDEO_RENDERERS "opengl3" CACHE STRING "Semicolon-separated renderer plugins")
+option(OMF_STRIP_GNU_BINARIES "Strip GNU Release binaries at link time" ON)
+
+set(OMF_USE_SDL_AUDIO_DRIVER OFF)
+if("sdl" IN_LIST OMF_AUDIO_BACKENDS)
+    set(OMF_USE_SDL_AUDIO_DRIVER ON)
+endif()
+set(OMF_USE_OPENGL_RENDERER OFF)
+if("opengl3" IN_LIST OMF_VIDEO_RENDERERS)
+    set(OMF_USE_OPENGL_RENDERER ON)
+endif()
+
 # Generate compile_commands.json so editors can find the correct headers.
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -180,7 +195,7 @@ file(GLOB_RECURSE OPENOMF_SRC
     "src/*/*.c" "src/*/*.h"
 )
 
-# Build vendored dependencies only when the corresponding feature is enabled.
+# Build vendored dependencies only when the feature needs their sources.
 if(NOT USE_ARGTABLE)
     list(FILTER OPENOMF_SRC EXCLUDE REGEX "^src/vendored/argtable/")
 endif()
@@ -190,15 +205,15 @@ endif()
 
 # Remove all player plugin source code from OPENOMF_SRC
 list(FILTER OPENOMF_SRC EXCLUDE REGEX "^src/audio/backends/.*/")
-# Enable "NULL" player in debug builds, for automated testing
-list(APPEND OPENOMF_SRC
-    "$<$<CONFIG:Debug>:src/audio/backends/null/null_backend.c>"
-    "$<$<CONFIG:Debug>:src/audio/backends/null/null_backend.h>"
-)
-list(APPEND AUDIO_C_DEFINES "$<$<CONFIG:Debug>:ENABLE_NULL_AUDIO_BACKEND>")
-# and enable select render plugins
-set(ENABLED_AUDIO_BACKEND_PLUGINS sdl)
-foreach (PLUGIN ${ENABLED_AUDIO_BACKEND_PLUGINS})
+# Keep the NULL test backend in Debug unless already selected explicitly.
+if(NOT "null" IN_LIST OMF_AUDIO_BACKENDS)
+    list(APPEND OPENOMF_SRC
+        "$<$<CONFIG:Debug>:src/audio/backends/null/null_backend.c>"
+        "$<$<CONFIG:Debug>:src/audio/backends/null/null_backend.h>"
+    )
+    list(APPEND AUDIO_C_DEFINES "$<$<CONFIG:Debug>:ENABLE_NULL_AUDIO_BACKEND>")
+endif()
+foreach(PLUGIN ${OMF_AUDIO_BACKENDS})
     # add render plugin sources
     file(GLOB_RECURSE PLUGIN_SRC
         LIST_DIRECTORIES OFF
@@ -229,15 +244,15 @@ set_source_files_properties("src/game/audio/audio_sources.c"
 
 # Remove all render plugin source code from OPENOMF_SRC
 list(FILTER OPENOMF_SRC EXCLUDE REGEX "^src/video/renderers/.*/")
-# Enable "NULL" renderer in debug builds, for automated testing
-list(APPEND OPENOMF_SRC
-  "$<$<CONFIG:Debug>:src/video/renderers/null/null_renderer.c>"
-  "$<$<CONFIG:Debug>:src/video/renderers/null/null_renderer.h>"
-)
-list(APPEND VIDEO_C_DEFINES "$<$<CONFIG:Debug>:ENABLE_NULL_RENDERER>")
-# and enable select render plugins
-set(ENABLED_RENDER_PLUGINS opengl3)
-foreach(PLUGIN ${ENABLED_RENDER_PLUGINS})
+# Keep the NULL test renderer in Debug unless already selected explicitly.
+if(NOT "null" IN_LIST OMF_VIDEO_RENDERERS)
+    list(APPEND OPENOMF_SRC
+      "$<$<CONFIG:Debug>:src/video/renderers/null/null_renderer.c>"
+      "$<$<CONFIG:Debug>:src/video/renderers/null/null_renderer.h>"
+    )
+    list(APPEND VIDEO_C_DEFINES "$<$<CONFIG:Debug>:ENABLE_NULL_RENDERER>")
+endif()
+foreach(PLUGIN ${OMF_VIDEO_RENDERERS})
     # add render plugin sources
     file(GLOB_RECURSE PLUGIN_SRC
         LIST_DIRECTORIES OFF
@@ -265,21 +280,27 @@ target_compile_definitions(openomf_core PUBLIC
 omf_target_precompile_headers(openomf_core PUBLIC
     "<SDL.h>"
     "<enet/enet.h>"
-    "<epoxy/gl.h>"
 )
+if(OMF_USE_OPENGL_RENDERER)
+    omf_target_precompile_headers(openomf_core PUBLIC "<epoxy/gl.h>")
+endif()
 # Match all variants of GCC and Clang.
 if(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
     set_source_files_properties("${CMAKE_SOURCE_DIR}/src/vendored/argtable/argtable3.c"
         PROPERTIES COMPILE_OPTIONS "-Wno-format-nonliteral"
     )
 endif()
-target_link_libraries(openomf_core PRIVATE
-    openomf::enet
-    openomf::epoxy
-    openomf::SDL2
-    openomf::SDL2_mixer
-    openomf::xmp
-)
+# TODO: remove enet and SDL2 from our (public) headers
+# Until then, propagate their include paths to consumers of the shared PCH.
+target_link_libraries(openomf_core PUBLIC openomf::enet openomf::SDL2)
+target_link_libraries(openomf_core PRIVATE openomf::xmp)
+
+if(OMF_USE_OPENGL_RENDERER)
+    target_link_libraries(openomf_core PRIVATE openomf::epoxy)
+endif()
+if(OMF_USE_SDL_AUDIO_DRIVER)
+    target_link_libraries(openomf_core PRIVATE openomf::SDL2_mixer)
+endif()
 
 if(USE_LIBPNG)
     message(STATUS "libpng support is enabled.")
@@ -337,7 +358,7 @@ if(WIN32)
 endif()
 
 # Only strip on GCC (clang does not appreciate)
-if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU" AND OMF_STRIP_GNU_BINARIES)
     set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -Wl,-s")
     set(CMAKE_C_FLAGS_MINSIZEREL "${CMAKE_C_FLAGS_MINSIZEREL} -Wl,-s")
 endif()
@@ -372,12 +393,14 @@ set_property(TARGET openomf PROPERTY
 OPENOMF_RESOURCE_DIR=${CMAKE_CURRENT_BINARY_DIR}/resources")
 set_property(DIRECTORY ${CMAKE_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT openomf)
 
-# This is used to copy shader files from source directory to the binary output directory during compile.
-add_custom_target(
-    copy_shaders ALL
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/shaders ${CMAKE_BINARY_DIR}/shaders
-)
-add_dependencies(openomf copy_shaders)
+# Copy shader resources only for the OpenGL renderer.
+if(OMF_USE_OPENGL_RENDERER)
+    add_custom_target(
+        copy_shaders ALL
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/shaders ${CMAKE_BINARY_DIR}/shaders
+    )
+    add_dependencies(openomf copy_shaders)
+endif()
 
 # Build tools if requested
 set(TOOL_TARGET_NAMES)
@@ -486,10 +509,15 @@ endif()
 
 # Make sure libraries are linked
 target_link_libraries(openomf PRIVATE ${CORELIBS})
-target_link_libraries(openomf PRIVATE openomf::SDL2main openomf::epoxy)
+target_link_libraries(openomf PRIVATE openomf::SDL2main)
+if(OMF_USE_OPENGL_RENDERER)
+    target_link_libraries(openomf PRIVATE openomf::epoxy)
+endif()
 foreach(TARGET ${TOOL_TARGET_NAMES})
-    target_link_libraries(${TARGET} PRIVATE ${CORELIBS})
-    target_link_libraries(${TARGET} PRIVATE openomf::SDL2main openomf::epoxy)
+    target_link_libraries(${TARGET} PRIVATE ${CORELIBS} openomf::SDL2main)
+    if(OMF_USE_OPENGL_RENDERER)
+        target_link_libraries(${TARGET} PRIVATE openomf::epoxy)
+    endif()
 endforeach()
 
 # Testing stuff
@@ -510,7 +538,10 @@ if(CUNIT_FOUND)
                                TESTS_ROOT_DIR="${CMAKE_SOURCE_DIR}/testing")
 
     target_include_directories(openomf_test_main PRIVATE testing/ src/)
-    target_link_libraries(openomf_test_main ${CORELIBS} openomf::SDL2main openomf::epoxy openomf::cunit)
+    target_link_libraries(openomf_test_main ${CORELIBS} openomf::SDL2main openomf::cunit)
+    if(OMF_USE_OPENGL_RENDERER)
+        target_link_libraries(openomf_test_main openomf::epoxy)
+    endif()
 
     if(MSVC)
         target_precompile_headers(openomf_test_main PRIVATE "<stdio.h>")
@@ -528,7 +559,9 @@ else()
     message(STATUS "Development: Unit-tests are disabled")
 endif()
 
-include("cmake-scripts/BuildLanguages.cmake")
+if(BUILD_LANGUAGES)
+    include("cmake-scripts/BuildLanguages.cmake")
+endif()
 
 # Copy some resources to destination resources directory to ease development setup.
 file(COPY resources/openomf.bk resources/gamecontrollerdb/gamecontrollerdb.txt DESTINATION resources)
