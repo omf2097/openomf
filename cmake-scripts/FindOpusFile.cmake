@@ -4,6 +4,7 @@
 #
 
 include(FindPackageHandleStandardArgs)
+include(PkgConfigHelper)
 
 find_package(PkgConfig QUIET)
 pkg_check_modules(PC_OPUSFILE QUIET opusfile)
