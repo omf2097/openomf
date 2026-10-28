@@ -180,6 +180,14 @@ file(GLOB_RECURSE OPENOMF_SRC
     "src/*/*.c" "src/*/*.h"
 )
 
+# Build vendored dependencies only when the corresponding feature is enabled.
+if(NOT USE_ARGTABLE)
+    list(FILTER OPENOMF_SRC EXCLUDE REGEX "^src/vendored/argtable/")
+endif()
+if(NOT USE_ZIP)
+    list(FILTER OPENOMF_SRC EXCLUDE REGEX "^src/vendored/zip/")
+endif()
+
 # Remove all player plugin source code from OPENOMF_SRC
 list(FILTER OPENOMF_SRC EXCLUDE REGEX "^src/audio/backends/.*/")
 # Enable "NULL" player in debug builds, for automated testing
