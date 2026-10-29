@@ -971,7 +971,8 @@ void game_state_static_tick(game_state *gs, bool replay) {
             log_debug("Next ID is SCENE_NONE! bailing.");
             gs->run = 0;
             if(str_size(&gs->rectest_failures) > 0) {
-                crash_with_args("RECTEST(s) FAILED:\n%s", str_c(&gs->rectest_failures));
+                log_error("RECTEST(s) FAILED:\n%s", str_c(&gs->rectest_failures));
+                exit(1);
             }
             return;
         }
