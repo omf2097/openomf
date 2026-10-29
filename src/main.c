@@ -82,14 +82,15 @@ int main(int argc, char *argv[]) {
     struct arg_str *force_renderer = arg_str0(NULL, "force-renderer", "<force-renderer>", "Force a renderer to use");
     struct arg_str *trace = arg_str0("t", "trace", "<file>", "Trace netplay events to file");
     struct arg_int *port = arg_int0("p", "port", "<port>", "Port to connect or listen (default: 2097)");
-    struct arg_file *play = arg_file0("P", "play", "<file>", "Play an existing recfile");
+    struct arg_file *play = arg_filen("P", "play", "<file>", 0, 999, "Play an existing recfile");
+    struct arg_file *play_description = arg_filen(NULL, "play-description", "<description>", 0, 999, "Descriptions for the played recfiles (for rectests)");
     struct arg_file *rec = arg_file0("R", "rec", "<file>", "Record a new recfile");
     struct arg_lit *warp = arg_lit0(NULL, "warp", "run the game at warp speed");
     struct arg_int *speed = arg_int0(NULL, "speed", "<speed>", "game speed to use: 1-10");
     struct arg_str *log_level = arg_str0(NULL, "log-level", "<level>", "Log level (DEBUG, INFO, WARN, ERROR)");
     struct arg_end *end = arg_end(30);
     void *argtable[] = {help,  vers, listen, lobby, lobbyarg, connect, force_audio_backend, force_renderer,
-                        trace, port, play,   rec,   warp,     speed,   log_level,           end};
+                        trace, port, play, play_description,   rec,   warp,     speed,   log_level,           end};
     const char *progname = "openomf";
 
     // Make sure everything got allocated
@@ -142,11 +143,27 @@ int main(int argc, char *argv[]) {
     } else if(lobby->count > 0) {
         init_flags.net_mode = NET_MODE_LOBBY;
     } else if(play->count > 0) {
-        init_flags.playback = 1;
-        path_from_c(&init_flags.rec_file, play->filename[0]);
+        if(play_description->count > 0 && play->count != play_description->count) {
+            fprintf(stderr, "Mismatched number of --play and --play-description options provided!");
+            goto exit_0;
+        }
+        init_flags.playback = play->count;
+        init_flags.rec_files = omf_calloc(play->count, sizeof(path));
+        for(int i = 0; i < play->count; i++) {
+            path_from_c(&init_flags.rec_files[i], play->filename[i]);
+        }
+
+        if(play_description->count > 0) {
+            init_flags.rec_file_descriptions = omf_calloc(play_description->count, sizeof(str));
+            for(int i = 0; i < play->count; i++) {
+                str_from_c(&init_flags.rec_file_descriptions[i], play_description->filename[i]);
+            }
+        }
+        
     } else if(rec->count > 0) {
         init_flags.record = 1;
-        path_from_c(&init_flags.rec_file, rec->filename[0]);
+        init_flags.rec_files = omf_malloc(1 * sizeof(path));
+        path_from_c(&init_flags.rec_files[0], rec->filename[0]);
     }
 
     if(warp->count > 0) {
@@ -311,6 +328,15 @@ exit_1:
     log_info("Exit.");
     log_close();
 exit_0:
+    if(init_flags.rec_files) {
+        omf_free(init_flags.rec_files);
+    }
+    if(init_flags.rec_files) {
+        for(unsigned i = 0; i < init_flags.playback; i++){
+            str_free(&init_flags.rec_file_descriptions[i]);
+        }
+        omf_free(init_flags.rec_file_descriptions);
+    }
     if(ip) {
         omf_free(ip);
     }

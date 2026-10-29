@@ -65,6 +65,7 @@ typedef struct game_state_t {
     uint32_t int_tick; // never adjusted, used in ping calculation
     unsigned int role;
     unsigned int speed;
+    unsigned int rec_playback_id;
     const engine_init_flags *init_flags;
 
     match_settings match_settings;
@@ -106,6 +107,8 @@ typedef struct game_state_t {
     sd_rec_file *rec;
 
     controller *menu_ctrl;
+
+    str rectest_failures;
 } game_state;
 
 #endif // GAME_STATE_TYPE_H
