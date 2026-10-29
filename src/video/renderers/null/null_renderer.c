@@ -54,7 +54,7 @@ static void close_context(void *userdata) {
     log_info("NULL renderer closed.");
 }
 
-static void draw_surface(void *userdata, const surface *src_surface, SDL_Rect *dst, int remap_offset, int remap_rounds,
+static void draw_surface(void *userdata, const surface *src_surface, irect *dst, int remap_offset, int remap_rounds,
                          int palette_offset, int palette_limit, int opacity, unsigned int flip_mode,
                          unsigned int options) {
 }
@@ -65,7 +65,7 @@ static void render_prepare(void *userdata, unsigned framebuffer_options) {
 
 static void render_finish(void *userdata) {
 }
-static void render_area_prepare(void *userdata, const SDL_Rect *area) {
+static void render_area_prepare(void *userdata, const irect *area) {
 }
 static void render_area_finish(void *userdata, surface *dst) {
 }
