@@ -106,7 +106,8 @@ int rec_controller_poll(controller *ctrl, ctrl_event **ev) {
 
                         if(init_flags->playback <= 1) {
                             // no need to continue, we're only playing a single rec.
-                            crash_with_args("RECTEST Failed: %s", description);
+                            log_error("RECTEST Failed: %s", description);
+                            exit(1);
                         }
                         // batch rectest
                         str ass_str;
