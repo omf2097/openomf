@@ -44,7 +44,7 @@ typedef struct gl3_context {
     int target_move_x;
     int target_move_y;
     bool draw_atlas;
-    SDL_Rect culling_area;
+    irect culling_area;
 
     uint64_t framerate_limit;
     uint64_t last_tick;
@@ -315,7 +315,7 @@ static void close_context(void *userdata) {
     log_info("OpenGL3 renderer closed.");
 }
 
-static void draw_surface(void *userdata, const surface *src_surface, SDL_Rect *dst, int remap_offset, int remap_rounds,
+static void draw_surface(void *userdata, const surface *src_surface, irect *dst, int remap_offset, int remap_rounds,
                          int palette_offset, int palette_limit, int opacity, unsigned int flip_mode,
                          unsigned int options) {
     const gl3_context *ctx = userdata;
@@ -373,7 +373,7 @@ static inline void video_set_blend_mode(gl3_context *ctx, object_array_blend_mod
 // TODO: Use asynchronous capture + PBO here.
 static void capture_screenshot(void *userdata) {
     gl3_context *ctx = userdata;
-    SDL_Rect r = {0, 0, ctx->screen_w, ctx->screen_h};
+    irect r = irect_create(0, 0, ctx->screen_w, ctx->screen_h);
     unsigned char *buffer = omf_malloc(r.w * r.h * 3);
     glReadPixels(r.x, r.y, r.w, r.h, GL_RGB, GL_UNSIGNED_BYTE, buffer);
     ctx->screenshot_cb(&r, buffer, true); // TODO: should preferably happen in a thread.
@@ -387,12 +387,12 @@ static void capture_screenshot(void *userdata) {
  * Set the viewport, and do screen-shakes here.
  */
 static inline void set_screen_viewport(const gl3_context *ctx) {
-    SDL_Rect viewport = {0, 0, ctx->viewport_w, ctx->viewport_h};
+    irect viewport = irect_create(0, 0, ctx->viewport_w, ctx->viewport_h);
 
     // aspect == 0 means 4:3
     // aspect == 1 means stretch to window
     if(ctx->aspect == 0) {
-        const SDL_Rect window = viewport;
+        const irect window = viewport;
         find_resolution_for_aspect_ratio(&viewport, &window, 4, 3);
     }
 
@@ -515,7 +515,7 @@ static void render_finish(void *userdata) {
     }
 }
 
-static void render_area_prepare(void *userdata, const SDL_Rect *area) {
+static void render_area_prepare(void *userdata, const irect *area) {
     gl3_context *ctx = userdata;
     object_array_prepare(ctx->objects);
     ctx->culling_area = *area;
@@ -526,7 +526,7 @@ static void render_area_finish(void *userdata, surface *dst) {
     finish_offscreen(ctx);
 
     // Ensure we don't read garbage from outside the FBO
-    const SDL_Rect *area = &ctx->culling_area;
+    const irect *area = &ctx->culling_area;
     const int x0 = clamp(area->x, 0, NATIVE_W);
     const int y0 = clamp(area->y, 0, NATIVE_H);
     const int x1 = clamp(area->x + area->w, 0, NATIVE_W);
@@ -534,7 +534,7 @@ static void render_area_finish(void *userdata, surface *dst) {
 
     // FBO may be scaled!
     const int scale = ctx->fb_scale;
-    const SDL_Rect r = (SDL_Rect){x0 * scale, y0 * scale, (x1 - x0) * scale, (y1 - y0) * scale};
+    const irect r = irect_create(x0 * scale, y0 * scale, (x1 - x0) * scale, (y1 - y0) * scale);
     uint16_t *buffer = omf_calloc(r.w * r.h, sizeof(uint16_t));
     glReadPixels(r.x, r.y, r.w, r.h, GL_RED, GL_UNSIGNED_SHORT, buffer);
     surface_create_from_flip_scale(dst, r.w, r.h, buffer, 1023.0f / 65535.0f);

@@ -1,7 +1,7 @@
 #ifndef RENDERER_H
 #define RENDERER_H
 
-#include <SDL_rect.h>
+#include "utils/rect.h"
 #include <stdbool.h>
 
 #include "video/surface.h"
@@ -9,7 +9,7 @@
 typedef struct renderer renderer;
 
 // Asynchronous screenshot signal, renderer must call this when it has the screenshot data.
-typedef void (*video_screenshot_signal)(const SDL_Rect *rect, unsigned char *data, bool flipped);
+typedef void (*video_screenshot_signal)(const irect *rect, unsigned char *data, bool flipped);
 
 // Metadata functions, all must be implemented. These must NOT require context or renderer state to be initialized!
 typedef bool (*is_available_fn)(void);
@@ -31,9 +31,9 @@ typedef void (*reset_context_fn)(void *ctx);
 typedef void (*close_context_fn)(void *ctx);
 
 // Rendering functions, there must be implemented
-typedef void (*draw_surface_fn)(void *ctx, const surface *src_surface, SDL_Rect *rect, int remap_offset,
-                                int remap_rounds, int palette_offset, int palette_limit, int opacity,
-                                unsigned int flip_mode, unsigned int options);
+typedef void (*draw_surface_fn)(void *ctx, const surface *src_surface, irect *rect, int remap_offset, int remap_rounds,
+                                int palette_offset, int palette_limit, int opacity, unsigned int flip_mode,
+                                unsigned int options);
 typedef void (*move_target_fn)(void *ctx, int x, int y);
 
 // Onscreen rendering state management, these must be implemented
@@ -41,7 +41,7 @@ typedef void (*render_prepare_fn)(void *ctx, unsigned framebuffer_options);
 typedef void (*render_finish_fn)(void *ctx);
 
 // Offscreen rendering state management, these must be implemented
-typedef void (*render_area_prepare_fn)(void *ctx, const SDL_Rect *area);
+typedef void (*render_area_prepare_fn)(void *ctx, const irect *area);
 typedef void (*render_area_finish_fn)(void *ctx, surface *dst);
 
 // Screenshotting, this /should/ be implemented (but is not required).
