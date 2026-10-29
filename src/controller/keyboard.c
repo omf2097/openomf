@@ -1,6 +1,7 @@
 #include "controller/keyboard.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
+#include <SDL.h>
 #include <stdlib.h>
 
 void keyboard_free(controller *ctrl) {
@@ -64,7 +65,7 @@ int keyboard_poll(controller *ctrl, ctrl_event **ev) {
 
 int keyboard_binds_key(controller *ctrl, SDL_Event *event) {
     keyboard *k = ctrl->data;
-    SDL_Scancode sc = event->key.keysym.scancode;
+    omf_scancode sc = event->key.keysym.scancode;
     if(sc == k->keys->jump_up || sc == k->keys->jump_right || sc == k->keys->walk_right ||
        sc == k->keys->duck_forward || sc == k->keys->duck || sc == k->keys->duck_back || sc == k->keys->walk_back ||
        sc == k->keys->jump_left || sc == k->keys->kick || sc == k->keys->punch) {

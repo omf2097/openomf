@@ -2,7 +2,7 @@
 #define KEYBOARD_H
 
 #include "controller/controller.h"
-#include <SDL.h>
+#include "utils/scancode.h"
 
 #define KEYBOARD_INPUT_BUFFER_SIZE 16
 
@@ -10,16 +10,16 @@ typedef struct keyboard_keys_t keyboard_keys;
 typedef struct keyboard_t keyboard;
 
 struct keyboard_keys_t {
-    SDL_Scancode jump_up;
-    SDL_Scancode jump_right;
-    SDL_Scancode walk_right;
-    SDL_Scancode duck_forward;
-    SDL_Scancode duck;
-    SDL_Scancode duck_back;
-    SDL_Scancode walk_back;
-    SDL_Scancode jump_left;
-    SDL_Scancode punch;
-    SDL_Scancode kick;
+    omf_scancode jump_up;
+    omf_scancode jump_right;
+    omf_scancode walk_right;
+    omf_scancode duck_forward;
+    omf_scancode duck;
+    omf_scancode duck_back;
+    omf_scancode walk_back;
+    omf_scancode jump_left;
+    omf_scancode punch;
+    omf_scancode kick;
 };
 
 struct keyboard_t {
@@ -28,7 +28,8 @@ struct keyboard_t {
 
 void keyboard_create(controller *ctrl, keyboard_keys *keys);
 void keyboard_free(controller *ctrl);
-int keyboard_binds_key(controller *ctrl, SDL_Event *event);
+union SDL_Event;
+int keyboard_binds_key(controller *ctrl, union SDL_Event *event);
 
 void keyboard_menu_poll(controller *ctrl, ctrl_event **ev);
 
