@@ -14,6 +14,11 @@ find_package(SDL2 CONFIG REQUIRED)
 target_link_libraries(openomf::SDL2 INTERFACE "$<IF:$<TARGET_EXISTS:SDL2::SDL2>,SDL2::SDL2,SDL2::SDL2-static>")
 target_link_libraries(openomf::SDL2main INTERFACE SDL2::SDL2main openomf::SDL2)
 
+if(MINGW)
+    # MINGW-specific hack: link SDL2 into SDL2main
+    target_link_libraries(SDL2::SDL2main INTERFACE openomf::SDL2)
+endif()
+
 if(OMF_USE_SDL_AUDIO_DRIVER)
     add_library(openomf::SDL2_mixer INTERFACE IMPORTED)
     find_package(SDL2_mixer CONFIG REQUIRED)
