@@ -119,7 +119,7 @@ for test in "${tests[@]}"; do
     output_file="$temp_dir/output_$i.log"
 
     echo -n "${desc} :"
-    if $OPENOMF_BIN --force-audio-backend=NULL --force-renderer=NULL --speed=10 -P "$RUNDIR/rectests/${filename}" >"$output_file"  2>&1; then
+    if $OPENOMF_BIN --force-audio-backend=NULL --force-renderer=NULL --warp -P "$RUNDIR/rectests/${filename}" >"$output_file"  2>&1; then
         echo " PASS"
     else
         echo " FAILED (${filename})"
