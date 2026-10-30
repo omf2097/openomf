@@ -120,7 +120,8 @@ for test in "${tests[@]}"; do
 
     echo -n "${desc} :"
     if $OPENOMF_BIN --force-audio-backend=NULL --force-renderer=NULL --warp -P "$RUNDIR/rectests/${filename}" >"$output_file"  2>&1; then
-        echo " PASS"
+        assert_count=$(grep -c "Assertion: " $output_file)
+        echo " PASS ${assert_count} ASSERTIONS"
     else
         echo " FAILED (${filename})"
         fail_summary="${fail_summary} ${filename}"
