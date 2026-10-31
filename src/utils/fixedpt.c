@@ -17,7 +17,7 @@ int fixedpt_from_c(const char *s, fixedpt *ret, const char **error_r) {
         return -1;
     }
     unsigned dec_size = powu(10, strlen(dec_c));
-    unsigned long long dec_scaled = (decimal << FIXEDPT_FBITS) / dec_size;
+    unsigned long long dec_scaled = ((decimal << FIXEDPT_FBITS) + (dec_size / 2)) / dec_size;
 
     *ret = FIXEDPT_ONE * whole;
     if(s[0] == '-') {
