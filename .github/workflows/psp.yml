@@ -7,20 +7,24 @@ on:
       - '.github/workflows/psp.yml'
       - 'CMakeLists.txt'
       - 'cmake-scripts/**'
+      - 'packaging/psp/**'
       - 'src/**'
+      - 'tools/languagetool/**'
 
 jobs:
   psp:
-    name: PSP NULL drivers
+    name: PSP SDL2 audio / NULL renderer
     runs-on: ubuntu-24.04
     container:
       image: ghcr.io/pspdev/pspdev:v20261001
     steps:
       - uses: actions/checkout@v7.0.1
       - name: Install build tools
-        run: apk add --no-cache build-base ninja
+        run: apk add --no-cache build-base ninja unzip zip tar sdl2-dev pkgconf imagemagick
       - name: Trust checkout in build container
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - name: Get OpenOMF assets
+        uses: ./.github/actions/assets
       - name: Configure
         run: |
           psp-cmake -S . -B build/psp -G Ninja \
@@ -32,8 +36,18 @@ jobs:
             -DUSE_ZIP=OFF \
             -DENABLE_MODMANAGER=OFF \
             -DBUILD_LANGUAGES=OFF \
-            -DOMF_AUDIO_BACKENDS=null \
+            -DOMF_AUDIO_BACKENDS=sdl \
             -DOMF_VIDEO_RENDERERS=null \
+            -DOMF_PSP_ASSET_ARCHIVE="$GITHUB_WORKSPACE/openomf-assets.zip" \
             -DOMF_STRIP_GNU_BINARIES=OFF
       - name: Build
         run: cmake --build build/psp --parallel "$(nproc)"
+      - name: Package PSP game
+        run: cmake --build build/psp --target psp_package
+      - name: Upload PSP game
+        uses: actions/upload-artifact@v7
+        with:
+          name: openomf-psp-sdl-null
+          path: build/psp/openomf-psp-sdl-null.zip
+          archive: false
+          if-no-files-found: error
