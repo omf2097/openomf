@@ -1,0 +1,5 @@
+foreach(name MAIN.BK INTRO.BK SOUNDS.DAT MENU.PSM ENGLISH.DAT openomf.bk)
+    if(NOT EXISTS "${OMF_PSP_RESOURCE_DIR}/${name}")
+        message(FATAL_ERROR "Missing PSP game resource: ${name}")
+    endif()
+endforeach()

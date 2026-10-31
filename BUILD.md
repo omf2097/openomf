@@ -80,6 +80,30 @@ Some useful CMake flags:
 Note that when USE_FORMAT is selected, you can run command "make clangformat" to run code
 formatter to the entire codebase.
 
+### PSP test build (SDL2 audio / NULL renderer)
+
+Set `PSPDEV` to your PSP SDK installation and include `$PSPDEV/bin` in `PATH`.
+The PSP cross-compiler and native host C compiler, SDL2 headers, CMake and `unzip`
+are required. The PSP configure step downloads the original game assets and icon
+into the build directory (or use `-DOMF_PSP_ASSET_ARCHIVE=/path/to/openomf-assets.zip`).
+
+```sh
+psp-cmake -S . -B build/psp -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+  -DUSE_MINIUPNPC=OFF -DUSE_NATPMP=OFF -DUSE_ARGTABLE=OFF \
+  -DUSE_CONFUSE=OFF -DUSE_ZIP=OFF -DENABLE_MODMANAGER=OFF \
+  -DBUILD_LANGUAGES=OFF -DOMF_AUDIO_BACKENDS=sdl \
+  -DOMF_VIDEO_RENDERERS=null -DOMF_STRIP_GNU_BINARIES=OFF
+cmake --build build/psp --parallel
+cmake --build build/psp --target psp_package
+```
+
+The normal build creates `build/psp/PSP/GAME/OpenOMF/EBOOT.PBP` with its
+`resources/` directory. Copy that whole directory to the PSP Memory Stick's
+`PSP/GAME/` directory (or PPSSPP's Memory Stick equivalent) to run it.
+The optional `psp_package` target creates `build/psp/openomf-psp-sdl-null.zip`.
+`RelWithDebInfo` keeps debug symbols; this milestone intentionally uses a NULL
+renderer and therefore draws no gameplay graphics.
+
 ## Data Files
 
 OpenOMF loads the original data files from the original OMF:2097 game.
