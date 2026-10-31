@@ -466,6 +466,14 @@ void player_run_apply(object *obj) {
         obj->pos.x = clampf(obj->pos.x, ARENA_LEFT_WALL, ARENA_RIGHT_WALL);
     }
 
+    if(script_is_tag_set_by_id(frame, TAG_Q)) {
+        obj->q_val = script_get_tag_value_by_id(frame, TAG_Q);
+        // Enable hit if the q value is higher than the hit count for this animation, or if the value is 1
+        if(obj->q_val > obj->q_counter || obj->q_val == 1) {
+            obj->can_hit = 1;
+        }
+    }
+
     // If frame changed, do something
     if(state->entered_frame) {
         // Animation creation command
@@ -754,14 +762,6 @@ void player_run_apply(object *obj) {
                             r,
                             frame->tick_len + r);*/
                 }
-            }
-        }
-
-        if(script_is_tag_set_by_id(frame, TAG_Q)) {
-            obj->q_val = script_get_tag_value_by_id(frame, TAG_Q);
-            // Enable hit if the q value is higher than the hit count for this animation
-            if(obj->q_val > obj->q_counter) {
-                obj->can_hit = 1;
             }
         }
 
