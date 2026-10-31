@@ -697,6 +697,8 @@ void player_run_apply(object *obj) {
             object_set_repeat(enemy, 0);
             object_set_stride(enemy, 1);
             script_reader_seek(&enemy->animation_state.reader, script_reader_tick(&obj->animation_state.reader));
+            const script_frame *enemyframe = script_reader_frame(&enemy->animation_state.reader);
+            object_select_sprite(enemy, enemyframe->sprite);
         }
 
         // handle scaling on the Y axis
