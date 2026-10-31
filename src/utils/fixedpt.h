@@ -82,6 +82,9 @@ static inline fixedpt fixedpt_min2(fixedpt a, fixedpt b) {
  */
 size_t fixedpt_str(fixedpt A, char *str, size_t bufsize, int max_dec);
 
+/* Get fixedpt from C string. Return negative value on failure. */
+int fixedpt_from_c(const char *s, fixedpt *ret, const char **error_r);
+
 /* Converts the given fixedpt number into a string, using a static
  * (non-threadsafe) string buffer */
 static inline char *fixedpt_cstr(const fixedpt A, const int max_dec) {

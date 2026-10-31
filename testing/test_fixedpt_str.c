@@ -137,6 +137,47 @@ void test_near_max_value(void) {
     CU_ASSERT_EQUAL(written, 10);
 }
 
+void test_fixedpt_from_c(void) {
+    char buf[FIXEDPT_STR_BUFSIZE];
+    size_t written;
+    int ret;
+    fixedpt val;
+    const char *error_r;
+
+    ret = fixedpt_from_c("0.5", &val, &error_r);
+    CU_ASSERT_EQUAL(ret, 0);
+    written = fixedpt_str(val, buf, sizeof(buf), -3);
+    CU_ASSERT_STRING_EQUAL(buf, "0.5");
+    CU_ASSERT_EQUAL(written, 3);
+    ret = fixedpt_from_c("-0.5", &val, &error_r);
+    CU_ASSERT_EQUAL(ret, 0);
+    written = fixedpt_str(val, buf, sizeof(buf), -3);
+    CU_ASSERT_STRING_EQUAL(buf, "-0.5");
+    CU_ASSERT_EQUAL(written, 4);
+
+    ret = fixedpt_from_c("0.75", &val, &error_r);
+    CU_ASSERT_EQUAL(ret, 0);
+    written = fixedpt_str(val, buf, sizeof(buf), -3);
+    CU_ASSERT_STRING_EQUAL(buf, "0.75");
+    CU_ASSERT_EQUAL(written, 4);
+    ret = fixedpt_from_c("-0.75", &val, &error_r);
+    CU_ASSERT_EQUAL(ret, 0);
+    written = fixedpt_str(val, buf, sizeof(buf), -3);
+    CU_ASSERT_STRING_EQUAL(buf, "-0.75");
+    CU_ASSERT_EQUAL(written, 5);
+
+    ret = fixedpt_from_c("0.192", &val, &error_r);
+    CU_ASSERT_EQUAL(ret, 0);
+    written = fixedpt_str(val, buf, sizeof(buf), -3);
+    CU_ASSERT_EQUAL(written, 10);
+    CU_ASSERT_STRING_EQUAL(buf, "0.19140625");
+    ret = fixedpt_from_c("-0.192", &val, &error_r);
+    CU_ASSERT_EQUAL(ret, 0);
+    written = fixedpt_str(val, buf, sizeof(buf), -3);
+    CU_ASSERT_EQUAL(written, 11);
+    CU_ASSERT_STRING_EQUAL(buf, "-0.19140625");
+}
+
 void fixedpt_str_test_suite(CU_pSuite suite) {
     CU_add_test(suite, "Zero Handling", test_zero_value);
     CU_add_test(suite, "Positive Integers", test_positive_integers);
@@ -149,4 +190,5 @@ void fixedpt_str_test_suite(CU_pSuite suite) {
     CU_add_test(suite, "Near Min Value", test_near_min_value);
     CU_add_test(suite, "Max Value", test_max_value);
     CU_add_test(suite, "Near Max Value", test_near_max_value);
+    CU_add_test(suite, "From C String", test_fixedpt_from_c);
 }
