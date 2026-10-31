@@ -176,6 +176,17 @@ void test_fixedpt_from_c(void) {
     written = fixedpt_str(val, buf, sizeof(buf), -3);
     CU_ASSERT_EQUAL(written, 11);
     CU_ASSERT_STRING_EQUAL(buf, "-0.19140625");
+
+    ret = fixedpt_from_c("0.002", &val, &error_r);
+    CU_ASSERT_EQUAL(ret, 0);
+    written = fixedpt_str(val, buf, sizeof(buf), -3);
+    CU_ASSERT_EQUAL(written, 10);
+    CU_ASSERT_STRING_EQUAL(buf, "0.00390625");
+    ret = fixedpt_from_c("-0.002", &val, &error_r);
+    CU_ASSERT_EQUAL(ret, 0);
+    written = fixedpt_str(val, buf, sizeof(buf), -3);
+    CU_ASSERT_EQUAL(written, 11);
+    CU_ASSERT_STRING_EQUAL(buf, "-0.00390625");
 }
 
 void fixedpt_str_test_suite(CU_pSuite suite) {
