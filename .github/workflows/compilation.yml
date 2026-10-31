@@ -212,8 +212,8 @@ jobs:
   # -----------------------------------------------------------------------------------------------
   build_macos-arm:
     needs: [unittest, windows_units]
-    name: Build macos-14
-    runs-on: macos-14
+    name: Build macos-15
+    runs-on: macos-15
     steps:
     - uses: actions/checkout@v6
       with:
