@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -7,36 +8,32 @@
 #include "utils/allocator.h"
 #include "utils/log.h"
 
-int sd_sprite_create(sd_sprite *sprite) {
-    if(sprite == NULL) {
-        return SD_INVALID_INPUT;
-    }
+void sd_sprite_create(sd_sprite *sprite) {
+    assert(sprite != NULL);
     memset(sprite, 0, sizeof(sd_sprite));
-    return SD_SUCCESS;
 }
 
-int sd_sprite_copy(sd_sprite *dst, const sd_sprite *src) {
-    if(dst == NULL || src == NULL) {
-        return SD_INVALID_INPUT;
-    }
+void sd_sprite_copy(sd_sprite *dst, const sd_sprite *src) {
+    assert(dst != NULL);
+    assert(src != NULL);
 
     // Clear destination
     memset(dst, 0, sizeof(sd_sprite));
 
-    dst->pos_x = src->pos_x;
-    dst->pos_y = src->pos_y;
+    dst->pos = src->pos;
     dst->index = src->index;
     dst->missing = src->missing;
     dst->width = src->width;
     dst->height = src->height;
+    dst->render_width = src->render_width;
+    dst->render_height = src->render_height;
+
     dst->len = src->len;
 
     if(src->data != NULL) {
         dst->data = omf_calloc(src->len, 1);
         memcpy(dst->data, src->data, src->len);
     }
-
-    return SD_SUCCESS;
 }
 
 void sd_sprite_free(sd_sprite *sprite) {
@@ -51,12 +48,18 @@ void sd_sprite_free(sd_sprite *sprite) {
     }
 }
 
+void sd_sprite_free_cb(void *ptr) {
+    sd_sprite_free((sd_sprite *)ptr);
+}
+
 int sd_sprite_load(sd_reader *r, sd_sprite *sprite) {
     sprite->len = sd_read_uword(r);
-    sprite->pos_x = sd_read_word(r);
-    sprite->pos_y = sd_read_word(r);
+    sprite->pos.x = sd_read_word(r);
+    sprite->pos.y = sd_read_word(r);
     sprite->width = sd_read_uword(r);
     sprite->height = sd_read_uword(r);
+    sprite->render_height = sprite->height;
+    sprite->render_width = sprite->width;
     sprite->index = sd_read_ubyte(r);
     sprite->missing = sd_read_ubyte(r);
 
@@ -75,12 +78,11 @@ int sd_sprite_load(sd_reader *r, sd_sprite *sprite) {
 }
 
 int sd_sprite_save(sd_writer *w, const sd_sprite *sprite) {
-    if(w == NULL || sprite == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(w != NULL);
+    assert(sprite != NULL);
     sd_write_uword(w, sprite->len);
-    sd_write_word(w, sprite->pos_x);
-    sd_write_word(w, sprite->pos_y);
+    sd_write_word(w, sprite->pos.x);
+    sd_write_word(w, sprite->pos.y);
     sd_write_uword(w, sprite->width);
     sd_write_uword(w, sprite->height);
     sd_write_ubyte(w, sprite->index);
@@ -99,17 +101,15 @@ int sd_sprite_rgba_encode(sd_sprite *dst, const sd_rgba_image *src, const vga_pa
     uint16_t c = 0;
     int rowstart = 0;
     int ret = SD_SUCCESS;
-    size_t rgb_size;
-    char *buf;
 
     // Make sure we aren't being fed BS
-    if(dst == NULL || src == NULL || pal == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(dst != NULL);
+    assert(src != NULL);
+    assert(pal != NULL);
 
     // allocate a buffer plenty big enough, we will trim it later
-    rgb_size = src->w * src->h * 4;
-    buf = omf_calloc(rgb_size, 1);
+    const size_t rgb_size = src->w * src->h * 4;
+    char *buf = omf_calloc(rgb_size, 1);
 
     // always initialize Y to 0
     buf[i++] = 2;
@@ -117,16 +117,16 @@ int sd_sprite_rgba_encode(sd_sprite *dst, const sd_rgba_image *src, const vga_pa
     rowstart = i;
 
     // Walk through the RGBA data
-    for(size_t pos = 0; pos <= rgb_size; pos += 4) {
-        uint8_t r = src->data[pos];
-        uint8_t g = src->data[pos + 1];
-        uint8_t b = src->data[pos + 2];
-        uint8_t a = src->data[pos + 3];
+    for(size_t pos = 0; pos < rgb_size; pos += 4) {
+        const uint8_t r = src->data[pos];
+        const uint8_t g = src->data[pos + 1];
+        const uint8_t b = src->data[pos + 2];
+        const uint8_t a = src->data[pos + 3];
 
         // ignore anything but fully opaque pixels
         if(a == 255) {
-            int16_t x = (pos / 4) % src->w;
-            int16_t y = (pos / 4) / src->w;
+            const int16_t x = (pos / 4) % src->w;
+            const int16_t y = (pos / 4) / src->w;
             if(y != lasty) {
                 // new row
                 c = (y * 4) + 2;
@@ -202,15 +202,15 @@ int sd_sprite_rgba_encode(sd_sprite *dst, const sd_rgba_image *src, const vga_pa
 int sd_sprite_rgba_decode(sd_rgba_image *dst, const sd_sprite *src, const vga_palette *pal) {
     uint16_t x = 0;
     uint16_t y = 0;
-    int i = 0;
+    uint32_t i = 0;
     uint16_t c = 0;
     uint16_t data = 0;
     char op = 0;
 
     // Make sure we aren't being fed BS
-    if(src == NULL || dst == NULL || pal == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(src != NULL);
+    assert(dst != NULL);
+    assert(pal != NULL);
 
     // If image data length is 0, then size should be 1x1
     if(src->len > 0) {
@@ -269,15 +269,14 @@ int sd_sprite_rgba_decode(sd_rgba_image *dst, const sd_sprite *src, const vga_pa
 int sd_sprite_vga_decode(sd_vga_image *dst, const sd_sprite *src) {
     uint16_t x = 0;
     uint16_t y = 0;
-    int i = 0;
+    uint32_t i = 0;
     uint16_t c = 0;
     uint16_t data = 0;
     char op = 0;
 
     // Make sure we aren't being fed BS
-    if(dst == NULL || src == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(dst != NULL);
+    assert(src != NULL);
 
     // If image data length is 0, then size should be 1x1
     if(src->len > 0) {
@@ -311,7 +310,7 @@ int sd_sprite_vga_decode(sd_vga_image *dst, const sd_sprite *src) {
                 y = data;
                 break;
             case 1:
-                while(data > 0) {
+                while(data > 0 && i < src->len) {
                     uint8_t b = src->data[i];
                     unsigned int pos = ((y * src->width) + x);
                     // if we're about to overflow the `dst` buffer, don't.
@@ -353,9 +352,8 @@ int sd_sprite_vga_encode(sd_sprite *dst, const sd_vga_image *src) {
     char *buf;
 
     // Make sure we aren't being fed BS
-    if(dst == NULL || src == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(dst != NULL);
+    assert(src != NULL);
 
     // allocate a buffer plenty big enough, we will trim it later
     vga_size = src->w * src->h;
@@ -422,6 +420,9 @@ int sd_sprite_vga_encode(sd_sprite *dst, const sd_vga_image *src) {
     // Copy data
     dst->width = src->w;
     dst->height = src->h;
+    dst->render_width = src->w;
+    dst->render_height = src->h;
+
     dst->len = i;
     dst->missing = 0;
     dst->data = omf_calloc(i, 1);

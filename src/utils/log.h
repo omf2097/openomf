@@ -11,6 +11,7 @@
 #ifndef LOG_H
 #define LOG_H
 
+#include "utils/compat.h"
 #include <stdbool.h>
 #include <stdlib.h>
 
@@ -110,7 +111,7 @@ bool is_log_level(const char *level);
  * @param fmt Printf-style format string
  * @param ... Format arguments
  */
-void log_msg(log_level level, const char *fmt, ...);
+void log_msg(log_level level, const char *fmt, ...) ATTR_FORMAT_PRINTF(2, 3);
 
 /**
  * @brief Get the last logged error message.

@@ -1,6 +1,5 @@
 #include <stdio.h>
 
-#include "game/gui/sizer.h"
 #include "game/gui/spritebutton.h"
 #include "game/gui/trn_menu.h"
 #include "game/scenes/mechlab.h"
@@ -11,6 +10,7 @@
 #include "resources/bk.h"
 #include "resources/languages.h"
 #include "utils/allocator.h"
+#include "utils/c_string_util.h"
 #include "utils/log.h"
 
 void lab_menu_trade_done(component *menu, component *submenu) {
@@ -40,7 +40,7 @@ bool confirm_trade(component *c, void *userdata) {
     omf_free(p1->pilot);
     p1->pilot = &p1->chr->pilot;
     mechlab_update(s);
-    trnmenu_finish(c->parent);
+    trnmenu_finish(component_get_parent(c));
     return true;
 }
 
@@ -50,7 +50,7 @@ bool cancel_trade(component *c, void *userdata) {
     omf_free(p1->pilot);
     p1->pilot = &p1->chr->pilot;
     mechlab_update(s);
-    trnmenu_finish(c->parent);
+    trnmenu_finish(component_get_parent(c));
     return true;
 }
 
@@ -61,24 +61,25 @@ void lab_menu_trade(component *c, void *userdata) {
     int trade_value = calculate_trade_value(&p1->chr->pilot);
     int har_value = har_price(p1->pilot->har_id);
     if(trade_value == har_value) {
-        snprintf(tmp, 100, lang_get(520), lang_get(31 + p1->chr->pilot.har_id), lang_get(31 + p1->pilot->har_id));
+        unsafe_snprintf(tmp, 100, lang_get(520), lang_get(31 + p1->chr->pilot.har_id),
+                        lang_get(31 + p1->pilot->har_id));
     } else if(trade_value > har_value) {
         char price[15];
         snprintf(price, 15, "$ %dK", trade_value - har_value);
-        snprintf(tmp, 100, lang_get(518), lang_get(31 + p1->chr->pilot.har_id), lang_get(31 + p1->pilot->har_id),
-                 price);
+        unsafe_snprintf(tmp, 100, lang_get(518), lang_get(31 + p1->chr->pilot.har_id), lang_get(31 + p1->pilot->har_id),
+                        price);
     } else if(trade_value + p1->pilot->money > har_value) {
         char price[15];
         snprintf(price, 15, "$ %dK", har_value - trade_value);
-        snprintf(tmp, 100, lang_get(519), lang_get(31 + p1->chr->pilot.har_id), price,
-                 lang_get(31 + p1->pilot->har_id));
+        unsafe_snprintf(tmp, 100, lang_get(519), lang_get(31 + p1->chr->pilot.har_id), price,
+                        lang_get(31 + p1->pilot->har_id));
     }
 
     component *menu = lab_menu_confirm_create(s, confirm_trade, s, cancel_trade, s, tmp);
     trnmenu_set_userdata(menu, s);
     trnmenu_set_submenu_done_cb(menu, lab_menu_trade_done);
-    trnmenu_finish(c->parent);
-    trnmenu_set_submenu(c->parent->parent, menu);
+    trnmenu_finish(component_get_parent(c));
+    trnmenu_set_submenu(component_get_parent(component_get_parent(c)), menu);
 }
 
 void lab_menu_trade_for_jaguar_focus(component *c, bool focused, void *userdata) {
@@ -235,7 +236,7 @@ component *lab_menu_trade_create(scene *s) {
     // Init GUI buttons with locations from the "select" button sprites
     for(int i = 0; i < animation_get_sprite_count(main_buttons); i++) {
         if(i == p1->pilot->har_id || 0 == ((p1->pilot->har_trades >> i) & 1)) {
-            log_debug("skipping har %d", i, p1->pilot->har_trades);
+            log_debug("skipping har %d (trades %u)", i, p1->pilot->har_trades);
             continue;
         }
         log_debug("adding button");

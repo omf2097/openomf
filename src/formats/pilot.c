@@ -1,30 +1,37 @@
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "formats/error.h"
 #include "formats/pic.h"
 #include "formats/pilot.h"
+#include "resources/modmanager.h"
 #include "resources/resource_files.h"
 #include "utils/allocator.h"
-#include "utils/c_string_util.h"
-#include "utils/log.h"
 
 #define PILOT_BLOCK_LENGTH 428
 
-int sd_pilot_create(sd_pilot *pilot) {
-    if(pilot == NULL) {
-        return SD_INVALID_INPUT;
+// Initialize all quote strings to empty.
+static void sd_pilot_quotes_init(str *quotes) {
+    for(int m = 0; m < SD_PILOT_QUOTE_COUNT; m++) {
+        str_create(&quotes[m]);
     }
+}
+
+void sd_pilot_create(sd_pilot *pilot) {
+    assert(pilot != NULL);
     memset(pilot, 0, sizeof(sd_pilot));
-    return SD_SUCCESS;
+    str_create(&pilot->name);
+    str_create(&pilot->trn_desc);
+    sd_pilot_quotes_init(pilot->quotes);
 }
 
 void sd_pilot_clone(sd_pilot *dest, const sd_pilot *src) {
     sd_pilot_copy_shallow(dest, src);
-    for(int m = 0; m < 10; m++) {
-        if(src->quotes[m] != NULL) {
-            dest->quotes[m] = omf_strdup(src->quotes[m]);
-        }
+    str_set(&dest->name, &src->name);
+    str_set(&dest->trn_desc, &src->trn_desc);
+    for(int m = 0; m < SD_PILOT_QUOTE_COUNT; m++) {
+        str_set(&dest->quotes[m], &src->quotes[m]);
     }
     if(src->photo) {
         dest->photo = omf_calloc(1, sizeof(sd_sprite));
@@ -36,7 +43,9 @@ void sd_pilot_copy_shallow(sd_pilot *dest, const sd_pilot *src) {
     sd_pilot_free(dest);
     *dest = *src;
     dest->photo = NULL;
-    memset(dest->quotes, 0, sizeof dest->quotes);
+    str_create(&dest->name);
+    str_create(&dest->trn_desc);
+    sd_pilot_quotes_init(dest->quotes); // reset aliased strings
 }
 
 void sd_pilot_free(sd_pilot *pilot) {
@@ -47,14 +56,16 @@ void sd_pilot_free(sd_pilot *pilot) {
         sd_sprite_free(pilot->photo);
         omf_free(pilot->photo);
     }
-    for(int m = 0; m < 10; m++) {
-        omf_free(pilot->quotes[m]);
+    for(int m = 0; m < SD_PILOT_QUOTE_COUNT; m++) {
+        str_free(&pilot->quotes[m]);
     }
+    str_free(&pilot->name);
+    str_free(&pilot->trn_desc);
 }
 
 // Reads exactly 24 + 8 + 11 = 43 bytes
 void sd_pilot_load_player_from_mem(memreader *mr, sd_pilot *pilot) {
-    memread_buf(mr, pilot->name, 18);
+    memread_fixed_str(mr, &pilot->name, 18);
     pilot->wins = memread_uword(mr);
     pilot->losses = memread_uword(mr);
     pilot->rank = memread_ubyte(mr);
@@ -89,7 +100,7 @@ void sd_pilot_load_from_mem(memreader *mr, sd_pilot *pilot) {
     sd_pilot_load_player_from_mem(mr, pilot);
 
     memread_buf(mr, pilot->trn_name, 13);
-    memread_buf(mr, pilot->trn_desc, 31);
+    memread_fixed_str(mr, &pilot->trn_desc, 31);
     memread_buf(mr, pilot->trn_image, 13);
 
     pilot->trn_rank_money = memread_float(mr);
@@ -134,8 +145,9 @@ void sd_pilot_load_from_mem(memreader *mr, sd_pilot *pilot) {
     pilot->att_def = att[2] & 0x7F;
     pilot->att_sniper = (att[2] >> 7) & 0x7F;
 
-    memread_buf(mr, (char *)pilot->unk_block_d, 6);
+    memread_buf(mr, (char *)pilot->unk_block_d, 4);
 
+    pilot->ap_close = memread_word(mr);
     pilot->ap_throw = memread_word(mr);
     pilot->ap_special = memread_word(mr);
     pilot->ap_jump = memread_word(mr);
@@ -149,27 +161,30 @@ void sd_pilot_load_from_mem(memreader *mr, sd_pilot *pilot) {
     pilot->unknown_e = memread_udword(mr);
     pilot->learning = memread_float(mr);
     pilot->forget = memread_float(mr);
-    memread_buf(mr, pilot->unk_block_f, 14);
+    pilot->sound_1 = memread_word(mr);
+    pilot->sound_2 = memread_word(mr);
+    pilot->sound_3 = memread_word(mr);
+    memread_buf(mr, pilot->unk_block_f, 8);
     pilot->enemies_inc_unranked = memread_uword(mr);
     pilot->enemies_ex_unranked = memread_uword(mr);
     pilot->unk_d_a = memread_uword(mr);
     pilot->har_trades = memread_udword(mr);
     pilot->winnings = memread_udword(mr);
     pilot->total_value = memread_udword(mr);
-    pilot->unk_f_a = memread_float(mr);
+    pilot->current_health = memread_word(mr);
+    pilot->maximum_health = memread_word(mr);
     pilot->unk_f_b = memread_float(mr);
     sd_mskip(mr, 8);
     vga_palette_init(&pilot->palette);
     palette_mload_range(mr, &pilot->palette, 0, 48);
-    pilot->unk_block_i = memread_uword(mr);
+    pilot->is_player = memread_uword(mr);
 
     pilot->photo_id = memread_uword(mr) & 0x3FF;
 }
 
 int sd_pilot_load(sd_reader *reader, sd_pilot *pilot) {
-    if(reader == NULL || pilot == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(reader != NULL);
+    assert(pilot != NULL);
 
     // Read block, XOR, Read to pilot, free memory
     memreader *mr = memreader_open_from_reader(reader, PILOT_BLOCK_LENGTH);
@@ -178,14 +193,14 @@ int sd_pilot_load(sd_reader *reader, sd_pilot *pilot) {
     memreader_close(mr);
 
     // Quote block
-    for(int m = 0; m < 10; m++) {
-        pilot->quotes[m] = sd_read_variable_str(reader);
+    for(int m = 0; m < SD_PILOT_QUOTE_COUNT; m++) {
+        sd_read_padded_str(reader, &pilot->quotes[m], UINT16_MAX);
     }
     return SD_SUCCESS;
 }
 
 void sd_pilot_save_player_to_mem(memwriter *w, const sd_pilot *pilot) {
-    memwrite_buf(w, pilot->name, 18);
+    memwrite_fixed_str(w, &pilot->name, 18);
     memwrite_uword(w, pilot->wins);
     memwrite_uword(w, pilot->losses);
     memwrite_ubyte(w, pilot->rank);
@@ -223,7 +238,7 @@ void sd_pilot_save_to_mem(memwriter *w, const sd_pilot *pilot) {
     sd_pilot_save_player_to_mem(w, pilot);
 
     memwrite_buf(w, pilot->trn_name, 13);
-    memwrite_buf(w, pilot->trn_desc, 31);
+    memwrite_fixed_str(w, &pilot->trn_desc, 31);
     memwrite_buf(w, pilot->trn_image, 13);
 
     memwrite_float(w, pilot->trn_rank_money);
@@ -275,8 +290,9 @@ void sd_pilot_save_to_mem(memwriter *w, const sd_pilot *pilot) {
     att[2] |= (pilot->att_def & 0x7F);
     memwrite_buf(w, (char *)att, 6);
 
-    memwrite_buf(w, (char *)pilot->unk_block_d, 6);
+    memwrite_buf(w, (char *)pilot->unk_block_d, 4);
 
+    memwrite_word(w, pilot->ap_close);
     memwrite_word(w, pilot->ap_throw);
     memwrite_word(w, pilot->ap_special);
     memwrite_word(w, pilot->ap_jump);
@@ -290,26 +306,29 @@ void sd_pilot_save_to_mem(memwriter *w, const sd_pilot *pilot) {
     memwrite_udword(w, pilot->unknown_e);
     memwrite_float(w, pilot->learning);
     memwrite_float(w, pilot->forget);
-    memwrite_buf(w, pilot->unk_block_f, 14);
+    memwrite_word(w, pilot->sound_1);
+    memwrite_word(w, pilot->sound_2);
+    memwrite_word(w, pilot->sound_3);
+    memwrite_buf(w, pilot->unk_block_f, 8);
     memwrite_uword(w, pilot->enemies_inc_unranked);
     memwrite_uword(w, pilot->enemies_ex_unranked);
     memwrite_uword(w, pilot->unk_d_a);
     memwrite_udword(w, pilot->har_trades);
     memwrite_udword(w, pilot->winnings);
     memwrite_udword(w, pilot->total_value);
-    memwrite_float(w, pilot->unk_f_a);
+    memwrite_word(w, pilot->current_health);
+    memwrite_word(w, pilot->maximum_health);
     memwrite_float(w, pilot->unk_f_b);
     memwrite_fill(w, 0, 8);
     palette_msave_range(w, &pilot->palette, 0, 48);
-    memwrite_uword(w, pilot->unk_block_i);
+    memwrite_uword(w, pilot->is_player);
 
     memwrite_uword(w, pilot->photo_id & 0x3FF);
 }
 
 int sd_pilot_save(sd_writer *fw, const sd_pilot *pilot) {
-    if(fw == NULL || pilot == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(fw != NULL);
+    assert(pilot != NULL);
 
     // Copy, XOR, save and close
     memwriter *w = memwriter_open();
@@ -319,8 +338,8 @@ int sd_pilot_save(sd_writer *fw, const sd_pilot *pilot) {
     memwriter_close(w);
 
     // Quote block
-    for(int m = 0; m < 10; m++) {
-        sd_write_variable_str(fw, pilot->quotes[m]);
+    for(int m = 0; m < SD_PILOT_QUOTE_COUNT; m++) {
+        sd_write_padded_str(fw, &pilot->quotes[m]);
     }
     return SD_SUCCESS;
 }
@@ -350,6 +369,7 @@ void sd_pilot_set_player_color(sd_pilot *pilot, player_color index, uint8_t colo
         sd_pic_create(&players);
         int ret = sd_pic_load(&players, &players_filename);
         if(ret == SD_SUCCESS) {
+            modmanager_get_player_pics(&players);
             // Load player palette from PLAYERS.PIC
             const sd_pic_photo *photo = sd_pic_get(&players, pilot->photo_id);
             if(photo) {
@@ -379,6 +399,6 @@ uint8_t sd_pilot_get_player_color(sd_pilot const *pilot, player_color index) {
 void sd_pilot_exit_tournament(sd_pilot *pilot) {
     pilot->rank = 0;
     pilot->trn_name[0] = '\0';
-    pilot->trn_desc[0] = '\0';
+    str_set_c(&pilot->trn_desc, "");
     pilot->trn_image[0] = '\0';
 }

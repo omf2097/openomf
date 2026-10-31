@@ -54,7 +54,6 @@ void menu_presskey_free(component *c) {
 }
 
 void menu_presskey_tick(component *c) {
-    menu *m = sizer_get_obj(c);
     presskey_menu_local *local = menu_get_userdata(c);
     char errbuf[50];
 
@@ -79,7 +78,7 @@ void menu_presskey_tick(component *c) {
     const unsigned char *state = SDL_GetKeyboardState(&keys);
     if(state[SDL_SCANCODE_ESCAPE]) {
         // escape means escape
-        m->finished = 1;
+        menu_finish(c);
         return;
     }
 
@@ -93,15 +92,15 @@ void menu_presskey_tick(component *c) {
             if(is_key_bound(i, errbuf) && strcmp(SDL_GetScancodeName(i), *(local->key)) != 0) {
                 label_set_text(local->text[2], errbuf);
                 // Set texts to red as a warning
-                for(int m = 0; m < 3; m++) {
-                    label_set_text_color(local->text[m], 0xF6);
+                for(int j = 0; j < 3; j++) {
+                    label_set_text_color(local->text[j], 0xF6);
                 }
                 local->warn_timeout = 50;
                 return;
             } else {
                 omf_free(*(local->key));
                 *(local->key) = omf_strdup(SDL_GetScancodeName(i));
-                m->finished = 1;
+                menu_finish(c);
                 return;
             }
         }

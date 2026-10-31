@@ -7,7 +7,7 @@
 #endif
 #include "game/utils/serial.h"
 #include "utils/allocator.h"
-#include "utils/log.h"
+#include "utils/crash.h"
 #include <stdio.h>
 
 #define SERIAL_BUF_RESIZE_INC 64
@@ -71,6 +71,10 @@ void serial_write_int8(serial *s, int8_t v) {
     serial_write(s, (char *)&v, sizeof(v));
 }
 
+void serial_write_uint8(serial *s, uint8_t v) {
+    serial_write(s, (char *)&v, sizeof(v));
+}
+
 void serial_write_int16(serial *s, int16_t v) {
     int16_t t = htons(v);
     serial_write(s, (char *)&t, sizeof(t));
@@ -114,8 +118,47 @@ void serial_read(serial *s, char *buf, size_t len) {
     s->rpos += len;
 }
 
+void serial_write_str(serial *s, const str *src) {
+    if(str_size(src) > 255) {
+        crash("Invalid serial write -- string must be shorter than 256 bytes!");
+    }
+    serial_write_uint8(s, (uint8_t)str_size(src));
+    serial_write(s, str_c(src), str_size(src));
+}
+
+void serial_write_bytes(serial *s, const uint8_t *buf, const size_t max) {
+    for(size_t i = 0; i < max && buf[i]; i++) {
+        serial_write_uint8(s, buf[i]);
+    }
+    serial_write_uint8(s, 0);
+}
+
+void serial_read_bytes(serial *s, uint8_t *buf, const size_t max) {
+    size_t i = 0;
+    uint8_t b;
+    memset(buf, 0, max);
+    while(s->rpos < s->wpos && (b = serial_read_uint8(s)) != 0) {
+        if(i < max) {
+            buf[i++] = b;
+        }
+    }
+}
+
+void serial_read_str(serial *s, str *dst) {
+    const uint8_t len = serial_read_uint8(s);
+    char buf[256 + 1];
+    serial_read(s, buf, len);
+    buf[len] = '\0';
+    str_set_c(dst, buf);
+}
+
 int8_t serial_read_int8(serial *s) {
     int8_t v;
+    serial_read(s, (char *)&v, sizeof(v));
+    return v;
+}
+uint8_t serial_read_uint8(serial *s) {
+    uint8_t v;
     serial_read(s, (char *)&v, sizeof(v));
     return v;
 }

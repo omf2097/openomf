@@ -28,6 +28,8 @@ component *lab_dash_newplayer_create(scene *s, newplayer_widgets *nw) {
     textinput_set_font(nw->input, FONT_SMALL);
     textinput_set_horizontal_align(nw->input, TEXT_ALIGN_LEFT);
     textinput_set_filter_cb(nw->input, lab_dash_newplayer_textinput_filter);
+    textinput_set_wheel_charset(nw->input, " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
+    textinput_set_edit_by_default(nw->input, true);
     component_select(nw->input, true);
     textinput_enable_background(nw->input, false);
     xysizer_attach(xy, nw->input, 114, 62, 120, 8);

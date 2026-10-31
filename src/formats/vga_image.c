@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <png.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -7,13 +8,12 @@
 #include "formats/error.h"
 #include "formats/vga_image.h"
 #include "utils/allocator.h"
+#include "utils/log.h"
 #include "utils/png_reader.h"
 #include "utils/png_writer.h"
 
 int sd_vga_image_create(sd_vga_image *img, unsigned int w, unsigned int h) {
-    if(img == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(img != NULL);
     img->w = w;
     img->h = h;
     img->len = w * h;
@@ -21,16 +21,14 @@ int sd_vga_image_create(sd_vga_image *img, unsigned int w, unsigned int h) {
     return SD_SUCCESS;
 }
 
-int sd_vga_image_copy(sd_vga_image *dst, const sd_vga_image *src) {
-    if(dst == NULL || src == NULL) {
-        return SD_INVALID_INPUT;
-    }
+void sd_vga_image_copy(sd_vga_image *dst, const sd_vga_image *src) {
+    assert(dst != NULL);
+    assert(src != NULL);
     dst->w = src->w;
     dst->h = src->h;
     dst->len = src->len;
     dst->data = omf_calloc(src->len, 1);
     memcpy(dst->data, src->data, src->len);
-    return SD_SUCCESS;
 }
 
 void sd_vga_image_free(sd_vga_image *img) {
@@ -41,13 +39,10 @@ void sd_vga_image_free(sd_vga_image *img) {
 }
 
 int sd_vga_image_decode(sd_rgba_image *dst, const sd_vga_image *src, const vga_palette *pal) {
-    int ret;
-    if(dst == NULL || src == NULL || pal == NULL) {
-        return SD_INVALID_INPUT;
-    }
-    if((ret = sd_rgba_image_create(dst, src->w, src->h)) != SD_SUCCESS) {
-        return ret;
-    }
+    assert(dst != NULL);
+    assert(src != NULL);
+    assert(pal != NULL);
+    sd_rgba_image_create(dst, src->w, src->h);
     int pos = 0;
     for(int y = src->h - 1; y >= 0; y--) {
         for(unsigned x = 0; x < src->w; x++) {
@@ -72,10 +67,28 @@ int sd_vga_image_from_png(sd_vga_image *img, const path *filename) {
     return SD_SUCCESS;
 }
 
-int sd_vga_image_to_png(const sd_vga_image *img, const vga_palette *pal, const path *filename) {
-    if(img == NULL || filename == NULL) {
-        return SD_INVALID_INPUT;
+int sd_vga_image_from_png_in_memory(sd_vga_image *img, const unsigned char *buf, size_t len, bool allow_transparency,
+                                    vga_palette *pal) {
+    int w = 0;
+    int h = 0;
+    // first do a read to figure out dimensions
+    if(!read_paletted_png_from_memory(buf, len, NULL, &w, &h, allow_transparency, NULL)) {
+        return SD_FAILURE;
     }
+    log_info("allocating png %dx%d", w, h);
+    if(sd_vga_image_create(img, w, h) != SD_SUCCESS) {
+        return SD_FAILURE;
+    }
+
+    if(!read_paletted_png_from_memory(buf, len, (unsigned char *)img->data, &w, &h, allow_transparency, pal)) {
+        return SD_FAILURE;
+    }
+    return SD_SUCCESS;
+}
+
+int sd_vga_image_to_png(const sd_vga_image *img, const vga_palette *pal, const path *filename) {
+    assert(img != NULL);
+    assert(filename != NULL);
     if(!write_paletted_png(filename, img->w, img->h, pal, (unsigned char *)img->data)) {
         return SD_FILE_OPEN_ERROR;
     }

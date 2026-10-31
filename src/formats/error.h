@@ -1,17 +1,18 @@
-/*! \file
- * \brief Format handler error handling.
- * \details Functions for dealing with format handler errors.
- * \copyright MIT license.
- * \date 2013-2014
- * \author animehunter
- * \author Andrew Thompson
- * \author Tuomas Virtanen
+/**
+ * @file error.h
+ * @brief Format handler error handling.
+ * @details Functions for dealing with format handler errors.
+ * @copyright MIT License
+ * @date 2013-2026
+ * @author animehunter
+ * @author Andrew Thompson
+ * @author Tuomas Virtanen
  */
 
 #ifndef SD_ERROR_H
 #define SD_ERROR_H
 
-/*! \brief Errorcode list.
+/** @brief Errorcode list.
  */
 enum SD_ERRORCODE
 {
@@ -20,7 +21,6 @@ enum SD_ERRORCODE
     SD_FILE_INVALID_TYPE,    ///< File was of invalid type
     SD_FILE_PARSE_ERROR,     ///< File had a syntax error
     SD_ANIM_INVALID_STRING,  ///< Invalid animation string
-    SD_OUT_OF_MEMORY,        ///< Out of memory error
     SD_INVALID_INPUT,        ///< Function encountered unexpected/invalid arguments
     SD_FORMAT_NOT_SUPPORTED, ///< File format is not supported
     SD_INVALID_TAG,          ///< Invalid tag in animation string
@@ -30,13 +30,13 @@ enum SD_ERRORCODE
     SD_FAILURE,              ///< General failure
 };
 
-/*! \brief Get text error for error ID
+/** @brief Get text error for error ID
  *
  * Returns a clear text error message for the given error ID.
  *
- * \sa SD_ERRORCODE
- * \param error_code Errorcode
- * \return Error message
+ * @sa SD_ERRORCODE
+ * @param error_code Errorcode
+ * @return Error message
  */
 const char *sd_get_error(enum SD_ERRORCODE error_code);
 

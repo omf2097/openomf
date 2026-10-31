@@ -1,18 +1,14 @@
-#include <stdio.h>
-#include <stdlib.h>
-
+#include "game/gui/textselector.h"
 #include "audio/audio.h"
 #include "controller/controller.h"
+#include "game/gui/component.h"
 #include "game/gui/text/text.h"
-#include "game/gui/textselector.h"
-#include "game/gui/widget.h"
 #include "utils/allocator.h"
 #include "utils/c_string_util.h"
 
 typedef struct text_selector {
     text *text;
     str title;
-    int ticks;
     int dir;
     int pos_;
     int *pos;
@@ -27,18 +23,18 @@ typedef struct text_selector {
 } text_selector;
 
 void textselector_clear_options(component *c) {
-    text_selector *t = widget_get_obj(c);
+    text_selector *t = component_get_obj(c);
     vector_clear(&t->options);
 }
 
 void textselector_add_option(component *c, const char *value) {
-    text_selector *tb = widget_get_obj(c);
+    text_selector *tb = component_get_obj(c);
     char *new = omf_strdup(value);
     vector_append(&tb->options, &new);
 }
 
 const char *textselector_get_current_text(const component *c) {
-    text_selector *tb = widget_get_obj(c);
+    const text_selector *tb = component_get_obj(c);
     char **text = vector_get(&tb->options, *tb->pos);
     if(text != NULL) {
         return *text;
@@ -47,7 +43,7 @@ const char *textselector_get_current_text(const component *c) {
 }
 
 static void refresh(component *c) {
-    text_selector *t = widget_get_obj(c);
+    const text_selector *t = component_get_obj(c);
     str new;
     if(vector_size(&t->options) > 0 && str_size(&t->title) > 0) {
         // label & options
@@ -74,7 +70,7 @@ static void refresh(component *c) {
 }
 
 static void textselector_render(component *c) {
-    text_selector *t = widget_get_obj(c);
+    const text_selector *t = component_get_obj(c);
     const gui_theme *theme = component_get_theme(c);
     if(component_is_selected(c)) {
         text_set_color(t->text, theme->text.active_color);
@@ -83,24 +79,25 @@ static void textselector_render(component *c) {
     } else {
         text_set_color(t->text, theme->text.inactive_color);
     }
-    text_draw(t->text, c->x, c->y);
+    const vec2i pos = component_get_pos(c);
+    text_draw(t->text, pos.x, pos.y);
 }
 
-static int textselector_action(component *c, int action) {
-    text_selector *tb = widget_get_obj(c);
+static bool textselector_action(component *c, int action, int source) {
+    const text_selector *tb = component_get_obj(c);
     if(vector_size(&tb->options) <= 1) {
-        return 0;
+        return false;
     }
     int old_pos = *tb->pos;
-    float panning = 0.0f;
+    int panning = 0;
     if(action == ACT_KICK || action == ACT_PUNCH || action == ACT_RIGHT) {
-        panning = 0.5f;
+        panning = 50;
         (*tb->pos)++;
         if(*tb->pos >= (int)vector_size(&tb->options)) {
             *tb->pos = 0;
         }
     } else if(action == ACT_LEFT) {
-        panning = -0.5f;
+        panning = -50;
         (*tb->pos)--;
         if(*tb->pos < 0) {
             *tb->pos = vector_size(&tb->options) - 1;
@@ -111,31 +108,24 @@ static int textselector_action(component *c, int action) {
         if(tb->toggle) {
             tb->toggle(c, tb->userdata, *tb->pos);
         }
-        audio_play_sound(20, 0.5f, panning, 0);
-        // reset ticks so text is bright
-        tb->ticks = 0;
-        return 0;
+        audio_play_sound_simple(20, panning);
+        return true;
     }
-    return 1;
-}
-
-static void textselector_tick(component *c) {
-    text_selector *t = widget_get_obj(c);
-    t->ticks++;
+    return false;
 }
 
 int textselector_get_pos(const component *c) {
-    text_selector *t = widget_get_obj(c);
+    const text_selector *t = component_get_obj(c);
     return *t->pos;
 }
 
 void textselector_set_pos(component *c, int pos) {
-    text_selector *t = widget_get_obj(c);
+    const text_selector *t = component_get_obj(c);
     *t->pos = pos;
 }
 
 static void textselector_free(component *c) {
-    text_selector *t = widget_get_obj(c);
+    text_selector *t = component_get_obj(c);
     vector_free(&t->options);
     str_free(&t->title);
     text_free(&t->text);
@@ -147,10 +137,11 @@ static void item_free(void *item) {
 }
 
 static void textselector_init(component *c, const gui_theme *theme) {
-    text_selector *t = widget_get_obj(c);
+    const text_selector *t = component_get_obj(c);
     refresh(c);
     text_set_font(t->text, t->override_font != FONT_NONE ? t->override_font : theme->text.font);
-    if(c->w_hint < 0 && c->h_hint < 0) {
+    const vec2i hint = component_get_size_hint(c);
+    if(hint.x < 0 && hint.y < 0) {
         text_generate_layout(t->text);
         int text_width = text_get_layout_width(t->text);
         int text_height = text_get_layout_height(t->text);
@@ -159,7 +150,7 @@ static void textselector_init(component *c, const gui_theme *theme) {
 }
 
 static void textselector_layout(component *c, int x, int y, int w, int h) {
-    text_selector *t = widget_get_obj(c);
+    const text_selector *t = component_get_obj(c);
     text_set_bounding_box(t->text, w, h);
     text_set_horizontal_align(t->text, t->text_horizontal_align);
     text_set_vertical_align(t->text, t->text_vertical_align);
@@ -167,7 +158,7 @@ static void textselector_layout(component *c, int x, int y, int w, int h) {
 }
 
 component *textselector_create(const char *text, const char *help, textselector_toggle_cb cb, void *userdata) {
-    component *c = widget_create();
+    component *c = component_create();
 
     text_selector *t = omf_calloc(1, sizeof(text_selector));
     str_from_c(&t->title, text);
@@ -179,16 +170,15 @@ component *textselector_create(const char *text, const char *help, textselector_
     t->text_vertical_align = TEXT_ALIGN_MIDDLE;
     t->text_horizontal_align = TEXT_ALIGN_CENTER;
     vector_create_with_size_cb(&t->options, sizeof(char *), 0, item_free);
-    widget_set_obj(c, t);
+    component_set_obj(c, t);
 
     component_set_help_text(c, help);
 
-    widget_set_render_cb(c, textselector_render);
-    widget_set_action_cb(c, textselector_action);
-    widget_set_tick_cb(c, textselector_tick);
-    widget_set_free_cb(c, textselector_free);
-    widget_set_init_cb(c, textselector_init);
-    widget_set_layout_cb(c, textselector_layout);
+    component_set_render_cb(c, textselector_render);
+    component_set_action_cb(c, textselector_action);
+    component_set_free_cb(c, textselector_free);
+    component_set_init_cb(c, textselector_init);
+    component_set_layout_cb(c, textselector_layout);
 
     return c;
 }
@@ -196,7 +186,7 @@ component *textselector_create(const char *text, const char *help, textselector_
 component *textselector_create_bind(const char *text, const char *help, textselector_toggle_cb toggle_cb,
                                     void *userdata, int *bind) {
     component *c = textselector_create(text, help, toggle_cb, userdata);
-    text_selector *ts = widget_get_obj(c);
+    text_selector *ts = component_get_obj(c);
     ts->pos = (bind) ? bind : &ts->pos_;
     return c;
 }
@@ -211,16 +201,16 @@ component *textselector_create_bind_opts(const char *text, const char *help, tex
 }
 
 void textselector_set_font(component *c, font_size font) {
-    text_selector *t = widget_get_obj(c);
+    text_selector *t = component_get_obj(c);
     t->override_font = font;
 }
 
 void textselector_set_text_horizontal_align(component *c, text_horizontal_align align) {
-    text_selector *t = widget_get_obj(c);
+    text_selector *t = component_get_obj(c);
     t->text_horizontal_align = align;
 }
 
 void textselector_set_text_vertical_align(component *c, text_vertical_align align) {
-    text_selector *t = widget_get_obj(c);
+    text_selector *t = component_get_obj(c);
     t->text_vertical_align = align;
 }

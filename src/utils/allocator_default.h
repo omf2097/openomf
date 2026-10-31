@@ -19,6 +19,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+static const char _text_malloc_error[] = "malloc(%zu) failed";
+static const char _text_calloc_error[] = "calloc(%zu, %zu) failed";
+static const char _text_realloc_error[] = "realloc(%p, %zu) failed";
+
 /** @internal */
 #define omf_free_real(ptr) free(ptr)
 

@@ -2,9 +2,9 @@
 #define NET_CONTROLLER_H
 
 #define NET_INPUT_DELAY 2
+#define MAX_EVENTS_PER_TICK 11
 
 #include "controller/controller.h"
-#include <SDL.h>
 #include <enet/enet.h>
 
 void net_controller_create(controller *ctrl, ENetHost *host, ENetPeer *peer, ENetPeer *lobby, int id);

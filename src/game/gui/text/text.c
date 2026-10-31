@@ -4,7 +4,6 @@
 #include "game/gui/text/text.h"
 #include "game/gui/text/text_layout.h"
 #include "utils/allocator.h"
-#include "utils/log.h"
 #include "utils/miscmath.h"
 #include "utils/vector.h"
 #include "video/surface.h"
@@ -537,34 +536,51 @@ void text_generate_layout(text *t) {
     }
 }
 
-static inline void draw_shadow(const text_layout_item *item, int16_t offset_x, int16_t offset_y, uint8_t shadow,
-                               vga_index color) {
-    int palette_offset = (int)color - 1;
-    int x = item->x + offset_x;
-    int y = item->y + offset_y;
+void text_draw_glyph_surface(const surface *glyph, int16_t x, int16_t y, vga_index color, uint8_t opacity) {
+    video_draw_full(glyph, x, y, glyph->w, glyph->h, 0, 0, (int)color - 1, 255, opacity, 0, 0);
+}
+
+void text_draw_glyph(const font *font, char ch, int16_t x, int16_t y, vga_index color) {
+    const surface *glyph = font_get_surface(font, ch);
+    if(glyph == NULL) {
+        return;
+    }
+    text_draw_glyph_surface(glyph, x, y, color, 255);
+}
+
+static inline void draw_glyph(const surface *glyph, const int x, const int y, const vga_index color,
+                              const uint8_t opacity) {
+    text_draw_glyph_surface(glyph, (int16_t)x, (int16_t)y, color, opacity);
+}
+
+static inline void draw_shadow(const text_layout_item *item, const int16_t offset_x, const int16_t offset_y,
+                               const uint8_t shadow, const vga_index color, const uint8_t opacity) {
+    const int x = item->x + offset_x;
+    const int y = item->y + offset_y;
     if(shadow & GLYPH_SHADOW_RIGHT) {
-        video_draw_offset(item->glyph, x + 1, y, palette_offset, 255);
+        draw_glyph(item->glyph, x + 1, y, color, opacity);
     }
     if(shadow & GLYPH_SHADOW_LEFT) {
-        video_draw_offset(item->glyph, x - 1, y, palette_offset, 255);
+        draw_glyph(item->glyph, x - 1, y, color, opacity);
     }
     if(shadow & GLYPH_SHADOW_BOTTOM) {
-        video_draw_offset(item->glyph, x, y + 1, palette_offset, 255);
+        draw_glyph(item->glyph, x, y + 1, color, opacity);
     }
     if(shadow & GLYPH_SHADOW_TOP) {
-        video_draw_offset(item->glyph, x, y - 1, palette_offset, 255);
+        draw_glyph(item->glyph, x, y - 1, color, opacity);
     }
 }
 
-static inline void draw_foreground(const text_layout_item *item, int16_t offset_x, int16_t offset_y, vga_index color) {
-    int palette_offset = (int)color - 1;
-    int x = item->x + offset_x;
-    int y = item->y + offset_y;
-    video_draw_offset(item->glyph, x, y, palette_offset, 255);
+static inline void draw_foreground(const text_layout_item *item, const int16_t offset_x, const int16_t offset_y,
+                                   const vga_index color, const uint8_t opacity) {
+    draw_glyph(item->glyph, item->x + offset_x, item->y + offset_y, color, opacity);
 }
 
-void text_draw(text *t, int16_t offset_x, int16_t offset_y) {
+void text_draw_opacity(text *t, int16_t offset_x, int16_t offset_y, uint8_t opacity) {
     assert(t != NULL);
+    if(opacity == 0) {
+        return;
+    }
     text_layout_item *item;
     iterator it;
     text_generate_layout(t); // Ensure we have a layout
@@ -572,12 +588,28 @@ void text_draw(text *t, int16_t offset_x, int16_t offset_y) {
     // First the shadows for all letters.
     vector_iter_begin(&t->layout.items, &it);
     foreach(it, item) {
-        draw_shadow(item, offset_x, offset_y, t->shadow, t->shadow_color);
+        draw_shadow(item, offset_x, offset_y, t->shadow, t->shadow_color, opacity);
     }
 
     // Then the actual letter foregrounds.
     vector_iter_begin(&t->layout.items, &it);
     foreach(it, item) {
-        draw_foreground(item, offset_x, offset_y, t->text_color);
+        draw_foreground(item, offset_x, offset_y, t->text_color, opacity);
     }
+}
+
+void text_draw(text *t, int16_t offset_x, int16_t offset_y) {
+    text_draw_opacity(t, offset_x, offset_y, 255);
+}
+
+bool text_get_glyph_pos(text *t, size_t index, int16_t *x, int16_t *y) {
+    assert(t != NULL);
+    text_generate_layout(t);
+    if(index >= vector_size(&t->layout.items)) {
+        return false;
+    }
+    const text_layout_item *item = vector_get(&t->layout.items, (unsigned int)index);
+    *x = (int16_t)item->x;
+    *y = (int16_t)item->y;
+    return true;
 }

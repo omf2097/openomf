@@ -1,16 +1,11 @@
+#include "common.h"
 #include "formats/af.h"
 #include "formats/error.h"
-#include <CUnit/Basic.h>
-#include <CUnit/CUnit.h>
 
 sd_af_file af;
 
 void test_sd_af_create(void) {
-    int ret;
-    ret = sd_af_create(&af);
-    CU_ASSERT(ret == SD_SUCCESS);
-    ret = sd_af_create(NULL);
-    CU_ASSERT(ret == SD_INVALID_INPUT);
+    sd_af_create(&af);
 }
 
 void test_sd_af_free(void) {
@@ -24,44 +19,38 @@ void test_af_roundtrip(void) {
     sd_animation ani;
     int ret;
 
-    ret = sd_af_create(&new);
-    CU_ASSERT(ret == SD_SUCCESS);
+    sd_af_create(&new);
 
     // Set some values
-    new.file_id = 1;
+    new.fighter_id = 1;
     new.exec_window = 2;
     new.endurance = 3;
-    new.unknown_b = 4;
+    new.upwards_jump_frame_limit = 4;
     new.health = 5;
     new.forward_speed = 6;
     new.reverse_speed = 7;
     new.jump_speed = 8;
     new.fall_speed = 9;
-    new.unknown_c = 10;
-    new.unknown_d = 11;
-    memset(new.soundtable, 10, sizeof(new.soundtable));
+    new.version_1 = 10;
+    new.ai_projectile_y_threshold = 11;
+    memset(new.sound_table, 10, sizeof(new.sound_table));
 
     // Create a new move
-    ret = sd_move_create(&move);
-    CU_ASSERT(ret == SD_SUCCESS);
-    ret = sd_move_set_footer_string(&move, "A10-B10-C10");
-    CU_ASSERT(ret == SD_SUCCESS);
-    ret = sd_move_set_move_string(&move, "D10-E10");
-    CU_ASSERT(ret == SD_SUCCESS);
+    sd_move_create(&move);
+    str_set_c(&move.footer_string, "A10-B10-C10");
+    str_set_c(&move.move_string, "D10-E10");
 
     // Create a new animation for move
-    ret = sd_animation_create(&ani);
-    CU_ASSERT(ret == SD_SUCCESS);
-    ret = sd_animation_set_anim_string(&ani, "F10-G10-H10");
-    CU_ASSERT(ret == SD_SUCCESS);
-    ret = sd_animation_push_extra_string(&ani, "s10A100");
-    CU_ASSERT(ret == SD_SUCCESS);
-    ret = sd_animation_push_extra_string(&ani, "s10B100");
-    CU_ASSERT(ret == SD_SUCCESS);
+    sd_animation_create(&ani);
+    str_set_c(&ani.anim_string, "F10-G10-H10");
+    str extra_string;
+    str_from_c(&extra_string, "s10A100");
+    vector_append(&ani.extra_strings, &extra_string);
+    str_from_c(&extra_string, "s10B100");
+    vector_append(&ani.extra_strings, &extra_string);
 
     // Copy animation to move
-    ret = sd_move_set_animation(&move, &ani);
-    CU_ASSERT(ret == SD_SUCCESS);
+    sd_move_set_animation(&move, &ani);
 
     // Copy move to AF file
     ret = sd_af_set_move(&new, 0, &move);
@@ -71,44 +60,40 @@ void test_af_roundtrip(void) {
     path_from_c(&test_af_file, "test.af");
 
     // Roundtripping
-    ret = sd_af_create(&loaded);
-    CU_ASSERT(ret == SD_SUCCESS);
+    sd_af_create(&loaded);
     ret = sd_af_save(&new, &test_af_file);
     CU_ASSERT(ret == SD_SUCCESS);
     ret = sd_af_load(&loaded, &test_af_file);
     CU_ASSERT(ret == SD_SUCCESS);
 
     // Check some random samples from sd_af_file
-    CU_ASSERT_EQUAL(loaded.file_id, new.file_id);
-    CU_ASSERT_EQUAL(loaded.unknown_c, new.unknown_c);
-    CU_ASSERT_EQUAL(loaded.unknown_d, new.unknown_d);
-    CU_ASSERT_NSTRING_EQUAL(loaded.soundtable, new.soundtable, 30);
+    CU_ASSERT_EQUAL(loaded.fighter_id, new.fighter_id);
+    CU_ASSERT_EQUAL(loaded.version_1, new.version_1);
+    CU_ASSERT_EQUAL(loaded.ai_projectile_y_threshold, new.ai_projectile_y_threshold);
+    CU_ASSERT_NSTRING_EQUAL(loaded.sound_table, new.sound_table, 30);
 
     // Make sure ID 0 exists in moves
-    CU_ASSERT_PTR_NOT_NULL(new.moves[0]);
-    CU_ASSERT_PTR_NOT_NULL(loaded.moves[0]);
+    sd_move *new_move = sd_af_get_move(&new, 0);
+    sd_move *loaded_move = sd_af_get_move(&loaded, 0);
+    CU_ASSERT_PTR_NOT_NULL(new_move);
+    CU_ASSERT_PTR_NOT_NULL(loaded_move);
 
     // Check strings from move 0
-    CU_ASSERT_STRING_EQUAL(new.moves[0]->move_string, loaded.moves[0]->move_string);
-    CU_ASSERT_STRING_EQUAL(new.moves[0]->footer_string, loaded.moves[0]->footer_string);
+    CU_ASSERT_STRING_EQUAL(str_c(&new_move->move_string), str_c(&loaded_move->move_string));
+    CU_ASSERT_STRING_EQUAL(str_c(&new_move->footer_string), str_c(&loaded_move->footer_string));
 
     // Check that animation seems correct
-    CU_ASSERT_STRING_EQUAL(new.moves[0]->animation->anim_string, loaded.moves[0]->animation->anim_string);
-    CU_ASSERT(new.moves[0]->animation->extra_string_count == 2);
+    CU_ASSERT_STRING_EQUAL(str_c(&new_move->animation->anim_string), str_c(&loaded_move->animation->anim_string));
+    CU_ASSERT(vector_size(&new_move->animation->extra_strings) == 2);
 
+    sd_animation_free(&ani);
     sd_move_free(&move);
     sd_af_free(&new);
     sd_af_free(&loaded);
 }
 
 void af_test_suite(CU_pSuite suite) {
-    if(CU_add_test(suite, "test of sd_af_create", test_sd_af_create) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "test of AF empty roundtripping", test_af_roundtrip) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "test of sd_af_free", test_sd_af_free) == NULL) {
-        return;
-    }
+    ADD_TEST("test of sd_af_create", test_sd_af_create);
+    ADD_TEST("test of AF empty roundtripping", test_af_roundtrip);
+    ADD_TEST("test of sd_af_free", test_sd_af_free);
 }

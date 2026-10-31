@@ -33,6 +33,7 @@ typedef struct {
     int sound_vol;
     int music_vol;
     const char *player;
+    int music_type;
 } settings_sound;
 
 typedef struct {

@@ -1,6 +1,7 @@
 #ifndef GAME_STATE_H
 #define GAME_STATE_H
 
+#include "audio/sound_opts.h"
 #include "formats/rec_assertion.h"
 #include "game/game_state_type.h"
 #include "game/utils/serial.h"
@@ -23,9 +24,9 @@ bool game_state_check_assertion_is_met(rec_assertion *ass, game_state *gs);
 void game_state_match_settings_reset(game_state *gs);
 void game_state_copy_match_settings(game_state *gs, const match_settings *ms);
 void game_state_match_settings_defaults(game_state *gs);
-int game_state_create(game_state *gs, engine_init_flags *init_flags);
+int game_state_create(game_state *gs, const engine_init_flags *init_flags);
 void game_state_free(game_state **gs);
-int game_state_handle_event(game_state *gs, SDL_Event *event);
+bool game_state_handle_event(game_state *gs, SDL_Event *event);
 void game_state_render(game_state *gs);
 unsigned game_state_get_framebuffer_options(game_state *gs);
 void game_state_palette_transform(game_state *gs);
@@ -39,6 +40,7 @@ unsigned int game_state_is_running(game_state *gs);
 unsigned int game_state_is_paused(game_state *gs);
 void game_state_set_paused(game_state *gs, unsigned int paused);
 void game_state_set_next(game_state *gs, unsigned int next_scene_id);
+int game_state_swap_scene(game_state *gs, int scene_id);
 game_player *game_state_get_player(const game_state *gs, int player_id);
 int game_state_num_players(game_state *gs);
 void game_state_init_demo(game_state *gs);
@@ -50,8 +52,9 @@ object *game_state_find_object(game_state *gs, uint32_t object_id);
 int game_state_find_objects(game_state *gs, vector *out, bool (*predicate)(const object *obj, void *user_data),
                             void *ud);
 
-// used to play sounds that may be subject to rollback (eg sounds from player.c, HAR and arena)
-void game_state_play_sound(game_state *gs, int id, float volume, float panning, int pitch);
+// used to play sounds that may be subject to rollback (eg sounds from player.c, HAR and arena).
+// NULL opts means defaults.
+void game_state_play_sound(game_state *gs, int sound_id, const sound_opts *opts);
 
 int game_state_clone(game_state *src, game_state *dst);
 void game_state_clone_free(game_state *gs);

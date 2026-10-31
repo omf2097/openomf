@@ -7,6 +7,12 @@
 #include "utils/vec.h"
 #include "utils/vector.h"
 
+typedef enum
+{
+    BK_ANIMATION,
+    AF_ANIMATION
+} animation_source;
+
 // All HARs have these predefined animations
 enum
 {
@@ -46,7 +52,7 @@ typedef struct animation_t {
     vector sprites;
 } animation;
 
-void animation_create(animation *ani, array *sprites, void *src, int id);
+void animation_create(animation_source type, str *name, animation *ani, array *sprites, void *src, int id);
 sprite *animation_get_sprite(animation *ani, int sprite_id);
 void animation_free(animation *ani);
 

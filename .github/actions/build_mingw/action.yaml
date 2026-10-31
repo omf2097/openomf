@@ -7,7 +7,7 @@ runs:
       uses: ./.github/actions/version
 
     - name: Install apt Dependencies
-      uses: Eeems-Org/apt-cache-action@v1.3
+      uses: Eeems-Org/apt-cache-action@v1.5
       with:
         packages: mingw-w64 unzip wine64 wine
 

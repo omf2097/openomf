@@ -72,7 +72,7 @@ void export_to(sd_font *font, const path *directory, int split) {
         path filename;
         sd_rgba_image ch_img;
         sd_rgba_image_create(&ch_img, font->h, font->h);
-        for(int i = 32; i < 256; i++) {
+        for(unsigned i = 32; i < 256; i++) {
             filename = *directory;
             sd_font_decode_rgb(font, &ch_img, (char)(i - 32), 0, 0, 0);
             snprintf(tmp, 32, "uni%04x.png", i);

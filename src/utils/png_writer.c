@@ -9,7 +9,7 @@
 static_assert(PNG_LIBPNG_VER >= 10600, "libpng version should be 1.6.0 or later");
 
 static void abort_png(png_structp png, const char *err) {
-    crash(err);
+    crash_with_args("%s", err);
 }
 
 bool write_rgb_png(const path *filename, int w, int h, const unsigned char *data, bool has_alpha, bool flip) {
@@ -32,8 +32,8 @@ bool write_rgb_png(const path *filename, int w, int h, const unsigned char *data
     }
 
     png_init_io(png_ptr, handle);
-    png_set_IHDR(png_ptr, info_ptr, w, h, 8, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE,
-                 PNG_FILTER_TYPE_BASE);
+    png_set_IHDR(png_ptr, info_ptr, w, h, 8, has_alpha ? PNG_COLOR_TYPE_RGB_ALPHA : PNG_COLOR_TYPE_RGB,
+                 PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
     png_write_info(png_ptr, info_ptr);
 
     // Write rows; take into account write order (might be flipped)

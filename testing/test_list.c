@@ -1,5 +1,4 @@
-#include <CUnit/Basic.h>
-#include <CUnit/CUnit.h>
+#include "common.h"
 #include <utils/allocator.h>
 #include <utils/iterator.h>
 #include <utils/list.h>
@@ -400,64 +399,24 @@ void test_list_get_backward(void) {
 
 void list_test_suite(CU_pSuite suite) {
     // Add tests
-    if(CU_add_test(suite, "Test for list create", test_list_create) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for list append", test_list_append) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for list prepend", test_list_prepend) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for list iter_next", test_list_iter_next) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for list iter_peek", test_list_iter_peek) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for list iter_prev", test_list_iter_prev) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for list get", test_list_get) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for list delete", test_list_delete) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for list iter_append", test_list_iter_append) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for list first and last", test_list_first_last) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for list pop_front", test_list_pop_front) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for list pop_back", test_list_pop_back) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for list free_cb", test_list_free_cb) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for list empty operations", test_list_empty_operations) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for list delete first", test_list_delete_first) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for list delete last", test_list_delete_last) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for list delete single", test_list_delete_single) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for list iter_append middle", test_list_iter_append_middle) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for list iter_append end", test_list_iter_append_end) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for list get backward", test_list_get_backward) == NULL) {
-        return;
-    }
+    ADD_TEST("Test for list create", test_list_create);
+    ADD_TEST("Test for list append", test_list_append);
+    ADD_TEST("Test for list prepend", test_list_prepend);
+    ADD_TEST("Test for list iter_next", test_list_iter_next);
+    ADD_TEST("Test for list iter_peek", test_list_iter_peek);
+    ADD_TEST("Test for list iter_prev", test_list_iter_prev);
+    ADD_TEST("Test for list get", test_list_get);
+    ADD_TEST("Test for list delete", test_list_delete);
+    ADD_TEST("Test for list iter_append", test_list_iter_append);
+    ADD_TEST("Test for list first and last", test_list_first_last);
+    ADD_TEST("Test for list pop_front", test_list_pop_front);
+    ADD_TEST("Test for list pop_back", test_list_pop_back);
+    ADD_TEST("Test for list free_cb", test_list_free_cb);
+    ADD_TEST("Test for list empty operations", test_list_empty_operations);
+    ADD_TEST("Test for list delete first", test_list_delete_first);
+    ADD_TEST("Test for list delete last", test_list_delete_last);
+    ADD_TEST("Test for list delete single", test_list_delete_single);
+    ADD_TEST("Test for list iter_append middle", test_list_iter_append_middle);
+    ADD_TEST("Test for list iter_append end", test_list_iter_append_end);
+    ADD_TEST("Test for list get backward", test_list_get_backward);
 }

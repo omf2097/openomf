@@ -94,4 +94,13 @@ int omf_strcasecmp(char const *s1, char const *s2);
  */
 size_t omf_strnlen_s(char const *str, size_t strsz);
 
+/**
+ * @brief snprintf for nonliteral format string.
+ * @details Call snprintf with nonliteral format string.
+ * @param str Buffer to write into
+ * @param size Maximum number of bytes to write, including '\0'
+ * @return Number of bytes written, or negative value on error
+ */
+int unsafe_snprintf(char *str, size_t size, const char *format, ...);
+
 #endif // C_STRING_UTIL_H

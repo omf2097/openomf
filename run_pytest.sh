@@ -14,4 +14,4 @@ fi
 export OPENOMF_BIN="./${OPENOMF_BIN#$BUILD_DIR}"
 export OPENOMF_RESOURCE_PATH="$PWD/$BUILD_DIR"
 
-exec poetry run pytest -vrP pytest
+exec poetry run pytest -vrx --tb=line pytest

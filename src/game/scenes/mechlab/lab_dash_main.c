@@ -21,7 +21,7 @@
 #include "video/video.h"
 
 bool lab_dash_main_photo_select(component *c, void *userdata) {
-    trnmenu_finish(c->parent);
+    trnmenu_finish(component_get_parent(c));
     return true;
 }
 
@@ -29,7 +29,7 @@ bool lab_dash_main_photo_left(component *c, void *userdata) {
     dashboard_widgets *dw = userdata;
     portrait_prev(dw->photo[0]);
     dw->pilot->photo_id = portrait_selected(dw->photo[0]);
-    portrait_load(dw->pilot->photo, &dw->pilot->palette, PIC_PLAYERS, dw->pilot->photo_id);
+    portrait_load(dw->pilot->photo, &dw->pilot->palette, dw->pilot->photo_id);
     palette_load_player_colors(&dw->pilot->palette, 0);
     return true;
 }
@@ -38,7 +38,7 @@ bool lab_dash_main_photo_right(component *c, void *userdata) {
     dashboard_widgets *dw = userdata;
     portrait_next(dw->photo[0]);
     dw->pilot->photo_id = portrait_selected(dw->photo[0]);
-    portrait_load(dw->pilot->photo, &dw->pilot->palette, PIC_PLAYERS, dw->pilot->photo_id);
+    portrait_load(dw->pilot->photo, &dw->pilot->palette, dw->pilot->photo_id);
     palette_load_player_colors(&dw->pilot->palette, 0);
     return true;
 }
@@ -54,7 +54,7 @@ bool lab_dash_main_chr_load(component *c, void *userdata) {
 
     assert(oldchr != NULL);
     assert(oldchr != chr);
-    log_debug("Freeing previous CHR %s", oldchr->pilot.name);
+    log_debug("Freeing previous CHR %s", str_c(&oldchr->pilot.name));
     sd_chr_free(oldchr);
     omf_free(oldchr);
 
@@ -63,12 +63,11 @@ bool lab_dash_main_chr_load(component *c, void *userdata) {
     if(dw->savegames) {
         iterator it;
         list_iter_begin(dw->savegames, &it);
-        sd_chr_file *chr = NULL;
 
         int16_t i = 0;
         foreach(it, chr) {
             if(i != dw->index) {
-                log_debug("Freeing CHR %s", chr->pilot.name);
+                log_debug("Freeing CHR %s", str_c(&chr->pilot.name));
                 sd_chr_free(chr);
             }
             ++i;
@@ -78,16 +77,16 @@ bool lab_dash_main_chr_load(component *c, void *userdata) {
         omf_free(dw->savegames);
     }
 
-    trnmenu_finish(c->parent); // We refer to the components sizer
+    trnmenu_finish(component_get_parent(c)); // We refer to the components sizer
     return true;
 }
 
 bool lab_dash_main_chr_delete(component *c, void *userdata) {
     dashboard_widgets *dw = userdata;
     game_player *p1 = game_state_get_player(dw->scene->gs, 0);
-    const char *pilot_name = p1->pilot->name;
+    const char *pilot_name = str_c(&p1->pilot->name);
     sg_delete(pilot_name);
-    trnmenu_finish(c->parent);
+    trnmenu_finish(component_get_parent(c));
     return true;
 }
 
@@ -131,7 +130,7 @@ void lab_dash_main_chr_init(component *menu, component *submenu) {
 
     sd_chr_file *chr = NULL;
     foreach(it, chr) {
-        if(p1->chr && strcmp(p1->chr->pilot.name, chr->pilot.name) == 0) {
+        if(p1->chr && str_equal(&p1->chr->pilot.name, &chr->pilot.name)) {
             sd_chr_free(chr);
             list_delete(dw->savegames, &it);
         }
@@ -183,8 +182,10 @@ void lab_dash_sim_update_portraits(dashboard_widgets *dw) {
         }
     }
 
-    component_layout(dw->photo_highlight->parent, dw->photo_highlight->parent->x, dw->photo_highlight->parent->y,
-                     dw->photo_highlight->parent->w, dw->photo_highlight->parent->h);
+    component *parent = component_get_parent(dw->photo_highlight);
+    const vec2i pos = component_get_pos(parent);
+    const vec2i size = component_get_size(parent);
+    component_layout(parent, pos.x, pos.y, size.x, size.y);
 }
 
 bool lab_dash_sim_left(component *c, void *userdata) {
@@ -334,7 +335,7 @@ void lab_dash_main_chr_done(component *menu, component *submenu) {
     if(dw->savegames) {
         list_iter_begin(dw->savegames, &it);
         foreach(it, chr) {
-            log_debug("freeing CHR %s", chr->pilot.name);
+            log_debug("freeing CHR %s", str_c(&chr->pilot.name));
             sd_chr_free(chr);
         }
         list_free(dw->savegames);
@@ -355,7 +356,7 @@ component *lab_dash_main_create(scene *s, dashboard_widgets *dw) {
     dw->index = 0;
 
     // Pilot image
-    dw->photo[0] = portrait_create(PIC_PLAYERS, 0);
+    dw->photo[0] = portrait_create(0);
     if(p1->pilot->photo) {
         log_debug("loading pilot photo from pilot");
         portrait_set_from_sprite(dw->photo[0], dw->pilot->photo);
@@ -364,7 +365,7 @@ component *lab_dash_main_create(scene *s, dashboard_widgets *dw) {
         sd_sprite_create(dw->pilot->photo);
         log_debug("selecting default pilot photo");
         dw->pilot->photo_id = portrait_selected(dw->photo[0]);
-        portrait_load(dw->pilot->photo, &dw->pilot->palette, PIC_PLAYERS, 0);
+        portrait_load(dw->pilot->photo, &dw->pilot->palette, 0);
     }
 
     palette_load_player_colors(&dw->pilot->palette, 0);
@@ -441,7 +442,7 @@ component *lab_dash_sim_create(scene *s, dashboard_widgets *dw) {
     xysizer_attach(xy, dw->photo_highlight, 6 + (2 * 60), -1, -1, -1);
 
     for(int i = 0; i < 5; i++) {
-        dw->photo[i] = portrait_create(PIC_PLAYERS, 0);
+        dw->photo[i] = portrait_create(0);
         xysizer_attach(xy, dw->photo[i], 6 + (i * 60), -1, -1, -1);
         dw->ranks[i] = label_create("NO RANK");
         label_set_font(dw->ranks[i], FONT_SMALL);
@@ -556,8 +557,8 @@ void lab_dash_main_update(scene *s, dashboard_widgets *dw) {
     label_set_text(dw->har_moves, lang_get(492 + p1->pilot->har_id));
 
     // Tournament and player name
-    label_set_text(dw->name, p1->pilot->name);
-    label_set_text(dw->tournament, p1->pilot->trn_desc);
+    label_set_text(dw->name, str_c(&p1->pilot->name));
+    label_set_text(dw->tournament, str_c(&p1->pilot->trn_desc));
 
     if(p1->pilot->photo) {
         log_debug("loading pilot photo from pilot");
@@ -565,7 +566,7 @@ void lab_dash_main_update(scene *s, dashboard_widgets *dw) {
     } else {
         log_debug("seletng default pilot photo");
         // Select pilot picture
-        portrait_select(dw->photo[0], PIC_PLAYERS, 0);
+        portrait_select(dw->photo[0], 0);
     }
 
     // Palette
@@ -583,7 +584,7 @@ void lab_dash_sim_update(scene *s, dashboard_widgets *dw, sd_pilot *pilot) {
     label_set_text(dw->losses, tmp);
     snprintf(tmp, sizeof(tmp), "MODEL: %s", lang_get(31 + pilot->har_id));
     label_set_text(dw->har_name, tmp);
-    snprintf(tmp, sizeof(tmp), "NAME: %s", pilot->name);
+    snprintf(tmp, sizeof(tmp), "NAME: %s", str_c(&pilot->name));
     label_set_text(dw->name, tmp);
 
     lab_dash_sim_update_portraits(dw);

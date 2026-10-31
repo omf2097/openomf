@@ -1,13 +1,12 @@
 #include <stdlib.h>
 
-#include "audio/audio.h"
+#include "game/audio/music_tracker.h"
 #include "game/game_state.h"
 #include "game/gui/text/text.h"
 #include "game/scenes/cutscene.h"
 #include "resources/ids.h"
 #include "resources/languages.h"
 #include "utils/allocator.h"
-#include "utils/c_string_util.h"
 #include "utils/str.h"
 #include "utils/vector.h"
 
@@ -54,9 +53,9 @@ static void cutscene_input_tick(scene *scene) {
         do {
             if(i->type == EVENT_TYPE_ACTION) {
                 if(i->event_data.action == ACT_KICK || i->event_data.action == ACT_PUNCH) {
-                    if(player1->chr && player1->chr->cutscene_text[local->pos + 1]) {
+                    if(player1->chr && str_size(&player1->chr->cutscene_text[local->pos + 1]) > 0) {
                         local->pos++;
-                        text_set_from_c(local->current, player1->chr->cutscene_text[local->pos]);
+                        text_set_from_c(local->current, str_c(&player1->chr->cutscene_text[local->pos]));
                     } else if(!player1->chr && local->pos < (int)vector_size(&local->texts) - 1) {
                         local->pos++;
                         text_set_from_str(local->current, vector_get(&local->texts, local->pos));
@@ -132,7 +131,7 @@ int cutscene_create(scene *scene) {
     const char *text = "";
     switch(scene->id) {
         case SCENE_END:
-            audio_play_music(PSM_END);
+            music_tracker_play(PSM_END);
             text = lang_get(END_TEXT);
             local->text_x = 10;
             local->text_y = 5;
@@ -176,7 +175,7 @@ int cutscene_create(scene *scene) {
                 palette_set_player_expanded_color(&p1->chr->pilot.palette);
             }
 
-            audio_play_music(PSM_END);
+            music_tracker_play(PSM_END);
 
             // load all the animations, in order
             // including the one for our HAR
@@ -207,7 +206,7 @@ int cutscene_create(scene *scene) {
 
     if(p1->chr) {
         local->pos = 0;
-        text_set_from_c(local->current, p1->chr->cutscene_text[local->pos]);
+        text_set_from_c(local->current, str_c(&p1->chr->cutscene_text[local->pos]));
     } else {
         str_split_c(&local->texts, text, '\n');
         local->pos = 0;

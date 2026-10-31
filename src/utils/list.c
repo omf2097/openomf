@@ -15,10 +15,7 @@ void list_create_cb(list *list, list_free_cb free_cb) {
     list->free_cb = free_cb;
 }
 
-void list_free(list *list) {
-    if(list->size == 0) {
-        return;
-    }
+void list_clear(list *list) {
     list_node *now = list->first;
     while(now != NULL) {
         list_node *next = now->next;
@@ -29,7 +26,13 @@ void list_free(list *list) {
         omf_free(now);
         now = next;
     }
+    list->first = NULL;
+    list->last = NULL;
     list->size = 0;
+}
+
+void list_free(list *list) {
+    list_clear(list);
 }
 
 void list_prepend(list *list, const void *ptr, size_t size) {

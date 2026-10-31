@@ -1,7 +1,17 @@
+/**
+ * @file memwriter.h
+ * @brief In-memory binary writer.
+ * @details A writer that operates on a memory buffer, mirroring the file writer API.
+ * @copyright MIT License
+ * @date 2013-2026
+ * @author OpenOMF Project
+ */
+
 #ifndef MEMWRITER_H
 #define MEMWRITER_H
 
 #include "formats/internal/writer.h"
+#include "utils/str.h"
 #include <stdint.h>
 
 typedef struct memwriter_t {
@@ -17,6 +27,7 @@ long memwriter_pos(const memwriter *writer);
 void memwriter_xor(memwriter *writer, uint8_t key);
 
 void memwrite_buf(memwriter *writer, const char *buf, int len);
+void memwrite_fixed_str(memwriter *writer, const str *src, size_t len);
 void memwrite_ubyte(memwriter *writer, uint8_t value);
 void memwrite_uword(memwriter *writer, uint16_t value);
 void memwrite_udword(memwriter *writer, uint32_t value);

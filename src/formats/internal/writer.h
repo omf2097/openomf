@@ -1,3 +1,12 @@
+/**
+ * @file writer.h
+ * @brief Binary file writer.
+ * @details Buffered writer for binary file data.
+ * @copyright MIT License
+ * @date 2013-2026
+ * @author OpenOMF Project
+ */
+
 #ifndef SD_WRITER_H
 #define SD_WRITER_H
 
@@ -38,7 +47,7 @@ int sd_writer_seek_end(const sd_writer *writer, long offset);
  */
 int sd_write_buf(sd_writer *writer, const char *buf, size_t len);
 
-int sd_write_fprintf(const sd_writer *writer, const char *format, ...);
+int sd_write_fprintf(const sd_writer *writer, const char *format, ...) ATTR_FORMAT_PRINTF(2, 3);
 
 void sd_write_ubyte(sd_writer *writer, uint8_t data);
 void sd_write_uword(sd_writer *writer, uint16_t data);
@@ -54,13 +63,26 @@ void sd_write_float(sd_writer *writer, float data);
 void sd_write_fill(sd_writer *writer, char content, size_t len);
 
 /**
- * @brief Writes a string object
- *
+ * @brief Writes a string whose length field counts the string including the null terminator.
  * @param writer Writer object
  * @param src Source string
- * @param null_terminated Should the string be null terminated when written (true = yes);
  */
-void sd_write_str(sd_writer *writer, str *src, bool null_terminated);
+void sd_write_padded_str(sd_writer *writer, const str *src);
+
+/**
+ * @brief Writes a string whose length field counts the string excluding the null terminator.
+ * @param writer Writer object
+ * @param src Source string
+ */
+void sd_write_terminated_str(sd_writer *writer, const str *src);
+
+/**
+ * @brief Writes a fixed-size, null-padded string field.
+ * @param writer Writer object
+ * @param src Source string
+ * @param len Size of the fixed field in bytes
+ */
+void sd_write_fixed_str(sd_writer *writer, const str *src, size_t len);
 
 void sd_write_variable_str(sd_writer *w, const char *str);
 

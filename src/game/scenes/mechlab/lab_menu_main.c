@@ -2,7 +2,6 @@
 
 #include "formats/chr.h"
 #include "game/common_defines.h"
-#include "game/gui/sizer.h"
 #include "game/gui/spritebutton.h"
 #include "game/gui/trn_menu.h"
 #include "game/scenes/mechlab.h"
@@ -14,6 +13,7 @@
 #include "resources/languages.h"
 #include "resources/sgmanager.h"
 #include "utils/allocator.h"
+#include "utils/c_string_util.h"
 #include "utils/log.h"
 
 void lab_menu_main_arena(component *c, void *userdata) {
@@ -67,18 +67,18 @@ void lab_menu_main_quit(component *c, void *userdata) {
 void lab_menu_main_buy_enter(component *c, void *userdata) {
     scene *s = userdata;
     mechlab_set_selling(s, false);
-    trnmenu_set_submenu(c->parent, lab_menu_customize_create(s));
+    trnmenu_set_submenu(component_get_parent(c), lab_menu_customize_create(s));
 }
 
 void lab_menu_main_sell_enter(component *c, void *userdata) {
     scene *s = userdata;
     mechlab_set_selling(s, true);
-    trnmenu_set_submenu(c->parent, lab_menu_customize_create(s));
+    trnmenu_set_submenu(component_get_parent(c), lab_menu_customize_create(s));
 }
 
 void lab_menu_main_training_enter(component *c, void *userdata) {
     scene *s = userdata;
-    trnmenu_set_submenu(c->parent, lab_menu_training_create(s));
+    trnmenu_set_submenu(component_get_parent(c), lab_menu_training_create(s));
 }
 
 void lab_menu_main_new(component *c, void *userdata) {
@@ -104,7 +104,7 @@ void lab_menu_main_load(component *c, void *userdata) {
         mechlab_open_popup(s, lang_get(157));
         return;
     }
-    trnmenu_set_submenu(c->parent, mechlab_chrload_menu_create(s));
+    trnmenu_set_submenu(component_get_parent(c), mechlab_chrload_menu_create(s));
 }
 
 void lab_menu_main_delete(component *c, void *userdata) {
@@ -115,13 +115,13 @@ void lab_menu_main_delete(component *c, void *userdata) {
         mechlab_open_popup(s, lang_get(159));
         return;
     }
-    trnmenu_set_submenu(c->parent, mechlab_chrdelete_menu_create(s));
+    trnmenu_set_submenu(component_get_parent(c), mechlab_chrdelete_menu_create(s));
 }
 
 void lab_menu_main_sim(component *c, void *userdata) {
     scene *s = userdata;
     mechlab_select_dashboard(s, DASHBOARD_SIM);
-    trnmenu_set_submenu(c->parent, mechlab_sim_menu_create(s));
+    trnmenu_set_submenu(component_get_parent(c), mechlab_sim_menu_create(s));
 }
 
 enum lab_buttons
@@ -157,10 +157,10 @@ static const button_details details_list[] = {
 void lab_menu_focus_arena(component *c, bool focused, void *userdata) {
     if(focused) {
         scene *s = userdata;
-        sd_chr_enemy *enemy = mechlab_next_opponent(s);
+        const sd_chr_enemy *enemy = mechlab_next_opponent(s);
         if(enemy) {
             char tmp[100];
-            snprintf(tmp, 100, lang_get(537), enemy->pilot.name);
+            unsafe_snprintf(tmp, 100, lang_get(537), str_c(&enemy->pilot.name));
             mechlab_set_hint(s, tmp);
         }
     }
@@ -239,10 +239,10 @@ void lab_menu_tick_arena(component *c, void *userdata) {
     game_player *p1 = game_state_get_player(s->gs, 0);
     if(p1->chr && p1->chr->pilot.rank > 1) {
         component_disable(c, 0);
-        c->supports_select = true;
+        component_set_selectable(c, true);
     } else {
         component_disable(c, 1);
-        c->supports_select = false;
+        component_set_selectable(c, false);
     }
 }
 
@@ -251,10 +251,10 @@ void lab_menu_tick_in_tournament(component *c, void *userdata) {
     game_player *p1 = game_state_get_player(s->gs, 0);
     if(p1->chr && p1->chr->pilot.rank != 0) {
         component_disable(c, 0);
-        c->supports_select = true;
+        component_set_selectable(c, true);
     } else {
         component_disable(c, 1);
-        c->supports_select = false;
+        component_set_selectable(c, false);
     }
 }
 
@@ -263,10 +263,10 @@ static void lab_menu_tick_chr_loaded(component *c, void *userdata) {
     game_player *p1 = game_state_get_player(s->gs, 0);
     if(p1->chr) {
         component_disable(c, 0);
-        c->supports_select = true;
+        component_set_selectable(c, true);
     } else {
         component_disable(c, 1);
-        c->supports_select = false;
+        component_set_selectable(c, false);
     }
 }
 

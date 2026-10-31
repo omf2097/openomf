@@ -3,6 +3,7 @@
 
 #include "audio/audio.h"
 #include "formats/pilot.h"
+#include "game/audio/music_tracker.h"
 #include "game/game_state.h"
 #include "game/gui/menu_background.h"
 #include "game/gui/progressbar.h"
@@ -471,10 +472,10 @@ void handle_action(scene *scene, int player, int action) {
                 progressbar_set_highlight(local->bar_stat[player][local->cheat_pilot_stats_stat[player]], 1);
                 break;
             }
-            // [[fallthrough]]
+            // FALLTHRU
         case ACT_PUNCH:
             *done = 1;
-            audio_play_sound(20, 0.5f, 0.0f, 0);
+            audio_play_sound_simple(20, 0);
             if(CURSOR_A_DONE(local) && (CURSOR_B_DONE(local) || !player2->selectable)) {
                 local->cursor[0].done = 0;
                 local->cursor[1].done = 0;
@@ -537,20 +538,8 @@ void handle_action(scene *scene, int player, int action) {
                         load_pilot_colors(scene, 1);
                     }
                     if(!local->network_game) {
-                        strncpy_or_truncate(player1->pilot->name, lang_get(player1->pilot->pilot_id + 20),
-                                            sizeof(player1->pilot->name));
-                        // TODO: lang: remove (the need for) newline stripping
-                        // 1player name strings end in a newline...
-                        if(player1->pilot->name[strlen(player1->pilot->name) - 1] == '\n') {
-                            player1->pilot->name[strlen(player1->pilot->name) - 1] = 0;
-                        }
-                        strncpy_or_truncate(player2->pilot->name, lang_get(player2->pilot->pilot_id + 20),
-                                            sizeof(player2->pilot->name));
-                        // TODO: lang: remove (the need for) newline stripping
-                        // 1player name strings end in a newline...
-                        if(player2->pilot->name[strlen(player2->pilot->name) - 1] == '\n') {
-                            player2->pilot->name[strlen(player2->pilot->name) - 1] = 0;
-                        }
+                        str_set_c(&player1->pilot->name, lang_get(player1->pilot->pilot_id + 20));
+                        str_set_c(&player2->pilot->name, lang_get(player2->pilot->pilot_id + 20));
                     }
                     game_state_set_next(scene->gs, SCENE_VS);
                 }
@@ -559,8 +548,9 @@ void handle_action(scene *scene, int player, int action) {
     }
 
     if(old_row != *row || old_column != *column) {
-        float panning = (float)(*column) * (2.0f / 5.0f) - 0.5f;
-        audio_play_sound(19, 0.5f, panning, 0);
+        // column 0..5 → panning -50..+50
+        int panning = (*column) * 100 / 5 - 50;
+        audio_play_sound_simple(19, panning);
         if(local->page == PILOT_SELECT) {
             if(player == 0) {
                 local->pilot_id_a = CURSOR_INDEX(local, player);
@@ -637,12 +627,15 @@ void melee_input_tick(scene *scene) {
 
     for(i = menu_ev; i; i = i->next) {
         if(i->type == EVENT_TYPE_ACTION && i->event_data.action == ACT_ESC) {
-            audio_play_sound(20, 0.5f, 0.0f, 0);
+            audio_play_sound_simple(20, 0);
             if(local->page == HAR_SELECT) {
                 // restore the player selection
                 restore_cursors_to(local, local->pilot_id_a, local->pilot_id_b);
                 local->page = PILOT_SELECT;
                 load_pilot_portraits_palette(scene);
+            } else if(scene->gs->net_mode == NET_MODE_LOBBY) {
+                // came from the network lobby (challenge arena); go back there
+                game_state_set_next(scene->gs, SCENE_LOBBY);
             } else {
                 game_state_set_next(scene->gs, SCENE_MENU);
             }
@@ -863,7 +856,7 @@ static void load_hars(scene *scene, melee_local *local, bool player2_is_selectab
     }
 }
 
-int melee_event_cb(scene *scene, SDL_Event *e) {
+bool melee_event_cb(scene *scene, SDL_Event *e) {
     melee_local *local = scene_get_userdata(scene);
     if(local->page == HAR_SELECT && e->type == SDL_KEYDOWN && SDLK_1 <= e->key.keysym.sym &&
        e->key.keysym.sym <= SDLK_6) {
@@ -882,8 +875,9 @@ int melee_event_cb(scene *scene, SDL_Event *e) {
             sd_pilot_set_player_color(player->pilot, pal_id, color);
             palette_load_player_colors(&player->pilot->palette, player_id);
         }
+        return true;
     }
-    return 1;
+    return false;
 }
 
 int melee_create(scene *scene) {
@@ -903,8 +897,8 @@ int melee_create(scene *scene) {
     }
 
     // if we already have a pilot name, we're coming back from VS.
-    if(!local->network_game && player1->pilot->name[0] != '\0' &&
-       (player2->pilot->name[0] != '\0' || !player2->selectable)) {
+    if(!local->network_game && str_size(&player1->pilot->name) > 0 &&
+       (str_size(&player2->pilot->name) > 0 || !player2->selectable)) {
         local->page = HAR_SELECT;
         local->pilot_id_a = player1->pilot->pilot_id;
         local->pilot_id_b = player2->pilot->pilot_id;
@@ -1033,7 +1027,7 @@ int melee_create(scene *scene) {
     scene_set_dynamic_tick_cb(scene, melee_tick);
 
     // Play correct music
-    audio_play_music(PSM_MENU);
+    music_tracker_play(PSM_MENU);
 
     // All done
     return 0;

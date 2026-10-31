@@ -12,12 +12,12 @@
 struct sd_reader {
     FILE *handle;
     long filesize;
-    int sd_errno;
+    int std_errno;
 };
 
 sd_reader *sd_reader_open(const path *filename) {
     sd_reader *reader = omf_calloc(1, sizeof(sd_reader));
-    reader->sd_errno = 0;
+    reader->std_errno = 0;
     // Attempt to open file (note: Binary mode!)
     reader->handle = path_fopen(filename, "rb");
     if(!reader->handle) {
@@ -51,7 +51,7 @@ long sd_reader_filesize(const sd_reader *reader) {
 }
 
 int sd_reader_errno(const sd_reader *reader) {
-    return reader->sd_errno;
+    return reader->std_errno;
 }
 
 void sd_reader_close(sd_reader *reader) {
@@ -61,7 +61,7 @@ void sd_reader_close(sd_reader *reader) {
 
 int sd_reader_set(sd_reader *reader, long offset) {
     if(fseek(reader->handle, offset, SEEK_SET) != 0) {
-        reader->sd_errno = errno;
+        reader->std_errno = errno;
         return 0;
     }
     return 1;
@@ -77,14 +77,14 @@ int sd_reader_ok(const sd_reader *reader) {
 long sd_reader_pos(sd_reader *reader) {
     long res = ftell(reader->handle);
     if(res == -1) {
-        reader->sd_errno = errno;
+        reader->std_errno = errno;
     }
     return res;
 }
 
 int sd_read_buf(sd_reader *reader, char *buf, size_t len) {
     if(fread(buf, 1, len, reader->handle) != len) {
-        reader->sd_errno = ferror(reader->handle);
+        reader->std_errno = ferror(reader->handle);
         return 0;
     }
     return 1;
@@ -95,7 +95,7 @@ int sd_peek_buf(sd_reader *reader, char *buf, int len) {
         return 0;
     }
     if(fseek(reader->handle, ftell(reader->handle) - len, SEEK_SET) == -1) {
-        reader->sd_errno = errno;
+        reader->std_errno = errno;
     }
     return 1;
 }
@@ -107,15 +107,15 @@ uint8_t sd_read_ubyte(sd_reader *reader) {
 }
 
 uint16_t sd_read_uword(sd_reader *reader) {
-    uint16_t d = 0;
-    sd_read_buf(reader, (char *)&d, 2);
-    return d;
+    uint8_t b[sizeof(uint16_t)] = {0};
+    sd_read_buf(reader, (char *)b, sizeof(b));
+    return (uint16_t)b[0] | ((uint16_t)b[1] << 8);
 }
 
 uint32_t sd_read_udword(sd_reader *reader) {
-    uint32_t d = 0;
-    sd_read_buf(reader, (char *)&d, 4);
-    return d;
+    uint8_t b[sizeof(uint32_t)] = {0};
+    sd_read_buf(reader, (char *)b, sizeof(b));
+    return (uint32_t)b[0] | ((uint32_t)b[1] << 8) | ((uint32_t)b[2] << 16) | ((uint32_t)b[3] << 24);
 }
 
 int8_t sd_read_byte(sd_reader *reader) {
@@ -125,20 +125,17 @@ int8_t sd_read_byte(sd_reader *reader) {
 }
 
 int16_t sd_read_word(sd_reader *reader) {
-    int16_t d = 0;
-    sd_read_buf(reader, (char *)&d, 2);
-    return d;
+    return (int16_t)sd_read_uword(reader);
 }
 
 int32_t sd_read_dword(sd_reader *reader) {
-    int32_t d = 0;
-    sd_read_buf(reader, (char *)&d, 4);
-    return d;
+    return (int32_t)sd_read_udword(reader);
 }
 
 float sd_read_float(sd_reader *reader) {
-    float f = 0;
-    sd_read_buf(reader, (char *)&f, 4);
+    uint32_t u = sd_read_udword(reader);
+    float f;
+    memcpy(&f, &u, sizeof(f));
     return f;
 }
 
@@ -149,15 +146,15 @@ uint8_t sd_peek_ubyte(sd_reader *reader) {
 }
 
 uint16_t sd_peek_uword(sd_reader *reader) {
-    uint16_t d = 0;
-    sd_peek_buf(reader, (char *)&d, 2);
-    return d;
+    uint8_t b[sizeof(uint16_t)] = {0};
+    sd_peek_buf(reader, (char *)b, (int)sizeof(b));
+    return (uint16_t)b[0] | ((uint16_t)b[1] << 8);
 }
 
 uint32_t sd_peek_udword(sd_reader *reader) {
-    uint32_t d = 0;
-    sd_peek_buf(reader, (char *)&d, 4);
-    return d;
+    uint8_t b[sizeof(uint32_t)] = {0};
+    sd_peek_buf(reader, (char *)b, (int)sizeof(b));
+    return (uint32_t)b[0] | ((uint32_t)b[1] << 8) | ((uint32_t)b[2] << 16) | ((uint32_t)b[3] << 24);
 }
 
 int8_t sd_peek_byte(sd_reader *reader) {
@@ -167,20 +164,17 @@ int8_t sd_peek_byte(sd_reader *reader) {
 }
 
 int16_t sd_peek_word(sd_reader *reader) {
-    int16_t d = 0;
-    sd_peek_buf(reader, (char *)&d, 2);
-    return d;
+    return (int16_t)sd_peek_uword(reader);
 }
 
 int32_t sd_peek_dword(sd_reader *reader) {
-    int32_t d = 0;
-    sd_peek_buf(reader, (char *)&d, 4);
-    return d;
+    return (int32_t)sd_peek_udword(reader);
 }
 
 float sd_peek_float(sd_reader *reader) {
-    float f = 0;
-    sd_peek_buf(reader, (char *)&f, 4);
+    uint32_t u = sd_peek_udword(reader);
+    float f;
+    memcpy(&f, &u, sizeof(f));
     return f;
 }
 
@@ -196,14 +190,14 @@ int sd_match(sd_reader *reader, const char *buf, unsigned int nbytes) {
 
 void sd_skip(sd_reader *reader, unsigned int nbytes) {
     if(fseek(reader->handle, nbytes, SEEK_CUR) == -1) {
-        reader->sd_errno = errno;
+        reader->std_errno = errno;
     }
 }
 
 int sd_read_scan(const sd_reader *reader, const char *format, ...) {
     va_list argp;
     va_start(argp, format);
-    int ret = fscanf(reader->handle, format, argp);
+    int ret = vfscanf(reader->handle, format, argp);
     va_end(argp);
     return ret;
 }
@@ -213,6 +207,29 @@ int sd_read_line(const sd_reader *reader, char *buffer, int maxlen) {
         return 1;
     }
     return 0;
+}
+
+bool sd_read_terminated_str(sd_reader *r, str *dst, uint16_t max_len) {
+    const uint16_t len = sd_read_uword(r);
+    if(len >= max_len) {
+        return false;
+    }
+    // Read the string plus its trailing (uncounted) null byte.
+    char *buf = omf_calloc(1, len + 2);
+    sd_read_buf(r, buf, len + 1);
+    const bool terminated = (buf[len] == 0);
+    if(terminated) {
+        str_from_c(dst, buf);
+    }
+    omf_free(buf);
+    return terminated;
+}
+
+void sd_read_fixed_str(sd_reader *r, str *dst, size_t len) {
+    char *buf = omf_calloc(1, len + 1); // Guaranteed null term at buf[len]
+    sd_read_buf(r, buf, len);
+    str_from_c(dst, buf);
+    omf_free(buf);
 }
 
 char *sd_read_variable_str(sd_reader *r) {
@@ -225,8 +242,11 @@ char *sd_read_variable_str(sd_reader *r) {
     return str;
 }
 
-void sd_read_str(sd_reader *r, str *dst) {
-    uint16_t len = sd_read_uword(r);
+bool sd_read_padded_str(sd_reader *r, str *dst, uint16_t max_len) {
+    const uint16_t len = sd_read_uword(r);
+    if(len >= max_len) {
+        return false;
+    }
     if(len > 0) {
         char *buf = omf_calloc(1, len + 1);
         sd_read_buf(r, buf, len);
@@ -235,4 +255,5 @@ void sd_read_str(sd_reader *r, str *dst) {
     } else {
         str_create(dst);
     }
+    return true;
 }

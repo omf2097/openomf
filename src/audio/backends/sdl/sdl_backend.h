@@ -1,3 +1,11 @@
+/**
+ * @file sdl_backend.h
+ * @brief SDL_mixer audio backend
+ * @copyright MIT License
+ * @date 2026
+ * @author OpenOMF Project
+ */
+
 #ifndef SDL_BACKEND_H
 #define SDL_BACKEND_H
 

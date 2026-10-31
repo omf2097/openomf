@@ -10,14 +10,14 @@
 
 struct sd_writer {
     FILE *handle;
-    int sd_errno;
+    int std_errno;
 };
 
 sd_writer *sd_writer_open(const path *filename) {
     sd_writer *writer = omf_calloc(1, sizeof(sd_writer));
 
     writer->handle = path_fopen(filename, "wb");
-    writer->sd_errno = 0;
+    writer->std_errno = 0;
     if(!writer->handle) {
         omf_free(writer);
         return 0;
@@ -27,7 +27,7 @@ sd_writer *sd_writer_open(const path *filename) {
 }
 
 int sd_writer_errno(const sd_writer *writer) {
-    return writer->sd_errno;
+    return writer->std_errno;
 }
 
 void sd_writer_close(sd_writer *writer) {
@@ -38,7 +38,7 @@ void sd_writer_close(sd_writer *writer) {
 long sd_writer_pos(sd_writer *writer) {
     long res = ftell(writer->handle);
     if(res == -1) {
-        writer->sd_errno = errno;
+        writer->std_errno = errno;
     }
     return res;
 }
@@ -60,12 +60,12 @@ int sd_write_buf(sd_writer *writer, const char *buf, size_t len) {
         if(len == 0) {
             return 1;
         } else {
-            writer->sd_errno = EINVAL;
+            writer->std_errno = EINVAL;
             return 0;
         }
     }
     if(fwrite(buf, 1, len, writer->handle) != len) {
-        writer->sd_errno = ferror(writer->handle);
+        writer->std_errno = ferror(writer->handle);
         return 0;
     }
     return 1;
@@ -84,11 +84,19 @@ void sd_write_ubyte(sd_writer *writer, uint8_t data) {
 }
 
 void sd_write_uword(sd_writer *writer, uint16_t data) {
-    sd_write_buf(writer, (char *)&data, 2);
+    uint8_t b[sizeof(data)];
+    b[0] = (uint8_t)data;
+    b[1] = (uint8_t)(data >> 8);
+    sd_write_buf(writer, (char *)b, sizeof(b));
 }
 
 void sd_write_udword(sd_writer *writer, uint32_t data) {
-    sd_write_buf(writer, (char *)&data, 4);
+    uint8_t b[sizeof(data)];
+    b[0] = (uint8_t)data;
+    b[1] = (uint8_t)(data >> 8);
+    b[2] = (uint8_t)(data >> 16);
+    b[3] = (uint8_t)(data >> 24);
+    sd_write_buf(writer, (char *)b, sizeof(b));
 }
 
 void sd_write_byte(sd_writer *writer, int8_t data) {
@@ -96,15 +104,17 @@ void sd_write_byte(sd_writer *writer, int8_t data) {
 }
 
 void sd_write_word(sd_writer *writer, int16_t data) {
-    sd_write_buf(writer, (char *)&data, 2);
+    sd_write_uword(writer, (uint16_t)data);
 }
 
 void sd_write_dword(sd_writer *writer, int32_t data) {
-    sd_write_buf(writer, (char *)&data, 4);
+    sd_write_udword(writer, (uint32_t)data);
 }
 
 void sd_write_float(sd_writer *writer, float data) {
-    sd_write_buf(writer, (char *)&data, sizeof(float));
+    uint32_t u;
+    memcpy(&u, &data, sizeof(u));
+    sd_write_udword(writer, u);
 }
 
 void sd_write_fill(sd_writer *writer, char content, size_t len) {
@@ -116,7 +126,7 @@ void sd_write_fill(sd_writer *writer, char content, size_t len) {
     while(left > 0) {
         now = (left > 1024) ? 1024 : left;
         if(fwrite(buffer, 1, now, writer->handle) != now) {
-            writer->sd_errno = ferror(writer->handle);
+            writer->std_errno = ferror(writer->handle);
             return;
         }
         left -= now;
@@ -133,20 +143,26 @@ void sd_write_variable_str(sd_writer *w, const char *str) {
     sd_write_buf(w, str, len);
 }
 
-void sd_write_str(sd_writer *w, str *src, bool null_terminated) {
+void sd_write_padded_str(sd_writer *w, const str *src) {
     // If string length is 0, it will not have ending null byte either.
     if(str_size(src) == 0) {
         sd_write_uword(w, 0);
         return;
     }
+    sd_write_uword(w, str_size(src) + 1);
+    sd_write_buf(w, str_c(src), str_size(src));
+    sd_write_ubyte(w, 0);
+}
 
-    // If string is null terminated, then length should be string size + 1 byte for NULL.
-    if(null_terminated) {
-        sd_write_uword(w, str_size(src) + 1);
-        sd_write_buf(w, str_c(src), str_size(src));
-        sd_write_ubyte(w, 0);
-    } else {
-        sd_write_uword(w, str_size(src));
-        sd_write_buf(w, str_c(src), str_size(src));
-    }
+void sd_write_terminated_str(sd_writer *w, const str *src) {
+    const uint16_t len = str_size(src);
+    sd_write_uword(w, len);
+    sd_write_buf(w, str_c(src), len);
+    sd_write_ubyte(w, 0);
+}
+
+void sd_write_fixed_str(sd_writer *w, const str *src, size_t len) {
+    const size_t n = (str_size(src) < len) ? str_size(src) : len;
+    sd_write_buf(w, str_c(src), n);
+    sd_write_fill(w, 0, len - n);
 }

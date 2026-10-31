@@ -6,7 +6,7 @@
 #ifndef VIDEO_H
 #define VIDEO_H
 
-#include <SDL_rect.h>
+#include "utils/rect.h"
 #include <stdbool.h>
 
 #include "video/surface.h"
@@ -20,7 +20,7 @@
  * @param data Raw pixel data (RGB format)
  * @param flipped Whether the image data is vertically flipped
  */
-typedef void (*video_screenshot_signal)(const SDL_Rect *rect, unsigned char *data, bool flipped);
+typedef void (*video_screenshot_signal)(const irect *rect, unsigned char *data, bool flipped);
 
 /**
  * @brief Scan for available renderers; should be run at startup.
@@ -190,7 +190,7 @@ void video_render_finish(void);
  * @brief Prepare for rendering to a specific screen area
  * @param area Rectangle defining the render area
  */
-void video_render_area_prepare(const SDL_Rect *area);
+void video_render_area_prepare(const irect *area);
 
 /**
  * @brief Finish rendering to an area and copy result to surface

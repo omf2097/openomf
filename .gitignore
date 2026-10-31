@@ -9,6 +9,10 @@ build/*.conf
 build/CMakeFiles/
 build/music/
 build/
+dist/
+.vcpkg/
+data/
+.DS_Store
 mingw_build/
 *.sw[klmnop]
 .idea
@@ -23,4 +27,3 @@ test.af
 test.bk
 test.trn
 test.rec
-

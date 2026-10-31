@@ -11,13 +11,13 @@
 void lab_menu_confirm_yes(component *c, void *userdata) {
     lab_menu_select_t *sel = userdata;
     sel->cb(c, sel->data);
-    trnmenu_finish(c->parent);
+    trnmenu_finish(component_get_parent(c));
 }
 
 void lab_menu_confirm_no(component *c, void *userdata) {
     lab_menu_select_t *sel = userdata;
     sel->cb(c, sel->data);
-    trnmenu_finish(c->parent);
+    trnmenu_finish(component_get_parent(c));
 }
 
 component *lab_menu_confirm_create(scene *s, lab_menu_select_cb yes, void *yesdata, lab_menu_select_cb no, void *nodata,

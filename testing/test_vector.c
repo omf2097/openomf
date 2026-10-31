@@ -1,5 +1,4 @@
-#include <CUnit/Basic.h>
-#include <CUnit/CUnit.h>
+#include "common.h"
 #include <utils/iterator.h>
 #include <utils/vector.h>
 
@@ -223,6 +222,42 @@ void test_vector_set(void) {
     vector_free(&test_vector);
 }
 
+void test_vector_insert_at(void) {
+    const int values[3] = {10, 20, 30};
+    vector test_vector;
+    vector_create(&test_vector, sizeof(int));
+    vector_append(&test_vector, &values[0]);
+    vector_append(&test_vector, &values[1]);
+    vector_append(&test_vector, &values[2]);
+
+    // Insert middle, elements shift
+    const int mid = 15;
+    CU_ASSERT(vector_insert_at(&test_vector, 1, &mid) == 0); // 10,15,20,30
+    CU_ASSERT(vector_size(&test_vector) == 4);
+    CU_ASSERT(*(int *)vector_get(&test_vector, 0) == 10);
+    CU_ASSERT(*(int *)vector_get(&test_vector, 1) == 15);
+    CU_ASSERT(*(int *)vector_get(&test_vector, 2) == 20);
+    CU_ASSERT(*(int *)vector_get(&test_vector, 3) == 30);
+
+    // Insert front
+    const int front = 5;
+    CU_ASSERT(vector_insert_at(&test_vector, 0, &front) == 0); // 5,10,15,20,30
+    CU_ASSERT(*(int *)vector_get(&test_vector, 0) == 5);
+    CU_ASSERT(*(int *)vector_get(&test_vector, 1) == 10);
+    CU_ASSERT(vector_size(&test_vector) == 5);
+
+    // Inserting at end is an append op
+    const int back = 99;
+    CU_ASSERT(vector_insert_at(&test_vector, vector_size(&test_vector), &back) == 0);
+    CU_ASSERT(vector_size(&test_vector) == 6);
+    CU_ASSERT(*(int *)vector_get(&test_vector, 5) == 99);
+
+    // Index past the end fails
+    CU_ASSERT(vector_insert_at(&test_vector, vector_size(&test_vector) + 1, &back) == 1);
+
+    vector_free(&test_vector);
+}
+
 void test_vector_delete_at(void) {
     int values[4] = {1, 2, 3, 4};
     vector test_vector;
@@ -422,75 +457,67 @@ void test_vector_zero_size(void) {
     vector_free(&zero_vector);
 }
 
+void test_vector_compact(void) {
+    vector v;
+    vector_create(&v, sizeof(int));
+
+    // Initially always sized 32
+    CU_ASSERT(v.reserved == 32);
+    for(int i = 0; i < 3; i++) {
+        vector_append(&v, &i);
+    }
+    CU_ASSERT(v.reserved == 32);
+    CU_ASSERT(vector_size(&v) == 3);
+
+    // Compact shrinks and keeps the contents
+    vector_compact(&v);
+    CU_ASSERT(v.reserved == 3);
+    CU_ASSERT(vector_size(&v) == 3);
+    CU_ASSERT(*(int *)vector_get(&v, 0) == 0);
+    CU_ASSERT(*(int *)vector_get(&v, 2) == 2);
+    vector_free(&v);
+
+    // If empty, release buffer entirely.
+    vector empty;
+    vector_create(&empty, sizeof(int));
+    vector_compact(&empty);
+    CU_ASSERT(empty.reserved == 0);
+    CU_ASSERT_PTR_NULL(empty.data);
+
+    // Appending again works.
+    const int x = 99;
+    vector_append(&empty, &x);
+    CU_ASSERT(vector_size(&empty) == 1);
+    CU_ASSERT(*(int *)vector_get(&empty, 0) == 99);
+    CU_ASSERT(empty.reserved >= 1);
+    vector_free(&empty);
+}
+
 void vector_test_suite(CU_pSuite suite) {
     // Add tests
-    if(CU_add_test(suite, "Test for vector create", test_vector_create) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for vector append", test_vector_append) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for vector get", test_vector_get) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for vector iter_next", test_vector_iter_next) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for vector iter_prev", test_vector_iter_prev) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for vector delete", test_vector_delete) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for vector swap_delete_at", test_vector_swap_delete_at) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for zero size vector operation", test_vector_zero_size) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for vector pop", test_vector_pop) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for vector back", test_vector_back) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for vector back on empty", test_vector_back_empty) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for vector clone", test_vector_clone) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for vector clone empty", test_vector_clone_empty) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for vector clear", test_vector_clear) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for vector set", test_vector_set) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for vector delete_at", test_vector_delete_at) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for vector swapdelete_at last element", test_vector_swapdelete_at_last) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for vector sort", test_vector_sort) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for vector append_ptr", test_vector_append_ptr) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for vector free callback", test_vector_free_callback) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for vector pop on empty", test_vector_pop_empty) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for vector delete on empty", test_vector_delete_empty) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for vector delete reverse iteration", test_vector_delete_reverse) == NULL) {
-        return;
-    }
+    ADD_TEST("Test for vector create", test_vector_create);
+    ADD_TEST("Test for vector append", test_vector_append);
+    ADD_TEST("Test for vector get", test_vector_get);
+    ADD_TEST("Test for vector iter_next", test_vector_iter_next);
+    ADD_TEST("Test for vector iter_prev", test_vector_iter_prev);
+    ADD_TEST("Test for vector delete", test_vector_delete);
+    ADD_TEST("Test for vector swap_delete_at", test_vector_swap_delete_at);
+    ADD_TEST("Test for zero size vector operation", test_vector_zero_size);
+    ADD_TEST("Test for vector pop", test_vector_pop);
+    ADD_TEST("Test for vector back", test_vector_back);
+    ADD_TEST("Test for vector back on empty", test_vector_back_empty);
+    ADD_TEST("Test for vector clone", test_vector_clone);
+    ADD_TEST("Test for vector clone empty", test_vector_clone_empty);
+    ADD_TEST("Test for vector clear", test_vector_clear);
+    ADD_TEST("Test for vector set", test_vector_set);
+    ADD_TEST("Test for vector insert_at", test_vector_insert_at);
+    ADD_TEST("Test for vector delete_at", test_vector_delete_at);
+    ADD_TEST("Test for vector swapdelete_at last element", test_vector_swapdelete_at_last);
+    ADD_TEST("Test for vector sort", test_vector_sort);
+    ADD_TEST("Test for vector append_ptr", test_vector_append_ptr);
+    ADD_TEST("Test for vector free callback", test_vector_free_callback);
+    ADD_TEST("Test for vector pop on empty", test_vector_pop_empty);
+    ADD_TEST("Test for vector delete on empty", test_vector_delete_empty);
+    ADD_TEST("Test for vector delete reverse iteration", test_vector_delete_reverse);
+    ADD_TEST("Test for vector compact", test_vector_compact);
 }

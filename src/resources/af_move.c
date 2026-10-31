@@ -1,12 +1,13 @@
 #include "resources/af_move.h"
 #include "formats/move.h"
+#include "resources/modmanager.h"
 
-void af_move_create(af_move *move, array *sprites, void *src, int id) {
+void af_move_create(str *name, af_move *move, array *sprites, void *src, int id) {
     sd_move *sdmv = (sd_move *)src;
-    str_from_c(&move->move_string, sdmv->move_string);
-    str_from_c(&move->footer_string, sdmv->footer_string);
+    str_from(&move->move_string, &sdmv->move_string);
+    str_from(&move->footer_string, &sdmv->footer_string);
     move->id = id;
-    move->next_move = sdmv->next_anim_id;
+    move->next_move = sdmv->play_if_hit;
     move->successor_id = sdmv->successor_id;
     move->category = sdmv->category;
     move->damage = sdmv->damage_amount;
@@ -17,7 +18,8 @@ void af_move_create(af_move *move, array *sprites, void *src, int id) {
     move->pos_constraints = sdmv->pos_constraint;
     move->throw_duration = sdmv->throw_duration;
     move->extra_string_selector = sdmv->extra_string_selector;
-    animation_create(&move->ani, sprites, sdmv->animation, id);
+    animation_create(AF_ANIMATION, name, &move->ani, sprites, sdmv->animation, id);
+    modmanager_get_af_move(name, id, move);
     if(id == ANIM_JUMPING) {
         // fixup the jump coordinates
         animation_fixup_coordinates(&move->ani, 0, JUMP_COORD_ADJUSTMENT * -1);

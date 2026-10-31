@@ -1,13 +1,14 @@
 #include "formats/af.h"
 #include "resources/af.h"
+#include "resources/modmanager.h"
 #include "resources/sprite.h"
 #include <string.h>
 
-void af_create(af *a, void *src) {
+void af_create(af *a, void *src, str *name) {
     sd_af_file *sdaf = (sd_af_file *)src;
 
     // Trivial stuff
-    a->id = sdaf->file_id;
+    a->id = sdaf->fighter_id;
     a->endurance = sdaf->endurance;
     a->health = sdaf->health;
     a->forward_speed = sdaf->forward_speed;
@@ -16,7 +17,7 @@ void af_create(af *a, void *src) {
     a->fall_speed = sdaf->fall_speed;
 
     // Sound translation table
-    memcpy(a->sound_translation_table, sdaf->soundtable, 30);
+    memcpy(a->sound_translation_table, sdaf->sound_table, 30);
 
     // Set defaults like master.dat
     // TODO: These may change according to pilot and HAR... Find out how.
@@ -28,13 +29,16 @@ void af_create(af *a, void *src) {
     array_create(&a->sprites);
 
     // Moves
-    for(int i = 0; i < 70; i++) {
-        if(sdaf->moves[i] != NULL) {
+    for(int i = 0; i < MAX_AF_MOVES; i++) {
+        sd_move *sd_move_ptr = sd_af_get_move(sdaf, i);
+        if(sd_move_ptr != NULL) {
             af_move *move = omf_calloc(1, sizeof(af_move));
-            af_move_create(move, &a->sprites, (void *)sdaf->moves[i], i);
+            af_move_create(name, move, &a->sprites, (void *)sd_move_ptr, i);
             array_set(&a->moves, i, move);
         }
     }
+
+    modmanager_get_fighter_header(name, a);
 }
 
 af_move *af_get_move(const af *a, int id) {

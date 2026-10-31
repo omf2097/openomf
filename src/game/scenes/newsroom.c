@@ -1,5 +1,5 @@
 #include "game/scenes/newsroom.h"
-#include "audio/audio.h"
+#include "game/audio/music_tracker.h"
 #include "game/gui/dialog.h"
 #include "game/gui/menu_background.h"
 #include "game/utils/settings.h"
@@ -243,18 +243,18 @@ void newsroom_input_tick(scene *scene) {
     game_player *p1 = game_state_get_player(scene->gs, 0);
     game_player *p2 = game_state_get_player(scene->gs, 1);
 
-    ctrl_event *event = NULL, *i;
+    ctrl_event *event = NULL, *e;
     game_state_menu_poll(scene->gs, &event);
-    i = event;
-    if(i) {
+    e = event;
+    if(e) {
         do {
-            if(i->type == EVENT_TYPE_ACTION) {
+            if(e->type == EVENT_TYPE_ACTION) {
                 if(dialog_is_visible(&local->continue_dialog)) {
-                    dialog_event(&local->continue_dialog, i->event_data.action);
+                    dialog_event(&local->continue_dialog, e->event_data.action, e->source);
                 } else if(dialog_is_visible(&local->accept_challenge_dialog)) {
-                    dialog_event(&local->accept_challenge_dialog, i->event_data.action);
-                } else if(i->event_data.action == ACT_ESC || i->event_data.action == ACT_KICK ||
-                          i->event_data.action == ACT_PUNCH) {
+                    dialog_event(&local->accept_challenge_dialog, e->event_data.action, e->source);
+                } else if(e->event_data.action == ACT_ESC || e->event_data.action == ACT_KICK ||
+                          e->event_data.action == ACT_PUNCH) {
                     local->screen++;
                     newsroom_fixup_str(local);
 
@@ -304,13 +304,7 @@ void newsroom_input_tick(scene *scene) {
                                     sd_pilot_set_player_color(p2->pilot, SECONDARY, p.color_2);
                                     sd_pilot_set_player_color(p2->pilot, TERTIARY, p.color_3);
 
-                                    strncpy_or_abort(p2->pilot->name, lang_get(p2->pilot->pilot_id + 20),
-                                                     sizeof(p2->pilot->name));
-                                    // TODO: lang: remove (the need for) newline stripping
-                                    // 1player name strings end in a newline...
-                                    if(p2->pilot->name[strlen(p2->pilot->name) - 1] == '\n') {
-                                        p2->pilot->name[strlen(p2->pilot->name) - 1] = 0;
-                                    }
+                                    str_set_c(&p2->pilot->name, lang_get(p2->pilot->pilot_id + 20));
 
                                     // make a new AI controller
                                     controller *ctrl = omf_calloc(1, sizeof(controller));
@@ -332,7 +326,7 @@ void newsroom_input_tick(scene *scene) {
                     }
                 }
             }
-        } while((i = i->next));
+        } while((e = e->next));
     }
     controller_free_chain(event);
 }
@@ -408,7 +402,7 @@ int newsroom_create(scene *scene) {
             p2->pilot = local->challenger;
             fight_stats->challenger = NULL;
         } else if(p1->chr) {
-            int health = game_player_get_score(p1)->health;
+            health = game_player_get_score(p1)->health;
             // see if we have meet any unranked challenger criteria
             for(int k = p1->chr->pilot.enemies_ex_unranked - 1; k < p1->chr->pilot.enemies_inc_unranked; k++) {
                 sd_pilot *p = &p1->chr->enemies[k]->pilot;
@@ -485,8 +479,8 @@ int newsroom_create(scene *scene) {
     // p2 pilot must be set by now
     assert(p2->pilot != NULL);
 
-    newsroom_set_names(local, p1->pilot->name, p2->pilot->name, p1->pilot->har_id, p2->pilot->har_id, p1->pilot->sex,
-                       p2->pilot->sex);
+    newsroom_set_names(local, str_c(&p1->pilot->name), str_c(&p2->pilot->name), p1->pilot->har_id, p2->pilot->har_id,
+                       p1->pilot->sex, p2->pilot->sex);
     newsroom_fixup_str(local);
 
     // Continue Dialog
@@ -514,7 +508,7 @@ int newsroom_create(scene *scene) {
     scene_set_startup_cb(scene, newsroom_startup);
 
     // Start correct music
-    audio_play_music(PSM_MENU);
+    music_tracker_play(PSM_MENU);
 
     return 0;
 }

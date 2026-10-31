@@ -139,10 +139,29 @@ static bool find_resource_path(path *dst) {
         }
         str_free(&tmp);
     }
+#if defined(__APPLE__)
+    if(base_path(&tmp)) {
+        // App bundles keep read-only resources outside Contents/MacOS.
+        str_append_c(&tmp, "../Resources/openomf");
+        if(scan_potential_resource_dirs(dst, &tmp, "resources/openomf.bk", "/")) {
+            log_debug("Resources found in macOS app bundle: %s", path_c(dst));
+            goto ok;
+        }
+        str_free(&tmp);
+    }
+#endif
     if(system_path(&tmp)) {
         // Check default paths. This may be set in CMAKE.
         if(scan_potential_resource_dirs(dst, &tmp, "openomf/resources/openomf.bk", "openomf/")) {
             log_debug("Resources found in system path: %s", path_c(dst));
+            goto ok;
+        }
+        str_free(&tmp);
+    }
+    if(env_str(&tmp, "APPDIR")) {
+        str_append_c(&tmp, "/usr/share/games/openomf");
+        if(scan_potential_resource_dirs(dst, &tmp, "resources/openomf.bk", "/")) {
+            log_debug("Resources found in APPDIR: %s", path_c(dst));
             goto ok;
         }
         str_free(&tmp);

@@ -12,9 +12,26 @@ OPTION(BUILD_LANGUAGES "Build Language Files" ON)
 OPTION(USE_COLORS "Use colors in log output" ON)
 OPTION(USE_OPUSFILE "Support ogg/opus music files" ON)
 OPTION(USE_EXTENDED_PALETTE "Use 1024-color extended palette instead of 256" ON)
+OPTION(ENABLE_MODMANAGER "Enable modmanager" ON)
 
 OPTION(USE_MINIUPNPC "Use miniupnpc for port forwarding" ON)
 OPTION(USE_NATPMP "Use natpmp for port forwarding" ON)
+OPTION(USE_ARGTABLE "Use argtable for parsing commandline arguments" ON)
+OPTION(USE_CONFUSE "Use confuse for config file persistence" ON)
+OPTION(USE_ZIP "Use zip (required for mods)" ON)
+
+if(MIN_LIB_BUILD)
+    message(STATUS "Building with minimal deps (for CI check)")
+    set(USE_MINIUPNPC OFF)
+    set(USE_NATPMP OFF)
+    set(USE_ARGTABLE OFF)
+    set(USE_CONFUSE OFF)
+    set(USE_ZIP OFF)
+    # turn off features that rely on these 3rd party deps
+    set(USE_TOOLS OFF)
+    set(BUILD_LANGUAGES OFF)
+    set(ENABLE_MODMANAGER OFF)
+endif()
 
 # vcpkg features must be set before project()
 if(USE_TESTS)
@@ -26,8 +43,43 @@ endif()
 if(USE_NATPMP)
     list(APPEND VCPKG_MANIFEST_FEATURES natpmp)
 endif()
+if(USE_CONFUSE)
+    list(APPEND VCPKG_MANIFEST_FEATURES confuse)
+endif()
+
+if(USE_TOOLS AND NOT USE_ARGTABLE)
+    message(FATAL_ERROR "Cannot USE_TOOLS without USE_ARGTABLE.\n Please either turn tools off by setting USE_TOOLS=OFF or enable the argtable dependency with USE_ARGTABLE=ON")
+endif()
+if(BUILD_LANGUAGES AND NOT USE_ARGTABLE)
+    message(FATAL_ERROR "Cannot BUILD_LANGUAGES without USE_ARGTABLE.\n Please either turn language-building off by setting BUILD_LANGUAGES=OFF or enable the argtable dependency with USE_ARGTABLE=ON")
+endif()
+if(ENABLE_MODMANAGER AND NOT USE_CONFUSE)
+    # FIXME: modmanager should use config.h instead of directly depending on libconfuse. yes, config.h would need to be taught new tricks.
+    message(FATAL_ERROR "Cannot currently ENABLE_MODMANAGER without USE_CONFUSE.\n Please either turn the modmanager off by setting ENABLE_MODMANAGER=OFF or enable the confuse dependency with USE_CONFUSE=ON")
+endif()
+if(ENABLE_MODMANAGER AND NOT USE_ZIP)
+    message(FATAL_ERROR "Cannot ENABLE_MODMANAGER without USE_ZIP.\n Please either turn the modmanager off by setting ENABLE_MODMANAGER=OFF or enable the confuse dependency with USE_ZIP=ON")
+endif()
 
 project(OpenOMF C)
+
+# Build capabilities are configured by the caller (e.g. a CI toolchain job).
+# Defaults preserve the existing desktop configuration.
+set(OMF_AUDIO_BACKENDS "sdl" CACHE STRING "Semicolon-separated audio backend plugins")
+set(OMF_VIDEO_RENDERERS "opengl3" CACHE STRING "Semicolon-separated renderer plugins")
+option(OMF_STRIP_GNU_BINARIES "Strip GNU Release binaries at link time" ON)
+
+set(OMF_USE_SDL_AUDIO_DRIVER OFF)
+if("sdl" IN_LIST OMF_AUDIO_BACKENDS)
+    set(OMF_USE_SDL_AUDIO_DRIVER ON)
+endif()
+set(OMF_USE_OPENGL_RENDERER OFF)
+if("opengl3" IN_LIST OMF_VIDEO_RENDERERS)
+    set(OMF_USE_OPENGL_RENDERER ON)
+endif()
+
+# Generate compile_commands.json so editors can find the correct headers.
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(USE_PCH ON)
 if(USE_PCH AND USE_TIDY)
@@ -51,20 +103,12 @@ if(MSVC)
     # Disable select warnings:
     # C4100: unreferenced formal parameter
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4100")
-    # C4456: declaration hides previous local declaration
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4456")
-    # C4459: declaration hides previous global declaration
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4459")
     # C4244: implicit conversion, possible loss of data
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4244")
     # C4267: implicit conversion from size_t, possible loss of data
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4267")
-    # C4389: 'equality-operator' : signed/unsigned mismatch
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4389")
     # _CRT_SECURE_NO_WARNINGS: disable warnings when calling functions like strncpy or sscanf
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /D_CRT_SECURE_NO_WARNINGS")
-    # _CRT_NONSTDC_NO_WARNINGS: disable warnings when calling POSIX functions like fileno
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /D_CRT_NONSTDC_NO_WARNINGS")
 
     # Error on certain warnings:
     # C4013: call to undefined function
@@ -84,12 +128,19 @@ if(MSVC)
     # C4702: unreachable code
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /we4702")
 else()
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wno-unused-parameter -Wformat -pedantic -Wvla")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wno-unused-parameter -Wformat=2 -pedantic -Wvla")
+    if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wformat-signedness")
+    endif()
     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -ggdb -Werror -fno-omit-frame-pointer")
     set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -g -O2 -fno-omit-frame-pointer -DNDEBUG")
     set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O2 -DNDEBUG")
     set(CMAKE_C_FLAGS_MINSIZEREL "${CMAKE_C_FLAGS_MINSIZEREL} -Os -DNDEBUG")
 endif()
+
+# Detect C11 uchar.h instead of assuming its availability from the OS.
+# All targets, including tools and tests, share this compatibility setting.
+include("cmake-scripts/DetectUchar.cmake")
 
 # Enable AddressSanitizer if requested
 if(USE_SANITIZERS)
@@ -144,17 +195,25 @@ file(GLOB_RECURSE OPENOMF_SRC
     "src/*/*.c" "src/*/*.h"
 )
 
+# Build vendored dependencies only when the feature needs their sources.
+if(NOT USE_ARGTABLE)
+    list(FILTER OPENOMF_SRC EXCLUDE REGEX "^src/vendored/argtable/")
+endif()
+if(NOT USE_ZIP)
+    list(FILTER OPENOMF_SRC EXCLUDE REGEX "^src/vendored/zip/")
+endif()
+
 # Remove all player plugin source code from OPENOMF_SRC
 list(FILTER OPENOMF_SRC EXCLUDE REGEX "^src/audio/backends/.*/")
-# Enable "NULL" player in debug builds, for automated testing
-list(APPEND OPENOMF_SRC
-    "$<$<CONFIG:Debug>:src/audio/backends/null/null_backend.c>"
-    "$<$<CONFIG:Debug>:src/audio/backends/null/null_backend.h>"
-)
-list(APPEND AUDIO_C_DEFINES "$<$<CONFIG:Debug>:ENABLE_NULL_AUDIO_BACKEND>")
-# and enable select render plugins
-set(ENABLED_AUDIO_BACKEND_PLUGINS sdl)
-foreach (PLUGIN ${ENABLED_AUDIO_BACKEND_PLUGINS})
+# Keep the NULL test backend in Debug unless already selected explicitly.
+if(NOT "null" IN_LIST OMF_AUDIO_BACKENDS)
+    list(APPEND OPENOMF_SRC
+        "$<$<CONFIG:Debug>:src/audio/backends/null/null_backend.c>"
+        "$<$<CONFIG:Debug>:src/audio/backends/null/null_backend.h>"
+    )
+    list(APPEND AUDIO_C_DEFINES "$<$<CONFIG:Debug>:ENABLE_NULL_AUDIO_BACKEND>")
+endif()
+foreach(PLUGIN ${OMF_AUDIO_BACKENDS})
     # add render plugin sources
     file(GLOB_RECURSE PLUGIN_SRC
         LIST_DIRECTORIES OFF
@@ -171,17 +230,29 @@ foreach (PLUGIN ${ENABLED_AUDIO_BACKEND_PLUGINS})
 endforeach ()
 set_source_files_properties("src/audio/audio.c" PROPERTIES COMPILE_DEFINITIONS "${AUDIO_C_DEFINES}")
 
+# Remove all null-source code from OPENOMF_SRC
+list(FILTER OPENOMF_SRC EXCLUDE REGEX "(sound|music)_sources/null_")
+# Enable null sources in debug builds, for automated testing
+list(APPEND OPENOMF_SRC
+    "$<$<CONFIG:Debug>:src/audio/sound_sources/null_sound_source.c>"
+    "$<$<CONFIG:Debug>:src/audio/sound_sources/null_sound_source.h>"
+    "$<$<CONFIG:Debug>:src/audio/music_sources/null_music_source.c>"
+    "$<$<CONFIG:Debug>:src/audio/music_sources/null_music_source.h>"
+)
+set_source_files_properties("src/game/audio/audio_sources.c"
+    PROPERTIES COMPILE_DEFINITIONS "$<$<CONFIG:Debug>:ENABLE_NULL_AUDIO_SOURCES>")
+
 # Remove all render plugin source code from OPENOMF_SRC
 list(FILTER OPENOMF_SRC EXCLUDE REGEX "^src/video/renderers/.*/")
-# Enable "NULL" renderer in debug builds, for automated testing
-list(APPEND OPENOMF_SRC
-  "$<$<CONFIG:Debug>:src/video/renderers/null/null_renderer.c>"
-  "$<$<CONFIG:Debug>:src/video/renderers/null/null_renderer.h>"
-)
-list(APPEND VIDEO_C_DEFINES "$<$<CONFIG:Debug>:ENABLE_NULL_RENDERER>")
-# and enable select render plugins
-set(ENABLED_RENDER_PLUGINS opengl3)
-foreach(PLUGIN ${ENABLED_RENDER_PLUGINS})
+# Keep the NULL test renderer in Debug unless already selected explicitly.
+if(NOT "null" IN_LIST OMF_VIDEO_RENDERERS)
+    list(APPEND OPENOMF_SRC
+      "$<$<CONFIG:Debug>:src/video/renderers/null/null_renderer.c>"
+      "$<$<CONFIG:Debug>:src/video/renderers/null/null_renderer.h>"
+    )
+    list(APPEND VIDEO_C_DEFINES "$<$<CONFIG:Debug>:ENABLE_NULL_RENDERER>")
+endif()
+foreach(PLUGIN ${OMF_VIDEO_RENDERERS})
     # add render plugin sources
     file(GLOB_RECURSE PLUGIN_SRC
         LIST_DIRECTORIES OFF
@@ -204,26 +275,44 @@ add_library(openomf_core OBJECT ${OPENOMF_SRC})
 target_compile_definitions(openomf_core PUBLIC
     "$<$<CONFIG:Debug>:DEBUGMODE>"
     "$<$<BOOL:${USE_EXTENDED_PALETTE}>:USE_EXTENDED_PALETTE>"
+    "$<$<BOOL:${ENABLE_MODMANAGER}>:ENABLE_MODMANAGER>"
 )
 omf_target_precompile_headers(openomf_core PUBLIC
     "<SDL.h>"
     "<enet/enet.h>"
-    "<epoxy/gl.h>"
 )
-target_link_libraries(openomf_core PRIVATE
-    openomf::confuse
-    openomf::enet
-    openomf::epoxy
-    openomf::SDL2
-    openomf::SDL2_mixer
-    openomf::xmp
-)
+if(OMF_USE_OPENGL_RENDERER)
+    omf_target_precompile_headers(openomf_core PUBLIC "<epoxy/gl.h>")
+endif()
+# Match all variants of GCC and Clang.
+if(CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
+    set_source_files_properties("${CMAKE_SOURCE_DIR}/src/vendored/argtable/argtable3.c"
+        PROPERTIES COMPILE_OPTIONS "-Wno-format-nonliteral"
+    )
+endif()
+# TODO: remove enet and SDL2 from our (public) headers
+# Until then, propagate their include paths to consumers of the shared PCH.
+target_link_libraries(openomf_core PUBLIC openomf::enet openomf::SDL2)
+target_link_libraries(openomf_core PRIVATE openomf::xmp)
+
+if(OMF_USE_OPENGL_RENDERER)
+    target_link_libraries(openomf_core PRIVATE openomf::epoxy)
+endif()
+if(OMF_USE_SDL_AUDIO_DRIVER)
+    target_link_libraries(openomf_core PRIVATE openomf::SDL2_mixer)
+endif()
 
 if(USE_LIBPNG)
     message(STATUS "libpng support is enabled.")
     target_link_libraries(openomf_core PRIVATE openomf::png)
 else()
     message(STATUS "libpng support is disabled -- screenshots not available!")
+endif()
+
+if(USE_ZIP)
+    target_link_libraries(openomf_core PRIVATE
+        openomf::zip
+    )
 endif()
 
 if(USE_OPUSFILE)
@@ -239,6 +328,14 @@ endif()
 
 if(USE_NATPMP)
     target_link_libraries(openomf_core PUBLIC openomf::natpmp)
+endif()
+
+if(USE_ARGTABLE)
+    target_link_libraries(openomf_core PUBLIC openomf::argtable)
+endif()
+
+if(USE_CONFUSE)
+    target_link_libraries(openomf_core PUBLIC openomf::confuse)
 endif()
 
 list(APPEND CORELIBS openomf_core)
@@ -261,14 +358,9 @@ if(WIN32)
 endif()
 
 # Only strip on GCC (clang does not appreciate)
-if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU" AND OMF_STRIP_GNU_BINARIES)
     set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -Wl,-s")
     set(CMAKE_C_FLAGS_MINSIZEREL "${CMAKE_C_FLAGS_MINSIZEREL} -Wl,-s")
-endif()
-
-# Configure GCC to accept `// [[fallthrough]]` as a fallthrough comment.
-if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wimplicit-fallthrough=2")
 endif()
 
 set(COREINCS
@@ -301,12 +393,14 @@ set_property(TARGET openomf PROPERTY
 OPENOMF_RESOURCE_DIR=${CMAKE_CURRENT_BINARY_DIR}/resources")
 set_property(DIRECTORY ${CMAKE_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT openomf)
 
-# This is used to copy shader files from source directory to the binary output directory during compile.
-add_custom_target(
-    copy_shaders ALL
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/shaders ${CMAKE_BINARY_DIR}/shaders
-)
-add_dependencies(openomf copy_shaders)
+# Copy shader resources only for the OpenGL renderer.
+if(OMF_USE_OPENGL_RENDERER)
+    add_custom_target(
+        copy_shaders ALL
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/shaders ${CMAKE_BINARY_DIR}/shaders
+    )
+    add_dependencies(openomf copy_shaders)
+endif()
 
 # Build tools if requested
 set(TOOL_TARGET_NAMES)
@@ -321,6 +415,9 @@ if (USE_TOOLS)
     add_executable(aftool tools/aftool/main.c
         tools/shared/animation_misc.c
         tools/shared/conversions.c)
+    add_executable(fixedpoint_tool
+        src/utils/fixedpt.c
+        tools/fixedpoint_tool/main.c)
     add_executable(soundtool tools/soundtool/main.c)
     add_executable(afdiff tools/afdiff/main.c)
     add_executable(rectool tools/rectool/main.c tools/shared/pilot.c)
@@ -415,10 +512,15 @@ endif()
 
 # Make sure libraries are linked
 target_link_libraries(openomf PRIVATE ${CORELIBS})
-target_link_libraries(openomf PRIVATE openomf::argtable openomf::SDL2main openomf::epoxy)
+target_link_libraries(openomf PRIVATE openomf::SDL2main)
+if(OMF_USE_OPENGL_RENDERER)
+    target_link_libraries(openomf PRIVATE openomf::epoxy)
+endif()
 foreach(TARGET ${TOOL_TARGET_NAMES})
-    target_link_libraries(${TARGET} PRIVATE ${CORELIBS})
-    target_link_libraries(${TARGET} PRIVATE openomf::argtable openomf::SDL2main openomf::epoxy)
+    target_link_libraries(${TARGET} PRIVATE ${CORELIBS} openomf::SDL2main)
+    if(OMF_USE_OPENGL_RENDERER)
+        target_link_libraries(${TARGET} PRIVATE openomf::epoxy)
+    endif()
 endforeach()
 
 # Testing stuff
@@ -439,7 +541,10 @@ if(CUNIT_FOUND)
                                TESTS_ROOT_DIR="${CMAKE_SOURCE_DIR}/testing")
 
     target_include_directories(openomf_test_main PRIVATE testing/ src/)
-    target_link_libraries(openomf_test_main ${CORELIBS} openomf::SDL2main openomf::epoxy openomf::cunit)
+    target_link_libraries(openomf_test_main ${CORELIBS} openomf::SDL2main openomf::cunit)
+    if(OMF_USE_OPENGL_RENDERER)
+        target_link_libraries(openomf_test_main openomf::epoxy)
+    endif()
 
     if(MSVC)
         target_precompile_headers(openomf_test_main PRIVATE "<stdio.h>")
@@ -457,7 +562,9 @@ else()
     message(STATUS "Development: Unit-tests are disabled")
 endif()
 
-include("cmake-scripts/BuildLanguages.cmake")
+if(BUILD_LANGUAGES)
+    include("cmake-scripts/BuildLanguages.cmake")
+endif()
 
 # Copy some resources to destination resources directory to ease development setup.
 file(COPY resources/openomf.bk resources/gamecontrollerdb/gamecontrollerdb.txt DESTINATION resources)
@@ -466,7 +573,9 @@ set(DOC_FILES
     README.md
     LICENSE
     resources/gamecontrollerdb/LICENSE.gamecontrollerdb
-    src/vendored/LICENSE.argtable3
+    src/vendored/argtable/LICENSE.argtable3
+    src/vendored/zip/LICENSE.zip
+    src/vendored/fixedptc/LICENSE.fixedptc
 )
 
 # Installation
@@ -480,9 +589,19 @@ if(WIN32)
 else()
     # On unixy systems, follow standard.
     install(TARGETS openomf RUNTIME DESTINATION bin COMPONENT Binaries)
-    install(FILES ${DOC_FILES} resources/openomf.bk resources/gamecontrollerdb/gamecontrollerdb.txt resources/icons/openomf.png
+    install(FILES ${DOC_FILES} resources/openomf.bk resources/gamecontrollerdb/gamecontrollerdb.txt
+            resources/icons/openomf.png resources/flatpak/org.openomf.OpenOMF.desktop
         DESTINATION share/games/openomf/resources/
         COMPONENT Data
     )
     install(DIRECTORY shaders/ DESTINATION share/games/openomf/shaders COMPONENT Data)
+endif()
+
+if(PSP)
+    # SDL2 and opusfile must appear before the PSP SDK libraries in the linker command.
+    target_link_libraries(openomf PRIVATE
+        pspvram pspvfpu psphprm pspgu pspge pspdisplay pspctrl pspaudio pspnet
+        pspnet_inet pspnet_resolver pspnet_apctl pspwlan psppower pspdebug
+    )
+    create_pbp_file(TARGET openomf TITLE "OpenOMF" MEMSIZE 1)
 endif()

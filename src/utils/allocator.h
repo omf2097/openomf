@@ -13,11 +13,6 @@
 #ifndef ALLOCATOR_H
 #define ALLOCATOR_H
 
-// format strings for use in platform-specific allocator header
-extern const char *_text_malloc_error;
-extern const char *_text_calloc_error;
-extern const char *_text_realloc_error;
-
 // Add ifdefs here to include platform-specific allocators.
 #include "utils/allocator_default.h"
 
@@ -60,7 +55,7 @@ extern const char *_text_realloc_error;
  * @param size the number of bytes to allocate
  * @return the new allocation, a non-null pointer.
  */
-#define omf_realloc(ptr, size) omf_realloc_real((ptr), (size), __FILE__, __LINE__);
+#define omf_realloc(ptr, size) omf_realloc_real((ptr), (size), __FILE__, __LINE__)
 
 /**
  * @brief Free an allocation by pointer, and reassigns the pointer to NULL.

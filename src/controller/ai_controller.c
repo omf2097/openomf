@@ -1451,7 +1451,7 @@ bool is_valid_move(const af_move *move, const har *h, bool force_allow_projectil
     if(move->category == CAT_DESTRUCTION && h->state != STATE_SCRAP) {
         return false;
     }
-    if(move->category == CAT_FIRE_ICE) {
+    if(move->category == CAT_VICTORY) {
         return false;
     }
 
@@ -2688,7 +2688,7 @@ int ai_controller_poll(controller *ctrl, ctrl_event **ev) {
     if(o) {
         object *enemy = game_state_find_object(ctrl->gs, o->animation_state.enemy_obj_id);
         // UJ tag signals to the AI it should probably jump
-        if(can_move && can_interupt_tactic && player_frame_isset(enemy, "uj") && smart_sometimes(a)) {
+        if(can_move && can_interupt_tactic && player_frame_isset(enemy, TAG_UJ) && smart_sometimes(a)) {
             reset_tactic_state(a);
             controller_cmd(ctrl, ACT_UP, ev);
             controller_cmd(ctrl, ACT_STOP, ev);

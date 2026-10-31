@@ -25,6 +25,7 @@
 #define STUN_RECOVERY_BLOCKING_CONSTANT 256 * 27 / 250
 #define HEIGHT_STANDING 55
 #define HEIGHT_CROUCHING 30
+#define INPUT_BUFFER_TICKS 3
 
 enum
 {
@@ -36,8 +37,8 @@ enum
     CAT_JUMPING,
     CAT_PROJECTILE,
     CAT_BASIC,
+    CAT_BK_HAZARD,
     CAT_VICTORY, // or defeat
-    CAT_FIRE_ICE,
     CAT_SCRAP,
     CAT_DESTRUCTION
 };
@@ -102,12 +103,6 @@ typedef struct har_event_t {
     };
 } har_event;
 
-enum
-{
-    DAMAGETYPE_LOW, // Damage to low area of har
-    DAMAGETYPE_HIGH // Damage to high area of har
-};
-
 typedef void (*har_action_hook_cb)(int action, void *data);
 typedef void (*har_hook_cb)(har_event event, void *data);
 
@@ -135,11 +130,13 @@ typedef struct har_t {
     uint8_t damage_done;     // Damage was done this animation
     uint8_t damage_received; // Damage was received this animation
     uint8_t air_attacked;
-    uint8_t is_wallhugging;  // HAR is standing right next to a wall
-    uint8_t is_grabbed;      // Is being moved by another object. Set by ex, ey tags
-    uint8_t jump_delay;      // Prevent HARs from jumping again too soon
-    float last_damage_value; // Last damage value taken
-    float last_stun_value;   // Last stun value taken
+    uint8_t is_wallhugging;    // HAR is standing right next to a wall
+    uint8_t is_grabbed;        // Is being moved by another object. Set by ex, ey tags
+    uint8_t jump_delay;        // Prevent HARs from jumping again too soon
+    int16_t last_damage_value; // Last damage value taken
+    float last_stun_value;     // Last stun value taken
+    uint8_t punch_valid;       // Buffer for punch input, counts down every tick
+    uint8_t kick_valid;        // Buffer for kick input, counts down every tick
 
     float jump_speed;      // Agility generated speed modifier for jumping
     float superjump_speed; // Agility generated speed modifier for jumping
@@ -150,6 +147,9 @@ typedef struct har_t {
     int in_stasis_ticks; // Handle stasis activator
     int throw_duration;
     int block_duration;
+    bool cornerpush_vel_applied;
+    bool cornerpush_enabled;
+    int last_hit_raw_damage;
     int height; // Distance required to jump over this HAR
 
     uint8_t stride;
@@ -158,9 +158,9 @@ typedef struct har_t {
     int endurance_max, endurance;
     char inputs[11];
     uint32_t input_change_tick; // last tick the input direction changed
+    char last_input;            // last held direction, corrected for facing
 
     uint8_t stun_timer;
-    uint8_t delay; // used for 'stretching' frames in netplay
 
     // ptr, pe, etc. stuff
     uint8_t p_pal_ref;    // "pd"
@@ -208,8 +208,6 @@ int har_is_walking(har *h);
 int har_is_blocking(object *obj, af_move *move);
 void har_copy_actions(object *new, object *old);
 void har_reset(object *obj);
-
-void har_set_delay(object *obj, int delay);
 
 uint8_t har_player_id(object *obj);
 

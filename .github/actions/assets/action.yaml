@@ -14,7 +14,7 @@ runs:
   steps:
     - name: Restore assets file
       id: cache-assets
-      uses: actions/cache/restore@v4
+      uses: actions/cache/restore@v5
       with:
         path: "${{ inputs.filename }}"
         key: openomf-assets.zip
@@ -29,9 +29,14 @@ runs:
       shell: pwsh
       run: Invoke-WebRequest "${{ inputs.asset_url }}" -OutFile "${{ inputs.filename }}"
 
+    - name: Download assets file
+      if: ${{ (steps.cache-assets.outputs.cache-hit != 'true') && (runner.os == 'macOS') }}
+      shell: bash
+      run: curl -fsSL "${{ inputs.asset_url }}" -o "${{ inputs.filename }}"
+
     - name: Cache assets file
       if: steps.cache-assets.outputs.cache-hit != 'true'
-      uses: actions/cache/save@v4
+      uses: actions/cache/save@v5
       with:
         path: "${{ inputs.filename }}"
         key: openomf-assets.zip

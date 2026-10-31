@@ -1,0 +1,24 @@
+name: Fetch mods
+description: Fetch new soundtracks
+inputs:
+  mods_url:
+    description: 'Soundtrack mod ZIP package URL'
+    required: false
+    default: 'https://github.com/omf2097/openomf-music-mod/releases/latest/download/openomf-mods.zip'
+  filename:
+    description: 'Downloaded soundtrack bundle filename'
+    required: false
+    default: 'openomf-mods.zip'
+runs:
+  # NOTE! No caching, since the soundtrack bundle file might change!
+  using: "composite"
+  steps:
+    - name: Download mods file
+      if: runner.os != 'Windows'
+      shell: bash
+      run: curl -fsSL "${{ inputs.mods_url }}" -o "${{ inputs.filename }}"
+
+    - name: Download mods file
+      if: runner.os == 'Windows'
+      shell: pwsh
+      run: Invoke-WebRequest "${{ inputs.mods_url }}" -OutFile "${{ inputs.filename }}"

@@ -10,7 +10,6 @@
 #ifndef TRN_MENU_H
 #define TRN_MENU_H
 
-#include "game/game_state.h"
 #include "game/gui/component.h"
 #include "game/protos/object.h"
 #include "resources/animation.h"
@@ -85,13 +84,6 @@ int trnmenu_is_finished(const component *menu);
  * @param menu Tournament menu to modify
  */
 void trnmenu_finish(component *menu);
-
-/**
- * @brief Check if the menu is currently fading
- * @param menu Tournament menu to query
- * @return Non-zero if menu is fading
- */
-int trnmenu_is_fading(const component *menu);
 
 /**
  * @brief Set user data for the menu

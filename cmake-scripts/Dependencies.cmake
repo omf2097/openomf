@@ -10,21 +10,19 @@ set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-scripts)
 # SDL2, SDL2_mixer
 add_library(openomf::SDL2 INTERFACE IMPORTED)
 add_library(openomf::SDL2main INTERFACE IMPORTED)
-add_library(openomf::SDL2_mixer INTERFACE IMPORTED)
-if(VCPKG_TOOLCHAIN)
-    find_package(SDL2 CONFIG REQUIRED)
-    target_link_libraries(openomf::SDL2 INTERFACE "$<IF:$<TARGET_EXISTS:SDL2::SDL2>,SDL2::SDL2,SDL2::SDL2-static>")
-    target_link_libraries(openomf::SDL2main INTERFACE SDL2::SDL2main openomf::SDL2)
+find_package(SDL2 CONFIG REQUIRED)
+target_link_libraries(openomf::SDL2 INTERFACE "$<IF:$<TARGET_EXISTS:SDL2::SDL2>,SDL2::SDL2,SDL2::SDL2-static>")
+target_link_libraries(openomf::SDL2main INTERFACE SDL2::SDL2main openomf::SDL2)
 
+if(MINGW)
+    # MINGW-specific hack: link SDL2 into SDL2main
+    target_link_libraries(SDL2::SDL2main INTERFACE openomf::SDL2)
+endif()
+
+if(OMF_USE_SDL_AUDIO_DRIVER)
+    add_library(openomf::SDL2_mixer INTERFACE IMPORTED)
     find_package(SDL2_mixer CONFIG REQUIRED)
     target_link_libraries(openomf::SDL2_mixer INTERFACE "$<IF:$<TARGET_EXISTS:SDL2_mixer::SDL2_mixer>,SDL2_mixer::SDL2_mixer,SDL2_mixer::SDL2_mixer-static>")
-else()
-    find_package(SDL2 REQUIRED)
-    target_link_libraries(openomf::SDL2 INTERFACE SDL2::Core)
-    target_link_libraries(openomf::SDL2main INTERFACE SDL2::Main openomf::SDL2)
-
-    find_package(SDL2_mixer REQUIRED)
-    target_link_libraries(openomf::SDL2_mixer INTERFACE SDL2::Mixer)
 endif()
 
 # xmp
@@ -38,9 +36,18 @@ else()
     target_include_directories(openomf::xmp INTERFACE ${XMP_INCLUDE_DIR})
 endif()
 
-# argtable
-add_library(openomf::argtable INTERFACE IMPORTED)
-target_include_directories(openomf::argtable INTERFACE "${CMAKE_SOURCE_DIR}/src/vendored")
+if(USE_ARGTABLE)
+    # argtable
+    add_library(openomf::argtable INTERFACE IMPORTED)
+    target_include_directories(openomf::argtable INTERFACE "${CMAKE_SOURCE_DIR}/src/vendored/argtable")
+    target_compile_definitions(openomf::argtable INTERFACE USE_ARGTABLE)
+endif()
+
+if(USE_ZIP)
+    # zip
+    add_library(openomf::zip INTERFACE IMPORTED)
+    target_include_directories(openomf::zip INTERFACE "${CMAKE_SOURCE_DIR}/src/vendored/zip")
+endif()
 
 # enet
 add_library(openomf::enet INTERFACE IMPORTED)
@@ -53,15 +60,18 @@ else()
     target_include_directories(openomf::enet INTERFACE ${ENET_INCLUDE_DIR})
 endif()
 
-# confuse
-add_library(openomf::confuse INTERFACE IMPORTED)
-if(VCPKG_TOOLCHAIN)
-    find_package(unofficial-libconfuse CONFIG REQUIRED)
-    target_link_libraries(openomf::confuse INTERFACE unofficial::libconfuse::libconfuse)
-else()
-    find_package(confuse REQUIRED)
-    target_link_libraries(openomf::confuse INTERFACE ${CONFUSE_LIBRARY})
-    target_include_directories(openomf::confuse INTERFACE ${CONFUSE_INCLUDE_DIR})
+if(USE_CONFUSE)
+    # confuse
+    add_library(openomf::confuse INTERFACE IMPORTED)
+    target_compile_definitions(openomf::confuse INTERFACE USE_CONFUSE)
+    if(VCPKG_TOOLCHAIN)
+        find_package(unofficial-libconfuse CONFIG REQUIRED)
+        target_link_libraries(openomf::confuse INTERFACE unofficial::libconfuse::libconfuse)
+    else()
+        find_package(confuse REQUIRED)
+        target_link_libraries(openomf::confuse INTERFACE ${CONFUSE_LIBRARY})
+        target_include_directories(openomf::confuse INTERFACE ${CONFUSE_INCLUDE_DIR})
+    endif()
 endif()
 
 if(USE_MINIUPNPC)
@@ -92,6 +102,12 @@ if(USE_NATPMP)
 endif()
 
 if(USE_LIBPNG)
+    # HACK: alias ZLIB::ZLIBSTATIC for PNGConfig.cmake on x64-windows-static triplet
+    find_package(ZLIB REQUIRED)
+    if(NOT TARGET ZLIB::ZLIB)
+        add_library(ZLIB::ZLIB ALIAS ZLIB::ZLIBSTATIC)
+    endif()
+
     find_package(PNG REQUIRED)
     add_library(openomf::png INTERFACE IMPORTED)
     target_link_libraries(openomf::png INTERFACE PNG::PNG)
@@ -106,16 +122,17 @@ if(USE_OPUSFILE)
         target_link_libraries(openomf::opusfile INTERFACE OpusFile::opusfile)
     else()
         find_package(OpusFile REQUIRED)
-        target_link_libraries(openomf::opusfile INTERFACE ${OPUSFILE_LIBRARY})
-        target_include_directories(openomf::opusfile INTERFACE ${OPUSFILE_INCLUDE_DIR})
+        target_link_libraries(openomf::opusfile INTERFACE OpusFile::opusfile)
     endif()
 endif()
 
-find_package(Epoxy REQUIRED)
-add_library(openomf::epoxy UNKNOWN IMPORTED)
-set_target_properties(openomf::epoxy PROPERTIES
-    IMPORTED_LOCATION "${EPOXY_LIBRARY}"
-    INTERFACE_INCLUDE_DIRECTORIES "${EPOXY_INCLUDE_DIR}")
+if(OMF_USE_OPENGL_RENDERER)
+    find_package(Epoxy REQUIRED)
+    add_library(openomf::epoxy UNKNOWN IMPORTED)
+    set_target_properties(openomf::epoxy PROPERTIES
+        IMPORTED_LOCATION "${EPOXY_LIBRARY}"
+        INTERFACE_INCLUDE_DIRECTORIES "${EPOXY_INCLUDE_DIR}")
+endif()
 
 if(USE_TESTS)
     find_package(CUnit REQUIRED)

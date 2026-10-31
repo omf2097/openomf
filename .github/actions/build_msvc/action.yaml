@@ -15,7 +15,7 @@ runs:
 
     - name: Prepare VCPKG
       # must be done *after* openomf has been checked out
-      uses: johnwason/vcpkg-action@v7.0.1
+      uses: johnwason/vcpkg-action@v8
       id: prepare-vcpkg
       with:
         manifest-dir: ${{ github.workspace }}
@@ -25,7 +25,7 @@ runs:
 
     - uses: lukka/get-cmake@latest
 
-    - uses: ilammy/msvc-dev-cmd@v1
+    - uses: step-security/msvc-dev-cmd@v1
 
     - name: Configure CMake (${{ inputs.arch }})
       shell: pwsh
@@ -53,6 +53,15 @@ runs:
       shell: pwsh
       run: cmake --install build-msvc --config Release --prefix install
 
+    - name: Get openomf mods
+      uses: ./.github/actions/fetch_mods
+
+    - name: Extract openomf mods
+      shell: pwsh
+      run: |
+        New-Item -ItemType Directory -Force -Path install/openomf/mods
+        Expand-Archive -Path openomf-mods.zip -DestinationPath install/openomf/mods -Force
+
     - name: Generate ZIP package
       shell: pwsh
       run: |
@@ -60,7 +69,7 @@ runs:
         Compress-Archive -Path openomf -DestinationPath openomf_${{ env.OPENOMF_VERSION }}_windows_msvc_${{ inputs.arch }}.zip -PassThru
 
     - name: Upload ZIP artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: openomf_${{ env.OPENOMF_VERSION }}_windows_msvc_${{ inputs.arch }}
         path: install/openomf_${{ env.OPENOMF_VERSION }}_windows_msvc_${{ inputs.arch }}.zip

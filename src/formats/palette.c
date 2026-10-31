@@ -5,6 +5,7 @@
 #include "utils/miscmath.h"
 #include "video/vga_remap.h"
 #include "video/vga_state.h"
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -45,21 +46,42 @@ unsigned char palette_resolve_color(uint8_t r, uint8_t g, uint8_t b, const vga_p
     return 0;
 }
 
+vga_index palette_resolve_closest(const vga_palette *pal, const vga_index start, const vga_index end, const uint8_t r,
+                                  const uint8_t g, const uint8_t b) {
+    assert(start >= 0 && end < VGA_PALETTE_SIZE && end >= start);
+    vga_index closest_index = start;
+    int32_t shortest_dist = 255 * 255 * 3 + 1; // Theoretical maximum and then some.
+    for(vga_index i = start; i <= end; i++) {
+        const int32_t rd = (int32_t)pal->colors[i].r - r;
+        const int32_t gd = (int32_t)pal->colors[i].g - g;
+        const int32_t bd = (int32_t)pal->colors[i].b - b;
+        const int32_t dist = rd * rd + gd * gd + bd * bd;
+        if(dist < shortest_dist) {
+            shortest_dist = dist;
+            closest_index = i;
+            if(dist == 0) {
+                // Cannot find shorter
+                break;
+            }
+        }
+    }
+    return closest_index;
+}
+
 int palette_to_gimp_palette(const vga_palette *pal, const path *filename) {
     sd_writer *w;
     unsigned char r, g, b;
     int i;
 
-    if(pal == NULL || filename == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(pal != NULL);
+    assert(filename != NULL);
 
     if(!(w = sd_writer_open(filename))) {
         return SD_FILE_OPEN_ERROR;
     }
 
     sd_write_fprintf(w, "GIMP Palette\n");
-    sd_write_fprintf(w, "Name: %s\n", filename);
+    sd_write_fprintf(w, "Name: %s\n", path_c(filename));
     sd_write_fprintf(w, "#\n");
     for(i = 0; i < 255; i++) {
         r = pal->colors[i].r & 0xff;
@@ -77,9 +99,8 @@ int palette_from_gimp_palette(vga_palette *pal, const path *filename) {
     char tmp[128];
     int i;
 
-    if(pal == NULL || filename == NULL) {
-        return SD_INVALID_INPUT;
-    }
+    assert(pal != NULL);
+    assert(filename != NULL);
 
     if(!(rd = sd_reader_open(filename))) {
         return SD_FILE_OPEN_ERROR;
@@ -217,11 +238,11 @@ void palette_remaps_save(sd_writer *writer, const vga_remap_tables *remaps) {
     }
 }
 
-void palette_load_player_colors(vga_palette *src, int player) {
-    // only load 47 palette colors, skipping the first one
-    // because that seems to be ignored by the original
-    int dst_offset = (player * 48) + 1;
-    vga_state_set_base_palette_from_range(src, dst_offset, 1, 47);
+void palette_load_player_colors(const vga_palette *src, int player) {
+    // Match the original behaviour -- copy all, then force 0 to black.
+    vga_state_set_base_palette_from_range(src, player * 48, 0, 48);
+    static const vga_color black = {0, 0, 0};
+    vga_state_set_base_palette_index(0, &black);
 }
 
 void palette_load_altpal_player_color(vga_palette *dst, int player, int src_color, int dst_color) {

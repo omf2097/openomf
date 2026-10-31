@@ -1,5 +1,4 @@
-#include <CUnit/Basic.h>
-#include <CUnit/CUnit.h>
+#include "common.h"
 #include <utils/sprite_packer.h>
 
 void test_sprite_packer_create(void) {
@@ -99,22 +98,10 @@ void test_sprite_packer_reset(void) {
 }
 
 void sprite_packer_test_suite(CU_pSuite suite) {
-    if(CU_add_test(suite, "Test sprite_packer create", test_sprite_packer_create) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test sprite_packer alloc single", test_sprite_packer_alloc_single) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test sprite_packer alloc multiple", test_sprite_packer_alloc_multiple) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test sprite_packer alloc exact fit", test_sprite_packer_alloc_exact_fit) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test sprite_packer alloc too large", test_sprite_packer_alloc_too_large) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test sprite_packer reset", test_sprite_packer_reset) == NULL) {
-        return;
-    }
+    ADD_TEST("Test sprite_packer create", test_sprite_packer_create);
+    ADD_TEST("Test sprite_packer alloc single", test_sprite_packer_alloc_single);
+    ADD_TEST("Test sprite_packer alloc multiple", test_sprite_packer_alloc_multiple);
+    ADD_TEST("Test sprite_packer alloc exact fit", test_sprite_packer_alloc_exact_fit);
+    ADD_TEST("Test sprite_packer alloc too large", test_sprite_packer_alloc_too_large);
+    ADD_TEST("Test sprite_packer reset", test_sprite_packer_reset);
 }

@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -17,9 +18,7 @@ int altpals_init(void) {
     const path filename = get_resource_filename("ALTPALS.DAT");
 
     altpals = omf_calloc(1, sizeof(altpal_file));
-    if(altpal_create(altpals) != SD_SUCCESS) {
-        goto error_0;
-    }
+    altpal_create(altpals);
     if(altpals_load(altpals, &filename) != SD_SUCCESS) {
         log_error("Unable to load altpals file '%s'!", path_c(&filename));
         goto error_1;
@@ -29,7 +28,6 @@ int altpals_init(void) {
 
 error_1:
     altpal_free(altpals);
-error_0:
     omf_free(altpals);
     return 1;
 }
@@ -41,12 +39,9 @@ void altpals_close(void) {
     }
 }
 
-int altpal_create(altpal_file *ap) {
-    if(ap == NULL) {
-        return SD_INVALID_INPUT;
-    }
+void altpal_create(altpal_file *ap) {
+    assert(ap != NULL);
     memset(ap, 0, sizeof(altpal_file));
-    return SD_SUCCESS;
 }
 
 int altpals_load(altpal_file *ap, const path *filename) {
@@ -64,7 +59,7 @@ int altpals_load(altpal_file *ap, const path *filename) {
     return SD_SUCCESS;
 }
 
-int altpals_save(altpal_file *ap, const path *filename) {
+int altpals_save(const altpal_file *ap, const path *filename) {
     sd_writer *w = sd_writer_open(filename);
     if(!w) {
         return SD_FILE_OPEN_ERROR;

@@ -109,19 +109,19 @@ int main(int argc, char *argv[]) {
             }
             sd_rgba_image_free(&img);
         } else {
-            printf("Length = %d\n", photo->sprite->len);
+            printf("Length = %u\n", photo->sprite->len);
             printf("Size = (%d,%d)\n", photo->sprite->width, photo->sprite->height);
-            printf("Position = (%d,%d)\n", photo->sprite->pos_x, photo->sprite->pos_y);
+            printf("Position = (%d,%d)\n", photo->sprite->pos.x, photo->sprite->pos.y);
             printf("Sex = %s (%d)\n", (photo->sex ? "FEMALE" : "MALE"), photo->sex);
             printf("Is Player = %d\n", photo->is_player);
         }
     } else {
         printf("ID       Sex  Player  Length    W    H    X    Y  Unk\n");
-        for(int i = 0; i < pic.photo_count; i++) {
+        for(int i = 0; i < (int)vector_size(&pic.photos); i++) {
             photo = sd_pic_get(&pic, i);
-            printf("%3d %8s %7d %7d %4d %4d %4d %4d %4d\n", i, (photo->sex ? "FEMALE" : "MALE"), photo->is_player,
-                   photo->sprite->len, photo->sprite->width, photo->sprite->height, photo->sprite->pos_x,
-                   photo->sprite->pos_y, photo->unk_flag);
+            printf("%3d %8s %7d %7u %4d %4d %4d %4d %4d\n", i, (photo->sex ? "FEMALE" : "MALE"), photo->is_player,
+                   photo->sprite->len, photo->sprite->width, photo->sprite->height, photo->sprite->pos.x,
+                   photo->sprite->pos.y, photo->has_photo);
         }
     }
 

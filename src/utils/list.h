@@ -69,6 +69,13 @@ void list_create_cb(list *list, list_free_cb free_cb);
 void list_free(list *list);
 
 /**
+ * @brief Remove all nodes from the list, leaving it empty and reusable.
+ * @details Calls the free callback (if set) on each node's data before freeing.
+ * @param list List to clear
+ */
+void list_clear(list *list);
+
+/**
  * @brief Add an element at the beginning of the list.
  * @details The data is copied into a newly allocated node.
  * @param list List to modify

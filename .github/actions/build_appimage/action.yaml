@@ -1,0 +1,68 @@
+name: Build AppImage
+description: Build AppImage
+runs:
+  using: "composite"
+  steps:
+    - name: Get OpenOMF Version
+      uses: ./.github/actions/version
+
+    - name: Install Ubuntu Dependencies
+      uses: Eeems-Org/apt-cache-action@v1.5
+      with:
+        packages: cmake libcunit1-dev libsdl2-mixer-dev
+          libconfuse-dev libenet-dev libsdl2-dev libxmp-dev libpng-dev libepoxy-dev
+          libopusfile-dev libminiupnpc-dev libnatpmp-dev
+
+    - name: Generate Release
+      shell: bash
+      run: |
+        mkdir build-release && cd build-release
+        cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=release/usr ..
+        make -j $(getconf _NPROCESSORS_ONLN)
+        make -j $(getconf _NPROCESSORS_ONLN) install
+
+    - name: Get openomf assets
+      uses: ./.github/actions/assets
+
+    - name: Extract openomf assets
+      shell: bash
+      run: unzip -j openomf-assets.zip -d build-release/release/usr/share/games/openomf/resources
+
+    - name: Get openomf mods
+      uses: ./.github/actions/fetch_mods
+
+    - name: Extract openomf mods
+      shell: bash
+      run: |
+        mkdir -p build-release/release/usr/share/games/openomf/mods
+        unzip -o openomf-mods.zip -d build-release/release/usr/share/games/openomf/mods
+
+    - name: Download LinuxDeploy and AppImage Plugin
+      shell: bash
+      run: |
+        wget -q https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+        chmod +x linuxdeploy-x86_64.AppImage
+
+    - name: Fix desktop icon path for AppImage
+      shell: bash
+      run: |
+        sed -i -e "s/Icon=.*/Icon=openomf/" \
+          build-release/release/usr/share/games/openomf/resources/org.openomf.OpenOMF.desktop
+
+    - name: Bundle OpenOMF into an AppImage
+      shell: bash
+      env:
+        OUTPUT: OpenOMF-${{ env.OPENOMF_VERSION }}-x86_64.AppImage
+      run: |
+        ./linuxdeploy-x86_64.AppImage \
+          --appdir build-release/release \
+          --desktop-file build-release/release/usr/share/games/openomf/resources/org.openomf.OpenOMF.desktop \
+          --icon-file build-release/release/usr/share/games/openomf/resources/openomf.png \
+          --output appimage
+
+    - name: Upload AppImage Artifact
+      uses: actions/upload-artifact@v7
+      with:
+        name: OpenOMF-${{ env.OPENOMF_VERSION }}-x86_64.AppImage
+        path: OpenOMF-${{ env.OPENOMF_VERSION }}-x86_64.AppImage
+        if-no-files-found: error

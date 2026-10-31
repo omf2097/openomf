@@ -1,7 +1,7 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-#include "formats/script.h"
+#include "formats/script_reader.h"
 #include "game/game_state.h"
 #include "utils/vec.h"
 #include <stdint.h>
@@ -42,18 +42,24 @@ typedef struct player_slide_op_t {
     int timer;
 } player_slide_state;
 
+typedef enum
+{
+    ANIM_PHASE_HOLD = 0, ///< Initial state; allows us to advance to tick zero.
+    ANIM_PHASE_RUNNING,  ///< Playback is ongoing.
+    ANIM_PHASE_FINISHED, ///< Reached the end of a script. The last sprite is held.
+} player_anim_phase;
+
 typedef struct player_animation_state_t {
-    uint32_t previous_tick;
-    uint32_t current_tick;
-    int previous;
-    int entered_frame;
-    sd_script parser;
-    uint8_t repeat;
-    uint8_t reverse;
-    uint8_t finished;
-    uint8_t disable_d;
-    uint8_t shadow_corner_hack;
-    bool looping;
+    bool entered_frame; ///< True if playback entered a new frame on the current tick.
+    script_reader reader;
+    player_anim_phase phase; ///< Playback lifecycle state (see player_anim_phase).
+    bool repeat;             ///< Restart the animation from the beginning when it finishes.
+    bool reverse;            ///< Play the animation backwards (tick decrements each step).
+    bool disable_d;          ///< Ignore the 'd' re-enter tag for this animation.
+    bool shadow_corner_hack; ///< Enables the shadow HAR corner-case hack.
+    bool looping;            ///< The animation is looping via a 'd' re-enter tag.
+    bool pending_apply;      ///< An advance ran and its frame effects have not been applied yet.
+    bool from_spawn;         ///< bk-pool spawn: skip the same-tick bootstrap so it first renders on T+1.
 
     uint8_t pal_copy_entries; // ba
     uint8_t pal_copy_start;   // bi
@@ -69,23 +75,23 @@ typedef struct player_animation_state_t {
 } player_animation_state;
 
 void player_create(object *obj);
-void player_clone(object *src, object *dst);
-void player_free(object *obj);
 void player_reload(object *obj);
 void player_reload_with_str(object *obj, const char *str);
 void player_reset(object *obj);
-int player_frame_isset(const object *obj, const char *tag);
-int player_frame_get(const object *obj, const char *tag);
+int player_frame_isset(const object *obj, script_tag tag);
+int player_frame_get(const object *obj, script_tag tag);
 void player_run(object *obj);
+void player_run_advance(object *obj);
+void player_run_apply(object *obj);
 void player_set_repeat(object *obj, int repeat);
 int player_get_repeat(const object *obj);
 void player_next_frame(object *obj);
 void player_goto_frame(object *obj, int frame_id);
 int player_get_frame(const object *obj);
 void player_jump_to_tick(object *obj, int tick);
+void player_init_spawned(object *obj);
 char player_get_last_frame_letter(const object *obj);
 unsigned int player_get_len_ticks(const object *obj);
-void player_set_delay(object *obj, int delay);
 bool player_is_looping(const object *obj);
 uint32_t player_get_current_tick(const object *obj);
 void player_set_shadow_correction_y(object *obj, int value);

@@ -1,9 +1,9 @@
+#include "common.h"
 #include "game/gui/text/text_layout.h"
 #include "resources/fonts.h"
 #include "utils/allocator.h"
 #include "utils/str.h"
 #include "video/surface.h"
-#include <CUnit/CUnit.h>
 
 void create_fake_font(font *font) {
     font_create(font);
@@ -83,6 +83,16 @@ void test_find_next_line_end(void) {
     CU_ASSERT_EQUAL(find_next_line_end(&s, &f, TEXT_ROW_HORIZONTAL, 0, 0, 16, true), 0);
     str_free(&s);
 
+    // A dash that does not itself fit must not be used as a cut-off point.
+    str_from_c(&s, "AAAA-B");
+    CU_ASSERT_EQUAL(find_next_line_end(&s, &f, TEXT_ROW_HORIZONTAL, 0, 0, 32, true), 4);
+    str_free(&s);
+
+    // A space that does not fit is trimmed.
+    str_from_c(&s, "AAAA B");
+    CU_ASSERT_EQUAL(find_next_line_end(&s, &f, TEXT_ROW_HORIZONTAL, 0, 0, 32, true), 5);
+    str_free(&s);
+
     font_free(&f);
 }
 
@@ -107,10 +117,6 @@ void test_text_layout_compute(void) {
 
 void text_layout_test_suite(CU_pSuite suite) {
     // Add tests
-    if(CU_add_test(suite, "Test for find_next_line_end", test_find_next_line_end) == NULL) {
-        return;
-    }
-    if(CU_add_test(suite, "Test for text_layout_compute", test_text_layout_compute) == NULL) {
-        return;
-    }
+    ADD_TEST("Test for find_next_line_end", test_find_next_line_end);
+    ADD_TEST("Test for text_layout_compute", test_text_layout_compute);
 }

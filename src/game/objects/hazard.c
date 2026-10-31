@@ -2,19 +2,15 @@
 #include "game/protos/scene.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
-#include "utils/miscmath.h"
-#include <math.h>
-#include <stdlib.h>
 
 void hazard_tick(object *obj) {
-    scene *sc = obj->gs->sc;
-
-    if(obj->animation_state.finished) {
-        bk_info *anim = bk_get_info(sc->bk_data, obj->cur_animation->id);
+    const scene *sc = obj->gs->sc;
+    if(object_is_finished(obj)) {
+        const bk_info *anim = bk_get_info(sc->bk_data, obj->cur_animation->id);
         if(anim->chain_no_hit) {
             object_set_animation(obj, &bk_get_info(sc->bk_data, anim->chain_no_hit)->ani);
             object_set_repeat(obj, 0);
-            obj->animation_state.finished = 0;
+            object_set_finished(obj, false);
         }
     }
 }
@@ -41,6 +37,7 @@ void hazard_spawn_cb(object *parent, int id, vec2i pos, vec2f vel, uint8_t mp_fl
             // without this, the 'bullet damage' sprite in the desert spawns at 0,0
             obj->pos = parent->pos;
         }
+        player_init_spawned(obj);
         game_state_add_object(parent->gs, obj, RENDER_LAYER_BOTTOM, 0, 0);
     } else {
         log_debug("failed to spawn hazard child");

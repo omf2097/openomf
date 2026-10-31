@@ -1,7 +1,7 @@
 /**
  * @file component.h
  * @brief GUI base component
- * @details Base component for GUI elements. Sizers, widgets etc. are based on this.
+ * @details Base component for GUI elements.
  * @copyright MIT License
  * @date 2026
  * @author OpenOMF Project
@@ -12,13 +12,15 @@
 
 #include "game/gui/text/text.h"
 #include "game/gui/theme.h"
+#include "utils/iterator.h"
+#include "utils/vec.h"
 #include <SDL.h>
 
 typedef struct component component;
 
 typedef void (*component_render_cb)(component *c);                             ///< Render callback function type
-typedef int (*component_event_cb)(component *c, SDL_Event *event);             ///< SDL event callback function type
-typedef int (*component_action_cb)(component *c, int action);                  ///< Action callback function type
+typedef bool (*component_event_cb)(component *c, SDL_Event *event);            ///< SDL event callback function type
+typedef bool (*component_action_cb)(component *c, int action, int source);     ///< Action callback function type
 typedef void (*component_focus_cb)(component *c, bool focused);                ///< Focus change callback function type
 typedef void (*component_layout_cb)(component *c, int x, int y, int w, int h); ///< Layout callback function type
 typedef void (*component_tick_cb)(component *c);                               ///< Tick/update callback function type
@@ -27,71 +29,26 @@ typedef void (*component_init_cb)(component *c, const gui_theme *theme); ///< In
 typedef component *(*component_find_cb)(component *c, int id); ///< Find component by ID callback function type
 
 /**
- * @brief Basic GUI object
+ * @brief Create a new component
  *
- * This is the basic component that you get by creating any textbutton, togglebutton, etc.
+ * This is the basic component that you get by creating any textbutton, togglebutton, menu, etc.
  * The point is to abstract away rendering and event handling.
  *
  * @note The component doesn't have position or size before component_layout has been called.
- * Component_layout call for a sizer will cause all its children widgets and sizers to be set also.
- */
-struct component {
-    uint32_t header; ///< Safety header. 0xDEADBEEF for sizers, 0x8BADF00D for components.
-
-    int x;     ///< Horizontal position of the object in pixels. This is in screen coordinates.
-    int y;     ///< Vertical position of the object in pixels. This is in screen coordinates.
-    int w;     ///< Width of the object in pixels.
-    int h;     ///< Height of the object in pixels.
-    void *obj; ///< Specialization object pointer. Basically always Sizer or Widget struct.
-
-    int x_hint; ///< X position hint. Sizers may or may not obey this. -1 = not set. >=0 means set.
-    int y_hint; ///< Y position hint. Sizers may or may not obey this. -1 = not set. >=0 means set.
-    int w_hint; ///< W size hint. Sizers may or may not obey this. -1 = not set. >=0 means set.
-    int h_hint; ///< H size hint. Sizers may or may not obey this. -1 = not set. >=0 means set.
-
-    bool supports_select; ///< Whether the component can be selected by component_select() call.
-    bool is_selected;     ///< Whether the component is selected
-
-    bool supports_disable; ///< Whether the component can be disabled by component_disable() call.
-    bool is_disabled;      ///< Whether the component is disabled
-
-    bool supports_focus; ///< Whether the component can be focused by component_focus() call.
-    bool is_focused;     ///< Whether the component is focused
-
-    text *help; ///< Help text, if available
-
-    const gui_theme *theme; ///< Theme object. After init, this should be set for all objects.
-
-    component_render_cb render; ///< Render function callback. This tells the component to draw itself.
-    component_event_cb event;   ///< Event function callback. Direct SDL2 event handler.
-    component_action_cb action; ///< Action function callback. Handles OpenOMF abstract key events.
-    component_focus_cb focus;   ///< Focus function callback. Handles OpenOMF focus events.
-    component_layout_cb layout; ///< Layout function callback. This is called after the component tree is created. Sets
-                                ///< component size and position.
-    component_tick_cb tick;     ///< Tick function callback. This is called periodically.
-    component_free_cb free;     ///< Free function callback. Any component callbacks should be done here.
-    component_find_cb find;     ///< Should only be set by widget and sizer. Used to look up widgets by ID.
-    component_init_cb init;     ///< Initialization function callback. This is called right before layout function. This
-                                ///< should be used to prerender elements, decide size hints, etc.
-
-    component *parent; ///< Parent component. For widgets, usually a sizer. NULL for root component.
-};
-
-/**
- * @brief Create a new component
- * @param header Safety header value (0xDEADBEEF for sizers, 0x8BADF00D for widgets)
+ * Component_layout call for a component with children will cause all its children to be set also.
+ *
  * @return Pointer to the newly created component
  */
-component *component_create(uint32_t header);
+component *component_create(void);
 
 /**
- * @brief Free a component and its resources
+ * @brief Free a component, its children and its resources
  * @param c Component to free
  */
 void component_free(component *c);
 
 /**
- * @brief Process a tick update for the component
+ * @brief Process a tick update for the component and its children
  * @param c Component to tick
  */
 void component_tick(component *c);
@@ -106,24 +63,39 @@ void component_render(component *c);
  * @brief Handle an SDL event
  * @param c Component to receive the event
  * @param event SDL event to process
- * @return Non-zero if the event was handled
+ * @return True if the event was consumed, false if not
  */
-int component_event(component *c, SDL_Event *event);
+bool component_event(component *c, SDL_Event *event);
 
 /**
  * @brief Handle an abstract action event
  * @param c Component to receive the action
  * @param action Action code to process
- * @return Non-zero if the action was handled
+ * @param source CTRL_TYPE_* of the device that produced the action
+ * @return True if the action was consumed, false if not
  */
-int component_action(component *c, int action);
+bool component_action(component *c, int action, int source);
 
 /**
- * @brief Initialize the component with a theme
+ * @brief Initialize the component and its children with a theme
  * @param c Component to initialize
  * @param theme Theme to apply
  */
 void component_init(component *c, const gui_theme *theme);
+
+/**
+ * @brief Get the position of the component in pixels
+ * @param c Component to query
+ * @return Position set by the last layout call
+ */
+vec2i component_get_pos(const component *c);
+
+/**
+ * @brief Get the size of the component in pixels
+ * @param c Component to query
+ * @return Size set by the last layout call
+ */
+vec2i component_get_size(const component *c);
 
 /**
  * @brief Set the layout (position and size) of the component
@@ -180,9 +152,16 @@ bool component_is_focused(const component *c);
 /**
  * @brief Check if the component can be selected
  * @param c Component to check
- * @return True if the component supports selection and is not disabled
+ * @return True if the component supports selection
  */
 bool component_is_selectable(component *c);
+
+/**
+ * @brief Sets whether the component can be selected
+ * @param c Component to modify
+ * @param selectable True to allow selection, false to disallow.
+ */
+void component_set_selectable(component *c, bool selectable);
 
 /**
  * @brief Set size hints for the component
@@ -201,13 +180,69 @@ void component_set_size_hints(component *c, int w, int h);
 void component_set_pos_hints(component *c, int x, int y);
 
 /**
+ * @brief Get the position hints of the component
+ * @param c Component to query
+ * @return Position hint, -1 on an axis means not set
+ */
+vec2i component_get_pos_hint(const component *c);
+
+/**
+ * @brief Get the size hints of the component
+ * @param c Component to query
+ * @return Size hint, -1 on an axis means not set
+ */
+vec2i component_get_size_hint(const component *c);
+
+/**
  * @brief Set which features the component supports
  * @param c Component to modify
  * @param allow_disable Whether the component can be disabled
  * @param allow_select Whether the component can be selected
  * @param allow_focus Whether the component can be focused
  */
-void component_set_supports(component *c, bool allow_disable, bool allow_select, bool allow_focus);
+void component_set_supported(component *c, bool allow_disable, bool allow_select, bool allow_focus);
+
+/**
+ * @brief Check if the component is in edit mode and owns input
+ * @param c Component to check
+ * @return True if editing
+ */
+bool component_is_editing(const component *c);
+
+/**
+ * @brief Set the edit mode of the component
+ * @param c Component to modify
+ * @param editing True to enter edit mode, false to leave it
+ */
+void component_set_editing(component *c, bool editing);
+
+/**
+ * @brief Check if render inputs have changed since the last render
+ * @param c Component to check
+ * @return True if dirty
+ */
+bool component_is_dirty(const component *c);
+
+/**
+ * @brief Set the dirty flag of the component
+ * @param c Component to modify
+ * @param dirty True to mark render inputs changed, false to clear the flag
+ */
+void component_set_dirty(component *c, bool dirty);
+
+/**
+ * @brief Get the parent component
+ * @param c Component to query
+ * @return Parent component, or NULL for the root component
+ */
+component *component_get_parent(const component *c);
+
+/**
+ * @brief Set the parent component
+ * @param c Component to modify
+ * @param parent Parent component, or NULL for the root component
+ */
+void component_set_parent(component *c, component *parent);
 
 /**
  * @brief Set help text for the component
@@ -215,6 +250,13 @@ void component_set_supports(component *c, bool allow_disable, bool allow_select,
  * @param text Help text string
  */
 void component_set_help_text(component *c, const char *text);
+
+/**
+ * @brief Get the help text of the component
+ * @param c Component to query
+ * @return Help text object, or NULL if none has been set
+ */
+text *component_get_help_text(const component *c);
 
 /**
  * @brief Set the theme for the component
@@ -232,6 +274,7 @@ const gui_theme *component_get_theme(component *c);
 
 /**
  * @brief Find a component by ID within a component tree
+ * @details Checks the component itself, then its children, then the find callback.
  * @param c Root component to search from
  * @param id ID to search for
  * @return Pointer to the found component, or NULL if not found
@@ -241,7 +284,7 @@ component *component_find(component *c, int id);
 /**
  * @brief Set the specialization object for the component
  * @param c Component to modify
- * @param obj Object pointer (typically sizer or widget struct)
+ * @param obj Object pointer, eg. a label, button or menu struct
  */
 void component_set_obj(component *c, void *obj);
 
@@ -251,6 +294,50 @@ void component_set_obj(component *c, void *obj);
  * @return Object pointer
  */
 void *component_get_obj(const component *c);
+
+/**
+ * @brief Set the component's ID for lookup
+ * @param c Component to modify
+ * @param id Component ID. Default is -1, which means not set.
+ */
+void component_set_id(component *c, int id);
+
+/**
+ * @brief Get the component's ID
+ * @param c Component to query
+ * @return Component ID, or -1 if not set
+ */
+int component_get_id(const component *c);
+
+/**
+ * @brief Attach a child component
+ * @details The child is owned by the parent and freed with it.
+ * @param c Parent component
+ * @param nc Child component to attach
+ */
+void component_attach(component *c, component *nc);
+
+/**
+ * @brief Get a child component by index
+ * @param c Parent component to query
+ * @param item Index of the child
+ * @return Pointer to the child component, or NULL if out of range
+ */
+component *component_get_child(const component *c, int item);
+
+/**
+ * @brief Get the number of children
+ * @param c Parent component to query
+ * @return Number of child components
+ */
+int component_child_count(const component *c);
+
+/**
+ * @brief Begin iterating over child components
+ * @param c Parent component to iterate
+ * @param it Iterator to initialize
+ */
+void component_iter_begin(const component *c, iterator *it);
 
 /**
  * @brief Set the render callback

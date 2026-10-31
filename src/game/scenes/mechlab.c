@@ -25,6 +25,7 @@
 #include "resources/sgmanager.h"
 #include "utils/allocator.h"
 #include "utils/c_array_util.h"
+#include "utils/c_string_util.h"
 #include "utils/log.h"
 #include "video/video.h"
 
@@ -176,7 +177,7 @@ void mechlab_free(scene *scene) {
     game_player *player1 = game_state_get_player(scene->gs, 0);
     // save the character file
     if(player1->chr != NULL && sg_save(player1->chr) != SD_SUCCESS) {
-        log_error("Failed to save pilot %s", player1->chr->pilot.name);
+        log_error("Failed to save pilot %s", str_c(&player1->chr->pilot.name));
     }
 
     for(unsigned i = 0; i < N_ELEMENTS(local->bg_obj); i++) {
@@ -305,7 +306,7 @@ void mechlab_tick(scene *scene, int paused) {
         game_player *player1 = game_state_get_player(scene->gs, 0);
         if(local->dashtype == DASHBOARD_NEW_PLAYER) {
             char select_photo[64];
-            snprintf(select_photo, sizeof(select_photo), lang_get(224), player1->pilot->name);
+            unsafe_snprintf(select_photo, sizeof(select_photo), lang_get(224), str_c(&player1->pilot->name));
             mechlab_select_dashboard(scene, DASHBOARD_SELECT_NEW_PIC);
             gui_frame_free(local->frame);
             gui_theme theme;
@@ -357,7 +358,7 @@ void mechlab_tick(scene *scene, int paused) {
             }
 
             if(sg_save(player1->chr) != SD_SUCCESS) {
-                log_error("Failed to save pilot %s", player1->chr->pilot.name);
+                log_error("Failed to save pilot %s", str_c(&player1->chr->pilot.name));
             }
             // force the character to reload because its just easier
 
@@ -457,14 +458,14 @@ void mechlab_select_dashboard(scene *scene, dashboard_type type) {
     }
 }
 
-int mechlab_event(scene *scene, SDL_Event *event) {
+bool mechlab_event(scene *scene, SDL_Event *event) {
     mechlab_local *local = scene_get_userdata(scene);
     game_player *player1 = game_state_get_player(scene->gs, 0);
     if(player1->ctrl->type == CTRL_TYPE_GAMEPAD ||
        (player1->ctrl->type == CTRL_TYPE_KEYBOARD && event->type == SDL_KEYDOWN &&
         keyboard_binds_key(player1->ctrl, event))) {
         // these events will be handled by polling
-        return 1;
+        return false;
     }
 
     if(local->dashtype == DASHBOARD_STATS && event->type == SDL_KEYDOWN && event->key.keysym.sym == SDLK_e) {
@@ -475,7 +476,7 @@ int mechlab_event(scene *scene, SDL_Event *event) {
             log_info("Replaying cutscene '%s'", player1->chr->bk_name);
             scene->gs->fight_stats.winner = -1;
             game_state_set_next(scene->gs, SCENE_TRN_CUTSCENE);
-            return 1;
+            return true;
         }
     }
 
@@ -550,13 +551,13 @@ void mechlab_input_tick(scene *scene) {
                     gui_frame_layout(local->frame);
                 } else if(i->event_data.action == ACT_PUNCH) {
                     if(strlen(textinput_value(local->nw.input)) > 0) {
-                        strncpy(player1->pilot->name, textinput_value(local->nw.input), 17);
+                        str_set_c(&player1->pilot->name, textinput_value(local->nw.input));
                         trnmenu_finish(
                             gui_frame_get_root(local->frame)); // This will trigger exception case in mechlab_tick
                     }
                 } else {
                     log_debug("sending input %d to new player dash", i->event_data.action);
-                    gui_frame_action(local->dashboard, i->event_data.action);
+                    gui_frame_action(local->dashboard, i->event_data.action, i->source);
                 }
 
             } else if(local->dashtype == DASHBOARD_SELECT_NEW_PIC && i->event_data.action == ACT_ESC) {
@@ -580,7 +581,7 @@ void mechlab_input_tick(scene *scene) {
                 gui_frame_set_root(local->frame, lab_menu_main_create(scene, found));
                 gui_frame_layout(local->frame);
             } else {
-                gui_frame_action(local->frame, i->event_data.action);
+                gui_frame_action(local->frame, i->event_data.action, i->source);
             }
         }
     } while((i = i->next) != NULL);

@@ -1,6 +1,7 @@
 #include "formats/pcx.h"
 #include "formats/error.h"
 #include "formats/internal/reader.h"
+#include <assert.h>
 #include <string.h>
 
 static unsigned decode_next_bytes(char *dest, sd_reader *reader) {
@@ -139,7 +140,9 @@ int pcx_load_font(pcx_font *font, const path *filename) {
 }
 
 int pcx_font_decode(const pcx_font *font, sd_vga_image *o, uint8_t ch, int8_t palette_offset) {
-    if(ch >= font->glyph_count || font == NULL || o == NULL) {
+    assert(font != NULL);
+    assert(o != NULL);
+    if(ch >= font->glyph_count) {
         return SD_INVALID_INPUT;
     }
 

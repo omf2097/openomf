@@ -8,8 +8,6 @@ component interface providing rendering, event handling, and layout functionalit
 Component Hierarchy
 -------------------
 
-The GUI system is built on a two-level type system:
-
 .. graphviz::
 
    digraph component_hierarchy {
@@ -17,12 +15,6 @@ The GUI system is built on a two-level type system:
        node [shape=box, fontname="monospace"]
 
        component [label="component\n(base struct)"]
-
-       widget [label="widget\n(leaf node)"]
-       sizer [label="sizer\n(container node)"]
-
-       component -> widget [label="WIDGET_MAGIC\n0x8BADF00D"]
-       component -> sizer [label="SIZER_MAGIC\n0xDEADBEEF"]
 
        button [label="button"]
        label [label="label"]
@@ -32,23 +24,25 @@ The GUI system is built on a two-level type system:
        xysizer [label="xysizer"]
        menu [label="menu"]
 
-       widget -> button
-       widget -> label
-       widget -> textinput
-       widget -> gauge
+       component -> button
+       component -> label
+       component -> textinput
+       component -> gauge
 
-       sizer -> xysizer
-       sizer -> menu
+       component -> xysizer [label="sizer role\n(has children)"]
+       component -> menu [label="sizer role\n(has children)"]
    }
 
+Every component is created with ``component_create()``. The specialization struct is stored with
+``component_set_obj()`` and the lifecycle callbacks are installed with the ``component_set_*_cb()``
+setters.
+
 **Widgets** are leaf nodes representing interactive elements like buttons, labels, and text inputs.
-They cannot have children and are created via ``widget_create()``.
+They never attach children. Their task is to render themselves and act on inputs.
 
-**Sizers** are container nodes that manage layout and hold a vector of child components. They handle
-event propagation to children and manage the layout algorithm. Created via ``sizer_create()``.
-
-Each component uses a magic header value (``0x8BADF00D`` for widgets, ``0xDEADBEEF`` for sizers) for
-runtime type safety checks.
+**Sizers** attach children with ``component_attach()`` and own them: the children are freed, ticked
+and initialized by the base component. Rendering, event and action propagation and the layout
+algorithm are left to the sizer's own callbacks, since ordering and focus rules differ per sizer.
 
 Callback Architecture
 ---------------------
@@ -89,7 +83,7 @@ Component Lifecycle
    }
 
 1. **Create**: Base component allocated, specialization struct created
-2. **Attach**: Child added to parent's vector via ``sizer_attach()``
+2. **Attach**: Child added to parent's vector via ``component_attach()``
 3. **Init**: Theme propagated, size hints computed
 4. **Layout**: Final position and size calculated recursively
 5. **Runtime**: Main loop calls ``tick()``, ``render()``, and event handlers
@@ -119,7 +113,6 @@ Rendering follows a recursive depth-first traversal of the component tree:
 
 1. Sizers iterate through children and render each
 2. Widgets call their specialized render callback
-3. Sizers support opacity (0.0-1.0) for fade effects
 
 The render callback draws the component at its computed position (``c->x``, ``c->y``) with
 computed dimensions (``c->w``, ``c->h``).
@@ -145,7 +138,7 @@ GUI Frame
 
 A ``gui_frame`` is the top-level container that holds:
 
-- The root component (typically a sizer)
+- The root component (typically a component in the sizer role)
 - Theme configuration
 - Frame dimensions
 

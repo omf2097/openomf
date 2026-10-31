@@ -51,6 +51,7 @@ int scene_create(scene *scene, game_state *gs, int scene_id) {
     scene->bk_data = omf_calloc(1, sizeof(bk));
     if(load_bk_file(scene->bk_data, &bk_filename)) {
         log_error("Unable to load scene %s (%s)!", scene_get_name(scene_id), path_c(&bk_filename));
+        omf_free(scene->bk_data);
         return 1;
     }
     scene->id = scene_id;
@@ -175,12 +176,11 @@ void scene_startup(scene *scene, int id, int *m_load, int *m_repeat) {
     }
 }
 
-// Return 0 if event was handled here
-int scene_event(scene *scene, SDL_Event *event) {
+bool scene_event(scene *scene, SDL_Event *event) {
     if(scene->event != NULL) {
         return scene->event(scene, event);
     }
-    return 1;
+    return false;
 }
 
 void scene_render_overlay(scene *scene) {

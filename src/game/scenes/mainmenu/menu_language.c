@@ -9,6 +9,7 @@
 #include "resources/languages.h"
 #include "resources/resource_files.h"
 #include "utils/allocator.h"
+#include "utils/c_string_util.h"
 #include "utils/list.h"
 #include "utils/log.h"
 #include "utils/path.h"
@@ -22,12 +23,11 @@ typedef struct {
 } language_menu_data;
 
 void menu_language_done(component *c, void *u) {
-    language_menu_data *local = menu_get_userdata(c->parent);
+    language_menu_data *local = menu_get_userdata(component_get_parent(c));
     settings_language *l = &settings_get()->language;
 
     // Set menu as finished
-    menu *m = sizer_get_obj(c->parent);
-    m->finished = 1;
+    menu_finish(component_get_parent(c));
 
     if(strcmp(l->language, local->language_filenames[local->selected_language]) != 0) {
         omf_free(l->language);
@@ -53,8 +53,7 @@ void menu_language_free(component *c) {
 }
 
 void menu_language_submenu_done(component *c, component *submenu) {
-    menu *m = sizer_get_obj(c);
-    m->finished = 1;
+    menu_finish(c);
 }
 
 component *menu_language_create(scene *s) {
@@ -81,44 +80,43 @@ component *menu_language_create(scene *s) {
     list_iter_begin(&dir_list, &it);
     path *language_file2;
     foreach(it, language_file2) {
-        // Get localized language name from OpenOMF .DAT2 or .LNG2 file
+        // The base filename (e.g. "ENGLISH.DAT") is the language identifier stored in settings.
+        // Capture it before we mutate the path to point at the .DAT2/.LNG2 file below.
+        path_filename(language_file2, &name);
+
+        // Switch to the OpenOMF .DAT2 / .LNG2 supplementary file to read the localized language name.
         path_ext(language_file2, &ext);
         str_append_char(&ext, '2');
         path_set_ext(language_file2, str_c(&ext));
         str_free(&ext);
 
         sd_language lang2;
-        if(sd_language_create(&lang2) != SD_SUCCESS) {
-            continue;
-        }
-        if(sd_language_load(&lang2, language_file2)) {
+        sd_language_create(&lang2);
+        if(sd_language_load(&lang2, language_file2, false)) {
             log_info("Warning: Unable to load OpenOMF language file '%s'!", path_c(language_file2));
             sd_language_free(&lang2);
+            str_free(&name);
             continue;
         }
-        if(lang2.count != LANG2_STR_COUNT) {
-            log_info("Warning: Invalid OpenOMF language file '%s', got %d entries!", path_c(language_file2),
-                     lang2.count);
+        if(vector_size(&lang2.strings) != LANG2_STR_COUNT) {
+            log_info("Warning: Invalid OpenOMF language file '%s', got %u entries!", path_c(language_file2),
+                     vector_size(&lang2.strings));
             sd_language_free(&lang2);
+            str_free(&name);
             continue;
         }
-        char *language_name = lang2.strings[LANG2_STR_LANGUAGE].data;
-        lang2.strings[LANG2_STR_LANGUAGE].data = NULL;
+        const sd_lang_string *lang_entry = vector_get(&lang2.strings, LANG2_STR_LANGUAGE);
+        char *language_name = omf_strdup(str_c(&lang_entry->data));
         sd_language_free(&lang2);
 
-        path_filename(language_file2, &name);
         if(str_match(&name, setting->language.language)) {
             local->selected_language = local->language_count;
         }
-        str_free(&name);
 
         const int id = local->language_count++;
         local->language_names[id] = language_name;
-
-        // move filename into language_filenames
-        list_node *now = it.vnow;
-        local->language_filenames[id] = now->data;
-        now->data = NULL;
+        local->language_filenames[id] = omf_strdup(str_c(&name));
+        str_free(&name);
     }
     list_free(&dir_list);
 
