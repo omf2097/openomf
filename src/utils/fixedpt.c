@@ -1,4 +1,33 @@
 #include "utils/fixedpt.h"
+#include "utils/miscmath.h"
+#include <stdio.h>
+#include <string.h>
+
+int fixedpt_from_c(const char *s, fixedpt *ret, const char **error_r) {
+    char dec_c[12];
+    long whole;
+    unsigned long long decimal;
+
+    if(sscanf(s, "%ld.%9s", &whole, dec_c) != 2) {
+        *error_r = "No whole.decimal number in string";
+        return -1;
+    }
+    if(sscanf(dec_c, "%llu", &decimal) != 1) {
+        *error_r = "Cannot recognize the decimal part";
+        return -1;
+    }
+    unsigned dec_size = powu(10, strlen(dec_c));
+    unsigned long long dec_scaled = (decimal << FIXEDPT_FBITS) / dec_size;
+
+    *ret = FIXEDPT_ONE * whole;
+    if(s[0] == '-') {
+        *ret -= (fixedpt)dec_scaled;
+    } else {
+        *ret += (fixedpt)dec_scaled;
+    }
+
+    return 0;
+}
 
 size_t fixedpt_str(fixedpt A, char *str, size_t bufsize, int max_dec) {
     // boy this function sure is safe with pointers :(
