@@ -440,13 +440,13 @@ void player_run_apply(object *obj) {
                         enemy->pos.x += ARENA_LEFT_WALL - obj->pos.x;
                     }
                     obj->pos.x = ARENA_LEFT_WALL;
-                    obj->wall_collision = true;
+                    obj->wall_collision = -1;
                 } else if(obj->pos.x > ARENA_RIGHT_WALL && obj->group == GROUP_HAR) {
                     if(script_is_tag_set_by_id(frame, TAG_E) && enemy) {
                         enemy->pos.x -= obj->pos.x - ARENA_RIGHT_WALL;
                     }
                     obj->pos.x = ARENA_RIGHT_WALL;
-                    obj->wall_collision = true;
+                    obj->wall_collision = 1;
                 }
             }
             obj->pos.y += trans_y;

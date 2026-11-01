@@ -582,6 +582,9 @@ bool can_wallslam(int player_id, scene *scene) {
 }
 
 void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
+    if(wall == -1) {
+        wall = 0;
+    }
     object *o_har =
         game_state_find_object(scene->gs, game_player_get_har_obj_id(game_state_get_player(scene->gs, player_id)));
     har *h = object_get_userdata(o_har);

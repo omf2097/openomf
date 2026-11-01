@@ -90,7 +90,7 @@ struct object_t {
     int8_t direction;
     int8_t group;
     // Set when moving against the wall either by continuous velocity or by instantaneous position changes.
-    bool wall_collision;
+    int wall_collision;
     bool hit_pixels_disabled;
     bool crossup_protection;
     bool should_hitpause;
