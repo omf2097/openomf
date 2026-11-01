@@ -90,15 +90,12 @@ static void button_init(component *c, const gui_theme *theme) {
     text_set_shadow_color(b->text, b->text_shadow_color);
 
     const vec2i hint = component_get_size_hint(c);
-    if(hint.x < 0) {
+    if(hint.x < 0 || hint.y < 0) {
         text_generate_layout(b->text);
-        int text_width = text_get_layout_width(b->text);
-        component_set_size_hints(c, text_width + (b->use_border ? 4 : 0), hint.y);
-    }
-    if(hint.y < 0) {
-        text_generate_layout(b->text);
-        int text_height = text_get_layout_height(b->text);
-        component_set_size_hints(c, hint.x, text_height + (b->use_border ? 4 : 0));
+        const int border = b->use_border ? 4 : 0;
+        const int w = hint.x < 0 ? text_get_layout_width(b->text) + border : hint.x;
+        const int h = hint.y < 0 ? text_get_layout_height(b->text) + border : hint.y;
+        component_set_size_hints(c, w, h);
     }
 }
 
