@@ -1936,11 +1936,11 @@ void har_tick(object *obj) {
         if(pos.x < left_bound) {
             distance = left_bound - pos.x;
             pos.x = left_bound;
-            obj->wall_collision = -1;
+            obj->wall_collision = WALL_HIT_LEFT;
         } else if(pos.x > right_bound) {
             distance = right_bound - pos.x;
             pos.x = right_bound;
-            obj->wall_collision = 1;
+            obj->wall_collision = WALL_HIT_RIGHT;
         }
         if(distance != 0 && (h->state == STATE_BLOCKSTUN || h->state == STATE_RECOIL)) {
             log_debug("Trigger cornerpush, distance %f", distance);
@@ -1948,7 +1948,7 @@ void har_tick(object *obj) {
         }
 
         af_move *move = af_get_move(h->af_data, obj->cur_animation->id);
-        if(obj->wall_collision != 0) {
+        if(obj->wall_collision != WALL_HIT_NONE) {
             if(wall_flag && move->next_move) {
                 // log_debug("wall hit chaining to next animation %d", move->next_move);
                 har_set_ani(obj, move->next_move, 0);
@@ -1957,6 +1957,7 @@ void har_tick(object *obj) {
                 object_set_pos(obj, pos);
                 har_event_hit_wall(h, obj->wall_collision, ctrl);
             }
+            obj->wall_collision = WALL_HIT_NONE;
         }
     }
 
@@ -2913,7 +2914,6 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
                 // TODO: disable all fire/ice moves indiscriminately for now
                 str_set_c(&move->move_string, "!");
             }
-            obj->wall_collision = 0;
         }
     }
 
