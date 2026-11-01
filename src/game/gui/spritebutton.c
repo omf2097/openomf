@@ -111,7 +111,7 @@ component *spritebutton_create(const char *text, const surface *img, bool disabl
     component *c = component_create();
     component_disable(c, disabled);
     component_set_supported(c, true, true, true);
-    component_set_size_hints(c, img->w, img->h);
+    component_set_required_size(c, img->w, img->h);
 
     spritebutton *b = omf_calloc(1, sizeof(spritebutton));
     b->text = (text != NULL) ? text_create_from_c(text) : NULL;
