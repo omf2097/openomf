@@ -64,7 +64,8 @@ enum
     OBJECT_FLAGS_MC = 0x4,
 };
 
-enum WallCollision {
+enum WallCollision
+{
     WALL_HIT_NONE = -1,
     WALL_HIT_LEFT = 0,
     WALL_HIT_RIGHT = 1, // Useful abstractions since left/right wall animations are generally one apart

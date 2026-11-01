@@ -436,8 +436,14 @@ void player_run_apply(object *obj) {
             obj->pos.x += trans_x * (mp & 0x20 ? -1 : 1);
             if(!ab_flag) {
                 if(obj->pos.x < ARENA_LEFT_WALL && obj->group == GROUP_HAR) {
+                    if(script_is_tag_set_by_id(frame, TAG_E) && enemy) {
+                        enemy->pos.x += ARENA_LEFT_WALL - obj->pos.x;
+                    }
                     obj->wall_collision = WALL_HIT_LEFT;
                 } else if(obj->pos.x > ARENA_RIGHT_WALL && obj->group == GROUP_HAR) {
+                    if(script_is_tag_set_by_id(frame, TAG_E) && enemy) {
+                        enemy->pos.x -= obj->pos.x - ARENA_RIGHT_WALL;
+                    }
                     obj->wall_collision = WALL_HIT_RIGHT;
                 }
             }
