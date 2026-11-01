@@ -96,15 +96,11 @@ static void label_init(component *c, const gui_theme *theme) {
     const int bb_h = hint.y < 0 ? TEXT_BBOX_MAX : hint.y;
     text_set_bounding_box(local->text, bb_w, bb_h);
 
-    if(hint.x < 0) {
+    if(hint.x < 0 || hint.y < 0) {
         text_generate_layout(local->text);
-        int text_width = text_get_layout_width(local->text);
-        component_set_size_hints(c, text_width + 6, hint.y);
-    }
-    if(hint.y < 0) {
-        text_generate_layout(local->text);
-        int text_height = text_get_layout_height(local->text);
-        component_set_size_hints(c, hint.x, text_height + 3);
+        const int w = hint.x < 0 ? text_get_layout_width(local->text) + 6 : hint.x;
+        const int h = hint.y < 0 ? text_get_layout_height(local->text) + 3 : hint.y;
+        component_set_size_hints(c, w, h);
     }
 }
 
