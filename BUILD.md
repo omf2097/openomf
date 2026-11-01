@@ -80,6 +80,10 @@ Some useful CMake flags:
 Note that when USE_FORMAT is selected, you can run command "make clangformat" to run code
 formatter to the entire codebase.
 
+### PSP
+
+For PSP-specific build, packaging, and local testing instructions, see [PSP.md](PSP.md).
+
 ## Data Files
 
 OpenOMF loads the original data files from the original OMF:2097 game.
