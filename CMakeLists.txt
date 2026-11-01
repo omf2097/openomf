@@ -603,5 +603,38 @@ if(PSP)
         pspvram pspvfpu psphprm pspgu pspge pspdisplay pspctrl pspaudio pspnet
         pspnet_inet pspnet_resolver pspnet_apctl pspwlan psppower pspdebug
     )
-    create_pbp_file(TARGET openomf TITLE "OpenOMF" MEMSIZE 1)
+    set(OMF_PSP_ICON_PATH "" CACHE FILEPATH "Override the downloaded PSP EBOOT icon")
+    if(OMF_PSP_ICON_PATH)
+        if(NOT EXISTS "${OMF_PSP_ICON_PATH}")
+            message(FATAL_ERROR "PSP icon not found: ${OMF_PSP_ICON_PATH}")
+        endif()
+        set(psp_icon "${OMF_PSP_ICON_PATH}")
+    else()
+        set(psp_icon_dir "${CMAKE_CURRENT_BINARY_DIR}/psp-icon")
+        set(psp_icon_archive "${psp_icon_dir}/openomf-icons.zip")
+        set(psp_icon "${psp_icon_dir}/omf-logo/omf-144x80.png")
+        if(NOT EXISTS "${psp_icon}")
+            file(MAKE_DIRECTORY "${psp_icon_dir}")
+            if(NOT EXISTS "${psp_icon_archive}")
+                file(DOWNLOAD
+                    "https://www.omf2097.com/pub/files/omf/openomf-icons.zip"
+                    "${psp_icon_archive}"
+                    TLS_VERIFY ON TIMEOUT 60 STATUS psp_icon_download)
+                list(GET psp_icon_download 0 download_status)
+                if(NOT download_status EQUAL 0)
+                    file(REMOVE "${psp_icon_archive}")
+                    message(FATAL_ERROR "Unable to download OpenOMF artwork: ${psp_icon_download}")
+                endif()
+            endif()
+            execute_process(
+                COMMAND "${CMAKE_COMMAND}" -E tar xf "${psp_icon_archive}"
+                    "omf-logo/omf-144x80.png"
+                WORKING_DIRECTORY "${psp_icon_dir}"
+                RESULT_VARIABLE psp_icon_extract_result)
+            if(NOT psp_icon_extract_result EQUAL 0 OR NOT EXISTS "${psp_icon}")
+                message(FATAL_ERROR "Unable to extract PSP XMB icon from ${psp_icon_archive}")
+            endif()
+        endif()
+    endif()
+    create_pbp_file(TARGET openomf TITLE "OpenOMF" MEMSIZE 1 ICON_PATH "${psp_icon}")
 endif()
