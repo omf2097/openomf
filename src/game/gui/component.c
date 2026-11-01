@@ -16,6 +16,8 @@ struct component {
     int y_hint; ///< Y position hint. Sizers may or may not obey this. -1 = not set. >=0 means set.
     int w_hint; ///< W size hint. Sizers may or may not obey this. -1 = not set. >=0 means set.
     int h_hint; ///< H size hint. Sizers may or may not obey this. -1 = not set. >=0 means set.
+    int w_required; ///< Width the content needs to render properly. -1 = not set.
+    int h_required; ///< Height the content needs to render properly. -1 = not set.
 
     bool supports_select; ///< Whether the component can be selected by component_select() call.
     bool is_selected;     ///< Whether the component is selected
@@ -187,6 +189,19 @@ vec2i component_get_size_hint(const component *c) {
 void component_set_size_hints(component *c, int w, int h) {
     c->w_hint = w;
     c->h_hint = h;
+}
+
+vec2i component_get_required_size(const component *c) {
+    return vec2i_create(c->w_required, c->h_required);
+}
+
+void component_set_required_size(component *c, int w, int h) {
+    c->w_required = w;
+    c->h_required = h;
+}
+
+vec2i component_get_preferred_size(const component *c) {
+    return vec2i_create(c->w_hint >= 0 ? c->w_hint : c->w_required, c->h_hint >= 0 ? c->h_hint : c->h_required);
 }
 
 void component_set_pos_hints(component *c, int x, int y) {
@@ -363,6 +378,8 @@ component *component_create(void) {
     c->y_hint = -1;
     c->w_hint = -1;
     c->h_hint = -1;
+    c->w_required = -1;
+    c->h_required = -1;
     c->help = NULL;
     return c;
 }

@@ -19,11 +19,23 @@ typedef struct button {
     void *userdata;
 } button;
 
+static void button_measure(component *c) {
+    const button *b = component_get_obj(c);
+    uint16_t bb_w, bb_h;
+    text_get_bounding_box(b->text, &bb_w, &bb_h);
+
+    const int border = b->use_border ? 4 : 0;
+    text_set_bounding_box(b->text, TEXT_BBOX_MAX, TEXT_BBOX_MAX);
+    text_generate_layout(b->text);
+    component_set_required_size(c, text_get_layout_width(b->text) + border, text_get_layout_height(b->text) + border);
+
+    text_set_bounding_box(b->text, bb_w, bb_h);
+}
+
 void button_set_text(component *c, const char *text) {
     const button *b = component_get_obj(c);
     text_set_from_c(b->text, text);
-    text_generate_layout(b->text);
-    component_set_size_hints(c, text_get_layout_width(b->text), text_get_layout_height(b->text));
+    button_measure(c);
 }
 
 void button_set_text_shadow(component *c, uint8_t shadow, vga_index color) {
@@ -89,14 +101,7 @@ static void button_init(component *c, const gui_theme *theme) {
     text_set_shadow_style(b->text, b->text_shadow);
     text_set_shadow_color(b->text, b->text_shadow_color);
 
-    const vec2i hint = component_get_size_hint(c);
-    if(hint.x < 0 || hint.y < 0) {
-        text_generate_layout(b->text);
-        const int border = b->use_border ? 4 : 0;
-        const int w = hint.x < 0 ? text_get_layout_width(b->text) + border : hint.x;
-        const int h = hint.y < 0 ? text_get_layout_height(b->text) + border : hint.y;
-        component_set_size_hints(c, w, h);
-    }
+    button_measure(c);
 }
 
 /**
