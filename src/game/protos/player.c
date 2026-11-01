@@ -235,7 +235,7 @@ void player_run_apply(object *obj) {
     }
 
     // Reset the wall collision condition
-    obj->wall_collision = false;
+    obj->wall_collision = WALL_HIT_NONE;
     // See if x+/- or y+/- are set and save values
     int trans_x = 0, trans_y = 0;
     if(script_is_tag_set_by_id(frame, TAG_Y_MINUS)) {
@@ -439,14 +439,12 @@ void player_run_apply(object *obj) {
                     if(script_is_tag_set_by_id(frame, TAG_E) && enemy) {
                         enemy->pos.x += ARENA_LEFT_WALL - obj->pos.x;
                     }
-                    obj->pos.x = ARENA_LEFT_WALL;
-                    obj->wall_collision = true;
+                    obj->wall_collision = WALL_HIT_LEFT;
                 } else if(obj->pos.x > ARENA_RIGHT_WALL && obj->group == GROUP_HAR) {
                     if(script_is_tag_set_by_id(frame, TAG_E) && enemy) {
                         enemy->pos.x -= obj->pos.x - ARENA_RIGHT_WALL;
                     }
-                    obj->pos.x = ARENA_RIGHT_WALL;
-                    obj->wall_collision = true;
+                    obj->wall_collision = WALL_HIT_RIGHT;
                 }
             }
             obj->pos.y += trans_y;

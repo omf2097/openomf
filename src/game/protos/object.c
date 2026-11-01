@@ -33,6 +33,7 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
     obj->vel = vel;
     obj->horizontal_velocity_modifier = obj->vertical_velocity_modifier = 1.0f;
     obj->direction = OBJECT_FACE_RIGHT;
+    obj->wall_collision = WALL_HIT_NONE;
     obj->y_percent = 1.0;
     obj->x_percent = 1.0;
 

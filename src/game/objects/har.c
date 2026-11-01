@@ -1932,17 +1932,15 @@ void har_tick(object *obj) {
         }
 
         int wall_flag = player_frame_isset(obj, TAG_AW);
-        int wall = 0;
         float distance = 0;
         if(pos.x < left_bound) {
             distance = left_bound - pos.x;
             pos.x = left_bound;
-            obj->wall_collision = true;
+            obj->wall_collision = WALL_HIT_LEFT;
         } else if(pos.x > right_bound) {
             distance = right_bound - pos.x;
             pos.x = right_bound;
-            wall = 1;
-            obj->wall_collision = true;
+            obj->wall_collision = WALL_HIT_RIGHT;
         }
         if(distance != 0 && (h->state == STATE_BLOCKSTUN || h->state == STATE_RECOIL)) {
             log_debug("Trigger cornerpush, distance %f", distance);
@@ -1950,16 +1948,16 @@ void har_tick(object *obj) {
         }
 
         af_move *move = af_get_move(h->af_data, obj->cur_animation->id);
-        if(obj->wall_collision) {
-            obj->wall_collision = false;
+        if(obj->wall_collision != WALL_HIT_NONE) {
             if(wall_flag && move->next_move) {
                 // log_debug("wall hit chaining to next animation %d", move->next_move);
                 har_set_ani(obj, move->next_move, 0);
                 h->executing_move = 1;
             } else {
                 object_set_pos(obj, pos);
-                har_event_hit_wall(h, wall, ctrl);
+                har_event_hit_wall(h, obj->wall_collision, ctrl);
             }
+            obj->wall_collision = WALL_HIT_NONE;
         }
     }
 

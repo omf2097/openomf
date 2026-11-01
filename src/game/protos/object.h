@@ -64,6 +64,13 @@ enum
     OBJECT_FLAGS_MC = 0x4,
 };
 
+enum WallCollision
+{
+    WALL_HIT_NONE = -1,
+    WALL_HIT_LEFT = 0,
+    WALL_HIT_RIGHT = 1, // Useful abstractions since left/right wall animations are generally one apart
+};
+
 typedef struct object_t object;
 typedef struct game_state_t game_state;
 
@@ -90,7 +97,7 @@ struct object_t {
     int8_t direction;
     int8_t group;
     // Set when moving against the wall either by continuous velocity or by instantaneous position changes.
-    bool wall_collision;
+    enum WallCollision wall_collision;
     bool hit_pixels_disabled;
     bool crossup_protection;
     bool should_hitpause;
