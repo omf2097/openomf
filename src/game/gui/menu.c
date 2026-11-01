@@ -308,18 +308,18 @@ static void menu_layout(component *c, int x, int y, int w, int h) {
     int non_reserved_space = available_space;
     int non_reserved_items = component_child_count(c);
     foreach(it, tmp) {
-        const vec2i size_hint = component_get_size_hint(*tmp);
-        const int hint = m->horizontal ? size_hint.x : size_hint.y;
-        if(hint > -1) {
-            non_reserved_space -= hint;
+        const vec2i pref_size = component_get_preferred_size(*tmp);
+        const int pref = m->horizontal ? pref_size.x : pref_size.y;
+        if(pref > -1) {
+            non_reserved_space -= pref;
             non_reserved_items -= 1;
         }
     }
     // Take padding into account
     non_reserved_space -= m->padding * (component_child_count(c) - 1);
 
-    // This is how much space we have for items that do not declare hint.
-    int non_hinted_item_space = non_reserved_items > 0 ? non_reserved_space / non_reserved_items : 0;
+    // This is how much space we have for items that do not declare a preferred size.
+    const int non_hinted_item_space = non_reserved_items > 0 ? non_reserved_space / non_reserved_items : 0;
 
     // Select first non-disabled component
     int i = 0;
@@ -334,7 +334,7 @@ static void menu_layout(component *c, int x, int y, int w, int h) {
     }
 
     // Align components. Note that if there are any flexible (non-hinted) items, centering cannot
-    // do anything. Therefore only enable when all components declare size hints.
+    // do anything. Therefore only enable when all components declare a preferred size.
     int offset = 0;
     if(m->centered && non_reserved_items == 0) {
         int reserved_space = available_space - non_reserved_space;
@@ -351,14 +351,14 @@ static void menu_layout(component *c, int x, int y, int w, int h) {
     foreach(it, tmp) {
         // Set component position and size
         int left = available_space - (offset > 0 ? offset - m->padding : offset);
-        const vec2i size_hint = component_get_size_hint(*tmp);
+        const vec2i pref_size = component_get_preferred_size(*tmp);
         if(m->horizontal) {
-            int obj_w = size_hint.x > -1 ? size_hint.x : non_hinted_item_space;
+            int obj_w = pref_size.x > -1 ? pref_size.x : non_hinted_item_space;
             obj_w = min2(left, obj_w);
             component_layout(*tmp, x + offset, y, obj_w, h);
             offset += obj_w + m->padding;
         } else {
-            int obj_h = size_hint.y > -1 ? size_hint.y : non_hinted_item_space;
+            int obj_h = pref_size.y > -1 ? pref_size.y : non_hinted_item_space;
             obj_h = min2(left, obj_h);
             component_layout(*tmp, x, y + offset, w, obj_h);
             offset += obj_h + m->padding;
@@ -390,7 +390,7 @@ static void menu_layout(component *c, int x, int y, int w, int h) {
         menu_background_create(m->help_bg2, m->help_w + 16, m->help_w / 8, MenuBackground);
     }
 
-    component_set_size_hints(c, actual_w, actual_h);
+    component_set_required_size(c, actual_w, actual_h);
 }
 
 void menu_set_userdata(component *c, void *userdata) {

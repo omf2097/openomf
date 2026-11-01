@@ -139,11 +139,11 @@ component *gauge_create(gauge_type type, int size, int lit) {
     if(local->type == GAUGE_SMALL) {
         surface_from_pix_img(&local->on, &gauge_small_on_img);
         surface_from_pix_img(&local->off, &gauge_small_off_img);
-        component_set_size_hints(c, gauge_small_on_img.width * size, gauge_small_on_img.height);
+        component_set_required_size(c, gauge_small_on_img.width * size, gauge_small_on_img.height);
     } else {
         surface_from_pix_img(&local->on, &gauge_big_on_img);
         surface_from_pix_img(&local->off, &gauge_big_off_img);
-        component_set_size_hints(c, gauge_big_on_img.width * size, gauge_big_on_img.height);
+        component_set_required_size(c, gauge_big_on_img.width * size, gauge_big_on_img.height);
     }
 
     // Set callbacks

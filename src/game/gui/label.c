@@ -36,9 +36,23 @@ static void label_free(component *c) {
     omf_free(local);
 }
 
+static void label_measure(component *c) {
+    const label *local = component_get_obj(c);
+    uint16_t bb_w, bb_h;
+    text_get_bounding_box(local->text, &bb_w, &bb_h);
+
+    const vec2i hint = component_get_size_hint(c);
+    text_set_bounding_box(local->text, hint.x < 0 ? TEXT_BBOX_MAX : hint.x, hint.y < 0 ? TEXT_BBOX_MAX : hint.y);
+    text_generate_layout(local->text);
+    component_set_required_size(c, text_get_layout_width(local->text) + 6, text_get_layout_height(local->text) + 3);
+
+    text_set_bounding_box(local->text, bb_w, bb_h);
+}
+
 void label_set_text(component *c, const char *text) {
     const label *local = component_get_obj(c);
     text_set_from_c(local->text, text);
+    label_measure(c);
 }
 
 void label_set_text_color(component *c, vga_index color) {
@@ -91,17 +105,7 @@ static void label_init(component *c, const gui_theme *theme) {
     text_set_shadow_color(local->text, local->text_shadow_color);
     text_set_margin(local->text, local->text_margin);
 
-    const vec2i hint = component_get_size_hint(c);
-    const int bb_w = hint.x < 0 ? TEXT_BBOX_MAX : hint.x;
-    const int bb_h = hint.y < 0 ? TEXT_BBOX_MAX : hint.y;
-    text_set_bounding_box(local->text, bb_w, bb_h);
-
-    if(hint.x < 0 || hint.y < 0) {
-        text_generate_layout(local->text);
-        const int w = hint.x < 0 ? text_get_layout_width(local->text) + 6 : hint.x;
-        const int h = hint.y < 0 ? text_get_layout_height(local->text) + 3 : hint.y;
-        component_set_size_hints(c, w, h);
-    }
+    label_measure(c);
 }
 
 static void label_layout(component *c, int x, int y, int w, int h) {

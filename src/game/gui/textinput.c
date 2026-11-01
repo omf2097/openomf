@@ -382,12 +382,8 @@ static void textinput_init(component *c, const gui_theme *theme) {
         text_set_margin(ti->text, (text_margin){1, 1, 1, 1});
     }
     refresh(c);
-    const vec2i hint = component_get_size_hint(c);
-    if(hint.y < 0) {
-        text_generate_layout(ti->text);
-        int text_height = text_get_layout_height(ti->text) + (ti->bg_enabled ? 2 : 0);
-        component_set_size_hints(c, hint.x, text_height);
-    }
+    text_generate_layout(ti->text);
+    component_set_required_size(c, -1, text_get_layout_height(ti->text) + (ti->bg_enabled ? 2 : 0));
 }
 
 static void textinput_layout(component *c, int x, int y, int w, int h) {
