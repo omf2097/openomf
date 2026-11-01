@@ -660,7 +660,7 @@ void har_move(object *obj) {
         controller *ctrl = game_player_get_ctrl(game_state_get_player(obj->gs, h->player_id));
 
         obj->pos.y = ARENA_FLOOR;
-        if(obj->vel.y > 0) {
+        if(obj->vel.y > 0 || is_har_idle_grounded(obj)) {
             clear_rehits(h);
         }
 
