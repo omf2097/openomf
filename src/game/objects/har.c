@@ -2166,8 +2166,8 @@ bool is_move_chain_allowed(object *obj, af_move *move) {
         allowed = false;
     }
 
-    if(move->pos_constraints & POS_FIRE_ICE_ALLOWED && move->pos_constraints & POS_OPP_FIRE_ICE_DESTRUCT
-        && !arena_secret_activated(obj->gs->sc)) {
+    if(move->pos_constraints & POS_FIRE_ICE_ALLOWED && move->pos_constraints & POS_OPP_FIRE_ICE_DESTRUCT &&
+       !arena_secret_activated(obj->gs->sc)) {
         allowed = false;
     }
 
