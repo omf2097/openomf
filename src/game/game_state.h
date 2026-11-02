@@ -81,6 +81,9 @@ void game_state_del_animation(game_state *gs, int anim_id);
 void game_state_get_projectiles(game_state *gs, vector *obj_proj);
 void game_state_clear_objects(game_state *gs, int mask);
 
+void game_state_advance_secret(game_state *gs);
+int game_state_get_secret(const game_state *gs);
+
 bool is_netplay(const game_state *gs);
 bool is_singleplayer(const game_state *gs);
 bool is_tournament(const game_state *gs);

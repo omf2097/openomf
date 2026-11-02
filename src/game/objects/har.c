@@ -656,7 +656,7 @@ void har_move(object *obj) {
     }
 
     // Handle floor collisions
-    if(obj->pos.y >= ARENA_FLOOR) {
+    if(obj->pos.y >= ARENA_FLOOR && !player_frame_isset(obj, TAG_AX)) {
         controller *ctrl = game_player_get_ctrl(game_state_get_player(obj->gs, h->player_id));
 
         obj->pos.y = ARENA_FLOOR;
@@ -2166,6 +2166,11 @@ bool is_move_chain_allowed(object *obj, af_move *move) {
         allowed = false;
     }
 
+    if(move->pos_constraints & POS_FIRE_ICE_ALLOWED && move->pos_constraints & POS_OPP_FIRE_ICE_DESTRUCT
+        && !arena_secret_activated(obj->gs->sc)) {
+        allowed = false;
+    }
+
     return allowed;
 }
 
@@ -2910,10 +2915,6 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
                 // scramble the move string
                 log_debug("disabling move %d on har %d because it has no-op animation string '%s'", i, har_id,
                           str_c(&move->ani.animation_string));
-                str_set_c(&move->move_string, "!");
-            }
-            if(move->pos_constraints & POS_IN_ARENA3) {
-                // TODO: disable all fire/ice moves indiscriminately for now
                 str_set_c(&move->move_string, "!");
             }
         }

@@ -1357,6 +1357,13 @@ void arena_dynamic_tick(scene *scene, int paused) {
             }
         }
 
+        // Secret handling
+        if(player_frame_isset(obj_har[0], TAG_B2) || player_frame_isset(obj_har[1], TAG_B2)) {
+            if(game_state_get_secret(gs) < 2) {
+                arena_activate_secret(scene);
+            }
+        }
+
         // Pour some rein!
         if(local->rein_enabled) {
             if(rand_float() > 0.65f) {
@@ -1702,6 +1709,33 @@ static void arena_free(scene *scene) {
 void arena_clone_free(scene *scene) {
     arena_local *local = scene_get_userdata(scene);
     omf_free(local);
+}
+
+void arena_activate_secret(scene *scene) {
+    if(!is_singleplayer(scene->gs)) {
+        return;
+    }
+
+    if(scene->id == SCENE_ARENA3 && !scene->secret_activated) {
+        bk_info *info = bk_get_info(scene->bk_data, 12);
+        if(info) {
+            log_debug("Activating secret!");
+            scene->secret_activated = true;
+            object *obj = omf_calloc(1, sizeof(object));
+            object_create(obj, scene->gs, info->ani.start_pos, vec2f_create(0, 0));
+            object_set_stl(obj, scene->bk_data->sound_translation_table);
+            object_set_animation(obj, &info->ani);
+            player_init_spawned(obj);
+            if(game_state_add_object(scene->gs, obj, RENDER_LAYER_BOTTOM, 1, 0) != 0) {
+                object_free(obj);
+                omf_free(obj);
+            }
+        }
+    }
+}
+
+bool arena_secret_activated(scene *scene) {
+    return scene->secret_activated;
 }
 
 int arena_create(scene *scene) {
