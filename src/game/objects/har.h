@@ -137,6 +137,7 @@ typedef struct har_t {
     int32_t last_stun_value;   // Last stun value taken. HAR_ENDURANCE fixed point.
     uint8_t punch_valid;       // Buffer for punch input, counts down every tick
     uint8_t kick_valid;        // Buffer for kick input, counts down every tick
+    uint8_t air_stop;          // Value for handling air-to-air juggle behavior
 
     float jump_speed;      // Agility generated speed modifier for jumping
     float superjump_speed; // Agility generated speed modifier for jumping
