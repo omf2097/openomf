@@ -612,12 +612,6 @@ void har_move(object *obj) {
         return;
     }
 
-    char last_input = get_last_input(obj);
-    object_apply_controllable_velocity(obj, false, last_input);
-
-    obj->pos.x += (obj->vel.x + obj->cvel.x);
-    obj->pos.y += (obj->vel.y + obj->cvel.y);
-
     object *enemy_obj =
         game_state_find_object(obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
     har *enemy_har = object_get_userdata(enemy_obj);
@@ -642,6 +636,34 @@ void har_move(object *obj) {
     } else if(h->walk_destination > 0) {
         log_debug("still walking to %d, at %f", h->walk_destination, obj->pos.x);
     }
+
+    if(h->air_stop) {
+        obj->vel.x = 0;
+        obj->vel.y = 0;
+
+        if(h->air_stop == 10) {
+            obj->vel.x = 6 * (object_get_direction(obj) * -1);
+            obj->vel.y = -6;
+            h->air_stop = 0;
+            har_set_ani(obj, ANIM_JUMPING, 0);
+            object_set_playback_direction(obj, PLAY_BACKWARDS);
+            object_set_tick_pos(obj, -110);
+            object_set_stride(obj, 7); // Pass 7 frames per tick
+        } else {
+            object_set_halt(obj, 1);
+            h->air_stop--;
+            if(h->air_stop == 0) {
+                object_set_halt(obj, 0);
+            }
+        }
+        return;
+    }
+
+    char last_input = get_last_input(obj);
+    object_apply_controllable_velocity(obj, false, last_input);
+
+    obj->pos.x += (obj->vel.x + obj->cvel.x);
+    obj->pos.y += (obj->vel.y + obj->cvel.y);
 
     // Check for wall hits
     if(obj->pos.x <= ARENA_LEFT_WALL || obj->pos.x >= ARENA_RIGHT_WALL) {
@@ -1430,6 +1452,14 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
             obj_b->vel.y -= 3;
         }
 
+        if(b->rehit_combo && move->pos_constraints & POS_JUMP_WALL_BOUNCE && move->category == CAT_JUMPING) {
+            if(b->is_wallhugging) {
+                a->air_stop = 10;
+            } else {
+                a->air_stop = 9;
+            }
+        }
+
         if((hit_coord.x != 0 || hit_coord.y != 0) && move->damage != 0) {
             har_spawn_scrap(obj_b, hit_coord, move->block_stun);
         }
@@ -2091,7 +2121,7 @@ bool is_move_chain_allowed(object *obj, af_move *move) {
     har *h = object_get_userdata(obj);
 
     bool allowed_in_idle = true;
-    if(move->pos_constraints & 0x2) { // Not allowed to perform this move normally
+    if(move->pos_constraints & POS_CANNOT_PERFORM) { // Not allowed to perform this move normally
         allowed_in_idle = false;
     }
 
@@ -2102,7 +2132,7 @@ bool is_move_chain_allowed(object *obj, af_move *move) {
         return false;
     }
 
-    if(h->is_wallhugging != 1 && move->pos_constraints & 0x1) {
+    if(h->is_wallhugging != 1 && move->pos_constraints & POS_WALL) {
         log_debug("Position contraint prevents move when not wallhugging!");
         // required to be wall hugging
         return false;
