@@ -1,6 +1,4 @@
 #include "game/objects/hazard.h"
-
-#include "game/protos/intersect.h"
 #include "game/protos/scene.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
