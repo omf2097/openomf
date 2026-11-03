@@ -1628,6 +1628,10 @@ void har_collide_with_hazard(object *o_har, object *o_hzd) {
     // Track this now so we don't re-evaluate after the hit registers
     bool air_hit = object_is_airborne(o_har);
 
+    if(o_hzd->animation_state.enemy_obj_id == o_har->animation_state.enemy_obj_id) {
+        return;
+    }
+
     if(h->rehit_combo) {
         // rehit mode is off
         if(!o_har->gs->match_settings.rehit) {
