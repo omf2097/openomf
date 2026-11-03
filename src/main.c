@@ -1,8 +1,9 @@
-#include "controller/game_controller_db.h"
+#include "controller/joystick.h"
 #include "engine.h"
 #include "game/game_state.h"
 #include "game/utils/settings.h"
 #include "game/utils/version.h"
+#include "platform/time.h"
 #include "resources/resource_files.h"
 #include "resources/resource_paths.h"
 #include "resources/sgmanager.h"
@@ -13,7 +14,6 @@
 #include "utils/msgbox.h"
 #include "utils/random.h"
 
-#include <SDL.h>
 #include <enet/enet.h>
 #include <stdio.h>
 #include <string.h>
@@ -28,32 +28,6 @@ static const char *git_sha1_hash = "";
 #else
 static const char *git_sha1_hash = SHA1_HASH;
 #endif
-
-void scan_game_controllers(void) {
-    log_info("Found %d joysticks attached", SDL_NumJoysticks());
-    SDL_Joystick *joy;
-    char guid_str[33];
-    for(int i = 0; i < SDL_NumJoysticks(); i++) {
-        joy = SDL_JoystickOpen(i);
-        if(joy) {
-            SDL_JoystickGUID guid = SDL_JoystickGetGUID(joy);
-            SDL_JoystickGetGUIDString(guid, guid_str, 33);
-            log_info("Opened Joystick %d", i);
-            log_info(" * Name:              %s", SDL_JoystickNameForIndex(i));
-            log_info(" * Number of Axes:    %d", SDL_JoystickNumAxes(joy));
-            log_info(" * Number of Buttons: %d", SDL_JoystickNumButtons(joy));
-            log_info(" * Number of Balls:   %d", SDL_JoystickNumBalls(joy));
-            log_info(" * Number of Hats:    %d", SDL_JoystickNumHats(joy));
-            log_info(" * GUID          :    %s", guid_str);
-        } else {
-            log_info("Joystick %d is unsupported", i);
-        }
-
-        if(SDL_JoystickGetAttached(joy)) {
-            SDL_JoystickClose(joy);
-        }
-    }
-}
 
 int main(int argc, char *argv[]) {
     // Set up initial state for misc things
@@ -261,40 +235,24 @@ int main(int argc, char *argv[]) {
         settings_get()->net.net_listen_port_start = listen_port;
     }
 
-    // Init SDL2
-    if(SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO)) {
-        err_msgbox("SDL2 Initialization failed: %s", SDL_GetError());
-        goto exit_2;
-    }
-    SDL_version sdl_linked;
-    SDL_GetVersion(&sdl_linked);
-    log_info("Found SDL v%d.%d.%d", sdl_linked.major, sdl_linked.minor, sdl_linked.patch);
-    log_info("Running on platform: %s", SDL_GetPlatform());
-
-    if(SDL_InitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER)) {
-        err_msgbox("Joystick initialization failed: %s", SDL_GetError());
+    if(!time_init()) {
         goto exit_2;
     }
 
-    // Just warn if haptic subsystem does not get initialized.
-    if(SDL_InitSubSystem(SDL_INIT_HAPTIC)) {
-        log_warn("Haptic subsystem failed to initialize -- rumble will be disabled.");
+    if(!joystick_init()) {
+        goto exit_3;
     }
-
-    // Load game controller support
-    joystick_load_external_mappings();
-    scan_game_controllers();
 
     // Init enet
     if(enet_initialize() != 0) {
         err_msgbox("Failed to initialize enet");
-        goto exit_3;
+        goto exit_4;
     }
 
     // Initialize engine
     if(engine_init(&init_flags)) {
         err_msgbox("Failed to initialize game engine: %s", log_last_error());
-        goto exit_4;
+        goto exit_5;
     }
 
     // Run
@@ -303,10 +261,12 @@ int main(int argc, char *argv[]) {
 
     // Close everything
     engine_close();
-exit_4:
+exit_5:
     enet_deinitialize();
+exit_4:
+    joystick_close();
 exit_3:
-    SDL_Quit();
+    time_close();
 exit_2:
     if(oldlobbyaddr) {
         // we probably don't want to save this override
