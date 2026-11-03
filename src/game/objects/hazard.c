@@ -1,19 +1,9 @@
 #include "game/objects/hazard.h"
+
+#include "game/protos/intersect.h"
 #include "game/protos/scene.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
-
-void hazard_tick(object *obj) {
-    const scene *sc = obj->gs->sc;
-    if(object_is_finished(obj)) {
-        const bk_info *anim = bk_get_info(sc->bk_data, obj->cur_animation->id);
-        if(anim->chain_no_hit) {
-            object_set_animation(obj, &bk_get_info(sc->bk_data, anim->chain_no_hit)->ani);
-            object_set_repeat(obj, 0);
-            object_set_finished(obj, false);
-        }
-    }
-}
 
 void hazard_spawn_cb(object *parent, int id, vec2i pos, vec2f vel, uint8_t mp_flags, int s, int g, void *userdata) {
     scene *sc = parent->gs->sc;
@@ -47,7 +37,6 @@ void hazard_spawn_cb(object *parent, int id, vec2i pos, vec2f vel, uint8_t mp_fl
 int hazard_create(object *obj, scene *scene) {
     object_set_spawn_cb(obj, hazard_spawn_cb, NULL);
     object_set_destroy_cb(obj, cb_scene_destroy_object, NULL);
-    object_set_dynamic_tick_cb(obj, hazard_tick);
 
     return 0;
 }

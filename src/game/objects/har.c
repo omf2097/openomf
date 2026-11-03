@@ -13,6 +13,7 @@
 #include "game/objects/scrap.h"
 #include "game/protos/intersect.h"
 #include "game/scenes/arena.h"
+#include "hazard.h"
 #include "resources/af_loader.h"
 #include "resources/animation.h"
 #include "utils/allocator.h"
@@ -1676,11 +1677,24 @@ void har_collide_with_hazard(object *o_har, object *o_hzd) {
         h->rehit_combo = air_hit;
     } else if(anim->chain_hit && intersect_sprite_hitpoint(o_har, o_hzd, &hit_coord)) {
         // we can punch this! Only set on fire pit orb
+        if(anim->chain_no_hit) {
+            object_set_animation(o_hzd, &bk_get_info(bk_data, anim->chain_no_hit)->ani);
+            object_set_repeat(o_hzd, 0);
+        }
+
         anim = bk_get_info(bk_data, anim->chain_hit);
-        o_hzd->animation_state.enemy_obj_id = o_har->animation_state.enemy_obj_id;
-        object_set_animation(o_hzd, &anim->ani);
-        object_set_repeat(o_hzd, 0);
-        object_set_finished(o_hzd, false);
+        object *new_proj = omf_calloc(1, sizeof(object));
+        object_create(new_proj, o_har->gs, vec2i_add(vec2i_create(o_hzd->start.x, o_hzd->start.y), anim->ani.start_pos),
+                      vec2f_create(0, 0));
+        object_set_stl(new_proj, object_get_stl(o_hzd));
+        object_set_animation(new_proj, &anim->ani);
+        object_set_layers(new_proj, LAYER_HAZARD | LAYER_HAR);
+        object_set_group(new_proj, GROUP_PROJECTILE);
+        object_set_userdata(new_proj, object_get_userdata(o_hzd));
+        hazard_create(new_proj, o_har->gs->sc);
+        player_init_spawned(new_proj);
+        game_state_add_object(new_proj->gs, new_proj, RENDER_LAYER_BOTTOM, 0, 0);
+        new_proj->animation_state.enemy_obj_id = o_har->animation_state.enemy_obj_id;
     }
 }
 
