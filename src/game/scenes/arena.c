@@ -1731,9 +1731,6 @@ bool arena_secret_activated(const scene *scene) {
 }
 
 int arena_create(scene *scene) {
-    // Free up the script cache here, since we know that we don't share animations over the arena start.
-    script_cache_clear();
-
     // Load up settings
     settings *setting = settings_get();
 
