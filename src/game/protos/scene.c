@@ -5,6 +5,7 @@
 #include "resources/bk_loader.h"
 #include "resources/ids.h"
 #include "resources/resource_files.h"
+#include "resources/script_cache.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
 #include "utils/path.h"
@@ -84,6 +85,9 @@ int scene_create(scene *scene, game_state *gs, int scene_id) {
     // Index 0 is always black.
     vga_color c = {0, 0, 0};
     vga_state_set_base_palette_index(0, &c);
+
+    scene->script_cache = omf_calloc(1, sizeof(script_cache));
+    script_cache_init(scene->script_cache);
 
     // All done.
     log_debug("Loaded scene %s (%s).", scene_get_name(scene_id), path_c(&bk_filename));
@@ -265,6 +269,8 @@ void scene_free(scene *scene) {
         omf_free(scene->af_data[1]);
     }
     ticktimer_close(&scene->tick_timer);
+    script_cache_close(scene->script_cache);
+    omf_free(scene->script_cache);
 }
 
 void scene_set_free_cb(scene *scene, scene_free_cb cbfunc) {
@@ -313,6 +319,10 @@ void scene_set_anim_prio_override_cb(scene *scene, scene_anim_prio_override_cb c
 
 bool scene_is_arena(scene *scene) {
     return (scene->id >= SCENE_ARENA0 && scene->id <= SCENE_ARENA4);
+}
+
+const script *scene_get_script(scene *scene, char const *str) {
+    return script_cache_get(scene->script_cache, str);
 }
 
 void scene_set_input_poll_cb(scene *scene, scene_input_poll_cb cbfunc) {

@@ -10,28 +10,33 @@
 #define SCRIPT_CACHE_H
 
 #include "formats/script.h"
+#include "utils/hashmap.h"
+
+typedef struct script_cache {
+    hashmap scripts; ///< Maps an animation string to its script instance
+} script_cache;
 
 /**
  * @brief Initialize the script cache. Call once during engine startup before any lookups.
  */
-void script_cache_init(void);
+void script_cache_init(script_cache *cache);
 
 /**
  * @brief Free every cached script and the cache itself. Call once during engine shutdown.
  * @details Must not be called while any reader still references a cached script.
  */
-void script_cache_close(void);
+void script_cache_close(script_cache *cache);
 
 /**
  * @brief Returns the decoded script for an animation string, decoding and caching it on first use.
  * @param str Animation string (null terminated). Used as the cache key.
  * @return A const, cache-owned script. Never NULL; a string that fails to decode aborts the program.
  */
-const script *script_cache_get(const char *str);
+const script *script_cache_get(script_cache *cache, const char *str);
 
 /**
  * @brief Clear the script cache and free all script instances.
  */
-void script_cache_clear(void);
+void script_cache_clear(script_cache *cache);
 
 #endif // SCRIPT_CACHE_H

@@ -10,8 +10,8 @@
 #include "game/objects/projectile.h"
 #include "game/protos/object.h"
 #include "game/protos/player.h"
+#include "game/protos/scene.h"
 #include "resources/ids.h"
-#include "resources/script_cache.h"
 #include "utils/log.h"
 #include "utils/miscmath.h"
 #include "utils/random.h"
@@ -36,7 +36,7 @@ void player_create(object *obj) {
 }
 
 void player_reload_with_str(object *obj, const char *custom_str) {
-    script_reader_load(&obj->animation_state.reader, script_cache_get(custom_str));
+    script_reader_load(&obj->animation_state.reader, scene_get_script(obj->gs->sc, custom_str));
 
     // Set player state
     player_reset(obj);
