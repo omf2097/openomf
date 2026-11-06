@@ -17,7 +17,7 @@ runs:
       uses: actions/cache/restore@v5
       with:
         path: "${{ inputs.filename }}"
-        key: openomf-assets.zip
+        key: "${{ inputs.filename }}"
 
     - name: Download assets file
       if: ${{ (steps.cache-assets.outputs.cache-hit != 'true') && (runner.os == 'Linux') }}
@@ -39,4 +39,4 @@ runs:
       uses: actions/cache/save@v5
       with:
         path: "${{ inputs.filename }}"
-        key: openomf-assets.zip
+        key: "${{ inputs.filename }}"

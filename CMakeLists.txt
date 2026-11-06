@@ -603,5 +603,13 @@ if(PSP)
         pspvram pspvfpu psphprm pspgu pspge pspdisplay pspctrl pspaudio pspnet
         pspnet_inet pspnet_resolver pspnet_apctl pspwlan psppower pspdebug
     )
-    create_pbp_file(TARGET openomf TITLE "OpenOMF" MEMSIZE 1)
+    if(NOT OMF_PSP_ICON_PATH)
+        set(OMF_PSP_ICON_PATH "${CMAKE_CURRENT_BINARY_DIR}/icon0.png" CACHE FILEPATH "Existing PSP EBOOT icon" FORCE)
+    endif()
+    if(NOT EXISTS "${OMF_PSP_ICON_PATH}")
+        message(FATAL_ERROR
+            "PSP icon not found: ${OMF_PSP_ICON_PATH}\n"
+            "Provide icon0.png before configuring, or set OMF_PSP_ICON_PATH to an existing image.")
+    endif()
+    create_pbp_file(TARGET openomf TITLE "OpenOMF" MEMSIZE 1 ICON_PATH "${OMF_PSP_ICON_PATH}")
 endif()
