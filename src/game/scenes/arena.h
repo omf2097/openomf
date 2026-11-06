@@ -25,6 +25,6 @@ void arena_reset(scene *sc);
 int arena_is_over(scene *sc);
 int arena_get_wall_slam_tolerance(game_state *gs);
 void arena_activate_secret(scene *scene);
-bool arena_secret_activated(scene *scene);
+bool arena_secret_activated(const scene *scene);
 
 #endif // ARENA_H

@@ -1734,7 +1734,7 @@ void arena_activate_secret(scene *scene) {
     }
 }
 
-bool arena_secret_activated(scene *scene) {
+bool arena_secret_activated(const scene *scene) {
     return scene->secret_activated;
 }
 
