@@ -75,9 +75,9 @@ void lab_menu_training_endurance(component *c, void *userdata) {
     scene *s = userdata;
     game_player *p1 = game_state_get_player(s->gs, 0);
     sd_pilot *pilot = game_player_get_pilot(p1);
-    int32_t price = prices[pilot->endurance];
+    int32_t price = prices[pilot->endurance_level];
     pilot->money -= price;
-    pilot->endurance++;
+    pilot->endurance_level++;
     mechlab_update(s);
     lab_menu_focus_endurance(c, true, userdata);
 }
@@ -86,11 +86,11 @@ void lab_menu_training_check_endurance_price(component *c, void *userdata) {
     scene *s = userdata;
     game_player *p1 = game_state_get_player(s->gs, 0);
     sd_pilot *pilot = game_player_get_pilot(p1);
-    if(pilot->endurance > 23) {
+    if(pilot->endurance_level > 23) {
         component_disable(c, 1);
         return;
     }
-    int32_t price = prices[pilot->endurance];
+    int32_t price = prices[pilot->endurance_level];
     if(price > pilot->money) {
         component_disable(c, 1);
     }
@@ -153,12 +153,12 @@ static void lab_menu_focus_endurance(component *c, bool focused, void *userdata)
         game_player *p1 = game_state_get_player(s->gs, 0);
         sd_pilot *pilot = game_player_get_pilot(p1);
         label_set_text(label1, lang_get(514));
-        if(pilot->endurance > 23) {
+        if(pilot->endurance_level > 23) {
             label_set_text(label2, "UNAVAILABLE");
         } else {
             char tmp[32];
             char price_str[16];
-            score_format(prices[pilot->endurance], price_str, sizeof(price_str));
+            score_format(prices[pilot->endurance_level], price_str, sizeof(price_str));
             snprintf(tmp, sizeof(tmp), "$ %sK", price_str);
             label_set_text(label2, tmp);
         }

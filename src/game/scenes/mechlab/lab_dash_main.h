@@ -17,7 +17,7 @@ typedef struct {
     component *ranks[5];
     component *power;
     component *agility;
-    component *endurance;
+    component *endurance_level;
     component *arm_power;
     component *arm_speed;
     component *leg_power;

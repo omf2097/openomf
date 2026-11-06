@@ -4,7 +4,9 @@
 #include <stdint.h>
 
 typedef struct pilot_t {
-    int power, agility, endurance;
+    int power;
+    int agility;
+    int endurance_level;
     uint8_t color_3; ///< HAR Tertiary Color.
     uint8_t color_2; ///< HAR Secondary Color.
     uint8_t color_1; ///< HAR Primary Color.
