@@ -258,6 +258,7 @@ int game_state_create(game_state *gs, const engine_init_flags *init_flags) {
     gs->tick = 0;
     gs->int_tick = 0;
     gs->arena = 0;
+    gs->fire_ice_progress = 0;
     gs->role = ROLE_CLIENT;
     gs->net_mode = init_flags->net_mode;
     gs->speed = settings_get()->gameplay.speed + 5;
@@ -1403,6 +1404,14 @@ int game_state_clone(game_state *src, game_state *dst) {
     dst->clone = true;
 
     return 0;
+}
+
+void game_state_advance_secret(game_state *gs) {
+    gs->fire_ice_progress++;
+}
+
+int game_state_get_secret(const game_state *gs) {
+    return gs->fire_ice_progress;
 }
 
 bool game_state_hars_are_alive(game_state *gs) {

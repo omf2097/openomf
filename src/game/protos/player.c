@@ -259,6 +259,10 @@ void player_run_apply(object *obj) {
 #endif
         player_clear_frame(obj);
 
+        if(script_is_tag_set_by_id(frame, TAG_B1)) {
+            game_state_advance_secret(obj->gs);
+        }
+
         if(script_is_tag_set_by_id(frame, TAG_AC)) {
             // force the har to face the center of the arena
             if(obj->pos.x > 160) {

@@ -59,6 +59,7 @@ int scene_create(scene *scene, game_state *gs, int scene_id) {
     scene->af_data[0] = NULL;
     scene->af_data[1] = NULL;
     scene->static_ticks_since_start = 0;
+    scene->secret_activated = false;
 
     // Init functions
     scene->userdata = NULL;

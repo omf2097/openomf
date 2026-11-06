@@ -36,6 +36,7 @@ struct scene_t {
     af *af_data[2];
     void *userdata;
     int static_ticks_since_start;
+    bool secret_activated;
 
     scene_free_cb free;
     scene_event_cb event;
