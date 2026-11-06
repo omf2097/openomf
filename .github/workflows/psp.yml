@@ -25,6 +25,11 @@ jobs:
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - name: Get OpenOMF assets
         uses: ./.github/actions/assets
+      - name: Get OpenOMF icons
+        uses: ./.github/actions/assets
+        with:
+          asset_url: 'https://www.omf2097.com/pub/files/omf/openomf-icons.zip'
+          filename: 'openomf-icons.zip'
       - name: Configure host languages
         run: |
           cmake -S . -B build/host -G Ninja \
@@ -37,10 +42,7 @@ jobs:
       - name: Prepare PSP icon
         run: |
           mkdir -p build/psp
-          curl -fL --retry 3 --retry-delay 2 \
-            https://www.omf2097.com/pub/files/omf/openomf-icons.zip \
-            -o build/psp/openomf-icons.zip
-          unzip -p build/psp/openomf-icons.zip omf-logo/omf-144x80.png > build/psp/icon0.png
+          unzip -p openomf-icons.zip omf-logo/omf-144x80.png > build/psp/icon0.png
           test -s build/psp/icon0.png
       - name: Configure
         run: |
