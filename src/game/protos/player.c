@@ -211,7 +211,7 @@ void player_run_apply(object *obj) {
     }
 
     // Get MP flag content, set to 0 if not set.
-    uint8_t mp = script_is_tag_set_by_id(frame, TAG_MP) ? script_get_tag_value_by_id(frame, TAG_MP) & 0xFF : 0;
+    int mp = script_is_tag_set_by_id(frame, TAG_MP) ? script_get_tag_value_by_id(frame, TAG_MP) : 0;
 
     if(script_is_tag_set_by_id(frame, TAG_E) && enemy && !script_is_tag_set_by_id(frame, TAG_AM)) {
 
@@ -477,7 +477,9 @@ void player_run_apply(object *obj) {
     // If frame changed, do something
     if(state->entered_frame) {
         // Animation creation command
-        if(script_is_tag_set_by_id(frame, TAG_M) && state->spawn != NULL) {
+        if(mp == -1) {
+            // No-op.  This assigns a hittable palette range, which we don't need.
+        } else if(script_is_tag_set_by_id(frame, TAG_M) && state->spawn != NULL) {
             int mx = 0;
             int my = 0;
             float vx = 0;

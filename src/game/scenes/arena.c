@@ -1048,13 +1048,6 @@ void arena_spawn_hazard(scene *scene) {
                 object_set_animation(obj, &info->ani);
                 // fire pit wandering (in case this is an orb)
                 obj->orb_val = random_int(&scene->gs->rand, 255) - 127;
-                if(scene->id == SCENE_ARENA3 && info->ani.id == 0) {
-                    // XXX fire pit orb has a bug whwre it double spawns. Use a custom animation string to avoid it
-                    // it mioght be to do with the 'mp' tag, which we don't currently understand
-                    object_set_custom_string(obj, "Z3-mx+160my+100m15mp10Z1-Z300");
-                }
-                /*object_set_spawn_cb(obj, cb_scene_spawn_object, (void*)scene);*/
-                /*object_set_destroy_cb(obj, cb_scene_destroy_object, (void*)scene);*/
                 hazard_create(obj, scene);
                 player_init_spawned(obj);
                 if(game_state_add_object(scene->gs, obj, RENDER_LAYER_BOTTOM, 1, 0) == 0) {
@@ -1062,7 +1055,7 @@ void arena_spawn_hazard(scene *scene) {
                     object_set_group(obj, GROUP_HAZARD);
                     object_set_userdata(obj, scene->bk_data);
                     if(info->ani.extra_string_count > 0) {
-                        // For the desert, there's a bunch of extra animation strgins for
+                        // For the desert, there's a bunch of extra animation strings for
                         // the different plane formations.
                         // Pick one, rather than always use the first
 
