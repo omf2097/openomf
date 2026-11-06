@@ -79,6 +79,7 @@ tests=(
     "Chronos can attack opponent when in stasis in the air and rehit mode is disabled:CHRONOS_AIR_STASIS.REC"
     "Player 2 can crossup in the left corner and neither player can crossup in the right corner:CORNER_TEST.REC"
     "Player can hold back to block even after being crossed up:BLOCK_DIR.REC"
+    "An air-to-air juggle causes air-stop behavior:AIR_STOP.REC"
     "Fire pit fireball does not hit the player which spawned it:OWN_GOAL.REC"
 )
 
