@@ -78,7 +78,7 @@ void portrait_select(component *c, int pilot_id) {
     sd_sprite_free(&spr);
 
     // Required size of the gui component is the size of the portrait image
-    component_set_required_size(c, local->img->data->w, local->img->data->h);
+    component_set_natural_size(c, local->img->data->w, local->img->data->h);
 
     // Save some information
     local->selected = pilot_id;
@@ -119,7 +119,7 @@ void portrait_set_from_sprite(component *c, sd_sprite *spr) {
     local->img = omf_calloc(1, sizeof(sprite));
 
     sprite_create(local->img, spr, -1);
-    component_set_required_size(c, local->img->data->w, local->img->data->h);
+    component_set_natural_size(c, local->img->data->w, local->img->data->h);
 }
 
 component *portrait_create(int pilot_id) {

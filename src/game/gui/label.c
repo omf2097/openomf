@@ -44,7 +44,7 @@ static void label_measure(component *c) {
     const vec2i hint = component_get_size_hint(c);
     text_set_bounding_box(local->text, hint.x < 0 ? TEXT_BBOX_MAX : hint.x, hint.y < 0 ? TEXT_BBOX_MAX : hint.y);
     text_generate_layout(local->text);
-    component_set_required_size(c, text_get_layout_width(local->text) + 6, text_get_layout_height(local->text) + 3);
+    component_set_natural_size(c, text_get_layout_width(local->text) + 6, text_get_layout_height(local->text) + 3);
 
     text_set_bounding_box(local->text, bb_w, bb_h);
 }

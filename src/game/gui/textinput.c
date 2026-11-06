@@ -383,7 +383,7 @@ static void textinput_init(component *c, const gui_theme *theme) {
     }
     refresh(c);
     text_generate_layout(ti->text);
-    component_set_required_size(c, -1, text_get_layout_height(ti->text) + (ti->bg_enabled ? 2 : 0));
+    component_set_natural_size(c, -1, text_get_layout_height(ti->text) + (ti->bg_enabled ? 2 : 0));
 }
 
 static void textinput_layout(component *c, int x, int y, int w, int h) {

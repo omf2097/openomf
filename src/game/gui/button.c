@@ -27,7 +27,7 @@ static void button_measure(component *c) {
     const int border = b->use_border ? 4 : 0;
     text_set_bounding_box(b->text, TEXT_BBOX_MAX, TEXT_BBOX_MAX);
     text_generate_layout(b->text);
-    component_set_required_size(c, text_get_layout_width(b->text) + border, text_get_layout_height(b->text) + border);
+    component_set_natural_size(c, text_get_layout_width(b->text) + border, text_get_layout_height(b->text) + border);
 
     text_set_bounding_box(b->text, bb_w, bb_h);
 }

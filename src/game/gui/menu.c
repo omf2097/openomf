@@ -390,7 +390,7 @@ static void menu_layout(component *c, int x, int y, int w, int h) {
         menu_background_create(m->help_bg2, m->help_w + 16, m->help_w / 8, MenuBackground);
     }
 
-    component_set_required_size(c, actual_w, actual_h);
+    component_set_natural_size(c, actual_w, actual_h);
 }
 
 void menu_set_userdata(component *c, void *userdata) {

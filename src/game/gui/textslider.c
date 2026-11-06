@@ -98,7 +98,7 @@ static void textslider_init(component *c, const gui_theme *theme) {
     refresh(c);
     text_set_font(t->text, t->override_font != FONT_NONE ? t->override_font : theme->text.font);
     text_generate_layout(t->text);
-    component_set_required_size(c, text_get_layout_width(t->text), text_get_layout_height(t->text));
+    component_set_natural_size(c, text_get_layout_width(t->text), text_get_layout_height(t->text));
 }
 
 static void textslider_layout(component *c, int x, int y, int w, int h) {
