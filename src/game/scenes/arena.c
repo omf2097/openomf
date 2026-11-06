@@ -853,7 +853,7 @@ uint32_t arena_state_hash(game_state *gs) {
         hash = ((hash << 5) + hash) + har->id;
         hash = ((hash << 5) + hash) + player->pilot->power;
         hash = ((hash << 5) + hash) + player->pilot->agility;
-        hash = ((hash << 5) + hash) + player->pilot->endurance;
+        hash = ((hash << 5) + hash) + player->pilot->endurance_level;
         hash = ((hash << 5) + hash) + x;
         hash = ((hash << 5) + hash) + y;
         hash = ((hash << 5) + hash) + health;
@@ -921,8 +921,8 @@ void arena_state_dump(game_state *gs, char *buf, size_t bufsize) {
         off = snprintf(buf + off, bufsize - off,
                        "player %d  power %d agility %d endurance %d HAR id %d  pos %d,%d, health %d, endurance %d, "
                        "velocity %f,%f, state %s, executing_move %d cur_anim %d seed %" PRIu32 "\n",
-                       i, player->pilot->power, player->pilot->agility, player->pilot->endurance, har->id, pos.x, pos.y,
-                       har->health, har->endurance, vel.x, vel.y, state_name(har->state), har->executing_move,
+                       i, player->pilot->power, player->pilot->agility, player->pilot->endurance_level, har->id, pos.x,
+                       pos.y, har->health, har->endurance, vel.x, vel.y, state_name(har->state), har->executing_move,
                        obj_har->cur_animation->id, random_get_seed(&gs->rand));
     }
 }

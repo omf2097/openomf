@@ -320,7 +320,7 @@ void send_game_information(wtf *data) {
     serial_write_int8(&ser, player->pilot->pilot_id);
     serial_write_int8(&ser, player->pilot->power);
     serial_write_int8(&ser, player->pilot->agility);
-    serial_write_int8(&ser, player->pilot->endurance);
+    serial_write_int8(&ser, player->pilot->endurance_level);
     serial_write_int8(&ser, sd_pilot_get_player_color(player->pilot, PRIMARY));
     serial_write_int8(&ser, sd_pilot_get_player_color(player->pilot, SECONDARY));
     serial_write_int8(&ser, sd_pilot_get_player_color(player->pilot, TERTIARY));
@@ -1026,8 +1026,9 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                             return 1;
                         }
                         val = serial_read_int8(&ser);
-                        if(player->pilot->endurance != val) {
-                            log_error("Pilot endurance mismatch, we had %d they had %d", player->pilot->endurance, val);
+                        if(player->pilot->endurance_level != val) {
+                            log_error("Pilot endurance mismatch, we had %d they had %d", player->pilot->endurance_level,
+                                      val);
                             enet_peer_disconnect_later(data->peer, 0);
                             return 1;
                         }

@@ -41,7 +41,7 @@ typedef struct {
     uint8_t stun_resistance; ///< Har stun resistance (0-9).
     uint8_t power;           ///< Pilot power (1-25).
     uint8_t agility;         ///< Pilot agility (1-25).
-    uint8_t endurance;       ///< Pilot endurance (1-25).
+    uint8_t endurance_level; ///< Pilot endurance (1-25).
     uint16_t offense;        ///< Offense preference value (100 high, should be under 200).
     uint16_t defense;        ///< Defense preference value (100 high, should be under 200).
     int32_t money;           ///< Amount of money the pilot currently has

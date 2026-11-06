@@ -10,7 +10,7 @@ void pilot_get_info(pilot *pilot, int id) {
         case PILOT_CRYSTAL:
             pilot->power = 5;
             pilot->agility = 16;
-            pilot->endurance = 9;
+            pilot->endurance_level = 9;
             pilot->color_1 = 5;
             pilot->color_2 = 11;
             pilot->color_3 = 8;
@@ -19,7 +19,7 @@ void pilot_get_info(pilot *pilot, int id) {
         case PILOT_STEFFAN:
             pilot->power = 13;
             pilot->agility = 9;
-            pilot->endurance = 8;
+            pilot->endurance_level = 8;
             pilot->color_1 = 10;
             pilot->color_2 = 15;
             pilot->color_3 = 7;
@@ -27,7 +27,7 @@ void pilot_get_info(pilot *pilot, int id) {
         case PILOT_MILANO:
             pilot->power = 7;
             pilot->agility = 20;
-            pilot->endurance = 4;
+            pilot->endurance_level = 4;
             pilot->color_1 = 11;
             pilot->color_2 = 12;
             pilot->color_3 = 7;
@@ -35,7 +35,7 @@ void pilot_get_info(pilot *pilot, int id) {
         case PILOT_CHRISTIAN:
             pilot->power = 9;
             pilot->agility = 7;
-            pilot->endurance = 15;
+            pilot->endurance_level = 15;
             pilot->color_1 = 8;
             pilot->color_2 = 15;
             pilot->color_3 = 6;
@@ -43,7 +43,7 @@ void pilot_get_info(pilot *pilot, int id) {
         case PILOT_SHIRRO:
             pilot->power = 20;
             pilot->agility = 1;
-            pilot->endurance = 8;
+            pilot->endurance_level = 8;
             pilot->color_1 = 4;
             pilot->color_2 = 7;
             pilot->color_3 = 14;
@@ -51,7 +51,7 @@ void pilot_get_info(pilot *pilot, int id) {
         case PILOT_JEANPAUL:
             pilot->power = 9;
             pilot->agility = 10;
-            pilot->endurance = 11;
+            pilot->endurance_level = 11;
             pilot->color_1 = 1;
             pilot->color_2 = 7;
             pilot->color_3 = 6;
@@ -59,7 +59,7 @@ void pilot_get_info(pilot *pilot, int id) {
         case PILOT_IBRAHIM:
             pilot->power = 10;
             pilot->agility = 1;
-            pilot->endurance = 20;
+            pilot->endurance_level = 20;
             pilot->color_1 = 8;
             pilot->color_2 = 6;
             pilot->color_3 = 14;
@@ -67,7 +67,7 @@ void pilot_get_info(pilot *pilot, int id) {
         case PILOT_ANGEL:
             pilot->power = 7;
             pilot->agility = 10;
-            pilot->endurance = 13;
+            pilot->endurance_level = 13;
             pilot->color_1 = 0;
             pilot->color_2 = 15;
             pilot->color_3 = 7;
@@ -76,7 +76,7 @@ void pilot_get_info(pilot *pilot, int id) {
         case PILOT_COSSETTE:
             pilot->power = 14;
             pilot->agility = 8;
-            pilot->endurance = 8;
+            pilot->endurance_level = 8;
             pilot->color_1 = 0;
             pilot->color_2 = 8;
             pilot->color_3 = 2;
@@ -85,7 +85,7 @@ void pilot_get_info(pilot *pilot, int id) {
         case PILOT_RAVEN:
             pilot->power = 14;
             pilot->agility = 4;
-            pilot->endurance = 12;
+            pilot->endurance_level = 12;
             pilot->color_1 = 9;
             pilot->color_2 = 10;
             pilot->color_3 = 4;
@@ -93,7 +93,7 @@ void pilot_get_info(pilot *pilot, int id) {
         case PILOT_KREISSACK:
             pilot->power = 16;
             pilot->agility = 15;
-            pilot->endurance = 16;
+            pilot->endurance_level = 16;
             pilot->color_1 = 5;
             pilot->color_2 = 1;
             pilot->color_3 = 15;

@@ -479,7 +479,7 @@ component *lab_dash_sim_create(scene *s, dashboard_widgets *dw) {
 component *lab_dash_main_create_gauges(component *xy, dashboard_widgets *dw, sd_pilot *pilot) {
     component *power = label_create("POWER");
     component *agility = label_create("AGILITY");
-    component *endurance = label_create("ENDURANCE");
+    component *endurance_level = label_create("ENDURANCE");
     component *arm_power = label_create("ARM POWER");
     component *leg_power = label_create("LEG POWER");
     component *armor = label_create("ARMOR");
@@ -487,7 +487,7 @@ component *lab_dash_main_create_gauges(component *xy, dashboard_widgets *dw, sd_
     component *leg_speed = label_create("LEG SPEED");
     component *stun_res = label_create("STUN RES");
 
-    component *m[] = {power, agility, endurance, arm_power, leg_power, armor, arm_speed, leg_speed, stun_res};
+    component *m[] = {power, agility, endurance_level, arm_power, leg_power, armor, arm_speed, leg_speed, stun_res};
     for(int i = 0; i < 9; i++) {
         label_set_font(m[i], FONT_SMALL);
         label_set_text_color(m[i], MECHLAB_DARK_GREEN);
@@ -500,9 +500,9 @@ component *lab_dash_main_create_gauges(component *xy, dashboard_widgets *dw, sd_
     xysizer_attach(xy, agility, 12, 106, 200, 6);
     dw->agility = gauge_create(GAUGE_SMALL, 25, 3);
     xysizer_attach(xy, dw->agility, 12, 113, -1, -1);
-    xysizer_attach(xy, endurance, 12, 117, 200, 6);
-    dw->endurance = gauge_create(GAUGE_SMALL, 25, 3);
-    xysizer_attach(xy, dw->endurance, 12, 124, -1, -1);
+    xysizer_attach(xy, endurance_level, 12, 117, 200, 6);
+    dw->endurance_level = gauge_create(GAUGE_SMALL, 25, 3);
+    xysizer_attach(xy, dw->endurance_level, 12, 124, -1, -1);
 
     // Bars and texts (bottom middle)
     xysizer_attach(xy, arm_power, 125, 95, 200, 6);
@@ -598,7 +598,7 @@ void lab_dash_main_update_gauges(dashboard_widgets *dw, sd_pilot *pilot) {
     // Pilot stats
     SET_GAUGE_X(power);
     SET_GAUGE_X(agility);
-    SET_GAUGE_X(endurance);
+    SET_GAUGE_X(endurance_level);
 
     gauge_set_size(dw->arm_power, max_arm_power[pilot->har_id] + 1);
     gauge_set_size(dw->leg_power, max_leg_power[pilot->har_id] + 1);
