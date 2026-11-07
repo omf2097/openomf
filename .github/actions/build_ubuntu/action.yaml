@@ -21,17 +21,17 @@ runs:
         make -j $(getconf _NPROCESSORS_ONLN)
         make -j $(getconf _NPROCESSORS_ONLN) install
 
-    - name: Get openomf assets
+    - name: Get OpenOMF assets
       uses: ./.github/actions/assets
 
-    - name: Extract openomf assets
+    - name: Extract OpenOMF assets
       shell: bash
       run: unzip -j openomf-assets.zip -d build-release/release/usr/share/games/openomf/resources
 
-    - name: Get openomf mods
+    - name: Get OpenOMF mods
       uses: ./.github/actions/fetch_mods
 
-    - name: Extract openomf mods
+    - name: Extract OpenOMF mods
       shell: bash
       run: |
         mkdir -p build-release/release/usr/share/games/openomf/mods

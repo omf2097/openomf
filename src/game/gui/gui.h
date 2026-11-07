@@ -21,7 +21,6 @@
 #include "game/gui/menu_background.h"
 #include "game/gui/portrait.h"
 #include "game/gui/progressbar.h"
-#include "game/gui/sizer.h"
 #include "game/gui/spritebutton.h"
 #include "game/gui/spriteimage.h"
 #include "game/gui/textinput.h"
@@ -30,7 +29,6 @@
 #include "game/gui/theme.h"
 #include "game/gui/trn_menu.h"
 #include "game/gui/trnselect.h"
-#include "game/gui/widget.h"
 #include "game/gui/xysizer.h"
 
 #endif // GUI_H

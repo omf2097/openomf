@@ -63,11 +63,19 @@ void memwrite_ubyte(memwriter *writer, uint8_t value) {
 }
 
 void memwrite_uword(memwriter *writer, uint16_t value) {
-    memwrite_buf(writer, (char *)&value, 2);
+    uint8_t b[sizeof(value)];
+    b[0] = (uint8_t)value;
+    b[1] = (uint8_t)(value >> 8);
+    memwrite_buf(writer, (char *)b, (int)sizeof(b));
 }
 
 void memwrite_udword(memwriter *writer, uint32_t value) {
-    memwrite_buf(writer, (char *)&value, 4);
+    uint8_t b[sizeof(value)];
+    b[0] = (uint8_t)value;
+    b[1] = (uint8_t)(value >> 8);
+    b[2] = (uint8_t)(value >> 16);
+    b[3] = (uint8_t)(value >> 24);
+    memwrite_buf(writer, (char *)b, (int)sizeof(b));
 }
 
 void memwrite_byte(memwriter *writer, int8_t value) {
@@ -75,15 +83,17 @@ void memwrite_byte(memwriter *writer, int8_t value) {
 }
 
 void memwrite_word(memwriter *writer, int16_t value) {
-    memwrite_buf(writer, (char *)&value, 2);
+    memwrite_uword(writer, (uint16_t)value);
 }
 
 void memwrite_dword(memwriter *writer, int32_t value) {
-    memwrite_buf(writer, (char *)&value, 4);
+    memwrite_udword(writer, (uint32_t)value);
 }
 
 void memwrite_float(memwriter *writer, float value) {
-    memwrite_buf(writer, (char *)&value, sizeof(float));
+    uint32_t u;
+    memcpy(&u, &value, sizeof(u));
+    memwrite_udword(writer, u);
 }
 
 void memwrite_fill(memwriter *writer, char content, int len) {

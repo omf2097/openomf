@@ -48,15 +48,12 @@ enum
 {
     EFFECT_NONE = 0,
     EFFECT_SHADOW = 0x1,
-    EFFECT_DARK_TINT = 0x2,
+    EFFECT_TRANSLUCENT = 0x2,
     EFFECT_POSITIONAL_LIGHTING = 0x4,
-    EFFECT_STASIS = 0x8,
     EFFECT_SATURATE = 0x10,
     EFFECT_GLOW = 0x20,
     EFFECT_TRAIL = 0x40,
     EFFECT_ADD = 0x80,
-    // palette quirks for electra electricity and pyros fire
-    EFFECT_HAR_QUIRKS = 0x100,
 };
 
 enum
@@ -65,6 +62,13 @@ enum
     OBJECT_FLAGS_NEXT_ANIM_ON_OWNER_HIT = 0x1,
     OBJECT_FLAGS_NEXT_ANIM_ON_ENEMY_HIT = 0x2,
     OBJECT_FLAGS_MC = 0x4,
+};
+
+enum WallCollision
+{
+    WALL_HIT_NONE = -1,
+    WALL_HIT_LEFT = 0,
+    WALL_HIT_RIGHT = 1, // Useful abstractions since left/right wall animations are generally one apart
 };
 
 typedef struct object_t object;
@@ -93,7 +97,7 @@ struct object_t {
     int8_t direction;
     int8_t group;
     // Set when moving against the wall either by continuous velocity or by instantaneous position changes.
-    bool wall_collision;
+    enum WallCollision wall_collision;
     bool hit_pixels_disabled;
     bool crossup_protection;
     bool should_hitpause;

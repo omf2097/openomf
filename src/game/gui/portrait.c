@@ -1,7 +1,7 @@
 #include "game/gui/portrait.h"
 #include "formats/error.h"
 #include "formats/pic.h"
-#include "game/gui/widget.h"
+#include "game/gui/component.h"
 #include "resources/ids.h"
 #include "resources/modmanager.h"
 #include "resources/resource_files.h"
@@ -18,14 +18,15 @@ typedef struct portrait {
 } portrait;
 
 static void portrait_render(component *c) {
-    portrait *g = widget_get_obj(c);
+    const portrait *g = component_get_obj(c);
     if(g->img != NULL) {
-        video_draw(g->img->data, c->x, c->y);
+        const vec2i pos = component_get_pos(c);
+        video_draw(g->img->data, pos.x, pos.y);
     }
 }
 
 static void portrait_free(component *c) {
-    portrait *g = widget_get_obj(c);
+    portrait *g = component_get_obj(c);
     sprite_free(g->img);
     omf_free(g->img);
     omf_free(g);
@@ -59,7 +60,7 @@ int portrait_load(sd_sprite *s, vga_palette *pal, int pilot_id) {
 }
 
 void portrait_select(component *c, int pilot_id) {
-    portrait *local = widget_get_obj(c);
+    portrait *local = component_get_obj(c);
 
     // Free old image
     if(local->img != NULL) {
@@ -76,9 +77,8 @@ void portrait_select(component *c, int pilot_id) {
     sprite_create(local->img, &spr, -1);
     sd_sprite_free(&spr);
 
-    // Position and size hints for the gui component
-    // These are set on layout function call
-    component_set_size_hints(c, local->img->data->w, local->img->data->h);
+    // Required size of the gui component is the size of the portrait image
+    component_set_natural_size(c, local->img->data->w, local->img->data->h);
 
     // Save some information
     local->selected = pilot_id;
@@ -86,7 +86,7 @@ void portrait_select(component *c, int pilot_id) {
 }
 
 void portrait_next(component *c) {
-    portrait *local = widget_get_obj(c);
+    const portrait *local = component_get_obj(c);
     int select = local->selected + 1;
     if(select >= local->max) {
         select = 0;
@@ -95,7 +95,7 @@ void portrait_next(component *c) {
 }
 
 void portrait_prev(component *c) {
-    portrait *local = widget_get_obj(c);
+    const portrait *local = component_get_obj(c);
     int select = local->selected - 1;
     if(select < 0) {
         select = local->max - 1;
@@ -104,12 +104,12 @@ void portrait_prev(component *c) {
 }
 
 int portrait_selected(component *c) {
-    portrait *local = widget_get_obj(c);
+    const portrait *local = component_get_obj(c);
     return local->selected;
 }
 
 void portrait_set_from_sprite(component *c, sd_sprite *spr) {
-    portrait *local = widget_get_obj(c);
+    portrait *local = component_get_obj(c);
     // Free old image
     if(local->img != NULL) {
         sprite_free(local->img);
@@ -119,14 +119,12 @@ void portrait_set_from_sprite(component *c, sd_sprite *spr) {
     local->img = omf_calloc(1, sizeof(sprite));
 
     sprite_create(local->img, spr, -1);
-    component_set_size_hints(c, local->img->data->w, local->img->data->h);
+    component_set_natural_size(c, local->img->data->w, local->img->data->h);
 }
 
 component *portrait_create(int pilot_id) {
-    component *c = widget_create();
-    c->supports_disable = 0;
-    c->supports_select = 0;
-    c->supports_focus = 0;
+    component *c = component_create();
+    component_set_supported(c, false, false, false);
 
     // Local information
     portrait *local = omf_calloc(1, sizeof(portrait));
@@ -134,9 +132,9 @@ component *portrait_create(int pilot_id) {
     local->selected = 0;
 
     // Set callbacks
-    widget_set_obj(c, local);
-    widget_set_render_cb(c, portrait_render);
-    widget_set_free_cb(c, portrait_free);
+    component_set_obj(c, local);
+    component_set_render_cb(c, portrait_render);
+    component_set_free_cb(c, portrait_free);
 
     // Update graphics
     portrait_select(c, pilot_id);

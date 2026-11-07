@@ -21,14 +21,13 @@
     "libxmp",
     "libepoxy",
     "enet",
-    "libconfuse",
     "libpng",
     "opusfile"
   ],
   "features": {
     "ci-deps": {
       "description": "pull in everything for CI",
-      "dependencies": [ "cunit", "miniupnpc", "libnatpmp" ]
+      "dependencies": [ "cunit", "miniupnpc", "libnatpmp", "libconfuse" ]
     },
     "use-tests": {
       "description": "build cunit for USE_TESTS",
@@ -41,6 +40,10 @@
     "natpmp": {
       "description": "build natpmp",
       "dependencies": [ "libnatpmp" ]
+    },
+    "confuse": {
+      "description": "build confuse",
+      "dependencies": [ "libconfuse" ]
     }
   }
 }

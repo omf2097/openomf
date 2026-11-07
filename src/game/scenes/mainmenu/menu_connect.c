@@ -50,7 +50,7 @@ void menu_connect_free(component *c) {
 
 void menu_connect_start(component *c, void *userdata) {
     scene *s = userdata;
-    connect_menu_data *local = menu_get_userdata(c->parent);
+    connect_menu_data *local = menu_get_userdata(component_get_parent(c));
     ENetAddress address;
     const char *addr = textinput_value(local->addr_input);
     s->gs->role = ROLE_CLIENT;
@@ -83,7 +83,7 @@ void menu_connect_start(component *c, void *userdata) {
     component_disable(local->connect_button, 1);
     component_disable(local->addr_input, 1);
     component_disable(local->port_input, 1);
-    menu_select(c->parent, local->cancel_button);
+    menu_select(component_get_parent(c), local->cancel_button);
 
     // Set address
     enet_address_set_host(&address, addr);
@@ -99,15 +99,14 @@ void menu_connect_start(component *c, void *userdata) {
 }
 
 void menu_connect_cancel(component *c, void *userdata) {
-    menu *m = sizer_get_obj(c->parent);
 
-    connect_menu_data *local = menu_get_userdata(c->parent);
+    connect_menu_data *local = menu_get_userdata(component_get_parent(c));
     if(local->connect_start && difftime(time(NULL), local->connect_start) < 0.1) {
         return;
     }
 
     // Finish menu
-    m->finished = 1;
+    menu_finish(component_get_parent(c));
 
     // Clean up host
     if(local->host && !local->controllers_created) {
@@ -218,7 +217,7 @@ component *menu_connect_create(scene *s) {
     local->connect_button =
         button_create("CONNECT", "Connect to the provided IP address.", false, false, menu_connect_start, s);
     local->cancel_button = button_create("CANCEL", "Exit from this menu.", false, false, menu_connect_cancel, s);
-    widget_set_id(local->connect_button, NETWORK_CONNECT_IP_BUTTON_ID);
+    component_set_id(local->connect_button, NETWORK_CONNECT_IP_BUTTON_ID);
     menu_attach(menu, local->addr_input);
     menu_attach(menu, local->port_input);
     menu_attach(menu, local->connect_button);

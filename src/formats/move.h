@@ -54,7 +54,7 @@ enum
 {
     POS_NONE = 0x0000,
     POS_WALL = 0x0001,                  ///< HAR is near a wall
-    POS_NO_DIST_CHECK = 0x0002,         ///< Bypass distance and position gates
+    POS_CANNOT_PERFORM = 0x0002,        ///< Cannot perform this move normally
     POS_JUMP_WALL_BOUNCE = 0x0004,      ///< Aerial hit triggers wall-bounce on the target
     POS_IN_ARENA0 = 0x0008,             ///< Require arena 0
     POS_IN_ARENA1 = 0x0010,             ///< Require arena 1

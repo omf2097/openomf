@@ -3,9 +3,9 @@
 #include <string.h>
 
 #include "controller/controller.h"
+#include "game/gui/component.h"
 #include "game/gui/text/text.h"
 #include "game/gui/textinput.h"
-#include "game/gui/widget.h"
 #include "utils/allocator.h"
 #include "utils/miscmath.h"
 #include "video/image.h"
@@ -38,32 +38,25 @@ typedef struct textinput {
     void *userdata;
 } textinput;
 
-static void textinput_set_editing(component *c, bool editing) {
-    if(c->editing != editing) {
-        c->editing = editing;
-        c->dirty = true;
-    }
-}
-
 static bool textinput_wheel_active(component *c) {
-    const textinput *ti = widget_get_obj(c);
-    return ti->last_source == CTRL_TYPE_GAMEPAD && c->editing;
+    const textinput *ti = component_get_obj(c);
+    return ti->last_source == CTRL_TYPE_GAMEPAD && component_is_editing(c);
 }
 
 // This keeps a field from being left in edit mode.
 static void textinput_focus(component *c, bool focused) {
-    textinput *ti = widget_get_obj(c);
-    textinput_set_editing(c, focused && ti->edit_by_default);
+    const textinput *ti = component_get_obj(c);
+    component_set_editing(c, focused && ti->edit_by_default);
 }
 
 static void set_cursor(component *c, bool focused) {
-    const textinput *ti = widget_get_obj(c);
+    const textinput *ti = component_get_obj(c);
 
     // Try to avoid pointless work
-    if(!c->dirty) {
+    if(!component_is_dirty(c)) {
         return;
     }
-    c->dirty = false;
+    component_set_dirty(c, false);
 
     // Not focused, just show the text as-is (no cursor)
     if(!focused) {
@@ -75,7 +68,7 @@ static void set_cursor(component *c, bool focused) {
     str tmp;
     str_from(&tmp, &ti->buf);
     if(ti->last_source == CTRL_TYPE_GAMEPAD) {
-        if(c->editing) {
+        if(component_is_editing(c)) {
             // If user is using a gamepad and has entered editing mode (via PUNCH), we show the cursor
             // ON TOP of the character.
             if(ti->pos >= str_size(&tmp)) {
@@ -93,18 +86,19 @@ static void set_cursor(component *c, bool focused) {
 }
 
 static void refresh(component *c) {
-    textinput *ti = widget_get_obj(c);
+    textinput *ti = component_get_obj(c);
     str_truncate(&ti->buf, ti->max_chars - 1);
-    c->dirty = true;
+    component_set_dirty(c, true);
     text_set_from_str(ti->text, &ti->buf);
 }
 
 static void textinput_render(component *c) {
-    const textinput *ti = widget_get_obj(c);
+    const textinput *ti = component_get_obj(c);
     const gui_theme *theme = component_get_theme(c);
 
+    const vec2i pos = component_get_pos(c);
     if(ti->bg_enabled) {
-        video_draw(&ti->bg_surface, c->x + 2, c->y);
+        video_draw(&ti->bg_surface, pos.x + 2, pos.y);
     }
 
     if(component_is_selected(c)) {
@@ -123,7 +117,7 @@ static void textinput_render(component *c) {
         left += 2;
         top += 2;
     }
-    text_draw(ti->text, c->x + left, c->y + top);
+    text_draw(ti->text, pos.x + left, pos.y + top);
 
     // Render a black character on top of the cursor when using gamepad letter wheel
     if(component_is_selected(c) && !component_is_disabled(c) && textinput_wheel_active(c) &&
@@ -131,7 +125,7 @@ static void textinput_render(component *c) {
         int16_t gx, gy;
         if(text_get_glyph_pos(ti->text, ti->pos, &gx, &gy)) {
             const font *font = fonts_get_font(text_get_font(ti->text));
-            text_draw_glyph(font, str_at(&ti->buf, ti->pos), (int16_t)(c->x + left + gx), (int16_t)(c->y + top + gy),
+            text_draw_glyph(font, str_at(&ti->buf, ti->pos), (int16_t)(pos.x + left + gx), (int16_t)(pos.y + top + gy),
                             0);
         }
     }
@@ -151,7 +145,7 @@ char textinput_wheel_step(const str *charset, char current, bool up) {
 }
 
 static void textinput_wheel_scroll(component *c, bool up) {
-    textinput *ti = widget_get_obj(c);
+    textinput *ti = component_get_obj(c);
     const char new_char = textinput_wheel_step(&ti->wheel_charset, str_at(&ti->buf, ti->pos), up);
     if(ti->pos >= str_size(&ti->buf)) {
         str_append_char(&ti->buf, new_char);
@@ -162,7 +156,7 @@ static void textinput_wheel_scroll(component *c, bool up) {
 }
 
 static void textinput_move_caret(component *c, bool right) {
-    textinput *ti = widget_get_obj(c);
+    textinput *ti = component_get_obj(c);
     if(right) {
         ti->pos = smin2(ti->pos + 1, str_size(&ti->buf));
     } else if(ti->pos > 0) {
@@ -171,14 +165,14 @@ static void textinput_move_caret(component *c, bool right) {
     refresh(c);
 }
 
-static int textinput_action(component *c, int action, int source) {
-    textinput *ti = widget_get_obj(c);
+static bool textinput_action(component *c, int action, int source) {
+    textinput *ti = component_get_obj(c);
     // A connected but idle gamepad emits ACT_STOP every tick. That idle signal is
     // not real input, so it must not flip the field into gamepad mode while the
     // keyboard is being used.
     if(action != ACT_STOP && ti->last_source != source) {
         ti->last_source = source;
-        c->dirty = true;
+        component_set_dirty(c, true);
     }
 
     // Keyboard handling
@@ -186,60 +180,60 @@ static int textinput_action(component *c, int action, int source) {
         switch(action) {
             case ACT_RIGHT:
                 textinput_move_caret(c, true);
-                return 0;
+                return true;
             case ACT_LEFT:
                 textinput_move_caret(c, false);
-                return 0;
+                return true;
             case ACT_PUNCH:
                 if(ti->done_cb) {
                     ti->done_cb(c, ti->userdata);
-                    return 0;
+                    return true;
                 }
                 break;
             default:
                 break;
         }
-        return 1;
+        return false;
     }
 
     // If controller is gamepad and if not yet editing, enable edit mode.
-    if(!c->editing) {
+    if(!component_is_editing(c)) {
         if(action == ACT_PUNCH) {
-            textinput_set_editing(c, true);
-            return 0;
+            component_set_editing(c, true);
+            return true;
         }
-        return 1;
+        return false;
     }
 
     // If controller is gamepad, and we are editing, work with the text.
     switch(action) {
         case ACT_RIGHT:
             textinput_move_caret(c, true);
-            return 0;
+            return true;
         case ACT_LEFT:
             textinput_move_caret(c, false);
-            return 0;
+            return true;
         case ACT_UP:
             textinput_wheel_scroll(c, true);
-            return 0;
+            return true;
         case ACT_DOWN:
             textinput_wheel_scroll(c, false);
-            return 0;
+            return true;
         case ACT_KICK:
             if(!ti->edit_by_default) {
-                textinput_set_editing(c, false);
-                return 0;
+                component_set_editing(c, false);
+                return true;
             }
-            return 1;
+            return false;
         case ACT_PUNCH:
             if(ti->done_cb) {
                 ti->done_cb(c, ti->userdata);
             }
-            return 0;
+            return true;
         default:
             break;
     }
-    return 1;
+    return false;
 }
 
 // '@' and '~' are not printable in this game
@@ -247,12 +241,12 @@ static bool is_valid_input(char c) {
     return isprint(c) && c != '@' && c != '~';
 }
 
-static int textinput_event(component *c, SDL_Event *e) {
+static bool textinput_event(component *c, SDL_Event *e) {
     // Handle selection
-    textinput *ti = widget_get_obj(c);
+    textinput *ti = component_get_obj(c);
     if((e->type == SDL_TEXTINPUT || e->type == SDL_KEYDOWN) && ti->last_source != CTRL_TYPE_KEYBOARD) {
         ti->last_source = CTRL_TYPE_KEYBOARD;
-        c->dirty = true;
+        component_set_dirty(c, true);
     }
     // Only accept input if:
     // - The global filter accepts that this is text supported by font (is_valid_input)
@@ -263,19 +257,22 @@ static int textinput_event(component *c, SDL_Event *e) {
         str_truncate(&ti->buf, ti->max_chars - 1);
         ti->pos = smin2(ti->pos + 1, str_size(&ti->buf));
         refresh(c);
-        return 0;
+        return true;
     } else if(e->type == SDL_KEYDOWN) {
-        const unsigned char *state = SDL_GetKeyboardState(NULL);
-        if(state[SDL_SCANCODE_BACKSPACE]) {
+        const SDL_Scancode key = e->key.keysym.scancode;
+        const bool ctrl_mod = (e->key.keysym.mod & KMOD_CTRL) != 0;
+        if(key == SDL_SCANCODE_BACKSPACE) {
             if(ti->pos > 0) {
                 ti->pos--;
                 str_delete_at(&ti->buf, ti->pos);
             }
             refresh(c);
-        } else if(state[SDL_SCANCODE_DELETE]) {
+            return true;
+        } else if(key == SDL_SCANCODE_DELETE) {
             str_delete_at(&ti->buf, ti->pos);
             refresh(c);
-        } else if(state[SDL_SCANCODE_V] && state[SDL_SCANCODE_LCTRL]) {
+            return true;
+        } else if(key == SDL_SCANCODE_V && ctrl_mod) {
             if(SDL_HasClipboardText()) {
                 char *clip = SDL_GetClipboardText();
                 str filtered;
@@ -292,29 +289,29 @@ static int textinput_event(component *c, SDL_Event *e) {
                 SDL_free(clip);
                 refresh(c);
             }
+            return true;
         }
-        return 0;
     }
-    return 1;
+    return false;
 }
 
 const char *textinput_value(const component *c) {
-    textinput *ti = widget_get_obj(c);
+    textinput *ti = component_get_obj(c);
     str_strip(&ti->buf);
-    ti->pos = 0;
+    ti->pos = smin2(ti->pos, str_size(&ti->buf));
     return str_c(&ti->buf);
 }
 
 void textinput_clear(component *c) {
-    textinput *ti = widget_get_obj(c);
+    textinput *ti = component_get_obj(c);
     str_truncate(&ti->buf, 0);
-    c->dirty = true;
+    component_set_dirty(c, true);
     text_set_from_str(ti->text, &ti->buf);
     ti->pos = 0;
 }
 
 static void textinput_free(component *c) {
-    textinput *ti = widget_get_obj(c);
+    textinput *ti = component_get_obj(c);
     surface_free(&ti->bg_surface);
     text_free(&ti->text);
     str_free(&ti->buf);
@@ -323,57 +320,57 @@ static void textinput_free(component *c) {
 }
 
 void textinput_enable_background(component *c, int enabled) {
-    textinput *ti = widget_get_obj(c);
+    textinput *ti = component_get_obj(c);
     ti->bg_enabled = enabled;
 }
 
 void textinput_set_filter_cb(component *c, textinput_filter_cb filter_cb) {
-    textinput *ti = widget_get_obj(c);
+    textinput *ti = component_get_obj(c);
     ti->filter_cb = filter_cb;
 }
 
 void textinput_set_done_cb(component *c, textinput_done_cb done_cb, void *userdata) {
-    textinput *ti = widget_get_obj(c);
+    textinput *ti = component_get_obj(c);
     ti->done_cb = done_cb;
     ti->userdata = userdata;
 }
 
 void textinput_set_text(component *c, char const *value) {
-    textinput *ti = widget_get_obj(c);
+    textinput *ti = component_get_obj(c);
     str_set_c(&ti->buf, value);
     refresh(c);
     ti->pos = str_size(&ti->buf);
 }
 
 void textinput_set_font(component *c, font_size font) {
-    textinput *ti = widget_get_obj(c);
+    textinput *ti = component_get_obj(c);
     ti->font_size = font;
 }
 
 void textinput_set_horizontal_align(component *c, text_horizontal_align align) {
-    textinput *ti = widget_get_obj(c);
+    textinput *ti = component_get_obj(c);
     ti->text_horizontal_align = align;
 }
 
 void textinput_set_text_shadow(component *c, uint8_t shadow, vga_index color) {
-    textinput *ti = widget_get_obj(c);
+    textinput *ti = component_get_obj(c);
     ti->text_shadow = shadow;
     ti->text_shadow_color = color;
 }
 
 void textinput_set_wheel_charset(component *c, const char *charset) {
-    textinput *ti = widget_get_obj(c);
+    textinput *ti = component_get_obj(c);
     str_set_c(&ti->wheel_charset, charset);
 }
 
 void textinput_set_edit_by_default(component *c, bool enabled) {
-    textinput *ti = widget_get_obj(c);
+    textinput *ti = component_get_obj(c);
     ti->edit_by_default = enabled;
-    textinput_set_editing(c, enabled);
+    component_set_editing(c, enabled);
 }
 
 static void textinput_init(component *c, const gui_theme *theme) {
-    textinput *ti = widget_get_obj(c);
+    const textinput *ti = component_get_obj(c);
     text_set_font(ti->text, ti->font_size != FONT_NONE ? ti->font_size : theme->text.font);
     text_set_color(ti->text, theme->text.primary_color);
     text_set_horizontal_align(ti->text, TEXT_ALIGN_LEFT);
@@ -385,15 +382,12 @@ static void textinput_init(component *c, const gui_theme *theme) {
         text_set_margin(ti->text, (text_margin){1, 1, 1, 1});
     }
     refresh(c);
-    if(c->h_hint < 0) {
-        text_generate_layout(ti->text);
-        int text_height = text_get_layout_height(ti->text) + (ti->bg_enabled ? 2 : 0);
-        component_set_size_hints(c, c->w_hint, text_height);
-    }
+    text_generate_layout(ti->text);
+    component_set_natural_size(c, -1, text_get_layout_height(ti->text) + (ti->bg_enabled ? 2 : 0));
 }
 
 static void textinput_layout(component *c, int x, int y, int w, int h) {
-    textinput *ti = widget_get_obj(c);
+    textinput *ti = component_get_obj(c);
     text_set_horizontal_align(ti->text, ti->text_horizontal_align);
     if(ti->bg_enabled) {
         text_set_bounding_box(ti->text, w - 2, h - 2);
@@ -401,6 +395,7 @@ static void textinput_layout(component *c, int x, int y, int w, int h) {
         image_create(&img, w - 4, h);
         image_clear(&img, 0);
         image_rect(&img, 0, 0, w - 4, h, COLOR_MENU_BORDER);
+        surface_free(&ti->bg_surface);
         surface_create_from_image(&ti->bg_surface, &img);
         image_free(&img);
     } else {
@@ -410,7 +405,7 @@ static void textinput_layout(component *c, int x, int y, int w, int h) {
 }
 
 component *textinput_create(int max_chars, const char *help, const char *initial_value) {
-    component *c = widget_create();
+    component *c = component_create();
 
     textinput *ti = omf_calloc(1, sizeof(textinput));
     str_from_c(&ti->buf, initial_value);
@@ -430,13 +425,13 @@ component *textinput_create(int max_chars, const char *help, const char *initial
     component_set_help_text(c, help);
 
     // Widget stuff
-    widget_set_obj(c, ti);
-    widget_set_render_cb(c, textinput_render);
-    widget_set_event_cb(c, textinput_event);
-    widget_set_action_cb(c, textinput_action);
-    widget_set_free_cb(c, textinput_free);
-    widget_set_init_cb(c, textinput_init);
-    widget_set_layout_cb(c, textinput_layout);
-    widget_set_focus_cb(c, textinput_focus);
+    component_set_obj(c, ti);
+    component_set_render_cb(c, textinput_render);
+    component_set_event_cb(c, textinput_event);
+    component_set_action_cb(c, textinput_action);
+    component_set_free_cb(c, textinput_free);
+    component_set_init_cb(c, textinput_init);
+    component_set_layout_cb(c, textinput_layout);
+    component_set_focus_cb(c, textinput_focus);
     return c;
 }

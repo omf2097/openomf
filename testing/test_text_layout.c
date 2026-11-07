@@ -83,6 +83,16 @@ void test_find_next_line_end(void) {
     CU_ASSERT_EQUAL(find_next_line_end(&s, &f, TEXT_ROW_HORIZONTAL, 0, 0, 16, true), 0);
     str_free(&s);
 
+    // A dash that does not itself fit must not be used as a cut-off point.
+    str_from_c(&s, "AAAA-B");
+    CU_ASSERT_EQUAL(find_next_line_end(&s, &f, TEXT_ROW_HORIZONTAL, 0, 0, 32, true), 4);
+    str_free(&s);
+
+    // A space that does not fit is trimmed.
+    str_from_c(&s, "AAAA B");
+    CU_ASSERT_EQUAL(find_next_line_end(&s, &f, TEXT_ROW_HORIZONTAL, 0, 0, 32, true), 5);
+    str_free(&s);
+
     font_free(&f);
 }
 

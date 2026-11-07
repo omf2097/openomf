@@ -239,10 +239,10 @@ void palette_remaps_save(sd_writer *writer, const vga_remap_tables *remaps) {
 }
 
 void palette_load_player_colors(const vga_palette *src, int player) {
-    // only load 47 palette colors, skipping the first one
-    // because that seems to be ignored by the original
-    int dst_offset = (player * 48) + 1;
-    vga_state_set_base_palette_from_range(src, dst_offset, 1, 47);
+    // Match the original behaviour -- copy all, then force 0 to black.
+    vga_state_set_base_palette_from_range(src, player * 48, 0, 48);
+    static const vga_color black = {0, 0, 0};
+    vga_state_set_base_palette_index(0, &black);
 }
 
 void palette_load_altpal_player_color(vga_palette *dst, int player, int src_color, int dst_color) {

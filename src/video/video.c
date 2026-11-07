@@ -1,3 +1,4 @@
+#include "utils/rect.h"
 #include <SDL.h>
 
 #include "utils/c_array_util.h"
@@ -197,7 +198,7 @@ void video_render_finish(void) {
     current_renderer.render_finish(current_renderer.ctx);
 }
 
-void video_render_area_prepare(const SDL_Rect *area) {
+void video_render_area_prepare(const irect *area) {
     current_renderer.render_area_prepare(current_renderer.ctx, area);
 }
 
@@ -234,7 +235,7 @@ void video_schedule_screenshot(video_screenshot_signal callback) {
  * @param flip_mode Flip mode flags
  * @param options Rendering options
  */
-static inline void draw_args(const surface *sur, SDL_Rect *dst, int remap_offset, int remap_rounds, int palette_offset,
+static inline void draw_args(const surface *sur, irect *dst, int remap_offset, int remap_rounds, int palette_offset,
                              int palette_limit, int opacity, unsigned int flip_mode, unsigned int options) {
     current_renderer.draw_surface(current_renderer.ctx, sur, dst, remap_offset, remap_rounds, palette_offset,
                                   palette_limit, opacity, flip_mode, options);
@@ -242,48 +243,28 @@ static inline void draw_args(const surface *sur, SDL_Rect *dst, int remap_offset
 
 void video_draw_full(const surface *src_surface, int x, int y, int w, int h, int remap_offset, int remap_rounds,
                      int palette_offset, int palette_limit, int opacity, unsigned int flip_mode, unsigned int options) {
-    SDL_Rect dst;
-    dst.w = w;
-    dst.h = h;
-    dst.x = x;
-    dst.y = y;
+    irect dst = irect_create(x, y, w, h);
     draw_args(src_surface, &dst, remap_offset, remap_rounds, palette_offset, palette_limit, opacity, flip_mode,
               options);
 }
 
 void video_draw_offset(const surface *src_surface, int x, int y, int offset, int limit) {
-    SDL_Rect dst;
-    dst.w = src_surface->render_w;
-    dst.h = src_surface->render_h;
-    dst.x = x;
-    dst.y = y;
+    irect dst = irect_create(x, y, src_surface->render_w, src_surface->render_h);
     draw_args(src_surface, &dst, 0, 0, offset, limit, 255, 0, 0);
 }
 
 void video_draw_size(const surface *src_surface, int x, int y, int w, int h) {
-    SDL_Rect dst;
-    dst.w = w;
-    dst.h = h;
-    dst.x = x;
-    dst.y = y;
+    irect dst = irect_create(x, y, w, h);
     draw_args(src_surface, &dst, 0, 0, 0, 255, 255, 0, 0);
 }
 
 void video_draw(const surface *src_surface, int x, int y) {
-    SDL_Rect dst;
-    dst.w = src_surface->render_w;
-    dst.h = src_surface->render_h;
-    dst.x = x;
-    dst.y = y;
+    irect dst = irect_create(x, y, src_surface->render_w, src_surface->render_h);
     draw_args(src_surface, &dst, 0, 0, 0, 255, 255, 0, 0);
 }
 
 void video_draw_remap(const surface *src_surface, int x, int y, int remap_offset, int remap_rounds,
                       unsigned int options) {
-    SDL_Rect dst;
-    dst.w = src_surface->render_w;
-    dst.h = src_surface->render_h;
-    dst.x = x;
-    dst.y = y;
+    irect dst = irect_create(x, y, src_surface->render_w, src_surface->render_h);
     draw_args(src_surface, &dst, remap_offset, remap_rounds, 0, 255, 255, 0, options);
 }

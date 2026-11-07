@@ -11,47 +11,10 @@
 #define MENU_H
 
 #include "game/gui/component.h"
-#include "game/gui/gui_frame.h"
-#include "video/surface.h"
 
 typedef void (*menu_tick_cb)(component *c);                                ///< Menu tick callback
 typedef void (*menu_free_cb)(component *c);                                ///< Menu free callback
 typedef void (*menu_submenu_done_cb)(component *menu, component *submenu); ///< Submenu completion callback
-
-/**
- * @brief Menu internal structure
- */
-typedef struct menu {
-    surface *bg1;      ///< Primary background surface
-    surface *bg2;      ///< Secondary background surface
-    surface *help_bg1; ///< Primary help area background
-    surface *help_bg2; ///< Secondary help area background
-    int selected;      ///< Index of selected item
-    int margin_top;    ///< Top margin in pixels
-    int padding;       ///< Padding between items
-    bool finished;     ///< Whether the menu is finished
-    bool horizontal;   ///< Whether items are arranged horizontally
-    bool background;   ///< Whether to draw background
-    bool centered;     ///< Whether items are centered
-    bool is_submenu;   ///< Whether this menu is a submenu
-
-    int help_x;                             ///< Help area X coordinate
-    int help_y;                             ///< Help area Y coordinate
-    int help_w;                             ///< Help area width
-    int help_h;                             ///< Help area height
-    vga_index help_text_color;              ///< Help text color
-    text_horizontal_align help_text_halign; ///< Help text horizontal alignment
-    text_vertical_align help_text_valign;   ///< Help text vertical alignment
-    font_size help_text_font;               ///< Help text font
-
-    char prev_submenu_state;           ///< Previous submenu state
-    component *submenu;                ///< Active submenu
-    menu_submenu_done_cb submenu_done; ///< Submenu completion callback
-
-    void *userdata;    ///< User data for callbacks
-    menu_free_cb free; ///< Free callback
-    menu_tick_cb tick; ///< Tick callback
-} menu;
 
 /**
  * @brief Create a menu
@@ -81,11 +44,19 @@ void menu_select(component *menu, component *c);
 component *menu_selected(const component *menu);
 
 /**
+ * @brief Mark the menu as finished
+ * @details A finished submenu is closed by its parent on the next tick; a finished root menu is
+ *          left for the owning scene to act on (see menu_is_finished).
+ * @param menu Menu to finish
+ */
+void menu_finish(component *menu);
+
+/**
  * @brief Check if the menu is finished
  * @param menu Menu to query
- * @return Non-zero if finished
+ * @return True if finished
  */
-int menu_is_finished(const component *menu);
+bool menu_is_finished(const component *menu);
 
 /**
  * @brief Set the active submenu
@@ -95,11 +66,15 @@ int menu_is_finished(const component *menu);
 void menu_set_submenu(component *menu, component *submenu);
 
 /**
- * @brief Link this menu to a GUI frame
+ * @brief Set the active submenu, at an given position and size
  * @param menu Menu to modify
- * @param linked_menu GUI frame to link
+ * @param submenu Submenu component to set
+ * @param x X coordinate in pixels
+ * @param y Y coordinate in pixels
+ * @param w Width in pixels
+ * @param h Height in pixels
  */
-void menu_link_menu(component *menu, gui_frame *linked_menu);
+void menu_link_menu(component *menu, component *submenu, int x, int y, int w, int h);
 
 /**
  * @brief Get the current submenu
@@ -162,8 +137,8 @@ void menu_set_background(component *c, bool background);
  * @param c Menu component to modify
  * @param x X coordinate of help area
  * @param y Y coordinate of help area
- * @param h Height of help area
  * @param w Width of help area
+ * @param h Height of help area
  */
 void menu_set_help_pos(component *c, int x, int y, int w, int h);
 

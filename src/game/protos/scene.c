@@ -59,6 +59,7 @@ int scene_create(scene *scene, game_state *gs, int scene_id) {
     scene->af_data[0] = NULL;
     scene->af_data[1] = NULL;
     scene->static_ticks_since_start = 0;
+    scene->secret_activated = false;
 
     // Init functions
     scene->userdata = NULL;
@@ -176,12 +177,11 @@ void scene_startup(scene *scene, int id, int *m_load, int *m_repeat) {
     }
 }
 
-// Return 0 if event was handled here
-int scene_event(scene *scene, SDL_Event *event) {
+bool scene_event(scene *scene, SDL_Event *event) {
     if(scene->event != NULL) {
         return scene->event(scene, event);
     }
-    return 1;
+    return false;
 }
 
 void scene_render_overlay(scene *scene) {

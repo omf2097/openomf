@@ -211,7 +211,7 @@ void player_run_apply(object *obj) {
     }
 
     // Get MP flag content, set to 0 if not set.
-    uint8_t mp = script_is_tag_set_by_id(frame, TAG_MP) ? script_get_tag_value_by_id(frame, TAG_MP) & 0xFF : 0;
+    int mp = script_is_tag_set_by_id(frame, TAG_MP) ? script_get_tag_value_by_id(frame, TAG_MP) : 0;
 
     if(script_is_tag_set_by_id(frame, TAG_E) && enemy && !script_is_tag_set_by_id(frame, TAG_AM)) {
 
@@ -235,7 +235,7 @@ void player_run_apply(object *obj) {
     }
 
     // Reset the wall collision condition
-    obj->wall_collision = false;
+    obj->wall_collision = WALL_HIT_NONE;
     // See if x+/- or y+/- are set and save values
     int trans_x = 0, trans_y = 0;
     if(script_is_tag_set_by_id(frame, TAG_Y_MINUS)) {
@@ -258,6 +258,10 @@ void player_run_apply(object *obj) {
         // player_describe_mp_flags(frame, mp);
 #endif
         player_clear_frame(obj);
+
+        if(script_is_tag_set_by_id(frame, TAG_B1)) {
+            game_state_advance_secret(obj->gs);
+        }
 
         if(script_is_tag_set_by_id(frame, TAG_AC)) {
             // force the har to face the center of the arena
@@ -439,14 +443,12 @@ void player_run_apply(object *obj) {
                     if(script_is_tag_set_by_id(frame, TAG_E) && enemy) {
                         enemy->pos.x += ARENA_LEFT_WALL - obj->pos.x;
                     }
-                    obj->pos.x = ARENA_LEFT_WALL;
-                    obj->wall_collision = true;
+                    obj->wall_collision = WALL_HIT_LEFT;
                 } else if(obj->pos.x > ARENA_RIGHT_WALL && obj->group == GROUP_HAR) {
                     if(script_is_tag_set_by_id(frame, TAG_E) && enemy) {
                         enemy->pos.x -= obj->pos.x - ARENA_RIGHT_WALL;
                     }
-                    obj->pos.x = ARENA_RIGHT_WALL;
-                    obj->wall_collision = true;
+                    obj->wall_collision = WALL_HIT_RIGHT;
                 }
             }
             obj->pos.y += trans_y;
@@ -466,10 +468,20 @@ void player_run_apply(object *obj) {
         obj->pos.x = clampf(obj->pos.x, ARENA_LEFT_WALL, ARENA_RIGHT_WALL);
     }
 
+    if(script_is_tag_set_by_id(frame, TAG_Q)) {
+        obj->q_val = script_get_tag_value_by_id(frame, TAG_Q);
+        // Enable hit if the q value is higher than the hit count for this animation, or if the value is 1
+        if(obj->q_val > obj->q_counter || obj->q_val == 1) {
+            obj->can_hit = 1;
+        }
+    }
+
     // If frame changed, do something
     if(state->entered_frame) {
         // Animation creation command
-        if(script_is_tag_set_by_id(frame, TAG_M) && state->spawn != NULL) {
+        if(mp == -1) {
+            // No-op.  This assigns a hittable palette range, which we don't need.
+        } else if(script_is_tag_set_by_id(frame, TAG_M) && state->spawn != NULL) {
             int mx = 0;
             int my = 0;
             float vx = 0;
@@ -697,6 +709,8 @@ void player_run_apply(object *obj) {
             object_set_repeat(enemy, 0);
             object_set_stride(enemy, 1);
             script_reader_seek(&enemy->animation_state.reader, script_reader_tick(&obj->animation_state.reader));
+            const script_frame *enemyframe = script_reader_frame(&enemy->animation_state.reader);
+            object_select_sprite(enemy, enemyframe->sprite);
         }
 
         // handle scaling on the Y axis
@@ -757,18 +771,10 @@ void player_run_apply(object *obj) {
             }
         }
 
-        if(script_is_tag_set_by_id(frame, TAG_Q)) {
-            obj->q_val = script_get_tag_value_by_id(frame, TAG_Q);
-            // Enable hit if the q value is higher than the hit count for this animation
-            if(obj->q_val > obj->q_counter) {
-                obj->can_hit = 1;
-            }
-        }
-
         // Set video effects now.
         int effects = EFFECT_NONE;
         if(script_is_tag_set_by_id(frame, TAG_BT)) {
-            effects |= EFFECT_DARK_TINT;
+            effects |= EFFECT_TRANSLUCENT;
         }
         if(script_is_tag_set_by_id(frame, TAG_BR)) {
             effects |= EFFECT_GLOW;

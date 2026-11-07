@@ -10,7 +10,7 @@
 typedef struct af_move_t {
     int id;
     animation ani;
-    uint8_t pos_constraints;
+    uint16_t pos_constraints;
     uint8_t next_move;
     uint8_t successor_id;
     uint8_t category;
@@ -19,8 +19,8 @@ typedef struct af_move_t {
     uint8_t block_stun;
     uint8_t throw_duration;
     uint8_t extra_string_selector;
-    float damage;
-    float stun;
+    int16_t damage;
+    int32_t stun;
     str move_string;
     str footer_string;
 #ifdef DEBUGMODE

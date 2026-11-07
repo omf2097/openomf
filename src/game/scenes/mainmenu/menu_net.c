@@ -7,8 +7,7 @@
 #include "game/gui/gui.h"
 
 void menu_net_done(component *c, void *userdata) {
-    menu *m = sizer_get_obj(c->parent);
-    m->finished = 1;
+    menu_finish(component_get_parent(c));
 }
 
 void menu_net_lobby(component *c, void *userdata) {
@@ -18,20 +17,20 @@ void menu_net_lobby(component *c, void *userdata) {
 
 void menu_net_connect(component *c, void *userdata) {
     scene *s = userdata;
-    menu_set_submenu(c->parent, menu_connect_create(s));
+    menu_set_submenu(component_get_parent(c), menu_connect_create(s));
 }
 
 void menu_net_listen(component *c, void *userdata) {
     scene *s = userdata;
     component *new_menu = menu_listen_create(s);
     if(new_menu != NULL) {
-        menu_set_submenu(c->parent, new_menu);
+        menu_set_submenu(component_get_parent(c), new_menu);
     }
 }
 
 void menu_net_config(component *c, void *userdata) {
     scene *s = userdata;
-    menu_set_submenu(c->parent, menu_netconfig_create(s));
+    menu_set_submenu(component_get_parent(c), menu_netconfig_create(s));
 }
 
 component *menu_net_create(scene *s) {
@@ -41,17 +40,17 @@ component *menu_net_create(scene *s) {
 
     component *lobby = button_create("LOBBY", "Join the OpenOMF network lobby to challenge other players.", false,
                                      false, menu_net_lobby, s);
-    widget_set_id(lobby, NETWORK_LOBBY_BUTTON_ID);
+    component_set_id(lobby, NETWORK_LOBBY_BUTTON_ID);
     menu_attach(menu, lobby);
 
     component *connect = button_create("CONNECT TO SERVER", "Connect to a specified IP address to play an opponent.",
                                        false, false, menu_net_connect, s);
-    widget_set_id(connect, NETWORK_CONNECT_BUTTON_ID);
+    component_set_id(connect, NETWORK_CONNECT_BUTTON_ID);
     menu_attach(menu, connect);
 
     component *listen = button_create("START SERVER", "Start a server for other players to connect to.", false, false,
                                       menu_net_listen, s);
-    widget_set_id(listen, NETWORK_LISTEN_BUTTON_ID);
+    component_set_id(listen, NETWORK_LISTEN_BUTTON_ID);
     menu_attach(menu, listen);
 
     component *config = button_create("CONFIGURATION", "Configure network options.", false, false, menu_net_config, s);

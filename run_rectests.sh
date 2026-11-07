@@ -6,7 +6,7 @@ if [ -z "$1" ]; then
 fi
 
 export BUILD_DIR="$1"
-OPENOMF_BIN=$(find "$BUILD_DIR" -name openomf -type f -executable -print -quit)
+OPENOMF_BIN=$(find "$BUILD_DIR" -name openomf -type f -exec test -x {} \; -print | head -n1)
 if [ -z "$OPENOMF_BIN" ]; then
     echo "Could not find openomf executable from $BUILD_DIR" >&2
     exit 1
@@ -75,11 +75,14 @@ tests=(
     "Nova can combo a stunned HAR from belly flop and enemy continues to be stunned:NOVA_FLOP_STUN_COMBO.REC"
     "Rehit juggles are not allowed against stunned opponents:NO_STUN_JUGGLE.REC"
     "Katana enters winpose after landing from heel stomp:KATANA_WINPOSE.REC"
-    "Round one starts on tick 92:ROUNDONE.REC"
+    "Round one starts on tick 90:ROUNDONE.REC"
     "Chronos can attack opponent when in stasis in the air and rehit mode is disabled:CHRONOS_AIR_STASIS.REC"
+    "Chronos cannot combo from throw when rehit mode is disabled:CHRONOS_THROW_COMBO_FAIL.REC"
     "Jaguar hits with a turnaround j.K:AIR_TURN.REC"
     "Player 2 can crossup in the left corner and neither player can crossup in the right corner:CORNER_TEST.REC"
     "Player can hold back to block even after being crossed up:BLOCK_DIR.REC"
+    "An air-to-air juggle causes air-stop behavior:AIR_STOP.REC"
+    "Fire pit fireball does not hit the player which spawned it:OWN_GOAL.REC"
 )
 
 # Setup temp directory for outputs
@@ -101,7 +104,7 @@ RUNDIR=$(pwd)
 
 cd $BUILD_DIR
 
-export OPENOMF_RESOURCE_PATH="."
+export OPENOMF_RESOURCE_PATH="${OPENOMF_RESOURCE_PATH:-.}"
 export LSAN_OPTIONS="suppressions=../lsan.supp"
 
 output_file="$temp_dir/output_shouldfail.log"

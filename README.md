@@ -34,6 +34,12 @@ Installation
 1. Download the latest windows package from https://github.com/omf2097/openomf/releases
 2. Extract the zip file somewhere
 
+### macOS
+
+1. Download the latest `macos15_arm` package from https://github.com/omf2097/openomf/releases
+2. Extract `OpenOMF.app` and try to open it
+3. If macOS blocks the app, open **System Settings > Privacy & Security**, scroll to the Security section, and click **Open Anyway**
+
 Build
 -----
 For compiling from sources, please see [BUILD.md](BUILD.md).
@@ -47,6 +53,7 @@ OpenOMF contains pieces of other software, which have licenses of their own:
 - resources/gamecontrollerdb.txt is under [zlib license](resources/gamecontrollerdb/LICENSE.gamecontrollerdb)
 - src/vendored/argtable3 is under multiple licenses, please see [LICENSE](src/vendored/argtable/LICENSE.argtable3)
 - src/vendored/zip and miniz is under the MIT license, please see [LICENSE](src/vendored/zip/LICENSE.zip)
+- src/vendored/fixedptc is under the BSD 2-Clause license, please see [LICENSE](src/vendored/fixedptc/LICENSE.fixedptc)
 
 And finally, the icon resources in resources/icons fall under CC-BY 4.0 license; please see 
 [LICENSE](resources/icons/LICENSE) and https://creativecommons.org/licenses/by/4.0/ for details.

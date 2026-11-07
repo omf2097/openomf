@@ -159,7 +159,7 @@ void renderer_toggled(component *c, void *userdata, int pos) {
 
 void menu_video_done(component *c, void *u) {
     scene *s = u;
-    video_menu_data *local = menu_get_userdata(c->parent);
+    video_menu_data *local = menu_get_userdata(component_get_parent(c));
     settings_video *v = &settings_get()->video;
 
     bool render_plugin_changed = strcmp(v->renderer, local->old_video_settings.renderer) != 0;
@@ -167,7 +167,7 @@ void menu_video_done(component *c, void *u) {
         video_close();
         video_init(v->renderer, v->screen_w, v->screen_h, v->fullscreen, v->vsync, v->aspect, v->framerate_limit,
                    v->fb_scale, v->scaling_mode);
-        menu_set_submenu(c->parent, menu_video_confirm_create(s, &local->old_video_settings));
+        menu_set_submenu(component_get_parent(c), menu_video_confirm_create(s, &local->old_video_settings));
     } else if(local->old_video_settings.screen_w != v->screen_w || local->old_video_settings.screen_h != v->screen_h ||
               local->old_video_settings.fullscreen != v->fullscreen || local->old_video_settings.vsync != v->vsync ||
               local->old_video_settings.aspect != v->aspect ||
@@ -177,10 +177,9 @@ void menu_video_done(component *c, void *u) {
         video_reinit(v->screen_w, v->screen_h, v->fullscreen, v->vsync, v->aspect, v->framerate_limit, v->fb_scale,
                      v->scaling_mode);
 
-        menu_set_submenu(c->parent, menu_video_confirm_create(s, &local->old_video_settings));
+        menu_set_submenu(component_get_parent(c), menu_video_confirm_create(s, &local->old_video_settings));
     } else {
-        menu *m = sizer_get_obj(c->parent);
-        m->finished = 1;
+        menu_finish(component_get_parent(c));
     }
 }
 
@@ -191,8 +190,7 @@ void menu_video_free(component *c) {
 }
 
 void menu_video_submenu_done(component *c, component *submenu) {
-    menu *m = sizer_get_obj(c);
-    m->finished = 1;
+    menu_finish(c);
 }
 
 component *menu_video_create(scene *s) {

@@ -86,7 +86,7 @@ void har_screencaps_capture(har_screencaps *caps, object *obj, object *obj2, int
     pos.y = clamp(pos.y, 0, NATIVE_H - size.y);
 
     // Render offscreen and capture.
-    SDL_Rect clip_area = {pos.x, pos.y, size.x, size.y};
+    irect clip_area = irect_create(pos.x, pos.y, size.x, size.y);
     video_render_area_prepare(&clip_area);
     gs->hide_ui = true;
     game_state_render(gs);

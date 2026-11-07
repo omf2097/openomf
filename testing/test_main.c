@@ -22,6 +22,7 @@ void cp437_test_suite(CU_pSuite suite);
 void path_test_suite(CU_pSuite suite);
 void smallbuffer_test_suite(CU_pSuite suite);
 void sstream_test_suite(CU_pSuite suite);
+void fixedpt_str_test_suite(CU_pSuite suite);
 void ringbuffer_test_suite(CU_pSuite suite);
 void c_string_util_test_suite(CU_pSuite suite);
 void sprite_packer_test_suite(CU_pSuite suite);
@@ -175,6 +176,12 @@ int main(int argc, char **argv) {
         goto end;
     }
     sound_tracker_test_suite(sound_tracker_suite);
+
+    CU_pSuite fixedpt_str_suite = CU_add_suite("Fixed Point String Printing", NULL, NULL);
+    if(fixedpt_str_suite == NULL) {
+        goto end;
+    }
+    fixedpt_str_test_suite(fixedpt_str_suite);
 
     // Run tests
     CU_basic_set_mode(CU_BRM_VERBOSE);

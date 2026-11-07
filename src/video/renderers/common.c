@@ -1,7 +1,7 @@
 #include "video/renderers/common.h"
 #include "utils/miscmath.h"
 
-void find_resolution_for_aspect_ratio(SDL_Rect *view, const SDL_Rect *window, unsigned x_ratio, unsigned y_ratio) {
+void find_resolution_for_aspect_ratio(irect *view, const irect *window, unsigned x_ratio, unsigned y_ratio) {
     float rx = (float)x_ratio / y_ratio;
     float ry = (float)y_ratio / x_ratio;
     view->w = min2(window->w, window->h * rx);

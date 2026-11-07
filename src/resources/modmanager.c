@@ -1,5 +1,7 @@
 #include "resources/modmanager.h"
 
+#if defined(ENABLE_MODMANAGER)
+
 #include "formats/error.h"
 #include "game/common_defines.h"
 #include "game/utils/settings.h"
@@ -9,8 +11,8 @@
 #include "utils/hashmap.h"
 #include "utils/log.h"
 #include "utils/miscmath.h"
-#include "vendored/zip/zip.h"
 #include "video/vga_palette.h"
+#include "zip.h"
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
@@ -801,7 +803,7 @@ bool modmanager_parse_af_move_mod(const char *buf, af_move *current_move) {
         CFG_INT("block_stun", current_move->block_stun, CFGF_NONE),
         CFG_INT("throw_duration", current_move->throw_duration, CFGF_NONE),
         CFG_INT("extra_string_selector", current_move->extra_string_selector, CFGF_NONE),
-        CFG_FLOAT("damage", current_move->damage, CFGF_NONE), CFG_FLOAT("stun", current_move->stun, CFGF_NONE),
+        CFG_INT("damage", current_move->damage, CFGF_NONE), CFG_INT("stun", current_move->stun, CFGF_NONE),
         CFG_STR("move_string", str_c(&current_move->move_string), CFGF_NONE),
         CFG_STR("footer_string", str_c(&current_move->footer_string), CFGF_NONE),
 
@@ -876,15 +878,14 @@ bool modmanager_parse_af_move_mod(const char *buf, af_move *current_move) {
         current_move->ani.start_pos.y = cfg_getint(cfg, "start_y");
     }
 
-    // Update float fields only if they changed
-    if(current_move->damage != cfg_getfloat(cfg, "damage")) {
-        log_info("setting damage from %f to %f", current_move->damage, cfg_getfloat(cfg, "damage"));
-        current_move->damage = cfg_getfloat(cfg, "damage");
+    if(current_move->damage != cfg_getint(cfg, "damage")) {
+        log_info("setting damage from %d to %ld", current_move->damage, cfg_getint(cfg, "damage"));
+        current_move->damage = cfg_getint(cfg, "damage");
     }
 
-    if(current_move->stun != cfg_getfloat(cfg, "stun")) {
-        log_info("setting stun from %f to %f", current_move->stun, cfg_getfloat(cfg, "stun"));
-        current_move->stun = cfg_getfloat(cfg, "stun");
+    if(current_move->stun != cfg_getint(cfg, "stun")) {
+        log_info("setting stun from %d to %ld", current_move->stun, cfg_getint(cfg, "stun"));
+        current_move->stun = cfg_getint(cfg, "stun");
     }
 
     // Update string fields if they were modified
@@ -1100,7 +1101,7 @@ bool modmanager_get_bk_animation(str *name, int anim_id, bk_info *bk_data) {
 
 bool modmanager_parse_fighter_header_mod(const char *buf, af *fighter) {
 
-    cfg_opt_t header_opts[] = {CFG_FLOAT("endurance", fighter->endurance, CFGF_NONE),
+    cfg_opt_t header_opts[] = {CFG_INT("endurance", fighter->endurance, CFGF_NONE),
                                CFG_INT("health", fighter->health, CFGF_NONE),
                                CFG_FLOAT("forward_speed", fighter->forward_speed, CFGF_NONE),
                                CFG_FLOAT("reverse_speed", fighter->reverse_speed, CFGF_NONE),
@@ -1116,9 +1117,9 @@ bool modmanager_parse_fighter_header_mod(const char *buf, af *fighter) {
     }
 
     // Update each field only if it changed, with logging
-    if(fighter->endurance != cfg_getfloat(cfg, "endurance")) {
-        log_info("setting endurance from %f to %f", fighter->endurance, cfg_getfloat(cfg, "endurance"));
-        fighter->endurance = cfg_getfloat(cfg, "endurance");
+    if(fighter->endurance != cfg_getint(cfg, "endurance")) {
+        log_info("setting endurance from %d to %ld", fighter->endurance, cfg_getint(cfg, "endurance"));
+        fighter->endurance = cfg_getint(cfg, "endurance");
     }
 
     if(fighter->health != (unsigned int)cfg_getint(cfg, "health")) {
@@ -1797,3 +1798,54 @@ bool modmanager_get_player_pics(sd_pic_file *players) {
 
     return result;
 }
+
+#else // !defined(ENABLE_MODMANAGER)
+
+bool modmanager_init(void) {
+    return true;
+}
+void modmanager_shutdown(void) {
+}
+void modmanager_set_allowed(bool enabled) {
+}
+
+bool modmanager_get_bk_background(str *name, sd_vga_image **img) {
+    return false;
+}
+bool modmanager_get_sprite(animation_source source, str *name, int animation, int frame, sd_sprite **spr) {
+    return false;
+}
+unsigned int modmanager_count_music(str *name) {
+    return 0;
+}
+bool modmanager_get_music(str *name, unsigned int index, unsigned char **buf, size_t *buflen) {
+    return false;
+}
+
+bool modmanager_get_hitcoords(animation_source source, str *name, int animation, int frame, vector *coords,
+                              vec2i *origin, vec2i *sprite_offset) {
+    return false;
+}
+bool modmanager_get_af_move(str *name, int move_id, af_move *move_data) {
+    return false;
+}
+bool modmanager_get_bk_animation(str *name, int anim_id, bk_info *bk_data) {
+    return false;
+}
+
+bool modmanager_get_fighter_header(str *name, af *fighter) {
+    return false;
+}
+
+bool modmanager_get_tournament_mod(const char *tournament_name, sd_tournament_file *tourn_data) {
+    return false;
+}
+
+bool modmanager_parse_photo_mod(const char *buf, sd_pic_photo *photo) {
+    return false;
+}
+bool modmanager_get_player_pics(sd_pic_file *pic) {
+    return false;
+}
+
+#endif // !defined(ENABLE_MODMANAGER)

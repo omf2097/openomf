@@ -116,7 +116,7 @@ exit_0:
     return 1;
 }
 
-void save_screenshot(const SDL_Rect *r, unsigned char *data, bool flip) {
+void save_screenshot(const irect *r, unsigned char *data, bool flip) {
     char *time = format_time();
     path filename = get_screenshot_filename(time);
     if(write_rgb_png(&filename, r->w, r->h, data, false, flip)) {

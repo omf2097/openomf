@@ -4,7 +4,6 @@
 #include "game/gui/text/text.h"
 #include "game/gui/text/text_layout.h"
 #include "utils/allocator.h"
-#include "utils/log.h"
 #include "utils/miscmath.h"
 #include "utils/vector.h"
 #include "video/surface.h"

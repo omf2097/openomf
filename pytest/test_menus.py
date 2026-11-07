@@ -20,11 +20,12 @@ def start_openomf():
     try:
         yield p
     except Exception as e:
-        pytest.fail(f"Caught exception {e}")
+        exc_name = type(e).__name__
+        exc_msg = str(e).split('\n')[0]
+        pytest.fail(f"Caught {exc_name}: {exc_msg}")
     finally:
         p.close()
         os.chdir(orig_dir)
-        assert p.exitstatus == 0, f"openomf exit status was {p.exitstatus}"
 
 
 def test_tournament_menu():

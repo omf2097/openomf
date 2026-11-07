@@ -856,7 +856,7 @@ static void load_hars(scene *scene, melee_local *local, bool player2_is_selectab
     }
 }
 
-int melee_event_cb(scene *scene, SDL_Event *e) {
+bool melee_event_cb(scene *scene, SDL_Event *e) {
     melee_local *local = scene_get_userdata(scene);
     if(local->page == HAR_SELECT && e->type == SDL_KEYDOWN && SDLK_1 <= e->key.keysym.sym &&
        e->key.keysym.sym <= SDLK_6) {
@@ -875,8 +875,9 @@ int melee_event_cb(scene *scene, SDL_Event *e) {
             sd_pilot_set_player_color(player->pilot, pal_id, color);
             palette_load_player_colors(&player->pilot->palette, player_id);
         }
+        return true;
     }
-    return 1;
+    return false;
 }
 
 int melee_create(scene *scene) {

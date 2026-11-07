@@ -75,6 +75,9 @@ typedef struct game_state_t {
 
     int arena;
 
+    // Fire/Ice
+    int fire_ice_progress;
+
     // For momentary game speed switches
     int speed_slowdown_previous;
     int speed_slowdown_time;

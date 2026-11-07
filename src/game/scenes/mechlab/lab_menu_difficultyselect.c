@@ -16,7 +16,7 @@ void lab_menu_difficultyselect_aluminium(component *c, void *userdata) {
     scene *s = userdata;
     game_player *player1 = game_state_get_player(s->gs, 0);
     player1->pilot->difficulty = 0;
-    trnmenu_finish(c->parent);
+    trnmenu_finish(component_get_parent(c));
 }
 
 void lab_menu_difficultyselect_iron(component *c, void *userdata) {
@@ -24,7 +24,7 @@ void lab_menu_difficultyselect_iron(component *c, void *userdata) {
     scene *s = userdata;
     game_player *player1 = game_state_get_player(s->gs, 0);
     player1->pilot->difficulty = 1;
-    trnmenu_finish(c->parent);
+    trnmenu_finish(component_get_parent(c));
 }
 
 void lab_menu_difficultyselect_steel(component *c, void *userdata) {
@@ -32,7 +32,7 @@ void lab_menu_difficultyselect_steel(component *c, void *userdata) {
     scene *s = userdata;
     game_player *player1 = game_state_get_player(s->gs, 0);
     player1->pilot->difficulty = 2;
-    trnmenu_finish(c->parent);
+    trnmenu_finish(component_get_parent(c));
 }
 
 void lab_menu_difficultyselect_heavy(component *c, void *userdata) {
@@ -40,7 +40,7 @@ void lab_menu_difficultyselect_heavy(component *c, void *userdata) {
     scene *s = userdata;
     game_player *player1 = game_state_get_player(s->gs, 0);
     player1->pilot->difficulty = 3;
-    trnmenu_finish(c->parent);
+    trnmenu_finish(component_get_parent(c));
 }
 
 static const button_details details_list[] = {

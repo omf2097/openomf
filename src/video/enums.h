@@ -11,10 +11,8 @@ typedef enum
     // This implements the "bg" tag feature. Add indexes together in the postprocess.
     // Requires FBUFOPT_CREDITS.
     SPRITE_INDEX_ADD = 0x04,
-    // palette quirks for electra electricity and pyros fire
-    SPRITE_HAR_QUIRKS = 0x08,
-    // use weird stasis/shadow color blending
-    SPRITE_DARK_TINT = 0x10,
+    // Draw the sprite translucent. Used by shadows moves, chronos's stasis.
+    SPRITE_TRANSLUCENT = 0x08,
 } renderer_options;
 
 typedef enum

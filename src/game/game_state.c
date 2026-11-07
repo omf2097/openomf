@@ -258,6 +258,7 @@ int game_state_create(game_state *gs, const engine_init_flags *init_flags) {
     gs->tick = 0;
     gs->int_tick = 0;
     gs->arena = 0;
+    gs->fire_ice_progress = 0;
     gs->role = ROLE_CLIENT;
     gs->net_mode = init_flags->net_mode;
     gs->speed = settings_get()->gameplay.speed + 5;
@@ -553,12 +554,11 @@ void game_state_set_paused(game_state *gs, unsigned int paused) {
     gs->paused = paused;
 }
 
-// Return 0 if event was handled here
-int game_state_handle_event(game_state *gs, SDL_Event *event) {
+bool game_state_handle_event(game_state *gs, SDL_Event *event) {
     if(event->type == SDL_KEYDOWN && is_demoplay(gs) && event->key.keysym.sym == SDLK_ESCAPE) {
         // ESC during demo mode jumps you back to the main menu
         game_state_set_next(gs, SCENE_MENU);
-        return 0;
+        return true;
     } else if(event->type == SDL_KEYDOWN && is_demoplay(gs) && event->key.keysym.sym == SDLK_RETURN) {
         // ENTER during demo mode skips menus
         if(gs->sc->id < SCENE_ARENA0 || gs->sc->id > SCENE_ARENA4) {
@@ -566,13 +566,10 @@ int game_state_handle_event(game_state *gs, SDL_Event *event) {
                 game_state_init_demo(gs);
             }
             game_state_set_next(gs, rand_arena());
-            return 0;
+            return true;
         }
     }
-    if(scene_event(gs->sc, event) == 0) {
-        return 0;
-    }
-    return 1;
+    return scene_event(gs->sc, event);
 }
 
 void cross_fade_transform(damage_tracker *damage, vga_palette *pal, void *userdata) {
@@ -1407,6 +1404,14 @@ int game_state_clone(game_state *src, game_state *dst) {
     dst->clone = true;
 
     return 0;
+}
+
+void game_state_advance_secret(game_state *gs) {
+    gs->fire_ice_progress++;
+}
+
+int game_state_get_secret(const game_state *gs) {
+    return gs->fire_ice_progress;
 }
 
 bool game_state_hars_are_alive(game_state *gs) {

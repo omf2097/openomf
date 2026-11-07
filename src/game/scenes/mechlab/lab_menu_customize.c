@@ -60,7 +60,7 @@ int har_price(int har_id) {
 }
 
 void lab_menu_customize_done(component *c, void *userdata) {
-    trnmenu_finish(c->parent);
+    trnmenu_finish(component_get_parent(c));
 }
 
 void lab_menu_customize_color_main(component *c, void *userdata) {
@@ -306,7 +306,7 @@ void lab_menu_customize_check_stun_resistance_price(component *c, void *userdata
 
 void lab_menu_customize_trade(component *c, void *userdata) {
     scene *s = userdata;
-    trnmenu_set_submenu(c->parent, lab_menu_trade_create(s));
+    trnmenu_set_submenu(component_get_parent(c), lab_menu_trade_create(s));
 }
 
 void lab_menu_customize_check_trade_robot(component *c, void *userdata) {
@@ -684,9 +684,6 @@ static const spritebutton_focus_cb focus_cbs[] = {
 };
 
 static void lab_menu_har_picture_tick(component *current_picture, void *userdata) {
-    if(trnmenu_is_fading(current_picture->parent)) {
-        return;
-    }
     scene *s = userdata;
     game_player *p1 = game_state_get_player(s->gs, 0);
     animation *correct_picture = &bk_get_info(s->bk_data, 5)->ani;
@@ -724,13 +721,13 @@ component *lab_menu_customize_create(scene *s) {
     const sprite *bsprite = animation_get_sprite(har_picture, p1->pilot->har_id);
     component *button = spritebutton_create(NULL, bsprite->data, false, NULL, s);
     component_set_pos_hints(button, bsprite->pos.x, bsprite->pos.y);
-    button->supports_select = false;
+    component_set_selectable(button, false);
     spritebutton_set_always_display(button);
     spritebutton_set_tick_cb(button, lab_menu_har_picture_tick);
     trnmenu_attach(menu, button);
 
     header_label = label_create("");
-    label_set_text_letter_spacing(header_label, 2);
+    label_set_text_line_spacing(header_label, 2);
     label_set_text_color(header_label, 0xA5);
     label_set_font(header_label, FONT_SMALL);
     component_set_size_hints(header_label, 90, 80);
@@ -738,7 +735,7 @@ component *lab_menu_customize_create(scene *s) {
     trnmenu_attach(menu, header_label);
 
     details_label = label_create("");
-    label_set_text_letter_spacing(details_label, 2);
+    label_set_text_line_spacing(details_label, 2);
     label_set_text_color(details_label, 0xA7);
     label_set_font(details_label, FONT_SMALL);
     component_set_size_hints(details_label, 90, 80);

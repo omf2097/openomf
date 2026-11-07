@@ -24,7 +24,7 @@
 typedef struct {
     uint16_t fighter_id;               ///< Fighter ID
     uint16_t exec_window;              ///< Move execution window (?)
-    float endurance;                   ///< HAR Endurance
+    int32_t endurance;                 ///< HAR Endurance
     uint8_t upwards_jump_frame_limit;  ///< Max number of ticks the HAR keeps rising during a jump.
     uint16_t health;                   ///< HAR Health
     float forward_speed;               ///< HAR fwd speed

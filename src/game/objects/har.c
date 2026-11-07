@@ -13,9 +13,11 @@
 #include "game/objects/scrap.h"
 #include "game/protos/intersect.h"
 #include "game/scenes/arena.h"
+#include "hazard.h"
 #include "resources/af_loader.h"
 #include "resources/animation.h"
 #include "utils/allocator.h"
+#include "utils/fixedpt.h"
 #include "utils/log.h"
 #include "utils/miscmath.h"
 #include "utils/random.h"
@@ -268,6 +270,12 @@ void har_stunned_done(object *har_obj) {
 
 // Simple helper function
 void har_set_ani(object *obj, int animation_id, int repeat) {
+    // Do not reset walk animation
+    if(obj->cur_animation) {
+        if(obj->cur_animation->id == ANIM_WALKING && animation_id == ANIM_WALKING) {
+            return;
+        }
+    }
     har *h = object_get_userdata(obj);
     af_move *move = af_get_move(h->af_data, animation_id);
     object_set_animation(obj, &move->ani);
@@ -605,6 +613,28 @@ void har_move(object *obj) {
         return;
     }
 
+    if(h->air_stop) {
+        obj->vel.x = 0;
+        obj->vel.y = 0;
+
+        if(h->air_stop == 10) {
+            obj->vel.x = 6 * (object_get_direction(obj) * -1);
+            obj->vel.y = -6;
+            h->air_stop = 0;
+            har_set_ani(obj, ANIM_JUMPING, 0);
+            object_set_playback_direction(obj, PLAY_BACKWARDS);
+            object_set_tick_pos(obj, -110);
+            object_set_stride(obj, 7); // Pass 7 frames per tick
+        } else {
+            object_set_halt(obj, 1);
+            h->air_stop--;
+            if(h->air_stop == 0) {
+                object_set_halt(obj, 0);
+            }
+        }
+        return;
+    }
+
     char last_input = get_last_input(obj);
     object_apply_controllable_velocity(obj, false, last_input);
 
@@ -649,11 +679,13 @@ void har_move(object *obj) {
     }
 
     // Handle floor collisions
-    if(obj->pos.y >= ARENA_FLOOR) {
+    if(obj->pos.y >= ARENA_FLOOR && !player_frame_isset(obj, TAG_AX)) {
         controller *ctrl = game_player_get_ctrl(game_state_get_player(obj->gs, h->player_id));
 
         obj->pos.y = ARENA_FLOOR;
-        clear_rehits(h);
+        if(obj->vel.y > 0 || is_har_idle_grounded(obj)) {
+            clear_rehits(h);
+        }
 
         if(player_frame_isset(obj, TAG_CL)) {
             af_move *move = af_get_move(h->af_data, obj->cur_animation->id);
@@ -849,8 +881,9 @@ void calc_damage_and_stun(object *obj, af_move *move, int *damage, int *stun) {
         *damage = *damage * (25 + pilot->power) / 35 + 1;
 
         // (Limb Power + 3) * .192
-        float leg_power = (pilot->leg_power + 3) * 0.192f;
-        float arm_power = (pilot->arm_power + 3) * 0.192f;
+        const fixedpt power_multiplier = 0x31; // 0.192
+        fixedpt leg_power = fixedpt_mul(fixedpt_fromint(pilot->leg_power + 3), power_multiplier);
+        fixedpt arm_power = fixedpt_mul(fixedpt_fromint(pilot->arm_power + 3), power_multiplier);
 
         switch(move->extra_string_selector) {
             case ESS_NONE:
@@ -858,16 +891,16 @@ void calc_damage_and_stun(object *obj, af_move *move, int *damage, int *stun) {
             case ESS_ARM_SPEED:
             case ESS_SPECIAL_ARM:
                 // apply arm power for damage
-                *damage = *damage * arm_power;
+                *damage = fixedpt_toint(fixedpt_mul(fixedpt_fromint(*damage), arm_power));
                 break;
             case ESS_LEG_SPEED:
             case ESS_SPECIAL_LEG:
                 // apply leg power for damage
-                *damage = *damage * leg_power;
+                *damage = fixedpt_toint(fixedpt_mul(fixedpt_fromint(*damage), leg_power));
                 break;
             case ESS_SPECIAL:
                 // apply leg and arm power for damage
-                *damage = *damage * arm_power * leg_power;
+                *damage = fixedpt_toint(fixedpt_mul(fixedpt_fromint(*damage), fixedpt_mul(arm_power, leg_power)));
         }
     }
     // log_debug("Calculated damage %d", *damage);
@@ -891,7 +924,7 @@ void har_take_damage(object *obj, af_move *move) {
     calc_damage_and_stun(other_har, move, &damage, &stun);
 
     // rehits do 60% more damage
-    damage = h->rehit_combo ? damage / 0.6 : damage;
+    damage = h->rehit_combo ? (10 * damage) / 6 : damage;
 
     // Save damage taken
     h->last_damage_value = damage;
@@ -931,9 +964,13 @@ void har_take_damage(object *obj, af_move *move) {
         if(player->pilot->photo) {
             // in tournament mode, damage is mitigated by armor
             // (Armor + 2.5) * .25
-            log_debug("applying %d to %d modulated by armor %f", damage, h->health,
-                      0.25f * (2.5f + player->pilot->armor));
-            h->health -= damage / (0.25f * (2.5f + player->pilot->armor));
+            const fixedpt quarter = 0x40;      // 0.25
+            const fixedpt armor_magic = 0x280; // 2.5
+            fixedpt armor_divisor =
+                fixedpt_mul(fixedpt_add(fixedpt_fromint(player->pilot->armor), armor_magic), quarter);
+            log_debug("Applying %d damage to %d health modulated by armor %s", damage, h->health,
+                      fixedpt_cstr(armor_divisor, -3));
+            h->health -= fixedpt_toint(fixedpt_div(fixedpt_fromint(damage), armor_divisor));
         } else {
             h->health -= damage;
         }
@@ -1418,12 +1455,23 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
             obj_b->vel.y -= 3;
         }
 
+        if(b->rehit_combo && move->pos_constraints & POS_JUMP_WALL_BOUNCE && move->category == CAT_JUMPING) {
+            if(b->is_wallhugging) {
+                a->air_stop = 10;
+            } else {
+                a->air_stop = 9;
+            }
+        }
+
         if((hit_coord.x != 0 || hit_coord.y != 0) && move->damage != 0) {
             har_spawn_scrap(obj_b, hit_coord, move->block_stun);
         }
 
+        if(air_hit) {
+            disable_rehit(b, move);
+        }
+
         b->rehit_combo = air_hit;
-        disable_rehit(b, move);
 
         if(move->next_move) {
             log_debug("HAR %s going to next move %d", har_get_name(a->id), move->next_move);
@@ -1568,8 +1616,8 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
             assert(str_size(&move->footer_string) > 0);
 
             // Just take damage normally if there is no footer string in successor
-            log_debug("projectile dealt damage of %f", move->damage);
-            log_debug("projectile %d dealt damage of %f", move->id, move->damage);
+            log_debug("projectile dealt damage of %d", move->damage);
+            log_debug("projectile %d dealt damage of %d", move->id, move->damage);
 
             // face B to the direction they're being attacked from
             object_set_direction(o_har, -object_get_direction(o_pjt));
@@ -1614,6 +1662,11 @@ void har_collide_with_hazard(object *o_har, object *o_hzd) {
 
     // Track this now so we don't re-evaluate after the hit registers
     bool air_hit = object_is_airborne(o_har);
+
+    // Same enemy means this is our fire pit fireball, reject hit
+    if(o_hzd->animation_state.enemy_obj_id == o_har->animation_state.enemy_obj_id) {
+        return;
+    }
 
     if(h->rehit_combo) {
         // rehit mode is off
@@ -1664,11 +1717,24 @@ void har_collide_with_hazard(object *o_har, object *o_hzd) {
         h->rehit_combo = air_hit;
     } else if(anim->chain_hit && intersect_sprite_hitpoint(o_har, o_hzd, &hit_coord)) {
         // we can punch this! Only set on fire pit orb
+        if(anim->chain_no_hit) {
+            object_set_animation(o_hzd, &bk_get_info(bk_data, anim->chain_no_hit)->ani);
+            object_set_repeat(o_hzd, 0);
+        }
+
         anim = bk_get_info(bk_data, anim->chain_hit);
-        o_hzd->animation_state.enemy_obj_id = o_har->animation_state.enemy_obj_id;
-        object_set_animation(o_hzd, &anim->ani);
-        object_set_repeat(o_hzd, 0);
-        object_set_finished(o_hzd, false);
+        object *new_proj = omf_calloc(1, sizeof(object));
+        object_create(new_proj, o_har->gs, vec2i_add(vec2i_create(o_hzd->start.x, o_hzd->start.y), anim->ani.start_pos),
+                      vec2f_create(0, 0));
+        object_set_stl(new_proj, object_get_stl(o_hzd));
+        object_set_animation(new_proj, &anim->ani);
+        object_set_layers(new_proj, LAYER_HAZARD | LAYER_HAR);
+        object_set_group(new_proj, GROUP_PROJECTILE);
+        object_set_userdata(new_proj, object_get_userdata(o_hzd));
+        hazard_create(new_proj, o_har->gs->sc);
+        player_init_spawned(new_proj);
+        game_state_add_object(new_proj->gs, new_proj, RENDER_LAYER_BOTTOM, 0, 0);
+        new_proj->animation_state.enemy_obj_id = o_har->animation_state.enemy_obj_id;
     }
 }
 
@@ -1856,10 +1922,10 @@ void har_tick(object *obj) {
         h->in_stasis_ticks--;
         if(h->in_stasis_ticks) {
             object_set_halt(obj, 1);
-            object_add_animation_effects(obj, EFFECT_STASIS);
+            object_add_animation_effects(obj, EFFECT_TRANSLUCENT);
         } else {
             object_set_halt(obj, 0);
-            object_del_animation_effects(obj, EFFECT_STASIS);
+            object_del_animation_effects(obj, EFFECT_TRANSLUCENT);
         }
     }
 
@@ -1874,6 +1940,8 @@ void har_tick(object *obj) {
         if(h->throw_duration == 0) {
             // we've already called har_take_damage, so just apply the damage and check for defeat
             h->health -= h->last_damage_value;
+            // cannot combo from throw unless rehit mode is enabled
+            h->rehit_combo = true;
             if(h->endurance < 0) {
                 h->endurance = 0;
             } else {
@@ -1920,17 +1988,15 @@ void har_tick(object *obj) {
         }
 
         int wall_flag = player_frame_isset(obj, TAG_AW);
-        int wall = 0;
         float distance = 0;
         if(pos.x < left_bound) {
             distance = left_bound - pos.x;
             pos.x = left_bound;
-            obj->wall_collision = true;
+            obj->wall_collision = WALL_HIT_LEFT;
         } else if(pos.x > right_bound) {
             distance = right_bound - pos.x;
             pos.x = right_bound;
-            wall = 1;
-            obj->wall_collision = true;
+            obj->wall_collision = WALL_HIT_RIGHT;
         }
         if(distance != 0 && (h->state == STATE_BLOCKSTUN || h->state == STATE_RECOIL)) {
             log_debug("Trigger cornerpush, distance %f", distance);
@@ -1938,16 +2004,16 @@ void har_tick(object *obj) {
         }
 
         af_move *move = af_get_move(h->af_data, obj->cur_animation->id);
-        if(obj->wall_collision) {
-            obj->wall_collision = false;
+        if(obj->wall_collision != WALL_HIT_NONE) {
             if(wall_flag && move->next_move) {
                 // log_debug("wall hit chaining to next animation %d", move->next_move);
                 har_set_ani(obj, move->next_move, 0);
                 h->executing_move = 1;
             } else {
                 object_set_pos(obj, pos);
-                har_event_hit_wall(h, wall, ctrl);
+                har_event_hit_wall(h, obj->wall_collision, ctrl);
             }
+            obj->wall_collision = WALL_HIT_NONE;
         }
     }
 
@@ -2079,7 +2145,7 @@ bool is_move_chain_allowed(object *obj, af_move *move) {
     har *h = object_get_userdata(obj);
 
     bool allowed_in_idle = true;
-    if(move->pos_constraints & 0x2) { // Not allowed to perform this move normally
+    if(move->pos_constraints & POS_CANNOT_PERFORM) { // Not allowed to perform this move normally
         allowed_in_idle = false;
     }
 
@@ -2090,7 +2156,7 @@ bool is_move_chain_allowed(object *obj, af_move *move) {
         return false;
     }
 
-    if(h->is_wallhugging != 1 && move->pos_constraints & 0x1) {
+    if(h->is_wallhugging != 1 && move->pos_constraints & POS_WALL) {
         log_debug("Position contraint prevents move when not wallhugging!");
         // required to be wall hugging
         return false;
@@ -2151,6 +2217,11 @@ bool is_move_chain_allowed(object *obj, af_move *move) {
 
     bool is_over = arena_is_over(obj->gs->sc) != -1;
     if(move->category == CAT_SCRAP && !is_over) {
+        allowed = false;
+    }
+
+    if(move->pos_constraints & POS_FIRE_ICE_ALLOWED && move->pos_constraints & POS_OPP_FIRE_ICE_DESTRUCT &&
+       !arena_secret_activated(obj->gs->sc)) {
         allowed = false;
     }
 
@@ -2702,10 +2773,10 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
 
         //  The stun cap is calculated as follows
         //  HAR Endurance * 3.6 * (Pilot Endurance + 16) / 23
-        local->endurance_max = (af_data->endurance * 3.6 * (pilot->endurance + 16) / 23);
+        local->endurance_max = (af_data->endurance * 36 * (pilot->endurance + 16) / 23 / 10);
         local->stun_factor = 1.2 * 256 * (pilot->endurance + 30) / 40;
     } else {
-        local->endurance_max = (af_data->endurance * 3.6 * (pilot->endurance + 25) / 37);
+        local->endurance_max = (af_data->endurance * 36 * (pilot->endurance + 25) / 37 / 10);
         local->endurance_max = (local->endurance_max * (pilot->stun_resistance + 2)) / 3;
         local->stun_factor = (pilot->stun_resistance + 3.0) * 0.2 * 0.9 * 256.0 * (pilot->endurance + 30) / 40;
     }
@@ -2718,7 +2789,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
 
     // log_debug("HAR health is %d with pilot endurance %d and base health %d", local->health, pilot->endurance,
     // af_data->health);
-    log_debug("HAR endurance is %d with pilot endurance %d and base endurance %f", local->endurance_max,
+    log_debug("HAR endurance is %d with pilot endurance %d and base endurance %d", local->endurance_max,
               pilot->endurance, af_data->endurance);
     log_debug("HAR stun factor is %d", local->stun_factor);
 
@@ -2759,7 +2830,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     local->walk_done_anim = 0;
 
     // Last damage value, for convenience
-    local->last_damage_value = 0.0f;
+    local->last_damage_value = 0;
 
     // p<x> stuff
     local->p_fade_in_ticks_left = local->p_fade_in_ticks = 0;
@@ -2827,18 +2898,13 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
 
 #endif
 
-    // Enable Electra Electricity & Pyros Fire palette tricks
-    object_add_animation_effects(obj, EFFECT_HAR_QUIRKS);
-
-    af_move *move;
-    int extra_index;
-    int fight_mode = obj->gs->match_settings.fight_mode;
+    const int fight_mode = obj->gs->match_settings.fight_mode;
     // apply HAR upgrades/enhancements/hyper mode to the HAR
     for(int i = 0; i < MAX_AF_MOVES; i++) {
-        move = af_get_move(af_data, i);
+        af_move *move = af_get_move(af_data, i);
         if(move != NULL) {
             // normal or hyper
-            extra_index = fight_mode ? 1 : 0;
+            int extra_index = fight_mode ? 1 : 0;
 
             // check for enhancements
             if(move->ani.extra_string_count > 0 && move->extra_string_selector != ESS_ARM_SPEED &&
@@ -2904,10 +2970,6 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
                 // scramble the move string
                 log_debug("disabling move %d on har %d because it has no-op animation string '%s'", i, har_id,
                           str_c(&move->ani.animation_string));
-                str_set_c(&move->move_string, "!");
-            }
-            if(move->pos_constraints & POS_IN_ARENA3) {
-                // TODO: disable all fire/ice moves indiscriminately for now
                 str_set_c(&move->move_string, "!");
             }
         }

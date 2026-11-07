@@ -9,7 +9,7 @@ void vga_palette_init(vga_palette *palette) {
 }
 
 void vga_palette_tint_range(vga_palette *pal, vga_index ref_index, vga_index start, vga_index end, uint8_t step) {
-    assert(start >= 0 && end < VGA_PALETTE_SIZE && end >= start);
+    assert(start >= 0 && end <= VGA_PALETTE_SIZE && end >= start);
     const vga_color ref = pal->colors[ref_index];
     for(vga_index i = start; i < end; i++) {
         const uint32_t m = max3(pal->colors[i].r, pal->colors[i].g, pal->colors[i].b);
@@ -21,7 +21,7 @@ void vga_palette_tint_range(vga_palette *pal, vga_index ref_index, vga_index sta
 }
 
 void vga_palette_mix_range(vga_palette *pal, vga_index ref_index, vga_index start, vga_index end, uint8_t step) {
-    assert(start >= 0 && end < VGA_PALETTE_SIZE && end >= start);
+    assert(start >= 0 && end <= VGA_PALETTE_SIZE && end >= start);
     const vga_color ref = pal->colors[ref_index];
     const uint32_t inv = 255 - step;
     for(vga_index i = start; i < end; i++) {
@@ -41,7 +41,7 @@ void vga_palette_darken(vga_palette *pal, uint8_t step) {
 }
 
 void vga_palette_light_range(vga_palette *pal, uint8_t gray, vga_index start, vga_index end, int32_t blend_factor) {
-    assert(start >= 0 && end < VGA_PALETTE_SIZE && end >= start);
+    assert(start >= 0 && end <= VGA_PALETTE_SIZE && end >= start);
     const int32_t gr = gray; // widen to prevent underflow
     vga_color *colors = pal->colors;
     for(vga_index i = start; i < end; i++) {

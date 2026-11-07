@@ -53,14 +53,14 @@ void mainmenu_input_tick(scene *scene) {
     controller_free_chain(ev);
 }
 
-int mainmenu_event(scene *scene, SDL_Event *event) {
+bool mainmenu_event(scene *scene, SDL_Event *event) {
     mainmenu_local *local = scene_get_userdata(scene);
     game_player *player1 = game_state_get_player(scene->gs, 0);
     if(player1->ctrl->type == CTRL_TYPE_GAMEPAD ||
        (player1->ctrl->type == CTRL_TYPE_KEYBOARD && event->type == SDL_KEYDOWN &&
         keyboard_binds_key(player1->ctrl, event))) {
         // these events will be handled by polling
-        return 1;
+        return false;
     }
 
     return gui_frame_event(local->frame, event);

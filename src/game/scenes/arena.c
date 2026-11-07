@@ -14,13 +14,13 @@
 #include "game/game_player.h"
 #include "game/game_state.h"
 #include "game/gui/button.h"
+#include "game/gui/component.h"
 #include "game/gui/filler.h"
 #include "game/gui/gui_frame.h"
 #include "game/gui/label.h"
 #include "game/gui/menu.h"
 #include "game/gui/progressbar.h"
 #include "game/gui/textslider.h"
-#include "game/gui/widget.h"
 #include "game/objects/arena_constraints.h"
 #include "game/objects/har.h"
 #include "game/objects/hazard.h"
@@ -1048,13 +1048,6 @@ void arena_spawn_hazard(scene *scene) {
                 object_set_animation(obj, &info->ani);
                 // fire pit wandering (in case this is an orb)
                 obj->orb_val = random_int(&scene->gs->rand, 255) - 127;
-                if(scene->id == SCENE_ARENA3 && info->ani.id == 0) {
-                    // XXX fire pit orb has a bug whwre it double spawns. Use a custom animation string to avoid it
-                    // it mioght be to do with the 'mp' tag, which we don't currently understand
-                    object_set_custom_string(obj, "Z3-mx+160my+100m15mp10Z1-Z300");
-                }
-                /*object_set_spawn_cb(obj, cb_scene_spawn_object, (void*)scene);*/
-                /*object_set_destroy_cb(obj, cb_scene_destroy_object, (void*)scene);*/
                 hazard_create(obj, scene);
                 player_init_spawned(obj);
                 if(game_state_add_object(scene->gs, obj, RENDER_LAYER_BOTTOM, 1, 0) == 0) {
@@ -1062,7 +1055,7 @@ void arena_spawn_hazard(scene *scene) {
                     object_set_group(obj, GROUP_HAZARD);
                     object_set_userdata(obj, scene->bk_data);
                     if(info->ani.extra_string_count > 0) {
-                        // For the desert, there's a bunch of extra animation strgins for
+                        // For the desert, there's a bunch of extra animation strings for
                         // the different plane formations.
                         // Pick one, rather than always use the first
 
@@ -1303,7 +1296,7 @@ void arena_dynamic_tick(scene *scene, int paused) {
         } else if(local->state == ARENA_STATE_STARTING) {
             if(local->state_ticks == ARENA_CROSSFADE_TICKS) {
                 arena_create_roundstart_anim(scene);
-            } else if(local->state_ticks == 92) {
+            } else if(local->state_ticks == 90) {
                 // release the HARs for action
                 local->state = ARENA_STATE_FIGHTING;
                 local->state_ticks = 0;
@@ -1354,6 +1347,13 @@ void arena_dynamic_tick(scene *scene, int paused) {
                         arena_reset(scene);
                     }
                 }
+            }
+        }
+
+        // Secret handling
+        if(player_frame_isset(obj_har[0], TAG_B2) || player_frame_isset(obj_har[1], TAG_B2)) {
+            if(game_state_get_secret(gs) < 2) {
+                arena_activate_secret(scene);
             }
         }
 
@@ -1453,8 +1453,8 @@ void arena_input_tick(scene *scene) {
     controller_free_chain(menu_ev);
 }
 
-int arena_event(scene *scene, SDL_Event *e) {
-    return 0;
+bool arena_event(scene *scene, SDL_Event *e) {
+    return false;
 }
 
 void arena_render_overlay(scene *scene) {
@@ -1704,6 +1704,33 @@ void arena_clone_free(scene *scene) {
     omf_free(local);
 }
 
+void arena_activate_secret(scene *scene) {
+    if(!is_singleplayer(scene->gs)) {
+        return;
+    }
+
+    if(scene->id == SCENE_ARENA3 && !scene->secret_activated) {
+        bk_info *info = bk_get_info(scene->bk_data, 12);
+        if(info) {
+            log_debug("Activating secret!");
+            scene->secret_activated = true;
+            object *obj = omf_calloc(1, sizeof(object));
+            object_create(obj, scene->gs, info->ani.start_pos, vec2f_create(0, 0));
+            object_set_stl(obj, scene->bk_data->sound_translation_table);
+            object_set_animation(obj, &info->ani);
+            player_init_spawned(obj);
+            if(game_state_add_object(scene->gs, obj, RENDER_LAYER_BOTTOM, 1, 0) != 0) {
+                object_free(obj);
+                omf_free(obj);
+            }
+        }
+    }
+}
+
+bool arena_secret_activated(const scene *scene) {
+    return scene->secret_activated;
+}
+
 int arena_create(scene *scene) {
     // Free up the script cache here, since we know that we don't share animations over the arena start.
     script_cache_clear();
@@ -1929,7 +1956,7 @@ int arena_create(scene *scene) {
     menu_attach(menu, filler_create());
     component *return_button =
         button_create("RETURN TO GAME", "Continue fighting.", false, false, game_menu_return, scene);
-    widget_set_id(return_button, GAME_MENU_RETURN_ID);
+    component_set_id(return_button, GAME_MENU_RETURN_ID);
     menu_attach(menu, return_button);
 
     menu_attach(menu, textslider_create_bind(
@@ -1960,7 +1987,7 @@ int arena_create(scene *scene) {
     } else {
         quit_button = button_create("QUIT", lang_get(322), false, false, game_menu_quit, scene);
     }
-    widget_set_id(quit_button, GAME_MENU_QUIT_ID);
+    component_set_id(quit_button, GAME_MENU_QUIT_ID);
     menu_attach(menu, quit_button);
 
     gui_frame_set_root(local->game_menu, menu);

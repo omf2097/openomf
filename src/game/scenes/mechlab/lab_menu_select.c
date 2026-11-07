@@ -9,7 +9,7 @@
 void lab_menu_select_choose(component *c, void *userdata) {
     lab_menu_select_t *sel = userdata;
     sel->cb(c, sel->data);
-    trnmenu_finish(c->parent);
+    trnmenu_finish(component_get_parent(c));
 }
 
 void lab_menu_focus_left(component *c, bool focused, void *userdata) {
