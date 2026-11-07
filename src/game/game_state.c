@@ -303,8 +303,9 @@ int game_state_create(game_state *gs, const engine_init_flags *init_flags) {
 
     reconfigure_controller(gs);
     int nscene;
-    if(init_flags->playback > 0 && gs->rec_playback_id < gs->init_flags->playback &&
-       path_is_set(&init_flags->rec_files[gs->rec_playback_id])) {
+    if(is_rec_playback(gs)) {
+        assert(gs->rec_playback_id < gs->init_flags->playback);
+        assert(path_is_set(&init_flags->rec_files[gs->rec_playback_id]));
         path const *rec = &init_flags->rec_files[gs->rec_playback_id];
         gs->rec = omf_malloc(sizeof(sd_rec_file));
         sd_rec_create(gs->rec);
