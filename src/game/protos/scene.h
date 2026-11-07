@@ -34,6 +34,7 @@ struct scene_t {
     int id;
     bk *bk_data;
     af *af_data[2];
+    struct script_cache *script_cache;
     void *userdata;
     int static_ticks_since_start;
     bool secret_activated;
@@ -69,6 +70,7 @@ void scene_input_poll(scene *scene);
 void scene_startup(scene *scene, int id, int *m_load, int *m_startup);
 int scene_anim_prio_override(scene *scene, int anim_id);
 bool scene_is_arena(scene *scene);
+const struct script *scene_get_script(scene *scene, char const *str);
 
 int scene_clone(scene *src, scene *dst, game_state *gs);
 int scene_clone_free(scene *sc);
