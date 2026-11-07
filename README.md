@@ -44,6 +44,25 @@ Build
 -----
 For compiling from sources, please see [BUILD.md](BUILD.md).
 
+Logging channels
+----------------
+When running a local build, you can limit log output to specific channels by listing the individual channel names you want, separated by commas:
+
+```bash
+./openomf --log-level DEBUG --log-channels ai,rec
+```
+
+If `--log-channels` is omitted, all channels are enabled.
+
+| Channel | Description |
+| --- | --- |
+| `ai` | AI state changes, decisions, tactic selection, and scoring |
+| `rec` | REC playback/recording, replay controls, and REC assertions |
+| `network` | Reserved placeholder for networking |
+| `gameplay` | Reserved placeholder for gameplay |
+| `video` | Reserved placeholder for video |
+| `audio` | Reserved placeholder for audio |
+
 License
 -------
 OpenOMF is developed under the MIT License. Please read [LICENSE](LICENSE)
