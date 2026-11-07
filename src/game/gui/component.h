@@ -165,6 +165,10 @@ void component_set_selectable(component *c, bool selectable);
 
 /**
  * @brief Set size hints for the component
+ *
+ * Size hints are explicit size requests made by whoever creates the component. Components never write
+ * these for themselves; their own measurement goes to component_set_natural_size().
+ *
  * @param c Component to modify
  * @param w Width hint (-1 for not set)
  * @param h Height hint (-1 for not set)
@@ -192,6 +196,27 @@ vec2i component_get_pos_hint(const component *c);
  * @return Size hint, -1 on an axis means not set
  */
 vec2i component_get_size_hint(const component *c);
+
+/**
+ * @brief Set the size the component would choose for itself
+ *
+ * This is written by the component itself, based on its content. Size hints override it.
+ *
+ * @param c Component to modify
+ * @param w Natural width (-1 for none)
+ * @param h Natural height (-1 for none)
+ */
+void component_set_natural_size(component *c, int w, int h);
+
+/**
+ * @brief Get the size containers should try to give to this component
+ *
+ * The size hint wins if set; otherwise the natural size.
+ *
+ * @param c Component to query
+ * @return Preferred size, -1 means flexible.
+ */
+vec2i component_get_preferred_size(const component *c);
 
 /**
  * @brief Set which features the component supports

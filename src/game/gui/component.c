@@ -12,10 +12,12 @@ struct component {
 
     vector children; ///< Child components. Empty in the widget role; nothing is allocated until the first attach.
 
-    int x_hint; ///< X position hint. Sizers may or may not obey this. -1 = not set. >=0 means set.
-    int y_hint; ///< Y position hint. Sizers may or may not obey this. -1 = not set. >=0 means set.
-    int w_hint; ///< W size hint. Sizers may or may not obey this. -1 = not set. >=0 means set.
-    int h_hint; ///< H size hint. Sizers may or may not obey this. -1 = not set. >=0 means set.
+    int x_hint;    ///< X position hint. Sizers may or may not obey this. -1 = not set. >=0 means set.
+    int y_hint;    ///< Y position hint. Sizers may or may not obey this. -1 = not set. >=0 means set.
+    int w_hint;    ///< W size hint. Sizers may or may not obey this. -1 = not set. >=0 means set.
+    int h_hint;    ///< H size hint. Sizers may or may not obey this. -1 = not set. >=0 means set.
+    int w_natural; ///< Width the component would choose for itself. -1 = not set.
+    int h_natural; ///< Height the component would choose for itself. -1 = not set.
 
     bool supports_select; ///< Whether the component can be selected by component_select() call.
     bool is_selected;     ///< Whether the component is selected
@@ -187,6 +189,15 @@ vec2i component_get_size_hint(const component *c) {
 void component_set_size_hints(component *c, int w, int h) {
     c->w_hint = w;
     c->h_hint = h;
+}
+
+void component_set_natural_size(component *c, int w, int h) {
+    c->w_natural = w;
+    c->h_natural = h;
+}
+
+vec2i component_get_preferred_size(const component *c) {
+    return vec2i_create(c->w_hint >= 0 ? c->w_hint : c->w_natural, c->h_hint >= 0 ? c->h_hint : c->h_natural);
 }
 
 void component_set_pos_hints(component *c, int x, int y) {
@@ -363,6 +374,8 @@ component *component_create(void) {
     c->y_hint = -1;
     c->w_hint = -1;
     c->h_hint = -1;
+    c->w_natural = -1;
+    c->h_natural = -1;
     c->help = NULL;
     return c;
 }
