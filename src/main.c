@@ -330,24 +330,16 @@ exit_1:
     log_info("Exit.");
     log_close();
 exit_0:
-    if(init_flags.rec_files) {
-        omf_free(init_flags.rec_files);
-    }
+    omf_free(init_flags.rec_files);
     if(init_flags.rec_file_descriptions) {
         for(unsigned i = 0; i < init_flags.playback; i++) {
             str_free(&init_flags.rec_file_descriptions[i]);
         }
         omf_free(init_flags.rec_file_descriptions);
     }
-    if(ip) {
-        omf_free(ip);
-    }
-    if(lobbyaddr) {
-        omf_free(lobbyaddr);
-    }
-    if(trace_file) {
-        omf_free(trace_file);
-    }
+    omf_free(ip);
+    omf_free(lobbyaddr);
+    omf_free(trace_file);
 #if defined(USE_ARGTABLE)
     arg_freetable(argtable, N_ELEMENTS(argtable));
 #endif
