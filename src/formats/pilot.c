@@ -83,7 +83,7 @@ void sd_pilot_load_player_from_mem(memreader *mr, sd_pilot *pilot) {
     pilot->stun_resistance = (stats_b >> 10) & 0x1F;
     pilot->agility = (stats_c >> 0) & 0x7F;
     pilot->power = (stats_c >> 7) & 0x7F;
-    pilot->endurance = (stats_d >> 0) & 0x7F;
+    pilot->endurance_level = (stats_d >> 0) & 0x7F;
     sd_mskip(mr, 1);
 
     pilot->offense = memread_uword(mr);
@@ -216,7 +216,7 @@ void sd_pilot_save_player_to_mem(memwriter *w, const sd_pilot *pilot) {
     stats_b |= (pilot->stun_resistance & 0x1F) << 10;
     stats_c |= (pilot->agility & 0x7F) << 0;
     stats_c |= (pilot->power & 0x7F) << 7;
-    stats_d |= (pilot->endurance & 0x7F) << 0;
+    stats_d |= (pilot->endurance_level & 0x7F) << 0;
     memwrite_uword(w, stats_a);
     memwrite_uword(w, stats_b);
     memwrite_uword(w, stats_c);

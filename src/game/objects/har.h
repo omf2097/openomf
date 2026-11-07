@@ -154,7 +154,7 @@ typedef struct har_t {
     int height; // Distance required to jump over this HAR
 
     uint8_t stride;
-    int stun_factor;
+    int32_t stun_factor;
     int16_t health_max, health;
     int32_t endurance_max, endurance;
     char inputs[11];

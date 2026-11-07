@@ -1292,7 +1292,7 @@ bool modmanager_parse_pilot_mod(const char *buf, sd_pilot *pilot) {
     UPDATE_FIELD_INT(stun_resistance, pilot->stun_resistance, cfg_getint(cfg, "stun_resistance"));
     UPDATE_FIELD_INT(power, pilot->power, cfg_getint(cfg, "power"));
     UPDATE_FIELD_INT(agility, pilot->agility, cfg_getint(cfg, "speed")); // Note: "speed" maps to agility
-    UPDATE_FIELD_INT(endurance, pilot->endurance, cfg_getint(cfg, "endurance"));
+    UPDATE_FIELD_INT(endurance, pilot->endurance_level, cfg_getint(cfg, "endurance"));
     UPDATE_FIELD_INT(offense, pilot->offense, cfg_getint(cfg, "offense"));
     UPDATE_FIELD_INT(defense, pilot->defense, cfg_getint(cfg, "defense"));
     UPDATE_FIELD_INT(money, pilot->money, cfg_getint(cfg, "money"));

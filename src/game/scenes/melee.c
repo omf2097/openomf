@@ -275,7 +275,7 @@ static uint8_t *get_pilot_stat(sd_pilot *p, int stat) {
         case STAT_AGILITY:
             return &p->agility;
         case STAT_ENDURANCE:
-            return &p->endurance;
+            return &p->endurance_level;
     }
 }
 
@@ -338,7 +338,7 @@ static void load_pilot_stats(scene *scene, int player_id) {
         object_select_sprite(big_portrait, pilot_id);
     }
 
-    player->pilot->endurance = p_a.endurance;
+    player->pilot->endurance_level = p_a.endurance_level;
     player->pilot->power = p_a.power;
     player->pilot->agility = p_a.agility;
     player->pilot->sex = p_a.sex;
