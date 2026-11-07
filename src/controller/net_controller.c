@@ -12,6 +12,7 @@
 #include "game/scenes/arena.h"
 #include "game/utils/serial.h"
 #include "game/utils/settings.h"
+#include "platform/platform.h"
 #include "utils/allocator.h"
 #include "utils/list.h"
 #include "utils/log.h"
@@ -366,7 +367,7 @@ int rewind_and_replay(wtf *data, controller *ctrl) {
         }
     }
 
-    uint64_t replay_start = SDL_GetTicks64();
+    uint64_t replay_start = platform_time_ms();
     int tick_count = 0;
 
     uint32_t arena_hash;
@@ -581,7 +582,7 @@ int rewind_and_replay(wtf *data, controller *ctrl) {
         tick_count++;
     }
 
-    uint64_t replay_end = SDL_GetTicks64();
+    uint64_t replay_end = platform_time_ms();
 
     if(gs_new == NULL) {
         // we weren't able to make a new state backup, so restore the old one

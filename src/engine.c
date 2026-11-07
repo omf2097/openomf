@@ -8,6 +8,7 @@
 #include "game/game_state.h"
 #include "game/gui/osd/osd.h"
 #include "game/utils/settings.h"
+#include "platform/platform.h"
 #include "resources/languages.h"
 #include "resources/modmanager.h"
 #include "resources/resource_files.h"
@@ -190,7 +191,7 @@ void engine_run(const engine_init_flags *init_flags) {
     joystick_init();
 
     // Game loop
-    uint64_t frame_start = SDL_GetTicks64(); // Set game tick timer
+    uint64_t frame_start = platform_time_ms(); // Set game tick timer
     int dynamic_wait = 0;
     int static_wait = 0;
     while(run && game_state_is_running(gs)) {
@@ -318,15 +319,15 @@ void engine_run(const engine_init_flags *init_flags) {
 
         // hide mouse after n ticks
         if(mouse_visible_ticks > 0) {
-            mouse_visible_ticks -= SDL_GetTicks64() - frame_start;
+            mouse_visible_ticks -= platform_time_ms() - frame_start;
             if(mouse_visible_ticks <= 0) {
                 SDL_ShowCursor(0);
             }
         }
 
         // Render scene
-        uint64_t frame_dt = SDL_GetTicks64() - frame_start;
-        frame_start = SDL_GetTicks64();
+        uint64_t frame_dt = platform_time_ms() - frame_start;
+        frame_start = platform_time_ms();
         if(!visual_debugger) {
             dynamic_wait += frame_dt;
             static_wait += frame_dt;
@@ -379,7 +380,7 @@ void engine_run(const engine_init_flags *init_flags) {
                 dynamic_wait -= dyntick_ms;
                 if(gs->delay > 0) {
                     log_debug("applying delay %d", gs->delay);
-                    SDL_Delay(4);
+                    platform_sleep_ms(4);
                     gs->delay--;
                     dynamic_wait -= 4;
                 }
@@ -404,7 +405,7 @@ void engine_run(const engine_init_flags *init_flags) {
             video_render_finish();
         } else {
             // If screen updates are disabled, then wait
-            SDL_Delay(1);
+            platform_sleep_ms(1);
         }
     }
 
