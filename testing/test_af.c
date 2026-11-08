@@ -27,10 +27,10 @@ void test_af_roundtrip(void) {
     new.endurance = 3;
     new.upwards_jump_frame_limit = 4;
     new.health = 5;
-    new.forward_speed = 6;
-    new.reverse_speed = 7;
-    new.jump_speed = 8;
-    new.fall_speed = 9;
+    new.forward_speed = fixedpt_fromint(6);
+    new.reverse_speed = fixedpt_fromint(7);
+    new.jump_speed = fixedpt_fromint(8);
+    new.fall_speed = fixedpt_fromint(9);
     new.version_1 = 10;
     new.ai_projectile_y_threshold = 11;
     memset(new.sound_table, 10, sizeof(new.sound_table));

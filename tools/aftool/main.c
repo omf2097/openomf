@@ -527,16 +527,16 @@ void af_get_key(sd_af_file *af, const char **key, int kcount) {
             printf("%d\n", af->health);
             break;
         case 5:
-            printf("%f\n", af->forward_speed);
+            printf("%d\n", af->forward_speed);
             break;
         case 6:
-            printf("%f\n", af->reverse_speed);
+            printf("%d\n", af->reverse_speed);
             break;
         case 7:
-            printf("%f\n", af->jump_speed);
+            printf("%d\n", af->jump_speed);
             break;
         case 8:
-            printf("%f\n", af->fall_speed);
+            printf("%d\n", af->fall_speed);
             break;
         case 9:
             printf("%d\n", af->version_1);
@@ -580,16 +580,16 @@ void af_set_key(sd_af_file *af, const char **key, int kcount, const char *value)
             af->health = conv_uword(value);
             break;
         case 5:
-            af->forward_speed = conv_float(value);
+            af->forward_speed = conv_dword(value);
             break;
         case 6:
-            af->reverse_speed = conv_float(value);
+            af->reverse_speed = conv_dword(value);
             break;
         case 7:
-            af->jump_speed = conv_float(value);
+            af->jump_speed = conv_dword(value);
             break;
         case 8:
-            af->fall_speed = conv_float(value);
+            af->fall_speed = conv_dword(value);
             break;
         case 9:
             af->version_1 = conv_uword(value);
@@ -637,10 +637,10 @@ void af_info(sd_af_file *af) {
     printf(" * Endurance:        %d\n", af->endurance);
     printf(" * Jump frame limit: %d\n", af->upwards_jump_frame_limit);
     printf(" * Health:           %d\n", af->health);
-    printf(" * Fwd speed:        %f\n", af->forward_speed);
-    printf(" * Rev speed:        %f\n", af->reverse_speed);
-    printf(" * Jump speed:       %f\n", af->jump_speed);
-    printf(" * Fall speed:       %f\n", af->fall_speed);
+    printf(" * Fwd speed:        %d\n", af->forward_speed);
+    printf(" * Rev speed:        %d\n", af->reverse_speed);
+    printf(" * Jump speed:       %d\n", af->jump_speed);
+    printf(" * Fall speed:       %d\n", af->fall_speed);
     printf(" * Version 1:        %d\n", af->version_1);
 
     printf(" * Animations:  ");
