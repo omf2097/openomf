@@ -17,7 +17,6 @@
 #include "resources/af_loader.h"
 #include "resources/animation.h"
 #include "utils/allocator.h"
-#include "utils/fixedpt.h"
 #include "utils/log.h"
 #include "utils/miscmath.h"
 #include "utils/random.h"
@@ -320,7 +319,7 @@ void har_walk_to(object *obj, int destination) {
     h->walk_done_anim = obj->cur_animation->id;
     h->walk_done_tick = player_get_current_tick(obj);
 
-    float vx = h->fwd_speed * object_get_direction(obj);
+    float vx = fixedpt_tofloat(h->fwd_speed) * object_get_direction(obj);
     log_debug("set velocity to %f", vx);
     object_set_vel(obj, vec2f_create(vx, 0));
 
@@ -777,10 +776,10 @@ void har_move(object *obj) {
 
         if(h->state == STATE_WALKTO) {
             har_face_enemy(obj, enemy_obj);
-            obj->pos.x += (h->fwd_speed * object_get_direction(obj));
+            obj->pos.x += (fixedpt_tofloat(h->fwd_speed) * object_get_direction(obj));
         } else if(h->state == STATE_WALKFROM) {
             har_face_enemy(obj, enemy_obj);
-            obj->pos.x -= (h->back_speed * object_get_direction(obj));
+            obj->pos.x -= (fixedpt_tofloat(h->back_speed) * object_get_direction(obj));
         }
     } else {
         if(game_state_hars_are_alive(obj->gs)) {
@@ -2411,8 +2410,8 @@ int har_act(object *obj, int act_type) {
         if(move->category == CAT_SCRAP || move->category == CAT_DESTRUCTION) {
             obj->horizontal_velocity_modifier = 1.0f;
             obj->vertical_velocity_modifier = 1.0f;
-            object_set_gravity(obj, h->af_data->fall_speed);
-            object_set_gravity(enemy_obj, enemy_har->af_data->fall_speed);
+            object_set_gravity(obj, fixedpt_tofloat(h->af_data->fall_speed));
+            object_set_gravity(enemy_obj, fixedpt_tofloat(enemy_har->af_data->fall_speed));
         }
 
         if(move->category == CAT_SCRAP) {
@@ -2521,10 +2520,10 @@ int har_act(object *obj, int act_type) {
             case STATE_JUMPING:
                 har_set_ani(obj, ANIM_JUMPING, 0);
                 vx = 0.0f;
-                vy = h->jump_speed;
+                vy = fixedpt_tofloat(h->jump_speed);
                 int jump_dir = 0;
                 if(last_input == '9') {
-                    vx = (h->fwd_speed * direction);
+                    vx = fixedpt_tofloat(h->fwd_speed) * direction;
                     object_set_tick_pos(obj, 110);
                     object_set_stride(obj, 7); // Pass 7 frames per tick
                     jump_dir = 1;
@@ -2533,7 +2532,7 @@ int har_act(object *obj, int act_type) {
                     // at -100 frames (seems to be about right)
                     object_set_playback_direction(obj, PLAY_BACKWARDS);
                     object_set_tick_pos(obj, -110);
-                    vx = (h->back_speed * direction * -1);
+                    vx = fixedpt_tofloat(h->back_speed) * direction * -1;
                     object_set_stride(obj, 7); // Pass 7 frames per tick
                     jump_dir = -1;
                 } else if(last_input == '8') {
@@ -2545,7 +2544,7 @@ int har_act(object *obj, int act_type) {
                 }
                 if(input_staleness <= 6 && (h->inputs[1] == '1' || h->inputs[1] == '2' || h->inputs[1] == '3')) {
                     // jumping from crouch makes you jump 25% higher
-                    vy = h->superjump_speed;
+                    vy = fixedpt_tofloat(h->superjump_speed);
                 }
                 object_set_vel(obj, vec2f_create(vx, vy));
                 har_event_jump(h, jump_dir, ctrl);
@@ -2725,6 +2724,14 @@ void har_bootstrap(object *obj) {
     obj->clone_free = har_clone_free;
 }
 
+// jump_speed = ((agility + 35) / 45) * af_data->jump_speed * jump_multiplier * 216 / 256;
+static inline fixedpt calc_jump_speed(int agility, fixedpt af_jump_speed, fixedpt multiplier, fixedpt ratio) {
+    return fixedpt_mul(
+        fixedpt_mul(fixedpt_mul(fixedpt_div(fixedpt_fromint(agility + 35), fixedpt_fromint(45)), af_jump_speed),
+                    multiplier),
+        ratio);
+}
+
 int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int player_id) {
     // Create local data
     har *local = omf_calloc(1, sizeof(har));
@@ -2747,12 +2754,12 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
         power = obj->gs->match_settings.power1;
     }
 
-    float jump_multiplier = 1.0;
+    fixedpt jump_multiplier = fixedpt_fromint(1);
     float vitality_multiplier = 1.0;
     float power_multiplier = 1.0;
     float hp_adjust;
     if(!is_tournament(obj->gs)) {
-        jump_multiplier = obj->gs->match_settings.jump_height / 100.0;
+        jump_multiplier = fixedpt_div(fixedpt_fromint(obj->gs->match_settings.jump_height), fixedpt_fromint(100));
         vitality_multiplier = obj->gs->match_settings.vitality / 100.0;
         // see https://www.omf2097.com/wiki/doku.php?id=omf2097:stats
         power_multiplier = 2.25 - 0.25 * power; // TODO: skip when either player is AI
@@ -2798,12 +2805,19 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     float vertical_agility_modifier = ((float)gp->pilot->agility + 20) / 30;
     obj->horizontal_velocity_modifier = horizontal_agility_modifier;
     obj->vertical_velocity_modifier = vertical_agility_modifier;
-    local->jump_speed = (((float)gp->pilot->agility + 35) / 45) * af_data->jump_speed * jump_multiplier * 216 / 256;
-    local->superjump_speed =
-        (((float)gp->pilot->agility + 35) / 45) * af_data->jump_speed * jump_multiplier * 266 / 256;
-    local->fall_speed = (((float)gp->pilot->agility + 20) / 30) * af_data->fall_speed;
-    local->fwd_speed = (((float)gp->pilot->agility + 20) / 30) * af_data->forward_speed;
-    local->back_speed = (((float)gp->pilot->agility + 20) / 30) * af_data->reverse_speed;
+    const fixedpt jump_ratio = 0xd8; // 216 / 256 = 0.84375
+    local->jump_speed = calc_jump_speed(gp->pilot->agility, af_data->jump_speed, jump_multiplier, jump_ratio);
+    const fixedpt superjump_ratio = 0x10a; // 266 / 256 = 1.0390625
+    local->superjump_speed = calc_jump_speed(gp->pilot->agility, af_data->jump_speed, jump_multiplier, superjump_ratio);
+    // fall_speed = (((float)gp->pilot->agility + 20) / 30) * af_data->fall_speed;
+    local->fall_speed =
+        fixedpt_mul(fixedpt_div(fixedpt_fromint(gp->pilot->agility + 20), fixedpt_fromint(30)), af_data->fall_speed);
+    // fwd_speed = (((float)gp->pilot->agility + 20) / 30) * af_data->forward_speed;
+    local->fwd_speed =
+        fixedpt_mul(fixedpt_div(fixedpt_fromint(gp->pilot->agility + 20), fixedpt_fromint(30)), af_data->forward_speed);
+    // back_speed = (((float)gp->pilot->agility + 20) / 30) * af_data->reverse_speed;
+    local->back_speed =
+        fixedpt_mul(fixedpt_div(fixedpt_fromint(gp->pilot->agility + 20), fixedpt_fromint(30)), af_data->reverse_speed);
     local->stride = (gp->pilot->agility + 20) / 30;
     log_debug("setting HAR stride to %d", local->stride);
     local->close = 0;
@@ -2843,7 +2857,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     object_set_pal_limit(obj, (player_id + 1) * 48);
 
     // Object related stuff
-    object_set_gravity(obj, local->fall_speed);
+    object_set_gravity(obj, fixedpt_tofloat(local->fall_speed));
     object_set_layers(obj, LAYER_HAR | (player_id == 0 ? LAYER_HAR1 : LAYER_HAR2));
     object_set_direction(obj, dir);
     object_set_repeat(obj, 1);
@@ -2971,7 +2985,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
 
 void har_reset(object *obj) {
     har *h = object_get_userdata(obj);
-    object_set_gravity(obj, h->fall_speed);
+    object_set_gravity(obj, fixedpt_tofloat(h->fall_speed));
     h->close = 0;
     h->state = STATE_STANDING;
     h->executing_move = 0;

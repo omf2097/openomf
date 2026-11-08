@@ -1103,10 +1103,10 @@ bool modmanager_parse_fighter_header_mod(const char *buf, af *fighter) {
 
     cfg_opt_t header_opts[] = {CFG_INT("endurance", fighter->endurance, CFGF_NONE),
                                CFG_INT("health", fighter->health, CFGF_NONE),
-                               CFG_FLOAT("forward_speed", fighter->forward_speed, CFGF_NONE),
-                               CFG_FLOAT("reverse_speed", fighter->reverse_speed, CFGF_NONE),
-                               CFG_FLOAT("jump_speed", fighter->jump_speed, CFGF_NONE),
-                               CFG_FLOAT("fall_speed", fighter->fall_speed, CFGF_NONE),
+                               CFG_INT("forward_speed", fighter->forward_speed, CFGF_NONE),
+                               CFG_INT("reverse_speed", fighter->reverse_speed, CFGF_NONE),
+                               CFG_INT("jump_speed", fighter->jump_speed, CFGF_NONE),
+                               CFG_INT("fall_speed", fighter->fall_speed, CFGF_NONE),
                                CFG_END()};
 
     cfg_t *cfg = cfg_init(header_opts, CFGF_NONE);
@@ -1127,24 +1127,24 @@ bool modmanager_parse_fighter_header_mod(const char *buf, af *fighter) {
         fighter->health = cfg_getint(cfg, "health");
     }
 
-    if(fighter->forward_speed != cfg_getfloat(cfg, "forward_speed")) {
-        log_info("setting forward speed from %f to %f", fighter->forward_speed, cfg_getfloat(cfg, "forward_speed"));
-        fighter->forward_speed = cfg_getfloat(cfg, "forward_speed");
+    if(fighter->forward_speed != cfg_getint(cfg, "forward_speed")) {
+        log_info("setting forward speed from %d to %ld", fighter->forward_speed, cfg_getint(cfg, "forward_speed"));
+        fighter->forward_speed = cfg_getint(cfg, "forward_speed");
     }
 
-    if(fighter->reverse_speed != cfg_getfloat(cfg, "reverse_speed")) {
-        log_info("setting reverse speed from %f to %f", fighter->reverse_speed, cfg_getfloat(cfg, "reverse_speed"));
-        fighter->reverse_speed = cfg_getfloat(cfg, "reverse_speed");
+    if(fighter->reverse_speed != cfg_getint(cfg, "reverse_speed")) {
+        log_info("setting reverse speed from %d to %ld", fighter->reverse_speed, cfg_getint(cfg, "reverse_speed"));
+        fighter->reverse_speed = cfg_getint(cfg, "reverse_speed");
     }
 
-    if(fighter->jump_speed != cfg_getfloat(cfg, "jump_speed")) {
-        log_info("setting jump speed from %f to %f", fighter->jump_speed, cfg_getfloat(cfg, "jump_speed"));
-        fighter->jump_speed = cfg_getfloat(cfg, "jump_speed");
+    if(fighter->jump_speed != cfg_getint(cfg, "jump_speed")) {
+        log_info("setting jump speed from %d to %ld", fighter->jump_speed, cfg_getint(cfg, "jump_speed"));
+        fighter->jump_speed = cfg_getint(cfg, "jump_speed");
     }
 
-    if(fighter->fall_speed != cfg_getfloat(cfg, "fall_speed")) {
-        log_info("setting fall speed from %f to %f", fighter->fall_speed, cfg_getfloat(cfg, "fall_speed"));
-        fighter->fall_speed = cfg_getfloat(cfg, "fall_speed");
+    if(fighter->fall_speed != cfg_getint(cfg, "fall_speed")) {
+        log_info("setting fall speed from %d to %ld", fighter->fall_speed, cfg_getint(cfg, "fall_speed"));
+        fighter->fall_speed = cfg_getint(cfg, "fall_speed");
     }
 
     cfg_free(cfg);

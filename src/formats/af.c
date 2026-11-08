@@ -114,10 +114,10 @@ int sd_af_load(sd_af_file *af, const path *filename) {
     af->endurance = sd_read_dword(r);
     af->upwards_jump_frame_limit = sd_read_ubyte(r); // Always 1 or 2
     af->health = sd_read_uword(r);
-    af->forward_speed = sd_read_dword(r) / 256.0f;
-    af->reverse_speed = sd_read_dword(r) / 256.0f;
-    af->jump_speed = sd_read_dword(r) / 256.0f;
-    af->fall_speed = sd_read_dword(r) / 256.0f;
+    af->forward_speed = sd_read_dword(r);
+    af->reverse_speed = sd_read_dword(r);
+    af->jump_speed = sd_read_dword(r);
+    af->fall_speed = sd_read_dword(r);
     af->version_1 = sd_read_ubyte(r);                 // Always 0x32 ?
     af->ai_projectile_y_threshold = sd_read_ubyte(r); // Always 0x14 ?
 
@@ -162,10 +162,10 @@ int sd_af_save(const sd_af_file *af, const path *filename) {
     sd_write_udword(w, (int)(af->endurance * 256));
     sd_write_ubyte(w, af->upwards_jump_frame_limit);
     sd_write_uword(w, af->health);
-    sd_write_dword(w, (int)(af->forward_speed * 256));
-    sd_write_dword(w, (int)(af->reverse_speed * 256));
-    sd_write_dword(w, (int)(af->jump_speed * 256));
-    sd_write_dword(w, (int)(af->fall_speed * 256));
+    sd_write_dword(w, af->forward_speed);
+    sd_write_dword(w, af->reverse_speed);
+    sd_write_dword(w, af->jump_speed);
+    sd_write_dword(w, af->fall_speed);
     sd_write_ubyte(w, af->version_1);
     sd_write_ubyte(w, af->ai_projectile_y_threshold);
 
