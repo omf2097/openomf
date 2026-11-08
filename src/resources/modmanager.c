@@ -1105,7 +1105,7 @@ bool modmanager_parse_fighter_header_mod(const char *buf, af *fighter) {
                                CFG_INT("health", fighter->health, CFGF_NONE),
                                CFG_FLOAT("forward_speed", fighter->forward_speed, CFGF_NONE),
                                CFG_FLOAT("reverse_speed", fighter->reverse_speed, CFGF_NONE),
-                               CFG_FLOAT("jump_speed", fighter->jump_speed, CFGF_NONE),
+                               CFG_INT("jump_speed", fighter->jump_speed, CFGF_NONE),
                                CFG_FLOAT("fall_speed", fighter->fall_speed, CFGF_NONE),
                                CFG_END()};
 
@@ -1137,9 +1137,9 @@ bool modmanager_parse_fighter_header_mod(const char *buf, af *fighter) {
         fighter->reverse_speed = cfg_getfloat(cfg, "reverse_speed");
     }
 
-    if(fighter->jump_speed != cfg_getfloat(cfg, "jump_speed")) {
-        log_info("setting jump speed from %f to %f", fighter->jump_speed, cfg_getfloat(cfg, "jump_speed"));
-        fighter->jump_speed = cfg_getfloat(cfg, "jump_speed");
+    if(fighter->jump_speed != cfg_getint(cfg, "jump_speed")) {
+        log_info("setting jump speed from %d to %ld", fighter->jump_speed, cfg_getint(cfg, "jump_speed"));
+        fighter->jump_speed = cfg_getint(cfg, "jump_speed");
     }
 
     if(fighter->fall_speed != cfg_getfloat(cfg, "fall_speed")) {

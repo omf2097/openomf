@@ -6,6 +6,7 @@
 #include "resources/af.h"
 #include "resources/animation.h"
 #include "resources/bk.h"
+#include "utils/fixedpt.h"
 #include "utils/list.h"
 
 // For debug texture stuff
@@ -139,11 +140,11 @@ typedef struct har_t {
     uint8_t kick_valid;        // Buffer for kick input, counts down every tick
     uint8_t air_stop;          // Value for handling air-to-air juggle behavior
 
-    float jump_speed;      // Agility generated speed modifier for jumping
-    float superjump_speed; // Agility generated speed modifier for jumping
-    float fall_speed;      // Agility generated speed modifier for falling
-    float fwd_speed;       // Agility generated speed modifier for falling
-    float back_speed;      // Agility generated speed modifier for falling
+    fixedpt jump_speed;      // Agility generated speed modifier for jumping
+    fixedpt superjump_speed; // Agility generated speed modifier for jumping
+    float fall_speed;        // Agility generated speed modifier for falling
+    float fwd_speed;         // Agility generated speed modifier for falling
+    float back_speed;        // Agility generated speed modifier for falling
 
     int in_stasis_ticks; // Handle stasis activator
     int throw_duration;
