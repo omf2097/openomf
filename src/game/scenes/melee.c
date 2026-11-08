@@ -367,6 +367,9 @@ void handle_action(scene *scene, int player, int action) {
     bool *done = &local->cursor[player].done;
 
     if(*done) {
+        if(action == (ACT_PUNCH | ACT_KICK)) {
+            *done = 0;
+        }
         return;
     }
 
