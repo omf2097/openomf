@@ -578,7 +578,7 @@ void har_floor_landing_effects(object *obj, bool play_sound) {
     int amount = rand_int(2) + 1;
     for(int i = 0; i < amount; i++) {
         int variance = rand_int(20) - 10;
-        vec2i coord = vec2i_create(obj->pos.x + variance + i * 10, obj->pos.y);
+        vec2i coord = vec2i_create((int)(obj->pos.x + variance + i * 10), (int)obj->pos.y);
         object *dust = omf_calloc(1, sizeof(object));
         object_create(dust, obj->gs, coord, vec2f_create(0, 0));
         object_set_stl(dust, object_get_stl(obj));
@@ -592,7 +592,7 @@ void har_floor_landing_effects(object *obj, bool play_sound) {
         sound_opts opts;
         sound_opts_init(&opts);
         opts.volume = 38;
-        opts.panning = clamp((obj->pos.x - 160) * 100 / 160, -100, 100);
+        opts.panning = clamp((int)((obj->pos.x - 160) * 100 / 160), -100, 100);
         game_state_play_sound(obj->gs, 56, &opts);
     }
 }
@@ -1724,7 +1724,8 @@ void har_collide_with_hazard(object *o_har, object *o_hzd) {
 
         anim = bk_get_info(bk_data, anim->chain_hit);
         object *new_proj = omf_calloc(1, sizeof(object));
-        object_create(new_proj, o_har->gs, vec2i_add(vec2i_create(o_hzd->start.x, o_hzd->start.y), anim->ani.start_pos),
+        object_create(new_proj, o_har->gs,
+                      vec2i_add(vec2i_create((int)o_hzd->start.x, (int)o_hzd->start.y), anim->ani.start_pos),
                       vec2f_create(0, 0));
         object_set_stl(new_proj, object_get_stl(o_hzd));
         object_set_animation(new_proj, &anim->ani);
@@ -1826,12 +1827,12 @@ static void har_palette_transform(damage_tracker *damage, vga_palette *pal, void
     float step;
     if(h->p_fade_in_ticks_left > 0) {
         step = 1.0f - h->p_fade_in_ticks_left / (float)h->p_fade_in_ticks;
-        process_range(h, damage, pal, clamp(step * 255, 0, 255));
+        process_range(h, damage, pal, clamp((int)step * 255, 0, 255));
     } else if(h->p_sustain_ticks_left > 0) {
         process_range(h, damage, pal, 255);
     } else if(h->p_fade_out_ticks_left > 0) {
         step = h->p_fade_out_ticks_left / (float)h->p_fade_out_ticks;
-        process_range(h, damage, pal, clamp(step * 255, 0, 255));
+        process_range(h, damage, pal, clamp((int)step * 255, 0, 255));
     }
 }
 
@@ -2795,8 +2796,8 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     // Health, endurance
     // HP is
     // (HAR hp * (Pilot Endurance + 25) / 35) * 1.1
-    local->health_max = local->health =
-        ((af_data->health * (pilot->endurance_level + 25) / 35) * 1.1) * power_multiplier * vitality_multiplier;
+    local->health_max = local->health = (int16_t)(((af_data->health * (pilot->endurance_level + 25) / 35) * 1.1) *
+                                                  power_multiplier * vitality_multiplier);
 
     // log_debug("HAR health is %d with pilot endurance %d and base health %d", local->health, pilot->endurance,
     // af_data->health);

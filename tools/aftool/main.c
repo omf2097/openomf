@@ -571,7 +571,7 @@ void af_set_key(sd_af_file *af, const char **key, int kcount, const char *value)
             af->exec_window = conv_uword(value);
             break;
         case 2:
-            af->endurance = conv_float(value);
+            af->endurance = (int32_t)conv_float(value);
             break;
         case 3:
             af->upwards_jump_frame_limit = conv_ubyte(value);

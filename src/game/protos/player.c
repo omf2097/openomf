@@ -338,7 +338,7 @@ void player_run_apply(object *obj) {
             int destination = 160;
             if(script_is_tag_set_by_id(frame, TAG_AM) && script_is_tag_set_by_id(frame, TAG_E)) {
                 // destination is the enemy's position
-                destination = enemy->pos.x - trans_x;
+                destination = (int)(enemy->pos.x - trans_x);
                 if(obj->pos.x > enemy->pos.x) {
                     object_set_direction(obj, OBJECT_FACE_LEFT);
                 } else {
@@ -496,12 +496,12 @@ void player_run_apply(object *obj) {
 
             // Staring X coordinate for new animation
             if(script_is_tag_set_by_id(frame, TAG_MX)) {
-                mx = obj->start.x + (script_get_tag_value_by_id(frame, TAG_MX) * object_get_direction(obj));
+                mx = (int)(obj->start.x + (script_get_tag_value_by_id(frame, TAG_MX) * object_get_direction(obj)));
             }
 
             // Staring Y coordinate for new animation
             if(script_is_tag_set_by_id(frame, TAG_MY)) {
-                my = obj->start.y + script_get_tag_value_by_id(frame, TAG_MY);
+                my = (int)(obj->start.y + script_get_tag_value_by_id(frame, TAG_MY));
             }
 
             // Angle/speed for new animation
@@ -578,7 +578,7 @@ void player_run_apply(object *obj) {
             if(script_is_tag_set_by_id(frame, TAG_SB)) {
                 opts.panning = clamp(script_get_tag_value_by_id(frame, TAG_SB), -100, 100);
             } else {
-                opts.panning = clamp((obj->pos.x - 160) * 100 / 160, -100, 100);
+                opts.panning = clamp((int)((obj->pos.x - 160) * 100 / 160), -100, 100);
             }
             if(script_is_tag_set_by_id(frame, TAG_SF)) {
                 opts.pitch = script_get_tag_value_by_id(frame, TAG_SF);
@@ -733,7 +733,7 @@ void player_run_apply(object *obj) {
                 int mr = script_get_tick_pos_at_frame(script, frame_id);
                 int r = mr - script_reader_tick(&state->reader) - frame->tick_len;
                 int next_x = script_get_tag_value_by_id(script_get_frame(script, frame_id), TAG_X_EQ);
-                int slide = obj->start.x + (next_x * object_get_direction(obj));
+                int slide = (int)(obj->start.x + (next_x * object_get_direction(obj)));
                 if(slide != obj->pos.x) {
                     obj->slide_state.vel.x = dist(obj->pos.x, slide) / (float)(frame->tick_len + r);
                     obj->slide_state.timer = frame->tick_len + r;
@@ -757,7 +757,7 @@ void player_run_apply(object *obj) {
                 int mr = script_get_tick_pos_at_frame(script, frame_id);
                 int r = mr - script_reader_tick(&state->reader) - frame->tick_len;
                 int next_y = script_get_tag_value_by_id(script_get_frame(script, frame_id), TAG_Y_EQ);
-                int slide = next_y + obj->start.y;
+                int slide = (int)(next_y + obj->start.y);
                 if(slide != obj->pos.y) {
                     obj->slide_state.vel.y = dist(obj->pos.y, slide) / (float)(frame->tick_len + r);
                     obj->slide_state.timer = frame->tick_len + r;

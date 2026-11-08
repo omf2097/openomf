@@ -161,7 +161,7 @@ void melee_free(scene *scene) {
 
 static int ticks_to_blinky(int ticks) {
     float rate = ((float)ticks) / 25.0f;
-    int offset = roundf((cosf(rate) + 1.0f) * 64.0f);
+    int offset = (int)roundf((cosf(rate) + 1.0f) * 64.0f);
     return offset;
 }
 

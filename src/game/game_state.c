@@ -109,13 +109,13 @@ int game_state_get_assertion_operand(const rec_assertion_operand *op, game_state
     const har *har = object_get_userdata(obj);
     switch(op->value.attr.attribute) {
         case ATTR_X_POS:
-            return obj->pos.x;
+            return (int)obj->pos.x;
         case ATTR_Y_POS:
-            return obj->pos.y;
+            return (int)obj->pos.y;
         case ATTR_X_VEL:
-            return obj->vel.x;
+            return (int)obj->vel.x;
         case ATTR_Y_VEL:
-            return obj->vel.y;
+            return (int)obj->vel.y;
         case ATTR_STATE_ID:
             return har->state;
         case ATTR_ANIMATION_ID:
@@ -128,7 +128,7 @@ int game_state_get_assertion_operand(const rec_assertion_operand *op, game_state
         case ATTR_OPPONENT_DISTANCE: {
             object *obj_opp = game_state_find_object(
                 gs, game_player_get_har_obj_id(game_state_get_player(gs, abs(op->value.attr.har_id - 1))));
-            return fabsf(obj->pos.x - obj_opp->pos.x);
+            return (int)fabsf(obj->pos.x - obj_opp->pos.x);
             case ATTR_DIRECTION:
                 return object_get_direction(obj);
         }

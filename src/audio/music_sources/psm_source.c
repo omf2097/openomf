@@ -37,7 +37,7 @@ static void psm_close(void *userdata) {
 
 static void psm_set_volume(void *userdata, const float volume) {
     const xmp_context context = userdata;
-    const int clamped = clamp(volume * 100, 0, 100);
+    const int clamped = clamp((int)volume * 100, 0, 100);
     if(xmp_set_player(context, XMP_PLAYER_VOLUME, clamped) != 0) {
         log_error("Unable to set music volume");
     }
