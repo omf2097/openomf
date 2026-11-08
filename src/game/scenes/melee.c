@@ -105,7 +105,7 @@ typedef struct {
     // nova selection cheat
     unsigned char cheat_selected[2][10];
     unsigned char katana_down_count[2];
-    // pilot stat cheat. wrap around on both rows and select every pilot, then hold KICK to adjust stats.
+    // pilot stat cheat. select every pilot, then hold KICK to adjust stats.
     unsigned char cheat_pilot_stats[2];
     unsigned char cheat_pilot_stats_stat[2]; // which stat is selected?
 
@@ -202,9 +202,6 @@ static bool check_pilot_stat_cheat(scene *scene, int player_id) {
 
     // if we haven't enabled the cheat yet, check the rules
     if(local->cheat_pilot_stats[player_id] != 0xFF) {
-        if(local->cheat_pilot_stats[player_id] != 3) {
-            return false; // haven't wrapped around both rows
-        }
         if(memchr(local->cheat_selected[player_id], 0, sizeof(local->cheat_selected[player_id])) != NULL) {
             return false; // not all pilots have been selected
         }
