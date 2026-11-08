@@ -288,7 +288,7 @@ static void arena_end(scene *sc) {
         // TODO: The repair costs formula here is completely bogus
         int trade_value = calculate_trade_value(player_winner->pilot) / 100;
         float hp_percentage = (float)winner_har->health / (float)winner_har->health_max;
-        fight_stats->repair_cost = (1.0f - hp_percentage) * trade_value;
+        fight_stats->repair_cost = (int)((1.0f - hp_percentage) * trade_value);
 
         fight_stats->winnings =
             calculate_winnings(player_winner->pilot, player_loser->pilot, player_winner->chr->winnings_multiplier);
@@ -627,7 +627,7 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
             info = bk_get_info(scene->bk_data, 22);
             if(info) { // Only Power Plant has the electric overlay effect
                 object *obj2 = omf_calloc(1, sizeof(object));
-                object_create(obj2, scene->gs, vec2i_create(o_har->pos.x, o_har->pos.y), vec2f_create(0, 0));
+                object_create(obj2, scene->gs, vec2i_create((int)o_har->pos.x, (int)o_har->pos.y), vec2f_create(0, 0));
                 object_set_stl(obj2, scene->bk_data->sound_translation_table);
                 object_set_animation(obj2, &info->ani);
                 object_attach_to(obj2, o_har);
@@ -643,8 +643,8 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
                 int variance = rand_int(20) - 10;
                 int anim_no = rand_int(2) + 24;
                 // log_debug("XXX anim = %d, variance = %d", anim_no, variance);
-                int pos_y = o_har->pos.y - object_get_size(o_har).y + variance + i * 25;
-                vec2i coord = vec2i_create(o_har->pos.x, pos_y);
+                int pos_y = (int)(o_har->pos.y - object_get_size(o_har).y + variance + i * 25);
+                vec2i coord = vec2i_create((int)o_har->pos.x, pos_y);
                 object *dust = omf_calloc(1, sizeof(object));
                 object_create(dust, scene->gs, coord, vec2f_create(0, 0));
                 object_set_stl(dust, scene->bk_data->sound_translation_table);
@@ -657,13 +657,13 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
             // 36, 37, and 38 all sound alike, unsure which is the right one
             sound_opts opts;
             sound_opts_init(&opts);
-            opts.panning = clamp(o_har->pos.x * 100 / 640 - 25, -100, 100);
+            opts.panning = clamp((int)(o_har->pos.x * 100 / 640 - 25), -100, 100);
             game_state_play_sound(o_har->gs, 36, &opts);
 
             // Set hit animation
             object_set_animation(o_har, &af_get_move(h->af_data, ANIM_DAMAGE)->ani);
             object_set_repeat(o_har, 0);
-            scene->gs->screen_shake_horizontal = 3 * fabsf(o_har->vel.x);
+            scene->gs->screen_shake_horizontal = (int)(3 * fabsf(o_har->vel.x));
             // from MASTER.DAT
             object_set_custom_string(o_har, "hQ1-hQ7-x-3Q5-x-2L5-x-2M900");
 
@@ -1281,8 +1281,8 @@ void arena_dynamic_tick(scene *scene, int paused) {
                 en = clampf(((float)hars[i]->endurance_max - (float)hars[i]->endurance) / (float)hars[i]->endurance_max,
                             0.0f, 1.0f);
             }
-            progressbar_set_progress(local->health_bars[i], hp * 100, !(gs->warp_speed || gs->clone));
-            progressbar_set_progress(local->endurance_bars[i], en * 100, !(gs->warp_speed || gs->clone));
+            progressbar_set_progress(local->health_bars[i], (int)(hp * 100), !(gs->warp_speed || gs->clone));
+            progressbar_set_progress(local->endurance_bars[i], (int)(en * 100), !(gs->warp_speed || gs->clone));
             progressbar_set_flashing(local->endurance_bars[i], (en * 100 < 50), 8);
             component_tick(local->health_bars[i]);
             component_tick(local->endurance_bars[i]);

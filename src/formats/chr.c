@@ -49,7 +49,7 @@ void sd_chr_from_trn(sd_chr_file *chr, const sd_tournament_file *trn, const sd_p
 
     int32_t pilot_total_value = calculate_trade_value(&chr->pilot) + chr->pilot.money + (har_prices[0] * 85) / 100;
     float extra_value = (pilot_total_value - trn->assumed_initial_value) / 320;
-    int32_t extra = extra_value / 0.6f;
+    int32_t extra = (int32_t)(extra_value / 0.6f);
     if(extra > 1500) {
         extra = 1500;
     } else if(extra < 0) {

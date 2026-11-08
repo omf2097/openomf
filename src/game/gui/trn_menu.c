@@ -358,7 +358,7 @@ static void trnmenu_tick(component *c) {
             }
         } else {
             vec2i dist = vec2i_sub(m->hand.pend, m->hand.pstart);
-            vec2i m_pos = vec2i_create(dist.x * m->hand.moved, dist.y * m->hand.moved);
+            vec2i m_pos = vec2i_create((int)(dist.x * m->hand.moved), (int)(dist.y * m->hand.moved));
             vec2i r_pos = vec2i_add(m->hand.pstart, m_pos);
             object_set_pos(m->hand.obj, r_pos);
             m->hand.moved += 0.05f;

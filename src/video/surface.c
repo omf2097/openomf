@@ -222,7 +222,7 @@ void surface_to_grayscale(const surface *src, surface *dst, const vga_palette *p
         const float r = pal->colors[i].r * 0.3;
         const float g = pal->colors[i].g * 0.59;
         const float b = pal->colors[i].b * 0.11;
-        mapping[i] = find_closest_gray(pal, range_start, range_end, r + g + b);
+        mapping[i] = find_closest_gray(pal, range_start, range_end, (int)(r + g + b));
     }
 
     surface_create(dst, src->w, src->h);

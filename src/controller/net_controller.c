@@ -114,9 +114,9 @@ int avg_rtt(wtf *data) {
         }
     }
     if(j != 0) {
-        return truncf(result / j);
+        return (int)truncf(result / j);
     }
-    return truncf(average);
+    return (int)truncf(average);
 }
 
 // insert an event into the event trace

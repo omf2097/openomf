@@ -12,9 +12,9 @@ void scrap_move(object *obj) {
         return;
     }
 
-    pos.x += vel.x;
+    pos.x += (int)vel.x;
     vel.y += obj->gravity;
-    pos.y += vel.y;
+    pos.y += (int)vel.y;
 
     float dampen = 0.4f;
 
