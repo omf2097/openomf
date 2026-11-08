@@ -167,7 +167,7 @@ static float rank_bonus(unsigned rank) {
     return 5.0;
 }
 
-float calculate_winnings(sd_pilot *winner, sd_pilot *loser, float winnings_multiplier) {
+int calculate_winnings(sd_pilot *winner, sd_pilot *loser, float winnings_multiplier) {
     update_total_value(winner);
     update_total_value(loser);
 
@@ -178,5 +178,5 @@ float calculate_winnings(sd_pilot *winner, sd_pilot *loser, float winnings_multi
     winnings += winner->trn_rank_money * rank_bonus(winner->rank);
     winnings *= 0.7f;
     winnings *= winnings_multiplier;
-    return winnings;
+    return (int)winnings;
 }
