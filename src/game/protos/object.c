@@ -137,7 +137,7 @@ void object_scenewide_palette_transform(damage_tracker *damage, vga_palette *pal
     assert(state->pal_start_index + state->pal_entry_count <= 256);
 
     step = state->timer / (float)state->duration;
-    bp = clamp(state->pal_begin + (int)((state->pal_end - state->pal_begin) * step), 0, 255);
+    bp = clamp((int)(state->pal_begin + (state->pal_end - state->pal_begin) * step), 0, 255);
     start = state->pal_start_index;
     end = state->pal_start_index + state->pal_entry_count;
 
@@ -455,9 +455,9 @@ void object_render_shadow(object *obj) {
     }
 
     if(flip_mode & FLIP_HORIZONTAL) {
-        x += (int)-((cur_sprite->pos.x + obj->sprite_state.o_correction.x) * obj->x_percent) - w;
+        x = (int)(x - ((cur_sprite->pos.x + obj->sprite_state.o_correction.x) * obj->x_percent) - w);
     } else {
-        x += (int)((cur_sprite->pos.x + obj->sprite_state.o_correction.x) * obj->x_percent);
+        x = (int)(x + ((cur_sprite->pos.x + obj->sprite_state.o_correction.x) * obj->x_percent));
     }
 
     player_sprite_state *state = &obj->sprite_state;
@@ -469,7 +469,7 @@ void object_render_shadow(object *obj) {
     }
 
     int correction_y = obj->sprite_state.o_correction.y + obj->o_shadow_correction;
-    y += (int)(((cur_sprite->pos.y + correction_y) * obj->y_percent) / 4);
+    y = (int)(y + ((cur_sprite->pos.y + correction_y) * obj->y_percent) / 4);
 
     // Draw the shadow, using the texture data to determine which remap to use (uses the first four remaps)
     video_draw_full(cur_sprite->data, x, y, w, h, -1, 1, 0, 0, opacity, flip_mode, SPRITE_SHADOW);
