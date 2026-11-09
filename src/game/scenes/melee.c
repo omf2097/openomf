@@ -187,9 +187,9 @@ static void load_pilot_portraits_palette(const scene *scene, int level) {
     for(uint8_t idx = 0x01; idx < 0x60; idx++) {
         uint8_t src_idx = idx + 0xA0;
         vga_color src = bk_pal->colors[src_idx];
-        src.r *= mult;
-        src.g *= mult;
-        src.b *= mult;
+        src.r = (int)(src.r * mult);
+        src.g = (int)(src.g * mult);
+        src.b = (int)(src.b * mult);
         bk_pal->colors[idx] = src;
     }
     vga_state_set_base_palette_from_range(bk_pal, 0x00, 0x00, 0x60);
@@ -261,10 +261,10 @@ static void set_fade_value(const scene *scene) {
             break;
         case HAR_SELECT:
             if(local->fade_time) {
-                game_player *player = game_state_get_player(scene->gs, 0);
-                float mult = (5 - fade_level) / 10.0f;
+                const game_player *player = game_state_get_player(scene->gs, 0);
+                const float mult = (5 - fade_level) / 10.0f;
                 for(int i = 0; i < 16; i++) {
-                    int value = (i << 4 | i) * mult;
+                    const int value = (int)((i << 4 | i) * mult);
                     player->pilot->palette.colors[i].r = value;
                     player->pilot->palette.colors[i + 16].r = value;
                     player->pilot->palette.colors[i + 32].r = value;
@@ -282,7 +282,7 @@ static void set_fade_value(const scene *scene) {
                 palette_load_player_colors(&player->pilot->palette, 0);
             } else {
                 load_pilot_colors(scene, 0);
-                game_player *player_2 = game_state_get_player(scene->gs, 1);
+                const game_player *player_2 = game_state_get_player(scene->gs, 1);
                 if(player_2->selectable) {
                     load_pilot_colors(scene, 1);
                 }
