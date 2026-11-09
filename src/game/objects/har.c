@@ -1827,12 +1827,12 @@ static void har_palette_transform(damage_tracker *damage, vga_palette *pal, void
     float step;
     if(h->p_fade_in_ticks_left > 0) {
         step = 1.0f - h->p_fade_in_ticks_left / (float)h->p_fade_in_ticks;
-        process_range(h, damage, pal, clamp((int)step * 255, 0, 255));
+        process_range(h, damage, pal, clamp((int)(step * 255), 0, 255));
     } else if(h->p_sustain_ticks_left > 0) {
         process_range(h, damage, pal, 255);
     } else if(h->p_fade_out_ticks_left > 0) {
         step = h->p_fade_out_ticks_left / (float)h->p_fade_out_ticks;
-        process_range(h, damage, pal, clamp((int)step * 255, 0, 255));
+        process_range(h, damage, pal, clamp((int)(step * 255), 0, 255));
     }
 }
 
