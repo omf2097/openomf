@@ -173,7 +173,15 @@ static bool play_pcm_sound(void *userdata, const int channel, const sound_source
         return false;
     }
     Mix_SetPanning(channel, pan_left, pan_right);
-    if(Mix_FadeInChannelTimed(channel, &ctx->chunks[channel], 0, fade_in_ms, -1) == -1) {
+
+    // Only use fading if it's needed. Otherwise it's overhead.
+    int result;
+    if(fade_in_ms > 0) {
+        result = Mix_FadeInChannelTimed(channel, &ctx->chunks[channel], 0, fade_in_ms, -1);
+    } else {
+        result = Mix_PlayChannel(channel, &ctx->chunks[channel], 0);
+    }
+    if(result == -1) {
         log_error("Unable to play sound: %s", Mix_GetError());
         return false;
     }
