@@ -266,14 +266,14 @@ static void set_fade_value(const scene *scene) {
                 for(int i = 0; i < 16; i++) {
                     int value = (i << 4 | i) * mult;
                     player->pilot->palette.colors[i].r = value;
-                    player->pilot->palette.colors[i+16].r = value;
-                    player->pilot->palette.colors[i+32].r = value;
+                    player->pilot->palette.colors[i + 16].r = value;
+                    player->pilot->palette.colors[i + 32].r = value;
                     player->pilot->palette.colors[i].g = value;
-                    player->pilot->palette.colors[i+16].g = value;
-                    player->pilot->palette.colors[i+32].g = value;
+                    player->pilot->palette.colors[i + 16].g = value;
+                    player->pilot->palette.colors[i + 32].g = value;
                     player->pilot->palette.colors[i].b = value;
-                    player->pilot->palette.colors[i+16].b = value;
-                    player->pilot->palette.colors[i+32].b = value;
+                    player->pilot->palette.colors[i + 16].b = value;
+                    player->pilot->palette.colors[i + 32].b = value;
                 }
                 player->pilot->palette.colors[0].r = 0;
                 player->pilot->palette.colors[0].g = 0;
@@ -380,8 +380,7 @@ static void update_har(scene *scene, int player) {
     object_set_repeat(har, 1);
     if(player2->selectable) {
         str tmp;
-        str_from_format(&tmp, "%s VS. %s", har_get_name(CURSOR_INDEX(local, 0)),
-                        har_get_name(CURSOR_INDEX(local, 1)));
+        str_from_format(&tmp, "%s VS. %s", har_get_name(CURSOR_INDEX(local, 0)), har_get_name(CURSOR_INDEX(local, 1)));
         text_set_from_str(local->har_title, &tmp);
         str_free(&tmp);
     } else {
@@ -822,7 +821,6 @@ static void render_har_select(melee_local *local, bool player2_is_selectable) {
     } else {
         object_render(&local->unselected_har_portraits);
     }
-
 
     // currently selected player
     object_render(&local->big_portrait_1);
