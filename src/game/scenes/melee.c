@@ -260,10 +260,8 @@ static void set_fade_value(const scene *scene) {
             load_pilot_portraits_palette(scene, fade_level);
             break;
         case HAR_SELECT:
-            game_player *player = game_state_get_player(scene->gs, 0);
-            game_player *player_2 = game_state_get_player(scene->gs, 1);
-
             if(local->fade_time) {
+                game_player *player = game_state_get_player(scene->gs, 0);
                 float mult = (5 - fade_level) / 10.0f;
                 for(int i = 0; i < 16; i++) {
                     int value = (i << 4 | i) * mult;
@@ -284,6 +282,7 @@ static void set_fade_value(const scene *scene) {
                 palette_load_player_colors(&player->pilot->palette, 0);
             } else {
                 load_pilot_colors(scene, 0);
+                game_player *player_2 = game_state_get_player(scene->gs, 1);
                 if(player_2->selectable) {
                     load_pilot_colors(scene, 1);
                 }
