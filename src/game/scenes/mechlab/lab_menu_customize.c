@@ -52,7 +52,7 @@ int calculate_trade_value(sd_pilot *pilot) {
         trade_value += har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[i] * stun_res_multiplier;
     }
 
-    return (int)(trade_value * 0.85);
+    return trade_value * 0.85;
 }
 
 int har_price(int har_id) {
@@ -92,7 +92,7 @@ void lab_menu_customize_arm_power(component *c, void *userdata) {
         int32_t price =
             har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[pilot->arm_power] * arm_leg_multiplier;
         if(price > 0) {
-            pilot->money += (int32_t)(price * 0.85);
+            pilot->money += price * 0.85;
             pilot->arm_power--;
             mechlab_update(s);
         }
@@ -129,7 +129,7 @@ void lab_menu_customize_leg_power(component *c, void *userdata) {
         int32_t price =
             har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[pilot->leg_power] * arm_leg_multiplier;
         if(price > 0) {
-            pilot->money += (int32_t)(price * 0.85);
+            pilot->money += price * 0.85;
             pilot->leg_power--;
             mechlab_update(s);
         }
@@ -166,7 +166,7 @@ void lab_menu_customize_arm_speed(component *c, void *userdata) {
         int32_t price =
             har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[pilot->arm_speed] * arm_leg_multiplier;
         if(price > 0) {
-            pilot->money += (int32_t)(price * 0.85);
+            pilot->money += price * 0.85;
             pilot->arm_speed--;
             mechlab_update(s);
         }
@@ -203,7 +203,7 @@ void lab_menu_customize_leg_speed(component *c, void *userdata) {
         int32_t price =
             har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[pilot->leg_speed] * arm_leg_multiplier;
         if(price > 0) {
-            pilot->money += (int32_t)(price * 0.85);
+            pilot->money += price * 0.85;
             pilot->leg_speed--;
             mechlab_update(s);
         }
@@ -239,7 +239,7 @@ void lab_menu_customize_armor(component *c, void *userdata) {
     if(mechlab_get_selling(s)) {
         int32_t price = har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[pilot->armor] * armor_multiplier;
         if(price > 0) {
-            pilot->money += (int32_t)(price * 0.85);
+            pilot->money += price * 0.85;
             pilot->armor--;
             mechlab_update(s);
         }
@@ -275,7 +275,7 @@ void lab_menu_customize_stun_resistance(component *c, void *userdata) {
         int32_t price =
             har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[pilot->stun_resistance] * stun_res_multiplier;
         if(price > 0) {
-            pilot->money += (int32_t)(price * 0.85);
+            pilot->money += price * 0.85;
             pilot->stun_resistance--;
             mechlab_update(s);
         }

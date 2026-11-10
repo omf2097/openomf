@@ -91,7 +91,7 @@ static void set_framerate_limit(gl3_context *ctx, int framerate_limit) {
     if(framerate_limit == 0) {
         ctx->framerate_limit = 0;
     } else {
-        ctx->framerate_limit = (uint64_t)((1.0 / framerate_limit) * SDL_GetPerformanceFrequency());
+        ctx->framerate_limit = (1.0 / framerate_limit) * SDL_GetPerformanceFrequency();
     }
 }
 
@@ -397,8 +397,8 @@ static inline void set_screen_viewport(const gl3_context *ctx) {
     }
 
     float move_ratio = viewport.w / NATIVE_W;
-    viewport.x += (int)(ctx->target_move_x * move_ratio); // This is used for screen shakes on x-axis
-    viewport.y += (int)(ctx->target_move_y * move_ratio); // This is used for screen shakes on y-axis
+    viewport.x += ctx->target_move_x * move_ratio; // This is used for screen shakes on x-axis
+    viewport.y += ctx->target_move_y * move_ratio; // This is used for screen shakes on y-axis
     glViewport(viewport.x, viewport.y, viewport.w, viewport.h);
 }
 
@@ -509,7 +509,7 @@ static void render_finish(void *userdata) {
         if(frame_time < ctx->framerate_limit) {
             const double wait = ctx->framerate_limit - frame_time;
             const double ms_conv = SDL_GetPerformanceFrequency() / 1000;
-            SDL_Delay((Uint32)(wait / ms_conv)); // TODO: SDL_DelayNS() or alternative.
+            SDL_Delay(wait / ms_conv); // TODO: SDL_DelayNS() or alternative.
         }
         ctx->last_tick = SDL_GetPerformanceCounter();
     }

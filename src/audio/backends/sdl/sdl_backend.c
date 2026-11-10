@@ -130,7 +130,7 @@ exit_0:
 static void set_backend_sound_volume(void *userdata, float volume) {
     assert(userdata);
     volume = clampf(volume, 0.0f, 1.0f);
-    Mix_MasterVolume((int)(volume * MIX_MAX_VOLUME));
+    Mix_MasterVolume(volume * MIX_MAX_VOLUME);
 }
 
 static void set_backend_music_volume(void *userdata, const float volume) {

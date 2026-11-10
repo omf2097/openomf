@@ -110,8 +110,8 @@ static inline vec2f vec2f_mult(vec2f a, vec2f b) {
  */
 static inline vec2i vec2f_to_i(vec2f f) {
     vec2i i;
-    i.x = (int)f.x;
-    i.y = (int)f.y;
+    i.x = f.x;
+    i.y = f.y;
     return i;
 }
 
