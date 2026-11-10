@@ -137,7 +137,7 @@ void object_scenewide_palette_transform(damage_tracker *damage, vga_palette *pal
     assert(state->pal_start_index + state->pal_entry_count <= 256);
 
     step = state->timer / (float)state->duration;
-    bp = clamp(state->pal_begin + (int)((state->pal_end - state->pal_begin) * step), 0, 255);
+    bp = clamp(state->pal_begin + (state->pal_end - state->pal_begin) * step, 0, 255);
     start = state->pal_start_index;
     end = state->pal_start_index + state->pal_entry_count;
 
@@ -182,9 +182,9 @@ void object_palette_copy_transform(damage_tracker *damage, vga_palette *pal, voi
             r = clampf((ref->r - pal->colors[w].r) * bpp, 0, 255);
             g = clampf((ref->g - pal->colors[w].g) * bpp, 0, 255);
             b = clampf((ref->b - pal->colors[w].b) * bpp, 0, 255);
-            pal->colors[pos].r = clamp((int)(r + pal->colors[w].r), 0, 255);
-            pal->colors[pos].g = clamp((int)(g + pal->colors[w].g), 0, 255);
-            pal->colors[pos].b = clamp((int)(b + pal->colors[w].b), 0, 255);
+            pal->colors[pos].r = clamp(r + pal->colors[w].r, 0, 255);
+            pal->colors[pos].g = clamp(g + pal->colors[w].g, 0, 255);
+            pal->colors[pos].b = clamp(b + pal->colors[w].b, 0, 255);
             pos++;
         }
     }
@@ -370,18 +370,18 @@ void object_render(object *obj) {
     // Position
     int x;
     int y;
-    int w = (int)(obj->cur_surface->render_w * obj->x_percent);
-    int h = (int)(obj->cur_surface->render_h * obj->y_percent);
+    int w = obj->cur_surface->render_w * obj->x_percent;
+    int h = obj->cur_surface->render_h * obj->y_percent;
 
     // Set Y coord, take into account sprite flipping
     if(rstate->flipmode & FLIP_VERTICAL) {
-        y = (int)(obj->pos.y - ((cur_sprite->pos.y - rstate->o_correction.y) * obj->y_percent) - h);
+        y = obj->pos.y - ((cur_sprite->pos.y - rstate->o_correction.y) * obj->y_percent) - h;
 
         if(obj->cur_animation->id == ANIM_JUMPING) {
             y -= JUMP_COORD_ADJUSTMENT * 2;
         }
     } else {
-        y = (int)(obj->pos.y + ((cur_sprite->pos.y + rstate->o_correction.y) * obj->y_percent));
+        y = obj->pos.y + ((cur_sprite->pos.y + rstate->o_correction.y) * obj->y_percent);
     }
 
     // Flip to face the right direction
@@ -397,16 +397,16 @@ void object_render(object *obj) {
     //   0    |     1     |   1
     //   1    |     1     |   0
     if(flip_mode & FLIP_HORIZONTAL) {
-        x = (int)(obj->pos.x - ((cur_sprite->pos.x + rstate->o_correction.x) * obj->x_percent) - w);
+        x = obj->pos.x - ((cur_sprite->pos.x + rstate->o_correction.x) * obj->x_percent) - w;
     } else {
-        x = (int)(obj->pos.x + ((cur_sprite->pos.x + rstate->o_correction.x) * obj->x_percent));
+        x = obj->pos.x + ((cur_sprite->pos.x + rstate->o_correction.x) * obj->x_percent);
     }
 
     uint8_t opacity = rstate->blend_finish;
     if(rstate->duration > 0) {
         float moment = (float)rstate->timer / (float)rstate->duration;
         float d = ((float)rstate->blend_finish - (float)rstate->blend_start) * moment;
-        opacity = clamp((int)(rstate->blend_start + d), 0, 255);
+        opacity = clamp(rstate->blend_start + d, 0, 255);
     }
 
     int remap_offset = 0;
@@ -443,10 +443,10 @@ void object_render_shadow(object *obj) {
         return;
     }
 
-    int x = (int)obj->pos.x;
+    int x = obj->pos.x;
     int y = ARENA_FLOOR;
-    int w = (int)(cur_sprite->data->render_w * obj->x_percent);
-    int h = (int)((cur_sprite->data->render_h * obj->y_percent) / 4);
+    int w = cur_sprite->data->render_w * obj->x_percent;
+    int h = (cur_sprite->data->render_h * obj->y_percent) / 4;
 
     // Determine X
     int flip_mode = obj->sprite_state.flipmode;
@@ -455,9 +455,9 @@ void object_render_shadow(object *obj) {
     }
 
     if(flip_mode & FLIP_HORIZONTAL) {
-        x += (int)-((cur_sprite->pos.x + obj->sprite_state.o_correction.x) * obj->x_percent) - w;
+        x += -((cur_sprite->pos.x + obj->sprite_state.o_correction.x) * obj->x_percent) - w;
     } else {
-        x += (int)((cur_sprite->pos.x + obj->sprite_state.o_correction.x) * obj->x_percent);
+        x += ((cur_sprite->pos.x + obj->sprite_state.o_correction.x) * obj->x_percent);
     }
 
     player_sprite_state *state = &obj->sprite_state;
@@ -465,11 +465,11 @@ void object_render_shadow(object *obj) {
     if(state->duration > 0) {
         float moment = (float)state->timer / (float)state->duration;
         float d = ((float)state->blend_finish - (float)state->blend_start) * moment;
-        opacity = clamp((int)(state->blend_start + d), 0, 255);
+        opacity = clamp(state->blend_start + d, 0, 255);
     }
 
     int correction_y = obj->sprite_state.o_correction.y + obj->o_shadow_correction;
-    y += (int)(((cur_sprite->pos.y + correction_y) * obj->y_percent) / 4);
+    y += ((cur_sprite->pos.y + correction_y) * obj->y_percent) / 4;
 
     // Draw the shadow, using the texture data to determine which remap to use (uses the first four remaps)
     video_draw_full(cur_sprite->data, x, y, w, h, -1, 1, 0, 0, opacity, flip_mode, SPRITE_SHADOW);

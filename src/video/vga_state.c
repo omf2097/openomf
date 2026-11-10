@@ -97,9 +97,9 @@ void vga_state_mul_base_palette(vga_index start, vga_index end, float multiplier
     vga_color *c;
     for(int i = start; i < end; i++) {
         c = &state.base.colors[i];
-        c->r = (unsigned char)(multiplier * c->r);
-        c->g = (unsigned char)(multiplier * c->g);
-        c->b = (unsigned char)(multiplier * c->b);
+        c->r = multiplier * c->r;
+        c->g = multiplier * c->g;
+        c->b = multiplier * c->b;
     }
     damage_add_range(&state.dmg_base, start, end);
 }

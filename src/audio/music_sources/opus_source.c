@@ -115,7 +115,7 @@ static void opus_render(void *userdata, char *stream, const int len) {
         opus_int16 *samples = (opus_int16 *)stream;
         for(int i = 0; i < len / 2; i++) {
             // Correct volume per signed 16bit sample.
-            samples[i] = (opus_int16)(samples[i] * context->volume);
+            samples[i] *= context->volume;
         }
     }
 }

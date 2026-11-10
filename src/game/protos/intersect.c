@@ -147,8 +147,8 @@ int intersect(const object *obj, const object *target, vec2i *point, bool is_har
                 sum.x += hcoords[k].x;
                 sum.y += hcoords[k].y;
             }
-            point->x = (int)((sum.x / found) + pos_b.x);
-            point->y = (int)((sum.y / found) + pos_b.y);
+            point->x = (sum.x / found) + pos_b.x;
+            point->y = (sum.y / found) + pos_b.y;
             return 1;
         }
     }
