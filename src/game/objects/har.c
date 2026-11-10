@@ -2777,6 +2777,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     float jump_multiplier = 1.0;
     float vitality_multiplier = 1.0;
     float power_multiplier = 1.0;
+    float hp_adjust;
     if(!is_tournament(obj->gs)) {
         jump_multiplier = obj->gs->match_settings.jump_height / 100.0;
         vitality_multiplier = obj->gs->match_settings.vitality / 100.0;
@@ -2787,16 +2788,19 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
         //  HAR Endurance * 3.6 * (Pilot Endurance + 16) / 23
         local->endurance_max = (af_data->endurance * 36 * (pilot->endurance_level + 16) / 23 / 10);
         local->stun_factor = 192 * (pilot->endurance_level + 30) / 25;
+        hp_adjust = 1.1f;
     } else {
         local->endurance_max = (af_data->endurance * 36 * (pilot->endurance_level + 25) / 37 / 10);
         local->endurance_max = (local->endurance_max * (pilot->stun_resistance + 2)) / 3;
         local->stun_factor = (pilot->stun_resistance + 3) * 144 * (pilot->endurance_level + 30) / 125;
+        hp_adjust = 1.5f;
     }
 
     // Health, endurance
     // HP is
-    // (HAR hp * (Pilot Endurance + 25) / 35) * 1.1
-    local->health_max = local->health = (int16_t)(((af_data->health * (pilot->endurance_level + 25) / 35) * 1.1) *
+    // (HAR hp * (Pilot Endurance + 25) / 35) * 1.1 one/two player
+    // (HAR hp * (Pilot Endurance + 25) / 35) * 1.5 tournament
+    local->health_max = local->health = (int16_t)(((af_data->health * (pilot->endurance_level + 25) / 35) * hp_adjust) *
                                                   power_multiplier * vitality_multiplier);
 
     // log_debug("HAR health is %d with pilot endurance %d and base health %d", local->health, pilot->endurance,
