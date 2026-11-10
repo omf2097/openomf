@@ -200,11 +200,11 @@ void vs_handle_action(scene *scene, int action, int source) {
                 break;
             case ACT_UP:
             case ACT_LEFT:
+                scene->gs->arena--;
+                if(scene->gs->arena < 0) {
+                    scene->gs->arena = 4;
+                }
                 if(game_state_get_player(scene->gs, 1)->selectable) {
-                    scene->gs->arena--;
-                    if(scene->gs->arena < 0) {
-                        scene->gs->arena = 4;
-                    }
                     object *arena_select = game_state_find_object(scene->gs, local->arena_select_obj_id);
                     object_select_sprite(arena_select, scene->gs->arena);
 
@@ -214,11 +214,11 @@ void vs_handle_action(scene *scene, int action, int source) {
                 break;
             case ACT_DOWN:
             case ACT_RIGHT:
+                scene->gs->arena++;
+                if(scene->gs->arena > 4) {
+                    scene->gs->arena = 0;
+                }
                 if(game_state_get_player(scene->gs, 1)->selectable) {
-                    scene->gs->arena++;
-                    if(scene->gs->arena > 4) {
-                        scene->gs->arena = 0;
-                    }
                     object *arena_select = game_state_find_object(scene->gs, local->arena_select_obj_id);
                     object_select_sprite(arena_select, scene->gs->arena);
 
