@@ -11,7 +11,6 @@
 #include "resources/languages.h"
 #include "resources/modmanager.h"
 #include "resources/resource_files.h"
-#include "resources/script_cache.h"
 #include "resources/sounds_loader.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
@@ -88,7 +87,6 @@ int engine_init(const engine_init_flags *init_flags) {
         goto exit_8;
     }
     vga_state_init();
-    script_cache_init();
 
     // Return successfully
     run = 1;
@@ -114,6 +112,26 @@ exit_1:
     video_close();
 exit_0:
     return 1;
+}
+
+static void engine_check_and_replace_game_state(game_state **_gs) {
+    game_state *old_gs = *_gs;
+    if(old_gs->new_state) {
+        // somebody wants to replace the game state
+        game_state *new_gs = old_gs->new_state;
+        *_gs = new_gs;
+        if(new_gs->clone) {
+            game_state_swap_cloneness(old_gs, new_gs);
+            game_state_clone_free(old_gs);
+            omf_free(old_gs);
+        } else {
+            game_state_free(&old_gs);
+        }
+
+        // apply palette transforms
+        game_state_palette_transform(new_gs);
+        vga_state_render();
+    }
 }
 
 void save_screenshot(const irect *r, unsigned char *data, bool flip) {
@@ -234,18 +252,8 @@ void engine_run(const engine_init_flags *init_flags) {
                         if(game_state_get_player(gs, 0)->ctrl->type == CTRL_TYPE_REC) {
                             controller_rewind(game_state_get_player(gs, 0)->ctrl);
                             controller_rewind(game_state_get_player(gs, 1)->ctrl);
-                            if(gs->new_state) {
-                                // one of the controllers wants to replace the game state
-                                game_state *old_gs = gs;
-                                game_state *new_gs = gs->new_state;
-                                gs = new_gs;
-                                game_state_clone_free(old_gs);
-                                omf_free(old_gs);
-
-                                // apply palette transforms
-                                game_state_palette_transform(gs);
-                                vga_state_render();
-                            }
+                            // check if we need to replace the game state
+                            engine_check_and_replace_game_state(&gs);
                             visual_debugger = 1;
                         }
                     }
@@ -356,15 +364,7 @@ void engine_run(const engine_init_flags *init_flags) {
             if(has_static) {
                 game_state_static_tick(gs, false);
                 // check if we need to replace the game state
-                if(gs->new_state) {
-                    // one of the controllers wants to replace the game state
-                    game_state *old_gs = gs;
-                    game_state *new_gs = gs->new_state;
-                    gs = new_gs;
-                    // gs->new_state = NULL;
-                    game_state_clone_free(old_gs);
-                    omf_free(old_gs);
-                }
+                engine_check_and_replace_game_state(&gs);
                 console_tick(gs);
                 osd_tick();
                 static_wait -= STATIC_TICKS;
@@ -376,6 +376,8 @@ void engine_run(const engine_init_flags *init_flags) {
             has_dynamic = dynamic_wait > dyntick_ms;
             if(has_dynamic) {
                 game_state_dynamic_tick(gs, false);
+                // check if we need to replace the game state
+                engine_check_and_replace_game_state(&gs);
                 dynamic_wait -= dyntick_ms;
                 if(gs->delay > 0) {
                     log_debug("applying delay %d", gs->delay);
@@ -417,7 +419,6 @@ void engine_run(const engine_init_flags *init_flags) {
 }
 
 void engine_close(void) {
-    script_cache_close();
     osd_close();
     console_close();
     altpals_close();
