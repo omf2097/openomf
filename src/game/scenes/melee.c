@@ -482,18 +482,18 @@ void handle_action(scene *scene, int player, int action) {
                 if(local->page == PILOT_SELECT) {
                     local->page = HAR_SELECT;
                     update_har(scene, 0);
-                    update_har(scene, 1);
                     local->pilot_id_a = CURSOR_INDEX(local, 0);
-                    local->pilot_id_b = CURSOR_INDEX(local, 1);
 
                     // prepare for nova selection cheat
                     memset(local->cheat_selected, 0, sizeof(local->cheat_selected));
                     local->cheat_selected[0][local->pilot_id_a] = 1;
-                    local->cheat_selected[1][local->pilot_id_b] = 1;
 
                     load_pilot_colors(scene, 0);
 
                     if(player2->selectable) {
+                        update_har(scene, 1);
+                        local->pilot_id_b = CURSOR_INDEX(local, 1);
+                        local->cheat_selected[1][local->pilot_id_b] = 1;
                         load_pilot_colors(scene, 1);
                     }
                 } else {
