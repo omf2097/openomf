@@ -2816,9 +2816,10 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     // Insanius: there's a value labeled here horizontal_agility_modifier which is  (Agility + 35) / 45 (edited)
     // Insanius: And vertical_agility_modifier which is (Agility + 20) / 30 (edited)
     // Insanius: I suspect these labels may not be accurate but we'll see
-    // Insanius: I went ahead and changed the formulas to use division instead of multiplication since it's more precise
-    // for us Insanius: jump speed = speed up * vertical_agility_modifier * 212 / 256 Insanius: superjump speed = speed
-    // up * vertical_agility_modifier * 266 / 256
+    // Insanius: I went ahead and changed the formulas to use division instead of multiplication since it's more
+    // precise for us
+    // Insanius: jump speed = speed up * vertical_agility_modifier * 216 / 256
+    // Insanius: superjump speed = speed up * vertical_agility_modifier * 266 / 256
     float horizontal_agility_modifier = ((float)gp->pilot->agility + 35) / 45;
     float vertical_agility_modifier = ((float)gp->pilot->agility + 20) / 30;
     obj->horizontal_velocity_modifier = horizontal_agility_modifier;
