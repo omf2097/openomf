@@ -10,7 +10,7 @@ Required:
 * Enet: http://enet.bespin.org/
 * libpng: http://www.libpng.org/pub/png/libpng.html
 * zlib: http://www.zlib.net/ (for libpng)
-* SDL2_Mixer (>=2.0.4): https://github.com/libsdl-org/SDL_mixer
+* SDL2_Mixer (>=2.6.0): https://github.com/libsdl-org/SDL_mixer
 * libxmp: https://github.com/cmatsuoka/libxmp
 * opusfile: https://github.com/xiph/opusfile
 

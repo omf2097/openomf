@@ -21,7 +21,7 @@ endif()
 
 if(OMF_USE_SDL_AUDIO_DRIVER)
     add_library(openomf::SDL2_mixer INTERFACE IMPORTED)
-    find_package(SDL2_mixer CONFIG REQUIRED)
+    find_package(SDL2_mixer 2.6.0 CONFIG REQUIRED)
     target_link_libraries(openomf::SDL2_mixer INTERFACE "$<IF:$<TARGET_EXISTS:SDL2_mixer::SDL2_mixer>,SDL2_mixer::SDL2_mixer,SDL2_mixer::SDL2_mixer-static>")
 endif()
 
