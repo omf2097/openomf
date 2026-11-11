@@ -12,10 +12,8 @@
 void test_log_channels_single(void) {
     log_channel_filter ai = log_channels_from_string("ai");
     log_channel_filter rec = log_channels_from_string("rec");
-    CU_ASSERT_TRUE(ai.active);
     CU_ASSERT_TRUE(ai.enabled[LOG_CHANNEL_AI]);
     CU_ASSERT_FALSE(ai.enabled[LOG_CHANNEL_REC]);
-    CU_ASSERT_TRUE(rec.active);
     CU_ASSERT_TRUE(rec.enabled[LOG_CHANNEL_REC]);
     CU_ASSERT_FALSE(rec.enabled[LOG_CHANNEL_AI]);
 }
@@ -35,12 +33,11 @@ void test_log_channels_comma_only(void) {
     log_channel_filter padded = log_channels_from_string(" rec ");
     CU_ASSERT_TRUE(spaced.enabled[LOG_CHANNEL_AI]);
     CU_ASSERT_FALSE(spaced.enabled[LOG_CHANNEL_REC]);
-    CU_ASSERT_FALSE(padded.active);
+    CU_ASSERT_FALSE(padded.enabled[LOG_CHANNEL_REC]);
 }
 
 void test_log_channels_group(void) {
     log_channel_filter grouped = log_channels_from_string("ai,rec,ai");
-    CU_ASSERT_TRUE(grouped.active);
     CU_ASSERT_TRUE(grouped.enabled[LOG_CHANNEL_AI]);
     CU_ASSERT_TRUE(grouped.enabled[LOG_CHANNEL_REC]);
 }
@@ -48,17 +45,16 @@ void test_log_channels_group(void) {
 void test_log_channels_empty(void) {
     log_channel_filter empty = log_channels_from_string("");
     log_channel_filter whitespace = log_channels_from_string(" , \t ");
-    CU_ASSERT_FALSE(empty.active);
-    CU_ASSERT_FALSE(whitespace.active);
+    CU_ASSERT_FALSE(empty.enabled[LOG_CHANNEL_AI] || empty.enabled[LOG_CHANNEL_REC]);
+    CU_ASSERT_FALSE(whitespace.enabled[LOG_CHANNEL_AI] || whitespace.enabled[LOG_CHANNEL_REC]);
 }
 
 void test_log_channels_unknown_tokens_ignored(void) {
     log_channel_filter mixed = log_channels_from_string("typo,rec");
     log_channel_filter unknown = log_channels_from_string("typo");
-    CU_ASSERT_TRUE(mixed.active);
     CU_ASSERT_TRUE(mixed.enabled[LOG_CHANNEL_REC]);
     CU_ASSERT_FALSE(mixed.enabled[LOG_CHANNEL_AI]);
-    CU_ASSERT_FALSE(unknown.active);
+    CU_ASSERT_FALSE(unknown.enabled[LOG_CHANNEL_AI] || unknown.enabled[LOG_CHANNEL_REC]);
 }
 
 void test_log_channel_values_are_distinct(void) {

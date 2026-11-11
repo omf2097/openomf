@@ -62,6 +62,10 @@ void log_init(void) {
     state->level = LOG_DEBUG;
     state->colors = false;
     state->target_count = 0;
+    // Until a filter is set, all channels are enabled.
+    for(int i = 0; i < LOG_CHANNEL_COUNT; i++) {
+        state->channel_filter.enabled[i] = true;
+    }
 }
 
 log_level log_level_text_to_enum(const char *level, log_level default_value) {
@@ -131,7 +135,6 @@ log_channel_filter log_channels_from_string(const char *modules) {
         for(log_channel i = LOG_CHANNEL_AI; i < LOG_CHANNEL_COUNT; i++) {
             if(str_equal_c(token, channel_names[i])) {
                 result.enabled[i] = true;
-                result.active = true;
                 recognized = true;
             }
         }
@@ -198,7 +201,7 @@ static void log_vmsg_channel(log_channel module, log_level level, const char *fm
         return;
     }
     // Channel filtering only applies to tagged messages.
-    if(module != LOG_CHANNEL_NONE && state->channel_filter.active && !state->channel_filter.enabled[module]) {
+    if(module != LOG_CHANNEL_NONE && !state->channel_filter.enabled[module]) {
         return;
     }
 

@@ -43,9 +43,8 @@ typedef enum log_channel
     LOG_CHANNEL_COUNT     ///< Number of channel values; not a message channel.
 } log_channel;
 
-/** An inactive filter accepts all tagged channels. */
+/** Per-channel enable flags. All channels are enabled until a filter is set. */
 typedef struct log_channel_filter {
-    bool active;
     bool enabled[LOG_CHANNEL_COUNT];
 } log_channel_filter;
 
@@ -103,7 +102,7 @@ typedef struct log_channel_filter {
 
 /**
  * @brief Set the active channel filter.
- * @param filter Enabled channels; inactive means all tagged channels.
+ * @param filter Enabled channels.
  */
 void log_set_channel_filter(log_channel_filter filter);
 
