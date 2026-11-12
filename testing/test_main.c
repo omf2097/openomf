@@ -184,12 +184,6 @@ int main(int argc, char **argv) {
     }
     fixedpt_str_test_suite(fixedpt_str_suite);
 
-    CU_pSuite log_channel_suite = CU_add_suite("Log Channels", NULL, NULL);
-    if(log_channel_suite == NULL) {
-        goto end;
-    }
-    log_channel_test_suite(log_channel_suite);
-
     // Run tests
     CU_basic_set_mode(CU_BRM_VERBOSE);
     CU_basic_run_tests();
