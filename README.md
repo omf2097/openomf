@@ -49,10 +49,10 @@ Logging channels
 When running a local build, you can limit log output to specific channels by listing the individual channel names you want, separated by commas:
 
 ```bash
-./openomf --log-level DEBUG --log-channels ai,rec
+./openomf --log-trace ai,rec
 ```
 
-If `--log-channels` is omitted, all channels are enabled.
+If `--log-trace` is omitted, no channel is enabled.
 
 | Channel | Description |
 | --- | --- |

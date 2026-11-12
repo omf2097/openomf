@@ -13,7 +13,7 @@
 #include "utils/vector.h"
 
 #define MAX_TARGETS 3
-#define LOG_LEVELS 4
+#define LOG_LEVELS 5
 
 static char last_error[256];
 
@@ -35,23 +35,16 @@ typedef struct log_state {
 } log_state;
 
 static const char *level_names[] = {
-    "DEBUG",
-    "INFO",
-    "WARN",
-    "ERROR",
+    "TRACE", "DEBUG", "INFO", "WARN", "ERROR",
 };
 
 static const char *level_colors[] = {
-    "\x1b[36m",
-    "\x1b[32m",
-    "\x1b[33m",
-    "\x1b[31m",
+    "\x1b[90m", "\x1b[36m", "\x1b[32m", "\x1b[33m", "\x1b[31m",
 };
 
-static const char *channel_names[LOG_CHANNEL_COUNT] = {
-    [LOG_CHANNEL_AI] = "ai",           [LOG_CHANNEL_REC] = "rec",
-    [LOG_CHANNEL_NETWORK] = "network", [LOG_CHANNEL_GAMEPLAY] = "gameplay",
-    [LOG_CHANNEL_VIDEO] = "video",     [LOG_CHANNEL_AUDIO] = "audio",
+static const char *channel_names[TRACE_COUNT] = {
+    [TRACE_AI] = "ai",       [TRACE_REC] = "rec",     [TRACE_NETWORK] = "network", [TRACE_GAMEPLAY] = "gameplay",
+    [TRACE_VIDEO] = "video", [TRACE_AUDIO] = "audio",
 };
 
 static log_state *state = NULL;
@@ -62,10 +55,6 @@ void log_init(void) {
     state->level = LOG_DEBUG;
     state->colors = false;
     state->target_count = 0;
-    // Until a filter is set, all channels are enabled.
-    for(int i = 0; i < LOG_CHANNEL_COUNT; i++) {
-        state->channel_filter.enabled[i] = true;
-    }
 }
 
 log_level log_level_text_to_enum(const char *level, log_level default_value) {
@@ -132,7 +121,7 @@ log_channel_filter log_channels_from_string(const char *modules) {
     str *token;
     foreach(it, token) {
         bool recognized = false;
-        for(log_channel i = LOG_CHANNEL_AI; i < LOG_CHANNEL_COUNT; i++) {
+        for(trace_channel i = TRACE_AI; i < TRACE_COUNT; i++) {
             if(str_equal_c(token, channel_names[i])) {
                 result.enabled[i] = true;
                 recognized = true;
@@ -149,10 +138,10 @@ log_channel_filter log_channels_from_string(const char *modules) {
 }
 
 // Format the message channel, not the active filter.
-// Example: " [ai]"; empty for LOG_CHANNEL_NONE.
-static void format_channel_tag(log_channel module, char *buf, size_t len) {
+// Example: " [ai]"; empty for TRACE_NONE.
+static void format_channel_tag(trace_channel module, char *buf, size_t len) {
     buf[0] = '\0';
-    if(module <= LOG_CHANNEL_NONE || module >= LOG_CHANNEL_COUNT) {
+    if(module <= TRACE_NONE || module >= TRACE_COUNT) {
         return;
     }
 
@@ -188,20 +177,23 @@ static void format_timestamp(char *buffer, size_t len) {
     buffer[len - 1] = '\0';
 }
 
+static inline bool drop_log(trace_channel module, log_level level, log_level threshold) {
+    if(module != TRACE_NONE && state->channel_filter.enabled[module]) {
+        return false;
+    }
+    return level < state->level;
+}
+
 ATTR_FORMAT_PRINTF(3, 0)
-static void log_vmsg_channel(log_channel module, log_level level, const char *fmt, va_list args) {
+static void log_vmsg_channel(trace_channel module, log_level level, const char *fmt, va_list args) {
     assert(state != NULL);
-    assert(module >= LOG_CHANNEL_NONE && module < LOG_CHANNEL_COUNT);
+    assert(module >= TRACE_NONE && module < TRACE_COUNT);
     char dt[16];
     char module_tag[64];
     const char *color = level_colors[level];
     const char *name = level_names[level];
 
-    if(level < state->level) {
-        return;
-    }
-    // Channel filtering only applies to tagged messages.
-    if(module != LOG_CHANNEL_NONE && !state->channel_filter.enabled[module]) {
+    if(drop_log(module, level, state->level)) {
         return;
     }
 
@@ -209,7 +201,7 @@ static void log_vmsg_channel(log_channel module, log_level level, const char *fm
     format_channel_tag(module, module_tag, sizeof(module_tag));
     for(int i = 0; i < state->target_count; i++) {
         const log_target *target = &state->targets[i];
-        if(level < target->level) {
+        if(drop_log(module, level, target->level)) {
             continue;
         }
         if(SDL_LockMutex(target->lock) != 0) {
@@ -243,15 +235,15 @@ void log_msg(log_level level, const char *fmt, ...) {
     assert(state != NULL);
     va_list args;
     va_start(args, fmt);
-    log_vmsg_channel(LOG_CHANNEL_NONE, level, fmt, args);
+    log_vmsg_channel(TRACE_NONE, level, fmt, args);
     va_end(args);
 }
 
-void log_msg_channel(log_channel module, log_level level, const char *fmt, ...) {
+void log_trace(trace_channel module, const char *fmt, ...) {
     assert(state != NULL);
     va_list args;
     va_start(args, fmt);
-    log_vmsg_channel(module, level, fmt, args);
+    log_vmsg_channel(module, LOG_TRACE, fmt, args);
     va_end(args);
 }
 
