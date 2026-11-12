@@ -80,27 +80,6 @@ typedef struct log_channel_filter {
 #define log_debug_channel(channel, ...) log_msg_channel((channel), LOG_DEBUG, __VA_ARGS__)
 
 /**
- * @brief Log an informational message tagged with a channel.
- * @param channel Channel to tag the message with.
- * @param ... Printf-style format string and arguments
- */
-#define log_info_channel(channel, ...) log_msg_channel((channel), LOG_INFO, __VA_ARGS__)
-
-/**
- * @brief Log a warning message tagged with a channel.
- * @param channel Channel to tag the message with.
- * @param ... Printf-style format string and arguments
- */
-#define log_warn_channel(channel, ...) log_msg_channel((channel), LOG_WARN, __VA_ARGS__)
-
-/**
- * @brief Log an error message tagged with a channel.
- * @param channel Channel to tag the message with.
- * @param ... Printf-style format string and arguments
- */
-#define log_error_channel(channel, ...) log_msg_channel((channel), LOG_ERROR, __VA_ARGS__)
-
-/**
  * @brief Set the active channel filter.
  * @param filter Enabled channels.
  */
@@ -116,7 +95,7 @@ log_channel_filter log_channels_from_string(const char *channels);
 
 /**
  * @brief Log a message at the specified level, tagged with a channel.
- * @details Prefer using the log_debug_channel/info_channel/warn_channel/error_channel macros instead.
+ * @details Prefer using the log_debug_channel macro instead.
  * @param channel Channel to tag the message with.
  * @param level Severity level
  * @param fmt Printf-style format string
