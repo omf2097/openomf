@@ -22,30 +22,31 @@
  */
 typedef enum log_level
 {
+    LOG_TRACE, ///< Detailed trace
     LOG_DEBUG, ///< Debug messages for development
     LOG_INFO,  ///< Informational messages
     LOG_WARN,  ///< Warning messages
-    LOG_ERROR  ///< Error messages
+    LOG_ERROR, ///< Error messages
 } log_level;
 
 /**
  * @brief Channel attached to a log message.
  */
-typedef enum log_channel
+typedef enum trace_channel
 {
-    LOG_CHANNEL_NONE = 0,
-    LOG_CHANNEL_AI,       ///< AI state transitions, decisions, and intent flow.
-    LOG_CHANNEL_REC,      ///< REC playback/recording controller events.
-    LOG_CHANNEL_NETWORK,  ///< Reserved placeholder for networking/logging during future migration.
-    LOG_CHANNEL_GAMEPLAY, ///< Reserved placeholder for gameplay systems and world simulation logs.
-    LOG_CHANNEL_VIDEO,    ///< Reserved placeholder for rendering and video pipeline diagnostics.
-    LOG_CHANNEL_AUDIO,    ///< Reserved placeholder for audio system diagnostics.
-    LOG_CHANNEL_COUNT     ///< Number of channel values; not a message channel.
-} log_channel;
+    TRACE_NONE = 0,
+    TRACE_AI,       ///< AI state transitions, decisions, and intent flow.
+    TRACE_REC,      ///< REC playback/recording controller events.
+    TRACE_NETWORK,  ///< Reserved placeholder for networking/logging during future migration.
+    TRACE_GAMEPLAY, ///< Reserved placeholder for gameplay systems and world simulation logs.
+    TRACE_VIDEO,    ///< Reserved placeholder for rendering and video pipeline diagnostics.
+    TRACE_AUDIO,    ///< Reserved placeholder for audio system diagnostics.
+    TRACE_COUNT,    ///< Number of channel values; not a message channel.
+} trace_channel;
 
 /** Per-channel enable flags. All channels are enabled until a filter is set. */
 typedef struct log_channel_filter {
-    bool enabled[LOG_CHANNEL_COUNT];
+    bool enabled[TRACE_COUNT];
 } log_channel_filter;
 
 /**
@@ -73,34 +74,6 @@ typedef struct log_channel_filter {
 #define log_error(...) log_msg(LOG_ERROR, __VA_ARGS__)
 
 /**
- * @brief Log a debug message tagged with a channel.
- * @param channel Channel to tag the message with.
- * @param ... Printf-style format string and arguments
- */
-#define log_debug_channel(channel, ...) log_msg_channel((channel), LOG_DEBUG, __VA_ARGS__)
-
-/**
- * @brief Log an informational message tagged with a channel.
- * @param channel Channel to tag the message with.
- * @param ... Printf-style format string and arguments
- */
-#define log_info_channel(channel, ...) log_msg_channel((channel), LOG_INFO, __VA_ARGS__)
-
-/**
- * @brief Log a warning message tagged with a channel.
- * @param channel Channel to tag the message with.
- * @param ... Printf-style format string and arguments
- */
-#define log_warn_channel(channel, ...) log_msg_channel((channel), LOG_WARN, __VA_ARGS__)
-
-/**
- * @brief Log an error message tagged with a channel.
- * @param channel Channel to tag the message with.
- * @param ... Printf-style format string and arguments
- */
-#define log_error_channel(channel, ...) log_msg_channel((channel), LOG_ERROR, __VA_ARGS__)
-
-/**
  * @brief Set the active channel filter.
  * @param filter Enabled channels.
  */
@@ -115,14 +88,12 @@ void log_set_channel_filter(log_channel_filter filter);
 log_channel_filter log_channels_from_string(const char *channels);
 
 /**
- * @brief Log a message at the specified level, tagged with a channel.
- * @details Prefer using the log_debug_channel/info_channel/warn_channel/error_channel macros instead.
+ * @brief Log a trace tagged with a channel.
  * @param channel Channel to tag the message with.
- * @param level Severity level
  * @param fmt Printf-style format string
  * @param ... Format arguments
  */
-void log_msg_channel(log_channel channel, log_level level, const char *fmt, ...) ATTR_FORMAT_PRINTF(3, 4);
+void log_trace(trace_channel channel, const char *fmt, ...) ATTR_FORMAT_PRINTF(2, 3);
 
 /**
  * @brief Initialize the logging system.
