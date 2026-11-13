@@ -240,7 +240,7 @@ static void load_pilot_colors(const scene *scene, int player_id) {
 static void create_grayscale_har_colors(const scene *scene) {
     const game_player *player = game_state_get_player(scene->gs, 0);
     for(int i = 0; i < 16; i++) {
-        const int value = (i << 4 | i) / 2;
+        const int value = i << 3 | i >> 1;
         player->pilot->palette.colors[i].r = value;
         player->pilot->palette.colors[i + 16].r = value;
         player->pilot->palette.colors[i + 32].r = value;
