@@ -180,16 +180,15 @@ static void set_cursor_colors(int a_ticks, int b_ticks, bool a_done, bool b_done
     vga_state_set_base_palette_index(VIOLET_CURSOR_INDEX, &violet_cursor_color);
 }
 
-static void load_pilot_portraits_palette(const scene *scene, int level) {
+static void load_pilot_portraits_palette(const scene *scene) {
     vga_palette *bk_pal = bk_get_palette(scene->bk_data, 0);
     // copy and dim for unselected pilot portraits
-    float mult = (4.0 - level) / 8.0;
     for(uint8_t idx = 0x01; idx < 0x60; idx++) {
         uint8_t src_idx = idx + 0xA0;
         vga_color src = bk_pal->colors[src_idx];
-        src.r = (int)(src.r * mult);
-        src.g = (int)(src.g * mult);
-        src.b = (int)(src.b * mult);
+        src.r /= 2;
+        src.g /= 2;
+        src.b /= 2;
         bk_pal->colors[idx] = src;
     }
     vga_state_set_base_palette_from_range(bk_pal, 0x00, 0x00, 0x60);
@@ -238,15 +237,40 @@ static void load_pilot_colors(const scene *scene, int player_id) {
     palette_load_player_colors(&player->pilot->palette, player_id);
 }
 
+static void create_grayscale_har_colors(const scene *scene) {
+    const game_player *player = game_state_get_player(scene->gs, 0);
+    for(int i = 0; i < 16; i++) {
+        const int value = (i << 4 | i) / 2;
+        player->pilot->palette.colors[i].r = value;
+        player->pilot->palette.colors[i + 16].r = value;
+        player->pilot->palette.colors[i + 32].r = value;
+        player->pilot->palette.colors[i].g = value;
+        player->pilot->palette.colors[i + 16].g = value;
+        player->pilot->palette.colors[i + 32].g = value;
+        player->pilot->palette.colors[i].b = value;
+        player->pilot->palette.colors[i + 16].b = value;
+        player->pilot->palette.colors[i + 32].b = value;
+    }
+    player->pilot->palette.colors[0].r = 0;
+    player->pilot->palette.colors[0].g = 0;
+    player->pilot->palette.colors[0].b = 0;
+
+    palette_load_player_colors(&player->pilot->palette, 0);
+}
+
 static void start_page_transition(const scene *scene, selection_page page) {
     melee_local *local = scene_get_userdata(scene);
 
     local->next_page = page;
     local->fade_time = FADE_TIME;
+
+    if(local->page == HAR_SELECT) {
+        create_grayscale_har_colors(scene);
+    }
 }
 
-static void set_fade_value(const scene *scene) {
-    melee_local *local = scene_get_userdata(scene);
+static void character_select_fade_transform(damage_tracker *damage, vga_palette *pal, void *userdata) {
+    melee_local *local = userdata;
 
     int fade_level;
     if(local->fade_time < FADE_TIME / 2) {
@@ -255,45 +279,23 @@ static void set_fade_value(const scene *scene) {
         fade_level = (FADE_TIME - local->fade_time) * 8 / FADE_TIME; // Should be 0-4
     }
 
-    switch(local->page) {
-        case PILOT_SELECT:
-            load_pilot_portraits_palette(scene, fade_level);
-            break;
-        case HAR_SELECT:
-            if(local->fade_time) {
-                const game_player *player = game_state_get_player(scene->gs, 0);
-                const float mult = (5 - fade_level) / 10.0f;
-                for(int i = 0; i < 16; i++) {
-                    const int value = (int)((i << 4 | i) * mult);
-                    player->pilot->palette.colors[i].r = value;
-                    player->pilot->palette.colors[i + 16].r = value;
-                    player->pilot->palette.colors[i + 32].r = value;
-                    player->pilot->palette.colors[i].g = value;
-                    player->pilot->palette.colors[i + 16].g = value;
-                    player->pilot->palette.colors[i + 32].g = value;
-                    player->pilot->palette.colors[i].b = value;
-                    player->pilot->palette.colors[i + 16].b = value;
-                    player->pilot->palette.colors[i + 32].b = value;
-                }
-                player->pilot->palette.colors[0].r = 0;
-                player->pilot->palette.colors[0].g = 0;
-                player->pilot->palette.colors[0].b = 0;
+    vga_palette_darken(pal, 63 * fade_level, 0, 0x60);
 
-                palette_load_player_colors(&player->pilot->palette, 0);
-            } else {
-                load_pilot_colors(scene, 0);
-                const game_player *player_2 = game_state_get_player(scene->gs, 1);
-                if(player_2->selectable) {
-                    load_pilot_colors(scene, 1);
-                }
-            }
-            break;
-    }
+    damage_add_range(damage, 0, 0x60);
 }
 
 static void finish_page_transition(scene *scene) {
     melee_local *local = scene_get_userdata(scene);
     local->page = local->next_page;
+
+    switch(local->page) {
+        case PILOT_SELECT:
+            load_pilot_portraits_palette(scene);
+            break;
+        case HAR_SELECT:
+            create_grayscale_har_colors(scene);
+            break;
+    }
 }
 
 static void melee_tick(scene *scene, int paused) {
@@ -341,9 +343,15 @@ static void melee_tick(scene *scene, int paused) {
         local->fade_time--;
         if(local->fade_time == FADE_TIME / 2) {
             finish_page_transition(scene);
+        } else if(local->fade_time == 0 && local->page == HAR_SELECT) {
+            load_pilot_colors(scene, 0);
+            const game_player *player_2 = game_state_get_player(scene->gs, 1);
+            if(player_2->selectable) {
+                load_pilot_colors(scene, 1);
+            }
         }
+        vga_state_enable_palette_transform(character_select_fade_transform, local);
     }
-    set_fade_value(scene);
 }
 
 static uint8_t *get_pilot_stat(sd_pilot *p, int stat) {
@@ -996,6 +1004,8 @@ int melee_create(scene *scene) {
         local->pilot_id_a = PILOT_CRYSTAL;
         local->pilot_id_b = PILOT_SHIRRO;
         restore_cursors_to(local, local->pilot_id_a, local->pilot_id_b);
+
+        load_pilot_portraits_palette(scene);
     }
 
     controller *player1_ctrl = game_player_get_ctrl(player1);

@@ -61,12 +61,22 @@ void vga_palette_tint_range(vga_palette *pal, vga_index ref_index, vga_index sta
 void vga_palette_mix_range(vga_palette *pal, vga_index ref_index, vga_index start, vga_index end, uint8_t step);
 
 /**
- * Darken each palette color.
+ * Convenience function for vga_palette_darken
  *
  * @param pal Palette to operate on
  * @param step How much to darken (0 - 255).
  */
-void vga_palette_darken(vga_palette *pal, uint8_t step);
+void vga_palette_darken_all(vga_palette *pal, uint8_t step);
+
+/**
+ * Darken palette colors in a range.
+ *
+ * @param pal Palette to operate on
+ * @param step How much to darken (0 - 255).
+ * @param start Index to start darkening (inclusive)
+ * @param end Index to end darkening (exclusive)
+ */
+void vga_palette_darken(vga_palette *pal, uint8_t step, vga_index start, vga_index end);
 
 /**
  * Mix palette with a target shade of gray.
