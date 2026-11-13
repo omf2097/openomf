@@ -1223,7 +1223,7 @@ static void arena_crossfade_transform(damage_tracker *damage, vga_palette *pal, 
     int progress = abs(local->state_ticks - target_tick);
     int darken = 255 - progress * 255 / ARENA_CROSSFADE_TICKS;
 
-    vga_palette_darken(pal, darken);
+    vga_palette_darken_all(pal, darken);
 
     damage_set_all(damage);
 }

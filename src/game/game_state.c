@@ -584,7 +584,7 @@ void cross_fade_transform(damage_tracker *damage, vga_palette *pal, void *userda
     }
 
     // Set palette darkness value.
-    vga_palette_darken(pal, darkness);
+    vga_palette_darken_all(pal, darkness);
 
     damage_set_all(damage);
 }
