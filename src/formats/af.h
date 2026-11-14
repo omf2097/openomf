@@ -13,6 +13,7 @@
 
 #include "formats/move.h"
 #include "utils/array.h"
+#include "utils/fixedpt.h"
 #include <stdint.h>
 
 #define MAX_AF_MOVES 70 ///< Maximum amount of moves for a HAR
@@ -29,7 +30,7 @@ typedef struct {
     uint16_t health;                   ///< HAR Health
     float forward_speed;               ///< HAR fwd speed
     float reverse_speed;               ///< HAR bwd speed
-    float jump_speed;                  ///< HAR jump speed
+    fixedpt jump_speed;                ///< HAR jump speed
     float fall_speed;                  ///< HAR fall speed
     uint8_t version_1;                 ///< Version value
     uint8_t ai_projectile_y_threshold; ///< AI projectile Y threshold for high/low classification.

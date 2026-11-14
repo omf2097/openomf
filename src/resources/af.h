@@ -4,6 +4,7 @@
 #include "resources/af_move.h"
 #include "utils/allocator.h"
 #include "utils/array.h"
+#include "utils/fixedpt.h"
 
 typedef struct af_t {
     unsigned int id;
@@ -11,7 +12,7 @@ typedef struct af_t {
     unsigned int health;
     float forward_speed;
     float reverse_speed;
-    float jump_speed;
+    fixedpt jump_speed;
     float fall_speed;
     array sprites;
     array moves;

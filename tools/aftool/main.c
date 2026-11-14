@@ -533,7 +533,7 @@ void af_get_key(sd_af_file *af, const char **key, int kcount) {
             printf("%f\n", af->reverse_speed);
             break;
         case 7:
-            printf("%f\n", af->jump_speed);
+            printf("%d\n", af->jump_speed);
             break;
         case 8:
             printf("%f\n", af->fall_speed);
@@ -586,7 +586,7 @@ void af_set_key(sd_af_file *af, const char **key, int kcount, const char *value)
             af->reverse_speed = conv_float(value);
             break;
         case 7:
-            af->jump_speed = conv_float(value);
+            af->jump_speed = conv_dword(value);
             break;
         case 8:
             af->fall_speed = conv_float(value);
@@ -639,7 +639,7 @@ void af_info(sd_af_file *af) {
     printf(" * Health:           %d\n", af->health);
     printf(" * Fwd speed:        %f\n", af->forward_speed);
     printf(" * Rev speed:        %f\n", af->reverse_speed);
-    printf(" * Jump speed:       %f\n", af->jump_speed);
+    printf(" * Jump speed:       %d\n", af->jump_speed);
     printf(" * Fall speed:       %f\n", af->fall_speed);
     printf(" * Version 1:        %d\n", af->version_1);
 

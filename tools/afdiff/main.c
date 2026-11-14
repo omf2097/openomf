@@ -56,7 +56,7 @@ int base_info_diff(sd_af_file *a, sd_af_file *b) {
     d_found |= int_diff(" * Health", VNAME(health));
     d_found |= float_diff(" * Fwd speed", VNAME(forward_speed));
     d_found |= float_diff(" * Rev speed", VNAME(reverse_speed));
-    d_found |= float_diff(" * Jump speed", VNAME(jump_speed));
+    d_found |= int_diff(" * Jump speed", VNAME(jump_speed));
     d_found |= float_diff(" * Fall speed", VNAME(fall_speed));
     d_found |= int_diff(" * Version 1", VNAME(version_1));
     d_found |= int_diff(" * AI projectile Y threshold", VNAME(ai_projectile_y_threshold));
