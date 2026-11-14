@@ -564,7 +564,7 @@ void console_init_cmd(void) {
     console_add_cmd("rein", &console_cmd_rein, "R-E-I-N!");
     console_add_cmd("god", &console_cmd_god, "Enable god mode");
     console_add_cmd("kreissack", &console_kreissack, "Fight Kreissack");
-    console_add_cmd("ez-destruct", &console_cmd_ez_destruct, "Punch = destruction, kick = scrap");
+    console_add_cmd("ez-destruct", &console_cmd_ez_destruct, "Punch or kick to activate destruct sequences");
     console_add_cmd("warp", &console_toggle_warp, "Toggle warp speed");
     console_add_cmd("money", &console_cmd_money, "Set tournament mode money");
     console_add_cmd("rank", &console_cmd_rank, "Set tournament mode rank");

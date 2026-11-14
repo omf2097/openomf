@@ -2247,8 +2247,10 @@ af_move *match_move_prefix(object *obj, char prefix, char *inputs) {
     for(int i = ANIM_SCREW + 1; i < 70; i++) {
         if((move = af_get_move(h->af_data, i))) {
             len = str_size(&move->move_string);
-            if(str_at(&move->move_string, 0) == prefix &&
-               (len == 1 || !strncmp(str_c(&move->move_string) + 1, inputs, len - 1))) {
+            if((str_at(&move->move_string, 0) == prefix &&
+                (len == 1 || !strncmp(str_c(&move->move_string) + 1, inputs, len - 1))) ||
+               (game_state_get_player(obj->gs, h->player_id)->ez_destruct &&
+                (h->state == STATE_VICTORY || h->state == STATE_SCRAP))) {
                 if(is_move_chain_allowed(obj, move)) {
                     if(str_size(&move->move_string) > 1) {
                         // matched a move that was not just a 5P or 5K
@@ -2277,27 +2279,6 @@ af_move *match_move(object *obj, char *inputs) {
         h->kick_valid = 0;
     }
     return move;
-}
-
-af_move *scrap_destruction_cheat(object *obj) {
-    har *h = object_get_userdata(obj);
-    for(int i = 0; i < 70; i++) {
-        af_move *move;
-        if((move = af_get_move(h->af_data, i))) {
-            if(move->category == CAT_SCRAP && h->state == STATE_VICTORY && h->kick_valid &&
-               (player_frame_isset(obj, TAG_JF) ||
-                (player_frame_isset(obj, TAG_JN) && i == player_frame_get(obj, TAG_JN)))) {
-                return move;
-            }
-
-            if(move->category == CAT_DESTRUCTION && h->state == STATE_SCRAP && h->punch_valid &&
-               (player_frame_isset(obj, TAG_JF2) ||
-                (player_frame_isset(obj, TAG_JN) && i == player_frame_get(obj, TAG_JN)))) {
-                return move;
-            }
-        }
-    }
-    return NULL;
 }
 
 int maybe_har_change_state(int oldstate, bool can_jump, char act_type) {
@@ -2410,11 +2391,6 @@ int har_act(object *obj, int act_type) {
 
     if(player_frame_isset(obj, TAG_JN) && player_frame_isset(obj, TAG_CW) && (enemy_har->state == STATE_WALLDAMAGE)) {
         move = af_get_move(h->af_data, player_frame_get(obj, TAG_JN));
-    }
-
-    if(game_state_get_player(obj->gs, h->player_id)->ez_destruct && move == NULL &&
-       (h->state == STATE_VICTORY || h->state == STATE_SCRAP)) {
-        move = scrap_destruction_cheat(obj);
     }
 
     if(move) {
