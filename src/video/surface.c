@@ -234,3 +234,14 @@ void surface_to_grayscale(const surface *src, surface *dst, const vga_palette *p
     }
     surface_set_transparency(dst, -1);
 }
+
+void surface_perform_remap(surface *src, const vga_remap_table *remap_table, int offset) {
+    src->guid = guid++;
+
+    for(int i = 0; i < src->w * src->h; i++) {
+        const vga_index idx = src->data[i];
+        if(idx > 0 && idx < 128) {
+            src->data[i] = remap_table->data[idx + offset];
+        }
+    }
+}

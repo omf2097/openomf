@@ -1168,8 +1168,6 @@ void har_spawn_scrap(const object *obj, vec2i pos, int amount) {
         object_set_animation(scrap, &af_get_move(h->af_data, anim_no)->ani);
         object_set_stl(scrap, object_get_stl(obj));
         object_set_gravity(scrap, 1.0f);
-        object_set_pal_offset(scrap, object_get_pal_offset(obj));
-        object_set_pal_limit(scrap, object_get_pal_limit(obj));
         object_set_layers(scrap, LAYER_SCRAP);
         object_set_group(scrap, GROUP_SCRAP);
         object_set_shadow(scrap, 1);
