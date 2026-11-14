@@ -140,6 +140,11 @@ void vga_state_copy_base_palette_range(vga_index dst, vga_index src, vga_index c
 void vga_state_enable_palette_transform(vga_palette_transform transform_callback, void *userdata);
 
 /**
+ * @brief Create an internal mapping from HAR indices to the rest of the palette
+ */
+void vga_state_build_nearest_remap_table(vga_remap_table *remap_table);
+
+/**
  * @brief Write a debug screenshot of the current palette
  * @param filename Output file path
  */

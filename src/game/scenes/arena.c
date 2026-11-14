@@ -1903,18 +1903,25 @@ int arena_create(scene *scene) {
                 }
             }
         }
+    }
 
-        // Remap scrap palettes
+    // Build remap table after both pilot palettes are loaded
+    vga_remap_table *remap_table = omf_calloc(1, sizeof(vga_remap_table));
+    vga_state_build_nearest_remap_table(remap_table);
+
+    // Remap scrap palettes
+    for(int p = 0; p < 2; p++) {
         for(int a = 0; a < 3; a++) {
-            af_move *scrap = af_get_move(scene->af_data[i], ANIM_SCRAP_METAL + a);
+            af_move *scrap = af_get_move(scene->af_data[p], ANIM_SCRAP_METAL + a);
             int spr_count = animation_get_sprite_count(&scrap->ani);
             for(int spr_no = 0; spr_no < spr_count; spr_no++) {
                 sprite *sprite = animation_get_sprite(&scrap->ani, spr_no);
-                vga_palette *pal = bk_get_palette(scene->bk_data, pal_index);
-                surface_remap_nearest(sprite->data, &player->pilot->palette, pal);
+                surface_remap_nearest(sprite->data, remap_table, p * 48);
             }
         }
     }
+
+    omf_free(remap_table);
 
     // remove the keyboard hooks
 

@@ -235,18 +235,13 @@ void surface_to_grayscale(const surface *src, surface *dst, const vga_palette *p
     surface_set_transparency(dst, -1);
 }
 
-void surface_remap_nearest(surface *src, const vga_palette *src_pal, const vga_palette *dst_pal) {
-    vga_index mapping[128];
-    for(vga_index i = 1; i < 128; i++) {
-        mapping[i] = vga_palette_match(src_pal, dst_pal, i, 128, 256);
-    }
-
+void surface_remap_nearest(surface *src, const vga_remap_table *remap_table, int offset) {
     src->guid = guid++;
 
     for(int i = 0; i < src->w * src->h; i++) {
         const vga_index idx = src->data[i];
         if(idx > 0 && idx < 128) {
-            src->data[i] = mapping[idx];
+            src->data[i] = remap_table->data[idx + offset];
         }
     }
 }
