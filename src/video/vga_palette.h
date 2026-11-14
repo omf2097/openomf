@@ -81,4 +81,16 @@ void vga_palette_darken(vga_palette *pal, uint8_t step);
  */
 void vga_palette_light_range(vga_palette *pal, uint8_t gray, vga_index start, vga_index end, int32_t step);
 
+/**
+ * Color matching function to remap a color into a different range
+ * in the same palette.
+ *
+ * @param pal Palette to operate on
+ * @param source Palette index to find a new index for
+ * @param start Start of range to search, inclusive
+ * @param end End of range to search, exclusive
+ * @return The closest palette match for the source index
+ */
+vga_index vga_palette_match(const vga_palette *pal, vga_index source, vga_index start, vga_index end);
+
 #endif // VGA_PALETTE_H

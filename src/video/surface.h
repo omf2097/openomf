@@ -95,4 +95,14 @@ void surface_convert_har_to_grayscale(surface *sur, uint8_t brightness);
 void surface_to_grayscale(const surface *src, surface *dst, const vga_palette *pal, vga_index range_start,
                           vga_index range_end, int ignore_below);
 
+/**
+ * Similar to surface_to_grayscale, but remaps to any nearest matching color, not just gray.
+ * Performs a remapping for the first 128 indices into the last 128 indices.
+ *
+ * @param src Surface to alter
+ * @param pal Palette to use
+ * @param offset Palette offset (for differentiating player 1 and 2)
+ */
+void surface_remap_nearest(const surface *src, const vga_palette *pal, int offset);
+
 #endif // SURFACE_H

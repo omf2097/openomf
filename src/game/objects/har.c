@@ -1168,8 +1168,6 @@ void har_spawn_scrap(const object *obj, vec2i pos, int amount) {
         object_set_animation(scrap, &af_get_move(h->af_data, anim_no)->ani);
         object_set_stl(scrap, object_get_stl(obj));
         object_set_gravity(scrap, 1.0f);
-        object_set_pal_offset(scrap, object_get_pal_offset(obj));
-        object_set_pal_limit(scrap, object_get_pal_limit(obj));
         object_set_layers(scrap, LAYER_SCRAP);
         object_set_group(scrap, GROUP_SCRAP);
         object_set_shadow(scrap, 1);
@@ -2987,6 +2985,17 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
                           str_c(&move->ani.animation_string));
                 str_set_c(&move->move_string, "!");
             }
+        }
+    }
+
+    // Remap scrap palettes
+    for(int a = 0; a < 3; a++) {
+        af_move *scrap = af_get_move(local->af_data, ANIM_SCRAP_METAL + a);
+        int spr_count = animation_get_sprite_count(&scrap->ani);
+        for(int i = 0; i < spr_count; i++) {
+            sprite *sprite = animation_get_sprite(&scrap->ani, i);
+            vga_palette pal = vga_state_get_base_palette();
+            surface_remap_nearest(sprite->data, &pal, object_get_pal_offset(obj));
         }
     }
 
