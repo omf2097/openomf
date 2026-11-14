@@ -1916,7 +1916,7 @@ int arena_create(scene *scene) {
             int spr_count = animation_get_sprite_count(&scrap->ani);
             for(int spr_no = 0; spr_no < spr_count; spr_no++) {
                 sprite *sprite = animation_get_sprite(&scrap->ani, spr_no);
-                surface_remap_nearest(sprite->data, remap_table, p * 48);
+                surface_perform_remap(sprite->data, remap_table, p * 48);
             }
         }
     }

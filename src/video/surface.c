@@ -235,7 +235,7 @@ void surface_to_grayscale(const surface *src, surface *dst, const vga_palette *p
     surface_set_transparency(dst, -1);
 }
 
-void surface_remap_nearest(surface *src, const vga_remap_table *remap_table, int offset) {
+void surface_perform_remap(surface *src, const vga_remap_table *remap_table, int offset) {
     src->guid = guid++;
 
     for(int i = 0; i < src->w * src->h; i++) {
