@@ -59,7 +59,7 @@ vga_index vga_palette_match(const vga_palette *pal, vga_index source, vga_index 
     const vga_color *colors = pal->colors;
     for(vga_index i = start; i < end; i++) {
         const int closeness = abs(colors[source].r - colors[i].r) + abs(colors[source].g - colors[i].g) +
-                        abs(colors[source].b - colors[i].b);
+                              abs(colors[source].b - colors[i].b);
         if(closeness < last_closeness) {
             last_closeness = closeness;
             index = i;

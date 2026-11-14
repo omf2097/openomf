@@ -244,7 +244,7 @@ void surface_remap_nearest(const surface *src, const vga_palette *pal, int offse
     for(int i = 0; i < src->w * src->h; i++) {
         const vga_index idx = src->data[i];
         if(idx > 0 && idx < 128) {
-            src->data[i] = mapping[idx+offset];
+            src->data[i] = mapping[idx + offset];
         }
     }
 }
