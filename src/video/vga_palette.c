@@ -1,6 +1,7 @@
 #include "video/vga_palette.h"
 #include "utils/miscmath.h"
 #include <assert.h>
+#include <stdlib.h>
 #include <string.h>
 
 void vga_palette_init(vga_palette *palette) {
