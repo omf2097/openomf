@@ -196,8 +196,7 @@ void vga_state_build_nearest_remap_table(vga_remap_table *remap_table) {
         int last_closeness = 1000;
         const vga_color *colors = state.base.colors;
         for(vga_index i = 128; i < 256; i++) {
-            const int closeness = abs(colors[source].r - colors[i].r) +
-                                  abs(colors[source].g - colors[i].g) +
+            const int closeness = abs(colors[source].r - colors[i].r) + abs(colors[source].g - colors[i].g) +
                                   abs(colors[source].b - colors[i].b);
             if(closeness < last_closeness) {
                 last_closeness = closeness;
