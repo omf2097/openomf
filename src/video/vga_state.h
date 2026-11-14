@@ -100,11 +100,6 @@ void vga_state_set_remaps_from(const vga_remap_tables *src);
 void vga_state_set_base_palette_from(const vga_palette *src);
 
 /**
- * @return The base palette loaded
- */
-vga_palette vga_state_get_base_palette(void);
-
-/**
  * @brief Copy a range of colors from source palette to base palette
  * @param src Source palette
  * @param dst_start Destination start index in base palette

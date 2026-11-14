@@ -1903,6 +1903,17 @@ int arena_create(scene *scene) {
                 }
             }
         }
+
+        // Remap scrap palettes
+        for(int a = 0; a < 3; a++) {
+            af_move *scrap = af_get_move(scene->af_data[i], ANIM_SCRAP_METAL + a);
+            int spr_count = animation_get_sprite_count(&scrap->ani);
+            for(int spr_no = 0; spr_no < spr_count; spr_no++) {
+                sprite *sprite = animation_get_sprite(&scrap->ani, spr_no);
+                vga_palette *pal = bk_get_palette(scene->bk_data, pal_index);
+                surface_remap_nearest(sprite->data, &player->pilot->palette, pal);
+            }
+        }
     }
 
     // remove the keyboard hooks

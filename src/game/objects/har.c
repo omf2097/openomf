@@ -2988,17 +2988,6 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
         }
     }
 
-    // Remap scrap palettes
-    for(int a = 0; a < 3; a++) {
-        af_move *scrap = af_get_move(local->af_data, ANIM_SCRAP_METAL + a);
-        int spr_count = animation_get_sprite_count(&scrap->ani);
-        for(int i = 0; i < spr_count; i++) {
-            sprite *sprite = animation_get_sprite(&scrap->ani, i);
-            vga_palette pal = vga_state_get_base_palette();
-            surface_remap_nearest(sprite->data, &pal, object_get_pal_offset(obj));
-        }
-    }
-
     // All done
     return 0;
 }

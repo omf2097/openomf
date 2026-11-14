@@ -53,14 +53,17 @@ void vga_palette_light_range(vga_palette *pal, uint8_t gray, vga_index start, vg
     }
 }
 
-vga_index vga_palette_match(const vga_palette *pal, vga_index source, vga_index start, vga_index end) {
+vga_index vga_palette_match(const vga_palette *pal, const vga_palette *target, vga_index source, vga_index start,
+                            vga_index end) {
     assert(start >= 0 && end <= VGA_PALETTE_SIZE && end >= start);
     int last_closeness = 1000;
     vga_index index = start;
-    const vga_color *colors = pal->colors;
+    const vga_color *srccolors = pal->colors;
+    const vga_color *targetcolors = target->colors;
     for(vga_index i = start; i < end; i++) {
-        const int closeness = abs(colors[source].r - colors[i].r) + abs(colors[source].g - colors[i].g) +
-                              abs(colors[source].b - colors[i].b);
+        const int closeness = abs(srccolors[source].r - targetcolors[i].r) +
+                              abs(srccolors[source].g - targetcolors[i].g) +
+                              abs(srccolors[source].b - targetcolors[i].b);
         if(closeness < last_closeness) {
             last_closeness = closeness;
             index = i;

@@ -140,10 +140,6 @@ void vga_state_set_base_palette_from(const vga_palette *src) {
     damage_set_all(&state.dmg_base);
 }
 
-vga_palette vga_state_get_base_palette(void) {
-    return state.base;
-}
-
 void vga_state_set_base_palette_from_range(const vga_palette *src, vga_index dst_start, vga_index src_start,
                                            vga_index count) {
     assert(src != NULL);

@@ -100,9 +100,9 @@ void surface_to_grayscale(const surface *src, surface *dst, const vga_palette *p
  * Performs a remapping for the first 128 indices into the last 128 indices.
  *
  * @param src Surface to alter
- * @param pal Palette to use
- * @param offset Palette offset (for differentiating player 1 and 2)
+ * @param src_pal Palette to map from
+ * @param dst_pal Palette to map to
  */
-void surface_remap_nearest(const surface *src, const vga_palette *pal, int offset);
+void surface_remap_nearest(const surface *src, const vga_palette *src_pal, const vga_palette *dst_pal);
 
 #endif // SURFACE_H
