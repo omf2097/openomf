@@ -1,9 +1,17 @@
 #version 330 core
 
-// Note: This is modified from https://godotshaders.com/shader/very-simple-crt-shader/
+// CRT colors without the geometry stuff
+// The ideas used here are mostly from https://github.com/libretro/slang-shaders/
+// and https://github.com/dosbox-staging/dosbox-staging shaders.
 
-uniform float scanline_intensity = 0.25;
-uniform float color_bleed_weight = 0.35;
+// Tunables
+uniform float beam_width = 0.4;
+const int beam_taps = 2;
+const float beam_tap_step = 0.5;
+const float source_gamma = 2.4;
+const float display_gamma = 2.2;
+const float native_width = 320.0;
+const float min_blend_width = 1.0 / 256.0;
 
 // In
 in vec2 tex_coord;
@@ -13,17 +21,55 @@ uniform sampler2D framebuffer;
 // Out
 layout (location = 0) out vec4 color;
 
+// display to linear light
+vec3 to_linear(vec3 c) {
+    return pow(c, vec3(source_gamma));
+}
+
+// linear to display light
+vec3 to_display(vec3 c) {
+    return pow(clamp(c, 0.0, 1.0), vec3(1.0 / display_gamma));
+}
+
+// fetch and convert to linear light
+vec4 fetch_linear(vec2 texel) {
+    vec4 c = texture(framebuffer, texel / texture_size);
+    return vec4(to_linear(c.rgb), c.a);
+}
+
+vec4 sample_bilinear(vec2 texel_floor, vec2 texel_fract) {
+    vec4 c00 = fetch_linear(texel_floor + vec2(0.5, 0.5));
+    vec4 c10 = fetch_linear(texel_floor + vec2(1.5, 0.5));
+    vec4 c01 = fetch_linear(texel_floor + vec2(0.5, 1.5));
+    vec4 c11 = fetch_linear(texel_floor + vec2(1.5, 1.5));
+    vec4 top = mix(c00, c10, texel_fract.x);
+    vec4 bottom = mix(c01, c11, texel_fract.x);
+    return mix(top, bottom, texel_fract.y);
+}
+
 void main() {
-    // Darken top halves of pixels
-    float color_dark_offset = 0.0;
-    int y_pos = int(floor(tex_coord.y * texture_size.y * 2.0));
-    if (int(floor((float(y_pos) / 2.0))) * 2 == y_pos) {
-        color_dark_offset = scanline_intensity;
+    // Position in framebuffer pixel space, offset so that pixel centers land on integers
+    vec2 texel = tex_coord * texture_size - 0.5;
+    vec2 texel_floor = floor(texel);
+    vec2 texel_fract = fract(texel);
+
+    // Sharp bilinear
+    vec2 texels_per_pixel = clamp(fwidth(texel), min_blend_width, 1.0);
+    vec2 sharp_fract = clamp((texel_fract - 0.5) / texels_per_pixel + 0.5, 0.0, 1.0);
+
+    float tap_step = beam_tap_step * texture_size.x / native_width;
+    vec4 center = sample_bilinear(texel_floor, sharp_fract);
+    vec3 sum = center.rgb;
+    float weight_sum = 1.0;
+    for(int i = 1; i <= beam_taps; i++) {
+        float dist = float(i) * beam_tap_step;
+        float weight = exp(-0.5 * dist * dist / (beam_width * beam_width));
+        vec2 offset = vec2(float(i) * tap_step, 0.0);
+        sum += weight * sample_bilinear(texel_floor - offset, sharp_fract).rgb;
+        sum += weight * sample_bilinear(texel_floor + offset, sharp_fract).rgb;
+        weight_sum += 2.0 * weight;
     }
+    vec3 linear_color = sum / weight_sum;
 
-    // Blend pixel with left and top pixel to simulate color bleeding
-    vec4 adjacent_pixel_color_average = texture(framebuffer, tex_coord - vec2(1.0 / texture_size.x, 0)) * 0.5 + texture(framebuffer, tex_coord - vec2(0, 1.0 / texture_size.y)) * 0.5;
-    vec4 this_pixel_color = texture(framebuffer, tex_coord);
-
-    color = adjacent_pixel_color_average * color_bleed_weight + this_pixel_color * (1.0 - color_bleed_weight) - vec4(vec3(color_dark_offset), 0);
+    color = vec4(to_display(linear_color), center.a);
 }
