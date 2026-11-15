@@ -1673,7 +1673,9 @@ static void arena_free(scene *scene) {
         game_player *player = game_state_get_player(scene->gs, i);
         game_player_set_har(player, NULL);
         // game_player_set_ctrl(player, NULL);
-        controller_set_repeat(game_player_get_ctrl(player), 0);
+        if(game_player_get_ctrl(player)) {
+            controller_set_repeat(game_player_get_ctrl(player), 0);
+        }
     }
 
     gui_frame_free(local->game_menu);

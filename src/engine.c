@@ -411,6 +411,11 @@ void engine_run(const engine_init_flags *init_flags) {
 
     joystick_close();
 
+    // Detach controllers (to free REC controller game_state clones)
+    for(int i = 0; i < 2; i++) {
+        game_player_set_ctrl(gs->players[i], NULL);
+    }
+
     // Free scene object
     game_state_free(gs);
     omf_free(gs);

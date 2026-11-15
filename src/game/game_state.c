@@ -1413,8 +1413,13 @@ bool game_state_hars_are_alive(game_state *gs) {
 }
 
 bool is_netplay(const game_state *gs) {
-    return game_state_get_player(gs, 0)->ctrl->type == CTRL_TYPE_NETWORK ||
-           game_state_get_player(gs, 1)->ctrl->type == CTRL_TYPE_NETWORK;
+    if(game_state_get_player(gs, 0)->ctrl && game_state_get_player(gs, 0)->ctrl->type == CTRL_TYPE_NETWORK) {
+        return true;
+    }
+    if(game_state_get_player(gs, 1)->ctrl && game_state_get_player(gs, 1)->ctrl->type == CTRL_TYPE_NETWORK) {
+        return true;
+    }
+    return false;
 }
 
 bool is_singleplayer(const game_state *gs) {
