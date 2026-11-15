@@ -336,7 +336,7 @@ int main(int argc, char *argv[]) {
     struct arg_str *key = arg_strn("k", "key", "<key>", 0, 3, "Select key");
     struct arg_int *pilot = arg_int0(NULL, "pilot", "<int>", "Only print pilot information");
     struct arg_str *value = arg_str0("s", "set", "<value>", "Set value (requires --key)");
-    struct arg_int *insert = arg_int0("i", "insert", "<number>", "Insert a new element");
+    struct arg_int *insert = arg_int0(NULL, "insert", "<number>", "Insert a new element");
     struct arg_lit *assert = arg_lit0(NULL, "assert", "Insert an assertion");
     struct arg_int *assert_tick = arg_int0(NULL, "assertion_tick", "<number>", "Tick at which to do assertion");
     struct arg_str *assert_op = arg_str0(NULL, "operator", "<gt|lt|eq>", "Assertion operator");
