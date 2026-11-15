@@ -1273,9 +1273,12 @@ void game_state_free(game_state *gs) {
         }
     }
 
-    if(gs->init_flags->playback == 1) {
-        gs->players[0]->pilot = NULL;
-        gs->players[1]->pilot = NULL;
+    if(gs->rec) {
+        for(int i = 0; i < 2; i++) {
+            if(gs->players[i]->pilot == &gs->rec->pilots[i].info) {
+                gs->players[i]->pilot = NULL;
+            }
+        }
     }
 
     // Free players
