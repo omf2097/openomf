@@ -103,7 +103,7 @@ typedef struct game_state_t {
     fight_stats fight_stats;
     struct game_state_t *new_state;
     int *clones;
-    bool clone;
+    bool offscreen;
     int delay;
     struct random_t rand;
 

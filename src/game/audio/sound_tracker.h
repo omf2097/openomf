@@ -70,7 +70,7 @@ void sound_tracker_merge(sound_tracker *old, sound_tracker *new);
  * @brief Play a sound and record it for rollback.
  * @param t Tracker to record into.
  * @param tick The current game tick (stored on the entry for merge matching).
- * @param clone True if this is being called on a cloned/lookahead state
+ * @param offscreen True if this is being called on a cloned/lookahead state
  * @param sound_id Sample id (range-checked, ignored if outside 0 ... 299).
  * @param opts Per-play parameters, or NULL for defaults.
  */
