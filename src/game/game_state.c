@@ -1243,10 +1243,7 @@ void game_state_menu_poll(game_state *gs, ctrl_event **ev) {
     joystick_menu_poll_all(gs->menu_ctrl, ev);
 }
 
-void game_state_free(game_state **_gs) {
-    game_state *gs = *_gs;
-    *_gs = NULL;
-
+void game_state_free(game_state *gs) {
     bool clone = *gs->clones > 0;
     (*gs->clones)--;
 
@@ -1305,7 +1302,6 @@ void game_state_free(game_state **_gs) {
         omf_free(gs->rec);
     }
     omf_free(gs->menu_ctrl);
-    omf_free(gs);
 }
 
 int game_state_ms_per_dyntick(game_state *gs) {
