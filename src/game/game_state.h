@@ -25,7 +25,7 @@ void game_state_match_settings_reset(game_state *gs);
 void game_state_copy_match_settings(game_state *gs, const match_settings *ms);
 void game_state_match_settings_defaults(game_state *gs);
 int game_state_create(game_state *gs, const engine_init_flags *init_flags);
-void game_state_free(game_state **gs);
+void game_state_free(game_state *gs);
 bool game_state_handle_event(game_state *gs, SDL_Event *event);
 void game_state_render(game_state *gs);
 unsigned game_state_get_framebuffer_options(game_state *gs);
