@@ -520,7 +520,7 @@ int rewind_and_replay(wtf *data, controller *ctrl) {
             gs_new = omf_calloc(1, sizeof(game_state));
             game_state_clone(gs, gs_new);
             data->gs_bak = gs_new;
-            game_state_clone_free(gs_old);
+            game_state_free(&gs_old);
             omf_free(gs_old);
         }
 
@@ -565,7 +565,7 @@ int rewind_and_replay(wtf *data, controller *ctrl) {
                 }
             }
             if(gs_old) {
-                game_state_clone_free(gs_old);
+                game_state_free(&gs_old);
                 omf_free(gs_old);
             }
             return 1;
@@ -597,7 +597,7 @@ int rewind_and_replay(wtf *data, controller *ctrl) {
     // replace the game state with the replayed one
     gs->new_state = NULL;
     if(gs_current->new_state) {
-        game_state_clone_free(gs_current->new_state);
+        game_state_free(&gs_current->new_state);
         omf_free(gs_current->new_state);
     }
     gs_current->new_state = gs;
@@ -700,7 +700,7 @@ done:
     }
     list_free(&data->transcript);
     if(data->gs_bak) {
-        game_state_clone_free(data->gs_bak);
+        game_state_free(&data->gs_bak);
         omf_free(data->gs_bak);
     }
     if(ctrl->data) {
@@ -760,7 +760,7 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
         data->last_hash = arena_state_hash(data->gs_bak);
     } else if(data->gs_bak != NULL && !scene_is_arena(game_state_get_scene(ctrl->gs))) {
         // changed scene and no longer need a game state backup, release it
-        game_state_clone_free(data->gs_bak);
+        game_state_free(&data->gs_bak);
         omf_free(data->gs_bak);
         data->last_action = ACT_NONE;
         data->last_peer_action = ACT_NONE;
@@ -1088,11 +1088,11 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                         rewind_and_replay(data, ctrl);
                     }
                     if(ctrl->gs->new_state) {
-                        game_state_clone_free(ctrl->gs->new_state);
+                        game_state_free(&ctrl->gs->new_state);
                         omf_free(ctrl->gs->new_state);
                     }
                     if(data->gs_bak) {
-                        game_state_clone_free(data->gs_bak);
+                        game_state_free(&data->gs_bak);
                         omf_free(data->gs_bak);
                     }
                     if(ctrl->gs->rec) {

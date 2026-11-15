@@ -57,7 +57,6 @@ int game_state_find_objects(game_state *gs, vector *out, bool (*predicate)(const
 void game_state_play_sound(game_state *gs, int sound_id, const sound_opts *opts);
 
 int game_state_clone(game_state *src, game_state *dst);
-void game_state_clone_free(game_state *gs);
 
 void _setup_keyboard(game_state *gs, int player_id, int control_id);
 void _setup_ai(game_state *gs, int player_id);
