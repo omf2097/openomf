@@ -294,6 +294,7 @@ int game_state_create(game_state *gs, const engine_init_flags *init_flags) {
     controller_init(gs->menu_ctrl, gs);
 
     gs->sc = omf_calloc(1, sizeof(scene));
+    gs->clones = omf_calloc(1, sizeof(int));
 
     // Set up players
     for(int i = 0; i < 2; i++) {
@@ -1244,42 +1245,23 @@ void game_state_menu_poll(game_state *gs, ctrl_event **ev) {
     joystick_menu_poll_all(gs->menu_ctrl, ev);
 }
 
-void game_state_clone_free(game_state *gs) {
-    // Free objects
-    render_obj *robj;
-    iterator it;
-    vector_iter_begin(&gs->objects, &it);
-    foreach(it, robj) {
-        object_clone_free(robj->obj);
-        omf_free(robj->obj);
-        vector_delete(&gs->objects, &it);
-    }
-    vector_free(&gs->objects);
-    sound_tracker_free(&gs->tracker);
-
-    // Free scene
-    scene_clone_free(gs->sc);
-    // omf_free(gs->sc);
-
-    // Free players
-    for(int i = 0; i < 2; i++) {
-        // game_player_set_ctrl(gs->players[i], NULL);
-        game_player_clone_free(gs->players[i]);
-        omf_free(gs->players[i]);
-    }
-    // omf_free(gs);
-}
-
 void game_state_free(game_state **_gs) {
     game_state *gs = *_gs;
     *_gs = NULL;
 
+    bool clone = *gs->clones > 0;
+    (*gs->clones)--;
+
     // Free objects
     render_obj *robj;
     iterator it;
     vector_iter_begin(&gs->objects, &it);
     foreach(it, robj) {
-        object_free(robj->obj);
+        if(clone) {
+            object_clone_free(robj->obj);
+        } else {
+            object_free(robj->obj);
+        }
         omf_free(robj->obj);
         vector_delete(&gs->objects, &it);
     }
@@ -1288,13 +1270,12 @@ void game_state_free(game_state **_gs) {
 
     // Free scene
     if(gs->sc) {
-        scene_free(gs->sc);
-        omf_free(gs->sc);
-    }
-
-    if(gs->rec) {
-        sd_rec_free(gs->rec);
-        omf_free(gs->rec);
+        if(clone) {
+            scene_clone_free(gs->sc);
+        } else {
+            scene_free(gs->sc);
+            omf_free(gs->sc);
+        }
     }
 
     if(gs->init_flags->playback == 1) {
@@ -1304,9 +1285,26 @@ void game_state_free(game_state **_gs) {
 
     // Free players
     for(int i = 0; i < 2; i++) {
-        game_player_set_ctrl(gs->players[i], NULL);
-        game_player_free(gs->players[i]);
+        if(clone) {
+            game_player_clone_free(gs->players[i]);
+        } else {
+            game_player_free(gs->players[i]);
+            game_player_set_ctrl(gs->players[i], NULL);
+        }
         omf_free(gs->players[i]);
+    }
+
+    // Clone check
+    if(clone) {
+        // don't free the rest, a clone is still using it
+        return;
+    }
+
+    omf_free(gs->clones);
+
+    if(gs->rec) {
+        sd_rec_free(gs->rec);
+        omf_free(gs->rec);
     }
     omf_free(gs->menu_ctrl);
     omf_free(gs);
@@ -1402,6 +1400,7 @@ int game_state_clone(game_state *src, game_state *dst) {
     dst->new_state = NULL;
 
     dst->clone = true;
+    (*dst->clones)++;
 
     return 0;
 }

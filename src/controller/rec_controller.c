@@ -25,7 +25,7 @@ void rec_controller_free(controller *ctrl) {
         vector_iter_begin(&data->game_states, &it);
         game_state *gs = NULL;
         foreach(it, gs) {
-            game_state_clone_free(gs);
+            game_state_free(&gs);
         }
         vector_free(&data->game_states);
 
@@ -172,7 +172,7 @@ void rec_controller_step_back(controller *ctrl) {
     }
     game_state *gs_bak = vector_back(&data->game_states);
     while(vector_size(&data->game_states) > 1 && gs_bak->tick >= ctrl->gs->tick) {
-        game_state_clone_free(gs_bak);
+        game_state_free(&gs_bak);
         vector_pop(&data->game_states);
         gs_bak = vector_back(&data->game_states);
     }
