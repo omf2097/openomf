@@ -268,7 +268,7 @@ int game_state_create(game_state *gs, const engine_init_flags *init_flags) {
     }
     gs->init_flags = init_flags;
     gs->new_state = NULL;
-    gs->clone = false;
+    gs->offscreen = false;
     gs->hit_pause = 0;
     game_state_match_settings_reset(gs);
     vector_create(&gs->objects, sizeof(render_obj));
@@ -994,7 +994,7 @@ void game_state_static_tick(game_state *gs, bool replay) {
         game_state_merge_sounds(gs, gs->new_state);
         gs = gs->new_state;
         // remove the cloned flag
-        gs->clone = false;
+        gs->offscreen = false;
     }
 
     // Call static ticks for scene
@@ -1363,7 +1363,7 @@ int game_state_find_objects(game_state *gs, vector *out, bool (*predicate)(const
 }
 
 void game_state_play_sound(game_state *gs, int sound_id, const sound_opts *opts) {
-    sound_tracker_play(&gs->tracker, gs->tick, gs->clone, sound_id, opts);
+    sound_tracker_play(&gs->tracker, gs->tick, gs->offscreen, sound_id, opts);
 }
 
 int game_state_clone(game_state *src, game_state *dst) {
@@ -1399,7 +1399,7 @@ int game_state_clone(game_state *src, game_state *dst) {
 
     dst->new_state = NULL;
 
-    dst->clone = true;
+    dst->offscreen = true;
     (*dst->clones)++;
 
     return 0;

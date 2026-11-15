@@ -1257,7 +1257,7 @@ void menu_controller_hook(controller *ctrl, int action) {
 int net_controller_poll(controller *ctrl, ctrl_event **ev) {
     wtf *data = ctrl->data;
     // if we're replaying don't do this
-    if(ctrl->gs->clone) {
+    if(ctrl->gs->offscreen) {
         return 0;
     }
     iterator it;
