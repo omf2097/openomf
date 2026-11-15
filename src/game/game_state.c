@@ -993,8 +993,6 @@ void game_state_static_tick(game_state *gs, bool replay) {
         // merge the sounds
         game_state_merge_sounds(gs, gs->new_state);
         gs = gs->new_state;
-        // remove the cloned flag
-        gs->offscreen = false;
     }
 
     // Call static ticks for scene
@@ -1399,7 +1397,6 @@ int game_state_clone(game_state *src, game_state *dst) {
 
     dst->new_state = NULL;
 
-    dst->offscreen = true;
     (*dst->clones)++;
 
     return 0;

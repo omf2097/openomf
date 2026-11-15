@@ -384,6 +384,8 @@ int rewind_and_replay(wtf *data, controller *ctrl) {
         ev = iter_next(&it);
     }
 
+    gs->offscreen = true;
+
     while(gs->tick < gs_current->tick) {
         if(ev && ev->tick == gs->tick - data->local_proposal) {
             // feed in the inputs
@@ -519,6 +521,7 @@ int rewind_and_replay(wtf *data, controller *ctrl) {
             // on the state of the game
             gs_new = omf_calloc(1, sizeof(game_state));
             game_state_clone(gs, gs_new);
+            gs_new->offscreen = false;
             data->gs_bak = gs_new;
             game_state_free(&gs_old);
             omf_free(gs_old);
@@ -564,6 +567,7 @@ int rewind_and_replay(wtf *data, controller *ctrl) {
                     c->gs = gs_current;
                 }
             }
+            gs->offscreen = false;
             if(gs_old) {
                 game_state_free(&gs_old);
                 omf_free(gs_old);
@@ -602,6 +606,8 @@ int rewind_and_replay(wtf *data, controller *ctrl) {
     }
     gs_current->new_state = gs;
     data->gs_bak->new_state = NULL;
+
+    gs->offscreen = false;
 
     return 0;
 }
