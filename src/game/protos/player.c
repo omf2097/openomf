@@ -670,12 +670,21 @@ void player_run_apply(object *obj) {
             state->pal_copy_entries = script_get_tag_value_by_id(frame, TAG_BC); // Number of indexes to copy
         }
 
-        if(script_is_tag_set_by_id(frame, TAG_BY)) {
-            object_set_shadow(obj, 0);
-        }
-
-        if(script_is_tag_set_by_id(frame, TAG_BW)) {
-            object_set_shadow(obj, 1);
+        if(object_get_group(obj) == GROUP_HAR) {
+            // 'bo<n>' y-moves shadow, but 'bo' and 'bo0' hides it. Totally logical.
+            // and 'by' matches 'bo' and 'bo0' ?
+            const bool shadow_off =
+                script_is_tag_set_by_id(frame, TAG_BY) ||
+                (script_is_tag_set_by_id(frame, TAG_BO) && script_get_tag_value_by_id(frame, TAG_BO) == 0);
+            object_set_shadow(obj, !shadow_off);
+        } else {
+            // These should only apply on projectiles
+            if(script_is_tag_set_by_id(frame, TAG_BY)) {
+                object_set_shadow(obj, 0);
+            }
+            if(script_is_tag_set_by_id(frame, TAG_BW)) {
+                object_set_shadow(obj, 1);
+            }
         }
 
         // Handle position correction
