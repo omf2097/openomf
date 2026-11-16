@@ -101,8 +101,9 @@ typedef struct game_state_t {
     game_player *players[2];
 
     fight_stats fight_stats;
-    void *new_state;
-    bool clone;
+    struct game_state_t *new_state;
+    int *clones;
+    bool offscreen;
     int delay;
     struct random_t rand;
 

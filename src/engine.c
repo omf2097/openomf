@@ -183,7 +183,8 @@ void engine_run(const engine_init_flags *init_flags) {
     // Set up game
     game_state *gs = omf_calloc(1, sizeof(game_state));
     if(game_state_create(gs, init_flags)) {
-        game_state_free(&gs);
+        game_state_free(gs);
+        omf_free(gs);
         return;
     }
 
@@ -239,7 +240,7 @@ void engine_run(const engine_init_flags *init_flags) {
                                 game_state *old_gs = gs;
                                 game_state *new_gs = gs->new_state;
                                 gs = new_gs;
-                                game_state_clone_free(old_gs);
+                                game_state_free(old_gs);
                                 omf_free(old_gs);
 
                                 // apply palette transforms
@@ -362,7 +363,7 @@ void engine_run(const engine_init_flags *init_flags) {
                     game_state *new_gs = gs->new_state;
                     gs = new_gs;
                     // gs->new_state = NULL;
-                    game_state_clone_free(old_gs);
+                    game_state_free(old_gs);
                     omf_free(old_gs);
                 }
                 console_tick(gs);
@@ -410,8 +411,14 @@ void engine_run(const engine_init_flags *init_flags) {
 
     joystick_close();
 
+    // Detach controllers (to free REC controller game_state clones)
+    for(int i = 0; i < 2; i++) {
+        game_player_set_ctrl(gs->players[i], NULL);
+    }
+
     // Free scene object
-    game_state_free(&gs);
+    game_state_free(gs);
+    omf_free(gs);
 
     log_info(" --- END GAME LOG ---");
 }

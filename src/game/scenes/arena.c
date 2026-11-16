@@ -1281,8 +1281,8 @@ void arena_dynamic_tick(scene *scene, int paused) {
                 en = clampf(((float)hars[i]->endurance_max - (float)hars[i]->endurance) / (float)hars[i]->endurance_max,
                             0.0f, 1.0f);
             }
-            progressbar_set_progress(local->health_bars[i], hp * 100, !(gs->warp_speed || gs->clone));
-            progressbar_set_progress(local->endurance_bars[i], en * 100, !(gs->warp_speed || gs->clone));
+            progressbar_set_progress(local->health_bars[i], hp * 100, !(gs->warp_speed || gs->offscreen));
+            progressbar_set_progress(local->endurance_bars[i], en * 100, !(gs->warp_speed || gs->offscreen));
             progressbar_set_flashing(local->endurance_bars[i], (en * 100 < 50), 8);
             component_tick(local->health_bars[i]);
             component_tick(local->endurance_bars[i]);
@@ -1673,7 +1673,9 @@ static void arena_free(scene *scene) {
         game_player *player = game_state_get_player(scene->gs, i);
         game_player_set_har(player, NULL);
         // game_player_set_ctrl(player, NULL);
-        controller_set_repeat(game_player_get_ctrl(player), 0);
+        if(game_player_get_ctrl(player)) {
+            controller_set_repeat(game_player_get_ctrl(player), 0);
+        }
     }
 
     gui_frame_free(local->game_menu);
