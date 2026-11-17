@@ -67,6 +67,7 @@ project(OpenOMF C)
 # Defaults preserve the existing desktop configuration.
 set(OMF_AUDIO_BACKENDS "sdl" CACHE STRING "Semicolon-separated audio backend plugins")
 set(OMF_VIDEO_RENDERERS "opengl3" CACHE STRING "Semicolon-separated renderer plugins")
+set(OMF_INPUT_BACKENDS "null" CACHE STRING "Semicolon-separated input backend plugins")
 option(OMF_STRIP_GNU_BINARIES "Strip GNU Release binaries at link time" ON)
 
 set(OMF_USE_SDL_AUDIO_DRIVER OFF)
@@ -268,6 +269,33 @@ foreach(PLUGIN ${OMF_VIDEO_RENDERERS})
     message(STATUS "Enabled video backend plugin '${PLUGIN}'")
 endforeach()
 set_source_files_properties("src/video/video.c" PROPERTIES COMPILE_DEFINITIONS "${VIDEO_C_DEFINES}")
+
+# Remove all input backend plugin source code from OPENOMF_SRC
+list(FILTER OPENOMF_SRC EXCLUDE REGEX "^src/input/backends/.*/")
+# Keep the NULL test backend in Debug unless already selected explicitly.
+if(NOT "null" IN_LIST OMF_INPUT_BACKENDS)
+    list(APPEND OPENOMF_SRC
+        "$<$<CONFIG:Debug>:src/input/backends/null/null_backend.c>"
+        "$<$<CONFIG:Debug>:src/input/backends/null/null_backend.h>"
+    )
+    list(APPEND INPUT_C_DEFINES "$<$<CONFIG:Debug>:ENABLE_NULL_INPUT_BACKEND>")
+endif()
+foreach(PLUGIN ${OMF_INPUT_BACKENDS})
+    # add input plugin sources
+    file(GLOB_RECURSE PLUGIN_SRC
+        LIST_DIRECTORIES OFF
+        CONFIGURE_DEPENDS
+        RELATIVE ${CMAKE_SOURCE_DIR}
+        "src/input/backends/${PLUGIN}/*.c"
+        "src/input/backends/${PLUGIN}/*.h"
+    )
+    list(APPEND OPENOMF_SRC ${PLUGIN_SRC})
+    # hook input plugin into input.c
+    string(TOUPPER "${PLUGIN}" PLUGIN_UPPER)
+    list(APPEND INPUT_C_DEFINES "ENABLE_${PLUGIN_UPPER}_INPUT_BACKEND")
+    message(STATUS "Enabled input backend plugin '${PLUGIN}'")
+endforeach()
+set_source_files_properties("src/input/input.c" PROPERTIES COMPILE_DEFINITIONS "${INPUT_C_DEFINES}")
 
 # Build core sources first as an object library
 # this can then be reused in tests and main executable to speed things up

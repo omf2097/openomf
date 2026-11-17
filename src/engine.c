@@ -8,6 +8,7 @@
 #include "game/game_state.h"
 #include "game/gui/osd/osd.h"
 #include "game/utils/settings.h"
+#include "input/input.h"
 #include "resources/languages.h"
 #include "resources/modmanager.h"
 #include "resources/resource_files.h"
@@ -60,32 +61,36 @@ int engine_init(const engine_init_flags *init_flags) {
     // Initialize everything.
     video_scan_renderers();
     audio_scan_backends();
+    input_scan_backends();
     if(!video_init(renderer, w, h, fs, vsync, aspect, framerate_limit, fb_scale, scaling_mode)) {
         goto exit_0;
     }
     if(!audio_init(player, frequency, mono, resampler, music_volume, sound_volume)) {
         goto exit_1;
     }
-    if(!sounds_loader_init()) {
+    if(!input_init(NULL)) {
         goto exit_2;
     }
-    if(!lang_init()) {
+    if(!sounds_loader_init()) {
         goto exit_3;
     }
-    if(!fonts_init()) {
+    if(!lang_init()) {
         goto exit_4;
     }
-    if(altpals_init()) {
+    if(!fonts_init()) {
         goto exit_5;
     }
-    if(!console_init()) {
+    if(altpals_init()) {
         goto exit_6;
     }
-    if(!osd_init()) {
+    if(!console_init()) {
         goto exit_7;
     }
-    if(!modmanager_init()) {
+    if(!osd_init()) {
         goto exit_8;
+    }
+    if(!modmanager_init()) {
+        goto exit_9;
     }
     vga_state_init();
     script_cache_init();
@@ -96,18 +101,20 @@ int engine_init(const engine_init_flags *init_flags) {
     return 0;
 
     // If something failed, close in correct order
-exit_8:
+exit_9:
     osd_close();
-exit_7:
+exit_8:
     console_close();
-exit_6:
+exit_7:
     altpals_close();
-exit_5:
+exit_6:
     fonts_close();
-exit_4:
+exit_5:
     lang_close();
-exit_3:
+exit_4:
     sounds_loader_close();
+exit_3:
+    input_close();
 exit_2:
     audio_close();
 exit_1:
@@ -424,6 +431,7 @@ void engine_close(void) {
     fonts_close();
     lang_close();
     sounds_loader_close();
+    input_close();
     audio_close();
     video_close();
     vga_state_close();
