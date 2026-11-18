@@ -109,6 +109,10 @@ static void reload_scaler_program(const gl3_context *ctx) {
 static bool setup_context(void *userdata, int window_w, int window_h, bool fullscreen, bool vsync, int aspect,
                           int framerate_limit, int fb_scale, int scaling_mode) {
     gl3_context *ctx = userdata;
+    if(SDL_InitSubSystem(SDL_INIT_VIDEO)) {
+        log_error("Unable to initialize SDL video subsystem: %s", SDL_GetError());
+        return false;
+    }
     ctx->screen_w = window_w;
     ctx->screen_h = window_h;
     ctx->fullscreen = fullscreen;
@@ -216,6 +220,7 @@ error_1:
     SDL_DestroyWindow(ctx->window);
 
 error_0:
+    SDL_QuitSubSystem(SDL_INIT_VIDEO);
     return false;
 }
 
@@ -312,6 +317,7 @@ static void close_context(void *userdata) {
     delete_program(ctx->scale_prog_id);
     SDL_GL_DeleteContext(ctx->gl_context);
     SDL_DestroyWindow(ctx->window);
+    SDL_QuitSubSystem(SDL_INIT_VIDEO);
     log_info("OpenGL3 renderer closed.");
 }
 

@@ -1,6 +1,8 @@
 #include "controller/joystick.h"
+#include "controller/game_controller_db.h"
 #include "utils/allocator.h"
 #include "utils/log.h"
+#include "utils/msgbox.h"
 #include <stdlib.h>
 
 #define UP -32768
@@ -220,14 +222,49 @@ int joystick_create(controller *ctrl, int joystick_id) {
 }
 
 static vector every_gamepad;
+static bool haptic_initialized;
 
-void joystick_init(void) {
+static void scan_game_controllers(void) {
+    log_info("Found %d joysticks attached", SDL_NumJoysticks());
+    char guid_str[33];
+    for(int i = 0; i < SDL_NumJoysticks(); i++) {
+        SDL_Joystick *joy = SDL_JoystickOpen(i);
+        if(joy) {
+            SDL_JoystickGUID guid = SDL_JoystickGetGUID(joy);
+            SDL_JoystickGetGUIDString(guid, guid_str, sizeof(guid_str));
+            log_info("Opened Joystick %d", i);
+            log_info(" * Name:              %s", SDL_JoystickNameForIndex(i));
+            log_info(" * Number of Axes:    %d", SDL_JoystickNumAxes(joy));
+            log_info(" * Number of Buttons: %d", SDL_JoystickNumButtons(joy));
+            log_info(" * Number of Balls:   %d", SDL_JoystickNumBalls(joy));
+            log_info(" * Number of Hats:    %d", SDL_JoystickNumHats(joy));
+            log_info(" * GUID          :    %s", guid_str);
+            SDL_JoystickClose(joy);
+        } else {
+            log_info("Joystick %d is unsupported", i);
+        }
+    }
+}
+
+bool joystick_init(void) {
+    if(SDL_InitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER)) {
+        err_msgbox("Joystick initialization failed: %s", SDL_GetError());
+        return false;
+    }
+    haptic_initialized = SDL_InitSubSystem(SDL_INIT_HAPTIC) == 0;
+    if(!haptic_initialized) {
+        log_warn("Haptic subsystem failed to initialize -- rumble will be disabled.");
+    }
+    joystick_load_external_mappings();
+    scan_game_controllers();
+
     int num_joysticks = SDL_NumJoysticks();
     vector_create_with_size(&every_gamepad, sizeof(SDL_GameController *), num_joysticks);
 
     for(int idx = 0; idx < num_joysticks; idx++) {
         joystick_deviceadded(idx);
     }
+    return true;
 }
 
 void joystick_close(void) {
@@ -238,6 +275,11 @@ void joystick_close(void) {
         SDL_GameControllerClose(*gamepad);
     }
     vector_free(&every_gamepad);
+    if(haptic_initialized) {
+        SDL_QuitSubSystem(SDL_INIT_HAPTIC);
+        haptic_initialized = false;
+    }
+    SDL_QuitSubSystem(SDL_INIT_GAMECONTROLLER | SDL_INIT_JOYSTICK);
 }
 
 void joystick_menu_poll_all(controller *menu_ctrl, ctrl_event **ev) {

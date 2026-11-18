@@ -52,6 +52,11 @@ bool has_gl_available(int version_major, int version_minor) {
     SDL_GLContext *c;
     bool ret = false;
 
+    if(SDL_InitSubSystem(SDL_INIT_VIDEO)) {
+        log_debug("Unable to initialize SDL video for OpenGL probe: %s", SDL_GetError());
+        return false;
+    }
+
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, version_major);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, version_minor);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
@@ -70,6 +75,7 @@ bool has_gl_available(int version_major, int version_minor) {
 exit_1:
     SDL_DestroyWindow(w);
 exit_0:
+    SDL_QuitSubSystem(SDL_INIT_VIDEO);
     return ret;
 }
 
