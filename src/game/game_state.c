@@ -1433,7 +1433,7 @@ bool is_singleplayer(const game_state *gs) {
 }
 
 bool is_tournament(const game_state *gs) {
-    return game_state_get_player(gs, 0)->chr;
+    return game_state_get_player(gs, 0)->chr != NULL;
 }
 
 bool is_spectator(const game_state *gs) {
