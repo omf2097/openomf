@@ -18,10 +18,10 @@
 /**
  * @brief 2D vector with float components.
  */
-typedef struct vec2f {
+typedef struct vec2fp {
     float x; ///< X component
     float y; ///< Y component
-} vec2f;
+} vec2fp;
 
 /**
  * @brief 2D vector with integer components.
@@ -81,7 +81,7 @@ static inline vec2i vec2i_mult(vec2i a, vec2i b) {
  * @param b Second vector
  * @return Sum of a and b
  */
-static inline vec2f vec2f_add(vec2f a, vec2f b) {
+static inline vec2fp vec2f_add(vec2fp a, vec2fp b) {
     a.x += b.x;
     a.y += b.y;
     return a;
@@ -93,7 +93,7 @@ static inline vec2f vec2f_add(vec2f a, vec2f b) {
  * @param b Second vector (to subtract)
  * @return a minus b
  */
-static inline vec2f vec2f_sub(vec2f a, vec2f b) {
+static inline vec2fp vec2f_sub(vec2fp a, vec2fp b) {
     a.x -= b.x;
     a.y -= b.y;
     return a;
@@ -105,7 +105,7 @@ static inline vec2f vec2f_sub(vec2f a, vec2f b) {
  * @param b Second vector
  * @return Component-wise product
  */
-static inline vec2f vec2f_mult(vec2f a, vec2f b) {
+static inline vec2fp vec2f_mult(vec2fp a, vec2fp b) {
     a.x *= b.x;
     a.y *= b.y;
     return a;
@@ -153,7 +153,7 @@ static inline vec2pt vec2pt_mult(vec2pt a, vec2pt b) {
  * @param f Float vector to convert
  * @return Integer vector with truncated components
  */
-static inline vec2i vec2f_to_i(vec2f f) {
+static inline vec2i vec2f_to_i(vec2fp f) {
     vec2i i;
     i.x = f.x;
     i.y = f.y;
@@ -165,8 +165,8 @@ static inline vec2i vec2f_to_i(vec2f f) {
  * @param i Integer vector to convert
  * @return Float vector with the same component values
  */
-static inline vec2f vec2i_to_f(vec2i i) {
-    vec2f f;
+static inline vec2fp vec2i_to_f(vec2i i) {
+    vec2fp f;
     f.x = i.x;
     f.y = i.y;
     return f;
@@ -177,7 +177,7 @@ static inline vec2f vec2i_to_f(vec2i i) {
  * @param a Vector to measure
  * @return Length of the vector
  */
-static inline float vec2f_mag(vec2f a) {
+static inline float vec2f_mag(vec2fp a) {
     return sqrtf(a.x * a.x + a.y * a.y);
 }
 
@@ -186,7 +186,7 @@ static inline float vec2f_mag(vec2f a) {
  * @param a Vector to normalize
  * @return Unit vector in the same direction
  */
-static inline vec2f vec2f_norm(vec2f a) {
+static inline vec2fp vec2f_norm(vec2fp a) {
     float mag = vec2f_mag(a);
     a.x /= mag;
     a.y /= mag;
@@ -199,7 +199,7 @@ static inline vec2f vec2f_norm(vec2f a) {
  * @param b Second point
  * @return Euclidean distance between a and b
  */
-static inline float vec2f_dist(vec2f a, vec2f b) {
+static inline float vec2f_dist(vec2fp a, vec2fp b) {
     return vec2f_mag(vec2f_sub(a, b));
 }
 
@@ -222,8 +222,8 @@ static inline vec2i vec2i_create(int x, int y) {
  * @param y Y component
  * @return New float vector
  */
-static inline vec2f vec2f_create(float x, float y) {
-    vec2f v;
+static inline vec2fp vec2fp_create(float x, float y) {
+    vec2fp v;
     v.x = x;
     v.y = y;
     return v;
