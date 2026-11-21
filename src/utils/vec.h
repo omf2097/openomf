@@ -1,9 +1,9 @@
 /**
  * @file vec.h
  * @brief 2D vector mathematics.
- * @details Provides 2D vector types and operations for both integer and
- *          floating-point coordinates. Used throughout the engine for
- *          positions, velocities, and other 2D quantities.
+ * @details Provides 2D vector types and operations for integer,
+ *          floating-point, and fixed point coordinates. Used throughout
+ *          the engine for positions, velocities, and other 2D quantities.
  * @copyright MIT License
  * @date 2026
  * @author OpenOMF Project
@@ -13,6 +13,7 @@
 #define VEC_H
 
 #include <math.h>
+#include "utils/fixedpt.h"
 
 /**
  * @brief 2D vector with float components.
@@ -29,6 +30,14 @@ typedef struct vec2i {
     int x; ///< X component
     int y; ///< Y component
 } vec2i;
+
+/**
+ * @brief 2D vector with fixedpt components.
+ */
+typedef struct vec2pt {
+    fixedpt x; ///< X component
+    fixedpt y; ///< Y component
+} vec2pt;
 
 /**
  * @brief Add two integer vectors.
@@ -97,6 +106,42 @@ static inline vec2f vec2f_sub(vec2f a, vec2f b) {
  * @return Component-wise product
  */
 static inline vec2f vec2f_mult(vec2f a, vec2f b) {
+    a.x *= b.x;
+    a.y *= b.y;
+    return a;
+}
+
+/**
+ * @brief Add two fixed point vectors.
+ * @param a First vector
+ * @param b Second vector
+ * @return Sum of a and b
+ */
+static inline vec2pt vec2pt_add(vec2pt a, vec2pt b) {
+    a.x += b.x;
+    a.y += b.y;
+    return a;
+}
+
+/**
+ * @brief Subtract two fixed point vectors.
+ * @param a First vector
+ * @param b Second vector (to subtract)
+ * @return a minus b
+ */
+static inline vec2pt vec2pt_sub(vec2pt a, vec2pt b) {
+    a.x -= b.x;
+    a.y -= b.y;
+    return a;
+}
+
+/**
+ * @brief Component-wise multiply two fixed point vectors.
+ * @param a First vector
+ * @param b Second vector
+ * @return Component-wise product
+ */
+static inline vec2pt vec2pt_mult(vec2pt a, vec2pt b) {
     a.x *= b.x;
     a.y *= b.y;
     return a;
@@ -179,6 +224,19 @@ static inline vec2i vec2i_create(int x, int y) {
  */
 static inline vec2f vec2f_create(float x, float y) {
     vec2f v;
+    v.x = x;
+    v.y = y;
+    return v;
+}
+
+/**
+ * @brief Create a fixed point vector from components.
+ * @param x X component
+ * @param y Y component
+ * @return New fixed point vector
+ */
+static inline vec2pt vec2pt_create(fixedpt x, fixedpt y) {
+    vec2pt v;
     v.x = x;
     v.y = y;
     return v;
