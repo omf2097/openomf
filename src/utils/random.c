@@ -26,6 +26,10 @@ float random_float(struct random_t *r) {
     return (float)random_intmax(r) / (float)UINT_MAX;
 }
 
+fixedpt random_fixedpt(struct random_t *r, fixedpt max) {
+    return (fixedpt)random_int(r, (uint32_t)max + 1);
+}
+
 void rand_seed(uint32_t seed) {
     random_seed(&rand_state, seed);
 }
@@ -40,4 +44,7 @@ uint32_t rand_intmax(void) {
 }
 float rand_float(void) {
     return random_float(&rand_state);
+}
+fixedpt rand_fixedpt(fixedpt max) {
+    return random_fixedpt(&rand_state, max);
 }
