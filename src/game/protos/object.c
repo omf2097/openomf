@@ -40,7 +40,7 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
     // Physics
     obj->layers = OBJECT_DEFAULT_LAYER;
     obj->group = GROUP_UNKNOWN;
-    obj->gravity = 0.0f;
+    obj->gravity = 0;
 
     // Video effect stuff
     obj->animation_video_effects = 0;
@@ -675,11 +675,11 @@ void object_set_layers(object *obj, int layers) {
 void object_set_group(object *obj, int group) {
     obj->group = group;
 }
-void object_set_gravity(object *obj, float gravity) {
+void object_set_gravity(object *obj, fixedpt gravity) {
     obj->gravity = gravity;
 }
 
-float object_get_gravity(const object *obj) {
+fixedpt object_get_gravity(const object *obj) {
     return obj->gravity;
 }
 int object_get_group(const object *obj) {

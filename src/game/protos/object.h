@@ -5,6 +5,7 @@
 #include "game/utils/serial.h"
 #include "resources/animation.h"
 #include "resources/sprite.h"
+#include "utils/fixedpt.h"
 #include "utils/hashmap.h"
 #include "utils/random.h"
 #include "utils/vec.h"
@@ -111,7 +112,7 @@ struct object_t {
 
     float x_percent;
     float y_percent;
-    float gravity;
+    fixedpt gravity;
 
     // Bitmask for several video effects (shadow, etc.)
     uint32_t frame_video_effects;     //< Effects that only last for current frame
@@ -216,7 +217,7 @@ void object_apply_controllable_velocity(object *obj, bool is_projectile, char in
 
 void object_set_layers(object *obj, int layers);
 void object_set_group(object *obj, int group);
-void object_set_gravity(object *obj, float gravity);
+void object_set_gravity(object *obj, fixedpt gravity);
 
 void object_set_userdata(object *obj, void *ptr);
 void *object_get_userdata(const object *obj);
@@ -235,7 +236,7 @@ int object_get_repeat(const object *obj);
 void object_set_direction(object *obj, int dir);
 int object_get_direction(const object *obj);
 
-float object_get_gravity(const object *obj);
+fixedpt object_get_gravity(const object *obj);
 int object_get_group(const object *obj);
 int object_get_layers(const object *obj);
 

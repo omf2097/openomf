@@ -515,7 +515,7 @@ void cb_har_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t m
         object_create(obj, parent->gs, pos, vel);
         object_set_stl(obj, object_get_stl(parent));
         object_set_animation(obj, &move->ani);
-        object_set_gravity(obj, g / 100.0f);
+        object_set_gravity(obj, fixedpt_fromint(g) / 100);
         object_set_pal_offset(obj, object_get_pal_offset(parent));
         object_set_pal_limit(obj, object_get_pal_limit(parent));
         // Set all projectiles to their own layer + har layer
@@ -783,7 +783,7 @@ void har_move(object *obj) {
         }
     } else {
         if(game_state_hars_are_alive(obj->gs)) {
-            obj->vel.y += obj->gravity;
+            obj->vel.y += fixedpt_tofloat(obj->gravity);
         } else {
             obj->vel.y += 230.0 / 256.0;
         }
@@ -1111,8 +1111,8 @@ static vec2f har_debris_random_vel(const object *har_obj, bool is_destruction) {
 }
 
 // gravity for sparks. scrap, nuts, and bolts seem to have different gravity
-static inline float har_sparks_random_gravity(const object *har_obj) {
-    return (float)(rand_int(30) + 40) / 100.0;
+static inline fixedpt har_sparks_random_gravity(const object *har_obj) {
+    return (rand_fixedpt(0x1e00) + 0x2800) / 100; // 0x1e00 = 30, 0x2800 = 40
 }
 
 // TODO: This is kind of a hack. It's used to check if either
@@ -1166,7 +1166,7 @@ void har_spawn_scrap(const object *obj, vec2i pos, int amount) {
         object_create(scrap, obj->gs, pos, har_debris_random_vel(obj, is_destruction(obj->gs)));
         object_set_animation(scrap, &af_get_move(h->af_data, anim_no)->ani);
         object_set_stl(scrap, object_get_stl(obj));
-        object_set_gravity(scrap, 1.0f);
+        object_set_gravity(scrap, FIXEDPT_ONE);
         object_set_layers(scrap, LAYER_SCRAP);
         object_set_group(scrap, GROUP_SCRAP);
         object_set_shadow(scrap, 1);
@@ -2410,8 +2410,8 @@ int har_act(object *obj, int act_type) {
         if(move->category == CAT_SCRAP || move->category == CAT_DESTRUCTION) {
             obj->horizontal_velocity_modifier = 1.0f;
             obj->vertical_velocity_modifier = 1.0f;
-            object_set_gravity(obj, fixedpt_tofloat(h->af_data->fall_speed));
-            object_set_gravity(enemy_obj, fixedpt_tofloat(enemy_har->af_data->fall_speed));
+            object_set_gravity(obj, h->af_data->fall_speed);
+            object_set_gravity(enemy_obj, enemy_har->af_data->fall_speed);
         }
 
         if(move->category == CAT_SCRAP) {
@@ -2857,7 +2857,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     object_set_pal_limit(obj, (player_id + 1) * 48);
 
     // Object related stuff
-    object_set_gravity(obj, fixedpt_tofloat(local->fall_speed));
+    object_set_gravity(obj, local->fall_speed);
     object_set_layers(obj, LAYER_HAR | (player_id == 0 ? LAYER_HAR1 : LAYER_HAR2));
     object_set_direction(obj, dir);
     object_set_repeat(obj, 1);
@@ -2985,7 +2985,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
 
 void har_reset(object *obj) {
     har *h = object_get_userdata(obj);
-    object_set_gravity(obj, fixedpt_tofloat(h->fall_speed));
+    object_set_gravity(obj, h->fall_speed);
     h->close = 0;
     h->state = STATE_STANDING;
     h->executing_move = 0;
