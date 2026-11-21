@@ -21,7 +21,7 @@ static uint32_t object_id = 1;
  * \param pos Initial position
  * \param vel Initial velocity
  */
-void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
+void object_create(object *obj, game_state *gs, vec2i pos, vec2pt vel) {
     // State
     obj->gs = gs;
     obj->id = object_id++;

@@ -12,6 +12,7 @@
 
 #include "utils/fixedpt.h"
 #include <stdint.h>
+#include "utils/fixedpt.h"
 
 /* Note: do not typedef random here because it will clash with stdlib's (linux?) random() */
 

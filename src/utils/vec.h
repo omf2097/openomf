@@ -142,8 +142,8 @@ static inline vec2pt vec2pt_sub(vec2pt a, vec2pt b) {
  * @return Component-wise product
  */
 static inline vec2pt vec2pt_mult(vec2pt a, vec2pt b) {
-    a.x *= b.x;
-    a.y *= b.y;
+    a.x = fixedpt_mul(a.x, b.x);
+    a.y = fixedpt_mul(a.y, b.y);
     return a;
 }
 
@@ -170,6 +170,19 @@ static inline vec2fp vec2i_to_f(vec2i i) {
     f.x = i.x;
     f.y = i.y;
     return f;
+}
+
+/**
+ * @brief Convert a fixed point vector to an integer vector.
+ * @details Components are truncated toward zero.
+ * @param pt Fixed point vector to convert
+ * @return Integer vector with truncated components
+ */
+static inline vec2i vec2pt_to_i(vec2pt pt) {
+    vec2i i;
+    i.x = fixedpt_toint(pt.x);
+    i.y = fixedpt_toint(pt.y);
+    return i;
 }
 
 /**
@@ -201,6 +214,37 @@ static inline vec2fp vec2f_norm(vec2fp a) {
  */
 static inline float vec2f_dist(vec2fp a, vec2fp b) {
     return vec2f_mag(vec2f_sub(a, b));
+}
+
+/**
+ * @brief Calculate the magnitude (length) of a fixed point vector.
+ * @param a Vector to measure
+ * @return Length of the vector
+ */
+static inline float vec2pt_mag(vec2pt a) {
+    return fixedpt_sqrt(fixedpt_mul(a.x, a.x) + fixedpt_mul(a.y, a.y));
+}
+
+/**
+ * @brief Normalize a fixed point vector to unit length.
+ * @param a Vector to normalize
+ * @return Unit vector in the same direction
+ */
+static inline vec2pt vec2pt_norm(vec2pt a) {
+    fixedpt mag = vec2pt_mag(a);
+    a.x = fixedpt_div(a.x, mag);
+    a.y = fixedpt_div(a.y, mag);
+    return a;
+}
+
+/**
+ * @brief Calculate the distance between two fixed point vectors.
+ * @param a First point
+ * @param b Second point
+ * @return Euclidean distance between a and b
+ */
+static inline float vec2pt_dist(vec2pt a, vec2pt b) {
+    return vec2pt_mag(vec2pt_sub(a, b));
 }
 
 /**

@@ -142,13 +142,13 @@ int intersect(const object *obj, const object *target, vec2i *point, bool is_har
             hcoords[found++] = vec2i_create(xcoord, ycoord);
         }
         if(found > 0) {
-            vec2f sum = vec2f_create(0, 0);
+            vec2pt sum = vec2pt_create(0, 0);
             for(int k = 0; k < found; k++) {
-                sum.x += hcoords[k].x;
-                sum.y += hcoords[k].y;
+                sum.x += fixedpt_fromint(hcoords[k].x);
+                sum.y += fixedpt_fromint(hcoords[k].y);
             }
-            point->x = (sum.x / found) + pos_b.x;
-            point->y = (sum.y / found) + pos_b.y;
+            point->x = fixedpt_toint(fixedpt_div(sum.x, fixedpt_fromint(found)) + fixedpt_fromint(pos_b.x));
+            point->y = fixedpt_toint(fixedpt_div(sum.y, fixedpt_fromint(found)) + fixedpt_fromint(pos_b.y));
             return 1;
         }
     }

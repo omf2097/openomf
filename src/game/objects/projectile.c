@@ -43,7 +43,7 @@ void projectile_finished(object *obj) {
     if(move->successor_id) {
         object_set_animation(obj, &af_get_move(local->af_data, move->successor_id)->ani);
         object_set_repeat(obj, 0);
-        object_set_vel(obj, vec2f_create(0, 0));
+        object_set_vel(obj, vec2pt_create(0, 0));
         object_set_finished(obj, false);
     }
 }

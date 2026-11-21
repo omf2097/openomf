@@ -6,7 +6,7 @@
 
 // TODO: This is kind of quick and dirty, think of something better.
 void scrap_move(object *obj) {
-    vec2f vel = object_get_vel(obj);
+    vec2pt vel = object_get_vel(obj);
     vec2i pos = object_get_pos(obj);
     if(object_is_rewind_tag_disabled(obj) > 0) {
         return;
