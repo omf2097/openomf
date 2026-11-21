@@ -89,10 +89,10 @@ struct object_t {
     uint32_t id;
     game_state *gs;
 
-    vec2f start;
-    vec2f pos;
-    vec2f vel;
-    vec2f cvel;
+    vec2pt start;
+    vec2pt pos;
+    vec2pt vel;
+    vec2pt cvel;
     float vertical_velocity_modifier;
     float horizontal_velocity_modifier;
     int8_t direction;
@@ -163,7 +163,7 @@ struct object_t {
     object_clone_free_cb clone_free;
 };
 
-void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel);
+void object_create(object *obj, game_state *gs, vec2i pos, vec2pt vel);
 void object_create_static(object *obj, game_state *gs);
 void object_render(object *obj);
 void object_render_shadow(object *obj);
@@ -259,10 +259,10 @@ int object_get_pal_limit(const object *obj);
 
 vec2i object_get_size(const object *obj);
 vec2i object_get_pos(const object *obj);
-vec2f object_get_vel(const object *obj);
+vec2pt object_get_vel(const object *obj);
 
 void object_set_pos(object *obj, vec2i pos);
-void object_set_vel(object *obj, vec2f vel);
+void object_set_vel(object *obj, vec2pt vel);
 
 int object_w(const object *obj);
 int object_h(const object *obj);

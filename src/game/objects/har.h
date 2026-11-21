@@ -215,7 +215,7 @@ uint8_t har_player_id(object *obj);
 
 int16_t har_health_percent(har *h);
 
-void cb_har_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t mp_flags, int s, int g, void *userdata);
+void cb_har_spawn_object(object *parent, int id, vec2i pos, vec2pt vel, uint8_t mp_flags, int s, int g, void *userdata);
 void cb_har_disable_animation(object *parent, uint8_t animation_id, uint16_t ticks, void *userdata);
 
 #endif // HAR_H

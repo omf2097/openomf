@@ -3,14 +3,14 @@
 #include "utils/allocator.h"
 #include "utils/log.h"
 
-void hazard_spawn_cb(object *parent, int id, vec2i pos, vec2f vel, uint8_t mp_flags, int s, int g, void *userdata) {
+void hazard_spawn_cb(object *parent, int id, vec2i pos, vec2pt vel, uint8_t mp_flags, int s, int g, void *userdata) {
     scene *sc = parent->gs->sc;
 
     // Get next animation
     bk_info *info = bk_get_info(sc->bk_data, id);
     if(info != NULL) {
         object *obj = omf_calloc(1, sizeof(object));
-        object_create(obj, parent->gs, vec2i_add(pos, info->ani.start_pos), vec2f_create(0, 0));
+        object_create(obj, parent->gs, vec2i_add(pos, info->ani.start_pos), vec2pt_create(0, 0));
         object_set_stl(obj, object_get_stl(parent));
         object_set_animation(obj, &info->ani);
         if(info->probability == 1) {

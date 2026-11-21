@@ -128,7 +128,7 @@ int game_state_get_assertion_operand(const rec_assertion_operand *op, game_state
         case ATTR_OPPONENT_DISTANCE: {
             object *obj_opp = game_state_find_object(
                 gs, game_player_get_har_obj_id(game_state_get_player(gs, abs(op->value.attr.har_id - 1))));
-            return fabsf(obj->pos.x - obj_opp->pos.x);
+            return abs(obj->pos.x - obj_opp->pos.x);
             case ATTR_DIRECTION:
                 return object_get_direction(obj);
         }
