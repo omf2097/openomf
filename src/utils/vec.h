@@ -1,9 +1,9 @@
 /**
  * @file vec.h
  * @brief 2D vector mathematics.
- * @details Provides 2D vector types and operations for both integer and
- *          floating-point coordinates. Used throughout the engine for
- *          positions, velocities, and other 2D quantities.
+ * @details Provides 2D vector types and operations for integer,
+ *          floating-point, and fixed point coordinates. Used throughout
+ *          the engine for positions, velocities, and other 2D quantities.
  * @copyright MIT License
  * @date 2026
  * @author OpenOMF Project
@@ -12,6 +12,7 @@
 #ifndef VEC_H
 #define VEC_H
 
+#include "utils/fixedpt.h"
 #include <math.h>
 
 /**
@@ -29,6 +30,14 @@ typedef struct vec2i {
     int x; ///< X component
     int y; ///< Y component
 } vec2i;
+
+/**
+ * @brief 2D vector with fixedpt components.
+ */
+typedef struct vec2pt {
+    fixedpt x; ///< X component
+    fixedpt y; ///< Y component
+} vec2pt;
 
 /**
  * @brief Add two integer vectors.
@@ -103,6 +112,42 @@ static inline vec2f vec2f_mult(vec2f a, vec2f b) {
 }
 
 /**
+ * @brief Add two fixed point vectors.
+ * @param a First vector
+ * @param b Second vector
+ * @return Sum of a and b
+ */
+static inline vec2pt vec2pt_add(vec2pt a, vec2pt b) {
+    a.x += b.x;
+    a.y += b.y;
+    return a;
+}
+
+/**
+ * @brief Subtract two fixed point vectors.
+ * @param a First vector
+ * @param b Second vector (to subtract)
+ * @return a minus b
+ */
+static inline vec2pt vec2pt_sub(vec2pt a, vec2pt b) {
+    a.x -= b.x;
+    a.y -= b.y;
+    return a;
+}
+
+/**
+ * @brief Component-wise multiply two fixed point vectors.
+ * @param a First vector
+ * @param b Second vector
+ * @return Component-wise product
+ */
+static inline vec2pt vec2pt_mult(vec2pt a, vec2pt b) {
+    a.x = fixedpt_mul(a.x, b.x);
+    a.y = fixedpt_mul(a.y, b.y);
+    return a;
+}
+
+/**
  * @brief Convert a float vector to an integer vector.
  * @details Components are truncated toward zero.
  * @param f Float vector to convert
@@ -125,6 +170,31 @@ static inline vec2f vec2i_to_f(vec2i i) {
     f.x = i.x;
     f.y = i.y;
     return f;
+}
+
+/**
+ * @brief Convert an integer vector to a fixed point vector.
+ * @param i Integer vector to convert
+ * @return Fixed point vector with the same component values
+ */
+static inline vec2pt vec2i_to_pt(vec2i i) {
+    vec2pt f;
+    f.x = fixedpt_fromint(i.x);
+    f.y = fixedpt_fromint(i.y);
+    return f;
+}
+
+/**
+ * @brief Convert a fixed point vector to an integer vector.
+ * @details Components are truncated toward zero.
+ * @param pt Fixed point vector to convert
+ * @return Integer vector with truncated components
+ */
+static inline vec2i vec2pt_to_i(vec2pt pt) {
+    vec2i i;
+    i.x = fixedpt_toint(pt.x);
+    i.y = fixedpt_toint(pt.y);
+    return i;
 }
 
 /**
@@ -159,6 +229,40 @@ static inline float vec2f_dist(vec2f a, vec2f b) {
 }
 
 /**
+ * @brief Calculate the magnitude (length) of a fixed point vector.
+ * @param a Vector to measure
+ * @return Length of the vector
+ */
+static inline fixedpt vec2pt_mag(vec2pt a) {
+    return fixedpt_sqrt(fixedpt_mul(a.x, a.x) + fixedpt_mul(a.y, a.y));
+}
+
+/**
+ * @brief Normalize a fixed point vector to unit length.
+ * @param a Vector to normalize
+ * @return Unit vector in the same direction
+ */
+static inline vec2pt vec2pt_norm(vec2pt a) {
+    fixedpt mag = vec2pt_mag(a);
+    if(mag == 0) {
+        return a;
+    }
+    a.x = fixedpt_div(a.x, mag);
+    a.y = fixedpt_div(a.y, mag);
+    return a;
+}
+
+/**
+ * @brief Calculate the distance between two fixed point vectors.
+ * @param a First point
+ * @param b Second point
+ * @return Euclidean distance between a and b
+ */
+static inline fixedpt vec2pt_dist(vec2pt a, vec2pt b) {
+    return vec2pt_mag(vec2pt_sub(a, b));
+}
+
+/**
  * @brief Create an integer vector from components.
  * @param x X component
  * @param y Y component
@@ -179,6 +283,19 @@ static inline vec2i vec2i_create(int x, int y) {
  */
 static inline vec2f vec2f_create(float x, float y) {
     vec2f v;
+    v.x = x;
+    v.y = y;
+    return v;
+}
+
+/**
+ * @brief Create a fixed point vector from components.
+ * @param x X component
+ * @param y Y component
+ * @return New fixed point vector
+ */
+static inline vec2pt vec2pt_create(fixedpt x, fixedpt y) {
+    vec2pt v;
     v.x = x;
     v.y = y;
     return v;
