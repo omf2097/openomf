@@ -17,6 +17,7 @@ void text_layout_test_suite(CU_pSuite suite);
 void text_markup_test_suite(CU_pSuite suite);
 void video_common_test_suite(CU_pSuite suite);
 void time_test_suite(CU_pSuite suite);
+void framebuffer_presenter_test_suite(CU_pSuite suite);
 int text_markup_suite_init(void);
 int text_markup_suite_free(void);
 void cp437_test_suite(CU_pSuite suite);
@@ -100,6 +101,12 @@ int main(int argc, char **argv) {
         goto end;
     }
     time_test_suite(suite);
+
+    suite = CU_add_suite("Framebuffer presenter", NULL, NULL);
+    if(suite == NULL) {
+        goto end;
+    }
+    framebuffer_presenter_test_suite(suite);
 
     CU_pSuite text_layout_suite = CU_add_suite("Text Layout", NULL, NULL);
     if(text_layout_suite == NULL) {
