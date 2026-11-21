@@ -66,7 +66,7 @@ void projectile_move(object *obj) {
     object *obj_har = game_state_find_object(gs, game_player_get_har_obj_id(player));
 
     obj->pos.x += (obj->vel.x + obj->cvel.x);
-    obj->vel.y += obj->gravity;
+    obj->vel.y += fixedpt_tofloat(obj->gravity);
     obj->pos.y += (obj->vel.y + obj->cvel.y);
 
     float dampen = 0.7f;
@@ -105,8 +105,8 @@ void projectile_move(object *obj) {
         object_set_finished(obj, true);
         projectile_finished(obj);
     }
-    if(obj->pos.y >= (ARENA_FLOOR - 5) && IS_ZERO(obj->vel.x) && obj->vel.y < obj->gravity * 1.1 &&
-       obj->vel.y > obj->gravity * -1.1 && local->ground_freeze) {
+    if(obj->pos.y >= (ARENA_FLOOR - 5) && IS_ZERO(obj->vel.x) && obj->vel.y < fixedpt_tofloat(obj->gravity) * 1.1 &&
+       obj->vel.y > fixedpt_tofloat(obj->gravity) * -1.1 && local->ground_freeze) {
 
         object_disable_rewind_tag(obj, 1);
     }
