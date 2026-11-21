@@ -10,6 +10,7 @@
 #ifndef RANDOM_H
 #define RANDOM_H
 
+#include "utils/fixedpt.h"
 #include <stdint.h>
 
 /* Note: do not typedef random here because it will clash with stdlib's (linux?) random() */
@@ -59,6 +60,13 @@ uint32_t random_intmax(struct random_t *r);
 float random_float(struct random_t *r);
 
 /**
+ * @brief Generate a random fixed point in range [0, max].
+ * @param r RNG state to use
+ * @return Random float in [0, max]
+ */
+fixedpt random_fixedpt(struct random_t *r, fixedpt max);
+
+/**
  * @brief Initialize the global RNG with a seed value.
  * @details Use as a replacement for srand().
  * @param seed Seed value for the generator
@@ -92,5 +100,12 @@ uint32_t rand_intmax(void);
  * @return Random float in [0.0, 1.0]
  */
 float rand_float(void);
+
+/**
+ * @brief Generate a random fixed point in range [0, max].
+ * @details Uses the global RNG state.
+ * @return Random fixed point in [0, max]
+ */
+fixedpt rand_fixedpt(fixedpt max);
 
 #endif // RANDOM_H
