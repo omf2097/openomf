@@ -13,7 +13,7 @@ void scrap_move(object *obj) {
     }
 
     pos.x += vel.x;
-    vel.y += fixedpt_tofloat(obj->gravity);
+    vel.y += obj->gravity;
     pos.y += vel.y;
 
     float dampen = 0.4f;
@@ -38,8 +38,8 @@ void scrap_move(object *obj) {
     object_set_vel(obj, vel);
 
     // If object is at rest, just halt animation
-    if(pos.y >= (ARENA_FLOOR - 5) && IS_ZERO(vel.x) && vel.y < fixedpt_tofloat(obj->gravity) * 1.1 &&
-       vel.y > fixedpt_tofloat(obj->gravity) * -1.1) {
+    // FIXME: This was abs(vel.y) < obj->gravity * 1.1, but ugly with fixed point
+    if(pos.y >= (ARENA_FLOOR - 5) && IS_ZERO(vel.x) && abs(vel.y) <= obj->gravity) {
         object_disable_rewind_tag(obj, 1);
     }
 }

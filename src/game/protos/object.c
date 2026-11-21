@@ -497,7 +497,7 @@ int object_act(object *obj, int action) {
 
 void object_move(object *obj) {
     if(obj->sprite_state.disable_gravity) {
-        object_set_vel(obj, vec2f_create(0, 0));
+        object_set_vel(obj, vec2pt_create(0, 0));
     }
     if(obj->move != NULL) {
         obj->move(obj);
