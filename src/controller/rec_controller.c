@@ -21,17 +21,32 @@ void rec_controller_free(controller *ctrl) {
     rec_controller_data *data = ctrl->data;
     if(data) {
 
-        iterator it;
-        vector_iter_begin(&data->game_states, &it);
-        game_state *gs = NULL;
-        foreach(it, gs) {
+        while(vector_size(&data->game_states) > 0) {
+            game_state *gs = vector_back(&data->game_states);
             game_state_free(gs);
+            vector_pop(&data->game_states);
         }
         vector_free(&data->game_states);
 
         hashmap_free(&data->tick_lookup);
         omf_free(data);
     }
+}
+
+static int rec_controller_count_game_state_clones(controller *ctrl, game_state *clones_of) {
+    rec_controller_data *data = ctrl->data;
+    int clone_count = 0;
+    if(data) {
+        iterator it;
+        vector_iter_begin(&data->game_states, &it);
+        game_state *gs = NULL;
+        foreach(it, gs) {
+            if(gs != clones_of && gs->clones == clones_of->clones) {
+                clone_count++;
+            }
+        }
+    }
+    return clone_count;
 }
 
 static int unpack_sd_action(sd_action move_action) {
@@ -228,6 +243,7 @@ void rec_controller_create(controller *ctrl, int player, sd_rec_file *rec) {
     ctrl->data = data;
     ctrl->type = CTRL_TYPE_REC;
     ctrl->poll_fun = &rec_controller_poll;
+    ctrl->count_game_state_clones = &rec_controller_count_game_state_clones;
     ctrl->free_fun = &rec_controller_free;
     ctrl->dyntick_fun = &rec_controller_dyntick;
     ctrl->rewind_fun = &rec_controller_step_back;

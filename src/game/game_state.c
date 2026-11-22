@@ -1244,8 +1244,15 @@ void game_state_menu_poll(game_state *gs, ctrl_event **ev) {
 }
 
 void game_state_free(game_state *gs) {
-    bool clone = *gs->clones > 0;
-    (*gs->clones)--;
+    int contained = 0;
+    // count how many game_state clones are contained within the controllers
+    for(int i = 0; i < game_state_num_players(gs); i++) {
+        game_player *gp = game_state_get_player(gs, i);
+        controller *ctrl = game_player_get_ctrl(gp);
+        contained += controller_count_game_state_clones(ctrl, gs);
+    }
+
+    bool clone = *gs->clones > contained;
 
     // Free objects
     render_obj *robj;
@@ -1293,6 +1300,7 @@ void game_state_free(game_state *gs) {
     }
 
     // Clone check
+    (*gs->clones)--;
     if(clone) {
         // don't free the rest, a clone is still using it
         return;

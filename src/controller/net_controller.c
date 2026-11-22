@@ -648,6 +648,16 @@ int net_controller_tick_offset(controller *ctrl) {
     return data->tick_offset / 2;
 }
 
+static int net_controller_count_game_state_clones(controller *ctrl, game_state *clones_of) {
+    wtf *data = ctrl->data;
+    if(data->gs_bak && data->gs_bak != clones_of && data->gs_bak->clones == clones_of->clones) {
+        // `data->gs_bak` is a clone of `clones_of`
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
 void net_controller_free(controller *ctrl) {
     wtf *data = ctrl->data;
 
@@ -706,8 +716,10 @@ done:
     }
     list_free(&data->transcript);
     if(data->gs_bak) {
-        game_state_free(data->gs_bak);
-        omf_free(data->gs_bak);
+        game_state *gs_bak = data->gs_bak;
+        data->gs_bak = NULL;
+        game_state_free(gs_bak);
+        omf_free(gs_bak);
     }
     if(ctrl->data) {
         omf_free(ctrl->data);
@@ -1338,6 +1350,7 @@ void net_controller_create(controller *ctrl, ENetHost *host, ENetPeer *peer, ENe
     ctrl->type = CTRL_TYPE_NETWORK;
     ctrl->tick_fun = &net_controller_tick;
     ctrl->controller_hook = &controller_hook;
+    ctrl->count_game_state_clones = &net_controller_count_game_state_clones;
     ctrl->free_fun = &net_controller_free;
     ctrl->poll_fun = &net_controller_poll;
 }

@@ -49,6 +49,14 @@ void controller_clear_hooks(controller *ctrl) {
     }
 }
 
+int controller_count_game_state_clones(controller *ctrl, game_state *clones_of) {
+    if(clones_of && ctrl && ctrl->count_game_state_clones) {
+        return ctrl->count_game_state_clones(ctrl, clones_of);
+    } else {
+        return 0;
+    }
+}
+
 void controller_free_chain(ctrl_event *ev) {
     ctrl_event *now = ev;
     ctrl_event *tmp;
