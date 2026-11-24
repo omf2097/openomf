@@ -1300,7 +1300,7 @@ void har_cornerpush(const object *self, object *enemy, const float distance) {
             }
             h->cornerpush_vel_applied = true;
             vec2f vel = object_get_vel(enemy);
-            vel.x = distance < 0 ? -1 : 1 * pushvel;
+            vel.x = (distance < 0 ? -1 : 1) * pushvel;
             object_set_vel(enemy, vel);
         }
     }
