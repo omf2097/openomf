@@ -104,7 +104,7 @@ static void cutscene_spawn_random(scene *scene) {
                 continue;
             }
             object *obj = omf_calloc(1, sizeof(object));
-            object_create(obj, scene->gs, info->ani.start_pos, vec2f_create(0, 0));
+            object_create(obj, scene->gs, info->ani.start_pos, vec2pt_create(0, 0));
             object_set_stl(obj, scene->bk_data->sound_translation_table);
             object_set_animation(obj, &info->ani);
 
@@ -147,7 +147,7 @@ int cutscene_create(scene *scene) {
             // Pilot face
             animation *ani = &bk_get_info(scene->bk_data, 3)->ani;
             object *obj = omf_calloc(1, sizeof(object));
-            object_create(obj, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
+            object_create(obj, scene->gs, vec2i_create(0, 0), vec2pt_create(0, 0));
             object_set_animation(obj, ani);
             object_select_sprite(obj, p1->pilot->pilot_id);
             object_set_halt(obj, 1);
@@ -156,7 +156,7 @@ int cutscene_create(scene *scene) {
             // Face effects
             ani = &bk_get_info(scene->bk_data, 10 + p1->pilot->pilot_id)->ani;
             obj = omf_calloc(1, sizeof(object));
-            object_create(obj, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
+            object_create(obj, scene->gs, vec2i_create(0, 0), vec2pt_create(0, 0));
             object_set_animation(obj, ani);
             game_state_add_object(scene->gs, obj, RENDER_LAYER_TOP, 0, 0);
             break;
@@ -187,7 +187,7 @@ int cutscene_create(scene *scene) {
                 if(bki) {
                     ani = &bki->ani;
                     obj = omf_calloc(1, sizeof(object));
-                    object_create(obj, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
+                    object_create(obj, scene->gs, vec2i_create(0, 0), vec2pt_create(0, 0));
                     object_set_stl(obj, scene->bk_data->sound_translation_table);
                     object_set_animation(obj, ani);
                     game_state_add_object(scene->gs, obj, RENDER_LAYER_TOP, 0, 0);

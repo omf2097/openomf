@@ -845,10 +845,10 @@ static void load_har_portraits(scene *scene, melee_local *local) {
 }
 
 static void load_hars(scene *scene, melee_local *local, bool player2_is_selectable) {
-    object_create(&local->har[0], scene->gs, vec2i_create(110, 95), vec2f_create(0, 0));
+    object_create(&local->har[0], scene->gs, vec2i_create(110, 95), vec2pt_create(0, 0));
     update_har(scene, 0);
     if(player2_is_selectable) {
-        object_create(&local->har[1], scene->gs, vec2i_create(210, 95), vec2f_create(0, 0));
+        object_create(&local->har[1], scene->gs, vec2i_create(210, 95), vec2pt_create(0, 0));
         update_har(scene, 1);
         object_set_direction(&local->har[1], OBJECT_FACE_LEFT);
         object_set_pal_offset(&local->har[1], 48);
@@ -985,7 +985,7 @@ int melee_create(scene *scene) {
         local->wins[1] = create_black_text(160 - 8, 6, tmp);
         text_set_horizontal_align(local->wins[1], TEXT_ALIGN_RIGHT);
 
-        object_create(&local->big_portrait_2, scene->gs, vec2i_create(320, 0), vec2f_create(0, 0));
+        object_create(&local->big_portrait_2, scene->gs, vec2i_create(320, 0), vec2pt_create(0, 0));
         object_set_animation(&local->big_portrait_2, pilot_big_portraits);
         object_select_sprite(&local->big_portrait_2, 4);
         object_set_direction(&local->big_portrait_2, OBJECT_FACE_LEFT);

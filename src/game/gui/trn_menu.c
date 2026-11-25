@@ -39,22 +39,22 @@ void trnmenu_attach(component *c, component *nc) {
     component_attach(c, nc);
 }
 
-static vec2f center(const component *c) {
+static vec2pt center(const component *c) {
     const vec2i pos = component_get_pos(c);
     const vec2i size = component_get_size(c);
-    return vec2f_create(pos.x + size.x / 2, pos.y + size.y / 2);
+    return vec2pt_create(fixedpt_fromint(pos.x + size.x / 2), fixedpt_fromint(pos.y + size.y / 2));
 }
 
-static vec2f rcenter(const component *c) {
+static vec2pt rcenter(const component *c) {
     const vec2i pos = component_get_pos(c);
     const vec2i size = component_get_size(c);
-    return vec2f_create(pos.x + size.x, pos.y + size.y / 2);
+    return vec2pt_create(fixedpt_fromint(pos.x + size.x), fixedpt_fromint(pos.y + size.y / 2));
 }
 
-static vec2f lcenter(const component *c) {
+static vec2pt lcenter(const component *c) {
     const vec2i pos = component_get_pos(c);
     const vec2i size = component_get_size(c);
-    return vec2f_create(pos.x, pos.y + size.y / 2);
+    return vec2pt_create(fixedpt_fromint(pos.x), fixedpt_fromint(pos.y + size.y / 2));
 }
 
 static void trnmenu_hand_finished(object *hand_obj) {
@@ -85,7 +85,7 @@ static int trnmenu_hand_select(component *c) {
     component_focus(sel, 1);
     m->hand.move = 1;
     m->hand.pstart = object_get_pos(m->hand.obj);
-    m->hand.pend = vec2f_to_i(center(sel));
+    m->hand.pend = vec2pt_to_i(center(sel));
     m->hand.moved = 0.0f;
     return 1;
 }
@@ -101,7 +101,7 @@ void trnmenu_bind_hand(component *c, animation *hand_ani, game_state *gs) {
 
     // Set up new hand object
     m->hand.obj = omf_calloc(1, sizeof(object));
-    object_create(m->hand.obj, gs, vec2i_create(0, 0), vec2f_create(0, 0));
+    object_create(m->hand.obj, gs, vec2i_create(0, 0), vec2pt_create(0, 0));
     object_set_animation(m->hand.obj, hand_ani);
     object_set_userdata(m->hand.obj, &m->hand);
     object_set_finish_cb(m->hand.obj, trnmenu_hand_finished);
@@ -178,7 +178,7 @@ static void trnmenu_layout(component *c, int x, int y, int w, int h) {
     // Set initial hand position
     component *sel = component_get_child(c, m->selected);
     if(sel != NULL) {
-        object_set_pos(m->hand.obj, vec2f_to_i(center(sel)));
+        object_set_pos(m->hand.obj, vec2pt_to_i(center(sel)));
     }
 }
 
@@ -190,7 +190,7 @@ static int find_next_button(component *c, int act) {
     component_iter_begin(c, &it);
 
     component *cur = component_get_child(c, m->selected);
-    float best_dist = 9999.0f;
+    fixedpt best_dist = FIXEDPT_MAX;
     int best_idx = -1;
     int idx_now = 0;
     foreach(it, tmp) {
@@ -202,7 +202,7 @@ static int find_next_button(component *c, int act) {
         switch(act) {
             case ACT_LEFT:
                 if(component_get_pos(t).x < component_get_pos(cur).x) {
-                    float tdist = vec2f_dist(rcenter(t), lcenter(cur));
+                    fixedpt tdist = vec2pt_dist(rcenter(t), lcenter(cur));
                     if(tdist < best_dist) {
                         best_dist = tdist;
                         best_idx = idx_now;
@@ -211,7 +211,7 @@ static int find_next_button(component *c, int act) {
                 break;
             case ACT_RIGHT:
                 if(component_get_pos(t).x > component_get_pos(cur).x) {
-                    float tdist = vec2f_dist(lcenter(t), rcenter(cur));
+                    fixedpt tdist = vec2pt_dist(lcenter(t), rcenter(cur));
                     if(tdist < best_dist) {
                         best_dist = tdist;
                         best_idx = idx_now;
@@ -220,7 +220,7 @@ static int find_next_button(component *c, int act) {
                 break;
             case ACT_UP:
                 if(component_get_pos(t).y < component_get_pos(cur).y) {
-                    float tdist = vec2f_dist(center(t), center(cur));
+                    fixedpt tdist = vec2pt_dist(center(t), center(cur));
                     if(tdist < best_dist) {
                         best_dist = tdist;
                         best_idx = idx_now;
@@ -229,7 +229,7 @@ static int find_next_button(component *c, int act) {
                 break;
             case ACT_DOWN:
                 if(component_get_pos(t).y > component_get_pos(cur).y) {
-                    float tdist = vec2f_dist(center(t), center(cur));
+                    fixedpt tdist = vec2pt_dist(center(t), center(cur));
                     if(tdist < best_dist) {
                         best_dist = tdist;
                         best_idx = idx_now;

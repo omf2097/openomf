@@ -109,13 +109,13 @@ int game_state_get_assertion_operand(const rec_assertion_operand *op, game_state
     const har *har = object_get_userdata(obj);
     switch(op->value.attr.attribute) {
         case ATTR_X_POS:
-            return obj->pos.x;
+            return fixedpt_toint(obj->pos.x);
         case ATTR_Y_POS:
-            return obj->pos.y;
+            return fixedpt_toint(obj->pos.y);
         case ATTR_X_VEL:
-            return obj->vel.x;
+            return fixedpt_toint(obj->vel.x);
         case ATTR_Y_VEL:
-            return obj->vel.y;
+            return fixedpt_toint(obj->vel.y);
         case ATTR_STATE_ID:
             return har->state;
         case ATTR_ANIMATION_ID:
@@ -128,7 +128,7 @@ int game_state_get_assertion_operand(const rec_assertion_operand *op, game_state
         case ATTR_OPPONENT_DISTANCE: {
             object *obj_opp = game_state_find_object(
                 gs, game_player_get_har_obj_id(game_state_get_player(gs, abs(op->value.attr.har_id - 1))));
-            return fabsf(obj->pos.x - obj_opp->pos.x);
+            return fixedpt_toint(labs(obj->pos.x - obj_opp->pos.x));
             case ATTR_DIRECTION:
                 return object_get_direction(obj);
         }
@@ -170,16 +170,16 @@ bool game_state_check_assertion_is_met(rec_assertion *ass, game_state *gs) {
 
             switch(ass->operand1.value.attr.attribute) {
                 case ATTR_X_POS:
-                    obj->pos.x = operand2;
+                    obj->pos.x = fixedpt_fromint(operand2);
                     return true;
                 case ATTR_Y_POS:
-                    obj->pos.y = operand2;
+                    obj->pos.y = fixedpt_fromint(operand2);
                     return true;
                 case ATTR_X_VEL:
-                    obj->vel.x = operand2;
+                    obj->vel.x = fixedpt_fromint(operand2);
                     return true;
                 case ATTR_Y_VEL:
-                    obj->vel.y = operand2;
+                    obj->vel.y = fixedpt_fromint(operand2);
                     return true;
                 case ATTR_HEALTH:
                     har->health = operand2;
