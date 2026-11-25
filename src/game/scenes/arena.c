@@ -1887,12 +1887,12 @@ int arena_create(scene *scene) {
             for(int j = 0; j < 4; j++) {
                 if(j < ceilf(local->rounds / 2.0f)) {
                     object *round_token = omf_calloc(1, sizeof(object));
-                    int xoff = 110 + 9 * j + 3 + j;
+                    int xoff = 112 + 10 * j;
                     if(i == 1) {
-                        xoff = 210 - 9 * j - 3 - j;
+                        xoff = 208 - 10 * j;
                     }
                     animation *ani = &bk_get_info(scene->bk_data, 27)->ani;
-                    object_create(round_token, scene->gs, vec2i_create(xoff, 9), vec2f_create(0, 0));
+                    object_create(round_token, scene->gs, vec2i_create(xoff, 8), vec2f_create(0, 0));
                     local->player_rounds[i][j] = round_token->id;
                     object_set_animation(round_token, ani);
                     object_select_sprite(round_token, 1);
@@ -2014,13 +2014,13 @@ int arena_create(scene *scene) {
 
     // Health and endurance bars
     local->health_bars[0] = progressbar_create(PROGRESSBAR_THEME_HEALTH, PROGRESSBAR_RIGHT, 100);
-    component_layout(local->health_bars[0], 4, 4, 100, 8);
+    component_layout(local->health_bars[0], 4, 4, 101, 8);
     local->health_bars[1] = progressbar_create(PROGRESSBAR_THEME_HEALTH, PROGRESSBAR_LEFT, 100);
-    component_layout(local->health_bars[1], 216, 4, 100, 8);
+    component_layout(local->health_bars[1], 216, 4, 101, 8);
     local->endurance_bars[0] = progressbar_create(PROGRESSBAR_THEME_ENDURANCE, PROGRESSBAR_RIGHT, 100);
-    component_layout(local->endurance_bars[0], 4, 13, 100, 4);
+    component_layout(local->endurance_bars[0], 4, 13, 101, 4);
     local->endurance_bars[1] = progressbar_create(PROGRESSBAR_THEME_ENDURANCE, PROGRESSBAR_LEFT, 100);
-    component_layout(local->endurance_bars[1], 216, 13, 100, 4);
+    component_layout(local->endurance_bars[1], 216, 13, 101, 4);
 
     // Score positioning
     chr_score_set_pos(game_player_get_score(_player[0]), 4, 32, OBJECT_FACE_RIGHT);
