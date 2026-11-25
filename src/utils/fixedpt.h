@@ -94,4 +94,11 @@ static inline char *fixedpt_cstr(const fixedpt A, const int max_dec) {
     return (str);
 }
 
+/* Write fixedpt A into buf as a string, and return buf.
+ * The size of buf must be at least FIXEDPT_STR_BUFSIZE. */
+static inline const char *fixedpt_cstr_buf(const fixedpt A, char buf[FIXEDPT_STR_BUFSIZE]) {
+    fixedpt_str(A, buf, FIXEDPT_STR_BUFSIZE, -3);
+    return buf;
+}
+
 #endif // FIXEDPT_H
