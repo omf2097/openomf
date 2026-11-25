@@ -763,26 +763,7 @@ int object_px(const object *obj) {
     return vec2f_to_i(obj->pos).x;
 }
 int object_py(const object *obj) {
-    return vec2f_to_i(obj->pos).y;
-}
-float object_vx(const object *obj) {
-    return obj->vel.x;
-}
-float object_vy(const object *obj) {
-    return obj->vel.y;
-}
-
-void object_set_px(object *obj, int val) {
-    obj->pos.x = val;
-}
-void object_set_py(object *obj, int val) {
-    obj->pos.y = val;
-}
-void object_set_vx(object *obj, float val) {
-    obj->vel.x = val;
-}
-void object_set_vy(object *obj, float val) {
-    obj->vel.y = val;
+    return vec2pt_to_i(obj->pos).y;
 }
 
 vec2i object_get_pos(const object *obj) {
