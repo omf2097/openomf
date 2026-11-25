@@ -22,7 +22,7 @@
 #define TEXT_GREEN 0xA7
 #define TEXT_SHADOW_GREEN 0xA2
 
-void cb_vs_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t mp_flags, int s, int g, void *userdata);
+void cb_vs_spawn_object(object *parent, int id, vec2i pos, vec2pt vel, uint8_t mp_flags, int s, int g, void *userdata);
 void cb_vs_destroy_object(object *parent, int id, void *userdata);
 
 typedef struct report_card {
@@ -125,14 +125,14 @@ vec2i spawn_position(int index, int scientist) {
     return vec2i_create(160, 200);
 }
 
-void cb_vs_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t mp_flags, int s, int g, void *userdata) {
+void cb_vs_spawn_object(object *parent, int id, vec2i pos, vec2pt vel, uint8_t mp_flags, int s, int g, void *userdata) {
     scene *sc = (scene *)userdata;
 
     // Get next animation
     bk_info *info = bk_get_info(sc->bk_data, id);
     if(info != NULL) {
         object *obj = omf_calloc(1, sizeof(object));
-        object_create(obj, parent->gs, vec2i_add(pos, vec2f_to_i(parent->pos)), vel);
+        object_create(obj, parent->gs, vec2i_add(pos, vec2pt_to_i(parent->pos)), vel);
         object_set_stl(obj, object_get_stl(parent));
         object_set_animation(obj, &info->ani);
         object_set_spawn_cb(obj, cb_vs_spawn_object, userdata);
@@ -561,7 +561,7 @@ int vs_create(scene *scene) {
     animation *ani;
     ani = &bk_get_info(scene->bk_data, 5)->ani;
     object *player1_har = omf_calloc(1, sizeof(object));
-    object_create(player1_har, scene->gs, vec2i_create(160, 0), vec2f_create(0, 0));
+    object_create(player1_har, scene->gs, vec2i_create(160, 0), vec2pt_create(0, 0));
     object_set_animation(player1_har, ani);
     object_select_sprite(player1_har, player1->pilot->har_id);
     object_set_halt(player1_har, 1);
@@ -569,7 +569,7 @@ int vs_create(scene *scene) {
 
     if(player2->pilot) {
         object *player2_har = omf_calloc(1, sizeof(object));
-        object_create(player2_har, scene->gs, vec2i_create(160, 0), vec2f_create(0, 0));
+        object_create(player2_har, scene->gs, vec2i_create(160, 0), vec2pt_create(0, 0));
         object_set_animation(player2_har, ani);
         object_select_sprite(player2_har, player2->pilot->har_id);
         object_set_direction(player2_har, OBJECT_FACE_LEFT);
@@ -580,7 +580,7 @@ int vs_create(scene *scene) {
 
         // PLAYER
         object *player1_portrait = omf_calloc(1, sizeof(object));
-        object_create(player1_portrait, scene->gs, vec2i_create(-10, 150), vec2f_create(0, 0));
+        object_create(player1_portrait, scene->gs, vec2i_create(-10, 150), vec2pt_create(0, 0));
         ani = &bk_get_info(scene->bk_data, 4)->ani;
         if(player1->chr) {
             object_set_sprite_override(player1_portrait, 1);
@@ -597,7 +597,7 @@ int vs_create(scene *scene) {
         game_state_add_object(scene->gs, player1_portrait, RENDER_LAYER_TOP, 0, 0);
 
         object *player2_portrait = omf_calloc(1, sizeof(object));
-        object_create(player2_portrait, scene->gs, vec2i_create(330, 150), vec2f_create(0, 0));
+        object_create(player2_portrait, scene->gs, vec2i_create(330, 150), vec2pt_create(0, 0));
         if(player1->chr) {
             object_set_sprite_override(player2_portrait, 1);
             sprite *sp = omf_calloc(1, sizeof(sprite));
@@ -617,7 +617,7 @@ int vs_create(scene *scene) {
         // plug time!!!!!!!111eleven!
         object *plug = omf_calloc(1, sizeof(object));
         fight_stats *fight_stats = &scene->gs->fight_stats;
-        object_create(plug, scene->gs, vec2i_create(-10, 150), vec2f_create(0, 0));
+        object_create(plug, scene->gs, vec2i_create(-10, 150), vec2pt_create(0, 0));
         ani = &bk_get_info(scene->bk_data, 2)->ani;
         object_set_animation(plug, ani);
         // plug should be happy, sometimes? he is happy on frame 1
@@ -695,7 +695,7 @@ int vs_create(scene *scene) {
     if(player2->selectable) {
         ani = &bk_get_info(scene->bk_data, 3)->ani;
         object *arena_select = omf_calloc(1, sizeof(object));
-        object_create(arena_select, scene->gs, vec2i_create(59, 155), vec2f_create(0, 0));
+        object_create(arena_select, scene->gs, vec2i_create(59, 155), vec2pt_create(0, 0));
         local->arena_select_obj_id = arena_select->id;
         object_set_animation(arena_select, ani);
         object_select_sprite(arena_select, scene->gs->arena);
@@ -719,7 +719,7 @@ int vs_create(scene *scene) {
     }
     object *o_scientist = omf_calloc(1, sizeof(object));
     ani = &bk_get_info(scene->bk_data, 8)->ani;
-    object_create(o_scientist, scene->gs, scientistcoord, vec2f_create(0, 0));
+    object_create(o_scientist, scene->gs, scientistcoord, vec2pt_create(0, 0));
     object_set_animation(o_scientist, ani);
     object_select_sprite(o_scientist, 0);
     object_set_direction(o_scientist, scientistpos % 2 ? OBJECT_FACE_LEFT : OBJECT_FACE_RIGHT);
@@ -744,7 +744,7 @@ int vs_create(scene *scene) {
     }
     object *o_welder = omf_calloc(1, sizeof(object));
     ani = &bk_get_info(scene->bk_data, 7)->ani;
-    object_create(o_welder, scene->gs, spawn_position(welderpos, 0), vec2f_create(0, 0));
+    object_create(o_welder, scene->gs, spawn_position(welderpos, 0), vec2pt_create(0, 0));
     object_set_animation(o_welder, ani);
     object_select_sprite(o_welder, 0);
     object_set_spawn_cb(o_welder, cb_vs_spawn_object, (void *)scene);
@@ -755,14 +755,14 @@ int vs_create(scene *scene) {
     // GANTRIES
     object *o_gantry_a = omf_calloc(1, sizeof(object));
     ani = &bk_get_info(scene->bk_data, 11)->ani;
-    object_create(o_gantry_a, scene->gs, vec2i_create(0, 0), vec2f_create(0, 0));
+    object_create(o_gantry_a, scene->gs, vec2i_create(0, 0), vec2pt_create(0, 0));
     object_set_animation(o_gantry_a, ani);
     object_select_sprite(o_gantry_a, 0);
     game_state_add_object(scene->gs, o_gantry_a, RENDER_LAYER_TOP, 0, 0);
 
     if(player2->pilot) {
         object *o_gantry_b = omf_calloc(1, sizeof(object));
-        object_create(o_gantry_b, scene->gs, vec2i_create(320, 0), vec2f_create(0, 0));
+        object_create(o_gantry_b, scene->gs, vec2i_create(320, 0), vec2pt_create(0, 0));
         object_set_animation(o_gantry_b, ani);
         object_select_sprite(o_gantry_b, 0);
         object_set_direction(o_gantry_b, OBJECT_FACE_LEFT);

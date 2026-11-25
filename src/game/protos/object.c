@@ -21,15 +21,15 @@ static uint32_t object_id = 1;
  * \param pos Initial position
  * \param vel Initial velocity
  */
-void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel) {
+void object_create(object *obj, game_state *gs, vec2i pos, vec2pt vel) {
     // State
     obj->gs = gs;
     obj->id = object_id++;
 
     // Position related
-    obj->pos = vec2i_to_f(pos);
+    obj->pos = vec2i_to_pt(pos);
     // remember the place we were spawned, the x= and y= tags are relative to that
-    obj->start = vec2i_to_f(pos);
+    obj->start = vec2i_to_pt(pos);
     obj->vel = vel;
     obj->horizontal_velocity_modifier = obj->vertical_velocity_modifier = 1.0f;
     obj->direction = OBJECT_FACE_RIGHT;
@@ -104,7 +104,7 @@ int object_clone(object *src, object *dst, game_state *gs) {
 // FIXME: This was removed in HEAD, not sure why or what is the replacement
 // TODO: GET RID
 void object_create_static(object *obj, game_state *gs) {
-    object_create(obj, gs, vec2i_create(0, 0), vec2f_create(0, 0));
+    object_create(obj, gs, vec2i_create(0, 0), vec2pt_create(0, 0));
 }
 
 void object_set_stride(object *obj, int stride) {
@@ -318,7 +318,7 @@ void object_del_frame_effects(object *obj, uint32_t effects) {
 // Assuming pre-flipped input
 void object_apply_controllable_velocity(object *obj, bool is_projectile, char input) {
     if(player_frame_isset(obj, TAG_CX)) {
-        float cx = player_frame_get(obj, TAG_CX) / 10.0;
+        fixedpt cx = fixedpt_xdiv(fixedpt_fromint(player_frame_get(obj, TAG_CX)), 0xa00); // 0xa00 = 10
         if(!is_projectile) {
             cx *= obj->horizontal_velocity_modifier;
         }
@@ -333,7 +333,7 @@ void object_apply_controllable_velocity(object *obj, bool is_projectile, char in
         }
         // CY needs CX to be set, and only works for projectiles
         if(player_frame_isset(obj, TAG_CY) && is_projectile) {
-            float cy = player_frame_get(obj, TAG_CY) / 10.0;
+            fixedpt cy = fixedpt_xdiv(fixedpt_fromint(player_frame_get(obj, TAG_CY)), 0xa00); // 0xa00 = 10
             if(input == '8') {
                 obj->cvel.y -= cy;
             } else if(input == '2') {
@@ -372,16 +372,17 @@ void object_render(object *obj) {
     int y;
     int w = obj->cur_surface->render_w * obj->x_percent;
     int h = obj->cur_surface->render_h * obj->y_percent;
+    vec2i pos = object_get_pos(obj);
 
     // Set Y coord, take into account sprite flipping
     if(rstate->flipmode & FLIP_VERTICAL) {
-        y = obj->pos.y - ((cur_sprite->pos.y - rstate->o_correction.y) * obj->y_percent) - h;
+        y = pos.y - ((cur_sprite->pos.y - rstate->o_correction.y) * obj->y_percent) - h;
 
         if(obj->cur_animation->id == ANIM_JUMPING) {
             y -= JUMP_COORD_ADJUSTMENT * 2;
         }
     } else {
-        y = obj->pos.y + ((cur_sprite->pos.y + rstate->o_correction.y) * obj->y_percent);
+        y = pos.y + ((cur_sprite->pos.y + rstate->o_correction.y) * obj->y_percent);
     }
 
     // Flip to face the right direction
@@ -397,9 +398,9 @@ void object_render(object *obj) {
     //   0    |     1     |   1
     //   1    |     1     |   0
     if(flip_mode & FLIP_HORIZONTAL) {
-        x = obj->pos.x - ((cur_sprite->pos.x + rstate->o_correction.x) * obj->x_percent) - w;
+        x = pos.x - ((cur_sprite->pos.x + rstate->o_correction.x) * obj->x_percent) - w;
     } else {
-        x = obj->pos.x + ((cur_sprite->pos.x + rstate->o_correction.x) * obj->x_percent);
+        x = pos.x + ((cur_sprite->pos.x + rstate->o_correction.x) * obj->x_percent);
     }
 
     uint8_t opacity = rstate->blend_finish;
@@ -443,7 +444,7 @@ void object_render_shadow(object *obj) {
         return;
     }
 
-    int x = obj->pos.x;
+    int x = object_px(obj);
     int y = ARENA_FLOOR;
     int w = cur_sprite->data->render_w * obj->x_percent;
     int h = (cur_sprite->data->render_h * obj->y_percent) / 4;
@@ -497,15 +498,15 @@ int object_act(object *obj, int action) {
 
 void object_move(object *obj) {
     if(obj->sprite_state.disable_gravity) {
-        object_set_vel(obj, vec2f_create(0, 0));
+        object_set_vel(obj, vec2pt_create(0, 0));
     }
     if(obj->move != NULL) {
         obj->move(obj);
     }
 }
 
-float object_distance(object *a, object *b) {
-    return vec2f_dist(a->pos, b->pos);
+fixedpt object_distance(object *a, object *b) {
+    return vec2pt_dist(a->pos, b->pos);
 }
 
 /** Frees the object and all resources attached to it (even the animation, if it is owned by the object)
@@ -579,7 +580,10 @@ void object_set_animation(object *obj, animation *ani) {
 
     // Debug texts
     if(obj->cur_animation->id == -1) {
-        log_debug("Custom object set to (x,y) = (%f,%f).", obj->pos.x, obj->pos.y);
+        char buf1[FIXEDPT_STR_BUFSIZE];
+        char buf2[FIXEDPT_STR_BUFSIZE];
+        log_debug("Custom object set to (x,y) = (%s,%s).", fixedpt_cstr_buf(obj->pos.x, buf1),
+                  fixedpt_cstr_buf(obj->pos.y, buf2));
     } else {
         /*log_debug("Animation object %d set to (x,y) = (%f,%f) with \"%s\".", */
         /*obj->cur_animation->id,*/
@@ -760,22 +764,22 @@ int object_h(const object *obj) {
     return object_get_size(obj).y;
 }
 int object_px(const object *obj) {
-    return vec2f_to_i(obj->pos).x;
+    return vec2pt_to_i(obj->pos).x;
 }
 int object_py(const object *obj) {
     return vec2pt_to_i(obj->pos).y;
 }
 
 vec2i object_get_pos(const object *obj) {
-    return vec2f_to_i(obj->pos);
+    return vec2pt_to_i(obj->pos);
 }
-vec2f object_get_vel(const object *obj) {
+vec2pt object_get_vel(const object *obj) {
     return obj->vel;
 }
 void object_set_pos(object *obj, vec2i pos) {
-    obj->pos = vec2i_to_f(pos);
+    obj->pos = vec2i_to_pt(pos);
 }
-void object_set_vel(object *obj, vec2f vel) {
+void object_set_vel(object *obj, vec2pt vel) {
     obj->vel = vel;
 }
 
@@ -815,7 +819,7 @@ void object_set_disable_cb(object *obj, object_state_disable_cb cbf, void *userd
 }
 
 int object_is_airborne(const object *obj) {
-    return obj->pos.y < ARENA_FLOOR || obj->vel.y < 0 || player_frame_isset(obj, TAG_UG);
+    return obj->pos.y < ARENA_FLOOR_PT || obj->vel.y < 0 || player_frame_isset(obj, TAG_UG);
 }
 
 /* Attaches one object to another. Positions are synced to this from the attached. */

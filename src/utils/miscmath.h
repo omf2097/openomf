@@ -137,16 +137,6 @@ static inline unsigned udist(unsigned a, unsigned b) {
 }
 
 /**
- * @brief Calculate signed distance from a to b.
- * @param a First value
- * @param b Second value
- * @return Signed distance (positive if a < b, negative if a > b)
- */
-static inline float dist(float a, float b) {
-    return fabsf((a < b ? a : b) - (a > b ? a : b)) * (a < b ? 1.0f : -1.0f);
-}
-
-/**
  * @brief Return the minimum of two size_t values.
  * @param a First value
  * @param b Second value

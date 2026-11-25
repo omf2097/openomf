@@ -43,7 +43,7 @@ void projectile_finished(object *obj) {
     if(move->successor_id) {
         object_set_animation(obj, &af_get_move(local->af_data, move->successor_id)->ani);
         object_set_repeat(obj, 0);
-        object_set_vel(obj, vec2f_create(0, 0));
+        object_set_vel(obj, vec2pt_create(0, 0));
         object_set_finished(obj, false);
     }
 }
@@ -66,48 +66,47 @@ void projectile_move(object *obj) {
     object *obj_har = game_state_find_object(gs, game_player_get_har_obj_id(player));
 
     obj->pos.x += (obj->vel.x + obj->cvel.x);
-    obj->vel.y += fixedpt_tofloat(obj->gravity);
+    obj->vel.y += obj->gravity;
     obj->pos.y += (obj->vel.y + obj->cvel.y);
 
-    float dampen = 0.7f;
+    fixedpt dampen = 0xb3; // 0.7
 
     // If wall bounce flag is on, bounce the projectile on wall hit
     // Otherwise kill it.
     if(local->wall_bounce) {
-        if(obj->pos.x < ARENA_LEFT_WALL) {
-            obj->pos.x = ARENA_LEFT_WALL;
-            obj->vel.x = -obj->vel.x * dampen;
+        if(obj->pos.x < ARENA_LEFT_WALL_PT) {
+            obj->pos.x = ARENA_LEFT_WALL_PT;
+            obj->vel.x = fixedpt_mul(-obj->vel.x, dampen);
         }
-        if(obj->pos.x > ARENA_RIGHT_WALL) {
-            obj->pos.x = ARENA_RIGHT_WALL;
-            obj->vel.x = -obj->vel.x * dampen;
+        if(obj->pos.x > ARENA_RIGHT_WALL_PT) {
+            obj->pos.x = ARENA_RIGHT_WALL_PT;
+            obj->vel.x = fixedpt_mul(-obj->vel.x, dampen);
         }
         // if not invincible, not ignoring bounds checking and actually has an X velocity (the latter two help with
         // shadow grab)
     } else if(!local->invincible && !player_frame_isset(obj, TAG_BH) && !IS_ZERO(obj->vel.x)) {
-        if(obj->pos.x < ARENA_LEFT_WALL) {
-            obj->pos.x = ARENA_LEFT_WALL;
+        if(obj->pos.x < ARENA_LEFT_WALL_PT) {
+            obj->pos.x = ARENA_LEFT_WALL_PT;
             object_set_finished(obj, true);
             projectile_finished(obj);
         }
-        if(obj->pos.x > ARENA_RIGHT_WALL) {
-            obj->pos.x = ARENA_RIGHT_WALL;
+        if(obj->pos.x > ARENA_RIGHT_WALL_PT) {
+            obj->pos.x = ARENA_RIGHT_WALL_PT;
             object_set_finished(obj, true);
             projectile_finished(obj);
         }
     }
-    if(obj->pos.y > ARENA_FLOOR && local->wall_bounce) {
-        obj->pos.y = ARENA_FLOOR;
-        obj->vel.y = -obj->vel.y * dampen;
-        obj->vel.x = obj->vel.x * dampen;
-    } else if(obj->pos.y > ARENA_FLOOR) {
-        obj->pos.y = ARENA_FLOOR;
+    if(obj->pos.y > ARENA_FLOOR_PT && local->wall_bounce) {
+        obj->pos.y = ARENA_FLOOR_PT;
+        obj->vel.y = fixedpt_mul(-obj->vel.y, dampen);
+        obj->vel.x = fixedpt_mul(obj->vel.x, dampen);
+    } else if(obj->pos.y > ARENA_FLOOR_PT) {
+        obj->pos.y = ARENA_FLOOR_PT;
         object_set_finished(obj, true);
         projectile_finished(obj);
     }
-    if(obj->pos.y >= (ARENA_FLOOR - 5) && IS_ZERO(obj->vel.x) && obj->vel.y < fixedpt_tofloat(obj->gravity) * 1.1 &&
-       obj->vel.y > fixedpt_tofloat(obj->gravity) * -1.1 && local->ground_freeze) {
-
+    if(obj->pos.y >= (ARENA_FLOOR_PT - 0x500) && IS_ZERO(obj->vel.x) &&              // 0x500 = 5
+       abs(obj->vel.y) < fixedpt_mul(obj->gravity, 0x11a) && local->ground_freeze) { // 0x11a = 1.1
         object_disable_rewind_tag(obj, 1);
     }
     har *h = object_get_userdata(obj_har);

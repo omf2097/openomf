@@ -319,9 +319,9 @@ void har_walk_to(object *obj, int destination) {
     h->walk_done_anim = obj->cur_animation->id;
     h->walk_done_tick = player_get_current_tick(obj);
 
-    float vx = fixedpt_tofloat(h->fwd_speed) * object_get_direction(obj);
-    log_debug("set velocity to %f", vx);
-    object_set_vel(obj, vec2f_create(vx, 0));
+    fixedpt vx = h->fwd_speed * object_get_direction(obj);
+    log_debug("set velocity to %s", fixedpt_cstr(vx, -3));
+    object_set_vel(obj, vec2pt_create(vx, 0));
 
     object_set_animation(obj, &move->ani);
     object_set_repeat(obj, 1);
@@ -430,7 +430,7 @@ bool is_in_range(object *obj, object *enemy_obj, af_move *move) {
     if(check_move->successor_id) { // This is a throw with limited range
         // CLOSE moves use the successor id field as a distance requirement
         float throw_range = (float)obj->gs->match_settings.throw_range / 100.0f;
-        if(object_distance(obj, enemy_obj) > check_move->successor_id * throw_range) {
+        if(fixedpt_tofloat(object_distance(obj, enemy_obj)) > check_move->successor_id * throw_range) {
             return false;
         }
     }
@@ -488,7 +488,8 @@ void cb_har_disable_animation(object *parent, uint8_t animation_id, uint16_t tic
 }
 
 // Callback for spawning new objects, eg. projectiles
-void cb_har_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t mp_flags, int s, int g, void *userdata) {
+void cb_har_spawn_object(object *parent, int id, vec2i pos, vec2pt vel, uint8_t mp_flags, int s, int g,
+                         void *userdata) {
     object *har_obj = userdata;
     har *h = object_get_userdata(har_obj);
     vec2i p_pos = object_get_pos(parent);
@@ -577,9 +578,10 @@ void har_floor_landing_effects(object *obj, bool play_sound) {
     int amount = rand_int(2) + 1;
     for(int i = 0; i < amount; i++) {
         int variance = rand_int(20) - 10;
-        vec2i coord = vec2i_create(obj->pos.x + variance + i * 10, obj->pos.y);
+        vec2i pos = object_get_pos(obj);
+        vec2i coord = vec2i_create(pos.x + variance + i * 10, pos.y);
         object *dust = omf_calloc(1, sizeof(object));
-        object_create(dust, obj->gs, coord, vec2f_create(0, 0));
+        object_create(dust, obj->gs, coord, vec2pt_create(0, 0));
         object_set_stl(dust, object_get_stl(obj));
         object_set_animation(dust, &bk_get_info(game_state_get_scene(obj->gs)->bk_data, 26)->ani);
         player_init_spawned(dust);
@@ -591,7 +593,7 @@ void har_floor_landing_effects(object *obj, bool play_sound) {
         sound_opts opts;
         sound_opts_init(&opts);
         opts.volume = 38;
-        opts.panning = clamp((obj->pos.x - 160) * 100 / 160, -100, 100);
+        opts.panning = clamp((object_px(obj) - 160) * 100 / 160, -100, 100);
         game_state_play_sound(obj->gs, 56, &opts);
     }
 }
@@ -617,8 +619,8 @@ void har_move(object *obj) {
         obj->vel.y = 0;
 
         if(h->air_stop == 10) {
-            obj->vel.x = 6 * (object_get_direction(obj) * -1);
-            obj->vel.y = -6;
+            obj->vel.x = 0x600 * (object_get_direction(obj) * -1); // 0x600 = 6
+            obj->vel.y = -0x600;                                   // -0x600 = -6
             h->air_stop = 0;
             har_set_ani(obj, ANIM_JUMPING, 0);
             object_set_playback_direction(obj, PLAY_BACKWARDS);
@@ -637,23 +639,23 @@ void har_move(object *obj) {
     char last_input = get_last_input(obj);
     object_apply_controllable_velocity(obj, false, last_input);
 
-    obj->pos.x += (obj->vel.x + obj->cvel.x);
-    obj->pos.y += (obj->vel.y + obj->cvel.y);
+    obj->pos = vec2pt_add(obj->pos, vec2pt_add(obj->vel, obj->cvel));
 
     object *enemy_obj =
         game_state_find_object(obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
     har *enemy_har = object_get_userdata(enemy_obj);
 
-    if(h->walk_destination > 0 && h->walk_done_anim &&
-       ((obj->pos.x >= h->walk_destination && object_get_direction(obj) == OBJECT_FACE_RIGHT) ||
-        (obj->pos.x <= h->walk_destination && object_get_direction(obj) == OBJECT_FACE_LEFT))) {
-        obj->pos.x = h->walk_destination;
+    fixedpt dest = fixedpt_fromint(h->walk_destination);
+    if(dest > 0 && h->walk_done_anim &&
+       ((obj->pos.x >= dest && object_get_direction(obj) == OBJECT_FACE_RIGHT) ||
+        (obj->pos.x <= dest && object_get_direction(obj) == OBJECT_FACE_LEFT))) {
+        obj->pos.x = dest;
         log_debug("reached destination!");
         if(obj->animation_state.shadow_corner_hack) {
             object_set_direction(obj, object_get_direction(obj) * -1);
         }
 
-        object_set_vel(obj, vec2f_create(0, 0));
+        object_set_vel(obj, vec2pt_create(0, 0));
         har_set_ani(obj, h->walk_done_anim, 0);
         script_reader_seek(&obj->animation_state.reader, h->walk_done_tick);
 
@@ -661,12 +663,12 @@ void har_move(object *obj) {
         h->walk_done_anim = 0;
         h->walk_done_tick = 0;
         return;
-    } else if(h->walk_destination > 0) {
-        log_debug("still walking to %d, at %f", h->walk_destination, obj->pos.x);
+    } else if(dest > 0) {
+        log_debug("still walking to %d, at %s", h->walk_destination, fixedpt_cstr(obj->pos.x, -3));
     }
 
     // Check for wall hits
-    if(obj->pos.x <= ARENA_LEFT_WALL || obj->pos.x >= ARENA_RIGHT_WALL) {
+    if(object_px(obj) <= ARENA_LEFT_WALL || object_px(obj) >= ARENA_RIGHT_WALL) {
         h->is_wallhugging = 1;
         if(player_frame_isset(obj, TAG_CW) && player_frame_isset(obj, TAG_D)) {
             log_debug("disabling d tag on animation because of wall hit");
@@ -678,27 +680,26 @@ void har_move(object *obj) {
     }
 
     // Handle floor collisions
-    if(obj->pos.y >= ARENA_FLOOR && !player_frame_isset(obj, TAG_AX)) {
+    if(obj->pos.y >= ARENA_FLOOR_PT && !player_frame_isset(obj, TAG_AX)) {
         controller *ctrl = game_player_get_ctrl(game_state_get_player(obj->gs, h->player_id));
-
-        obj->pos.y = ARENA_FLOOR;
+        obj->pos.y = ARENA_FLOOR_PT;
         if(obj->vel.y > 0 || is_har_idle_grounded(obj)) {
             clear_rehits(h);
         }
 
         if(player_frame_isset(obj, TAG_CL)) {
             af_move *move = af_get_move(h->af_data, obj->cur_animation->id);
-            object_set_vel(obj, vec2f_create(0, 0));
+            object_set_vel(obj, vec2pt_create(0, 0));
             har_set_ani(obj, move->next_move, 0);
             object_set_stride(obj, 1);
         } else if((h->state == STATE_SCRAP || h->state == STATE_DESTRUCTION) && obj->vel.y > 0) {
-            object_set_vel(obj, vec2f_create(0, 0));
+            object_set_vel(obj, vec2pt_create(0, 0));
             har_finished(obj);
             har_floor_landing_effects(obj, true);
         } else if((h->state == STATE_VICTORY) && obj->vel.y > 0) {
             // TODO: A trigger in arena.c often puts us in STATE_VICTORY too early, which can be a problem
             // if we're still airborne.  This allows us to land somewhat properly.
-            object_set_vel(obj, vec2f_create(0, 0));
+            object_set_vel(obj, vec2pt_create(0, 0));
             har_set_ani(obj, ANIM_IDLE, 1);
             object_set_stride(obj, h->stride);
             har_event_land(h, ctrl);
@@ -709,17 +710,17 @@ void har_move(object *obj) {
             if(last_input == '6') {
                 h->state = STATE_WALKTO;
                 har_set_ani(obj, ANIM_WALKING, 1);
-                object_set_vel(obj, vec2f_create(0, 0));
+                object_set_vel(obj, vec2pt_create(0, 0));
                 object_set_stride(obj, h->stride);
                 har_event_walk(h, 1, ctrl);
             } else if(last_input == '4') {
                 h->state = STATE_WALKFROM;
                 har_set_ani(obj, ANIM_WALKING, 1);
-                object_set_vel(obj, vec2f_create(0, 0));
+                object_set_vel(obj, vec2pt_create(0, 0));
                 object_set_stride(obj, h->stride);
                 har_event_walk(h, -1, ctrl);
             } else {
-                object_set_vel(obj, vec2f_create(0, 0));
+                object_set_vel(obj, vec2pt_create(0, 0));
                 h->state = STATE_STANDING;
                 har_set_ani(obj, ANIM_IDLE, 1);
                 object_set_stride(obj, h->stride);
@@ -729,9 +730,9 @@ void har_move(object *obj) {
             har_floor_landing_effects(obj, true);
         } else if(h->state == STATE_RECOIL) {
             // bounce and screenshake if falling fast enough
-            if(obj->vel.y > 6) {
+            if(obj->vel.y > 0x600) { // 0x600 = 6
                 har_floor_landing_effects(obj, false);
-                obj->vel.y = -3;
+                obj->vel.y = -0x300; // -0x300 = -3
                 obj->vel.x = obj->vel.x / 2;
                 if(h->id != 10) {
                     object_set_custom_string(obj, "l20s4sp13zzN3-zzM100");
@@ -744,7 +745,7 @@ void har_move(object *obj) {
             }
             // cause a knockdown even while not falling
             if(obj->vel.y >= 0 && player_get_current_tick(obj) > 5 && obj->cur_sprite_id == 12 && !h->is_grabbed) {
-                obj->vel.y = 1;
+                obj->vel.y = FIXEDPT_ONE;
             }
             // stop if still falling
             if(obj->vel.y > 0) {
@@ -759,37 +760,37 @@ void har_move(object *obj) {
             // add some friction from the floor if we're not walking during scrap
             // This is important to dampen/eliminate the velocity added from pushing away from the other HAR
             // friction decreases velocity by 1 each tick, and sets it to 0 if its under |2|
-            if(obj->vel.x > 0.0f) {
-                if(obj->vel.x <= 1.0f) {
-                    obj->vel.x = 0.0f;
+            if(obj->vel.x > 0) {
+                if(obj->vel.x <= FIXEDPT_ONE) {
+                    obj->vel.x = 0;
                 } else {
-                    obj->vel.x -= 1.0f;
+                    obj->vel.x -= FIXEDPT_ONE;
                 }
-            } else if(obj->vel.x < 0.0f) {
-                if(obj->vel.x >= -1.0f) {
-                    obj->vel.x = 0.0f;
+            } else if(obj->vel.x < 0) {
+                if(obj->vel.x >= -FIXEDPT_ONE) {
+                    obj->vel.x = 0;
                 } else {
-                    obj->vel.x += 1.0f;
+                    obj->vel.x += FIXEDPT_ONE;
                 }
             }
         }
 
         if(h->state == STATE_WALKTO) {
             har_face_enemy(obj, enemy_obj);
-            obj->pos.x += (fixedpt_tofloat(h->fwd_speed) * object_get_direction(obj));
+            obj->pos.x += h->fwd_speed * object_get_direction(obj);
         } else if(h->state == STATE_WALKFROM) {
             har_face_enemy(obj, enemy_obj);
-            obj->pos.x -= (fixedpt_tofloat(h->back_speed) * object_get_direction(obj));
+            obj->pos.x -= h->back_speed * object_get_direction(obj);
         }
     } else {
         if(game_state_hars_are_alive(obj->gs)) {
-            obj->vel.y += fixedpt_tofloat(obj->gravity);
+            obj->vel.y += obj->gravity;
         } else {
-            obj->vel.y += 230.0 / 256.0;
+            obj->vel.y += 0xe6; // 230 / 256
         }
         // Terminal Velocity
-        if(obj->vel.y > 13) {
-            obj->vel.y = 13;
+        if(obj->vel.y > 0xd00) { // 0xd00 = 13
+            obj->vel.y = 0xd00;
         }
     }
 }
@@ -969,7 +970,7 @@ void har_take_damage(object *obj, af_move *move) {
                 fixedpt_mul(fixedpt_add(fixedpt_fromint(player->pilot->armor), armor_magic), quarter);
             log_debug("Applying %d damage to %d health modulated by armor %s", damage, h->health,
                       fixedpt_cstr(armor_divisor, -3));
-            h->health -= fixedpt_toint(fixedpt_div(fixedpt_fromint(damage), armor_divisor));
+            h->health -= fixedpt_toint(fixedpt_xdiv(fixedpt_fromint(damage), armor_divisor));
         } else {
             h->health -= damage;
         }
@@ -1014,8 +1015,8 @@ void har_take_damage(object *obj, af_move *move) {
         } else if(player_frame_isset(other_har, TAG_AI) && (move->category != CAT_PROJECTILE)) {
             log_debug("grounded launch");
             str_from_c(&custom, "A1-s01l50B2-C2-L5-M400");
-            obj->vel.x = -5.0 * object_get_direction(obj);
-            obj->vel.y = -9.0;
+            obj->vel.x = -0x500 * object_get_direction(obj); // -0x500 = -5
+            obj->vel.y = -0x900;                             // -0x900 = -9
             object_set_stride(obj, 1);
         } else if(object_is_airborne(obj)) {
             log_debug("airborne knockback");
@@ -1028,12 +1029,13 @@ void har_take_damage(object *obj, af_move *move) {
                 str_append_c(&custom, "-L2-M5-L2");
             }
 
-            obj->vel.y = obj->vertical_velocity_modifier * ((((30.0f - move->damage) * 0.133333f) + 6.5f) * -1.0);
+            obj->vel.y = fixedpt_rconst(obj->vertical_velocity_modifier *
+                                        ((((30.0f - move->damage) * 0.133333f) + 6.5f) * -1.0));
             // TODO there's an alternative formula used in some conditions:
             // (((damage * 0.09523809523809523) + 3.5)  * -1) * obj->vertical_velocity_modifier
             // but we don't know what those conditions are
-            obj->vel.x = (((move->damage * 0.16666666f) + 2.0f) * object_get_direction(obj) * -1) *
-                         obj->horizontal_velocity_modifier;
+            obj->vel.x = fixedpt_rconst((((move->damage * 0.16666666f) + 2.0f) * object_get_direction(obj) * -1) *
+                                        obj->horizontal_velocity_modifier);
             object_set_stride(obj, 1);
         } else {
             if(h->health <= 0 || h->endurance >= h->endurance_max || h->endurance < 0) {
@@ -1062,7 +1064,7 @@ void har_take_damage(object *obj, af_move *move) {
                 if(push < 7) {
                     push = 7;
                 }
-                obj->vel.x = push * object_get_direction(obj) * -1;
+                obj->vel.x = fixedpt_rconst(push * object_get_direction(obj) * -1);
             }
         }
 
@@ -1071,17 +1073,18 @@ void har_take_damage(object *obj, af_move *move) {
         // Insanius 3/17/2025 - This is actually mostly correct, the OG checks if the string starts with the 'k' char
         const script_frame *frame = script_get_frame(script_reader_get_script(&obj->animation_state.reader), 0);
         if(frame != NULL && script_is_tag_set_by_id(frame, TAG_K)) {
-            obj->vel.x = -5 * object_get_direction(obj);
-            obj->vel.y = -8;
+            obj->vel.x = -0x500 * object_get_direction(obj); // -0x500 = -5
+            obj->vel.y = -0x800;                             // -0x800 = -8
         }
     }
 }
 
 // for scrap, nuts, bolts, and sparks (aka burning oil)
-static vec2f har_debris_random_vel(const object *har_obj, bool is_destruction) {
-    vec2f vel;
-    vel.x = (rand_float() * 4.0f) - 2.0f;
-    vel.y = (rand_float() * 4.0f) - 2.0f;
+static vec2pt har_debris_random_vel(const object *har_obj, bool is_destruction) {
+    vec2pt vel;
+    // 0x200 = 2, 0x400 = 4
+    vel.x = (rand_fixedpt(0x400)) - 0x200;
+    vel.y = (rand_fixedpt(0x400)) - 0x200;
 
     // FIXME: burning oil/sparks in destruction and scrap animations
     // FIXME: how does the original game handle scrap velocity in destruction anims?
@@ -1092,8 +1095,8 @@ static vec2f har_debris_random_vel(const object *har_obj, bool is_destruction) {
             x = -1;
         }
         // For scrap and destruction animations, make the scrap fly all over the place!
-        vel.x *= x * 10.0f;
-        vel.y *= 10.0f;
+        vel.x = fixedpt_mul(vel.x, x * 0xa00); // 0xa00 = 10
+        vel.y = fixedpt_mul(vel.y, 0xa00);     // 0xa00 = 10
     } else {
         // push scrap and sparks upwards and away from the direction of impact
         int x = rand_int(4);
@@ -1103,8 +1106,8 @@ static vec2f har_debris_random_vel(const object *har_obj, bool is_destruction) {
         } else {
             x = 1;
         }
-        vel.x *= x * object_get_direction(har_obj) * 4.0f;
-        vel.y *= 3.0f;
+        vel.x = fixedpt_mul(vel.x, x * object_get_direction(har_obj) * 0x400); // 0x400 = 4
+        vel.y = fixedpt_mul(vel.y, 0x300);                                     // 0x300 = 3
     }
 
     return vel;
@@ -1192,7 +1195,7 @@ void har_block(object *obj, vec2i hit_coord, uint8_t block_stun) {
     // blocking spark
     h->state = STATE_BLOCKSTUN;
     object *scrape = omf_calloc(1, sizeof(object));
-    object_create(scrape, obj->gs, hit_coord, vec2f_create(0, 0));
+    object_create(scrape, obj->gs, hit_coord, vec2pt_create(0, 0));
     object_set_animation(scrape, &af_get_move(h->af_data, ANIM_BLOCKING_SCRAPE)->ani);
     object_set_stl(scrape, object_get_stl(obj));
     object_set_direction(scrape, object_get_direction(obj));
@@ -1288,18 +1291,18 @@ void har_debug(object *obj) {
 void har_cornerpush(const object *self, object *enemy, const float distance) {
     har *h = object_get_userdata(self);
     if(h->throw_duration || (h->cornerpush_enabled && h->state == STATE_BLOCKSTUN)) {
-        enemy->pos.x += distance;
+        enemy->pos.x += fixedpt_rconst(distance);
     } else if(h->cornerpush_enabled && h->state == STATE_RECOIL) {
         if(!object_is_airborne(self) && !object_is_airborne(enemy)) {
-            enemy->pos.x += distance / 2.0 + (distance < 0 ? -2 : 2);
+            enemy->pos.x += fixedpt_rconst(distance / 2.0) + fixedpt_fromint(distance < 0 ? -2 : 2);
         } else if(object_is_airborne(self) && !object_is_airborne(enemy) && player_get_current_tick(self) <= 2 &&
                   !h->cornerpush_vel_applied) { // todo, also check last hit wasn't CAT_CLOSE or CAT_JUMP
-            float pushvel = (h->last_hit_raw_damage + 15) / 3.0;
-            if(pushvel > 9) {
-                pushvel = 9;
+            fixedpt pushvel = fixedpt_xdiv(fixedpt_fromint(h->last_hit_raw_damage + 15), 0x300); // 0x300 = 3
+            if(pushvel > 0x900) {
+                pushvel = 0x900; // 0x900 = 9
             }
             h->cornerpush_vel_applied = true;
-            vec2f vel = object_get_vel(enemy);
+            vec2pt vel = object_get_vel(enemy);
             vel.x = (distance < 0 ? -1 : 1) * pushvel;
             object_set_vel(enemy, vel);
         }
@@ -1391,13 +1394,15 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
             if(player_frame_isset(obj_a, TAG_I) && move->next_move) {
                 har_set_ani(obj_a, move->next_move, 0);
             }
-            int block_val = move->block_stun;
-            if(block_val <= 1) {
-                block_val = 2;
+            fixedpt block_val = fixedpt_fromint(move->block_stun);
+            if(block_val <= FIXEDPT_ONE) {
+                block_val = 0x200; // 0x200 = 2
             }
-            vec2f push = object_get_vel(obj_b);
-            push.x = -1 * object_get_direction(obj_b) * (block_val * (20.0 / 27.0) + 1);
-            log_debug("doing block pushback of %f", push.x);
+            vec2pt push = object_get_vel(obj_b);
+            // push.x = -1 * object_get_direction(obj_b) * (block_val * (20.0 / 27.0) + 1);
+            // 0xbe = 20.0 / 27.0 ~= 0.740740741
+            push.x = -1 * object_get_direction(obj_b) * (fixedpt_mul(block_val, 0xbe) + FIXEDPT_ONE);
+            log_debug("doing block pushback of %s", fixedpt_cstr(push.x, -3));
             object_set_vel(obj_b, push);
             return 0;
         }
@@ -1435,7 +1440,7 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
 
         if(object_is_airborne(obj_a) && object_is_airborne(obj_b)) {
             // modify the horizontal velocity of the attacker when doing air knockback
-            obj_a->vel.x *= 0.7f;
+            obj_a->vel.x = fixedpt_mul(obj_a->vel.x, fixedpt_rconst(0.7f));
             // the opponent's velocity is modified in har_take_damage
         }
 
@@ -1449,7 +1454,7 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
         har_take_damage(obj_b, move);
 
         if(b->rehit_combo) {
-            obj_b->vel.y -= 3;
+            obj_b->vel.y -= 0x300; // 0x300 = 3
         }
 
         if(b->rehit_combo && move->pos_constraints & POS_JUMP_WALL_BOUNCE && move->category == CAT_JUMPING) {
@@ -1566,13 +1571,15 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
             h->damage_received = 0;
             har_block(o_har, hit_coord, move->block_stun);
             // do block pushback
-            int block_val = move->block_stun;
-            if(block_val <= 1) {
-                block_val = 2;
+            fixedpt block_val = fixedpt_fromint(move->block_stun);
+            if(block_val <= FIXEDPT_ONE) {
+                block_val = 0x200; // 0x200 = 2
             }
-            vec2f push = object_get_vel(o_har);
-            push.x = -1 * object_get_direction(o_har) * (block_val * (20.0 / 27.0) + 1);
-            log_debug("doing block pushback of %f", push.x);
+            vec2pt push = object_get_vel(o_har);
+            // push.x = -1 * object_get_direction(o_har) * (block_val * (20.0 / 27.0) + 1);
+            // 0xbe = 20.0 / 27.0 ~= 0.740740741
+            push.x = -1 * object_get_direction(o_har) * (fixedpt_mul(block_val, 0xbe) + FIXEDPT_ONE);
+            log_debug("doing block pushback of %s", fixedpt_cstr(push.x, -3));
             object_set_vel(o_har, push);
             return;
         }
@@ -1621,7 +1628,7 @@ void har_collide_with_projectile(object *o_har, object *o_pjt) {
 
             har_take_damage(o_har, move);
             if(air_hit) {
-                o_har->vel.y -= 3;
+                o_har->vel.y -= 0x300; // 0x300 = 3
             }
         } else if(move->category == CAT_CLOSE) {
             // shadow grab is a projectile
@@ -1721,8 +1728,8 @@ void har_collide_with_hazard(object *o_har, object *o_hzd) {
 
         anim = bk_get_info(bk_data, anim->chain_hit);
         object *new_proj = omf_calloc(1, sizeof(object));
-        object_create(new_proj, o_har->gs, vec2i_add(vec2i_create(o_hzd->start.x, o_hzd->start.y), anim->ani.start_pos),
-                      vec2f_create(0, 0));
+        object_create(new_proj, o_har->gs, vec2i_add(vec2pt_to_i(o_hzd->start), anim->ani.start_pos),
+                      vec2pt_create(0, 0));
         object_set_stl(new_proj, object_get_stl(o_hzd));
         object_set_animation(new_proj, &anim->ani);
         object_set_layers(new_proj, LAYER_HAZARD | LAYER_HAR);
@@ -1834,7 +1841,7 @@ static void har_palette_transform(damage_tracker *damage, vga_palette *pal, void
 
 // hpfactor = (health_max * ratio + health) / health_max
 static inline fixedpt hpfactor_calc(fixedpt ratio, fixedpt health_max, fixedpt health) {
-    return fixedpt_div(fixedpt_add(fixedpt_mul(health_max, ratio), health), health_max);
+    return fixedpt_xdiv(fixedpt_add(fixedpt_mul(health_max, ratio), health), health_max);
 }
 
 void har_handle_stun(object *obj) {
@@ -1850,7 +1857,7 @@ void har_handle_stun(object *obj) {
         } else { // Not yet stunned, handle regular stun recovery
             fixedpt stunfactor =
                 fixedpt_mul(fixedpt_fromint(h->stun_factor),
-                            fixedpt_div(fixedpt_fromint(h->endurance), fixedpt_fromint(h->endurance_max)));
+                            fixedpt_xdiv(fixedpt_fromint(h->endurance), fixedpt_fromint(h->endurance_max)));
             if((obj->cur_animation->id == ANIM_IDLE) || (obj->cur_animation->id == ANIM_CROUCHING) ||
                (obj->cur_animation->id == ANIM_VICTORY)) {
                 // hpfactor = (health_max * 5.0 / 9.0 + health) / health_max
@@ -2081,7 +2088,7 @@ void har_tick(object *obj) {
             hashmap_get_int(h->trail_cache, obj->cur_sprite_id, (void **)&anim, NULL);
         }
         object *nobj = omf_calloc(1, sizeof(object));
-        object_create(nobj, obj->gs, object_get_pos(obj), vec2f_create(0, 0));
+        object_create(nobj, obj->gs, object_get_pos(obj), vec2pt_create(0, 0));
         object_set_stl(nobj, object_get_stl(obj));
         object_set_animation(nobj, anim);
         object_set_custom_string(nobj, "bs100A1-bf0A15");
@@ -2187,7 +2194,7 @@ bool is_move_chain_allowed(object *obj, af_move *move) {
                 if(player_frame_isset(obj, TAG_JG) || (is_har_idle_grounded(obj) && allowed_in_idle)) {
                     object *enemy_obj = game_state_find_object(
                         obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
-                    if(enemy_obj->pos.y == ARENA_FLOOR && !har_is_invincible(enemy_obj, move) &&
+                    if(enemy_obj->pos.y == ARENA_FLOOR_PT && !har_is_invincible(enemy_obj, move) &&
                        is_in_range(obj, enemy_obj, move)) {
                         allowed = true;
                     }
@@ -2326,7 +2333,7 @@ int har_act(object *obj, int act_type) {
         game_state_find_object(obj->gs, game_player_get_har_obj_id(game_state_get_player(obj->gs, !h->player_id)));
     har *enemy_har = (har *)enemy_obj->userdata;
 
-    if(is_har_idle_grounded(obj) && (object_distance(obj, enemy_obj) > 4)) {
+    if(is_har_idle_grounded(obj) && (object_distance(obj, enemy_obj) > 0x400)) { // 0x400 = 4
         har_face_enemy(obj, enemy_obj);
     }
 
@@ -2440,7 +2447,7 @@ int har_act(object *obj, int act_type) {
 
     // Don't allow new movement while we're still executing a move
     if(h->executing_move) {
-        if(obj->pos.y < ARENA_FLOOR) {
+        if(obj->pos.y < ARENA_FLOOR_PT) {
             if(h->state < STATE_JUMPING) {
                 log_debug("standing move led to airborne one");
                 h->state = STATE_JUMPING;
@@ -2488,7 +2495,7 @@ int har_act(object *obj, int act_type) {
         return 0;
     }
 
-    float vx, vy;
+    fixedpt vx, vy;
     // no moves matched, do player movement
     int newstate;
     if((newstate = maybe_har_change_state(h->state, !h->jump_delay, last_input))) {
@@ -2496,16 +2503,16 @@ int har_act(object *obj, int act_type) {
         switch(newstate) {
             case STATE_CROUCHBLOCK:
                 har_set_ani(obj, ANIM_CROUCHING, 1);
-                object_set_vel(obj, vec2f_create(0, 0));
+                object_set_vel(obj, vec2pt_create(0, 0));
                 break;
             case STATE_CROUCHING:
                 har_set_ani(obj, ANIM_CROUCHING, 1);
-                object_set_vel(obj, vec2f_create(0, 0));
+                object_set_vel(obj, vec2pt_create(0, 0));
                 break;
             case STATE_STANDING:
                 har_set_ani(obj, ANIM_IDLE, 1);
                 object_set_stride(obj, h->stride);
-                object_set_vel(obj, vec2f_create(0, 0));
+                object_set_vel(obj, vec2pt_create(0, 0));
                 break;
             case STATE_WALKTO:
                 har_set_ani(obj, ANIM_WALKING, 1);
@@ -2519,11 +2526,11 @@ int har_act(object *obj, int act_type) {
                 break;
             case STATE_JUMPING:
                 har_set_ani(obj, ANIM_JUMPING, 0);
-                vx = 0.0f;
-                vy = fixedpt_tofloat(h->jump_speed);
+                vx = 0;
+                vy = h->jump_speed;
                 int jump_dir = 0;
                 if(last_input == '9') {
-                    vx = fixedpt_tofloat(h->fwd_speed) * direction;
+                    vx = h->fwd_speed * direction;
                     object_set_tick_pos(obj, 110);
                     object_set_stride(obj, 7); // Pass 7 frames per tick
                     jump_dir = 1;
@@ -2532,7 +2539,7 @@ int har_act(object *obj, int act_type) {
                     // at -100 frames (seems to be about right)
                     object_set_playback_direction(obj, PLAY_BACKWARDS);
                     object_set_tick_pos(obj, -110);
-                    vx = fixedpt_tofloat(h->back_speed) * direction * -1;
+                    vx = h->back_speed * direction * -1;
                     object_set_stride(obj, 7); // Pass 7 frames per tick
                     jump_dir = -1;
                 } else if(last_input == '8') {
@@ -2544,9 +2551,9 @@ int har_act(object *obj, int act_type) {
                 }
                 if(input_staleness <= 6 && (h->inputs[1] == '1' || h->inputs[1] == '2' || h->inputs[1] == '3')) {
                     // jumping from crouch makes you jump 25% higher
-                    vy = fixedpt_tofloat(h->superjump_speed);
+                    vy = h->superjump_speed;
                 }
-                object_set_vel(obj, vec2f_create(vx, vy));
+                object_set_vel(obj, vec2pt_create(vx, vy));
                 har_event_jump(h, jump_dir, ctrl);
                 break;
         }
@@ -2727,7 +2734,7 @@ void har_bootstrap(object *obj) {
 // jump_speed = ((agility + 35) / 45) * af_data->jump_speed * jump_multiplier * 216 / 256;
 static inline fixedpt calc_jump_speed(int agility, fixedpt af_jump_speed, fixedpt multiplier, fixedpt ratio) {
     return fixedpt_mul(
-        fixedpt_mul(fixedpt_mul(fixedpt_div(fixedpt_fromint(agility + 35), fixedpt_fromint(45)), af_jump_speed),
+        fixedpt_mul(fixedpt_mul(fixedpt_xdiv(fixedpt_fromint(agility + 35), fixedpt_fromint(45)), af_jump_speed),
                     multiplier),
         ratio);
 }
@@ -2759,7 +2766,7 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     float power_multiplier = 1.0;
     float hp_adjust;
     if(!is_tournament(obj->gs)) {
-        jump_multiplier = fixedpt_div(fixedpt_fromint(obj->gs->match_settings.jump_height), fixedpt_fromint(100));
+        jump_multiplier = fixedpt_xdiv(fixedpt_fromint(obj->gs->match_settings.jump_height), fixedpt_fromint(100));
         vitality_multiplier = obj->gs->match_settings.vitality / 100.0;
         // see https://www.omf2097.com/wiki/doku.php?id=omf2097:stats
         power_multiplier = 2.25 - 0.25 * power; // TODO: skip when either player is AI
@@ -2811,13 +2818,13 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     local->superjump_speed = calc_jump_speed(gp->pilot->agility, af_data->jump_speed, jump_multiplier, superjump_ratio);
     // fall_speed = (((float)gp->pilot->agility + 20) / 30) * af_data->fall_speed;
     local->fall_speed =
-        fixedpt_mul(fixedpt_div(fixedpt_fromint(gp->pilot->agility + 20), fixedpt_fromint(30)), af_data->fall_speed);
+        fixedpt_mul(fixedpt_xdiv(fixedpt_fromint(gp->pilot->agility + 20), fixedpt_fromint(30)), af_data->fall_speed);
     // fwd_speed = (((float)gp->pilot->agility + 20) / 30) * af_data->forward_speed;
-    local->fwd_speed =
-        fixedpt_mul(fixedpt_div(fixedpt_fromint(gp->pilot->agility + 20), fixedpt_fromint(30)), af_data->forward_speed);
+    local->fwd_speed = fixedpt_mul(fixedpt_xdiv(fixedpt_fromint(gp->pilot->agility + 20), fixedpt_fromint(30)),
+                                   af_data->forward_speed);
     // back_speed = (((float)gp->pilot->agility + 20) / 30) * af_data->reverse_speed;
-    local->back_speed =
-        fixedpt_mul(fixedpt_div(fixedpt_fromint(gp->pilot->agility + 20), fixedpt_fromint(30)), af_data->reverse_speed);
+    local->back_speed = fixedpt_mul(fixedpt_xdiv(fixedpt_fromint(gp->pilot->agility + 20), fixedpt_fromint(30)),
+                                    af_data->reverse_speed);
     local->stride = (gp->pilot->agility + 20) / 30;
     log_debug("setting HAR stride to %d", local->stride);
     local->close = 0;

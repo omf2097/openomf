@@ -89,10 +89,10 @@ struct object_t {
     uint32_t id;
     game_state *gs;
 
-    vec2f start;
-    vec2f pos;
-    vec2f vel;
-    vec2f cvel;
+    vec2pt start;
+    vec2pt pos;
+    vec2pt vel;
+    vec2pt cvel;
     float vertical_velocity_modifier;
     float horizontal_velocity_modifier;
     int8_t direction;
@@ -163,7 +163,7 @@ struct object_t {
     object_clone_free_cb clone_free;
 };
 
-void object_create(object *obj, game_state *gs, vec2i pos, vec2f vel);
+void object_create(object *obj, game_state *gs, vec2i pos, vec2pt vel);
 void object_create_static(object *obj, game_state *gs);
 void object_render(object *obj);
 void object_render_shadow(object *obj);
@@ -175,7 +175,7 @@ void object_dynamic_tick_advance(object *obj);
 void object_dynamic_tick_apply(object *obj);
 void object_set_tick_pos(object *obj, int tick);
 void object_move(object *obj);
-float object_distance(object *a, object *b);
+fixedpt object_distance(object *a, object *b);
 void object_collide(object *a, object *b);
 int object_act(object *obj, int action);
 int object_is_finished(object *obj);

@@ -14,7 +14,7 @@
 #include <stdlib.h>
 
 // Some internal functions
-void cb_scene_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t mp_flags, int s, int g,
+void cb_scene_spawn_object(object *parent, int id, vec2i pos, vec2pt vel, uint8_t mp_flags, int s, int g,
                            void *userdata);
 void cb_scene_destroy_object(object *parent, int id, void *userdata);
 
@@ -125,7 +125,7 @@ void scene_init(scene *scene) {
         // Start up animations
         if(m_load) {
             object *obj = omf_calloc(1, sizeof(object));
-            object_create(obj, scene->gs, info->ani.start_pos, vec2f_create(0, 0));
+            object_create(obj, scene->gs, info->ani.start_pos, vec2pt_create(0, 0));
             object_set_stl(obj, scene->bk_data->sound_translation_table);
             object_set_animation(obj, &info->ani);
             object_set_repeat(obj, m_repeat);
@@ -319,7 +319,7 @@ void scene_set_input_poll_cb(scene *scene, scene_input_poll_cb cbfunc) {
     scene->input_poll = cbfunc;
 }
 
-void cb_scene_spawn_object(object *parent, int id, vec2i pos, vec2f vel, uint8_t mp_flags, int s, int g,
+void cb_scene_spawn_object(object *parent, int id, vec2i pos, vec2pt vel, uint8_t mp_flags, int s, int g,
                            void *userdata) {
     scene *sc = (scene *)userdata;
 

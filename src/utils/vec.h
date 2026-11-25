@@ -247,8 +247,8 @@ static inline vec2pt vec2pt_norm(vec2pt a) {
     if(mag == 0) {
         return a;
     }
-    a.x = fixedpt_div(a.x, mag);
-    a.y = fixedpt_div(a.y, mag);
+    a.x = fixedpt_xdiv(a.x, mag);
+    a.y = fixedpt_xdiv(a.y, mag);
     return a;
 }
 

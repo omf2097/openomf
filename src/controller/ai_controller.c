@@ -389,7 +389,7 @@ int get_enemy_range(const controller *ctrl) {
     object *o_enemy =
         game_state_find_object(ctrl->gs, game_state_get_player(ctrl->gs, h->player_id == 1 ? 0 : 1)->har_obj_id);
 
-    int range_units = fabsf(o_enemy->pos.x - o->pos.x) / 30;
+    int range_units = fixedpt_toint(labs(o_enemy->pos.x - o->pos.x)) / 30;
     switch(range_units) {
         case 0:
         case 1:
@@ -1493,7 +1493,7 @@ void set_selected_move(controller *ctrl, af_move *selected_move) {
     a->move_str_pos = str_size(&selected_move->move_string) - 1;
     object *o_enemy =
         game_state_find_object(ctrl->gs, game_state_get_player(ctrl->gs, h->player_id == 1 ? 0 : 1)->har_obj_id);
-    a->move_stats[a->selected_move->id].last_dist = fabsf(o->pos.x - o_enemy->pos.x);
+    a->move_stats[a->selected_move->id].last_dist = fixedpt_toint(labs(o->pos.x - o_enemy->pos.x));
     a->blocked = 0;
 }
 
@@ -1619,7 +1619,7 @@ int ai_block_har(controller *ctrl, ctrl_event **ev) {
     har *h_enemy = object_get_userdata(o_enemy);
 
     // XXX TODO get maximum move distance from the animation object
-    if(fabsf(o_enemy->pos.x - o->pos.x) < 100 && h_enemy->executing_move && smart_usually(a)) {
+    if(fixedpt_toint(labs(o_enemy->pos.x - o->pos.x)) < 100 && h_enemy->executing_move && smart_usually(a)) {
         if(har_is_crouching(h_enemy)) {
             a->cur_act = DOWNBACK;
             controller_cmd(ctrl, a->cur_act, ev);
@@ -1662,7 +1662,7 @@ int ai_block_projectile(controller *ctrl, ctrl_event **ev) {
                 if(object_get_direction(o_prj) == OBJECT_FACE_LEFT) {
                     pos_prj.x = object_get_pos(o_prj).x + ((cur_sprite->pos.x * -1) - size_prj.x);
                 }
-                if(fabsf(pos_prj.x - o->pos.x) < 120) {
+                if(abs(pos_prj.x - object_get_pos(o).x) < 120) {
                     a->cur_act = DOWNBACK;
                     controller_cmd(ctrl, a->cur_act, ev);
                     return 1;

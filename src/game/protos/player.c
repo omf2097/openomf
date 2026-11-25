@@ -42,7 +42,7 @@ void player_reload_with_str(object *obj, const char *custom_str) {
     player_reset(obj);
     obj->animation_state.reverse = 0;
     obj->slide_state.timer = 0;
-    obj->slide_state.vel = vec2f_create(0, 0);
+    obj->slide_state.vel = vec2pt_create(0, 0);
     obj->q_counter = 0;
     obj->q_val = 0;
     obj->can_hit = 0;
@@ -82,17 +82,19 @@ void player_describe_frame(const script_frame *frame) {
 }
 
 void player_describe_object(object *obj) {
+    char buf1[FIXEDPT_STR_BUFSIZE];
+    char buf2[FIXEDPT_STR_BUFSIZE];
     log_debug("Object:");
-    log_debug("  - Start: %f, %f", obj->start.x, obj->start.y);
-    log_debug("  - Position: %f, %f", obj->pos.x, obj->pos.y);
-    log_debug("  - Velocity: %f, %f", obj->vel.x, obj->vel.y);
+    log_debug("  - Start: %s, %s", fixedpt_cstr_buf(obj->start.x, buf1), fixedpt_cstr_buf(obj->start.y, buf2));
+    log_debug("  - Position: %s, %s", fixedpt_cstr_buf(obj->pos.x, buf1), fixedpt_cstr_buf(obj->pos.y, buf2));
+    log_debug("  - Velocity: %s, %s", fixedpt_cstr_buf(obj->vel.x, buf1), fixedpt_cstr_buf(obj->vel.y, buf2));
     if(obj->cur_sprite_id) {
         sprite *cur_sprite = animation_get_sprite(obj->cur_animation, obj->cur_sprite_id);
         log_debug("  - Pos: %d, %d", cur_sprite->pos.x, cur_sprite->pos.y);
         log_debug("  - Size: %d, %d", cur_sprite->data->w, cur_sprite->data->h);
         player_sprite_state *rstate = &obj->sprite_state;
-        log_debug("CURRENT = %f - %d + %d - %d", obj->pos.y, cur_sprite->pos.y, rstate->o_correction.y,
-                  cur_sprite->data->h);
+        log_debug("CURRENT = %s - %d + %d - %d", fixedpt_cstr_buf(obj->pos.y, buf1), cur_sprite->pos.y,
+                  rstate->o_correction.y, cur_sprite->data->h);
     }
 }
 
@@ -265,7 +267,7 @@ void player_run_apply(object *obj) {
 
         if(script_is_tag_set_by_id(frame, TAG_AC)) {
             // force the har to face the center of the arena
-            if(obj->pos.x > 160) {
+            if(object_px(obj) > 160) {
                 object_set_direction(obj, OBJECT_FACE_LEFT);
             } else {
                 object_set_direction(obj, OBJECT_FACE_RIGHT);
@@ -338,7 +340,7 @@ void player_run_apply(object *obj) {
             int destination = 160;
             if(script_is_tag_set_by_id(frame, TAG_AM) && script_is_tag_set_by_id(frame, TAG_E)) {
                 // destination is the enemy's position
-                destination = enemy->pos.x - trans_x;
+                destination = object_px(enemy) - trans_x;
                 if(obj->pos.x > enemy->pos.x) {
                     object_set_direction(obj, OBJECT_FACE_LEFT);
                 } else {
@@ -362,8 +364,8 @@ void player_run_apply(object *obj) {
             // clear this
             trans_x = 0;
             if(script_get_tag_value_by_id(frame, TAG_BM) == 10 && destination > 0 &&
-               fabsf(obj->pos.x - destination) > 5.0) {
-                log_debug("HAR walk to %d from %f", destination, obj->pos.x);
+               labs(obj->pos.x - fixedpt_fromint(destination)) > 0x500) { // 0x500 = 5
+                log_debug("HAR walk to %d from %s", destination, fixedpt_cstr(obj->pos.x, -3));
                 har_walk_to(obj, destination);
                 state->phase = ANIM_PHASE_HOLD;
                 return;
@@ -384,7 +386,7 @@ void player_run_apply(object *obj) {
     // Set to ground
     if(script_is_tag_set_by_id(frame, TAG_G)) {
         obj->vel.y = 0;
-        obj->pos.y = ARENA_FLOOR;
+        obj->pos.y = ARENA_FLOOR_PT;
     }
 
     if(script_is_tag_set_by_id(frame, TAG_AD)) {
@@ -415,16 +417,16 @@ void player_run_apply(object *obj) {
         har *har = object_get_userdata(obj);
         switch(har->inputs[0]) {
             case '6':
-                obj->pos.x = ARENA_RIGHT_WALL - random_int(&obj->gs->rand, 30);
+                obj->pos.x = ARENA_RIGHT_WALL_PT - fixedpt_fromint(random_int(&obj->gs->rand, 30));
                 break;
             case '4':
-                obj->pos.x = ARENA_LEFT_WALL + random_int(&obj->gs->rand, 30);
+                obj->pos.x = ARENA_LEFT_WALL_PT + fixedpt_fromint(random_int(&obj->gs->rand, 30));
                 break;
             default:
-                if(obj->pos.x > enemy->pos.x) { // From right to left
-                    obj->pos.x = enemy->pos.x - 40;
-                } else { // From left to right
-                    obj->pos.x = enemy->pos.x + 40;
+                if(obj->pos.x > enemy->pos.x) {         // From right to left
+                    obj->pos.x = enemy->pos.x - 0x2800; // 0x2800 = 40
+                } else {                                // From left to right
+                    obj->pos.x = enemy->pos.x + 0x2800; // 0x2800 = 40;
                 }
         }
     }
@@ -432,26 +434,27 @@ void player_run_apply(object *obj) {
     // Handle vx+/-, vy+/-, x+/-. y+/-
     if(trans_x || trans_y) {
         if(script_is_tag_set_by_id(frame, TAG_V)) {
-            obj->vel.x = (trans_x * (mp & 0x20 ? -1 : 1)) * obj->horizontal_velocity_modifier;
-            obj->vel.y = trans_y * obj->horizontal_velocity_modifier;
+            obj->vel.x = fixedpt_mul(fixedpt_fromint(trans_x * (mp & 0x20 ? -1 : 1)),
+                                     fixedpt_rconst(obj->horizontal_velocity_modifier));
+            obj->vel.y = fixedpt_mul(fixedpt_fromint(trans_y), fixedpt_rconst(obj->horizontal_velocity_modifier));
             // log_debug("vel x+%d, y+%d to x=%f, y=%f", trans_x * (mp & 0x20 ? -1 : 1), trans_y, obj->vel.x,
             // obj->vel.y);
         } else {
-            obj->pos.x += trans_x * (mp & 0x20 ? -1 : 1);
+            obj->pos.x += fixedpt_fromint(trans_x * (mp & 0x20 ? -1 : 1));
             if(!ab_flag) {
-                if(obj->pos.x < ARENA_LEFT_WALL && obj->group == GROUP_HAR) {
+                if(obj->pos.x < ARENA_LEFT_WALL_PT && obj->group == GROUP_HAR) {
                     if(script_is_tag_set_by_id(frame, TAG_E) && enemy) {
-                        enemy->pos.x += ARENA_LEFT_WALL - obj->pos.x;
+                        enemy->pos.x += ARENA_LEFT_WALL_PT - obj->pos.x;
                     }
                     obj->wall_collision = WALL_HIT_LEFT;
-                } else if(obj->pos.x > ARENA_RIGHT_WALL && obj->group == GROUP_HAR) {
+                } else if(obj->pos.x > ARENA_RIGHT_WALL_PT && obj->group == GROUP_HAR) {
                     if(script_is_tag_set_by_id(frame, TAG_E) && enemy) {
-                        enemy->pos.x -= obj->pos.x - ARENA_RIGHT_WALL;
+                        enemy->pos.x -= obj->pos.x - ARENA_RIGHT_WALL_PT;
                     }
                     obj->wall_collision = WALL_HIT_RIGHT;
                 }
             }
-            obj->pos.y += trans_y;
+            obj->pos.y += fixedpt_fromint(trans_y);
             // log_debug("pos x+%d, y+%d to x=%f, y=%f", trans_x * (mp & 0x20 ? -1 : 1), trans_y, obj->pos.x,
             // obj->pos.y);
         }
@@ -459,13 +462,12 @@ void player_run_apply(object *obj) {
 
     // Handle slide operations on self
     if(obj->slide_state.timer > 0) {
-        obj->pos.x += obj->slide_state.vel.x;
-        obj->pos.y += obj->slide_state.vel.y;
+        obj->pos = vec2pt_add(obj->pos, obj->slide_state.vel);
         obj->slide_state.timer--;
     }
 
     if(obj->group == GROUP_HAR && enemy && !ab_flag) {
-        obj->pos.x = clampf(obj->pos.x, ARENA_LEFT_WALL, ARENA_RIGHT_WALL);
+        obj->pos.x = fixedpt_clamp(obj->pos.x, ARENA_LEFT_WALL_PT, ARENA_RIGHT_WALL_PT);
     }
 
     if(script_is_tag_set_by_id(frame, TAG_Q)) {
@@ -484,8 +486,8 @@ void player_run_apply(object *obj) {
         } else if(script_is_tag_set_by_id(frame, TAG_M) && state->spawn != NULL) {
             int mx = 0;
             int my = 0;
-            float vx = 0;
-            float vy = 0;
+            fixedpt vx = 0;
+            fixedpt vy = 0;
 
             // Instance count
             int instances = 1;
@@ -496,20 +498,24 @@ void player_run_apply(object *obj) {
 
             // Staring X coordinate for new animation
             if(script_is_tag_set_by_id(frame, TAG_MX)) {
-                mx = obj->start.x + (script_get_tag_value_by_id(frame, TAG_MX) * object_get_direction(obj));
+                mx = fixedpt_toint(obj->start.x) +
+                     (script_get_tag_value_by_id(frame, TAG_MX) * object_get_direction(obj));
             }
 
             // Staring Y coordinate for new animation
             if(script_is_tag_set_by_id(frame, TAG_MY)) {
-                my = obj->start.y + script_get_tag_value_by_id(frame, TAG_MY);
+                my = fixedpt_toint(obj->start.y) + script_get_tag_value_by_id(frame, TAG_MY);
             }
 
             // Angle/speed for new animation
             if(script_is_tag_set_by_id(frame, TAG_MA)) {
                 int ma = script_get_tag_value_by_id(frame, TAG_MA);
-                vx = cosf(ma);
-                vy = sinf(ma);
-                log_debug("MA is set! angle = %d, vx = %f, vy = %f", ma, vx, vy);
+                vx = fixedpt_rconst(cosf(ma));
+                vy = fixedpt_rconst(sinf(ma));
+                char buf1[FIXEDPT_STR_BUFSIZE];
+                char buf2[FIXEDPT_STR_BUFSIZE];
+                log_debug("MA is set! angle = %d, vx = %s, vy = %s", ma, fixedpt_cstr_buf(vx, buf1),
+                          fixedpt_cstr_buf(vy, buf2));
             }
 
             // Special positioning for certain desert arena sprites
@@ -533,7 +539,7 @@ void player_run_apply(object *obj) {
                     log_debug("randomized my as %d", my);
                 }
 
-                state->spawn(obj, script_get_tag_value_by_id(frame, TAG_M), vec2i_create(mx, my), vec2f_create(vx, vy),
+                state->spawn(obj, script_get_tag_value_by_id(frame, TAG_M), vec2i_create(mx, my), vec2pt_create(vx, vy),
                              mp, ms, mg, state->spawn_userdata);
             }
         }
@@ -578,7 +584,7 @@ void player_run_apply(object *obj) {
             if(script_is_tag_set_by_id(frame, TAG_SB)) {
                 opts.panning = clamp(script_get_tag_value_by_id(frame, TAG_SB), -100, 100);
             } else {
-                opts.panning = clamp((obj->pos.x - 160) * 100 / 160, -100, 100);
+                opts.panning = clamp((object_px(obj) - 160) * 100 / 160, -100, 100);
             }
             if(script_is_tag_set_by_id(frame, TAG_SF)) {
                 opts.pitch = script_get_tag_value_by_id(frame, TAG_SF);
@@ -729,10 +735,11 @@ void player_run_apply(object *obj) {
 
         // Handle slides
         if(script_is_tag_set_by_id(frame, TAG_X_EQ) || script_is_tag_set_by_id(frame, TAG_Y_EQ)) {
-            obj->vel = vec2f_create(0, 0);
+            obj->vel = vec2pt_create(0, 0);
         }
         if(script_is_tag_set_by_id(frame, TAG_X_EQ)) {
-            obj->pos.x = obj->start.x + (script_get_tag_value_by_id(frame, TAG_X_EQ) * object_get_direction(obj));
+            obj->pos.x =
+                obj->start.x + fixedpt_fromint(script_get_tag_value_by_id(frame, TAG_X_EQ) * object_get_direction(obj));
 
             // Find frame ID by tick
             int frame_id = script_get_next_frame_with_tag_id(script, TAG_X_EQ, script_reader_tick(&state->reader));
@@ -741,10 +748,11 @@ void player_run_apply(object *obj) {
             if(frame_id >= 0) {
                 int mr = script_get_tick_pos_at_frame(script, frame_id);
                 int r = mr - script_reader_tick(&state->reader) - frame->tick_len;
-                int next_x = script_get_tag_value_by_id(script_get_frame(script, frame_id), TAG_X_EQ);
-                int slide = obj->start.x + (next_x * object_get_direction(obj));
+                fixedpt next_x =
+                    fixedpt_fromint(script_get_tag_value_by_id(script_get_frame(script, frame_id), TAG_X_EQ));
+                fixedpt slide = obj->start.x + next_x * object_get_direction(obj);
                 if(slide != obj->pos.x) {
-                    obj->slide_state.vel.x = dist(obj->pos.x, slide) / (float)(frame->tick_len + r);
+                    obj->slide_state.vel.x = (slide - obj->pos.x) / (frame->tick_len + r);
                     obj->slide_state.timer = frame->tick_len + r;
                     /* log_debug("Slide object %d for X = %f for a total of %d + %d = %d ticks.",
                             obj->cur_animation->id,
@@ -756,7 +764,7 @@ void player_run_apply(object *obj) {
             }
         }
         if(script_is_tag_set_by_id(frame, TAG_Y_EQ)) {
-            obj->pos.y = obj->start.y + script_get_tag_value_by_id(frame, TAG_Y_EQ);
+            obj->pos.y = obj->start.y + fixedpt_fromint(script_get_tag_value_by_id(frame, TAG_Y_EQ));
 
             // Find frame ID by tick
             int frame_id = script_get_next_frame_with_tag_id(script, TAG_Y_EQ, script_reader_tick(&state->reader));
@@ -765,10 +773,11 @@ void player_run_apply(object *obj) {
             if(frame_id >= 0) {
                 int mr = script_get_tick_pos_at_frame(script, frame_id);
                 int r = mr - script_reader_tick(&state->reader) - frame->tick_len;
-                int next_y = script_get_tag_value_by_id(script_get_frame(script, frame_id), TAG_Y_EQ);
-                int slide = next_y + obj->start.y;
+                fixedpt next_y =
+                    fixedpt_fromint(script_get_tag_value_by_id(script_get_frame(script, frame_id), TAG_Y_EQ));
+                fixedpt slide = next_y + obj->start.y;
                 if(slide != obj->pos.y) {
-                    obj->slide_state.vel.y = dist(obj->pos.y, slide) / (float)(frame->tick_len + r);
+                    obj->slide_state.vel.y = (slide - obj->pos.y) / (frame->tick_len + r);
                     obj->slide_state.timer = frame->tick_len + r;
                     /* log_debug("Slide object %d for Y = %f for a total of %d + %d = %d ticks.",
                             obj->cur_animation->id,
@@ -816,31 +825,32 @@ void player_run_apply(object *obj) {
         double delta_2 = abs(obj->orb_val * 2) + obj->gs->tick;
         double t = sinf(base_val * (delta_1 * 0.003574533) + obj->orb_val * 3.0) * 65.0 + 160.0;
         double t2 = cosf(base_val * (delta_2 * 0.004974533) + obj->orb_val * 4.0) * 65.0;
-        obj->pos.x = (t + t2);
+        obj->pos.x = fixedpt_fromint(t + t2);
         t = cosf(base_val * (delta_2 * 0.005874533) + obj->orb_val * 6.0) * 30.0 + 60.0;
         t2 = sinf(base_val * (delta_1 * 0.004174533) + obj->orb_val * 3.0) * 30.0;
-        obj->pos.y = (t + t2);
+        obj->pos.y = fixedpt_fromint(t + t2);
         obj->vel.x = 0;
         obj->vel.y = 0;
     }
 
     if(script_is_tag_set_by_id(frame, TAG_BU)) {
-        if(obj->vel.y < 0.0f) {
-            float x_dist = dist(obj->pos.x, 160);
+        const fixedpt center_x = 0xa000; // 0xa000 = 160
+        if(obj->vel.y < 0) {
+            fixedpt x_dist = center_x - obj->pos.x;
             // assume that bu is used in conjunction with 'vy-X' and that we want to land in the center of the arena
-            obj->vel.x = x_dist / (obj->vel.y * -2);
+            obj->vel.x = fixedpt_xdiv(x_dist, obj->vel.y * -2);
         } else {
             // teleport offscreen (Thorn's scrap)
-            obj->pos.x = 160;
+            obj->pos.x = center_x;
         }
     }
 
     if(script_is_tag_set_by_id(frame, TAG_CG)) {
-        obj->animation_state.disable_d = obj->pos.y < ARENA_FLOOR ? 1 : 0;
+        obj->animation_state.disable_d = obj->pos.y < ARENA_FLOOR_PT;
 
-        if(obj->pos.y >= ARENA_FLOOR) {
+        if(obj->pos.y >= ARENA_FLOOR_PT) {
             har *h = object_get_userdata(obj);
-            obj->pos.y = ARENA_FLOOR;
+            obj->pos.y = ARENA_FLOOR_PT;
             obj->vel.y = 0;
             h->state = STATE_STANDING;
         }
