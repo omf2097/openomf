@@ -733,6 +733,7 @@ void arena_har_defeat_hook(int loser_player_id, scene *scene) {
         object_set_sprite_override(round_token, 1);
     }
     score->rounds++;
+    chr_score_award_streaks(score);
     if(player_winner->ctrl->type != CTRL_TYPE_AI && player_loser->ctrl->type == CTRL_TYPE_AI) {
         chr_score_victory(score, har_health_percent(winner_har));
     }
