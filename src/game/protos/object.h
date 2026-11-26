@@ -93,8 +93,8 @@ struct object_t {
     vec2pt pos;
     vec2pt vel;
     vec2pt cvel;
-    float vertical_velocity_modifier;
-    float horizontal_velocity_modifier;
+    fixedpt vertical_velocity_modifier;
+    fixedpt horizontal_velocity_modifier;
     int8_t direction;
     int8_t group;
     // Set when moving against the wall either by continuous velocity or by instantaneous position changes.

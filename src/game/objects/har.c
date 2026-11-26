@@ -1029,13 +1029,18 @@ void har_take_damage(object *obj, af_move *move) {
                 str_append_c(&custom, "-L2-M5-L2");
             }
 
-            obj->vel.y = fixedpt_rconst(obj->vertical_velocity_modifier *
-                                        ((((30.0f - move->damage) * 0.133333f) + 6.5f) * -1.0));
+            // ((30 - damage) * 2 / 15 + 6.5) * -1 * vertical_velocity_modifier
+            // 0.133333f (2/15) ≈ 0x22, 6.5 = 0x680
+            obj->vel.y = -fixedpt_mul(fixedpt_mul(fixedpt_fromint(30 - move->damage), 0x22) + 0x680,
+                                      obj->vertical_velocity_modifier);
             // TODO there's an alternative formula used in some conditions:
             // (((damage * 0.09523809523809523) + 3.5)  * -1) * obj->vertical_velocity_modifier
             // but we don't know what those conditions are
-            obj->vel.x = fixedpt_rconst((((move->damage * 0.16666666f) + 2.0f) * object_get_direction(obj) * -1) *
-                                        obj->horizontal_velocity_modifier);
+            // (damage / 6 + 2) * -direction * horizontal_velocity_modifier
+            // 0.16666666f (1/6) ≈ 0x2b, 2.0 = 0x200
+            obj->vel.x =
+                fixedpt_mul((fixedpt_mul(fixedpt_fromint(move->damage), 0x2b) + 0x200) * object_get_direction(obj) * -1,
+                            obj->horizontal_velocity_modifier);
             object_set_stride(obj, 1);
         } else {
             if(h->health <= 0 || h->endurance >= h->endurance_max || h->endurance < 0) {
@@ -1060,11 +1065,12 @@ void har_take_damage(object *obj, af_move *move) {
         if(!object_is_airborne(obj)) {
             int hit_ticks = player_get_len_ticks(obj);
             if(hit_ticks < 20) {
-                float push = (hit_ticks - 3) * 20.0 / 29.0 + 0.5;
-                if(push < 7) {
-                    push = 7;
+                fixedpt push =
+                    fixedpt_xdiv(fixedpt_fromint((hit_ticks - 3) * 20), 0x1d00) + 0x80; // 0x1d00 = 29, 0x80 = 0.5
+                if(push < 0x700) {                                                      // 0x700 = 7
+                    push = 0x700;
                 }
-                obj->vel.x = fixedpt_rconst(push * object_get_direction(obj) * -1);
+                obj->vel.x = push * (object_get_direction(obj) * -1);
             }
         }
 
@@ -1288,13 +1294,13 @@ void har_debug(object *obj) {
 }
 #endif // DEBUGMODE
 
-void har_cornerpush(const object *self, object *enemy, const float distance) {
+void har_cornerpush(const object *self, object *enemy, fixedpt distance) {
     har *h = object_get_userdata(self);
     if(h->throw_duration || (h->cornerpush_enabled && h->state == STATE_BLOCKSTUN)) {
-        enemy->pos.x += fixedpt_rconst(distance);
+        enemy->pos.x += distance;
     } else if(h->cornerpush_enabled && h->state == STATE_RECOIL) {
         if(!object_is_airborne(self) && !object_is_airborne(enemy)) {
-            enemy->pos.x += fixedpt_rconst(distance / 2.0) + fixedpt_fromint(distance < 0 ? -2 : 2);
+            enemy->pos.x += (distance / 2) + (distance < 0 ? -0x200 : 0x200); // 0x200 = 2
         } else if(object_is_airborne(self) && !object_is_airborne(enemy) && player_get_current_tick(self) <= 2 &&
                   !h->cornerpush_vel_applied) { // todo, also check last hit wasn't CAT_CLOSE or CAT_JUMP
             fixedpt pushvel = fixedpt_xdiv(fixedpt_fromint(h->last_hit_raw_damage + 15), 0x300); // 0x300 = 3
@@ -1440,7 +1446,7 @@ int har_collide_with_har(object *obj_a, object *obj_b, int loop) {
 
         if(object_is_airborne(obj_a) && object_is_airborne(obj_b)) {
             // modify the horizontal velocity of the attacker when doing air knockback
-            obj_a->vel.x = fixedpt_mul(obj_a->vel.x, fixedpt_rconst(0.7f));
+            obj_a->vel.x = fixedpt_mul(obj_a->vel.x, 0xb3); // 0xb3 ~= 0.7
             // the opponent's velocity is modified in har_take_damage
         }
 
@@ -2003,18 +2009,18 @@ void har_tick(object *obj) {
         }
 
         int wall_flag = player_frame_isset(obj, TAG_AW);
-        float distance = 0;
+        fixedpt distance = 0;
         if(pos.x < left_bound) {
-            distance = left_bound - pos.x;
+            distance = fixedpt_fromint(left_bound - pos.x);
             pos.x = left_bound;
             obj->wall_collision = WALL_HIT_LEFT;
         } else if(pos.x > right_bound) {
-            distance = right_bound - pos.x;
+            distance = fixedpt_fromint(right_bound - pos.x);
             pos.x = right_bound;
             obj->wall_collision = WALL_HIT_RIGHT;
         }
         if(distance != 0 && (h->state == STATE_BLOCKSTUN || h->state == STATE_RECOIL)) {
-            log_debug("Trigger cornerpush, distance %f", distance);
+            log_debug("Trigger cornerpush, distance %s", fixedpt_cstr(distance, -3));
             har_cornerpush(obj, enemy_obj, distance);
         }
 
@@ -2415,8 +2421,8 @@ int har_act(object *obj, int act_type) {
         // If animation is scrap or destruction, then remove our customizations
         // from gravity/fall speed, and just use the HARs native value.
         if(move->category == CAT_SCRAP || move->category == CAT_DESTRUCTION) {
-            obj->horizontal_velocity_modifier = 1.0f;
-            obj->vertical_velocity_modifier = 1.0f;
+            obj->horizontal_velocity_modifier = FIXEDPT_ONE;
+            obj->vertical_velocity_modifier = FIXEDPT_ONE;
             object_set_gravity(obj, h->af_data->fall_speed);
             object_set_gravity(enemy_obj, enemy_har->af_data->fall_speed);
         }
@@ -2808,8 +2814,8 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
     // precise for us
     // Insanius: jump speed = speed up * vertical_agility_modifier * 216 / 256
     // Insanius: superjump speed = speed up * vertical_agility_modifier * 266 / 256
-    float horizontal_agility_modifier = ((float)gp->pilot->agility + 35) / 45;
-    float vertical_agility_modifier = ((float)gp->pilot->agility + 20) / 30;
+    fixedpt horizontal_agility_modifier = fixedpt_xdiv(fixedpt_fromint(gp->pilot->agility + 35), 0x2d00); // 0x2d00 = 45
+    fixedpt vertical_agility_modifier = fixedpt_xdiv(fixedpt_fromint(gp->pilot->agility + 20), 0x1e00);   // 0x1e00 = 30
     obj->horizontal_velocity_modifier = horizontal_agility_modifier;
     obj->vertical_velocity_modifier = vertical_agility_modifier;
     const fixedpt jump_ratio = 0xd8; // 216 / 256 = 0.84375
