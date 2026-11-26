@@ -31,7 +31,7 @@ void object_create(object *obj, game_state *gs, vec2i pos, vec2pt vel) {
     // remember the place we were spawned, the x= and y= tags are relative to that
     obj->start = vec2i_to_pt(pos);
     obj->vel = vel;
-    obj->horizontal_velocity_modifier = obj->vertical_velocity_modifier = 1.0f;
+    obj->horizontal_velocity_modifier = obj->vertical_velocity_modifier = FIXEDPT_ONE;
     obj->direction = OBJECT_FACE_RIGHT;
     obj->wall_collision = WALL_HIT_NONE;
     obj->y_percent = 1.0;
@@ -320,7 +320,7 @@ void object_apply_controllable_velocity(object *obj, bool is_projectile, char in
     if(player_frame_isset(obj, TAG_CX)) {
         fixedpt cx = fixedpt_xdiv(fixedpt_fromint(player_frame_get(obj, TAG_CX)), 0xa00); // 0xa00 = 10
         if(!is_projectile) {
-            cx *= obj->horizontal_velocity_modifier;
+            cx = fixedpt_mul(cx, obj->horizontal_velocity_modifier);
         }
         if(input == '4') {
             obj->cvel.x -= cx;

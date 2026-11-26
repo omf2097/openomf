@@ -434,9 +434,9 @@ void player_run_apply(object *obj) {
     // Handle vx+/-, vy+/-, x+/-. y+/-
     if(trans_x || trans_y) {
         if(script_is_tag_set_by_id(frame, TAG_V)) {
-            obj->vel.x = fixedpt_mul(fixedpt_fromint(trans_x * (mp & 0x20 ? -1 : 1)),
-                                     fixedpt_rconst(obj->horizontal_velocity_modifier));
-            obj->vel.y = fixedpt_mul(fixedpt_fromint(trans_y), fixedpt_rconst(obj->horizontal_velocity_modifier));
+            obj->vel.x =
+                fixedpt_mul(fixedpt_fromint(trans_x * (mp & 0x20 ? -1 : 1)), obj->horizontal_velocity_modifier);
+            obj->vel.y = fixedpt_mul(fixedpt_fromint(trans_y), obj->horizontal_velocity_modifier);
             // log_debug("vel x+%d, y+%d to x=%f, y=%f", trans_x * (mp & 0x20 ? -1 : 1), trans_y, obj->vel.x,
             // obj->vel.y);
         } else {
@@ -509,13 +509,14 @@ void player_run_apply(object *obj) {
 
             // Angle/speed for new animation
             if(script_is_tag_set_by_id(frame, TAG_MA)) {
-                int ma = script_get_tag_value_by_id(frame, TAG_MA);
-                vx = fixedpt_rconst(cosf(ma));
-                vy = fixedpt_rconst(sinf(ma));
+                fixedpt ma = fixedpt_fromint(script_get_tag_value_by_id(frame, TAG_MA));
+                vx = fixedpt_cos(ma);
+                vy = fixedpt_sin(ma);
                 char buf1[FIXEDPT_STR_BUFSIZE];
                 char buf2[FIXEDPT_STR_BUFSIZE];
-                log_debug("MA is set! angle = %d, vx = %s, vy = %s", ma, fixedpt_cstr_buf(vx, buf1),
-                          fixedpt_cstr_buf(vy, buf2));
+                char buf3[FIXEDPT_STR_BUFSIZE];
+                log_debug("MA is set! angle = %s, vx = %s, vy = %s", fixedpt_cstr_buf(ma, buf1),
+                          fixedpt_cstr_buf(vx, buf2), fixedpt_cstr_buf(vy, buf3));
             }
 
             // Special positioning for certain desert arena sprites

@@ -593,16 +593,17 @@ void arena_har_hit_wall_hook(int player_id, int wall, scene *scene) {
         return;
     }
 
-    float abs_velocity_h = fabsf(fixedpt_tofloat(o_har->vel.x)) / o_har->horizontal_velocity_modifier;
+    fixedpt abs_velocity_h = fixedpt_xdiv(labs(o_har->vel.x), o_har->horizontal_velocity_modifier);
     if(player_frame_isset(o_har2, TAG_CW)) {
-        abs_velocity_h = 7;
+        abs_velocity_h = 0x700; // 0x700 = 7
     }
 
-    if(abs_velocity_h > 2) {
-        int tolerance = arena_get_wall_slam_tolerance(scene->gs);
+    if(abs_velocity_h > 0x200) { // 0x200 = 2
+        fixedpt tolerance = fixedpt_fromint(arena_get_wall_slam_tolerance(scene->gs));
 
         // log_debug("Checking if %f velocity will wallslam", abs_velocity_h);
-        if((abs_velocity_h + 0.5f) > tolerance && (h->state == STATE_RECOIL || h->state == STATE_DEFEAT)) {
+        if((abs_velocity_h + 0x80) > tolerance &&
+           (h->state == STATE_RECOIL || h->state == STATE_DEFEAT)) { // 0x80 = 0.5
             h->state = STATE_WALLDAMAGE;
 
             if(o_har->pos.y == ARENA_FLOOR_PT) {
