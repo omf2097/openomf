@@ -304,6 +304,11 @@ int chr_score_interrupt(chr_score *score, vec2i pos) {
     return ret;
 }
 
+void chr_score_award_streaks(chr_score *score) {
+    chr_score_end_combo(score, vec2i_create(160, 100));
+    chr_score_interrupt(score, vec2i_create(160, 100));
+}
+
 int chr_score_end_combo(chr_score *score, vec2i pos) {
     // enemy recovered control, end any combos
     int ret = 0;
