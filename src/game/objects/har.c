@@ -1089,7 +1089,7 @@ static vec2pt har_debris_random_vel(const object *har_obj, bool is_destruction) 
     // FIXME: burning oil/sparks in destruction and scrap animations
     // FIXME: how does the original game handle scrap velocity in destruction anims?
     if(is_destruction) {
-        int x = rand_int(1);
+        int x = rand_int(2);
         // 50/50 directional split
         if(x == 0) {
             x = -1;
