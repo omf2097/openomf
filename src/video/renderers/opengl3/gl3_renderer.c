@@ -12,6 +12,7 @@
 #include "utils/allocator.h"
 #include "utils/log.h"
 #include "utils/miscmath.h"
+#include "video/renderers/renderer.h"
 #include "video/vga_state.h"
 
 #define TEX_UNIT_ATLAS 0
@@ -58,8 +59,12 @@ typedef struct gl3_context {
     video_screenshot_signal screenshot_cb;
 } gl3_context;
 
-static bool is_available(void) {
-    return has_gl_available(3, 3);
+static renderer_availability get_availability(void) {
+    if(has_gl_available(3, 3)) {
+        return RENDERER_HEALTHY;
+    } else {
+        return RENDERER_UNAVAILABLE;
+    }
 }
 
 static const char *get_description(void) {
@@ -571,7 +576,7 @@ static void renderer_destroy(renderer *gl3_renderer) {
 }
 
 void gl3_renderer_set_callbacks(renderer *gl3_renderer) {
-    gl3_renderer->is_available = is_available;
+    gl3_renderer->get_availability = get_availability;
     gl3_renderer->get_description = get_description;
     gl3_renderer->get_name = get_name;
 

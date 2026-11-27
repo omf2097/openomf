@@ -1,5 +1,6 @@
 #include "utils/rect.h"
 #include <SDL.h>
+#include <assert.h>
 
 #include "utils/c_array_util.h"
 #include "utils/log.h"
@@ -38,13 +39,18 @@ static int all_renderers_count = N_ELEMENTS(all_renderers); ///< Count of built-
  * @brief Information about an available renderer
  */
 static struct available_renderer {
-    renderer_init set_callbacks; ///< Callback to set up renderer function pointers
-    const char *name;            ///< Renderer name
-    const char *description;     ///< Renderer description
+    renderer_init set_callbacks;        ///< Callback to set up renderer function pointers
+    const char *name;                   ///< Renderer name
+    const char *description;            ///< Renderer description
+    renderer_availability availability; ///< Availability
 } available_renderers[MAX_AVAILABLE_RENDERERS];
 static int renderer_count = 0; ///< Number of available renderers
 
 static renderer current_renderer; ///< Currently active renderer
+
+static char const *const renderer_availability_names[] = {"Unavailable", "Healthy", "Only If Forced"};
+static_assert(N_ELEMENTS(renderer_availability_names) == RENDERER_AVAILABILITY_COUNT,
+              "Please update renderer_availability_names to match enum");
 
 /**
  * @brief Scan for available renderers
@@ -54,16 +60,19 @@ static renderer current_renderer; ///< Currently active renderer
 void video_scan_renderers(void) {
     renderer tmp;
     renderer_count = 0;
+    log_debug("%d renderers are available", all_renderers_count);
     for(int i = 0; i < all_renderers_count; i++) {
         all_renderers[i](&tmp);
         if(renderer_count >= MAX_AVAILABLE_RENDERERS) {
             break;
         }
-        if(tmp.is_available()) {
-            available_renderers[renderer_count].set_callbacks = all_renderers[i];
-            available_renderers[renderer_count].name = tmp.get_name();
-            available_renderers[renderer_count].description = tmp.get_description();
-            log_debug("Renderer '%s' is available", available_renderers[renderer_count].name);
+        struct available_renderer *next = &available_renderers[renderer_count];
+        next->set_callbacks = all_renderers[i];
+        next->availability = tmp.get_availability();
+        next->name = tmp.get_name();
+        log_debug("Renderer '%s' is '%s'", next->name, renderer_availability_names[next->availability]);
+        if(next->availability != RENDERER_UNAVAILABLE) {
+            next->description = tmp.get_description();
             renderer_count++;
         }
     }
@@ -121,9 +130,11 @@ static bool hunt_renderer_by_name(const char *try_name) {
  * @return true if a renderer was found and set as current, false otherwise
  */
 static bool find_best_renderer(void) {
-    if(renderer_count > 0) {
-        available_renderers[0].set_callbacks(&current_renderer);
-        return true;
+    for(int best = 0; best < renderer_count; best++) {
+        if(available_renderers[best].availability == RENDERER_HEALTHY) {
+            available_renderers[0].set_callbacks(&current_renderer);
+            return true;
+        }
     }
     return false;
 }

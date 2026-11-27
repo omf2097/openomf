@@ -2,9 +2,10 @@
 
 #include "utils/allocator.h"
 #include "utils/log.h"
+#include "video/renderers/renderer.h"
 
-static bool is_available(void) {
-    return true;
+static renderer_availability get_availability(void) {
+    return RENDERER_ONLY_IF_FORCED;
 }
 
 static const char *get_description(void) {
@@ -84,7 +85,7 @@ static void renderer_destroy(renderer *gl3_renderer) {
 }
 
 void null_renderer_set_callbacks(renderer *gl3_renderer) {
-    gl3_renderer->is_available = is_available;
+    gl3_renderer->get_availability = get_availability;
     gl3_renderer->get_description = get_description;
     gl3_renderer->get_name = get_name;
 
