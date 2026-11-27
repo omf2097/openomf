@@ -429,8 +429,8 @@ bool is_in_range(object *obj, object *enemy_obj, af_move *move) {
 
     if(check_move->successor_id) { // This is a throw with limited range
         // CLOSE moves use the successor id field as a distance requirement
-        float throw_range = (float)obj->gs->match_settings.throw_range / 100.0f;
-        if(fixedpt_tofloat(object_distance(obj, enemy_obj)) > check_move->successor_id * throw_range) {
+        fixedpt throw_range = fixedpt_fromint(obj->gs->match_settings.throw_range) / 100;
+        if(object_distance(obj, enemy_obj) > fixedpt_mul(fixedpt_fromint(check_move->successor_id), throw_range)) {
             return false;
         }
     }
