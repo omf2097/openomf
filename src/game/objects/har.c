@@ -2766,35 +2766,36 @@ int har_create(object *obj, af *af_data, int dir, int har_id, int pilot_id, int 
         // power 1 applies to player 2's health
         power = obj->gs->match_settings.power1;
     }
-
-    fixedpt jump_multiplier = fixedpt_fromint(1);
-    float vitality_multiplier = 1.0;
-    float power_multiplier = 1.0;
-    float hp_adjust;
+    fixedpt jump_multiplier = FIXEDPT_ONE;
+    fixedpt vitality_multiplier = FIXEDPT_ONE;
+    fixedpt power_multiplier = FIXEDPT_ONE;
+    fixedpt hp_adjust;
     if(!is_tournament(obj->gs)) {
-        jump_multiplier = fixedpt_xdiv(fixedpt_fromint(obj->gs->match_settings.jump_height), fixedpt_fromint(100));
-        vitality_multiplier = obj->gs->match_settings.vitality / 100.0;
+        jump_multiplier = fixedpt_fromint(obj->gs->match_settings.jump_height) / 100;
+        vitality_multiplier = fixedpt_fromint(obj->gs->match_settings.vitality) / 100;
         // see https://www.omf2097.com/wiki/doku.php?id=omf2097:stats
-        power_multiplier = 2.25 - 0.25 * power; // TODO: skip when either player is AI
+        // TODO: skip when either player is AI
+        power_multiplier = 0x240 - 0x40 * power; // 2.25 - 0.25 * power (0x240 = 2.25, 0x40 = 0.25)
 
         //  The stun cap is calculated as follows
         //  HAR Endurance * 3.6 * (Pilot Endurance + 16) / 23
         local->endurance_max = (af_data->endurance * 36 * (pilot->endurance_level + 16) / 23 / 10);
         local->stun_factor = 192 * (pilot->endurance_level + 30) / 25;
-        hp_adjust = 1.1f;
+        hp_adjust = 0x119; // 0x119 = 281 / 256 ~= 1.0977, almost 1.1
     } else {
         local->endurance_max = (af_data->endurance * 36 * (pilot->endurance_level + 25) / 37 / 10);
         local->endurance_max = (local->endurance_max * (pilot->stun_resistance + 2)) / 3;
         local->stun_factor = (pilot->stun_resistance + 3) * 144 * (pilot->endurance_level + 30) / 125;
-        hp_adjust = 1.5f;
+        hp_adjust = 0x180; // 1.5
     }
 
     // Health, endurance
     // HP is
     // (HAR hp * (Pilot Endurance + 25) / 35) * 1.1 one/two player
     // (HAR hp * (Pilot Endurance + 25) / 35) * 1.5 tournament
-    local->health_max = local->health = (int16_t)(((af_data->health * (pilot->endurance_level + 25) / 35) * hp_adjust) *
-                                                  power_multiplier * vitality_multiplier);
+    fixedpt base_hp = fixedpt_fromint(af_data->health * (pilot->endurance_level + 25) / 35);
+    local->health_max = local->health = (int16_t)fixedpt_toint(
+        fixedpt_mul(fixedpt_mul(fixedpt_mul(base_hp, hp_adjust), power_multiplier), vitality_multiplier));
 
     // log_debug("HAR health is %d with pilot endurance %d and base health %d", local->health, pilot->endurance,
     // af_data->health);
