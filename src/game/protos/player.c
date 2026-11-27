@@ -281,6 +281,12 @@ void player_run_apply(object *obj) {
             obj->hit_pixels_disabled = false;
         }
 
+        if(script_is_tag_set_by_id(frame, TAG_AI)) {
+            obj->launch_enabled = true;
+        } else {
+            obj->launch_enabled = false;
+        }
+
         // BJ sets new animation for our HAR
         // TODO this is still wrong somehow, there's some kind of conditional
         // but it fixes gargoyle's scrap looping and some other stuff
