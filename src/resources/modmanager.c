@@ -482,8 +482,7 @@ bool modmanager_init(void) {
                         buf->size = entry_size + 1;
                         buf->type = MOD_BUFFER;
 
-                        // XXX the file buffer is NOT null terminated
-                        strncpy(ini_buf, entry_buf, entry_size);
+                        memcpy(ini_buf, entry_buf, entry_size + 1);
 
                         buf->buf = (unsigned char *)ini_buf;
 
@@ -1187,8 +1186,7 @@ bool modmanager_parse_pilot_mod(const char *buf, sd_pilot *pilot) {
 
     // Store original values for comparison
     char original_name[18];
-    strncpy(original_name, str_c(&pilot->name), sizeof(original_name));
-    original_name[17] = '\0';
+    strncpy_or_truncate(original_name, str_c(&pilot->name), sizeof(original_name));
 
     // Options for colors section
     cfg_opt_t colors_opts[] = {CFG_INT("primary", 255, CFGF_NONE), CFG_INT("secondary", 255, CFGF_NONE),
@@ -1445,8 +1443,7 @@ bool modmanager_parse_tournament_mod(const char *buf, sd_tournament_file *tourn)
 
     // Store original values for comparison
     char original_tournament_end[14];
-    strncpy(original_tournament_end, tourn->bk_name, sizeof(original_tournament_end));
-    original_tournament_end[13] = '\0'; // Ensure null termination
+    strncpy_or_truncate(original_tournament_end, tourn->bk_name, sizeof(original_tournament_end));
 
     int original_registration_fee = tourn->registration_fee;
     float original_winnings_multiplier = tourn->winnings_multiplier;
@@ -1491,9 +1488,7 @@ bool modmanager_parse_tournament_mod(const char *buf, sd_tournament_file *tourn)
     // Update top-level fields
     char *tournament_end = cfg_getstr(cfg, "tournament_end");
     if(tournament_end) {
-        // Copy to fixed-size bk_name field with bounds checking
-        strncpy(tourn->bk_name, tournament_end, sizeof(tourn->bk_name) - 1);
-        tourn->bk_name[sizeof(tourn->bk_name) - 1] = '\0'; // Ensure null termination
+        strncpy_or_truncate(tourn->bk_name, tournament_end, sizeof(tourn->bk_name));
         log_info("setting tournament_end from '%s' to '%s'", original_tournament_end, tourn->bk_name);
     }
 
