@@ -292,7 +292,6 @@ void har_set_ani(object *obj, int animation_id, int repeat) {
     }
     object_set_repeat(obj, repeat);
     object_set_stride(obj, 1);
-    object_dynamic_tick(obj);
     // update this so mx/my have correct origins
     obj->start = obj->pos;
     h->damage_done = 0;
@@ -1012,7 +1011,7 @@ void har_take_damage(object *obj, af_move *move) {
         if(h->throw_duration) {
             // No special handling
             object_set_stride(obj, 1);
-        } else if(player_frame_isset(other_har, TAG_AI) && (move->category != CAT_PROJECTILE)) {
+        } else if(other_har->launch_enabled && (move->category != CAT_PROJECTILE)) {
             log_debug("grounded launch");
             str_from_c(&custom, "A1-s01l50B2-C2-L5-M400");
             obj->vel.x = -0x500 * object_get_direction(obj); // -0x500 = -5

@@ -100,6 +100,7 @@ struct object_t {
     // Set when moving against the wall either by continuous velocity or by instantaneous position changes.
     enum WallCollision wall_collision;
     bool hit_pixels_disabled;
+    bool launch_enabled;
     bool crossup_protection;
     bool should_hitpause;
 
