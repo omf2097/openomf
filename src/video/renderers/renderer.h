@@ -8,11 +8,22 @@
 
 typedef struct renderer renderer;
 
+/** @brief Contains all actions a HAR can do during a match
+ */
+typedef enum
+{
+    RENDERER_UNAVAILABLE,
+    RENDERER_HEALTHY,
+    RENDERER_ONLY_IF_FORCED,
+
+    RENDERER_AVAILABILITY_COUNT,
+} renderer_availability;
+
 // Asynchronous screenshot signal, renderer must call this when it has the screenshot data.
 typedef void (*video_screenshot_signal)(const irect *rect, unsigned char *data, bool flipped);
 
 // Metadata functions, all must be implemented. These must NOT require context or renderer state to be initialized!
-typedef bool (*is_available_fn)(void);
+typedef renderer_availability (*get_availability_fn)(void);
 typedef const char *(*get_description_fn)(void);
 typedef const char *(*get_name_fn)(void);
 
@@ -52,7 +63,7 @@ typedef void (*signal_scene_change_fn)(void *ctx);
 typedef void (*signal_draw_atlas_fn)(void *ctx, bool toggle);
 
 struct renderer {
-    is_available_fn is_available;
+    get_availability_fn get_availability;
     get_description_fn get_description;
     get_name_fn get_name;
 

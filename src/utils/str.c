@@ -230,7 +230,7 @@ bool str_from_file(str *dst, const path *file_path) {
     return true;
 }
 
-void str_format(str *dst, const char *format, ...) {
+ATTR_FORMAT_PRINTF(2, 3) ATTR_NONNULL(2) void str_format(str *dst, const char *format, ...) {
     va_list args1;
     va_list args2;
 

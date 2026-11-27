@@ -62,9 +62,11 @@ bool has_gl_available(int version_major, int version_minor) {
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
     if((w = SDL_CreateWindow("", 0, 0, 320, 200, SDL_WINDOW_HIDDEN | SDL_WINDOW_OPENGL)) == NULL) {
+        log_debug("Failed to create window for OpenGL probe: %s", SDL_GetError());
         goto exit_0;
     }
     if((c = SDL_GL_CreateContext(w)) == NULL) {
+        log_debug("Failed to create GL Context for OpenGL probe: %s", SDL_GetError());
         goto exit_1;
     }
 

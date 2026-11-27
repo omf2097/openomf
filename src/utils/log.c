@@ -185,7 +185,7 @@ static inline bool drop_log(trace_channel module, log_level level, log_level thr
 }
 
 ATTR_FORMAT_PRINTF(3, 0)
-static void log_vmsg_channel(trace_channel module, log_level level, const char *fmt, va_list args) {
+ATTR_NONNULL(3) static void log_vmsg_channel(trace_channel module, log_level level, const char *fmt, va_list args) {
     assert(state != NULL);
     assert(module >= TRACE_NONE && module < TRACE_COUNT);
     char dt[16];
