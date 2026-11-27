@@ -27,9 +27,11 @@ typedef uint_least32_t char32_t;
 #if defined(__GNUC__)
 #define ATTR_FORMAT_PRINTF(fmt_idx, args_idx) __attribute__((format(printf, fmt_idx, args_idx)))
 #define ATTR_FORMAT_SCANF(fmt_idx, args_idx) __attribute__((format(scanf, fmt_idx, args_idx)))
+#define ATTR_NONNULL(args_idx) __attribute__((nonnull(args_idx)))
 #else
 #define ATTR_FORMAT_PRINTF(fmt_idx, args_idx)
 #define ATTR_FORMAT_SCANF(fmt_idx, args_idx)
+#define ATTR_NONNULL(args_idx)
 #endif
 
 #endif // COMPAT_H
