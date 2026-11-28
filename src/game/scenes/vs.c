@@ -5,6 +5,7 @@
 #include "game/gui/menu_background.h"
 #include "game/gui/text/text.h"
 #include "game/protos/scene.h"
+#include "game/scenes/mechlab/har_economy.h"
 #include "game/scenes/mechlab/lab_menu_customize.h"
 #include "game/utils/formatting.h"
 #include "game/utils/settings.h"

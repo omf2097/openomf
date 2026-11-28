@@ -4,6 +4,7 @@
 #include "game/gui/trn_menu.h"
 #include "game/scenes/mechlab.h"
 #include "game/scenes/mechlab/button_details.h"
+#include "game/scenes/mechlab/har_economy.h"
 #include "game/scenes/mechlab/lab_menu_confirm.h"
 #include "game/scenes/mechlab/lab_menu_customize.h"
 #include "game/scenes/mechlab/lab_menu_trade.h"
@@ -68,7 +69,7 @@ void lab_menu_trade(component *c, void *userdata) {
         snprintf(price, 15, "$ %dK", trade_value - har_value);
         unsafe_snprintf(tmp, 100, lang_get(518), lang_get(31 + p1->chr->pilot.har_id), lang_get(31 + p1->pilot->har_id),
                         price);
-    } else if(trade_value + p1->pilot->money > har_value) {
+    } else {
         char price[15];
         snprintf(price, 15, "$ %dK", har_value - trade_value);
         unsafe_snprintf(tmp, 100, lang_get(519), lang_get(31 + p1->chr->pilot.har_id), price,

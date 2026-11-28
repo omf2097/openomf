@@ -29,7 +29,9 @@ static const int32_t arm_leg_multiplier = 2;
 static const int32_t stun_res_multiplier = 3;
 static const int32_t armor_multiplier = 5;
 
+int calculate_repair_cost(const sd_pilot *pilot, int max_hp, int hp);
 int calculate_winnings(sd_pilot *winner, sd_pilot *loser, float winnings_multiplier);
+int calculate_trade_value(const sd_pilot *pilot);
 bool har_can_upgrade(sd_pilot *pilot, enum HAR_UPGRADE upgrade);
 void purchase_random_har(sd_pilot *pilot);
 void purchase_random_har_upgrades(sd_pilot *pilot);
