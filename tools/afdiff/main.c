@@ -59,7 +59,7 @@ int base_info_diff(sd_af_file *a, sd_af_file *b) {
     printf("Header:\n");
     d_found |= int_diff(" * Fighter ID", VNAME(fighter_id));
     d_found |= int_diff(" * Exec window", VNAME(exec_window));
-    d_found |= float_diff(" * Endurance", VNAME(endurance));
+    d_found |= int_diff(" * Endurance", VNAME(endurance));
     d_found |= int_diff(" * Jump frame limit", VNAME(upwards_jump_frame_limit));
     d_found |= int_diff(" * Health", VNAME(health));
     d_found |= fixedpt_diff(" * Fwd speed", VNAME(forward_speed));
