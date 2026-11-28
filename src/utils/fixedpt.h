@@ -101,4 +101,7 @@ static inline const char *fixedpt_cstr_buf(const fixedpt A, char buf[FIXEDPT_STR
     return buf;
 }
 
+/* Format fixedpt A into a temporary stack buffer. */
+#define FIXEDPT_CSTR(A) fixedpt_cstr_buf((A), (char[FIXEDPT_STR_BUFSIZE]){0})
+
 #endif // FIXEDPT_H
