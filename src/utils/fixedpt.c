@@ -8,8 +8,13 @@ int fixedpt_from_c(const char *s, fixedpt *ret, const char **error_r) {
     long whole;
     unsigned long long decimal;
 
-    if(sscanf(s, "%ld.%9s", &whole, dec_c) != 2) {
-        *error_r = "No whole.decimal number in string";
+    int matches = sscanf(s, "%ld.%9s", &whole, dec_c);
+    if(matches == 1) {
+        *ret = FIXEDPT_ONE * whole;
+        return 0;
+    }
+    if(matches != 2) {
+        *error_r = "No whole or whole.decimal number in string";
         return -1;
     }
     if(sscanf(dec_c, "%llu", &decimal) != 1) {
