@@ -38,6 +38,14 @@ int float_diff(const char *label, float a, float b) {
     return 0;
 }
 
+int fixedpt_diff(const char *label, fixedpt a, fixedpt b) {
+    if(a != b) {
+        printf("%-30s: %-6s != %-6s\n", label, FIXEDPT_CSTR(a), FIXEDPT_CSTR(b));
+        return 1;
+    }
+    return 0;
+}
+
 int str_diff(const char *label, const char *a, const char *b) {
     if(strcmp(a, b) != 0) {
         printf("%-30s: A      != B\n", label);
@@ -54,10 +62,10 @@ int base_info_diff(sd_af_file *a, sd_af_file *b) {
     d_found |= float_diff(" * Endurance", VNAME(endurance));
     d_found |= int_diff(" * Jump frame limit", VNAME(upwards_jump_frame_limit));
     d_found |= int_diff(" * Health", VNAME(health));
-    d_found |= int_diff(" * Fwd speed", VNAME(forward_speed));
-    d_found |= int_diff(" * Rev speed", VNAME(reverse_speed));
-    d_found |= int_diff(" * Jump speed", VNAME(jump_speed));
-    d_found |= int_diff(" * Fall speed", VNAME(fall_speed));
+    d_found |= fixedpt_diff(" * Fwd speed", VNAME(forward_speed));
+    d_found |= fixedpt_diff(" * Rev speed", VNAME(reverse_speed));
+    d_found |= fixedpt_diff(" * Jump speed", VNAME(jump_speed));
+    d_found |= fixedpt_diff(" * Fall speed", VNAME(fall_speed));
     d_found |= int_diff(" * Version 1", VNAME(version_1));
     d_found |= int_diff(" * AI projectile Y threshold", VNAME(ai_projectile_y_threshold));
     if(!d_found) {
