@@ -5,7 +5,6 @@
 #include "game/protos/scene.h"
 
 component *lab_menu_customize_create(scene *s);
-int calculate_trade_value(sd_pilot *pilot);
 int sell_highest_value_upgrade(sd_pilot *pilot, char *sold);
 int har_price(int har_id);
 

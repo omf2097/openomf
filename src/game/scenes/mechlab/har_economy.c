@@ -117,32 +117,7 @@ void upgrade_har(sd_pilot *pilot, enum HAR_UPGRADE upgrade) {
 }
 
 static void update_total_value(sd_pilot *pilot) {
-    int value = har_prices[pilot->har_id];
-    for(int i = 1; i < pilot->arm_power; i++) {
-        value += har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[i] * arm_leg_multiplier;
-    }
-
-    for(int i = 1; i < pilot->arm_speed; i++) {
-        value += har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[i] * arm_leg_multiplier;
-    }
-
-    for(int i = 1; i < pilot->leg_power; i++) {
-        value += har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[i] * arm_leg_multiplier;
-    }
-
-    for(int i = 1; i < pilot->leg_speed; i++) {
-        value += har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[i] * arm_leg_multiplier;
-    }
-
-    for(int i = 1; i < pilot->armor; i++) {
-        value += har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[i] * armor_multiplier;
-    }
-
-    for(int i = 1; i < pilot->stun_resistance; i++) {
-        value += har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[i] * stun_res_multiplier;
-    }
-
-    pilot->total_value = (value * 70) / 100;
+    pilot->total_value = calculate_trade_value(pilot);
 }
 
 static int rank_additions[] = {
@@ -167,6 +142,23 @@ static float rank_bonus(unsigned rank) {
     return 5.0;
 }
 
+static const float repair_cost_multipliers[] = {
+    1.05f, 1.1f, 1.0f, 1.25f, 1.12f, 1.14f, 1.05f, 1.1f, 1.2f, 1.27f, 1.42f,
+};
+
+int calculate_repair_cost(const sd_pilot *pilot, int max_hp, int hp) {
+    int damage = max_hp - hp;
+    if(damage <= 0) {
+        return 0;
+    }
+
+    int upgrade_weight = (pilot->arm_power * 8) + (pilot->arm_speed * 8) + (pilot->leg_power * 8) +
+                         (pilot->leg_speed * 8) + (pilot->armor * 4) + (pilot->stun_resistance * 10);
+
+    float t = ((upgrade_weight * (1.0f / 37.0f) + 0.77) * repair_cost_multipliers[pilot->har_id]);
+    return t * (damage * 0.55f);
+}
+
 int calculate_winnings(sd_pilot *winner, sd_pilot *loser, float winnings_multiplier) {
     update_total_value(winner);
     update_total_value(loser);
@@ -178,5 +170,34 @@ int calculate_winnings(sd_pilot *winner, sd_pilot *loser, float winnings_multipl
     winnings += winner->trn_rank_money * rank_bonus(winner->rank);
     winnings *= 0.7f;
     winnings *= winnings_multiplier;
-    return (int)winnings;
+    return winnings;
+}
+
+int calculate_trade_value(const sd_pilot *pilot) {
+    int trade_value = har_prices[pilot->har_id];
+    for(int i = 1; i <= pilot->arm_power; i++) {
+        trade_value += har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[i] * arm_leg_multiplier;
+    }
+
+    for(int i = 1; i <= pilot->leg_power; i++) {
+        trade_value += har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[i] * arm_leg_multiplier;
+    }
+
+    for(int i = 1; i <= pilot->arm_speed; i++) {
+        trade_value += har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[i] * arm_leg_multiplier;
+    }
+
+    for(int i = 1; i <= pilot->leg_speed; i++) {
+        trade_value += har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[i] * arm_leg_multiplier;
+    }
+
+    for(int i = 1; i <= pilot->armor; i++) {
+        trade_value += har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[i] * armor_multiplier;
+    }
+
+    for(int i = 1; i <= pilot->stun_resistance; i++) {
+        trade_value += har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[i] * stun_res_multiplier;
+    }
+
+    return (trade_value * 85) / 100;
 }

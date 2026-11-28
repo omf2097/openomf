@@ -26,35 +26,6 @@ static void lab_menu_focus_leg_speed(component *c, bool focused, void *userdata)
 static void lab_menu_focus_armor(component *c, bool focused, void *userdata);
 static void lab_menu_focus_stun_resistance(component *c, bool focused, void *userdata);
 
-int calculate_trade_value(sd_pilot *pilot) {
-    int trade_value = har_prices[pilot->har_id];
-    for(int i = 1; i < pilot->arm_power; i++) {
-        trade_value += har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[i] * arm_leg_multiplier;
-    }
-
-    for(int i = 1; i < pilot->leg_power; i++) {
-        trade_value += har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[i] * arm_leg_multiplier;
-    }
-
-    for(int i = 1; i < pilot->arm_speed; i++) {
-        trade_value += har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[i] * arm_leg_multiplier;
-    }
-
-    for(int i = 1; i < pilot->leg_speed; i++) {
-        trade_value += har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[i] * arm_leg_multiplier;
-    }
-
-    for(int i = 1; i < pilot->armor; i++) {
-        trade_value += har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[i] * armor_multiplier;
-    }
-
-    for(int i = 1; i < pilot->stun_resistance; i++) {
-        trade_value += har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[i] * stun_res_multiplier;
-    }
-
-    return trade_value * 0.85;
-}
-
 int har_price(int har_id) {
     return har_prices[har_id];
 }

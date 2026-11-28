@@ -285,10 +285,8 @@ static void arena_end(scene *sc) {
             }
         }
 
-        // TODO: The repair costs formula here is completely bogus
-        int trade_value = calculate_trade_value(player_winner->pilot) / 100;
-        float hp_percentage = (float)winner_har->health / (float)winner_har->health_max;
-        fight_stats->repair_cost = (1.0f - hp_percentage) * trade_value;
+        fight_stats->repair_cost =
+            calculate_repair_cost(player_winner->pilot, winner_har->health_max, winner_har->health);
 
         fight_stats->winnings =
             calculate_winnings(player_winner->pilot, player_loser->pilot, player_winner->chr->winnings_multiplier);
@@ -309,7 +307,9 @@ static void arena_end(scene *sc) {
                 }
             }
         }
-        fight_stats->repair_cost = calculate_trade_value(player_loser->pilot) / 100;
+        object *loser = game_state_find_object(scene->gs, game_player_get_har_obj_id(player_loser));
+        har *loser_har = object_get_userdata(loser);
+        fight_stats->repair_cost = calculate_repair_cost(player_loser->pilot, loser_har->health_max, loser_har->health);
     }
 
     if(!gs->match_settings.sim) {
