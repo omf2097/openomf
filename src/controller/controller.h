@@ -75,6 +75,7 @@ struct controller_t {
     int (*har_hook)(controller *ctrl, har_event event);
     void (*rewind_fun)(controller *ctrl);
     void (*controller_hook)(controller *ctrl, int action);
+    int (*count_game_state_clones)(controller *ctrl, game_state *clones_of);
     void (*free_fun)(controller *ctrl);
     void *data;
     int type;
@@ -95,6 +96,7 @@ int controller_dyntick(controller *ctrl, uint32_t ticks, ctrl_event **ev);
 int controller_har_hook(controller *ctrl, har_event event);
 void controller_add_hook(controller *ctrl, controller *source, void (*fp)(controller *ctrl, int act_type));
 void controller_clear_hooks(controller *ctrl);
+int controller_count_game_state_clones(controller *ctrl, game_state *clones_of);
 void controller_free_chain(ctrl_event *ev);
 void controller_free(controller *ctrl);
 void controller_set_repeat(controller *ctrl, int repeat);

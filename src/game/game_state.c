@@ -268,7 +268,7 @@ int game_state_create(game_state *gs, const engine_init_flags *init_flags) {
     }
     gs->init_flags = init_flags;
     gs->new_state = NULL;
-    gs->clone = false;
+    gs->offscreen = false;
     gs->hit_pause = 0;
     game_state_match_settings_reset(gs);
     vector_create(&gs->objects, sizeof(render_obj));
@@ -294,6 +294,7 @@ int game_state_create(game_state *gs, const engine_init_flags *init_flags) {
     controller_init(gs->menu_ctrl, gs);
 
     gs->sc = omf_calloc(1, sizeof(scene));
+    gs->clones = omf_calloc(1, sizeof(int));
 
     // Set up players
     for(int i = 0; i < 2; i++) {
@@ -992,8 +993,6 @@ void game_state_static_tick(game_state *gs, bool replay) {
         // merge the sounds
         game_state_merge_sounds(gs, gs->new_state);
         gs = gs->new_state;
-        // remove the cloned flag
-        gs->clone = false;
     }
 
     // Call static ticks for scene
@@ -1244,42 +1243,27 @@ void game_state_menu_poll(game_state *gs, ctrl_event **ev) {
     joystick_menu_poll_all(gs->menu_ctrl, ev);
 }
 
-void game_state_clone_free(game_state *gs) {
-    // Free objects
-    render_obj *robj;
-    iterator it;
-    vector_iter_begin(&gs->objects, &it);
-    foreach(it, robj) {
-        object_clone_free(robj->obj);
-        omf_free(robj->obj);
-        vector_delete(&gs->objects, &it);
+void game_state_free(game_state *gs) {
+    int contained = 0;
+    // count how many game_state clones are contained within the controllers
+    for(int i = 0; i < game_state_num_players(gs); i++) {
+        game_player *gp = game_state_get_player(gs, i);
+        controller *ctrl = game_player_get_ctrl(gp);
+        contained += controller_count_game_state_clones(ctrl, gs);
     }
-    vector_free(&gs->objects);
-    sound_tracker_free(&gs->tracker);
 
-    // Free scene
-    scene_clone_free(gs->sc);
-    // omf_free(gs->sc);
-
-    // Free players
-    for(int i = 0; i < 2; i++) {
-        // game_player_set_ctrl(gs->players[i], NULL);
-        game_player_clone_free(gs->players[i]);
-        omf_free(gs->players[i]);
-    }
-    // omf_free(gs);
-}
-
-void game_state_free(game_state **_gs) {
-    game_state *gs = *_gs;
-    *_gs = NULL;
+    bool clone = *gs->clones > contained;
 
     // Free objects
     render_obj *robj;
     iterator it;
     vector_iter_begin(&gs->objects, &it);
     foreach(it, robj) {
-        object_free(robj->obj);
+        if(clone) {
+            object_clone_free(robj->obj);
+        } else {
+            object_free(robj->obj);
+        }
         omf_free(robj->obj);
         vector_delete(&gs->objects, &it);
     }
@@ -1288,28 +1272,47 @@ void game_state_free(game_state **_gs) {
 
     // Free scene
     if(gs->sc) {
-        scene_free(gs->sc);
-        omf_free(gs->sc);
+        if(clone) {
+            scene_clone_free(gs->sc);
+        } else {
+            scene_free(gs->sc);
+            omf_free(gs->sc);
+        }
     }
+
+    if(gs->rec) {
+        for(int i = 0; i < 2; i++) {
+            if(gs->players[i]->pilot == &gs->rec->pilots[i].info) {
+                gs->players[i]->pilot = NULL;
+            }
+        }
+    }
+
+    // Free players
+    for(int i = 0; i < 2; i++) {
+        if(clone) {
+            game_player_clone_free(gs->players[i]);
+        } else {
+            game_player_free(gs->players[i]);
+            game_player_set_ctrl(gs->players[i], NULL);
+        }
+        omf_free(gs->players[i]);
+    }
+
+    // Clone check
+    (*gs->clones)--;
+    if(clone) {
+        // don't free the rest, a clone is still using it
+        return;
+    }
+
+    omf_free(gs->clones);
 
     if(gs->rec) {
         sd_rec_free(gs->rec);
         omf_free(gs->rec);
     }
-
-    if(gs->init_flags->playback == 1) {
-        gs->players[0]->pilot = NULL;
-        gs->players[1]->pilot = NULL;
-    }
-
-    // Free players
-    for(int i = 0; i < 2; i++) {
-        game_player_set_ctrl(gs->players[i], NULL);
-        game_player_free(gs->players[i]);
-        omf_free(gs->players[i]);
-    }
     omf_free(gs->menu_ctrl);
-    omf_free(gs);
 }
 
 int game_state_ms_per_dyntick(game_state *gs) {
@@ -1365,7 +1368,7 @@ int game_state_find_objects(game_state *gs, vector *out, bool (*predicate)(const
 }
 
 void game_state_play_sound(game_state *gs, int sound_id, const sound_opts *opts) {
-    sound_tracker_play(&gs->tracker, gs->tick, gs->clone, sound_id, opts);
+    sound_tracker_play(&gs->tracker, gs->tick, gs->offscreen, sound_id, opts);
 }
 
 int game_state_clone(game_state *src, game_state *dst) {
@@ -1401,7 +1404,7 @@ int game_state_clone(game_state *src, game_state *dst) {
 
     dst->new_state = NULL;
 
-    dst->clone = true;
+    (*dst->clones)++;
 
     return 0;
 }

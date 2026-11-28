@@ -384,6 +384,8 @@ int rewind_and_replay(wtf *data, controller *ctrl) {
         ev = iter_next(&it);
     }
 
+    gs->offscreen = true;
+
     while(gs->tick < gs_current->tick) {
         if(ev && ev->tick == gs->tick - data->local_proposal) {
             // feed in the inputs
@@ -519,8 +521,9 @@ int rewind_and_replay(wtf *data, controller *ctrl) {
             // on the state of the game
             gs_new = omf_calloc(1, sizeof(game_state));
             game_state_clone(gs, gs_new);
+            gs_new->offscreen = false;
             data->gs_bak = gs_new;
-            game_state_clone_free(gs_old);
+            game_state_free(gs_old);
             omf_free(gs_old);
         }
 
@@ -564,8 +567,9 @@ int rewind_and_replay(wtf *data, controller *ctrl) {
                     c->gs = gs_current;
                 }
             }
+            gs->offscreen = false;
             if(gs_old) {
-                game_state_clone_free(gs_old);
+                game_state_free(gs_old);
                 omf_free(gs_old);
             }
             return 1;
@@ -597,11 +601,13 @@ int rewind_and_replay(wtf *data, controller *ctrl) {
     // replace the game state with the replayed one
     gs->new_state = NULL;
     if(gs_current->new_state) {
-        game_state_clone_free(gs_current->new_state);
+        game_state_free(gs_current->new_state);
         omf_free(gs_current->new_state);
     }
     gs_current->new_state = gs;
     data->gs_bak->new_state = NULL;
+
+    gs->offscreen = false;
 
     return 0;
 }
@@ -640,6 +646,16 @@ bool net_controller_ready(controller *ctrl) {
 int net_controller_tick_offset(controller *ctrl) {
     wtf *data = ctrl->data;
     return data->tick_offset / 2;
+}
+
+static int net_controller_count_game_state_clones(controller *ctrl, game_state *clones_of) {
+    wtf *data = ctrl->data;
+    if(data->gs_bak && data->gs_bak != clones_of && data->gs_bak->clones == clones_of->clones) {
+        // `data->gs_bak` is a clone of `clones_of`
+        return 1;
+    } else {
+        return 0;
+    }
 }
 
 void net_controller_free(controller *ctrl) {
@@ -700,8 +716,10 @@ done:
     }
     list_free(&data->transcript);
     if(data->gs_bak) {
-        game_state_clone_free(data->gs_bak);
-        omf_free(data->gs_bak);
+        game_state *gs_bak = data->gs_bak;
+        data->gs_bak = NULL;
+        game_state_free(gs_bak);
+        omf_free(gs_bak);
     }
     if(ctrl->data) {
         omf_free(ctrl->data);
@@ -760,7 +778,7 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
         data->last_hash = arena_state_hash(data->gs_bak);
     } else if(data->gs_bak != NULL && !scene_is_arena(game_state_get_scene(ctrl->gs))) {
         // changed scene and no longer need a game state backup, release it
-        game_state_clone_free(data->gs_bak);
+        game_state_free(data->gs_bak);
         omf_free(data->gs_bak);
         data->last_action = ACT_NONE;
         data->last_peer_action = ACT_NONE;
@@ -1088,11 +1106,11 @@ int net_controller_tick(controller *ctrl, uint32_t ticks0, ctrl_event **ev) {
                         rewind_and_replay(data, ctrl);
                     }
                     if(ctrl->gs->new_state) {
-                        game_state_clone_free(ctrl->gs->new_state);
+                        game_state_free(ctrl->gs->new_state);
                         omf_free(ctrl->gs->new_state);
                     }
                     if(data->gs_bak) {
-                        game_state_clone_free(data->gs_bak);
+                        game_state_free(data->gs_bak);
                         omf_free(data->gs_bak);
                     }
                     if(ctrl->gs->rec) {
@@ -1258,7 +1276,7 @@ void menu_controller_hook(controller *ctrl, int action) {
 int net_controller_poll(controller *ctrl, ctrl_event **ev) {
     wtf *data = ctrl->data;
     // if we're replaying don't do this
-    if(ctrl->gs->clone) {
+    if(ctrl->gs->offscreen) {
         return 0;
     }
     iterator it;
@@ -1332,6 +1350,7 @@ void net_controller_create(controller *ctrl, ENetHost *host, ENetPeer *peer, ENe
     ctrl->type = CTRL_TYPE_NETWORK;
     ctrl->tick_fun = &net_controller_tick;
     ctrl->controller_hook = &controller_hook;
+    ctrl->count_game_state_clones = &net_controller_count_game_state_clones;
     ctrl->free_fun = &net_controller_free;
     ctrl->poll_fun = &net_controller_poll;
 }
