@@ -580,10 +580,7 @@ void object_set_animation(object *obj, animation *ani) {
 
     // Debug texts
     if(obj->cur_animation->id == -1) {
-        char buf1[FIXEDPT_STR_BUFSIZE];
-        char buf2[FIXEDPT_STR_BUFSIZE];
-        log_debug("Custom object set to (x,y) = (%s,%s).", fixedpt_cstr_buf(obj->pos.x, buf1),
-                  fixedpt_cstr_buf(obj->pos.y, buf2));
+        log_debug("Custom object set to (x,y) = (%s,%s).", FIXEDPT_CSTR(obj->pos.x), FIXEDPT_CSTR(obj->pos.y));
     } else {
         /*log_debug("Animation object %d set to (x,y) = (%f,%f) with \"%s\".", */
         /*obj->cur_animation->id,*/

@@ -914,8 +914,6 @@ char *state_name(int state) {
 
 void arena_state_dump(game_state *gs, char *buf, size_t bufsize) {
     int off = 0;
-    char buf1[FIXEDPT_STR_BUFSIZE];
-    char buf2[FIXEDPT_STR_BUFSIZE];
     for(int i = 0; i < 2; i++) {
         game_player *player = game_state_get_player(gs, i);
         object *obj_har = game_state_find_object(gs, game_player_get_har_obj_id(player));
@@ -926,7 +924,7 @@ void arena_state_dump(game_state *gs, char *buf, size_t bufsize) {
                        "player %d  power %d agility %d endurance %d HAR id %d  pos %d,%d, health %d, endurance %d, "
                        "velocity %s,%s, state %s, executing_move %d cur_anim %d seed %" PRIu32 "\n",
                        i, player->pilot->power, player->pilot->agility, player->pilot->endurance_level, har->id, pos.x,
-                       pos.y, har->health, har->endurance, fixedpt_cstr_buf(vel.x, buf1), fixedpt_cstr_buf(vel.y, buf2),
+                       pos.y, har->health, har->endurance, FIXEDPT_CSTR(vel.x), FIXEDPT_CSTR(vel.y),
                        state_name(har->state), har->executing_move, obj_har->cur_animation->id,
                        random_get_seed(&gs->rand));
     }

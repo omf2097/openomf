@@ -82,19 +82,17 @@ void player_describe_frame(const script_frame *frame) {
 }
 
 void player_describe_object(object *obj) {
-    char buf1[FIXEDPT_STR_BUFSIZE];
-    char buf2[FIXEDPT_STR_BUFSIZE];
     log_debug("Object:");
-    log_debug("  - Start: %s, %s", fixedpt_cstr_buf(obj->start.x, buf1), fixedpt_cstr_buf(obj->start.y, buf2));
-    log_debug("  - Position: %s, %s", fixedpt_cstr_buf(obj->pos.x, buf1), fixedpt_cstr_buf(obj->pos.y, buf2));
-    log_debug("  - Velocity: %s, %s", fixedpt_cstr_buf(obj->vel.x, buf1), fixedpt_cstr_buf(obj->vel.y, buf2));
+    log_debug("  - Start: %s, %s", FIXEDPT_CSTR(obj->start.x), FIXEDPT_CSTR(obj->start.y));
+    log_debug("  - Position: %s, %s", FIXEDPT_CSTR(obj->pos.x), FIXEDPT_CSTR(obj->pos.y));
+    log_debug("  - Velocity: %s, %s", FIXEDPT_CSTR(obj->vel.x), FIXEDPT_CSTR(obj->vel.y));
     if(obj->cur_sprite_id) {
         sprite *cur_sprite = animation_get_sprite(obj->cur_animation, obj->cur_sprite_id);
         log_debug("  - Pos: %d, %d", cur_sprite->pos.x, cur_sprite->pos.y);
         log_debug("  - Size: %d, %d", cur_sprite->data->w, cur_sprite->data->h);
         player_sprite_state *rstate = &obj->sprite_state;
-        log_debug("CURRENT = %s - %d + %d - %d", fixedpt_cstr_buf(obj->pos.y, buf1), cur_sprite->pos.y,
-                  rstate->o_correction.y, cur_sprite->data->h);
+        log_debug("CURRENT = %s - %d + %d - %d", FIXEDPT_CSTR(obj->pos.y), cur_sprite->pos.y, rstate->o_correction.y,
+                  cur_sprite->data->h);
     }
 }
 
@@ -512,11 +510,8 @@ void player_run_apply(object *obj) {
                 fixedpt ma = fixedpt_fromint(script_get_tag_value_by_id(frame, TAG_MA));
                 vx = fixedpt_cos(ma);
                 vy = fixedpt_sin(ma);
-                char buf1[FIXEDPT_STR_BUFSIZE];
-                char buf2[FIXEDPT_STR_BUFSIZE];
-                char buf3[FIXEDPT_STR_BUFSIZE];
-                log_debug("MA is set! angle = %s, vx = %s, vy = %s", fixedpt_cstr_buf(ma, buf1),
-                          fixedpt_cstr_buf(vx, buf2), fixedpt_cstr_buf(vy, buf3));
+                log_debug("MA is set! angle = %s, vx = %s, vy = %s", FIXEDPT_CSTR(ma), FIXEDPT_CSTR(vx),
+                          FIXEDPT_CSTR(vy));
             }
 
             // Special positioning for certain desert arena sprites
