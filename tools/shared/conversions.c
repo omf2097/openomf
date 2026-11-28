@@ -24,3 +24,11 @@ int32_t conv_dword(const char *data) {
 float conv_float(const char *data) {
     return atof(data);
 }
+fixedpt conv_fixedpt(const char *data) {
+    fixedpt out = 0;
+    const char *err;
+    if(fixedpt_from_c(data, &out, &err) < 0) {
+        return 0;
+    }
+    return out;
+}

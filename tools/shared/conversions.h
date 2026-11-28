@@ -1,6 +1,7 @@
 #ifndef CONVERSIONS_H
 #define CONVERSIONS_H
 
+#include "utils/fixedpt.h"
 #include <stdint.h>
 
 uint8_t conv_ubyte(const char *data);
@@ -10,5 +11,6 @@ int16_t conv_word(const char *data);
 uint32_t conv_udword(const char *data);
 int32_t conv_dword(const char *data);
 float conv_float(const char *data);
+fixedpt conv_fixedpt(const char *data);
 
 #endif // CONVERSIONS_H
