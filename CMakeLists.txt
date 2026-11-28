@@ -66,7 +66,8 @@ project(OpenOMF C)
 # Build capabilities are configured by the caller (e.g. a CI toolchain job).
 # Defaults preserve the existing desktop configuration.
 set(OMF_AUDIO_BACKENDS "sdl" CACHE STRING "Semicolon-separated audio backend plugins")
-set(OMF_VIDEO_RENDERERS "opengl3" CACHE STRING "Semicolon-separated renderer plugins")
+set(OMF_VIDEO_RENDERERS "opengl3;software" CACHE STRING "Semicolon-separated renderer plugins")
+set(OMF_FRAMEBUFFER_PRESENTERS "sdl" CACHE STRING "Semicolon-separated framebuffer presenters for the software renderer")
 option(OMF_STRIP_GNU_BINARIES "Strip GNU Release binaries at link time" ON)
 
 set(OMF_USE_SDL_AUDIO_DRIVER OFF)
@@ -244,6 +245,8 @@ set_source_files_properties("src/game/audio/audio_sources.c"
 
 # Remove all render plugin source code from OPENOMF_SRC
 list(FILTER OPENOMF_SRC EXCLUDE REGEX "^src/video/renderers/.*/")
+# Presenter implementations are also plugins, separate from the CPU compositor.
+list(FILTER OPENOMF_SRC EXCLUDE REGEX "^src/video/framebuffer/presenters/.*/")
 # Keep the NULL test renderer in Debug unless already selected explicitly.
 if(NOT "null" IN_LIST OMF_VIDEO_RENDERERS)
     list(APPEND OPENOMF_SRC
@@ -268,6 +271,27 @@ foreach(PLUGIN ${OMF_VIDEO_RENDERERS})
     message(STATUS "Enabled video backend plugin '${PLUGIN}'")
 endforeach()
 set_source_files_properties("src/video/video.c" PROPERTIES COMPILE_DEFINITIONS "${VIDEO_C_DEFINES}")
+
+if("software" IN_LIST OMF_VIDEO_RENDERERS)
+    foreach(PRESENTER ${OMF_FRAMEBUFFER_PRESENTERS})
+        file(GLOB_RECURSE PRESENTER_SRC
+            LIST_DIRECTORIES OFF
+            CONFIGURE_DEPENDS
+            RELATIVE ${CMAKE_SOURCE_DIR}
+            "src/video/framebuffer/presenters/${PRESENTER}/*.c"
+            "src/video/framebuffer/presenters/${PRESENTER}/*.h"
+        )
+        if(NOT PRESENTER_SRC)
+            message(FATAL_ERROR "Unknown framebuffer presenter '${PRESENTER}'")
+        endif()
+        list(APPEND OPENOMF_SRC ${PRESENTER_SRC})
+        string(TOUPPER "${PRESENTER}" PRESENTER_UPPER)
+        list(APPEND FRAMEBUFFER_C_DEFINES "ENABLE_${PRESENTER_UPPER}_FRAMEBUFFER_PRESENTER")
+        message(STATUS "Enabled framebuffer presenter '${PRESENTER}'")
+    endforeach()
+endif()
+set_source_files_properties("src/video/framebuffer/presenter.c" PROPERTIES
+    COMPILE_DEFINITIONS "${FRAMEBUFFER_C_DEFINES}")
 
 # Build core sources first as an object library
 # this can then be reused in tests and main executable to speed things up
