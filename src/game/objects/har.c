@@ -979,18 +979,13 @@ void har_take_damage(object *obj, af_move *move) {
 
     // Handle health changes
     if(h->health <= 0) {
-        h->health = 0;
-    }
-
-    if(h->health == 0) {
         // Take a screencap of enemy har
         har_screencaps_capture(&other_player->screencaps, other_har, obj, SCREENCAP_BLOW);
 
         // Slow down game more for last shot
         log_debug("Slowdown: Slowing from %u to %u.", game_state_get_speed(obj->gs),
-                  h->health == 0 ? game_state_get_speed(obj->gs) - 10 : game_state_get_speed(obj->gs) - 6);
-        game_state_slowdown(obj->gs, 12,
-                            h->health == 0 ? game_state_get_speed(obj->gs) - 10 : game_state_get_speed(obj->gs) - 6);
+                  game_state_get_speed(obj->gs) - 10);
+        game_state_slowdown(obj->gs, 12, game_state_get_speed(obj->gs) - 10);
     }
 
     const str *string = &move->footer_string;
@@ -1977,10 +1972,8 @@ void har_tick(object *obj) {
 
                 // Slow down game more for last shot
                 log_debug("Slowdown: Slowing from %u to %u.", game_state_get_speed(obj->gs),
-                          h->health == 0 ? game_state_get_speed(obj->gs) - 10 : game_state_get_speed(obj->gs) - 6);
-                game_state_slowdown(obj->gs, 12,
-                                    h->health == 0 ? game_state_get_speed(obj->gs) - 10
-                                                   : game_state_get_speed(obj->gs) - 6);
+                          game_state_get_speed(obj->gs) - 10);
+                game_state_slowdown(obj->gs, 12, game_state_get_speed(obj->gs) - 10);
 
                 har_event_defeat(h, ctrl);
             }

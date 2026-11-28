@@ -1398,11 +1398,11 @@ void arena_dynamic_tick(scene *scene, int paused) {
         }
 
         // check some invariants
-        if(hars[0]->health == 0) {
+        if(hars[0]->health <= 0) {
             assert(hars[0]->state == STATE_DEFEAT || hars[0]->state == STATE_RECOIL || hars[0]->state == STATE_NONE ||
                    hars[0]->state == STATE_WALLDAMAGE);
         }
-        if(hars[1]->health == 0) {
+        if(hars[1]->health <= 0) {
             assert(hars[1]->state == STATE_DEFEAT || hars[1]->state == STATE_RECOIL || hars[1]->state == STATE_NONE ||
                    hars[1]->state == STATE_WALLDAMAGE);
         }
