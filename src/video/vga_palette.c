@@ -31,9 +31,13 @@ void vga_palette_mix_range(vga_palette *pal, vga_index ref_index, vga_index star
     }
 }
 
-void vga_palette_darken(vga_palette *pal, uint8_t step) {
+void vga_palette_darken_all(vga_palette *pal, uint8_t step) {
+    vga_palette_darken(pal, step, 0, VGA_PALETTE_SIZE);
+}
+
+void vga_palette_darken(vga_palette *pal, uint8_t step, vga_index start, vga_index end) {
     const uint32_t inv = 255 - step;
-    for(int i = 0; i < VGA_PALETTE_SIZE; i++) {
+    for(int i = start; i < end; i++) {
         pal->colors[i].r = (pal->colors[i].r * inv) >> 8;
         pal->colors[i].g = (pal->colors[i].g * inv) >> 8;
         pal->colors[i].b = (pal->colors[i].b * inv) >> 8;
