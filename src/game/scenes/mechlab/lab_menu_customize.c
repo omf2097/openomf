@@ -63,7 +63,7 @@ void lab_menu_customize_arm_power(component *c, void *userdata) {
         int32_t price =
             har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[pilot->arm_power] * arm_leg_multiplier;
         if(price > 0) {
-            pilot->money += price * 0.85;
+            pilot->money += (price * 70) / 100;
             pilot->arm_power--;
             mechlab_update(s);
         }
@@ -100,7 +100,7 @@ void lab_menu_customize_leg_power(component *c, void *userdata) {
         int32_t price =
             har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[pilot->leg_power] * arm_leg_multiplier;
         if(price > 0) {
-            pilot->money += price * 0.85;
+            pilot->money += (price * 70) / 100;
             pilot->leg_power--;
             mechlab_update(s);
         }
@@ -137,7 +137,7 @@ void lab_menu_customize_arm_speed(component *c, void *userdata) {
         int32_t price =
             har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[pilot->arm_speed] * arm_leg_multiplier;
         if(price > 0) {
-            pilot->money += price * 0.85;
+            pilot->money += (price * 70) / 100;
             pilot->arm_speed--;
             mechlab_update(s);
         }
@@ -174,7 +174,7 @@ void lab_menu_customize_leg_speed(component *c, void *userdata) {
         int32_t price =
             har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[pilot->leg_speed] * arm_leg_multiplier;
         if(price > 0) {
-            pilot->money += price * 0.85;
+            pilot->money += (price * 70) / 100;
             pilot->leg_speed--;
             mechlab_update(s);
         }
@@ -210,7 +210,7 @@ void lab_menu_customize_armor(component *c, void *userdata) {
     if(mechlab_get_selling(s)) {
         int32_t price = har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[pilot->armor] * armor_multiplier;
         if(price > 0) {
-            pilot->money += price * 0.85;
+            pilot->money += (price * 70) / 100;
             pilot->armor--;
             mechlab_update(s);
         }
@@ -246,7 +246,7 @@ void lab_menu_customize_stun_resistance(component *c, void *userdata) {
         int32_t price =
             har_upgrade_price[pilot->har_id] * upgrade_level_multiplier[pilot->stun_resistance] * stun_res_multiplier;
         if(price > 0) {
-            pilot->money += price * 0.85;
+            pilot->money += (price * 70) / 100;
             pilot->stun_resistance--;
             mechlab_update(s);
         }
@@ -382,7 +382,7 @@ static void lab_menu_focus_arm_power(component *c, bool focused, void *userdata)
             if(price < 1) {
                 label_set_text(details_label, "Unavailable\n\nUnavailable");
             } else {
-                score_format((int)(price * 0.85), price_str, sizeof(price_str));
+                score_format((price * 70) / 100, price_str, sizeof(price_str));
                 snprintf(tmp, sizeof(tmp), "Level %d\n\n$ %sK", pilot->arm_power, price_str);
                 label_set_text(details_label, tmp);
             }
@@ -419,7 +419,7 @@ static void lab_menu_focus_leg_power(component *c, bool focused, void *userdata)
             if(price < 1) {
                 label_set_text(details_label, "Unavailable\n\nUnavailable");
             } else {
-                score_format((int)(price * 0.85), price_str, sizeof(price_str));
+                score_format((price * 70) / 100, price_str, sizeof(price_str));
                 snprintf(tmp, sizeof(tmp), "Level %d\n\n$ %sK", pilot->leg_power, price_str);
                 label_set_text(details_label, tmp);
             }
@@ -456,7 +456,7 @@ static void lab_menu_focus_arm_speed(component *c, bool focused, void *userdata)
             if(price < 1) {
                 label_set_text(details_label, "Unavailable\n\nUnavailable");
             } else {
-                score_format((int)(price * 0.85), price_str, sizeof(price_str));
+                score_format((price * 70) / 100, price_str, sizeof(price_str));
                 snprintf(tmp, sizeof(tmp), "Level %d\n\n$ %sK", pilot->arm_speed, price_str);
                 label_set_text(details_label, tmp);
             }
@@ -493,7 +493,7 @@ static void lab_menu_focus_leg_speed(component *c, bool focused, void *userdata)
             if(price < 1) {
                 label_set_text(details_label, "Unavailable\n\nUnavailable");
             } else {
-                score_format((int)(price * 0.85), price_str, sizeof(price_str));
+                score_format((price * 70) / 100, price_str, sizeof(price_str));
                 snprintf(tmp, sizeof(tmp), "Level %d\n\n$ %sK", pilot->leg_speed, price_str);
                 label_set_text(details_label, tmp);
             }
@@ -530,7 +530,7 @@ static void lab_menu_focus_armor(component *c, bool focused, void *userdata) {
             if(price < 1) {
                 label_set_text(details_label, "Unavailable\n\nUnavailable");
             } else {
-                score_format((int)(price * 0.85), price_str, sizeof(price_str));
+                score_format((price * 70) / 100, price_str, sizeof(price_str));
                 snprintf(tmp, sizeof(tmp), "Level %d\n\n$ %sK", pilot->armor, price_str);
                 label_set_text(details_label, tmp);
             }
@@ -565,7 +565,7 @@ static void lab_menu_focus_stun_resistance(component *c, bool focused, void *use
             if(price < 1) {
                 label_set_text(details_label, "Unavailable\n\nUnavailable");
             } else {
-                score_format((int)(price * 0.85), price_str, sizeof(price_str));
+                score_format((price * 70) / 100, price_str, sizeof(price_str));
                 snprintf(tmp, sizeof(tmp), "Level %d\n\n$ %sK", pilot->stun_resistance, price_str);
                 label_set_text(details_label, tmp);
             }
@@ -738,32 +738,32 @@ int sell_highest_value_upgrade(sd_pilot *pilot, char *sold) {
     }
     switch(max_idx) {
         case 0:
-            pilot->money += (int32_t)(prices[max_idx] * 0.85);
+            pilot->money += (prices[max_idx] * 70) / 100;
             snprintf(sold, SOLD_BUF_SIZE, "LEVEL %d ARM POWER", pilot->arm_power + 1);
             pilot->arm_power--;
             break;
         case 1:
-            pilot->money += (int32_t)(prices[max_idx] * 0.85);
+            pilot->money += (prices[max_idx] * 70) / 100;
             snprintf(sold, SOLD_BUF_SIZE, "LEVEL %d ARM SPEED", pilot->arm_speed + 1);
             pilot->arm_speed--;
             break;
         case 2:
-            pilot->money += (int32_t)(prices[max_idx] * 0.85);
+            pilot->money += (prices[max_idx] * 70) / 100;
             snprintf(sold, SOLD_BUF_SIZE, "LEVEL %d LEG POWER", pilot->leg_power + 1);
             pilot->leg_power--;
             break;
         case 3:
-            pilot->money += (int32_t)(prices[max_idx] * 0.85);
+            pilot->money += (prices[max_idx] * 70) / 100;
             snprintf(sold, SOLD_BUF_SIZE, "LEVEL %d LEG SPEED", pilot->leg_speed + 1);
             pilot->leg_speed--;
             break;
         case 4:
-            pilot->money += (int32_t)(prices[max_idx] * 0.85);
+            pilot->money += (prices[max_idx] * 70) / 100;
             snprintf(sold, SOLD_BUF_SIZE, "LEVEL %d STUN RES.", pilot->stun_resistance + 1);
             pilot->stun_resistance--;
             break;
         case 5:
-            pilot->money += (int32_t)(prices[max_idx] * 0.85);
+            pilot->money += (prices[max_idx] * 70) / 100;
             snprintf(sold, SOLD_BUF_SIZE, "LEVEL %d ARMOR PLATE", pilot->armor + 1);
             pilot->armor--;
             break;
