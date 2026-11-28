@@ -291,7 +291,7 @@ void lab_menu_customize_check_trade_robot(component *c, void *userdata) {
             // don't trade for the current HAR
             continue;
         }
-        if((p1->pilot->har_trades >> i) & 1 && har_prices[i] < trade_value + p1->pilot->money) {
+        if((p1->pilot->har_trades >> i) & 1 && har_prices[i] <= trade_value + p1->pilot->money) {
             trades = true;
         }
     }
@@ -600,7 +600,7 @@ void lab_menu_focus_trade(component *c, bool focused, void *userdata) {
                 // don't trade for the current HAR
                 continue;
             }
-            if((p1->pilot->har_trades >> i) & 1 && har_prices[i] < trade_value + p1->pilot->money) {
+            if((p1->pilot->har_trades >> i) & 1 && har_prices[i] <= trade_value + p1->pilot->money) {
                 trades[tradecount] = i;
                 tradecount++;
             }
